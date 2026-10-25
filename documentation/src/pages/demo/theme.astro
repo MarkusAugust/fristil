@@ -25,10 +25,10 @@ import "@lo-tek/interfaces/paragraph.css"
 import "@lo-tek/interfaces/card.css"
 import "@lo-tek/interfaces/badge.css"
 
-const VALG = [
-  { verdi: "auto", tekst: "Follow the system" },
-  { verdi: "light", tekst: "Light" },
-  { verdi: "dark", tekst: "Dark" },
+const OPTIONS = [
+  { value: "auto", label: "Follow the system" },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
 ]
 ---
 
@@ -51,16 +51,16 @@ const VALG = [
         <fieldset class="lt-toggle-group" aria-describedby="demo-theme-switch">
           <legend class="lt-sr-only">Theme</legend>
           {
-            VALG.map(({ verdi, tekst }) => (
+            OPTIONS.map(({ value, label }) => (
               <label class="lt-toggle-group__option">
                 <input
                   class="lt-theme-control"
                   type="radio"
                   name="theme"
-                  value={verdi}
-                  checked={verdi === "auto"}
+                  value={value}
+                  checked={value === "auto"}
                 />
-                {tekst}
+                {label}
               </label>
             ))
           }

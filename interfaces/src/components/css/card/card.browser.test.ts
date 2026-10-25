@@ -20,63 +20,67 @@ import "../button/button.css"
 describe("lt-card", () => {
   beforeEach(() => {
     mount(`
-      <div class="lt-card" id="vanlig">
-        <h3 class="lt-card__title">Søknad om bostøtte</h3>
-        <p>Sendt 4. mars. Saksnummer 2026-0481.</p>
+      <div class="lt-card" id="regular">
+        <h3 class="lt-card__title">Housing benefit application</h3>
+        <p>Sent 4 March. Case number 2026-0481.</p>
       </div>
-      <div class="lt-card" data-variant="filled" id="fylt">
-        <h3 class="lt-card__title">Søknad om barnehageplass</h3>
-        <p>Under behandling.</p>
+      <div class="lt-card" data-variant="filled" id="filled">
+        <h3 class="lt-card__title">Nursery place application</h3>
+        <p>In progress.</p>
       </div>
-      <a class="lt-card" data-interactive href="#" id="klikkbar">
-        <h3 class="lt-card__title">Se hele saken</h3>
-        <p>Alle dokumenter og meldinger.</p>
+      <a class="lt-card" data-interactive href="#" id="clickable">
+        <h3 class="lt-card__title">See the whole case</h3>
+        <p>All documents and messages.</p>
       </a>
     `)
   })
 
-  it("lar et merke, en knapp og en lenke ha sin egen bredde, og strekker avsnittet", () => {
+  it("lets a badge, a button and a link keep their own width, and stretches the paragraph", () => {
     mount(`
-      <div class="lt-card" id="med-merke" style="width: 400px">
-        <p>Sendt 4. mars.</p>
-        <span class="lt-badge" data-color="success">Innvilget</span>
-        <button class="lt-button" data-variant="secondary">Last opp vedlegg</button>
-        <a class="lt-link" href="#">Se vedtaket</a>
+      <div class="lt-card" id="with-badge" style="width: 400px">
+        <p>Sent 4 March.</p>
+        <span class="lt-badge" data-color="success">Granted</span>
+        <button class="lt-button" data-variant="secondary">Upload attachment</button>
+        <a class="lt-link" href="#">See the decision</a>
       </div>
     `)
-    const kort = document.getElementById("med-merke") as HTMLElement
-    const bredde = (s: string) =>
-      (kort.querySelector(s) as HTMLElement).getBoundingClientRect().width
-    const innside =
-      kort.clientWidth -
-      2 * Number.parseFloat(getComputedStyle(kort).paddingLeft)
+    const cardElement = document.getElementById("with-badge") as HTMLElement
+    const width = (s: string) =>
+      (cardElement.querySelector(s) as HTMLElement).getBoundingClientRect()
+        .width
+    const inside =
+      cardElement.clientWidth -
+      2 * Number.parseFloat(getComputedStyle(cardElement).paddingLeft)
 
-    expect(bredde(".lt-badge")).toBeLessThan(innside / 2)
-    expect(bredde(".lt-button")).toBeLessThan(innside)
-    expect(bredde(".lt-link")).toBeLessThan(innside / 2)
-    expect(bredde("p")).toBeCloseTo(innside, 0)
+    expect(width(".lt-badge")).toBeLessThan(inside / 2)
+    expect(width(".lt-button")).toBeLessThan(inside)
+    expect(width(".lt-link")).toBeLessThan(inside / 2)
+    expect(width("p")).toBeCloseTo(inside, 0)
   })
 
-  it("skiller fylt fra omriss", () => {
-    const vanlig = getComputedStyle(
-      document.getElementById("vanlig") as Element,
+  it("tells filled apart from outlined", () => {
+    const regular = getComputedStyle(
+      document.getElementById("regular") as Element,
     )
-    const fylt = getComputedStyle(document.getElementById("fylt") as Element)
+    const filled = getComputedStyle(
+      document.getElementById("filled") as Element,
+    )
 
-    expect(fylt.backgroundColor).not.toBe(vanlig.backgroundColor)
-    expect(fylt.borderTopColor).not.toBe(vanlig.borderTopColor)
+    expect(filled.backgroundColor).not.toBe(regular.backgroundColor)
+    expect(filled.borderTopColor).not.toBe(regular.borderTopColor)
   })
 
-  it("lar det klikkbare kortet være et ekte lenkeelement", () => {
-    const klikkbar = document.getElementById("klikkbar") as HTMLElement
+  it("keeps the clickable card a real link element", () => {
+    const clickable = document.getElementById("clickable") as HTMLElement
 
-    // Et <div> med klikklytter kan hverken nås med tastatur eller meldes som
-    // noe å trykke på. Derfor setter data-interactive bare stilen.
-    expect(klikkbar.tagName).toBe("A")
-    expect(getComputedStyle(klikkbar).textDecorationLine).toBe("none")
+    // A <div> with a click listener can neither be reached with the keyboard
+    // nor announced as something to press. So data-interactive only sets
+    // the style.
+    expect(clickable.tagName).toBe("A")
+    expect(getComputedStyle(clickable).textDecorationLine).toBe("none")
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(card()).toEqual({ class: "lt-card" })
     expect(card({ variant: "filled", interactive: true })).toEqual({
       class: "lt-card",
@@ -86,41 +90,41 @@ describe("lt-card", () => {
     expect(card.title).toBe("lt-card__title")
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })
 })
 
-describe("lt-card som knapp", () => {
-  it("har samme skrift som et kort som er en lenke", () => {
-    // En <button> arver ikke skriften, og kortet hadde 13 piksler.
+describe("lt-card as a button", () => {
+  it("has the same font as a card that is a link", () => {
+    // A <button> does not inherit the font, and the card had 13 pixels.
     mount(`
-      <a class="lt-card" data-interactive href="#"><p id="i-lenke">Tekst</p></a>
-      <button class="lt-card" data-interactive type="button"><p id="i-knapp">Tekst</p></button>
+      <a class="lt-card" data-interactive href="#"><p id="in-link">Text</p></a>
+      <button class="lt-card" data-interactive type="button"><p id="in-button">Text</p></button>
     `)
-    const skrift = (id: string) =>
+    const font = (id: string) =>
       getComputedStyle(document.getElementById(id) as HTMLElement).fontSize
 
-    expect(skrift("i-knapp")).toBe(skrift("i-lenke"))
+    expect(font("in-button")).toBe(font("in-link"))
   })
 })
 
-describe("avsnitt i lt-card", () => {
-  it("lar klassen på avsnittet vinne over kortet", () => {
-    // `.lt-card p` slo `.lt-paragraph` på spesifisitet, så
-    // `--lt-paragraph-line-height` virket overalt unntatt i et kort.
+describe("paragraphs in lt-card", () => {
+  it("lets the class on the paragraph win over the card", () => {
+    // `.lt-card p` beat `.lt-paragraph` on specificity, so
+    // `--lt-paragraph-line-height` worked everywhere except in a card.
     mount(`
-      <p class="lt-paragraph" id="utenfor" style="--lt-paragraph-line-height: 1.2">Tekst</p>
+      <p class="lt-paragraph" id="outside" style="--lt-paragraph-line-height: 1.2">Text</p>
       <div class="lt-card">
-        <p class="lt-paragraph" id="inni" style="--lt-paragraph-line-height: 1.2">Tekst</p>
-        <p class="lt-help-text" id="hjelp">Hjelp</p>
+        <p class="lt-paragraph" id="inside" style="--lt-paragraph-line-height: 1.2">Text</p>
+        <p class="lt-help-text" id="help">Help</p>
       </div>
     `)
-    const stil = (id: string) =>
+    const style = (id: string) =>
       getComputedStyle(document.getElementById(id) as HTMLElement)
 
-    expect(stil("inni").lineHeight).toBe(stil("utenfor").lineHeight)
-    expect(stil("hjelp").marginTop).not.toBe("0px")
+    expect(style("inside").lineHeight).toBe(style("outside").lineHeight)
+    expect(style("help").marginTop).not.toBe("0px")
   })
 })

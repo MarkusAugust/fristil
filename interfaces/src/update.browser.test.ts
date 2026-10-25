@@ -98,9 +98,9 @@ const omraade = (innhold: string, oppdatert = false) =>
   `<div id="omraade">${oppdatert ? "<span hidden data-oppdatert></span>" : ""}${innhold}</div>`
 
 async function oppdater(maate: Maate, innhold: string): Promise<void> {
-  const rot = document.getElementById("omraade") as HTMLElement
+  const root = document.getElementById("omraade") as HTMLElement
   // The marker from the previous update is removed, so this one has to bring it.
-  rot.querySelector("[data-oppdatert]")?.remove()
+  root.querySelector("[data-oppdatert]")?.remove()
   if (maate === "Datastar") {
     // Like a `datastar-patch-elements` without a selector: `outer` on the id.
     document.dispatchEvent(
@@ -113,12 +113,12 @@ async function oppdater(maate: Maate, innhold: string): Promise<void> {
       }),
     )
   } else if (maate === "idiomorph") {
-    Idiomorph.morph(rot, omraade(innhold, true), {
+    Idiomorph.morph(root, omraade(innhold, true), {
       morphStyle: "outerHTML",
       ignoreActiveValue: true,
     })
   } else {
-    rot.innerHTML = `<span hidden data-oppdatert></span>${innhold}`
+    root.innerHTML = `<span hidden data-oppdatert></span>${innhold}`
   }
   await roSeg()
   expect(
@@ -308,19 +308,19 @@ describe("fields and suggestion fields through a server update", () => {
 
     it(`checkbox: ${maate} and what the server sends back`, async () => {
       await mount(AVKRYSSING(false))
-      const boks = document.getElementById("vilkar") as HTMLInputElement
-      boks.click()
-      expect(boks.checked).toBe(true)
+      const box = document.getElementById("vilkar") as HTMLInputElement
+      box.click()
+      expect(box.checked).toBe(true)
 
       await oppdater(maate, AVKRYSSING(false))
-      expect(document.getElementById("vilkar")).toBe(boks)
-      expect(boks.checked).toBe(maate === "Datastar")
+      expect(document.getElementById("vilkar")).toBe(box)
+      expect(box.checked).toBe(maate === "Datastar")
 
       // The server sends `checked` while the box is unchecked after the user
       // touched it. Both morphers set the check from the server's HTML.
-      boks.checked = false
+      box.checked = false
       await oppdater(maate, AVKRYSSING(true))
-      expect(boks.checked).toBe(true)
+      expect(box.checked).toBe(true)
     })
 
     it(`list with ids from a key: the text stays in the right row (${maate})`, async () => {

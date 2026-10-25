@@ -14,150 +14,155 @@ import skipLinkCss from "./skip-link.css?inline"
 import "../../../tokens/tokens.css"
 import "./skip-link.css"
 
-/** `transform` når lenken står på plass: identitetsmatrisen, eller `none`. */
-const SYNLIG = /matrix\(1, 0, 0, 1, 0, 0\)|none/
+/** `transform` when the link is in place: the identity matrix, or `none`. */
+const VISIBLE = /matrix\(1, 0, 0, 1, 0, 0\)|none/
 
 describe("lt-skip-link", () => {
   beforeEach(() => {
     mount(`
-      <a class="lt-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
-      <main id="hovedinnhold" tabindex="-1">
-        <p>Innholdet på siden.</p>
+      <a class="lt-skip-link" href="#main-content" id="skip">Skip to main content</a>
+      <main id="main-content" tabindex="-1">
+        <p>The content of the page.</p>
       </main>
     `)
   })
 
-  it("blir værende i tastaturrekkefølgen mens den er skjult", () => {
-    const lenke = document.getElementById("hopp") as HTMLElement
-    const stil = getComputedStyle(lenke)
+  it("stays in the tab order while it is hidden", () => {
+    const link = document.getElementById("skip") as HTMLElement
+    const style = getComputedStyle(link)
 
-    // display: none eller visibility: hidden ville tatt lenken ut av
-    // tastaturrekkefølgen, og da finnes den ikke for den som trenger den.
-    expect(stil.display).not.toBe("none")
-    expect(stil.visibility).not.toBe("hidden")
+    // display: none or visibility: hidden would take the link out of the
+    // tab order, and then it does not exist for the person who needs it.
+    expect(style.display).not.toBe("none")
+    expect(style.visibility).not.toBe("hidden")
   })
 
-  it("kommer til syne når den får fokus", async () => {
-    const lenke = document.getElementById("hopp") as HTMLElement
-    const skjult = getComputedStyle(lenke).transform
+  it("appears when it gets focus", async () => {
+    const link = document.getElementById("skip") as HTMLElement
+    const hidden = getComputedStyle(link).transform
 
-    // Lenken glir på plass, så verdien leses til den står der, og ikke
-    // etter en fast pause eller på `transitionend`: 250 millisekunder holdt
-    // ikke alltid i Firefox, og hendelsen kom ikke alltid fram der heller.
-    lenke.focus()
+    // The link slides into place, so the value is read until it is there,
+    // not after a fixed pause or on `transitionend`: 250 milliseconds was
+    // not always enough in Firefox, and the event did not always arrive
+    // there either.
+    link.focus()
     await vi.waitFor(
-      () => expect(getComputedStyle(lenke).transform).toMatch(SYNLIG),
+      () => expect(getComputedStyle(link).transform).toMatch(VISIBLE),
       {
         timeout: 3000,
       },
     )
 
-    expect(skjult).not.toMatch(SYNLIG)
-    expect(document.activeElement).toBe(lenke)
+    expect(hidden).not.toMatch(VISIBLE)
+    expect(document.activeElement).toBe(link)
   })
 
-  it("kommer til syne på :focus, ikke på :focus-visible", () => {
-    // Hadde lenken brukt `:focus-visible`, sto den skjult for den som
-    // hopper dit fra et skript etter et museklikk. Regelen leses fra
-    // stilarket, og prøves med et attributt i stedet for pseudoklassen, så
-    // svaret ikke avhenger av om vinduet har fokus i motoren testen kjører i.
+  it("appears on :focus, not on :focus-visible", () => {
+    // Had the link used `:focus-visible`, it stayed hidden for someone who
+    // jumps there from a script after a mouse click. The rule is read from
+    // the stylesheet, and tried with an attribute instead of the
+    // pseudo-class, so the answer does not depend on whether the window has
+    // focus in the engine the test runs in.
     expect(skipLinkCss).toContain(".lt-skip-link:focus {")
     expect(skipLinkCss).not.toMatch(/\.lt-skip-link:focus-visible/)
     mount(`
       <style>
-        ${skipLinkCss.replaceAll(":focus", "[data-fokus]")}
+        ${skipLinkCss.replaceAll(":focus", "[data-focus]")}
         .lt-skip-link { transition: none; }
       </style>
-      <a class="lt-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
-      <main id="hovedinnhold" tabindex="-1"><p>Innholdet på siden.</p></main>
+      <a class="lt-skip-link" href="#main-content" id="skip">Skip to main content</a>
+      <main id="main-content" tabindex="-1"><p>The content of the page.</p></main>
     `)
-    const lenke = document.getElementById("hopp") as HTMLElement
-    expect(getComputedStyle(lenke).transform).not.toMatch(SYNLIG)
+    const link = document.getElementById("skip") as HTMLElement
+    expect(getComputedStyle(link).transform).not.toMatch(VISIBLE)
 
-    lenke.setAttribute("data-fokus", "")
-    expect(getComputedStyle(lenke).transform).toMatch(SYNLIG)
+    link.setAttribute("data-focus", "")
+    expect(getComputedStyle(link).transform).toMatch(VISIBLE)
   })
 
-  it("regner ikke fokus satt fra kode etter et museklikk som synlig fokus", async () => {
-    // Det er derfor stilarket bruker `:focus`. Etter et tastetrykk treffer
-    // `:focus-visible` også fra kode, så det er museklikket som avgjør, og
-    // klikket må være ekte, fra pekeren.
+  it("does not treat focus set from code after a mouse click as visible focus", async () => {
+    // That is why the stylesheet uses `:focus`. After a key press,
+    // `:focus-visible` matches from code too, so the mouse click is what
+    // decides, and the click must be real, from the pointer.
     mount(`
-      <a class="lt-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
-      <main id="hovedinnhold" tabindex="-1">
-        <p>Innholdet på siden.</p>
-        <button type="button" id="topp">Til toppen</button>
+      <a class="lt-skip-link" href="#main-content" id="skip">Skip to main content</a>
+      <main id="main-content" tabindex="-1">
+        <p>The content of the page.</p>
+        <button type="button" id="top">Back to top</button>
       </main>
     `)
-    const lenke = document.getElementById("hopp") as HTMLElement
-    const knapp = document.getElementById("topp") as HTMLElement
-    let klikk = 0
-    knapp.addEventListener("click", () => {
-      klikk += 1
-      lenke.focus()
+    const link = document.getElementById("skip") as HTMLElement
+    const button = document.getElementById("top") as HTMLElement
+    let clicks = 0
+    button.addEventListener("click", () => {
+      clicks += 1
+      link.focus()
     })
 
-    // I Firefox i CI kommer pekerklikket fra Playwright ikke alltid fram til
-    // siden, så det gjentas til lytteren har kjørt.
-    for (let forsøk = 0; forsøk < 5 && klikk === 0; forsøk++) {
-      await userEvent.click(knapp)
-      await new Promise((ferdig) => setTimeout(ferdig, 100))
+    // In Firefox in CI the pointer click from Playwright does not always
+    // reach the page, so it is repeated until the listener has run.
+    for (let attempt = 0; attempt < 5 && clicks === 0; attempt++) {
+      await userEvent.click(button)
+      await new Promise((done) => setTimeout(done, 100))
     }
-    expect(klikk, "pekerklikket kom ikke fram til knappen").toBeGreaterThan(0)
+    expect(
+      clicks,
+      "the pointer click did not reach the button",
+    ).toBeGreaterThan(0)
 
-    const tilstand = () =>
-      `activeElement=${document.activeElement?.id ?? document.activeElement?.tagName}, hasFocus=${document.hasFocus()}, :focus=${lenke.matches(":focus")}`
-    await vi.waitFor(
-      () => expect(document.activeElement, tilstand()).toBe(lenke),
-      { timeout: 3000 },
-    )
-    expect(lenke.matches(":focus-visible"), tilstand()).toBe(false)
+    const state = () =>
+      `activeElement=${document.activeElement?.id ?? document.activeElement?.tagName}, hasFocus=${document.hasFocus()}, :focus=${link.matches(":focus")}`
+    await vi.waitFor(() => expect(document.activeElement, state()).toBe(link), {
+      timeout: 3000,
+    })
+    expect(link.matches(":focus-visible"), state()).toBe(false)
   })
 
-  it("flytter fokus til målet når det har tabindex", async () => {
-    // Uten `tabindex="-1"` flytter nettleseren visningen til målet, men
-    // ikke fokus, så skjermleseren får ikke beskjed om at brukeren er
-    // framme. Siden sa at neste Tab da fortsatte i menyen, men nettleseren
-    // fortsetter fra målet uansett: det er fokuset som mangler.
+  it("moves focus to the target when it has tabindex", async () => {
+    // Without `tabindex="-1"` the browser scrolls to the target but does not
+    // move focus, so the screen reader is not told that the user has
+    // arrived. The page said that the next Tab then continued in the menu,
+    // but the browser continues from the target either way: it is the focus
+    // that is missing.
     mount(`
-      <a class="lt-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
-      <header><a href="#meny" id="meny">Meny</a></header>
-      <main id="hovedinnhold" tabindex="-1">
-        <input id="inne" aria-label="Søk i innholdet" />
+      <a class="lt-skip-link" href="#main-content" id="skip">Skip to main content</a>
+      <header><a href="#menu" id="menu">Menu</a></header>
+      <main id="main-content" tabindex="-1">
+        <input id="inside" aria-label="Search the content" />
       </main>
     `)
-    // Et tekstfelt og ikke en lenke først i innholdet: WebKit på macOS
-    // hopper som Safari over lenker og knapper med Tab, men stopper i et
-    // tekstfelt. Det testen spør om, hvor neste Tab fortsetter fra, er det
-    // samme.
-    const lenke = document.getElementById("hopp") as HTMLAnchorElement
-    const maal = document.getElementById("hovedinnhold") as HTMLElement
+    // A text field and not a link first in the content: WebKit on macOS,
+    // like Safari, skips links and buttons with Tab, but stops in a text
+    // field. What the test asks, where the next Tab continues from, is the
+    // same.
+    const link = document.getElementById("skip") as HTMLAnchorElement
+    const target = document.getElementById("main-content") as HTMLElement
 
-    // Hoppet til fragmentet skjer ikke i samme omgang som klikket i alle
-    // motorer: Chromium flytter fokus med en gang, Firefox i en senere
-    // oppgave. Derfor ventes det på fokuset, ikke på klikket.
-    lenke.focus()
-    lenke.click()
-    await vi.waitFor(() => expect(document.activeElement).toBe(maal))
+    // The jump to the fragment does not happen in the same turn as the click
+    // in every engine: Chromium moves focus at once, Firefox in a later
+    // task. So the test waits for the focus, not for the click.
+    link.focus()
+    link.click()
+    await vi.waitFor(() => expect(document.activeElement).toBe(target))
 
     await userEvent.tab()
-    expect(document.activeElement?.id).toBe("inne")
+    expect(document.activeElement?.id).toBe("inside")
 
-    maal.removeAttribute("tabindex")
+    target.removeAttribute("tabindex")
     location.hash = ""
-    lenke.focus()
-    lenke.click()
+    link.focus()
+    link.click()
     await vi.waitFor(() => expect(document.activeElement).toBe(document.body))
 
     await userEvent.tab()
-    expect(document.activeElement?.id).toBe("inne")
+    expect(document.activeElement?.id).toBe("inside")
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(skipLink()).toEqual({ class: "lt-skip-link" })
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

@@ -44,7 +44,7 @@ import toast from "@lo-tek/interfaces/toast.css?inline"
 import toggleGroup from "@lo-tek/interfaces/toggle-group.css?inline"
 import tooltip from "@lo-tek/interfaces/tooltip.css?inline"
 
-const STILARK = {
+const STYLESHEETS = {
   alert,
   progress,
   table,
@@ -91,15 +91,15 @@ const STILARK = {
   textarea,
 } as const
 
-export type Stilark = keyof typeof STILARK
+export type Stylesheet = keyof typeof STYLESHEETS
 
 interface Props {
   /** The stylesheets the example needs, the same ones you would import in an app. */
-  styles?: Stilark[]
+  styles?: Stylesheet[]
   /**
-   * `rad` lays the content out side by side, `stabel` one below the other.
+   * `row` lays the content out side by side, `stack` one below the other.
    * `flow` is ordinary block flow, where margins collapse as they do on a
-   * real page. In `stabel` the surface is a flex column, and there the
+   * real page. In `stack` the surface is a flex column, and there the
    * margins and the gap add up.
    */
   layout?: "row" | "stack" | "flow"
@@ -138,10 +138,10 @@ const {
   fixedInside = false,
 } = Astro.props
 
-for (const navn of styles) {
-  if (!(navn in STILARK)) {
+for (const name of styles) {
+  if (!(name in STYLESHEETS)) {
     throw new Error(
-      `Preview: unknown stylesheet "${navn}". Valid: ${Object.keys(STILARK).join(", ")}`,
+      `Preview: unknown stylesheet "${name}". Valid: ${Object.keys(STYLESHEETS).join(", ")}`,
     )
   }
 }
@@ -160,7 +160,7 @@ for (const navn of styles) {
  * tokens.css and inherited through the shadow boundary, so both light and
  * dark themes come through without anything being repeated here.
  */
-const stilark = [
+const css = [
   `
 	:host {
 		display: block;
@@ -184,7 +184,7 @@ const stilark = [
 	   block for a fixed-position child, so the reader sees the result where
 	   they pressed rather than at the top of the window. A consumer does not
 	   need this, and should not copy it. */
-	.surface[data-fast-inni] {
+	.surface[data-fixed-inside] {
 		contain: layout;
 	}
 
@@ -207,18 +207,18 @@ const stilark = [
 	   defaults. If something looks odd, it is the component that is missing
 	   something, not the preview. */
 	`,
-  ...styles.map((navn) => STILARK[navn]),
+  ...styles.map((name) => STYLESHEETS[name]),
   extraCss ?? "",
 ].join("\n")
 ---
 
 <div class="lt-preview not-content" id={id}>
 	<template shadowrootmode="open">
-		<style set:html={stilark}></style>
+		<style set:html={css}></style>
 		<div
 			class="surface"
 			data-layout={layout}
-			data-fast-inni={fixedInside ? "" : undefined}
+			data-fixed-inside={fixedInside ? "" : undefined}
 			style={maxWidth ? `--lt-preview-max-width: ${maxWidth}` : undefined}
 		>
 			<slot />

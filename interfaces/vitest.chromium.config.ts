@@ -4,14 +4,15 @@ import { defineConfig } from "vitest/config"
 import base from "./vitest.config"
 
 /**
- * Testene i en Chromium som alt står på maskinen, uten `playwright install`.
+ * The tests in a Chromium already installed on the machine, without
+ * `playwright install`.
  *
- * For et miljø uten nett, eller der Playwrights egne nettlesere ikke kan
- * hentes. Bare Chromium: Playwright kan bruke en vanlig Chrome eller
- * Chromium, men Firefox og WebKit må være Playwrights egne bygg. CI og
- * `bun run check` bruker fortsatt alle tre.
+ * For an environment without network access, or where Playwright's own
+ * browsers cannot be downloaded. Chromium only: Playwright can use a regular
+ * Chrome or Chromium, but Firefox and WebKit must be Playwright's own builds.
+ * CI and `bun run check` still use all three.
  *
- * Stien leses fra `CHROMIUM`, og ellers prøves de vanlige stedene.
+ * The path is read from `CHROMIUM`, and otherwise the usual places are tried.
  *
  *     CHROMIUM=/usr/bin/chromium bun --filter @lo-tek/interfaces test:chromium
  */
@@ -28,11 +29,11 @@ const candidates = [
 const executablePath = candidates.find((path) => existsSync(path))
 if (executablePath === undefined)
   throw new Error(
-    `Fant ingen Chromium. Sett CHROMIUM til stien. Prøvde: ${candidates.join(", ")}`,
+    `No Chromium found. Set CHROMIUM to its path. Tried: ${candidates.join(", ")}`,
   )
 
-// Feltene overstyres for hånd: `mergeConfig` legger lister etter hverandre,
-// og da ville Chromium kjørt to ganger ved siden av Firefox og WebKit.
+// The fields are overridden by hand: `mergeConfig` concatenates lists, and
+// Chromium would then have run twice alongside Firefox and WebKit.
 export default defineConfig({
   ...base,
   test: {

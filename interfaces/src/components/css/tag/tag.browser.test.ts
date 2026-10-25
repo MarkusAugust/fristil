@@ -15,35 +15,37 @@ import "./tag.css"
 describe("lt-tag", () => {
   beforeEach(() => {
     mount(`
-      <span class="lt-tag" id="vanlig">Bostøtte</span>
-      <span class="lt-tag" data-variant="filled" id="fylt">Barnehage</span>
-      <button class="lt-tag" data-selectable aria-pressed="true" id="valgt" type="button">
-        Innvilget
+      <span class="lt-tag" id="plain">Housing benefit</span>
+      <span class="lt-tag" data-variant="filled" id="filled">Kindergarten</span>
+      <button class="lt-tag" data-selectable aria-pressed="true" id="selected" type="button">
+        Granted
       </button>
-      <button class="lt-tag" data-selectable aria-pressed="false" id="ikkevalgt" type="button">
-        Avslått
+      <button class="lt-tag" data-selectable aria-pressed="false" id="unselected" type="button">
+        Rejected
       </button>
     `)
   })
 
-  it("skiller den valgte fra den uvalgte", () => {
-    const valgt = getComputedStyle(document.getElementById("valgt") as Element)
-    const ikkevalgt = getComputedStyle(
-      document.getElementById("ikkevalgt") as Element,
+  it("distinguishes the selected from the unselected", () => {
+    const selected = getComputedStyle(
+      document.getElementById("selected") as Element,
+    )
+    const unselected = getComputedStyle(
+      document.getElementById("unselected") as Element,
     )
 
-    expect(valgt.backgroundColor).not.toBe(ikkevalgt.backgroundColor)
-    expect(valgt.color).not.toBe(ikkevalgt.color)
+    expect(selected.backgroundColor).not.toBe(unselected.backgroundColor)
+    expect(selected.color).not.toBe(unselected.color)
   })
 
-  it("lar den valgbare merkelappen være en ekte knapp", () => {
-    const valgbar = document.getElementById("valgt") as HTMLElement
+  it("keeps the selectable tag a real button", () => {
+    const selectable = document.getElementById("selected") as HTMLElement
 
-    expect(valgbar.tagName).toBe("BUTTON")
-    expect(valgbar.getAttribute("aria-pressed")).toBe("true")
+    expect(selectable.tagName).toBe("BUTTON")
+    expect(selectable.getAttribute("aria-pressed")).toBe("true")
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(tag()).toEqual({ class: "lt-tag" })
     expect(tag({ variant: "filled", selectable: true })).toEqual({
       class: "lt-tag",
@@ -52,7 +54,7 @@ describe("lt-tag", () => {
     })
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

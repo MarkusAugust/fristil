@@ -25,8 +25,8 @@ function css(id: string) {
 describe("lt-error-text", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <p id="error" class="lt-error-text">Feilmelding</p>
-      <p id="warning" class="lt-error-text" data-variant="warning">Varsel</p>
+      <p id="error" class="lt-error-text">Error message</p>
+      <p id="warning" class="lt-error-text" data-variant="warning">Warning</p>
     `
   })
 
@@ -44,22 +44,22 @@ describe("lt-error-text", () => {
   })
 })
 
-describe("lt-error-text tilgjengelighet", () => {
-  it("har nok kontrast og er koblet til feltet", async () => {
+describe("lt-error-text accessibility", () => {
+  it("has enough contrast and is wired to the field", async () => {
     mount(`
-      <label class="lt-label" for="a11y-feil-epost">E-postadresse</label>
+      <label class="lt-label" for="a11y-error-email">Email address</label>
       <input
         class="lt-input"
-        id="a11y-feil-epost"
+        id="a11y-error-email"
         type="email"
         data-state="invalid"
         aria-invalid="true"
-        aria-describedby="a11y-feil-epost-feil"
-        value="ola@"
+        aria-describedby="a11y-error-email-error"
+        value="alex@"
       />
-      <p class="lt-error-text" id="a11y-feil-epost-feil">Skriv en e-postadresse med krøllalfa.</p>
+      <p class="lt-error-text" id="a11y-error-email-error">Enter an email address with an @.</p>
 
-      <p class="lt-error-text" data-variant="warning">Adressen finnes ikke i folkeregisteret.</p>
+      <p class="lt-error-text" data-variant="warning">This address is not in the population register.</p>
     `)
 
     await waitForPaint()

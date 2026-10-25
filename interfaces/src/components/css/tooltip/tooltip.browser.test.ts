@@ -20,75 +20,76 @@ describe("lt-tooltip", () => {
     mount(`
       <span class="lt-tooltip">
         <button class="lt-button" data-variant="ghost" type="button"
-          aria-describedby="hint" id="utloser">Arkiver</button>
+          aria-describedby="hint" id="trigger">Archive</button>
         <span class="lt-tooltip__bubble" role="tooltip" id="hint">
-          Saken flyttes til arkivet
+          The case is moved to the archive
         </span>
       </span>
     `)
   })
 
-  it("viser boblen når utløseren får fokus, ikke bare på hover", () => {
-    const boble = document.getElementById("hint") as HTMLElement
-    expect(getComputedStyle(boble).display).toBe("none")
+  it("shows the bubble when the trigger gets focus, not only on hover", () => {
+    const bubble = document.getElementById("hint") as HTMLElement
+    expect(getComputedStyle(bubble).display).toBe("none")
 
-    ;(document.getElementById("utloser") as HTMLElement).focus()
+    ;(document.getElementById("trigger") as HTMLElement).focus()
 
-    // En boble som bare kommer med musa finnes ikke for den som bruker
-    // tastatur. Derfor :focus-within i tillegg til :hover.
-    expect(getComputedStyle(boble).display).toBe("block")
+    // A bubble that only comes with the mouse does not exist for someone
+    // using the keyboard. Hence :focus-within as well as :hover.
+    expect(getComputedStyle(bubble).display).toBe("block")
   })
 
-  it("holder teksten i tilgjengelighetstreet mens den er skjult", () => {
-    const boble = document.getElementById("hint") as HTMLElement
+  it("keeps the text in the accessibility tree while it is hidden", () => {
+    const bubble = document.getElementById("hint") as HTMLElement
 
-    // Boblen er `display: none` til den vises, og teksten er likevel
-    // knappens beskrivelse: `aria-describedby` tar med innholdet i et skjult
-    // element det peker på (accname, steg 2A). Før var den `visibility:
-    // hidden` av denne grunnen, og tok da plass og ga sidelengs rulling.
-    expect(boble.textContent?.trim()).not.toBe("")
+    // The bubble is `display: none` until it shows, and the text is still the
+    // button's description: `aria-describedby` includes the content of a
+    // hidden element it points to (accname, step 2A). It used to be
+    // `visibility: hidden` for this reason, and then took up space and caused
+    // horizontal scrolling.
+    expect(bubble.textContent?.trim()).not.toBe("")
     expect(
-      (document.getElementById("utloser") as HTMLElement).getAttribute(
+      (document.getElementById("trigger") as HTMLElement).getAttribute(
         "aria-describedby",
       ),
     ).toBe("hint")
   })
 
-  it("dekker gapet mellom knappen og boblen i hele knappens bredde", async () => {
-    // Det var et gap, og `:hover` slapp på vei opp. Broen står mens boblen
-    // vises, også ved fokus, og testen bruker fokus: nettlesersiden har én
-    // mus, og en annen testfil som flytter den samtidig, ga tilfeldige feil
-    // i Firefox.
-    const utloser = document.getElementById("utloser") as HTMLElement
-    const omslag = utloser.closest(".lt-tooltip") as HTMLElement
-    const boble = document.getElementById("hint") as HTMLElement
-    utloser.focus()
+  it("covers the gap between the button and the bubble across the button's full width", async () => {
+    // There was a gap, and `:hover` was lost on the way up. The bridge is
+    // there while the bubble shows, also on focus, and the test uses focus:
+    // the browser page has one mouse, and another test file moving it at the
+    // same time gave random failures in Firefox.
+    const trigger = document.getElementById("trigger") as HTMLElement
+    const wrapper = trigger.closest(".lt-tooltip") as HTMLElement
+    const bubble = document.getElementById("hint") as HTMLElement
+    trigger.focus()
     await waitForPaint()
 
-    const knapp = utloser.getBoundingClientRect()
-    const hoyde = (boble.getBoundingClientRect().bottom + knapp.top) / 2
+    const button = trigger.getBoundingClientRect()
+    const height = (bubble.getBoundingClientRect().bottom + button.top) / 2
     for (const x of [
-      knapp.left + 2,
-      knapp.left + knapp.width / 2,
-      knapp.right - 2,
+      button.left + 2,
+      button.left + button.width / 2,
+      button.right - 2,
     ]) {
       expect(
-        omslag.contains(document.elementFromPoint(x, hoyde)),
+        wrapper.contains(document.elementFromPoint(x, height)),
         `x=${x}`,
       ).toBe(true)
     }
-    // Ikke bredere enn knappen: ved siden av står det som var der.
+    // No wider than the button: beside it is whatever was there.
     expect(
-      omslag.contains(document.elementFromPoint(knapp.right + 4, hoyde)),
+      wrapper.contains(document.elementFromPoint(button.right + 4, height)),
     ).toBe(false)
   })
 
   it.skipIf(server.browser !== "chromium")(
-    "er knappens beskrivelse også mens den er skjult",
+    "is the button's description also while it is hidden",
     async () => {
-      // Boblen er `display: none`, og teksten skal likevel være knappens
-      // beskrivelse gjennom `aria-describedby`. Tilgjengelighetstreet kan
-      // bare leses over CDP, som bare Chromium har herfra.
+      // The bubble is `display: none`, and the text must still be the
+      // button's description through `aria-describedby`. The accessibility
+      // tree can only be read over CDP, which only Chromium has from here.
       expect(
         getComputedStyle(document.getElementById("hint") as Element).display,
       ).toBe("none")
@@ -98,12 +99,12 @@ describe("lt-tooltip", () => {
           childFrames?: unknown[]
         }
       }
-      type Ramme = { frame: { id: string; url: string }; childFrames?: Ramme[] }
-      const finn = (ramme: Ramme): string | undefined =>
-        ramme.frame.url === location.href
-          ? ramme.frame.id
-          : (ramme.childFrames ?? []).map(finn).find(Boolean)
-      const frameId = finn(frameTree as Ramme)
+      type Frame = { frame: { id: string; url: string }; childFrames?: Frame[] }
+      const find = (frame: Frame): string | undefined =>
+        frame.frame.url === location.href
+          ? frame.frame.id
+          : (frame.childFrames ?? []).map(find).find(Boolean)
+      const frameId = find(frameTree as Frame)
       const { nodes } = (await cdp().send("Accessibility.getFullAXTree", {
         frameId,
       })) as {
@@ -113,38 +114,38 @@ describe("lt-tooltip", () => {
           role?: { value?: string }
         }>
       }
-      const knapp = nodes.find(
+      const button = nodes.find(
         (node) =>
-          node.role?.value === "button" && node.name?.value === "Arkiver",
+          node.role?.value === "button" && node.name?.value === "Archive",
       )
 
-      expect(knapp?.description?.value?.trim()).toBe(
-        "Saken flyttes til arkivet",
+      expect(button?.description?.value?.trim()).toBe(
+        "The case is moved to the archive",
       )
     },
   )
 
-  it("tar ikke plass når den er skjult, så den ikke gir sidelengs rulling", () => {
+  it("takes up no space while hidden, so it causes no horizontal scrolling", () => {
     mount(`
-      <div style="inline-size: 320px; overflow: auto" id="smal">
+      <div style="inline-size: 320px; overflow: auto" id="narrow">
         <div style="display: flex; justify-content: flex-end">
           <span class="lt-tooltip">
-            <button type="button" aria-describedby="kant">i</button>
-            <span class="lt-tooltip__bubble" role="tooltip" id="kant">En lang forklaring som er bredere enn knappen</span>
+            <button type="button" aria-describedby="edge">i</button>
+            <span class="lt-tooltip__bubble" role="tooltip" id="edge">A long explanation that is wider than the button</span>
           </span>
         </div>
       </div>`)
-    const smal = document.getElementById("smal") as HTMLElement
+    const narrow = document.getElementById("narrow") as HTMLElement
 
-    expect(smal.scrollWidth).toBe(smal.clientWidth)
+    expect(narrow.scrollWidth).toBe(narrow.clientWidth)
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(tooltip()).toEqual({ class: "lt-tooltip" })
     expect(tooltip.bubble).toBe("lt-tooltip__bubble")
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

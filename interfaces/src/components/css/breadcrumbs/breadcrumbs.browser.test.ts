@@ -1,7 +1,7 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import side from "../../../../../documentation/src/content/docs/components/breadcrumbs.mdx?raw"
+import page from "../../../../../documentation/src/content/docs/components/breadcrumbs.mdx?raw"
 import {
   expectNoAccessibilityViolations,
   mount,
@@ -14,85 +14,88 @@ import "./breadcrumbs.css"
 
 describe("lt-breadcrumbs", () => {
   afterEach(() => {
-    document.getElementById("oppskrift")?.remove()
+    document.getElementById("recipe")?.remove()
   })
 
   beforeEach(() => {
     mount(`
-      <nav aria-label="Du er her">
+      <nav aria-label="You are here">
         <ol class="lt-breadcrumbs">
-          <li><a href="#">Forsiden</a></li>
-          <li><a href="#">Mine saker</a></li>
-          <li><a href="#" aria-current="page" id="her">Søknad 2026-0481</a></li>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">My cases</a></li>
+          <li><a href="#" aria-current="page" id="here">Application 2026-0481</a></li>
         </ol>
       </nav>
     `)
   })
 
-  it("gir skilletegnet en tom alternativ tekst, så det ikke leses opp", () => {
-    // Generert innhold leses opp, og skjermleseren sa «skråstrek» mellom
-    // hvert steg. Nettlesere uten formen beholder streken.
-    const ledd = document.querySelectorAll(".lt-breadcrumbs li")[1] as Element
-    const innhold = getComputedStyle(ledd, "::before").content
+  it("gives the separator an empty alternative text, so it is not read aloud", () => {
+    // Generated content is read aloud, and the screen reader said "slash"
+    // between every step. Browsers without the syntax keep the slash.
+    const item = document.querySelectorAll(".lt-breadcrumbs li")[1] as Element
+    const content = getComputedStyle(item, "::before").content
 
     if (CSS.supports("content", '"/" / ""')) {
-      expect(innhold).toBe('"/" / ""')
+      expect(content).toBe('"/" / ""')
     } else {
-      expect(innhold).toBe('"/"')
+      expect(content).toBe('"/"')
     }
   })
 
-  it("lar oppskriften på siden bytte tegn uten at det leses opp", () => {
-    // Siden viser hvordan skilletegnet byttes. Snutten står utenfor laget
-    // og slår stilarket, så glemmer den alternativteksten, er «›» tilbake i
-    // tilgjengelighetstreet, og skjermleseren leser det opp mellom hvert
-    // steg igjen. Snutten leses fra siden, så den kan ikke drive fra koden.
-    const snutt = /```css\n([\s\S]*?)```/.exec(side)?.[1]
-    if (snutt === undefined) throw new Error("Fant ingen CSS-snutt på siden")
-    const stil = document.createElement("style")
-    stil.id = "oppskrift"
-    stil.textContent = snutt
-    document.head.append(stil)
+  it("lets the recipe on the page swap the character without it being read aloud", () => {
+    // The page shows how to swap the separator. The snippet sits outside the
+    // layer and beats the stylesheet, so if it forgets the alternative text,
+    // "›" is back in the accessibility tree and the screen reader reads it
+    // between every step again. The snippet is read from the page, so it
+    // cannot drift from the code.
+    const snippet = /```css\n([\s\S]*?)```/.exec(page)?.[1]
+    if (snippet === undefined)
+      throw new Error("Found no CSS snippet on the page")
+    const style = document.createElement("style")
+    style.id = "recipe"
+    style.textContent = snippet
+    document.head.append(style)
 
-    const ledd = document.querySelectorAll(".lt-breadcrumbs li")[1] as Element
-    const innhold = getComputedStyle(ledd, "::before").content
+    const item = document.querySelectorAll(".lt-breadcrumbs li")[1] as Element
+    const content = getComputedStyle(item, "::before").content
 
-    // Tegnet er byttet, og alternativteksten står der nettleseren kan den.
-    expect(/^"(.)"/.exec(innhold)?.[1]).not.toBe("/")
+    // The character is swapped, and the alternative text is there where the
+    // browser supports it.
+    expect(/^"(.)"/.exec(content)?.[1]).not.toBe("/")
     if (CSS.supports("content", '"/" / ""')) {
-      expect(innhold).toMatch(/^"."\s*\/\s*""$/)
+      expect(content).toMatch(/^"."\s*\/\s*""$/)
     } else {
-      expect(innhold).toMatch(/^"."$/)
+      expect(content).toMatch(/^"."$/)
     }
   })
 
-  it("legger skilletegnet inn med CSS, ikke i markupen", () => {
-    const andre = document.querySelectorAll(".lt-breadcrumbs li")[1]
-    const skille = getComputedStyle(andre, "::before")
+  it("adds the separator with CSS, not in the markup", () => {
+    const second = document.querySelectorAll(".lt-breadcrumbs li")[1]
+    const separator = getComputedStyle(second, "::before")
 
-    // Sto skråstreken i markupen, ville skjermlesere lest den opp mellom
-    // hvert steg.
-    expect(skille.content).toContain("/")
+    // Had the slash been in the markup, screen readers would have read it
+    // between every step.
+    expect(separator.content).toContain("/")
     expect(
       document.querySelector(".lt-breadcrumbs")?.textContent,
     ).not.toContain("/")
   })
 
-  it("skiller gjeldende side fra lenkene", () => {
-    const her = getComputedStyle(document.getElementById("her") as Element)
-    const foran = getComputedStyle(
+  it("sets the current page apart from the links", () => {
+    const here = getComputedStyle(document.getElementById("here") as Element)
+    const before = getComputedStyle(
       document.querySelector(".lt-breadcrumbs a") as Element,
     )
 
-    expect(her.color).not.toBe(foran.color)
-    expect(her.textDecorationLine).toBe("none")
+    expect(here.color).not.toBe(before.color)
+    expect(here.textDecorationLine).toBe("none")
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(breadcrumbs()).toEqual({ class: "lt-breadcrumbs" })
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

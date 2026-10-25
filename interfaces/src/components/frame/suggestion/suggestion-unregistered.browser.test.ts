@@ -8,26 +8,26 @@ import "../../../tokens/tokens.css"
 import "./suggestion.css"
 
 /*
- * Ingen `defineLtSuggestion()` her, med vilje. Fila kjører i sin egen ramme,
- * så `lt-suggestion` er uregistrert gjennom hele testen, og det er den
- * tilstanden regelen i `suggestion.css` gjelder for: markup skrevet uten
- * JavaScript, før komponenten har rukket å lukke lista.
+ * No `defineLtSuggestion()` here, on purpose. The file runs in its own frame,
+ * so `lt-suggestion` stays unregistered for the whole test, and that is the
+ * state the rule in `suggestion.css` applies to: markup written without
+ * JavaScript, before the component has had time to close the list.
  */
-describe("suggestion.css før komponenten er registrert", () => {
-  it("holder en bar liste skjult", async () => {
+describe("suggestion.css before the component is registered", () => {
+  it("keeps a bare list hidden", async () => {
     expect(customElements.get("lt-suggestion")).toBeUndefined()
     mount(`
       <lt-suggestion>
-        <label>Kommune</label>
+        <label>Municipality</label>
         <div>
-          <input class="lt-input" name="kommune">
-          <ul class="lt-suggestion__list"><li>Bergen</li><li>Bodø</li></ul>
+          <input class="lt-input" name="municipality">
+          <ul class="lt-suggestion__list"><li>Bath</li><li>Bristol</li></ul>
         </div>
       </lt-suggestion>
     `)
     await waitForPaint()
 
-    const liste = document.querySelector("ul") as HTMLElement
-    expect(getComputedStyle(liste).display).toBe("none")
+    const list = document.querySelector("ul") as HTMLElement
+    expect(getComputedStyle(list).display).toBe("none")
   })
 })

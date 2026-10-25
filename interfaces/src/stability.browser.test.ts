@@ -34,7 +34,7 @@ const attr = (verdier: Record<string, unknown>) =>
     .join(" ")
 
 /** Teller mutasjoner i et undertre over fire tegninger. */
-async function mutasjonerEtterRo(rot: Element): Promise<number> {
+async function mutasjonerEtterRo(root: Element): Promise<number> {
   await waitForPaint()
   await waitForPaint()
 
@@ -42,7 +42,7 @@ async function mutasjonerEtterRo(rot: Element): Promise<number> {
   const observatør = new MutationObserver((poster) => {
     antall += poster.length
   })
-  observatør.observe(rot, {
+  observatør.observe(root, {
     childList: true,
     subtree: true,
     attributes: true,
@@ -162,7 +162,7 @@ describe("komponentene faller til ro", () => {
 
     expect(await mutasjonerEtterRo(flate)).toBe(0)
 
-    const boks = flate.querySelector("dialog") as HTMLDialogElement
-    boks.close("lukk")
+    const box = flate.querySelector("dialog") as HTMLDialogElement
+    box.close("lukk")
   })
 })

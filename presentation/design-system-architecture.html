@@ -133,7 +133,7 @@ body::after {
   box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.9);
 }
 
-.lysbilde[data-vist] { display: block; }
+.lysbilde[data-shown] { display: block; }
 
 h1 {
   font-size: clamp(2.4rem, 4.6vw, 3.6rem);
@@ -188,7 +188,7 @@ a { color: var(--azure-30); }
  * with a tick, stacked layers, a package with a way out, and a warning
  * triangle for the pitfalls.
  */
-.lysbilde.kapittel[data-vist] {
+.lysbilde.kapittel[data-shown] {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -206,7 +206,7 @@ a { color: var(--azure-30); }
 .kapittel-topp h2 { margin: 0; }
 .kapittelikon { flex: none; }
 @media (max-width: 860px) {
-  .lysbilde.kapittel[data-vist] { display: block; min-block-size: 0; }
+  .lysbilde.kapittel[data-shown] { display: block; min-block-size: 0; }
   .kapittel-topp { gap: 0.9rem; margin-block-start: 1rem; }
   .kapittelikon { width: 56px; height: 56px; }
 }
@@ -844,7 +844,7 @@ tr:last-child td { border-block-end: none; }
 .avh-scene { position: relative; }
 .avh-graf { display: grid; }
 .avh-graf > svg { grid-area: 1 / 1; visibility: hidden; }
-.avh-graf > svg[data-valgt] { visibility: visible; }
+.avh-graf > svg[data-selected] { visibility: visible; }
 
 .avh-svg { display: block; inline-size: 100%; block-size: auto; overflow: visible; font-family: var(--sans); }
 .avh-kant { fill: none; stroke: rgba(205, 225, 249, 0.3); stroke-width: 1.25; transition: opacity 0.12s, stroke 0.12s; }
@@ -852,8 +852,8 @@ tr:last-child td { border-block-end: none; }
 .avh-node { cursor: default; outline: none; transition: opacity 0.12s; }
 .avh-node .prikk { stroke: var(--flate-kort); stroke-width: 2; }
 .avh-node[data-type="system"] .prikk { fill: var(--azure-30); }
-.avh-node[data-type="annen"] .prikk { fill: var(--ochre-50); }
-.avh-node[data-type="grunn"] .prikk { fill: var(--flate-kort); stroke: var(--graphite-50); stroke-width: 1.75; }
+.avh-node[data-type="pulled-in"] .prikk { fill: var(--ochre-50); }
+.avh-node[data-type="base"] .prikk { fill: var(--flate-kort); stroke: var(--graphite-50); stroke-width: 1.75; }
 .avh-node[data-type="app"] .prikk { fill: none; stroke: var(--tekst-dempet); stroke-width: 1.25; }
 /* The halo in the surface colour keeps the name readable where the lines cross it. */
 .avh-node text { fill: var(--tekst-dempet); font-size: 11px; pointer-events: none; paint-order: stroke; stroke: var(--flate-kort); stroke-width: 3px; stroke-linejoin: round; }
@@ -863,11 +863,11 @@ tr:last-child td { border-block-end: none; }
 .avh-node:focus-visible .prikk, .avh-node:hover .prikk { stroke: var(--graphite-0); }
 
 /* When one package is selected, the rest recede. */
-.avh-svg[data-aktiv] .avh-kant { opacity: 0.1; }
-.avh-svg[data-aktiv] .avh-kant[data-aktiv] { opacity: 1; stroke: var(--azure-30); stroke-width: 1.75; }
-.avh-svg[data-aktiv] .avh-node { opacity: 0.28; }
-.avh-svg[data-aktiv] .avh-node[data-aktiv] { opacity: 1; }
-.avh-svg[data-aktiv] .avh-node[data-aktiv] text { fill: var(--tekst); }
+.avh-svg[data-active] .avh-kant { opacity: 0.1; }
+.avh-svg[data-active] .avh-kant[data-active] { opacity: 1; stroke: var(--azure-30); stroke-width: 1.75; }
+.avh-svg[data-active] .avh-node { opacity: 0.28; }
+.avh-svg[data-active] .avh-node[data-active] { opacity: 1; }
+.avh-svg[data-active] .avh-node[data-active] text { fill: var(--tekst); }
 
 .avh-tips {
   position: absolute;
@@ -892,12 +892,12 @@ tr:last-child td { border-block-end: none; }
 .avh-tabeller td, .avh-tabeller th { padding: 0.35rem 0.55rem; }
 .avh-tabeller td:nth-child(4) { text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-.avh[data-visning="tabell"] .avh-liste, .avh[data-visning="tabell"] .avh-scene { display: none; }
-.avh:not([data-visning="tabell"]) .avh-tabeller { display: none; }
+.avh[data-view="table"] .avh-liste, .avh[data-view="table"] .avh-scene { display: none; }
+.avh:not([data-view="table"]) .avh-tabeller { display: none; }
 @media (max-width: 860px) {
   /* On a narrow screen the table is the view. A graph at 375 pixels says nothing. */
   .avh .avh-liste, .avh .avh-scene, .avh .avh-bytt, .avh .avh-forklaring { display: none; }
-  .avh:not([data-visning="tabell"]) .avh-tabeller { display: block; }
+  .avh:not([data-view="table"]) .avh-tabeller { display: block; }
 }
 @media (prefers-reduced-motion: reduce) {
   .avh-kant, .avh-node { transition: none; }
@@ -926,14 +926,14 @@ tr:last-child td { border-block-end: none; }
 <script>
 (() => {
   // Nodes: [name, version, type, unpacked bytes]. Edges: [from, to, 0 = regular, 1 = peer].
-  // The type "grunn" is what the app already has, and is not counted.
-  const DATA = {"skatt":{"navn":"Skatteetaten","scope":"@skatteetaten/","kommando":"npm install @skatteetaten/ds-{core-designtokens,buttons}","n":[["your app","","app",0],["@babel/runtime","7.29.10","annen",247215],["@skatteetaten/ds-buttons","3.0.0","system",93796],["@skatteetaten/ds-core-designtokens","3.0.0","system",32338],["@skatteetaten/ds-core-utils","3.0.0","system",164875],["@skatteetaten/ds-icons","3.0.0","system",205462],["@skatteetaten/ds-progress","3.0.0","system",10752],["html-parse-stringify","4.0.1","annen",57003],["i18next","26.4.4","annen",524379],["react-i18next","17.0.16","annen",957407],["use-sync-external-store","1.7.0","annen",28183],["react","19.3.0","grunn",0]],"e":[[0,2,0],[0,3,0],[2,4,1],[2,5,1],[2,6,1],[2,8,1],[2,11,1],[2,9,1],[4,8,1],[4,11,1],[4,9,1],[5,4,1],[5,8,1],[5,11,1],[5,9,1],[6,4,1],[6,8,1],[6,11,1],[6,9,1],[9,1,0],[9,7,0],[9,10,0],[9,8,1],[9,11,1],[10,11,1]]},"aksel":{"navn":"Aksel","scope":"@navikt/","kommando":"npm install @navikt/ds-{react,css}","n":[["your app","","app",0],["@date-fns/tz","1.5.0","annen",100524],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.27.20","annen",934317],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.19.1","system",11147411],["@navikt/ds-css","8.19.1","system",1747680],["@navikt/ds-react","8.19.1","system",7369081],["@navikt/ds-tokens","8.19.1","system",439537],["date-fns","4.4.0","annen",10902084],["react-day-picker","10.0.1","annen",987344],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,8,0],[0,9,0],[2,6,0],[3,2,0],[3,6,0],[4,5,0],[4,6,0],[4,13,0],[4,14,1],[4,15,1],[5,3,0],[5,14,1],[5,15,1],[9,4,0],[9,5,0],[9,7,0],[9,10,0],[9,11,0],[9,12,0],[9,14,1],[9,15,1],[12,1,0],[12,11,0],[12,14,1]]},"digdir":{"navn":"Designsystemet (Digdir)","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-{react,css}","n":[["your app","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-react","1.23.0","system",812522],["@digdir/designsystemet-types","1.23.0","system",3454],["@digdir/designsystemet-web","1.23.0","system",971002],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.26.23","annen",733859],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.19.1","annen",11147411],["@radix-ui/react-compose-refs","1.1.5","annen",12899],["@radix-ui/react-slot","1.5.0","annen",49653],["@tanstack/react-virtual","3.14.16","annen",63728],["@tanstack/virtual-core","3.19.1","annen",478978],["@u-elements/u-combobox","2.1.5","annen",72957],["@u-elements/u-datalist","2.0.3","annen",54586],["@u-elements/u-details","1.0.0","annen",32981],["@u-elements/u-tabs","1.0.4","annen",53518],["clsx","2.1.1","annen",8555],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,1,0],[0,2,0],[1,3,0],[2,3,0],[2,4,0],[2,6,0],[2,7,0],[2,10,0],[2,12,0],[2,13,0],[2,19,0],[2,21,1],[2,22,1],[4,6,0],[4,15,0],[4,16,0],[4,17,0],[4,18,0],[5,9,0],[6,5,0],[6,9,0],[7,8,0],[7,9,0],[7,20,0],[7,21,1],[7,22,1],[8,6,0],[8,21,1],[8,22,1],[11,21,1],[12,11,0],[12,21,1],[13,14,0],[13,21,1],[13,22,1]]},"digdircss":{"navn":"Digdir, CSS only","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-css","knapp":5418,"n":[["your app","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-types","1.23.0","system",3454]],"e":[[0,1,0],[1,2,0]]},"lotek":{"navn":"LO-TEK","scope":"@lo-tek/","kommando":"npm install @lo-tek/interfaces","knapp":2838,"n":[["your app","","app",0],["@lo-tek/interfaces","0.32.1","system",3278919]],"e":[[0,1,0]]}}
+  // The type "base" is what the app already has, and is not counted.
+  const DATA = {"skatt":{"name":"Skatteetaten","scope":"@skatteetaten/","command":"npm install @skatteetaten/ds-{core-designtokens,buttons}","n":[["your app","","app",0],["@babel/runtime","7.29.10","pulled-in",247215],["@skatteetaten/ds-buttons","3.0.0","system",93796],["@skatteetaten/ds-core-designtokens","3.0.0","system",32338],["@skatteetaten/ds-core-utils","3.0.0","system",164875],["@skatteetaten/ds-icons","3.0.0","system",205462],["@skatteetaten/ds-progress","3.0.0","system",10752],["html-parse-stringify","4.0.1","pulled-in",57003],["i18next","26.4.4","pulled-in",524379],["react-i18next","17.0.16","pulled-in",957407],["use-sync-external-store","1.7.0","pulled-in",28183],["react","19.3.0","base",0]],"e":[[0,2,0],[0,3,0],[2,4,1],[2,5,1],[2,6,1],[2,8,1],[2,11,1],[2,9,1],[4,8,1],[4,11,1],[4,9,1],[5,4,1],[5,8,1],[5,11,1],[5,9,1],[6,4,1],[6,8,1],[6,11,1],[6,9,1],[9,1,0],[9,7,0],[9,10,0],[9,8,1],[9,11,1],[10,11,1]]},"aksel":{"name":"Aksel","scope":"@navikt/","command":"npm install @navikt/ds-{react,css}","n":[["your app","","app",0],["@date-fns/tz","1.5.0","pulled-in",100524],["@floating-ui/core","1.8.0","pulled-in",218589],["@floating-ui/dom","1.8.0","pulled-in",174208],["@floating-ui/react","0.27.20","pulled-in",934317],["@floating-ui/react-dom","2.1.9","pulled-in",63904],["@floating-ui/utils","0.2.12","pulled-in",66066],["@navikt/aksel-icons","8.19.1","system",11147411],["@navikt/ds-css","8.19.1","system",1747680],["@navikt/ds-react","8.19.1","system",7369081],["@navikt/ds-tokens","8.19.1","system",439537],["date-fns","4.4.0","pulled-in",10902084],["react-day-picker","10.0.1","pulled-in",987344],["tabbable","6.5.0","pulled-in",427160],["react","19.3.0","base",0],["react-dom","19.3.0","base",0]],"e":[[0,8,0],[0,9,0],[2,6,0],[3,2,0],[3,6,0],[4,5,0],[4,6,0],[4,13,0],[4,14,1],[4,15,1],[5,3,0],[5,14,1],[5,15,1],[9,4,0],[9,5,0],[9,7,0],[9,10,0],[9,11,0],[9,12,0],[9,14,1],[9,15,1],[12,1,0],[12,11,0],[12,14,1]]},"digdir":{"name":"Designsystemet (Digdir)","scope":"@digdir/","command":"npm install @digdir/designsystemet-{react,css}","n":[["your app","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-react","1.23.0","system",812522],["@digdir/designsystemet-types","1.23.0","system",3454],["@digdir/designsystemet-web","1.23.0","system",971002],["@floating-ui/core","1.8.0","pulled-in",218589],["@floating-ui/dom","1.8.0","pulled-in",174208],["@floating-ui/react","0.26.23","pulled-in",733859],["@floating-ui/react-dom","2.1.9","pulled-in",63904],["@floating-ui/utils","0.2.12","pulled-in",66066],["@navikt/aksel-icons","8.19.1","pulled-in",11147411],["@radix-ui/react-compose-refs","1.1.5","pulled-in",12899],["@radix-ui/react-slot","1.5.0","pulled-in",49653],["@tanstack/react-virtual","3.14.16","pulled-in",63728],["@tanstack/virtual-core","3.19.1","pulled-in",478978],["@u-elements/u-combobox","2.1.5","pulled-in",72957],["@u-elements/u-datalist","2.0.3","pulled-in",54586],["@u-elements/u-details","1.0.0","pulled-in",32981],["@u-elements/u-tabs","1.0.4","pulled-in",53518],["clsx","2.1.1","pulled-in",8555],["tabbable","6.5.0","pulled-in",427160],["react","19.3.0","base",0],["react-dom","19.3.0","base",0]],"e":[[0,1,0],[0,2,0],[1,3,0],[2,3,0],[2,4,0],[2,6,0],[2,7,0],[2,10,0],[2,12,0],[2,13,0],[2,19,0],[2,21,1],[2,22,1],[4,6,0],[4,15,0],[4,16,0],[4,17,0],[4,18,0],[5,9,0],[6,5,0],[6,9,0],[7,8,0],[7,9,0],[7,20,0],[7,21,1],[7,22,1],[8,6,0],[8,21,1],[8,22,1],[11,21,1],[12,11,0],[12,21,1],[13,14,0],[13,21,1],[13,22,1]]},"digdircss":{"name":"Digdir, CSS only","scope":"@digdir/","command":"npm install @digdir/designsystemet-css","buttonCss":5418,"n":[["your app","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-types","1.23.0","system",3454]],"e":[[0,1,0],[1,2,0]]},"lotek":{"name":"LO-TEK","scope":"@lo-tek/","command":"npm install @lo-tek/interfaces","buttonCss":2838,"n":[["your app","","app",0],["@lo-tek/interfaces","0.32.1","system",3278919]],"e":[[0,1,0]]}}
 
-  const TYPENAVN = { system: "The design system's own", annen: "Pulled in", grunn: "Already in the app", app: "The app" }
-  const BREDDE = 1136 // fixed, so all the graphs have the same scale
-  const RAD = 30      // distance between packages in the same layer
-  const VENSTRE = 70
-  const HOYRE = 70
+  const TYPE_NAMES = { system: "The design system's own", "pulled-in": "Pulled in", base: "Already in the app", app: "The app" }
+  const WIDTH = 1136 // fixed, so all the graphs have the same scale
+  const ROW = 30      // distance between packages in the same layer
+  const LEFT = 70
+  const RIGHT = 70
   const R = 6
   const NS = "http://www.w3.org/2000/svg"
 
@@ -943,287 +943,287 @@ tr:last-child td { border-block-end: none; }
     return Math.round(b / 1024) + " kB"
   }
   const kb = (b) => (b / 1024).toFixed(1) + " kB"
-  const el = (navn, attr = {}) => {
-    const e = document.createElementNS(NS, navn)
+  const el = (name, attr = {}) => {
+    const e = document.createElementNS(NS, name)
     for (const [k, v] of Object.entries(attr)) e.setAttribute(k, v)
     return e
   }
-  const lag = (navn, klasse, tekst) => {
-    const e = document.createElement(navn)
-    if (klasse) e.className = klasse
-    if (tekst !== undefined) e.textContent = tekst
+  const make = (name, className, text) => {
+    const e = document.createElement(name)
+    if (className) e.className = className
+    if (text !== undefined) e.textContent = text
     return e
   }
 
   /* Lays the graph out in layers: the rank is the longest path from the app.
      Cycles are broken with DFS, so a package that points back does not make
      the rank grow without end. */
-  function lagdel(sys) {
+  function layOut(sys) {
     const n = sys.n.length
-    const ut = Array.from({ length: n }, () => [])
-    const inn = Array.from({ length: n }, () => [])
+    const outgoing = Array.from({ length: n }, () => [])
+    const incoming = Array.from({ length: n }, () => [])
     for (const [a, b] of sys.e) {
-      ut[a].push(b)
-      inn[b].push(a)
+      outgoing[a].push(b)
+      incoming[b].push(a)
     }
-    const farge = new Array(n).fill(0)
-    const bak = new Set()
+    const mark = new Array(n).fill(0)
+    const backEdges = new Set()
     const dfs = (v) => {
-      farge[v] = 1
-      for (const t of ut[v]) {
-        if (farge[t] === 1) bak.add(v + ">" + t)
-        else if (!farge[t]) dfs(t)
+      mark[v] = 1
+      for (const t of outgoing[v]) {
+        if (mark[t] === 1) backEdges.add(v + ">" + t)
+        else if (!mark[t]) dfs(t)
       }
-      farge[v] = 2
+      mark[v] = 2
     }
     // From every unvisited node, not just from the app: a package nobody reaches
     // from the app can still be in a cycle, and then the rank would grow without end.
-    for (let v = 0; v < n; v++) if (!farge[v]) dfs(v)
-    const rang = new Array(n).fill(0)
-    let endret = true
-    for (let runde = 0; endret && runde < n; runde++) {
-      endret = false
+    for (let v = 0; v < n; v++) if (!mark[v]) dfs(v)
+    const rank = new Array(n).fill(0)
+    let changed = true
+    for (let round = 0; changed && round < n; round++) {
+      changed = false
       for (const [a, b] of sys.e) {
-        if (bak.has(a + ">" + b)) continue
-        if (rang[b] < rang[a] + 1) {
-          rang[b] = rang[a] + 1
-          endret = true
+        if (backEdges.has(a + ">" + b)) continue
+        if (rank[b] < rank[a] + 1) {
+          rank[b] = rank[a] + 1
+          changed = true
         }
       }
     }
-    const lagene = []
-    for (let i = 0; i < n; i++) (lagene[rang[i]] ??= []).push(i)
+    const layers = []
+    for (let i = 0; i < n; i++) (layers[rank[i]] ??= []).push(i)
     // The order in each layer: the centre of gravity of the neighbours in the
     // layer before, so the lines cross as little as possible. Three sweeps,
     // back and forth.
-    const plass = new Array(n).fill(0)
-    const sorter = (l) => l.forEach((i, p) => { plass[i] = p })
-    lagene.forEach(sorter)
-    const sveip = (naboer) => {
-      for (let r = 1; r < lagene.length; r++) {
-        const midt = (i) => {
-          const nb = naboer[i].filter((j) => rang[j] !== rang[i])
-          return nb.length ? nb.reduce((s, j) => s + plass[j], 0) / nb.length : plass[i]
+    const position = new Array(n).fill(0)
+    const recordPositions = (l) => l.forEach((i, p) => { position[i] = p })
+    layers.forEach(recordPositions)
+    const sweep = (neighbours) => {
+      for (let r = 1; r < layers.length; r++) {
+        const centre = (i) => {
+          const near = neighbours[i].filter((j) => rank[j] !== rank[i])
+          return near.length ? near.reduce((s, j) => s + position[j], 0) / near.length : position[i]
         }
-        lagene[r].sort((a, b) => midt(a) - midt(b) || sys.n[a][0].localeCompare(sys.n[b][0]))
-        sorter(lagene[r])
+        layers[r].sort((a, b) => centre(a) - centre(b) || sys.n[a][0].localeCompare(sys.n[b][0]))
+        recordPositions(layers[r])
       }
     }
-    sveip(inn)
-    sveip(ut)
-    sveip(inn)
-    return { lag: lagene, rang, inn, ut }
+    sweep(incoming)
+    sweep(outgoing)
+    sweep(incoming)
+    return { layers, rank, incoming, outgoing }
   }
 
-  const systemer = Object.values(DATA).map((sys) => ({
+  const systems = Object.values(DATA).map((sys) => ({
     ...sys,
-    ...lagdel(sys),
-    nye: sys.n.filter((p) => p[2] === "system" || p[2] === "annen").length,
+    ...layOut(sys),
+    added: sys.n.filter((p) => p[2] === "system" || p[2] === "pulled-in").length,
     sum: sys.n.reduce((s, p) => s + p[3], 0),
   }))
   // Most new packages at the top: the list is a ranking.
-  systemer.sort((a, b) => b.nye - a.nye)
+  systems.sort((a, b) => b.added - a.added)
 
-  const maksRang = Math.max(...systemer.map((s) => s.lag.length - 1))
-  const KOL = (BREDDE - VENSTRE - HOYRE) / maksRang // avstand mellom lagene
+  const maxRank = Math.max(...systems.map((s) => s.layers.length - 1))
+  const COLUMN = (WIDTH - LEFT - RIGHT) / maxRank // distance between the layers
   // All the graphs are equally tall, and a layer spreads its packages over the
   // whole height. A small graph then gets as much room as the largest, and none
   // stands in a clump.
-  const maksRader = Math.max(...systemer.map((s) => Math.max(...s.lag.map((l) => l.length))))
-  const HOYDE = maksRader * RAD + 20
+  const maxRows = Math.max(...systems.map((s) => Math.max(...s.layers.map((l) => l.length))))
+  const HEIGHT = maxRows * ROW + 20
 
-  const seksjon = document.querySelector(".avh")
-  const liste = seksjon.querySelector(".avh-liste")
-  const scene = seksjon.querySelector(".avh-scene")
-  const graf = seksjon.querySelector(".avh-graf")
-  const tabeller = seksjon.querySelector(".avh-tabeller")
-  const tips = lag("div", "avh-tips")
-  tips.setAttribute("role", "tooltip")
-  tips.hidden = true
-  scene.append(tips)
+  const section = document.querySelector(".avh")
+  const list = section.querySelector(".avh-liste")
+  const scene = section.querySelector(".avh-scene")
+  const graph = section.querySelector(".avh-graf")
+  const tables = section.querySelector(".avh-tabeller")
+  const tooltip = make("div", "avh-tips")
+  tooltip.setAttribute("role", "tooltip")
+  tooltip.hidden = true
+  scene.append(tooltip)
 
-  const faner = []
-  function velg(nr) {
-    faner.forEach(({ knapp, svg }, i) => {
-      knapp.setAttribute("aria-selected", String(i === nr))
-      knapp.tabIndex = i === nr ? 0 : -1
-      svg.toggleAttribute("data-valgt", i === nr)
+  const tabs = []
+  function select(index) {
+    tabs.forEach(({ tab, svg }, i) => {
+      tab.setAttribute("aria-selected", String(i === index))
+      tab.tabIndex = i === index ? 0 : -1
+      svg.toggleAttribute("data-selected", i === index)
     })
-    tips.hidden = true
+    tooltip.hidden = true
   }
 
-  systemer.forEach((sys, nr) => {
-    const { lag: lagene, rang, inn, ut } = sys
+  systems.forEach((sys, index) => {
+    const { layers, rank, incoming, outgoing } = sys
     // The design system's own scope is in the row, and is stripped. Others are kept.
-    const kort = (navn) => navn.startsWith(sys.scope) ? navn.slice(sys.scope.length) : navn
-    const hoyde = HOYDE
-    const x = (i) => VENSTRE + rang[i] * KOL
-    const y = (i) => 10 + (lagene[rang[i]].indexOf(i) + 0.5) * ((hoyde - 20) / lagene[rang[i]].length)
+    const short = (name) => name.startsWith(sys.scope) ? name.slice(sys.scope.length) : name
+    const height = HEIGHT
+    const x = (i) => LEFT + rank[i] * COLUMN
+    const y = (i) => 10 + (layers[rank[i]].indexOf(i) + 0.5) * ((height - 20) / layers[rank[i]].length)
 
     // The row of numbers, which is also the tab.
-    const knapp = lag("button", "avh-hode")
-    knapp.type = "button"
-    knapp.setAttribute("role", "tab")
-    knapp.id = `avh-fane-${nr}`
-    knapp.append(lag("strong", "", sys.navn), lag("code", "", sys.kommando))
-    const tall = lag("span", "avh-tall")
-    const tallene = [[sys.nye, sys.nye === 1 ? "new package" : "new packages"], [sys.e.length, sys.e.length === 1 ? "link" : "links"], [mb(sys.sum), "unpacked"]]
-    if (sys.knapp) tallene.push([kb(sys.knapp), "CSS for the button"])
-    for (const [verdi, tekst] of tallene) {
-      const s = lag("span")
-      s.append(lag("b", "", verdi), tekst)
-      tall.append(s)
+    const tab = make("button", "avh-hode")
+    tab.type = "button"
+    tab.setAttribute("role", "tab")
+    tab.id = `avh-fane-${index}`
+    tab.append(make("strong", "", sys.name), make("code", "", sys.command))
+    const numbers = make("span", "avh-tall")
+    const figures = [[sys.added, sys.added === 1 ? "new package" : "new packages"], [sys.e.length, sys.e.length === 1 ? "link" : "links"], [mb(sys.sum), "unpacked"]]
+    if (sys.buttonCss) figures.push([kb(sys.buttonCss), "CSS for the button"])
+    for (const [value, text] of figures) {
+      const s = make("span")
+      s.append(make("b", "", value), text)
+      numbers.append(s)
     }
-    knapp.append(tall)
-    knapp.setAttribute("aria-label", `${sys.navn}, ${sys.kommando}: ${sys.nye} ${sys.nye === 1 ? "new package" : "new packages"}, ${sys.e.length} ${sys.e.length === 1 ? "link" : "links"}, ${mb(sys.sum)} unpacked${sys.knapp ? `, ${kb(sys.knapp)} CSS for the button` : ""}`)
-    knapp.addEventListener("click", () => velg(nr))
-    liste.append(knapp)
+    tab.append(numbers)
+    tab.setAttribute("aria-label", `${sys.name}, ${sys.command}: ${sys.added} ${sys.added === 1 ? "new package" : "new packages"}, ${sys.e.length} ${sys.e.length === 1 ? "link" : "links"}, ${mb(sys.sum)} unpacked${sys.buttonCss ? `, ${kb(sys.buttonCss)} CSS for the button` : ""}`)
+    tab.addEventListener("click", () => select(index))
+    list.append(tab)
 
-    const svg = el("svg", { class: "avh-svg", id: `avh-graf-${nr}`, viewBox: `0 0 ${BREDDE} ${hoyde}`, role: "tabpanel", "aria-labelledby": knapp.id })
-    knapp.setAttribute("aria-controls", svg.id)
-    const kanter = el("g")
-    const noder = el("g")
-    svg.append(kanter, noder)
+    const svg = el("svg", { class: "avh-svg", id: `avh-graf-${index}`, viewBox: `0 0 ${WIDTH} ${height}`, role: "tabpanel", "aria-labelledby": tab.id })
+    tab.setAttribute("aria-controls", svg.id)
+    const edges = el("g")
+    const nodes = el("g")
+    svg.append(edges, nodes)
 
-    const kantEl = sys.e.map(([a, b, peer]) => {
+    const edgeEls = sys.e.map(([a, b, peer]) => {
       const x1 = x(a) + (a === 0 ? 34 : R), y1 = y(a), x2 = x(b) - R, y2 = y(b)
-      const d = rang[a] === rang[b]
+      const d = rank[a] === rank[b]
         ? `M${x1 - R} ${y1} C${x1 + 26} ${y1}, ${x2 + 26 + R} ${y2}, ${x2 + R} ${y2}`
         : `M${x1} ${y1} C${(x1 + x2) / 2} ${y1}, ${(x1 + x2) / 2} ${y2}, ${x2} ${y2}`
       const p = el("path", { class: "avh-kant", d })
       if (peer) p.setAttribute("data-peer", "")
-      kanter.append(p)
+      edges.append(p)
       return p
     })
 
     sys.n.forEach((p, i) => {
-      const [fulltNavn, versjon, type] = p
+      const [fullName, version, type] = p
       const g = el("g", { class: "avh-node", role: "img", "data-type": type, tabindex: "0", transform: `translate(${x(i)} ${y(i)})` })
-      g.setAttribute("aria-label", type === "app" ? fulltNavn : `${fulltNavn} ${versjon}, ${TYPENAVN[type].toLowerCase()}, required by ${inn[i].length}`)
+      g.setAttribute("aria-label", type === "app" ? fullName : `${fullName} ${version}, ${TYPE_NAMES[type].toLowerCase()}, required by ${incoming[i].length}`)
       if (type === "app") {
         g.append(el("rect", { class: "prikk", x: -34, y: -11, width: 68, height: 22, rx: 6 }))
         const t = el("text", { "text-anchor": "middle", y: 4 })
-        t.textContent = fulltNavn
+        t.textContent = fullName
         g.append(t)
       } else {
         g.append(el("circle", { class: "treff", r: 16 }))
-        g.append(type === "grunn"
+        g.append(type === "base"
           ? el("rect", { class: "prikk", x: -R, y: -R, width: 2 * R, height: 2 * R, rx: 1.5 })
           : el("circle", { class: "prikk", r: R }))
         // Every other column gets the text above and below, so neighbours on the
         // same row do not write over each other. In the same column the row
         // spacing is enough.
-        const over = rang[i] % 2 === 1
-        const t = el("text", { "text-anchor": "middle", y: over ? -10 : 19 })
-        t.textContent = kort(fulltNavn)
+        const above = rank[i] % 2 === 1
+        const t = el("text", { "text-anchor": "middle", y: above ? -10 : 19 })
+        t.textContent = short(fullName)
         g.append(t)
       }
-      g.addEventListener("pointerenter", () => marker(i))
-      g.addEventListener("focus", () => marker(i))
-      g.addEventListener("pointerleave", avmarker)
-      g.addEventListener("blur", avmarker)
-      noder.append(g)
+      g.addEventListener("pointerenter", () => highlight(i))
+      g.addEventListener("focus", () => highlight(i))
+      g.addEventListener("pointerleave", unhighlight)
+      g.addEventListener("blur", unhighlight)
+      nodes.append(g)
     })
 
     // The nodes are focusable, but not buttons: Enter and Space must not reach
     // the presentation's key listener and move to the next slide.
-    noder.addEventListener("keydown", (e) => {
+    nodes.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault()
         e.stopPropagation()
       }
     })
-    const nodeEl = [...noder.children]
-    function marker(i) {
-      svg.setAttribute("data-aktiv", "")
-      const nabo = new Set([i, ...inn[i], ...ut[i]])
-      nodeEl.forEach((g, j) => g.toggleAttribute("data-aktiv", nabo.has(j)))
-      kantEl.forEach((k, j) => {
+    const nodeEls = [...nodes.children]
+    function highlight(i) {
+      svg.setAttribute("data-active", "")
+      const neighbourhood = new Set([i, ...incoming[i], ...outgoing[i]])
+      nodeEls.forEach((g, j) => g.toggleAttribute("data-active", neighbourhood.has(j)))
+      edgeEls.forEach((k, j) => {
         const [a, b] = sys.e[j]
-        k.toggleAttribute("data-aktiv", a === i || b === i)
+        k.toggleAttribute("data-active", a === i || b === i)
       })
-      visTips(i)
+      showTooltip(i)
     }
-    function avmarker() {
-      svg.removeAttribute("data-aktiv")
-      nodeEl.forEach((g) => g.removeAttribute("data-aktiv"))
-      kantEl.forEach((k) => k.removeAttribute("data-aktiv"))
-      tips.hidden = true
+    function unhighlight() {
+      svg.removeAttribute("data-active")
+      nodeEls.forEach((g) => g.removeAttribute("data-active"))
+      edgeEls.forEach((k) => k.removeAttribute("data-active"))
+      tooltip.hidden = true
     }
-    function visTips(i) {
-      const [fulltNavn, versjon, type, byte] = sys.n[i]
-      tips.replaceChildren(lag("strong", "", type === "app" ? "Your app" : `${fulltNavn} ${versjon}`))
+    function showTooltip(i) {
+      const [fullName, version, type, bytes] = sys.n[i]
+      tooltip.replaceChildren(make("strong", "", type === "app" ? "Your app" : `${fullName} ${version}`))
       if (type === "app") {
-        tips.append(lag("p", "", `Asks for ${ut[i].length} ${ut[i].length === 1 ? "package" : "packages"} and gets ${sys.nye}.`))
-      } else if (type === "grunn") {
-        tips.append(lag("p", "", `${TYPENAVN[type]}, ${versjon}. Not counted.`))
+        tooltip.append(make("p", "", `Asks for ${outgoing[i].length} ${outgoing[i].length === 1 ? "package" : "packages"} and gets ${sys.added}.`))
+      } else if (type === "base") {
+        tooltip.append(make("p", "", `${TYPE_NAMES[type]}, ${version}. Not counted.`))
       } else {
-        tips.append(lag("p", "", `${TYPENAVN[type]} · ${mb(byte)} unpacked`))
+        tooltip.append(make("p", "", `${TYPE_NAMES[type]} · ${mb(bytes)} unpacked`))
       }
       if (type !== "app") {
-        const kreves = lag("p")
-        kreves.append(lag("b", "", inn[i].length === 1 ? "Required by 1: " : `Required by ${inn[i].length}: `), inn[i].map((j) => (j === 0 ? "your app" : kort(sys.n[j][0]))).join(", "))
-        tips.append(kreves)
-        if (ut[i].length) {
-          const krever = lag("p")
-          krever.append(lag("b", "", `Requires ${ut[i].length}: `), ut[i].map((j) => kort(sys.n[j][0])).join(", "))
-          tips.append(krever)
+        const requiredBy = make("p")
+        requiredBy.append(make("b", "", incoming[i].length === 1 ? "Required by 1: " : `Required by ${incoming[i].length}: `), incoming[i].map((j) => (j === 0 ? "your app" : short(sys.n[j][0]))).join(", "))
+        tooltip.append(requiredBy)
+        if (outgoing[i].length) {
+          const requires = make("p")
+          requires.append(make("b", "", `Requires ${outgoing[i].length}: `), outgoing[i].map((j) => short(sys.n[j][0])).join(", "))
+          tooltip.append(requires)
         }
       }
       const s = scene.getBoundingClientRect()
-      const n = nodeEl[i].getBoundingClientRect()
-      tips.hidden = false
-      let venstre = n.right - s.left + 10
-      if (venstre + tips.offsetWidth > s.width) venstre = n.left - s.left - tips.offsetWidth - 10
-      tips.style.left = Math.max(0, venstre) + "px"
-      tips.style.top = Math.max(0, n.top - s.top - 6) + "px"
+      const n = nodeEls[i].getBoundingClientRect()
+      tooltip.hidden = false
+      let left = n.right - s.left + 10
+      if (left + tooltip.offsetWidth > s.width) left = n.left - s.left - tooltip.offsetWidth - 10
+      tooltip.style.left = Math.max(0, left) + "px"
+      tooltip.style.top = Math.max(0, n.top - s.top - 6) + "px"
     }
 
-    graf.append(svg)
-    faner.push({ knapp, svg })
+    graph.append(svg)
+    tabs.push({ tab, svg })
 
     // The table: the same, without the drawing.
-    tabeller.append(lag("h3", "", `${sys.navn}: ${sys.nye} ${sys.nye === 1 ? "new package" : "new packages"}, ${mb(sys.sum)} unpacked`))
-    const rull = lag("div", "tabellrull")
-    const tabell = lag("table")
-    const thead = lag("thead")
-    const hr = lag("tr")
-    for (const t of ["Package", "Version", "Type", "Unpacked", "Required by"]) hr.append(lag("th", "", t))
+    tables.append(make("h3", "", `${sys.name}: ${sys.added} ${sys.added === 1 ? "new package" : "new packages"}, ${mb(sys.sum)} unpacked`))
+    const scroller = make("div", "tabellrull")
+    const table = make("table")
+    const thead = make("thead")
+    const hr = make("tr")
+    for (const t of ["Package", "Version", "Type", "Unpacked", "Required by"]) hr.append(make("th", "", t))
     thead.append(hr)
-    const tbody = lag("tbody")
+    const tbody = make("tbody")
     sys.n.forEach((p, i) => {
-      if (i === 0 || p[2] === "grunn") return
-      const tr = lag("tr")
-      for (const v of [p[0], p[1], TYPENAVN[p[2]], mb(p[3]), inn[i].map((j) => (j === 0 ? "your app" : kort(sys.n[j][0]))).join(", ")]) tr.append(lag("td", "", v))
+      if (i === 0 || p[2] === "base") return
+      const tr = make("tr")
+      for (const v of [p[0], p[1], TYPE_NAMES[p[2]], mb(p[3]), incoming[i].map((j) => (j === 0 ? "your app" : short(sys.n[j][0]))).join(", ")]) tr.append(make("td", "", v))
       tbody.append(tr)
     })
-    tabell.append(thead, tbody)
-    rull.append(tabell)
-    tabeller.append(rull)
+    table.append(thead, tbody)
+    scroller.append(table)
+    tables.append(scroller)
   })
 
   // Up and down arrows switch rows when a row has focus, and Home and End go to
   // the first and the last, as the tabs pattern says. Left and right move
   // through the presentation, and are left alone.
-  liste.addEventListener("keydown", (e) => {
-    const nr = faner.findIndex((f) => f.knapp === document.activeElement)
-    if (nr < 0) return
-    const til = { ArrowDown: (nr + 1) % faner.length, ArrowUp: (nr + faner.length - 1) % faner.length, Home: 0, End: faner.length - 1 }[e.key]
-    if (til === undefined) return
+  list.addEventListener("keydown", (e) => {
+    const index = tabs.findIndex((f) => f.tab === document.activeElement)
+    if (index < 0) return
+    const target = { ArrowDown: (index + 1) % tabs.length, ArrowUp: (index + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1 }[e.key]
+    if (target === undefined) return
     e.preventDefault()
     e.stopPropagation()
-    velg(til)
-    faner[til].knapp.focus()
+    select(target)
+    tabs[target].tab.focus()
   })
-  velg(0)
+  select(0)
 
-  const bytt = seksjon.querySelector(".avh-bytt")
-  bytt.addEventListener("click", () => {
-    const tilTabell = seksjon.getAttribute("data-visning") !== "tabell"
-    if (tilTabell) seksjon.setAttribute("data-visning", "tabell")
-    else seksjon.removeAttribute("data-visning")
-    bytt.setAttribute("aria-pressed", String(tilTabell))
-    bytt.textContent = tilTabell ? "Show as graph" : "Show as table"
+  const toggle = section.querySelector(".avh-bytt")
+  toggle.addEventListener("click", () => {
+    const toTable = section.getAttribute("data-view") !== "table"
+    if (toTable) section.setAttribute("data-view", "table")
+    else section.removeAttribute("data-view")
+    toggle.setAttribute("aria-pressed", String(toTable))
+    toggle.textContent = toTable ? "Show as graph" : "Show as table"
   })
 })()
 </script>
@@ -1326,7 +1326,7 @@ setResults(await response.json())</pre>
 .morf-knapp[aria-disabled="true"] { color: var(--tekst-dempet); cursor: default; border-color: var(--kant); }
 .morf-knapp[aria-pressed="true"] { background: rgba(156, 207, 242, 0.14); border-color: var(--azure-30); color: var(--graphite-0); }
 
-.morf-scene > [data-skjult] { display: none; }
+.morf-scene > [data-hidden] { display: none; }
 
 .morf-panel {
   padding: 0.35rem 1rem 0.4rem;
@@ -1358,7 +1358,7 @@ setResults(await response.json())</pre>
   transition: border-color 0.2s;
 }
 .morf-input:empty::before { content: "\00a0"; }
-.morf-input[data-ugyldig] { border-color: #e7b78a; box-shadow: 0 0 0 1px #e7b78a; }
+.morf-input[data-invalid] { border-color: #e7b78a; box-shadow: 0 0 0 1px #e7b78a; }
 .morf-feil { color: #e7b78a; }
 .morf-feil[hidden] { display: none; }
 .morf-opplest { margin: 0 0 0 auto; font-size: 0.78rem; color: var(--tekst-dempet); }
@@ -1375,11 +1375,11 @@ setResults(await response.json())</pre>
   background: rgba(205, 225, 249, 0.06);
   transition: opacity 0.3s, transform 0.3s, border-color 0.2s, background 0.2s;
 }
-.morf-brikke[data-kilde="komponent"] { border-color: var(--azure-30); background: rgba(156, 207, 242, 0.16); color: var(--graphite-0); }
-.morf-brikke[data-tilstand="sjekkes"] { border-color: var(--graphite-0); background: rgba(205, 225, 249, 0.18); }
-.morf-brikke[data-tilstand="fjernes"] { border-color: #e7b78a; color: #e7b78a; background: rgba(231, 183, 138, 0.14); text-decoration: line-through; }
-.morf-brikke[data-tilstand="borte"] { opacity: 0; transform: translateY(0.4rem); }
-.morf-brikke[data-tilstand="ny"], .morf-linje[data-tilstand="ny"] { animation: morf-inn 0.3s ease-out; }
+.morf-brikke[data-source="component"] { border-color: var(--azure-30); background: rgba(156, 207, 242, 0.16); color: var(--graphite-0); }
+.morf-brikke[data-state="checking"] { border-color: var(--graphite-0); background: rgba(205, 225, 249, 0.18); }
+.morf-brikke[data-state="removing"] { border-color: #e7b78a; color: #e7b78a; background: rgba(231, 183, 138, 0.14); text-decoration: line-through; }
+.morf-brikke[data-state="gone"] { opacity: 0; transform: translateY(0.4rem); }
+.morf-brikke[data-state="new"], .morf-linje[data-state="new"] { animation: morf-inn 0.3s ease-out; }
 @keyframes morf-inn { from { opacity: 0; transform: translateY(-0.4rem); } }
 
 /* The traffic: what goes to the server, and what comes back. */
@@ -1388,13 +1388,13 @@ setResults(await response.json())</pre>
 .morf-linje i { color: var(--tekst-dempet); font-style: normal; }
 .morf-tom { font-size: 0.8rem; color: var(--tekst-dempet); }
 .morf-tekst { margin: 0; font-size: 0.86rem; color: var(--tekst); min-block-size: 1.3em; }
-.morf-tekst[data-tone="varsel"] { color: #e7b78a; }
+.morf-tekst[data-tone="warning"] { color: #e7b78a; }
 .morf-tekst[data-tone="ok"] { color: var(--forest-30); }
 @media (max-width: 860px) {
   /* On a narrow screen the code stays, as before. */
   .morf-bytt { display: none; }
   .morf-scene > .morf-panel { display: none; }
-  .morf-scene > pre[data-skjult] { display: block; }
+  .morf-scene > pre[data-hidden] { display: block; }
 }
 @media (prefers-reduced-motion: reduce) {
   .morf-brikke, .morf-linje, .morf-input { transition: none; animation: none; }
@@ -1412,18 +1412,18 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
 
 <i>// If the attribute is there, but not in what the server sent,</i>
 <i>// remove it. Unless the template has protected the name.</i></pre>
-  <div class="morf-panel" role="group" data-skjult aria-label="The morph, step by step">
+  <div class="morf-panel" role="group" data-hidden aria-label="The morph, step by step">
     <div class="morf-rad">
       <span class="morf-utgang">Variant:</span>
-      <button type="button" class="morf-knapp" data-utgang="uten" aria-pressed="true">Without protection</button>
-      <button type="button" class="morf-knapp" data-utgang="fredet" aria-pressed="false">With data-preserve-attr</button>
+      <button type="button" class="morf-knapp" data-mode="unprotected" aria-pressed="true">Without protection</button>
+      <button type="button" class="morf-knapp" data-mode="protected" aria-pressed="false">With data-preserve-attr</button>
       <span class="morf-styring">
-        <button type="button" class="morf-knapp" data-steg="neste">Next step</button>
-        <button type="button" class="morf-knapp" data-steg="start">Start over</button>
+        <button type="button" class="morf-knapp" data-step="next">Next step</button>
+        <button type="button" class="morf-knapp" data-step="start">Start over</button>
       </span>
     </div>
     <div class="morf-felt">
-      <span class="morf-etikett">Email</span><span class="morf-input"></span><span class="morf-feil" id="epost-feil" hidden>Enter a valid email address</span>
+      <span class="morf-etikett">Email</span><span class="morf-input"></span><span class="morf-feil" id="email-error" hidden>Enter a valid email address</span>
       <p class="morf-opplest"></p>
     </div>
     <div class="morf-kolonner">
@@ -1441,201 +1441,201 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
 <script>
 (() => {
-  const seksjon = document.currentScript.closest(".lysbilde")
-  const scene = seksjon.querySelector(".morf-scene")
-  const kode = scene.querySelector("pre")
+  const section = document.currentScript.closest(".lysbilde")
+  const scene = section.querySelector(".morf-scene")
+  const code = scene.querySelector("pre")
   const panel = scene.querySelector(".morf-panel")
-  const bytt = seksjon.querySelector(".morf-bytt")
-  const brikkerR = panel.querySelector('[data-side="r"]')
-  const trafikk = panel.querySelector(".morf-trafikk")
-  const felt = panel.querySelector(".morf-input")
-  const feil = panel.querySelector(".morf-feil")
-  const opplest = panel.querySelector(".morf-opplest")
-  const tekst = panel.querySelector(".morf-tekst")
-  const neste = panel.querySelector('[data-steg="neste"]')
-  const start = panel.querySelector('[data-steg="start"]')
-  const utganger = [...panel.querySelectorAll("[data-utgang]")]
-  const stille = matchMedia("(prefers-reduced-motion: reduce)").matches
-  const ADRESSE = "alex@example"
+  const toggle = section.querySelector(".morf-bytt")
+  const chipsR = panel.querySelector('[data-side="r"]')
+  const traffic = panel.querySelector(".morf-trafikk")
+  const field = panel.querySelector(".morf-input")
+  const error = panel.querySelector(".morf-feil")
+  const readOut = panel.querySelector(".morf-opplest")
+  const text = panel.querySelector(".morf-tekst")
+  const next = panel.querySelector('[data-step="next"]')
+  const start = panel.querySelector('[data-step="start"]')
+  const modeButtons = [...panel.querySelectorAll("[data-mode]")]
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches
+  const ADDRESS = "alex@example"
 
   // Two real elements. r is what is in the page, s what the server sent.
-  let r, s, steg, utgang = "uten", lopende = 0, opptatt = false
-  const SISTE = 6
-  const oppdaterKnapp = () => neste.setAttribute("aria-disabled", String(opptatt || steg >= SISTE))
+  let r, s, step, mode = "unprotected", run = 0, busy = false
+  const LAST = 6
+  const updateNextButton = () => next.setAttribute("aria-disabled", String(busy || step >= LAST))
 
-  const brikke = (navn, verdi, kilde) => {
+  const chip = (name, value, source) => {
     const b = document.createElement("span")
     b.className = "morf-brikke"
-    b.dataset.navn = navn
-    if (kilde) b.dataset.kilde = kilde
-    b.textContent = verdi === "" ? navn : `${navn}="${verdi}"`
+    b.dataset.name = name
+    if (source) b.dataset.source = source
+    b.textContent = value === "" ? name : `${name}="${value}"`
     return b
   }
   // Draws r from the element's own attributes, and from nothing else.
-  function tegnR(komponentens = []) {
-    brikkerR.replaceChildren()
+  function drawR(fromComponent = []) {
+    chipsR.replaceChildren()
     for (const { name, value } of r.attributes) {
-      brikkerR.append(brikke(name, value, komponentens.includes(name) ? "komponent" : ""))
+      chipsR.append(chip(name, value, fromComponent.includes(name) ? "component" : ""))
     }
   }
   // One line in the traffic. The first part is muted, the rest is the payload.
-  function linje(merke, innhold) {
+  function line(label, payload) {
     const l = document.createElement("span")
     l.className = "morf-linje"
-    l.dataset.tilstand = "ny"
+    l.dataset.state = "new"
     const m = document.createElement("i")
-    m.textContent = merke
-    l.append(m, innhold)
-    trafikk.append(l)
+    m.textContent = label
+    l.append(m, payload)
+    traffic.append(l)
   }
-  const som = (el) => {
+  const asHtml = (el) => {
     const a = [...el.attributes].map(({ name, value }) => (value === "" ? name : `${name}="${value}"`)).join(" ")
     return `<input ${a}>`
   }
   // What a screen reader says about the field, worked out from r: the name from
   // the label, invalid from aria-invalid, and the description by following
   // aria-describedby to the element with that id, as the screen reader does.
-  function lesOpp() {
+  function readAloud() {
     let t = "Email"
     if (r.getAttribute("aria-invalid") === "true") t += ", invalid"
-    const peker = r.getAttribute("aria-describedby")
-    const beskrivelse = peker && document.getElementById(peker)
-    if (beskrivelse && !beskrivelse.hidden) t += `, ${beskrivelse.textContent}`
-    opplest.replaceChildren("The screen reader says: ")
+    const pointer = r.getAttribute("aria-describedby")
+    const description = pointer && document.getElementById(pointer)
+    if (description && !description.hidden) t += `, ${description.textContent}`
+    readOut.replaceChildren("The screen reader says: ")
     const b = document.createElement("b")
     b.textContent = `“${t}”`
-    opplest.append(b)
+    readOut.append(b)
   }
-  const si = (t, tone) => {
-    tekst.textContent = t
-    if (tone) tekst.dataset.tone = tone
-    else delete tekst.dataset.tone
+  const say = (t, tone) => {
+    text.textContent = t
+    if (tone) text.dataset.tone = tone
+    else delete text.dataset.tone
   }
-  const vent = (ms) => new Promise((klar) => setTimeout(klar, stille ? 0 : ms))
+  const wait = (ms) => new Promise((done) => setTimeout(done, reduced ? 0 : ms))
 
-  function fraStart() {
-    lopende++
+  function restart() {
+    run++
     r = document.createElement("input")
-    r.setAttribute("id", "epost")
+    r.setAttribute("id", "email")
     r.setAttribute("class", "lt-input")
     r.setAttribute("required", "")
     s = null
-    steg = 0
-    felt.textContent = ""
-    delete felt.dataset.ugyldig
-    feil.hidden = true
-    trafikk.replaceChildren()
+    step = 0
+    field.textContent = ""
+    delete field.dataset.invalid
+    error.hidden = true
+    traffic.replaceChildren()
     const t = document.createElement("span")
     t.className = "morf-tom"
     t.textContent = "nothing yet"
-    trafikk.append(t)
-    tegnR()
-    lesOpp()
-    si("The server sent the page, with an empty email field. Everything in r came from there.")
-    opptatt = false
-    oppdaterKnapp()
+    traffic.append(t)
+    drawR()
+    readAloud()
+    say("The server sent the page, with an empty email field. Everything in r came from there.")
+    busy = false
+    updateNextButton()
   }
 
-  async function nesteSteg() {
-    if (opptatt || steg >= SISTE) return
-    steg++
-    oppdaterKnapp()
-    const mitt = ++lopende
-    if (steg === 1) {
-      felt.textContent = ADRESSE
-      si(`The user types “${ADRESSE}” and moves on to the next field.`)
-    } else if (steg === 2) {
-      feil.hidden = false
-      felt.dataset.ugyldig = ""
-      r.setAttribute("aria-describedby", "epost-feil")
-      tegnR(["aria-describedby"])
-      brikkerR.lastElementChild.dataset.tilstand = "ny"
-      lesOpp()
-      si("The component in the browser sees that the address has no domain, shows the error message, and wires it to the field with aria-describedby.")
-    } else if (steg === 3) {
-      trafikk.replaceChildren()
-      linje("→ ", `POST /answer  {"email": "${ADRESSE}"}`)
-      si("The user submits the form. Datastar sends the fields to the server as JSON.")
-    } else if (steg === 4) {
+  async function nextStep() {
+    if (busy || step >= LAST) return
+    step++
+    updateNextButton()
+    const mine = ++run
+    if (step === 1) {
+      field.textContent = ADDRESS
+      say(`The user types “${ADDRESS}” and moves on to the next field.`)
+    } else if (step === 2) {
+      error.hidden = false
+      field.dataset.invalid = ""
+      r.setAttribute("aria-describedby", "email-error")
+      drawR(["aria-describedby"])
+      chipsR.lastElementChild.dataset.state = "new"
+      readAloud()
+      say("The component in the browser sees that the address has no domain, shows the error message, and wires it to the field with aria-describedby.")
+    } else if (step === 3) {
+      traffic.replaceChildren()
+      line("→ ", `POST /answer  {"email": "${ADDRESS}"}`)
+      say("The user submits the form. Datastar sends the fields to the server as JSON.")
+    } else if (step === 4) {
       s = document.createElement("input")
-      s.setAttribute("id", "epost")
+      s.setAttribute("id", "email")
       s.setAttribute("class", "lt-input")
       s.setAttribute("required", "")
       s.setAttribute("aria-invalid", "true")
-      if (utgang === "fredet") s.setAttribute("data-preserve-attr", "aria-describedby")
-      linje("← ", "event: datastar-patch-elements")
-      linje("  ", `data: elements ${som(s)}`)
-      si(utgang === "fredet"
+      if (mode === "protected") s.setAttribute("data-preserve-attr", "aria-describedby")
+      line("← ", "event: datastar-patch-elements")
+      line("  ", `data: elements ${asHtml(s)}`)
+      say(mode === "protected"
         ? "The server validates and answers with a Server-Sent Event: the field again, with aria-invalid, and aria-describedby protected in data-preserve-attr."
         : "The server validates and answers with a Server-Sent Event: the field again, with aria-invalid. It does not know about aria-describedby.")
-    } else if (steg === 5) {
-      opptatt = true
-      oppdaterKnapp()
-      si("Datastar finds the element with the same id, first copies in what the server sent, and then goes through the attributes in r, one at a time.")
+    } else if (step === 5) {
+      busy = true
+      updateNextButton()
+      say("Datastar finds the element with the same id, first copies in what the server sent, and then goes through the attributes in r, one at a time.")
       // As datastar.js does it, with o read the way Datastar reads it: first
       // what the server sent is copied, except what is protected, then the loop
       // from the code panel runs over what is in r.
       const o = (s.getAttribute("data-preserve-attr") ?? "").split(" ").filter(Boolean)
-      const hadde = [...r.attributes].map((a) => a.name)
+      const had = [...r.attributes].map((a) => a.name)
       for (let { name: l, value: f } of s.attributes) r.getAttribute(l) !== f && !o.includes(l) && r.setAttribute(l, f)
-      tegnR(["aria-describedby"])
-      for (const b of brikkerR.children) if (!hadde.includes(b.dataset.navn)) b.dataset.tilstand = "ny"
-      await vent(700)
-      if (mitt !== lopende) return
-      const fjernet = []
+      drawR(["aria-describedby"])
+      for (const b of chipsR.children) if (!had.includes(b.dataset.name)) b.dataset.state = "new"
+      await wait(700)
+      if (mine !== run) return
+      const removed = []
       for (let { name: l } of Array.from(r.attributes)) {
-        const b = brikkerR.querySelector(`[data-navn="${l}"]`)
-        b.dataset.tilstand = "sjekkes"
-        await vent(550)
-        if (mitt !== lopende) return
+        const b = chipsR.querySelector(`[data-name="${l}"]`)
+        b.dataset.state = "checking"
+        await wait(550)
+        if (mine !== run) return
         if (!s.hasAttribute(l) && !o.includes(l)) {
           r.removeAttribute(l)
-          fjernet.push(l)
-          b.dataset.tilstand = "fjernes"
-          await vent(650)
-          if (mitt !== lopende) return
-          b.dataset.tilstand = "borte"
+          removed.push(l)
+          b.dataset.state = "removing"
+          await wait(650)
+          if (mine !== run) return
+          b.dataset.state = "gone"
         } else {
-          delete b.dataset.tilstand
+          delete b.dataset.state
         }
       }
-      await vent(350)
-      if (mitt !== lopende) return
-      tegnR(fjernet.includes("aria-describedby") ? [] : ["aria-describedby"])
-      lesOpp()
-      opptatt = false
-      oppdaterKnapp()
-      si(fjernet.includes("aria-describedby")
+      await wait(350)
+      if (mine !== run) return
+      drawR(removed.includes("aria-describedby") ? [] : ["aria-describedby"])
+      readAloud()
+      busy = false
+      updateNextButton()
+      say(removed.includes("aria-describedby")
         ? "aria-describedby was not in what the server sent, and has been removed. aria-invalid came in with the copy."
         : "aria-describedby was in data-preserve-attr, and was left alone. aria-invalid came in with the copy.")
-    } else if (steg === 6) {
-      oppdaterKnapp()
+    } else if (step === 6) {
+      updateNextButton()
       if (r.hasAttribute("aria-describedby")) {
-        si("The screen reader reads the error message, but only because the template protected the name. If the component changes what it sets, every template has to change with it.", "ok")
+        say("The screen reader reads the error message, but only because the template protected the name. If the component changes what it sets, every template has to change with it.", "ok")
       } else {
-        si("The error message is there on screen, but the wiring is gone. The screen reader reads the field without it, and nothing reports it.", "varsel")
+        say("The error message is there on screen, but the wiring is gone. The screen reader reads the field without it, and nothing reports it.", "warning")
       }
     }
   }
 
-  neste.addEventListener("click", nesteSteg)
-  start.addEventListener("click", fraStart)
-  for (const k of utganger) {
+  next.addEventListener("click", nextStep)
+  start.addEventListener("click", restart)
+  for (const k of modeButtons) {
     k.addEventListener("click", () => {
-      utgang = k.dataset.utgang
-      for (const a of utganger) a.setAttribute("aria-pressed", String(a === k))
-      fraStart()
+      mode = k.dataset.mode
+      for (const a of modeButtons) a.setAttribute("aria-pressed", String(a === k))
+      restart()
     })
   }
-  bytt.addEventListener("click", () => {
-    const visPanel = kode.hasAttribute("data-skjult") === false
-    kode.toggleAttribute("data-skjult", visPanel)
-    panel.toggleAttribute("data-skjult", !visPanel)
-    bytt.setAttribute("aria-pressed", String(visPanel))
-    bytt.textContent = visPanel ? "Show the code" : "Show the morph"
-    if (visPanel) fraStart()
+  toggle.addEventListener("click", () => {
+    const showPanel = code.hasAttribute("data-hidden") === false
+    code.toggleAttribute("data-hidden", showPanel)
+    panel.toggleAttribute("data-hidden", !showPanel)
+    toggle.setAttribute("aria-pressed", String(showPanel))
+    toggle.textContent = showPanel ? "Show the code" : "Show the morph"
+    if (showPanel) restart()
   })
-  fraStart()
+  restart()
 })()
 </script>
   <p style="margin-block-start: 1rem;">The emergency exit is <code>data-preserve-attr</code>, where the HTML template on the server lists everything the web component has set. Every template then has to change in step with the web component, with no compiler to say so, so a design system cannot build on it.</p>
@@ -2218,9 +2218,9 @@ defineLtField()
 </div>
 
 <div class="styring">
-  <button type="button" id="forrige" aria-label="Previous slide">Previous</button>
-  <span class="teller" id="teller" aria-live="polite"></span>
-  <button type="button" id="neste" aria-label="Next slide">Next</button>
+  <button type="button" id="previous" aria-label="Previous slide">Previous</button>
+  <span class="teller" id="counter" aria-live="polite"></span>
+  <button type="button" id="next" aria-label="Next slide">Next</button>
 </div>
 
 <script>
@@ -2232,35 +2232,35 @@ defineLtField()
  * particular slide, and a reload lands in the same place. The older form
  * #lysbilde-6 is still read, so links made before the translation still work.
  */
-const lysbilder = [...document.querySelectorAll(".lysbilde")]
-const teller = document.getElementById("teller")
-let gjeldende = 0
+const slides = [...document.querySelectorAll(".lysbilde")]
+const counter = document.getElementById("counter")
+let current = 0
 
-function vis(nr) {
-  gjeldende = Math.max(0, Math.min(nr, lysbilder.length - 1))
-  lysbilder.forEach((l, i) => {
-    if (i === gjeldende) l.setAttribute("data-vist", "")
-    else l.removeAttribute("data-vist")
+function show(index) {
+  current = Math.max(0, Math.min(index, slides.length - 1))
+  slides.forEach((l, i) => {
+    if (i === current) l.setAttribute("data-shown", "")
+    else l.removeAttribute("data-shown")
   })
   // If focus was on something in the slide that was just hidden, such as a
   // graph node clicked with the mouse, it stays there in Safari and Firefox,
   // and Enter and Space go to the hidden control instead of moving on.
   // The buttons in the controls keep focus, as they are always visible.
-  const aktiv = document.activeElement
-  if (aktiv && aktiv !== document.body && !lysbilder[gjeldende].contains(aktiv) && !aktiv.closest(".styring")) aktiv.blur()
-  teller.textContent = `${gjeldende + 1} / ${lysbilder.length}`
-  lysbilder[gjeldende].scrollTop = 0
+  const active = document.activeElement
+  if (active && active !== document.body && !slides[current].contains(active) && !active.closest(".styring")) active.blur()
+  counter.textContent = `${current + 1} / ${slides.length}`
+  slides[current].scrollTop = 0
   window.scrollTo(0, 0)
-  history.replaceState(null, "", `#slide-${gjeldende + 1}`)
+  history.replaceState(null, "", `#slide-${current + 1}`)
 }
 
-function fraAdressen() {
-  const treff = /^#(?:slide|lysbilde)-(\d+)$/.exec(location.hash)
-  return treff ? Number(treff[1]) - 1 : 0
+function fromAddress() {
+  const match = /^#(?:slide|lysbilde)-(\d+)$/.exec(location.hash)
+  return match ? Number(match[1]) - 1 : 0
 }
 
-document.getElementById("neste").addEventListener("click", () => vis(gjeldende + 1))
-document.getElementById("forrige").addEventListener("click", () => vis(gjeldende - 1))
+document.getElementById("next").addEventListener("click", () => show(current + 1))
+document.getElementById("previous").addEventListener("click", () => show(current - 1))
 
 document.addEventListener("keydown", (e) => {
   // Cmd+arrow and Alt+arrow are the browser's own forward and back, and must not move slides.
@@ -2268,29 +2268,29 @@ document.addEventListener("keydown", (e) => {
   // Enter on a link should follow the link, and Space on a button should press
   // it. Without this line the presentation moved on instead, and the links on
   // the first and last slides could not be followed with the keyboard.
-  const påKontroll =
+  const onControl =
     e.target instanceof HTMLButtonElement || e.target instanceof HTMLAnchorElement
-  if (påKontroll && (e.key === " " || e.key === "Enter")) return
+  if (onControl && (e.key === " " || e.key === "Enter")) return
   if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " " || e.key === "Enter") {
     e.preventDefault()
-    vis(gjeldende + 1)
+    show(current + 1)
   } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
     e.preventDefault()
-    vis(gjeldende - 1)
+    show(current - 1)
   } else if (e.key === "Home") {
     e.preventDefault()
-    vis(0)
+    show(0)
   } else if (e.key === "End") {
     e.preventDefault()
-    vis(lysbilder.length - 1)
+    show(slides.length - 1)
   }
 })
 
 // The address is corrected after clamping, so #slide-99 becomes #slide-36.
 // replaceState does not fire hashchange, so there is no loop.
-window.addEventListener("hashchange", () => vis(fraAdressen()))
+window.addEventListener("hashchange", () => show(fromAddress()))
 
-vis(fraAdressen())
+show(fromAddress())
 </script>
 </body>
 </html>

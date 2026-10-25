@@ -16,9 +16,9 @@ import.meta.glob("./components/*/*/*.css", { eager: true })
  *
  * En komponent som blir bredere enn skjermen, gjør at hele siden kan dras
  * sidelengs. Det er en av de vanligste feilene i et designsystem, og den ses
- * ikke i et utviklingsvindu på 1400 piksler.
+ * ikke i et utviklingsvindu på 1400 pixels.
  *
- * Vinduet selv settes til 320 piksler, ikke bare en boks i et bredt vindu.
+ * Vinduet selv settes til 320 pixels, ikke bare en box i et bredt vindu.
  * En dialog, et sprettoppvindu og en melding regner bredden sin ut fra
  * vinduet, og står i topplaget eller med `position: fixed`, der de ikke
  * gjør siden bredere, men kan stikke utenfor skjermen likevel. Testen sjekker
@@ -231,7 +231,7 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
   ],
   "sr-only": [
     {
-      markup: `<span class="lt-sr-only">${LANG}, og en lang forklaring bare skjermlesere hører</span>`,
+      markup: `<span class="lt-sr-only">${LANG}, og en lang help bare skjermlesere hører</span>`,
     },
   ],
   switch: [
@@ -423,7 +423,7 @@ const TILFELLER = Object.entries(KOMPONENTER).flatMap(([mappe, liste]) =>
   liste.map((tilfelle, i) => [`${mappe} #${i + 1}`, tilfelle] as const),
 )
 
-describe(`komponentene i et vindu på ${SMAL} piksler`, () => {
+describe(`komponentene i et vindu på ${SMAL} pixels`, () => {
   beforeAll(async () => {
     defineLt()
     await page.viewport(SMAL, 640)
@@ -451,10 +451,11 @@ describe(`komponentene i et vindu på ${SMAL} piksler`, () => {
     expect(window.innerWidth).toBe(SMAL)
 
     // Siden kan ikke rulles sidelengs.
-    const rot = document.documentElement
-    expect(rot.scrollWidth, "siden er bredere enn vinduet").toBeLessThanOrEqual(
-      rot.clientWidth,
-    )
+    const root = document.documentElement
+    expect(
+      root.scrollWidth,
+      "siden er bredere enn vinduet",
+    ).toBeLessThanOrEqual(root.clientWidth)
 
     // Det som skulle åpnes, står åpent.
     if (tilfelle.apen) {
@@ -472,11 +473,11 @@ describe(`komponentene i et vindu på ${SMAL} piksler`, () => {
       if (node.closest(".lt-table-scroll, .lt-sr-only")) continue
       const stil = getComputedStyle(node)
       if (stil.visibility === "hidden") continue
-      const boks = node.getBoundingClientRect()
-      if (boks.width === 0 || boks.height === 0) continue
+      const box = node.getBoundingClientRect()
+      if (box.width === 0 || box.height === 0) continue
       const hvem = `${node.tagName.toLowerCase()}.${node.className}`
-      expect(boks.left, `${hvem} til venstre`).toBeGreaterThanOrEqual(-0.5)
-      expect(boks.right, `${hvem} til høyre`).toBeLessThanOrEqual(SMAL + 0.5)
+      expect(box.left, `${hvem} til venstre`).toBeGreaterThanOrEqual(-0.5)
+      expect(box.right, `${hvem} til høyre`).toBeLessThanOrEqual(SMAL + 0.5)
       if (
         node.closest(":modal, :popover-open") ||
         getComputedStyle(node).position === "fixed"

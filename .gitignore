@@ -7,28 +7,28 @@ dist
 __screenshots__
 .vitest-attachments
 
-# Lokale engangsskript for etterprøving i nettleser, ikke del av sjekkene
-documentation/scripts/.lokal/
+# Local one-off scripts for checking in a browser, not part of the checks
+documentation/scripts/.local/
 
 # macOS
 .DS_Store
 
-# Midlertidige demoapper for etterprøving mot ekte SSR, ikke del av pakken
-demoer-lokalt/
+# Temporary demo apps for checking against real SSR, not part of the package
+demos-local/
 
-# Pakket utvidelse, lages av `bun --filter vscode check`
+# Packaged extension, made by `bun --filter vscode check`
 *.vsix
 .vscode-test/
 
-# IntelliJ-pluginens byggemapper. `.intellijPlatform` er en hel IDE lastet
-# ned for å kompilere mot, rundt en gigabyte.
+# The IntelliJ plugin's build folders. `.intellijPlatform` is a whole IDE
+# downloaded to compile against, around a gigabyte.
 intellij/.gradle/
 intellij/.kotlin/
 intellij/.intellijPlatform/
 intellij/build/
 presentation/index.html
 
-# Kotlin-prosjektets byggemapper
+# The Kotlin project's build folders
 kotlin/.gradle/
 kotlin/.kotlin/
 kotlin/build/
@@ -39,10 +39,10 @@ kotlin/buildSrc/.gradle/
 kotlin/buildSrc/.kotlin/
 kotlin/buildSrc/build/
 
-# Rust-kjernens byggemapper. Modulen bygges fra kildekoden.
+# The Rust core's build folders. The module is built from source.
 target/
 core/dist/
 interfaces/core/
 
-# Tarballen `bun --filter @lo-tek/interfaces pack` lager for Kotlin-pakken
+# The tarball `bun --filter @lo-tek/interfaces pack` makes for the Kotlin package
 interfaces/*.tgz

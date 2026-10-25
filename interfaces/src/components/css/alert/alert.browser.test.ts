@@ -17,58 +17,60 @@ describe("lt-alert", () => {
   beforeEach(() => {
     mount(`
       <div class="lt-alert">
-        <p class="lt-alert__title">Saken er registrert</p>
-        <p>Du får svar innen tre uker.</p>
+        <p class="lt-alert__title">Your case has been registered</p>
+        <p>You will get an answer within three weeks.</p>
       </div>
-      <div class="lt-alert" data-color="success" id="vellykket">
-        <p>Søknaden er sendt.</p>
+      <div class="lt-alert" data-color="success" id="success">
+        <p>The application has been sent.</p>
       </div>
-      <div class="lt-alert" data-color="warning" id="advarsel">
-        <p>Fristen går ut om tre dager.</p>
+      <div class="lt-alert" data-color="warning" id="warning">
+        <p>The deadline is in three days.</p>
       </div>
-      <div class="lt-alert" data-color="danger" id="feil" role="alert">
-        <p class="lt-alert__title">Søknaden ble ikke sendt</p>
-        <p>Nettverket svarte ikke. Prøv igjen.</p>
+      <div class="lt-alert" data-color="danger" id="danger" role="alert">
+        <p class="lt-alert__title">The application was not sent</p>
+        <p>The network did not respond. Try again.</p>
       </div>
       <div class="lt-alert" data-color="info" id="info">
-        <p>Tjenesten er oppdatert.</p>
+        <p>The service has been updated.</p>
       </div>
     `)
   })
 
-  it("gir hver farge sin egen flate", () => {
-    const farger = ["vellykket", "advarsel", "feil", "info"].map(
+  it("gives each colour its own surface", () => {
+    const colours = ["success", "warning", "danger", "info"].map(
       (id) =>
         getComputedStyle(document.getElementById(id) as Element)
           .backgroundColor,
     )
 
-    expect(new Set(farger).size).toBe(farger.length)
+    expect(new Set(colours).size).toBe(colours.length)
   })
 
-  it("merker kanten i statusfargen", () => {
-    const feil = getComputedStyle(document.getElementById("feil") as Element)
+  it("marks the edge in the status colour", () => {
+    const danger = getComputedStyle(
+      document.getElementById("danger") as Element,
+    )
 
-    expect(feil.borderInlineStartWidth).not.toBe("0px")
-    expect(feil.borderInlineStartColor).not.toBe(feil.backgroundColor)
+    expect(danger.borderInlineStartWidth).not.toBe("0px")
+    expect(danger.borderInlineStartColor).not.toBe(danger.backgroundColor)
   })
 
-  it("lar marginen til en hjelpetekst i meldingen stå", () => {
-    // `.lt-alert p` nullet den, siden den slo `.lt-help-text` på spesifisitet.
+  it("leaves the margin of a help text in the message alone", () => {
+    // `.lt-alert p` set it to zero, since it beat `.lt-help-text` on specificity.
     mount(`
       <div class="lt-alert">
-        <p>Du får svar innen tre uker.</p>
-        <p class="lt-help-text" id="hjelp">Saksnummeret står i kvitteringen.</p>
+        <p>You will get an answer within three weeks.</p>
+        <p class="lt-help-text" id="help">The case number is on the receipt.</p>
       </div>
     `)
 
     expect(
-      getComputedStyle(document.getElementById("hjelp") as HTMLElement)
+      getComputedStyle(document.getElementById("help") as HTMLElement)
         .marginTop,
     ).not.toBe("0px")
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(alert()).toEqual({ class: "lt-alert" })
     expect(alert({ color: "danger" })).toEqual({
       class: "lt-alert",
@@ -79,7 +81,7 @@ describe("lt-alert", () => {
     expect(alert.isColor("critical")).toBe(false)
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

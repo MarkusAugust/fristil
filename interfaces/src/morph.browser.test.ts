@@ -75,11 +75,11 @@ function morfElement(live: Element, server: Element): void {
 function morf(live: Element, markup: string): void {
   const mal = document.createElement("div")
   mal.innerHTML = markup
-  const rot = mal.firstElementChild
-  if (!rot) throw new Error("Markupen har ingen rot")
+  const root = mal.firstElementChild
+  if (!root) throw new Error("Markupen har ingen root")
 
   const levende = [live, ...live.querySelectorAll("*")]
-  const sendte = [rot, ...rot.querySelectorAll("*")]
+  const sendte = [root, ...root.querySelectorAll("*")]
 
   if (levende.length !== sendte.length) {
     throw new Error(
@@ -89,7 +89,7 @@ function morf(live: Element, markup: string): void {
 
   for (let i = 0; i < levende.length; i++) {
     // Uten dette kunne en komponent som setter inn en node forskyve hele
-    // sammenligningen, og testen ville stilt krav til feil elementer uten å
+    // sammenligningen, og testen ville stilt krav til feil elements uten å
     // si fra.
     if (levende[i].tagName !== sendte[i].tagName) {
       throw new Error(
@@ -220,12 +220,12 @@ describe("morfing river ikke bort det komponenten setter", () => {
    * dialogen igjen etter at brukeren hadde lukket den én gang.
    */
   it("lar serveren åpne en dialog brukeren har lukket", async () => {
-    const boks = dialog({ titleId: "tittel", open: true })
+    const box = dialog({ titleId: "tittel", open: true })
     const MARKUP = `
-      <lt-dialog ${attr(boks.host)}>
-        <dialog ${attr(boks.dialog)}>
-          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
-          <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
+      <lt-dialog ${attr(box.host)}>
+        <dialog ${attr(box.dialog)}>
+          <h2 ${attr(box.title)}>Vedtaket er registrert</h2>
+          <div ${attr(box.body)}><p>Saken er ferdigbehandlet.</p></div>
         </dialog>
       </lt-dialog>`
 
@@ -264,13 +264,13 @@ describe("morfing river ikke bort det komponenten setter", () => {
    * serverens node mangler, og testen kunne ikke feile.
    */
   it("lukker ikke en åpen dialog i en patch", async () => {
-    const boks = dialog({ titleId: "tittel", open: true })
-    const { open: _serverensOpen, ...dialogUtenOpen } = boks.dialog
+    const box = dialog({ titleId: "tittel", open: true })
+    const { open: _serverensOpen, ...dialogUtenOpen } = box.dialog
     const MARKUP = `
-      <lt-dialog ${attr(boks.host)}>
+      <lt-dialog ${attr(box.host)}>
         <dialog ${attr(dialogUtenOpen)}>
-          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
-          <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
+          <h2 ${attr(box.title)}>Vedtaket er registrert</h2>
+          <div ${attr(box.body)}><p>Saken er ferdigbehandlet.</p></div>
         </dialog>
       </lt-dialog>`
 

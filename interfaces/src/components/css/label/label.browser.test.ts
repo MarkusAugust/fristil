@@ -24,11 +24,11 @@ function css(id: string, pseudo?: string) {
 describe("lt-label", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <label id="default" class="lt-label" for="a">Navn</label>
-      <label id="required-symbol" class="lt-label" data-required="symbol" for="b">E-post</label>
-      <label id="required-text" class="lt-label" data-required="text" for="e">Telefon</label>
-      <label id="optional" class="lt-label" data-optional="" for="c">Adresse</label>
-      <label id="disabled" class="lt-label" aria-disabled="true" for="d">Beskrivelse</label>
+      <label id="default" class="lt-label" for="a">Name</label>
+      <label id="required-symbol" class="lt-label" data-required="symbol" for="b">Email</label>
+      <label id="required-text" class="lt-label" data-required="text" for="e">Phone</label>
+      <label id="optional" class="lt-label" data-optional="" for="c">Address</label>
+      <label id="disabled" class="lt-label" aria-disabled="true" for="d">Description</label>
     `
   })
 
@@ -64,17 +64,17 @@ describe("lt-label", () => {
 describe("lt-label accessibility", () => {
   it("connects the label to the field in every marker", async () => {
     mount(`
-      <label class="lt-label" for="a11y-navn">Fullt navn</label>
-      <input class="lt-input" id="a11y-navn" type="text" />
+      <label class="lt-label" for="a11y-name">Full name</label>
+      <input class="lt-input" id="a11y-name" type="text" />
 
-      <label class="lt-label" data-required="symbol" for="a11y-epost">E-postadresse</label>
-      <input class="lt-input" id="a11y-epost" type="email" required />
+      <label class="lt-label" data-required="symbol" for="a11y-email">Email address</label>
+      <input class="lt-input" id="a11y-email" type="email" required />
 
-      <label class="lt-label" data-required="text" for="a11y-tlf">Telefonnummer</label>
-      <input class="lt-input" id="a11y-tlf" type="tel" required />
+      <label class="lt-label" data-required="text" for="a11y-phone">Phone number</label>
+      <input class="lt-input" id="a11y-phone" type="tel" required />
 
-      <label class="lt-label" data-optional="" for="a11y-adresse">Adresse</label>
-      <input class="lt-input" id="a11y-adresse" type="text" />
+      <label class="lt-label" data-optional="" for="a11y-address">Address</label>
+      <input class="lt-input" id="a11y-address" type="text" />
     `)
 
     await waitForPaint()
@@ -85,29 +85,30 @@ describe("lt-label accessibility", () => {
 describe("the text in the marker can be replaced", () => {
   it("is English when the variables are not set", () => {
     mount(`
-      <label id="krav" class="lt-label" data-required="text">Navn</label>
-      <label id="valg" class="lt-label" data-optional>Mellomnavn</label>
+      <label id="req" class="lt-label" data-required="text">Name</label>
+      <label id="opt" class="lt-label" data-optional>Middle name</label>
     `)
 
-    expect(css("krav", "::after").content).toBe('" (required)"')
-    expect(css("valg", "::after").content).toBe('" (optional)"')
+    expect(css("req", "::after").content).toBe('" (required)"')
+    expect(css("opt", "::after").content).toBe('" (optional)"')
   })
 
   it("reads the text from the variables, so it can be translated", () => {
     // A package cannot ship every language, so the text belongs to the app.
     // `:lang(nb)` is one way, a variable set from i18next another. The
     // values differ from the defaults, so the test fails if the variables
-    // are not read.
+    // are not read. The Norwegian texts are deliberate: they are the
+    // translation.
     mount(`
       <div style="--lt-label-required-text: ' (påkrevd)'; --lt-label-optional-text: ' (valgfri)'; --lt-label-required-symbol: ' †'">
-        <label id="krav" class="lt-label" data-required="text">Name</label>
-        <label id="valg" class="lt-label" data-optional>Middle name</label>
-        <label id="tegn" class="lt-label" data-required>Email</label>
+        <label id="req" class="lt-label" data-required="text">Name</label>
+        <label id="opt" class="lt-label" data-optional>Middle name</label>
+        <label id="sym" class="lt-label" data-required>Email</label>
       </div>
     `)
 
-    expect(css("krav", "::after").content).toBe('" (påkrevd)"')
-    expect(css("valg", "::after").content).toBe('" (valgfri)"')
-    expect(css("tegn", "::after").content).toBe('" †"')
+    expect(css("req", "::after").content).toBe('" (påkrevd)"')
+    expect(css("opt", "::after").content).toBe('" (valgfri)"')
+    expect(css("sym", "::after").content).toBe('" †"')
   })
 })

@@ -15,68 +15,68 @@ import "./pagination.css"
 describe("lt-pagination", () => {
   beforeEach(() => {
     mount(`
-      <nav aria-label="Sidenavigering">
+      <nav aria-label="Pagination">
         <ul class="lt-pagination">
-          <li><a href="#">Forrige</a></li>
-          <li><a href="#" id="en">1</a></li>
-          <li><a href="#" aria-current="page" id="to">2</a></li>
+          <li><a href="#">Previous</a></li>
+          <li><a href="#" id="one">1</a></li>
+          <li><a href="#" aria-current="page" id="two">2</a></li>
           <li><span class="lt-pagination__gap">…</span></li>
           <li><a href="#">9</a></li>
-          <li><a href="#">Neste</a></li>
+          <li><a href="#">Next</a></li>
         </ul>
       </nav>
     `)
   })
 
-  it("gir hvert nummer en stor nok treffflate", () => {
-    const rute = (
-      document.getElementById("en") as HTMLElement
+  it("gives every number a large enough target", () => {
+    const rect = (
+      document.getElementById("one") as HTMLElement
     ).getBoundingClientRect()
 
-    // WCAG 2.2 krever 24 piksler. Et nummer i en lang rekke er lett å bomme
-    // på, så her er flaten større enn minstekravet.
-    expect(rute.width).toBeGreaterThanOrEqual(24)
-    expect(rute.height).toBeGreaterThanOrEqual(24)
+    // WCAG 2.2 requires 24 pixels. A number in a long row is easy to miss,
+    // so the target here is larger than the minimum.
+    expect(rect.width).toBeGreaterThanOrEqual(24)
+    expect(rect.height).toBeGreaterThanOrEqual(24)
   })
 
-  it("markerer gjeldende side med aria-current, ikke bare farge", () => {
-    const naa = document.getElementById("to") as HTMLElement
-    const annen = document.getElementById("en") as HTMLElement
+  it("marks the current page with aria-current, not just colour", () => {
+    const current = document.getElementById("two") as HTMLElement
+    const other = document.getElementById("one") as HTMLElement
 
-    expect(naa.getAttribute("aria-current")).toBe("page")
-    expect(getComputedStyle(naa).backgroundColor).not.toBe(
-      getComputedStyle(annen).backgroundColor,
+    expect(current.getAttribute("aria-current")).toBe("page")
+    expect(getComputedStyle(current).backgroundColor).not.toBe(
+      getComputedStyle(other).backgroundColor,
     )
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(pagination()).toEqual({ class: "lt-pagination" })
     expect(pagination.gap).toBe("lt-pagination__gap")
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })
 })
 
-describe("lt-pagination med en deaktivert «Neste»", () => {
-  it("gir span-en samme boks som lenkene, og deaktivert farge", () => {
+describe("lt-pagination with a disabled “Next”", () => {
+  it("gives the span the same box as the links, and the disabled colour", () => {
     mount(`
-      <nav class="lt-pagination" aria-label="Sider">
+      <nav class="lt-pagination" aria-label="Pages">
         <ul>
-          <li><a href="#" id="lenke">2</a></li>
-          <li><span aria-disabled="true" id="neste">3</span></li>
+          <li><a href="#" id="link">2</a></li>
+          <li><span aria-disabled="true" id="next">3</span></li>
         </ul>
       </nav>
     `)
-    const boks = (id: string) =>
+    const box = (id: string) =>
       (document.getElementById(id) as HTMLElement).getBoundingClientRect()
-    const farge = (id: string) =>
+    const textColor = (id: string) =>
       getComputedStyle(document.getElementById(id) as HTMLElement).color
 
-    expect(boks("neste").height).toBe(boks("lenke").height)
-    expect(boks("neste").width).toBeGreaterThanOrEqual(boks("lenke").width)
-    expect(farge("neste")).not.toBe(farge("lenke"))
+    expect(box("next").height).toBe(box("link").height)
+    expect(box("next").width).toBeGreaterThanOrEqual(box("link").width)
+    expect(textColor("next")).not.toBe(textColor("link"))
   })
 })

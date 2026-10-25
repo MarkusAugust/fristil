@@ -1,8 +1,8 @@
-# WebAssembly slik den første standarden beskrev den (MVP), uten utvidelsene
-# Rust slår på som standard fra 1.82 (multivalue, reference-types og flere).
+# WebAssembly as the first standard described it (MVP), without the extensions
+# Rust turns on by default from 1.82 (multivalue, reference-types and more).
 #
-# Modulen skal kjøre likt i Node, i nettlesere som ikke er de nyeste, og i
-# Chicory på JVM-en. Kjernen trenger ingen av utvidelsene: den er ren tekst inn
-# og JSON ut, uten importer.
+# The module has to run the same in Node, in browsers that are not the newest,
+# and in Chicory on the JVM. The core needs none of the extensions: it is plain
+# text in and JSON out, with no imports.
 [target.wasm32-unknown-unknown]
 rustflags = ["-C", "target-cpu=mvp"]

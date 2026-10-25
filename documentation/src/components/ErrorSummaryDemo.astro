@@ -4,7 +4,7 @@ import Preview from "./Preview.astro"
 
 // The server writes the whole box: the class, the role, the tab stop and
 // the heading. The component only moves focus and handles clicks on the links.
-const feil = lt.errorSummary({ count: 2, id: "demo-oppsummering" })
+const summary = lt.errorSummary({ count: 2, id: "demo-summary" })
 ---
 
 <Preview
@@ -14,8 +14,8 @@ const feil = lt.errorSummary({ count: 2, id: "demo-oppsummering" })
 	maxWidth="34rem"
 >
 	<form id="demo-form" novalidate>
-		<lt-error-summary {...feil.host} data-autofocus="false">
-			<h2 {...feil.title}>The form has two errors</h2>
+		<lt-error-summary {...summary.host} data-autofocus="false">
+			<h2 {...summary.title}>The form has two errors</h2>
 			<ul class="lt-list">
 				<li><a href="#demo-email">Enter an email address with an @ sign</a></li>
 				<li><a href="#demo-date">Enter the date as day, month and year</a></li>

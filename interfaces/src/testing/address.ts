@@ -28,9 +28,9 @@ export async function setAddress(hash: string): Promise<void> {
 export async function goTo(hash: string): Promise<void> {
   const fragment = hash.replace(/^#/, "")
   if (location.hash.slice(1) === fragment) return
-  const endret = new Promise<void>((ferdig) =>
-    window.addEventListener("hashchange", () => ferdig(), { once: true }),
+  const changed = new Promise<void>((done) =>
+    window.addEventListener("hashchange", () => done(), { once: true }),
   )
   location.hash = fragment
-  await endret
+  await changed
 }

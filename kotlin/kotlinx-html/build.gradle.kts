@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm")
 }
 
-// Samme versjon og navnerom som hovedpakken: io.github.markusaugust:lo-tek-kotlinx-html.
+// Same version and group as the main package: io.github.markusaugust:lo-tek-kotlinx-html.
 group = rootProject.group
 version = rootProject.version
 base.archivesName = "lo-tek-kotlinx-html"

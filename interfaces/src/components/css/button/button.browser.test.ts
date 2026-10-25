@@ -69,20 +69,20 @@ describe("lt-button variants", () => {
     expect(disabled.backgroundColor).toBe(color("--lt-color-disabled-surface"))
     expect(disabled.borderTopColor).toBe(color("--lt-color-disabled-surface"))
     expect(disabled.color).toBe(color("--lt-color-disabled-text"))
-    // Markøren vises bare hvis elementet treffes av pekeren
+    // The cursor only shows if the pointer hits the element
     expect(disabled.pointerEvents).toBe("auto")
   })
 })
 
-describe("lt-button tilgjengelighet", () => {
-  it("har nok kontrast i alle varianter", async () => {
+describe("lt-button accessibility", () => {
+  it("has enough contrast in every variant", async () => {
     mount(`
-      <button class="lt-button">Send søknad</button>
-      <button class="lt-button" data-variant="secondary">Lagre utkast</button>
-      <button class="lt-button" data-variant="ghost">Legg til vedlegg</button>
-      <button class="lt-button" data-variant="danger">Slett søknad</button>
-      <button class="lt-button" disabled>Send søknad</button>
-      <a class="lt-button" href="/oversikt">Gå til oversikten</a>
+      <button class="lt-button">Send application</button>
+      <button class="lt-button" data-variant="secondary">Save draft</button>
+      <button class="lt-button" data-variant="ghost">Add attachment</button>
+      <button class="lt-button" data-variant="danger">Delete application</button>
+      <button class="lt-button" disabled>Send application</button>
+      <a class="lt-button" href="/overview">Go to the overview</a>
     `)
 
     await waitForPaint()
@@ -90,21 +90,21 @@ describe("lt-button tilgjengelighet", () => {
   })
 })
 
-describe("lt-button deaktivert", () => {
-  it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
-    mount(`<button class="lt-button" disabled>Av</button>`)
+describe("lt-button disabled", () => {
+  it("shows the not-allowed cursor, and is actually hit by the mouse", () => {
+    mount(`<button class="lt-button" disabled>Off</button>`)
 
     const element = document.querySelector("button") as HTMLElement
-    const ramme = element.getBoundingClientRect()
+    const rect = element.getBoundingClientRect()
 
     expect(getComputedStyle(element).cursor).toBe("not-allowed")
 
-    // cursor har ingen virkning hvis elementet ikke treffes av pekeren.
-    // Alle disse hadde pointer-events: none, så markøren ble aldri vist.
+    // cursor has no effect if the pointer does not hit the element. All of
+    // these had pointer-events: none, so the cursor was never shown.
     expect(
       document.elementFromPoint(
-        ramme.x + ramme.width / 2,
-        ramme.y + ramme.height / 2,
+        rect.x + rect.width / 2,
+        rect.y + rect.height / 2,
       ),
     ).toBe(element)
   })

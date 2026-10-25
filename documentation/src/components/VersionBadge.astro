@@ -1,5 +1,5 @@
 ---
-import pakke from "../../../interfaces/package.json" with { type: "json" }
+import pkg from "../../../interfaces/package.json" with { type: "json" }
 
 /*
  * The version is read from the package when the site is built, so the badge
@@ -8,7 +8,7 @@ import pakke from "../../../interfaces/package.json" with { type: "json" }
  * HTML. The name starts with the visible text, so someone using voice control
  * who says "v0.30.0" hits the link.
  */
-const { version } = pakke
+const { version } = pkg
 ---
 
 <a

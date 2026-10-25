@@ -39,8 +39,8 @@ import Preview from "./Preview.astro"
 
 	const surface = document.getElementById("demo-confirm")?.shadowRoot
 	const dialog = surface?.getElementById("demo-dialog") as HTMLDialogElement | null
-	const meldinger = surface?.getElementById("demo-messages") as
-		| (HTMLElement & { show(tekst: string, valg?: { color?: string }): void })
+	const messages = surface?.getElementById("demo-messages") as
+		| (HTMLElement & { show(text: string, options?: { color?: string }): void })
 		| null
 
 	surface?.getElementById("demo-delete")?.addEventListener("click", () => {
@@ -55,6 +55,6 @@ import Preview from "./Preview.astro"
 
 		// The action has been carried out. The message confirms it, but is not
 		// the place for an undo button: it disappears.
-		meldinger?.show("The application has been deleted", { color: "success" })
+		messages?.show("The application has been deleted", { color: "success" })
 	})
 </script>

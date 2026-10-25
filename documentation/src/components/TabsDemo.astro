@@ -6,13 +6,13 @@ import Preview from "./Preview.astro"
 // and the classes. The roles, the tab stops and which panels are hidden are
 // written by the component, so without JavaScript the page is a table of
 // contents.
-const faner = lt.tabs({
+const tabSet = lt.tabs({
   id: "demo",
   keys: ["application", "attachments", "messages"],
   label: "Parts of the case",
 })
-const titler = ["Application", "Attachments", "Messages"]
-const innhold = [
+const titles = ["Application", "Attachments", "Messages"]
+const contents = [
   "The application was sent on 4 March 2026. Case number 2026-0481.",
   "Three attachments have been uploaded. The last one arrived on 6 March.",
   "No messages in this case yet.",
@@ -21,15 +21,15 @@ const innhold = [
 
 <Preview id="demo-tabs" styles={["tabs", "paragraph"]} maxWidth="34rem">
 	<lt-tabs>
-		<ul {...faner.list}>
-			{faner.tabs.map((fane, i) => <li><a {...fane}>{titler[i]}</a></li>)}
+		<ul {...tabSet.list}>
+			{tabSet.tabs.map((tab, i) => <li><a {...tab}>{titles[i]}</a></li>)}
 		</ul>
 
 		{
-			faner.panels.map((panel, i) => (
+			tabSet.panels.map((panel, i) => (
 				<section {...panel}>
-					<h3 {...faner.headings[i]}>{titler[i]}</h3>
-					<p class="lt-paragraph">{innhold[i]}</p>
+					<h3 {...tabSet.headings[i]}>{titles[i]}</h3>
+					<p class="lt-paragraph">{contents[i]}</p>
 				</section>
 			))
 		}

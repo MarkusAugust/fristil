@@ -15,25 +15,25 @@ import "../../../tokens/tokens.css"
 import "./suggestion.css"
 import "../../css/sr-only/sr-only.css"
 
-const KOMMUNER = ["Bergen", "Bodø", "Oslo", "Tromsø"]
-const NOKLER = ["bergen", "bodo", "oslo", "tromso"]
+const MUNICIPALITIES = ["Bergen", "Bodø", "Oslo", "Tromsø"]
+const KEYS = ["bergen", "bodo", "oslo", "tromso"]
 
 /** The markup the server sends. The field and the list exist before the script has run. */
-const FORSLAG = suggestion({
-  id: "kommune",
-  keys: NOKLER,
+const SUGGESTION = suggestion({
+  id: "municipality",
+  keys: KEYS,
   help: true,
 })
 
-async function tegn() {
+async function paint() {
   await customElements.whenDefined("lt-suggestion")
   await waitForPaint()
   return document.querySelector("lt-suggestion") as LtSuggestion
 }
 
-function skriv(felt: LtSuggestion, tekst: string) {
-  const input = felt.querySelector("input") as HTMLInputElement
-  input.value = tekst
+function typeInto(field: LtSuggestion, text: string) {
+  const input = field.querySelector("input") as HTMLInputElement
+  input.value = text
   input.dispatchEvent(new Event("input", { bubbles: true }))
 }
 
@@ -45,19 +45,19 @@ describe("lt-suggestion", () => {
   beforeEach(async () => {
     mount(`
       <lt-suggestion>
-        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <label ${attr(SUGGESTION.label)}>Municipality</label>
         <div>
-          <input ${attr(FORSLAG.control)} name="kommune">
-          <ul ${attr(FORSLAG.list)}>
-            ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("\n            ")}
+          <input ${attr(SUGGESTION.control)} name="municipality">
+          <ul ${attr(SUGGESTION.list)}>
+            ${SUGGESTION.options.map((o, i) => `<li ${attr(o)}>${MUNICIPALITIES[i]}</li>`).join("\n            ")}
           </ul>
-          <p ${attr(FORSLAG.empty)} hidden>Ingen treff</p>
-          <span ${attr(FORSLAG.status)}></span>
+          <p ${attr(SUGGESTION.empty)} hidden>No matches</p>
+          <span ${attr(SUGGESTION.status)}></span>
         </div>
-        <p class="lt-help-text" ${attr(FORSLAG.help)}>Begynn å skrive</p>
+        <p class="lt-help-text" ${attr(SUGGESTION.help)}>Start typing</p>
       </lt-suggestion>
     `)
-    await tegn()
+    await paint()
   })
 
   it("is a real field before the script has run", () => {
@@ -66,7 +66,7 @@ describe("lt-suggestion", () => {
     const input = document.querySelector("input") as HTMLInputElement
     const label = document.querySelector("label") as HTMLLabelElement
 
-    expect(input.name).toBe("kommune")
+    expect(input.name).toBe("municipality")
     expect(label.htmlFor).toBe(input.id)
     expect(input.getAttribute("role")).toBe("combobox")
     expect(input.getAttribute("aria-autocomplete")).toBe("list")
@@ -80,114 +80,114 @@ describe("lt-suggestion", () => {
     // `data-preserve-attr` comes back here, someone has revived the contract
     // the template had to copy from the documentation.
     const input = document.querySelector("input") as HTMLInputElement
-    const liste = document.querySelector("[role='listbox']") as HTMLElement
-    const valg = document.querySelectorAll("[role='option']")
+    const list = document.querySelector("[role='listbox']") as HTMLElement
+    const options = document.querySelectorAll("[role='option']")
 
     expect(input.hasAttribute("data-preserve-attr")).toBe(false)
-    expect(liste.hasAttribute("data-preserve-attr")).toBe(false)
-    for (const v of valg)
+    expect(list.hasAttribute("data-preserve-attr")).toBe(false)
+    for (const v of options)
       expect(v.hasAttribute("data-preserve-attr")).toBe(false)
   })
 
   it("narrows the suggestions while the user types", async () => {
-    const felt = await tegn()
-    skriv(felt, "bo")
-    await tegn()
+    const field = await paint()
+    typeInto(field, "bo")
+    await paint()
 
-    const synlige = [
-      ...felt.querySelectorAll<HTMLElement>("[role='option']"),
+    const visible = [
+      ...field.querySelectorAll<HTMLElement>("[role='option']"),
     ].filter((o) => !o.hidden)
 
-    expect(synlige.map((o) => o.textContent?.trim())).toEqual(["Bodø"])
+    expect(visible.map((o) => o.textContent?.trim())).toEqual(["Bodø"])
   })
 
   it("announces the number of matches to screen readers", async () => {
-    const felt = await tegn()
-    skriv(felt, "bod")
-    await tegn()
+    const field = await paint()
+    typeInto(field, "bod")
+    await paint()
 
-    const status = felt.querySelector("[role='status']") as HTMLElement
+    const status = field.querySelector("[role='status']") as HTMLElement
     expect(status.textContent).toBe("One match")
   })
 
   it("moves the highlight with the arrow keys and points to it with aria", async () => {
-    const felt = await tegn()
-    const input = felt.querySelector("input") as HTMLInputElement
+    const field = await paint()
+    const input = field.querySelector("input") as HTMLInputElement
 
     input.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
     )
-    await tegn()
+    await paint()
 
-    const aktiv = felt.querySelector("[aria-selected='true']") as HTMLElement
-    expect(aktiv.textContent?.trim()).toBe("Bergen")
+    const active = field.querySelector("[aria-selected='true']") as HTMLElement
+    expect(active.textContent?.trim()).toBe("Bergen")
     // Focus stays in the field. aria-activedescendant is what makes the
     // screen reader announce the option anyway.
-    expect(input.getAttribute("aria-activedescendant")).toBe(aktiv.id)
+    expect(input.getAttribute("aria-activedescendant")).toBe(active.id)
   })
 
   it("chooses with Enter and reports it", async () => {
-    const felt = await tegn()
-    const input = felt.querySelector("input") as HTMLInputElement
-    const valgt: string[] = []
-    felt.addEventListener("suggestion-select", (hendelse) => {
-      valgt.push(hendelse.detail.value)
+    const field = await paint()
+    const input = field.querySelector("input") as HTMLInputElement
+    const chosen: string[] = []
+    field.addEventListener("suggestion-select", (event) => {
+      chosen.push(event.detail.value)
     })
 
     input.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
     )
-    await tegn()
+    await paint()
     input.dispatchEvent(
       new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
     )
-    await tegn()
+    await paint()
 
     expect(input.value).toBe("Bergen")
-    expect(valgt).toEqual(["Bergen"])
+    expect(chosen).toEqual(["Bergen"])
     expect(input.getAttribute("aria-expanded")).toBe("false")
   })
 
   it("says so when nothing matches", async () => {
-    const felt = await tegn()
-    skriv(felt, "xyz")
-    await tegn()
+    const field = await paint()
+    typeInto(field, "xyz")
+    await paint()
 
-    const tom = felt.querySelector(".lt-suggestion__empty") as HTMLElement
-    expect(tom.hidden).toBe(false)
+    const empty = field.querySelector(".lt-suggestion__empty") as HTMLElement
+    expect(empty.hidden).toBe(false)
     expect(
-      (felt.querySelector("[role='status']") as HTMLElement).textContent,
+      (field.querySelector("[role='status']") as HTMLElement).textContent,
     ).toBe("No matches")
   })
 
   it("closes the list on Escape", async () => {
-    const felt = await tegn()
-    const input = felt.querySelector("input") as HTMLInputElement
-    skriv(felt, "bo")
-    await tegn()
+    const field = await paint()
+    const input = field.querySelector("input") as HTMLInputElement
+    typeInto(field, "bo")
+    await paint()
 
     input.dispatchEvent(
       new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
     )
-    await tegn()
+    await paint()
 
-    const liste = felt.querySelector("[role='listbox']") as HTMLElement
-    expect(liste.hidden).toBe(true)
+    const list = field.querySelector("[role='listbox']") as HTMLElement
+    expect(list.hidden).toBe(true)
     expect(input.getAttribute("aria-expanded")).toBe("false")
   })
 
   it("does not filter when something else already has", async () => {
-    const felt = await tegn()
-    felt.setAttribute("prefiltered", "")
-    skriv(felt, "xyz")
-    await tegn()
+    const field = await paint()
+    field.setAttribute("prefiltered", "")
+    typeInto(field, "xyz")
+    await paint()
 
     // The server or React has already decided what is shown. Then the web
     // component must keep its hands off.
-    const synlige = [
-      ...felt.querySelectorAll<HTMLElement>("[role='option']"),
+    const visible = [
+      ...field.querySelectorAll<HTMLElement>("[role='option']"),
     ].filter((o) => !o.hidden)
-    expect(synlige).toHaveLength(4)
+    expect(visible).toHaveLength(4)
   })
 
   it("can be set as a property, the way React 19 does it", async () => {
@@ -197,13 +197,13 @@ describe("lt-suggestion", () => {
      * "Cannot set property", the attribute never landed, and the web component
      * hid what React had just rendered.
      */
-    const felt = await tegn()
+    const field = await paint()
 
-    felt.prefiltered = true
-    expect(felt.hasAttribute("prefiltered")).toBe(true)
+    field.prefiltered = true
+    expect(field.hasAttribute("prefiltered")).toBe(true)
 
-    felt.prefiltered = false
-    expect(felt.hasAttribute("prefiltered")).toBe(false)
+    field.prefiltered = false
+    expect(field.hasAttribute("prefiltered")).toBe(false)
   })
 
   it("announces the number of matches when whoever filtered has rendered the list", async () => {
@@ -214,21 +214,21 @@ describe("lt-suggestion", () => {
      * left. It was not written anywhere, and people who cannot see the screen
      * noticed.
      */
-    const felt = await tegn()
-    felt.prefiltered = true
-    const status = felt.querySelector("[role='status']") as HTMLElement
+    const field = await paint()
+    field.prefiltered = true
+    const status = field.querySelector("[role='status']") as HTMLElement
 
-    skriv(felt, "b")
-    await tegn()
+    typeInto(field, "b")
+    await paint()
     expect(
       status.textContent,
       "announced a count before whoever filtered had answered",
     ).toBe("")
 
     // The way a server or React would do it: everything except one is hidden.
-    const valg = [...felt.querySelectorAll<HTMLElement>("[role='option']")]
-    for (const [i, alternativ] of valg.entries()) alternativ.hidden = i !== 0
-    await tegn()
+    const options = [...field.querySelectorAll<HTMLElement>("[role='option']")]
+    for (const [i, option] of options.entries()) option.hidden = i !== 0
+    await paint()
 
     expect(status.textContent).toBe("One match")
   })
@@ -240,32 +240,32 @@ describe("lt-suggestion", () => {
      * from "the answer has not arrived yet", and so made the message visible
      * again in the middle of an asynchronous search, with no way around it.
      */
-    const felt = await tegn()
-    felt.prefiltered = true
-    const tom = felt.querySelector(".lt-suggestion__empty") as HTMLElement
+    const field = await paint()
+    field.prefiltered = true
+    const empty = field.querySelector(".lt-suggestion__empty") as HTMLElement
 
     // The app is waiting for an answer: no options, and the message stays hidden.
-    for (const alternativ of felt.querySelectorAll("[role='option']"))
-      alternativ.remove()
-    skriv(felt, "xyz")
-    await tegn()
-    expect(tom.hidden, 'the web component showed "No matches" itself').toBe(
+    for (const option of field.querySelectorAll("[role='option']"))
+      option.remove()
+    typeInto(field, "xyz")
+    await paint()
+    expect(empty.hidden, 'the web component showed "No matches" itself').toBe(
       true,
     )
 
     // The app answers that nothing matched, and shows the message itself.
-    tom.hidden = false
-    skriv(felt, "xyzæ")
-    await tegn()
-    expect(tom.hidden, 'the web component hid the app\'s "No matches"').toBe(
+    empty.hidden = false
+    typeInto(field, "xyzæ")
+    await paint()
+    expect(empty.hidden, 'the web component hid the app\'s "No matches"').toBe(
       false,
     )
   })
 
   it("has no accessibility violations with the list open", async () => {
-    const felt = await tegn()
-    skriv(felt, "o")
-    await tegn()
+    const field = await paint()
+    typeInto(field, "o")
+    await paint()
 
     await expectNoAccessibilityViolations()
   })
@@ -287,55 +287,55 @@ describe("lt-suggestion waiting for the first answer", () => {
   })
 
   beforeEach(async () => {
-    const tomt = suggestion({ id: "kommune", keys: [] })
+    const noKeys = suggestion({ id: "municipality", keys: [] })
 
     mount(`
       <lt-suggestion prefiltered>
-        <label ${attr(tomt.label)}>Kommune</label>
+        <label ${attr(noKeys.label)}>Municipality</label>
         <div>
-          <input ${attr(tomt.control)} name="kommune">
-          <ul ${attr(tomt.list)}></ul>
-          <p ${attr(tomt.empty)}>Ingen treff</p>
-          <span ${attr(tomt.status)}></span>
+          <input ${attr(noKeys.control)} name="municipality">
+          <ul ${attr(noKeys.list)}></ul>
+          <p ${attr(noKeys.empty)}>No matches</p>
+          <span ${attr(noKeys.status)}></span>
         </div>
       </lt-suggestion>
     `)
-    await tegn()
+    await paint()
   })
 
   it("says nothing on focus", async () => {
-    const felt = await tegn()
-    const input = felt.querySelector("input") as HTMLInputElement
+    const field = await paint()
+    const input = field.querySelector("input") as HTMLInputElement
 
     input.dispatchEvent(new FocusEvent("focus"))
-    await tegn()
+    await paint()
 
-    const status = felt.querySelector("[role='status']") as HTMLElement
+    const status = field.querySelector("[role='status']") as HTMLElement
     expect(status.textContent).toBe("")
     // The builder function no longer writes `hidden` on an empty list. What
     // keeps the message away is that an empty list below an empty field is not
     // opened, and that the stylesheet hides the message after a closed list.
-    const liste = felt.querySelector("ul") as HTMLElement
-    const tom = felt.querySelector(".lt-suggestion__empty") as HTMLElement
-    expect(liste.hidden, "an empty list opened on focus").toBe(true)
+    const list = field.querySelector("ul") as HTMLElement
+    const empty = field.querySelector(".lt-suggestion__empty") as HTMLElement
+    expect(list.hidden, "an empty list opened on focus").toBe(true)
     expect(
-      getComputedStyle(tom).display,
+      getComputedStyle(empty).display,
       'showed "No matches" before anyone had searched',
     ).toBe("none")
   })
 
   it("reports when the server has sent the list", async () => {
-    const felt = await tegn()
-    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+    const field = await paint()
+    const list = field.querySelector("[role='listbox']") as HTMLElement
 
     // The way a patch would do it.
-    liste.innerHTML = `
-      <li class="lt-suggestion__option" id="kommune-option-bergen" role="option">Bergen</li>
-      <li class="lt-suggestion__option" id="kommune-option-bodo" role="option">Bodø</li>
+    list.innerHTML = `
+      <li class="lt-suggestion__option" id="municipality-option-bergen" role="option">Bergen</li>
+      <li class="lt-suggestion__option" id="municipality-option-bodo" role="option">Bodø</li>
     `
-    await tegn()
+    await paint()
 
-    const status = felt.querySelector("[role='status']") as HTMLElement
+    const status = field.querySelector("[role='status']") as HTMLElement
     expect(status.textContent).toBe("2 matches")
   })
 })
@@ -354,35 +354,37 @@ describe("lt-suggestion with the highlight from the server", () => {
   })
 
   beforeEach(async () => {
-    const fra = suggestion({
-      id: "kommune",
-      keys: NOKLER,
+    const fromServer = suggestion({
+      id: "municipality",
+      keys: KEYS,
       open: true,
       activeIndex: 2,
     })
 
     mount(`
       <lt-suggestion>
-        <label ${attr(fra.label)}>Kommune</label>
+        <label ${attr(fromServer.label)}>Municipality</label>
         <div>
-          <input ${attr(fra.control)} name="kommune">
-          <ul ${attr(fra.list)}>
-            ${fra.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("\n            ")}
+          <input ${attr(fromServer.control)} name="municipality">
+          <ul ${attr(fromServer.list)}>
+            ${fromServer.options.map((o, i) => `<li ${attr(o)}>${MUNICIPALITIES[i]}</li>`).join("\n            ")}
           </ul>
-          <p ${attr(fra.empty)}>Ingen treff</p>
-          <span ${attr(fra.status)}></span>
+          <p ${attr(fromServer.empty)}>No matches</p>
+          <span ${attr(fromServer.status)}></span>
         </div>
       </lt-suggestion>
     `)
-    await tegn()
+    await paint()
   })
 
   it("moves on from what the server highlighted", async () => {
-    const felt = document.querySelector("lt-suggestion") as LtSuggestion
-    const input = felt.querySelector("input") as HTMLInputElement
-    const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
+    const field = document.querySelector("lt-suggestion") as LtSuggestion
+    const input = field.querySelector("input") as HTMLInputElement
+    const options = [
+      ...field.querySelectorAll("[role='option']"),
+    ] as HTMLElement[]
 
-    expect(valg[2].getAttribute("aria-selected")).toBe("true")
+    expect(options[2].getAttribute("aria-selected")).toBe("true")
 
     input.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
@@ -390,10 +392,10 @@ describe("lt-suggestion with the highlight from the server", () => {
     await waitForPaint()
 
     expect(
-      valg[3].getAttribute("aria-selected"),
+      options[3].getAttribute("aria-selected"),
       "the arrow key did not move to the option after the one the server highlighted",
     ).toBe("true")
-    expect(input.getAttribute("aria-activedescendant")).toBe(valg[3].id)
+    expect(input.getAttribute("aria-activedescendant")).toBe(options[3].id)
   })
 })
 
@@ -405,25 +407,27 @@ describe("lt-suggestion with arrow up", () => {
   beforeEach(async () => {
     mount(`
       <lt-suggestion>
-        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <label ${attr(SUGGESTION.label)}>Municipality</label>
         <div>
-          <input ${attr(FORSLAG.control)} name="kommune">
-          <ul ${attr(FORSLAG.list)}>
-            ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("\n            ")}
+          <input ${attr(SUGGESTION.control)} name="municipality">
+          <ul ${attr(SUGGESTION.list)}>
+            ${SUGGESTION.options.map((o, i) => `<li ${attr(o)}>${MUNICIPALITIES[i]}</li>`).join("\n            ")}
           </ul>
-          <p ${attr(FORSLAG.empty)}>Ingen treff</p>
-          <span ${attr(FORSLAG.status)}></span>
+          <p ${attr(SUGGESTION.empty)}>No matches</p>
+          <span ${attr(SUGGESTION.status)}></span>
         </div>
       </lt-suggestion>
     `)
-    await tegn()
+    await paint()
   })
 
   it("opens the list and goes to the last option", async () => {
-    const felt = document.querySelector("lt-suggestion") as LtSuggestion
-    const input = felt.querySelector("input") as HTMLInputElement
-    const liste = felt.querySelector("[role='listbox']") as HTMLElement
-    const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
+    const field = document.querySelector("lt-suggestion") as LtSuggestion
+    const input = field.querySelector("input") as HTMLInputElement
+    const list = field.querySelector("[role='listbox']") as HTMLElement
+    const options = [
+      ...field.querySelectorAll("[role='option']"),
+    ] as HTMLElement[]
 
     input.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }),
@@ -432,15 +436,15 @@ describe("lt-suggestion with arrow up", () => {
 
     // Without the opening, aria-activedescendant pointed into a list the
     // field at the same time reported as closed.
-    expect(liste.hidden, "the list was not opened").toBe(false)
+    expect(list.hidden, "the list was not opened").toBe(false)
     expect(input.getAttribute("aria-expanded")).toBe("true")
 
-    const siste = valg[valg.length - 1]
+    const last = options[options.length - 1]
     expect(
-      siste.getAttribute("aria-selected"),
+      last.getAttribute("aria-selected"),
       "arrow up did not go to the last option",
     ).toBe("true")
-    expect(input.getAttribute("aria-activedescendant")).toBe(siste.id)
+    expect(input.getAttribute("aria-activedescendant")).toBe(last.id)
   })
 })
 
@@ -449,41 +453,41 @@ describe("lt-suggestion closes and cleans up", () => {
     defineLtSuggestion()
   })
 
-  function markup(ekstraVert = "") {
+  function markup(extraHost = "") {
     return `
-      <lt-suggestion ${ekstraVert}>
-        <label ${attr(FORSLAG.label)}>Kommune</label>
+      <lt-suggestion ${extraHost}>
+        <label ${attr(SUGGESTION.label)}>Municipality</label>
         <div>
-          <input ${attr(FORSLAG.control)} name="kommune">
-          <ul ${attr(FORSLAG.list)}>
-            ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("")}
+          <input ${attr(SUGGESTION.control)} name="municipality">
+          <ul ${attr(SUGGESTION.list)}>
+            ${SUGGESTION.options.map((o, i) => `<li ${attr(o)}>${MUNICIPALITIES[i]}</li>`).join("")}
           </ul>
-          <p ${attr(FORSLAG.empty)}>Ingen treff</p>
-          <span ${attr(FORSLAG.status)}></span>
+          <p ${attr(SUGGESTION.empty)}>No matches</p>
+          <span ${attr(SUGGESTION.status)}></span>
         </div>
       </lt-suggestion>
-      <input id="neste-felt" />
+      <input id="next-field" />
     `
   }
 
-  const tast = (input: HTMLInputElement, key: string) =>
+  const press = (input: HTMLInputElement, key: string) =>
     input.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }))
 
   it("closes the list when focus leaves the field", async () => {
     // Tab moved on to the next field, and the list stayed over it with
     // `aria-expanded="true"` on a field that no longer had focus.
     mount(markup())
-    const felt = await tegn()
-    const input = felt.querySelector("input") as HTMLInputElement
-    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+    const field = await paint()
+    const input = field.querySelector("input") as HTMLInputElement
+    const list = field.querySelector("[role='listbox']") as HTMLElement
 
     input.focus()
-    await tegn()
-    expect(liste.hidden).toBe(false)
-    ;(document.getElementById("neste-felt") as HTMLInputElement).focus()
-    await tegn()
+    await paint()
+    expect(list.hidden).toBe(false)
+    ;(document.getElementById("next-field") as HTMLInputElement).focus()
+    await paint()
 
-    expect(liste.hidden).toBe(true)
+    expect(list.hidden).toBe(true)
     expect(input.getAttribute("aria-expanded")).toBe("false")
   })
 
@@ -493,111 +497,111 @@ describe("lt-suggestion closes and cleans up", () => {
     // must close then too.
     mount(`
       <lt-suggestion>
-        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <label ${attr(SUGGESTION.label)}>Municipality</label>
         <div>
-          <input ${attr(FORSLAG.control)} name="kommune">
-          <button type="button" id="tom-knapp">Tøm</button>
-          <ul ${attr(FORSLAG.list)}>
-            ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("")}
+          <input ${attr(SUGGESTION.control)} name="municipality">
+          <button type="button" id="clear-button">Clear</button>
+          <ul ${attr(SUGGESTION.list)}>
+            ${SUGGESTION.options.map((o, i) => `<li ${attr(o)}>${MUNICIPALITIES[i]}</li>`).join("")}
           </ul>
-          <span ${attr(FORSLAG.status)}></span>
+          <span ${attr(SUGGESTION.status)}></span>
         </div>
       </lt-suggestion>
-      <input id="neste-felt" />
+      <input id="next-field" />
     `)
-    const felt = await tegn()
-    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+    const field = await paint()
+    const list = field.querySelector("[role='listbox']") as HTMLElement
 
-    ;(felt.querySelector("input") as HTMLInputElement).focus()
-    await tegn()
-    ;(document.getElementById("tom-knapp") as HTMLElement).focus()
-    await tegn()
-    expect(liste.hidden, "the list closed for a button inside").toBe(false)
-    ;(document.getElementById("neste-felt") as HTMLElement).focus()
-    await tegn()
+    ;(field.querySelector("input") as HTMLInputElement).focus()
+    await paint()
+    ;(document.getElementById("clear-button") as HTMLElement).focus()
+    await paint()
+    expect(list.hidden, "the list closed for a button inside").toBe(false)
+    ;(document.getElementById("next-field") as HTMLElement).focus()
+    await paint()
 
-    expect(liste.hidden).toBe(true)
+    expect(list.hidden).toBe(true)
   })
 
   it("keeps the list open when the user clicks the field inside a shadow root", async () => {
     // The documentation's previews live in a shadow root. The listener on
     // `document` saw `event.target` retargeted to the shadow host, counted the
     // click as outside, and closed the list in the same click that opened it.
-    const vert = document.createElement("div")
-    document.body.append(vert)
-    const rot = vert.attachShadow({ mode: "open" })
-    rot.innerHTML = markup()
+    const host = document.createElement("div")
+    document.body.append(host)
+    const root = host.attachShadow({ mode: "open" })
+    root.innerHTML = markup()
     await customElements.whenDefined("lt-suggestion")
     await waitForPaint()
 
-    const input = rot.querySelector("input") as HTMLInputElement
-    const liste = rot.querySelector("[role='listbox']") as HTMLElement
+    const input = root.querySelector("input") as HTMLInputElement
+    const list = root.querySelector("[role='listbox']") as HTMLElement
     input.focus()
     input.dispatchEvent(
       new MouseEvent("click", { bubbles: true, composed: true }),
     )
     await waitForPaint()
 
-    expect(liste.hidden, "the list was closed by the click in the field").toBe(
+    expect(list.hidden, "the list was closed by the click in the field").toBe(
       false,
     )
-    vert.remove()
+    host.remove()
   })
 
   it('hides "No matches" together with the list', async () => {
     // The empty message is a sibling of the list, not a child, so `hidden` on
     // the list did not hide it, and it stayed below a closed field.
     mount(markup())
-    const felt = await tegn()
-    const input = felt.querySelector("input") as HTMLInputElement
-    const tom = felt.querySelector(".lt-suggestion__empty") as HTMLElement
+    const field = await paint()
+    const input = field.querySelector("input") as HTMLInputElement
+    const empty = field.querySelector(".lt-suggestion__empty") as HTMLElement
 
-    skriv(felt, "xyz")
-    await tegn()
-    expect(tom.hidden).toBe(false)
+    typeInto(field, "xyz")
+    await paint()
+    expect(empty.hidden).toBe(false)
 
-    tast(input, "Escape")
-    await tegn()
-    expect(tom.hidden).toBe(true)
-    expect(getComputedStyle(tom).display).toBe("none")
+    press(input, "Escape")
+    await paint()
+    expect(empty.hidden).toBe(true)
+    expect(getComputedStyle(empty).display).toBe("none")
   })
 
   it("does not open the list again when server-controlled is set and removed", async () => {
     mount(markup())
-    const felt = await tegn()
-    const input = felt.querySelector("input") as HTMLInputElement
-    const liste = felt.querySelector("[role='listbox']") as HTMLElement
-    tast(input, "ArrowDown")
-    await tegn()
-    expect(liste.hidden).toBe(false)
+    const field = await paint()
+    const input = field.querySelector("input") as HTMLInputElement
+    const list = field.querySelector("[role='listbox']") as HTMLElement
+    press(input, "ArrowDown")
+    await paint()
+    expect(list.hidden).toBe(false)
 
     // The server takes over and closes the list. Then it lets go again. Had
     // the web component remembered that the list was open, it would have
     // opened it again on the next patch.
-    felt.setAttribute("server-controlled", "")
-    liste.hidden = true
+    field.setAttribute("server-controlled", "")
+    list.hidden = true
     input.setAttribute("aria-expanded", "false")
-    await tegn()
-    felt.removeAttribute("server-controlled")
+    await paint()
+    field.removeAttribute("server-controlled")
     input.setAttribute("aria-expanded", "false")
-    await tegn()
+    await paint()
 
-    expect(liste.hidden).toBe(true)
+    expect(list.hidden).toBe(true)
     expect(input.getAttribute("aria-expanded")).toBe("false")
   })
 
   it("clears the highlight when the highlighted option is filtered out, also with server-controlled", async () => {
     mount(markup("server-controlled"))
-    const felt = await tegn()
-    const input = felt.querySelector("input") as HTMLInputElement
+    const field = await paint()
+    const input = field.querySelector("input") as HTMLInputElement
 
-    tast(input, "ArrowDown")
-    await tegn()
-    const bergen = felt.querySelector("[role='option']") as HTMLElement
+    press(input, "ArrowDown")
+    await paint()
+    const bergen = field.querySelector("[role='option']") as HTMLElement
     expect(bergen.getAttribute("aria-selected")).toBe("true")
 
-    skriv(felt, "o")
-    await tegn()
+    typeInto(field, "o")
+    await paint()
 
     expect(bergen.hidden).toBe(true)
     expect(bergen.getAttribute("aria-selected")).toBe("false")
@@ -607,30 +611,28 @@ describe("lt-suggestion closes and cleans up", () => {
   it("finds the options by role, not by class", async () => {
     mount(`
       <lt-suggestion>
-        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <label ${attr(SUGGESTION.label)}>Municipality</label>
         <div>
-          <input ${attr(FORSLAG.control)} name="kommune">
-          <ul ${attr(FORSLAG.list)}>
-            <li id="egen-0" role="option">Bergen</li>
-            <li id="egen-1" role="option">Oslo</li>
+          <input ${attr(SUGGESTION.control)} name="municipality">
+          <ul ${attr(SUGGESTION.list)}>
+            <li id="own-0" role="option">Bergen</li>
+            <li id="own-1" role="option">Oslo</li>
           </ul>
-          <span ${attr(FORSLAG.status)}></span>
+          <span ${attr(SUGGESTION.status)}></span>
         </div>
       </lt-suggestion>
     `)
-    const felt = await tegn()
-    const input = felt.querySelector("input") as HTMLInputElement
+    const field = await paint()
+    const input = field.querySelector("input") as HTMLInputElement
 
-    tast(input, "ArrowDown")
-    await tegn()
-    expect(input.getAttribute("aria-activedescendant")).toBe("egen-0")
+    press(input, "ArrowDown")
+    await paint()
+    expect(input.getAttribute("aria-activedescendant")).toBe("own-0")
 
-    skriv(felt, "os")
-    await tegn()
-    expect((document.getElementById("egen-0") as HTMLElement).hidden).toBe(true)
-    expect((document.getElementById("egen-1") as HTMLElement).hidden).toBe(
-      false,
-    )
+    typeInto(field, "os")
+    await paint()
+    expect((document.getElementById("own-0") as HTMLElement).hidden).toBe(true)
+    expect((document.getElementById("own-1") as HTMLElement).hidden).toBe(false)
   })
 
   it("leaves a narrower filter in the app alone", async () => {
@@ -640,32 +642,32 @@ describe("lt-suggestion closes and cleans up", () => {
      * web component's filter hides none of it. The claim is in the
      * documentation, and here.
      */
-    const smalt = suggestion({ id: "sted", keys: ["a", "b"] })
+    const narrow = suggestion({ id: "place", keys: ["a", "b"] })
     mount(`
       <lt-suggestion>
-        <label ${attr(smalt.label)}>Sted</label>
+        <label ${attr(narrow.label)}>Place</label>
         <div>
-          <input ${attr(smalt.control)} value="o">
-          <ul ${attr(smalt.list)}>
-            <li ${attr(smalt.options[0])}>Oslo</li>
-            <li ${attr(smalt.options[1])}>Odda</li>
+          <input ${attr(narrow.control)} value="o">
+          <ul ${attr(narrow.list)}>
+            <li ${attr(narrow.options[0])}>Oslo</li>
+            <li ${attr(narrow.options[1])}>Odda</li>
           </ul>
-          <span ${attr(smalt.status)}></span>
+          <span ${attr(narrow.status)}></span>
         </div>
       </lt-suggestion>
     `)
-    const felt = await tegn()
-    const input = felt.querySelector("input") as HTMLInputElement
+    const field = await paint()
+    const input = field.querySelector("input") as HTMLInputElement
 
     input.focus()
-    await tegn()
+    await paint()
 
-    const synlige = [
-      ...felt.querySelectorAll<HTMLElement>("[role='option']"),
+    const visible = [
+      ...field.querySelectorAll<HTMLElement>("[role='option']"),
     ].filter((o) => !o.hidden)
-    expect(synlige.map((o) => o.textContent)).toEqual(["Oslo", "Odda"])
+    expect(visible.map((o) => o.textContent)).toEqual(["Oslo", "Odda"])
     expect(
-      (felt.querySelector("[role='status']") as HTMLElement).textContent,
+      (field.querySelector("[role='status']") as HTMLElement).textContent,
     ).toBe("2 matches")
   })
 })
@@ -685,22 +687,22 @@ describe("lt.suggestion() writes what the web component would otherwise write", 
   })
 
   it("writes the highlight only when the list is open, both halves together", () => {
-    const lukket = suggestion({
+    const closed = suggestion({
       id: "k",
       keys: ["a", "b", "c"],
       activeIndex: 1,
     })
-    expect(lukket.options[1]["aria-selected"]).toBe("false")
-    expect(lukket.control["aria-activedescendant"]).toBeUndefined()
+    expect(closed.options[1]["aria-selected"]).toBe("false")
+    expect(closed.control["aria-activedescendant"]).toBeUndefined()
 
-    const apen = suggestion({
+    const open = suggestion({
       id: "k",
       keys: ["a", "b", "c"],
       activeIndex: 1,
       open: true,
     })
-    expect(apen.options[1]["aria-selected"]).toBe("true")
-    expect(apen.control["aria-activedescendant"]).toBe("k-option-b")
+    expect(open.options[1]["aria-selected"]).toBe("true")
+    expect(open.control["aria-activedescendant"]).toBe("k-option-b")
   })
 })
 
@@ -712,15 +714,15 @@ describe("lt.suggestion() writes what the web component would otherwise write", 
  * field. It fills in the rest. The status element must be written: it is
  * content the server sends.
  */
-const BAR = `
+const BARE = `
   <lt-suggestion>
-    <label for="kommune">Kommune</label>
+    <label for="municipality">Municipality</label>
     <div>
-      <input class="lt-input" id="kommune" name="kommune">
+      <input class="lt-input" id="municipality" name="municipality">
       <ul class="lt-suggestion__list">
-        ${KOMMUNER.map((k) => `<li>${k}</li>`).join("")}
+        ${MUNICIPALITIES.map((k) => `<li>${k}</li>`).join("")}
       </ul>
-      <p class="lt-suggestion__empty" hidden>Ingen treff</p>
+      <p class="lt-suggestion__empty" hidden>No matches</p>
       <span class="lt-sr-only" role="status"></span>
     </div>
   </lt-suggestion>`
@@ -730,42 +732,42 @@ describe("lt-suggestion wires up from bare structure", () => {
     defineLtSuggestion()
   })
 
-  function deler() {
+  function parts() {
     return {
-      felt: document.querySelector("lt-suggestion") as LtSuggestion,
+      field: document.querySelector("lt-suggestion") as LtSuggestion,
       label: document.querySelector("label") as HTMLLabelElement,
       input: document.querySelector("input") as HTMLInputElement,
-      liste: document.querySelector("ul") as HTMLElement,
-      valg: [...document.querySelectorAll<HTMLElement>("li")],
+      list: document.querySelector("ul") as HTMLElement,
+      options: [...document.querySelectorAll<HTMLElement>("li")],
     }
   }
 
   it("sets roles, ids and wiring, and keeps the list closed", async () => {
-    mount(BAR)
-    await tegn()
-    const { felt, label, input, liste, valg } = deler()
+    mount(BARE)
+    await paint()
+    const { field, label, input, list, options } = parts()
 
     expect(input.getAttribute("role")).toBe("combobox")
     expect(input.getAttribute("autocomplete")).toBe("off")
     expect(input.getAttribute("aria-autocomplete")).toBe("list")
-    expect(input.id).toBe("kommune")
-    expect(label.htmlFor).toBe("kommune")
+    expect(input.id).toBe("municipality")
+    expect(label.htmlFor).toBe("municipality")
     expect(label.classList.contains("lt-label")).toBe(true)
-    expect(liste.getAttribute("role")).toBe("listbox")
-    expect(liste.id).not.toBe("")
-    expect(input.getAttribute("aria-controls")).toBe(liste.id)
+    expect(list.getAttribute("role")).toBe("listbox")
+    expect(list.id).not.toBe("")
+    expect(input.getAttribute("aria-controls")).toBe(list.id)
     expect(input.getAttribute("aria-expanded")).toBe("false")
-    expect(liste.hidden).toBe(true)
-    for (const v of valg) {
+    expect(list.hidden).toBe(true)
+    for (const v of options) {
       expect(v.getAttribute("role")).toBe("option")
       expect(v.id).not.toBe("")
       expect(v.classList.contains("lt-suggestion__option")).toBe(true)
     }
 
-    skriv(felt, "b")
+    typeInto(field, "b")
     await waitForPaint()
-    expect(liste.hidden).toBe(false)
-    expect(valg.filter((v) => !v.hidden).map((v) => v.textContent)).toEqual([
+    expect(list.hidden).toBe(false)
+    expect(options.filter((v) => !v.hidden).map((v) => v.textContent)).toEqual([
       "Bergen",
       "Bodø",
     ])
@@ -778,88 +780,88 @@ describe("lt-suggestion wires up from bare structure", () => {
 
   it("leaves what the server wrote", async () => {
     mount(
-      BAR.replace('<label for="kommune">', '<label for="egen">')
+      BARE.replace('<label for="municipality">', '<label for="own">')
         .replace(
-          '<input class="lt-input" id="kommune" name="kommune">',
-          '<input class="lt-input" name="kommune" id="egen" aria-expanded="true">',
+          '<input class="lt-input" id="municipality" name="municipality">',
+          '<input class="lt-input" name="municipality" id="own" aria-expanded="true">',
         )
         .replace(
           '<ul class="lt-suggestion__list">',
-          '<ul class="lt-suggestion__list" id="egen-liste">',
+          '<ul class="lt-suggestion__list" id="own-list">',
         ),
     )
-    await tegn()
-    const { label, input, liste } = deler()
+    await paint()
+    const { label, input, list } = parts()
 
-    expect(input.id).toBe("egen")
-    expect(label.htmlFor).toBe("egen")
-    expect(liste.id).toBe("egen-liste")
-    expect(input.getAttribute("aria-controls")).toBe("egen-liste")
+    expect(input.id).toBe("own")
+    expect(label.htmlFor).toBe("own")
+    expect(list.id).toBe("own-list")
+    expect(input.getAttribute("aria-controls")).toBe("own-list")
     // The server said the list is open, and then it stays open.
     expect(input.getAttribute("aria-expanded")).toBe("true")
-    expect(liste.hidden).toBe(false)
+    expect(list.hidden).toBe(false)
   })
 
   it("sets the wiring back with the same ids after a patch", async () => {
-    mount(BAR)
-    await tegn()
-    const { label, input, liste, valg } = deler()
-    const ider = [input.id, liste.id, valg[0].id]
+    mount(BARE)
+    await paint()
+    const { label, input, list, options } = parts()
+    const ids = [input.id, list.id, options[0].id]
 
     // The way a morph does it: everything not in the server's HTML is
     // removed. The field's id and the label's `for` were there, and stay.
-    for (const navn of [
+    for (const name of [
       "role",
       "aria-controls",
       "aria-expanded",
       "autocomplete",
       "aria-autocomplete",
     ]) {
-      input.removeAttribute(navn)
+      input.removeAttribute(name)
     }
-    for (const navn of ["role", "id", "hidden"]) liste.removeAttribute(navn)
-    for (const navn of ["role", "id", "class"]) valg[0].removeAttribute(navn)
+    for (const name of ["role", "id", "hidden"]) list.removeAttribute(name)
+    for (const name of ["role", "id", "class"]) options[0].removeAttribute(name)
     await waitForPaint()
 
-    expect([input.id, liste.id, valg[0].id]).toEqual(ider)
-    expect(label.htmlFor).toBe(ider[0])
-    expect(input.getAttribute("aria-controls")).toBe(ider[1])
-    expect(valg[0].getAttribute("role")).toBe("option")
-    expect(liste.hidden).toBe(true)
+    expect([input.id, list.id, options[0].id]).toEqual(ids)
+    expect(label.htmlFor).toBe(ids[0])
+    expect(input.getAttribute("aria-controls")).toBe(ids[1])
+    expect(options[0].getAttribute("role")).toBe("option")
+    expect(list.hidden).toBe(true)
   })
 
   it("writes nothing on markup from lt.suggestion()", async () => {
     // The direct claim behind "what the server wrote stays": zero mutation
     // records from the web component's first round.
-    const omslag = document.createElement("div")
-    omslag.innerHTML = `
+    const wrapper = document.createElement("div")
+    wrapper.innerHTML = `
       <lt-suggestion>
-        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <label ${attr(SUGGESTION.label)}>Municipality</label>
         <div>
-          <input ${attr(FORSLAG.control)} name="kommune">
-          <ul ${attr(FORSLAG.list)}>
-            ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("")}
+          <input ${attr(SUGGESTION.control)} name="municipality">
+          <ul ${attr(SUGGESTION.list)}>
+            ${SUGGESTION.options.map((o, i) => `<li ${attr(o)}>${MUNICIPALITIES[i]}</li>`).join("")}
           </ul>
-          <p ${attr(FORSLAG.empty)} hidden>Ingen treff</p>
-          <span ${attr(FORSLAG.status)}></span>
+          <p ${attr(SUGGESTION.empty)} hidden>No matches</p>
+          <span ${attr(SUGGESTION.status)}></span>
         </div>
-        <p class="lt-help-text" ${attr(FORSLAG.help)}>Begynn å skrive</p>
+        <p class="lt-help-text" ${attr(SUGGESTION.help)}>Start typing</p>
       </lt-suggestion>`
-    const vert = omslag.querySelector("lt-suggestion") as HTMLElement
-    const poster: MutationRecord[] = []
-    const observatør = new MutationObserver((r) => poster.push(...r))
-    observatør.observe(vert, {
+    const host = wrapper.querySelector("lt-suggestion") as HTMLElement
+    const records: MutationRecord[] = []
+    const observer = new MutationObserver((r) => records.push(...r))
+    observer.observe(host, {
       attributes: true,
       childList: true,
       subtree: true,
     })
 
-    document.body.append(omslag)
-    await tegn()
+    document.body.append(wrapper)
+    await paint()
 
-    expect(poster.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
-    observatør.disconnect()
-    omslag.remove()
+    expect(records.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
+    observer.disconnect()
+    wrapper.remove()
   })
 })
 
@@ -869,70 +871,70 @@ describe("the empty message when the app filters itself", () => {
   })
 
   /** The way a React app renders the field: only the matches, and `prefiltered`. */
-  async function felt(valg: { keys: string[]; pending?: boolean }) {
-    const forslag = suggestion({ id: "kommune", ...valg })
+  async function field(options: { keys: string[]; pending?: boolean }) {
+    const built = suggestion({ id: "municipality", ...options })
     mount(`
       <lt-suggestion prefiltered>
-        <label ${attr(forslag.label)}>Kommune</label>
+        <label ${attr(built.label)}>Municipality</label>
         <div>
-          <input ${attr(forslag.control)} name="kommune">
-          <ul ${attr(forslag.list)}>${forslag.options
-            .map((valg, i) => `<li ${attr(valg)}>Treff ${i}</li>`)
+          <input ${attr(built.control)} name="municipality">
+          <ul ${attr(built.list)}>${built.options
+            .map((options, i) => `<li ${attr(options)}>Match ${i}</li>`)
             .join("")}</ul>
-          <p ${attr(forslag.empty)}>Ingen treff</p>
-          <span ${attr(forslag.status)}></span>
+          <p ${attr(built.empty)}>No matches</p>
+          <span ${attr(built.status)}></span>
         </div>
       </lt-suggestion>
     `)
-    const vert = await tegn()
+    const host = await paint()
     return {
-      input: vert.querySelector("input") as HTMLInputElement,
-      liste: vert.querySelector("ul") as HTMLElement,
-      tom: vert.querySelector(".lt-suggestion__empty") as HTMLElement,
+      input: host.querySelector("input") as HTMLInputElement,
+      list: host.querySelector("ul") as HTMLElement,
+      empty: host.querySelector(".lt-suggestion__empty") as HTMLElement,
     }
   }
 
-  const synlig = (element: HTMLElement) =>
+  const isVisible = (element: HTMLElement) =>
     getComputedStyle(element).display !== "none"
 
   it("does not show the message while the list is closed, even without matches", async () => {
     // The app does not know whether the list is open: that state belongs to
     // the web component. The stylesheet hides the message after a list with
     // `hidden`.
-    const { liste, tom } = await felt({ keys: [] })
+    const { list, empty } = await field({ keys: [] })
 
-    expect(liste.hidden).toBe(true)
-    expect(tom.hasAttribute("hidden")).toBe(false)
-    expect(synlig(tom)).toBe(false)
+    expect(list.hidden).toBe(true)
+    expect(empty.hasAttribute("hidden")).toBe(false)
+    expect(isVisible(empty)).toBe(false)
   })
 
   it("shows the message when the list opens and the search found nothing", async () => {
-    const { input, liste, tom } = await felt({ keys: [] })
+    const { input, list, empty } = await field({ keys: [] })
 
     input.focus()
     input.value = "xyz"
     input.dispatchEvent(new Event("input", { bubbles: true }))
-    await tegn()
+    await paint()
 
-    expect(liste.hidden, "the list did not open").toBe(false)
-    expect(synlig(tom)).toBe(true)
+    expect(list.hidden, "the list did not open").toBe(false)
+    expect(isVisible(empty)).toBe(true)
   })
 
   it("keeps the message hidden while the answer is on its way", async () => {
-    const { input, liste, tom } = await felt({ keys: [], pending: true })
+    const { input, list, empty } = await field({ keys: [], pending: true })
 
     input.focus()
     input.value = "xyz"
     input.dispatchEvent(new Event("input", { bubbles: true }))
-    await tegn()
+    await paint()
 
-    expect(liste.hidden).toBe(false)
-    expect(synlig(tom)).toBe(false)
+    expect(list.hidden).toBe(false)
+    expect(isVisible(empty)).toBe(false)
   })
 
   it("hides the message when there are matches", async () => {
-    const { tom } = await felt({ keys: ["a", "b"] })
-    expect(tom.hasAttribute("hidden")).toBe(true)
+    const { empty } = await field({ keys: ["a", "b"] })
+    expect(empty.hasAttribute("hidden")).toBe(true)
   })
 })
 
@@ -950,33 +952,33 @@ describe("lt-suggestion when a patch replaces the field or the list", () => {
      */
     mount(`
       <lt-suggestion>
-        <label>Kommune
+        <label>Municipality
           <input class="lt-input">
         </label>
         <div>
           <ul class="lt-suggestion__list"><li>Oslo</li></ul>
-          <p class="lt-suggestion__empty">Ingen treff</p>
+          <p class="lt-suggestion__empty">No matches</p>
           <span class="lt-suggestion__status" role="status"></span>
         </div>
       </lt-suggestion>
     `)
-    const vert = await tegn()
-    const listepeker = (
-      vert.querySelector("input") as HTMLElement
-    ).getAttribute("aria-controls")
+    const host = await paint()
+    const listId = (host.querySelector("input") as HTMLElement).getAttribute(
+      "aria-controls",
+    )
 
-    const nyttFelt = document.createElement("input")
-    nyttFelt.className = "lt-input"
-    nyttFelt.setAttribute("aria-controls", listepeker ?? "")
-    vert.querySelector("input")?.replaceWith(nyttFelt)
-    const nyListe = document.createElement("ul")
-    nyListe.className = "lt-suggestion__list"
-    nyListe.innerHTML = "<li>Bergen</li>"
-    vert.querySelector("ul")?.replaceWith(nyListe)
-    await tegn()
+    const newField = document.createElement("input")
+    newField.className = "lt-input"
+    newField.setAttribute("aria-controls", listId ?? "")
+    host.querySelector("input")?.replaceWith(newField)
+    const newList = document.createElement("ul")
+    newList.className = "lt-suggestion__list"
+    newList.innerHTML = "<li>Bergen</li>"
+    host.querySelector("ul")?.replaceWith(newList)
+    await paint()
 
-    expect(nyttFelt.hasAttribute("id")).toBe(false)
-    expect(nyListe.id, "aria-controls points to nothing").toBe(listepeker)
+    expect(newField.hasAttribute("id")).toBe(false)
+    expect(newList.id, "aria-controls points to nothing").toBe(listId)
   })
 })
 
@@ -986,67 +988,67 @@ describe("lt-suggestion announces the count in the page's language", () => {
   })
 
   /** The suggestion field on a page with `lang`, and the texts as attributes. */
-  async function felt(lang: string, attributter: string) {
+  async function field(lang: string, attributes: string) {
     mount(`
       <div lang="${lang}">
-        <lt-suggestion ${attributter}>
-          <label ${attr(FORSLAG.label)}>Municipality</label>
+        <lt-suggestion ${attributes}>
+          <label ${attr(SUGGESTION.label)}>Municipality</label>
           <div>
-            <input ${attr(FORSLAG.control)} name="kommune">
-            <ul ${attr(FORSLAG.list)}>
-              ${FORSLAG.options.map((o, i) => `<li ${attr(o)}>${KOMMUNER[i]}</li>`).join("\n")}
+            <input ${attr(SUGGESTION.control)} name="municipality">
+            <ul ${attr(SUGGESTION.list)}>
+              ${SUGGESTION.options.map((o, i) => `<li ${attr(o)}>${MUNICIPALITIES[i]}</li>`).join("\n")}
             </ul>
-            <span ${attr(FORSLAG.status)}></span>
+            <span ${attr(SUGGESTION.status)}></span>
           </div>
         </lt-suggestion>
       </div>
     `)
-    return tegn()
+    return paint()
   }
 
-  async function opplest(element: LtSuggestion, tekst: string) {
-    skriv(element, tekst)
-    await tegn()
+  async function announced(element: LtSuggestion, text: string) {
+    typeInto(element, text)
+    await paint()
     return (element.querySelector("[role='status']") as HTMLElement).textContent
   }
 
   it("uses the form the language requires, with the number filled in", async () => {
-    const element = await felt(
+    const element = await field(
       "en",
       'count-none="No results" count-one="{n} result" count-other="{n} results"',
     )
 
-    expect(await opplest(element, "bod")).toBe("1 result")
-    expect(await opplest(element, "o")).toBe("3 results")
-    expect(await opplest(element, "xyz")).toBe("No results")
+    expect(await announced(element, "bod")).toBe("1 result")
+    expect(await announced(element, "o")).toBe("3 results")
+    expect(await announced(element, "xyz")).toBe("No results")
   })
 
   it("falls back to count-other when a form is missing", async () => {
     // English has the form `one`. When only `count-other` is set, it must
     // apply to one match as well, rather than the announcement falling back to
     // the default text.
-    const element = await felt("en", 'count-other="{n} results"')
+    const element = await field("en", 'count-other="{n} results"')
 
-    expect(await opplest(element, "bod")).toBe("1 results")
-    expect(await opplest(element, "xyz")).toBe("0 results")
+    expect(await announced(element, "bod")).toBe("1 results")
+    expect(await announced(element, "xyz")).toBe("0 results")
   })
 
   it("picks the inflection by language, not by the number alone", async () => {
     // Polish has four forms. 2, 3 and 4 are `few`, and 1 is `one`.
-    const element = await felt(
+    const element = await field(
       "pl",
       'count-one="{n} wynik" count-few="{n} wyniki" count-many="{n} wyników" count-other="{n} wyniku"',
     )
 
-    expect(await opplest(element, "o")).toBe("3 wyniki")
-    expect(await opplest(element, "bod")).toBe("1 wynik")
+    expect(await announced(element, "o")).toBe("3 wyniki")
+    expect(await announced(element, "bod")).toBe("1 wynik")
   })
 
   it("uses the default text when no text is set", async () => {
-    const element = await felt("en", "")
+    const element = await field("en", "")
 
-    expect(await opplest(element, "bod")).toBe("One match")
-    expect(await opplest(element, "o")).toBe("3 matches")
+    expect(await announced(element, "bod")).toBe("One match")
+    expect(await announced(element, "o")).toBe("3 matches")
   })
 })
 
@@ -1055,31 +1057,31 @@ describe("lt-suggestion announces the count in the page's language", () => {
  * of its own on the node that remembers the last value set through it, and
  * `onChange` only when the value from the prototype differs.
  */
-function kontrollertAvReact(felt: HTMLInputElement | HTMLTextAreaElement) {
-  const opprinnelig = Object.getOwnPropertyDescriptor(
-    Object.getPrototypeOf(felt),
+function controlledByReact(field: HTMLInputElement | HTMLTextAreaElement) {
+  const original = Object.getOwnPropertyDescriptor(
+    Object.getPrototypeOf(field),
     "value",
   ) as PropertyDescriptor
-  let husket = felt.value
-  Object.defineProperty(felt, "value", {
+  let remembered = field.value
+  Object.defineProperty(field, "value", {
     configurable: true,
     get() {
-      return opprinnelig.get?.call(this)
+      return original.get?.call(this)
     },
-    set(verdi) {
-      husket = `${verdi}`
-      opprinnelig.set?.call(this, verdi)
+    set(value) {
+      remembered = `${value}`
+      original.set?.call(this, value)
     },
   })
-  const endringer: string[] = []
-  felt.addEventListener("input", () => {
-    const faktisk = opprinnelig.get?.call(felt) as string
-    if (faktisk !== husket) {
-      husket = faktisk
-      endringer.push(faktisk)
+  const changes: string[] = []
+  field.addEventListener("input", () => {
+    const actual = original.get?.call(field) as string
+    if (actual !== remembered) {
+      remembered = actual
+      changes.push(actual)
     }
   })
-  return endringer
+  return changes
 }
 
 describe("lt-suggestion with a field React controls", () => {
@@ -1087,42 +1089,42 @@ describe("lt-suggestion with a field React controls", () => {
     defineLtSuggestion()
   })
 
-  for (const kontroll of [
-    '<input id="kommune" role="combobox" aria-controls="kommune-liste" aria-expanded="false" aria-autocomplete="list">',
-    '<textarea id="kommune" role="combobox" aria-controls="kommune-liste" aria-expanded="false" aria-autocomplete="list"></textarea>',
+  for (const control of [
+    '<input id="municipality" role="combobox" aria-controls="municipality-list" aria-expanded="false" aria-autocomplete="list">',
+    '<textarea id="municipality" role="combobox" aria-controls="municipality-list" aria-expanded="false" aria-autocomplete="list"></textarea>',
   ]) {
-    it(`gives onChange the chosen option (${kontroll.slice(1, 6)})`, async () => {
+    it(`gives onChange the chosen option (${control.slice(1, 6)})`, async () => {
       // Set directly on the node, React saw no change, and wrote the old text
       // back on the next render.
       mount(`
         <lt-suggestion>
-          <label for="kommune">Kommune</label>
+          <label for="municipality">Municipality</label>
           <div>
-            ${kontroll}
-            <ul class="lt-suggestion__list" role="listbox" id="kommune-liste" hidden>
-              <li role="option" id="kommune-0">Bergen</li>
-              <li role="option" id="kommune-1">Oslo</li>
+            ${control}
+            <ul class="lt-suggestion__list" role="listbox" id="municipality-list" hidden>
+              <li role="option" id="municipality-0">Bergen</li>
+              <li role="option" id="municipality-1">Oslo</li>
             </ul>
           </div>
         </lt-suggestion>`)
-      const felt = document.getElementById("kommune") as
+      const field = document.getElementById("municipality") as
         | HTMLInputElement
         | HTMLTextAreaElement
-      const endringer = kontrollertAvReact(felt)
+      const changes = controlledByReact(field)
       await customElements.whenDefined("lt-suggestion")
       await waitForPaint()
 
-      felt.dispatchEvent(
+      field.dispatchEvent(
         new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
       )
       await waitForPaint()
-      felt.dispatchEvent(
+      field.dispatchEvent(
         new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
       )
       await waitForPaint()
 
-      expect(felt.value).toBe("Bergen")
-      expect(endringer).toEqual(["Bergen"])
+      expect(field.value).toBe("Bergen")
+      expect(changes).toEqual(["Bergen"])
     })
   }
 })
@@ -1132,12 +1134,12 @@ describe("lt-suggestion with a field React controls", () => {
  * the options have `data-value`, and a hidden `.lt-suggestion__value` gets
  * the code.
  */
-const MED_KODE = `
+const WITH_CODE = `
   <lt-suggestion>
-    <label for="kommune">Kommune</label>
+    <label for="municipality">Municipality</label>
     <div>
-      <input class="lt-input" id="kommune" name="kommune-tekst">
-      <input type="hidden" class="lt-suggestion__value" name="kommune">
+      <input class="lt-input" id="municipality" name="municipality-text">
+      <input type="hidden" class="lt-suggestion__value" name="municipality">
       <ul class="lt-suggestion__list">
         <li data-value="4601">Bergen</li>
         <li data-value="1804">Bodø</li>
@@ -1147,15 +1149,15 @@ const MED_KODE = `
     </div>
   </lt-suggestion>`
 
-function tast(input: HTMLElement, key: string, init: KeyboardEventInit = {}) {
-  const hendelse = new KeyboardEvent("keydown", {
+function press(input: HTMLElement, key: string, init: KeyboardEventInit = {}) {
+  const event = new KeyboardEvent("keydown", {
     key,
     bubbles: true,
     cancelable: true,
     ...init,
   })
-  input.dispatchEvent(hendelse)
-  return hendelse
+  input.dispatchEvent(event)
+  return event
 }
 
 describe("lt-suggestion chooses correctly", () => {
@@ -1163,121 +1165,116 @@ describe("lt-suggestion chooses correctly", () => {
     defineLtSuggestion()
   })
 
-  function deler() {
+  function parts() {
     return {
-      input: document.getElementById("kommune") as HTMLInputElement,
-      kode: document.querySelector(".lt-suggestion__value") as HTMLInputElement,
-      liste: document.querySelector("ul") as HTMLElement,
-      valg: [...document.querySelectorAll<HTMLElement>("li")],
+      input: document.getElementById("municipality") as HTMLInputElement,
+      code: document.querySelector(".lt-suggestion__value") as HTMLInputElement,
+      list: document.querySelector("ul") as HTMLElement,
+      options: [...document.querySelectorAll<HTMLElement>("li")],
     }
   }
 
   it("shows the text in the field and puts the code in the value field and the event", async () => {
-    mount(MED_KODE)
-    const vert = await tegn()
-    const { input, kode, valg } = deler()
-    const detaljer: unknown[] = []
-    vert.addEventListener("suggestion-select", (e) =>
-      detaljer.push((e as CustomEvent).detail),
+    mount(WITH_CODE)
+    const host = await paint()
+    const { input, code, options } = parts()
+    const details: unknown[] = []
+    host.addEventListener("suggestion-select", (e) =>
+      details.push((e as CustomEvent).detail),
     )
 
     input.focus()
-    valg[0].click()
+    options[0].click()
     await waitForPaint()
 
     expect(input.value).toBe("Bergen")
-    expect(kode.value).toBe("4601")
-    expect(detaljer).toEqual([{ value: "4601", label: "Bergen" }])
+    expect(code.value).toBe("4601")
+    expect(details).toEqual([{ value: "4601", label: "Bergen" }])
   })
 
   it("empties the value field when the user changes the text after a choice", async () => {
     // Otherwise the form would have submitted the code for Bergen with "Bodø" in the field.
-    mount(MED_KODE)
-    await tegn()
-    const { input, kode, valg } = deler()
+    mount(WITH_CODE)
+    await paint()
+    const { input, code, options } = parts()
 
     input.focus()
-    valg[0].click()
+    options[0].click()
     await waitForPaint()
     input.value = "Berge"
     input.dispatchEvent(new Event("input", { bubbles: true }))
     await waitForPaint()
 
-    expect(kode.value).toBe("")
+    expect(code.value).toBe("")
   })
 
   it("sets the code back when an update empties the value field", async () => {
     // The value field's `value` is an attribute, and a morph writes the
     // server's empty value over the code the user chose.
-    mount(MED_KODE)
-    await tegn()
-    const { input, kode, valg } = deler()
+    mount(WITH_CODE)
+    await paint()
+    const { input, code, options } = parts()
 
     input.focus()
-    valg[2].click()
+    options[2].click()
     await waitForPaint()
-    kode.removeAttribute("value")
+    code.removeAttribute("value")
     await waitForPaint()
 
     expect(input.value).toBe("Oslo")
-    expect(kode.value).toBe("0301")
+    expect(code.value).toBe("0301")
   })
 
   it("leaves a different code from the server alone", async () => {
     // Only an emptied value is set back. A code the server sends, for instance
     // after looking up an ambiguous name, is the server's word.
-    mount(MED_KODE)
-    await tegn()
-    const { input, kode, valg } = deler()
+    mount(WITH_CODE)
+    await paint()
+    const { input, code, options } = parts()
 
     input.focus()
-    valg[0].click()
+    options[0].click()
     await waitForPaint()
-    kode.setAttribute("value", "4602")
+    code.setAttribute("value", "4602")
     await waitForPaint()
     await waitForPaint()
 
     expect(input.value).toBe("Bergen")
-    expect(kode.value).toBe("4602")
+    expect(code.value).toBe("4602")
   })
 
   it("dispatches input and change on the value field when the code is written and emptied", async () => {
     // Otherwise neither `data-bind` in Datastar nor the state in React sees the code.
-    mount(MED_KODE)
-    await tegn()
-    const { input, kode, valg } = deler()
-    const hendelser: string[] = []
+    mount(WITH_CODE)
+    await paint()
+    const { input, code, options } = parts()
+    const events: string[] = []
     for (const type of ["input", "change"])
-      kode.addEventListener(type, () => hendelser.push(`${type}:${kode.value}`))
+      code.addEventListener(type, () => events.push(`${type}:${code.value}`))
 
     input.focus()
-    valg[0].click()
+    options[0].click()
     input.value = "Berge"
     input.dispatchEvent(new Event("input", { bubbles: true }))
 
-    expect(hendelser).toEqual([
-      "input:4601",
-      "change:4601",
-      "input:",
-      "change:",
-    ])
+    expect(events).toEqual(["input:4601", "change:4601", "input:", "change:"])
   })
 
   it("closes an open list when the field becomes readonly", async () => {
     // The repair kept it open, and Escape does nothing in a locked field.
-    mount(MED_KODE)
-    await tegn()
-    const { input, liste } = deler()
+    mount(WITH_CODE)
+    await paint()
+    const { input, list } = parts()
     input.focus()
-    tast(input, "ArrowDown")
+    press(input, "ArrowDown")
     await waitForPaint()
-    expect(liste.hidden).toBe(false)
+    expect(list.hidden).toBe(false)
 
     input.setAttribute("readonly", "")
     await waitForPaint()
     await waitForPaint()
 
-    expect(liste.hidden).toBe(true)
+    expect(list.hidden).toBe(true)
     expect(input.getAttribute("aria-expanded")).toBe("false")
   })
 
@@ -1287,134 +1284,140 @@ describe("lt-suggestion chooses correctly", () => {
      * used to happen on `mousedown`, and a `click` alone chose nothing.
      * `mousedown` still keeps focus in the field.
      */
-    mount(MED_KODE)
-    await tegn()
-    const { input, valg } = deler()
+    mount(WITH_CODE)
+    await paint()
+    const { input, options } = parts()
     input.focus()
 
-    const ned = new MouseEvent("mousedown", { bubbles: true, cancelable: true })
-    valg[1].dispatchEvent(ned)
-    expect(ned.defaultPrevented).toBe(true)
+    const down = new MouseEvent("mousedown", {
+      bubbles: true,
+      cancelable: true,
+    })
+    options[1].dispatchEvent(down)
+    expect(down.defaultPrevented).toBe(true)
     expect(input.value).toBe("")
 
-    valg[1].click()
+    options[1].click()
     expect(input.value).toBe("Bodø")
   })
 
   it("skips an option with aria-disabled, with keyboard and mouse", async () => {
     mount(
-      MED_KODE.replace(
+      WITH_CODE.replace(
         '<li data-value="4601">Bergen</li>',
         '<li data-value="4601" aria-disabled="true">Bergen</li>',
       ),
     )
-    await tegn()
-    const { input, valg } = deler()
+    await paint()
+    const { input, options } = parts()
     input.focus()
 
-    valg[0].click()
+    options[0].click()
     expect(input.value).toBe("")
 
-    tast(input, "ArrowDown")
-    tast(input, "Enter")
+    press(input, "ArrowDown")
+    press(input, "Enter")
     expect(input.value).toBe("Bodø")
   })
 
   it("does not open the list or change the value in a readonly field", async () => {
     mount(
-      MED_KODE.replace('name="kommune-tekst"', 'name="kommune-tekst" readonly'),
+      WITH_CODE.replace(
+        'name="municipality-text"',
+        'name="municipality-text" readonly',
+      ),
     )
-    await tegn()
-    const { input, liste, valg } = deler()
+    await paint()
+    const { input, list, options } = parts()
 
     input.focus()
-    tast(input, "ArrowDown")
-    tast(input, "Enter")
-    valg[0].click()
+    press(input, "ArrowDown")
+    press(input, "Enter")
+    options[0].click()
     await waitForPaint()
 
-    expect(liste.hidden).toBe(true)
+    expect(list.hidden).toBe(true)
     expect(input.value).toBe("")
   })
 
   it("leaves the keys alone during IME composition", async () => {
     // Enter confirms the characters in the composition, and must not choose anything.
-    mount(MED_KODE)
-    await tegn()
-    const { input } = deler()
+    mount(WITH_CODE)
+    await paint()
+    const { input } = parts()
 
     input.focus()
-    tast(input, "ArrowDown")
-    const enter = tast(input, "Enter", { isComposing: true })
+    press(input, "ArrowDown")
+    const enter = press(input, "Enter", { isComposing: true })
 
     expect(enter.defaultPrevented).toBe(false)
     expect(input.value).toBe("")
   })
 
   it("goes to the first and last option with PgUp and PgDn, and leaves Home and End alone", async () => {
-    mount(MED_KODE)
-    await tegn()
-    const { input, valg } = deler()
+    mount(WITH_CODE)
+    await paint()
+    const { input, options } = parts()
 
     input.focus()
-    tast(input, "ArrowDown")
-    tast(input, "PageDown")
-    expect(input.getAttribute("aria-activedescendant")).toBe(valg[2].id)
-    tast(input, "PageUp")
-    expect(input.getAttribute("aria-activedescendant")).toBe(valg[0].id)
+    press(input, "ArrowDown")
+    press(input, "PageDown")
+    expect(input.getAttribute("aria-activedescendant")).toBe(options[2].id)
+    press(input, "PageUp")
+    expect(input.getAttribute("aria-activedescendant")).toBe(options[0].id)
 
     // Home and End move the caret in the text. The web component leaves them alone.
-    expect(tast(input, "Home").defaultPrevented).toBe(false)
-    expect(tast(input, "End").defaultPrevented).toBe(false)
+    expect(press(input, "Home").defaultPrevented).toBe(false)
+    expect(press(input, "End").defaultPrevented).toBe(false)
   })
 
   it("finds the highlighted option again by its text when the list is replaced", async () => {
     // The list and the options get ids from the web component, and an update
     // that sends the list again replaces them. The highlight follows the text.
-    mount(MED_KODE)
-    await tegn()
-    const { input, liste } = deler()
+    mount(WITH_CODE)
+    await paint()
+    const { input, list } = parts()
     input.focus()
-    tast(input, "ArrowDown")
-    tast(input, "ArrowDown")
+    press(input, "ArrowDown")
+    press(input, "ArrowDown")
     await waitForPaint()
-    expect(deler().valg[1].getAttribute("aria-selected")).toBe("true")
+    expect(parts().options[1].getAttribute("aria-selected")).toBe("true")
 
-    const ny = document.createElement("ul")
-    ny.className = "lt-suggestion__list"
-    ny.innerHTML = `<li data-value="4601">Bergen</li><li data-value="1804">Bodø</li><li data-value="0301">Oslo</li>`
-    liste.replaceWith(ny)
+    const replacement = document.createElement("ul")
+    replacement.className = "lt-suggestion__list"
+    replacement.innerHTML = `<li data-value="4601">Bergen</li><li data-value="1804">Bodø</li><li data-value="0301">Oslo</li>`
+    list.replaceWith(replacement)
     await waitForPaint()
     await waitForPaint()
 
-    const bodoe = [...ny.querySelectorAll("li")].find(
+    const bodo = [...replacement.querySelectorAll("li")].find(
       (li) => li.textContent === "Bodø",
     ) as HTMLElement
-    expect(bodoe.getAttribute("aria-selected")).toBe("true")
-    expect(bodoe.id).not.toBe("")
-    expect(input.getAttribute("aria-activedescendant")).toBe(bodoe.id)
+    expect(bodo.getAttribute("aria-selected")).toBe("true")
+    expect(bodo.id).not.toBe("")
+    expect(input.getAttribute("aria-activedescendant")).toBe(bodo.id)
   })
 
   it("writes the number of matches again when an update empties the status element", async () => {
     // The text is not in the server's version, so without this the template
     // would have to write Datastar's `data-ignore-morph`, which means nothing to
     // htmx.
-    mount(MED_KODE)
-    await tegn()
-    const { input } = deler()
+    mount(WITH_CODE)
+    await paint()
+    const { input } = parts()
     const status = document.querySelector("[role='status']") as HTMLElement
     input.focus()
     input.value = "B"
     input.dispatchEvent(new Event("input", { bubbles: true }))
     await waitForPaint()
-    const lest = status.textContent
-    expect(lest).not.toBe("")
+    const announcedText = status.textContent
+    expect(announcedText).not.toBe("")
 
     status.textContent = ""
     await waitForPaint()
     await waitForPaint()
 
-    expect(status.textContent).toBe(lest)
+    expect(status.textContent).toBe(announcedText)
   })
 
   it("places the list right below the field also when the help text comes after", async () => {
@@ -1422,51 +1425,53 @@ describe("lt-suggestion chooses correctly", () => {
     // the list gets its static position, right after the field in the flow, and
     // not below the help text.
     mount(
-      MED_KODE.replace(
+      WITH_CODE.replace(
         "</lt-suggestion>",
-        '<p class="lt-help-text">Vi fyller ut resten av adressen for deg.</p></lt-suggestion>',
+        '<p class="lt-help-text">We fill in the rest of the address for you.</p></lt-suggestion>',
       ),
     )
-    await tegn()
-    const { input, liste } = deler()
-    const hjelp = document.querySelector(".lt-help-text") as HTMLElement
+    await paint()
+    const { input, list } = parts()
+    const help = document.querySelector(".lt-help-text") as HTMLElement
     input.focus()
-    tast(input, "ArrowDown")
+    press(input, "ArrowDown")
     await waitForPaint()
 
-    const felt = input.getBoundingClientRect()
-    const boks = liste.getBoundingClientRect()
-    expect(liste.hidden).toBe(false)
-    expect(boks.top).toBeGreaterThanOrEqual(felt.bottom)
-    expect(boks.top - felt.bottom).toBeLessThan(12)
-    expect(hjelp.getBoundingClientRect().top).toBeLessThan(boks.bottom)
+    const field = input.getBoundingClientRect()
+    const box = list.getBoundingClientRect()
+    expect(list.hidden).toBe(false)
+    expect(box.top).toBeGreaterThanOrEqual(field.bottom)
+    expect(box.top - field.bottom).toBeLessThan(12)
+    expect(help.getBoundingClientRect().top).toBeLessThan(box.bottom)
   })
 
   it("tells two options with the same text apart by code when the list is replaced", async () => {
     mount(
-      MED_KODE.replace(
+      WITH_CODE.replace(
         '<li data-value="0301">Oslo</li>',
         '<li data-value="3018">Våler</li><li data-value="3419">Våler</li>',
       ),
     )
-    await tegn()
-    const { input, liste } = deler()
+    await paint()
+    const { input, list } = parts()
     input.focus()
-    for (let i = 0; i < 4; i += 1) tast(input, "ArrowDown")
+    for (let i = 0; i < 4; i += 1) press(input, "ArrowDown")
     await waitForPaint()
-    expect(deler().valg[3].getAttribute("aria-selected")).toBe("true")
+    expect(parts().options[3].getAttribute("aria-selected")).toBe("true")
 
-    const ny = liste.cloneNode(true) as HTMLElement
-    for (const li of ny.querySelectorAll("li")) {
+    const replacement = list.cloneNode(true) as HTMLElement
+    for (const li of replacement.querySelectorAll("li")) {
       li.removeAttribute("id")
       li.removeAttribute("aria-selected")
     }
-    liste.replaceWith(ny)
+    list.replaceWith(replacement)
     await waitForPaint()
     await waitForPaint()
 
-    const valgt = ny.querySelector('[aria-selected="true"]') as HTMLElement
-    expect(valgt.getAttribute("data-value")).toBe("3419")
+    const chosen = replacement.querySelector(
+      '[aria-selected="true"]',
+    ) as HTMLElement
+    expect(chosen.getAttribute("data-value")).toBe("3419")
   })
 
   it("sets the code back to the server's when the form is reset", async () => {
@@ -1474,87 +1479,85 @@ describe("lt-suggestion chooses correctly", () => {
     // written as an attribute. Without this the form submitted the code for
     // Bodø with empty text after a reset.
     mount(
-      `<form>${MED_KODE.replace('name="kommune-tekst"', 'name="kommune-tekst" value="Bergen"').replace('class="lt-suggestion__value" name="kommune"', 'class="lt-suggestion__value" name="kommune" value="4601"')}</form>`,
+      `<form>${WITH_CODE.replace('name="municipality-text"', 'name="municipality-text" value="Bergen"').replace('class="lt-suggestion__value" name="municipality"', 'class="lt-suggestion__value" name="municipality" value="4601"')}</form>`,
     )
-    await tegn()
-    const { input, kode, valg } = deler()
+    await paint()
+    const { input, code, options } = parts()
     input.focus()
-    valg[1].click()
+    options[1].click()
     await waitForPaint()
     expect(input.value).toBe("Bodø")
-    expect(kode.value).toBe("1804")
+    expect(code.value).toBe("1804")
 
     ;(document.querySelector("form") as HTMLFormElement).reset()
     await new Promise((r) => setTimeout(r, 20))
     await waitForPaint()
 
     expect(input.value).toBe("Bergen")
-    expect(kode.value).toBe("4601")
+    expect(code.value).toBe("4601")
 
     // And with no code from the server: empty.
-    mount(`<form>${MED_KODE}</form>`)
-    await tegn()
-    const andre = deler()
-    andre.input.focus()
-    andre.valg[0].click()
+    mount(`<form>${WITH_CODE}</form>`)
+    await paint()
+    const second = parts()
+    second.input.focus()
+    second.options[0].click()
     await waitForPaint()
     ;(document.querySelector("form") as HTMLFormElement).reset()
     await new Promise((r) => setTimeout(r, 20))
     await waitForPaint()
-    expect(andre.input.value).toBe("")
-    expect(andre.kode.value).toBe("")
+    expect(second.input.value).toBe("")
+    expect(second.code.value).toBe("")
   })
 
   it("writes for from the field's id, and reports it, when the label pointed elsewhere", async () => {
     // Same rule as in <lt-field>: `for` and `id` are the same information.
     // But without JavaScript the field had no label, so it must be reported.
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    mount(MED_KODE.replace('for="kommune"', 'for="feil"'))
-    await tegn()
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    mount(WITH_CODE.replace('for="municipality"', 'for="wrong"'))
+    await paint()
     await new Promise((r) => setTimeout(r, 300))
     expect((document.querySelector("label") as HTMLLabelElement).htmlFor).toBe(
-      "kommune",
+      "municipality",
     )
-    expect(advarsel).toHaveBeenCalledTimes(1)
-    expect(String(advarsel.mock.calls[0][0])).toContain(
-      "pointed to a different id",
-    )
-    advarsel.mockRestore()
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(String(warn.mock.calls[0][0])).toContain("pointed to a different id")
+    warn.mockRestore()
   })
 
   it("does not let the events on the value field bubble to the host", async () => {
     // The recipe fetches suggestions with `data-on:input` on <lt-suggestion>.
     // Had the code fired it, every choice would have searched for "4601".
-    mount(MED_KODE)
-    const vert = await tegn()
-    const { input, valg } = deler()
-    const paaVerten: string[] = []
-    vert.addEventListener("input", (e) =>
-      paaVerten.push((e.target as HTMLInputElement).name),
+    mount(WITH_CODE)
+    const host = await paint()
+    const { input, options } = parts()
+    const onHost: string[] = []
+    host.addEventListener("input", (e) =>
+      onHost.push((e.target as HTMLInputElement).name),
     )
-    vert.addEventListener("change", (e) =>
-      paaVerten.push((e.target as HTMLInputElement).name),
+    host.addEventListener("change", (e) =>
+      onHost.push((e.target as HTMLInputElement).name),
     )
 
     input.focus()
-    valg[0].click()
+    options[0].click()
     await waitForPaint()
 
-    expect(paaVerten).toEqual(["kommune-tekst", "kommune-tekst"])
+    expect(onHost).toEqual(["municipality-text", "municipality-text"])
   })
 
   it("keeps the code on reset when the server has sent the choice back", async () => {
     // With htmx the server sends the text and the code back. Then the chosen
     // one is also the form's default value, and a reset must land there.
-    mount(`<form>${MED_KODE}</form>`)
-    await tegn()
-    const { input, kode, valg } = deler()
+    mount(`<form>${WITH_CODE}</form>`)
+    await paint()
+    const { input, code, options } = parts()
     input.focus()
-    valg[0].click()
+    options[0].click()
     await waitForPaint()
     // The server's answer: both values as attributes, the way a morph writes them.
     input.setAttribute("value", "Bergen")
-    kode.setAttribute("value", "4601")
+    code.setAttribute("value", "4601")
     await waitForPaint()
     await waitForPaint()
 
@@ -1563,43 +1566,43 @@ describe("lt-suggestion chooses correctly", () => {
     await waitForPaint()
 
     expect(input.value).toBe("Bergen")
-    expect(kode.value).toBe("4601")
+    expect(code.value).toBe("4601")
   })
 
   it("finds the code from the option when the text after reset is a different choice", async () => {
     // The server sent Bodø back after the user chose it, and the user kept
     // typing. The reset gives "Bodø", and the code follows the option.
-    mount(`<form>${MED_KODE}</form>`)
-    await tegn()
-    const { input, kode, valg } = deler()
+    mount(`<form>${WITH_CODE}</form>`)
+    await paint()
+    const { input, code, options } = parts()
     input.focus()
-    valg[1].click()
+    options[1].click()
     await waitForPaint()
     input.setAttribute("value", "Bodø")
-    kode.setAttribute("value", "1804")
+    code.setAttribute("value", "1804")
     await waitForPaint()
     input.value = "Bod"
     input.dispatchEvent(new Event("input", { bubbles: true }))
     await waitForPaint()
-    expect(kode.value).toBe("")
+    expect(code.value).toBe("")
 
     ;(document.querySelector("form") as HTMLFormElement).reset()
     await new Promise((r) => setTimeout(r, 20))
     await waitForPaint()
 
     expect(input.value).toBe("Bodø")
-    expect(kode.value).toBe("1804")
+    expect(code.value).toBe("1804")
   })
 
   it("does not write the count back when something else filters", async () => {
     // A patch is then the answer to a keystroke, and `announceFiltered`
     // announces the new count right after. Two numbers in a row are noise.
-    mount(MED_KODE.replace("<lt-suggestion>", "<lt-suggestion prefiltered>"))
-    await tegn()
-    const { input, liste } = deler()
+    mount(WITH_CODE.replace("<lt-suggestion>", "<lt-suggestion prefiltered>"))
+    await paint()
+    const { input, list } = parts()
     const status = document.querySelector("[role='status']") as HTMLElement
     input.focus()
-    liste.removeChild(liste.children[2])
+    list.removeChild(list.children[2])
     await waitForPaint()
     await waitForPaint()
     expect(status.textContent).not.toBe("")
@@ -1612,30 +1615,30 @@ describe("lt-suggestion chooses correctly", () => {
   })
 
   it("says nothing when the label wraps the whole element", async () => {
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
     mount(
-      `<label>Kommune <lt-suggestion><input class="lt-input" name="kommune"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion></label>`,
+      `<label>Municipality <lt-suggestion><input class="lt-input" name="municipality"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion></label>`,
     )
-    await tegn()
+    await paint()
     await new Promise((r) => setTimeout(r, 300))
     expect(
       (document.querySelector("input") as HTMLInputElement).labels?.length,
     ).toBe(1)
-    expect(advarsel).not.toHaveBeenCalled()
-    advarsel.mockRestore()
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
   })
 
   it("follows the form when form on the field points to another", async () => {
     // The `reset` listener belongs to the form the field belongs to now.
     // `form` on the field can point to another form without anything moving,
     // and a patch can change it.
-    mount(`<form id="a">${MED_KODE}</form><form id="b"></form>`)
-    await tegn()
-    const { input, kode, valg } = deler()
+    mount(`<form id="a">${WITH_CODE}</form><form id="b"></form>`)
+    await paint()
+    const { input, code, options } = parts()
     input.focus()
-    valg[0].click()
+    options[0].click()
     await waitForPaint()
-    expect(kode.value).toBe("4601")
+    expect(code.value).toBe("4601")
 
     input.setAttribute("form", "b")
     await waitForPaint()
@@ -1643,9 +1646,9 @@ describe("lt-suggestion chooses correctly", () => {
     input.value = "Berg"
     input.dispatchEvent(new Event("input", { bubbles: true }))
     await waitForPaint()
-    expect(kode.value).toBe("")
+    expect(code.value).toBe("")
     input.value = "Bergen"
-    kode.setAttribute("value", "4601")
+    code.setAttribute("value", "4601")
     await waitForPaint()
     ;(document.getElementById("b") as HTMLFormElement).reset()
     await new Promise((r) => setTimeout(r, 20))
@@ -1653,21 +1656,21 @@ describe("lt-suggestion chooses correctly", () => {
 
     // The text goes back to empty, and the code follows.
     expect(input.value).toBe("")
-    expect(kode.value).toBe("")
+    expect(code.value).toBe("")
   })
 
   it("does not write the count back when the list is closed", async () => {
     // Every patch of the region would otherwise announce the old count again.
-    mount(MED_KODE)
-    await tegn()
-    const { input } = deler()
+    mount(WITH_CODE)
+    await paint()
+    const { input } = parts()
     const status = document.querySelector("[role='status']") as HTMLElement
     input.focus()
     input.value = "B"
     input.dispatchEvent(new Event("input", { bubbles: true }))
     await waitForPaint()
     expect(status.textContent).not.toBe("")
-    tast(input, "Escape")
+    press(input, "Escape")
     await waitForPaint()
 
     status.textContent = ""
@@ -1680,72 +1683,72 @@ describe("lt-suggestion chooses correctly", () => {
   it("gives the code back as soon as the user types the chosen text again", async () => {
     // After a morph emptied both text and code, as idiomorph does without
     // ignoreActiveValue, the code must not wait for some random next patch.
-    mount(MED_KODE)
-    await tegn()
-    const { input, kode, valg } = deler()
+    mount(WITH_CODE)
+    await paint()
+    const { input, code, options } = parts()
     input.focus()
-    valg[0].click()
+    options[0].click()
     await waitForPaint()
     input.value = ""
-    kode.setAttribute("value", "")
+    code.setAttribute("value", "")
     await waitForPaint()
     await waitForPaint()
-    expect(kode.value).toBe("")
+    expect(code.value).toBe("")
 
     input.value = "Bergen"
     input.dispatchEvent(new Event("input", { bubbles: true }))
 
-    expect(kode.value).toBe("4601")
+    expect(code.value).toBe("4601")
   })
 
   it("says nothing about a field without an id that is named by aria-labelledby", async () => {
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
     mount(
-      `<lt-suggestion><label id="l">Kommune</label><input class="lt-input" name="kommune" aria-labelledby="l"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
+      `<lt-suggestion><label id="l">Municipality</label><input class="lt-input" name="municipality" aria-labelledby="l"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     )
-    await tegn()
+    await paint()
     await new Promise((r) => setTimeout(r, 300))
-    expect(advarsel).not.toHaveBeenCalled()
-    advarsel.mockRestore()
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
   })
 
   it("goes back to the server's Våler when the user had chosen the other one", async () => {
     // Two options with the same text: on reset the text is the server's, and
     // then the server's code applies, not the one the user chose.
     mount(
-      `<form>${MED_KODE.replace(
-        'name="kommune-tekst"',
-        'name="kommune-tekst" value="Våler"',
+      `<form>${WITH_CODE.replace(
+        'name="municipality-text"',
+        'name="municipality-text" value="Våler"',
       )
         .replace(
-          'class="lt-suggestion__value" name="kommune"',
-          'class="lt-suggestion__value" name="kommune" value="3419"',
+          'class="lt-suggestion__value" name="municipality"',
+          'class="lt-suggestion__value" name="municipality" value="3419"',
         )
         .replace(
           '<li data-value="0301">Oslo</li>',
           '<li data-value="3018">Våler</li><li data-value="3419">Våler</li>',
         )}</form>`,
     )
-    await tegn()
-    const { input, kode, valg } = deler()
+    await paint()
+    const { input, code, options } = parts()
     input.focus()
-    valg[2].click()
+    options[2].click()
     await waitForPaint()
-    expect(kode.value).toBe("3018")
+    expect(code.value).toBe("3018")
 
     ;(document.querySelector("form") as HTMLFormElement).reset()
     await new Promise((r) => setTimeout(r, 20))
     await waitForPaint()
 
     expect(input.value).toBe("Våler")
-    expect(kode.value).toBe("3419")
+    expect(code.value).toBe("3419")
   })
 
   it("gives a label outside the element the class, as lt-field does", async () => {
     mount(
-      `<label for="kommune">Kommune</label><lt-suggestion><input class="lt-input" id="kommune"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
+      `<label for="municipality">Municipality</label><lt-suggestion><input class="lt-input" id="municipality"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     )
-    await tegn()
+    await paint()
     expect(
       document.querySelector("label")?.classList.contains("lt-label"),
     ).toBe(true)

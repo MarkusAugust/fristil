@@ -61,19 +61,19 @@ describe("lt-textarea", () => {
     expect(textarea.backgroundColor).toBe(color("--lt-color-disabled-surface"))
     expect(textarea.borderTopColor).toBe(color("--lt-color-disabled-surface"))
     expect(textarea.color).toBe(color("--lt-color-neutral-border"))
-    // Markøren vises bare hvis elementet treffes av pekeren
+    // The cursor only shows if the pointer hits the element
     expect(textarea.pointerEvents).toBe("auto")
   })
 })
 
-describe("lt-textarea tilgjengelighet", () => {
-  it("har nok kontrast og ledetekst i alle tilstander", async () => {
+describe("lt-textarea accessibility", () => {
+  it("has enough contrast and a label in every state", async () => {
     mount(`
-      <label class="lt-label" for="a11y-melding">Melding til saksbehandler</label>
-      <textarea class="lt-textarea" id="a11y-melding" rows="3"></textarea>
+      <label class="lt-label" for="a11y-message">Message to the caseworker</label>
+      <textarea class="lt-textarea" id="a11y-message" rows="3"></textarea>
 
-      <label class="lt-label" for="a11y-begrunnelse">Begrunnelse</label>
-      <textarea class="lt-textarea" id="a11y-begrunnelse" rows="3" data-state="invalid" aria-invalid="true">For kort</textarea>
+      <label class="lt-label" for="a11y-reason">Reason</label>
+      <textarea class="lt-textarea" id="a11y-reason" rows="3" data-state="invalid" aria-invalid="true">Too short</textarea>
     `)
 
     await waitForPaint()
@@ -81,32 +81,32 @@ describe("lt-textarea tilgjengelighet", () => {
   })
 })
 
-describe("lt-textarea uten CSS-reset", () => {
-  it("holder seg innenfor boksen sin", () => {
-    const { boks } = mountIsolated(
+describe("lt-textarea without a CSS reset", () => {
+  it("stays inside its box", () => {
+    const { box } = mountIsolated(
       textareaCss,
-      `<textarea class="lt-textarea" rows="3">Jeg flytter 1. juni.</textarea>`,
+      `<textarea class="lt-textarea" rows="3">I am moving on 1 June.</textarea>`,
     )
 
-    expect(findOverflow(boks)).toEqual([])
+    expect(findOverflow(box)).toEqual([])
   })
 })
 
-describe("lt-textarea deaktivert", () => {
-  it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
-    mount(`<textarea class="lt-textarea" disabled>Av</textarea>`)
+describe("lt-textarea disabled", () => {
+  it("shows the not-allowed cursor, and is actually hit by the mouse", () => {
+    mount(`<textarea class="lt-textarea" disabled>Off</textarea>`)
 
     const element = document.querySelector("textarea") as HTMLElement
-    const ramme = element.getBoundingClientRect()
+    const rect = element.getBoundingClientRect()
 
     expect(getComputedStyle(element).cursor).toBe("not-allowed")
 
-    // cursor har ingen virkning hvis elementet ikke treffes av pekeren.
-    // Alle disse hadde pointer-events: none, så markøren ble aldri vist.
+    // cursor has no effect if the pointer does not hit the element.
+    // All of these had pointer-events: none, so the cursor never showed.
     expect(
       document.elementFromPoint(
-        ramme.x + ramme.width / 2,
-        ramme.y + ramme.height / 2,
+        rect.x + rect.width / 2,
+        rect.y + rect.height / 2,
       ),
     ).toBe(element)
   })

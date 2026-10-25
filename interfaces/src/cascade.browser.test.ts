@@ -139,10 +139,10 @@ describe("the markers on label and legend", () => {
 
   it('gives "(optional)" enough contrast to be read', () => {
     for (const id of ["l-valgfri", "g-valgfri"]) {
-      const merke = stil(id, "::after")
-      expect(merke.content).toBe('" (optional)"')
+      const label = stil(id, "::after")
+      expect(label.content).toBe('" (optional)"')
 
-      const tekst = tilRgb(merke.color)
+      const tekst = tilRgb(label.color)
       const flate = tilRgb(getComputedStyle(document.body).backgroundColor)
       expect(contrastRatio(tekst, flate), id).toBeGreaterThanOrEqual(4.5)
     }

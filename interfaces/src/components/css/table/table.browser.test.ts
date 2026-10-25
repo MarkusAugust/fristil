@@ -15,44 +15,46 @@ import "./table.css"
 describe("lt-table", () => {
   beforeEach(() => {
     mount(`
-      <div class="lt-table-scroll" tabindex="0" role="region" aria-label="Fakturaer">
-        <table class="lt-table" data-variant="striped" id="tabell">
-          <caption>Fakturaer i 2026</caption>
+      <div class="lt-table-scroll" tabindex="0" role="region" aria-label="Invoices">
+        <table class="lt-table" data-variant="striped" id="table">
+          <caption>Invoices in 2026</caption>
           <thead>
             <tr>
-              <th scope="col">Fakturanummer</th>
-              <th scope="col">Forfall</th>
-              <th scope="col" data-align="end">Beløp</th>
+              <th scope="col">Invoice number</th>
+              <th scope="col">Due</th>
+              <th scope="col" data-align="end">Amount</th>
             </tr>
           </thead>
           <tbody>
-            <tr><th scope="row">2026-0481</th><td>4. mars</td><td data-align="end">1 240 kr</td></tr>
-            <tr id="andre"><th scope="row">2026-0482</th><td>4. april</td><td data-align="end">980 kr</td></tr>
+            <tr><th scope="row">2026-0481</th><td>4 March</td><td data-align="end">£1,240</td></tr>
+            <tr id="second"><th scope="row">2026-0482</th><td>4 April</td><td data-align="end">£980</td></tr>
           </tbody>
         </table>
       </div>
     `)
   })
 
-  it("markerer annenhver rad når den er stripet", () => {
-    const andre = getComputedStyle(document.getElementById("andre") as Element)
+  it("marks every other row when striped", () => {
+    const second = getComputedStyle(
+      document.getElementById("second") as Element,
+    )
 
-    expect(andre.backgroundColor).not.toBe("rgba(0, 0, 0, 0)")
+    expect(second.backgroundColor).not.toBe("rgba(0, 0, 0, 0)")
   })
 
-  it("bruker samme sifferbredde, så kolonner med tall kan leses nedover", () => {
-    const stil = getComputedStyle(document.getElementById("tabell") as Element)
+  it("uses the same digit width, so columns of numbers can be read downwards", () => {
+    const style = getComputedStyle(document.getElementById("table") as Element)
 
-    expect(stil.fontVariantNumeric).toContain("tabular-nums")
+    expect(style.fontVariantNumeric).toContain("tabular-nums")
   })
 
-  it("høyrestiller cellene som er merket for det", () => {
-    const celle = document.querySelector("td[data-align='end']") as HTMLElement
+  it("aligns the cells marked for it to the end", () => {
+    const cell = document.querySelector("td[data-align='end']") as HTMLElement
 
-    expect(getComputedStyle(celle).textAlign).toBe("end")
+    expect(getComputedStyle(cell).textAlign).toBe("end")
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(table()).toEqual({ class: "lt-table" })
     expect(table({ variant: "striped", hoverable: true })).toEqual({
       class: "lt-table",
@@ -62,102 +64,106 @@ describe("lt-table", () => {
     expect(table.scroll).toBe("lt-table-scroll")
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })
 })
 
-describe("kolonner som kan sorteres", () => {
-  /** Den samme tabellen to ganger: med vanlige overskrifter og med knapper. */
+describe("sortable columns", () => {
+  /** The same table twice: with plain headers and with buttons. */
   beforeEach(() => {
-    const rad = (knapper: boolean, id: string) => `
+    const row = (buttons: boolean, id: string) => `
       <table class="lt-table">
         <thead>
           <tr id="${id}">
-            <th scope="col" ${knapper ? 'aria-sort="ascending"' : ""}>${knapper ? '<button type="button" class="lt-table__sort">Dato</button>' : "Dato"}</th>
-            <th scope="col">${knapper ? '<button type="button" class="lt-table__sort">Beløp</button>' : "Beløp"}</th>
-            <th scope="col" data-align="end" ${knapper ? 'aria-sort="descending"' : ""}>${knapper ? '<button type="button" class="lt-table__sort">Antall</button>' : "Antall"}</th>
+            <th scope="col" ${buttons ? 'aria-sort="ascending"' : ""}>${buttons ? '<button type="button" class="lt-table__sort">Date</button>' : "Date"}</th>
+            <th scope="col">${buttons ? '<button type="button" class="lt-table__sort">Amount</button>' : "Amount"}</th>
+            <th scope="col" data-align="end" ${buttons ? 'aria-sort="descending"' : ""}>${buttons ? '<button type="button" class="lt-table__sort">Quantity</button>' : "Quantity"}</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td id="${id}-celle">4. mars</td><td>1 240 kr</td><td data-align="end">3</td></tr>
+          <tr><td id="${id}-cell">4 March</td><td>£1,240</td><td data-align="end">3</td></tr>
         </tbody>
       </table>
     `
-    mount(rad(false, "uten") + rad(true, "med"))
+    mount(row(false, "without") + row(true, "with"))
   })
 
-  /** Hvor teksten i et element faktisk står, ikke hvor boksen står. */
-  function tekstboks(element: Element): DOMRect {
-    const omraade = document.createRange()
-    omraade.selectNodeContents(element)
-    return omraade.getBoundingClientRect()
+  /** Where the text in an element actually is, not where the box is. */
+  function textBox(element: Element): DOMRect {
+    const range = document.createRange()
+    range.selectNodeContents(element)
+    return range.getBoundingClientRect()
   }
 
-  it("gir overskriftsraden samme høyde som uten knapper", () => {
-    const uten = document.getElementById("uten") as HTMLElement
-    const med = document.getElementById("med") as HTMLElement
+  it("gives the header row the same height as without buttons", () => {
+    const without = document.getElementById("without") as HTMLElement
+    const withButtons = document.getElementById("with") as HTMLElement
 
-    expect(med.getBoundingClientRect().height).toBe(
-      uten.getBoundingClientRect().height,
+    expect(withButtons.getBoundingClientRect().height).toBe(
+      without.getBoundingClientRect().height,
     )
   })
 
-  it("setter teksten i overskriften der den står uten knapp", () => {
-    const knapp = document.querySelector("#med .lt-table__sort") as HTMLElement
-    const vanlig = document.querySelector("#uten th") as HTMLElement
-    const celle = document.getElementById("med-celle") as HTMLElement
-    const fraRaden = (tekst: Element, rad: string) =>
-      tekstboks(tekst).top -
-      (document.getElementById(rad) as HTMLElement).getBoundingClientRect().top
+  it("places the header text where it is without a button", () => {
+    const button = document.querySelector(
+      "#with .lt-table__sort",
+    ) as HTMLElement
+    const plain = document.querySelector("#without th") as HTMLElement
+    const cell = document.getElementById("with-cell") as HTMLElement
+    const fromRow = (text: Element, row: string) =>
+      textBox(text).top -
+      (document.getElementById(row) as HTMLElement).getBoundingClientRect().top
 
-    expect(fraRaden(knapp, "med")).toBe(fraRaden(vanlig, "uten"))
-    expect(tekstboks(knapp).left).toBe(tekstboks(celle).left)
+    expect(fromRow(button, "with")).toBe(fromRow(plain, "without"))
+    expect(textBox(button).left).toBe(textBox(cell).left)
   })
 
-  it("lar teksten i en høyrestilt overskrift slutte der tallene slutter", () => {
-    const knapp = document.querySelector(
-      "#med th[data-align='end'] .lt-table__sort",
+  it("lets the text in an end-aligned header end where the numbers end", () => {
+    const button = document.querySelector(
+      "#with th[data-align='end'] .lt-table__sort",
     ) as HTMLElement
-    const tall = document.querySelector(
-      "#med-celle ~ td[data-align='end']",
+    const number = document.querySelector(
+      "#with-cell ~ td[data-align='end']",
     ) as HTMLElement
 
-    expect(tekstboks(knapp).right).toBeCloseTo(tekstboks(tall).right, 1)
+    expect(textBox(button).right).toBeCloseTo(textBox(number).right, 1)
   })
 
-  it("lar knappen fylle cellen, så hele cellen kan trykkes", () => {
-    const celle = document.querySelector("#med th") as HTMLElement
-    const knapp = celle.querySelector(".lt-table__sort") as HTMLElement
+  it("lets the button fill the cell, so the whole cell can be pressed", () => {
+    const cell = document.querySelector("#with th") as HTMLElement
+    const button = cell.querySelector(".lt-table__sort") as HTMLElement
 
-    expect(knapp.getBoundingClientRect().width).toBe(
-      celle.getBoundingClientRect().width,
+    expect(button.getBoundingClientRect().width).toBe(
+      cell.getBoundingClientRect().width,
     )
   })
 
-  it("tegner en egen pil for hver retning, og en for ingen", () => {
-    const pil = (th: Element) =>
+  it("draws its own arrow for each direction, and one for none", () => {
+    const arrow = (th: Element) =>
       getComputedStyle(
         th.querySelector(".lt-table__sort") as Element,
         "::after",
       ).maskImage
-    const celler = [...document.querySelectorAll("#med th")]
-    const retning = (th: Element) => th.getAttribute("aria-sort") ?? "ingen"
+    const cells = [...document.querySelectorAll("#with th")]
+    const direction = (th: Element) => th.getAttribute("aria-sort") ?? "unset"
 
-    expect(celler.map(retning)).toEqual(["ascending", "ingen", "descending"])
-    const piler = celler.map(pil)
-    for (const p of piler) expect(p).toContain("svg")
-    expect(new Set(piler).size).toBe(3)
+    expect(cells.map(direction)).toEqual(["ascending", "unset", "descending"])
+    const arrows = cells.map(arrow)
+    for (const a of arrows) expect(a).toContain("svg")
+    expect(new Set(arrows).size).toBe(3)
   })
 
-  it("holder pila utenfor navnet på knappen", () => {
-    const knapp = document.querySelector("#med .lt-table__sort") as HTMLElement
+  it("keeps the arrow out of the button's name", () => {
+    const button = document.querySelector(
+      "#with .lt-table__sort",
+    ) as HTMLElement
 
-    expect(getComputedStyle(knapp, "::after").content).toBe('""')
+    expect(getComputedStyle(button, "::after").content).toBe('""')
   })
 
-  it("setter aria-sort på overskriften og klassen på knappen", () => {
+  it("sets aria-sort on the header and the class on the button", () => {
     expect(tableSort()).toEqual({
       header: {},
       button: { class: "lt-table__sort", type: "button" },
@@ -171,7 +177,7 @@ describe("kolonner som kan sorteres", () => {
     expect(tableSort.isDirection("none")).toBe(false)
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

@@ -57,16 +57,16 @@ describe("lt-help-text", () => {
   })
 })
 
-describe("lt-help-text tilgjengelighet", () => {
-  it("har nok kontrast og er koblet til feltet", async () => {
+describe("lt-help-text accessibility", () => {
+  it("has enough contrast and is wired to the field", async () => {
     mount(`
-      <label class="lt-label" for="a11y-kid">KID-nummer</label>
-      <input class="lt-input" id="a11y-kid" inputmode="numeric" aria-describedby="a11y-kid-hjelp" />
-      <p class="lt-help-text" id="a11y-kid-hjelp">Du finner nummeret øverst på fakturaen.</p>
+      <label class="lt-label" for="a11y-kid">Payment reference</label>
+      <input class="lt-input" id="a11y-kid" inputmode="numeric" aria-describedby="a11y-kid-help" />
+      <p class="lt-help-text" id="a11y-kid-help">You will find the number at the top of the invoice.</p>
 
-      <p class="lt-help-text" data-variant="strong">Endringen gjelder fra neste månedsskifte.</p>
-      <p class="lt-help-text" data-variant="success">Vedlegget er lastet opp.</p>
-      <p class="lt-help-text" data-variant="warning">Søknadsfristen går ut om tre dager.</p>
+      <p class="lt-help-text" data-variant="strong">The change applies from the start of next month.</p>
+      <p class="lt-help-text" data-variant="success">The attachment has been uploaded.</p>
+      <p class="lt-help-text" data-variant="warning">The application deadline is in three days.</p>
     `)
 
     await waitForPaint()

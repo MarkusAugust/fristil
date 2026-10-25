@@ -7,7 +7,7 @@
  * without all that.
  *
  * The source is the built page, not the `.mdx` file. That is the whole point.
- * In MDX the markup is in a `kode` string passed to `<Example>`, and the
+ * In MDX the markup is in a `code` string passed to `<Example>`, and the
  * "Plain HTML" tab with the `<link>`s to the CDN, the import lines and the
  * version number does not exist there at all: it is computed by the component.
  * A converter that read MDX would have had to do that computation again, and
@@ -35,10 +35,10 @@ import remarkGfm from "remark-gfm"
 import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
-const MARKDOWNLENKE = 'link[rel="alternate"][type="text/markdown"]'
+const MARKDOWN_LINK = 'link[rel="alternate"][type="text/markdown"]'
 
 /** What is there for the eye or the keyboard, and is not content. */
-const STØY = [
+const NOISE = [
   "script",
   "style",
   "template",
@@ -50,28 +50,30 @@ const STØY = [
   ".expressive-code .sr-only",
 ].join(", ")
 
-const tolk = unified().use(rehypeParse)
+const parser = unified().use(rehypeParse)
 
 /*
  * `rehype-remark` takes the language from the class on `<code>`, but not the
  * file name. That goes in `title=` after the language, as Expressive Code
  * itself writes it, so an agent sees which file the block belongs in.
  */
-function pre(_tilstand, node) {
-  const kode = node.children.find((barn) => barn.tagName === "code") ?? node
-  const klasse = (kode.properties?.className ?? []).find((navn) =>
-    String(navn).startsWith("language-"),
+function pre(_state, node) {
+  const code = node.children.find((child) => child.tagName === "code") ?? node
+  const languageClass = (code.properties?.className ?? []).find((name) =>
+    String(name).startsWith("language-"),
   )
 
   return {
     type: "code",
-    lang: klasse ? String(klasse).slice("language-".length) : null,
-    meta: kode.properties?.dataMeta ?? null,
-    value: toText(kode, { whitespace: "pre" }).replace(/\n$/, ""),
+    lang: languageClass
+      ? String(languageClass).slice("language-".length)
+      : null,
+    meta: code.properties?.dataMeta ?? null,
+    value: toText(code, { whitespace: "pre" }).replace(/\n$/, ""),
   }
 }
 
-const skriv = unified()
+const writer = unified()
   .use(rehypeRemark, { handlers: { pre } })
   .use(remarkGfm, { tablePipeAlign: false })
   .use(remarkStringify, { bullet: "-", fences: true, rule: "-" })
@@ -83,32 +85,34 @@ const element = (tagName, properties, children) => ({
   children,
 })
 
-const tekst = (value) => ({ type: "text", value })
+const text = (value) => ({ type: "text", value })
 
-/** Replaces every element `velger` matches with what `lag` returns. */
-function bytt(tre, velger, lag) {
-  for (const gammel of selectAll(velger, tre)) {
-    const ny = lag(gammel)
-    for (const nøkkel of Object.keys(gammel)) delete gammel[nøkkel]
-    Object.assign(gammel, ny)
+/** Replaces every element `selector` matches with what `make` returns. */
+function replaceMatches(tree, selector, make) {
+  for (const old of selectAll(selector, tree)) {
+    const replacement = make(old)
+    for (const key of Object.keys(old)) delete old[key]
+    Object.assign(old, replacement)
   }
 }
 
-function fjern(tre, velger) {
-  const borte = new Set(selectAll(velger, tre))
+function remove(tree, selector) {
+  const removed = new Set(selectAll(selector, tree))
 
-  const gå = (node) => {
+  const walk = (node) => {
     if (!node.children) return
-    node.children = node.children.filter((barn) => !borte.has(barn))
-    for (const barn of node.children) gå(barn)
+    node.children = node.children.filter((child) => !removed.has(child))
+    for (const child of node.children) walk(child)
   }
 
-  gå(tre)
+  walk(tree)
 }
 
-const erTom = (node) =>
-  !node.children?.some((barn) =>
-    barn.type === "text" ? barn.value.trim() !== "" : barn.type === "element",
+const isEmpty = (node) =>
+  !node.children?.some((child) =>
+    child.type === "text"
+      ? child.value.trim() !== ""
+      : child.type === "element",
   )
 
 /**
@@ -116,22 +120,22 @@ const erTom = (node) =>
  * turned back into a plain `<pre><code>` with the language and file name,
  * which the Markdown writer turns into a fenced code block.
  */
-function kodeblokk(figur) {
-  const pre = select("pre", figur)
-  const språk = pre?.properties.dataLanguage
-  const tittel = toText(select(".title", figur) ?? tekst("")).trim()
-  const linjer = selectAll(".ec-line", figur).map((linje) =>
-    toText(linje, { whitespace: "pre" }),
+function codeBlock(figure) {
+  const pre = select("pre", figure)
+  const language = pre?.properties.dataLanguage
+  const title = toText(select(".title", figure) ?? text("")).trim()
+  const lines = selectAll(".ec-line", figure).map((line) =>
+    toText(line, { whitespace: "pre" }),
   )
 
   return element("pre", {}, [
     element(
       "code",
       {
-        className: språk ? [`language-${språk}`] : [],
-        dataMeta: tittel ? `title="${tittel}"` : undefined,
+        className: language ? [`language-${language}`] : [],
+        dataMeta: title ? `title="${title}"` : undefined,
       },
-      [tekst(linjer.join("\n"))],
+      [text(lines.join("\n"))],
     ),
   ])
 }
@@ -141,42 +145,42 @@ function kodeblokk(figur) {
  * and is removed with the rest, but the names are needed when the tabs are
  * laid out one after another.
  */
-function merkFaner(tre) {
-  for (const tabs of selectAll("starlight-tabs", tre)) {
+function markTabs(tree) {
+  for (const tabs of selectAll("starlight-tabs", tree)) {
     for (const panel of selectAll('[role="tabpanel"]', tabs)) {
-      const fane = select(`[id="${panel.properties.ariaLabelledBy}"]`, tabs)
-      panel.properties.dataFane = toText(fane ?? tekst("")).trim()
+      const tab = select(`[id="${panel.properties.ariaLabelledBy}"]`, tabs)
+      panel.properties.dataTab = toText(tab ?? text("")).trim()
     }
   }
 }
 
 /** The tabs one after another, each with its name in front. */
-function faner(tabs) {
-  const barn = []
+function tabList(tabs) {
+  const children = []
 
   for (const panel of selectAll('[role="tabpanel"]', tabs)) {
-    if (erTom(panel)) continue
+    if (isEmpty(panel)) continue
 
-    barn.push(
+    children.push(
       element("p", {}, [
-        element("strong", {}, [tekst(panel.properties.dataFane)]),
+        element("strong", {}, [text(panel.properties.dataTab)]),
       ]),
       ...panel.children,
     )
   }
 
-  return element("div", {}, barn)
+  return element("div", {}, children)
 }
 
 /** A Starlight aside becomes a blockquote with the title in bold. */
-function merknad(aside) {
-  const innhold = select(".starlight-aside__content", aside)
+function asideToQuote(aside) {
+  const content = select(".starlight-aside__content", aside)
 
   return element("blockquote", {}, [
     element("p", {}, [
-      element("strong", {}, [tekst(aside.properties.ariaLabel)]),
+      element("strong", {}, [text(aside.properties.ariaLabel)]),
     ]),
-    ...(innhold?.children ?? []),
+    ...(content?.children ?? []),
   ])
 }
 
@@ -189,84 +193,88 @@ function merknad(aside) {
  * against the page's own address, since the Markdown file sits somewhere else
  * than the page and the same relative path would miss from there.
  */
-function lenker(tre, sti, adresser) {
-  for (const a of selectAll("a[href]", tre)) {
+function links(tree, path, addresses) {
+  for (const a of selectAll("a[href]", tree)) {
     const href = String(a.properties.href)
     if (href.startsWith("#")) continue
 
-    const mål = new URL(href, `https://lotek${sti}`)
-    if (mål.origin !== "https://lotek") continue
+    const target = new URL(href, `https://lotek${path}`)
+    if (target.origin !== "https://lotek") continue
 
-    const md = adresser.get(mål.pathname)
-    if (md) a.properties.href = `${md}${mål.hash}`
+    const md = addresses.get(target.pathname)
+    if (md) a.properties.href = `${md}${target.hash}`
   }
 }
 
-function tilMarkdown(html, sti, adresser) {
-  const side = tolk.parse(html)
-  const innhold = select(".sl-markdown-content", side)
-  if (!innhold) return null
+function toMarkdown(html, path, addresses) {
+  const page = parser.parse(html)
+  const content = select(".sl-markdown-content", page)
+  if (!content) return null
 
-  const tittel = toText(select("h1", side) ?? tekst("")).trim()
-  const beskrivelse = select('meta[name="description"]', side)?.properties
+  const title = toText(select("h1", page) ?? text("")).trim()
+  const description = select('meta[name="description"]', page)?.properties
     .content
 
   /*
    * The code blocks first: the copy button and "Terminal window" are inside
-   * them, and `kodeblokk` takes the lines before they disappear. The tabs
+   * them, and `codeBlock` takes the lines before they disappear. The tabs
    * last, so a tab that only had a live example is empty when it is
    * considered, and drops out.
    */
-  bytt(innhold, ".expressive-code", kodeblokk)
-  merkFaner(innhold)
-  fjern(innhold, STØY)
-  bytt(innhold, "aside.starlight-aside", merknad)
-  bytt(innhold, "starlight-tabs", faner)
-  lenker(innhold, sti, adresser)
+  replaceMatches(content, ".expressive-code", codeBlock)
+  markTabs(content)
+  remove(content, NOISE)
+  replaceMatches(content, "aside.starlight-aside", asideToQuote)
+  replaceMatches(content, "starlight-tabs", tabList)
+  links(content, path, addresses)
 
-  const brødtekst = skriv
-    .stringify(skriv.runSync({ type: "root", children: [innhold] }))
+  const body = writer
+    .stringify(writer.runSync({ type: "root", children: [content] }))
     .trim()
 
-  return [`# ${tittel}`, beskrivelse ? `> ${beskrivelse}` : "", brødtekst]
+  return [`# ${title}`, description ? `> ${description}` : "", body]
     .filter(Boolean)
     .join("\n\n")
 }
 
 /** @returns {import("astro").AstroIntegration} */
-export function markdownsider() {
+export function markdownPages() {
   return {
-    name: "lotek:markdownsider",
+    name: "lotek:markdown-pages",
     hooks: {
       "astro:build:done": ({ dir, pages, logger }) => {
-        const rot = fileURLToPath(dir)
+        const root = fileURLToPath(dir)
 
         // Every page that has a Markdown version, and where it is to go.
-        const sider = []
+        const entries = []
         for (const { pathname } of pages) {
-          const fil = `${rot}${pathname}index.html`.replace(/\/\/+/g, "/")
+          const file = `${root}${pathname}index.html`.replace(/\/\/+/g, "/")
           let html
           try {
-            html = readFileSync(fil, "utf8")
+            html = readFileSync(file, "utf8")
           } catch {
             continue
           }
 
-          const lenke = select(MARKDOWNLENKE, tolk.parse(html))
-          if (lenke)
-            sider.push({ sti: `/${pathname}`, html, md: lenke.properties.href })
+          const link = select(MARKDOWN_LINK, parser.parse(html))
+          if (link)
+            entries.push({
+              path: `/${pathname}`,
+              html,
+              md: link.properties.href,
+            })
         }
 
-        const adresser = new Map(sider.map(({ sti, md }) => [sti, md]))
+        const addresses = new Map(entries.map(({ path, md }) => [path, md]))
         const headers = []
 
-        for (const { sti, html, md } of sider) {
-          const markdown = tilMarkdown(html, sti, adresser)
+        for (const { path, html, md } of entries) {
+          const markdown = toMarkdown(html, path, addresses)
           if (markdown === null) {
-            throw new Error(`${sti} has a Markdown link, but no content`)
+            throw new Error(`${path} has a Markdown link, but no content`)
           }
 
-          writeFileSync(`${rot}${md.slice(1)}`, `${markdown}\n`)
+          writeFileSync(`${root}${md.slice(1)}`, `${markdown}\n`)
           headers.push(`${md}\n  Content-Type: text/markdown; charset=utf-8`)
         }
 
@@ -276,13 +284,13 @@ export function markdownsider() {
          * nothing depends on how Netlify reads a wildcard in the middle of a
          * file name, and the list is made from the files actually written.
          */
-        const headerfil = `${rot}_headers`
+        const headerFile = `${root}_headers`
         writeFileSync(
-          headerfil,
-          `${readFileSync(headerfil, "utf8").trimEnd()}\n\n# The Markdown versions of the pages, written by src/plugins/markdown-pages.mjs.\n${headers.join("\n")}\n`,
+          headerFile,
+          `${readFileSync(headerFile, "utf8").trimEnd()}\n\n# The Markdown versions of the pages, written by src/plugins/markdown-pages.mjs.\n${headers.join("\n")}\n`,
         )
 
-        logger.info(`${sider.length} pages written as Markdown.`)
+        logger.info(`${entries.length} pages written as Markdown.`)
       },
     },
   }

@@ -13,18 +13,18 @@ export async function pixel(
   x: number,
   y = 0.5,
 ): Promise<[number, number, number]> {
-  const bilde = new Image()
-  bilde.src = `data:image/png;base64,${await page.screenshot({ element, save: false })}`
-  await bilde.decode()
-  const lerret = document.createElement("canvas")
-  lerret.width = bilde.width
-  lerret.height = bilde.height
-  const tegning = lerret.getContext("2d")
-  if (tegning === null) throw new Error("Could not draw on the canvas")
-  tegning.drawImage(bilde, 0, 0)
-  const [r, g, b] = tegning.getImageData(
-    Math.min(Math.floor(bilde.width * x), bilde.width - 1),
-    Math.min(Math.floor(bilde.height * y), bilde.height - 1),
+  const image = new Image()
+  image.src = `data:image/png;base64,${await page.screenshot({ element, save: false })}`
+  await image.decode()
+  const canvas = document.createElement("canvas")
+  canvas.width = image.width
+  canvas.height = image.height
+  const context = canvas.getContext("2d")
+  if (context === null) throw new Error("Could not draw on the canvas")
+  context.drawImage(image, 0, 0)
+  const [r, g, b] = context.getImageData(
+    Math.min(Math.floor(image.width * x), image.width - 1),
+    Math.min(Math.floor(image.height * y), image.height - 1),
     1,
     1,
   ).data

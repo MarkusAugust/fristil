@@ -15,39 +15,39 @@ import "./skeleton.css"
 describe("lt-skeleton", () => {
   beforeEach(() => {
     mount(`
-      <p role="status">Henter søknadene dine</p>
-      <div class="lt-skeleton" data-variant="circle" id="sirkel" aria-hidden="true"></div>
-      <div class="lt-skeleton" data-variant="text" id="tekst" aria-hidden="true"></div>
-      <div class="lt-skeleton" id="blokk" aria-hidden="true"></div>
+      <p role="status">Loading your applications</p>
+      <div class="lt-skeleton" data-variant="circle" id="circle" aria-hidden="true"></div>
+      <div class="lt-skeleton" data-variant="text" id="text" aria-hidden="true"></div>
+      <div class="lt-skeleton" id="block" aria-hidden="true"></div>
     `)
   })
 
-  it("er rund i sirkelvarianten", () => {
-    const sirkel = getComputedStyle(
-      document.getElementById("sirkel") as Element,
+  it("is round in the circle variant", () => {
+    const circle = getComputedStyle(
+      document.getElementById("circle") as Element,
     )
 
-    expect(sirkel.borderRadius).toMatch(/50%|9999px/)
+    expect(circle.borderRadius).toMatch(/50%|9999px/)
   })
 
-  it("lar --lt-skeleton-radius gjelde tekstlinjene også", () => {
-    // Tekstvarianten hadde en fast radius og leste ikke variabelen.
-    for (const id of ["tekst", "blokk"]) {
+  it("applies --lt-skeleton-radius to the text lines too", () => {
+    // The text variant had a fixed radius and did not read the variable.
+    for (const id of ["text", "block"]) {
       const element = document.getElementById(id) as HTMLElement
       element.style.setProperty("--lt-skeleton-radius", "20px")
       expect(getComputedStyle(element).borderTopLeftRadius, id).toBe("20px")
     }
   })
 
-  it("holdes utenfor tilgjengelighetstreet", () => {
-    // En rekke tomme bokser som leses opp er verre enn stillhet. Ventingen
-    // meldes ett sted, i elementet med role="status".
-    for (const form of document.querySelectorAll(".lt-skeleton")) {
-      expect(form.getAttribute("aria-hidden")).toBe("true")
+  it("stays out of the accessibility tree", () => {
+    // A row of empty boxes read aloud is worse than silence. The wait is
+    // announced in one place, in the element with role="status".
+    for (const shape of document.querySelectorAll(".lt-skeleton")) {
+      expect(shape.getAttribute("aria-hidden")).toBe("true")
     }
   })
 
-  it("setter aria-hidden fra byggefunksjonen", () => {
+  it("sets aria-hidden from the builder function", () => {
     expect(skeleton()).toEqual({ class: "lt-skeleton", "aria-hidden": "true" })
     expect(skeleton({ variant: "text" })).toEqual({
       class: "lt-skeleton",
@@ -56,7 +56,7 @@ describe("lt-skeleton", () => {
     })
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

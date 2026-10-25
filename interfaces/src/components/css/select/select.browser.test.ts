@@ -28,10 +28,10 @@ function css(id: string) {
 describe("lt-select", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <select id="default" class="lt-select"><option>Velg</option></select>
-      <select id="invalid" class="lt-select" data-state="invalid"><option>Velg</option></select>
-      <select id="success" class="lt-select" data-state="success"><option>Velg</option></select>
-      <select id="disabled" class="lt-select" disabled><option>Velg</option></select>
+      <select id="default" class="lt-select"><option>Choose</option></select>
+      <select id="invalid" class="lt-select" data-state="invalid"><option>Choose</option></select>
+      <select id="success" class="lt-select" data-state="success"><option>Choose</option></select>
+      <select id="disabled" class="lt-select" disabled><option>Choose</option></select>
     `
   })
 
@@ -63,23 +63,23 @@ describe("lt-select", () => {
     expect(select.backgroundColor).toBe(color("--lt-color-disabled-surface"))
     expect(select.borderTopColor).toBe(color("--lt-color-disabled-surface"))
     expect(select.color).toBe(color("--lt-color-disabled-text"))
-    // Markøren vises bare hvis elementet treffes av pekeren
+    // The cursor only shows if the pointer hits the element
     expect(select.pointerEvents).toBe("auto")
   })
 })
 
-describe("lt-select tilgjengelighet", () => {
-  it("har nok kontrast og ledetekst i alle tilstander", async () => {
+describe("lt-select accessibility", () => {
+  it("has enough contrast and a label in every state", async () => {
     mount(`
-      <label class="lt-label" for="a11y-fylke">Fylke</label>
-      <select class="lt-select" id="a11y-fylke">
-        <option value="">Velg fylke</option>
-        <option value="vestland">Vestland</option>
+      <label class="lt-label" for="a11y-country">Country</label>
+      <select class="lt-select" id="a11y-country">
+        <option value="">Choose a country</option>
+        <option value="norway">Norway</option>
       </select>
 
-      <label class="lt-label" for="a11y-kommune">Kommune</label>
-      <select class="lt-select" id="a11y-kommune" data-state="invalid" aria-invalid="true">
-        <option value="">Velg kommune</option>
+      <label class="lt-label" for="a11y-city">City</label>
+      <select class="lt-select" id="a11y-city" data-state="invalid" aria-invalid="true">
+        <option value="">Choose a city</option>
       </select>
     `)
 
@@ -88,258 +88,265 @@ describe("lt-select tilgjengelighet", () => {
   })
 })
 
-describe("lt-select uten CSS-reset", () => {
-  it("holder seg innenfor boksen sin", () => {
-    const { boks } = mountIsolated(
+describe("lt-select without a CSS reset", () => {
+  it("stays inside its box", () => {
+    const { box } = mountIsolated(
       selectCss,
-      `<select class="lt-select"><option>Vestland</option></select>`,
+      `<select class="lt-select"><option>Norway</option></select>`,
     )
 
-    expect(findOverflow(boks)).toEqual([])
+    expect(findOverflow(box)).toEqual([])
   })
 })
 
-describe("lt-select deaktivert", () => {
-  it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
-    mount(`<select class="lt-select" disabled><option>Av</option></select>`)
+describe("lt-select disabled", () => {
+  it("shows the not-allowed cursor, and is actually hit by the mouse", () => {
+    mount(`<select class="lt-select" disabled><option>Off</option></select>`)
 
     const element = document.querySelector("select") as HTMLElement
-    const ramme = element.getBoundingClientRect()
+    const rect = element.getBoundingClientRect()
 
     expect(getComputedStyle(element).cursor).toBe("not-allowed")
 
-    // cursor har ingen virkning hvis elementet ikke treffes av pekeren.
-    // Alle disse hadde pointer-events: none, så markøren ble aldri vist.
+    // cursor has no effect if the pointer does not hit the element. All of
+    // these had pointer-events: none, so the cursor was never shown.
     expect(
       document.elementFromPoint(
-        ramme.x + ramme.width / 2,
-        ramme.y + ramme.height / 2,
+        rect.x + rect.width / 2,
+        rect.y + rect.height / 2,
       ),
     ).toBe(element)
   })
 })
 
 /*
- * Nedtrekkslista som tegnes i siden.
+ * The dropdown list drawn in the page.
  *
- * `appearance: base-select` finnes i Chromium og WebKit, men ikke i Firefox
- * 150. Testen kjører i alle tre, og sier hva som skal skje i hver: der det
- * finnes, tegnes lista i siden; der det ikke finnes, står feltet igjen
- * nøyaktig som et vanlig felt. Begge deler er riktig oppførsel, og det er
- * grunnen til at dette er noe man slår på og ikke standarden.
+ * `appearance: base-select` exists in Chromium and WebKit, but not in Firefox
+ * 150. The test runs in all three and says what should happen in each: where
+ * it exists, the list is drawn in the page; where it does not, the field stays
+ * exactly like a plain field. Both are correct behaviour, and that is why this
+ * is something you turn on and not the default.
  */
-const harBaseSelect = CSS.supports("appearance", "base-select")
+const hasBaseSelect = CSS.supports("appearance", "base-select")
 
-/** Leser en utregnet fargeverdi som tre tall. */
-function rgb(verdi: string): [number, number, number] {
-  const tall = verdi.match(/\d+/g)
-  if (!tall || tall.length < 3) throw new Error(`Uleselig color «${verdi}»`)
-  return [Number(tall[0]), Number(tall[1]), Number(tall[2])]
+/** Reads a computed colour value as three numbers. */
+function rgb(value: string): [number, number, number] {
+  const numbers = value.match(/\d+/g)
+  if (!numbers || numbers.length < 3) {
+    throw new Error(`Unreadable color "${value}"`)
+  }
+  return [Number(numbers[0]), Number(numbers[1]), Number(numbers[2])]
 }
 
 /**
- * Venter til lista er ferdig tonet inn, ikke på klokka. Overgangen varer 120
- * millisekunder, og en fast venting ville feilet tilfeldig på en treg kjøring.
+ * Waits until the list has faded in, not on the clock. The transition lasts
+ * 120 milliseconds, and a fixed wait would fail at random on a slow run.
  */
-async function ventPaListen(element: HTMLElement): Promise<void> {
+async function waitForList(element: HTMLElement): Promise<void> {
   for (let i = 0; i < 90; i++) {
     if (getComputedStyle(element, "::picker(select)").opacity === "1") return
     await new Promise((resolve) => requestAnimationFrame(resolve))
   }
-  throw new Error("Lista åpnet seg ikke")
+  throw new Error("The list did not open")
 }
 
-/** Lukker lista igjen, slik at den ikke står åpen inn i neste test. */
-async function lukk(element: HTMLElement): Promise<void> {
+/** Closes the list again, so it does not stay open into the next test. */
+async function closeList(element: HTMLElement): Promise<void> {
   await userEvent.keyboard("{Escape}")
   await waitForPaint(element)
 }
 
-describe('lt-select med data-picker="styled"', () => {
+describe('lt-select with data-picker="styled"', () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <select id="vanlig" class="lt-select">
-        <option value="vestland">Vestland</option>
-        <option value="rogaland">Rogaland</option>
+      <select id="plain" class="lt-select">
+        <option value="norway">Norway</option>
+        <option value="sweden">Sweden</option>
       </select>
-      <select id="stylet" class="lt-select" data-picker="styled">
-        <option value="vestland">Vestland</option>
-        <option value="rogaland" selected>Rogaland</option>
+      <select id="styled" class="lt-select" data-picker="styled">
+        <option value="norway">Norway</option>
+        <option value="sweden" selected>Sweden</option>
       </select>
     `
   })
 
-  it("lar nettleseren tegne lista når den kan", () => {
-    const stylet = css("stylet")
+  it("lets the browser draw the list when it can", () => {
+    const styled = css("styled")
 
-    if (harBaseSelect) {
-      expect(stylet.appearance).toBe("base-select")
-      // Pila kommer fra ::picker-icon nå, så de to gradientene skal bort.
-      expect(stylet.backgroundImage).toBe("none")
+    if (hasBaseSelect) {
+      expect(styled.appearance).toBe("base-select")
+      // The arrow comes from ::picker-icon now, so the two gradients go.
+      expect(styled.backgroundImage).toBe("none")
     } else {
-      // Firefox: attributtet gjør ingenting, og feltet ser ut som ellers.
-      expect(stylet.appearance).toBe("none")
-      expect(stylet.backgroundImage).toContain("gradient")
+      // Firefox: the attribute does nothing, and the field looks as it always does.
+      expect(styled.appearance).toBe("none")
+      expect(styled.backgroundImage).toContain("gradient")
     }
   })
 
-  it("rører ikke et felt uten attributtet", () => {
-    const vanlig = css("vanlig")
+  it("leaves a field without the attribute alone", () => {
+    const plain = css("plain")
 
-    expect(vanlig.appearance).toBe("none")
-    expect(vanlig.backgroundImage).toContain("gradient")
+    expect(plain.appearance).toBe("none")
+    expect(plain.backgroundImage).toContain("gradient")
   })
 
-  it("beholder farger og tilstand fra resten av komponenten", () => {
-    const stylet = css("stylet")
+  it("keeps the colours and state from the rest of the component", () => {
+    const styled = css("styled")
 
-    expect(stylet.backgroundColor).toBe(color("--lt-color-neutral-canvas"))
-    expect(stylet.borderTopColor).toBe(color("--lt-color-disabled-text"))
-    expect(stylet.color).toBe(color("--lt-color-neutral-text-strong"))
+    expect(styled.backgroundColor).toBe(color("--lt-color-neutral-canvas"))
+    expect(styled.borderTopColor).toBe(color("--lt-color-disabled-text"))
+    expect(styled.color).toBe(color("--lt-color-neutral-text-strong"))
   })
 
-  it("åpner lista inne i siden, med vår egen flate", async () => {
-    if (!harBaseSelect) return
+  it("opens the list inside the page, with our own surface", async () => {
+    if (!hasBaseSelect) return
 
-    const element = document.getElementById("stylet")
-    if (!(element instanceof HTMLElement)) throw new Error("Fant ikke feltet")
+    const element = document.getElementById("styled")
+    if (!(element instanceof HTMLElement))
+      throw new Error("Could not find the field")
 
     await userEvent.click(element)
-    await ventPaListen(element)
+    await waitForList(element)
 
-    const liste = getComputedStyle(element, "::picker(select)")
+    const list = getComputedStyle(element, "::picker(select)")
 
     expect(element.matches(":open")).toBe(true)
-    expect(liste.backgroundColor).toBe(color("--lt-color-neutral-canvas"))
-    expect(liste.borderTopColor).toBe(color("--lt-color-disabled-text"))
-    expect(liste.overflowY).toBe("auto")
+    expect(list.backgroundColor).toBe(color("--lt-color-neutral-canvas"))
+    expect(list.borderTopColor).toBe(color("--lt-color-disabled-text"))
+    expect(list.overflowY).toBe("auto")
 
-    // Høyden animeres fra null i Chromium. Går noe galt med overgangen, står
-    // lista åpen uten å være synlig, og det er en feil ingen ser i CSS-en.
-    expect(Number.parseFloat(liste.blockSize)).toBeGreaterThan(40)
+    // The height animates from zero in Chromium. If something goes wrong with
+    // the transition, the list is open without being visible, and that is a
+    // bug nobody sees in the CSS.
+    expect(Number.parseFloat(list.blockSize)).toBeGreaterThan(40)
 
-    await lukk(element)
+    await closeList(element)
   })
 
-  it("gir det valgte alternativet vår egen markering", async () => {
-    if (!harBaseSelect) return
+  it("gives the selected option our own highlight", async () => {
+    if (!hasBaseSelect) return
 
-    const element = document.getElementById("stylet")
-    if (!(element instanceof HTMLElement)) throw new Error("Fant ikke feltet")
+    const element = document.getElementById("styled")
+    if (!(element instanceof HTMLElement))
+      throw new Error("Could not find the field")
 
     await userEvent.click(element)
-    await ventPaListen(element)
+    await waitForList(element)
 
-    const valgt = element.querySelector("option[value='rogaland']")
-    const annet = element.querySelector("option[value='vestland']")
-    if (!(valgt instanceof HTMLElement) || !(annet instanceof HTMLElement)) {
-      throw new Error("Fant ikke alternativene")
+    const selected = element.querySelector("option[value='sweden']")
+    const other = element.querySelector("option[value='norway']")
+    if (!(selected instanceof HTMLElement) || !(other instanceof HTMLElement)) {
+      throw new Error("Could not find the options")
     }
 
-    expect(getComputedStyle(valgt).backgroundColor).toBe(
+    expect(getComputedStyle(selected).backgroundColor).toBe(
       color("--lt-color-accent-fill"),
     )
-    expect(getComputedStyle(valgt).color).toBe(
+    expect(getComputedStyle(selected).color).toBe(
       color("--lt-color-accent-content"),
     )
-    expect(getComputedStyle(annet).backgroundColor).toBe(
+    expect(getComputedStyle(other).backgroundColor).toBe(
       color("--lt-color-neutral-canvas"),
     )
-    expect(getComputedStyle(annet).padding).toBe("8px 12px")
+    expect(getComputedStyle(other).padding).toBe("8px 12px")
 
-    await lukk(element)
+    await closeList(element)
   })
-  it("skiller gruppeoverskriften fra valgene", async () => {
-    if (!harBaseSelect) return
+  it("tells the group heading apart from the options", async () => {
+    if (!hasBaseSelect) return
 
     document.body.innerHTML = `
-      <select id="gruppert" class="lt-select" data-picker="styled">
-        <optgroup label="Vestlandet">
-          <option value="bergen">Bergen</option>
+      <select id="grouped" class="lt-select" data-picker="styled">
+        <optgroup label="Nordic countries">
+          <option value="norway">Norway</option>
         </optgroup>
-        <option value="oslo" selected>Oslo</option>
+        <option value="germany" selected>Germany</option>
       </select>
     `
 
-    const element = document.getElementById("gruppert")
-    if (!(element instanceof HTMLElement)) throw new Error("Fant ikke feltet")
+    const element = document.getElementById("grouped")
+    if (!(element instanceof HTMLElement))
+      throw new Error("Could not find the field")
 
     await userEvent.click(element)
-    await ventPaListen(element)
+    await waitForList(element)
 
-    const gruppe = element.querySelector("optgroup")
-    const iGruppe = element.querySelector("option[value='bergen']")
-    const utenfor = element.querySelector("option[value='oslo']")
+    const group = element.querySelector("optgroup")
+    const inGroup = element.querySelector("option[value='norway']")
+    const outside = element.querySelector("option[value='germany']")
     if (
-      !(gruppe instanceof HTMLElement) ||
-      !(iGruppe instanceof HTMLElement) ||
-      !(utenfor instanceof HTMLElement)
+      !(group instanceof HTMLElement) ||
+      !(inGroup instanceof HTMLElement) ||
+      !(outside instanceof HTMLElement)
     ) {
-      throw new Error("Fant ikke gruppa")
+      throw new Error("Could not find the group")
     }
 
-    // Overskriften kommer fra `label=`, og er ikke et element vi kan treffe.
-    // Den arver fra gruppa, så det er gruppa som må ha verdiene.
-    expect(getComputedStyle(gruppe).fontSize).toBe("14px")
-    expect(getComputedStyle(gruppe).color).toBe(
+    // The heading comes from `label=`, and is not an element we can target.
+    // It inherits from the group, so the group is what must have the values.
+    expect(getComputedStyle(group).fontSize).toBe("14px")
+    expect(getComputedStyle(group).color).toBe(
       color("--lt-color-neutral-text-subtle"),
     )
-    expect(getComputedStyle(gruppe).textIndent).toBe("12px")
+    expect(getComputedStyle(group).textIndent).toBe("12px")
 
-    // Og valgene inni må stå igjen som valgene utenfor. `oslo` er det valgte,
-    // så `bergen` viser den vanlige teksten.
-    expect(getComputedStyle(iGruppe).fontSize).toBe("16px")
-    expect(getComputedStyle(iGruppe).color).toBe(
+    // And the options inside must look like the options outside. `germany` is
+    // the selected one, so `norway` shows the plain text.
+    expect(getComputedStyle(inGroup).fontSize).toBe("16px")
+    expect(getComputedStyle(inGroup).color).toBe(
       color("--lt-color-neutral-text-strong"),
     )
-    expect(getComputedStyle(iGruppe).textIndent).toBe("0px")
-    expect(iGruppe.getBoundingClientRect().width).toBe(
-      utenfor.getBoundingClientRect().width,
+    expect(getComputedStyle(inGroup).textIndent).toBe("0px")
+    expect(inGroup.getBoundingClientRect().width).toBe(
+      outside.getBoundingClientRect().width,
     )
 
-    await lukk(element)
+    await closeList(element)
   })
 
-  it("klipper et langt valg når <selectedcontent> står i knappen", async () => {
-    // <selectedcontent> er et element forfatteren skriver selv. Nettleseren
-    // lager det ikke, så regelen traff ingenting med vanlig markup, og et
-    // langt valg ble brutt over to linjer.
-    if (!harBaseSelect || !("HTMLSelectedContentElement" in window)) return
+  it("clips a long option when <selectedcontent> is in the button", async () => {
+    // <selectedcontent> is an element the author writes. The browser does not
+    // create it, so the rule matched nothing with plain markup, and a long
+    // option wrapped onto two lines.
+    if (!hasBaseSelect || !("HTMLSelectedContentElement" in window)) return
 
-    const langt = "Søknad om dispensasjon fra reguleringsplanen for området"
+    const long =
+      "Application for an exemption from the zoning plan for the area"
     document.body.innerHTML = `
       <div style="inline-size: 260px">
-        <select id="langt" class="lt-select" data-picker="styled">
+        <select id="long" class="lt-select" data-picker="styled">
           <button><selectedcontent></selectedcontent></button>
-          <option>${langt}</option>
+          <option>${long}</option>
         </select>
-        <select id="kort" class="lt-select" data-picker="styled">
+        <select id="short" class="lt-select" data-picker="styled">
           <button><selectedcontent></selectedcontent></button>
-          <option>Byggesak</option>
+          <option>Building permit</option>
         </select>
       </div>
     `
-    const element = document.getElementById("langt") as HTMLElement
+    const element = document.getElementById("long") as HTMLElement
     await waitForPaint(element)
 
-    const innhold = element.querySelector("selectedcontent") as HTMLElement
-    expect(innhold.textContent).toBe(langt)
-    expect(innhold.scrollWidth).toBeGreaterThan(innhold.clientWidth)
+    const content = element.querySelector("selectedcontent") as HTMLElement
+    expect(content.textContent).toBe(long)
+    expect(content.scrollWidth).toBeGreaterThan(content.clientWidth)
     expect(element.getBoundingClientRect().height).toBe(
-      (document.getElementById("kort") as HTMLElement).getBoundingClientRect()
+      (document.getElementById("short") as HTMLElement).getBoundingClientRect()
         .height,
     )
   })
 })
 
-describe("lt-select med lista i siden, tilgjengelighet", () => {
-  it("har nok kontrast og ledetekst", async () => {
+describe("lt-select with the list in the page, accessibility", () => {
+  it("has enough contrast and a label", async () => {
     mount(`
-      <label class="lt-label" for="a11y-stylet">Fylke</label>
-      <select class="lt-select" id="a11y-stylet" data-picker="styled">
-        <optgroup label="Vestlandet">
-          <option value="">Velg fylke</option>
-          <option value="vestland">Vestland</option>
+      <label class="lt-label" for="a11y-styled">Country</label>
+      <select class="lt-select" id="a11y-styled" data-picker="styled">
+        <optgroup label="Nordic countries">
+          <option value="">Choose a country</option>
+          <option value="norway">Norway</option>
         </optgroup>
       </select>
     `)
@@ -349,57 +356,62 @@ describe("lt-select med lista i siden, tilgjengelighet", () => {
   })
 
   /*
-   * axe ser ikke inn i den åpne lista. Testet: settes fargen på et valg til
-   * lysegrå, melder axe fortsatt grønt, både med lista åpen og lukket. Da må
-   * kontrasten regnes ut her, ellers står det en påstand i testen som ikke
-   * kan feile.
+   * axe does not look inside the open list. Tested: with the colour of an
+   * option set to light grey, axe still reports green, with the list both
+   * open and closed. So the contrast has to be computed here, or the test
+   * holds an assertion that cannot fail.
    */
-  it("holder kontrastkravet på valgene i den åpne lista", async () => {
-    if (!harBaseSelect) return
+  it("meets the contrast requirement on the options in the open list", async () => {
+    if (!hasBaseSelect) return
 
     mount(`
-      <label class="lt-label" for="kontrast-stylet">Fylke</label>
-      <select class="lt-select" id="kontrast-stylet" data-picker="styled">
-        <optgroup label="Vestlandet">
-          <option value="bergen">Bergen</option>
-          <option value="stavanger" selected>Stavanger</option>
+      <label class="lt-label" for="contrast-styled">Country</label>
+      <select class="lt-select" id="contrast-styled" data-picker="styled">
+        <optgroup label="Nordic countries">
+          <option value="norway">Norway</option>
+          <option value="sweden" selected>Sweden</option>
         </optgroup>
       </select>
     `)
 
-    const element = document.getElementById("kontrast-stylet")
-    if (!(element instanceof HTMLElement)) throw new Error("Fant ikke feltet")
+    const element = document.getElementById("contrast-styled")
+    if (!(element instanceof HTMLElement))
+      throw new Error("Could not find the field")
 
     await userEvent.click(element)
-    await ventPaListen(element)
+    await waitForList(element)
 
-    const flate = rgb(
+    const surface = rgb(
       getComputedStyle(element, "::picker(select)").backgroundColor,
     )
 
-    for (const [navn, velger] of [
-      ["et valg", "option[value='bergen']"],
-      ["det valgte", "option[value='stavanger']"],
-      ["gruppeoverskriften", "optgroup"],
+    for (const [name, selector] of [
+      ["an option", "option[value='norway']"],
+      ["the selected option", "option[value='sweden']"],
+      ["the group heading", "optgroup"],
     ] as const) {
-      const del = element.querySelector(velger)
-      if (!(del instanceof HTMLElement)) throw new Error(`Fant ikke ${navn}`)
+      const part = element.querySelector(selector)
+      if (!(part instanceof HTMLElement)) {
+        throw new Error(`Could not find ${name}`)
+      }
 
-      const bak = getComputedStyle(del).backgroundColor
-      const bakgrunn = bak.includes("rgba(0, 0, 0, 0)") ? flate : rgb(bak)
+      const behind = getComputedStyle(part).backgroundColor
+      const background = behind.includes("rgba(0, 0, 0, 0)")
+        ? surface
+        : rgb(behind)
 
       expect(
-        kontrastForhold(rgb(getComputedStyle(del).color), bakgrunn),
-        navn,
+        contrastBetween(rgb(getComputedStyle(part).color), background),
+        name,
       ).toBeGreaterThanOrEqual(4.5)
     }
 
-    await lukk(element)
+    await closeList(element)
   })
 })
 
-/** Kontrasten mellom to utregnede farger, som `rgb(r, g, b)`. */
-function kontrastForhold(
+/** The contrast between two computed colours, as `rgb(r, g, b)`. */
+function contrastBetween(
   a: [number, number, number],
   b: [number, number, number],
 ): number {

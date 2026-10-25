@@ -5,8 +5,8 @@ import Preview from "./Preview.astro"
 // The server writes the wiring: aria-controls on the button, the class and
 // popover on the panel. The component computes the position and closes on a
 // click outside.
-const boks = lt.popover({ id: "demo-popover-panel" })
-const handlinger = [
+const box = lt.popover({ id: "demo-popover-panel" })
+const actions = [
   "Archive the case",
   "Download as PDF",
   "Share with a caseworker",
@@ -14,17 +14,17 @@ const handlinger = [
 ---
 
 <Preview id="demo-popover" styles={["popover", "button"]} maxWidth="30rem">
-	<lt-popover placement="bottom-start" {...boks.host}>
-		<button {...boks.trigger} {...lt.button({ variant: "secondary" })} type="button">
+	<lt-popover placement="bottom-start" {...box.host}>
+		<button {...box.trigger} {...lt.button({ variant: "secondary" })} type="button">
 			Actions
 		</button>
 
-		<ul {...boks.panel}>
+		<ul {...box.panel}>
 			{
-				handlinger.map((tekst) => (
+				actions.map((text) => (
 					<li>
 						<button class="lt-button" data-variant="ghost" type="button">
-							{tekst}
+							{text}
 						</button>
 					</li>
 				))

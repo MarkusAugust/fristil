@@ -7,41 +7,41 @@ export default defineConfig({
     browser: {
       enabled: true,
       provider: playwright(),
-      // Tre nettlesere, fordi hele premisset er at vi bruker nettleserens
-      // egne API-er. Det er nettopp de som spriker: :has(),
-      // ::file-selector-button, <details name>, popover og pseudoelementer
-      // på <input> oppfører seg ulikt.
+      // Three browsers, because the whole premise is that we use the
+      // browser's own APIs. Those are exactly what differ: :has(),
+      // ::file-selector-button, <details name>, popover and pseudo-elements
+      // on <input> behave differently.
       instances: [
         { browser: "chromium" },
         /*
-         * Firefox kjører én fil om gangen. Hver fil får sin egen side, men
-         * alle sidene deler én Firefox, og Playwright gjør siden som får en
-         * musehandling til det aktive vinduet. Testene står i en iframe, og
-         * der gjelder ikke Playwrights fokusetterligning: de andre sidene får
-         * `blur`, `:focus` slutter å treffe, og `:hover` forsvinner. Testen er
-         * riktig, men en annen fil tok fokus og mus fra den.
-         * https://github.com/microsoft/playwright/issues/42933 (fokus, åpen)
-         * https://github.com/microsoft/playwright/issues/40562 (mus)
-         * Chromium og WebKit etterligner fokus og mus per side.
+         * Firefox runs one file at a time. Each file gets its own page, but
+         * all the pages share one Firefox, and Playwright makes the page that
+         * gets a mouse action the active window. The tests run in an iframe,
+         * where Playwright's focus emulation does not apply: the other pages
+         * get `blur`, `:focus` stops matching, and `:hover` goes away. The
+         * test is correct, but another file took focus and mouse from it.
+         * https://github.com/microsoft/playwright/issues/42933 (focus, open)
+         * https://github.com/microsoft/playwright/issues/40562 (mouse)
+         * Chromium and WebKit emulate focus and mouse per page.
          */
         { browser: "firefox", fileParallelism: false },
         { browser: "webkit" },
       ],
       headless: true,
       /*
-       * Tre minutter og ikke ett på å få kontakt med en nettleserside.
+       * Three minutes, not one, to reach a browser page.
        *
-       * Standarden er 30 sekunder, og på en travel maskin, som når to
-       * testkjøringer deler tre nettlesere, rakk ikke Firefox å svare før
-       * fristen: «Failed to connect to the browser session … within the
-       * timeout», midt i en kjøring der 31 filer alt var grønne. Fristen er
-       * ikke en test, og en kjøring som stopper på den sier ingenting om
-       * koden.
+       * The default is 30 seconds, and on a busy machine, such as when two
+       * test runs share three browsers, Firefox did not answer before the
+       * deadline: "Failed to connect to the browser session … within the
+       * timeout", in the middle of a run where 31 files were already green.
+       * The deadline is not a test, and a run that stops on it says nothing
+       * about the code.
        */
       connectTimeout: 180_000,
-      // Ingen tester sammenlikner bilder, så skjermbildene fra feilede
-      // kjøringer ble bare liggende og samle seg. Feilmeldingen sier det
-      // samme. Sett den til true igjen om du trenger bildet en gang.
+      // No test compares images, so the screenshots from failed runs just
+      // piled up. The error message says the same. Set it back to true if you
+      // ever need the image.
       screenshotFailures: false,
     },
   },

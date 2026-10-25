@@ -83,25 +83,25 @@ describe("lt-input", () => {
     expect(input.backgroundColor).toBe(color("--lt-color-disabled-surface"))
     expect(input.borderTopColor).toBe(color("--lt-color-disabled-surface"))
     expect(input.color).toBe(color("--lt-color-disabled-text"))
-    // Markøren vises bare hvis elementet treffes av pekeren
+    // The cursor only shows if the pointer hits the element
     expect(input.pointerEvents).toBe("auto")
   })
 })
 
-describe("lt-input tilgjengelighet", () => {
-  it("har nok kontrast og ledetekst i alle tilstander", async () => {
+describe("lt-input accessibility", () => {
+  it("has enough contrast and a label in every state", async () => {
     mount(`
-      <label class="lt-label" for="a11y-standard">E-postadresse</label>
-      <input class="lt-input" id="a11y-standard" type="email" />
+      <label class="lt-label" for="a11y-default">Email address</label>
+      <input class="lt-input" id="a11y-default" type="email" />
 
-      <label class="lt-label" for="a11y-gyldig">Bekreft e-postadresse</label>
-      <input class="lt-input" id="a11y-gyldig" type="email" data-state="success" value="ola@eksempel.no" />
+      <label class="lt-label" for="a11y-valid">Confirm email address</label>
+      <input class="lt-input" id="a11y-valid" type="email" data-state="success" value="sam@example.com" />
 
-      <label class="lt-label" for="a11y-ugyldig">Reserve-e-post</label>
-      <input class="lt-input" id="a11y-ugyldig" type="email" data-state="invalid" aria-invalid="true" value="ola@" />
+      <label class="lt-label" for="a11y-invalid">Backup email</label>
+      <input class="lt-input" id="a11y-invalid" type="email" data-state="invalid" aria-invalid="true" value="sam@" />
 
-      <label class="lt-label" for="a11y-dato">Reisedato</label>
-      <input class="lt-input" id="a11y-dato" type="date" data-variant="date" value="2026-05-31" />
+      <label class="lt-label" for="a11y-date">Travel date</label>
+      <input class="lt-input" id="a11y-date" type="date" data-variant="date" value="2026-05-31" />
     `)
 
     await waitForPaint()
@@ -109,32 +109,32 @@ describe("lt-input tilgjengelighet", () => {
   })
 })
 
-describe("lt-input uten CSS-reset", () => {
-  it("holder seg innenfor boksen sin", () => {
-    const { boks } = mountIsolated(
+describe("lt-input without a CSS reset", () => {
+  it("stays inside its box", () => {
+    const { box } = mountIsolated(
       inputCss,
-      `<input class="lt-input" type="email" value="ola@eksempel.no" />`,
+      `<input class="lt-input" type="email" value="sam@example.com" />`,
     )
 
-    expect(findOverflow(boks)).toEqual([])
+    expect(findOverflow(box)).toEqual([])
   })
 })
 
-describe("lt-input deaktivert", () => {
-  it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
-    mount(`<input class="lt-input" disabled value="Av" />`)
+describe("lt-input disabled", () => {
+  it("shows the not-allowed cursor, and is actually hit by the mouse", () => {
+    mount(`<input class="lt-input" disabled value="Off" />`)
 
     const element = document.querySelector("input") as HTMLElement
-    const ramme = element.getBoundingClientRect()
+    const rect = element.getBoundingClientRect()
 
     expect(getComputedStyle(element).cursor).toBe("not-allowed")
 
-    // cursor har ingen virkning hvis elementet ikke treffes av pekeren.
-    // Alle disse hadde pointer-events: none, så markøren ble aldri vist.
+    // cursor has no effect if the pointer does not hit the element. All of
+    // these had pointer-events: none, so the cursor was never shown.
     expect(
       document.elementFromPoint(
-        ramme.x + ramme.width / 2,
-        ramme.y + ramme.height / 2,
+        rect.x + rect.width / 2,
+        rect.y + rect.height / 2,
       ),
     ).toBe(element)
   })

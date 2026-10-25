@@ -47,14 +47,14 @@ describe("lt-link variants", () => {
   })
 })
 
-describe("lt-link tilgjengelighet", () => {
-  it("har nok kontrast i tekst og i deaktivert tilstand", async () => {
+describe("lt-link accessibility", () => {
+  it("has enough contrast in text and when disabled", async () => {
     mount(`
       <p>
-        Søknaden er sendt. Du finner den under
-        <a class="lt-link" href="/mine-soknader">Mine søknader</a>.
+        Your application has been sent. You will find it under
+        <a class="lt-link" href="/my-applications">My applications</a>.
       </p>
-      <a class="lt-link" role="link" tabindex="0" aria-disabled="true">Se årsoppgave</a>
+      <a class="lt-link" role="link" tabindex="0" aria-disabled="true">See annual statement</a>
     `)
 
     await waitForPaint()
@@ -64,51 +64,57 @@ describe("lt-link tilgjengelighet", () => {
 
 describe("lt.link({ disabled })", () => {
   /*
-   * Den avslåtte lenken hadde `href`, og Enter fulgte den: `pointer-events`
-   * stopper bare musa. Uten `href` er en `<a>` ingen lenke for skjermleseren
-   * og står ikke i tabrekkefølgen, så byggefunksjonen gir begge tilbake.
+   * The disabled link had `href`, and Enter followed it: `pointer-events`
+   * only stops the mouse. Without `href`, an `<a>` is not a link to the screen
+   * reader and is not in the tab order, so the builder function gives both
+   * back.
    */
-  it("gir en lenke uten href rollen og plassen i tabrekkefølgen", () => {
-    mount(`<a id="arsoppgave">Se årsoppgave</a>`)
-    const lenke = document.getElementById("arsoppgave") as HTMLAnchorElement
+  it("gives a link without href the role and the place in the tab order", () => {
+    mount(`<a id="annual-statement">See annual statement</a>`)
+    const anchor = document.getElementById(
+      "annual-statement",
+    ) as HTMLAnchorElement
 
-    setAttributes(lenke, link({ disabled: true }))
-    expect(lenke.getAttribute("role")).toBe("link")
-    expect(lenke.getAttribute("aria-disabled")).toBe("true")
-    lenke.focus()
-    expect(document.activeElement).toBe(lenke)
+    setAttributes(anchor, link({ disabled: true }))
+    expect(anchor.getAttribute("role")).toBe("link")
+    expect(anchor.getAttribute("aria-disabled")).toBe("true")
+    anchor.focus()
+    expect(document.activeElement).toBe(anchor)
 
-    // Klar: href settes av appen, og byggefunksjonen tar sitt tilbake.
-    lenke.href = "/arsoppgave"
-    setAttributes(lenke, link())
-    expect(lenke.hasAttribute("role")).toBe(false)
-    expect(lenke.hasAttribute("tabindex")).toBe(false)
-    expect(lenke.hasAttribute("aria-disabled")).toBe(false)
+    // Ready: the app sets href, and the builder function takes back what it
+    // set.
+    anchor.href = "/annual-statement"
+    setAttributes(anchor, link())
+    expect(anchor.hasAttribute("role")).toBe(false)
+    expect(anchor.hasAttribute("tabindex")).toBe(false)
+    expect(anchor.hasAttribute("aria-disabled")).toBe(false)
   })
 })
 
-describe("lt-link besøkt", () => {
+describe("lt-link visited", () => {
   /*
-   * Nettleseren skjuler `:visited` for skript, så en lenke kan ikke gjøres
-   * besøkt herfra. Testen bytter derfor `:visited` med et attributt i en kopi
-   * av reglene, i samme rekkefølge. `:hover` sto før `:visited` med samme
-   * spesifisitet, og en besøkt lenke skiftet ikke color under musa. `:hover`
-   * byttes også, for nettlesersiden har én mus, og hover.browser.test.ts
-   * flytter den samtidig.
+   * The browser hides `:visited` from scripts, so a link cannot be made
+   * visited from here. The test therefore swaps `:visited` for an attribute
+   * in a copy of the rules, in the same order. `:hover` came before
+   * `:visited` with the same specificity, and a visited link did not change
+   * colour under the mouse. `:hover` is swapped too, because the browser page
+   * has one mouse, and hover.browser.test.ts moves it at the same time.
    */
-  it("skifter color under musa også når lenken er besøkt", () => {
+  it("changes colour under the mouse also when the link is visited", () => {
     mount(`
       <style>
-        ${linkCss.replaceAll(":visited", "[data-besokt]").replaceAll(":hover", "[data-mus]")}
+        ${linkCss.replaceAll(":visited", "[data-visited]").replaceAll(":hover", "[data-mouse]")}
         .lt-link { transition: none; }
       </style>
-      <a id="besokt" class="lt-link" href="#" data-besokt>Søknaden din</a>
+      <a id="visited" class="lt-link" href="#" data-visited>Your application</a>
     `)
-    const lenke = document.getElementById("besokt") as HTMLElement
-    expect(getComputedStyle(lenke).color).toBe(color("--lt-color-visited-text"))
+    const visited = document.getElementById("visited") as HTMLElement
+    expect(getComputedStyle(visited).color).toBe(
+      color("--lt-color-visited-text"),
+    )
 
-    lenke.setAttribute("data-mus", "")
-    expect(getComputedStyle(lenke).color).toBe(
+    visited.setAttribute("data-mouse", "")
+    expect(getComputedStyle(visited).color).toBe(
       color("--lt-color-accent-text-strong"),
     )
   })

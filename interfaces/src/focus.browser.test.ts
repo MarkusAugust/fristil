@@ -98,7 +98,7 @@ const SIDEN = `
 /**
  * Ringen brukeren faktisk ser når dette elementet har fokus.
  *
- * Som regel står den på elementet selv. Ligger den på en forelder, som når
+ * Som rule står den på elementet selv. Ligger den på en forelder, som når
  * et valg tegner ringen med `:has(input:focus-visible)`, er det den som
  * gjelder.
  */
@@ -160,7 +160,7 @@ async function fokuserGjennom() {
 }
 
 describe("tastaturfokus er synlig", () => {
-  it("gir hver kontroll en ring på to piksler", async () => {
+  it("gir hver kontroll en ring på to pixels", async () => {
     mount(SIDEN)
     await waitForPaint()
 

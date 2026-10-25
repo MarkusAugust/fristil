@@ -17,36 +17,38 @@ import "./avatar.css"
 describe("lt-avatar", () => {
   beforeEach(() => {
     mount(`
-      <span class="lt-avatar" data-size="small" id="liten" aria-hidden="true">ON</span>
-      <span class="lt-avatar" id="vanlig" aria-hidden="true">ON</span>
-      <span class="lt-avatar" data-size="large" id="stor" aria-hidden="true">ON</span>
-      <span class="lt-avatar" data-variant="square" id="firkant" aria-hidden="true">KB</span>
-      <p>Ola Nordmann</p>
+      <span class="lt-avatar" data-size="small" id="small" aria-hidden="true">ON</span>
+      <span class="lt-avatar" id="regular" aria-hidden="true">ON</span>
+      <span class="lt-avatar" data-size="large" id="large" aria-hidden="true">ON</span>
+      <span class="lt-avatar" data-variant="square" id="square" aria-hidden="true">KB</span>
+      <p>Olivia Nolan</p>
     `)
   })
 
-  it("skiller størrelsene", () => {
-    const bredder = ["liten", "vanlig", "stor"].map(
+  it("tells the sizes apart", () => {
+    const widths = ["small", "regular", "large"].map(
       (id) =>
         (document.getElementById(id) as HTMLElement).getBoundingClientRect()
           .width,
     )
 
-    expect(bredder[0]).toBeLessThan(bredder[1])
-    expect(bredder[1]).toBeLessThan(bredder[2])
+    expect(widths[0]).toBeLessThan(widths[1])
+    expect(widths[1]).toBeLessThan(widths[2])
   })
 
-  it("er rund som standard og avrundet som firkant", () => {
-    const rund = getComputedStyle(document.getElementById("vanlig") as Element)
-    const firkant = getComputedStyle(
-      document.getElementById("firkant") as Element,
+  it("is round by default and rounded as a square", () => {
+    const round = getComputedStyle(
+      document.getElementById("regular") as Element,
+    )
+    const square = getComputedStyle(
+      document.getElementById("square") as Element,
     )
 
-    expect(rund.borderRadius).toMatch(/50%|9999px/)
-    expect(firkant.borderRadius).not.toMatch(/50%/)
+    expect(round.borderRadius).toMatch(/50%|9999px/)
+    expect(square.borderRadius).not.toMatch(/50%/)
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(avatar()).toEqual({ class: "lt-avatar" })
     expect(avatar({ size: "large", variant: "square" })).toEqual({
       class: "lt-avatar",
@@ -55,132 +57,138 @@ describe("lt-avatar", () => {
     })
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })
 })
 
-describe("lt-avatar som knapp", () => {
+describe("lt-avatar as a button", () => {
   /*
-   * Ringen rundt bildet er en `outline` i laget, og den slo nettleserens egen
-   * fokusmarkering. En avatar som er en knapp fikk da bare den tynne ringen
-   * innenfor kanten når den hadde fokus. Om `:focus-visible` treffer etter et
-   * programmert `focus()`, avgjør nettleseren selv, så testen bytter det med
-   * et attributt i en kopi av reglene, slik testen for besøkte lenker gjør.
+   * The ring around the image is an `outline` in the layer, and it beat the
+   * browser's own focus indicator. An avatar that is a button then only got
+   * the thin ring inside the edge when it had focus. Whether `:focus-visible`
+   * matches after a programmatic `focus()` is up to the browser, so the test
+   * swaps it for an attribute in a copy of the rules, as the test for
+   * visited links does.
    */
-  it("viser fokusringen og ikke ringen rundt bildet", () => {
+  it("shows the focus ring and not the ring around the image", () => {
     mount(`
-      <style>${avatarCss.replaceAll(":focus-visible", "[data-fokus]")}</style>
-      <button class="lt-avatar" id="profil" aria-label="Profil">ON</button>
+      <style>${avatarCss.replaceAll(":focus-visible", "[data-focus]")}</style>
+      <button class="lt-avatar" id="profile" aria-label="Profile">ON</button>
     `)
-    const knapp = document.getElementById("profil") as HTMLButtonElement
-    expect(getComputedStyle(knapp).outlineWidth).toBe("1px")
+    const button = document.getElementById("profile") as HTMLButtonElement
+    expect(getComputedStyle(button).outlineWidth).toBe("1px")
 
-    knapp.setAttribute("data-fokus", "")
-    const stil = getComputedStyle(knapp)
-    expect(stil.outlineWidth).toBe("2px")
-    expect(stil.outlineOffset).toBe("2px")
+    button.setAttribute("data-focus", "")
+    const style = getComputedStyle(button)
+    expect(style.outlineWidth).toBe("2px")
+    expect(style.outlineOffset).toBe("2px")
   })
 })
 
-describe("lt-avatar med bilde", () => {
-  it("tegner ringen over et lyst bilde", async () => {
-    // Ringen var en skygge innover, og den males under innholdet. Et bilde
-    // som fylte flaten dekket den, så ringen fantes bare med initialer. Ringen
-    // får en farge her som ikke finnes ellers, så den ikke kan forveksles med
-    // bakgrunnen som skinner gjennom i kanten av en avrundet flate.
-    const hvitt = `data:image/svg+xml,${encodeURIComponent(
+describe("lt-avatar with an image", () => {
+  it("draws the ring over a light image", async () => {
+    // The ring was an inset shadow, and that is painted below the content. An
+    // image that filled the surface covered it, so the ring only existed with
+    // initials. The ring gets a colour here that appears nowhere else, so it
+    // cannot be mistaken for the background showing through at the edge of a
+    // rounded surface.
+    const white = `data:image/svg+xml,${encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="white"/></svg>',
     )}`
-    const stil =
+    const style =
       "--lt-avatar-size: 96px; --lt-color-neutral-border-subtle: rgb(255, 0, 0)"
     mount(`
-      <span class="lt-avatar" id="rund" style="${stil}"><img src="${hvitt}" alt="" /></span>
-      <span class="lt-avatar" data-variant="square" id="firkant" style="${stil}"><img src="${hvitt}" alt="" /></span>
+      <span class="lt-avatar" id="round" style="${style}"><img src="${white}" alt="" /></span>
+      <span class="lt-avatar" data-variant="square" id="square" style="${style}"><img src="${white}" alt="" /></span>
     `)
-    for (const bilde of document.querySelectorAll("img")) await bilde.decode()
+    for (const image of document.querySelectorAll("img")) await image.decode()
     await waitForPaint()
 
-    for (const id of ["rund", "firkant"]) {
+    for (const id of ["round", "square"]) {
       const element = document.getElementById(id) as HTMLElement
       expect(await pixel(element, 0.5), id).toEqual([255, 255, 255])
-      // De ytterste pikslene, siden kanten av en sirkel er utjevnet mot siden.
-      let rødest = 0
+      // The outermost pixels, since the edge of a circle is anti-aliased against the page.
+      let reddest = 0
       for (const x of [0, 0.01, 0.02, 0.03]) {
         const [r, g, b] = await pixel(element, x)
-        rødest = Math.max(rødest, r - Math.max(g, b))
+        reddest = Math.max(reddest, r - Math.max(g, b))
       }
-      expect(rødest, id).toBeGreaterThan(60)
+      expect(reddest, id).toBeGreaterThan(60)
     }
   })
-  it("lar avataren foran dekke ringen til den bak i en stabel", async () => {
-    // Ringen er en `outline`, og en slik males etter alt innholdet i
-    // stablingskonteksten. Uten en egen kontekst per avatar lå ringen til
-    // avataren bak som en bue over bildet til den foran. Den bak får en rød
-    // ring og den foran et hvitt bilde med hvit ring, så hver rød pixel inne
-    // i den foran er ringen bak som skinner gjennom.
-    const hvitt = `data:image/svg+xml,${encodeURIComponent(
+  it("lets the front avatar cover the ring of the one behind it in a stack", async () => {
+    // The ring is an `outline`, and an outline is painted after all the
+    // content in the stacking context. Without a context of its own per
+    // avatar, the ring of the avatar behind lay as an arc over the image of
+    // the one in front. The one behind gets a red ring and the one in front a
+    // white image with a white ring, so every red pixel inside the one in
+    // front is the ring behind showing through.
+    const white = `data:image/svg+xml,${encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="white"/></svg>',
     )}`
     mount(`
       <ul class="lt-avatar-stack" style="--lt-avatar-size: 96px; --lt-avatar-stack-overlap: -24px">
-        <li><span class="lt-avatar" id="bak" style="--lt-color-neutral-border-subtle: rgb(255, 0, 0)"><img src="${hvitt}" alt="" /></span></li>
-        <li><span class="lt-avatar" id="foran" style="--lt-color-neutral-border-subtle: rgb(255, 255, 255)"><img src="${hvitt}" alt="" /></span></li>
+        <li><span class="lt-avatar" id="behind" style="--lt-color-neutral-border-subtle: rgb(255, 0, 0)"><img src="${white}" alt="" /></span></li>
+        <li><span class="lt-avatar" id="front" style="--lt-color-neutral-border-subtle: rgb(255, 255, 255)"><img src="${white}" alt="" /></span></li>
       </ul>
     `)
-    for (const bilde of document.querySelectorAll("img")) await bilde.decode()
+    for (const image of document.querySelectorAll("img")) await image.decode()
     await waitForPaint()
 
-    // Stabelen snur rekkefølgen: den første i markupen står lengst til
-    // høyre, og den andre ligger over venstre kant av den, 24 px inn.
-    const bak = document.getElementById("bak") as HTMLElement
-    const foran = document.getElementById("foran") as HTMLElement
-    // Ringen bak finnes: rød i den ytterste kanten på siden som ikke er dekket.
-    let rødest = 0
+    // The stack reverses the order: the first in the markup is furthest to
+    // the right, and the second lies over its left edge, 24 px in.
+    const behind = document.getElementById("behind") as HTMLElement
+    const front = document.getElementById("front") as HTMLElement
+    // The ring behind exists: red at the outermost edge on the side that is not covered.
+    let reddest = 0
     for (const x of [0.97, 0.98, 0.99, 1]) {
-      const [r, g, b] = await pixel(bak, x)
-      rødest = Math.max(rødest, r - Math.max(g, b))
+      const [r, g, b] = await pixel(behind, x)
+      reddest = Math.max(reddest, r - Math.max(g, b))
     }
-    expect(rødest, "ringen bak").toBeGreaterThan(60)
-    // Der venstre kant av den bak, med ringen, ligger under den foran, er det
-    // bare det hvite bildet foran å se. Kanten står 72 px inn i den foran, og
-    // leses over en bredde på noen piksler og i tre høyder.
+    expect(reddest, "the ring behind").toBeGreaterThan(60)
+    // Where the left edge of the one behind, with its ring, lies under the one
+    // in front, only the white image in front is visible. The edge is 72 px
+    // into the one in front, and is read over a width of a few pixels and at
+    // three heights.
     for (const x of [0.73, 0.75, 0.77, 0.79])
       for (const y of [0.3, 0.5, 0.7]) {
-        const [r, g, b] = await pixel(foran, x, y)
-        expect(r - Math.max(g, b), `foran ved ${x},${y}`).toBeLessThan(40)
+        const [r, g, b] = await pixel(front, x, y)
+        expect(r - Math.max(g, b), `front at ${x},${y}`).toBeLessThan(40)
       }
   })
-  it("viser hele fokusringen til en avatar bak en annen i en stabel", async () => {
-    // Hver avatar i stabelen males for seg, og det gjelder fokusringen også:
-    // den bak fikk ringen dekket der den foran overlapper. Den som har fokus,
-    // løftes over naboene. Ringen får en rød farge som ikke finnes ellers, og
-    // `:focus-visible` byttes med et attributt i en kopi av reglene, som i
-    // testen for knappen. Skjermbildet tas av stabelen, siden ringen ligger
-    // utenfor avatarens egen boks.
-    const hvitt = `data:image/svg+xml,${encodeURIComponent(
+  it("shows the whole focus ring of an avatar behind another in a stack", async () => {
+    // Each avatar in the stack is painted on its own, and that applies to the
+    // focus ring too: the one behind had its ring covered where the one in
+    // front overlaps. The one with focus is lifted above its neighbours. The
+    // ring gets a red colour that appears nowhere else, and `:focus-visible`
+    // is swapped for an attribute in a copy of the rules, as in the test for
+    // the button. The screenshot is taken of the stack, since the ring lies
+    // outside the avatar's own box.
+    const white = `data:image/svg+xml,${encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="white"/></svg>',
     )}`
     mount(`
-      <style>${avatarCss.replaceAll(":focus-visible", "[data-fokus]")}</style>
-      <ul class="lt-avatar-stack" id="stabel" style="--lt-avatar-size: 96px; --lt-avatar-stack-overlap: -24px; --lt-focus-ring: 2px solid rgb(255, 0, 0)">
-        <li><button class="lt-avatar" id="bak" data-fokus aria-label="Bak"><img src="${hvitt}" alt="" /></button></li>
-        <li><button class="lt-avatar" id="foran" aria-label="Foran"><img src="${hvitt}" alt="" /></button></li>
+      <style>${avatarCss.replaceAll(":focus-visible", "[data-focus]")}</style>
+      <ul class="lt-avatar-stack" id="stack" style="--lt-avatar-size: 96px; --lt-avatar-stack-overlap: -24px; --lt-focus-ring: 2px solid rgb(255, 0, 0)">
+        <li><button class="lt-avatar" id="behind" data-focus aria-label="Behind"><img src="${white}" alt="" /></button></li>
+        <li><button class="lt-avatar" id="front" aria-label="Front"><img src="${white}" alt="" /></button></li>
       </ul>
     `)
-    for (const bilde of document.querySelectorAll("img")) await bilde.decode()
+    for (const image of document.querySelectorAll("img")) await image.decode()
     await waitForPaint()
 
-    // Stabelen er 168 px bred. Den bak begynner 72 px inn, og fokusringen
-    // ligger 2 til 4 px utenfor venstre kant, under den foran uten løftet.
-    const stabel = document.getElementById("stabel") as HTMLElement
-    expect(stabel.getBoundingClientRect().width).toBeCloseTo(168, 0)
-    let rødest = 0
+    // The stack is 168 px wide. The one behind starts 72 px in, and the focus
+    // ring lies 2 to 4 px outside its left edge, under the one in front
+    // without the lift.
+    const stack = document.getElementById("stack") as HTMLElement
+    expect(stack.getBoundingClientRect().width).toBeCloseTo(168, 0)
+    let reddest = 0
     for (const x of [0.4, 0.405, 0.41, 0.415]) {
-      const [r, g, b] = await pixel(stabel, x)
-      rødest = Math.max(rødest, r - Math.max(g, b))
+      const [r, g, b] = await pixel(stack, x)
+      reddest = Math.max(reddest, r - Math.max(g, b))
     }
-    expect(rødest, "fokusringen bak").toBeGreaterThan(60)
+    expect(reddest, "the focus ring behind").toBeGreaterThan(60)
   })
 })

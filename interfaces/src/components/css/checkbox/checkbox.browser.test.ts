@@ -13,10 +13,10 @@ import "../../../tokens/tokens.css"
 import "./checkbox.css"
 import "../label/label.css"
 
-function stil(id: string) {
+function style(id: string) {
   const element = document.getElementById(id)
   if (!(element instanceof HTMLElement)) {
-    throw new Error(`Mangler #${id}`)
+    throw new Error(`Missing #${id}`)
   }
   return getComputedStyle(element)
 }
@@ -25,55 +25,55 @@ describe("lt-checkbox", () => {
   beforeEach(() => {
     mount(`
       <div class="lt-checkbox-row">
-        <input class="lt-checkbox" type="checkbox" id="vilkar" />
-        <label class="lt-label" for="vilkar">Jeg godtar vilkårene</label>
+        <input class="lt-checkbox" type="checkbox" id="terms" />
+        <label class="lt-label" for="terms">I accept the terms</label>
       </div>
       <div class="lt-checkbox-row">
-        <input class="lt-checkbox" type="checkbox" id="nyhetsbrev" checked />
-        <label class="lt-label" for="nyhetsbrev">Send meg nyhetsbrev</label>
+        <input class="lt-checkbox" type="checkbox" id="newsletter" checked />
+        <label class="lt-label" for="newsletter">Send me the newsletter</label>
       </div>
       <div class="lt-checkbox-row">
-        <input class="lt-checkbox" type="checkbox" id="delvis" />
-        <label class="lt-label" for="delvis">Velg alle vedlegg</label>
+        <input class="lt-checkbox" type="checkbox" id="partial" />
+        <label class="lt-label" for="partial">Select all attachments</label>
       </div>
       <div class="lt-checkbox-row">
-        <input class="lt-checkbox" type="checkbox" id="ugyldig"
+        <input class="lt-checkbox" type="checkbox" id="invalid"
           data-state="invalid" aria-invalid="true" />
-        <label class="lt-label" for="ugyldig">Jeg bekrefter opplysningene</label>
+        <label class="lt-label" for="invalid">I confirm the details</label>
       </div>
     `)
 
-    const delvis = document.getElementById("delvis") as HTMLInputElement
-    delvis.indeterminate = true
+    const partial = document.getElementById("partial") as HTMLInputElement
+    partial.indeterminate = true
   })
 
-  it("viser haken når boksen er krysset av", () => {
-    expect(stil("nyhetsbrev").backgroundImage).toContain("polyline")
-    expect(stil("vilkar").backgroundImage).toBe("none")
+  it("shows the tick when the box is checked", () => {
+    expect(style("newsletter").backgroundImage).toContain("polyline")
+    expect(style("terms").backgroundImage).toBe("none")
   })
 
-  it("viser streken når boksen er delvis avkrysset", () => {
-    expect(stil("delvis").backgroundImage).toContain("line")
+  it("shows the dash when the box is partly checked", () => {
+    expect(style("partial").backgroundImage).toContain("line")
   })
 
-  it("er stor nok til å treffes", () => {
-    const boks = document.getElementById("vilkar") as HTMLElement
-    const rute = boks.getBoundingClientRect()
+  it("is large enough to hit", () => {
+    const box = document.getElementById("terms") as HTMLElement
+    const rect = box.getBoundingClientRect()
 
-    // 20 piksler pluss fokusmarkeringen utenfor. Under 20 blir boksen
-    // vanskelig å treffe med finger, og haken utydelig.
-    expect(rute.width).toBeGreaterThanOrEqual(20)
-    expect(rute.height).toBeGreaterThanOrEqual(20)
+    // 20 pixels plus the focus ring outside. Below 20 the box is hard to hit
+    // with a finger, and the tick is hard to make out.
+    expect(rect.width).toBeGreaterThanOrEqual(20)
+    expect(rect.height).toBeGreaterThanOrEqual(20)
   })
 
-  it("markerer ugyldig med både farge og aria", () => {
-    const ugyldig = document.getElementById("ugyldig") as HTMLInputElement
+  it("marks invalid with both colour and aria", () => {
+    const invalid = document.getElementById("invalid") as HTMLInputElement
 
-    expect(ugyldig.getAttribute("aria-invalid")).toBe("true")
-    expect(stil("ugyldig").borderColor).not.toBe(stil("vilkar").borderColor)
+    expect(invalid.getAttribute("aria-invalid")).toBe("true")
+    expect(style("invalid").borderColor).not.toBe(style("terms").borderColor)
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(checkbox()).toEqual({ class: "lt-checkbox", type: "checkbox" })
     expect(checkbox({ state: "invalid" })).toEqual({
       class: "lt-checkbox",
@@ -84,7 +84,7 @@ describe("lt-checkbox", () => {
     expect(checkbox.row).toBe("lt-checkbox-row")
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

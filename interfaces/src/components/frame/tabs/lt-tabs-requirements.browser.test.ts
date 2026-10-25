@@ -40,55 +40,55 @@ import { tabs } from "./tabs"
 import "../../../tokens/tokens.css"
 import "./tabs.css"
 
-const NAVN = ["Søknaden", "Vedlegg", "Meldinger"]
-const NOKLER = ["soknaden", "vedlegg", "meldinger"]
+const NAMES = ["Application", "Attachments", "Messages"]
+const KEYS = ["application", "attachments", "messages"]
 
 type Bar = {
-  vert?: string
-  liste?: string
-  overskrift?: (i: number) => string | null
-  lenke?: (i: number) => string
+  host?: string
+  list?: string
+  heading?: (i: number) => string | null
+  link?: (i: number) => string
   panel?: (i: number) => string
-  inni?: (i: number) => string
+  inside?: (i: number) => string
 }
 
 /** The tabs as a template writes them by hand: links, and ids only on the panels. */
-function bar(valg: Bar = {}): string {
-  const overskrift = valg.overskrift ?? ((i) => NAVN[i])
+function bar(options: Bar = {}): string {
+  const heading = options.heading ?? ((i) => NAMES[i])
   return `
-    <lt-tabs${valg.vert ?? ""}>
-      <ul class="lt-tabs__list"${valg.liste ?? ' aria-label="Deler av saken"'}>
-        ${NAVN.map((n, i) => `<li><a href="#${NOKLER[i]}"${valg.lenke?.(i) ?? ""}>${n}</a></li>`).join("")}
+    <lt-tabs${options.host ?? ""}>
+      <ul class="lt-tabs__list"${options.list ?? ' aria-label="Parts of the case"'}>
+        ${NAMES.map((n, i) => `<li><a href="#${KEYS[i]}"${options.link?.(i) ?? ""}>${n}</a></li>`).join("")}
       </ul>
-      ${NAVN.map((_, i) => {
-        const tittel = overskrift(i)
-        return `<section class="lt-tabs__panel" id="${NOKLER[i]}"${valg.panel?.(i) ?? ""}>${tittel === null ? "" : `<h2>${tittel}</h2>`}<p id="inne-${NOKLER[i]}">Innholdet i ${NAVN[i].toLowerCase()}.</p>${valg.inni?.(i) ?? ""}</section>`
+      ${NAMES.map((_, i) => {
+        const title = heading(i)
+        return `<section class="lt-tabs__panel" id="${KEYS[i]}"${options.panel?.(i) ?? ""}>${title === null ? "" : `<h2>${title}</h2>`}<p id="inside-${KEYS[i]}">Content of ${NAMES[i].toLowerCase()}.</p>${options.inside?.(i) ?? ""}</section>`
       }).join("")}
     </lt-tabs>`
 }
 
 /** What `lt.tabs()` writes, put together the way a template does it. */
-function fraByggefunksjonen(): string {
-  const f = tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
+function fromBuilder(): string {
+  const f = tabs({ id: "case", keys: KEYS, label: "Parts of the case" })
   return `
     <lt-tabs>
       <ul ${attr(f.list)}>
-        ${f.tabs.map((t, i) => `<li><a ${attr(t)}>${NAVN[i]}</a></li>`).join("")}
+        ${f.tabs.map((t, i) => `<li><a ${attr(t)}>${NAMES[i]}</a></li>`).join("")}
       </ul>
-      ${f.panels.map((p, i) => `<section ${attr(p)}><h2 ${attr(f.headings[i])}>${NAVN[i]}</h2><p>Innholdet i ${NAVN[i].toLowerCase()}.</p></section>`).join("")}
+      ${f.panels.map((p, i) => `<section ${attr(p)}><h2 ${attr(f.headings[i])}>${NAMES[i]}</h2><p>Content of ${NAMES[i].toLowerCase()}.</p></section>`).join("")}
     </lt-tabs>`
 }
 
-const vert = () => document.querySelector("lt-tabs") as LtTabs
-const faner = () => [
+const host = () => document.querySelector("lt-tabs") as LtTabs
+const links = () => [
   ...document.querySelectorAll<HTMLElement>("lt-tabs .lt-tabs__list a"),
 ]
-const paneler = () => [
+const panels = () => [
   ...document.querySelectorAll<HTMLElement>(".lt-tabs__panel"),
 ]
-const valgt = () =>
-  faner().map((f) => f.getAttribute("aria-selected") === "true")
-const skjult = () => paneler().map((p) => p.hasAttribute("hidden"))
+const selectedTabs = () =>
+  links().map((f) => f.getAttribute("aria-selected") === "true")
+const hiddenPanels = () => panels().map((p) => p.hasAttribute("hidden"))
 
 /**
  * The computed name, by AccName, as a screen reader gets it.
@@ -96,20 +96,20 @@ const skjult = () => paneler().map((p) => p.hasAttribute("hidden"))
  * axe's types do not include the functions that compute the name from the
  * tree, so they are typed here.
  */
-const navneberegning = axe as unknown as {
-  setup: (rot: Node) => void
+const accName = axe as unknown as {
+  setup: (root: Node) => void
   teardown: () => void
   utils: { getNodeFromTree: (e: Element) => unknown }
   commons: { text: { accessibleTextVirtual: (n: unknown) => string } }
 }
-function navn(element: Element): string {
-  navneberegning.setup(document)
+function nameOf(element: Element): string {
+  accName.setup(document)
   try {
-    return navneberegning.commons.text.accessibleTextVirtual(
-      navneberegning.utils.getNodeFromTree(element),
+    return accName.commons.text.accessibleTextVirtual(
+      accName.utils.getNodeFromTree(element),
     )
   } finally {
-    navneberegning.teardown()
+    accName.teardown()
   }
 }
 
@@ -122,7 +122,7 @@ async function tab() {
   else await userEvent.tab()
 }
 
-async function tegn() {
+async function settle() {
   await customElements.whenDefined("lt-tabs")
   await waitForPaint()
 }
@@ -136,21 +136,21 @@ async function tegn() {
  * order they were added, a listener in the capture phase included, so a
  * stopper added after the component's stopped nothing there.
  */
-function somSokISiden(): () => void {
-  const stopp = (e: Event) => e.stopImmediatePropagation()
-  window.addEventListener("hashchange", stopp, true)
-  return () => window.removeEventListener("hashchange", stopp, true)
+function likeFindInPage(): () => void {
+  const stop = (e: Event) => e.stopImmediatePropagation()
+  window.addEventListener("hashchange", stop, true)
+  return () => window.removeEventListener("hashchange", stop, true)
 }
 
-function lyttEtterAdvarsler() {
+function spyOnWarnings() {
   return vi.spyOn(console, "warn").mockImplementation(() => {})
 }
 
 /** The warnings that have arrived, once `warnAboutMarkup` has checked its condition. */
-async function advarsler(spion: ReturnType<typeof lyttEtterAdvarsler>) {
+async function warnings(spy: ReturnType<typeof spyOnWarnings>) {
   await waitForPaint()
   await waitForPaint()
-  return spion.mock.calls.map((k) => String(k[0]))
+  return spy.mock.calls.map((k) => String(k[0]))
 }
 
 beforeAll(() => {
@@ -168,7 +168,7 @@ afterEach(() => {
 describe("A. Three states of the page", () => {
   it("A6: registration gives markup from lt.tabs() the same state as hand-written markup, and changes nothing the builder function wrote", async () => {
     /** The attributes that carry the tabs, without ids, which differ between the two sources. */
-    const tilstand = () =>
+    const state = () =>
       [...document.querySelectorAll("lt-tabs, lt-tabs *")].map((e) =>
         [...e.attributes]
           .filter(
@@ -187,41 +187,45 @@ describe("A. Three states of the page", () => {
           .join(" "),
       )
 
-    mount(bar({ overskrift: (i) => NAVN[i] }))
-    await tegn()
-    const forventet = tilstand()
+    mount(bar({ heading: (i) => NAMES[i] }))
+    await settle()
+    const expected = state()
 
-    const omslag = document.createElement("div")
-    omslag.innerHTML = fraByggefunksjonen()
-    const skrevet = new Map<Element, Map<string, string | null>>()
-    for (const e of omslag.querySelectorAll("*"))
-      skrevet.set(e, new Map([...e.attributes].map((a) => [a.name, a.value])))
-    const endret: string[] = []
-    const observatør = new MutationObserver((poster) => {
-      for (const p of poster) {
-        const fra = skrevet.get(p.target as Element)
-        if (p.attributeName && fra?.has(p.attributeName))
-          endret.push(`${(p.target as Element).localName} ${p.attributeName}`)
+    const wrapper = document.createElement("div")
+    wrapper.innerHTML = fromBuilder()
+    const written = new Map<Element, Map<string, string | null>>()
+    for (const e of wrapper.querySelectorAll("*"))
+      written.set(e, new Map([...e.attributes].map((a) => [a.name, a.value])))
+    const changed: string[] = []
+    const observer = new MutationObserver((records) => {
+      for (const p of records) {
+        const from = written.get(p.target as Element)
+        if (p.attributeName && from?.has(p.attributeName))
+          changed.push(`${(p.target as Element).localName} ${p.attributeName}`)
       }
     })
-    observatør.observe(omslag, { attributes: true, subtree: true })
-    document.body.replaceChildren(omslag)
-    await tegn()
-    observatør.disconnect()
+    observer.observe(wrapper, { attributes: true, subtree: true })
+    document.body.replaceChildren(wrapper)
+    await settle()
+    observer.disconnect()
 
     expect(
-      endret,
+      changed,
       "registration changed something the builder function wrote",
     ).toEqual([])
-    expect(tilstand()).toEqual(forventet)
+    expect(state()).toEqual(expected)
   })
 
   /** A React app that renders the tabs with `lt.tabs()` from the React entry point. */
-  const App = ({ teller }: { teller: number }) => {
-    const f = ltReact.tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
+  const App = ({ counter }: { counter: number }) => {
+    const f = ltReact.tabs({
+      id: "case",
+      keys: KEYS,
+      label: "Parts of the case",
+    })
     return h(
       "div",
-      { "data-teller": teller },
+      { "data-counter": counter },
       h(
         "lt-tabs",
         null,
@@ -229,15 +233,15 @@ describe("A. Three states of the page", () => {
           "ul",
           f.list,
           ...f.tabs.map((t, i) =>
-            h("li", { ...f.item, key: NOKLER[i] }, h("a", t, NAVN[i])),
+            h("li", { ...f.item, key: KEYS[i] }, h("a", t, NAMES[i])),
           ),
         ),
         ...f.panels.map((p, i) =>
           h(
             "section",
-            { ...p, key: NOKLER[i] },
-            h("h2", null, NAVN[i]),
-            h("p", null, "Innhold"),
+            { ...p, key: KEYS[i] },
+            h("h2", null, NAMES[i]),
+            h("p", null, "Content"),
           ),
         ),
       ),
@@ -245,134 +249,137 @@ describe("A. Three states of the page", () => {
   }
 
   it("A7: React hydrates markup from lt.tabs() in the React entry point without mismatches, also when the user has switched tabs and React renders again", async () => {
-    const avvik: string[] = []
-    const feil = vi.spyOn(console, "error").mockImplementation((...a) => {
-      avvik.push(a.map(String).join(" "))
+    const mismatches: string[] = []
+    const errorSpy = vi.spyOn(console, "error").mockImplementation((...a) => {
+      mismatches.push(a.map(String).join(" "))
     })
 
-    const flate = mount("")
-    flate.innerHTML = renderToString(h(App, { teller: 0 }))
-    await tegn()
-    const rot = hydrateRoot(flate, h(App, { teller: 0 }), {
-      onRecoverableError: (e) => avvik.push(String(e)),
+    const surface = mount("")
+    surface.innerHTML = renderToString(h(App, { counter: 0 }))
+    await settle()
+    const root = hydrateRoot(surface, h(App, { counter: 0 }), {
+      onRecoverableError: (e) => mismatches.push(String(e)),
     })
     await waitForPaint()
 
-    faner()[1].click()
-    await tegn()
-    rot.render(h(App, { teller: 1 }))
-    await tegn()
+    links()[1].click()
+    await settle()
+    root.render(h(App, { counter: 1 }))
+    await settle()
 
-    feil.mockRestore()
-    expect(avvik).toEqual([])
-    expect(valgt()).toEqual([false, true, false])
-    expect(skjult()).toEqual([true, false, true])
-    rot.unmount()
+    errorSpy.mockRestore()
+    expect(mismatches).toEqual([])
+    expect(selectedTabs()).toEqual([false, true, false])
+    expect(hiddenPanels()).toEqual([true, false, true])
+    root.unmount()
   })
 
   it("A7 with D11: React hydrates without mismatches also when the address points to another tab", async () => {
-    await setAddress("#sak-vedlegg")
-    const avvik: string[] = []
-    const feil = vi.spyOn(console, "error").mockImplementation((...a) => {
-      avvik.push(a.map(String).join(" "))
+    await setAddress("#case-attachments")
+    const mismatches: string[] = []
+    const errorSpy = vi.spyOn(console, "error").mockImplementation((...a) => {
+      mismatches.push(a.map(String).join(" "))
     })
 
-    const flate = mount("")
-    flate.innerHTML = renderToString(h(App, { teller: 0 }))
-    await tegn()
-    const rot = hydrateRoot(flate, h(App, { teller: 0 }), {
-      onRecoverableError: (e) => avvik.push(String(e)),
+    const surface = mount("")
+    surface.innerHTML = renderToString(h(App, { counter: 0 }))
+    await settle()
+    const root = hydrateRoot(surface, h(App, { counter: 0 }), {
+      onRecoverableError: (e) => mismatches.push(String(e)),
     })
     await waitForPaint()
 
-    feil.mockRestore()
-    expect(avvik).toEqual([])
-    expect(valgt()).toEqual([true, false, false])
-    expect(location.hash).toBe("#sak-soknaden")
-    rot.unmount()
+    errorSpy.mockRestore()
+    expect(mismatches).toEqual([])
+    expect(selectedTabs()).toEqual([true, false, false])
+    expect(location.hash).toBe("#case-application")
+    root.unmount()
   })
 
   it("A9: the component writes nothing on markup from lt.tabs() in the React entry point", async () => {
-    const omslag = document.createElement("div")
-    omslag.innerHTML = renderToString(h(App, { teller: 0 }))
-    const poster: string[] = []
-    const observatør = new MutationObserver((r) =>
-      poster.push(
+    const wrapper = document.createElement("div")
+    wrapper.innerHTML = renderToString(h(App, { counter: 0 }))
+    const records: string[] = []
+    const observer = new MutationObserver((r) =>
+      records.push(
         ...r.map(
           (p) =>
             `${(p.target as Element).localName} ${p.attributeName ?? p.type}`,
         ),
       ),
     )
-    observatør.observe(omslag, {
+    observer.observe(wrapper, {
       attributes: true,
       childList: true,
       subtree: true,
     })
 
-    document.body.replaceChildren(omslag)
-    await tegn()
-    observatør.disconnect()
+    document.body.replaceChildren(wrapper)
+    await settle()
+    observer.disconnect()
 
-    expect(poster).toEqual([])
+    expect(records).toEqual([])
   })
 })
 
 describe("B. Semantics and names", () => {
   it("B5: an icon-only tab gives the panel its name from aria-label, without hidden text", async () => {
     mount(
-      bar({ overskrift: () => null })
+      bar({ heading: () => null })
         .replace(
-          '<a href="#vedlegg">Vedlegg</a>',
-          '<a href="#vedlegg" aria-label="Vedlegg"><svg aria-hidden="true" width="16" height="16"></svg></a>',
+          '<a href="#attachments">Attachments</a>',
+          '<a href="#attachments" aria-label="Attachments"><svg aria-hidden="true" width="16" height="16"></svg></a>',
         )
         .replace(
-          '<a href="#meldinger">Meldinger</a>',
-          '<a href="#meldinger">Meldinger<span aria-hidden="true"> (3)</span></a>',
+          '<a href="#messages">Messages</a>',
+          '<a href="#messages">Messages<span aria-hidden="true"> (3)</span></a>',
         ),
     )
-    await tegn()
+    await settle()
 
-    expect(paneler().map(navn)).toEqual(NAVN)
+    expect(panels().map(nameOf)).toEqual(NAMES)
   })
 
   it("B6: the panel has the same name as the tab, also when the heading says something else", async () => {
     mount(
       bar({
-        overskrift: (i) => (i === 1 ? "Dokumenter du har lastet opp" : NAVN[i]),
+        heading: (i) => (i === 1 ? "Documents you have uploaded" : NAMES[i]),
       }),
     )
-    await tegn()
+    await settle()
 
-    expect(paneler().map(navn)).toEqual(faner().map(navn))
+    expect(panels().map(nameOf)).toEqual(links().map(nameOf))
   })
 
   it("B7: an aria-labelledby the server wrote is not changed, also when it points to something that arrives later", async () => {
     mount(
       bar({
-        panel: (i) => (i === 1 ? ' aria-labelledby="kommer-senere"' : ""),
+        panel: (i) => (i === 1 ? ' aria-labelledby="arrives-later"' : ""),
       }),
     )
-    await tegn()
-    const panel = paneler()[1]
+    await settle()
+    const panel = panels()[1]
 
-    expect(panel.getAttribute("aria-labelledby")).toBe("kommer-senere")
+    expect(panel.getAttribute("aria-labelledby")).toBe("arrives-later")
 
-    panel.insertAdjacentHTML("beforebegin", '<p id="kommer-senere">Vedlegg</p>')
-    await tegn()
+    panel.insertAdjacentHTML(
+      "beforebegin",
+      '<p id="arrives-later">Attachments</p>',
+    )
+    await settle()
 
-    expect(panel.getAttribute("aria-labelledby")).toBe("kommer-senere")
-    expect(navn(panel)).toBe("Vedlegg")
+    expect(panel.getAttribute("aria-labelledby")).toBe("arrives-later")
+    expect(nameOf(panel)).toBe("Attachments")
   })
 
   it("B8: the name follows when the tab's text changes in the text node, as idiomorph does it", async () => {
-    mount(bar({ overskrift: () => null }))
-    await tegn()
+    mount(bar({ heading: () => null }))
+    await settle()
 
-    ;(faner()[1].firstChild as Text).nodeValue = "Vedlegg (2)"
-    await tegn()
+    ;(links()[1].firstChild as Text).nodeValue = "Attachments (2)"
+    await settle()
 
-    expect(navn(paneler()[1])).toBe("Vedlegg (2)")
+    expect(nameOf(panels()[1])).toBe("Attachments (2)")
   })
 
   /*
@@ -381,360 +388,362 @@ describe("B. Semantics and names", () => {
    * reader does, and the panel must have the same name as the tab (B5, B6,
    * D7).
    */
-  const NAVNEVARIANTER: Array<{
-    hva: string
-    lenke: string
-    overskrift: string
-    utenfor?: string
-    navn: string
+  const NAME_VARIANTS: Array<{
+    what: string
+    link: string
+    heading: string
+    outside?: string
+    name: string
   }> = [
     {
-      hva: "text",
-      lenke: "Vedlegg",
-      overskrift: "<h2>Vedlegg</h2>",
-      navn: "Vedlegg",
+      what: "text",
+      link: "Attachments",
+      heading: "<h2>Attachments</h2>",
+      name: "Attachments",
     },
     {
-      hva: "without a heading",
-      lenke: "Vedlegg",
-      overskrift: "",
-      navn: "Vedlegg",
+      what: "without a heading",
+      link: "Attachments",
+      heading: "",
+      name: "Attachments",
     },
     {
-      hva: "heading with different text",
-      lenke: "Vedlegg",
-      overskrift: "<h2>Bilag</h2>",
-      navn: "Vedlegg",
+      what: "heading with different text",
+      link: "Attachments",
+      heading: "<h2>Enclosures</h2>",
+      name: "Attachments",
     },
     {
-      hva: "hidden heading",
-      lenke: "Vedlegg",
-      overskrift: "<h2 hidden>Vedlegg</h2>",
-      navn: "Vedlegg",
+      what: "hidden heading",
+      link: "Attachments",
+      heading: "<h2 hidden>Attachments</h2>",
+      name: "Attachments",
     },
     {
-      hva: "heading with aria-label equal to the tab",
-      lenke: "Vedlegg",
-      overskrift: '<h2 aria-label="Vedlegg">Bilag</h2>',
-      navn: "Vedlegg",
+      what: "heading with aria-label equal to the tab",
+      link: "Attachments",
+      heading: '<h2 aria-label="Attachments">Enclosures</h2>',
+      name: "Attachments",
     },
     {
-      hva: "heading with aria-label different from the tab",
-      lenke: "Vedlegg",
-      overskrift: '<h2 aria-label="Noe annet">Vedlegg</h2>',
-      navn: "Vedlegg",
+      what: "heading with aria-label different from the tab",
+      link: "Attachments",
+      heading: '<h2 aria-label="Something else">Attachments</h2>',
+      name: "Attachments",
     },
     {
       // If the panel points to the heading, the heading's own
-      // `aria-labelledby` is not followed, and the panel is named "Bilag".
-      hva: "heading with aria-labelledby",
-      lenke: "Vedlegg",
-      overskrift: '<h2 aria-labelledby="ov-navn">Bilag</h2>',
-      utenfor: '<span id="ov-navn">Vedlegg</span>',
-      navn: "Vedlegg",
+      // `aria-labelledby` is not followed, and the panel is named "Enclosures".
+      what: "heading with aria-labelledby",
+      link: "Attachments",
+      heading: '<h2 aria-labelledby="heading-name">Enclosures</h2>',
+      outside: '<span id="heading-name">Attachments</span>',
+      name: "Attachments",
     },
     {
-      hva: "text hidden with CSS",
-      lenke: 'Vedlegg<span style="display: none"> (2)</span>',
-      overskrift: "",
-      navn: "Vedlegg",
+      what: "text hidden with CSS",
+      link: 'Attachments<span style="display: none"> (2)</span>',
+      heading: "",
+      name: "Attachments",
     },
     {
-      hva: "text with aria-hidden",
-      lenke: 'Vedlegg<span aria-hidden="true"> (2)</span>',
-      overskrift: "<h2>Vedlegg</h2>",
-      navn: "Vedlegg",
+      what: "text with aria-hidden",
+      link: 'Attachments<span aria-hidden="true"> (2)</span>',
+      heading: "<h2>Attachments</h2>",
+      name: "Attachments",
     },
     {
-      hva: "image with alt",
-      lenke: '<img alt="Vedlegg" width="1" height="1">',
-      overskrift: "<h2>Vedlegg</h2>",
-      navn: "Vedlegg",
+      what: "image with alt",
+      link: '<img alt="Attachments" width="1" height="1">',
+      heading: "<h2>Attachments</h2>",
+      name: "Attachments",
     },
     {
-      hva: "aria-label on a child",
-      lenke: '<span role="img" aria-label="Vedlegg">📎</span>',
-      overskrift: "",
-      navn: "Vedlegg",
+      what: "aria-label on a child",
+      link: '<span role="img" aria-label="Attachments">📎</span>',
+      heading: "",
+      name: "Attachments",
     },
     {
       // AccName 2B also applies to a child of the tab.
-      hva: "aria-labelledby on a child, pointing to a hidden element",
-      lenke:
-        '<svg role="img" aria-labelledby="ikon-navn" width="16" height="16"></svg>',
-      overskrift: "",
-      utenfor: '<span id="ikon-navn" hidden>Bilag</span>',
-      navn: "Bilag",
+      what: "aria-labelledby on a child, pointing to a hidden element",
+      link: '<svg role="img" aria-labelledby="icon-name" width="16" height="16"></svg>',
+      heading: "",
+      outside: '<span id="icon-name" hidden>Enclosures</span>',
+      name: "Enclosures",
     },
     {
-      hva: "aria-labelledby on the tab, pointing to a hidden element",
-      lenke: "Vedlegg",
-      overskrift: "",
-      utenfor: '<span id="fane-navn" hidden>Bilag</span>',
-      navn: "Bilag",
+      what: "aria-labelledby on the tab, pointing to a hidden element",
+      link: "Attachments",
+      heading: "",
+      outside: '<span id="tab-name" hidden>Enclosures</span>',
+      name: "Enclosures",
     },
     {
       // Inside an `aria-labelledby` that is already being followed, another one is not followed.
-      hva: "aria-labelledby inside aria-labelledby",
-      lenke: "Vedlegg",
-      overskrift: "",
-      utenfor:
-        '<span id="fane-navn"><span role="img" aria-labelledby="dypere">Bilag</span></span><span id="dypere">Feil</span>',
-      navn: "Bilag",
+      what: "aria-labelledby inside aria-labelledby",
+      link: "Attachments",
+      heading: "",
+      outside:
+        '<span id="tab-name"><span role="img" aria-labelledby="deeper">Enclosures</span></span><span id="deeper">Wrong</span>',
+      name: "Enclosures",
     },
   ]
 
-  for (const v of NAVNEVARIANTER) {
-    it(`B5 and B6: the panel has the tab's name, ${v.hva}`, async () => {
-      const lenkeAttr = v.utenfor?.includes('id="fane-navn"')
-        ? ' aria-labelledby="fane-navn"'
+  for (const v of NAME_VARIANTS) {
+    it(`B5 and B6: the panel has the tab's name, ${v.what}`, async () => {
+      const linkAttr = v.outside?.includes('id="tab-name"')
+        ? ' aria-labelledby="tab-name"'
         : ""
       mount(
-        `${v.utenfor ?? ""}${bar()
+        `${v.outside ?? ""}${bar()
           .replace(
-            '<a href="#vedlegg">Vedlegg</a>',
-            `<a href="#vedlegg"${lenkeAttr}>${v.lenke}</a>`,
+            '<a href="#attachments">Attachments</a>',
+            `<a href="#attachments"${linkAttr}>${v.link}</a>`,
           )
-          .replace("<h2>Vedlegg</h2>", v.overskrift)}`,
+          .replace("<h2>Attachments</h2>", v.heading)}`,
       )
-      await tegn()
+      await settle()
 
-      expect(navn(faner()[1])).toBe(v.navn)
-      expect(navn(paneler()[1])).toBe(v.navn)
+      expect(nameOf(links()[1])).toBe(v.name)
+      expect(nameOf(panels()[1])).toBe(v.name)
     })
   }
 
   it("B6: the heading is the name only when its name is the same as the tab's", async () => {
     mount(
       bar().replace(
-        "<h2>Vedlegg</h2>",
-        '<h2 aria-label="Noe helt annet">Vedlegg</h2>',
+        "<h2>Attachments</h2>",
+        '<h2 aria-label="Something entirely different">Attachments</h2>',
       ),
     )
-    await tegn()
+    await settle()
 
-    expect(paneler().map(navn)).toEqual(NAVN)
+    expect(panels().map(nameOf)).toEqual(NAMES)
   })
 
   it("B5: a tab with aria-labelledby pointing to a hidden element is named what that element says", async () => {
     mount(
-      `<span id="skjult-navn" hidden>Bilag</span>${bar({
-        overskrift: () => null,
+      `<span id="hidden-name" hidden>Enclosures</span>${bar({
+        heading: () => null,
       }).replace(
-        '<a href="#vedlegg">',
-        '<a href="#vedlegg" aria-labelledby="skjult-navn">',
+        '<a href="#attachments">',
+        '<a href="#attachments" aria-labelledby="hidden-name">',
       )}`,
     )
-    await tegn()
+    await settle()
 
-    expect(navn(paneler()[1])).toBe("Bilag")
+    expect(nameOf(panels()[1])).toBe("Enclosures")
   })
 
   it("B5: text hidden with CSS and a tab with only a title", async () => {
     mount(
-      bar({ overskrift: () => null })
+      bar({ heading: () => null })
         .replace(
-          '<a href="#vedlegg">Vedlegg</a>',
-          '<a href="#vedlegg">Vedlegg<span style="display: none"> (2)</span></a>',
+          '<a href="#attachments">Attachments</a>',
+          '<a href="#attachments">Attachments<span style="display: none"> (2)</span></a>',
         )
         .replace(
-          '<a href="#meldinger">Meldinger</a>',
-          '<a href="#meldinger" title="Meldinger"><svg aria-hidden="true" width="16" height="16"></svg></a>',
+          '<a href="#messages">Messages</a>',
+          '<a href="#messages" title="Messages"><svg aria-hidden="true" width="16" height="16"></svg></a>',
         ),
     )
-    await tegn()
+    await settle()
 
-    expect(paneler().map(navn)).toEqual(NAVN)
+    expect(panels().map(nameOf)).toEqual(NAMES)
   })
 
   it("B8: the name follows when the text in the heading changes", async () => {
     mount(bar())
-    await tegn()
-    expect(navn(paneler()[1])).toBe("Vedlegg")
+    await settle()
+    expect(nameOf(panels()[1])).toBe("Attachments")
 
     // As idiomorph does it: only the text node changes.
-    const tekst = paneler()[1].querySelector("h2")?.firstChild as Text
-    tekst.nodeValue = "Bilag"
-    await tegn()
+    const text = panels()[1].querySelector("h2")?.firstChild as Text
+    text.nodeValue = "Enclosures"
+    await settle()
 
     // The heading no longer says what the tab says, so the panel has the
     // tab's name.
-    expect(navn(paneler()[1])).toBe("Vedlegg")
+    expect(nameOf(panels()[1])).toBe("Attachments")
   })
 
   it("B8: the name follows when the text aria-labelledby points to inside a panel changes", async () => {
     mount(
-      bar({ overskrift: () => null })
+      bar({ heading: () => null })
         .replace(
-          '<a href="#vedlegg">',
-          '<a href="#vedlegg" aria-labelledby="sent-navn">',
+          '<a href="#attachments">',
+          '<a href="#attachments" aria-labelledby="late-name">',
         )
         .replace(
-          '<p id="inne-soknaden">',
-          '<p id="inne-soknaden"><span id="sent-navn" hidden><b>Bilag</b></span>',
+          '<p id="inside-application">',
+          '<p id="inside-application"><span id="late-name" hidden><b>Enclosures</b></span>',
         ),
     )
-    await tegn()
-    expect(navn(paneler()[1])).toBe("Bilag")
+    await settle()
+    expect(nameOf(panels()[1])).toBe("Enclosures")
 
     // The text is inside the element the id points to, not directly in it.
-    const tekst = document.querySelector("#sent-navn b")?.firstChild as Text
-    tekst.nodeValue = "Dokumenter"
-    await tegn()
+    const text = document.querySelector("#late-name b")?.firstChild as Text
+    text.nodeValue = "Documents"
+    await settle()
 
-    expect(navn(paneler()[1])).toBe("Dokumenter")
+    expect(nameOf(panels()[1])).toBe("Documents")
   })
 
   it("B8: the same when aria-labelledby is on a child of the tab", async () => {
     mount(
-      bar({ overskrift: () => null })
+      bar({ heading: () => null })
         .replace(
-          '<a href="#vedlegg">Vedlegg</a>',
-          '<a href="#vedlegg"><svg role="img" aria-labelledby="sent-navn" width="16" height="16"></svg></a>',
+          '<a href="#attachments">Attachments</a>',
+          '<a href="#attachments"><svg role="img" aria-labelledby="late-name" width="16" height="16"></svg></a>',
         )
         .replace(
-          '<p id="inne-soknaden">',
-          '<p id="inne-soknaden"><span id="sent-navn" hidden>Bilag</span>',
+          '<p id="inside-application">',
+          '<p id="inside-application"><span id="late-name" hidden>Enclosures</span>',
         ),
     )
-    await tegn()
-    expect(navn(paneler()[1])).toBe("Bilag")
+    await settle()
+    expect(nameOf(panels()[1])).toBe("Enclosures")
 
-    const tekst = document.getElementById("sent-navn")?.firstChild as Text
-    tekst.nodeValue = "Dokumenter"
-    await tegn()
+    const text = document.getElementById("late-name")?.firstChild as Text
+    text.nodeValue = "Documents"
+    await settle()
 
-    expect(navn(paneler()[1])).toBe("Dokumenter")
+    expect(nameOf(panels()[1])).toBe("Documents")
   })
 
   it("B7: the fallback is removed when the element the server's aria-labelledby points to arrives inside a panel", async () => {
     mount(
       bar({
-        overskrift: () => null,
-        panel: (i) => (i === 1 ? ' aria-labelledby="sent-navn"' : ""),
+        heading: () => null,
+        panel: (i) => (i === 1 ? ' aria-labelledby="late-name"' : ""),
       }),
     )
-    await tegn()
-    expect(paneler()[1].getAttribute("aria-label")).toBe("Vedlegg")
+    await settle()
+    expect(panels()[1].getAttribute("aria-label")).toBe("Attachments")
 
-    const dypt = document.getElementById("inne-soknaden") as HTMLElement
-    dypt.insertAdjacentHTML("beforeend", '<span id="sent-navn">Vedlegg</span>')
-    await tegn()
+    const deep = document.getElementById("inside-application") as HTMLElement
+    deep.insertAdjacentHTML(
+      "beforeend",
+      '<span id="late-name">Attachments</span>',
+    )
+    await settle()
 
-    expect(paneler()[1].hasAttribute("aria-label")).toBe(false)
-    expect(paneler()[1].getAttribute("aria-labelledby")).toBe("sent-navn")
+    expect(panels()[1].hasAttribute("aria-label")).toBe(false)
+    expect(panels()[1].getAttribute("aria-labelledby")).toBe("late-name")
   })
 
   it("B8: the name follows when the element aria-labelledby points to arrives inside a panel", async () => {
     mount(
-      bar({ overskrift: () => null }).replace(
-        '<a href="#vedlegg">',
-        '<a href="#vedlegg" aria-labelledby="sent-navn">',
+      bar({ heading: () => null }).replace(
+        '<a href="#attachments">',
+        '<a href="#attachments" aria-labelledby="late-name">',
       ),
     )
-    await tegn()
-    expect(navn(paneler()[1])).toBe("Vedlegg")
+    await settle()
+    expect(nameOf(panels()[1])).toBe("Attachments")
 
-    const dypt = document.getElementById("inne-soknaden") as HTMLElement
-    dypt.insertAdjacentHTML(
+    const deep = document.getElementById("inside-application") as HTMLElement
+    deep.insertAdjacentHTML(
       "beforeend",
-      '<span hidden><span id="sent-navn">Bilag</span></span>',
+      '<span hidden><span id="late-name">Enclosures</span></span>',
     )
-    await tegn()
+    await settle()
 
-    expect(navn(paneler()[1])).toBe("Bilag")
+    expect(nameOf(panels()[1])).toBe("Enclosures")
   })
 
   it("B8: the name follows when an element inside a panel gets the id aria-labelledby points to", async () => {
     mount(
-      bar({ overskrift: () => null })
+      bar({ heading: () => null })
         .replace(
-          '<a href="#vedlegg">',
-          '<a href="#vedlegg" aria-labelledby="sent-navn">',
+          '<a href="#attachments">',
+          '<a href="#attachments" aria-labelledby="late-name">',
         )
         .replace(
-          '<p id="inne-soknaden">',
-          '<p id="inne-soknaden"><span id="ennå-ikke" hidden>Bilag</span>',
+          '<p id="inside-application">',
+          '<p id="inside-application"><span id="not-yet" hidden>Enclosures</span>',
         ),
     )
-    await tegn()
-    expect(navn(paneler()[1])).toBe("Vedlegg")
+    await settle()
+    expect(nameOf(panels()[1])).toBe("Attachments")
 
-    document.getElementById("ennå-ikke")?.setAttribute("id", "sent-navn")
-    await tegn()
+    document.getElementById("not-yet")?.setAttribute("id", "late-name")
+    await settle()
 
-    expect(navn(paneler()[1])).toBe("Bilag")
+    expect(nameOf(panels()[1])).toBe("Enclosures")
   })
 
   it("D7: the heading becomes the name when its text changes to the tab's", async () => {
-    mount(bar({ overskrift: (i) => (i === 1 ? "Bilag" : NAVN[i]) }))
-    await tegn()
-    expect(paneler()[1].getAttribute("aria-label")).toBe("Vedlegg")
+    mount(bar({ heading: (i) => (i === 1 ? "Enclosures" : NAMES[i]) }))
+    await settle()
+    expect(panels()[1].getAttribute("aria-label")).toBe("Attachments")
 
-    const overskrift = paneler()[1].querySelector("h2") as HTMLElement
-    ;(overskrift.firstChild as Text).nodeValue = "Vedlegg"
-    await tegn()
+    const heading = panels()[1].querySelector("h2") as HTMLElement
+    ;(heading.firstChild as Text).nodeValue = "Attachments"
+    await settle()
 
-    expect(paneler()[1].hasAttribute("aria-label")).toBe(false)
-    expect(paneler()[1].getAttribute("aria-labelledby")).toBe(overskrift.id)
+    expect(panels()[1].hasAttribute("aria-label")).toBe(false)
+    expect(panels()[1].getAttribute("aria-labelledby")).toBe(heading.id)
   })
 
   it("B8: the name follows when the element aria-labelledby points to loses its id inside a panel", async () => {
     mount(
-      bar({ overskrift: () => null })
+      bar({ heading: () => null })
         .replace(
-          '<a href="#vedlegg">',
-          '<a href="#vedlegg" aria-labelledby="sent-navn">',
+          '<a href="#attachments">',
+          '<a href="#attachments" aria-labelledby="late-name">',
         )
         .replace(
-          '<p id="inne-soknaden">',
-          '<p id="inne-soknaden"><span id="sent-navn" hidden>Bilag</span>',
+          '<p id="inside-application">',
+          '<p id="inside-application"><span id="late-name" hidden>Enclosures</span>',
         ),
     )
-    await tegn()
-    expect(navn(paneler()[1])).toBe("Bilag")
+    await settle()
+    expect(nameOf(panels()[1])).toBe("Enclosures")
 
-    document.getElementById("sent-navn")?.setAttribute("id", "noe-annet")
-    await tegn()
+    document.getElementById("late-name")?.setAttribute("id", "something-else")
+    await settle()
 
-    expect(navn(paneler()[1])).toBe("Vedlegg")
+    expect(nameOf(panels()[1])).toBe("Attachments")
   })
 
   it("B8: the name follows when alt on an image in the tab changes", async () => {
     mount(
-      bar({ overskrift: () => null }).replace(
-        '<a href="#vedlegg">Vedlegg</a>',
-        '<a href="#vedlegg"><img alt="Vedlegg" width="1" height="1"></a>',
+      bar({ heading: () => null }).replace(
+        '<a href="#attachments">Attachments</a>',
+        '<a href="#attachments"><img alt="Attachments" width="1" height="1"></a>',
       ),
     )
-    await tegn()
+    await settle()
 
-    ;(faner()[1].querySelector("img") as HTMLElement).setAttribute(
+    ;(links()[1].querySelector("img") as HTMLElement).setAttribute(
       "alt",
-      "Bilag",
+      "Enclosures",
     )
-    await tegn()
+    await settle()
 
-    expect(navn(paneler()[1])).toBe("Bilag")
+    expect(nameOf(panels()[1])).toBe("Enclosures")
   })
 
   it("B9: the component warns when the tab list has no name", async () => {
-    const spion = lyttEtterAdvarsler()
-    mount(bar({ liste: "" }))
-    await tegn()
+    const spy = spyOnWarnings()
+    mount(bar({ list: "" }))
+    await settle()
 
-    expect((await advarsler(spion)).some((m) => m.includes("aria-label"))).toBe(
+    expect((await warnings(spy)).some((m) => m.includes("aria-label"))).toBe(
       true,
     )
   })
 
   it("B9: the component does not warn when the tab list has a name", async () => {
-    const spion = lyttEtterAdvarsler()
+    const spy = spyOnWarnings()
     mount(bar())
-    await tegn()
+    await settle()
 
     expect(
-      (await advarsler(spion)).filter((m) => m.startsWith("lt-tabs")),
+      (await warnings(spy)).filter((m) => m.startsWith("lt-tabs")),
     ).toEqual([])
   })
 
@@ -742,9 +751,9 @@ describe("B. Semantics and names", () => {
     // A non-breaking space and a BOM are whitespace to JavaScript, and to
     // Kotlin only when it checks the same way.
     for (const label of [undefined, "", "   ", "\u00a0\ufeff"]) {
-      for (const bygg of [tabs, ltReact.tabs]) {
+      for (const build of [tabs, ltReact.tabs]) {
         expect(() =>
-          bygg({ id: "uten-navn", keys: ["a"], label } as never),
+          build({ id: "unnamed", keys: ["a"], label } as never),
         ).toThrow(/label/)
       }
     }
@@ -756,105 +765,110 @@ describe("B. Semantics and names", () => {
 })
 
 describe("C. Keyboard and focus", () => {
-  const rundt = (innhold: string) =>
-    `<button type="button" id="foer">Før</button>${innhold}<button type="button" id="etter">Etter</button>`
+  const around = (content: string) =>
+    `<button type="button" id="before">Before</button>${content}<button type="button" id="after">After</button>`
 
   it("C1: Tab into the tab list lands on the selected tab, and Tab again moves to the selected panel", async () => {
-    mount(rundt(bar()))
-    await tegn()
-    faner()[1].click()
-    await tegn()
-    ;(document.getElementById("foer") as HTMLElement).focus()
+    mount(around(bar()))
+    await settle()
+    links()[1].click()
+    await settle()
+    ;(document.getElementById("before") as HTMLElement).focus()
 
     await tab()
-    expect(document.activeElement).toBe(faner()[1])
+    expect(document.activeElement).toBe(links()[1])
     await tab()
-    expect(document.activeElement).toBe(paneler()[1])
+    expect(document.activeElement).toBe(panels()[1])
   })
 
   it("C2: nothing in a panel that is not selected can be reached with Tab, the panel itself included", async () => {
     mount(
-      rundt(
+      around(
         bar({
-          inni: (i) =>
-            `<button type="button" id="knapp-${NOKLER[i]}">Gjør noe</button>`,
+          inside: (i) =>
+            `<button type="button" id="button-${KEYS[i]}">Do something</button>`,
         }),
       ),
     )
-    await tegn()
-    ;(document.getElementById("foer") as HTMLElement).focus()
+    await settle()
+    ;(document.getElementById("before") as HTMLElement).focus()
 
-    const besokt: Element[] = []
-    for (let i = 0; i < 10 && document.activeElement?.id !== "etter"; i++) {
+    const visited: Element[] = []
+    for (let i = 0; i < 10 && document.activeElement?.id !== "after"; i++) {
       await tab()
-      if (document.activeElement) besokt.push(document.activeElement)
+      if (document.activeElement) visited.push(document.activeElement)
     }
 
-    const iSkjulte = besokt.filter((e) =>
-      paneler().some(
+    const inHidden = visited.filter((e) =>
+      panels().some(
         (p) => p.hasAttribute("hidden") && (p === e || p.contains(e)),
       ),
     )
-    expect(iSkjulte.map((e) => e.id || e.localName)).toEqual([])
-    expect(besokt[besokt.length - 1]?.id).toBe("etter")
+    expect(inHidden.map((e) => e.id || e.localName)).toEqual([])
+    expect(visited[visited.length - 1]?.id).toBe("after")
   })
 
   it("C3: left arrow wraps from the first to the last", async () => {
     mount(bar())
-    await tegn()
-    faner()[0].focus()
+    await settle()
+    links()[0].focus()
 
     await userEvent.keyboard("{ArrowLeft}")
-    await tegn()
+    await settle()
 
-    expect(document.activeElement).toBe(faner()[2])
-    expect(valgt()).toEqual([false, false, true])
+    expect(document.activeElement).toBe(links()[2])
+    expect(selectedTabs()).toEqual([false, false, true])
   })
 
   it("C7: Enter selects with manual activation", async () => {
-    mount(bar({ vert: ' activation="manual"' }))
-    await tegn()
-    faner()[0].focus()
+    mount(bar({ host: ' activation="manual"' }))
+    await settle()
+    links()[0].focus()
 
     await userEvent.keyboard("{ArrowRight}")
-    expect(valgt()).toEqual([true, false, false])
+    expect(selectedTabs()).toEqual([true, false, false])
     await userEvent.keyboard("{Enter}")
-    await tegn()
+    await settle()
 
-    expect(valgt()).toEqual([false, true, false])
+    expect(selectedTabs()).toEqual([false, true, false])
   })
 
   it("C8: a tab with hidden is skipped by the arrow keys and never gets the tab stop", async () => {
     mount(
-      rundt(bar().replace('<a href="#vedlegg">', '<a href="#vedlegg" hidden>')),
+      around(
+        bar().replace(
+          '<a href="#attachments">',
+          '<a href="#attachments" hidden>',
+        ),
+      ),
     )
-    await tegn()
-    faner()[0].focus()
+    await settle()
+    links()[0].focus()
 
     await userEvent.keyboard("{ArrowRight}")
-    await tegn()
+    await settle()
 
-    expect(valgt()).toEqual([false, false, true])
-    expect(faner().map((f) => f.getAttribute("tabindex"))).toEqual([
+    expect(selectedTabs()).toEqual([false, false, true])
+    expect(links().map((f) => f.getAttribute("tabindex"))).toEqual([
       "-1",
       "-1",
       "0",
     ])
-    expect(document.activeElement).toBe(faner()[2])
+    expect(document.activeElement).toBe(links()[2])
   })
 
   it("C10: focus is visible on the tab and on the panel", async () => {
-    mount(rundt(bar()))
-    await tegn()
-    ;(document.getElementById("foer") as HTMLElement).focus()
+    mount(around(bar()))
+    await settle()
+    ;(document.getElementById("before") as HTMLElement).focus()
 
-    for (const element of [faner()[0], paneler()[0]]) {
+    for (const element of [links()[0], panels()[0]]) {
       await tab()
       expect(document.activeElement).toBe(element)
-      const stil = getComputedStyle(element)
-      expect(stil.outlineStyle, element.localName).not.toBe("none")
+      const style = getComputedStyle(element)
+      expect(style.outlineStyle, element.localName).not.toBe("none")
       expect(
-        Number.parseFloat(stil.outlineWidth),
+        Number.parseFloat(style.outlineWidth),
         element.localName,
       ).toBeGreaterThanOrEqual(2)
     }
@@ -864,238 +878,240 @@ describe("C. Keyboard and focus", () => {
 describe("D. Mouse and links", () => {
   it("D2: a real middle click does not select the tab", async () => {
     mount(bar())
-    await tegn()
-    const lenke = faner()[1]
-    let klikk = 0
-    lenke.addEventListener("click", () => klikk++)
+    await settle()
+    const link = links()[1]
+    let clicks = 0
+    link.addEventListener("click", () => clicks++)
     // A middle click opens the link in a new browser tab. In the test the new
     // tab would load Vitest's test page, which sends messages the run does
     // not recognise, and WebKit navigates in the same page instead. The
     // browser's default action is stopped, so the test asks only about the
     // component. The listener is on `window` and runs last, so it sees
     // whether anything before it has stopped the link.
-    let stoppet: boolean | undefined
-    const stopp = (e: Event) => {
-      stoppet = e.defaultPrevented
+    let stopped: boolean | undefined
+    const stop = (e: Event) => {
+      stopped = e.defaultPrevented
       e.preventDefault()
     }
-    window.addEventListener("auxclick", stopp)
+    window.addEventListener("auxclick", stop)
     try {
-      await userEvent.click(lenke, { button: "middle" } as never)
-      await tegn()
+      await userEvent.click(link, { button: "middle" } as never)
+      await settle()
     } finally {
-      window.removeEventListener("auxclick", stopp)
+      window.removeEventListener("auxclick", stop)
     }
 
-    expect(stoppet).toBe(false)
-    expect(klikk).toBe(0)
-    expect(valgt()).toEqual([true, false, false])
+    expect(stopped).toBe(false)
+    expect(clicks).toBe(0)
+    expect(selectedTabs()).toEqual([true, false, false])
     expect(location.hash).toBe("")
   })
 
   it('D3: a role="tab" without href is not a tab, and the component warns', async () => {
-    const spion = lyttEtterAdvarsler()
+    const spy = spyOnWarnings()
     mount(
       bar().replace(
         "</ul>",
-        '<li><button type="button" role="tab" aria-controls="soknaden" id="uten-href">Annet</button></li></ul>',
+        '<li><button type="button" role="tab" aria-controls="application" id="without-href">Other</button></li></ul>',
       ),
     )
-    await tegn()
-    const knapp = document.getElementById("uten-href") as HTMLElement
+    await settle()
+    const button = document.getElementById("without-href") as HTMLElement
 
-    expect(knapp.hasAttribute("aria-selected")).toBe(false)
-    expect(knapp.hasAttribute("tabindex")).toBe(false)
-    expect((await advarsler(spion)).some((m) => m.includes("href"))).toBe(true)
+    expect(button.hasAttribute("aria-selected")).toBe(false)
+    expect(button.hasAttribute("tabindex")).toBe(false)
+    expect((await warnings(spy)).some((m) => m.includes("href"))).toBe(true)
   })
 })
 
 describe("E. The address and find in page", () => {
   it("E1: an address to something inside a panel selects that tab on load", async () => {
-    await setAddress("#inne-meldinger")
+    await setAddress("#inside-messages")
     mount(bar())
-    await tegn()
+    await settle()
 
-    expect(valgt()).toEqual([false, false, true])
-    expect(location.hash).toBe("#inne-meldinger")
+    expect(selectedTabs()).toEqual([false, false, true])
+    expect(location.hash).toBe("#inside-messages")
   })
 
   /** The tab list with one more tab, which points to a panel that does not exist. */
-  const medFaneUtenPanel = (markup: string) =>
+  const withTabWithoutPanel = (markup: string) =>
     markup.replace(
-      '<li><a href="#vedlegg">',
-      '<li><a href="#finnes-ikke">Mangler</a></li><li><a href="#vedlegg">',
+      '<li><a href="#attachments">',
+      '<li><a href="#missing">Missing</a></li><li><a href="#attachments">',
     )
 
   it("E1: a tab without a panel does not stop the address from selecting", async () => {
-    lyttEtterAdvarsler()
-    await setAddress("#vedlegg")
-    mount(medFaneUtenPanel(bar()))
-    await tegn()
+    spyOnWarnings()
+    await setAddress("#attachments")
+    mount(withTabWithoutPanel(bar()))
+    await settle()
 
-    expect(valgt()).toEqual([false, false, true, false])
+    expect(selectedTabs()).toEqual([false, false, true, false])
   })
 
   for (const [fragment, id] of [
-    ["sent-innhold", "sent-innhold"],
-    ["s%C3%B8knad-sent", "søknad-sent"],
+    ["late-content", "late-content"],
+    ["r%C3%A9sum%C3%A9-late", "résumé-late"],
   ]) {
     it(`E1: content the address points to, arriving after the panel, selects the tab (#${fragment})`, async () => {
       await setAddress(`#${fragment}`)
-      mount(bar({ inni: (i) => (i === 2 ? '<div id="beholder"></div>' : "") }))
-      await tegn()
-      expect(valgt()).toEqual([true, false, false])
+      mount(
+        bar({ inside: (i) => (i === 2 ? '<div id="container"></div>' : "") }),
+      )
+      await settle()
+      expect(selectedTabs()).toEqual([true, false, false])
 
       // Deep in the panel, where what happens otherwise does not trigger a new round (F11).
-      ;(document.getElementById("beholder") as HTMLElement).insertAdjacentHTML(
+      ;(document.getElementById("container") as HTMLElement).insertAdjacentHTML(
         "beforeend",
-        `<p id="${id}">Kom senere</p>`,
+        `<p id="${id}">Arrived later</p>`,
       )
-      await tegn()
+      await settle()
 
-      expect(valgt()).toEqual([false, false, true])
+      expect(selectedTabs()).toEqual([false, false, true])
       expect(location.hash).toBe(`#${fragment}`)
     })
   }
 
-  for (const [hva, lag] of [
+  for (const [what, make] of [
     ["a complete tab list", (m: string) => m],
-    ["a tab list with a tab without a panel", medFaneUtenPanel],
+    ["a tab list with a tab without a panel", withTabWithoutPanel],
   ] as const) {
-    it(`E6: the address is corrected after a patch, also in ${hva}`, async () => {
-      lyttEtterAdvarsler()
-      mount(lag(bar()))
-      await tegn()
+    it(`E6: the address is corrected after a patch, also in ${what}`, async () => {
+      spyOnWarnings()
+      mount(make(bar()))
+      await settle()
 
       // The app moves the address without selecting, and the server touches a panel.
-      history.replaceState(null, "", "#vedlegg")
-      paneler()[0].setAttribute("data-patch", "1")
-      paneler()[0].setAttribute("hidden", "")
-      paneler()[0].removeAttribute("hidden")
-      await tegn()
+      history.replaceState(null, "", "#attachments")
+      panels()[0].setAttribute("data-patch", "1")
+      panels()[0].setAttribute("hidden", "")
+      panels()[0].removeAttribute("hidden")
+      await settle()
 
-      expect(valgt()[0]).toBe(true)
-      expect(location.hash).toBe("#soknaden")
+      expect(selectedTabs()[0]).toBe(true)
+      expect(location.hash).toBe("#application")
     })
   }
 
   it("G2: an address to something that does not exist stays, and a click is reported once", async () => {
-    await setAddress("#/sak/1")
+    await setAddress("#/case/1")
     mount(bar())
-    await tegn()
-    expect(valgt()).toEqual([true, false, false])
-    expect(location.hash).toBe("#/sak/1")
-    const meldt: number[] = []
-    vert().addEventListener("tab-select", (e) => meldt.push(e.detail.index))
+    await settle()
+    expect(selectedTabs()).toEqual([true, false, false])
+    expect(location.hash).toBe("#/case/1")
+    const reported: number[] = []
+    host().addEventListener("tab-select", (e) => reported.push(e.detail.index))
 
-    faner()[1].click()
-    await tegn()
-    await tegn()
+    links()[1].click()
+    await settle()
+    await settle()
 
-    expect(valgt()).toEqual([false, true, false])
-    expect(location.hash).toBe("#vedlegg")
-    expect(meldt).toEqual([1])
+    expect(selectedTabs()).toEqual([false, true, false])
+    expect(location.hash).toBe("#attachments")
+    expect(reported).toEqual([1])
   })
 
   it("E1: the tab list first and the panels afterwards: the address still selects", async () => {
-    await setAddress("#meldinger")
+    await setAddress("#messages")
     const markup = bar()
-    const slutt = markup.indexOf("</ul>") + "</ul>".length
-    mount(`${markup.slice(0, slutt)}</lt-tabs>`)
-    await tegn()
+    const end = markup.indexOf("</ul>") + "</ul>".length
+    mount(`${markup.slice(0, end)}</lt-tabs>`)
+    await settle()
 
-    vert().insertAdjacentHTML(
+    host().insertAdjacentHTML(
       "beforeend",
-      markup.slice(slutt, markup.lastIndexOf("</lt-tabs>")),
+      markup.slice(end, markup.lastIndexOf("</lt-tabs>")),
     )
-    await tegn()
-    await tegn()
+    await settle()
+    await settle()
 
-    expect(valgt()).toEqual([false, false, true])
-    expect(location.hash).toBe("#meldinger")
+    expect(selectedTabs()).toEqual([false, false, true])
+    expect(location.hash).toBe("#messages")
   })
 
   it("E1: when the tab list is disconnected and reconnected, the address is read again", async () => {
     mount(bar())
-    await tegn()
-    faner()[1].click()
-    await tegn()
-    const v = vert()
-    const forelder = v.parentElement as HTMLElement
+    await settle()
+    links()[1].click()
+    await settle()
+    const v = host()
+    const parent = v.parentElement as HTMLElement
 
     v.remove()
-    history.replaceState(null, "", "#meldinger")
-    forelder.append(v)
-    await tegn()
-    await tegn()
+    history.replaceState(null, "", "#messages")
+    parent.append(v)
+    await settle()
+    await settle()
 
-    expect(valgt()).toEqual([false, false, true])
+    expect(selectedTabs()).toEqual([false, false, true])
   })
 
   it("E3: a link to something inside a hidden panel selects the tab through beforematch", async () => {
-    const slipp = somSokISiden()
-    let sett = 0
+    const release = likeFindInPage()
+    let seen = 0
     try {
       mount(bar())
-      await tegn()
-      paneler()[1].addEventListener("beforematch", () => sett++)
+      await settle()
+      panels()[1].addEventListener("beforematch", () => seen++)
 
       // `hashchange` is stopped, so it is `beforematch` that must select.
-      location.hash = "#inne-vedlegg"
-      await tegn()
-      await tegn()
+      location.hash = "#inside-attachments"
+      await settle()
+      await settle()
     } finally {
-      slipp()
+      release()
     }
 
-    expect(sett).toBe(1)
-    expect(valgt()).toEqual([false, true, false])
-    expect(skjult()).toEqual([true, false, true])
+    expect(seen).toBe(1)
+    expect(selectedTabs()).toEqual([false, true, false])
+    expect(hiddenPanels()).toEqual([true, false, true])
   })
 
   it("E4: the same when the panel is outside <lt-tabs>", async () => {
     const markup = bar()
-    const [foran, bak] = markup.split(
-      '<section class="lt-tabs__panel" id="vedlegg"',
+    const [front, back] = markup.split(
+      '<section class="lt-tabs__panel" id="attachments"',
     )
-    const slutt = bak.indexOf("</section>") + "</section>".length
-    const vedlegg = `<section class="lt-tabs__panel" id="vedlegg"${bak.slice(0, slutt)}`
-    const slipp = somSokISiden()
+    const end = back.indexOf("</section>") + "</section>".length
+    const attachments = `<section class="lt-tabs__panel" id="attachments"${back.slice(0, end)}`
+    const release = likeFindInPage()
     try {
-      mount(`${foran}${bak.slice(slutt)}${vedlegg}`)
-      await tegn()
-      location.hash = "#inne-vedlegg"
-      await tegn()
-      await tegn()
+      mount(`${front}${back.slice(end)}${attachments}`)
+      await settle()
+      location.hash = "#inside-attachments"
+      await settle()
+      await settle()
     } finally {
-      slipp()
+      release()
     }
 
-    expect(valgt()).toEqual([false, true, false])
+    expect(selectedTabs()).toEqual([false, true, false])
     expect(
-      paneler()
+      panels()
         .filter((p) => !p.hasAttribute("hidden"))
         .map((p) => p.id),
-    ).toEqual(["vedlegg"])
+    ).toEqual(["attachments"])
   })
 
-  /** Tabs in tabs: the match `#dypt` is in the inner panel `ib`, inside the outer `yb`. */
-  const FANER_I_FANER = (indre = "") => `
-    <a href="#dypt" id="til-dypt">Til treffet</a>
-    <lt-tabs id="ytre">
-      <ul class="lt-tabs__list" aria-label="Ytre"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
-      <section class="lt-tabs__panel" id="ya"><h2>YA</h2>Ytre a</section>
+  /** Tabs in tabs: the match `#deep` is in the inner panel `ib`, inside the outer `yb`. */
+  const TABS_IN_TABS = (inner = "") => `
+    <a href="#deep" id="to-deep">To the match</a>
+    <lt-tabs id="outer">
+      <ul class="lt-tabs__list" aria-label="Outer"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
+      <section class="lt-tabs__panel" id="ya"><h2>YA</h2>Outer a</section>
       <section class="lt-tabs__panel" id="yb"><h2>YB</h2>
-        <lt-tabs id="indre"${indre}>
-          <ul class="lt-tabs__list" aria-label="Indre"><li><a href="#ia">IA</a></li><li><a href="#ib">IB</a></li></ul>
-          <section class="lt-tabs__panel" id="ia"><h3>IA</h3>Indre a</section>
-          <section class="lt-tabs__panel" id="ib"><h3>IB</h3><p id="dypt">Dypt inne</p></section>
+        <lt-tabs id="inner"${inner}>
+          <ul class="lt-tabs__list" aria-label="Inner"><li><a href="#ia">IA</a></li><li><a href="#ib">IB</a></li></ul>
+          <section class="lt-tabs__panel" id="ia"><h3>IA</h3>Inner a</section>
+          <section class="lt-tabs__panel" id="ib"><h3>IB</h3><p id="deep">Deep inside</p></section>
         </lt-tabs>
       </section>
     </lt-tabs>`
 
-  const skjultI = (...ider: string[]) =>
-    ider.map((id) =>
+  const hiddenIn = (...ids: string[]) =>
+    ids.map((id) =>
       (document.getElementById(id) as HTMLElement).hasAttribute("hidden"),
     )
 
@@ -1108,117 +1124,119 @@ describe("E. The address and find in page", () => {
    * afterwards.
    */
   it("E3: find in page reveals a match in a tab list inside a hidden panel", async () => {
-    const slipp = somSokISiden()
+    const release = likeFindInPage()
     try {
-      mount(FANER_I_FANER())
-      await tegn()
-      await userEvent.click(document.getElementById("til-dypt") as HTMLElement)
-      await tegn()
-      await tegn()
+      mount(TABS_IN_TABS())
+      await settle()
+      await userEvent.click(document.getElementById("to-deep") as HTMLElement)
+      await settle()
+      await settle()
     } finally {
-      slipp()
+      release()
     }
 
     expect(
-      (document.getElementById("dypt") as HTMLElement).checkVisibility(),
+      (document.getElementById("deep") as HTMLElement).checkVisibility(),
     ).toBe(true)
-    expect(skjultI("ya", "yb", "ia", "ib")).toEqual([true, false, true, false])
+    expect(hiddenIn("ya", "yb", "ia", "ib")).toEqual([true, false, true, false])
   })
 
   it("E3: the same when the inner tab list is server-controlled, and the selection is reported once", async () => {
-    const slipp = somSokISiden()
-    const meldt: number[] = []
+    const release = likeFindInPage()
+    const reported: number[] = []
     try {
-      mount(FANER_I_FANER(" server-controlled"))
-      await tegn()
-      ;(document.getElementById("indre") as HTMLElement).addEventListener(
+      mount(TABS_IN_TABS(" server-controlled"))
+      await settle()
+      ;(document.getElementById("inner") as HTMLElement).addEventListener(
         "tab-select",
         (e) => {
           e.stopPropagation()
-          meldt.push((e as CustomEvent<{ index: number }>).detail.index)
+          reported.push((e as CustomEvent<{ index: number }>).detail.index)
         },
       )
-      await userEvent.click(document.getElementById("til-dypt") as HTMLElement)
-      await tegn()
-      await tegn()
+      await userEvent.click(document.getElementById("to-deep") as HTMLElement)
+      await settle()
+      await settle()
     } finally {
-      slipp()
+      release()
     }
 
     expect(
-      (document.getElementById("dypt") as HTMLElement).checkVisibility(),
+      (document.getElementById("deep") as HTMLElement).checkVisibility(),
     ).toBe(true)
-    expect(skjultI("ya", "yb", "ia", "ib")).toEqual([true, false, true, false])
-    expect(meldt).toEqual([1])
+    expect(hiddenIn("ya", "yb", "ia", "ib")).toEqual([true, false, true, false])
+    expect(reported).toEqual([1])
   })
 
   it("E3: find in page opens a closed <details> around the tab list", async (ctx) => {
-    const slipp = somSokISiden()
+    const release = likeFindInPage()
     try {
       // First without tabs: if the engine does not open a <details> itself,
       // the test has nothing to say about the component.
       mount(
-        '<a href="#kontroll-treff" id="til-kontroll">Til</a><details id="kontroll"><summary>K</summary><p id="kontroll-treff">Treff</p></details>',
+        '<a href="#control-match" id="to-control">To</a><details id="control"><summary>K</summary><p id="control-match">Match</p></details>',
       )
       await userEvent.click(
-        document.getElementById("til-kontroll") as HTMLElement,
+        document.getElementById("to-control") as HTMLElement,
       )
-      await tegn()
-      const motorenApner = (
-        document.getElementById("kontroll") as HTMLDetailsElement
+      await settle()
+      const engineOpens = (
+        document.getElementById("control") as HTMLDetailsElement
       ).open
-      if (!motorenApner) ctx.skip()
+      if (!engineOpens) ctx.skip()
 
       mount(
-        `<a href="#inne-vedlegg" id="til-treff">Til treffet</a><details id="rundt"><summary>Mer</summary>${bar()}</details>`,
+        `<a href="#inside-attachments" id="to-match">To the match</a><details id="around"><summary>More</summary>${bar()}</details>`,
       )
-      await tegn()
-      await userEvent.click(document.getElementById("til-treff") as HTMLElement)
-      await tegn()
-      await tegn()
+      await settle()
+      await userEvent.click(document.getElementById("to-match") as HTMLElement)
+      await settle()
+      await settle()
     } finally {
-      slipp()
+      release()
     }
 
-    expect((document.getElementById("rundt") as HTMLDetailsElement).open).toBe(
+    expect((document.getElementById("around") as HTMLDetailsElement).open).toBe(
       true,
     )
     expect(
       (
-        document.getElementById("inne-vedlegg") as HTMLElement
+        document.getElementById("inside-attachments") as HTMLElement
       ).checkVisibility(),
     ).toBe(true)
-    expect(valgt()).toEqual([false, true, false])
+    expect(selectedTabs()).toEqual([false, true, false])
   })
 
   it("E3: a panel removed during revealing and inserted again is shown", async () => {
     // The browser does not reveal a panel that is not in the document after
     // `beforematch`. Without a fallback the component waited for it forever,
     // and the panel stayed hidden even though the tab was selected.
-    const slipp = somSokISiden()
+    const release = likeFindInPage()
     try {
-      mount(`<a href="#inne-vedlegg" id="til-treff">Til treffet</a>${bar()}`)
-      await tegn()
-      const panel = paneler()[1]
-      const forelder = panel.parentElement as HTMLElement
-      const neste = panel.nextSibling
+      mount(
+        `<a href="#inside-attachments" id="to-match">To the match</a>${bar()}`,
+      )
+      await settle()
+      const panel = panels()[1]
+      const parent = panel.parentElement as HTMLElement
+      const next = panel.nextSibling
       panel.addEventListener(
         "beforematch",
         () => {
           panel.remove()
-          setTimeout(() => forelder.insertBefore(panel, neste), 0)
+          setTimeout(() => parent.insertBefore(panel, next), 0)
         },
         { once: true },
       )
-      await userEvent.click(document.getElementById("til-treff") as HTMLElement)
+      await userEvent.click(document.getElementById("to-match") as HTMLElement)
       await new Promise((r) => setTimeout(r, 10))
-      await tegn()
+      await settle()
     } finally {
-      slipp()
+      release()
     }
 
-    expect(valgt()).toEqual([false, true, false])
-    expect(skjult()).toEqual([true, false, true])
+    expect(selectedTabs()).toEqual([false, true, false])
+    expect(hiddenPanels()).toEqual([true, false, true])
   })
 
   it("E3: when something else sets hidden during revealing, the panel is still shown", async () => {
@@ -1226,120 +1244,122 @@ describe("E. The address and find in page", () => {
     // `beforematch`. The change triggered a round while the component was
     // waiting, and no round came afterwards, unless the component wrote the
     // tab list itself.
-    const slipp = somSokISiden()
+    const release = likeFindInPage()
     try {
-      mount(`<a href="#inne-vedlegg" id="til-treff">Til treffet</a>${bar()}`)
-      await tegn()
-      const panel = paneler()[1]
+      mount(
+        `<a href="#inside-attachments" id="to-match">To the match</a>${bar()}`,
+      )
+      await settle()
+      const panel = panels()[1]
       panel.addEventListener(
         "beforematch",
         () => panel.setAttribute("hidden", ""),
         { once: true },
       )
-      await userEvent.click(document.getElementById("til-treff") as HTMLElement)
+      await userEvent.click(document.getElementById("to-match") as HTMLElement)
       await new Promise((r) => setTimeout(r, 10))
-      await tegn()
+      await settle()
     } finally {
-      slipp()
+      release()
     }
 
-    expect(valgt()).toEqual([false, true, false])
-    expect(skjult()).toEqual([true, false, true])
+    expect(selectedTabs()).toEqual([false, true, false])
+    expect(hiddenPanels()).toEqual([true, false, true])
   })
 
   it("E3: a beforematch sent by a script selects at once", async () => {
     // No browser reveals the panel after an event from a script, so the
     // component does not wait for it.
     mount(bar())
-    await tegn()
+    await settle()
 
-    paneler()[2].dispatchEvent(new Event("beforematch", { bubbles: true }))
+    panels()[2].dispatchEvent(new Event("beforematch", { bubbles: true }))
     await Promise.resolve()
     await Promise.resolve()
 
-    expect(skjult()).toEqual([true, true, false])
+    expect(hiddenPanels()).toEqual([true, true, false])
   })
 
   it("E1: an empty <lt-tabs> filled afterwards selects the tab the address points to", async () => {
-    await setAddress("#meldinger")
+    await setAddress("#messages")
     mount("<lt-tabs></lt-tabs>")
-    await tegn()
+    await settle()
 
-    vert().innerHTML = bar().slice(
+    host().innerHTML = bar().slice(
       bar().indexOf(">") + 1,
       bar().lastIndexOf("<"),
     )
-    await tegn()
+    await settle()
 
-    expect(valgt()).toEqual([false, false, true])
+    expect(selectedTabs()).toEqual([false, false, true])
   })
 
   it("E6: the address is corrected when the server moves the selection with a patch", async () => {
     mount(bar())
-    await tegn()
-    faner()[1].click()
-    await tegn()
-    expect(location.hash).toBe("#vedlegg")
+    await settle()
+    links()[1].click()
+    await settle()
+    expect(location.hash).toBe("#attachments")
 
-    const innhold = bar().slice(bar().indexOf(">") + 1, bar().lastIndexOf("<"))
-    vert().innerHTML = innhold.replace(
-      '<a href="#soknaden">',
-      '<a href="#soknaden" aria-selected="true">',
+    const content = bar().slice(bar().indexOf(">") + 1, bar().lastIndexOf("<"))
+    host().innerHTML = content.replace(
+      '<a href="#application">',
+      '<a href="#application" aria-selected="true">',
     )
-    await tegn()
+    await settle()
 
-    expect(valgt()).toEqual([true, false, false])
-    expect(location.hash).toBe("#soknaden")
+    expect(selectedTabs()).toEqual([true, false, false])
+    expect(location.hash).toBe("#application")
   })
 
   it("E6: the address is corrected when the server moves the selection under server-controlled", async () => {
-    mount(bar({ vert: " server-controlled" }))
-    await tegn()
-    faner()[1].click()
-    await tegn()
-    expect(location.hash).toBe("#vedlegg")
+    mount(bar({ host: " server-controlled" }))
+    await settle()
+    links()[1].click()
+    await settle()
+    expect(location.hash).toBe("#attachments")
 
     // The server answers with the first one, and touches only the panels.
-    paneler()[1].setAttribute("hidden", "")
-    paneler()[0].removeAttribute("hidden")
-    await tegn()
+    panels()[1].setAttribute("hidden", "")
+    panels()[0].removeAttribute("hidden")
+    await settle()
 
-    expect(valgt()).toEqual([true, false, false])
-    expect(location.hash).toBe("#soknaden")
+    expect(selectedTabs()).toEqual([true, false, false])
+    expect(location.hash).toBe("#application")
   })
 
   it("E3: find in page selects the tab under server-controlled too, like a click", async () => {
-    mount(bar({ vert: " server-controlled" }))
-    await tegn()
-    const meldt: number[] = []
-    vert().addEventListener("tab-select", (e) => meldt.push(e.detail.index))
+    mount(bar({ host: " server-controlled" }))
+    await settle()
+    const reported: number[] = []
+    host().addEventListener("tab-select", (e) => reported.push(e.detail.index))
 
-    paneler()[2].dispatchEvent(new Event("beforematch", { bubbles: true }))
+    panels()[2].dispatchEvent(new Event("beforematch", { bubbles: true }))
     // The browser itself removes `hidden` after the event.
-    paneler()[2].removeAttribute("hidden")
-    await tegn()
-    await tegn()
+    panels()[2].removeAttribute("hidden")
+    await settle()
+    await settle()
 
-    expect(valgt()).toEqual([false, false, true])
-    expect(skjult()).toEqual([true, true, false])
-    expect(meldt).toEqual([2])
+    expect(selectedTabs()).toEqual([false, false, true])
+    expect(hiddenPanels()).toEqual([true, true, false])
+    expect(reported).toEqual([2])
   })
 
   it("E3: find in page selects the tab when the tab list is in a shadow root", async () => {
-    const flate = mount('<div id="vert-for-rot"></div>')
-    const rot = (
-      flate.querySelector("#vert-for-rot") as HTMLElement
+    const surface = mount('<div id="root-host"></div>')
+    const root = (
+      surface.querySelector("#root-host") as HTMLElement
     ).attachShadow({ mode: "open" })
-    rot.innerHTML = bar()
-    await tegn()
-    const p = [...rot.querySelectorAll<HTMLElement>(".lt-tabs__panel")]
+    root.innerHTML = bar()
+    await settle()
+    const p = [...root.querySelectorAll<HTMLElement>(".lt-tabs__panel")]
 
     // As the browser sends it: bubbles, but is not `composed`.
     p[2].dispatchEvent(new Event("beforematch", { bubbles: true }))
-    await tegn()
+    await settle()
 
     expect(
-      [...rot.querySelectorAll(".lt-tabs__list a")].map(
+      [...root.querySelectorAll(".lt-tabs__list a")].map(
         (a) => a.getAttribute("aria-selected") === "true",
       ),
     ).toEqual([false, false, true])
@@ -1347,63 +1367,63 @@ describe("E. The address and find in page", () => {
 
   it("E8: the address is written also with a <base> to another origin", async () => {
     const base = document.createElement("base")
-    base.href = "https://eksempel.invalid/annet/"
+    base.href = "https://example.invalid/other/"
     document.head.prepend(base)
     try {
       mount(bar())
-      await tegn()
-      const sti = location.pathname
+      await settle()
+      const path = location.pathname
 
-      faner()[1].click()
-      await tegn()
+      links()[1].click()
+      await settle()
 
-      expect(location.pathname).toBe(sti)
-      expect(location.hash).toBe("#vedlegg")
+      expect(location.pathname).toBe(path)
+      expect(location.hash).toBe("#attachments")
     } finally {
       base.remove()
     }
   })
 
   it("D11: the server's aria-selected wins over the address when the page loads", async () => {
-    await setAddress("#vedlegg")
+    await setAddress("#attachments")
     mount(
       bar().replace(
-        '<a href="#meldinger">',
-        '<a href="#meldinger" aria-selected="true">',
+        '<a href="#messages">',
+        '<a href="#messages" aria-selected="true">',
       ),
     )
-    await tegn()
+    await settle()
 
-    expect(valgt()).toEqual([false, false, true])
+    expect(selectedTabs()).toEqual([false, false, true])
     // The address is corrected to the tab that is actually selected (E6).
-    expect(location.hash).toBe("#meldinger")
+    expect(location.hash).toBe("#messages")
   })
 
   it("D11: an address to something outside the tab list stays when the server has selected", async () => {
-    await setAddress("#annet")
+    await setAddress("#other")
     mount(
-      `<p id="annet">Annet</p>${bar().replace('<a href="#meldinger">', '<a href="#meldinger" aria-selected="true">')}`,
+      `<p id="other">Other</p>${bar().replace('<a href="#messages">', '<a href="#messages" aria-selected="true">')}`,
     )
-    await tegn()
+    await settle()
 
-    expect(valgt()).toEqual([false, false, true])
-    expect(location.hash).toBe("#annet")
+    expect(selectedTabs()).toEqual([false, false, true])
+    expect(location.hash).toBe("#other")
   })
 
   it("E8: a click does not change the path in the address, not even with <base>", async () => {
     const base = document.createElement("base")
-    base.href = "/en-annen-side/"
+    base.href = "/another-page/"
     document.head.prepend(base)
     try {
       mount(bar())
-      await tegn()
-      const sti = location.pathname
+      await settle()
+      const path = location.pathname
 
-      faner()[1].click()
-      await tegn()
+      links()[1].click()
+      await settle()
 
-      expect(location.pathname).toBe(sti)
-      expect(location.hash).toBe("#vedlegg")
+      expect(location.pathname).toBe(path)
+      expect(location.hash).toBe("#attachments")
     } finally {
       base.remove()
     }
@@ -1411,31 +1431,31 @@ describe("E. The address and find in page", () => {
 
   it("E5: a link to something inside a hidden panel opens the tab and scrolls there", async () => {
     mount(
-      `${bar()}<div style="block-size: 200vh"></div><a href="#inne-meldinger" id="hopp">Til meldingene</a>`,
+      `${bar()}<div style="block-size: 200vh"></div><a href="#inside-messages" id="jump">To the messages</a>`,
     )
-    await tegn()
+    await settle()
     window.scrollTo(0, document.body.scrollHeight)
 
-    ;(document.getElementById("hopp") as HTMLElement).click()
-    await tegn()
-    await tegn()
-    const mål = (
-      document.getElementById("inne-meldinger") as HTMLElement
+    ;(document.getElementById("jump") as HTMLElement).click()
+    await settle()
+    await settle()
+    const target = (
+      document.getElementById("inside-messages") as HTMLElement
     ).getBoundingClientRect()
 
-    expect(valgt()).toEqual([false, false, true])
+    expect(selectedTabs()).toEqual([false, false, true])
     // The scroll can land on a fraction of a pixel.
-    expect(mål.top).toBeGreaterThan(-1)
-    expect(mål.bottom).toBeLessThanOrEqual(window.innerHeight)
+    expect(target.top).toBeGreaterThan(-1)
+    expect(target.bottom).toBeLessThanOrEqual(window.innerHeight)
   })
 
   describe("E6: the address points to the selected panel after every selection", () => {
-    const veier: [string, () => Promise<void>, number][] = [
-      ["click", async () => faner()[2].click(), 2],
+    const ways: [string, () => Promise<void>, number][] = [
+      ["click", async () => links()[2].click(), 2],
       [
         "right arrow",
         async () => {
-          faner()[0].focus()
+          links()[0].focus()
           await userEvent.keyboard("{ArrowRight}")
         },
         1,
@@ -1443,97 +1463,95 @@ describe("E. The address and find in page", () => {
       [
         "End",
         async () => {
-          faner()[0].focus()
+          links()[0].focus()
           await userEvent.keyboard("{End}")
         },
         2,
       ],
-      ["select()", async () => vert().select(1), 1],
+      ["select()", async () => host().select(1), 1],
       [
         "selected",
         async () => {
-          vert().selected = 2
+          host().selected = 2
         },
         2,
       ],
       [
         "find in page (beforematch)",
         async () => {
-          paneler()[1].dispatchEvent(
-            new Event("beforematch", { bubbles: true }),
-          )
+          panels()[1].dispatchEvent(new Event("beforematch", { bubbles: true }))
         },
         1,
       ],
       [
         "the fallback when the selected tab disappears",
         async () => {
-          faner()[1].click()
-          await tegn()
-          faner()[1].closest("li")?.remove()
-          paneler()[1].remove()
+          links()[1].click()
+          await settle()
+          links()[1].closest("li")?.remove()
+          panels()[1].remove()
         },
         0,
       ],
     ]
 
-    for (const [vei, gjør, indeks] of veier) {
-      it(vei, async () => {
+    for (const [way, act, index] of ways) {
+      it(way, async () => {
         mount(bar())
-        await tegn()
-        await gjør()
-        await tegn()
+        await settle()
+        await act()
+        await settle()
 
-        expect(valgt().indexOf(true)).toBe(indeks)
-        expect(location.hash).toBe(`#${paneler()[indeks].id}`)
+        expect(selectedTabs().indexOf(true)).toBe(index)
+        expect(location.hash).toBe(`#${panels()[index].id}`)
       })
     }
 
     it("Space and Enter with manual activation", async () => {
-      mount(bar({ vert: ' activation="manual"' }))
-      await tegn()
-      faner()[0].focus()
+      mount(bar({ host: ' activation="manual"' }))
+      await settle()
+      links()[0].focus()
       await userEvent.keyboard("{ArrowRight}")
       await userEvent.keyboard(" ")
-      await tegn()
-      expect(location.hash).toBe("#vedlegg")
+      await settle()
+      expect(location.hash).toBe("#attachments")
 
       await userEvent.keyboard("{ArrowRight}")
       await userEvent.keyboard("{Enter}")
-      await tegn()
-      expect(location.hash).toBe("#meldinger")
+      await settle()
+      expect(location.hash).toBe("#messages")
     })
 
     it("an address to something inside the selected panel stays", async () => {
       mount(bar())
-      await tegn()
+      await settle()
 
-      location.hash = "#inne-vedlegg"
-      await tegn()
-      await tegn()
+      location.hash = "#inside-attachments"
+      await settle()
+      await settle()
 
-      expect(valgt()).toEqual([false, true, false])
-      expect(location.hash).toBe("#inne-vedlegg")
+      expect(selectedTabs()).toEqual([false, true, false])
+      expect(location.hash).toBe("#inside-attachments")
     })
   })
 
   it("E7 with E6: after innerHTML the tab the user last selected with the arrow key is selected", async () => {
-    const innhold = bar()
-    mount(innhold)
-    await tegn()
-    faner()[1].click()
-    await tegn()
-    faner()[1].focus()
+    const content = bar()
+    mount(content)
+    await settle()
+    links()[1].click()
+    await settle()
+    links()[1].focus()
     await userEvent.keyboard("{ArrowRight}")
-    await tegn()
+    await settle()
 
-    vert().innerHTML = innhold.slice(
-      innhold.indexOf(">") + 1,
-      innhold.lastIndexOf("<"),
+    host().innerHTML = content.slice(
+      content.indexOf(">") + 1,
+      content.lastIndexOf("<"),
     )
-    await tegn()
+    await settle()
 
-    expect(valgt()).toEqual([false, false, true])
+    expect(selectedTabs()).toEqual([false, false, true])
   })
 })
 
@@ -1541,84 +1559,86 @@ describe("F. Updates from the server", () => {
   it("F11: what happens deep in a panel does not trigger a new round", async () => {
     mount(
       bar({
-        inni: (i) =>
+        inside: (i) =>
           i === 1
-            ? '<div role="listbox" id="forslag"><div role="option" aria-selected="false">A</div></div><p id="teller">0</p>'
+            ? '<div role="listbox" id="suggestions"><div role="option" aria-selected="false">A</div></div><p id="counter">0</p>'
             : "",
       }),
     )
-    await tegn()
-    const runder = vi.spyOn(
+    await settle()
+    const rounds = vi.spyOn(
       LtTabs.prototype as unknown as { sync: () => void },
       "sync",
     )
 
     // As a suggestion field and a counter in the panel do it on every keystroke.
-    const valg = document.querySelector('[role="option"]') as HTMLElement
-    valg.setAttribute("aria-selected", "true")
-    ;(document.getElementById("forslag") as HTMLElement).hidden = true
-    valg.insertAdjacentHTML("afterend", '<div role="option">B</div>')
+    const option = document.querySelector('[role="option"]') as HTMLElement
+    option.setAttribute("aria-selected", "true")
+    ;(document.getElementById("suggestions") as HTMLElement).hidden = true
+    option.insertAdjacentHTML("afterend", '<div role="option">B</div>')
     ;(
-      (document.getElementById("teller") as HTMLElement).firstChild as Text
+      (document.getElementById("counter") as HTMLElement).firstChild as Text
     ).nodeValue = "1"
-    await tegn()
+    await settle()
 
-    expect(runder).not.toHaveBeenCalled()
+    expect(rounds).not.toHaveBeenCalled()
   })
 
   it("F11: the same when the address points to something that does not exist, as in an app with routing", async () => {
-    await setAddress("#/sak/1")
+    await setAddress("#/case/1")
     // In a container: what is put directly in the panel could be a heading.
     mount(
-      bar({ inni: (i) => (i === 1 ? '<div><p id="teller">0</p></div>' : "") }),
+      bar({
+        inside: (i) => (i === 1 ? '<div><p id="counter">0</p></div>' : ""),
+      }),
     )
-    await tegn()
-    const runder = vi.spyOn(
+    await settle()
+    const rounds = vi.spyOn(
       LtTabs.prototype as unknown as { sync: () => void },
       "sync",
     )
 
     ;(
-      (document.getElementById("teller") as HTMLElement).firstChild as Text
+      (document.getElementById("counter") as HTMLElement).firstChild as Text
     ).nodeValue = "1"
     document
-      .getElementById("teller")
-      ?.insertAdjacentHTML("afterend", "<p>Mer</p>")
-    await tegn()
+      .getElementById("counter")
+      ?.insertAdjacentHTML("afterend", "<p>More</p>")
+    await settle()
 
-    expect(runder).not.toHaveBeenCalled()
+    expect(rounds).not.toHaveBeenCalled()
   })
 
   it("F11: a patch on the panel itself triggers a new round", async () => {
     mount(bar())
-    await tegn()
-    const runder = vi.spyOn(
+    await settle()
+    const rounds = vi.spyOn(
       LtTabs.prototype as unknown as { sync: () => void },
       "sync",
     )
 
-    paneler()[1].removeAttribute("hidden")
-    await tegn()
+    panels()[1].removeAttribute("hidden")
+    await settle()
 
-    expect(runder).toHaveBeenCalled()
-    expect(skjult()).toEqual([false, true, true])
+    expect(rounds).toHaveBeenCalled()
+    expect(hiddenPanels()).toEqual([false, true, true])
   })
 
   it("F1: an inner tab list before the outer tab list does not take the roles from the outer one", async () => {
     // The panels come before the tab list, and the first panel has a tab list of its own.
     mount(`
-      <lt-tabs id="ytre">
+      <lt-tabs id="outer">
         <section class="lt-tabs__panel" id="ya"><h2>YA</h2>
           <lt-tabs>
-            <ul class="lt-tabs__list" aria-label="Indre"><li><a href="#ia">IA</a></li></ul>
+            <ul class="lt-tabs__list" aria-label="Inner"><li><a href="#ia">IA</a></li></ul>
             <section class="lt-tabs__panel" id="ia"><h3>IA</h3></section>
           </lt-tabs>
         </section>
         <section class="lt-tabs__panel" id="yb"><h2>YB</h2></section>
-        <ul class="lt-tabs__list" aria-label="Ytre" id="ytre-rad"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
+        <ul class="lt-tabs__list" aria-label="Outer" id="outer-list"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
       </lt-tabs>`)
-    await tegn()
-    const rad = document.getElementById("ytre-rad") as HTMLElement
+    await settle()
+    const rad = document.getElementById("outer-list") as HTMLElement
 
     expect(rad.getAttribute("role")).toBe("tablist")
     expect([...rad.children].map((li) => li.getAttribute("role"))).toEqual([
@@ -1637,102 +1657,102 @@ describe("F. Updates from the server", () => {
    * The links have no id, and the panels have the server's, so the nodes are
    * kept, and the component writes the selection back on the same nodes.
    */
-  for (const [kilde, markup] of [
+  for (const [source, markup] of [
     ["bare markup", bar],
-    ["markup from lt.tabs()", fraByggefunksjonen],
+    ["markup from lt.tabs()", fromBuilder],
   ] as const) {
-    it(`F3: idiomorph keeps the links and panels, and the selection stays (${kilde})`, async () => {
-      const spion = lyttEtterAdvarsler()
-      const flate = mount(markup())
-      await tegn()
-      const faneFør = faner()
-      const panelFør = paneler()
-      faneFør[1].click()
-      await tegn()
-      expect(valgt()).toEqual([false, true, false])
+    it(`F3: idiomorph keeps the links and panels, and the selection stays (${source})`, async () => {
+      const spy = spyOnWarnings()
+      const surface = mount(markup())
+      await settle()
+      const linksBefore = links()
+      const panelsBefore = panels()
+      linksBefore[1].click()
+      await settle()
+      expect(selectedTabs()).toEqual([false, true, false])
 
-      Idiomorph.morph(flate, `<div id="lt-testflate">${markup()}</div>`, {
+      Idiomorph.morph(surface, `<div id="lt-test-surface">${markup()}</div>`, {
         morphStyle: "outerHTML",
       })
-      await tegn()
-      await tegn()
+      await settle()
+      await settle()
 
-      expect(faner().map((f, i) => f === faneFør[i])).toEqual([
+      expect(links().map((f, i) => f === linksBefore[i])).toEqual([
         true,
         true,
         true,
       ])
-      expect(paneler().map((p, i) => p === panelFør[i])).toEqual([
+      expect(panels().map((p, i) => p === panelsBefore[i])).toEqual([
         true,
         true,
         true,
       ])
-      expect(valgt()).toEqual([false, true, false])
-      expect(paneler().map((p) => p.getAttribute("hidden"))).toEqual([
+      expect(selectedTabs()).toEqual([false, true, false])
+      expect(panels().map((p) => p.getAttribute("hidden"))).toEqual([
         "until-found",
         null,
         "until-found",
       ])
-      expect(faner().map((f) => f.id)).toEqual(["", "", ""])
-      expect(await advarsler(spion)).toEqual([])
+      expect(links().map((f) => f.id)).toEqual(["", "", ""])
+      expect(await warnings(spy)).toEqual([])
     })
   }
 
   it("G2 with F4: tab-select is not sent when innerHTML only replaces the links", async () => {
     mount(bar())
-    await tegn()
-    faner()[1].click()
-    await tegn()
-    const meldt: number[] = []
-    vert().addEventListener("tab-select", (e) => meldt.push(e.detail.index))
+    await settle()
+    links()[1].click()
+    await settle()
+    const reported: number[] = []
+    host().addEventListener("tab-select", (e) => reported.push(e.detail.index))
 
-    vert().innerHTML = bar().slice(
+    host().innerHTML = bar().slice(
       bar().indexOf(">") + 1,
       bar().lastIndexOf("<"),
     )
-    await tegn()
+    await settle()
 
-    expect(valgt()).toEqual([false, true, false])
-    expect(meldt).toEqual([])
+    expect(selectedTabs()).toEqual([false, true, false])
+    expect(reported).toEqual([])
   })
 
   it("I2: an encoded fragment finds its panel", async () => {
     mount(`
       <lt-tabs>
-        <ul class="lt-tabs__list" aria-label="Deler"><li><a href="#s%C3%B8knaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>
-        <section class="lt-tabs__panel" id="søknaden"><h2>Søknaden</h2></section>
-        <section class="lt-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>
+        <ul class="lt-tabs__list" aria-label="Parts"><li><a href="#r%C3%A9sum%C3%A9">Résumé</a></li><li><a href="#attachments">Attachments</a></li></ul>
+        <section class="lt-tabs__panel" id="résumé"><h2>Résumé</h2></section>
+        <section class="lt-tabs__panel" id="attachments"><h2>Attachments</h2></section>
       </lt-tabs>`)
-    await tegn()
+    await settle()
 
-    expect(faner()[0].getAttribute("aria-controls")).toBe("søknaden")
-    faner()[1].click()
-    await tegn()
-    faner()[0].click()
-    await tegn()
-    expect(skjult()).toEqual([false, true])
+    expect(links()[0].getAttribute("aria-controls")).toBe("résumé")
+    links()[1].click()
+    await settle()
+    links()[0].click()
+    await settle()
+    expect(hiddenPanels()).toEqual([false, true])
   })
 
   it("F7: when the server selects a tab after the selection was lost, the panels and the tab stop agree", async () => {
     mount(bar())
-    await tegn()
-    faner()[1].click()
-    await tegn()
+    await settle()
+    links()[1].click()
+    await settle()
 
     // The server replaces the tab list with full markup, and marks the third.
-    vert().querySelector("ul")?.remove()
-    vert().insertAdjacentHTML(
+    host().querySelector("ul")?.remove()
+    host().insertAdjacentHTML(
       "afterbegin",
-      `<ul class="lt-tabs__list" aria-label="Deler av saken" role="tablist">${NAVN.map(
+      `<ul class="lt-tabs__list" aria-label="Parts of the case" role="tablist">${NAMES.map(
         (n, i) =>
-          `<li role="presentation"><a role="tab" aria-controls="${NOKLER[i]}" href="#${NOKLER[i]}"${i === 2 ? ' aria-selected="true"' : ""}>${n}</a></li>`,
+          `<li role="presentation"><a role="tab" aria-controls="${KEYS[i]}" href="#${KEYS[i]}"${i === 2 ? ' aria-selected="true"' : ""}>${n}</a></li>`,
       ).join("")}</ul>`,
     )
-    await tegn()
-    await tegn()
+    await settle()
+    await settle()
 
-    expect(skjult()).toEqual([true, true, false])
-    expect(faner().map((f) => f.getAttribute("tabindex"))).toEqual([
+    expect(hiddenPanels()).toEqual([true, true, false])
+    expect(links().map((f) => f.getAttribute("tabindex"))).toEqual([
       "-1",
       "-1",
       "0",
@@ -1742,110 +1762,110 @@ describe("F. Updates from the server", () => {
 
 describe("G. API and events", () => {
   it("G2: tab-select is sent when the address selects the tab on load", async () => {
-    const meldt: number[] = []
-    const lytter = (e: Event) =>
-      meldt.push((e as CustomEvent<{ index: number }>).detail.index)
-    document.addEventListener("tab-select", lytter)
+    const reported: number[] = []
+    const listener = (e: Event) =>
+      reported.push((e as CustomEvent<{ index: number }>).detail.index)
+    document.addEventListener("tab-select", listener)
     try {
-      await setAddress("#vedlegg")
+      await setAddress("#attachments")
       mount(bar())
-      await tegn()
-      expect(meldt).toEqual([1])
+      await settle()
+      expect(reported).toEqual([1])
     } finally {
-      document.removeEventListener("tab-select", lytter)
+      document.removeEventListener("tab-select", listener)
     }
   })
 
   it("G2: tab-select is sent when find in page selects the tab", async () => {
     mount(bar())
-    await tegn()
-    const meldt: number[] = []
-    vert().addEventListener("tab-select", (e) => meldt.push(e.detail.index))
+    await settle()
+    const reported: number[] = []
+    host().addEventListener("tab-select", (e) => reported.push(e.detail.index))
 
-    paneler()[2].dispatchEvent(new Event("beforematch", { bubbles: true }))
-    await tegn()
+    panels()[2].dispatchEvent(new Event("beforematch", { bubbles: true }))
+    await settle()
 
-    expect(meldt).toEqual([2])
+    expect(reported).toEqual([2])
   })
 
   it("G2: tab-select is not sent on a click on the tab that is already selected", async () => {
     mount(bar())
-    await tegn()
-    faner()[1].click()
-    await tegn()
-    const meldt: number[] = []
-    vert().addEventListener("tab-select", (e) => meldt.push(e.detail.index))
+    await settle()
+    links()[1].click()
+    await settle()
+    const reported: number[] = []
+    host().addEventListener("tab-select", (e) => reported.push(e.detail.index))
 
-    faner()[1].click()
-    await tegn()
+    links()[1].click()
+    await settle()
 
-    expect(valgt()).toEqual([false, true, false])
-    expect(meldt).toEqual([])
+    expect(selectedTabs()).toEqual([false, true, false])
+    expect(reported).toEqual([])
   })
 
   it("G2: tab-select is not sent when the address changes to the tab that is already selected", async () => {
     mount(bar())
-    await tegn()
-    const meldt: number[] = []
-    vert().addEventListener("tab-select", (e) => meldt.push(e.detail.index))
+    await settle()
+    const reported: number[] = []
+    host().addEventListener("tab-select", (e) => reported.push(e.detail.index))
 
-    location.hash = "#soknaden"
-    await tegn()
-    await tegn()
+    location.hash = "#application"
+    await settle()
+    await settle()
 
-    expect(valgt()).toEqual([true, false, false])
-    expect(meldt).toEqual([])
+    expect(selectedTabs()).toEqual([true, false, false])
+    expect(reported).toEqual([])
   })
 
   it("G3: tab-select is not sent when the server moves the selection", async () => {
-    mount(bar({ vert: " server-controlled" }))
-    await tegn()
-    const meldt: number[] = []
-    vert().addEventListener("tab-select", (e) => meldt.push(e.detail.index))
+    mount(bar({ host: " server-controlled" }))
+    await settle()
+    const reported: number[] = []
+    host().addEventListener("tab-select", (e) => reported.push(e.detail.index))
 
-    paneler()[0].setAttribute("hidden", "")
-    paneler()[1].removeAttribute("hidden")
-    await tegn()
+    panels()[0].setAttribute("hidden", "")
+    panels()[1].removeAttribute("hidden")
+    await settle()
 
-    expect(valgt()).toEqual([false, true, false])
-    expect(meldt).toEqual([])
+    expect(selectedTabs()).toEqual([false, true, false])
+    expect(reported).toEqual([])
   })
 })
 
 describe("H. Appearance", () => {
   it("H1: the selected tab stands out by more than colour", async () => {
     mount(bar())
-    await tegn()
-    const [valgte, annen] = faner().map((f) => getComputedStyle(f))
+    await settle()
+    const [chosen, other] = links().map((f) => getComputedStyle(f))
 
-    expect(Number(valgte.fontWeight)).toBeGreaterThan(Number(annen.fontWeight))
-    expect(rgb(valgte.borderBottomColor).a).toBeGreaterThan(0)
-    expect(rgb(annen.borderBottomColor).a).toBe(0)
+    expect(Number(chosen.fontWeight)).toBeGreaterThan(Number(other.fontWeight))
+    expect(rgb(chosen.borderBottomColor).a).toBeGreaterThan(0)
+    expect(rgb(other.borderBottomColor).a).toBe(0)
   })
 
-  for (const utseende of ["light", "dark"] as const) {
-    it(`H2: the contrast of the tabs and the underline holds in the ${utseende} theme`, async () => {
-      document.documentElement.dataset.theme = utseende
+  for (const scheme of ["light", "dark"] as const) {
+    it(`H2: the contrast of the tabs and the underline holds in the ${scheme} theme`, async () => {
+      document.documentElement.dataset.theme = scheme
       try {
         mount(bar())
-        await tegn()
-        const flate = rgb(
+        await settle()
+        const surface = rgb(
           getComputedStyle(
-            document.getElementById("lt-testflate") as HTMLElement,
+            document.getElementById("lt-test-surface") as HTMLElement,
           ).backgroundColor,
         )
-        const [valgte, annen] = faner().map((f) => getComputedStyle(f))
+        const [chosen, other] = links().map((f) => getComputedStyle(f))
 
         expect(
-          contrastRatio(rgb(valgte.color), flate),
+          contrastRatio(rgb(chosen.color), surface),
           "text, selected",
         ).toBeGreaterThanOrEqual(4.5)
         expect(
-          contrastRatio(rgb(annen.color), flate),
+          contrastRatio(rgb(other.color), surface),
           "text, not selected",
         ).toBeGreaterThanOrEqual(4.5)
         expect(
-          contrastRatio(rgb(valgte.borderBottomColor), flate),
+          contrastRatio(rgb(chosen.borderBottomColor), surface),
           "the underline",
         ).toBeGreaterThanOrEqual(3)
       } finally {
@@ -1864,16 +1884,16 @@ describe("H. Appearance", () => {
 
       it("H3: the selected tab is visible", async () => {
         mount(bar())
-        await tegn()
+        await settle()
         await cdp().send("Emulation.setEmulatedMedia", {
           features: [{ name: "forced-colors", value: "active" }],
         })
         await waitForPaint()
-        const [valgte, annen] = faner().map((f) => getComputedStyle(f))
+        const [chosen, other] = links().map((f) => getComputedStyle(f))
 
-        expect(valgte.borderBottomStyle).toBe("solid")
-        expect(valgte.borderBottomColor).not.toBe(annen.borderBottomColor)
-        expect(valgte.color).not.toBe(annen.color)
+        expect(chosen.borderBottomStyle).toBe("solid")
+        expect(chosen.borderBottomColor).not.toBe(other.borderBottomColor)
+        expect(chosen.color).not.toBe(other.color)
       })
     },
   )
@@ -1881,20 +1901,20 @@ describe("H. Appearance", () => {
 
 describe("I. The builder function", () => {
   it("I2: an id stem with whitespace throws, like the keys", () => {
-    expect(() => tabs({ id: "a b", keys: ["x"], label: "Faner" })).toThrow(
+    expect(() => tabs({ id: "a b", keys: ["x"], label: "Tabs" })).toThrow(
       /whitespace/,
     )
     expect(() =>
-      ltReact.tabs({ id: "a b", keys: ["x"], label: "Faner" }),
+      ltReact.tabs({ id: "a b", keys: ["x"], label: "Tabs" }),
     ).toThrow(/whitespace/)
   })
 
   it("I6: a selected that is not an integer gives the first tab", () => {
     for (const selected of [Number.NaN, 1.5]) {
       const f = ltReact.tabs({
-        id: "sak",
+        id: "case",
         keys: ["a", "b"],
-        label: "Faner",
+        label: "Tabs",
         selected,
       })
       expect(f.tabs.map((t) => t["aria-selected"])).toEqual(["true", "false"])
@@ -1905,49 +1925,49 @@ describe("I. The builder function", () => {
   it("I6: lt.tabs() in the React entry point gives the whole state", () => {
     expect(
       ltReact.tabs({
-        id: "sak",
+        id: "case",
         keys: ["a", "b"],
-        label: "Deler av saken",
+        label: "Parts of the case",
         selected: 1,
       }),
     ).toEqual({
       list: {
         className: "lt-tabs__list",
         role: "tablist",
-        "aria-label": "Deler av saken",
+        "aria-label": "Parts of the case",
       },
       item: { role: "presentation" },
       tabs: [
         {
-          id: "sak-a-tab",
-          href: "#sak-a",
+          id: "case-a-tab",
+          href: "#case-a",
           role: "tab",
           "aria-selected": "false",
-          "aria-controls": "sak-a",
+          "aria-controls": "case-a",
           tabIndex: -1,
         },
         {
-          id: "sak-b-tab",
-          href: "#sak-b",
+          id: "case-b-tab",
+          href: "#case-b",
           role: "tab",
           "aria-selected": "true",
-          "aria-controls": "sak-b",
+          "aria-controls": "case-b",
           tabIndex: 0,
         },
       ],
       panels: [
         {
-          id: "sak-a",
+          id: "case-a",
           className: "lt-tabs__panel",
           role: "tabpanel",
-          "aria-labelledby": "sak-a-tab",
+          "aria-labelledby": "case-a-tab",
           hidden: true,
         },
         {
-          id: "sak-b",
+          id: "case-b",
           className: "lt-tabs__panel",
           role: "tabpanel",
-          "aria-labelledby": "sak-b-tab",
+          "aria-labelledby": "case-b-tab",
           tabIndex: 0,
         },
       ],
@@ -1956,15 +1976,15 @@ describe("I. The builder function", () => {
 
   it("I5: lt.tabs() writes only links, ids and classes", () => {
     expect(
-      tabs({ id: "sak", keys: ["a", "b"], label: "Deler av saken" }),
+      tabs({ id: "case", keys: ["a", "b"], label: "Parts of the case" }),
     ).toEqual({
-      list: { class: "lt-tabs__list", "aria-label": "Deler av saken" },
-      tabs: [{ href: "#sak-a" }, { href: "#sak-b" }],
+      list: { class: "lt-tabs__list", "aria-label": "Parts of the case" },
+      tabs: [{ href: "#case-a" }, { href: "#case-b" }],
       panels: [
-        { id: "sak-a", class: "lt-tabs__panel" },
-        { id: "sak-b", class: "lt-tabs__panel" },
+        { id: "case-a", class: "lt-tabs__panel" },
+        { id: "case-b", class: "lt-tabs__panel" },
       ],
-      headings: [{ id: "sak-a-heading" }, { id: "sak-b-heading" }],
+      headings: [{ id: "case-a-heading" }, { id: "case-b-heading" }],
     })
   })
 })

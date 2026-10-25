@@ -1,7 +1,7 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import side from "../../../../../documentation/src/content/docs/components/switch.mdx?raw"
+import page from "../../../../../documentation/src/content/docs/components/switch.mdx?raw"
 import {
   expectNoAccessibilityViolations,
   mount,
@@ -26,74 +26,74 @@ import "../label/label.css"
  */
 describe("the saving example on the page", () => {
   /** The markup and script in the "Plain HTML" tab, read from the page. */
-  function lesFanen(): { markup: string; skript: string } {
-    const fane = /<TabItem label="Plain HTML">\s*```html\n([\s\S]*?)```/.exec(
-      side,
+  function readTab(): { markup: string; script: string } {
+    const tab = /<TabItem label="Plain HTML">\s*```html\n([\s\S]*?)```/.exec(
+      page,
     )?.[1]
-    if (fane === undefined) throw new Error('Found no "Plain HTML" tab')
-    const skript = /<script type="module">([\s\S]*?)<\/script>/.exec(fane)?.[1]
-    if (skript === undefined) throw new Error("Found no script in the tab")
-    return { markup: fane.replace(/<script[\s\S]*<\/script>/, ""), skript }
+    if (tab === undefined) throw new Error('Found no "Plain HTML" tab')
+    const script = /<script type="module">([\s\S]*?)<\/script>/.exec(tab)?.[1]
+    if (script === undefined) throw new Error("Found no script in the tab")
+    return { markup: tab.replace(/<script[\s\S]*<\/script>/, ""), script }
   }
-  const { markup, skript } = lesFanen()
+  const { markup, script } = readTab()
 
   afterEach(() => {
     vi.unstubAllGlobals()
   })
 
   /** Mounts the example with a server that answers `status`, and flips the switch. */
-  function slaOm(status: number) {
+  function flip(status: number) {
     mount(markup)
-    let kall = 0
+    let calls = 0
     vi.stubGlobal("fetch", () => {
-      kall += 1
-      return new Promise((svar) => {
-        setTimeout(() => svar(new Response("", { status })), 50)
+      calls += 1
+      return new Promise((resolve) => {
+        setTimeout(() => resolve(new Response("", { status })), 50)
       })
     })
-    new Function(skript)()
+    new Function(script)()
 
-    const bryter = document.getElementById("notifications") as HTMLInputElement
-    const melding = document.getElementById(
+    const toggle = document.getElementById("notifications") as HTMLInputElement
+    const message = document.getElementById(
       "notifications-status",
     ) as HTMLElement
-    bryter.focus()
-    bryter.click()
+    toggle.focus()
+    toggle.click()
 
-    return { bryter, melding, kall: () => kall }
+    return { toggle, message, calls: () => calls }
   }
 
   it("rolls back and reports it when the server answers with an error status", async () => {
-    const { bryter, melding } = slaOm(500)
-    expect(bryter.checked).toBe(true)
+    const { toggle, message } = flip(500)
+    expect(toggle.checked).toBe(true)
 
-    await vi.waitFor(() => expect(melding.textContent).not.toBe(""))
+    await vi.waitFor(() => expect(message.textContent).not.toBe(""))
 
-    expect(bryter.checked).toBe(false)
-    expect(melding.textContent).toBe("Could not save. Try again.")
+    expect(toggle.checked).toBe(false)
+    expect(message.textContent).toBe("Could not save. Try again.")
   })
 
   it("keeps focus and blocks another press while it saves", async () => {
-    const { bryter, melding, kall } = slaOm(200)
-    expect(document.activeElement).toBe(bryter)
+    const { toggle, message, calls } = flip(200)
+    expect(document.activeElement).toBe(toggle)
 
     // Another press while saving should neither flip the switch nor send.
-    bryter.click()
-    expect(bryter.checked).toBe(true)
+    toggle.click()
+    expect(toggle.checked).toBe(true)
 
     await vi.waitFor(() =>
-      expect(melding.textContent).toBe("Notifications are on."),
+      expect(message.textContent).toBe("Notifications are on."),
     )
 
-    expect(document.activeElement).toBe(bryter)
-    expect(kall()).toBe(1)
+    expect(document.activeElement).toBe(toggle)
+    expect(calls()).toBe(1)
 
     // And afterwards it works as before.
-    bryter.click()
-    expect(bryter.checked).toBe(false)
-    expect(kall()).toBe(2)
+    toggle.click()
+    expect(toggle.checked).toBe(false)
+    expect(calls()).toBe(2)
     await vi.waitFor(() =>
-      expect(melding.textContent).toBe("Notifications are off."),
+      expect(message.textContent).toBe("Notifications are off."),
     )
   })
 })
@@ -102,43 +102,43 @@ describe("lt-switch", () => {
   beforeEach(() => {
     mount(`
       <div class="lt-switch-row">
-        <input class="lt-switch" type="checkbox" role="switch" id="varsler" checked />
-        <label class="lt-label" for="varsler">Varsle meg på e-post</label>
+        <input class="lt-switch" type="checkbox" role="switch" id="alerts" checked />
+        <label class="lt-label" for="alerts">Email me</label>
       </div>
       <div class="lt-switch-row">
         <input class="lt-switch" type="checkbox" role="switch" id="sms" />
-        <label class="lt-label" for="sms">Varsle meg på SMS</label>
+        <label class="lt-label" for="sms">Text me</label>
       </div>
     `)
   })
 
   it("announces itself as a switch, not a checkbox", () => {
-    const bryter = document.getElementById("varsler") as HTMLInputElement
+    const toggle = document.getElementById("alerts") as HTMLInputElement
 
     // role="switch" makes screen readers say "on" and "off". The element is
     // still a checkbox, so FormData finds it as before.
-    expect(bryter.getAttribute("role")).toBe("switch")
-    expect(bryter.type).toBe("checkbox")
+    expect(toggle.getAttribute("role")).toBe("switch")
+    expect(toggle.type).toBe("checkbox")
   })
 
   it("moves the knob to the right when it is on", () => {
-    const pa = getComputedStyle(document.getElementById("varsler") as Element)
-    const av = getComputedStyle(document.getElementById("sms") as Element)
+    const on = getComputedStyle(document.getElementById("alerts") as Element)
+    const off = getComputedStyle(document.getElementById("sms") as Element)
 
-    expect(pa.backgroundPositionX).not.toBe(av.backgroundPositionX)
-    expect(pa.backgroundColor).not.toBe(av.backgroundColor)
+    expect(on.backgroundPositionX).not.toBe(off.backgroundPositionX)
+    expect(on.backgroundColor).not.toBe(off.backgroundColor)
   })
 
   it("is submitted with the form like a checkbox", () => {
     document.body.innerHTML = `
-      <form id="skjema">
+      <form id="form">
         <input class="lt-switch" type="checkbox" role="switch"
-          name="varsler" value="ja" checked />
+          name="alerts" value="yes" checked />
       </form>
     `
-    const skjema = document.getElementById("skjema") as HTMLFormElement
+    const form = document.getElementById("form") as HTMLFormElement
 
-    expect(Object.fromEntries(new FormData(skjema))).toEqual({ varsler: "ja" })
+    expect(Object.fromEntries(new FormData(form))).toEqual({ alerts: "yes" })
   })
 
   it("sets the attributes from the builder function", () => {

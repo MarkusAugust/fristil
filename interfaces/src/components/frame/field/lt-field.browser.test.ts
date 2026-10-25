@@ -13,7 +13,7 @@ import "../../../tokens/tokens.css"
 import "./field.css"
 
 /** The attribute names on an element, sorted. */
-function navnene(element: Element): string[] {
+function attributeNames(element: Element): string[] {
   return [...element.attributes].map((a) => a.name).sort()
 }
 
@@ -29,7 +29,7 @@ describe("lt-field", () => {
   it("wires label[for] to the control id", async () => {
     document.body.innerHTML = `
       <lt-field>
-        <label id="label">E-post</label>
+        <label id="label">Email</label>
         <input id="email" class="lt-input" type="email" />
       </lt-field>
     `
@@ -43,10 +43,10 @@ describe("lt-field", () => {
   it("adds ids and aria-describedby for help and error text", async () => {
     document.body.innerHTML = `
       <lt-field>
-        <label for="email">E-post</label>
+        <label for="email">Email</label>
         <input id="email" class="lt-input" type="email" />
-        <p class="lt-help-text">Hjelp</p>
-        <p class="lt-error-text">Feil</p>
+        <p class="lt-help-text">Help</p>
+        <p class="lt-error-text">Error</p>
       </lt-field>
     `
 
@@ -75,9 +75,9 @@ describe("lt-field", () => {
      */
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" />
-        <p class="lt-error-text" hidden>Skriv en gyldig e-post.</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" />
+        <p class="lt-error-text" hidden>Enter a valid email.</p>
       </lt-field>
     `
     await Promise.resolve()
@@ -104,9 +104,9 @@ describe("lt-field", () => {
   it("does not touch hidden on the error text", async () => {
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" />
-        <p class="lt-error-text">Skriv en gyldig e-post.</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" />
+        <p class="lt-error-text">Enter a valid email.</p>
       </lt-field>
     `
     await waitForPaint()
@@ -122,9 +122,9 @@ describe("lt-field", () => {
     // must read it, not remove it.
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" aria-invalid="true" />
-        <p class="lt-error-text">Skriv en gyldig e-post.</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" aria-invalid="true" />
+        <p class="lt-error-text">Enter a valid email.</p>
       </lt-field>
     `
 
@@ -146,9 +146,9 @@ describe("lt-field", () => {
      */
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" aria-invalid="true" />
-        <p class="lt-error-text">Skriv en gyldig e-post.</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" aria-invalid="true" />
+        <p class="lt-error-text">Enter a valid email.</p>
       </lt-field>
     `
     await Promise.resolve()
@@ -176,9 +176,9 @@ describe("lt-field", () => {
      */
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" />
-        <p class="lt-error-text">Skriv en gyldig e-post.</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" />
+        <p class="lt-error-text">Enter a valid email.</p>
       </lt-field>
     `
 
@@ -188,27 +188,27 @@ describe("lt-field", () => {
     )
 
     // The patch: a new control that itself says invalid, and the error text hidden.
-    const gammel = document.querySelector("input") as HTMLInputElement
-    const ny = document.createElement("input")
-    ny.id = "epost"
-    ny.className = "lt-input"
-    ny.type = "email"
-    ny.setAttribute("aria-invalid", "true")
-    gammel.replaceWith(ny)
+    const oldControl = document.querySelector("input") as HTMLInputElement
+    const newControl = document.createElement("input")
+    newControl.id = "email"
+    newControl.className = "lt-input"
+    newControl.type = "email"
+    newControl.setAttribute("aria-invalid", "true")
+    oldControl.replaceWith(newControl)
     const error = document.querySelector(".lt-error-text") as HTMLElement
     error.hidden = true
 
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    expect(ny.getAttribute("aria-invalid")).toBe("true")
-    expect(ny.getAttribute("data-state")).toBe("invalid")
+    expect(newControl.getAttribute("aria-invalid")).toBe("true")
+    expect(newControl.getAttribute("data-state")).toBe("invalid")
     expect(error.hidden).toBe(true)
   })
 
   it("never writes an id on the control, not even when a patch replaces it", async () => {
     // The markup in the test has no label on purpose, and the warning about
     // it is expected. It must not show up as noise in the run.
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
     /*
      * Datastar and idiomorph recognise a node by its id, and a control with
      * an id the server did not send is replaced on the next update, along
@@ -218,31 +218,31 @@ describe("lt-field", () => {
      */
     document.body.innerHTML = `
       <div>
-        <label class="lt-label" for="epost">E-post</label>
+        <label class="lt-label" for="email">Email</label>
         <lt-field>
-          <input id="epost" class="lt-input" type="email" />
+          <input id="email" class="lt-input" type="email" />
         </lt-field>
       </div>
     `
     await Promise.resolve()
 
-    const gammel = document.querySelector("input") as HTMLInputElement
-    const ny = document.createElement("input")
-    ny.className = "lt-input"
-    ny.type = "email"
-    gammel.replaceWith(ny)
+    const oldControl = document.querySelector("input") as HTMLInputElement
+    const newControl = document.createElement("input")
+    newControl.className = "lt-input"
+    newControl.type = "email"
+    oldControl.replaceWith(newControl)
 
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
-    expect(ny.hasAttribute("id")).toBe(false)
-    advarsel.mockRestore()
+    expect(newControl.hasAttribute("id")).toBe(false)
+    warn.mockRestore()
   })
 
   it("writes neither id nor for when the label wraps the control", async () => {
     document.body.innerHTML = `
       <lt-field>
-        <label>E-post <input class="lt-input" type="email" /></label>
-        <p class="lt-help-text">Vi sender kvittering hit.</p>
+        <label>Email <input class="lt-input" type="email" /></label>
+        <p class="lt-help-text">We send the receipt here.</p>
       </lt-field>
     `
     await waitForPaint()
@@ -260,8 +260,8 @@ describe("lt-field", () => {
   it("leaves the data-required the server wrote, and marks optional fields", async () => {
     document.body.innerHTML = `
       <lt-field>
-        <label id="label" for="navn" data-required="text">Navn</label>
-        <input id="navn" class="lt-input" required />
+        <label id="label" for="name" data-required="text">Name</label>
+        <input id="name" class="lt-input" required />
       </lt-field>
     `
 
@@ -272,8 +272,8 @@ describe("lt-field", () => {
 
     document.body.innerHTML = `
       <lt-field optional>
-        <label id="label-2" for="telefon">Telefon</label>
-        <input id="telefon" class="lt-input" />
+        <label id="label-2" for="phone">Phone</label>
+        <input id="phone" class="lt-input" />
       </lt-field>
     `
 
@@ -288,16 +288,16 @@ describe("lt-field accessibility", () => {
   it("has no violations for a field with help text and error text", async () => {
     mount(`
       <lt-field>
-        <label for="epost" data-required="symbol">E-postadresse</label>
-        <input id="epost" class="lt-input" type="email" value="ola@" required />
-        <p class="lt-help-text">Vi sender kvittering til denne adressen.</p>
-        <p class="lt-error-text">Skriv en e-postadresse med krøllalfa.</p>
+        <label for="email" data-required="symbol">Email address</label>
+        <input id="email" class="lt-input" type="email" value="sam@" required />
+        <p class="lt-help-text">We send a receipt to this address.</p>
+        <p class="lt-error-text">Enter an email address with an @ sign.</p>
       </lt-field>
 
       <lt-field optional>
-        <label for="melding">Melding til saksbehandler</label>
-        <textarea id="melding" class="lt-textarea" rows="3"></textarea>
-        <p class="lt-help-text">Du kan skrive opptil 500 tegn.</p>
+        <label for="message">Message to the case officer</label>
+        <textarea id="message" class="lt-textarea" rows="3"></textarea>
+        <p class="lt-help-text">You can write up to 500 characters.</p>
       </lt-field>
     `)
 
@@ -308,7 +308,7 @@ describe("lt-field accessibility", () => {
   it("has no violations for a field without help text", async () => {
     mount(`
       <lt-field>
-        <label>Fullt navn <input class="lt-input" type="text" /></label>
+        <label>Full name <input class="lt-input" type="text" /></label>
       </lt-field>
     `)
 
@@ -321,8 +321,8 @@ describe("lt-field label", () => {
   it("gives the label lt-label, so the required marker actually shows", async () => {
     mount(`
       <lt-field>
-        <label for="epost" data-required="text">E-postadresse</label>
-        <input id="epost" class="lt-input" type="email" />
+        <label for="email" data-required="text">Email address</label>
+        <input id="email" class="lt-input" type="email" />
       </lt-field>
     `)
 
@@ -333,15 +333,15 @@ describe("lt-field label", () => {
     expect(label.getAttribute("data-required")).toBe("text")
 
     // The attribute alone does nothing without the class. The marker comes from ::after
-    const markering = getComputedStyle(label, "::after").content
-    expect(markering).toContain("required")
+    const marker = getComputedStyle(label, "::after").content
+    expect(marker).toContain("required")
   })
 
   it("marks optional fields the same way", async () => {
     mount(`
       <lt-field optional>
-        <label for="adresse">Adresse</label>
-        <input id="adresse" class="lt-input" type="text" />
+        <label for="address">Address</label>
+        <input id="address" class="lt-input" type="text" />
       </lt-field>
     `)
 
@@ -367,8 +367,8 @@ describe("lt-field does not fight the server", () => {
    * parallel attribute.
    */
   it("leaves the attributes the server wrote", async () => {
-    const felt = computeFieldAttributes({
-      id: "epost",
+    const field = computeFieldAttributes({
+      id: "email",
       help: true,
       error: true,
       invalid: true,
@@ -377,25 +377,25 @@ describe("lt-field does not fight the server", () => {
 
     mount(`
       <lt-field>
-        <label ${attr(felt.label)}>E-postadresse</label>
-        <input class="lt-input" type="email" ${attr(felt.control)} />
-        <p class="lt-help-text" ${attr(felt.help)}>Vi sender kvittering hit.</p>
-        <p class="lt-error-text" ${attr(felt.error)}>Skriv en gyldig adresse.</p>
+        <label ${attr(field.label)}>Email address</label>
+        <input class="lt-input" type="email" ${attr(field.control)} />
+        <p class="lt-help-text" ${attr(field.help)}>We send the receipt here.</p>
+        <p class="lt-error-text" ${attr(field.error)}>Enter a valid address.</p>
       </lt-field>
     `)
 
     await waitForPaint()
 
-    const input = document.getElementById("epost") as HTMLInputElement
+    const input = document.getElementById("email") as HTMLInputElement
     const label = document.querySelector("label") as HTMLLabelElement
-    const feilmelding = document.querySelector(".lt-error-text") as HTMLElement
+    const errorText = document.querySelector(".lt-error-text") as HTMLElement
 
     expect(input.getAttribute("aria-invalid")).toBe("true")
     expect(input.getAttribute("aria-describedby")).toBe(
-      "epost-help epost-error",
+      "email-help email-error",
     )
     expect(label.getAttribute("data-required")).toBe("symbol")
-    expect(feilmelding.hidden).toBe(false)
+    expect(errorText.hidden).toBe(false)
   })
 
   it("does not set aria-hidden on a hidden error text", async () => {
@@ -403,17 +403,17 @@ describe("lt-field does not fight the server", () => {
     // attribute the server does not write gives a hydration error in React.
     mount(`
       <lt-field>
-        <label for="epost">E-postadresse</label>
-        <input id="epost" class="lt-input" type="email" />
-        <p class="lt-error-text" hidden>Skriv en gyldig adresse.</p>
+        <label for="email">Email address</label>
+        <input id="email" class="lt-input" type="email" />
+        <p class="lt-error-text" hidden>Enter a valid address.</p>
       </lt-field>
     `)
 
     await waitForPaint()
 
-    const feilmelding = document.querySelector(".lt-error-text") as HTMLElement
-    expect(feilmelding.hidden).toBe(true)
-    expect(feilmelding.hasAttribute("aria-hidden")).toBe(false)
+    const errorText = document.querySelector(".lt-error-text") as HTMLElement
+    expect(errorText.hidden).toBe(true)
+    expect(errorText.hasAttribute("aria-hidden")).toBe(false)
   })
 })
 
@@ -431,10 +431,10 @@ describe("lt-field connects markup that has only structure", () => {
   it("gives the full wiring from for, id and a visible error text", async () => {
     mount(`
       <lt-field>
-        <label data-required="symbol">E-post</label>
-        <input id="epost" class="lt-input" type="email">
-        <p class="lt-help-text">Vi sender aldri spam.</p>
-        <p class="lt-error-text">Skriv en gyldig adresse.</p>
+        <label data-required="symbol">Email</label>
+        <input id="email" class="lt-input" type="email">
+        <p class="lt-help-text">We never send spam.</p>
+        <p class="lt-error-text">Enter a valid address.</p>
       </lt-field>
     `)
 
@@ -442,21 +442,21 @@ describe("lt-field connects markup that has only structure", () => {
 
     const label = document.querySelector("label") as HTMLLabelElement
     const input = document.querySelector("input") as HTMLInputElement
-    const hjelp = document.querySelector(".lt-help-text") as HTMLElement
-    const feilmelding = document.querySelector(".lt-error-text") as HTMLElement
+    const help = document.querySelector(".lt-help-text") as HTMLElement
+    const errorText = document.querySelector(".lt-error-text") as HTMLElement
 
     expect(label.getAttribute("class")).toBe("lt-label")
-    expect(label.getAttribute("for")).toBe("epost")
+    expect(label.getAttribute("for")).toBe("email")
     expect(label.getAttribute("data-required")).toBe("symbol")
-    expect(input.id).toBe("epost")
-    expect(hjelp.id).toMatch(/^lt-field-help-/)
-    expect(feilmelding.id).toMatch(/^lt-field-error-/)
+    expect(input.id).toBe("email")
+    expect(help.id).toMatch(/^lt-field-help-/)
+    expect(errorText.id).toMatch(/^lt-field-error-/)
     expect(input.getAttribute("aria-describedby")).toBe(
-      `${hjelp.id} ${feilmelding.id}`,
+      `${help.id} ${errorText.id}`,
     )
     expect(input.getAttribute("aria-invalid")).toBe("true")
     expect(input.getAttribute("data-state")).toBe("invalid")
-    expect(feilmelding.hidden).toBe(false)
+    expect(errorText.hidden).toBe(false)
   })
 
   /*
@@ -470,23 +470,23 @@ describe("lt-field connects markup that has only structure", () => {
   it("does not adopt a paragraph that only has a role on it", async () => {
     mount(`
       <lt-field>
-        <label for="postnummer">Postnummer</label>
-        <input id="postnummer" class="lt-input" aria-invalid="true">
-        <p class="egen-feil" data-role="error">Postnummeret må ha fire siffer.</p>
+        <label for="postcode">Postcode</label>
+        <input id="postcode" class="lt-input" aria-invalid="true">
+        <p class="own-error" data-role="error">The postcode must have four digits.</p>
       </lt-field>
     `)
 
     await waitForPaint()
 
     const input = document.querySelector("input") as HTMLInputElement
-    const avsnitt = document.querySelector(".egen-feil") as HTMLElement
+    const paragraph = document.querySelector(".own-error") as HTMLElement
 
     // One positive anchor. Without it the test would also pass if `sync()`
     // gave up before getting that far, and then it only claims that nothing
     // happened.
     expect(input.getAttribute("aria-invalid")).toBe("true")
 
-    expect(navnene(avsnitt)).toEqual(["class", "data-role"])
+    expect(attributeNames(paragraph)).toEqual(["class", "data-role"])
     expect(input.hasAttribute("aria-describedby")).toBe(false)
   })
 })
@@ -502,15 +502,15 @@ describe("lt-field is a block element", () => {
     // show until someone puts the field in a grid or gives it a margin.
     mount(`
       <lt-field>
-        <label class="lt-label">E-post</label>
+        <label class="lt-label">Email</label>
         <input class="lt-input" type="email" />
       </lt-field>
     `)
 
     await waitForPaint()
 
-    const felt = document.querySelector("lt-field") as HTMLElement
-    expect(getComputedStyle(felt).display).toBe("block")
+    const field = document.querySelector("lt-field") as HTMLElement
+    expect(getComputedStyle(field).display).toBe("block")
   })
 })
 
@@ -536,10 +536,10 @@ describe("lt-field only controls what it wrote itself", () => {
   it("takes the error text out of aria-describedby when it is hidden", async () => {
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" />
-        <p class="lt-help-text" id="h">Hjelp</p>
-        <p class="lt-error-text" id="x">Feil</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" />
+        <p class="lt-help-text" id="h">Help</p>
+        <p class="lt-error-text" id="x">Error</p>
       </lt-field>
     `
     await Promise.resolve()
@@ -557,9 +557,9 @@ describe("lt-field only controls what it wrote itself", () => {
   it("takes the help text out of aria-describedby when a patch removes it", async () => {
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" />
-        <p class="lt-help-text" id="h">Hjelp</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" />
+        <p class="lt-help-text" id="h">Help</p>
       </lt-field>
     `
     await Promise.resolve()
@@ -568,64 +568,64 @@ describe("lt-field only controls what it wrote itself", () => {
     expect(input.getAttribute("aria-describedby")).toBe("h")
 
     document.querySelector(".lt-help-text")?.remove()
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
     expect(input.getAttribute("aria-describedby")).toBeNull()
   })
 
   it("takes the extra ids out again when described-by is removed from the host", async () => {
     document.body.innerHTML = `
-      <p id="ekstra">Les vilkårene først.</p>
-      <lt-field described-by="ekstra">
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" />
+      <p id="extra">Read the terms first.</p>
+      <lt-field described-by="extra">
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" />
       </lt-field>
     `
     await Promise.resolve()
 
     const input = document.querySelector("input") as HTMLInputElement
-    expect(input.getAttribute("aria-describedby")).toBe("ekstra")
+    expect(input.getAttribute("aria-describedby")).toBe("extra")
 
-    const felt = document.querySelector("lt-field") as LtField
-    felt.describedBy = undefined
+    const field = document.querySelector("lt-field") as LtField
+    field.describedBy = undefined
     await Promise.resolve()
 
     expect(input.getAttribute("aria-describedby")).toBeNull()
   })
 
   it("keeps ids the server put in aria-describedby", async () => {
-    // `lt.field({ describedBy: ["vilkar"] })` writes the id straight on the
+    // `lt.field({ describedBy: ["terms"] })` writes the id straight on the
     // control. It is the server's, and must stay, also after the component
     // has rewritten the attribute to remove the error text.
     document.body.innerHTML = `
-      <p id="vilkar">Vilkår</p>
+      <p id="terms">Terms</p>
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email"
-               aria-describedby="epost-help epost-error vilkar" />
-        <p class="lt-help-text" id="epost-help">Hjelp</p>
-        <p class="lt-error-text" id="epost-error">Feil</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email"
+               aria-describedby="email-help email-error terms" />
+        <p class="lt-help-text" id="email-help">Help</p>
+        <p class="lt-error-text" id="email-error">Error</p>
       </lt-field>
     `
     await Promise.resolve()
 
     const input = document.querySelector("input") as HTMLInputElement
     expect(input.getAttribute("aria-describedby")).toBe(
-      "epost-help epost-error vilkar",
+      "email-help email-error terms",
     )
 
-    const error = document.getElementById("epost-error") as HTMLElement
+    const error = document.getElementById("email-error") as HTMLElement
     error.hidden = true
     await waitForPaint()
 
-    expect(input.getAttribute("aria-describedby")).toBe("epost-help vilkar")
+    expect(input.getAttribute("aria-describedby")).toBe("email-help terms")
   })
 
   it("turns disabled off again when the host turns it off", async () => {
     document.body.innerHTML = `
       <lt-field disabled>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" />
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" />
       </lt-field>
     `
     await Promise.resolve()
@@ -637,8 +637,8 @@ describe("lt-field only controls what it wrote itself", () => {
     // A real `disabled` needs no copy, and `lt.field()` writes none.
     expect(input.hasAttribute("aria-disabled")).toBe(false)
 
-    const felt = document.querySelector("lt-field") as LtField
-    felt.disabled = false
+    const field = document.querySelector("lt-field") as LtField
+    field.disabled = false
     await Promise.resolve()
 
     expect(input.disabled).toBe(false)
@@ -648,8 +648,8 @@ describe("lt-field only controls what it wrote itself", () => {
   it("leaves a disabled the server wrote on the control", async () => {
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" disabled="disabled" />
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" disabled="disabled" />
       </lt-field>
     `
     await Promise.resolve()
@@ -661,10 +661,10 @@ describe("lt-field only controls what it wrote itself", () => {
 
     // The host has had `disabled` and lost it again. The server's word on
     // the control still stands.
-    const felt = document.querySelector("lt-field") as LtField
-    felt.disabled = true
+    const field = document.querySelector("lt-field") as LtField
+    field.disabled = true
     await Promise.resolve()
-    felt.disabled = false
+    field.disabled = false
     await Promise.resolve()
 
     expect(input.getAttribute("disabled")).toBe("disabled")
@@ -673,8 +673,8 @@ describe("lt-field only controls what it wrote itself", () => {
   it("does not touch an aria-disabled the consumer wrote", async () => {
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" aria-disabled="true" />
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" aria-disabled="true" />
       </lt-field>
     `
     await Promise.resolve()
@@ -699,20 +699,20 @@ describe("lt-field only controls what it wrote itself", () => {
     const b = document.getElementById("b") as HTMLElement
     a.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" />
-        <p class="lt-error-text">Feil</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" />
+        <p class="lt-error-text">Error</p>
       </lt-field>
     `
     await Promise.resolve()
 
-    const felt = a.querySelector("lt-field") as LtField
-    const input = felt.querySelector("input") as HTMLInputElement
+    const field = a.querySelector("lt-field") as LtField
+    const input = field.querySelector("input") as HTMLInputElement
     expect(input.getAttribute("aria-invalid")).toBe("true")
 
-    b.append(felt)
+    b.append(field)
     await Promise.resolve()
-    ;(felt.querySelector(".lt-error-text") as HTMLElement).hidden = true
+    ;(field.querySelector(".lt-error-text") as HTMLElement).hidden = true
     await waitForPaint()
 
     expect(input.getAttribute("aria-invalid")).toBeNull()
@@ -721,23 +721,23 @@ describe("lt-field only controls what it wrote itself", () => {
   it("remembers what it wrote on a control that disappears and comes back", async () => {
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" />
-        <p class="lt-error-text">Feil</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" />
+        <p class="lt-error-text">Error</p>
       </lt-field>
     `
     await Promise.resolve()
 
-    const felt = document.querySelector("lt-field") as LtField
-    const input = felt.querySelector("input") as HTMLInputElement
+    const field = document.querySelector("lt-field") as LtField
+    const input = field.querySelector("input") as HTMLInputElement
     expect(input.getAttribute("aria-invalid")).toBe("true")
 
     input.remove()
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
-    felt.append(input)
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
+    field.append(input)
+    await new Promise((done) => requestAnimationFrame(done))
 
-    ;(felt.querySelector(".lt-error-text") as HTMLElement).hidden = true
+    ;(field.querySelector(".lt-error-text") as HTMLElement).hidden = true
     await waitForPaint()
 
     expect(input.getAttribute("aria-invalid")).toBeNull()
@@ -749,9 +749,9 @@ describe("lt-field only controls what it wrote itself", () => {
     // it removed again.
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" type="email" aria-invalid="false" />
-        <p class="lt-error-text" hidden>Feil</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" type="email" aria-invalid="false" />
+        <p class="lt-error-text" hidden>Error</p>
       </lt-field>
     `
     await Promise.resolve()
@@ -774,9 +774,9 @@ describe("lt-field only controls what it wrote itself", () => {
     // read as "not true", and removed.
     document.body.innerHTML = `
       <lt-field>
-        <label for="tekst">Tekst</label>
-        <input id="tekst" class="lt-input" aria-invalid="spelling" />
-        <p class="lt-error-text">Ordet finnes ikke.</p>
+        <label for="text">Text</label>
+        <input id="text" class="lt-input" aria-invalid="spelling" />
+        <p class="lt-error-text">The word does not exist.</p>
       </lt-field>
     `
     await Promise.resolve()
@@ -795,9 +795,9 @@ describe("lt-field only controls what it wrote itself", () => {
     // valid.
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" aria-invalid="" />
-        <p class="lt-error-text" hidden>Feil</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" aria-invalid="" />
+        <p class="lt-error-text" hidden>Error</p>
       </lt-field>
     `
     await Promise.resolve()
@@ -824,40 +824,40 @@ describe("lt-field only controls what it wrote itself", () => {
     document.body.innerHTML = `
       <div id="frame">
         <lt-field>
-          <label for="epost">E-post</label>
-          <input id="epost" class="lt-input" aria-describedby="epost-help" />
-          <p class="lt-help-text" id="epost-help">Hjelp</p>
+          <label for="email">Email</label>
+          <input id="email" class="lt-input" aria-describedby="email-help" />
+          <p class="lt-help-text" id="email-help">Help</p>
         </lt-field>
       </div>
     `
     await Promise.resolve()
 
-    const felt = document.querySelector("lt-field") as LtField
-    const hjelp = document.querySelector(".lt-help-text") as HTMLElement
-    const ramme = document.getElementById("frame") as HTMLElement
-    ramme.append(hjelp)
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    const field = document.querySelector("lt-field") as LtField
+    const help = document.querySelector(".lt-help-text") as HTMLElement
+    const frame = document.getElementById("frame") as HTMLElement
+    frame.append(help)
+    await new Promise((done) => requestAnimationFrame(done))
 
-    expect(felt.contains(hjelp)).toBe(false)
+    expect(field.contains(help)).toBe(false)
     const input = document.querySelector("input") as HTMLInputElement
-    expect(input.getAttribute("aria-describedby")).toBe("epost-help")
+    expect(input.getAttribute("aria-describedby")).toBe("email-help")
   })
 
   it("does not treat a removed help text as an extra id from the server", async () => {
-    // The server wrote `aria-describedby="epost-help"`. A script removes the
+    // The server wrote `aria-describedby="email-help"`. A script removes the
     // help text without touching the control. The id was managed by the
     // component, and must not stay as if the server had added it.
     document.body.innerHTML = `
       <lt-field>
-        <label for="epost">E-post</label>
-        <input id="epost" class="lt-input" aria-describedby="epost-help" />
-        <p class="lt-help-text" id="epost-help">Hjelp</p>
+        <label for="email">Email</label>
+        <input id="email" class="lt-input" aria-describedby="email-help" />
+        <p class="lt-help-text" id="email-help">Help</p>
       </lt-field>
     `
     await Promise.resolve()
 
     document.querySelector(".lt-help-text")?.remove()
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+    await new Promise((done) => requestAnimationFrame(done))
 
     const input = document.querySelector("input") as HTMLInputElement
     expect(input.getAttribute("aria-describedby")).toBeNull()
@@ -869,83 +869,88 @@ describe("lt-field does not read its own echo from the label", () => {
     defineLtField()
   })
 
-  async function felt(
-    vert: string,
-    kontroll = '<input id="navn" class="lt-input" />',
+  async function mountField(
+    host: string,
+    control = '<input id="name" class="lt-input" />',
   ) {
     mount(
-      `<lt-field ${vert}><label for="navn">Navn</label>${kontroll}</lt-field>`,
+      `<lt-field ${host}><label for="name">Name</label>${control}</lt-field>`,
     )
     await customElements.whenDefined("lt-field")
     await waitForPaint()
     return {
-      vert: document.querySelector("lt-field") as LtField,
-      ledetekst: document.querySelector("label") as HTMLLabelElement,
-      kontroll: document.querySelector("input") as HTMLInputElement,
+      host: document.querySelector("lt-field") as LtField,
+      label: document.querySelector("label") as HTMLLabelElement,
+      control: document.querySelector("input") as HTMLInputElement,
     }
   }
 
   it("removes data-optional when optional is removed from the host", async () => {
-    const { vert, ledetekst } = await felt("optional")
-    expect(ledetekst.hasAttribute("data-optional")).toBe(true)
+    const { host, label } = await mountField("optional")
+    expect(label.hasAttribute("data-optional")).toBe(true)
 
-    vert.removeAttribute("optional")
+    host.removeAttribute("optional")
     await waitForPaint()
 
-    expect(ledetekst.hasAttribute("data-optional")).toBe(false)
+    expect(label.hasAttribute("data-optional")).toBe(false)
   })
 
   it("leaves the markers the server wrote on the label", async () => {
     mount(
-      `<lt-field><label for="navn" data-required="text">Navn</label><input id="navn" class="lt-input" /></lt-field>`,
+      `<lt-field><label for="name" data-required="text">Name</label><input id="name" class="lt-input" /></lt-field>`,
     )
     await customElements.whenDefined("lt-field")
     await waitForPaint()
-    const ledetekst = document.querySelector("label") as HTMLLabelElement
-    const vert = document.querySelector("lt-field") as LtField
+    const label = document.querySelector("label") as HTMLLabelElement
+    const host = document.querySelector("lt-field") as LtField
 
     // One more round, as a patch would trigger.
-    vert.setAttribute("described-by", "annet")
+    host.setAttribute("described-by", "other")
     await waitForPaint()
 
-    expect(ledetekst.getAttribute("data-required")).toBe("text")
+    expect(label.getAttribute("data-required")).toBe("text")
   })
 
   it("removes disabled and optional when the property is set to undefined", async () => {
     // This is how React 19 writes a prop that is gone. `toggleAttribute`
     // with `undefined` toggles, and the attribute came back.
-    const { vert } = await felt("")
-    const egenskaper = vert as unknown as Record<string, boolean | undefined>
+    const { host } = await mountField("")
+    const properties = host as unknown as Record<string, boolean | undefined>
 
-    for (const navn of ["disabled", "optional"]) {
-      egenskaper[navn] = undefined
-      expect(vert.hasAttribute(navn), `${navn} på et felt uten`).toBe(false)
+    for (const attribute of ["disabled", "optional"]) {
+      properties[attribute] = undefined
+      expect(
+        host.hasAttribute(attribute),
+        `${attribute} on a field without`,
+      ).toBe(false)
 
-      egenskaper[navn] = true
-      egenskaper[navn] = undefined
-      expect(vert.hasAttribute(navn), `${navn} på et felt med`).toBe(false)
+      properties[attribute] = true
+      properties[attribute] = undefined
+      expect(host.hasAttribute(attribute), `${attribute} on a field with`).toBe(
+        false,
+      )
     }
   })
 
   it("leaves a data-state the template wrote by hand", async () => {
-    const { kontroll } = await felt(
+    const { control } = await mountField(
       "",
-      '<input id="navn" class="lt-input" data-state="invalid" />',
+      '<input id="name" class="lt-input" data-state="invalid" />',
     )
-    expect(kontroll.getAttribute("data-state")).toBe("invalid")
+    expect(control.getAttribute("data-state")).toBe("invalid")
   })
 
   it("still removes the data-state it wrote when the field becomes valid", async () => {
-    const { kontroll } = await felt(
+    const { control } = await mountField(
       "",
-      '<input id="navn" class="lt-input" /><p class="lt-error-text">Feil</p>',
+      '<input id="name" class="lt-input" /><p class="lt-error-text">Error</p>',
     )
-    expect(kontroll.getAttribute("data-state")).toBe("invalid")
+    expect(control.getAttribute("data-state")).toBe("invalid")
 
     ;(document.querySelector(".lt-error-text") as HTMLElement).hidden = true
     await waitForPaint()
 
-    expect(kontroll.hasAttribute("data-state")).toBe(false)
+    expect(control.hasAttribute("data-state")).toBe(false)
   })
 
   it("connects only its own parts when a field is inside another", async () => {
@@ -957,104 +962,106 @@ describe("lt-field does not read its own echo from the label", () => {
      * parts.
      */
     document.body.innerHTML = `
-      <lt-field id="ytre">
-        <label id="ytre-label">Kommune</label>
+      <lt-field id="outer">
+        <label id="outer-label">City</label>
         <div popover>
-          <lt-field id="indre">
-            <label id="indre-label">Søk i lista</label>
-            <input id="indre-input" class="lt-input" type="search" />
-            <p class="lt-help-text" id="indre-help">Skriv minst to bokstaver.</p>
-            <p class="lt-error-text" id="indre-error">Ingen treff.</p>
+          <lt-field id="inner">
+            <label id="inner-label">Search the list</label>
+            <input id="inner-input" class="lt-input" type="search" />
+            <p class="lt-help-text" id="inner-help">Type at least two letters.</p>
+            <p class="lt-error-text" id="inner-error">No matches.</p>
           </lt-field>
         </div>
-        <input id="ytre-input" class="lt-input" type="text" />
-        <p class="lt-help-text" id="ytre-help">Kommunen du bor i.</p>
+        <input id="outer-input" class="lt-input" type="text" />
+        <p class="lt-help-text" id="outer-help">The city you live in.</p>
       </lt-field>
     `
     await waitForPaint()
 
-    const ytreLabel = document.getElementById("ytre-label") as HTMLLabelElement
-    const ytreInput = document.getElementById("ytre-input") as HTMLInputElement
-    const indreLabel = document.getElementById(
-      "indre-label",
+    const outerLabel = document.getElementById(
+      "outer-label",
     ) as HTMLLabelElement
-    const indreInput = document.getElementById(
-      "indre-input",
+    const outerInput = document.getElementById(
+      "outer-input",
+    ) as HTMLInputElement
+    const innerLabel = document.getElementById(
+      "inner-label",
+    ) as HTMLLabelElement
+    const innerInput = document.getElementById(
+      "inner-input",
     ) as HTMLInputElement
 
-    expect(ytreLabel.htmlFor).toBe("ytre-input")
-    expect(ytreInput.getAttribute("aria-describedby")).toBe("ytre-help")
-    expect(ytreInput.hasAttribute("aria-invalid")).toBe(false)
+    expect(outerLabel.htmlFor).toBe("outer-input")
+    expect(outerInput.getAttribute("aria-describedby")).toBe("outer-help")
+    expect(outerInput.hasAttribute("aria-invalid")).toBe(false)
 
-    expect(indreLabel.htmlFor).toBe("indre-input")
-    expect(indreInput.getAttribute("aria-describedby")).toBe(
-      "indre-help indre-error",
+    expect(innerLabel.htmlFor).toBe("inner-input")
+    expect(innerInput.getAttribute("aria-describedby")).toBe(
+      "inner-help inner-error",
     )
-    expect(indreInput.getAttribute("aria-invalid")).toBe("true")
+    expect(innerInput.getAttribute("aria-invalid")).toBe("true")
   })
 
   it("treats an error text hidden with a class as hidden", async () => {
     // `display: none` from a class, such as a utility class in the app, is
     // just as hidden as `hidden`. Only the inline style used to be read.
     document.body.innerHTML = `
-      <style>.borte { display: none }</style>
+      <style>.gone { display: none }</style>
       <lt-field>
-        <label class="lt-label" for="e">E-post</label>
+        <label class="lt-label" for="e">Email</label>
         <input class="lt-input" id="e">
-        <p class="lt-error-text borte">Skriv en gyldig adresse.</p>
+        <p class="lt-error-text gone">Enter a valid address.</p>
       </lt-field>`
     await waitForPaint()
     const input = document.getElementById("e") as HTMLInputElement
     expect(input.hasAttribute("aria-invalid")).toBe(false)
 
     ;(document.querySelector(".lt-error-text") as HTMLElement).classList.remove(
-      "borte",
+      "gone",
     )
     await waitForPaint()
     expect(input.getAttribute("aria-invalid")).toBe("true")
   })
 
   it("says nothing when the label wraps the whole element", async () => {
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    document.body.innerHTML = `<label>Navn <lt-field><input class="lt-input" name="navn"></lt-field></label>`
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    document.body.innerHTML = `<label>Name <lt-field><input class="lt-input" name="name"></lt-field></label>`
     await waitForPaint()
     await new Promise((r) => setTimeout(r, 300))
     expect(
       (document.querySelector("input") as HTMLInputElement).labels?.length,
     ).toBe(1)
-    expect(advarsel).not.toHaveBeenCalled()
-    advarsel.mockRestore()
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
   })
 
   it("rewrites for, and reports it, when the label pointed to another id", async () => {
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    document.body.innerHTML = `<lt-field><label class="lt-label" for="feil">Navn</label><input class="lt-input" id="navn"></lt-field>`
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    document.body.innerHTML = `<lt-field><label class="lt-label" for="wrong">Name</label><input class="lt-input" id="name"></lt-field>`
     await waitForPaint()
     await new Promise((r) => setTimeout(r, 300))
     expect((document.querySelector("label") as HTMLLabelElement).htmlFor).toBe(
-      "navn",
+      "name",
     )
-    expect(advarsel).toHaveBeenCalledTimes(1)
-    expect(String(advarsel.mock.calls[0][0])).toContain(
-      "pointed to a different id",
-    )
-    advarsel.mockRestore()
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(String(warn.mock.calls[0][0])).toContain("pointed to a different id")
+    warn.mockRestore()
   })
 
   it("says nothing about a control without an id that is named by aria-labelledby", async () => {
-    const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    document.body.innerHTML = `<lt-field><label id="l">Navn</label><input class="lt-input" name="navn" aria-labelledby="l"></lt-field>`
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    document.body.innerHTML = `<lt-field><label id="l">Name</label><input class="lt-input" name="name" aria-labelledby="l"></lt-field>`
     await waitForPaint()
     await new Promise((r) => setTimeout(r, 300))
-    expect(advarsel).not.toHaveBeenCalled()
-    advarsel.mockRestore()
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
   })
 
   it("does not point aria-describedby to a hidden error text even when the server says invalid", async () => {
     document.body.innerHTML = `<lt-field>
-      <label class="lt-label" for="e">E-post</label>
+      <label class="lt-label" for="e">Email</label>
       <input class="lt-input" id="e" aria-invalid="true">
-      <p class="lt-error-text" hidden>Skriv en gyldig adresse.</p>
+      <p class="lt-error-text" hidden>Enter a valid address.</p>
     </lt-field>`
     await waitForPaint()
     const input = document.getElementById("e") as HTMLInputElement

@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { server } from "vitest/browser"
-import side from "../../../../../documentation/src/content/docs/components/accordion.mdx?raw"
+import page from "../../../../../documentation/src/content/docs/components/accordion.mdx?raw"
 import {
   expectNoAccessibilityViolations,
   mount,
@@ -15,153 +15,153 @@ import "./accordion.css"
 
 describe("lt-accordion", () => {
   afterEach(() => {
-    document.getElementById("oppskrift")?.remove()
+    document.getElementById("recipe")?.remove()
   })
 
   beforeEach(() => {
     mount(`
-      <details class="lt-accordion" id="forste">
-        <summary>Hvem kan søke om bostøtte?</summary>
+      <details class="lt-accordion" id="first">
+        <summary>Who can apply for housing benefit?</summary>
         <div class="lt-accordion__content">
-          <p>Alle som bor og er folkeregistrert i boligen.</p>
+          <p>Everyone who lives in the home and is registered at that address.</p>
         </div>
       </details>
-      <details class="lt-accordion" id="andre" open>
-        <summary>Hvor lang er behandlingstiden?</summary>
+      <details class="lt-accordion" id="second" open>
+        <summary>How long does processing take?</summary>
         <div class="lt-accordion__content">
-          <p>Vi behandler søknaden innen tre uker.</p>
+          <p>We process the application within three weeks.</p>
         </div>
       </details>
     `)
   })
 
-  it("lar nettleseren styre åpning og lukking", () => {
-    const panel = document.getElementById("forste") as HTMLDetailsElement
-    const knapp = panel.querySelector("summary") as HTMLElement
+  it("lets the browser handle opening and closing", () => {
+    const panel = document.getElementById("first") as HTMLDetailsElement
+    const button = panel.querySelector("summary") as HTMLElement
 
     expect(panel.open).toBe(false)
-    knapp.click()
+    button.click()
     expect(panel.open).toBe(true)
   })
 
-  it("bytter ut nettleserens egen trekant med en lik i alle nettlesere", () => {
-    const knapp = document.querySelector("summary") as HTMLElement
+  it("replaces the browser's own triangle with one that is the same in every browser", () => {
+    const button = document.querySelector("summary") as HTMLElement
 
-    expect(getComputedStyle(knapp).listStyleType).toBe("none")
-    expect(getComputedStyle(knapp, "::after").content).not.toBe("normal")
+    expect(getComputedStyle(button).listStyleType).toBe("none")
+    expect(getComputedStyle(button, "::after").content).not.toBe("normal")
   })
 
-  it("snur pilen når panelet er åpent", () => {
-    const lukket = getComputedStyle(
-      document.querySelector("#forste summary") as Element,
+  it("turns the arrow when the panel is open", () => {
+    const closed = getComputedStyle(
+      document.querySelector("#first summary") as Element,
       "::after",
     ).transform
-    const apent = getComputedStyle(
-      document.querySelector("#andre summary") as Element,
+    const open = getComputedStyle(
+      document.querySelector("#second summary") as Element,
       "::after",
     ).transform
 
-    expect(lukket).not.toBe(apent)
+    expect(closed).not.toBe(open)
   })
 
-  it("lar oppskriften på siden bytte pila uten at den står snudd", () => {
-    // Siden viser hvordan pila byttes. Rotasjonen ligger i `transform` og
-    // byttes når panelet er åpent, så en snutt som bare overstyrte `content`
-    // og `border` ga et «+» på skrå, og et «×» når panelet var åpent. Tegnet
-    // må også ha tom alternativ tekst, ellers blir det en del av navnet på
-    // knappen: skjermleseren sier «Hvem kan søke? +» når `<summary>` får
-    // fokus. Snutten leses fra siden, så den kan ikke drive fra koden.
-    const snutt = /```css\n([\s\S]*?)```/.exec(side)?.[1]
-    if (snutt === undefined) throw new Error("Fant ingen CSS-snutt på siden")
-    const stil = document.createElement("style")
-    stil.id = "oppskrift"
-    stil.textContent = snutt
-    document.head.append(stil)
+  it("lets the recipe on the page replace the arrow without it being turned", () => {
+    // The page shows how to replace the arrow. The rotation is in `transform`
+    // and changes when the panel is open, so a snippet that only overrode
+    // `content` and `border` gave a tilted "+", and a "×" when the panel was
+    // open. The character must also have empty alternative text, or it
+    // becomes part of the button's name: the screen reader says "Who can
+    // apply? +" when `<summary>` gets focus. The snippet is read from the
+    // page, so it cannot drift from the code.
+    const snippet = /```css\n([\s\S]*?)```/.exec(page)?.[1]
+    if (snippet === undefined)
+      throw new Error("Found no CSS snippet on the page")
+    const style = document.createElement("style")
+    style.id = "recipe"
+    style.textContent = snippet
+    document.head.append(style)
 
-    const lukket = getComputedStyle(
-      document.querySelector("#forste summary") as Element,
+    const closed = getComputedStyle(
+      document.querySelector("#first summary") as Element,
       "::after",
     )
-    const apent = getComputedStyle(
-      document.querySelector("#andre summary") as Element,
+    const open = getComputedStyle(
+      document.querySelector("#second summary") as Element,
       "::after",
     )
 
-    expect(lukket.transform).toBe("none")
-    expect(apent.transform).toBe("none")
-    expect(lukket.content).not.toBe('""')
+    expect(closed.transform).toBe("none")
+    expect(open.transform).toBe("none")
+    expect(closed.content).not.toBe('""')
     if (CSS.supports("content", '"/" / ""')) {
-      expect(lukket.content).toMatch(/\/\s*""$/)
+      expect(closed.content).toMatch(/\/\s*""$/)
     }
   })
 
   /*
-   * <details> holder innholdet søkbart. Bygger du det samme av knapper og
-   * aria-expanded, skjules teksten med `hidden`, og nettleserens søk finner
-   * den ikke. Før sjekket testen bare `textContent`, og den er satt i begge
-   * tilfellene, så testen kunne ikke skille dem. `window.find` er søket i
-   * siden fra skript. Det er ikke standard, og om det finner tekst i et
-   * lukket <details> spriker mellom motorene, så testen kjøres der det er
-   * målt.
+   * <details> keeps the content searchable. Build the same thing from buttons
+   * and aria-expanded, and the text is hidden with `hidden`, and the browser's
+   * find does not find it. The test used to check only `textContent`, which is
+   * set in both cases, so it could not tell them apart. `window.find` is
+   * find-in-page from script. It is not standard, and whether it finds text in
+   * a closed <details> differs between the engines, so the test runs where
+   * that has been checked.
    */
   it.skipIf(server.browser !== "chromium")(
-    "lar teksten i et lukket panel bli funnet av søk i siden",
+    "lets find-in-page find the text in a closed panel",
     () => {
       mount(`
-        <details class="lt-accordion" id="lukket">
-          <summary>Hvem kan søke om bostøtte?</summary>
-          <div class="lt-accordion__content"><p>Hybelkaninhabitat</p></div>
+        <details class="lt-accordion" id="closed">
+          <summary>Who can apply for housing benefit?</summary>
+          <div class="lt-accordion__content"><p>Dustbunnyhabitat</p></div>
         </details>
-        <button type="button" aria-expanded="false">Hvem kan søke?</button>
-        <div hidden><p>Kvistloftmotiv</p></div>
+        <button type="button" aria-expanded="false">Who can apply?</button>
+        <div hidden><p>Dormerwindowmotif</p></div>
       `)
-      const finn = (tekst: string) => {
+      const find = (text: string) => {
         getSelection()?.removeAllRanges()
-        return (window as unknown as { find(tekst: string): boolean }).find(
-          tekst,
-        )
+        return (window as unknown as { find(text: string): boolean }).find(text)
       }
 
-      expect(finn("Hybelkaninhabitat")).toBe(true)
-      expect(finn("Kvistloftmotiv")).toBe(false)
+      expect(find("Dustbunnyhabitat")).toBe(true)
+      expect(find("Dormerwindowmotif")).toBe(false)
     },
   )
 
-  it("gir en overskrift i summary samme størrelse som uten", () => {
-    // Dokumentasjonen viser `<summary><h3>`. Før fikk overskriften
-    // nettleserens marg og størrelse.
+  it("gives a heading in summary the same size as without one", () => {
+    // The documentation shows `<summary><h3>`. The heading used to get the
+    // browser's margin and size.
     mount(`
-      <details class="lt-accordion"><summary id="uten">Spørsmål</summary></details>
-      <details class="lt-accordion"><summary><h3 id="med">Spørsmål</h3></summary></details>
+      <details class="lt-accordion"><summary id="without">Question</summary></details>
+      <details class="lt-accordion"><summary><h3 id="with">Question</h3></summary></details>
     `)
-    const overskrift = getComputedStyle(
-      document.getElementById("med") as Element,
+    const heading = getComputedStyle(document.getElementById("with") as Element)
+    const without = getComputedStyle(
+      document.getElementById("without") as Element,
     )
-    const uten = getComputedStyle(document.getElementById("uten") as Element)
 
-    expect(overskrift.marginBlockStart).toBe("0px")
-    expect(overskrift.fontSize).toBe(uten.fontSize)
+    expect(heading.marginBlockStart).toBe("0px")
+    expect(heading.fontSize).toBe(without.fontSize)
   })
 
-  it("gir overskriften og innholdet samme luft til sidene", () => {
+  it("gives the heading and the content the same inline padding", () => {
     mount(`
       <details class="lt-accordion" open style="--lt-accordion-padding-inline: 40px">
-        <summary id="topp">Spørsmål</summary>
-        <div class="lt-accordion__content" id="innhold"><p>Svar</p></div>
+        <summary id="top">Question</summary>
+        <div class="lt-accordion__content" id="content"><p>Answer</p></div>
       </details>
     `)
 
     expect(
-      getComputedStyle(document.getElementById("innhold") as Element)
+      getComputedStyle(document.getElementById("content") as Element)
         .paddingInlineStart,
     ).toBe("40px")
     expect(
-      getComputedStyle(document.getElementById("topp") as Element)
+      getComputedStyle(document.getElementById("top") as Element)
         .paddingInlineStart,
     ).toBe("40px")
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(accordion()).toEqual({ class: "lt-accordion" })
     expect(accordion({ variant: "plain" })).toEqual({
       class: "lt-accordion",
@@ -170,7 +170,7 @@ describe("lt-accordion", () => {
     expect(accordion.content).toBe("lt-accordion__content")
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

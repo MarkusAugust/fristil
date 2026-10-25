@@ -15,38 +15,38 @@ import "./list.css"
 describe("lt-list", () => {
   beforeEach(() => {
     mount(`
-      <ul class="lt-list" id="vanlig">
-        <li>Fødselsattest</li>
-        <li>Bekreftelse fra arbeidsgiver</li>
+      <ul class="lt-list" id="regular">
+        <li>Birth certificate</li>
+        <li>Confirmation from employer</li>
       </ul>
-      <ul class="lt-list" data-variant="plain" id="ren">
-        <li>Sendt 4. mars</li>
-        <li>Under behandling</li>
+      <ul class="lt-list" data-variant="plain" id="plain">
+        <li>Sent 4 March</li>
+        <li>In progress</li>
       </ul>
-      <ul class="lt-list" data-variant="divided" id="delt">
-        <li>Faktura 2026-0481</li>
-        <li>Faktura 2026-0482</li>
+      <ul class="lt-list" data-variant="divided" id="divided">
+        <li>Invoice 2026-0481</li>
+        <li>Invoice 2026-0482</li>
       </ul>
     `)
   })
 
-  it("fjerner punktene uten å fjerne listen", () => {
-    const ren = document.getElementById("ren") as HTMLElement
+  it("removes the bullets without removing the list", () => {
+    const plain = document.getElementById("plain") as HTMLElement
 
-    expect(getComputedStyle(ren).listStyleType).toBe("none")
-    // Elementet er fortsatt en <ul>, så skjermleseren sier hvor mange
-    // elementer listen har. Det er nettopp derfor varianten finnes.
-    expect(ren.tagName).toBe("UL")
-    expect(ren.querySelectorAll("li")).toHaveLength(2)
+    expect(getComputedStyle(plain).listStyleType).toBe("none")
+    // The element is still a <ul>, so the screen reader says how many
+    // items the list has. That is exactly why the variant exists.
+    expect(plain.tagName).toBe("UL")
+    expect(plain.querySelectorAll("li")).toHaveLength(2)
   })
 
-  it("setter strek mellom radene i den delte varianten", () => {
-    const andre = document.querySelectorAll("#delt li")[1] as HTMLElement
+  it("draws a line between the rows in the divided variant", () => {
+    const second = document.querySelectorAll("#divided li")[1] as HTMLElement
 
-    expect(getComputedStyle(andre).borderBlockStartWidth).toBe("1px")
+    expect(getComputedStyle(second).borderBlockStartWidth).toBe("1px")
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(list()).toEqual({ class: "lt-list" })
     expect(list({ variant: "divided" })).toEqual({
       class: "lt-list",
@@ -54,7 +54,7 @@ describe("lt-list", () => {
     })
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

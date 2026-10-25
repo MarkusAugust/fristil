@@ -74,82 +74,82 @@ function patch(elements: string): void {
 }
 
 /** Whether each node is still the same. */
-function sammeNoder(før: Element[], etter: Element[]): boolean[] {
-  return før.map((node, i) => node === etter[i])
+function sameNodes(before: Element[], after: Element[]): boolean[] {
+  return before.map((node, i) => node === after[i])
 }
 
-const NAVN = ["Søknaden", "Vedlegg", "Meldinger"]
-const NOKLER = ["soknaden", "vedlegg", "meldinger"]
+const NAMES = ["Application", "Attachments", "Messages"]
+const KEYS = ["application", "attachments", "messages"]
 
 /**
  * A tab list as a Go or Kotlin template writes it without `lt.tabs()`: links
  * without an id, and ids only on the panels, which the links require.
  */
-const BAR = `<lt-tabs id="saken">
-  <ul class="lt-tabs__list" aria-label="Deler av saken">
-    ${NAVN.map((n, i) => `<li><a href="#${NOKLER[i]}">${n}</a></li>`).join("\n    ")}
+const BAR = `<lt-tabs id="case">
+  <ul class="lt-tabs__list" aria-label="Parts of the case">
+    ${NAMES.map((n, i) => `<li><a href="#${KEYS[i]}">${n}</a></li>`).join("\n    ")}
   </ul>
-  ${NAVN.map((n, i) => `<section class="lt-tabs__panel" id="${NOKLER[i]}"><h2>${n}</h2><p>Innhold</p></section>`).join("\n  ")}
+  ${NAMES.map((n, i) => `<section class="lt-tabs__panel" id="${KEYS[i]}"><h2>${n}</h2><p>Content</p></section>`).join("\n  ")}
 </lt-tabs>`
 
 /** What `lt.tabs()` writes: links, the panels' ids, the headings' ids and the classes. */
-const FANER = tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
-const FRA_BYGGEFUNKSJONEN = `<lt-tabs id="saken">
-  <ul ${attr(FANER.list)}>
-    ${FANER.tabs.map((t, i) => `<li><a ${attr(t)}>${NAVN[i]}</a></li>`).join("\n    ")}
+const TABS = tabs({ id: "claim", keys: KEYS, label: "Parts of the case" })
+const FROM_BUILDER = `<lt-tabs id="case">
+  <ul ${attr(TABS.list)}>
+    ${TABS.tabs.map((t, i) => `<li><a ${attr(t)}>${NAMES[i]}</a></li>`).join("\n    ")}
   </ul>
-  ${FANER.panels.map((p, i) => `<section ${attr(p)}><h2 ${attr(FANER.headings[i])}>${NAVN[i]}</h2><p>Innhold</p></section>`).join("\n  ")}
+  ${TABS.panels.map((p, i) => `<section ${attr(p)}><h2 ${attr(TABS.headings[i])}>${NAMES[i]}</h2><p>Content</p></section>`).join("\n  ")}
 </lt-tabs>`
 
-function faner(): HTMLAnchorElement[] {
+function links(): HTMLAnchorElement[] {
   return [
-    ...document.querySelectorAll<HTMLAnchorElement>("#saken .lt-tabs__list a"),
+    ...document.querySelectorAll<HTMLAnchorElement>("#case .lt-tabs__list a"),
   ]
 }
 
-function paneler(): HTMLElement[] {
-  return [...document.querySelectorAll<HTMLElement>("#saken .lt-tabs__panel")]
+function panels(): HTMLElement[] {
+  return [...document.querySelectorAll<HTMLElement>("#case .lt-tabs__panel")]
 }
 
-function valgt(): (string | null)[] {
-  return faner().map((fane) => fane.getAttribute("aria-selected"))
+function selected(): (string | null)[] {
+  return links().map((link) => link.getAttribute("aria-selected"))
 }
 
 /** Clicks tab 2, patches with `markup`, and reports what survived. */
-async function klikkOgPatch(markup: string) {
+async function clickAndPatch(markup: string) {
   document.body.innerHTML = markup
   await customElements.whenDefined("lt-tabs")
   await waitForPaint()
 
-  const faneFør = faner()
-  const panelFør = paneler()
-  faneFør[1].click()
+  const linksBefore = links()
+  const panelsBefore = panels()
+  linksBefore[1].click()
   await waitForPaint()
-  expect(valgt()).toEqual(["false", "true", "false"])
+  expect(selected()).toEqual(["false", "true", "false"])
 
-  const meldt: number[] = []
-  const lytter = new AbortController()
+  const reported: number[] = []
+  const listener = new AbortController()
   document.addEventListener(
     "tab-select",
-    (e) => meldt.push((e as CustomEvent<{ index: number }>).detail.index),
-    { signal: lytter.signal },
+    (e) => reported.push((e as CustomEvent<{ index: number }>).detail.index),
+    { signal: listener.signal },
   )
   patch(markup)
   await waitForPaint()
-  lytter.abort()
+  listener.abort()
 
   return {
-    faner: sammeNoder(faneFør, faner()),
-    paneler: sammeNoder(panelFør, paneler()),
-    valgt: valgt(),
-    skjult: paneler().map((p) => p.hasAttribute("hidden")),
-    hidden: paneler().map((p) => p.getAttribute("hidden")),
-    lenkeIder: faner().map((f) => f.id),
-    navn: paneler().map((p) => {
-      const peker = p.getAttribute("aria-labelledby")
-      return peker ? document.getElementById(peker)?.textContent : null
+    links: sameNodes(linksBefore, links()),
+    panels: sameNodes(panelsBefore, panels()),
+    selected: selected(),
+    hiddenFlags: panels().map((p) => p.hasAttribute("hidden")),
+    hidden: panels().map((p) => p.getAttribute("hidden")),
+    linkIds: links().map((f) => f.id),
+    names: panels().map((p) => {
+      const target = p.getAttribute("aria-labelledby")
+      return target ? document.getElementById(target)?.textContent : null
     }),
-    meldt,
+    reported,
   }
 }
 
@@ -172,30 +172,30 @@ describe("lt-tabs through Datastar's morph", () => {
      * still in the page, and the selection is restored after the morph took
      * `aria-selected`, `tabindex` and `hidden`.
      */
-    const r = await klikkOgPatch(BAR)
-    expect(r.faner).toEqual([true, true, true])
-    expect(r.paneler).toEqual([true, true, true])
-    expect(r.valgt).toEqual(["false", "true", "false"])
-    expect(r.skjult).toEqual([true, false, true])
-    expect(r.lenkeIder).toEqual(["", "", ""])
-    expect(r.meldt).toEqual([])
+    const r = await clickAndPatch(BAR)
+    expect(r.links).toEqual([true, true, true])
+    expect(r.panels).toEqual([true, true, true])
+    expect(r.selected).toEqual(["false", "true", "false"])
+    expect(r.hiddenFlags).toEqual([true, false, true])
+    expect(r.linkIds).toEqual(["", "", ""])
+    expect(r.reported).toEqual([])
   })
 
   it("bare markup: the panels keep their name from the heading", async () => {
     // The heading has no id from the server, so it can be replaced. The new
     // one gets the same id back, and the panel still points to it.
-    const r = await klikkOgPatch(BAR)
-    expect(r.navn).toEqual(NAVN)
+    const r = await clickAndPatch(BAR)
+    expect(r.names).toEqual(NAMES)
   })
 
   it("markup from lt.tabs(): the same, and the panels are hidden with until-found", async () => {
-    const r = await klikkOgPatch(FRA_BYGGEFUNKSJONEN)
-    expect(r.faner).toEqual([true, true, true])
-    expect(r.paneler).toEqual([true, true, true])
-    expect(r.valgt).toEqual(["false", "true", "false"])
+    const r = await clickAndPatch(FROM_BUILDER)
+    expect(r.links).toEqual([true, true, true])
+    expect(r.panels).toEqual([true, true, true])
+    expect(r.selected).toEqual(["false", "true", "false"])
     expect(r.hidden).toEqual(["until-found", null, "until-found"])
-    expect(r.navn).toEqual(NAVN)
-    expect(r.meldt).toEqual([])
+    expect(r.names).toEqual(NAMES)
+    expect(r.reported).toEqual([])
   })
 
   it("bare markup in a patch that wraps the tab list: the same", async () => {
@@ -204,22 +204,22 @@ describe("lt-tabs through Datastar's morph", () => {
      * `<lt-tabs>` has no id and is morphed into the old one, and the links
      * inside are kept the same way.
      */
-    const side = (innhold: string) => `<main id="side">${innhold}</main>`
-    const uten = BAR.replace(' id="saken"', ' class="saken"')
-    document.body.innerHTML = side(uten)
+    const page = (content: string) => `<main id="page">${content}</main>`
+    const withoutId = BAR.replace(' id="case"', ' class="case"')
+    document.body.innerHTML = page(withoutId)
     await waitForPaint()
-    const lenker = () => [
-      ...document.querySelectorAll("#side .lt-tabs__list a"),
+    const regionLinks = () => [
+      ...document.querySelectorAll("#page .lt-tabs__list a"),
     ]
-    const før = lenker()
-    ;(før[1] as HTMLElement).click()
+    const before = regionLinks()
+    ;(before[1] as HTMLElement).click()
     await waitForPaint()
 
-    patch(side(uten))
+    patch(page(withoutId))
     await waitForPaint()
 
-    expect(sammeNoder(før, lenker())).toEqual([true, true, true])
-    expect(lenker().map((k) => k.getAttribute("aria-selected"))).toEqual([
+    expect(sameNodes(before, regionLinks())).toEqual([true, true, true])
+    expect(regionLinks().map((k) => k.getAttribute("aria-selected"))).toEqual([
       "false",
       "true",
       "false",
@@ -233,48 +233,48 @@ describe("lt-tabs through Datastar's morph", () => {
      * `data-on:click="@get(…)"`. Confirms that the event above is the same
      * path the bundle itself takes.
      */
-    const oppdatert = BAR.replace("<p>Innhold</p>", "<p>Oppdatert</p>")
-    const strøm = [
+    const updated = BAR.replace("<p>Content</p>", "<p>Updated</p>")
+    const stream = [
       "event: datastar-patch-elements",
-      ...oppdatert.split("\n").map((linje) => `data: elements ${linje}`),
+      ...updated.split("\n").map((line) => `data: elements ${line}`),
       "",
       "",
     ].join("\n")
-    const hent = vi.spyOn(globalThis, "fetch").mockImplementation(
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(
       async () =>
-        new Response(strøm, {
+        new Response(stream, {
           headers: { "Content-Type": "text/event-stream" },
         }),
     )
 
     try {
       document.body.innerHTML = `${BAR}
-        <button id="oppdater" data-on:click="@get('/saken')">Oppdater</button>`
+        <button id="refresh" data-on:click="@get('/case')">Refresh</button>`
       await waitForPaint()
       // Datastar reads `data-*` in a `setTimeout` after the node arrived.
-      await new Promise((ferdig) => setTimeout(ferdig, 20))
+      await new Promise((done) => setTimeout(done, 20))
 
-      const før = faner()
-      const panelFør = paneler()
-      før[1].click()
+      const before = links()
+      const panelsBefore = panels()
+      before[1].click()
       await waitForPaint()
-      expect(valgt()).toEqual(["false", "true", "false"])
+      expect(selected()).toEqual(["false", "true", "false"])
 
-      document.getElementById("oppdater")?.click()
+      document.getElementById("refresh")?.click()
       // The links are kept, so the patch is recognised by the content of the first panel.
       await vi.waitFor(() =>
-        expect(paneler()[0].textContent).toContain("Oppdatert"),
+        expect(panels()[0].textContent).toContain("Updated"),
       )
       await waitForPaint()
 
-      expect(hent).toHaveBeenCalledOnce()
-      expect(sammeNoder(før, faner())).toEqual([true, true, true])
-      expect(sammeNoder(panelFør, paneler())).toEqual([true, true, true])
-      expect(valgt()).toEqual(["false", "true", "false"])
+      expect(fetchSpy).toHaveBeenCalledOnce()
+      expect(sameNodes(before, links())).toEqual([true, true, true])
+      expect(sameNodes(panelsBefore, panels())).toEqual([true, true, true])
+      expect(selected()).toEqual(["false", "true", "false"])
     } finally {
       // Otherwise `fetch` answered with this stream for the rest of the file
       // after a failure here.
-      hent.mockRestore()
+      fetchSpy.mockRestore()
     }
   })
 })
@@ -289,49 +289,49 @@ describe("lt-suggestion through Datastar's morph", () => {
   })
 
   /** Bare markup from a template: the label around the field, no ids, no roles. */
-  const FORSLAG_BAR = `<lt-suggestion id="kommune-vert">
+  const SUGGESTION_BAR = `<lt-suggestion id="town-host">
   <div>
-    <label>Kommune <input class="lt-input"></label>
-    <ul class="lt-suggestion__list"><li>Bergen</li><li>Bodø</li><li>Oslo</li></ul>
+    <label>Town <input class="lt-input"></label>
+    <ul class="lt-suggestion__list"><li>Bath</li><li>Bristol</li><li>Leeds</li></ul>
     <span class="lt-sr-only" role="status"></span>
   </div>
 </lt-suggestion>`
 
-  const FORSLAG_MED_ID = `<lt-suggestion id="kommune-vert">
-  <label for="kommune">Kommune</label>
+  const SUGGESTION_WITH_ID = `<lt-suggestion id="town-host">
+  <label for="town">Town</label>
   <div>
-    <input class="lt-input" id="kommune">
-    <ul class="lt-suggestion__list" id="kommune-list"><li id="kommune-option-0">Bergen</li><li id="kommune-option-1">Bodø</li><li id="kommune-option-2">Oslo</li></ul>
+    <input class="lt-input" id="town">
+    <ul class="lt-suggestion__list" id="town-list"><li id="town-option-0">Bath</li><li id="town-option-1">Bristol</li><li id="town-option-2">Leeds</li></ul>
     <span class="lt-sr-only" role="status"></span>
   </div>
 </lt-suggestion>`
 
-  async function skrivOgPatch(markup: string) {
+  async function typeAndPatch(markup: string) {
     document.body.innerHTML = markup
     await customElements.whenDefined("lt-suggestion")
     await waitForPaint()
 
-    const felt = document.querySelector("input") as HTMLInputElement
-    const liste = document.querySelector("ul") as HTMLElement
-    felt.focus()
-    felt.value = "B"
-    felt.dispatchEvent(new Event("input", { bubbles: true }))
-    felt.dispatchEvent(
+    const field = document.querySelector("input") as HTMLInputElement
+    const list = document.querySelector("ul") as HTMLElement
+    field.focus()
+    field.value = "B"
+    field.dispatchEvent(new Event("input", { bubbles: true }))
+    field.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
     )
     await waitForPaint()
-    expect(felt.getAttribute("aria-expanded")).toBe("true")
+    expect(field.getAttribute("aria-expanded")).toBe("true")
 
     patch(markup)
     await waitForPaint()
 
-    const nyttFelt = document.querySelector("input") as HTMLInputElement
+    const newField = document.querySelector("input") as HTMLInputElement
     return {
-      sammeFelt: nyttFelt === felt,
-      sammeListe: document.querySelector("ul") === liste,
-      verdi: nyttFelt.value,
-      fokus: document.activeElement === nyttFelt,
-      åpen: nyttFelt.getAttribute("aria-expanded"),
+      sameField: newField === field,
+      sameList: document.querySelector("ul") === list,
+      value: newField.value,
+      focus: document.activeElement === newField,
+      expanded: newField.getAttribute("aria-expanded"),
     }
   }
 
@@ -342,23 +342,23 @@ describe("lt-suggestion through Datastar's morph", () => {
      * and is replaced, but it has no state the user loses: the component
      * wires up the new one and opens it again.
      */
-    const { sammeListe: _, ...r } = await skrivOgPatch(FORSLAG_BAR)
+    const { sameList: _, ...r } = await typeAndPatch(SUGGESTION_BAR)
     expect(r).toEqual({
-      sammeFelt: true,
-      verdi: "B",
-      fokus: true,
-      åpen: "true",
+      sameField: true,
+      value: "B",
+      focus: true,
+      expanded: "true",
     })
   })
 
   it("id from the server: the field is morphed, and the text, focus and list stay", async () => {
-    const r = await skrivOgPatch(FORSLAG_MED_ID)
+    const r = await typeAndPatch(SUGGESTION_WITH_ID)
     expect(r).toEqual({
-      sammeFelt: true,
-      sammeListe: true,
-      verdi: "B",
-      fokus: true,
-      åpen: "true",
+      sameField: true,
+      sameList: true,
+      value: "B",
+      focus: true,
+      expanded: "true",
     })
   })
 })
@@ -372,45 +372,45 @@ describe("lt-popover through Datastar's morph", () => {
     document.body.innerHTML = ""
   })
 
-  const MENY_BAR = `<lt-popover id="meny-vert">
-  <button class="lt-button">Handlinger</button>
-  <div class="lt-popover"><button>Slett</button></div>
+  const MENU_BAR = `<lt-popover id="menu-host">
+  <button class="lt-button">Actions</button>
+  <div class="lt-popover"><button>Delete</button></div>
 </lt-popover>`
 
   /** An id from the server, but `popover` left to the component. */
-  const MENY_MED_ID = `<lt-popover id="meny-vert">
-  <button class="lt-button" aria-controls="meny">Handlinger</button>
-  <div class="lt-popover" id="meny"><button>Slett</button></div>
+  const MENU_WITH_ID = `<lt-popover id="menu-host">
+  <button class="lt-button" aria-controls="menu">Actions</button>
+  <div class="lt-popover" id="menu"><button>Delete</button></div>
 </lt-popover>`
 
   /** What `lt.popover()` and the Kotlin binding write. */
-  const MENY_MANUAL = `<lt-popover id="meny-vert">
-  <button class="lt-button" aria-controls="meny">Handlinger</button>
-  <div class="lt-popover" id="meny" popover="manual"><button>Slett</button></div>
+  const MENU_MANUAL = `<lt-popover id="menu-host">
+  <button class="lt-button" aria-controls="menu">Actions</button>
+  <div class="lt-popover" id="menu" popover="manual"><button>Delete</button></div>
 </lt-popover>`
 
-  async function åpneOgPatch(markup: string) {
+  async function openAndPatch(markup: string) {
     document.body.innerHTML = markup
     await customElements.whenDefined("lt-popover")
     await waitForPaint()
 
-    const knapp = document.querySelector("lt-popover > button") as HTMLElement
+    const button = document.querySelector("lt-popover > button") as HTMLElement
     const panel = document.querySelector(".lt-popover") as HTMLElement
-    knapp.click()
+    button.click()
     await waitForPaint()
-    const slett = panel.querySelector("button") as HTMLButtonElement
-    slett.focus()
+    const deleteButton = panel.querySelector("button") as HTMLButtonElement
+    deleteButton.focus()
     expect(panel.matches(":popover-open")).toBe(true)
 
     patch(markup)
     await waitForPaint()
 
-    const nyttPanel = document.querySelector(".lt-popover") as HTMLElement
+    const newPanel = document.querySelector(".lt-popover") as HTMLElement
     return {
-      sammeKnapp: document.querySelector("lt-popover > button") === knapp,
-      sammePanel: nyttPanel === panel,
-      åpent: nyttPanel.matches(":popover-open"),
-      fokusIPanelet: nyttPanel.contains(document.activeElement),
+      sameButton: document.querySelector("lt-popover > button") === button,
+      samePanel: newPanel === panel,
+      open: newPanel.matches(":popover-open"),
+      focusInPanel: newPanel.contains(document.activeElement),
     }
   }
 
@@ -418,12 +418,12 @@ describe("lt-popover through Datastar's morph", () => {
     // The component writes no id on the panel, so the panel in the page and
     // the one the server sends are the same to the morph. When it wrote an
     // id, the panel was replaced and focus was gone.
-    const r = await åpneOgPatch(MENY_BAR)
+    const r = await openAndPatch(MENU_BAR)
     expect(r).toEqual({
-      sammeKnapp: true,
-      sammePanel: true,
-      åpent: true,
-      fokusIPanelet: true,
+      sameButton: true,
+      samePanel: true,
+      open: true,
+      focusInPanel: true,
     })
   })
 
@@ -435,28 +435,28 @@ describe("lt-popover through Datastar's morph", () => {
      * task. It was taken as the user closing it, and the popover stayed
      * closed after the patch.
      */
-    const r = await åpneOgPatch(MENY_MED_ID)
+    const r = await openAndPatch(MENU_WITH_ID)
     expect(r).toEqual({
-      sammeKnapp: true,
-      sammePanel: true,
-      åpent: true,
-      fokusIPanelet: true,
+      sameButton: true,
+      samePanel: true,
+      open: true,
+      focusInPanel: true,
     })
   })
 
   it("id and popover from the server: the panel is morphed, stays open, and focus stays", async () => {
-    const r = await åpneOgPatch(MENY_MANUAL)
+    const r = await openAndPatch(MENU_MANUAL)
     expect(r).toEqual({
-      sammeKnapp: true,
-      sammePanel: true,
-      åpent: true,
-      fokusIPanelet: true,
+      sameButton: true,
+      samePanel: true,
+      open: true,
+      focusInPanel: true,
     })
   })
 })
 
 describe("the components warn when a patch replaced the elements", () => {
-  let advarsel: MockInstance<typeof console.warn>
+  let warn: MockInstance<typeof console.warn>
 
   beforeAll(() => {
     defineLtTabs()
@@ -467,16 +467,16 @@ describe("the components warn when a patch replaced the elements", () => {
 
   beforeEach(() => {
     document.body.innerHTML = ""
-    advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
+    warn = vi.spyOn(console, "warn").mockImplementation(() => {})
   })
 
   afterEach(() => {
-    advarsel.mockRestore()
+    warn.mockRestore()
   })
 
   /** The warnings that mention that something was replaced. */
-  function meldinger(): string[] {
-    return advarsel.mock.calls
+  function warnings(): string[] {
+    return warn.mock.calls
       .map((call) => String(call[0]))
       .filter((m) => m.includes("replaced the"))
   }
@@ -487,13 +487,13 @@ describe("the components warn when a patch replaced the elements", () => {
    * It waits two frames after the patch landed, and its two are registered
    * after the test's two, so one `waitForPaint` is not enough.
    */
-  async function roSeg() {
+  async function settle() {
     await waitForPaint()
     await waitForPaint()
   }
 
   /** Patches like a `datastar-patch-elements` with a selector and mode. */
-  function patchInni(selector: string, elements: string): void {
+  function patchInside(selector: string, elements: string): void {
     document.dispatchEvent(
       new CustomEvent("datastar-fetch", {
         detail: {
@@ -506,88 +506,92 @@ describe("the components warn when a patch replaced the elements", () => {
   }
 
   it("lt-tabs: does not warn, since the component writes no id that could be replaced", async () => {
-    await klikkOgPatch(BAR)
-    await roSeg()
-    expect(meldinger()).toEqual([])
+    await clickAndPatch(BAR)
+    await settle()
+    expect(warnings()).toEqual([])
 
-    faner()[1].click()
+    links()[1].click()
     await waitForPaint()
     patch(BAR)
-    await roSeg()
-    expect(valgt()).toEqual(["false", "true", "false"])
-    expect(meldinger()).toEqual([])
+    await settle()
+    expect(selected()).toEqual(["false", "true", "false"])
+    expect(warnings()).toEqual([])
   })
 
   it("lt-tabs: not on a narrow patch, where the selection stays", async () => {
     document.body.innerHTML = BAR
     await waitForPaint()
-    faner()[1].click()
+    links()[1].click()
     await waitForPaint()
 
-    patchInni("#saken > section:last-child", "Tre nye meldinger.")
-    await roSeg()
-    expect(valgt()).toEqual(["false", "true", "false"])
-    expect(paneler()[2].textContent).toBe("Tre nye meldinger.")
+    patchInside("#case > section:last-child", "Three new messages.")
+    await settle()
+    expect(selected()).toEqual(["false", "true", "false"])
+    expect(panels()[2].textContent).toBe("Three new messages.")
     // The heading disappeared in the patch, so the name is the tab's text.
-    expect(paneler()[2].getAttribute("aria-label")).toBe("Meldinger")
-    expect(meldinger()).toEqual([])
+    expect(panels()[2].getAttribute("aria-label")).toBe("Messages")
+    expect(warnings()).toEqual([])
   })
 
-  const FORSLAG = (id: string) => `<lt-suggestion id="kommune-vert">
-  <label for="${id}">Kommune</label>
+  const SUGGESTION = (id: string) => `<lt-suggestion id="town-host">
+  <label for="${id}">Town</label>
   <div>
-    <input class="lt-input" name="kommune" id="${id}">
-    <ul class="lt-suggestion__list"><li>Bergen</li><li>Bodø</li></ul>
+    <input class="lt-input" name="town" id="${id}">
+    <ul class="lt-suggestion__list"><li>Bath</li><li>Bristol</li></ul>
     <span class="lt-sr-only" role="status"></span>
   </div>
 </lt-suggestion>`
 
-  async function skrivOgPatchForslag(markup: string, tekst: string) {
+  async function typeAndPatchSuggestion(markup: string, text: string) {
     document.body.innerHTML = markup
     await waitForPaint()
-    const felt = document.querySelector("input") as HTMLInputElement
-    felt.focus()
-    felt.value = tekst
-    felt.dispatchEvent(new Event("input", { bubbles: true }))
+    const field = document.querySelector("input") as HTMLInputElement
+    field.focus()
+    field.value = text
+    field.dispatchEvent(new Event("input", { bubbles: true }))
     await waitForPaint()
     patch(markup)
-    await roSeg()
+    await settle()
   }
 
   it("lt-suggestion: when the id from the server changed between two renders", async () => {
-    document.body.innerHTML = FORSLAG("kommune-1")
+    document.body.innerHTML = SUGGESTION("town-1")
     await waitForPaint()
-    const felt = document.querySelector("input") as HTMLInputElement
-    felt.focus()
-    felt.value = "B"
-    felt.dispatchEvent(new Event("input", { bubbles: true }))
+    const field = document.querySelector("input") as HTMLInputElement
+    field.focus()
+    field.value = "B"
+    field.dispatchEvent(new Event("input", { bubbles: true }))
     await waitForPaint()
-    patch(FORSLAG("kommune-2"))
-    await roSeg()
-    expect(meldinger()).toHaveLength(1)
-    expect(meldinger()[0]).toContain(
+    patch(SUGGESTION("town-2"))
+    await settle()
+    expect(warnings()).toHaveLength(1)
+    expect(warnings()[0]).toContain(
       "lt-suggestion: a server update replaced the field",
     )
   })
 
   it("lt-suggestion: not when the server wrote the same id", async () => {
-    await skrivOgPatchForslag(FORSLAG("kommune"), "B")
-    expect(meldinger()).toEqual([])
+    await typeAndPatchSuggestion(SUGGESTION("town"), "B")
+    expect(warnings()).toEqual([])
   })
 
   /** A field wrapped in its label, optionally with an id from the server. */
-  const FELT = (id: string, verdi = "") => `<lt-field id="navn-vert">
-  <label>Navn <input class="lt-input" name="navn"${id}${verdi}></label>
+  const FIELD = (id: string, value = "") => `<lt-field id="name-host">
+  <label>Name <input class="lt-input" name="name"${id}${value}></label>
 </lt-field>`
 
-  async function skrivOgPatchFelt(foer: string, etter: string, tekst: string) {
-    document.body.innerHTML = foer
+  async function typeAndPatchField(
+    before: string,
+    after: string,
+    text: string,
+  ) {
+    document.body.innerHTML = before
     await waitForPaint()
-    const felt = document.querySelector("input") as HTMLInputElement
-    felt.value = tekst
-    patch(etter)
-    await roSeg()
-    return felt
+    const field = document.querySelector("input") as HTMLInputElement
+    field.value = text
+    patch(after)
+    await settle()
+    return field
   }
 
   it("lt-field: bare markup keeps the field and the text, without a warning", async () => {
@@ -597,146 +601,150 @@ describe("the components warn when a patch replaced the elements", () => {
      * stay. The component used to write an id, and that id was exactly what
      * made the field get replaced.
      */
-    const gammel = await skrivOgPatchFelt(FELT(""), FELT(""), "Kari")
-    const felt = document.querySelector("input") as HTMLInputElement
-    expect(felt).toBe(gammel)
-    expect(felt.value).toBe("Kari")
-    expect(meldinger()).toEqual([])
+    const old = await typeAndPatchField(FIELD(""), FIELD(""), "Kate")
+    const field = document.querySelector("input") as HTMLInputElement
+    expect(field).toBe(old)
+    expect(field.value).toBe("Kate")
+    expect(warnings()).toEqual([])
   })
 
   it("lt-field: when the id from the server changed between two renders", async () => {
-    await skrivOgPatchFelt(FELT(' id="navn-1"'), FELT(' id="navn-2"'), "Kari")
-    expect(meldinger()).toHaveLength(1)
-    expect(meldinger()[0]).toContain(
+    await typeAndPatchField(
+      FIELD(' id="name-1"'),
+      FIELD(' id="name-2"'),
+      "Kate",
+    )
+    expect(warnings()).toHaveLength(1)
+    expect(warnings()[0]).toContain(
       "lt-field: a server update replaced the control",
     )
   })
 
   it("lt-field: not when the server wrote the same id", async () => {
-    const gammel = await skrivOgPatchFelt(
-      FELT(' id="navn"'),
-      FELT(' id="navn"'),
-      "Kari",
+    const old = await typeAndPatchField(
+      FIELD(' id="name"'),
+      FIELD(' id="name"'),
+      "Kate",
     )
-    expect(document.querySelector("input")).toBe(gammel)
-    expect(meldinger()).toEqual([])
+    expect(document.querySelector("input")).toBe(old)
+    expect(warnings()).toEqual([])
   })
 
   it("lt-field: not when the user had not typed anything", async () => {
-    await skrivOgPatchFelt(FELT(' id="navn-1"'), FELT(' id="navn-2"'), "")
-    expect(meldinger()).toEqual([])
+    await typeAndPatchField(FIELD(' id="name-1"'), FIELD(' id="name-2"'), "")
+    expect(warnings()).toEqual([])
   })
 
   it("lt-field: not when the server sends the text back", async () => {
     // The server did what the message asks for. Then nothing is lost, even
     // though the node is new.
-    await skrivOgPatchFelt(
-      FELT(' id="navn-1"'),
-      FELT(' id="navn-2"', ' value="Kari"'),
-      "Kari",
+    await typeAndPatchField(
+      FIELD(' id="name-1"'),
+      FIELD(' id="name-2"', ' value="Kate"'),
+      "Kate",
     )
     expect((document.querySelector("input") as HTMLInputElement).value).toBe(
-      "Kari",
+      "Kate",
     )
-    expect(meldinger()).toEqual([])
+    expect(warnings()).toEqual([])
   })
 
   it("lt-field: not for a bare <select> the user left alone", async () => {
     // The browser selects the first option without anything being
     // `defaultSelected`, so a comparison with that saw a choice the user
     // never made.
-    const valg = `<lt-field id="land-vert">
-  <label>Land <select class="lt-select"><option>Norge</option><option>Sverige</option></select></label>
+    const select = `<lt-field id="country-host">
+  <label>Country <select class="lt-select"><option>Norway</option><option>Sweden</option></select></label>
 </lt-field>`
-    document.body.innerHTML = valg
+    document.body.innerHTML = select
     await waitForPaint()
-    patch(valg)
-    await roSeg()
-    expect(meldinger()).toEqual([])
+    patch(select)
+    await settle()
+    expect(warnings()).toEqual([])
   })
 
   it("lt-field: a checked box without an id stays after the patch", async () => {
-    const boks = `<lt-field id="samtykke-vert">
-  <label><input class="lt-checkbox" type="checkbox" name="samtykke"> Samtykke</label>
+    const box = `<lt-field id="consent-host">
+  <label><input class="lt-checkbox" type="checkbox" name="consent"> Consent</label>
 </lt-field>`
-    document.body.innerHTML = boks
+    document.body.innerHTML = box
     await waitForPaint()
-    const gammel = document.querySelector("input") as HTMLInputElement
-    gammel.checked = true
-    patch(boks)
-    await roSeg()
-    const ny = document.querySelector("input") as HTMLInputElement
-    expect(ny).toBe(gammel)
-    expect(ny.checked).toBe(true)
-    expect(meldinger()).toEqual([])
+    const old = document.querySelector("input") as HTMLInputElement
+    old.checked = true
+    patch(box)
+    await settle()
+    const fresh = document.querySelector("input") as HTMLInputElement
+    expect(fresh).toBe(old)
+    expect(fresh.checked).toBe(true)
+    expect(warnings()).toEqual([])
   })
 
   it("lt-field: when a checked box is replaced because the id changed", async () => {
     // `value` and `defaultValue` are always equal on a checkbox, so a
     // comparison of them never saw that the check was gone.
-    const boks = (id: string) => `<lt-field id="samtykke-vert">
-  <label><input class="lt-checkbox" type="checkbox" name="samtykke" id="${id}"> Samtykke</label>
+    const box = (id: string) => `<lt-field id="consent-host">
+  <label><input class="lt-checkbox" type="checkbox" name="consent" id="${id}"> Consent</label>
 </lt-field>`
-    document.body.innerHTML = boks("samtykke-1")
+    document.body.innerHTML = box("consent-1")
     await waitForPaint()
     ;(document.querySelector("input") as HTMLInputElement).checked = true
-    patch(boks("samtykke-2"))
-    await roSeg()
+    patch(box("consent-2"))
+    await settle()
     expect((document.querySelector("input") as HTMLInputElement).checked).toBe(
       false,
     )
-    expect(meldinger()).toHaveLength(1)
-    expect(meldinger()[0]).toContain(
+    expect(warnings()).toHaveLength(1)
+    expect(warnings()[0]).toContain(
       "lt-field: a server update replaced the control",
     )
   })
 
-  const MENY = (id: string) => `<lt-popover id="meny-vert">
-  <button class="lt-button"${id && ' aria-controls="meny"'}>Handlinger</button>
-  <div class="lt-popover"${id} popover="manual"><button>Slett</button></div>
+  const MENU = (id: string) => `<lt-popover id="menu-host">
+  <button class="lt-button"${id && ' aria-controls="menu"'}>Actions</button>
+  <div class="lt-popover"${id} popover="manual"><button>Delete</button></div>
 </lt-popover>`
 
-  async function apneOgPatchMeny(markup: string, apne: boolean) {
+  async function openAndPatchMenu(markup: string, open: boolean) {
     document.body.innerHTML = markup
     await waitForPaint()
-    if (apne) {
+    if (open) {
       ;(document.querySelector("lt-popover > button") as HTMLElement).click()
       await waitForPaint()
     }
     patch(markup)
-    await roSeg()
+    await settle()
   }
 
   it("lt-popover: when the id from the server changed while the popover was open", async () => {
     // How a template writes it when the id is made from a counter.
-    const meny = (id: string) => `<lt-popover id="meny-vert">
-  <button class="lt-button" aria-controls="${id}">Handlinger</button>
-  <div class="lt-popover" id="${id}" popover="manual"><button>Slett</button></div>
+    const menu = (id: string) => `<lt-popover id="menu-host">
+  <button class="lt-button" aria-controls="${id}">Actions</button>
+  <div class="lt-popover" id="${id}" popover="manual"><button>Delete</button></div>
 </lt-popover>`
-    document.body.innerHTML = meny("meny-1")
+    document.body.innerHTML = menu("menu-1")
     await waitForPaint()
     ;(document.querySelector("lt-popover > button") as HTMLElement).click()
     await waitForPaint()
-    patch(meny("meny-2"))
-    await roSeg()
-    expect(meldinger()).toHaveLength(1)
-    expect(meldinger()[0]).toContain(
+    patch(menu("menu-2"))
+    await settle()
+    expect(warnings()).toHaveLength(1)
+    expect(warnings()[0]).toContain(
       "lt-popover: a server update replaced the panel",
     )
   })
 
   it("lt-popover: not when the panel is bare, since it is then kept", async () => {
-    await apneOgPatchMeny(MENY(""), true)
-    expect(meldinger()).toEqual([])
+    await openAndPatchMenu(MENU(""), true)
+    expect(warnings()).toEqual([])
   })
 
   it("lt-popover: not when the server wrote an id", async () => {
-    await apneOgPatchMeny(MENY(' id="meny"'), true)
-    expect(meldinger()).toEqual([])
+    await openAndPatchMenu(MENU(' id="menu"'), true)
+    expect(warnings()).toEqual([])
   })
 
   it("lt-popover: not when the popover was closed", async () => {
-    await apneOgPatchMeny(MENY(""), false)
-    expect(meldinger()).toEqual([])
+    await openAndPatchMenu(MENU(""), false)
+    expect(warnings()).toEqual([])
   })
 })

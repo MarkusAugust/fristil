@@ -23,28 +23,28 @@ const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
 export function mount(html: string): HTMLElement {
   document.body.style.background = "var(--lt-color-neutral-canvas)"
   document.body.style.color = "var(--lt-color-neutral-text-strong)"
-  document.body.innerHTML = `<div id="lt-testflate">${html}</div>`
+  document.body.innerHTML = `<div id="lt-test-surface">${html}</div>`
 
-  const flate = document.getElementById("lt-testflate")
-  if (!(flate instanceof HTMLElement)) {
+  const surface = document.getElementById("lt-test-surface")
+  if (!(surface instanceof HTMLElement)) {
     throw new Error("Could not mount the test surface")
   }
 
-  flate.style.background = "var(--lt-color-neutral-canvas)"
-  flate.style.color = "var(--lt-color-neutral-text-strong)"
-  flate.style.padding = "var(--lt-spacing-4)"
+  surface.style.background = "var(--lt-color-neutral-canvas)"
+  surface.style.color = "var(--lt-color-neutral-text-strong)"
+  surface.style.padding = "var(--lt-spacing-4)"
 
-  return flate
+  return surface
 }
 
 export type AccessibilityViolation = {
-  regel: string
-  forklaring: string
-  elementer: string[]
+  rule: string
+  help: string
+  elements: string[]
 }
 
 /**
- * Runs axe against `rot` and returns the violations of WCAG 2.1 level A and
+ * Runs axe against `root` and returns the violations of WCAG 2.1 level A and
  * AA.
  *
  * What axe could not decide ("incomplete") is not a violation, and does not
@@ -56,25 +56,25 @@ export type AccessibilityViolation = {
  * passes. `--silent=false --reporter=default` shows it.
  */
 export async function findAccessibilityViolations(
-  rot: Element = document.body,
+  root: Element = document.body,
 ): Promise<AccessibilityViolation[]> {
-  const resultat = await axe.run(rot, {
+  const results = await axe.run(root, {
     runOnly: { type: "tag", values: WCAG_AA },
     resultTypes: ["violations", "incomplete"],
   })
-  const uavklarte = resultat.incomplete.reduce(
-    (sum, uavklart) => sum + uavklart.nodes.length,
+  const undecided = results.incomplete.reduce(
+    (sum, item) => sum + item.nodes.length,
     0,
   )
-  if (uavklarte > 0)
+  if (undecided > 0)
     console.info(
-      `axe could not decide ${uavklarte} checks (${document.documentElement.getAttribute("data-theme") ?? "no theme"}): ${resultat.incomplete.map((u) => `${u.id} (${u.nodes.length})`).join(", ")}`,
+      `axe could not decide ${undecided} checks (${document.documentElement.getAttribute("data-theme") ?? "no theme"}): ${results.incomplete.map((u) => `${u.id} (${u.nodes.length})`).join(", ")}`,
     )
 
-  return resultat.violations.map((brudd) => ({
-    regel: brudd.id,
-    forklaring: brudd.help,
-    elementer: brudd.nodes.map((node) => node.html),
+  return results.violations.map((violation) => ({
+    rule: violation.id,
+    help: violation.help,
+    elements: violation.nodes.map((node) => node.html),
   }))
 }
 
@@ -92,26 +92,26 @@ export async function findAccessibilityViolations(
  * understand what is wrong.
  */
 export async function expectNoAccessibilityViolations(
-  rot: Element = document.body,
+  root: Element = document.body,
 ): Promise<void> {
   const html = document.documentElement
   const before = html.getAttribute("data-theme")
-  const brudd: AccessibilityViolation[] = []
+  const violations: AccessibilityViolation[] = []
   // Transitions are turned off before the theme changes. A transition that
   // is already running does not stop when `transition` is set to `none`
   // afterwards, and axe read the colour of a link halfway between light and
   // dark. Animations off too, as in `check-accessibility.ts`, so axe reads a
   // settled state.
-  const uten = document.createElement("style")
-  uten.textContent =
+  const noMotion = document.createElement("style")
+  noMotion.textContent =
     "*, *::before, *::after { transition: none !important; animation: none !important }"
-  document.head.append(uten)
+  document.head.append(noMotion)
   try {
-    for (const tema of ["light", "dark"]) {
-      html.setAttribute("data-theme", tema)
+    for (const theme of ["light", "dark"]) {
+      html.setAttribute("data-theme", theme)
       await waitForPaint()
-      for (const b of await findAccessibilityViolations(rot))
-        brudd.push({ ...b, regel: `${b.regel} (${tema})` })
+      for (const b of await findAccessibilityViolations(root))
+        violations.push({ ...b, rule: `${b.rule} (${theme})` })
     }
   } finally {
     // The theme is restored while transitions are still off, and they are
@@ -120,21 +120,21 @@ export async function expectNoAccessibilityViolations(
     if (before === null) html.removeAttribute("data-theme")
     else html.setAttribute("data-theme", before)
     await waitForPaint()
-    uten.remove()
+    noMotion.remove()
   }
-  if (brudd.length === 0) return
+  if (violations.length === 0) return
 
-  const oppsummering = brudd
+  const summary = violations
     .map(
       (b) =>
-        `  ${b.regel}: ${b.forklaring}\n${b.elementer
+        `  ${b.rule}: ${b.help}\n${b.elements
           .map((element) => `    ${element}`)
           .join("\n")}`,
     )
     .join("\n\n")
 
   throw new Error(
-    `Found ${brudd.length} accessibility violations:\n\n${oppsummering}\n`,
+    `Found ${violations.length} accessibility violations:\n\n${summary}\n`,
   )
 }
 
@@ -149,9 +149,9 @@ export async function expectNoAccessibilityViolations(
  * pass it an element from another library.
  */
 export async function waitForPaint(element?: Element): Promise<void> {
-  const oppdatering = (element as { updateComplete?: Promise<unknown> })
+  const update = (element as { updateComplete?: Promise<unknown> })
     ?.updateComplete
-  if (oppdatering) await oppdatering
+  if (update) await update
 
   await new Promise<void>((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()))

@@ -15,31 +15,31 @@ import "./heading.css"
 describe("lt-heading", () => {
   beforeEach(() => {
     mount(`
-      <h1 class="lt-heading" data-size="mega" id="mega">Søknad om bostøtte</h1>
-      <h2 class="lt-heading" id="standard">Om søkeren</h2>
-      <h3 class="lt-heading" data-size="s" id="liten">Vedlegg</h3>
+      <h1 class="lt-heading" data-size="mega" id="mega">Housing benefit application</h1>
+      <h2 class="lt-heading" id="standard">About the applicant</h2>
+      <h3 class="lt-heading" data-size="s" id="small">Attachments</h3>
     `)
   })
 
-  it("skiller størrelsene uten å røre nivået", () => {
-    const stor = Number.parseFloat(
+  it("tells the sizes apart without touching the level", () => {
+    const large = Number.parseFloat(
       getComputedStyle(document.getElementById("mega") as Element).fontSize,
     )
-    const vanlig = Number.parseFloat(
+    const regular = Number.parseFloat(
       getComputedStyle(document.getElementById("standard") as Element).fontSize,
     )
-    const liten = Number.parseFloat(
-      getComputedStyle(document.getElementById("liten") as Element).fontSize,
+    const small = Number.parseFloat(
+      getComputedStyle(document.getElementById("small") as Element).fontSize,
     )
 
-    expect(stor).toBeGreaterThan(vanlig)
-    expect(vanlig).toBeGreaterThan(liten)
+    expect(large).toBeGreaterThan(regular)
+    expect(regular).toBeGreaterThan(small)
 
-    // Nivåene er urørt. En <h3> som ser liten ut er fortsatt en h3.
-    expect(document.getElementById("liten")?.tagName).toBe("H3")
+    // The levels are untouched. An <h3> that looks small is still an h3.
+    expect(document.getElementById("small")?.tagName).toBe("H3")
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(heading()).toEqual({ class: "lt-heading" })
     expect(heading({ size: "mega" })).toEqual({
       class: "lt-heading",
@@ -48,7 +48,7 @@ describe("lt-heading", () => {
     expect(heading.isSize("xs")).toBe(true)
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

@@ -16,46 +16,46 @@
 
 import { getCollection } from "astro:content"
 import type { APIRoute } from "astro"
-import pakke from "../../../interfaces/package.json"
-import { markdownAdresse } from "../markdown-address"
+import pkg from "../../../interfaces/package.json"
+import { markdownAddress } from "../markdown-address"
 
-const BASE = pakke.homepage.replace(/\/$/, "")
+const BASE = pkg.homepage.replace(/\/$/, "")
 
 /*
  * The rulebooks are loaded with `import.meta.glob`, which Vite resolves at build
  * time. A path computed from `import.meta.url` points at the chunk after
  * bundling, not at the source.
  */
-const BØKER = import.meta.glob("../../../interfaces/agent/*.md", {
+const BOOKS = import.meta.glob("../../../interfaces/agent/*.md", {
   query: "?raw",
   import: "default",
   eager: true,
 }) as Record<string, string>
 
 /** The heading and first paragraph of a rulebook, as title and description. */
-function lesRegelbok(sti: string) {
-  const navn = sti.replace(/^.*\/|\.md$/g, "")
-  const tekst = BØKER[sti]
-  const tittel = /^# (.+)$/m.exec(tekst)?.[1] ?? navn
-  const avsnitt = tekst.split("\n\n")[1] ?? ""
+function readRulebook(path: string) {
+  const name = path.replace(/^.*\/|\.md$/g, "")
+  const text = BOOKS[path]
+  const title = /^# (.+)$/m.exec(text)?.[1] ?? name
+  const paragraph = text.split("\n\n")[1] ?? ""
 
   /*
    * The first sentence is enough on an index row, and the link list has to be
    * readable. The split happens after the full stop, not on it, so the
    * sentence keeps its own and does not get another one added.
    */
-  const første = avsnitt.replace(/\n/g, " ").split(/(?<=\.)\s/)[0]
+  const first = paragraph.replace(/\n/g, " ").split(/(?<=\.)\s/)[0]
 
   return {
-    navn,
-    tittel,
-    beskrivelse: første.replace(/^(?:Regelboka|The rulebook) for /, ""),
+    name,
+    title,
+    description: first.replace(/^The rulebook for /, ""),
   }
 }
 
-const REGELBØKER = Object.keys(BØKER).sort().map(lesRegelbok)
+const RULEBOOKS = Object.keys(BOOKS).sort().map(readRulebook)
 
-const REGLENE = `Four mistakes account for almost everything that goes wrong. They apply in every environment:
+const RULES = `Four mistakes account for almost everything that goes wrong. They apply in every environment:
 
 1. The stylesheet must be loaded. If it is missing, the components look
    unstyled, and the answer is to load it, never to write your own CSS to make
@@ -81,66 +81,66 @@ that every \`for\` and \`aria-describedby\` points at an id that exists, and
 that every field has a label. You are done when both answer "The markup
 matches LO-TEK". Everything about the commands: ${BASE}/command-line/`
 
-type Rad = { tittel: string; beskrivelse: string; adresse: string }
+type Row = { title: string; description: string; address: string }
 
-function seksjon(overskrift: string, rader: Rad[]): string {
-  if (rader.length === 0) return ""
+function section(heading: string, rows: Row[]): string {
+  if (rows.length === 0) return ""
 
-  const linjer = rader.map(
-    ({ tittel, beskrivelse, adresse }) =>
-      `- [${tittel}](${adresse})${beskrivelse ? `: ${beskrivelse}` : ""}`,
+  const lines = rows.map(
+    ({ title, description, address }) =>
+      `- [${title}](${address})${description ? `: ${description}` : ""}`,
   )
 
-  return `## ${overskrift}\n\n${linjer.join("\n")}`
+  return `## ${heading}\n\n${lines.join("\n")}`
 }
 
 export const GET: APIRoute = async () => {
-  const sider = await getCollection("docs")
+  const pages = await getCollection("docs")
 
-  const somRad = (
+  const asRow = (
     id: string,
     data: { title: string; description?: string },
   ) => ({
-    tittel: data.title,
-    beskrivelse: data.description ?? "",
-    adresse: `${BASE}${markdownAdresse(`/${id}/`)}`,
+    title: data.title,
+    description: data.description ?? "",
+    address: `${BASE}${markdownAddress(`/${id}/`)}`,
   })
 
-  const veiledning: Rad[] = []
-  const mønstre: Rad[] = []
-  const komponenter: Rad[] = []
+  const guides: Row[] = []
+  const patterns: Row[] = []
+  const components: Row[] = []
 
-  for (const side of sider.sort((a, b) => a.id.localeCompare(b.id))) {
-    const rad = somRad(side.id, side.data)
-    if (side.id.startsWith("components/")) komponenter.push(rad)
-    else if (side.id.startsWith("patterns/")) mønstre.push(rad)
-    else veiledning.push(rad)
+  for (const page of pages.sort((a, b) => a.id.localeCompare(b.id))) {
+    const row = asRow(page.id, page.data)
+    if (page.id.startsWith("components/")) components.push(row)
+    else if (page.id.startsWith("patterns/")) patterns.push(row)
+    else guides.push(row)
   }
 
-  const tekst = [
+  const text = [
     "# LO-TEK",
-    `> ${pakke.description} Version ${pakke.version}. The components are CSS classes and web components, things the browser already understands, so the same components work in plain HTML, in a Go template, with bundles, in React, in Astro and with Datastar.`,
-    REGLENE,
-    seksjon(
+    `> ${pkg.description} Version ${pkg.version}. The components are CSS classes and web components, things the browser already understands, so the same components work in plain HTML, in a Go template, with bundles, in React, in Astro and with Datastar.`,
+    RULES,
+    section(
       "Rulebooks for coding agents",
-      REGELBØKER.map(({ navn, tittel, beskrivelse }) => ({
-        tittel,
-        beskrivelse,
-        adresse: `${BASE}/agent/${navn}.md`,
+      RULEBOOKS.map(({ name, title, description }) => ({
+        title,
+        description,
+        address: `${BASE}/agent/${name}.md`,
       })),
     ),
     `Each rulebook is complete for its environment. If the package is
 installed, the same files are in
 \`node_modules/@lo-tek/interfaces/agent/\`, and \`npx @lo-tek/interfaces agent\`
 writes the one that fits this project.`,
-    seksjon("Guides", veiledning),
-    seksjon("Patterns", mønstre),
-    seksjon("Components", komponenter),
+    section("Guides", guides),
+    section("Patterns", patterns),
+    section("Components", components),
   ]
     .filter(Boolean)
     .join("\n\n")
 
-  return new Response(`${tekst}\n`, {
+  return new Response(`${text}\n`, {
     headers: { "content-type": "text/plain; charset=utf-8" },
   })
 }

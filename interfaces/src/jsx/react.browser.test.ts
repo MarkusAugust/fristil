@@ -10,37 +10,39 @@ import { LtConnectionStatus } from "../components/standalone/connection-status/l
 import { LtToast } from "../components/standalone/toast/lt-toast"
 import { lt } from "../lt"
 import { toReactAttributes } from "../react"
-import kilde from "./react?raw"
+import source from "./react?raw"
 
 /**
- * JSX-deklarasjonene er håndskrevet, og kan derfor komme i utakt med
- * komponentene de beskriver. Legger noen til en egenskap på `<lt-suggestion>`
- * uten å legge den inn her, er den usynlig for TypeScript, og da er vi
- * tilbake til at skrivefeil går rett gjennom.
+ * The JSX declarations are written by hand, so they can fall out of step
+ * with the components they describe. If someone adds a property to
+ * `<lt-suggestion>` without adding it here, it is invisible to TypeScript,
+ * and typos go straight through again.
  *
- * Testen leser `static observedAttributes` fra komponentene og krever at
- * hvert attributt finnes i deklarasjonsfila.
+ * The test reads `static observedAttributes` from the components and requires
+ * every attribute to be in the declaration file.
  */
 
 /**
- * Attributter React allerede kjenner gjennom `HTMLAttributes`.
+ * Attributes React already knows through `HTMLAttributes`.
  *
- * `hidden` står ikke her, selv om `<lt-error-summary>` bare observerer det
- * fordi serveren kan ta det bort for å vise boksen. `HTMLAttributes` typer det
- * som `boolean`, og `hidden={false}` kompilerte, mens React 18 skriver det
- * som `hidden="false"` på en web component, som er sant. Deklarasjonen
- * strammer det til `Flag`, og testen under krever at den gjør det.
+ * `hidden` is not here, even though `<lt-error-summary>` only observes it
+ * because the server can remove it to show the box. `HTMLAttributes` types it
+ * as `boolean`, and `hidden={false}` compiled, while React 18 writes it as
+ * `hidden="false"` on a web component, which is true. The declaration
+ * narrows it to `Flag`, and the test below requires that it does.
  */
 const STANDARD = new Set(["id", "class", "title", "lang", "dir", "slot"])
 
-/** Attributtene komponenten faktisk lytter på, utenom de standardiserte. */
-function attributtnavn(klasse: { observedAttributes?: unknown }): string[] {
-  return [...((klasse.observedAttributes ?? []) as string[])].filter(
-    (navn) => !STANDARD.has(navn),
+/** The attributes the component actually listens to, apart from the standard ones. */
+function attributeNames(componentClass: {
+  observedAttributes?: unknown
+}): string[] {
+  return [...((componentClass.observedAttributes ?? []) as string[])].filter(
+    (name) => !STANDARD.has(name),
   )
 }
 
-describe("JSX-deklarasjonene følger komponentene", () => {
+describe("the JSX declarations follow the components", () => {
   it.each([
     ["lt-field", LtField],
     ["lt-tabs", LtTabs],
@@ -51,62 +53,62 @@ describe("JSX-deklarasjonene følger komponentene", () => {
     ["lt-connection-status", LtConnectionStatus],
     ["lt-suggestion", LtSuggestion],
     ["lt-dialog", LtDialog],
-  ])("%s har alle attributtene sine deklarert", (tagg, klasse) => {
-    const attributter = attributtnavn(klasse)
+  ])("%s has all its attributes declared", (tag, componentClass) => {
+    const attributes = attributeNames(componentClass)
 
-    // Selve taggen må finnes i IntrinsicElements
-    expect(kilde).toContain(`"${tagg}"`)
+    // The tag itself must be in IntrinsicElements
+    expect(source).toContain(`"${tag}"`)
 
-    const mangler = attributter.filter(
-      (navn) => !new RegExp(`(^|\\W)"?${navn}"?\\??:`, "m").test(kilde),
+    const missing = attributes.filter(
+      (name) => !new RegExp(`(^|\\W)"?${name}"?\\??:`, "m").test(source),
     )
 
     expect(
-      mangler,
-      `Disse attributtene på <${tagg}> mangler i src/jsx/react.ts`,
+      missing,
+      `These attributes on <${tag}> are missing from src/jsx/react.ts`,
     ).toEqual([])
   })
 
-  it("deklarerer ikke attributter komponentene ikke har", () => {
-    const kjente = new Set([
-      ...attributtnavn(LtField),
-      ...attributtnavn(LtTabs),
-      ...attributtnavn(LtErrorSummary),
-      ...attributtnavn(LtPopover),
-      ...attributtnavn(LtToast),
-      ...attributtnavn(LtSessionTimeout),
-      ...attributtnavn(LtConnectionStatus),
-      ...attributtnavn(LtSuggestion),
-      ...attributtnavn(LtDialog),
+  it("declares no attributes the components do not have", () => {
+    const known = new Set([
+      ...attributeNames(LtField),
+      ...attributeNames(LtTabs),
+      ...attributeNames(LtErrorSummary),
+      ...attributeNames(LtPopover),
+      ...attributeNames(LtToast),
+      ...attributeNames(LtSessionTimeout),
+      ...attributeNames(LtConnectionStatus),
+      ...attributeNames(LtSuggestion),
+      ...attributeNames(LtDialog),
     ])
 
-    // Bare attributtblokkene. Taggnavnene i IntrinsicElements står under
-    // `declare module`, og skal ikke med.
-    const attributtblokker = kilde.slice(0, kilde.indexOf("declare module"))
-    const deklarerte = [
-      ...attributtblokker.matchAll(/^\s+"?([a-z-]+)"?\??: /gm),
-    ].map((treff) => treff[1] as string)
+    // Only the attribute blocks. The tag names in IntrinsicElements are under
+    // `declare module`, and are left out.
+    const attributeBlocks = source.slice(0, source.indexOf("declare module"))
+    const declared = [
+      ...attributeBlocks.matchAll(/^\s+"?([a-z-]+)"?\??: /gm),
+    ].map((match) => match[1] as string)
 
-    const ukjente = deklarerte.filter((navn) => !kjente.has(navn))
+    const unknown = declared.filter((name) => !known.has(name))
 
     expect(
-      ukjente,
-      "Disse er deklarert i src/jsx/react.ts, men finnes ikke på noen komponent",
+      unknown,
+      "These are declared in src/jsx/react.ts, but exist on no component",
     ).toEqual([])
   })
 })
 
-describe("React-inngangen dekker alle attributtene byggefunksjonene sender ut", () => {
+describe("the React entry point covers every attribute the builder functions emit", () => {
   /**
-   * `autocomplete` slapp gjennom til React-demoen og ga «Invalid DOM property
-   * `autocomplete`. Did you mean `autoComplete`?» i konsollen. `tabindex`
-   * hadde sluppet gjennom på samme måte en runde tidligere.
+   * `autocomplete` slipped through to the React demo and gave "Invalid DOM
+   * property `autocomplete`. Did you mean `autoComplete`?" in the console.
+   * `tabindex` had slipped through the same way a round earlier.
    *
-   * Testen teller opp hvert attributtnavn `lt` faktisk sender ut, og krever at
-   * ingen av dem er et React staver med stor bokstav inni uten at `react.ts`
-   * døper det om.
+   * The test collects every attribute name `lt` actually emits, and requires
+   * that none of them is one React spells with a capital letter inside
+   * without `react.ts` renaming it.
    */
-  const KAMELFORMER: Record<string, string> = {
+  const CAMEL_CASE: Record<string, string> = {
     class: "className",
     for: "htmlFor",
     tabindex: "tabIndex",
@@ -123,74 +125,74 @@ describe("React-inngangen dekker alle attributtene byggefunksjonene sender ut", 
     crossorigin: "crossOrigin",
   }
 
-  /** Hvert attributtnavn en byggefunksjon kan sende ut. */
-  function alleAttributtnavn(): string[] {
-    const funnet = new Set<string>()
-    const samle = (verdi: unknown) => {
-      if (!verdi || typeof verdi !== "object") return
-      if (Array.isArray(verdi)) {
-        for (const del of verdi) samle(del)
+  /** Every attribute name a builder function can emit. */
+  function allAttributeNames(): string[] {
+    const found = new Set<string>()
+    const collect = (value: unknown) => {
+      if (!value || typeof value !== "object") return
+      if (Array.isArray(value)) {
+        for (const part of value) collect(part)
         return
       }
-      for (const [navn, under] of Object.entries(verdi)) {
-        if (under && typeof under === "object") samle(under)
-        else funnet.add(navn)
+      for (const [name, child] of Object.entries(value)) {
+        if (child && typeof child === "object") collect(child)
+        else found.add(name)
       }
     }
 
-    const medArgumenter: Record<string, unknown> = {
+    const withArguments: Record<string, unknown> = {
       popover: { id: "x" },
-      tabs: { id: "x", keys: ["a", "b"], label: "Faner" },
+      tabs: { id: "x", keys: ["a", "b"], label: "Tabs" },
       suggestion: { id: "x", keys: ["a", "b"] },
       field: { id: "x", help: true, error: true },
     }
 
-    for (const [navn, verdi] of Object.entries(lt)) {
-      if (typeof verdi !== "function") continue
+    for (const [name, value] of Object.entries(lt)) {
+      if (typeof value !== "function") continue
       try {
-        const byggefunksjon = verdi as (valg?: unknown) => unknown
-        samle(byggefunksjon(medArgumenter[navn]))
+        const builder = value as (options?: unknown) => unknown
+        collect(builder(withArguments[name]))
       } catch {
-        // Vakter og hjelpefunksjoner tåler ikke å bli kalt slik. De sender
-        // ikke ut attributter, så de er uinteressante her.
+        // Guards and helper functions cannot be called like this. They emit
+        // no attributes, so they do not matter here.
       }
     }
-    return [...funnet]
+    return [...found]
   }
 
-  it("døper om hvert navn React staver annerledes", () => {
-    // Sjekker hva funksjonen gjør, ikke hva som står i kildeteksten. Navnet
-    // finnes uansett i typen og i kommentaren, så et tekstsøk ville meldt
-    // grønt selv om omdøpingen manglet.
-    const mangler = alleAttributtnavn()
-      .filter((navn) => navn in KAMELFORMER)
-      .filter((navn) => {
-        const ut = toReactAttributes({ [navn]: "x" })
-        return !(KAMELFORMER[navn] in ut)
+  it("renames every name React spells differently", () => {
+    // Checks what the function does, not what the source text says. The name
+    // is in the type and in the comment anyway, so a text search would pass
+    // even if the renaming were missing.
+    const missing = allAttributeNames()
+      .filter((name) => name in CAMEL_CASE)
+      .filter((name) => {
+        const out = toReactAttributes({ [name]: "x" })
+        return !(CAMEL_CASE[name] in out)
       })
 
     expect(
-      mangler,
-      "Disse må inn i REACT_NAMES-tabellen i src/react.ts, ellers advarer React",
+      missing,
+      "These must go into the REACT_NAMES table in src/react.ts, or React warns",
     ).toEqual([])
   })
 
-  it("lar aria- og data-attributter stå", () => {
-    // React sender dem videre uendret, så en omdøping ville gitt ugyldig
-    // HTML. Her kjøres hvert navn gjennom funksjonen og sjekkes at det kommer
-    // ut med samme nøkkel. Den forrige utgaven filtrerte bare på navn som
-    // fantes i KAMELFORMER, og siden ingen aria- eller data-navn står der,
-    // kunne den aldri feile.
-    const navnene = alleAttributtnavn().filter(
-      (navn) => navn.startsWith("aria-") || navn.startsWith("data-"),
+  it("leaves aria- and data- attributes alone", () => {
+    // React passes them on unchanged, so renaming them would give invalid
+    // HTML. Here every name is run through the function and checked to come
+    // out with the same key. The previous version only filtered on names
+    // that were in CAMEL_CASE, and since no aria- or data- name is there, it
+    // could never fail.
+    const names = allAttributeNames().filter(
+      (name) => name.startsWith("aria-") || name.startsWith("data-"),
     )
 
-    expect(navnene.length, "fant ingen å sjekke").toBeGreaterThan(5)
+    expect(names.length, "found nothing to check").toBeGreaterThan(5)
 
-    const dopt = navnene.filter(
-      (navn) => !(navn in toReactAttributes({ [navn]: "x" })),
+    const renamed = names.filter(
+      (name) => !(name in toReactAttributes({ [name]: "x" })),
     )
 
-    expect(dopt, "Disse skal stå som de er i React").toEqual([])
+    expect(renamed, "These must stay as they are in React").toEqual([])
   })
 })

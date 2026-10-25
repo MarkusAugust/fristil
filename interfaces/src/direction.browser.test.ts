@@ -87,7 +87,7 @@ describe("høyre til venstre", () => {
     expect(rtl.backgroundPositionX).not.toBe(ltr.backgroundPositionX)
 
     // Like langt fra kanten i begge retninger. Fra høyre står avstanden som
-    // `calc(100% - …)`, fra venstre som en lengde. Før sto pila 6 piksler
+    // `calc(100% - …)`, fra venstre som en lengde. Før sto pila 6 pixels
     // fra kanten i høyre-til-venstre og 12 ellers.
     const avstander = (verdi: string) =>
       [...verdi.matchAll(/(\d+(?:\.\d+)?)px/g)]
@@ -229,7 +229,7 @@ describe("høyre til venstre", () => {
     document.documentElement.dir = "rtl"
     await waitForPaint()
 
-    // padding-inline-start i CSS-en, altså ingen egen regel for retningen.
+    // padding-inline-start i CSS-en, altså ingen egen rule for retningen.
     expect(stil("sok").paddingLeft).not.toBe(foer)
   })
 })

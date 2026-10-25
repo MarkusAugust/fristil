@@ -17,34 +17,34 @@ describe("lt-sr-only", () => {
   beforeEach(() => {
     mount(`
       <button class="lt-button" type="button">
-        Slett<span id="skjult" class="lt-sr-only"> søknaden fra 4. mars</span>
+        Delete<span id="hidden" class="lt-sr-only"> the application from 4 March</span>
       </button>
     `)
   })
 
-  it("tar ikke plass i visningen", () => {
-    const skjult = document.getElementById("skjult") as HTMLElement
-    const stil = getComputedStyle(skjult)
+  it("takes up no space in the layout", () => {
+    const hidden = document.getElementById("hidden") as HTMLElement
+    const style = getComputedStyle(hidden)
 
-    expect(stil.position).toBe("absolute")
-    expect(skjult.getBoundingClientRect().width).toBeLessThanOrEqual(1)
+    expect(style.position).toBe("absolute")
+    expect(hidden.getBoundingClientRect().width).toBeLessThanOrEqual(1)
   })
 
-  it("blir stående i tilgjengelighetstreet", () => {
-    const knapp = document.querySelector("button") as HTMLButtonElement
+  it("stays in the accessibility tree", () => {
+    const button = document.querySelector("button") as HTMLButtonElement
 
-    // Teksten skal være med i navnet skjermleseren leser opp. Hadde vi brukt
-    // display: none eller visibility: hidden, hadde den vært borte også her.
-    expect(knapp.textContent?.replace(/\s+/g, " ").trim()).toBe(
-      "Slett søknaden fra 4. mars",
+    // The text must be part of the name the screen reader reads out. With
+    // display: none or visibility: hidden it would be gone here too.
+    expect(button.textContent?.replace(/\s+/g, " ").trim()).toBe(
+      "Delete the application from 4 March",
     )
   })
 
-  it("gir klassen fra byggefunksjonen", () => {
+  it("gives the class from the builder function", () => {
     expect(srOnly()).toEqual({ class: "lt-sr-only" })
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

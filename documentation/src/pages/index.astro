@@ -6,10 +6,10 @@ import Logo from "../components/Logo.astro"
 import VersionBadge from "../components/VersionBadge.astro"
 import "../styles/custom-pages-tailwind.css"
 import sobernetics from "../assets/sobernetics.svg?raw"
-import { DELINGSBILDE, metaAttributter } from "../share-image.mjs"
+import { metaAttributes, SHARE_IMAGE } from "../share-image.mjs"
 
-const tittel = "LO-TEK design system"
-const beskrivelse =
+const title = "LO-TEK design system"
+const description =
   "A framework-independent design system where the components are CSS classes and web components. The same API in React, Astro, Datastar and plain HTML."
 ---
 
@@ -30,19 +30,19 @@ const beskrivelse =
     href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap"
   />
   <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
-  <title>{tittel}</title>
-  <meta name="description" content={beskrivelse} />
+  <title>{title}</title>
+  <meta name="description" content={description} />
   <!-- The front page sits outside Starlight, so the tags for shared links,
        which Starlight writes on the other pages, are here. -->
-  <meta property="og:title" content={tittel} />
-  <meta property="og:description" content={beskrivelse} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
   <meta property="og:type" content="website" />
   <meta property="og:url" content={Astro.site?.href} />
   <meta property="og:locale" content="en" />
   <meta property="og:site_name" content="LO-TEK" />
   <meta name="twitter:card" content="summary_large_image" />
-  {DELINGSBILDE.map((tagg) => {
-    const { property, name, content } = metaAttributter(tagg)
+  {SHARE_IMAGE.map((tag) => {
+    const { property, name, content } = metaAttributes(tag)
     return <meta property={property} name={name} content={content} />
   })}
 </head>
@@ -118,11 +118,11 @@ const beskrivelse =
         <div class="mx-auto mt-10 flex w-fit max-w-xl items-center gap-3 lg:my-auto lg:pt-12">
           <span
             aria-hidden="true"
-            class="font-sitat -mt-1 shrink-0 text-5xl leading-none text-logo-lilla/70 sm:text-7xl"
+            class="font-quote -mt-1 shrink-0 text-5xl leading-none text-logo-purple/70 sm:text-7xl"
           >
             &ldquo;
           </span>
-          <p class="bg-linear-to-br from-logo-lilla via-pink-400 to-rose-400 bg-clip-text font-sitat text-lg italic leading-snug text-balance text-transparent sm:text-xl">
+          <p class="bg-linear-to-br from-logo-purple via-pink-400 to-rose-400 bg-clip-text font-quote text-lg italic leading-snug text-balance text-transparent sm:text-xl">
             An uncompromising, minimalist sports car built straight on the browser's own APIs. LO-TEK throws out all the heavy baggage and gives you a real, unfiltered feel for the road: the DOM itself.
           </p>
         </div>
@@ -227,13 +227,13 @@ const beskrivelse =
         <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
           <h3 class="mb-3 text-xl font-bold">The colours meet the contrast requirement</h3>
           <p class="mb-5 text-sm leading-7 text-zinc-300">
-            Every colour pair in the system is computed and checked against the WCAG requirement, in both light and dark themes. If you give your own brand colours, their families are computed afresh with <code class="text-zinc-200">buildTheme</code> from <code class="text-zinc-200">@lo-tek/interfaces/tema</code>.
+            Every colour pair in the system is computed and checked against the WCAG requirement, in both light and dark themes. If you give your own brand colours, their families are computed afresh with <code class="text-zinc-200">buildTheme</code> from <code class="text-zinc-200">@lo-tek/interfaces/theme</code>.
           </p>
-          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>const tema = buildTheme(&#123;
+          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>const theme = buildTheme(&#123;
   accent: "#0062ba",
 &#125;)
 
-// tema.violations is empty
+// theme.violations is empty
 // when the contrast holds</code></pre>
           <p class="mt-5 text-sm leading-7 text-zinc-300">
             The colours are computed in OKLCH, because lightness in HSL means something different for each hue. The brand colour gives the hue, while the role sets the lightness and how much of the chroma is kept.

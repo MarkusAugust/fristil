@@ -6,19 +6,19 @@ import { lt } from "../react"
 import "./react"
 
 /**
- * At det byggefunksjonene sender ut, passer i pakkens egne JSX-deklarasjoner.
+ * That what the builder functions emit fits the package's own JSX declarations.
  *
- * De to er begge offentlig API, og de kan gå fra hverandre uten at noe sier
- * fra. `lt.popover().host` ga `open: ""`, mens deklarasjonen sa
- * `open?: true | undefined`. Da var det byggefunksjonen som tok feil: React
- * 19 setter egenskapen, og `el.open = ""` er usant, så panelet åpnet seg
- * ikke. Begge sender nå `true`.
+ * Both are public API, and they can drift apart without anything saying so.
+ * `lt.popover().host` gave `open: ""`, while the declaration said
+ * `open?: true | undefined`. In that case the builder function was wrong:
+ * React 19 sets the property, and `el.open = ""` is false, so the panel did
+ * not open. Both now emit `true`.
  *
- * Tilordningene under er testen, og det er `typecheck:tests` som kjører den.
- * Det som kjøres i nettleseren er bare at verdiene faktisk er der.
+ * The assignments below are the test, and `typecheck:tests` is what runs it.
+ * What runs in the browser only checks that the values are actually there.
  */
-describe("byggefunksjonene passer i JSX-deklarasjonene", () => {
-  it("sprettoppvinduets vert", () => {
+describe("the builder functions fit the JSX declarations", () => {
+  it("the popover's host", () => {
     const host: JSX.IntrinsicElements["lt-popover"] = lt.popover({
       id: "h",
       open: true,
@@ -27,7 +27,7 @@ describe("byggefunksjonene passer i JSX-deklarasjonene", () => {
     expect(host.open).toBe(true)
   })
 
-  it("dialogens vert", () => {
+  it("the dialog's host", () => {
     const host: JSX.IntrinsicElements["lt-dialog"] = lt.dialog({
       titleId: "t",
       open: true,
@@ -37,70 +37,72 @@ describe("byggefunksjonene passer i JSX-deklarasjonene", () => {
   })
 
   /**
-   * `hidden` er `boolean` i `HTMLAttributes`, og `hidden={false}` kompilerte
-   * på `<lt-error-summary>`. React 18 skriver det som `hidden="false"`, som
-   * er sant, så boksen var alltid skjult. Deklarasjonen sier nå `Flag`, som
-   * for `open`, og byggefunksjonen sender `true` eller ingenting.
+   * `hidden` is `boolean` in `HTMLAttributes`, and `hidden={false}` compiled
+   * on `<lt-error-summary>`. React 18 writes it as `hidden="false"`, which is
+   * true, so the box was always hidden. The declaration now says `Flag`, as
+   * for `open`, and the builder function emits `true` or nothing.
    */
-  it("feiloppsummeringens vert, der hidden er et flagg", () => {
-    const tom: JSX.IntrinsicElements["lt-error-summary"] = lt.errorSummary({
+  it("the error summary's host, where hidden is a flag", () => {
+    const empty: JSX.IntrinsicElements["lt-error-summary"] = lt.errorSummary({
       count: 0,
     }).host
-    const medFeil: JSX.IntrinsicElements["lt-error-summary"] = lt.errorSummary({
-      count: 2,
-    }).host
-    const skjult: JSX.IntrinsicElements["lt-error-summary"] = {
-      // @ts-expect-error `false` blir `hidden="false"` i React 18, og er sant.
+    const withErrors: JSX.IntrinsicElements["lt-error-summary"] =
+      lt.errorSummary({
+        count: 2,
+      }).host
+    const hidden: JSX.IntrinsicElements["lt-error-summary"] = {
+      // @ts-expect-error `false` becomes `hidden="false"` in React 18, which is true.
       hidden: false,
     }
 
-    expect(tom.hidden).toBe(true)
-    expect(medFeil.hidden).toBeUndefined()
-    expect(skjult.hidden).toBe(false)
+    expect(empty.hidden).toBe(true)
+    expect(withErrors.hidden).toBeUndefined()
+    expect(hidden.hidden).toBe(false)
   })
 
   /**
-   * At `server-controlled` er deklarert på hver komponent som har det.
+   * That `server-controlled` is declared on every component that has it.
    *
-   * Vakten i `react.browser.test.ts` leser kilden som tekst, og den kan ikke
-   * se dette: navnet står i den felles `ServerControlled`-typen, så regexen
-   * treffer uansett om en komponent faktisk bruker den. Tilordningene her går
-   * gjennom TypeScript, og en komponent som mister aliaset blir en
-   * kompileringsfeil i `typecheck:tests`.
+   * The guard in `react.browser.test.ts` reads the source as text, and it
+   * cannot see this: the name is in the shared `ServerControlled` type, so
+   * the regex matches whether or not a component actually uses it. The
+   * assignments here go through TypeScript, and a component that loses the
+   * alias becomes a compile error in `typecheck:tests`.
    */
-  it("de fire komponentene som lar serveren eie tilstanden", () => {
-    const faner: JSX.IntrinsicElements["lt-tabs"] = {
+  it("the four components that let the server decide the state", () => {
+    const tabs: JSX.IntrinsicElements["lt-tabs"] = {
       "server-controlled": true,
     }
-    const sprett: JSX.IntrinsicElements["lt-popover"] = {
+    const popover: JSX.IntrinsicElements["lt-popover"] = {
       "server-controlled": true,
     }
-    const forslag: JSX.IntrinsicElements["lt-suggestion"] = {
+    const suggestion: JSX.IntrinsicElements["lt-suggestion"] = {
       "server-controlled": true,
     }
-    const boks: JSX.IntrinsicElements["lt-dialog"] = {
+    const dialog: JSX.IntrinsicElements["lt-dialog"] = {
       "server-controlled": true,
     }
 
-    for (const el of [faner, sprett, forslag, boks]) {
+    for (const el of [tabs, popover, suggestion, dialog]) {
       expect(el["server-controlled"]).toBe(true)
     }
   })
 
   /**
-   * Fanene fra React-inngangen er lenker med `tabIndex` som tall, og
-   * listepunktet og panelet må passe i sine elementer. `tabindex: "0"` som
-   * streng kompilerte ikke i en React-app, og det var typen alene som sa fra.
+   * The tabs from the React entry point are links with `tabIndex` as a
+   * number, and the list item and the panel must fit their elements.
+   * `tabindex: "0"` as a string did not compile in a React app, and the type
+   * alone was what said so.
    */
-  it("fanene, som er lenker med tabIndex", () => {
-    const faner = lt.tabs({ id: "sak", keys: ["a", "b"], label: "Saken" })
-    const [forste] = faner.tabs
-    const fane: JSX.IntrinsicElements["a"] = forste ?? {}
-    const punkt: JSX.IntrinsicElements["li"] = faner.item
-    const panel: JSX.IntrinsicElements["section"] = faner.panels[0] ?? {}
+  it("the tabs, which are links with tabIndex", () => {
+    const tabs = lt.tabs({ id: "case", keys: ["a", "b"], label: "The case" })
+    const [first] = tabs.tabs
+    const tab: JSX.IntrinsicElements["a"] = first ?? {}
+    const item: JSX.IntrinsicElements["li"] = tabs.item
+    const panel: JSX.IntrinsicElements["section"] = tabs.panels[0] ?? {}
 
-    expect(fane.tabIndex).toBe(0)
-    expect(punkt.role).toBe("presentation")
+    expect(tab.tabIndex).toBe(0)
+    expect(item.role).toBe("presentation")
     expect(panel.tabIndex).toBe(0)
   })
 })

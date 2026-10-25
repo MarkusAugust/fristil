@@ -33,7 +33,7 @@ import "@lo-tek/interfaces/divider.css"
  * then lost without anything saying so, and for a long time the menu was
  * stacked in a column for exactly that reason.
  */
-const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
+const { class: listClass, ...listAttributes } = lt.list({ variant: "plain" })
 ---
 
 <!doctype html>
@@ -58,7 +58,7 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 				</a>
 
 				<nav aria-label="Main menu">
-					<ul {...liste} class={`${listeKlasse} skjelett-meny`}>
+					<ul {...listAttributes} class={`${listClass} skeleton-menu`}>
 						<li><a href="#" aria-current="page">My cases</a></li>
 						<li><a href="#">Applications</a></li>
 						<li><a href="#">Contact us</a></li>
@@ -87,7 +87,7 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 			<section aria-labelledby="under-review-status">
 				<h2 {...lt.heading({ size: "m" })} id="under-review-status">Under review</h2>
 
-				<ul {...liste} class={`${listeKlasse} skjelett-saker`}>
+				<ul {...listAttributes} class={`${listClass} skeleton-cases`}>
 					<li>
 						<article {...lt.card()}>
 							<h3 class={lt.card.title}>Housing benefit application</h3>
@@ -213,18 +213,18 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 				letter-spacing: -0.01em;
 			}
 
-			.skjelett-meny {
+			.skeleton-menu {
 				display: flex;
 				flex-wrap: wrap;
 				gap: var(--lt-spacing-5);
 			}
 
-			.skjelett-meny li + li {
+			.skeleton-menu li + li {
 				margin-block-start: 0;
 			}
 
 			/* The current page is marked with an underline, not only with colour. */
-			.skjelett-meny [aria-current="page"] {
+			.skeleton-menu [aria-current="page"] {
 				text-decoration: underline;
 				text-underline-offset: 0.35em;
 				text-decoration-thickness: 2px;
@@ -253,12 +253,12 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 				gap: var(--lt-spacing-3);
 			}
 
-			.skjelett-saker {
+			.skeleton-cases {
 				display: grid;
 				gap: var(--lt-spacing-3);
 			}
 
-			.skjelett-saker li + li {
+			.skeleton-cases li + li {
 				margin-block-start: 0;
 			}
 

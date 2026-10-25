@@ -1,8 +1,8 @@
-# Én fast Rust-versjon for kjernen, lokalt og i CI.
+# One pinned Rust version for the core, locally and in CI.
 #
-# Kompilatoren bestemmer hvilke WebAssembly-funksjoner modulen bruker, og
-# nyere versjoner slår på flere av dem som standard. En fast versjon gjør at
-# modulen ikke endrer seg bare fordi noen oppdaterte Rust.
+# The compiler decides which WebAssembly features the module uses, and newer
+# versions turn more of them on by default. With a pinned version the module
+# does not change just because someone updated Rust.
 [toolchain]
 channel = "1.97.0"
 components = ["rustfmt", "clippy"]

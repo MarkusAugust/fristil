@@ -14,42 +14,42 @@
 
 export type IsolatedSurface = {
   /** The shadow root the content is in. */
-  rot: ShadowRoot
+  root: ShadowRoot
   /** The box the content is in, with the width the test asked for. */
-  boks: HTMLElement
+  box: HTMLElement
 }
 
 /**
  * @param css  The stylesheet the component needs, as text (`import "...css?inline"`)
  * @param html The markup to test
- * @param bredde The width of the surrounding box, for example "300px"
+ * @param width The width of the surrounding box, for example "300px"
  */
 export function mountIsolated(
   css: string,
   html: string,
-  bredde = "300px",
+  width = "300px",
 ): IsolatedSurface {
-  document.body.innerHTML = '<div id="lt-isolert"></div>'
+  document.body.innerHTML = '<div id="lt-isolated"></div>'
 
-  const vert = document.getElementById("lt-isolert")
-  if (!(vert instanceof HTMLElement)) {
+  const host = document.getElementById("lt-isolated")
+  if (!(host instanceof HTMLElement)) {
     throw new Error("Could not mount the isolated surface")
   }
 
-  const rot = vert.attachShadow({ mode: "open" })
-  rot.innerHTML = `<style>${css}</style><div id="boks" style="width: ${bredde}">${html}</div>`
+  const root = host.attachShadow({ mode: "open" })
+  root.innerHTML = `<style>${css}</style><div id="box" style="width: ${width}">${html}</div>`
 
-  const boks = rot.getElementById("boks")
-  if (!(boks instanceof HTMLElement)) {
+  const box = root.getElementById("box")
+  if (!(box instanceof HTMLElement)) {
     throw new Error("Could not find the box")
   }
 
-  return { rot, boks }
+  return { root: root, box: box }
 }
 
 export type Overflow = {
-  merke: string
-  piksler: number
+  label: string
+  pixels: number
 }
 
 /**
@@ -57,18 +57,18 @@ export type Overflow = {
  *
  * Returns an empty list when everything stays inside.
  */
-export function findOverflow(boks: HTMLElement): Overflow[] {
-  const ramme = boks.getBoundingClientRect()
+export function findOverflow(box: HTMLElement): Overflow[] {
+  const bounds = box.getBoundingClientRect()
 
-  return [...boks.querySelectorAll("*")]
-    .map((element) => ({ element, mål: element.getBoundingClientRect() }))
-    .filter(({ mål }) => mål.width > 0 && mål.right > ramme.right + 0.5)
-    .map(({ element, mål }) => ({
-      merke:
+  return [...box.querySelectorAll("*")]
+    .map((element) => ({ element, rect: element.getBoundingClientRect() }))
+    .filter(({ rect }) => rect.width > 0 && rect.right > bounds.right + 0.5)
+    .map(({ element, rect }) => ({
+      label:
         element.tagName.toLowerCase() +
         (element.className
           ? `.${String(element.className).split(" ")[0]}`
           : ""),
-      piksler: Math.round(mål.right - ramme.right),
+      pixels: Math.round(rect.right - bounds.right),
     }))
 }

@@ -16,10 +16,10 @@ import "./error-summary.css"
 import "../../css/input/input.css"
 import "../../css/label/label.css"
 
-/** Markupen serveren sender når den fant to feil. */
-const FEIL = errorSummary({ count: 2 })
+/** The markup the server sends when it found two errors. */
+const ERRORS = errorSummary({ count: 2 })
 
-async function tegn() {
+async function settle() {
   await customElements.whenDefined("lt-error-summary")
   await waitForPaint()
 }
@@ -31,577 +31,581 @@ describe("lt-error-summary", () => {
 
   beforeEach(async () => {
     mount(`
-      <lt-error-summary ${attr(FEIL.host)}>
-        <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
+      <lt-error-summary ${attr(ERRORS.host)}>
+        <h2 ${attr(ERRORS.title)}>The form has two errors</h2>
         <ul>
-          <li><a href="#epost" id="lenke-epost">Skriv en gyldig e-postadresse</a></li>
-          <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
+          <li><a href="#email" id="email-link">Enter a valid email address</a></li>
+          <li><a href="#date-of-birth">Enter a date that exists</a></li>
         </ul>
       </lt-error-summary>
 
-      <label class="lt-label" for="epost">E-postadresse</label>
-      <input class="lt-input" id="epost" type="email" aria-invalid="true" data-state="invalid" />
+      <label class="lt-label" for="email">Email address</label>
+      <input class="lt-input" id="email" type="email" aria-invalid="true" data-state="invalid" />
 
-      <label class="lt-label" for="fodselsdato">Fødselsdato</label>
-      <input class="lt-input" id="fodselsdato" aria-invalid="true" data-state="invalid" />
+      <label class="lt-label" for="date-of-birth">Date of birth</label>
+      <input class="lt-input" id="date-of-birth" aria-invalid="true" data-state="invalid" />
     `)
-    await tegn()
+    await settle()
   })
 
-  it("får varslingsrollen og overskriften fra serveren", () => {
-    const boks = document.querySelector("lt-error-summary") as HTMLElement
-    const tittel = document.querySelector(
+  it("gets the alert role and the heading from the server", () => {
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    const title = document.querySelector(
       ".lt-error-summary__title",
     ) as HTMLElement
 
-    // Lagde komponenten dette selv, forsvant både klassen og overskriften ved
-    // første morfing i Datastar, og kom ikke tilbake.
-    expect(boks.classList.contains("lt-error-summary")).toBe(true)
-    expect(boks.getAttribute("role")).toBe("alert")
-    expect(boks.tabIndex).toBe(-1)
-    expect(tittel.textContent).toBe("Skjemaet har to feil")
+    // When the component made these itself, both the class and the heading
+    // disappeared at the first morph in Datastar, and did not come back.
+    expect(box.classList.contains("lt-error-summary")).toBe(true)
+    expect(box.getAttribute("role")).toBe("alert")
+    expect(box.tabIndex).toBe(-1)
+    expect(title.textContent).toBe("The form has two errors")
   })
 
-  it("skjules av serveren når det ikke er noen feil", () => {
-    const tom = errorSummary({ count: 0 })
+  it("is hidden by the server when there are no errors", () => {
+    const empty = errorSummary({ count: 0 })
 
-    expect(tom.host.hidden).toBe(true)
-    expect(FEIL.host.hidden).toBeUndefined()
+    expect(empty.host.hidden).toBe(true)
+    expect(ERRORS.host.hidden).toBeUndefined()
   })
 
-  it("flytter fokus til boksen når den kommer til syne", () => {
-    const boks = document.querySelector("lt-error-summary") as HTMLElement
+  it("moves focus to the box when it appears", () => {
+    const box = document.querySelector("lt-error-summary") as HTMLElement
 
-    // Uten dette vet ikke den som hører siden at innsendingen stoppet.
-    expect(document.activeElement).toBe(boks)
+    // Without this, someone listening to the page does not know the
+    // submission stopped.
+    expect(document.activeElement).toBe(box)
   })
 
-  it("virker på lenker en patch har byttet ut", async () => {
-    // Én lytter på verten. Før fikk hver ny lenke sin egen, og de gamle ble
-    // holdt fast i minnet.
-    const liste = document.querySelector("lt-error-summary ul") as HTMLElement
-    liste.innerHTML =
-      '<li><a href="#fodselsdato" id="ny-lenke">Skriv en dato som finnes</a></li>'
-    await tegn()
+  it("works on links a patch has replaced", async () => {
+    // One listener on the host. Before, each new link got its own, and the old
+    // ones were kept in memory.
+    const list = document.querySelector("lt-error-summary ul") as HTMLElement
+    list.innerHTML =
+      '<li><a href="#date-of-birth" id="new-link">Enter a date that exists</a></li>'
+    await settle()
 
-    ;(document.getElementById("ny-lenke") as HTMLElement).click()
+    ;(document.getElementById("new-link") as HTMLElement).click()
 
-    expect(document.activeElement?.id).toBe("fodselsdato")
+    expect(document.activeElement?.id).toBe("date-of-birth")
   })
 
-  it("gir fokus til selve feltet når en lenke følges", () => {
-    const lenke = document.getElementById("lenke-epost") as HTMLElement
-    lenke.click()
+  it("gives focus to the field itself when a link is followed", () => {
+    const link = document.getElementById("email-link") as HTMLElement
+    link.click()
 
-    // Komponenten gir feltet fokus selv, så det ikke avhenger av om målet
-    // kan få fokus fra nettleserens eget hopp. Tab fortsetter fra målet
-    // uansett; det er fokuset og opplesningen som mangler uten.
-    expect(document.activeElement?.id).toBe("epost")
+    // The component gives the field focus itself, so it does not depend on
+    // whether the target can take focus from the browser's own jump. Tab
+    // continues from the target either way; without it, focus and the
+    // announcement are what is missing.
+    expect(document.activeElement?.id).toBe("email")
   })
 
-  it("kobler seg på lenker serveren patcher inn senere", async () => {
-    const boks = document.querySelector("lt-error-summary") as HTMLElement
-    const liste = boks.querySelector("ul") as HTMLElement
+  it("picks up links the server patches in later", async () => {
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    const list = box.querySelector("ul") as HTMLElement
 
-    liste.innerHTML = `<li><a href="#fodselsdato" id="ny-lenke">Skriv en dato som finnes</a></li>`
-    await tegn()
-    ;(document.getElementById("ny-lenke") as HTMLElement).click()
+    list.innerHTML = `<li><a href="#date-of-birth" id="new-link">Enter a date that exists</a></li>`
+    await settle()
+    ;(document.getElementById("new-link") as HTMLElement).click()
 
-    expect(document.activeElement?.id).toBe("fodselsdato")
+    expect(document.activeElement?.id).toBe("date-of-birth")
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })
 })
 
-describe("lt-error-summary i en skyggerot", () => {
+describe("lt-error-summary in a shadow root", () => {
   /**
-   * Forhåndsvisningene i dokumentasjonen ligger i en skyggerot, og det gjør
-   * skjemaer inne i andre komponenter også. `document.getElementById` ser
-   * ikke inn dit, så lenken ble en vanlig ankerlenke uten fokusflytting.
+   * The previews in the documentation sit in a shadow root, and so do forms
+   * inside other components. `document.getElementById` does not see in
+   * there, so the link became a plain anchor link without moving focus.
    */
-  it("finner feltet i sin egen rot", async () => {
-    const vert = document.createElement("div")
-    document.body.append(vert)
-    const rot = vert.attachShadow({ mode: "open" })
-    const feil = errorSummary({ count: 1 })
+  it("finds the field in its own root", async () => {
+    const host = document.createElement("div")
+    document.body.append(host)
+    const root = host.attachShadow({ mode: "open" })
+    const summary = errorSummary({ count: 1 })
 
-    rot.innerHTML = `
-      <lt-error-summary ${attr(feil.host)} data-autofocus="false">
-        <h2 ${attr(feil.title)}>Skjemaet har én feil</h2>
-        <ul><li><a href="#skygge-epost" id="skygge-lenke">Skriv en gyldig adresse</a></li></ul>
+    root.innerHTML = `
+      <lt-error-summary ${attr(summary.host)} data-autofocus="false">
+        <h2 ${attr(summary.title)}>The form has one error</h2>
+        <ul><li><a href="#shadow-email" id="shadow-link">Enter a valid address</a></li></ul>
       </lt-error-summary>
-      <input id="skygge-epost" type="email" />
+      <input id="shadow-email" type="email" />
     `
 
     await waitForPaint()
-    ;(rot.getElementById("skygge-lenke") as HTMLElement).click()
+    ;(root.getElementById("shadow-link") as HTMLElement).click()
 
-    expect(rot.activeElement?.id).toBe("skygge-epost")
+    expect(root.activeElement?.id).toBe("shadow-email")
 
-    vert.remove()
+    host.remove()
   })
 })
 
 /**
- * Andre gang det samme skjemaet feiler.
+ * The second time the same form fails.
  *
- * Mønsteret i en Datastar-app er at serveren sender boksen skjult og bare tar
- * bort `hidden` når noe er galt. Lista står da med de samme lenkene hele
- * veien, og komponenten kan ikke bruke «har jeg flyttet fokus hit før» som
- * svar på om dette er en ny innsending.
+ * The pattern in a Datastar app is that the server sends the box hidden and
+ * only removes `hidden` when something is wrong. The list then keeps the same
+ * links all along, and the component cannot use "have I moved focus here
+ * before" to tell whether this is a new submission.
  */
-describe("lt-error-summary når skjemaet feiler igjen", () => {
+describe("lt-error-summary when the form fails again", () => {
   beforeAll(() => {
     defineLtErrorSummary()
   })
 
   beforeEach(async () => {
     mount(`
-      <lt-error-summary ${attr(FEIL.host)} hidden>
-        <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
+      <lt-error-summary ${attr(ERRORS.host)} hidden>
+        <h2 ${attr(ERRORS.title)}>The form has two errors</h2>
         <ul>
-          <li><a href="#epost">Skriv en gyldig e-postadresse</a></li>
-          <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
+          <li><a href="#email">Enter a valid email address</a></li>
+          <li><a href="#date-of-birth">Enter a date that exists</a></li>
         </ul>
       </lt-error-summary>
-      <input id="epost" />
+      <input id="email" />
     `)
-    await tegn()
+    await settle()
   })
 
-  it("tar fokus hver gang boksen vises på nytt", async () => {
-    const boks = document.querySelector("lt-error-summary") as HTMLElement
-    const felt = document.getElementById("epost") as HTMLInputElement
+  it("takes focus every time the box is shown again", async () => {
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    const field = document.getElementById("email") as HTMLInputElement
 
-    boks.hidden = false
+    box.hidden = false
     await waitForPaint()
-    expect(document.activeElement).toBe(boks)
+    expect(document.activeElement).toBe(box)
 
-    // Brukeren retter noe, serveren skjuler boksen igjen.
-    boks.hidden = true
-    felt.focus()
+    // The user corrects something, the server hides the box again.
+    box.hidden = true
+    field.focus()
     await waitForPaint()
 
-    // Og så feiler innsendingen på nytt, med de samme feilene.
-    boks.hidden = false
+    // And then the submission fails again, with the same errors.
+    box.hidden = false
     await waitForPaint()
 
     expect(
       document.activeElement,
-      "boksen tok ikke fokus andre gang skjemaet feilet",
-    ).toBe(boks)
+      "the box did not take focus the second time the form failed",
+    ).toBe(box)
   })
 })
 
-describe("lt-error-summary flytter fokus dit det faktisk kan lande", () => {
+describe("lt-error-summary moves focus where it can actually land", () => {
   beforeAll(() => {
     defineLtErrorSummary()
   })
 
-  it("tar fokus når forelderen vises og lista byttes ut", async () => {
+  it("takes focus when the parent is shown and the list is replaced", async () => {
     /*
-     * Boksen kan stå i et fanepanel eller en lukket dialog i det den kobles
-     * til. `focus()` gjør da ingenting, men flagget «har flyttet fokus» ble
-     * satt likevel, og boksen fikk aldri fokus da forelderen ble synlig og
-     * lista byttet ut.
+     * The box can be in a tab panel or a closed dialog when it connects.
+     * `focus()` then does nothing, but the "has moved focus" flag was set
+     * anyway, and the box never got focus when the parent became visible and
+     * the list was replaced.
      */
     mount(`
       <div id="panel" hidden>
-        <lt-error-summary ${attr(FEIL.host)}>
-          <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
-          <ul><li><a href="#epost">Skriv en gyldig e-postadresse</a></li></ul>
+        <lt-error-summary ${attr(ERRORS.host)}>
+          <h2 ${attr(ERRORS.title)}>The form has one error</h2>
+          <ul><li><a href="#email">Enter a valid email address</a></li></ul>
         </lt-error-summary>
       </div>
-      <input id="epost" />
+      <input id="email" />
     `)
-    await tegn()
+    await settle()
 
-    const boks = document.querySelector("lt-error-summary") as HTMLElement
-    expect(document.activeElement).not.toBe(boks)
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    expect(document.activeElement).not.toBe(box)
 
     const panel = document.getElementById("panel") as HTMLElement
     panel.hidden = false
-    ;(boks.querySelector("ul") as HTMLElement).innerHTML =
-      `<li><a href="#epost">Skriv en gyldig e-postadresse</a></li>`
-    await tegn()
+    ;(box.querySelector("ul") as HTMLElement).innerHTML =
+      `<li><a href="#email">Enter a valid email address</a></li>`
+    await settle()
 
-    expect(document.activeElement).toBe(boks)
+    expect(document.activeElement).toBe(box)
   })
 
-  it("river ikke fokus ut av et felt brukeren står i", async () => {
-    // Landet ikke første forsøk, prøver komponenten igjen ved neste endring
-    // i lista. Men ikke mens noen skriver: da patcher live-valideringen
-    // lista, og fokus skal bli der det er.
+  it("does not pull focus out of a field the user is in", async () => {
+    // If the first attempt did not land, the component tries again at the
+    // next change to the list. But not while someone is typing: then live
+    // validation patches the list, and focus should stay where it is.
     mount(`
       <div id="panel" hidden>
-        <lt-error-summary ${attr(FEIL.host)}>
-          <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
-          <ul><li><a href="#epost">Skriv en gyldig e-postadresse</a></li></ul>
+        <lt-error-summary ${attr(ERRORS.host)}>
+          <h2 ${attr(ERRORS.title)}>The form has one error</h2>
+          <ul><li><a href="#email">Enter a valid email address</a></li></ul>
         </lt-error-summary>
       </div>
-      <input id="epost" />
+      <input id="email" />
     `)
-    await tegn()
+    await settle()
 
-    const boks = document.querySelector("lt-error-summary") as HTMLElement
-    const felt = document.getElementById("epost") as HTMLInputElement
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    const field = document.getElementById("email") as HTMLInputElement
     ;(document.getElementById("panel") as HTMLElement).hidden = false
-    felt.focus()
-    ;(boks.querySelector("ul") as HTMLElement).innerHTML =
-      `<li><a href="#epost">Adressen mangler krøllalfa</a></li>`
-    await tegn()
+    field.focus()
+    ;(box.querySelector("ul") as HTMLElement).innerHTML =
+      `<li><a href="#email">The address is missing an @</a></li>`
+    await settle()
 
-    expect(document.activeElement).toBe(felt)
+    expect(document.activeElement).toBe(field)
   })
 
-  it("følger for til en gruppe når ledeteksten ikke har en kontroll", async () => {
+  it("follows for to a group when the label has no control", async () => {
     mount(`
-      <lt-error-summary ${attr(FEIL.host)} data-autofocus="false">
-        <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
-        <ul><li><a href="#valg-label" id="valg-lenke">Velg minst ett alternativ</a></li></ul>
+      <lt-error-summary ${attr(ERRORS.host)} data-autofocus="false">
+        <h2 ${attr(ERRORS.title)}>The form has one error</h2>
+        <ul><li><a href="#choice-label" id="choice-link">Choose at least one option</a></li></ul>
       </lt-error-summary>
-      <label id="valg-label" for="valg">Alternativer</label>
-      <div id="valg" role="group"><input type="checkbox" /></div>
+      <label id="choice-label" for="choice">Options</label>
+      <div id="choice" role="group"><input type="checkbox" /></div>
     `)
-    await tegn()
-    ;(document.getElementById("valg-lenke") as HTMLElement).click()
+    await settle()
+    ;(document.getElementById("choice-link") as HTMLElement).click()
 
-    expect(document.activeElement?.id).toBe("valg")
+    expect(document.activeElement?.id).toBe("choice")
   })
 
-  it("river ikke fokus ut av et felt utenfor skyggerota boksen står i", async () => {
-    // Rotas `activeElement` er null når fokus står utenfor skyggetreet, så
-    // brukeren ble regnet som «ingen», og gjenforsøket tok fokus.
-    mount(`<input id="ute" />`)
-    const vert = document.createElement("div")
-    vert.hidden = true
-    document.body.append(vert)
-    const rot = vert.attachShadow({ mode: "open" })
-    rot.innerHTML = `
-      <lt-error-summary ${attr(FEIL.host)}>
-        <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
-        <ul><li><a href="#ute">Skriv noe</a></li></ul>
+  it("does not pull focus out of a field outside the shadow root the box is in", async () => {
+    // The root's `activeElement` is null when focus is outside the shadow
+    // tree, so the user was counted as "nobody", and the retry took focus.
+    mount(`<input id="outside" />`)
+    const host = document.createElement("div")
+    host.hidden = true
+    document.body.append(host)
+    const root = host.attachShadow({ mode: "open" })
+    root.innerHTML = `
+      <lt-error-summary ${attr(ERRORS.host)}>
+        <h2 ${attr(ERRORS.title)}>The form has one error</h2>
+        <ul><li><a href="#outside">Write something</a></li></ul>
       </lt-error-summary>
     `
-    await tegn()
+    await settle()
 
-    const felt = document.getElementById("ute") as HTMLInputElement
-    vert.hidden = false
-    felt.focus()
-    ;(rot.querySelector("ul") as HTMLElement).innerHTML =
-      `<li><a href="#ute">Skriv noe annet</a></li>`
-    await tegn()
+    const field = document.getElementById("outside") as HTMLInputElement
+    host.hidden = false
+    field.focus()
+    ;(root.querySelector("ul") as HTMLElement).innerHTML =
+      `<li><a href="#outside">Write something else</a></li>`
+    await settle()
 
-    expect(document.activeElement).toBe(felt)
-    vert.remove()
+    expect(document.activeElement).toBe(field)
+    host.remove()
   })
 
-  it("følger en ledetekst som omslutter kontrollen", async () => {
-    // `for` er ikke den eneste koblingen mellom ledetekst og kontroll. Med
-    // kontrollen inni ledeteksten fikk ledeteksten fokus og en `tabindex`
-    // den ikke skulle hatt.
+  it("follows a label that wraps the control", async () => {
+    // `for` is not the only wiring between label and control. With the
+    // control inside the label, the label got focus and a `tabindex` it
+    // should not have had.
     mount(`
-      <lt-error-summary ${attr(FEIL.host)} data-autofocus="false">
-        <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
-        <ul><li><a href="#navn-label" id="navn-lenke">Skriv navnet ditt</a></li></ul>
+      <lt-error-summary ${attr(ERRORS.host)} data-autofocus="false">
+        <h2 ${attr(ERRORS.title)}>The form has one error</h2>
+        <ul><li><a href="#name-label" id="name-link">Enter your name</a></li></ul>
       </lt-error-summary>
-      <label id="navn-label">Navn <input id="navn" /></label>
+      <label id="name-label">Name <input id="name" /></label>
     `)
-    await tegn()
-    ;(document.getElementById("navn-lenke") as HTMLElement).click()
+    await settle()
+    ;(document.getElementById("name-link") as HTMLElement).click()
 
-    expect(document.activeElement?.id).toBe("navn")
+    expect(document.activeElement?.id).toBe("name")
     expect(
-      document.getElementById("navn-label")?.hasAttribute("tabindex"),
+      document.getElementById("name-label")?.hasAttribute("tabindex"),
     ).toBe(false)
   })
 })
 
-describe("lt-error-summary kobler fra bar struktur", () => {
+describe("lt-error-summary wires from bare structure", () => {
   beforeAll(() => {
     defineLtErrorSummary()
   })
 
   beforeEach(async () => {
     mount(`
-      <lt-error-summary id="bar-feil">
-        <h2>Skjemaet har én feil</h2>
+      <lt-error-summary id="bare-summary">
+        <h2>The form has one error</h2>
         <ul>
-          <li><a href="#bar-epost">Skriv en gyldig e-postadresse</a></li>
+          <li><a href="#bare-email">Enter a valid email address</a></li>
         </ul>
       </lt-error-summary>
 
-      <label class="lt-label" for="bar-epost">E-postadresse</label>
-      <input class="lt-input" id="bar-epost" type="email" />
+      <label class="lt-label" for="bare-email">Email address</label>
+      <input class="lt-input" id="bare-email" type="email" />
     `)
-    await tegn()
+    await settle()
   })
 
-  function boks() {
-    return document.getElementById("bar-feil") as HTMLElement
+  function box() {
+    return document.getElementById("bare-summary") as HTMLElement
   }
 
-  it("gir boksen klassen, rollen og tabbestoppen, og overskriften klassen", async () => {
-    const tittel = boks().querySelector("h2") as HTMLElement
+  it("gives the box the class, the role and the tab stop, and the heading the class", async () => {
+    const title = box().querySelector("h2") as HTMLElement
 
-    expect(boks().classList.contains("lt-error-summary")).toBe(true)
-    expect(boks().getAttribute("role")).toBe("alert")
-    expect(boks().tabIndex).toBe(-1)
-    expect(tittel.classList.contains("lt-error-summary__title")).toBe(true)
-    // Og da kan den få fokus, som er hele grunnen til komponenten.
-    expect(document.activeElement).toBe(boks())
+    expect(box().classList.contains("lt-error-summary")).toBe(true)
+    expect(box().getAttribute("role")).toBe("alert")
+    expect(box().tabIndex).toBe(-1)
+    expect(title.classList.contains("lt-error-summary__title")).toBe(true)
+    // And then it can take focus, which is the whole reason for the
+    // component.
+    expect(document.activeElement).toBe(box())
 
     await expectNoAccessibilityViolations()
   })
 
-  it("lar en rolle serveren skrev stå", async () => {
+  it("leaves a role the server wrote", async () => {
     mount(`
-      <lt-error-summary id="bar-feil" role="status">
-        <h2>Skjemaet har én feil</h2>
-        <ul><li><a href="#bar-epost">Skriv en gyldig e-postadresse</a></li></ul>
+      <lt-error-summary id="bare-summary" role="status">
+        <h2>The form has one error</h2>
+        <ul><li><a href="#bare-email">Enter a valid email address</a></li></ul>
       </lt-error-summary>
-      <input class="lt-input" id="bar-epost" type="email" />
+      <input class="lt-input" id="bare-email" type="email" />
     `)
-    await tegn()
+    await settle()
 
-    expect(boks().getAttribute("role")).toBe("status")
-    expect(boks().classList.contains("lt-error-summary")).toBe(true)
+    expect(box().getAttribute("role")).toBe("status")
+    expect(box().classList.contains("lt-error-summary")).toBe(true)
   })
 
-  it("setter klassene og tabbestoppen tilbake etter en patch", async () => {
-    const tittel = boks().querySelector("h2") as HTMLElement
+  it("puts the classes and the tab stop back after a patch", async () => {
+    const title = box().querySelector("h2") as HTMLElement
 
-    // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
-    boks().removeAttribute("class")
-    boks().removeAttribute("role")
-    boks().removeAttribute("tabindex")
-    tittel.removeAttribute("class")
+    // The way a morph does it: everything not in the server's HTML is removed.
+    box().removeAttribute("class")
+    box().removeAttribute("role")
+    box().removeAttribute("tabindex")
+    title.removeAttribute("class")
     await waitForPaint()
 
-    expect(boks().classList.contains("lt-error-summary")).toBe(true)
-    expect(boks().getAttribute("role")).toBe("alert")
-    expect(boks().tabIndex).toBe(-1)
-    expect(tittel.classList.contains("lt-error-summary__title")).toBe(true)
+    expect(box().classList.contains("lt-error-summary")).toBe(true)
+    expect(box().getAttribute("role")).toBe("alert")
+    expect(box().tabIndex).toBe(-1)
+    expect(title.classList.contains("lt-error-summary__title")).toBe(true)
   })
 })
 
-describe("lt-error-summary mens brukeren retter", () => {
+describe("lt-error-summary while the user corrects", () => {
   beforeAll(() => {
     defineLtErrorSummary()
   })
 
-  it("tar ikke fokus når en synlig liste tømmes og fylles igjen", async () => {
+  it("does not take focus when a visible list is emptied and filled again", async () => {
     mount(
-      `<lt-error-summary ${attr(FEIL.host)}>
-        <h2 ${attr(FEIL.title)}>Skjemaet har feil</h2>
-        <ul><li><a href="#navn">Navn mangler</a></li></ul>
+      `<lt-error-summary ${attr(ERRORS.host)}>
+        <h2 ${attr(ERRORS.title)}>The form has errors</h2>
+        <ul><li><a href="#name">Name is missing</a></li></ul>
       </lt-error-summary>
-      <label for="navn">Navn</label><input id="navn" />
-      <label for="epost">E-post</label><input id="epost" />`,
+      <label for="name">Name</label><input id="name" />
+      <label for="email">Email</label><input id="email" />`,
     )
-    await tegn()
-    const liste = document.querySelector("lt-error-summary ul") as HTMLElement
-    const navn = document.getElementById("navn") as HTMLInputElement
+    await settle()
+    const list = document.querySelector("lt-error-summary ul") as HTMLElement
+    const name = document.getElementById("name") as HTMLInputElement
 
-    navn.focus()
-    liste.innerHTML = ""
+    name.focus()
+    list.innerHTML = ""
     await waitForPaint()
-    liste.innerHTML = '<li><a href="#epost">E-post mangler</a></li>'
+    list.innerHTML = '<li><a href="#email">Email is missing</a></li>'
     await waitForPaint()
 
-    expect(document.activeElement).toBe(navn)
+    expect(document.activeElement).toBe(name)
   })
 
-  it("tar fokus igjen når lista tømmes før boksen skjules", async () => {
+  it("takes focus again when the list is emptied before the box is hidden", async () => {
     /*
-     * Rekkefølgen React gir: punktene fjernes før `hidden` settes på verten.
-     * Nullstillingen ved `hidden` sto etter returen for en tom liste, så
-     * boksen tok fokus ved første feilede innsending og aldri igjen.
+     * The order React gives: the items are removed before `hidden` is set on
+     * the host. The reset on `hidden` came after the return for an empty
+     * list, so the box took focus on the first failed submission and never
+     * again.
      */
     mount(
-      `<lt-error-summary ${attr(FEIL.host)}>
-        <h2 ${attr(FEIL.title)}>Skjemaet har feil</h2>
-        <ul><li><a href="#navn">Navn mangler</a></li></ul>
+      `<lt-error-summary ${attr(ERRORS.host)}>
+        <h2 ${attr(ERRORS.title)}>The form has errors</h2>
+        <ul><li><a href="#name">Name is missing</a></li></ul>
       </lt-error-summary>
-      <label for="navn">Navn</label><input id="navn" />`,
+      <label for="name">Name</label><input id="name" />`,
     )
-    await tegn()
-    const boks = document.querySelector("lt-error-summary") as HTMLElement
-    const liste = boks.querySelector("ul") as HTMLElement
-    const navn = document.getElementById("navn") as HTMLInputElement
-    expect(document.activeElement, "første innsending").toBe(boks)
+    await settle()
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    const list = box.querySelector("ul") as HTMLElement
+    const name = document.getElementById("name") as HTMLInputElement
+    expect(document.activeElement, "first submission").toBe(box)
 
-    navn.focus()
-    liste.innerHTML = ""
-    boks.hidden = true
+    name.focus()
+    list.innerHTML = ""
+    box.hidden = true
     await waitForPaint()
 
-    liste.innerHTML = '<li><a href="#navn">Navn mangler</a></li>'
-    boks.hidden = false
+    list.innerHTML = '<li><a href="#name">Name is missing</a></li>'
+    box.hidden = false
     await waitForPaint()
 
-    expect(document.activeElement, "andre innsending").toBe(boks)
+    expect(document.activeElement, "second submission").toBe(box)
   })
 })
 
-describe("lt-error-summary og en prosentkodet lenke", () => {
+describe("lt-error-summary and a percent-encoded link", () => {
   beforeAll(() => {
     defineLtErrorSummary()
   })
 
-  it("finner feltet og sier ikke at lenken er brutt", async () => {
-    const advarsler: string[] = []
-    const ekte = console.warn
-    console.warn = (...deler: unknown[]) => {
-      advarsler.push(String(deler[0]))
+  it("finds the field and does not say the link is broken", async () => {
+    const warnings: string[] = []
+    const original = console.warn
+    console.warn = (...args: unknown[]) => {
+      warnings.push(String(args[0]))
     }
     try {
       mount(
-        `<lt-error-summary ${attr(FEIL.host)} data-autofocus="false">
-          <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
-          <ul><li><a href="#f%C3%B8dselsdato">Skriv en dato som finnes</a></li></ul>
+        `<lt-error-summary ${attr(ERRORS.host)} data-autofocus="false">
+          <h2 ${attr(ERRORS.title)}>The form has one error</h2>
+          <ul><li><a href="#f%C3%B8dselsdato">Enter a date that exists</a></li></ul>
         </lt-error-summary>
-        <label for="fødselsdato">Fødselsdato</label><input id="fødselsdato" />`,
+        <label for="fødselsdato">Date of birth</label><input id="fødselsdato" />`,
       )
-      await tegn()
+      await settle()
       await waitForPaint()
       await waitForPaint()
 
-      expect(advarsler.filter((a) => a.includes("lenken peker"))).toEqual([])
+      expect(warnings.filter((a) => a.includes("the link points"))).toEqual([])
 
       ;(document.querySelector("lt-error-summary a") as HTMLElement).click()
       expect(document.activeElement?.id).toBe("fødselsdato")
     } finally {
-      console.warn = ekte
+      console.warn = original
     }
   })
 })
 
-describe("lt-error-summary under et annet tagnavn", () => {
-  it("skjules fortsatt av hidden", async () => {
+describe("lt-error-summary under another tag name", () => {
+  it("is still hidden by hidden", async () => {
     /*
-     * README fører `<lt-error-summary>` blant dem som ser like ut under et
-     * annet navn. `lt-error-summary[hidden]` i error-summary.css følger
-     * ikke med, men `display: block` står på klassen komponenten setter
-     * selv, og `[hidden]`-regelen i tokens.css er skrevet på den samme
-     * klassen, så boksen skjules likevel.
+     * The README lists `<lt-error-summary>` among those that look the same
+     * under another name. `lt-error-summary[hidden]` in error-summary.css
+     * does not come along, but `display: block` is on the class the component
+     * sets itself, and the `[hidden]` rule in tokens.css is written on the
+     * same class, so the box is hidden anyway.
      */
-    defineLtErrorSummary("annen-oppsummering")
+    defineLtErrorSummary("other-summary")
     mount(`
-      <annen-oppsummering ${attr(FEIL.host)} hidden>
-        <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
+      <other-summary ${attr(ERRORS.host)} hidden>
+        <h2 ${attr(ERRORS.title)}>The form has two errors</h2>
         <ul>
-          <li><a href="#epost">Skriv en gyldig e-postadresse</a></li>
-          <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
+          <li><a href="#email">Enter a valid email address</a></li>
+          <li><a href="#date-of-birth">Enter a date that exists</a></li>
         </ul>
-      </annen-oppsummering>
-      <input id="epost" />
+      </other-summary>
+      <input id="email" />
     `)
-    await customElements.whenDefined("annen-oppsummering")
+    await customElements.whenDefined("other-summary")
     await waitForPaint()
-    const boks = document.querySelector("annen-oppsummering") as HTMLElement
+    const box = document.querySelector("other-summary") as HTMLElement
 
-    expect(boks.classList.contains("lt-error-summary")).toBe(true)
-    expect(getComputedStyle(boks).display).toBe("none")
+    expect(box.classList.contains("lt-error-summary")).toBe(true)
+    expect(getComputedStyle(box).display).toBe("none")
 
-    boks.hidden = false
+    box.hidden = false
     await waitForPaint()
-    expect(getComputedStyle(boks).display).toBe("block")
-    expect(document.activeElement).toBe(boks)
+    expect(getComputedStyle(box).display).toBe("block")
+    expect(document.activeElement).toBe(box)
   })
 })
 
 /*
- * React gir fokus tilbake til elementet som hadde det før en commit, rett
- * etter at DOM-en er endret. Komponenten flytter fokus i det `hidden` tas
- * bort eller den kobles til, altså inne i den samme commiten, så React tok
- * det tilbake til innsendingsknappen. Testene gjør det samme som React, uten
- * React: endrer DOM-en og gir knappen fokus igjen i samme omgang.
+ * React gives focus back to the element that had it before a commit, right
+ * after the DOM has changed. The component moves focus when `hidden` is
+ * removed or when it connects, that is inside the same commit, so React took
+ * it back to the submit button. The tests do what React does, without React:
+ * change the DOM and give the button focus again in the same turn.
  */
-describe("lt-error-summary når et rammeverk gir fokus tilbake", () => {
+describe("lt-error-summary when a framework gives focus back", () => {
   beforeAll(() => {
     defineLtErrorSummary()
   })
 
-  const boks = () => `
-    <lt-error-summary ${attr(FEIL.host)} id="feil-r" hidden>
-      <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
-      <ul><li><a href="#epost-r">Skriv e-postadressen</a></li></ul>
+  const box = () => `
+    <lt-error-summary ${attr(ERRORS.host)} id="summary-r" hidden>
+      <h2 ${attr(ERRORS.title)}>The form has one error</h2>
+      <ul><li><a href="#email-r">Enter the email address</a></li></ul>
     </lt-error-summary>`
 
-  it("tar fokus tilbake når boksen vises", async () => {
+  it("takes focus back when the box is shown", async () => {
     mount(
-      `<form>${boks()}<input id="epost-r"><button type="submit" id="send-r">Send</button></form>`,
+      `<form>${box()}<input id="email-r"><button type="submit" id="submit-r">Send</button></form>`,
     )
-    await tegn()
-    const send = document.getElementById("send-r") as HTMLButtonElement
-    const feil = document.getElementById("feil-r") as HTMLElement
-    send.focus()
+    await settle()
+    const submit = document.getElementById("submit-r") as HTMLButtonElement
+    const summary = document.getElementById("summary-r") as HTMLElement
+    submit.focus()
 
-    feil.hidden = false
-    send.focus()
+    summary.hidden = false
+    submit.focus()
     await waitForPaint()
 
-    expect(document.activeElement).toBe(feil)
+    expect(document.activeElement).toBe(summary)
   })
 
-  it("tar fokus tilbake når boksen settes inn", async () => {
+  it("takes focus back when the box is inserted", async () => {
     mount(
-      `<form id="skjema-r"><input id="epost-r"><button type="submit" id="send-r">Send</button></form>`,
+      `<form id="form-r"><input id="email-r"><button type="submit" id="submit-r">Send</button></form>`,
     )
-    await tegn()
-    const send = document.getElementById("send-r") as HTMLButtonElement
-    send.focus()
+    await settle()
+    const submit = document.getElementById("submit-r") as HTMLButtonElement
+    submit.focus()
 
-    const mal = document.createElement("template")
-    mal.innerHTML = boks().replace(" hidden>", ">")
-    const feil = mal.content.firstElementChild as HTMLElement
-    document.getElementById("skjema-r")?.prepend(feil)
-    send.focus()
+    const template = document.createElement("template")
+    template.innerHTML = box().replace(" hidden>", ">")
+    const summary = template.content.firstElementChild as HTMLElement
+    document.getElementById("form-r")?.prepend(summary)
+    submit.focus()
     await waitForPaint()
 
-    expect(document.activeElement).toBe(feil)
+    expect(document.activeElement).toBe(summary)
   })
 
-  it("tar ikke fokus fra et felt i den samme skyggerota", async () => {
-    const vert = document.createElement("div")
-    document.body.append(vert)
-    const rot = vert.attachShadow({ mode: "open" })
-    rot.innerHTML = `${boks()}<input id="epost-r"><button type="submit" id="send-r">Send</button>`
-    await tegn()
-    const send = rot.getElementById("send-r") as HTMLButtonElement
-    const epost = rot.getElementById("epost-r") as HTMLInputElement
-    const feil = rot.getElementById("feil-r") as HTMLElement
-    send.focus()
+  it("does not take focus from a field in the same shadow root", async () => {
+    const host = document.createElement("div")
+    document.body.append(host)
+    const root = host.attachShadow({ mode: "open" })
+    root.innerHTML = `${box()}<input id="email-r"><button type="submit" id="submit-r">Send</button>`
+    await settle()
+    const submit = root.getElementById("submit-r") as HTMLButtonElement
+    const email = root.getElementById("email-r") as HTMLInputElement
+    const summary = root.getElementById("summary-r") as HTMLElement
+    submit.focus()
 
-    feil.hidden = false
-    // Boksen fikk fokus, ellers sier testen ingenting om vilkåret.
-    expect(rot.activeElement).toBe(feil)
-    epost.focus()
+    summary.hidden = false
+    // The box got focus; otherwise the test says nothing about the condition.
+    expect(root.activeElement).toBe(summary)
+    email.focus()
     await waitForPaint()
 
-    expect(rot.activeElement).toBe(epost)
-    vert.remove()
+    expect(root.activeElement).toBe(email)
+    host.remove()
   })
 
-  it("lar fokus stå når et skript har flyttet det til noe annet", async () => {
+  it("leaves focus where it is when a script has moved it elsewhere", async () => {
     mount(
-      `<form>${boks()}<input id="epost-r"><button type="submit" id="send-r">Send</button></form>`,
+      `<form>${box()}<input id="email-r"><button type="submit" id="submit-r">Send</button></form>`,
     )
-    await tegn()
-    const send = document.getElementById("send-r") as HTMLButtonElement
-    const epost = document.getElementById("epost-r") as HTMLInputElement
-    const feil = document.getElementById("feil-r") as HTMLElement
-    send.focus()
+    await settle()
+    const submit = document.getElementById("submit-r") as HTMLButtonElement
+    const email = document.getElementById("email-r") as HTMLInputElement
+    const summary = document.getElementById("summary-r") as HTMLElement
+    submit.focus()
 
-    feil.hidden = false
-    expect(document.activeElement).toBe(feil)
-    epost.focus()
+    summary.hidden = false
+    expect(document.activeElement).toBe(summary)
+    email.focus()
     await waitForPaint()
 
-    expect(document.activeElement).toBe(epost)
+    expect(document.activeElement).toBe(email)
   })
 })

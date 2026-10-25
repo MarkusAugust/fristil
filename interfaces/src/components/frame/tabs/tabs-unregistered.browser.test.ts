@@ -10,46 +10,46 @@ import "../../../tokens/tokens.css"
 import "./tabs.css"
 
 /*
- * Ingen `defineLtTabs()` her, med vilje. Fila kjører i sin egen ramme, så
- * `lt-tabs` er uregistrert gjennom hele testen, og det er den tilstanden
- * regelen i `tabs.css` gjelder for: markup skrevet uten JavaScript, før
- * komponenten har rukket å skjule panelene selv.
+ * No `defineLtTabs()` here, on purpose. The file runs in its own frame, so
+ * `lt-tabs` stays unregistered for the whole test, and that is the state the
+ * rule in `tabs.css` is for: markup written without JavaScript, before the
+ * component has had time to hide the panels itself.
  */
-const BAR = `
+const BARE = `
   <lt-tabs>
     <ul class="lt-tabs__list">
-      <li><a href="#soknaden">Søknaden</a></li>
-      <li><a href="#vedlegg">Vedlegg</a></li>
-      <li><a href="#meldinger">Meldinger</a></li>
+      <li><a href="#application">Application</a></li>
+      <li><a href="#attachments">Attachments</a></li>
+      <li><a href="#messages">Messages</a></li>
     </ul>
-    <section class="lt-tabs__panel" id="soknaden">Søknaden</section>
-    <section class="lt-tabs__panel" id="vedlegg">Vedlegg <p id="inne-vedlegg">Inni</p></section>
-    <section class="lt-tabs__panel" id="meldinger">Meldinger</section>
+    <section class="lt-tabs__panel" id="application">Application</section>
+    <section class="lt-tabs__panel" id="attachments">Attachments <p id="in-attachments">Inside</p></section>
+    <section class="lt-tabs__panel" id="messages">Messages</section>
   </lt-tabs>`
 
-/** Faner i faner: `#dypt` står i det indre panelet `ib`, i det ytre `yb`. */
-const FANER_I_FANER = (indre = "") => `
+/** Tabs in tabs: `#deep` is in the inner panel `ib`, inside the outer `yb`. */
+const TABS_IN_TABS = (inner = "") => `
   <lt-tabs>
     <ul class="lt-tabs__list"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
-    <section class="lt-tabs__panel" id="ya">Ytre a</section>
-    <section class="lt-tabs__panel" id="yb">Ytre b
-      <lt-tabs${indre}>
+    <section class="lt-tabs__panel" id="ya">Outer a</section>
+    <section class="lt-tabs__panel" id="yb">Outer b
+      <lt-tabs${inner}>
         <ul class="lt-tabs__list"><li><a href="#ia">IA</a></li><li><a href="#ib">IB</a></li></ul>
-        <section class="lt-tabs__panel" id="ia">Indre a</section>
-        <section class="lt-tabs__panel" id="ib">Indre b <p id="dypt">Dypt</p></section>
+        <section class="lt-tabs__panel" id="ia">Inner a</section>
+        <section class="lt-tabs__panel" id="ib">Inner b <p id="deep">Deep</p></section>
       </lt-tabs>
     </section>
   </lt-tabs>`
 
-function vises(...ider: string[]): boolean[] {
-  return ider.map(
+function shown(...ids: string[]): boolean[] {
+  return ids.map(
     (id) =>
       getComputedStyle(document.getElementById(id) as HTMLElement).display !==
       "none",
   )
 }
 
-function visning(): string[] {
+function displays(): string[] {
   return [...document.querySelectorAll<HTMLElement>(".lt-tabs__panel")].map(
     (panel) => getComputedStyle(panel).display,
   )
@@ -59,108 +59,112 @@ beforeEach(async () => {
   await setAddress("")
 })
 
-describe("tabs.css før komponenten er registrert", () => {
-  it("viser bare det første panelet når serveren ikke sa noe", async () => {
+describe("tabs.css before the component is registered", () => {
+  it("shows only the first panel when the server said nothing", async () => {
     expect(customElements.get("lt-tabs")).toBeUndefined()
-    mount(BAR)
+    mount(BARE)
     await waitForPaint()
 
-    expect(visning()).toEqual(["block", "none", "none"])
+    expect(displays()).toEqual(["block", "none", "none"])
   })
 
-  it("lar serverens hidden bestemme hvilket panel som er det første synlige", async () => {
+  it("lets the server's hidden decide which panel is the first visible one", async () => {
     mount(
-      BAR.replace('id="soknaden">Søknaden', 'id="soknaden" hidden>Søknaden'),
+      BARE.replace(
+        'id="application">Application',
+        'id="application" hidden>Application',
+      ),
     )
     await waitForPaint()
 
-    expect(visning()).toEqual(["none", "block", "none"])
+    expect(displays()).toEqual(["none", "block", "none"])
   })
 
   /*
-   * Peker adressen på et panel, eller på noe i det, viser CSS det panelet.
-   * Det er det komponenten velger når den registreres (krav E1), så
-   * innholdet ikke hopper (A4). Monteres først og navigeres etter, slik
-   * nettleseren finner elementet når siden lastes, se `goTo()`.
+   * When the address points at a panel, or at something in it, the CSS shows
+   * that panel. That is what the component selects when it is registered
+   * (requirement E1), so the content does not jump (A4). Mounted first and
+   * navigated afterwards, the way the browser finds the element when the page
+   * loads; see `goTo()`.
    */
-  it("viser panelet adressen peker på", async () => {
-    mount(BAR)
-    await goTo("#meldinger")
+  it("shows the panel the address points at", async () => {
+    mount(BARE)
+    await goTo("#messages")
     await waitForPaint()
 
-    expect(visning()).toEqual(["none", "none", "block"])
+    expect(displays()).toEqual(["none", "none", "block"])
   })
 
-  it("viser panelet med det adressen peker på inni", async () => {
-    mount(BAR)
-    await goTo("#inne-vedlegg")
+  it("shows the panel with what the address points at inside it", async () => {
+    mount(BARE)
+    await goTo("#in-attachments")
     await waitForPaint()
 
-    expect(visning()).toEqual(["none", "block", "none"])
+    expect(displays()).toEqual(["none", "block", "none"])
   })
 
-  it("viser panelet et kodet fragment peker på", async () => {
-    mount(BAR.replace('id="vedlegg"', 'id="søknaden-2"'))
-    await goTo("#s%C3%B8knaden-2")
+  it("shows the panel an encoded fragment points at", async () => {
+    mount(BARE.replace('id="attachments"', 'id="café-2"'))
+    await goTo("#caf%C3%A9-2")
     await waitForPaint()
 
-    expect(visning()).toEqual(["none", "block", "none"])
+    expect(displays()).toEqual(["none", "block", "none"])
   })
 
-  it("viser det første panelet når adressen peker utenfor raden", async () => {
-    mount(`<p id="annet">Annet</p>${BAR}`)
-    await goTo("#annet")
+  it("shows the first panel when the address points outside the tab list", async () => {
+    mount(`<p id="other">Other</p>${BARE}`)
+    await goTo("#other")
     await waitForPaint()
 
-    expect(visning()).toEqual(["block", "none", "none"])
+    expect(displays()).toEqual(["block", "none", "none"])
   })
 
-  it("lar serverens hidden gå foran adressen", async () => {
+  it("puts the server's hidden before the address", async () => {
     mount(
-      BAR.replace('id="meldinger">', 'id="meldinger" hidden>').replace(
-        'id="soknaden">',
-        'id="soknaden" hidden>',
+      BARE.replace('id="messages">', 'id="messages" hidden>').replace(
+        'id="application">',
+        'id="application" hidden>',
       ),
     )
-    await goTo("#meldinger")
+    await goTo("#messages")
     await waitForPaint()
 
-    expect(visning()).toEqual(["none", "block", "none"])
+    expect(displays()).toEqual(["none", "block", "none"])
   })
 
-  it("lar adressen være under server-controlled, der komponenten ikke velger fra den", async () => {
-    mount(BAR.replace("<lt-tabs>", "<lt-tabs server-controlled>"))
-    await goTo("#meldinger")
+  it("ignores the address under server-controlled, where the component does not select from it", async () => {
+    mount(BARE.replace("<lt-tabs>", "<lt-tabs server-controlled>"))
+    await goTo("#messages")
     await waitForPaint()
 
-    expect(visning()).toEqual(["block", "none", "none"])
+    expect(displays()).toEqual(["block", "none", "none"])
   })
 
-  it("viser treffet i faner i faner, i begge radene", async () => {
-    mount(FANER_I_FANER())
-    await goTo("#dypt")
+  it("shows the target in tabs in tabs, in both tab lists", async () => {
+    mount(TABS_IN_TABS())
+    await goTo("#deep")
     await waitForPaint()
 
-    expect(vises("ya", "yb", "ia", "ib")).toEqual([false, true, false, true])
+    expect(shown("ya", "yb", "ia", "ib")).toEqual([false, true, false, true])
   })
 
-  it("viser det første i en indre rad med server-controlled, og treffet i den ytre", async () => {
-    mount(FANER_I_FANER(" server-controlled"))
-    await goTo("#dypt")
+  it("shows the first panel in an inner tab list with server-controlled, and the target in the outer one", async () => {
+    mount(TABS_IN_TABS(" server-controlled"))
+    await goTo("#deep")
     await waitForPaint()
 
-    expect(vises("ya", "yb", "ia", "ib")).toEqual([false, true, true, false])
+    expect(shown("ya", "yb", "ia", "ib")).toEqual([false, true, true, false])
   })
 
-  it("viser panelet en lenke i raden fører til, også når komponenten aldri blir registrert", async () => {
-    mount(BAR)
+  it("shows the panel a link in the tab list leads to, even when the component is never registered", async () => {
+    mount(BARE)
     await waitForPaint()
 
     await userEvent.click(
-      document.querySelector('a[href="#meldinger"]') as HTMLElement,
+      document.querySelector('a[href="#messages"]') as HTMLElement,
     )
     await waitForPaint()
 
-    expect(visning()).toEqual(["none", "none", "block"])
+    expect(displays()).toEqual(["none", "none", "block"])
   })
 })

@@ -244,7 +244,7 @@
     --tabell-skygge: rgb(0 0 0 / 0.5);
   }
 
-  .sl-markdown-content .table-scroll[data-mer-hoyre] {
+  .sl-markdown-content .table-scroll[data-more-right] {
     background-image: linear-gradient(
       to left,
       var(--tabell-skygge),
@@ -253,7 +253,7 @@
     background-position: right;
   }
 
-  .sl-markdown-content .table-scroll[data-mer-venstre] {
+  .sl-markdown-content .table-scroll[data-more-left] {
     background-image: linear-gradient(
       to right,
       var(--tabell-skygge),
@@ -262,7 +262,7 @@
     background-position: left;
   }
 
-  .sl-markdown-content .table-scroll[data-mer-venstre][data-mer-hoyre] {
+  .sl-markdown-content .table-scroll[data-more-left][data-more-right] {
     background-image:
       linear-gradient(to right, var(--tabell-skygge), transparent),
       linear-gradient(to left, var(--tabell-skygge), transparent);

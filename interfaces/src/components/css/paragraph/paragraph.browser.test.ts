@@ -15,40 +15,40 @@ import "./paragraph.css"
 describe("lt-paragraph", () => {
   beforeEach(() => {
     mount(`
-      <p class="lt-paragraph" data-variant="lead" id="ingress">
-        Bostøtte er en støtteordning for deg som har lave inntekter og høye boutgifter.
+      <p class="lt-paragraph" data-variant="lead" id="lead">
+        Housing support is a scheme for people with low incomes and high housing costs.
       </p>
-      <p class="lt-paragraph" id="brod">
-        Du kan søke hver måned. Fristen er den 25., og svaret kommer rundt den 20. måneden etter.
+      <p class="lt-paragraph" id="body">
+        You can apply every month. The deadline is the 25th, and the answer comes around the 20th of the following month.
       </p>
-      <p class="lt-paragraph" id="andre">Neste avsnitt.</p>
+      <p class="lt-paragraph" id="second">Next paragraph.</p>
     `)
   })
 
-  it("holder linjelengden nede", () => {
-    const stil = getComputedStyle(document.getElementById("brod") as Element)
+  it("keeps the line length down", () => {
+    const style = getComputedStyle(document.getElementById("body") as Element)
 
-    // 70ch. Lengre linjer gjør det vanskelig å finne starten på neste linje.
-    expect(stil.maxInlineSize).not.toBe("none")
+    // 70ch. Longer lines make it hard to find the start of the next line.
+    expect(style.maxInlineSize).not.toBe("none")
   })
 
-  it("skiller ingressen fra brødteksten", () => {
-    const ingress = getComputedStyle(
-      document.getElementById("ingress") as Element,
+  it("tells the lead apart from the body text", () => {
+    const lead = getComputedStyle(document.getElementById("lead") as Element)
+    const body = getComputedStyle(document.getElementById("body") as Element)
+
+    expect(lead.fontSize).not.toBe(body.fontSize)
+    expect(lead.color).not.toBe(body.color)
+  })
+
+  it("adds space between consecutive paragraphs", () => {
+    const second = getComputedStyle(
+      document.getElementById("second") as Element,
     )
-    const brod = getComputedStyle(document.getElementById("brod") as Element)
 
-    expect(ingress.fontSize).not.toBe(brod.fontSize)
-    expect(ingress.color).not.toBe(brod.color)
+    expect(second.marginBlockStart).not.toBe("0px")
   })
 
-  it("setter luft mellom avsnitt som følger hverandre", () => {
-    const andre = getComputedStyle(document.getElementById("andre") as Element)
-
-    expect(andre.marginBlockStart).not.toBe("0px")
-  })
-
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(paragraph()).toEqual({ class: "lt-paragraph" })
     expect(paragraph({ size: "large", variant: "lead" })).toEqual({
       class: "lt-paragraph",
@@ -57,7 +57,7 @@ describe("lt-paragraph", () => {
     })
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

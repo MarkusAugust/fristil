@@ -138,9 +138,9 @@ describe("de to temablokkene er symmetriske", () => {
     // Navnene alene holder ikke. Hentet `lightLines` fra feil kilde, eller
     // fikk `--lt-icon-*` de mørke strekfargene sine, ville navnene fortsatt
     // stemt mens fargene var gale.
-    const rot = blokk("  :root")
+    const root = blokk("  :root")
     const avvik = [...blokk('[data-theme="light"]')].filter(
-      ([navn, verdi]) => rot.get(navn) !== verdi,
+      ([navn, verdi]) => root.get(navn) !== verdi,
     )
     expect(avvik).toEqual([])
   })
@@ -216,8 +216,8 @@ describe("temavelgeren virker uten JavaScript", () => {
   })
 
   it("lar serveren bestemme når brukeren velger å følge systemet", () => {
-    // «Følg systemet» har ingen regel, og det er hele poenget: tre tilstander
-    // ut av to selektorer. Treffer `auto` noe, er den en regel for mye.
+    // «Følg systemet» har ingen rule, og det er hele poenget: tre tilstander
+    // ut av to selektorer. Treffer `auto` noe, er den en rule for mye.
     document.documentElement.setAttribute("data-theme", "dark")
     velg("auto")
     expect(token(hent("ute"))).toBe(MORK)

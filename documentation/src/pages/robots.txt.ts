@@ -7,9 +7,9 @@
  */
 
 import type { APIRoute } from "astro"
-import pakke from "../../../interfaces/package.json"
+import pkg from "../../../interfaces/package.json"
 
-const BASE = pakke.homepage.replace(/\/$/, "")
+const BASE = pkg.homepage.replace(/\/$/, "")
 
 export const GET: APIRoute = () =>
   new Response(

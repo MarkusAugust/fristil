@@ -1,4 +1,4 @@
-import pakke from "../../interfaces/package.json" with { type: "json" }
+import pkg from "../../interfaces/package.json" with { type: "json" }
 
 /*
  * The image a link to the documentation gets when it is shared. The Starlight
@@ -9,9 +9,9 @@ import pakke from "../../interfaces/package.json" with { type: "json" }
  * The address must be absolute: X and the others do not read a relative path.
  * The image is `public/og.png`, 1200 × 630 pixels.
  */
-const BASE = pakke.homepage.replace(/\/$/, "")
+const BASE = pkg.homepage.replace(/\/$/, "")
 
-export const DELINGSBILDE = [
+export const SHARE_IMAGE = [
   ["og:image", `${BASE}/og.png`],
   ["og:image:width", "1200"],
   ["og:image:height", "630"],
@@ -20,7 +20,7 @@ export const DELINGSBILDE = [
 ]
 
 // `og:*` is a `property` in Open Graph, `twitter:*` is a `name`.
-export const metaAttributter = ([navn, verdi]) =>
-  navn.startsWith("og:")
-    ? { property: navn, content: verdi }
-    : { name: navn, content: verdi }
+export const metaAttributes = ([name, value]) =>
+  name.startsWith("og:")
+    ? { property: name, content: value }
+    : { name: name, content: value }

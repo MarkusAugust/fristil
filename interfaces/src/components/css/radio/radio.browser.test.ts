@@ -18,52 +18,54 @@ describe("lt-radio", () => {
   beforeEach(() => {
     mount(`
       <fieldset class="lt-fieldset">
-        <legend class="lt-legend">Leveringsmåte</legend>
+        <legend class="lt-legend">Delivery method</legend>
         <div class="lt-radio-row">
-          <input class="lt-radio" type="radio" id="post" name="levering" checked />
-          <label class="lt-label" for="post">Vanlig post</label>
+          <input class="lt-radio" type="radio" id="post" name="delivery" checked />
+          <label class="lt-label" for="post">Standard post</label>
         </div>
         <div class="lt-radio-row">
-          <input class="lt-radio" type="radio" id="hentes" name="levering" />
-          <label class="lt-label" for="hentes">Hentes på kontoret</label>
+          <input class="lt-radio" type="radio" id="pickup" name="delivery" />
+          <label class="lt-label" for="pickup">Collect at the office</label>
         </div>
       </fieldset>
     `)
   })
 
-  it("er rund, i motsetning til avkryssingsboksen", () => {
-    const knapp = document.getElementById("post") as HTMLElement
-    const radius = getComputedStyle(knapp).borderRadius
+  it("is round, unlike the checkbox", () => {
+    const button = document.getElementById("post") as HTMLElement
+    const radius = getComputedStyle(button).borderRadius
 
     expect(radius).toMatch(/50%|9999px/)
   })
 
-  it("viser prikken bare på den valgte", () => {
-    const valgt = getComputedStyle(document.getElementById("post") as Element)
-    const ikkeValgt = getComputedStyle(
-      document.getElementById("hentes") as Element,
+  it("shows the dot only on the selected one", () => {
+    const selected = getComputedStyle(
+      document.getElementById("post") as Element,
+    )
+    const unselected = getComputedStyle(
+      document.getElementById("pickup") as Element,
     )
 
-    expect(valgt.backgroundImage).toContain("radial-gradient")
-    expect(ikkeValgt.backgroundImage).toBe("none")
+    expect(selected.backgroundImage).toContain("radial-gradient")
+    expect(unselected.backgroundImage).toBe("none")
   })
 
-  it("holder bare én valgt om gangen innenfor samme name", () => {
-    const hentes = document.getElementById("hentes") as HTMLInputElement
-    hentes.click()
+  it("keeps only one selected at a time within the same name", () => {
+    const pickup = document.getElementById("pickup") as HTMLInputElement
+    pickup.click()
 
     expect((document.getElementById("post") as HTMLInputElement).checked).toBe(
       false,
     )
-    expect(hentes.checked).toBe(true)
+    expect(pickup.checked).toBe(true)
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(radio()).toEqual({ class: "lt-radio", type: "radio" })
     expect(radio.row).toBe("lt-radio-row")
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

@@ -18,30 +18,30 @@ describe("lt-search", () => {
   beforeEach(() => {
     mount(`
       <form class="lt-search-row" role="search">
-        <label class="lt-label lt-sr-only" for="sok">Søk i saker</label>
-        <input class="lt-input lt-search" type="search" id="sok" name="q"
-          placeholder="Søk i saker" />
-        <button class="lt-button" type="submit">Søk</button>
+        <label class="lt-label lt-sr-only" for="search">Search cases</label>
+        <input class="lt-input lt-search" type="search" id="search" name="q"
+          placeholder="Search cases" />
+        <button class="lt-button" type="submit">Search</button>
       </form>
     `)
   })
 
-  it("er et lt-input med plass til ikonet", () => {
-    const felt = document.getElementById("sok") as HTMLElement
-    const stil = getComputedStyle(felt)
+  it("is an lt-input with room for the icon", () => {
+    const field = document.getElementById("search") as HTMLElement
+    const style = getComputedStyle(field)
 
-    expect(felt.classList.contains("lt-input")).toBe(true)
-    expect(stil.backgroundImage).toContain("svg")
-    expect(Number.parseFloat(stil.paddingInlineStart)).toBeGreaterThan(24)
+    expect(field.classList.contains("lt-input")).toBe(true)
+    expect(style.backgroundImage).toContain("svg")
+    expect(Number.parseFloat(style.paddingInlineStart)).toBeGreaterThan(24)
   })
 
-  it("bruker type=search, så nettleseren gir kryss og søketastatur", () => {
-    const felt = document.getElementById("sok") as HTMLInputElement
+  it("uses type=search, so the browser gives a clear button and a search keyboard", () => {
+    const field = document.getElementById("search") as HTMLInputElement
 
-    expect(felt.type).toBe("search")
+    expect(field.type).toBe("search")
   })
 
-  it("setter begge klassene fra byggefunksjonen", () => {
+  it("sets both classes from the builder function", () => {
     expect(search()).toEqual({
       class: "lt-input lt-search",
       type: "search",
@@ -53,7 +53,7 @@ describe("lt-search", () => {
     expect(search.row).toBe("lt-search-row")
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

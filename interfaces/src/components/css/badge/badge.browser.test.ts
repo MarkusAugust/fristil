@@ -24,10 +24,10 @@ describe("lt-badge", () => {
   beforeEach(() => {
     document.body.innerHTML = `
       <span id="default" class="lt-badge">Info</span>
-      <span id="success" class="lt-badge" data-color="success">Aktiv</span>
-      <span id="warning" class="lt-badge" data-color="warning">Advarsel</span>
-      <span id="danger" class="lt-badge" data-color="danger">Feil</span>
-      <span id="neutral" class="lt-badge" data-color="neutral">Inaktiv</span>
+      <span id="success" class="lt-badge" data-color="success">Active</span>
+      <span id="warning" class="lt-badge" data-color="warning">Warning</span>
+      <span id="danger" class="lt-badge" data-color="danger">Error</span>
+      <span id="neutral" class="lt-badge" data-color="neutral">Inactive</span>
     `
   })
 
@@ -62,14 +62,14 @@ describe("lt-badge", () => {
   })
 })
 
-describe("lt-badge tilgjengelighet", () => {
-  it("har nok kontrast i alle fargevarianter", async () => {
+describe("lt-badge accessibility", () => {
+  it("has enough contrast in every colour variant", async () => {
     mount(`
-      <span class="lt-badge">Under behandling</span>
-      <span class="lt-badge" data-color="success">Innvilget</span>
-      <span class="lt-badge" data-color="warning">Mangler vedlegg</span>
-      <span class="lt-badge" data-color="danger">Avslått</span>
-      <span class="lt-badge" data-color="neutral">Arkivert</span>
+      <span class="lt-badge">In progress</span>
+      <span class="lt-badge" data-color="success">Granted</span>
+      <span class="lt-badge" data-color="warning">Missing attachment</span>
+      <span class="lt-badge" data-color="danger">Rejected</span>
+      <span class="lt-badge" data-color="neutral">Archived</span>
     `)
 
     await waitForPaint()

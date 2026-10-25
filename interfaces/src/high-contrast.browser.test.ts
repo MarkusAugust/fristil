@@ -78,7 +78,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
 
   it("lar nettleseren tegne avkryssingsboksen, radioknappen og bryteren", async () => {
     mount(`
-      <input class="lt-checkbox" type="checkbox" id="boks" checked />
+      <input class="lt-checkbox" type="checkbox" id="box" checked />
       <input class="lt-radio" type="radio" id="radio" checked />
       <input class="lt-switch" type="checkbox" role="switch" id="bryter" checked />
       <select class="lt-select" id="liste"><option>Valg</option></select>
@@ -87,7 +87,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
 
     await settHoeykontrast(true)
 
-    for (const id of ["boks", "radio", "bryter", "liste", "liste-stylet"]) {
+    for (const id of ["box", "radio", "bryter", "liste", "liste-stylet"]) {
       // `appearance: auto` gir tilbake nettleserens egen tegning, som er
       // riktig i alle temaene brukeren kan velge.
       expect(stil(id).appearance, id).toBe("auto")
@@ -240,10 +240,10 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
   })
 
   it("lar tilstanden være uendret utenfor modusen", async () => {
-    mount(`<input class="lt-checkbox" type="checkbox" id="boks" checked />`)
+    mount(`<input class="lt-checkbox" type="checkbox" id="box" checked />`)
     await waitForPaint()
 
-    expect(stil("boks").appearance).toBe("none")
-    expect(stil("boks").backgroundImage).toContain("svg")
+    expect(stil("box").appearance).toBe("none")
+    expect(stil("box").backgroundImage).toContain("svg")
   })
 })

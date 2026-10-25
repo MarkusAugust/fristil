@@ -26,15 +26,15 @@ import "../../css/button/button.css"
 describe(".lt-dialog", () => {
   beforeEach(() => {
     mount(`
-      <button class="lt-button" id="apne" type="button">Slett søknaden</button>
-      <dialog class="lt-dialog" id="dialog" aria-labelledby="dialog-tittel">
-        <h2 class="lt-dialog__title" id="dialog-tittel">Slette søknaden?</h2>
+      <button class="lt-button" id="open-button" type="button">Delete the application</button>
+      <dialog class="lt-dialog" id="dialog" aria-labelledby="dialog-title">
+        <h2 class="lt-dialog__title" id="dialog-title">Delete the application?</h2>
         <div class="lt-dialog__body">
-          <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+          <p>The application and its attachments will be gone. This cannot be undone.</p>
         </div>
         <div class="lt-dialog__footer">
-          <button class="lt-button" data-variant="secondary" id="avbryt" type="button">Avbryt</button>
-          <button class="lt-button" data-variant="danger" id="slett" type="button">Slett søknaden</button>
+          <button class="lt-button" data-variant="secondary" id="cancel" type="button">Cancel</button>
+          <button class="lt-button" data-variant="danger" id="delete" type="button">Delete the application</button>
         </div>
       </dialog>
     `)
@@ -45,60 +45,61 @@ describe(".lt-dialog", () => {
     if (d?.open) d.close()
   })
 
-  it("flytter fokus inn i dialogen når den åpnes med showModal", () => {
+  it("moves focus into the dialog when it is opened with showModal", () => {
     const d = document.getElementById("dialog") as HTMLDialogElement
     d.showModal()
 
     expect(d.open).toBe(true)
-    // showModal() flytter fokus selv. Et <dialog open> i markupen gjør ikke
-    // det, og er derfor bare en boks på siden.
+    // showModal() moves focus itself. A <dialog open> in the markup does not,
+    // and is therefore just a box on the page.
     expect(d.contains(document.activeElement)).toBe(true)
   })
 
-  it("lukkes med Escape uten at vi skriver noe for det", async () => {
+  it("closes with Escape without us writing anything for it", async () => {
     const d = document.getElementById("dialog") as HTMLDialogElement
     d.showModal()
 
-    // Et `cancel` sendt for hånd utløser ikke nettleserens egen lukking, og
-    // en test som gjorde det og deretter kalte `close()` selv, prøvde bare
-    // sin egen kode. Her trykkes tasten på ekte.
+    // A `cancel` dispatched by hand does not trigger the browser's own
+    // closing, and a test that did that and then called `close()` itself only
+    // tested its own code. Here the key is pressed for real.
     await userEvent.keyboard("{Escape}")
 
     expect(d.open).toBe(false)
   })
 
-  it("melder tilbake hva brukeren valgte", () => {
+  it("reports back what the user chose", () => {
     const d = document.getElementById("dialog") as HTMLDialogElement
     d.showModal()
-    d.close("slett")
+    d.close("delete")
 
-    expect(d.returnValue).toBe("slett")
+    expect(d.returnValue).toBe("delete")
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
-    const boks = dialog({ titleId: "dialog-tittel" })
+  it("sets the attributes from the builder function", () => {
+    const box = dialog({ titleId: "dialog-title" })
 
-    expect(boks.dialog).toEqual({
+    expect(box.dialog).toEqual({
       class: "lt-dialog",
-      "aria-labelledby": "dialog-tittel",
+      "aria-labelledby": "dialog-title",
     })
-    // Skal dialogen vises, står `open` begge steder. På `<dialog>` er det
-    // reserven for den som ikke har JavaScript: uten den er innholdet skjult.
+    // When the dialog is to be shown, `open` is in both places. On `<dialog>`
+    // it is the fallback for those without JavaScript: without it the content
+    // is hidden.
     expect(dialog({ titleId: "t", open: true }).dialog).toEqual({
       class: "lt-dialog",
       "aria-labelledby": "t",
       open: true,
     })
-    expect(boks.title).toEqual({
+    expect(box.title).toEqual({
       class: "lt-dialog__title",
-      id: "dialog-tittel",
+      id: "dialog-title",
     })
-    expect(boks.body).toEqual({ class: "lt-dialog__body" })
-    expect(boks.footer).toEqual({ class: "lt-dialog__footer" })
+    expect(box.body).toEqual({ class: "lt-dialog__body" })
+    expect(box.footer).toEqual({ class: "lt-dialog__footer" })
     expect(dialog.title).toBe("lt-dialog__title")
   })
 
-  it("har ingen tilgjengelighetsbrudd når den er åpen", async () => {
+  it("has no accessibility violations when open", async () => {
     const d = document.getElementById("dialog") as HTMLDialogElement
     d.showModal()
 
@@ -107,69 +108,69 @@ describe(".lt-dialog", () => {
   })
 })
 
-describe("bredden på dialogen", () => {
-  it("blir ikke bredere enn boksen den står i", async () => {
+describe("the width of the dialog", () => {
+  it("does not get wider than the box it is in", async () => {
     /*
-     * Dialogen regnet bredden sin mot vindusruten. Står den i en smalere
-     * boks, som i et panel eller en forhåndsvisning, stakk den utenfor.
+     * The dialog worked out its width against the viewport. In a narrower
+     * box, such as a panel or a preview, it stuck out.
      *
-     * En `<dialog open>` er absolutt plassert av nettleseren, så `100%`
-     * måles mot nærmeste plasserte forelder. Derfor `position: relative` på
-     * boksen her; uten den er det vindusruten som gjelder, og det er riktig
-     * for en dialog åpnet med `showModal()`.
+     * A `<dialog open>` is absolutely positioned by the browser, so `100%` is
+     * relative to the nearest positioned parent. Hence `position: relative`
+     * on the box here; without it the viewport applies, and that is right
+     * for a dialog opened with `showModal()`.
      */
     mount(`
-      <div id="smal" style="width: 240px; position: relative">
-        <dialog class="lt-dialog" id="i-boks" open>
-          <p>Innhold</p>
+      <div id="narrow" style="width: 240px; position: relative">
+        <dialog class="lt-dialog" id="in-box" open>
+          <p>Content</p>
         </dialog>
       </div>
 
-      <div id="smal-flate" style="width: 240px">
-        <div class="lt-dialog" id="som-boks">
-          <p>Innhold</p>
+      <div id="narrow-surface" style="width: 240px">
+        <div class="lt-dialog" id="as-box">
+          <p>Content</p>
         </div>
       </div>
     `)
 
     await waitForPaint()
 
-    for (const [boksId, dialogId] of [
-      ["smal", "i-boks"],
-      ["smal-flate", "som-boks"],
+    for (const [boxId, dialogId] of [
+      ["narrow", "in-box"],
+      ["narrow-surface", "as-box"],
     ]) {
-      const boks = document.getElementById(boksId) as HTMLElement
+      const box = document.getElementById(boxId) as HTMLElement
       const dialog = document.getElementById(dialogId) as HTMLElement
 
       expect(
         dialog.getBoundingClientRect().width,
         dialogId,
-      ).toBeLessThanOrEqual(boks.getBoundingClientRect().width)
+      ).toBeLessThanOrEqual(box.getBoundingClientRect().width)
     }
   })
 })
 
 /**
- * Serveren kan si at dialogen er åpen, og komponenten gjør kallet.
+ * The server can say the dialog is open, and the component makes the call.
  *
- * Uten dette kunne en app som bare sender HTML ikke åpne en dialog i det
- * hele tatt: `showModal()` er et kall, og `<dialog open>` er bare en boks på
- * siden. Det ble funnet i en app skrevet i Kotlin med Datastar.
+ * Without this, an app that only sends HTML could not open a dialog at all:
+ * `showModal()` is a call, and `<dialog open>` is just a box on the page. This
+ * was found in an app written in Kotlin with Datastar.
  */
 /**
- * Lukker dialogen og venter på `close`-hendelsen, ikke på en tegning.
+ * Closes the dialog and waits for the `close` event, not for a frame.
  *
- * Hendelsen er en køet oppgave, og komponentens lytter kjører i den. En
- * tegning kan komme før, og da leste testen verten før komponenten hadde
- * fjernet `open`. Lytteren her legges til etter komponentens, så den kjører
- * sist.
+ * The event is a queued task, and the component's listener runs in it. A
+ * frame can come first, and then the test read the host before the component
+ * had removed `open`. The listener here is added after the component's, so it
+ * runs last.
  */
-async function lukkOgVent(d: HTMLDialogElement, verdi?: string) {
-  const lukket = new Promise((ferdig) =>
-    d.addEventListener("close", ferdig, { once: true }),
+async function closeAndWait(d: HTMLDialogElement, value?: string) {
+  const closed = new Promise((done) =>
+    d.addEventListener("close", done, { once: true }),
   )
-  d.close(verdi)
-  await lukket
+  d.close(value)
+  await closed
   await waitForPaint()
 }
 
@@ -178,15 +179,15 @@ describe("lt-dialog", () => {
     defineLtDialog()
   })
 
-  async function monterDialog(open: boolean) {
-    const boks = dialog({ titleId: "tittel", open })
+  async function mountDialog(open: boolean) {
+    const box = dialog({ titleId: "title", open })
     mount(`
-      <lt-dialog ${attr(boks.host)}>
-        <dialog ${attr(boks.dialog)}>
-          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
-          <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
-          <form method="dialog" ${attr(boks.footer)}>
-            <button class="lt-button" id="lukk" value="lukk">Lukk</button>
+      <lt-dialog ${attr(box.host)}>
+        <dialog ${attr(box.dialog)}>
+          <h2 ${attr(box.title)}>The decision has been registered</h2>
+          <div ${attr(box.body)}><p>The case has been processed.</p></div>
+          <form method="dialog" ${attr(box.footer)}>
+            <button class="lt-button" id="close" value="close">Close</button>
           </form>
         </dialog>
       </lt-dialog>
@@ -194,7 +195,7 @@ describe("lt-dialog", () => {
     await customElements.whenDefined("lt-dialog")
     await waitForPaint()
     return {
-      vert: document.querySelector("lt-dialog") as HTMLElement,
+      host: document.querySelector("lt-dialog") as HTMLElement,
       d: document.querySelector("dialog") as HTMLDialogElement,
     }
   }
@@ -204,129 +205,132 @@ describe("lt-dialog", () => {
     if (d?.open) d.close()
   })
 
-  it("åpner modalt når serveren sier at den er åpen", async () => {
-    const { d } = await monterDialog(true)
+  it("opens as a modal when the server says it is open", async () => {
+    const { d } = await mountDialog(true)
 
     expect(d.open).toBe(true)
-    // `:modal` er forskjellen på `showModal()` og `show()`. Bare den første
-    // gjør resten av siden utilgjengelig og lukker på Escape. Fokus flyttes
-    // av begge, så det alene skiller dem ikke.
+    // `:modal` is the difference between `showModal()` and `show()`. Only the
+    // first makes the rest of the page unreachable and closes on Escape. Both
+    // move focus, so that alone does not tell them apart.
     expect(d.matches(":modal")).toBe(true)
     expect(d.contains(document.activeElement)).toBe(true)
   })
 
-  it("lar den stå lukket når serveren ikke sier noe", async () => {
-    const { d } = await monterDialog(false)
+  it("leaves it closed when the server says nothing", async () => {
+    const { d } = await mountDialog(false)
 
     expect(d.open).toBe(false)
   })
 
-  it("åpner og lukker når serveren snur attributtet", async () => {
-    const { vert, d } = await monterDialog(false)
+  it("opens and closes when the server flips the attribute", async () => {
+    const { host, d } = await mountDialog(false)
 
-    vert.setAttribute("open", "")
+    host.setAttribute("open", "")
     await waitForPaint()
     expect(d.open).toBe(true)
 
-    vert.removeAttribute("open")
+    host.removeAttribute("open")
     await waitForPaint()
     expect(d.open).toBe(false)
   })
 
-  it("fjerner open fra verten når brukeren lukker", async () => {
-    const { vert, d } = await monterDialog(true)
+  it("removes open from the host when the user closes", async () => {
+    const { host, d } = await mountDialog(true)
 
-    await lukkOgVent(d)
+    await closeAndWait(d)
 
-    // Markupen skal si det samme som skjermen. Ellers ville neste patch
-    // åpnet dialogen igjen, siden verten fortsatt sa `open`.
-    expect(vert.hasAttribute("open")).toBe(false)
+    // The markup should say the same as the screen. Otherwise the next patch
+    // would have opened the dialog again, since the host still said `open`.
+    expect(host.hasAttribute("open")).toBe(false)
   })
 
-  it("kaster ikke når markupen bygges løsrevet fra siden", async () => {
-    // En morfer lager serverens utgave i et løsrevet tre for å sammenligne.
-    // Elementet tas i bruk også der, og `showModal()` kaster på en dialog
-    // som ikke står i dokumentet.
+  it("does not throw when the markup is built detached from the page", async () => {
+    // A morpher builds the server's version in a detached tree to compare.
+    // The element is upgraded there too, and `showModal()` throws on a dialog
+    // that is not in the document.
     //
-    // Feilen kommer ikke ut av `innerHTML`: et unntak i en reaksjon på en
-    // web component rapporteres til vinduet i stedet. Derfor lyttes
-    // det på `error` framfor å pakke inn kallet.
-    const feil: string[] = []
-    const lytter = (event: ErrorEvent) => feil.push(event.message)
-    window.addEventListener("error", lytter)
+    // The error does not come out of `innerHTML`: an exception in a reaction
+    // on a web component is reported to the window instead. That is why the
+    // test listens for `error` rather than wrapping the call.
+    const errors: string[] = []
+    const listener = (event: ErrorEvent) => errors.push(event.message)
+    window.addEventListener("error", listener)
 
-    const boks = dialog({ titleId: "t", open: true })
+    const box = dialog({ titleId: "t", open: true })
     const holder = document.createElement("div")
     holder.innerHTML = `
-      <lt-dialog ${attr(boks.host)}>
-        <dialog ${attr(boks.dialog)}>
-          <h2 ${attr(boks.title)}>Tittel</h2>
+      <lt-dialog ${attr(box.host)}>
+        <dialog ${attr(box.dialog)}>
+          <h2 ${attr(box.title)}>Title</h2>
         </dialog>
       </lt-dialog>`
 
     await waitForPaint()
-    window.removeEventListener("error", lytter)
+    window.removeEventListener("error", listener)
 
-    expect(feil).toEqual([])
-    // To ting skal gjelde her. Komponenten skal ikke ha kalt `showModal()`,
-    // som er det `:modal` svarer på. Og serverens eget `open` skal stå
-    // igjen, for det er reserven for den som ikke har JavaScript: uten den
-    // er dialogen skjult, og innholdet finnes ikke.
+    expect(errors).toEqual([])
+    // Two things must hold here. The component must not have called
+    // `showModal()`, which is what `:modal` answers. And the server's own
+    // `open` must stay, because it is the fallback for those without
+    // JavaScript: without it the dialog is hidden, and the content is not
+    // there.
     expect(holder.querySelector("dialog")?.matches(":modal")).toBe(false)
     expect(holder.querySelector("dialog")?.hasAttribute("open")).toBe(true)
   })
 
-  it("skriver open på verten som serverens beskjed", () => {
-    // `true` og ikke `""`: React 19 setter egenskapen, og den tomme
-    // strengen er usann, så setteren i komponenten fjerner attributtet igjen.
+  it("writes open on the host as the server's word", () => {
+    // `true` and not `""`: React 19 sets the property, and the empty string
+    // is falsy, so the setter in the component removes the attribute again.
     expect(dialog({ titleId: "t", open: true }).host).toEqual({ open: true })
     expect(dialog({ titleId: "t" }).host).toEqual({})
   })
 
-  it("ber ikke malen frede noe", () => {
-    // `showModal()` setter `open` på `<dialog>` selv, og en morfing river det
-    // bort igjen. Før måtte malen skrive `data-preserve-attr="open"` for å
-    // hindre det. Nå setter komponenten attributtet tilbake, og kommer lista
-    // hit igjen, har noen gjenopptatt kontrakten malen måtte skrive av.
+  it("does not ask the template to preserve anything", () => {
+    // `showModal()` sets `open` on `<dialog>` itself, and a morph tears it
+    // away again. Before, the template had to write
+    // `data-preserve-attr="open"` to prevent that. Now the component puts the
+    // attribute back, and if the list comes back here, someone has brought
+    // back the contract the template had to copy out.
     expect("data-preserve-attr" in dialog({ titleId: "t" }).dialog).toBe(false)
     expect("data-preserve-attr" in dialog({ titleId: "t" }).host).toBe(false)
   })
 
-  it("åpner igjen når serveren sender open på nytt", async () => {
-    const { vert, d } = await monterDialog(true)
+  it("opens again when the server sends open again", async () => {
+    const { host, d } = await mountDialog(true)
 
-    await lukkOgVent(d)
-    expect(vert.hasAttribute("open")).toBe(false)
+    await closeAndWait(d)
+    expect(host.hasAttribute("open")).toBe(false)
 
-    // Dette er det en morfing gjør: serverens node sier fortsatt `open`.
-    vert.setAttribute("open", "")
+    // This is what a morph does: the server's node still says `open`.
+    host.setAttribute("open", "")
     await waitForPaint()
 
-    expect(d.open, "serveren kunne ikke åpne dialogen på nytt").toBe(true)
+    expect(d.open, "the server could not open the dialog again").toBe(true)
   })
 
-  it("melder fra når den åpnes og lukkes", async () => {
-    const meldinger: boolean[] = []
-    const { vert, d } = await monterDialog(false)
-    vert.addEventListener("dialog-toggle", (event) => {
-      meldinger.push(event.detail.open)
+  it("reports when it opens and closes", async () => {
+    const reports: boolean[] = []
+    const { host, d } = await mountDialog(false)
+    host.addEventListener("dialog-toggle", (event) => {
+      reports.push(event.detail.open)
     })
 
-    vert.setAttribute("open", "")
+    host.setAttribute("open", "")
     await waitForPaint()
-    await lukkOgVent(d)
+    await closeAndWait(d)
 
-    expect(meldinger).toEqual([true, false])
+    expect(reports).toEqual([true, false])
   })
 
-  it("åpner også når malen glemte open på selve dialogen", async () => {
-    // Håndskrevet markup, og dokumentasjonen har vist dette lenge: verten
-    // sier `open`, men `<dialog>` har det ikke. Byggefunksjonen gir begge nå,
-    // så dette tilfellet finnes bare i maler noen har skrevet selv.
+  it("also opens when the template forgot open on the dialog itself", async () => {
+    // Handwritten markup, and the documentation showed this for a long time:
+    // the host says `open`, but `<dialog>` does not. The builder function
+    // gives both now, so this case exists only in templates someone wrote by
+    // hand.
     mount(`
       <lt-dialog open>
-        <dialog class="lt-dialog" aria-labelledby="tittel">
-          <h2 class="lt-dialog__title" id="tittel">Tittel</h2>
+        <dialog class="lt-dialog" aria-labelledby="title">
+          <h2 class="lt-dialog__title" id="title">Title</h2>
         </dialog>
       </lt-dialog>
     `)
@@ -336,425 +340,434 @@ describe("lt-dialog", () => {
     expect(document.querySelector("dialog")?.matches(":modal")).toBe(true)
   })
 
-  it("lukker selv om attributtet på dialogen ble fjernet først", async () => {
+  it("closes even when the attribute on the dialog was removed first", async () => {
     /*
-     * React eier `open` på `<dialog>` nå, og oppdaterer barn før forelder.
-     * Lukker appen dialogen, fjernes attributtet på `<dialog>` før det på
-     * verten, og komponenten kommer hit med `dialog.open` alt usann.
+     * React now controls `open` on `<dialog>`, and updates children before
+     * the parent. When the app closes the dialog, the attribute on `<dialog>`
+     * is removed before the one on the host, and the component gets here
+     * with `dialog.open` already false.
      *
-     * Uten at komponenten ser på `:modal` ble dialogen stående i topplaget,
-     * usynlig, med resten av siden inert: en side der ingenting kunne
-     * klikkes, og ingenting synlig som forklarte hvorfor.
+     * Without the component looking at `:modal`, the dialog stayed in the top
+     * layer, invisible, with the rest of the page inert: a page where nothing
+     * could be clicked, and nothing visible explained why.
      */
-    const { vert, d } = await monterDialog(true)
+    const { host, d } = await mountDialog(true)
     expect(d.matches(":modal")).toBe(true)
 
     d.removeAttribute("open")
-    vert.removeAttribute("open")
+    host.removeAttribute("open")
     await waitForPaint()
 
-    expect(d.matches(":modal"), "dialogen står igjen i topplaget").toBe(false)
+    expect(d.matches(":modal"), "the dialog is left in the top layer").toBe(
+      false,
+    )
 
-    // Og siden er brukbar igjen: en knapp utenfor kan få fokus.
-    const knapp = document.createElement("button")
-    document.body.append(knapp)
-    knapp.focus()
-    const fikkFokus = document.activeElement === knapp
-    knapp.remove()
-    expect(fikkFokus, "resten av siden er fortsatt inert").toBe(true)
+    // And the page is usable again: a button outside can take focus.
+    const button = document.createElement("button")
+    document.body.append(button)
+    button.focus()
+    const gotFocus = document.activeElement === button
+    button.remove()
+    expect(gotFocus, "the rest of the page is still inert").toBe(true)
   })
 
-  it("åpner ikke igjen en dialog brukeren lukket før skriptet kom", async () => {
+  it("does not reopen a dialog the user closed before the script arrived", async () => {
     /*
-     * Serveren skriver `open` begge steder, så innholdet finnes uten
-     * JavaScript, og `<form method="dialog">` lukker boksen uten JavaScript
-     * også. Skjer det før komponenten har fått kjøre, finnes det ingen
-     * lytter, og første `sync()` så en vert som sa «åpen» og en lukket
-     * dialog. Da spratt dialogen opp igjen rett etter at brukeren hadde
-     * lukket den. På mobil skjedde det hver gang, fordi vinduet der er langt
-     * nok til å rekke et trykk.
+     * The server writes `open` in both places, so the content is there
+     * without JavaScript, and `<form method="dialog">` closes the box without
+     * JavaScript too. When that happens before the component has run, there
+     * is no listener, and the first `sync()` saw a host that said "open" and
+     * a closed dialog. The dialog then popped up again right after the user
+     * had closed it. On mobile it happened every time, because the window
+     * there is long enough to fit a tap.
      *
-     * Markupen bygges løsrevet og lukkes der. `sync()` gir seg på en dialog
-     * som ikke står i siden, så ingen lytter er festet, og det er nettopp
-     * tilstanden en side har før skriptet er lastet.
+     * The markup is built detached and closed there. `sync()` gives up on a
+     * dialog that is not in the page, so no listener is attached, and that
+     * is exactly the state a page is in before the script has loaded.
      */
-    const boks = dialog({ titleId: "tittel", open: true })
+    const box = dialog({ titleId: "title", open: true })
     const holder = document.createElement("div")
     holder.innerHTML = `
-      <lt-dialog ${attr(boks.host)}>
-        <dialog ${attr(boks.dialog)}>
-          <h2 ${attr(boks.title)}>Tittel</h2>
-          <form method="dialog" ${attr(boks.footer)}>
-            <button class="lt-button" value="lukk">Lukk</button>
+      <lt-dialog ${attr(box.host)}>
+        <dialog ${attr(box.dialog)}>
+          <h2 ${attr(box.title)}>Title</h2>
+          <form method="dialog" ${attr(box.footer)}>
+            <button class="lt-button" value="close">Close</button>
           </form>
         </dialog>
       </lt-dialog>`
 
     const d = holder.querySelector("dialog") as HTMLDialogElement
-    expect(d.open, "serveren sendte den ikke åpen").toBe(true)
+    expect(d.open, "the server did not send it open").toBe(true)
 
-    // Brukeren lukker boksen mens den bare er en boks på siden.
-    d.close("lukk")
+    // The user closes the box while it is just a box on the page.
+    d.close("close")
 
     document.body.append(holder)
     await waitForPaint()
 
-    expect(d.open, "dialogen spratt opp igjen").toBe(false)
+    expect(d.open, "the dialog popped up again").toBe(false)
     expect(
       holder.querySelector("lt-dialog")?.hasAttribute("open"),
-      "verten sier fortsatt at den er åpen",
+      "the host still says it is open",
     ).toBe(false)
 
     holder.remove()
   })
 
-  it("sender ingen close-hendelse når serveren sender dialogen åpen", async () => {
+  it("sends no close event when the server sends the dialog open", async () => {
     /*
-     * Serveren skriver `open` på `<dialog>`, og komponenten må ta det bort
-     * før `showModal()`. Gjør den det med `close()`, sender nettleseren en
-     * ekte `close`-hendelse, og den kommer ved hver eneste lasting. En app
-     * som lytter på `close` rett på `<dialog>`, slik det komplette
-     * eksempelet i dokumentasjonen gjør, fikk da en spøkelseslukking før
-     * brukeren hadde sett dialogen. `dialog-toggle` så den ikke, for
-     * `handleClose` stopper på `:modal`.
+     * The server writes `open` on `<dialog>`, and the component must remove
+     * it before `showModal()`. If it does that with `close()`, the browser
+     * sends a real `close` event, and it comes on every single load. An app
+     * listening for `close` directly on `<dialog>`, as the complete example
+     * in the documentation does, then got a phantom close before the user
+     * had seen the dialog. `dialog-toggle` did not see it, because
+     * `handleClose` stops on `:modal`.
      */
-    const hendelser: string[] = []
-    // `close` bobler ikke. En lytter på dokumentet i bobleefasen ser den
-    // aldri, og testen ville meldt grønt uansett hva komponenten gjorde.
-    const lytter = (e: Event) => {
-      if ((e.target as HTMLElement)?.tagName === "DIALOG")
-        hendelser.push("close")
+    const events: string[] = []
+    // `close` does not bubble. A listener on the document in the bubbling
+    // phase never sees it, and the test would have passed whatever the
+    // component did.
+    const listener = (e: Event) => {
+      if ((e.target as HTMLElement)?.tagName === "DIALOG") events.push("close")
     }
-    document.addEventListener("close", lytter, true)
+    document.addEventListener("close", listener, true)
 
-    const { d } = await monterDialog(true)
-    document.removeEventListener("close", lytter, true)
+    const { d } = await mountDialog(true)
+    document.removeEventListener("close", listener, true)
 
     expect(d.matches(":modal")).toBe(true)
-    expect(hendelser).toEqual([])
+    expect(events).toEqual([])
   })
 
-  it("lukker ikke seg selv når serveren lukker og åpner i samme omgang", async () => {
-    const { vert, d } = await monterDialog(true)
-    const meldinger: boolean[] = []
-    vert.addEventListener("dialog-toggle", (event) => {
-      meldinger.push(event.detail.open)
+  it("does not close itself when the server closes and opens in the same turn", async () => {
+    const { host, d } = await mountDialog(true)
+    const reports: boolean[] = []
+    host.addEventListener("dialog-toggle", (event) => {
+      reports.push(event.detail.open)
     })
 
-    // `close`-hendelsen er køet, ikke synkron. Uten en sperre kom den fram
-    // etter at dialogen var åpnet igjen, og lukket den på nytt.
-    vert.removeAttribute("open")
-    vert.setAttribute("open", "")
+    // The `close` event is queued, not synchronous. Without a guard it
+    // arrived after the dialog had been opened again, and closed it again.
+    host.removeAttribute("open")
+    host.setAttribute("open", "")
 
     await waitForPaint()
     await waitForPaint()
 
-    expect(d.matches(":modal"), "dialogen lukket seg selv etterpå").toBe(true)
-    expect(vert.hasAttribute("open")).toBe(true)
-    expect(meldinger).toEqual([false, true])
+    expect(d.matches(":modal"), "the dialog closed itself afterwards").toBe(
+      true,
+    )
+    expect(host.hasAttribute("open")).toBe(true)
+    expect(reports).toEqual([false, true])
   })
 
-  it("styrer bare sin egen dialog, ikke en lenger ned i treet", async () => {
-    // En annen komponent kan ha sin egen `<dialog>` inni denne. Den står
-    // først i dokumentet her, så en komponent som bare spurte etter «den
-    // første dialogen» ville åpnet feil boks.
-    const boks = dialog({ titleId: "tittel", open: true })
+  it("controls only its own dialog, not one further down the tree", async () => {
+    // Another component can have its own `<dialog>` inside this one. It comes
+    // first in the document here, so a component that only asked for "the
+    // first dialog" would have opened the wrong box.
+    const box = dialog({ titleId: "title", open: true })
     mount(`
-      <lt-dialog ${attr(boks.host)}>
-        <div class="et-eller-annet-kort">
-          <dialog id="fremmed"><p>Noe helt annet</p></dialog>
+      <lt-dialog ${attr(box.host)}>
+        <div class="some-card">
+          <dialog id="foreign"><p>Something else entirely</p></dialog>
         </div>
-        <dialog ${attr(boks.dialog)} id="min">
-          <h2 ${attr(boks.title)}>Tittel</h2>
+        <dialog ${attr(box.dialog)} id="mine">
+          <h2 ${attr(box.title)}>Title</h2>
         </dialog>
       </lt-dialog>
     `)
     await customElements.whenDefined("lt-dialog")
     await waitForPaint()
 
-    expect((document.getElementById("min") as HTMLDialogElement).open).toBe(
+    expect((document.getElementById("mine") as HTMLDialogElement).open).toBe(
       true,
     )
-    expect((document.getElementById("fremmed") as HTMLDialogElement).open).toBe(
+    expect((document.getElementById("foreign") as HTMLDialogElement).open).toBe(
       false,
     )
   })
 
-  it("sier hvilken knapp som lukket den", async () => {
-    const { vert, d } = await monterDialog(true)
-    let svar: string | undefined
-    vert.addEventListener("dialog-toggle", (event) => {
-      svar = event.detail.returnValue
+  it("says which button closed it", async () => {
+    const { host, d } = await mountDialog(true)
+    let answer: string | undefined
+    host.addEventListener("dialog-toggle", (event) => {
+      answer = event.detail.returnValue
     })
 
-    await lukkOgVent(d, "slett")
+    await closeAndWait(d, "delete")
 
-    expect(svar).toBe("slett")
+    expect(answer).toBe("delete")
   })
 
-  it("melder ikke forrige knapp når serveren lukker en dialog den åpnet på nytt", async () => {
-    const { vert, d } = await monterDialog(true)
-    await lukkOgVent(d, "slett")
-    vert.setAttribute("open", "")
+  it("does not report the previous button when the server closes a dialog it reopened", async () => {
+    const { host, d } = await mountDialog(true)
+    await closeAndWait(d, "delete")
+    host.setAttribute("open", "")
     await waitForPaint()
     expect(d.matches(":modal")).toBe(true)
 
-    const svar: Array<{ open: boolean; returnValue: string }> = []
-    vert.addEventListener("dialog-toggle", (event) => {
-      svar.push(event.detail)
+    const answers: Array<{ open: boolean; returnValue: string }> = []
+    host.addEventListener("dialog-toggle", (event) => {
+      answers.push(event.detail)
     })
-    vert.removeAttribute("open")
+    host.removeAttribute("open")
     await waitForPaint()
 
-    // Før kom «slett» fra forrige gang, og en app som slettet på den verdien
-    // slettet noe brukeren aldri ba om.
-    expect(svar).toEqual([{ open: false, returnValue: "" }])
+    // Before, "delete" came from the previous time, and an app that deleted
+    // on that value deleted something the user never asked for.
+    expect(answers).toEqual([{ open: false, returnValue: "" }])
   })
 
-  it("åpnes av serveren også etter at verten er flyttet", async () => {
-    const { vert, d } = await monterDialog(true)
-    await lukkOgVent(d, "lukk")
+  it("is opened by the server also after the host has been moved", async () => {
+    const { host, d } = await mountDialog(true)
+    await closeAndWait(d, "close")
 
-    // En morfer flytter verten og sender den åpen igjen. Før så komponenten
-    // `returnValue` fra lukkingen, trodde brukeren hadde lukket dialogen før
-    // skriptet kom, og tok `open` fra verten.
-    const annet = document.createElement("div")
-    document.body.append(annet)
-    vert.remove()
-    vert.setAttribute("open", "")
-    annet.append(vert)
+    // A morpher moves the host and sends it open again. Before, the component
+    // saw the `returnValue` from the close, believed the user had closed the
+    // dialog before the script arrived, and took `open` from the host.
+    const other = document.createElement("div")
+    document.body.append(other)
+    host.remove()
+    host.setAttribute("open", "")
+    other.append(host)
     await waitForPaint()
 
     expect(d.matches(":modal")).toBe(true)
-    expect(vert.hasAttribute("open")).toBe(true)
+    expect(host.hasAttribute("open")).toBe(true)
   })
 
-  it("lar knappens verdi stå når open skrives på verten før close er kommet", async () => {
-    // Et rammeverk som skriver samme `open` på nytt rett etter klikket. Før
-    // åpnet komponenten dialogen igjen og tømte verdien, og en lytter på
-    // `close` leste en tom verdi i stedet for «slett».
-    const { vert, d } = await monterDialog(true)
-    const lest: string[] = []
-    d.addEventListener("close", () => lest.push(d.returnValue))
-    const lukket = new Promise((ferdig) =>
-      d.addEventListener("close", ferdig, { once: true }),
+  it("keeps the button's value when open is written on the host before close has arrived", async () => {
+    // A framework that writes the same `open` again right after the click.
+    // Before, the component opened the dialog again and cleared the value,
+    // and a listener on `close` read an empty value instead of "delete".
+    const { host, d } = await mountDialog(true)
+    const read: string[] = []
+    d.addEventListener("close", () => read.push(d.returnValue))
+    const closed = new Promise((done) =>
+      d.addEventListener("close", done, { once: true }),
     )
 
-    d.close("slett")
-    vert.setAttribute("open", "")
-    await lukket
+    d.close("delete")
+    host.setAttribute("open", "")
+    await closed
     await waitForPaint()
 
-    expect(lest).toEqual(["slett"])
+    expect(read).toEqual(["delete"])
     expect(d.matches(":modal")).toBe(false)
-    expect(vert.hasAttribute("open")).toBe(false)
+    expect(host.hasAttribute("open")).toBe(false)
   })
 
-  it("åpner en dialog som flyttes inn i en ny vert", async () => {
-    // En dialog lukket med en knapp, flyttet inn i en ny vert serveren
-    // sender åpen. Før trodde den nye verten at brukeren hadde lukket den
-    // før skriptet kom.
-    const { d } = await monterDialog(true)
-    await lukkOgVent(d, "lukk")
+  it("opens a dialog that is moved into a new host", async () => {
+    // A dialog closed with a button, moved into a new host the server sends
+    // open. Before, the new host believed the user had closed it before the
+    // script arrived.
+    const { d } = await mountDialog(true)
+    await closeAndWait(d, "close")
 
-    const ny = document.createElement("lt-dialog")
-    ny.setAttribute("open", "")
-    ny.append(d)
-    document.body.append(ny)
+    const fresh = document.createElement("lt-dialog")
+    fresh.setAttribute("open", "")
+    fresh.append(d)
+    document.body.append(fresh)
     await waitForPaint()
 
     expect(d.matches(":modal")).toBe(true)
-    expect(ny.hasAttribute("open")).toBe(true)
+    expect(fresh.hasAttribute("open")).toBe(true)
   })
 
-  it("melder ingenting når dialogen flyttes inne i verten", async () => {
-    // En patch som bytter rekkefølgen på barna tar dialogen ut av
-    // topplaget, og komponenten åpner den igjen. Før meldte den `open: true`
-    // for en dialog som hadde vært åpen hele tiden.
-    const { vert, d } = await monterDialog(true)
-    const svar: boolean[] = []
-    vert.addEventListener("dialog-toggle", (event) => {
-      svar.push(event.detail.open)
+  it("reports nothing when the dialog is moved inside the host", async () => {
+    // A patch that reorders the children takes the dialog out of the top
+    // layer, and the component opens it again. Before, it reported
+    // `open: true` for a dialog that had been open all along.
+    const { host, d } = await mountDialog(true)
+    const answers: boolean[] = []
+    host.addEventListener("dialog-toggle", (event) => {
+      answers.push(event.detail.open)
     })
 
-    vert.prepend(document.createElement("span"))
-    vert.append(d)
+    host.prepend(document.createElement("span"))
+    host.append(d)
     await waitForPaint()
 
     expect(d.matches(":modal")).toBe(true)
-    expect(svar).toEqual([])
+    expect(answers).toEqual([])
   })
 
-  it("melder ingenting når en åpen dialog flyttes", async () => {
-    const { vert, d } = await monterDialog(true)
-    const svar: boolean[] = []
-    vert.addEventListener("dialog-toggle", (event) => {
-      svar.push(event.detail.open)
+  it("reports nothing when an open dialog is moved", async () => {
+    const { host, d } = await mountDialog(true)
+    const answers: boolean[] = []
+    host.addEventListener("dialog-toggle", (event) => {
+      answers.push(event.detail.open)
     })
 
-    const annet = document.createElement("div")
-    document.body.append(annet)
-    annet.append(vert)
+    const other = document.createElement("div")
+    document.body.append(other)
+    other.append(host)
     await waitForPaint()
 
     expect(d.matches(":modal")).toBe(true)
-    expect(svar).toEqual([])
+    expect(answers).toEqual([])
   })
 
-  it("har ingen tilgjengelighetsbrudd når den er åpen", async () => {
-    await monterDialog(true)
+  it("has no accessibility violations when open", async () => {
+    await mountDialog(true)
 
     await expectNoAccessibilityViolations()
   })
 })
 
 /**
- * Dialogen skal stå riktig også før den er blitt en ekte modal.
+ * The dialog must be in the right place also before it has become a real
+ * modal.
  *
- * Serveren sender `<dialog open>` fordi innholdet ellers ikke finnes uten
- * JavaScript. Nettleseren legger den da i den vanlige flyten, og først når
- * komponenten kaller `showModal()` flyttes den til topplaget og midtstilles.
- * På en treg forbindelse er hoppet mellom de to øyeblikkene godt synlig, og
- * det ble meldt fra en telefon: dialogen sto høyt oppe i siden og landet
- * midt på et halvt sekund senere.
+ * The server sends `<dialog open>` because the content is otherwise not there
+ * without JavaScript. The browser then puts it in the normal flow, and only
+ * when the component calls `showModal()` is it moved to the top layer and
+ * centred. On a slow connection the jump between those two moments is clearly
+ * visible, and it was reported from a phone: the dialog sat high up on the
+ * page and landed in the middle half a second later.
  */
-describe("dialogen før den er modal", () => {
+describe("the dialog before it is modal", () => {
   /*
-   * Tilstanden testes i en ramme uten skript.
+   * The state is tested in a frame without scripts.
    *
-   * Første utgave laget elementet i selve testsiden, og den var ikke til å
-   * stole på: i en full kjøring er `<lt-dialog>` alt registrert av en annen
-   * testfil, så dialogen rakk å bli modal før stilen ble lest. En ramme med
-   * bare markup og stilark er nøyaktig det serveren sender, og ingenting
-   * annet.
+   * The first version created the element in the test page itself, and it
+   * could not be trusted: in a full run `<lt-dialog>` is already registered
+   * by another test file, so the dialog became modal before the style was
+   * read. A frame with only markup and stylesheets is exactly what the server
+   * sends, and nothing else.
    */
-  async function iRammeUtenSkript(
+  async function inFrameWithoutScript(
     markup: string,
-    bredde = 800,
-    hoyde = 600,
+    width = 800,
+    height = 600,
   ): Promise<{
     dialog: HTMLDialogElement
-    vindu: Window
-    rydd: () => void
+    win: Window
+    cleanUp: () => void
   }> {
     const tokens = (await import("../../../tokens/tokens.css?inline")).default
-    const dialogstil = (await import("./dialog.css?inline")).default
+    const dialogStyles = (await import("./dialog.css?inline")).default
 
-    const ramme = document.createElement("iframe")
-    ramme.width = String(bredde)
-    ramme.height = String(hoyde)
-    ramme.srcdoc = `<!doctype html><html><head><style>${tokens}\n${dialogstil}</style></head><body>${markup}</body></html>`
-    document.body.append(ramme)
+    const frame = document.createElement("iframe")
+    frame.width = String(width)
+    frame.height = String(height)
+    frame.srcdoc = `<!doctype html><html><head><style>${tokens}\n${dialogStyles}</style></head><body>${markup}</body></html>`
+    document.body.append(frame)
 
-    await new Promise((klar) => {
-      ramme.addEventListener("load", klar, { once: true })
+    await new Promise((ready) => {
+      frame.addEventListener("load", ready, { once: true })
     })
 
     /*
-     * Vent på at ramma har en størrelse, ikke bare på `load`.
+     * Wait for the frame to have a size, not just for `load`.
      *
-     * `100vmax` i stilarket regnes mot rammas eget vindu, og det er null til
-     * den er lagt ut. Lokalt rakk den det før testen leste stilen, i CI ikke,
-     * og da ble skyggen null piksler bred uten at noe var galt med regelen.
+     * `100vmax` in the stylesheet is relative to the frame's own window, and
+     * that is zero until it has been laid out. Locally it got there before
+     * the test read the style, in CI it did not, and then the shadow was zero
+     * pixels wide with nothing wrong in the rule.
      */
     await vi.waitFor(() => {
-      if (!(ramme.contentWindow?.innerWidth ?? 0))
-        throw new Error("ramma er ikke lagt ut")
+      if (!(frame.contentWindow?.innerWidth ?? 0))
+        throw new Error("the frame is not laid out")
     })
 
-    const dok = ramme.contentDocument as Document
+    const doc = frame.contentDocument as Document
     return {
-      dialog: dok.querySelector("dialog") as HTMLDialogElement,
-      vindu: ramme.contentWindow as Window,
-      rydd: () => ramme.remove(),
+      dialog: doc.querySelector("dialog") as HTMLDialogElement,
+      win: frame.contentWindow as Window,
+      cleanUp: () => frame.remove(),
     }
   }
 
-  it("står midt i vinduet, med flaten bak malt", async () => {
+  it("sits in the middle of the window, with the surface behind painted", async () => {
     const {
-      dialog: boks,
-      vindu,
-      rydd,
-    } = await iRammeUtenSkript(`
+      dialog: box,
+      win,
+      cleanUp,
+    } = await inFrameWithoutScript(`
       <lt-dialog>
         <dialog class="lt-dialog" open>
-          <h2 class="lt-dialog__title">Velkommen</h2>
-          <p>Innhold som finnes uten JavaScript.</p>
+          <h2 class="lt-dialog__title">Welcome</h2>
+          <p>Content that is there without JavaScript.</p>
         </dialog>
       </lt-dialog>`)
 
     try {
-      // Ingen skript i ramma, så dialogen er åpen uten å være modal. Det er
-      // nøyaktig tilstanden serveren sender.
-      expect(boks.matches(":modal")).toBe(false)
-      expect(boks.open).toBe(true)
+      // No scripts in the frame, so the dialog is open without being modal.
+      // That is exactly the state the server sends.
+      expect(box.matches(":modal")).toBe(false)
+      expect(box.open).toBe(true)
 
-      const stil = vindu.getComputedStyle(boks)
-      expect(stil.position).toBe("fixed")
+      const style = win.getComputedStyle(box)
+      expect(style.position).toBe("fixed")
 
       /*
-       * Skyggen maler flaten bak, siden `::backdrop` bare finnes i topplaget.
+       * The shadow paints the surface behind, since `::backdrop` exists only
+       * in the top layer.
        *
-       * To lag: kortets egen skygge, og flaten. Og flaten skal faktisk dekke
-       * ramma, ikke bare stå der som en tynn kant.
+       * Two layers: the card's own shadow, and the surface. And the surface
+       * must actually cover the frame, not just sit there as a thin edge.
        */
-      const lag = stil.boxShadow.split(/,(?![^(]*\))/)
-      expect(lag).toHaveLength(2)
+      const layers = style.boxShadow.split(/,(?![^(]*\))/)
+      expect(layers).toHaveLength(2)
 
-      const spredning = Math.max(
-        ...[...stil.boxShadow.matchAll(/(\d+(?:\.\d+)?)px/g)].map((t) =>
+      const spread = Math.max(
+        ...[...style.boxShadow.matchAll(/(\d+(?:\.\d+)?)px/g)].map((t) =>
           Number(t[1]),
         ),
       )
-      expect(spredning).toBeGreaterThanOrEqual(
-        Math.max(vindu.innerWidth, vindu.innerHeight),
+      expect(spread).toBeGreaterThanOrEqual(
+        Math.max(win.innerWidth, win.innerHeight),
       )
 
-      // Og den står midt i ramma, ikke øverst i flyten.
-      const rute = boks.getBoundingClientRect()
+      // And it sits in the middle of the frame, not at the top of the flow.
+      const rect = box.getBoundingClientRect()
       expect(
-        Math.abs(rute.top + rute.height / 2 - vindu.innerHeight / 2),
+        Math.abs(rect.top + rect.height / 2 - win.innerHeight / 2),
       ).toBeLessThan(4)
     } finally {
-      rydd()
+      cleanUp()
     }
   })
 
   /*
-   * Den egentlige påstanden: ingen hopp, verken loddrett eller vannrett.
+   * The real claim: no jump, neither vertical nor horizontal.
    *
-   * Regelen som gir dialogen plassen til en modal før den er det, er skrevet
-   * tre ganger, og hver runde flyttet hoppet framfor å fjerne det. Først sto
-   * den øverst i flyten og landet på midten. Så ble den midtstilt, og
-   * nettleserens eget maksmål for bredden klipte den i det den ble modal. Så
-   * kom maksmålet på høyden med, og da vant det på spesifisitet før modalen
-   * og sluttet å gjelde etterpå, så en høy dialog hoppet i stedet.
+   * The rule that gives the dialog the place of a modal before it is one has
+   * been written three times, and each round moved the jump rather than
+   * removing it. First it sat at the top of the flow and landed in the
+   * middle. Then it was centred, and the browser's own maximum width clipped
+   * it as it became modal. Then the maximum height came along, and it won on
+   * specificity before the modal and stopped applying afterwards, so a tall
+   * dialog jumped instead.
    *
-   * Testen leser boksen i begge tilstander og krever at den står stille. Den
-   * kjøres med to slags innhold, siden et kort innhold aldri treffer
-   * maksmålene og da etterprøver ingenting.
+   * The test reads the box in both states and requires it to stay still. It
+   * runs with two kinds of content, since short content never reaches the
+   * maximum sizes and then checks nothing.
    */
-  for (const { navn, innhold } of [
+  for (const { name, content } of [
     {
-      navn: "med kort innhold",
-      innhold: "<p>Innhold som finnes uten JavaScript.</p>",
+      name: "with short content",
+      content: "<p>Content that is there without JavaScript.</p>",
     },
     {
-      navn: "med innhold som er høyere enn skjermen",
-      innhold: `<div class="lt-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>`,
+      name: "with content taller than the screen",
+      content: `<div class="lt-dialog__body">${"<p>The terms apply from the date the application is registered.</p>".repeat(40)}</div>`,
     },
   ]) {
-    it(`flytter seg ikke når den blir modal, ${navn}`, async () => {
+    it(`does not move when it becomes modal, ${name}`, async () => {
       const {
-        dialog: boks,
-        vindu,
-        rydd,
-      } = await iRammeUtenSkript(
+        dialog: box,
+        win,
+        cleanUp,
+      } = await inFrameWithoutScript(
         `
         <lt-dialog>
           <dialog class="lt-dialog" open>
-            <h2 class="lt-dialog__title">Velkommen</h2>
-            ${innhold}
+            <h2 class="lt-dialog__title">Welcome</h2>
+            ${content}
           </dialog>
         </lt-dialog>`,
         390,
@@ -762,56 +775,57 @@ describe("dialogen før den er modal", () => {
       )
 
       try {
-        // Er dialogen allerede modal her, er alle påstandene under sanne
-        // uten at noe er etterprøvd.
-        expect(boks.matches(":modal")).toBe(false)
+        // If the dialog is already modal here, every claim below is true
+        // without anything having been checked.
+        expect(box.matches(":modal")).toBe(false)
 
-        const før = boks.getBoundingClientRect()
+        const before = box.getBoundingClientRect()
 
         /*
-         * Så smal ramme at nettleserens eget maksmål for bredden på en modal
-         * er mindre enn bredden dialogen ellers ville tatt. Uten det er det
-         * ingenting å klippe, og testen ville vært grønn også med feilen i.
-         * Maksmålet regnes med dialogens egen skriftstørrelse, siden `2em`
-         * gjør det.
+         * A frame so narrow that the browser's own maximum width for a modal
+         * is less than the width the dialog would otherwise take. Without
+         * that there is nothing to clip, and the test would pass with the bug
+         * in place too. The maximum is worked out with the dialog's own font
+         * size, since `2em` does that.
          */
-        const em = Number.parseFloat(vindu.getComputedStyle(boks).fontSize)
+        const em = Number.parseFloat(win.getComputedStyle(box).fontSize)
         expect(
-          Math.abs(før.width - (vindu.innerWidth - 6 - 2 * em)),
+          Math.abs(before.width - (win.innerWidth - 6 - 2 * em)),
         ).toBeLessThanOrEqual(1)
 
-        boks.close()
-        boks.showModal()
-        expect(boks.matches(":modal")).toBe(true)
+        box.close()
+        box.showModal()
+        expect(box.matches(":modal")).toBe(true)
 
-        const etter = boks.getBoundingClientRect()
+        const after = box.getBoundingClientRect()
 
-        // Én pixel slingringsmonn for avrunding, ikke mer.
-        expect(Math.abs(etter.left - før.left)).toBeLessThanOrEqual(1)
-        expect(Math.abs(etter.top - før.top)).toBeLessThanOrEqual(1)
-        expect(Math.abs(etter.width - før.width)).toBeLessThanOrEqual(1)
-        expect(Math.abs(etter.height - før.height)).toBeLessThanOrEqual(1)
+        // One pixel of slack for rounding, no more.
+        expect(Math.abs(after.left - before.left)).toBeLessThanOrEqual(1)
+        expect(Math.abs(after.top - before.top)).toBeLessThanOrEqual(1)
+        expect(Math.abs(after.width - before.width)).toBeLessThanOrEqual(1)
+        expect(Math.abs(after.height - before.height)).toBeLessThanOrEqual(1)
       } finally {
-        rydd()
+        cleanUp()
       }
     })
   }
 
-  it("lar kroppen rulle, ikke dialogen, i begge tilstander", async () => {
+  it("lets the body scroll, not the dialog, in both states", async () => {
     /*
-     * `.lt-dialog__body` hadde `overflow-y: auto` uten å kunne rulle: dialogen
-     * var en blokk, så kroppens høyde var innholdsbestemt og ble aldri
-     * klippet. Det som rullet var dialogen selv, og bare når den var modal, så
-     * overskriften og knapperaden forsvant ut av syne sammen med teksten.
+     * `.lt-dialog__body` had `overflow-y: auto` without being able to scroll:
+     * the dialog was a block, so the body's height was set by its content and
+     * never clipped. What scrolled was the dialog itself, and only when it
+     * was modal, so the heading and the button row went out of view along
+     * with the text.
      */
-    const { dialog: boks, rydd } = await iRammeUtenSkript(
+    const { dialog: box, cleanUp } = await inFrameWithoutScript(
       `
       <lt-dialog>
         <dialog class="lt-dialog" open>
-          <h2 class="lt-dialog__title">Vilkår</h2>
-          <div class="lt-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>
+          <h2 class="lt-dialog__title">Terms</h2>
+          <div class="lt-dialog__body">${"<p>The terms apply from the date the application is registered.</p>".repeat(40)}</div>
           <div class="lt-dialog__footer">
-            <button class="lt-button" type="button">Lukk</button>
+            <button class="lt-button" type="button">Close</button>
           </div>
         </dialog>
       </lt-dialog>`,
@@ -819,93 +833,95 @@ describe("dialogen før den er modal", () => {
       700,
     )
 
-    const kropp = boks.querySelector(".lt-dialog__body") as HTMLElement
-    const bunn = boks.querySelector(".lt-dialog__footer") as HTMLElement
+    const body = box.querySelector(".lt-dialog__body") as HTMLElement
+    const footer = box.querySelector(".lt-dialog__footer") as HTMLElement
 
-    const somDenSkal = () => {
-      expect(kropp.scrollHeight).toBeGreaterThan(kropp.clientHeight + 1)
-      // Dialogen selv ruller ikke, så tittelen og knappene blir stående.
-      expect(boks.scrollHeight).toBeLessThanOrEqual(boks.clientHeight + 1)
-      const kort = boks.getBoundingClientRect()
-      const rad = bunn.getBoundingClientRect()
-      expect(rad.top).toBeGreaterThanOrEqual(kort.top - 1)
-      expect(rad.bottom).toBeLessThanOrEqual(kort.bottom + 1)
+    const asExpected = () => {
+      expect(body.scrollHeight).toBeGreaterThan(body.clientHeight + 1)
+      // The dialog itself does not scroll, so the title and the buttons stay.
+      expect(box.scrollHeight).toBeLessThanOrEqual(box.clientHeight + 1)
+      const card = box.getBoundingClientRect()
+      const row = footer.getBoundingClientRect()
+      expect(row.top).toBeGreaterThanOrEqual(card.top - 1)
+      expect(row.bottom).toBeLessThanOrEqual(card.bottom + 1)
     }
 
     try {
-      // Er dialogen allerede modal her, er påstandene under sanne uten at
-      // noe er etterprøvd.
-      expect(boks.matches(":modal")).toBe(false)
-      somDenSkal()
+      // If the dialog is already modal here, the claims below are true
+      // without anything having been checked.
+      expect(box.matches(":modal")).toBe(false)
+      asExpected()
 
-      // Og i topplaget, der nettleseren selv gir dialogen `overflow: auto`.
-      boks.close()
-      boks.showModal()
-      expect(boks.matches(":modal")).toBe(true)
-      somDenSkal()
+      // And in the top layer, where the browser itself gives the dialog
+      // `overflow: auto`.
+      box.close()
+      box.showModal()
+      expect(box.matches(":modal")).toBe(true)
+      asExpected()
     } finally {
-      rydd()
+      cleanUp()
     }
   })
 
-  it("holder en lukket dialog skjult, også med kropp", async () => {
+  it("keeps a closed dialog hidden, also with a body", async () => {
     /*
-     * Kolonnen ga klassen en `display`, og en forfatterregel slår nettleserens
-     * eget stilark uansett lag og spesifisitet. Uten at den skjulte tilstanden
-     * ble tatt tilbake, sto en lukket dialog som et kort oppå innholdet rundt:
-     * fra sidelasting for alt som sender dialogen lukket, og etter hver
-     * lukking. Det er den anbefalte bruken med JavaScript.
+     * The column gave the class a `display`, and an author rule beats the
+     * browser's own stylesheet whatever the layer and specificity. Without
+     * the hidden state being restored, a closed dialog stood as a card on top
+     * of the content around it: from page load for everything that sends the
+     * dialog closed, and after every close. That is the recommended use with
+     * JavaScript.
      */
     const {
-      dialog: boks,
-      vindu,
-      rydd,
-    } = await iRammeUtenSkript(`
+      dialog: box,
+      win,
+      cleanUp,
+    } = await inFrameWithoutScript(`
       <lt-dialog>
         <dialog class="lt-dialog">
-          <h2 class="lt-dialog__title">Slette søknaden?</h2>
+          <h2 class="lt-dialog__title">Delete the application?</h2>
           <div class="lt-dialog__body">
-            <p>Søknaden og vedleggene blir borte.</p>
+            <p>The application and its attachments will be gone.</p>
           </div>
         </dialog>
       </lt-dialog>`)
 
     try {
-      expect(boks.open).toBe(false)
-      expect(vindu.getComputedStyle(boks).display).toBe("none")
-      expect(boks.getBoundingClientRect().height).toBe(0)
+      expect(box.open).toBe(false)
+      expect(win.getComputedStyle(box).display).toBe("none")
+      expect(box.getBoundingClientRect().height).toBe(0)
 
-      // Og den kommer tilbake når den åpnes, som en kolonne.
-      boks.showModal()
-      expect(vindu.getComputedStyle(boks).display).toBe("flex")
+      // And it comes back when opened, as a column.
+      box.showModal()
+      expect(win.getComputedStyle(box).display).toBe("flex")
 
-      // Og forsvinner igjen etter lukking, som er der den ble stående.
-      boks.close()
-      expect(vindu.getComputedStyle(boks).display).toBe("none")
-      expect(boks.getBoundingClientRect().height).toBe(0)
+      // And disappears again after closing, which is where it got stuck.
+      box.close()
+      expect(win.getComputedStyle(box).display).toBe("none")
+      expect(box.getBoundingClientRect().height).toBe(0)
     } finally {
-      rydd()
+      cleanUp()
     }
   })
 
-  it("lar dialogen selv rulle når den ikke har en kropp", async () => {
+  it("lets the dialog itself scroll when it has no body", async () => {
     /*
-     * `overflow: auto` i regelen før modalen speiler det nettleseren gir en
-     * modal. Uten den er `overflow` `visible` fram til `showModal()`, og høyt
-     * innhold som ikke ligger i `.lt-dialog__body` renner ut av det avrundede
-     * kortet framfor å kunne rulles. Boksen er like stor uansett, så
-     * hopptestene ser det ikke.
+     * `overflow: auto` in the rule before the modal mirrors what the browser
+     * gives a modal. Without it `overflow` is `visible` until `showModal()`,
+     * and tall content that is not in `.lt-dialog__body` spills out of the
+     * rounded card rather than scrolling. The box is the same size either
+     * way, so the jump tests do not see it.
      */
     const {
-      dialog: boks,
-      vindu,
-      rydd,
-    } = await iRammeUtenSkript(
+      dialog: box,
+      win,
+      cleanUp,
+    } = await inFrameWithoutScript(
       `
       <lt-dialog>
         <dialog class="lt-dialog" open>
-          <h2 class="lt-dialog__title">Vilkår</h2>
-          ${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}
+          <h2 class="lt-dialog__title">Terms</h2>
+          ${"<p>The terms apply from the date the application is registered.</p>".repeat(40)}
         </dialog>
       </lt-dialog>`,
       390,
@@ -913,98 +929,98 @@ describe("dialogen før den er modal", () => {
     )
 
     try {
-      expect(boks.matches(":modal")).toBe(false)
-      expect(vindu.getComputedStyle(boks).overflow).toBe("auto")
-      expect(boks.scrollHeight).toBeGreaterThan(boks.clientHeight + 1)
+      expect(box.matches(":modal")).toBe(false)
+      expect(win.getComputedStyle(box).overflow).toBe("auto")
+      expect(box.scrollHeight).toBeGreaterThan(box.clientHeight + 1)
     } finally {
-      rydd()
+      cleanUp()
     }
   })
 
-  it("skjuler ikke en dialog som vises som popover", async () => {
+  it("does not hide a dialog shown as a popover", async () => {
     /*
-     * En popover setter aldri `open`, så regelen som tar tilbake den skjulte
-     * tilstanden må ha det samme unntaket som nettleserens eget stilark har.
-     * Uten det forsvant et `<dialog popover>` helt, uten et ord.
+     * A popover never sets `open`, so the rule that restores the hidden state
+     * must have the same exception as the browser's own stylesheet. Without
+     * it a `<dialog popover>` disappeared entirely, without a word.
      */
     const {
-      dialog: boks,
-      vindu,
-      rydd,
-    } = await iRammeUtenSkript(`
-      <dialog class="lt-dialog" popover id="hjelp">
-        <h2 class="lt-dialog__title">Hva betyr dette?</h2>
+      dialog: box,
+      win,
+      cleanUp,
+    } = await inFrameWithoutScript(`
+      <dialog class="lt-dialog" popover id="help">
+        <h2 class="lt-dialog__title">What does this mean?</h2>
         <div class="lt-dialog__body">
-          <p>Søknaden er registrert, men ikke behandlet.</p>
+          <p>The application is registered, but not processed.</p>
         </div>
       </dialog>`)
 
     try {
-      expect(vindu.getComputedStyle(boks).display).toBe("none")
+      expect(win.getComputedStyle(box).display).toBe("none")
 
-      boks.showPopover()
-      expect(boks.matches(":popover-open")).toBe(true)
-      expect(vindu.getComputedStyle(boks).display).toBe("flex")
-      expect(boks.getBoundingClientRect().width).toBeGreaterThan(0)
+      box.showPopover()
+      expect(box.matches(":popover-open")).toBe(true)
+      expect(win.getComputedStyle(box).display).toBe("flex")
+      expect(box.getBoundingClientRect().width).toBeGreaterThan(0)
 
-      boks.hidePopover()
-      expect(vindu.getComputedStyle(boks).display).toBe("none")
+      box.hidePopover()
+      expect(win.getComputedStyle(box).display).toBe("none")
     } finally {
-      rydd()
+      cleanUp()
     }
   })
 
-  it("lar dialogen være en blokk når den ikke har en kropp", async () => {
+  it("leaves the dialog a block when it has no body", async () => {
     /*
-     * Kolonnen slås på av `:has(> .lt-dialog__body)`, og det vilkåret er med
-     * vilje. En dialog uten kropp skal ikke endre utseende av at kolonnen kom:
-     * en knapp som står rett i dialogen skal beholde bredden sin framfor å bli
-     * en egen rad i full bredde.
+     * The column is switched on by `:has(> .lt-dialog__body)`, and that
+     * condition is deliberate. A dialog without a body should not change
+     * appearance because the column arrived: a button directly in the dialog
+     * should keep its width rather than become its own full-width row.
      */
     const {
-      dialog: boks,
-      vindu,
-      rydd,
-    } = await iRammeUtenSkript(`
+      dialog: box,
+      win,
+      cleanUp,
+    } = await inFrameWithoutScript(`
       <lt-dialog>
         <dialog class="lt-dialog" open>
-          <h2 class="lt-dialog__title">Vilkår</h2>
-          <p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>
-          <button class="lt-button" type="button">Lukk</button>
+          <h2 class="lt-dialog__title">Terms</h2>
+          <p>The terms apply from the date the application is registered.</p>
+          <button class="lt-button" type="button">Close</button>
         </dialog>
       </lt-dialog>`)
 
     try {
-      expect(vindu.getComputedStyle(boks).display).toBe("block")
+      expect(win.getComputedStyle(box).display).toBe("block")
 
-      const knapp = boks.querySelector(".lt-button") as HTMLElement
-      const bredde = knapp.getBoundingClientRect().width
-      expect(bredde).toBeGreaterThan(0)
-      // Ikke strukket til full bredde slik et flekselement ville blitt.
-      expect(bredde).toBeLessThan(boks.getBoundingClientRect().width / 2)
+      const button = box.querySelector(".lt-button") as HTMLElement
+      const width = button.getBoundingClientRect().width
+      expect(width).toBeGreaterThan(0)
+      // Not stretched to full width the way a flex item would have been.
+      expect(width).toBeLessThan(box.getBoundingClientRect().width / 2)
     } finally {
-      rydd()
+      cleanUp()
     }
   })
 
-  it("lar dialogen være en blokk når kroppen er pakket inn", async () => {
+  it("leaves the dialog a block when the body is wrapped", async () => {
     /*
-     * Det dokumentasjonen lover i tabellen over klassene: kroppen må være et
-     * direkte barn. Er den pakket inn, i et `<form>` for eksempel, er det
-     * dialogen som ruller, som før kolonnen kom. Da forsvinner overskriften ut
-     * av syne, og det er grunnen til at vilkåret står skrevet.
+     * What the documentation promises in the table of classes: the body must
+     * be a direct child. If it is wrapped, in a `<form>` for example, the
+     * dialog is what scrolls, as before the column arrived. Then the heading
+     * goes out of view, and that is why the condition is written out.
      */
     const {
-      dialog: boks,
-      vindu,
-      rydd,
-    } = await iRammeUtenSkript(
+      dialog: box,
+      win,
+      cleanUp,
+    } = await inFrameWithoutScript(
       `
       <lt-dialog>
         <dialog class="lt-dialog" open>
           <form method="dialog">
-            <h2 class="lt-dialog__title">Vilkår</h2>
-            <div class="lt-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>
+            <h2 class="lt-dialog__title">Terms</h2>
+            <div class="lt-dialog__body">${"<p>The terms apply from the date the application is registered.</p>".repeat(40)}</div>
           </form>
         </dialog>
       </lt-dialog>`,
@@ -1013,243 +1029,248 @@ describe("dialogen før den er modal", () => {
     )
 
     try {
-      expect(vindu.getComputedStyle(boks).display).toBe("block")
+      expect(win.getComputedStyle(box).display).toBe("block")
 
-      const kropp = boks.querySelector(".lt-dialog__body") as HTMLElement
-      expect(kropp.scrollHeight).toBeLessThanOrEqual(kropp.clientHeight + 1)
-      expect(boks.scrollHeight).toBeGreaterThan(boks.clientHeight + 1)
+      const body = box.querySelector(".lt-dialog__body") as HTMLElement
+      expect(body.scrollHeight).toBeLessThanOrEqual(body.clientHeight + 1)
+      expect(box.scrollHeight).toBeGreaterThan(box.clientHeight + 1)
     } finally {
-      rydd()
+      cleanUp()
     }
   })
 
-  it("rører ikke en dialog som brukes uten komponenten", async () => {
-    // En `.lt-dialog` som står alene, og med vilje ikke er modal, skal stå
-    // der den står.
+  it("does not touch a dialog used without the component", async () => {
+    // A `.lt-dialog` on its own, and deliberately not modal, should stay
+    // where it is.
     const {
-      dialog: boks,
-      vindu,
-      rydd,
-    } = await iRammeUtenSkript(
-      `<dialog class="lt-dialog" open>Uten vert</dialog>`,
+      dialog: box,
+      win,
+      cleanUp,
+    } = await inFrameWithoutScript(
+      `<dialog class="lt-dialog" open>Without a host</dialog>`,
     )
 
     try {
-      expect(vindu.getComputedStyle(boks).position).not.toBe("fixed")
+      expect(win.getComputedStyle(box).position).not.toBe("fixed")
     } finally {
-      rydd()
+      cleanUp()
     }
   })
 })
 
-describe("lt-dialog med server-controlled", () => {
+describe("lt-dialog with server-controlled", () => {
   beforeAll(() => {
     defineLtDialog()
   })
 
-  it("melder fra én gang også når React tar open fra barnet før verten", async () => {
-    // React oppdaterer barn før forelder. Da er vertens `open` alt borte i
-    // det komponenten lukker dialogen, og uten en melding herfra fikk appen
-    // aldri vite at den ble lukket.
-    const boks = dialog({ titleId: "sc2-tittel", open: true })
+  it("reports once also when React takes open from the child before the host", async () => {
+    // React updates children before the parent. Then the host's `open` is
+    // already gone when the component closes the dialog, and without a report
+    // from here the app never learnt that it was closed.
+    const box = dialog({ titleId: "sc2-title", open: true })
     mount(`
-      <lt-dialog server-controlled ${attr(boks.host)}>
-        <dialog ${attr(boks.dialog)}>
-          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+      <lt-dialog server-controlled ${attr(box.host)}>
+        <dialog ${attr(box.dialog)}>
+          <h2 ${attr(box.title)}>The decision has been registered</h2>
         </dialog>
       </lt-dialog>
     `)
     await customElements.whenDefined("lt-dialog")
     await waitForPaint()
 
-    const vert = document.querySelector("lt-dialog") as HTMLElement
+    const host = document.querySelector("lt-dialog") as HTMLElement
     const d = document.querySelector("dialog") as HTMLDialogElement
-    const meldinger: boolean[] = []
-    vert.addEventListener("dialog-toggle", (e) => meldinger.push(e.detail.open))
+    const reports: boolean[] = []
+    host.addEventListener("dialog-toggle", (e) => reports.push(e.detail.open))
 
     d.removeAttribute("open")
-    vert.removeAttribute("open")
+    host.removeAttribute("open")
     await waitForPaint()
     await waitForPaint()
 
     expect(d.matches(":modal")).toBe(false)
-    expect(meldinger).toEqual([false])
+    expect(reports).toEqual([false])
   })
 
-  it("lukker en modal dialog når patchen tar open fra den", async () => {
+  it("closes a modal dialog when the patch takes open from it", async () => {
     /*
-     * Serveren eier tilstanden, og sender området på nytt uten `open` på
-     * `<dialog>`. Reparasjonen var slått av, men ingen kalte `close()`:
-     * dialogen sto igjen med `:modal` og `display: none`, og ingenting på
-     * siden kunne klikkes. Dokumentasjonen lover at hver patch bestemmer,
-     * også når dialogen står i topplaget.
+     * The server decides the state, and sends the region again without
+     * `open` on `<dialog>`. Repair was switched off, but nobody called
+     * `close()`: the dialog was left with `:modal` and `display: none`, and
+     * nothing on the page could be clicked. The documentation promises that
+     * every patch decides, also when the dialog is in the top layer.
      */
-    const boks = dialog({ titleId: "sc-tittel", open: true })
+    const box = dialog({ titleId: "sc-title", open: true })
     mount(`
-      <lt-dialog server-controlled ${attr(boks.host)}>
-        <dialog ${attr(boks.dialog)}>
-          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
-          <form method="dialog" ${attr(boks.footer)}>
-            <button class="lt-button" value="lukk">Lukk</button>
+      <lt-dialog server-controlled ${attr(box.host)}>
+        <dialog ${attr(box.dialog)}>
+          <h2 ${attr(box.title)}>The decision has been registered</h2>
+          <form method="dialog" ${attr(box.footer)}>
+            <button class="lt-button" value="close">Close</button>
           </form>
         </dialog>
       </lt-dialog>
-      <button id="utenfor">Utenfor</button>
+      <button id="outside">Outside</button>
     `)
     await customElements.whenDefined("lt-dialog")
     await waitForPaint()
 
-    const vert = document.querySelector("lt-dialog") as HTMLElement
+    const host = document.querySelector("lt-dialog") as HTMLElement
     const d = document.querySelector("dialog") as HTMLDialogElement
-    const meldinger: boolean[] = []
-    vert.addEventListener("dialog-toggle", (e) => meldinger.push(e.detail.open))
+    const reports: boolean[] = []
+    host.addEventListener("dialog-toggle", (e) => reports.push(e.detail.open))
     expect(d.matches(":modal")).toBe(true)
 
     d.removeAttribute("open")
     await waitForPaint()
     await waitForPaint()
 
-    expect(d.matches(":modal"), "dialogen står igjen i topplaget").toBe(false)
-    expect(vert.hasAttribute("open")).toBe(false)
-    expect(meldinger).toEqual([false])
+    expect(d.matches(":modal"), "the dialog is left in the top layer").toBe(
+      false,
+    )
+    expect(host.hasAttribute("open")).toBe(false)
+    expect(reports).toEqual([false])
 
-    const knapp = document.getElementById("utenfor") as HTMLElement
-    knapp.focus()
-    expect(document.activeElement, "resten av siden er fortsatt inert").toBe(
-      knapp,
+    const button = document.getElementById("outside") as HTMLElement
+    button.focus()
+    expect(document.activeElement, "the rest of the page is still inert").toBe(
+      button,
     )
   })
 })
 
-describe("dialogen med farget topp", () => {
-  it("gir toppen fargen og flytter luften ut i delene", async () => {
-    // Uten dette skrev to dialoger i spilldemoen om padding på tre klasser
-    // for å få et farget bånd helt ut i kantene.
-    const boks = dialog({ titleId: "farge-tittel", color: "success" })
-    expect(boks.dialog["data-color"]).toBe("success")
+describe("the dialog with a coloured header", () => {
+  it("gives the header the colour and moves the spacing out into the parts", async () => {
+    // Without this, two dialogs in the game demo overrode padding on three
+    // classes to get a coloured band all the way to the edges.
+    const box = dialog({ titleId: "colour-title", color: "success" })
+    expect(box.dialog["data-color"]).toBe("success")
     expect(dialog({ titleId: "x" }).dialog["data-color"]).toBeUndefined()
 
     mount(`
-      <dialog ${attr(boks.dialog)} open>
-        <div ${attr(boks.header)}>
-          <h2 ${attr(boks.title)}>Full pott</h2>
-          <p ${attr(boks.subtitle)}>25 av 25 poeng</p>
+      <dialog ${attr(box.dialog)} open>
+        <div ${attr(box.header)}>
+          <h2 ${attr(box.title)}>Full marks</h2>
+          <p ${attr(box.subtitle)}>25 of 25 points</p>
         </div>
-        <div ${attr(boks.body)}><p>Alle fire traff.</p></div>
-        <form method="dialog" ${attr(boks.footer)}><button class="lt-button" value="lukk">Lukk</button></form>
+        <div ${attr(box.body)}><p>All four hit.</p></div>
+        <form method="dialog" ${attr(box.footer)}><button class="lt-button" value="close">Close</button></form>
       </dialog>
     `)
     await waitForPaint()
 
     const d = document.querySelector("dialog") as HTMLElement
-    const topp = d.querySelector(".lt-dialog__header") as HTMLElement
-    const kropp = d.querySelector(".lt-dialog__body") as HTMLElement
-    const fot = d.querySelector(".lt-dialog__footer") as HTMLElement
-    // En referanse med tokenet rett på, så fargen sammenlignes ferdig regnet.
-    const referanse = document.createElement("div")
-    referanse.style.background = "var(--lt-color-success-surface)"
-    document.body.append(referanse)
+    const header = d.querySelector(".lt-dialog__header") as HTMLElement
+    const body = d.querySelector(".lt-dialog__body") as HTMLElement
+    const footer = d.querySelector(".lt-dialog__footer") as HTMLElement
+    // A reference with the token set directly, so the colour is compared
+    // fully resolved.
+    const reference = document.createElement("div")
+    reference.style.background = "var(--lt-color-success-surface)"
+    document.body.append(reference)
 
     expect(getComputedStyle(d).paddingTop).toBe("0px")
-    expect(getComputedStyle(topp).paddingTop).not.toBe("0px")
-    expect(getComputedStyle(kropp).paddingTop).not.toBe("0px")
-    expect(getComputedStyle(fot).marginTop).toBe("0px")
-    expect(getComputedStyle(topp).backgroundColor).toBe(
-      getComputedStyle(referanse).backgroundColor,
+    expect(getComputedStyle(header).paddingTop).not.toBe("0px")
+    expect(getComputedStyle(body).paddingTop).not.toBe("0px")
+    expect(getComputedStyle(footer).marginTop).toBe("0px")
+    expect(getComputedStyle(header).backgroundColor).toBe(
+      getComputedStyle(reference).backgroundColor,
     )
-    expect(getComputedStyle(topp).backgroundColor).not.toBe(
-      getComputedStyle(kropp).backgroundColor,
+    expect(getComputedStyle(header).backgroundColor).not.toBe(
+      getComputedStyle(body).backgroundColor,
     )
-    referanse.remove()
+    reference.remove()
   })
 
-  it("gir ingen stripe når toppen står uten farge", async () => {
-    const boks = dialog({ titleId: "noytral-tittel" })
+  it("gives no stripe when the header has no colour", async () => {
+    const box = dialog({ titleId: "neutral-title" })
     mount(`
-      <dialog ${attr(boks.dialog)} open>
-        <div ${attr(boks.header)}><h2 ${attr(boks.title)}>Nøytral</h2></div>
-        <div ${attr(boks.body)}><p>Tekst.</p></div>
+      <dialog ${attr(box.dialog)} open>
+        <div ${attr(box.header)}><h2 ${attr(box.title)}>Neutral</h2></div>
+        <div ${attr(box.body)}><p>Text.</p></div>
       </dialog>
     `)
     await waitForPaint()
 
-    const topp = document.querySelector(".lt-dialog__header") as HTMLElement
-    const kropp = document.querySelector(".lt-dialog__body") as HTMLElement
-    const referanse = document.createElement("div")
-    referanse.style.paddingTop = "var(--lt-spacing-2)"
-    document.body.append(referanse)
+    const header = document.querySelector(".lt-dialog__header") as HTMLElement
+    const body = document.querySelector(".lt-dialog__body") as HTMLElement
+    const reference = document.createElement("div")
+    reference.style.paddingTop = "var(--lt-spacing-2)"
+    document.body.append(reference)
 
-    // Toppens bunnluft er overskriftens vanlige marg, og kroppen legger
-    // ingenting til, så avstanden ned til teksten er den samme som uten topp.
-    expect(getComputedStyle(topp).paddingBottom).toBe(
-      getComputedStyle(referanse).paddingTop,
+    // The header's bottom spacing is the heading's usual margin, and the body
+    // adds nothing, so the distance down to the text is the same as without
+    // a header.
+    expect(getComputedStyle(header).paddingBottom).toBe(
+      getComputedStyle(reference).paddingTop,
     )
-    expect(getComputedStyle(kropp).paddingTop).toBe("0px")
-    referanse.remove()
+    expect(getComputedStyle(body).paddingTop).toBe("0px")
+    reference.remove()
   })
 
-  it("gir neutral samme luft som ingen farge", async () => {
-    const boks = dialog({ titleId: "uten-tittel" })
-    const noytral = dialog({ titleId: "noytral-verdi-tittel" })
+  it("gives neutral the same spacing as no colour", async () => {
+    const box = dialog({ titleId: "plain-title" })
+    const neutral = dialog({ titleId: "neutral-value-title" })
     mount(`
-      <dialog ${attr(boks.dialog)} id="uten" open>
-        <div ${attr(boks.header)}><h2 ${attr(boks.title)}>Uten</h2></div>
-        <div ${attr(boks.body)}><p>Tekst.</p></div>
+      <dialog ${attr(box.dialog)} id="plain" open>
+        <div ${attr(box.header)}><h2 ${attr(box.title)}>Plain</h2></div>
+        <div ${attr(box.body)}><p>Text.</p></div>
       </dialog>
-      <dialog ${attr(noytral.dialog)} id="noytral" data-color="neutral" open>
-        <div ${attr(noytral.header)}><h2 ${attr(noytral.title)}>Nøytral</h2></div>
-        <div ${attr(noytral.body)}><p>Tekst.</p></div>
+      <dialog ${attr(neutral.dialog)} id="neutral" data-color="neutral" open>
+        <div ${attr(neutral.header)}><h2 ${attr(neutral.title)}>Neutral</h2></div>
+        <div ${attr(neutral.body)}><p>Text.</p></div>
       </dialog>
     `)
     await waitForPaint()
 
-    // `neutral` er standardverdien, og editoren foreslår den. Før fikk den
-    // 20 piksler under overskriften i stedet for 8.
-    const stil = (id: string, del: string) =>
-      getComputedStyle(document.querySelector(`#${id} ${del}`) as Element)
-    expect(stil("noytral", ".lt-dialog__header").paddingBottom).toBe(
-      stil("uten", ".lt-dialog__header").paddingBottom,
+    // `neutral` is the default value, and the editor suggests it. Before, it
+    // got 20 pixels under the heading instead of 8.
+    const style = (id: string, part: string) =>
+      getComputedStyle(document.querySelector(`#${id} ${part}`) as Element)
+    expect(style("neutral", ".lt-dialog__header").paddingBottom).toBe(
+      style("plain", ".lt-dialog__header").paddingBottom,
     )
-    expect(stil("noytral", ".lt-dialog__body").paddingTop).toBe("0px")
+    expect(style("neutral", ".lt-dialog__body").paddingTop).toBe("0px")
   })
 
-  it("holder avstanden til knapperaden når toppen uten farge står rett over den", async () => {
-    // En bekreftelsesdialog med bare overskrift og knapper. Med bunnluften
-    // satt til null sto knappene helt inntil overskriften.
-    const medTopp = dialog({ titleId: "kort-tittel" })
+  it("keeps the distance to the button row when an uncoloured header sits right above it", async () => {
+    // A confirmation dialog with only a heading and buttons. With the bottom
+    // spacing set to zero, the buttons sat right up against the heading.
+    const withHeader = dialog({ titleId: "short-title" })
     mount(`
-      <dialog ${attr(medTopp.dialog)} open id="med">
-        <div ${attr(medTopp.header)}><h2 ${attr(medTopp.title)}>Slette?</h2></div>
-        <form method="dialog" ${attr(medTopp.footer)}><button class="lt-button" value="ja">Ja</button></form>
+      <dialog ${attr(withHeader.dialog)} open id="with">
+        <div ${attr(withHeader.header)}><h2 ${attr(withHeader.title)}>Delete?</h2></div>
+        <form method="dialog" ${attr(withHeader.footer)}><button class="lt-button" value="yes">Yes</button></form>
       </dialog>
-      <dialog ${attr(dialog({ titleId: "kort-tittel-2" }).dialog)} open id="uten">
-        <h2 class="lt-dialog__title" id="kort-tittel-2">Slette?</h2>
-        <form method="dialog" class="lt-dialog__footer"><button class="lt-button" value="ja">Ja</button></form>
+      <dialog ${attr(dialog({ titleId: "short-title-2" }).dialog)} open id="without">
+        <h2 class="lt-dialog__title" id="short-title-2">Delete?</h2>
+        <form method="dialog" class="lt-dialog__footer"><button class="lt-button" value="yes">Yes</button></form>
       </dialog>
     `)
     await waitForPaint()
 
-    // Til knappen, ikke til knapperadens boks: radens luft ligger inni boksen
-    // med topp, og under boksen som marg uten. Det brukeren ser er knappen.
-    const avstand = (id: string) => {
+    // To the button, not to the button row's box: the row's spacing is inside
+    // the box with a header, and below the box as a margin without. What the
+    // user sees is the button.
+    const gap = (id: string) => {
       const d = document.getElementById(id) as HTMLElement
-      const tittel = d.querySelector("h2") as HTMLElement
-      const knapp = d.querySelector("button") as HTMLElement
+      const title = d.querySelector("h2") as HTMLElement
+      const button = d.querySelector("button") as HTMLElement
       return (
-        knapp.getBoundingClientRect().top -
-        tittel.getBoundingClientRect().bottom
+        button.getBoundingClientRect().top -
+        title.getBoundingClientRect().bottom
       )
     }
-    expect(Math.round(avstand("med"))).toBe(Math.round(avstand("uten")))
-    expect(avstand("med")).toBeGreaterThan(0)
+    expect(Math.round(gap("with"))).toBe(Math.round(gap("without")))
+    expect(gap("with")).toBeGreaterThan(0)
   })
 
-  it("står som før uten en topp", async () => {
-    const boks = dialog({ titleId: "vanlig-tittel" })
+  it("stays as before without a header", async () => {
+    const box = dialog({ titleId: "default-title" })
     mount(`
-      <dialog ${attr(boks.dialog)} open>
-        <h2 ${attr(boks.title)}>Vanlig</h2>
-        <div ${attr(boks.body)}><p>Tekst.</p></div>
+      <dialog ${attr(box.dialog)} open>
+        <h2 ${attr(box.title)}>Default</h2>
+        <div ${attr(box.body)}><p>Text.</p></div>
       </dialog>
     `)
     await waitForPaint()
@@ -1258,7 +1279,7 @@ describe("dialogen med farget topp", () => {
     expect(getComputedStyle(d).paddingTop).not.toBe("0px")
   })
 
-  it("kjenner fargene sine", () => {
+  it("knows its colours", () => {
     expect(dialog.colors).toEqual([
       "neutral",
       "brand",
@@ -1268,12 +1289,12 @@ describe("dialogen med farget topp", () => {
       "danger",
     ])
     expect(dialog.isColor("brand")).toBe(true)
-    expect(dialog.isColor("lilla")).toBe(false)
+    expect(dialog.isColor("purple")).toBe(false)
     expect(dialog.header).toBe("lt-dialog__header")
   })
 })
 
-describe("lt-dialog kobler fra bar struktur", () => {
+describe("lt-dialog wires from bare structure", () => {
   beforeAll(() => {
     defineLtDialog()
   })
@@ -1283,76 +1304,76 @@ describe("lt-dialog kobler fra bar struktur", () => {
     if (d?.open) d.close()
   })
 
-  const BAR = `
+  const BARE = `
     <lt-dialog>
       <dialog>
-        <h2>Slette søknaden?</h2>
-        <div class="lt-dialog__body"><p>Søknaden og vedleggene blir borte.</p></div>
+        <h2>Delete the application?</h2>
+        <div class="lt-dialog__body"><p>The application and its attachments will be gone.</p></div>
         <form method="dialog" class="lt-dialog__footer">
-          <button class="lt-button" value="avbryt">Avbryt</button>
+          <button class="lt-button" value="cancel">Cancel</button>
         </form>
       </dialog>
     </lt-dialog>`
 
-  async function monterBar(markup = BAR) {
+  async function mountBare(markup = BARE) {
     mount(markup)
     await customElements.whenDefined("lt-dialog")
     await waitForPaint()
     return {
       d: document.querySelector("dialog") as HTMLDialogElement,
-      tittel: document.querySelector("h2") as HTMLElement,
+      title: document.querySelector("h2") as HTMLElement,
     }
   }
 
-  it("gir dialogen klassen og navnet sitt fra overskriften", async () => {
-    const { d, tittel } = await monterBar()
+  it("gives the dialog its class and its name from the heading", async () => {
+    const { d, title } = await mountBare()
 
     expect(d.classList.contains("lt-dialog")).toBe(true)
-    expect(tittel.classList.contains("lt-dialog__title")).toBe(true)
-    expect(tittel.id).not.toBe("")
-    expect(d.getAttribute("aria-labelledby")).toBe(tittel.id)
+    expect(title.classList.contains("lt-dialog__title")).toBe(true)
+    expect(title.id).not.toBe("")
+    expect(d.getAttribute("aria-labelledby")).toBe(title.id)
   })
 
-  it("lar et navn fra aria-label stå, og rører ikke overskriften", async () => {
-    // Overskriften er da ikke tittelen, og skal verken få id eller klassen
-    // som stiler den som en.
-    const { d, tittel } = await monterBar(
-      BAR.replace("<dialog>", '<dialog aria-label="Slett søknaden">'),
+  it("leaves a name from aria-label, and does not touch the heading", async () => {
+    // The heading is then not the title, and should get neither an id nor the
+    // class that styles it as one.
+    const { d, title } = await mountBare(
+      BARE.replace("<dialog>", '<dialog aria-label="Delete the application">'),
     )
 
     expect(d.hasAttribute("aria-labelledby")).toBe(false)
-    expect(d.getAttribute("aria-label")).toBe("Slett søknaden")
-    expect(tittel.id).toBe("")
-    expect(tittel.classList.contains("lt-dialog__title")).toBe(false)
+    expect(d.getAttribute("aria-label")).toBe("Delete the application")
+    expect(title.id).toBe("")
+    expect(title.classList.contains("lt-dialog__title")).toBe(false)
   })
 
-  it("gir klassen til overskriften serveren pekte på", async () => {
-    const { d } = await monterBar(
-      BAR.replace("<dialog>", '<dialog aria-labelledby="egen-tittel">').replace(
-        "<h2>Slette søknaden?</h2>",
-        '<p id="egen-tittel">Slette søknaden?</p><h2>Vedlegg</h2>',
+  it("gives the class to the heading the server pointed to", async () => {
+    const { d } = await mountBare(
+      BARE.replace("<dialog>", '<dialog aria-labelledby="own-title">').replace(
+        "<h2>Delete the application?</h2>",
+        '<p id="own-title">Delete the application?</p><h2>Attachments</h2>',
       ),
     )
-    const egen = document.getElementById("egen-tittel") as HTMLElement
+    const own = document.getElementById("own-title") as HTMLElement
     const h2 = d.querySelector("h2") as HTMLElement
 
-    expect(egen.classList.contains("lt-dialog__title")).toBe(true)
+    expect(own.classList.contains("lt-dialog__title")).toBe(true)
     expect(h2.classList.contains("lt-dialog__title")).toBe(false)
     expect(h2.id).toBe("")
   })
 
-  it("gjør ikke en overskrift i kroppen til tittel", async () => {
-    // Overskriften i kroppen hører til innholdet. Tittelen er den første
-    // overskriften utenfor kroppen, også når den står etter kroppen.
-    const { d } = await monterBar(
-      BAR.replace("<h2>Slette søknaden?</h2>", "")
+  it("does not make a heading in the body the title", async () => {
+    // The heading in the body belongs to the content. The title is the first
+    // heading outside the body, also when it comes after the body.
+    const { d } = await mountBare(
+      BARE.replace("<h2>Delete the application?</h2>", "")
         .replace(
-          "<p>Søknaden og vedleggene blir borte.</p>",
-          "<h3>Vedleggene</h3><p>Søknaden og vedleggene blir borte.</p>",
+          "<p>The application and its attachments will be gone.</p>",
+          "<h3>The attachments</h3><p>The application and its attachments will be gone.</p>",
         )
         .replace(
           '<form method="dialog"',
-          '<h2>Slette søknaden?</h2><form method="dialog"',
+          '<h2>Delete the application?</h2><form method="dialog"',
         ),
     )
     const h3 = d.querySelector("h3") as HTMLElement
@@ -1364,36 +1385,36 @@ describe("lt-dialog kobler fra bar struktur", () => {
     expect(d.getAttribute("aria-labelledby")).toBe(h2.id)
   })
 
-  it("rører ikke overskriften i en nøstet dialog", async () => {
-    // Den nøstede dialogens overskrift står først i dokumentrekkefølge, og
-    // er likevel ikke den ytre dialogens tittel. Det er overskriften etter.
-    const { d } = await monterBar(
-      BAR.replace("<h2>Slette søknaden?</h2>", "").replace(
+  it("does not touch the heading in a nested dialog", async () => {
+    // The nested dialog's heading comes first in document order, and is
+    // still not the outer dialog's title. The heading after it is.
+    const { d } = await mountBare(
+      BARE.replace("<h2>Delete the application?</h2>", "").replace(
         '<form method="dialog"',
-        '<dialog id="indre"><h2>Er du sikker?</h2></dialog>' +
-          '<h2 id="ytre">Slette søknaden?</h2><form method="dialog"',
+        '<dialog id="inner"><h2>Are you sure?</h2></dialog>' +
+          '<h2 id="outer">Delete the application?</h2><form method="dialog"',
       ),
     )
-    const indre = d.querySelector("#indre h2") as HTMLElement
-    const ytre = d.querySelector("#ytre") as HTMLElement
+    const inner = d.querySelector("#inner h2") as HTMLElement
+    const outer = d.querySelector("#outer") as HTMLElement
 
-    expect(indre.classList.contains("lt-dialog__title")).toBe(false)
-    expect(ytre.classList.contains("lt-dialog__title")).toBe(true)
-    expect(d.getAttribute("aria-labelledby")).toBe("ytre")
+    expect(inner.classList.contains("lt-dialog__title")).toBe(false)
+    expect(outer.classList.contains("lt-dialog__title")).toBe(true)
+    expect(d.getAttribute("aria-labelledby")).toBe("outer")
   })
 
-  it("teller ikke en kropp utenfor sin egen dialog", async () => {
-    // En bekreftelse i kroppen til en innstillingsdialog: den indre
-    // dialogens overskrift står i den ytre dialogens kropp, men kroppen er
-    // ikke den indres, så overskriften er fortsatt tittelen dens.
+  it("does not count a body outside its own dialog", async () => {
+    // A confirmation in the body of a settings dialog: the inner dialog's
+    // heading is in the outer dialog's body, but that body is not the inner
+    // one's, so the heading is still its title.
     mount(`
-      <dialog id="ytre" aria-label="Innstillinger">
+      <dialog id="outer" aria-label="Settings">
         <div class="lt-dialog__body">
           <lt-dialog>
-            <dialog id="indre">
-              <h2 id="sikker">Er du sikker?</h2>
+            <dialog id="inner">
+              <h2 id="sure">Are you sure?</h2>
               <form method="dialog" class="lt-dialog__footer">
-                <button class="lt-button" value="avbryt">Avbryt</button>
+                <button class="lt-button" value="cancel">Cancel</button>
               </form>
             </dialog>
           </lt-dialog>
@@ -1402,153 +1423,153 @@ describe("lt-dialog kobler fra bar struktur", () => {
     `)
     await customElements.whenDefined("lt-dialog")
     await waitForPaint()
-    const indre = document.getElementById("indre") as HTMLDialogElement
-    const tittel = document.getElementById("sikker") as HTMLElement
+    const inner = document.getElementById("inner") as HTMLDialogElement
+    const title = document.getElementById("sure") as HTMLElement
 
-    expect(tittel.classList.contains("lt-dialog__title")).toBe(true)
-    expect(indre.getAttribute("aria-labelledby")).toBe("sikker")
+    expect(title.classList.contains("lt-dialog__title")).toBe(true)
+    expect(inner.getAttribute("aria-labelledby")).toBe("sure")
   })
 
-  it("åpner ikke igjen når en klasse endres i samme oppgave som lukkingen", async () => {
+  it("does not reopen when a class changes in the same task as the close", async () => {
     /*
-     * `close()` fjerner `open` synkront og køer `close`-hendelsen, og
-     * observatøren kjører før den. Så komponenten en klassepost og kjørte
-     * hele `sync()`, fant den en vert med `open` og en dialog som ikke var
-     * modal, og åpnet den igjen. Brukeren måtte lukke to ganger.
+     * `close()` removes `open` synchronously and queues the `close` event,
+     * and the observer runs before it. When the component saw a class record
+     * and ran the whole of `sync()`, it found a host with `open` and a dialog
+     * that was not modal, and opened it again. The user had to close twice.
      */
-    const { d } = await monterBar(
-      BAR.replace("<lt-dialog>", "<lt-dialog open>").replace(
+    const { d } = await mountBare(
+      BARE.replace("<lt-dialog>", "<lt-dialog open>").replace(
         "<dialog>",
         "<dialog open>",
       ),
     )
-    const vert = document.querySelector("lt-dialog") as HTMLElement
-    const knapp = d.querySelector("button") as HTMLButtonElement
+    const host = document.querySelector("lt-dialog") as HTMLElement
+    const button = d.querySelector("button") as HTMLButtonElement
     expect(d.matches(":modal")).toBe(true)
 
-    const meldt: boolean[] = []
-    vert.addEventListener("dialog-toggle", (e) => meldt.push(e.detail.open))
-    const lukket = new Promise((r) =>
+    const reported: boolean[] = []
+    host.addEventListener("dialog-toggle", (e) => reported.push(e.detail.open))
+    const closed = new Promise((r) =>
       d.addEventListener("close", r, { once: true }),
     )
-    d.close("slett")
-    knapp.classList.add("opptatt")
-    await lukket
+    d.close("delete")
+    button.classList.add("busy")
+    await closed
     await waitForPaint()
 
     expect(d.open).toBe(false)
-    expect(vert.hasAttribute("open")).toBe(false)
-    expect(meldt).toEqual([false])
+    expect(host.hasAttribute("open")).toBe(false)
+    expect(reported).toEqual([false])
   })
 
-  it("åpner ikke igjen når en node endres inne i dialogen i samme oppgave", async () => {
-    // Samme løp som over, gjennom en annen dør: en `childList`-post inne i
-    // dialogen, som `knapp.textContent = "Sletter…"` eller en patch fra en
-    // hendelsesstrøm, er ikke et bytte av dialogen og skal ikke kjøre
-    // åpne-og-lukke-logikken.
-    const { d } = await monterBar(
-      BAR.replace("<lt-dialog>", "<lt-dialog open>").replace(
+  it("does not reopen when a node changes inside the dialog in the same task", async () => {
+    // The same race as above, through another door: a `childList` record
+    // inside the dialog, such as `button.textContent = "Deleting…"` or a patch
+    // from an event stream, is not a swap of the dialog and must not run the
+    // open-and-close logic.
+    const { d } = await mountBare(
+      BARE.replace("<lt-dialog>", "<lt-dialog open>").replace(
         "<dialog>",
         "<dialog open>",
       ),
     )
-    const vert = document.querySelector("lt-dialog") as HTMLElement
-    const kropp = d.querySelector(".lt-dialog__body") as HTMLElement
+    const host = document.querySelector("lt-dialog") as HTMLElement
+    const body = d.querySelector(".lt-dialog__body") as HTMLElement
     expect(d.matches(":modal")).toBe(true)
 
-    const meldt: boolean[] = []
-    vert.addEventListener("dialog-toggle", (e) => meldt.push(e.detail.open))
-    const lukket = new Promise((r) =>
+    const reported: boolean[] = []
+    host.addEventListener("dialog-toggle", (e) => reported.push(e.detail.open))
+    const closed = new Promise((r) =>
       d.addEventListener("close", r, { once: true }),
     )
-    d.close("slett")
-    kropp.append(document.createElement("p"))
-    await lukket
+    d.close("delete")
+    body.append(document.createElement("p"))
+    await closed
     await waitForPaint()
 
     expect(d.open).toBe(false)
-    expect(vert.hasAttribute("open")).toBe(false)
-    expect(meldt).toEqual([false])
+    expect(host.hasAttribute("open")).toBe(false)
+    expect(reported).toEqual([false])
   })
 
-  it("setter koblingen tilbake med den samme id-en etter en patch", async () => {
-    const { d, tittel } = await monterBar()
-    const id = tittel.id
+  it("puts the wiring back with the same id after a patch", async () => {
+    const { d, title } = await mountBare()
+    const id = title.id
 
-    // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
+    // The way a morph does it: everything not in the server's HTML is removed.
     d.removeAttribute("class")
     d.removeAttribute("aria-labelledby")
-    tittel.removeAttribute("id")
-    tittel.removeAttribute("class")
+    title.removeAttribute("id")
+    title.removeAttribute("class")
     await waitForPaint()
 
-    expect(tittel.id).toBe(id)
+    expect(title.id).toBe(id)
     expect(d.getAttribute("aria-labelledby")).toBe(id)
     expect(d.classList.contains("lt-dialog")).toBe(true)
-    expect(tittel.classList.contains("lt-dialog__title")).toBe(true)
+    expect(title.classList.contains("lt-dialog__title")).toBe(true)
   })
 
-  it("skriver ingenting på markup fra lt.dialog()", async () => {
-    // Den direkte påstanden bak «det serveren skrev står»: null
-    // mutasjonsposter fra komponentens første runde.
-    const boks = dialog({ titleId: "tittel" })
-    const omslag = document.createElement("div")
-    omslag.innerHTML = `
-      <lt-dialog ${attr(boks.host)}>
-        <dialog ${attr(boks.dialog)}>
-          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
-          <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
+  it("writes nothing on markup from lt.dialog()", async () => {
+    // The direct claim behind "what the server wrote stays": zero mutation
+    // records from the component's first round.
+    const box = dialog({ titleId: "title" })
+    const wrapper = document.createElement("div")
+    wrapper.innerHTML = `
+      <lt-dialog ${attr(box.host)}>
+        <dialog ${attr(box.dialog)}>
+          <h2 ${attr(box.title)}>The decision has been registered</h2>
+          <div ${attr(box.body)}><p>The case has been processed.</p></div>
         </dialog>
       </lt-dialog>`
-    const vert = omslag.querySelector("lt-dialog") as HTMLElement
-    const poster: MutationRecord[] = []
-    const observatør = new MutationObserver((r) => poster.push(...r))
-    observatør.observe(vert, {
+    const host = wrapper.querySelector("lt-dialog") as HTMLElement
+    const records: MutationRecord[] = []
+    const observer = new MutationObserver((r) => records.push(...r))
+    observer.observe(host, {
       attributes: true,
       childList: true,
       subtree: true,
     })
 
-    document.body.append(omslag)
+    document.body.append(wrapper)
     await customElements.whenDefined("lt-dialog")
     await waitForPaint()
 
-    expect(poster.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
-    observatør.disconnect()
-    omslag.remove()
+    expect(records.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
+    observer.disconnect()
+    wrapper.remove()
   })
 })
 
-describe("lt-dialog når React skriver egenskapen", () => {
+describe("lt-dialog when React writes the property", () => {
   beforeAll(() => {
     defineLtDialog()
   })
 
-  it("fjerner open når egenskapen settes til undefined", async () => {
+  it("removes open when the property is set to undefined", async () => {
     /*
-     * React 19 skriver `el.open = undefined` når en prop går fra `true` til
-     * borte. `toggleAttribute(navn, undefined)` veksler, så en dialog
-     * brukeren hadde lukket fikk `open` tilbake og åpnet seg igjen.
+     * React 19 writes `el.open = undefined` when a prop goes from `true` to
+     * absent. `toggleAttribute(name, undefined)` toggles, so a dialog the
+     * user had closed got `open` back and opened again.
      */
-    const boks = dialog({ titleId: "tittel" })
+    const box = dialog({ titleId: "title" })
     mount(
-      `<lt-dialog><dialog ${attr(boks.dialog)}><h2 ${attr(boks.title)}>Slette?</h2></dialog></lt-dialog>`,
+      `<lt-dialog><dialog ${attr(box.dialog)}><h2 ${attr(box.title)}>Delete?</h2></dialog></lt-dialog>`,
     )
     await customElements.whenDefined("lt-dialog")
-    const vert = document.querySelector("lt-dialog") as HTMLElement & {
+    const host = document.querySelector("lt-dialog") as HTMLElement & {
       open: boolean | undefined
     }
 
-    vert.open = undefined
-    expect(vert.hasAttribute("open"), "undefined på en lukket").toBe(false)
+    host.open = undefined
+    expect(host.hasAttribute("open"), "undefined on a closed one").toBe(false)
 
-    vert.open = true
+    host.open = true
     await waitForPaint()
-    expect(vert.hasAttribute("open")).toBe(true)
+    expect(host.hasAttribute("open")).toBe(true)
 
-    vert.open = undefined
+    host.open = undefined
     await waitForPaint()
-    expect(vert.hasAttribute("open"), "undefined på en åpen").toBe(false)
+    expect(host.hasAttribute("open"), "undefined on an open one").toBe(false)
     expect(document.querySelector("dialog")?.matches(":modal")).toBe(false)
   })
 })

@@ -9,7 +9,7 @@
  * and the line length changes little.
  */
 @theme {
-  --font-sitat: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+  --font-quote: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
 
   /*
    * The purple end of the logo's own gradient, as it is in `Logo.astro`. It is
@@ -19,5 +19,5 @@
    * Contrast against the front page background: 5.27 against the darkest end
    * and 4.79 against the lightest, so above the requirement at both.
    */
-  --color-logo-lilla: #b15cff;
+  --color-logo-purple: #b15cff;
 }

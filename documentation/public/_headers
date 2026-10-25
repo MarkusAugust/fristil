@@ -1,9 +1,9 @@
-# Innholdstypene for filene kodeagenter henter.
+# The content types for the files coding agents fetch.
 #
-# Astro-rutene setter `content-type` i `new Response(...)`, men i et statisk
-# bygg skrives bare kroppen til fil, og headerne forsvinner. Netlify utleder
-# typen av endelsen, og da kommer `charset` ikke med. Begge filene er fulle av
-# æ, ø og å, så det er ikke en detalj.
+# The Astro routes set `content-type` in `new Response(...)`, but a static
+# build writes only the body to a file, and the headers are lost. Netlify
+# infers the type from the extension, and then `charset` is left out. Both
+# files can contain characters outside ASCII, so it is not a detail.
 /llms.txt
   Content-Type: text/plain; charset=utf-8
 

@@ -20,86 +20,90 @@ describe("lt-toggle-group", () => {
   beforeEach(() => {
     mount(`
       <fieldset class="lt-toggle-group">
-        <legend class="lt-sr-only">Visning</legend>
-        <label class="lt-toggle-group__option" id="liste">
-          <input type="radio" name="visning" value="liste" checked /> Liste
+        <legend class="lt-sr-only">View</legend>
+        <label class="lt-toggle-group__option" id="list">
+          <input type="radio" name="view" value="list" checked /> List
         </label>
-        <label class="lt-toggle-group__option" id="kart">
-          <input type="radio" name="visning" value="kart" /> Kart
+        <label class="lt-toggle-group__option" id="map">
+          <input type="radio" name="view" value="map" /> Map
         </label>
       </fieldset>
     `)
   })
 
-  it("markerer det valgte alternativet", () => {
-    const valgt = getComputedStyle(document.getElementById("liste") as Element)
-    const uvalgt = getComputedStyle(document.getElementById("kart") as Element)
+  it("marks the selected option", () => {
+    const selected = getComputedStyle(
+      document.getElementById("list") as Element,
+    )
+    const unselected = getComputedStyle(
+      document.getElementById("map") as Element,
+    )
 
-    expect(valgt.backgroundColor).not.toBe(uvalgt.backgroundColor)
+    expect(selected.backgroundColor).not.toBe(unselected.backgroundColor)
   })
 
-  it("er radioknapper under overflaten", () => {
-    const kart = document.querySelector("#kart input") as HTMLInputElement
-    kart.click()
+  it("is radio buttons underneath", () => {
+    const map = document.querySelector("#map input") as HTMLInputElement
+    map.click()
 
-    // Piltaster, FormData og «2 av 2» fra skjermleseren følger med gratis
-    // fordi kontrollene er ekte radioknapper.
-    expect(kart.checked).toBe(true)
+    // Arrow keys, FormData and "2 of 2" from the screen reader come for free
+    // because the controls are real radio buttons.
+    expect(map.checked).toBe(true)
     expect(
-      (document.querySelector("#liste input") as HTMLInputElement).checked,
+      (document.querySelector("#list input") as HTMLInputElement).checked,
     ).toBe(false)
   })
 
-  it("holder radioknappen i tastaturrekkefølgen", () => {
-    const input = document.querySelector("#liste input") as HTMLInputElement
-    const stil = getComputedStyle(input)
+  it("keeps the radio button in the keyboard order", () => {
+    const input = document.querySelector("#list input") as HTMLInputElement
+    const style = getComputedStyle(input)
 
-    expect(stil.display).not.toBe("none")
-    expect(stil.visibility).not.toBe("hidden")
+    expect(style.display).not.toBe("none")
+    expect(style.visibility).not.toBe("hidden")
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(toggleGroup()).toEqual({ class: "lt-toggle-group" })
     expect(toggleGroup.option).toBe("lt-toggle-group__option")
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })
 })
 
-describe("fokusringen på det valgte alternativet", () => {
-  for (const tema of ["light", "dark"] as const) {
-    it(`synes mot den valgte flaten (${tema})`, async () => {
+describe("the focus ring on the selected option", () => {
+  for (const theme of ["light", "dark"] as const) {
+    it(`is visible against the selected surface (${theme})`, async () => {
       mount(`
-        <div data-theme="${tema}">
+        <div data-theme="${theme}">
           <fieldset class="lt-toggle-group">
-            <legend class="lt-sr-only">Visning</legend>
+            <legend class="lt-sr-only">View</legend>
             <label class="lt-toggle-group__option">
-              <input type="radio" name="visning" value="liste" id="liste" checked /> Liste
+              <input type="radio" name="view" value="list" id="list" checked /> List
             </label>
             <label class="lt-toggle-group__option">
-              <input type="radio" name="visning" value="kart" /> Kart
+              <input type="radio" name="view" value="map" /> Map
             </label>
           </fieldset>
         </div>`)
-      // Fokus fra tastaturet, så `:focus-visible` gjelder. I en radiogruppe
-      // er det fokuserte alternativet alltid det valgte. Tab alene når ikke
-      // fram i WebKit på macOS, der Tab hopper over radioknapper som i
-      // Safari, så fokus settes fra kode etter det ene tastetrykket. Det
-      // teller som tastaturstyrt i alle tre motorene, som i fokustesten.
+      // Focus from the keyboard, so `:focus-visible` applies. In a radio group
+      // the focused option is always the selected one. Tab alone does not get
+      // there in WebKit on macOS, where Tab skips radio buttons as in Safari,
+      // so focus is set from code after the one key press. That counts as
+      // keyboard focus in all three engines, as in the focus test.
       await userEvent.tab()
-      const valgt = document.getElementById("liste") as HTMLInputElement
-      valgt.focus()
-      expect(document.activeElement).toBe(valgt)
+      const selected = document.getElementById("list") as HTMLInputElement
+      selected.focus()
+      expect(document.activeElement).toBe(selected)
       await waitForPaint()
 
-      const stil = getComputedStyle(valgt.closest("label") as Element)
-      expect(stil.outlineStyle).toBe("solid")
-      // Før var ringen 1,23:1 i lyst tema og 2,01:1 i mørkt.
+      const style = getComputedStyle(selected.closest("label") as Element)
+      expect(style.outlineStyle).toBe("solid")
+      // The ring used to be 1.23:1 in the light theme and 2.01:1 in the dark.
       expect(
-        contrastRatio(rgb(stil.outlineColor), rgb(stil.backgroundColor)),
+        contrastRatio(rgb(style.outlineColor), rgb(style.backgroundColor)),
       ).toBeGreaterThanOrEqual(3)
     })
   }

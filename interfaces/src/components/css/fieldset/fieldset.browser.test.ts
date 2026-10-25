@@ -16,45 +16,45 @@ import "../radio/radio.css"
 describe("lt-fieldset", () => {
   beforeEach(() => {
     mount(`
-      <fieldset class="lt-fieldset" id="gruppe">
-        <legend class="lt-legend" id="tittel" data-required="symbol">Leveringsmåte</legend>
+      <fieldset class="lt-fieldset" id="group">
+        <legend class="lt-legend" id="title" data-required="symbol">Delivery method</legend>
         <div class="lt-radio-row">
-          <input class="lt-radio" type="radio" id="post" name="levering" />
-          <label for="post">Vanlig post</label>
+          <input class="lt-radio" type="radio" id="post" name="delivery" />
+          <label for="post">Standard post</label>
         </div>
       </fieldset>
     `)
   })
 
-  it("fjerner nettleserens egen ramme og innrykk", () => {
-    const stil = getComputedStyle(document.getElementById("gruppe") as Element)
+  it("removes the browser's own border and indent", () => {
+    const style = getComputedStyle(document.getElementById("group") as Element)
 
-    expect(stil.borderTopWidth).toBe("0px")
-    expect(stil.paddingInlineStart).toBe("0px")
+    expect(style.borderTopWidth).toBe("0px")
+    expect(style.paddingInlineStart).toBe("0px")
   })
 
-  it("markerer påkrevd på ledeteksten", () => {
-    const merke = getComputedStyle(
-      document.getElementById("tittel") as Element,
+  it("marks the label as required", () => {
+    const marker = getComputedStyle(
+      document.getElementById("title") as Element,
       "::after",
     )
 
-    expect(merke.content).toContain("*")
+    expect(marker.content).toContain("*")
   })
 
-  it("slår av alle kontrollene i gruppen på én gang", () => {
-    const gruppe = document.getElementById("gruppe") as HTMLFieldSetElement
-    gruppe.disabled = true
+  it("disables every control in the group at once", () => {
+    const group = document.getElementById("group") as HTMLFieldSetElement
+    group.disabled = true
 
-    // Kontrollene inni arver tilstanden fra gruppen. Egenskapen `disabled` på
-    // hver av dem står fortsatt til false, så det er `:disabled` som svarer
-    // på om brukeren kommer til, ikke egenskapen.
-    const knapp = document.getElementById("post") as HTMLInputElement
-    expect(knapp.matches(":disabled")).toBe(true)
-    expect(knapp.disabled).toBe(false)
+    // The controls inside inherit the state from the group. The `disabled`
+    // property on each of them is still false, so `:disabled` is what tells
+    // whether the user can reach them, not the property.
+    const radio = document.getElementById("post") as HTMLInputElement
+    expect(radio.matches(":disabled")).toBe(true)
+    expect(radio.disabled).toBe(false)
   })
 
-  it("setter attributtene fra byggefunksjonene", () => {
+  it("sets the attributes from the builder functions", () => {
     expect(fieldset()).toEqual({ class: "lt-fieldset" })
     expect(fieldset({ state: "invalid" })).toEqual({
       class: "lt-fieldset",
@@ -66,7 +66,7 @@ describe("lt-fieldset", () => {
     })
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })

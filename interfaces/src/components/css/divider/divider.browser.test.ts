@@ -15,19 +15,21 @@ import "./divider.css"
 describe("lt-divider", () => {
   beforeEach(() => {
     mount(`
-      <p>Saken er registrert.</p>
-      <hr class="lt-divider" id="vanlig" />
-      <p>Du får svar innen tre uker.</p>
-      <hr class="lt-divider" data-variant="strong" id="sterk" />
-      <hr class="lt-divider" data-variant="subtle" id="svak" aria-hidden="true" />
+      <p>Your case has been registered.</p>
+      <hr class="lt-divider" id="default" />
+      <p>You will get an answer within three weeks.</p>
+      <hr class="lt-divider" data-variant="strong" id="strong" />
+      <hr class="lt-divider" data-variant="subtle" id="subtle" aria-hidden="true" />
     `)
   })
 
-  it("fjerner nettleserens egen ramme", () => {
-    const stil = getComputedStyle(document.getElementById("vanlig") as Element)
+  it("removes the browser's own border", () => {
+    const style = getComputedStyle(
+      document.getElementById("default") as Element,
+    )
 
-    expect(stil.borderTopWidth).toBe("0px")
-    expect(stil.height).toBe("1px")
+    expect(style.borderTopWidth).toBe("0px")
+    expect(style.height).toBe("1px")
   })
 
   it.each([
@@ -35,35 +37,35 @@ describe("lt-divider", () => {
     "display: flex; flex-direction: column; align-items: center",
     "display: grid",
     "display: grid; justify-items: start",
-  ])("fyller bredden i en forelder med %s", (oppsett) => {
-    // Nettleserens auto-marger til sidene vinner over stretch i flex, og
-    // streken ble 0 piksler bred. Dokumentasjonssiden viste ingen strek.
+  ])("fills the width of a parent with %s", (layout) => {
+    // The browser's auto margins on the sides win over stretch in flex, and
+    // the line was 0 pixels wide. The documentation page showed no line.
     mount(`
-      <div id="forelder" style="${oppsett}; inline-size: 20rem">
-        <p>Saken er registrert.</p>
-        <hr class="lt-divider" id="i-forelder" />
-        <p>Du får svar innen tre uker.</p>
+      <div id="parent" style="${layout}; inline-size: 20rem">
+        <p>Your case has been registered.</p>
+        <hr class="lt-divider" id="in-parent" />
+        <p>You will get an answer within three weeks.</p>
       </div>
     `)
-    const forelder = document.getElementById("forelder") as Element
-    const strek = document.getElementById("i-forelder") as Element
+    const parent = document.getElementById("parent") as Element
+    const line = document.getElementById("in-parent") as Element
 
-    expect(strek.getBoundingClientRect().width).toBe(
-      forelder.getBoundingClientRect().width,
+    expect(line.getBoundingClientRect().width).toBe(
+      parent.getBoundingClientRect().width,
     )
   })
 
-  it("gir hver variant sin egen styrke", () => {
-    const farger = ["vanlig", "sterk", "svak"].map(
+  it("gives each variant its own strength", () => {
+    const colours = ["default", "strong", "subtle"].map(
       (id) =>
         getComputedStyle(document.getElementById(id) as Element)
           .backgroundColor,
     )
 
-    expect(new Set(farger).size).toBe(3)
+    expect(new Set(colours).size).toBe(3)
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(divider()).toEqual({ class: "lt-divider" })
     expect(divider({ variant: "strong" })).toEqual({
       class: "lt-divider",
@@ -71,7 +73,7 @@ describe("lt-divider", () => {
     })
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
   })
