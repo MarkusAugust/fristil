@@ -324,7 +324,9 @@ describe("fs-popover plasserer panelet", () => {
 
 /*
  * Markup skrevet uten JavaScript: en knapp og et panel med klassen, uten
- * `popover`, id eller `aria-controls`. Komponenten fyller inn resten.
+ * `popover`, id eller `aria-controls`. Komponenten fyller inn `popover`, men
+ * aldri id: et panel med en id serveren ikke sendte, byttes ut ved neste
+ * oppdatering. `MED_ID` er det oppskriften viser, med id fra malen.
  */
 const BAR = `
   <fs-popover>
@@ -333,6 +335,11 @@ const BAR = `
       <li><button class="fs-button" data-variant="ghost" type="button">Arkiver</button></li>
     </ul>
   </fs-popover>`
+
+const MED_ID = BAR.replace(
+  '<ul class="fs-popover"',
+  '<ul class="fs-popover" id="meny"',
+)
 
 describe("fs-popover kobler fra bar struktur", () => {
   beforeAll(() => {
@@ -346,14 +353,31 @@ describe("fs-popover kobler fra bar struktur", () => {
     }
   }
 
-  it("setter popover, id og kobling, og åpner på klikk", async () => {
+  it("skriver aldri id på panelet, og åpner likevel på klikk", async () => {
     monter(BAR)
     await tegn()
     const { knapp, panel } = deler()
 
     expect(panel.getAttribute("popover")).toBe("manual")
-    expect(panel.id).not.toBe("")
-    expect(knapp.getAttribute("aria-controls")).toBe(panel.id)
+    expect(panel.hasAttribute("id")).toBe(false)
+    expect(knapp.hasAttribute("aria-controls")).toBe(false)
+    expect(knapp.getAttribute("aria-expanded")).toBe("false")
+
+    knapp.click()
+    await ventPaTegning()
+    expect(panel.matches(":popover-open")).toBe(true)
+    expect(knapp.getAttribute("aria-expanded")).toBe("true")
+    ;(document.querySelector("fs-popover") as FsPopover).hide()
+  })
+
+  it("skriver aria-controls fra id-en malen ga panelet, og åpner på klikk", async () => {
+    monter(MED_ID)
+    await tegn()
+    const { knapp, panel } = deler()
+
+    expect(panel.getAttribute("popover")).toBe("manual")
+    expect(panel.id).toBe("meny")
+    expect(knapp.getAttribute("aria-controls")).toBe("meny")
     expect(knapp.getAttribute("aria-expanded")).toBe("false")
 
     knapp.click()
@@ -434,7 +458,7 @@ describe("fs-popover kobler fra bar struktur", () => {
 
   it("velger ikke en knapp som peker på noe annet", async () => {
     monter(
-      BAR.replace(
+      MED_ID.replace(
         '<button class="fs-button" id="bar-knapp">',
         '<button class="fs-button" aria-controls="noe-annet" id="feil-knapp">Filter</button>' +
           '<button class="fs-button" id="bar-knapp">',
@@ -449,23 +473,35 @@ describe("fs-popover kobler fra bar struktur", () => {
     expect(feil.hasAttribute("aria-expanded")).toBe(false)
   })
 
-  it("setter koblingen tilbake med den samme id-en etter en patch", async () => {
-    monter(BAR)
+  it("setter koblingen tilbake etter en patch", async () => {
+    monter(MED_ID)
     await tegn()
     const { knapp, panel } = deler()
-    const id = panel.id
 
     // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
-    for (const navn of ["popover", "id"]) panel.removeAttribute(navn)
+    // Id-en sto der, så den blir stående.
+    panel.removeAttribute("popover")
     for (const navn of ["aria-controls", "aria-expanded"]) {
       knapp.removeAttribute(navn)
     }
     await ventPaTegning()
 
-    expect(panel.id).toBe(id)
+    expect(panel.id).toBe("meny")
     expect(panel.getAttribute("popover")).toBe("manual")
-    expect(knapp.getAttribute("aria-controls")).toBe(id)
+    expect(knapp.getAttribute("aria-controls")).toBe("meny")
     expect(knapp.getAttribute("aria-expanded")).toBe("false")
+  })
+
+  it("gir panelet id-en når en patch fra serveren gir det en", async () => {
+    monter(BAR)
+    await tegn()
+    const { knapp, panel } = deler()
+    expect(knapp.hasAttribute("aria-controls")).toBe(false)
+
+    panel.id = "meny"
+    await ventPaTegning()
+
+    expect(knapp.getAttribute("aria-controls")).toBe("meny")
   })
 
   it("gjør knappen til en vanlig knapp, så den ikke sender skjemaet", async () => {

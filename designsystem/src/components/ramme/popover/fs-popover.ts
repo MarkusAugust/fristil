@@ -6,7 +6,6 @@ import {
   SERVER_CONTROLLED,
   setAttr,
   setFlag,
-  uniqueId,
   warnAboutMarkup,
 } from "../../host-element.js"
 import {
@@ -42,18 +41,19 @@ export const FS_POPOVER_PARTS = {
  *
  * Lages markupen med JavaScript, skriver `fs.popover()` koblingen:
  * `aria-controls` på knappen, klassen, id-en og `popover` på panelet.
- * Kommer markupen fra en mal uten JavaScript, holder det med en knapp og et
- * panel med klassen `fs-popover`: komponenten setter `popover="manual"`,
- * lager id-en og skriver `aria-controls` på knappen. Bare det som mangler,
- * så det serveren skrev står. Komponenten setter `open` på verten,
- * `aria-expanded` på knappen og posisjonen på panelet, og setter alt den
- * har skrevet tilbake når en patch river det bort. Malen trenger ingen
- * `data-preserve-attr`. Men en morfing beholder panelet bare når id-en
- * stemmer: Datastar og idiomorph morfer ikke et element med id inn i et
- * uten. Lager komponenten id-en selv, byttes panelet ut ved neste patch fra
- * en mal uten id, og fokus og det brukeren gjorde i det er borte. Skal det
- * overleve, må serveren skrive id på panelet, slik `fs.popover()` gjør.
- * Komponenten sier fra i konsollen første gang det går galt.
+ * Kommer markupen fra en mal uten JavaScript, skriver malen en knapp og et
+ * panel med klassen `fs-popover` og en id: komponenten setter
+ * `popover="manual"` og skriver `aria-controls` på knappen fra id-en. Bare
+ * det som mangler, så det serveren skrev står. Komponenten setter `open` på
+ * verten, `aria-expanded` på knappen og posisjonen på panelet, og setter alt
+ * den har skrevet tilbake når en patch river det bort. Malen trenger ingen
+ * `data-preserve-attr`.
+ *
+ * Komponenten skriver aldri id på panelet. Datastar og idiomorph kjenner et
+ * element igjen på id, og et panel med en id serveren ikke sendte, ble byttet
+ * ut ved neste patch, med fokus og det brukeren gjorde i det. Uten id
+ * beholdes panelet, men knappen kan ikke kobles til det med `aria-controls`,
+ * og komponenten sier fra i konsollen.
  *
  * Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det
  * stående gjennom en patch. Sender serveren `open`, åpnes det, for det er noe
@@ -77,8 +77,6 @@ export class FsPopover extends HostElement {
   private panel?: HTMLElement
   private triggerElement?: HTMLElement
   private observer?: MutationObserver
-  /** Id-en komponenten ga panelet, så en patch som river den bort får den samme tilbake. */
-  private panelId?: string
   /**
    * Hva komponenten sist ble bedt om, gjennom `open`-egenskapen.
    *
@@ -224,13 +222,21 @@ export class FsPopover extends HostElement {
       // det er `auto`; da følger komponenten med når nettleseren lukker.
       addClass(panel, POPOVER_CLASS)
       if (!panel.hasAttribute("popover")) setAttr(panel, "popover", "manual")
-      if (!panel.id) {
-        this.panelId ??= uniqueId("fs-popover")
-        setAttr(panel, "id", this.panelId)
-      }
+      // Aldri id på panelet: se toppkommentaren. Uten id er det ingenting
+      // `aria-controls` kan peke på.
+      warnAboutMarkup(
+        this,
+        "panelet har ingen id, så knappen kan ikke kobles til det med " +
+          'aria-controls. Skriv id på panelet i malen, som id="meny", og den ' +
+          "samme i aria-controls på knappen.",
+        () => {
+          const found = this.findPanel()
+          return found !== null && !found.id
+        },
+      )
     }
     const trigger = panel ? this.findTrigger(panel) : null
-    if (panel && trigger && !trigger.hasAttribute("aria-controls")) {
+    if (panel?.id && trigger && !trigger.hasAttribute("aria-controls")) {
       setAttr(trigger, "aria-controls", panel.id)
     }
     // En `<button>` uten `type` er en innsendingsknapp, og det samme er en
@@ -327,37 +333,34 @@ export class FsPopover extends HostElement {
   }
 
   /**
-   * Sier fra når en patch byttet ut panelet fordi serveren ikke skrev id.
+   * Sier fra når en patch byttet ut det åpne panelet fordi id-en fra
+   * serveren endret seg.
    *
-   * Datastar og idiomorph morfer ikke et element med id inn i et uten: det
-   * gamle fjernes, og serverens settes inn. Lager komponenten id-en selv,
-   * får hver patch fra en mal uten id dermed et nytt panel. Komponenten
-   * åpner det igjen, men fokus, og det brukeren skrev i et felt i det, er
-   * borte.
+   * Datastar og idiomorph kjenner et element igjen på id, og en ny id er et
+   * nytt element for dem. Komponenten åpner det nye panelet igjen, men fokus,
+   * og det brukeren skrev i et felt i det, er borte. Det skjer når malen lager
+   * id-en av noe som skifter mellom rendringene, som et tilfeldig tall eller en
+   * teller.
    *
-   * Beskjeden kommer når det skjer, og bare når vinduet sto åpent: det gamle
-   * panelet er ute av treet, id-en på det var komponentens, og det nye fikk
-   * den samme fra komponenten. En advarsel om hvert bart panel ville truffet
-   * alle som aldri patcher, eller patcher smalt slik dokumentasjonen
-   * anbefaler, og de har ingenting å rette.
+   * Beskjeden kommer bare når vinduet sto åpent og begge panelene hadde en id
+   * fra serveren, med ulike verdier. Et panel uten id beholdes av morfingen,
+   * og en server som med vilje sender et annet panel mens vinduet er lukket,
+   * har ingenting å rette.
    */
   private warnAboutReplacedPanel(lost: HTMLElement, panel: HTMLElement): void {
     if (lost.isConnected || !this.wantsOpen) return
-    if (!this.panelId || lost.id !== this.panelId || panel.id !== this.panelId)
-      return
+    if (!lost.id || !panel.id || lost.id === panel.id) return
 
-    // Komponenten ser ikke om patchen morfet eller byttet ut med vilje, så
-    // meldingen sier hva som gjelder i hvert av tilfellene.
     warnAboutMarkup(
       this,
-      "en patch byttet ut panelet mens det sto åpent. Det åpnes igjen, men " +
-        "fokus og det brukeren gjorde i det er borte. Panelet hadde en id " +
-        "komponenten laget selv, og serverens markup har ingen. En morfing " +
-        "kjenner da ikke panelet igjen og setter inn et nytt: skriv id på " +
-        "panelet i malen, som fs.popover() gjør, så beholdes det. Bytter " +
-        "patchen ut elementene uansett, med inner, replace eller innerHTML, " +
-        "må serveren patche utenom panelet.",
-      () => this.findPanel()?.id === this.panelId,
+      "en oppdatering fra serveren byttet ut panelet mens det sto åpent. Det " +
+        "åpnes igjen, men fokus og det brukeren gjorde i det er borte. Id-en " +
+        "på panelet var en annen enn sist, og da kjenner oppdateringen ikke " +
+        "panelet igjen. Lag id-en av noe som er det samme hver gang, ikke av " +
+        "et tilfeldig tall eller en teller.",
+      // Byttet har skjedd og kan ikke gå over av seg selv, med mindre en ny
+      // oppdatering alt har byttet panelet igjen.
+      () => !lost.isConnected && this.findPanel() === panel,
     )
   }
 

@@ -30,6 +30,7 @@
 
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 import feltSide from "../../documentation/src/content/docs/components/field.mdx?raw"
+import sprettSide from "../../documentation/src/content/docs/components/popover.mdx?raw"
 import forslagSide from "../../documentation/src/content/docs/components/suggestion.mdx?raw"
 import checkboxCss from "./components/css/checkbox/checkbox.css?inline"
 import errorTextCss from "./components/css/error-text/error-text.css?inline"
@@ -38,6 +39,7 @@ import inputCss from "./components/css/input/input.css?inline"
 import labelCss from "./components/css/label/label.css?inline"
 import srOnlyCss from "./components/css/sr-only/sr-only.css?inline"
 import { defineFsField } from "./components/ramme/field/fs-field"
+import { defineFsPopover } from "./components/ramme/popover/fs-popover"
 import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion"
 import suggestionCss from "./components/ramme/suggestion/suggestion.css?inline"
 import { ventPaTegning } from "./testing/a11y"
@@ -440,4 +442,64 @@ describe("oppskriftene uten JavaScript", () => {
     const liste = dokument.querySelector(".fs-suggestion__list") as HTMLElement
     expect(dokument.defaultView?.getComputedStyle(liste).display).toBe("none")
   })
+})
+
+/*
+ * Sprettoppvinduet: komponenten skriver aldri id på panelet. Med id fra malen,
+ * som oppskriften, og uten, kjenner Datastar og idiomorph panelet igjen, så
+ * det står åpent med fokus der det var. Skrev komponenten en id selv, ble
+ * panelet byttet ut. `innerHTML` bytter ut alt, også verten.
+ */
+const SPRETT = oppskrift(sprettSide, "fs-popover")
+const SPRETT_BAR = SPRETT.replace(' id="handlinger"', "")
+
+describe("sprettoppvinduet gjennom en oppdatering fra serveren", () => {
+  beforeAll(() => {
+    defineFsPopover()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    document.body.innerHTML = ""
+  })
+
+  it("leser oppskriften fra komponentsiden, med id på panelet", () => {
+    expect(SPRETT).toContain('class="fs-popover" id="handlinger"')
+    expect(SPRETT_BAR).not.toContain("handlinger")
+  })
+
+  for (const [navn, markup] of [
+    ["oppskriften", SPRETT],
+    ["bar markup uten id", SPRETT_BAR],
+  ] as const) {
+    for (const maate of MAATER) {
+      it(`${navn}: ${maate}`, async () => {
+        await monter(markup)
+        const knapp = document.querySelector(
+          "fs-popover > button",
+        ) as HTMLElement
+        const panel = document.querySelector(".fs-popover") as HTMLElement
+        knapp.click()
+        await roSeg()
+        const valg = panel.querySelector("button") as HTMLElement
+        valg.focus()
+        expect(panel.matches(":popover-open")).toBe(true)
+
+        await oppdater(maate, markup)
+
+        const etter = document.querySelector(".fs-popover") as HTMLElement
+        expect(etter.hasAttribute("id")).toBe(markup === SPRETT)
+        if (maate === "innerHTML") {
+          expect(etter).not.toBe(panel)
+        } else {
+          expect(etter).toBe(panel)
+          expect(etter.matches(":popover-open")).toBe(true)
+          expect(document.activeElement).toBe(valg)
+        }
+        ;(
+          document.querySelector("fs-popover") as HTMLElement & { hide(): void }
+        ).hide()
+      })
+    }
+  }
 })
