@@ -2,12 +2,12 @@
 import { fs } from "@fristil/designsystem"
 import Preview from "./Preview.astro"
 
-// Markupen serveren sender. Rollene, tabbestoppene og hvilke paneler som er
-// skjult kommer herfra, ikke fra komponenten.
+// Markupen serveren sender: lenkene, id-ene på panelene og overskriftene, og
+// klassene. Rollene, tabbestoppene og hvilke paneler som er skjult skriver
+// komponenten, slik at siden er en innholdsfortegnelse uten JavaScript.
 const faner = fs.tabs({
   id: "demo",
-  count: 3,
-  selected: 0,
+  keys: ["soknaden", "vedlegg", "meldinger"],
   label: "Deler av saken",
 })
 const titler = ["Søknaden", "Vedlegg", "Meldinger"]
@@ -20,15 +20,16 @@ const innhold = [
 
 <Preview id="demo-tabs" stiler={["tabs", "paragraph"]} maxWidth="34rem">
 	<fs-tabs>
-		<div {...faner.list}>
-			{faner.tabs.map((fane, i) => <button {...fane}>{titler[i]}</button>)}
-		</div>
+		<ul {...faner.list}>
+			{faner.tabs.map((fane, i) => <li><a {...fane}>{titler[i]}</a></li>)}
+		</ul>
 
 		{
 			faner.panels.map((panel, i) => (
-				<div {...panel}>
+				<section {...panel}>
+					<h3 {...faner.headings[i]}>{titler[i]}</h3>
 					<p class="fs-paragraph">{innhold[i]}</p>
-				</div>
+				</section>
 			))
 		}
 	</fs-tabs>

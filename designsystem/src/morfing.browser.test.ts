@@ -30,6 +30,7 @@ import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion"
 import { suggestion } from "./components/ramme/suggestion/suggestion"
 import { defineFsTabs } from "./components/ramme/tabs/fs-tabs"
 import { tabs } from "./components/ramme/tabs/tabs"
+import { settAdresse } from "./testing/adresse"
 
 import "./tokens/tokens.css"
 
@@ -105,8 +106,10 @@ function monterMarkup(markup: string): HTMLElement {
 }
 
 describe("morfing river ikke bort det komponenten setter", () => {
-  beforeEach(() => {
-    document.body.innerHTML = ""
+  beforeEach(async () => {
+    // Komponenten leser adressen ved lasting, og et klikk på en fane skriver
+    // den.
+    await settAdresse("")
   })
 
   /*
@@ -296,7 +299,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
    * `hidden`, og serveren sender ikke den tilstanden, for den følger av hva
    * brukeren har skrevet.
    */
-  const FORSLAG = suggestion({ id: "kommune", count: 2 })
+  const FORSLAG = suggestion({ id: "kommune", keys: ["a", "b"] })
   const attr = (verdier: Record<string, unknown>) =>
     Object.entries(verdier)
       .map(([navn, verdi]) => (verdi === true ? navn : `${navn}="${verdi}"`))
@@ -479,22 +482,26 @@ describe("morfing river ikke bort det komponenten setter", () => {
   })
 
   /*
-   * Fanene bærer valget i `aria-selected` og `tabindex` på knappene, og i
-   * `hidden` på panelene. Ingen av delene finnes i serverens utgave, for
-   * valget er noe brukeren har gjort, og ingen av dem er fredet: byggefunksjonen
-   * skriver ingen `data-preserve-attr`. Morfingen river dem altså bort, og
-   * komponenten setter dem tilbake.
+   * Fanene bærer valget i `aria-selected` og `tabindex` på lenkene, og i
+   * `hidden` på panelene. Serverens utgave sier bare hva som var valgt da
+   * den ble skrevet, ikke hva brukeren har gjort etterpå, og ingen av delene
+   * er fredet: byggefunksjonen skriver ingen `data-preserve-attr`. Morfingen
+   * river dem altså bort, og komponenten setter dem tilbake.
    */
-  const FANER = tabs({ id: "sak", count: 2 })
+  const FANER = tabs({
+    id: "sak",
+    keys: ["oversikt", "vedlegg"],
+    label: "Saken",
+  })
 
   const FANEMARKUP = `
     <fs-tabs>
-      <div ${attr(FANER.list)}>
-        <button ${attr(FANER.tabs[0])}>Oversikt</button>
-        <button ${attr(FANER.tabs[1])}>Vedlegg</button>
-      </div>
-      <div ${attr(FANER.panels[0])}>Sammendrag</div>
-      <div ${attr(FANER.panels[1])}>Filer</div>
+      <ul ${attr(FANER.list)}>
+        <li><a ${attr(FANER.tabs[0])}>Oversikt</a></li>
+        <li><a ${attr(FANER.tabs[1])}>Vedlegg</a></li>
+      </ul>
+      <section ${attr(FANER.panels[0])}><h2 ${attr(FANER.headings[0])}>Oversikt</h2>Sammendrag</section>
+      <section ${attr(FANER.panels[1])}><h2 ${attr(FANER.headings[1])}>Vedlegg</h2>Filer</section>
     </fs-tabs>`
 
   it("holder på hvilken fane som er valgt gjennom en patch", async () => {
@@ -502,33 +509,35 @@ describe("morfing river ikke bort det komponenten setter", () => {
     await customElements.whenDefined("fs-tabs")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
-    const knapper = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    const lenker = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
     const paneler = [
       ...felt.querySelectorAll("[role='tabpanel']"),
     ] as HTMLElement[]
 
-    knapper[1].click()
-    expect(knapper[1].getAttribute("aria-selected")).toBe("true")
+    lenker[1].click()
+    expect(lenker[1].getAttribute("aria-selected")).toBe("true")
 
     morf(felt, FANEMARKUP)
     // Reparasjonen skjer i en observatør, altså i neste omgang av løkka.
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     expect(
-      knapper[1].getAttribute("aria-selected"),
+      lenker[1].getAttribute("aria-selected"),
       "den valgte fanen ble den første igjen",
     ).toBe("true")
-    expect(knapper[1].tabIndex, "tabbestoppet fulgte ikke med").toBe(0)
-    expect(paneler[1].hidden, "panelet til den valgte fanen ble skjult").toBe(
-      false,
-    )
-    expect(paneler[0].hidden).toBe(true)
+    expect(lenker[1].tabIndex, "tabbestoppet fulgte ikke med").toBe(0)
+    expect(
+      paneler[1].hasAttribute("hidden"),
+      "panelet til den valgte fanen ble skjult",
+    ).toBe(false)
+    expect(paneler[0].hasAttribute("hidden")).toBe(true)
   })
 
-  it("lar brukeren bytte fane i markup uten id-er", async () => {
+  it("lar brukeren bytte fane i markup uten id på fanene", async () => {
     /*
-     * Håndskrevet markup fra en Go- eller Kotlin-mal har ofte ingen id-er på
-     * fanene, og det er lovlig: `aria-controls` er ikke et krav.
+     * Håndskrevet markup fra en Go- eller Kotlin-mal har ingen id på
+     * fanene, og det skal den ikke ha: lenken peker på panelets id, og en id
+     * på fanen ville fått den byttet ut ved neste patch.
      *
      * Husket komponenten valget som en id, ble den tomme strengen en
      * identitet som traff den første fanen, og reparasjonen satte valget
@@ -537,37 +546,37 @@ describe("morfing river ikke bort det komponenten setter", () => {
      */
     const UTEN_IDER = `
       <fs-tabs>
-        <div class="fs-tabs__list" role="tablist">
-          <button role="tab" aria-selected="true" tabindex="0">Oversikt</button>
-          <button role="tab" aria-selected="false" tabindex="-1">Vedlegg</button>
-        </div>
-        <div class="fs-tabs__panel" role="tabpanel" tabindex="0">Sammendrag</div>
-        <div class="fs-tabs__panel" role="tabpanel" tabindex="0" hidden>Filer</div>
+        <ul class="fs-tabs__list" role="tablist">
+          <li role="presentation"><a href="#oversikt" role="tab" aria-selected="true" tabindex="0">Oversikt</a></li>
+          <li role="presentation"><a href="#vedlegg" role="tab" aria-selected="false" tabindex="-1">Vedlegg</a></li>
+        </ul>
+        <section class="fs-tabs__panel" id="oversikt" role="tabpanel" tabindex="0">Sammendrag</section>
+        <section class="fs-tabs__panel" id="vedlegg" role="tabpanel" tabindex="0" hidden>Filer</section>
       </fs-tabs>`
 
     const felt = monterMarkup(UTEN_IDER)
     await customElements.whenDefined("fs-tabs")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
-    const knapper = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    const lenker = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
     const paneler = [
       ...felt.querySelectorAll("[role='tabpanel']"),
     ] as HTMLElement[]
 
-    knapper[1].click()
+    lenker[1].click()
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     expect(
-      knapper[1].getAttribute("aria-selected"),
+      lenker[1].getAttribute("aria-selected"),
       "valget hoppet tilbake til den første fanen",
     ).toBe("true")
-    expect(paneler[1].hidden).toBe(false)
+    expect(paneler[1].hasAttribute("hidden")).toBe(false)
 
     morf(felt, UTEN_IDER)
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
-    expect(knapper[1].getAttribute("aria-selected")).toBe("true")
-    expect(paneler[1].hidden).toBe(false)
+    expect(lenker[1].getAttribute("aria-selected")).toBe("true")
+    expect(paneler[1].hasAttribute("hidden")).toBe(false)
   })
 
   it("lar fanene stå i takt når patchen fjerner den valgte", async () => {
@@ -585,16 +594,16 @@ describe("morfing river ikke bort det komponenten setter", () => {
     await customElements.whenDefined("fs-tabs")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
-    const knapper = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
-    knapper[1].click()
+    const lenker = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    lenker[1].click()
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
-    expect(knapper[1].getAttribute("aria-selected")).toBe("true")
+    expect(lenker[1].getAttribute("aria-selected")).toBe("true")
 
     const meldte: number[] = []
     felt.addEventListener("tab-select", (e) => meldte.push(e.detail.index))
 
     // Patchen fjerner fanen brukeren valgte, og panelet dens.
-    knapper[1].remove()
+    lenker[1].closest("li")?.remove()
     ;(felt.querySelectorAll("[role='tabpanel']")[1] as HTMLElement).remove()
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
@@ -611,9 +620,10 @@ describe("morfing river ikke bort det komponenten setter", () => {
       meldte,
       "opprydningen tok et nytt valg uten å si fra, så en app som laster panelinnhold fikk aldri vite det",
     ).toContain(0)
-    expect(paneler[0].hidden, "ingen paneler var synlige etter patchen").toBe(
-      false,
-    )
+    expect(
+      paneler[0].hasAttribute("hidden"),
+      "ingen paneler var synlige etter patchen",
+    ).toBe(false)
   })
 
   it("lar serveren flytte fanen når den sier at den eier valget", async () => {
@@ -633,18 +643,18 @@ describe("morfing river ikke bort det komponenten setter", () => {
     await customElements.whenDefined("fs-tabs")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
-    const knapper = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
-    knapper[1].click()
-    expect(knapper[1].getAttribute("aria-selected")).toBe("true")
+    const lenker = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
+    lenker[1].click()
+    expect(lenker[1].getAttribute("aria-selected")).toBe("true")
 
     morf(felt, SERVERENS)
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     expect(
-      knapper[0].getAttribute("aria-selected"),
+      lenker[0].getAttribute("aria-selected"),
       "serveren sa at den eier valget, men komponenten satte det tilbake",
     ).toBe("true")
-    expect(knapper[1].getAttribute("aria-selected")).toBe("false")
+    expect(lenker[1].getAttribute("aria-selected")).toBe("false")
   })
 
   /*

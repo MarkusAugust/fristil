@@ -121,8 +121,8 @@ describe("boolske attributter", () => {
 /** Valg som gir de sammensatte byggefunksjonene noe å bygge. */
 const GRUNNVALG: Record<string, Record<string, unknown>> = {
   field: { id: "felt", help: true, error: true },
-  tabs: { id: "faner", count: 2 },
-  suggestion: { id: "forslag", count: 2 },
+  tabs: { id: "faner", keys: ["a", "b"], label: "Faner" },
+  suggestion: { id: "forslag", keys: ["a", "b"] },
   dialog: { titleId: "tittel" },
   popover: { id: "panel" },
   errorSummary: { count: 1 },
@@ -600,7 +600,10 @@ describe("setAttributes og de boolske valgene", () => {
     expect(kontroll.getAttribute("name")).toBe("epost")
 
     const sok = document.createElement("input")
-    fs.setAttributes(sok, fs.suggestion({ id: "by", count: 3 }).control)
+    fs.setAttributes(
+      sok,
+      fs.suggestion({ id: "by", keys: ["a", "b", "c"] }).control,
+    )
     fs.setAttributes(sok, fs.input({ state: "invalid" }))
     expect(sok.getAttribute("role")).toBe("combobox")
   })

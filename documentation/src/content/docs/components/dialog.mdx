@@ -380,6 +380,13 @@ Uten byggefunksjonen er det de samme klassene, skrevet ut:
 
 Toppen er valgfri, og uten den står dialogen som før. Fargen gjelder toppen, så uten `header` i markupen har den ingenting å farge. En topp uten farge er heller ingen stripe: da slipper den bunnluften, og avstanden ned til teksten er den samme som ellers.
 
+## Attributter
+
+| Attributt | Type | Effekt |
+| --- | --- | --- |
+| `open` | boolsk | Om dialogen vises. Serveren setter det når dialogen skal vises, og komponenten fjerner det når brukeren lukker den. Skal serveren vise dialogen, må `open` også stå på `<dialog>`. |
+| `server-controlled` | boolsk | Fjerner en oppdatering fra serveren `open` fra `<dialog>` mens dialogen er åpen, lukker komponenten den og sender `dialog-toggle`. Uten attributtet setter den `open` tilbake. Se [Når serveren åpner dialogen](#når-serveren-åpner-dialogen). |
+
 ## Klasser du kan style
 
 | Klasse | Hva det er |

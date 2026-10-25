@@ -53,7 +53,10 @@ import {
 import { popover } from "./components/ramme/popover/popover.js"
 import { sessionTimeout } from "./components/ramme/session-timeout/session-timeout.js"
 import { suggestion } from "./components/ramme/suggestion/suggestion.js"
-import { tabs } from "./components/ramme/tabs/tabs.js"
+import {
+  type TabsWithStateOptions,
+  tabsWithState,
+} from "./components/ramme/tabs/tabs.js"
 import { type Attributes, setAttributes as setHtmlAttributes } from "./dom.js"
 
 // Typene til hendelsene, så `addEventListener` er typet også for den som
@@ -332,10 +335,15 @@ export const fs = {
     { isPlacement: popover.isPlacement },
   ),
 
-  tabs: (options: Parameters<typeof tabs>[0]) => {
-    const built = tabs(options)
+  /**
+   * Hele tilstanden, ikke bare lenkene: React melder avvik for hvert attributt
+   * komponenten skriver på et element React har rendret. Se `tabsWithState`.
+   */
+  tabs: (options: TabsWithStateOptions) => {
+    const built = tabsWithState(options)
     return {
       list: toReactAttributes(built.list),
+      item: toReactAttributes(built.item),
       tabs: built.tabs.map(toReactAttributes),
       panels: built.panels.map(toReactAttributes),
     }

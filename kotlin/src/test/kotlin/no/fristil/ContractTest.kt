@@ -2,6 +2,7 @@ package no.fristil
 
 import java.io.File
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -23,6 +24,19 @@ class ContractTest {
         assertTrue(cases.isNotEmpty(), "Ingen byggetilfeller for $builder")
         for (case in cases) {
             val options = case["options"] as Map<String, Any?>
+            // TypeScript kastet på dette tilfellet, som en tom nøkkel. Kotlin skal også.
+            if (case.containsKey("throws")) {
+                val feil = assertFailsWith<IllegalArgumentException>("$builder($options) skulle kastet: ${case["throws"]}") {
+                    Dispatch.call(builder, options)
+                }
+                // Meldingen er den samme etter navnet, som er `fs.tabs()` i TypeScript og `Fs.tabs` her.
+                assertEquals(
+                    (case["throws"] as String).substringAfter(": "),
+                    feil.message?.substringAfter(": "),
+                    "$builder($options) kastet med en annen melding",
+                )
+                continue
+            }
             assertEquals(normalize(case["expected"]), normalize(Dispatch.call(builder, options)), "$builder($options)")
         }
     }

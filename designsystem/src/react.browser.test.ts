@@ -118,9 +118,18 @@ describe("fs fra /react", () => {
      * den: uten den ville vakten prøvd et kall som ikke er lovlig, og fått en
      * advarsel i konsollen i tillegg.
      */
+    // `label` fordi `fs.tabs()` krever et navn på raden og kaster uten.
     const ekstra: Record<string, unknown>[] = [
       { id: "sak" },
-      { id: "sak", count: 2, help: true, error: true, invalid: true },
+      {
+        id: "sak",
+        count: 2,
+        keys: ["a", "b"],
+        label: "Deler",
+        help: true,
+        error: true,
+        invalid: true,
+      },
     ]
     const holder = byggefunksjon as unknown as Record<string, unknown>
     for (const [navn, verdier] of Object.entries(holder)) {
@@ -128,7 +137,13 @@ describe("fs fra /react", () => {
       const opsjon =
         { markers: "required", types: "type" }[navn] ?? navn.slice(0, -1)
       for (const verdi of verdier)
-        ekstra.push({ [opsjon]: verdi, id: "sak", count: 2 })
+        ekstra.push({
+          [opsjon]: verdi,
+          id: "sak",
+          count: 2,
+          keys: ["a", "b"],
+          label: "Deler",
+        })
     }
 
     const svar: unknown[] = []
@@ -191,15 +206,6 @@ describe("fs fra /react", () => {
  * Det ble funnet i en ekte React-app, ikke her.
  */
 describe("tabIndex kommer ut som et tall", () => {
-  it("på fanene", () => {
-    const faner = fsReact.tabs({ id: "sak", count: 2 })
-
-    expect(typeof faner.tabs[0]?.tabIndex).toBe("number")
-    expect(faner.tabs[0]?.tabIndex).toBe(0)
-    expect(faner.tabs[1]?.tabIndex).toBe(-1)
-    expect(typeof faner.panels[0]?.tabIndex).toBe("number")
-  })
-
   it("på feiloppsummeringen", () => {
     expect(typeof fsReact.errorSummary({ count: 1 }).host.tabIndex).toBe(
       "number",
@@ -246,12 +252,12 @@ describe("fs.setAttributes fra /react", () => {
   })
 
   it("skriver tabIndex som tabindex", () => {
-    const fane = document.createElement("button")
-    const [forste] = fsReact.tabs({ id: "sak", count: 2 }).tabs
+    const boks = document.createElement("div")
+    const { host } = fsReact.errorSummary({ count: 1 })
 
-    fsReact.setAttributes(fane, forste)
+    fsReact.setAttributes(boks, host)
 
-    expect(fane.getAttribute("tabindex")).toBe("0")
+    expect(boks.getAttribute("tabindex")).toBe(String(host.tabIndex))
   })
 
   it("gir det samme elementet som hovedinngangen", () => {

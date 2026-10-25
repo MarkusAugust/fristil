@@ -1,29 +1,111 @@
-import { attributes, idOrFallback } from "../../css/shared.js"
+import { attributes, checkedKeys, idOrFallback } from "../../css/shared.js"
 
 export const TABS_LIST_CLASS = "fs-tabs__list" as const
 export const TABS_PANEL_CLASS = "fs-tabs__panel" as const
 
 export type TabsOptions = {
-  /** Felles id-stamme. Fanene blir `${id}-tab-0`, panelene `${id}-panel-0`. */
+  /**
+   * Felles id-stamme. Panelene blir `${id}-${nøkkel}`, overskriftene i dem
+   * `${id}-${nøkkel}-heading`.
+   */
   id: string
-  /** Antall faner. */
-  count: number
-  /** Indeksen på fanen som er valgt. Standard: 0. */
-  selected?: number
-  /** Tekst som sier hva fanene velger mellom. Blir `aria-label` på raden. */
-  label?: string
+  /**
+   * Én nøkkel per fane, fra dataene, som `["soknaden", "vedlegg"]`. Nøkkelen
+   * gir panelet id, og lenken peker på den. En indeks er ingen nøkkel:
+   * setter serveren inn en fane først, peker den samme indeksen på et annet
+   * panel. Tom nøkkel, mellomrom og to like kaster.
+   */
+  keys: string[]
+  /**
+   * Hva fanene velger mellom. Blir `aria-label` på raden, som må ha et navn.
+   * Tom, eller bare mellomrom, kaster.
+   */
+  label: string
 }
 
 export type TabsAttributes = {
+  /** Raden, en `<ul>`. */
+  list: { class: typeof TABS_LIST_CLASS; "aria-label": string }
+  /** Hver fane, en lenke til panelet sitt. */
+  tabs: Array<{ href: string }>
+  /** Hvert panel, med id-en lenken peker på. */
+  panels: Array<{ id: string; class: typeof TABS_PANEL_CLASS }>
+  /** Overskriften i hvert panel. */
+  headings: Array<{ id: string }>
+}
+
+/** Det felles for begge utgavene: nøklene sjekket, og id-ene laget av dem. */
+function prepare(
+  builder: string,
+  options: { id: string; keys: string[]; label: string },
+) {
+  // Reserven gjelder bare den som ikke har en typesjekk.
+  const id = idOrFallback(builder, options.id)
+  // Stammen blir en del av hver id, og `aria-controls` deler på mellomrom:
+  // `"a b"` ga `aria-controls="a b-x"`, som er to id-er. Nøklene kaster på
+  // det samme.
+  if (/\s/.test(id)) {
+    throw new Error(
+      `${builder}: id-en «${id}» har mellomrom. Den blir en del av hver id, og en id kan ikke ha mellomrom.`,
+    )
+  }
+  // Før nøklene, som i Kotlin, så de to kaster med samme melding.
+  if (typeof options.label !== "string" || options.label.trim() === "") {
+    throw new Error(
+      `${builder}: label mangler eller er tom. Raden må ha et navn som sier hva fanene velger mellom, ellers sier skjermleseren bare «faneliste».`,
+    )
+  }
+  const keys = checkedKeys(builder, options.keys)
+  return { id, keys, panelId: (key: string) => `${id}-${key}` }
+}
+
+/**
+ * Attributtene for en fanerad der fanene er lenker til panelene.
+ *
+ * Bare lenker, id-er og klasser. Uten JavaScript er raden da en vanlig liste
+ * med lenker, og panelene står etter hverandre: en innholdsfortegnelse som
+ * virker for alle. Rollene, hvilken fane som er valgt og hvilke paneler som
+ * er skjult skriver `<fs-tabs>`. Sto de her, ville markupen uten JavaScript
+ * sagt «fane» om en lenke som ikke virker som en, og skjult panelene.
+ *
+ * Den første fanen er valgt når siden lastes. En annen kommer fra adressen,
+ * som `#sak-vedlegg`, eller fra `selected` og `select()` på `<fs-tabs>`.
+ *
+ * React-appen bruker `fs.tabs()` fra `@fristil/designsystem/react`, som gir
+ * hele tilstanden, så React hydrerer uten avvik.
+ *
+ * ```ts
+ * const faner = fs.tabs({ id: "sak", keys: ["soknaden", "vedlegg"], label: "Deler av saken" })
+ * ```
+ */
+export const tabs = (options: TabsOptions): TabsAttributes => {
+  const { id, keys, panelId } = prepare("fs.tabs()", options)
+  return {
+    list: attributes({ class: TABS_LIST_CLASS, "aria-label": options.label }),
+    tabs: keys.map((key) => attributes({ href: `#${panelId(key)}` })),
+    panels: keys.map((key) =>
+      attributes({ id: panelId(key), class: TABS_PANEL_CLASS }),
+    ),
+    headings: keys.map((key) => attributes({ id: `${id}-${key}-heading` })),
+  }
+}
+
+export type TabsWithStateOptions = TabsOptions & {
+  /** Indeksen på fanen som er valgt. Standard: 0. */
+  selected?: number
+}
+
+export type TabsWithStateAttributes = {
   list: {
     class: typeof TABS_LIST_CLASS
     role: "tablist"
-    "aria-label"?: string
+    "aria-label": string
   }
+  item: { role: "presentation" }
   tabs: Array<{
     id: string
+    href: string
     role: "tab"
-    type: "button"
     "aria-selected": "true" | "false"
     "aria-controls": string
     tabindex: "0" | "-1"
@@ -33,75 +115,68 @@ export type TabsAttributes = {
     class: typeof TABS_PANEL_CLASS
     role: "tabpanel"
     "aria-labelledby": string
-    tabindex: "0"
+    tabindex?: "0"
     hidden?: true
   }>
 }
 
 /**
- * Attributtene for en fanerad.
+ * Hele tilstanden, slik `<fs-tabs>` ville skrevet den. For React.
  *
- * Serveren skriver rollene og skjuler panelene som ikke er valgt. Gjorde
- * komponenten det, ville alle panelene vises til skriptet hadde kjørt, og
- * innholdet hoppe når det skjulte seg selv.
+ * React sammenligner attributtene på elementene den rendrer med det som står
+ * i siden, og melder et avvik for hvert attributt den ikke rendret selv.
+ * Skrev komponenten rollene og valget før React hydrerte, ga det ett avvik
+ * per element. Her står alt fra start, så komponenten har ingenting å skrive.
  *
- * Ingen bevaringsliste. Fanevalget er brukerens, og `<fs-tabs>` setter det
- * tilbake når en patch river det bort. Skal serveren kunne flytte fanen,
- * settes `server-controlled` på `<fs-tabs>`.
+ * Lenkene får id fra serveren, og panelet peker på lenken sin, slik APG gjør.
+ * En id serveren skriver er stabil; det er en id komponenten lager selv, som
+ * får en oppdatering til å bytte ut elementet.
  *
- * ```ts
- * const faner = fs.tabs({ id: "sak", count: 2, selected: 1, label: "Velg visning" })
- * ```
+ * `hidden` er boolsk: React 19 skriver `hidden="until-found"` som
+ * `hidden=""`. Søk i siden åpner derfor ikke et skjult panel i en React-app.
  */
-export const tabs = ({
-  id: givenId,
-  count,
-  selected = 0,
-  label,
-}: TabsOptions): TabsAttributes => {
-  // Reserven gjelder bare den som ikke har en typesjekk.
-  const id = idOrFallback("fs.tabs()", givenId)
-
+export const tabsWithState = (
+  options: TabsWithStateOptions,
+): TabsWithStateAttributes => {
+  const { id, keys, panelId } = prepare("fs.tabs()", options)
   // Er `selected` utenfor rekkevidde, rettes den her. Ellers ville markupen
   // sagt noe annet enn det brukeren ser.
-  const valid = Math.min(Math.max(selected, 0), Math.max(count - 1, 0))
-  const tabId = (index: number) => `${id}-tab-${index}`
-  const panelId = (index: number) => `${id}-panel-${index}`
-  // `Array.from` kaster på en negativ lengde. Null faner er en tom rad.
-  const indices = Array.from(
-    { length: Math.max(count, 0) },
-    (_, index) => index,
-  )
-
+  // Et tall som ikke er et heltall, som `NaN` eller 1,5, ga ingen valgt fane,
+  // alle panelene skjult og ingen tabbestopp.
+  const selected = Number.isInteger(options.selected)
+    ? (options.selected as number)
+    : 0
+  const valid = Math.min(Math.max(selected, 0), Math.max(keys.length - 1, 0))
+  const tabId = (key: string) => `${id}-${key}-tab`
   return {
     list: attributes({
       class: TABS_LIST_CLASS,
       role: "tablist" as const,
-      "aria-label": label,
+      "aria-label": options.label,
     }),
-    tabs: indices.map((index) =>
+    item: attributes({ role: "presentation" as const }),
+    tabs: keys.map((key, index) =>
       attributes({
-        id: tabId(index),
+        id: tabId(key),
+        href: `#${panelId(key)}`,
         role: "tab" as const,
-        type: "button" as const,
         "aria-selected": (index === valid ? "true" : "false") as
           | "true"
           | "false",
-        "aria-controls": panelId(index),
-        // Rullerende tabindex: bare den valgte fanen er en tabbestopp, så Tab
-        // går fra raden og rett inn i panelet.
+        "aria-controls": panelId(key),
+        // Rullerende tabindex: bare den valgte fanen er en tabbestopp.
         tabindex: (index === valid ? "0" : "-1") as "0" | "-1",
       }),
     ),
-    panels: indices.map((index) =>
+    panels: keys.map((key, index) =>
       attributes({
-        id: panelId(index),
+        id: panelId(key),
         class: TABS_PANEL_CLASS,
         role: "tabpanel" as const,
-        "aria-labelledby": tabId(index),
-        // Panelet får fokus når det ikke har noe å fokusere på selv, ellers
-        // hopper Tab rett forbi innholdet som nettopp ble vist.
-        tabindex: "0" as const,
+        "aria-labelledby": tabId(key),
+        // Bare det valgte panelet er en tabbestopp. Et skjult panel som kan
+        // få fokus, er et usynlig stopp for tastaturet.
+        tabindex: index === valid ? ("0" as const) : undefined,
         hidden: index === valid ? undefined : (true as const),
       }),
     ),

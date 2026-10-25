@@ -29,10 +29,12 @@
  * `datastar-patch-elements`, og én test går hele veien gjennom `@get` og en
  * strøm, så vi vet at snarveien er den samme.
  *
- * Påstandene om nodene beskriver det Datastar gjør, og det lar seg ikke
- * endre fra komponentene: uten id finnes det ingen identitet, verken for
- * morfingen eller for komponenten. Det komponentene gjør er å si fra i
- * konsollen når det skjer, og bare da, se den siste gruppa.
+ * Fanene skriver ingen id: lenkene har ingen, og panelenes id kommer fra
+ * serveren, siden `href` krever den. Datastar morfer dem derfor inn i de
+ * gamle nodene, og valget står. Overskriften i panelet får id av komponenten,
+ * for den har ingenting brukeren kan miste. Felt, forslagsfelt og
+ * sprettoppvindu sier fra i konsollen når en patch byttet ut det brukeren
+ * hadde gjort noe med, se den siste gruppa.
  */
 
 import {
@@ -47,10 +49,13 @@ import {
 } from "vitest"
 
 import { ventPaTegning } from "../../../testing/a11y"
+import { settAdresse } from "../../../testing/adresse"
+import { attr } from "../../../testing/markup"
 import { defineFsField } from "../field/fs-field"
 import { defineFsPopover } from "../popover/fs-popover"
 import { defineFsSuggestion } from "../suggestion/fs-suggestion"
 import { defineFsTabs } from "./fs-tabs"
+import { tabs } from "./tabs"
 
 import "../../../testing/datastar/datastar-v1.0.4.js"
 
@@ -72,28 +77,33 @@ function sammeNoder(før: Element[], etter: Element[]): boolean[] {
   return før.map((node, i) => node === etter[i])
 }
 
-/** Fanerad slik en Go- eller Kotlin-mal skriver den uten `fs.tabs()`. */
-function fanerad(fane: (i: number) => string, panel: (i: number) => string) {
-  const navn = ["Søknaden", "Vedlegg", "Meldinger"]
-  return `<fs-tabs id="saken">
-  <div class="fs-tabs__list" aria-label="Deler av saken">
-    ${navn.map((n, i) => `<button${fane(i)}>${n}</button>`).join("\n    ")}
-  </div>
-  ${navn.map((n, i) => `<div class="fs-tabs__panel"${panel(i)}>${n}</div>`).join("\n  ")}
+const NAVN = ["Søknaden", "Vedlegg", "Meldinger"]
+const NOKLER = ["soknaden", "vedlegg", "meldinger"]
+
+/**
+ * Fanerad slik en Go- eller Kotlin-mal skriver den uten `fs.tabs()`: lenker
+ * uten id, og id bare på panelene, som lenkene krever.
+ */
+const BAR = `<fs-tabs id="saken">
+  <ul class="fs-tabs__list" aria-label="Deler av saken">
+    ${NAVN.map((n, i) => `<li><a href="#${NOKLER[i]}">${n}</a></li>`).join("\n    ")}
+  </ul>
+  ${NAVN.map((n, i) => `<section class="fs-tabs__panel" id="${NOKLER[i]}"><h2>${n}</h2><p>Innhold</p></section>`).join("\n  ")}
 </fs-tabs>`
-}
 
-const UTEN = () => ""
-const BAR = fanerad(UTEN, UTEN)
-const MED_ID = fanerad(
-  (i) => ` id="sak-tab-${i}"`,
-  (i) => ` id="sak-panel-${i}"`,
-)
-const BARE_FANER_MED_ID = fanerad((i) => ` id="sak-tab-${i}"`, UTEN)
-const BARE_PANELER_MED_ID = fanerad(UTEN, (i) => ` id="sak-panel-${i}"`)
+/** Det `fs.tabs()` skriver: lenker, panelenes id, overskriftenes id og klassene. */
+const FANER = tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
+const FRA_BYGGEFUNKSJONEN = `<fs-tabs id="saken">
+  <ul ${attr(FANER.list)}>
+    ${FANER.tabs.map((t, i) => `<li><a ${attr(t)}>${NAVN[i]}</a></li>`).join("\n    ")}
+  </ul>
+  ${FANER.panels.map((p, i) => `<section ${attr(p)}><h2 ${attr(FANER.headings[i])}>${NAVN[i]}</h2><p>Innhold</p></section>`).join("\n  ")}
+</fs-tabs>`
 
-function faner(): HTMLButtonElement[] {
-  return [...document.querySelectorAll<HTMLButtonElement>("#saken button")]
+function faner(): HTMLAnchorElement[] {
+  return [
+    ...document.querySelectorAll<HTMLAnchorElement>("#saken .fs-tabs__list a"),
+  ]
 }
 
 function paneler(): HTMLElement[] {
@@ -131,7 +141,13 @@ async function klikkOgPatch(markup: string) {
     faner: sammeNoder(faneFør, faner()),
     paneler: sammeNoder(panelFør, paneler()),
     valgt: valgt(),
-    skjult: paneler().map((p) => p.hidden),
+    skjult: paneler().map((p) => p.hasAttribute("hidden")),
+    hidden: paneler().map((p) => p.getAttribute("hidden")),
+    lenkeIder: faner().map((f) => f.id),
+    navn: paneler().map((p) => {
+      const peker = p.getAttribute("aria-labelledby")
+      return peker ? document.getElementById(peker)?.textContent : null
+    }),
     meldt,
   }
 }
@@ -141,78 +157,70 @@ describe("fs-tabs gjennom Datastars morfing", () => {
     defineFsTabs()
   })
 
-  beforeEach(() => {
-    document.body.innerHTML = ""
+  beforeEach(async () => {
+    // Et klikk på en fane skriver adressen, og komponenten leser den ved
+    // lasting.
+    await settAdresse("")
   })
 
-  it("bar markup: fanene byttes ut, og valget faller tilbake til den første", async () => {
+  it("bar markup: lenkene og panelene morfes, og valget står", async () => {
     /*
-     * Komponenten skrev `fs-tabs-tab-N` på knappene og `fs-tabs-panel-N` på
-     * panelene. Serverens knapper har ingen id, så ingen av dem morfes inn i
-     * de gamle. `chosenTab` peker på en node som ikke står i siden lenger,
-     * og `repair()` faller tilbake til serverens markup, som sier ingenting,
-     * altså den første fanen. Flyttingen meldes som `tab-select`.
+     * Komponenten skriver ingen id på lenkene, og panelenes id kommer fra
+     * serveren. Datastar har dermed noe å kjenne igjen i begge, og morfer dem
+     * inn i de gamle nodene. `chosenTab` peker på en node som fortsatt står
+     * i siden, og valget settes tilbake etter at morfingen tok
+     * `aria-selected`, `tabindex` og `hidden`.
      */
     const r = await klikkOgPatch(BAR)
-    expect(r.faner).toEqual([false, false, false])
-    expect(r.paneler).toEqual([false, false, false])
-    expect(r.valgt).toEqual(["true", "false", "false"])
-    expect(r.skjult).toEqual([false, true, true])
-    expect(r.meldt).toEqual([0])
-  })
-
-  it("id fra serveren på faner og paneler: nodene morfes, og valget står", async () => {
-    const r = await klikkOgPatch(MED_ID)
     expect(r.faner).toEqual([true, true, true])
     expect(r.paneler).toEqual([true, true, true])
     expect(r.valgt).toEqual(["false", "true", "false"])
     expect(r.skjult).toEqual([true, false, true])
+    expect(r.lenkeIder).toEqual(["", "", ""])
     expect(r.meldt).toEqual([])
   })
 
-  it("id bare på fanene: panelene byttes ut, men valget står", async () => {
-    /*
-     * Det er knappene `chosenTab` peker på. Nye paneler finnes etter
-     * rekkefølgen, siden morfingen også tok `aria-controls`, og får `hidden`
-     * etter det brukeren valgte. Det som står inni et panel, som tekst
-     * brukeren har skrevet i et felt uten id, er likevel serverens på nytt.
-     */
-    const r = await klikkOgPatch(BARE_FANER_MED_ID)
-    expect(r.faner).toEqual([true, true, true])
-    expect(r.paneler).toEqual([false, false, false])
-    expect(r.valgt).toEqual(["false", "true", "false"])
-    expect(r.skjult).toEqual([true, false, true])
+  it("bar markup: panelene beholder navnet fra overskriften", async () => {
+    // Overskriften har ingen id fra serveren, så den kan byttes ut. Den nye
+    // får den samme id-en tilbake, og panelet peker fortsatt på den.
+    const r = await klikkOgPatch(BAR)
+    expect(r.navn).toEqual(NAVN)
   })
 
-  it("id bare på panelene: fanene byttes ut, og valget tapes", async () => {
-    const r = await klikkOgPatch(BARE_PANELER_MED_ID)
-    expect(r.faner).toEqual([false, false, false])
+  it("markup fra fs.tabs(): det samme, og panelene skjules med until-found", async () => {
+    const r = await klikkOgPatch(FRA_BYGGEFUNKSJONEN)
+    expect(r.faner).toEqual([true, true, true])
     expect(r.paneler).toEqual([true, true, true])
-    expect(r.valgt).toEqual(["true", "false", "false"])
+    expect(r.valgt).toEqual(["false", "true", "false"])
+    expect(r.hidden).toEqual(["until-found", null, "until-found"])
+    expect(r.navn).toEqual(NAVN)
+    expect(r.meldt).toEqual([])
   })
 
   it("bar markup i en patch som omslutter raden: det samme", async () => {
     /*
      * Serveren patcher ofte et område, ikke selve raden. Da har `<fs-tabs>`
-     * ingen id, og morfes inn i den gamle, men knappene inni byttes ut på
-     * samme måte.
+     * ingen id, og morfes inn i den gamle, og lenkene inni beholdes på samme
+     * måte.
      */
     const side = (innhold: string) => `<main id="side">${innhold}</main>`
     const uten = BAR.replace(' id="saken"', ' class="saken"')
     document.body.innerHTML = side(uten)
     await ventPaTegning()
-    const knapper = () => [...document.querySelectorAll("#side button")]
-    const før = knapper()
+    const lenker = () => [
+      ...document.querySelectorAll("#side .fs-tabs__list a"),
+    ]
+    const før = lenker()
     ;(før[1] as HTMLElement).click()
     await ventPaTegning()
 
     patch(side(uten))
     await ventPaTegning()
 
-    expect(sammeNoder(før, knapper())).toEqual([false, false, false])
-    expect(knapper().map((k) => k.getAttribute("aria-selected"))).toEqual([
-      "true",
+    expect(sammeNoder(før, lenker())).toEqual([true, true, true])
+    expect(lenker().map((k) => k.getAttribute("aria-selected"))).toEqual([
       "false",
+      "true",
       "false",
     ])
   })
@@ -224,9 +232,10 @@ describe("fs-tabs gjennom Datastars morfing", () => {
      * `data-on:click="@get(…)"`. Bekrefter at hendelsen over er den samme
      * veien bundlen selv går.
      */
+    const oppdatert = BAR.replace("<p>Innhold</p>", "<p>Oppdatert</p>")
     const strøm = [
       "event: datastar-patch-elements",
-      ...BAR.split("\n").map((linje) => `data: elements ${linje}`),
+      ...oppdatert.split("\n").map((linje) => `data: elements ${linje}`),
       "",
       "",
     ].join("\n")
@@ -245,17 +254,22 @@ describe("fs-tabs gjennom Datastars morfing", () => {
       await new Promise((ferdig) => setTimeout(ferdig, 20))
 
       const før = faner()
+      const panelFør = paneler()
       før[1].click()
       await ventPaTegning()
       expect(valgt()).toEqual(["false", "true", "false"])
 
       document.getElementById("oppdater")?.click()
-      await vi.waitFor(() => expect(faner()[0]).not.toBe(før[0]))
+      // Lenkene beholdes, så patchen kjennes på innholdet i det første panelet.
+      await vi.waitFor(() =>
+        expect(paneler()[0].textContent).toContain("Oppdatert"),
+      )
       await ventPaTegning()
 
       expect(hent).toHaveBeenCalledOnce()
-      expect(sammeNoder(før, faner())).toEqual([false, false, false])
-      expect(valgt()).toEqual(["true", "false", "false"])
+      expect(sammeNoder(før, faner())).toEqual([true, true, true])
+      expect(sammeNoder(panelFør, paneler())).toEqual([true, true, true])
+      expect(valgt()).toEqual(["false", "true", "false"])
     } finally {
       // Ellers svarte `fetch` med denne strømmen i resten av fila etter en
       // feil her.
@@ -487,55 +501,16 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     )
   }
 
-  it("fs-tabs: én gang, når bar markup patches med den samme raden", async () => {
+  it("fs-tabs: sier ikke fra, for komponenten skriver ingen id som kan byttes ut", async () => {
     await klikkOgPatch(BAR)
     await roSeg()
-    expect(meldinger()).toHaveLength(1)
-    expect(meldinger()[0]).toContain("fs-tabs: en patch byttet ut fanene")
-    expect(meldinger()[0]).toContain("fs.tabs()")
+    expect(meldinger()).toEqual([])
 
-    // Ikke én gang til når brukeren velger på nytt og patchen kommer igjen.
-    // Uten klikket er det ingenting å miste, og dedupliseringen prøves ikke.
     faner()[1].click()
     await ventPaTegning()
     patch(BAR)
     await roSeg()
-    expect(valgt()).toEqual(["true", "false", "false"])
-    expect(meldinger()).toHaveLength(1)
-  })
-
-  it("fs-tabs: ikke når serveren skrev id", async () => {
-    await klikkOgPatch(MED_ID)
-    await roSeg()
-    expect(meldinger()).toEqual([])
-  })
-
-  it("fs-tabs: ikke uten en patch", async () => {
-    document.body.innerHTML = BAR
-    await ventPaTegning()
-    faner()[1].click()
-    await roSeg()
-    expect(meldinger()).toEqual([])
-  })
-
-  it("fs-tabs: ikke når serveren sendte en annen rad med vilje", async () => {
-    /*
-     * Tapet er da riktig: fanene er andre, og ingen av dem er den brukeren
-     * valgte. Tvillingen med samme tekst er det som skiller dette fra en rad
-     * som bare ble byttet ut.
-     */
-    document.body.innerHTML = BAR
-    await ventPaTegning()
-    faner()[1].click()
-    await ventPaTegning()
-
-    patch(
-      BAR.replace("Søknaden", "Vedtaket")
-        .replace("Vedlegg", "Klagen")
-        .replace("Meldinger", "Loggen"),
-    )
-    await roSeg()
-    expect(valgt()).toEqual(["true", "false", "false"])
+    expect(valgt()).toEqual(["false", "true", "false"])
     expect(meldinger()).toEqual([])
   })
 
@@ -545,10 +520,12 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     faner()[1].click()
     await ventPaTegning()
 
-    patchInni("#saken > div:last-child", "Tre nye meldinger.")
+    patchInni("#saken > section:last-child", "Tre nye meldinger.")
     await roSeg()
     expect(valgt()).toEqual(["false", "true", "false"])
     expect(paneler()[2].textContent).toBe("Tre nye meldinger.")
+    // Overskriften forsvant i patchen, så navnet er teksten på fanen.
+    expect(paneler()[2].getAttribute("aria-label")).toBe("Meldinger")
     expect(meldinger()).toEqual([])
   })
 

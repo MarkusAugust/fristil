@@ -328,7 +328,7 @@ const STILER_MANGLER: [string, string] = [
 ]
 const INGEN_DEFINE: [string, string] = [
   "En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting",
-  "`define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser det første panelet og `<fs-suggestion>` skjuler lista til de er registrert",
+  "`define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser ett panel, det adressen peker på eller det første, og `<fs-suggestion>` skjuler lista til de er registrert",
 ]
 const NORSK_TEKST: [string, string] = [
   "En komponent snakker norsk på en side på et annet språk",
@@ -559,24 +559,24 @@ tilbake når en patch river markeringen bort. Malen trenger ingenting for det.
 
 Det forutsetter at patchen beholder elementene og bare endrer attributtene,
 slik en morfing gjør: Datastars \`outer\`, htmx med idiomorph-utvidelsen og
-Turbo 8 med morfing. Valget er knyttet til selve knappen. Bytter patchen ut
+Turbo 8 med morfing. Valget er knyttet til selve lenken. Bytter patchen ut
 nodene, som \`innerHTML\`, htmx' vanlige \`innerHTML\`- og \`outerHTML\`-bytte og
-Turbo uten morfing gjør, er fanen en annen, og komponenten følger markupen. Da
-må serveren skrive valget selv, med \`aria-selected\` og \`hidden\` på den
-riktige fanen og de andre panelene, eller bestemme tilstanden alene med
-\`server-controlled\`.
+Turbo uten morfing gjør, er fanen en annen, og komponenten velger den adressen
+peker på, ellers den serveren skjulte de andre panelene for, ellers den første.
+Vil serveren bestemme, skriver den \`hidden="until-found"\` på de andre
+panelene, eller bestemmer tilstanden alene med \`server-controlled\`.
 
 En morfing beholder et element bare når id-en stemmer: Datastar og idiomorph
-morfer ikke et element med id inn i et uten, de bytter det ut. Feltet i
-\`<fs-field>\` og \`<fs-suggestion>\` får aldri id av komponenten: skriv \`for\`
-på ledeteksten og \`id\` på feltet, eller legg ledeteksten rundt feltet.
-Fanene, panelene og panelet i sprettoppvinduet får id av komponenten når de
-mangler, og da byttes de ut ved neste patch som sender området på nytt, og
-det brukeren gjorde er borte. Skriv derfor id på fanene og panelene i
-\`<fs-tabs>\` og på panelet i \`<fs-popover>\`, de samme ved hver rendring.
-Lista og alternativene i \`<fs-suggestion>\` kan byttes ut; komponenten kobler
-dem på nytt og finner det markerte alternativet igjen på teksten. Komponenten
-sier fra i konsollen første gang en patch bytter ut noe brukeren hadde rørt.
+morfer ikke et element med id inn i et uten, de bytter det ut. Komponentene
+skriver derfor aldri id på det brukeren rører: feltet i \`<fs-field>\` og
+\`<fs-suggestion>\`, og fanene i \`<fs-tabs>\`. Skriv \`for\` på ledeteksten og
+\`id\` på feltet, eller legg ledeteksten rundt feltet. Fanene er lenker uten
+id, og panelene har den id-en lenken peker på, den samme ved hver rendring.
+Panelet i \`<fs-popover>\` trenger id på samme måte, for \`popovertarget\` og
+\`aria-controls\`. Lista og alternativene i \`<fs-suggestion>\` kan byttes ut;
+komponenten kobler dem på nytt og finner det markerte alternativet igjen på
+teksten. Komponenten sier fra i konsollen første gang en patch bytter ut noe
+brukeren hadde rørt.
 
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du det
 med \`server-controlled\`. Da bestemmer hver patch, og komponenten slutter å
@@ -584,12 +584,12 @@ sette brukerens valg tilbake:
 
 \`\`\`html
 <fs-tabs server-controlled>
-  <div class="fs-tabs__list" aria-label="Deler av saken">
-    <button>Søknaden</button>
-    <button>Vedlegg</button>
-  </div>
-  <div class="fs-tabs__panel">…</div>
-  <div class="fs-tabs__panel" hidden>…</div>
+  <ul class="fs-tabs__list" aria-label="Deler av saken">
+    <li><a href="#soknaden">Søknaden</a></li>
+    <li><a href="#vedlegg">Vedlegg</a></li>
+  </ul>
+  <section class="fs-tabs__panel" id="soknaden">…</section>
+  <section class="fs-tabs__panel" id="vedlegg" hidden="until-found">…</section>
 </fs-tabs>
 \`\`\`
 
@@ -1168,12 +1168,14 @@ vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
 Patcher serveren en komponent som holder tilstand, er spørsmålet hvem som
 bestemmer den. Som standard gjør web-komponenten det: \`<fs-tabs>\` husker fanen brukeren
 valgte, og setter den tilbake når en patch med \`outer\` river den bort: \`outer\`
-morfer, og valget er knyttet til selve knappen. \`inner\` og \`replace\` bytter
-ut nodene, og da følger komponenten markupen, så serveren må skrive
-\`aria-selected\` og \`hidden\` selv. Og \`outer\` morfer bare når id-ene stemmer:
-et element med en id serveren ikke sendte byttes ut. Skriv derfor id på
-fanene og panelene selv, de samme ved hver rendring, som \`fs.tabs()\` gjør.
-Det samme gjelder panelet i \`<fs-popover>\`. Kontrollen i \`<fs-field>\` og
+morfer, og valget er knyttet til selve lenken. \`inner\` og \`replace\` bytter
+ut nodene, og da velger komponenten fanen adressen peker på, ellers den
+serveren skjulte de andre panelene for med \`hidden="until-found"\`, ellers
+den første. Og \`outer\` morfer bare når id-ene stemmer: et element med en id
+serveren ikke sendte byttes ut. Komponentene skriver derfor aldri id på det
+brukeren rører. Fanene er lenker uten id, og panelene har den id-en lenken
+peker på, den samme ved hver rendring, som \`fs.tabs()\` skriver den. Panelet i
+\`<fs-popover>\` trenger id på samme måte. Kontrollen i \`<fs-field>\` og
 feltet i \`<fs-suggestion>\` får aldri id fra komponenten: \`for\` og \`id\`
 skriver malen, som HTML krever for at feltet skal ha navn uten JavaScript, eller
 så står ledeteksten rundt feltet og ingen id trengs. Komponenten sier fra i
@@ -1182,12 +1184,12 @@ serveren kunne flytte fanen, sier du det med \`server-controlled\`:
 
 \`\`\`html
 <fs-tabs server-controlled data-on:tab-select="$fane = evt.detail.index">
-  <div class="fs-tabs__list" aria-label="Deler av saken">
-    <button>Søknaden</button>
-    <button>Vedlegg</button>
-  </div>
-  <div class="fs-tabs__panel">…</div>
-  <div class="fs-tabs__panel" hidden>…</div>
+  <ul class="fs-tabs__list" aria-label="Deler av saken">
+    <li><a href="#soknaden">Søknaden</a></li>
+    <li><a href="#vedlegg">Vedlegg</a></li>
+  </ul>
+  <section class="fs-tabs__panel" id="soknaden">…</section>
+  <section class="fs-tabs__panel" id="vedlegg" hidden="until-found">…</section>
 </fs-tabs>
 \`\`\`
 

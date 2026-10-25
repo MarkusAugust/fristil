@@ -77,15 +77,30 @@ const PRØVER: Record<Valgtype["kind"], unknown[]> = {
   flag: [false, true],
   text: ["x", "a b", ""],
   number: [0, 1, 3],
-  textList: [[], ["x"], ["x", "x"], ["  x   y "], ["x y"], ["﻿x"], [""]],
+  // `["x", "y"]` er den eneste gyldige med flere: uten den ble fanene og
+  // alternativene aldri prøvd med mer enn én nøkkel.
+  textList: [
+    [],
+    ["x"],
+    ["x", "y"],
+    ["x", "x"],
+    ["  x   y "],
+    ["x y"],
+    ["﻿x"],
+    [""],
+  ],
 }
 const prøver = (v: Valg) => {
   const verdier = v.type.kind === "values" ? v.type.values : PRØVER[v.type.kind]
   // En påkrevd id som er tom, får TypeScript til å lage en tilfeldig id og
   // si fra i konsollen. Svaret er da ulikt fra kjøring til kjøring, og et
   // språk med typer stopper det før det kjører. Den prøves ikke.
-  if (v.required)
-    return v.type.kind === "text" ? verdier.filter((x) => x !== "") : verdier
+  if (v.required && v.type.kind === "text" && /^id$|Id$/.test(v.name))
+    return verdier.filter((x) => x !== "")
+  // En annen påkrevd tekst, som `label` i `tabs`, kaster når den er tom, og
+  // prøves også med bare mellomrom, slik JavaScript regner dem.
+  if (v.required && v.type.kind === "text") return [...verdier, " \u00a0\ufeff"]
+  if (v.required) return verdier
   return [undefined, ...verdier]
 }
 

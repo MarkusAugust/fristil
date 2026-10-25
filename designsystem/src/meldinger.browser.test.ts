@@ -288,17 +288,17 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(advarsel).not.toHaveBeenCalled()
   })
 
-  it("fanene uten knapper", async () => {
-    // Knapper i raden er nok: komponenten gir dem rollen. Lenker er det ikke,
-    // og uten `role="tab"` finner den ingen faner å koble.
+  it("fanene uten lenker", async () => {
+    // Fanene er lenker til panelene. En rad med bare knapper, slik fanene
+    // var før, har ingen faner komponenten kan koble.
     const advarsel = lytt()
 
     monter(`
       <fs-tabs>
-        <div class="fs-tabs__list">
-          <a href="#soknad">Søknaden</a>
-          <a href="#vedlegg">Vedlegg</a>
-        </div>
+        <ul class="fs-tabs__list">
+          <li><button>Søknaden</button></li>
+          <li><button>Vedlegg</button></li>
+        </ul>
       </fs-tabs>
     `)
     await ventTilRo()
@@ -313,11 +313,11 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
 
     monter(`
       <fs-tabs>
-        <div class="fs-tabs__list" role="tablist">
-          <button role="tab" aria-selected="true" tabindex="0">Søknaden</button>
-          <button role="tab" aria-selected="false" tabindex="-1">Vedlegg</button>
-        </div>
-        <div role="tabpanel" tabindex="0">Søknaden kom 3. mars.</div>
+        <ul class="fs-tabs__list">
+          <li><a href="#soknad">Søknaden</a></li>
+          <li><a href="#vedlegg">Vedlegg</a></li>
+        </ul>
+        <section class="fs-tabs__panel" id="soknad"><h2>Søknaden</h2>Søknaden kom 3. mars.</section>
       </fs-tabs>
     `)
     await ventTilRo()
@@ -537,19 +537,21 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
 
     const flate = monter(`
       <fs-tabs>
-        <div class="fs-tabs__list" role="tablist">
-          <button role="tab" aria-selected="true" tabindex="0">En</button>
-          <button role="tab" aria-selected="false" tabindex="-1">To</button>
-          <button role="tab" aria-selected="false" tabindex="-1">Tre</button>
-        </div>
+        <ul class="fs-tabs__list" aria-label="Deler av saken">
+          <li><a href="#en">En</a></li>
+          <li><a href="#to">To</a></li>
+          <li><a href="#tre">Tre</a></li>
+        </ul>
       </fs-tabs>
     `)
     const faner = flate.querySelector("fs-tabs") as HTMLElement
     await ventTilRo()
 
-    for (let n = 0; n < 2; n += 1) {
-      const panel = document.createElement("div")
-      panel.setAttribute("role", "tabpanel")
+    // To av tre paneler, ett om gangen. Den tredje fanen står uten panel hele tiden.
+    for (const id of ["en", "to"]) {
+      const panel = document.createElement("section")
+      panel.className = "fs-tabs__panel"
+      panel.id = id
       faner.append(panel)
       await ventTilRo()
     }
@@ -618,16 +620,12 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
         </fs-field>
 
         <fs-tabs>
-          <div class="fs-tabs__list" role="tablist">
-            <button id="sak-tab-0" role="tab" aria-selected="true"
-                    aria-controls="sak-panel-0" tabindex="0">Søknaden</button>
-            <button id="sak-tab-1" role="tab" aria-selected="false"
-                    aria-controls="sak-panel-1" tabindex="-1">Vedlegg</button>
-          </div>
-          <div id="sak-panel-0" role="tabpanel" aria-labelledby="sak-tab-0"
-               tabindex="0">Søknaden kom 3. mars.</div>
-          <div id="sak-panel-1" role="tabpanel" aria-labelledby="sak-tab-1"
-               tabindex="0" hidden>To vedlegg.</div>
+          <ul class="fs-tabs__list" aria-label="Deler av saken">
+            <li><a href="#sak-soknaden">Søknaden</a></li>
+            <li><a href="#sak-vedlegg">Vedlegg</a></li>
+          </ul>
+          <section class="fs-tabs__panel" id="sak-soknaden"><h2>Søknaden</h2>Søknaden kom 3. mars.</section>
+          <section class="fs-tabs__panel" id="sak-vedlegg"><h2>Vedlegg</h2>To vedlegg.</section>
         </fs-tabs>
 
         <fs-dialog>

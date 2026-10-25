@@ -378,8 +378,9 @@ export function classesData(): Classes {
     let base: unknown
     try {
       // En id, så byggefunksjonene som ellers lager en tilfeldig ikke sier fra.
-      // Dialogen kaller sin titleId, siden id-en sitter på overskriften.
-      base = build({ id: "x", titleId: "x" })
+      // Dialogen kaller sin titleId, siden id-en sitter på overskriften. Og
+      // et navn, som fanene krever på raden.
+      base = build({ id: "x", titleId: "x", keys: [], label: "x" })
     } catch {
       continue
     }
@@ -413,7 +414,9 @@ export function classesData(): Classes {
         for (const value of values as string[]) {
           const result =
             new Map(
-              parts(build({ id: "x", titleId: "x", [option]: value })),
+              parts(
+                build({ id: "x", titleId: "x", keys: [], [option]: value }),
+              ),
             ).get(part) ?? {}
           const extra = Object.entries(result).filter(
             ([key, v]) =>
@@ -467,7 +470,7 @@ export function classesData(): Classes {
     const flagged = flaggFor(
       builder,
       build as (options: Record<string, unknown>) => unknown,
-      { id: "x", titleId: "x" },
+      { id: "x", titleId: "x", keys: [], label: "x" },
       (name) => name in found,
     )
     for (const [name, attributes] of flagged)

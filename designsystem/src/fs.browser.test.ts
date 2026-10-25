@@ -187,7 +187,7 @@ describe("fs.field", () => {
 
     const forslag = utenId(
       fs.suggestion as (o: unknown) => ReturnType<typeof fs.suggestion>,
-      { count: 2 },
+      { keys: ["a", "b"] },
     )
     expect(JSON.stringify(forslag)).not.toContain("undefined")
     expect(forslag.control["aria-controls"]).toBe(forslag.list.id)
@@ -195,7 +195,8 @@ describe("fs.field", () => {
     const faner = utenId(
       fs.tabs as (o: unknown) => ReturnType<typeof fs.tabs>,
       {
-        count: 2,
+        keys: ["a", "b"],
+        label: "Faner",
       },
     )
     expect(JSON.stringify(faner)).not.toContain("undefined")
@@ -374,9 +375,10 @@ describe("attributter bare morferen leser", () => {
       field: () => fs.field({ id: "epost", help: true, error: true }),
       popover: () => fs.popover({ id: "panel" }),
       sessionTimeout: () => fs.sessionTimeout({ titleId: "okt" }),
-      suggestion: () => fs.suggestion({ id: "sok", count: 2, open: true }),
+      suggestion: () =>
+        fs.suggestion({ id: "sok", keys: ["a", "b"], open: true }),
       tableSort: () => fs.tableSort({ direction: "ascending" }),
-      tabs: () => fs.tabs({ id: "faner", count: 2 }),
+      tabs: () => fs.tabs({ id: "faner", keys: ["a", "b"], label: "Faner" }),
       toast: () => fs.toast(),
     },
   )

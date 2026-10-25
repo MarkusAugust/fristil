@@ -50,29 +50,37 @@
     },
     "fs-tabs": {
       "link": "https://fristil.sobernetics.no/components/tabs/",
-      "description": "Fanerad. Gir tastatur og fokus til en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp, og setter roller, id-er og kobling der markupen kom uten. Hvilken fane som er valgt leses fra `aria-selected`, ellers fra `hidden` på panelene.",
+      "description": "Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.",
       "attributes": {
         "server-controlled": {
           "type": "flag",
-          "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+          "description": "Serveren bestemmer hvilken fane som er valgt. Komponenten setter ikke brukerens valg tilbake etter en oppdatering fra serveren, og adressen velger ingen fane. Et klikk og søk i siden velger fanen til serveren svarer."
+        },
+        "activation": {
+          "type": "values",
+          "values": [
+            "manual",
+            "automatic"
+          ],
+          "description": "Hva piltastene gjør. Standard er at de velger fanen med en gang."
         }
       },
       "parts": {
         "list": {
           "selector": "[role='tablist'], .fs-tabs__list",
-          "description": "Raden med fanene. Har en fane `role=\"tab\"`, kan raden også ha andre knapper, som en lukkeknapp.",
+          "description": "Raden med fanene, en `<ul>` der hvert `<li>` får `role=\"presentation\"`. Den må ha et navn, som `aria-label`. Har serveren skrevet `role=\"tab\"` på lenkene, kan raden også ha andre lenker.",
           "content": "free",
           "unique": true
         },
         "tab": {
-          "selector": "[role='tab'], .fs-tabs__list > button:not([role])",
-          "description": "En fane: `role=\"tab\"`, eller en knapp uten rolle når ingen knapp i raden har rollen. Fane nummer n styrer panel nummer n.",
+          "selector": "a[role='tab'][href^='#'], .fs-tabs__list a[href^='#']:not([role])",
+          "description": "En fane: en lenke til panelet sitt, `<a href=\"#vedlegg\">`. Komponenten skriver `aria-controls` fra `href`. `role=\"tab\"` på noe som ikke er en lenke, er ikke en fane.",
           "content": "text",
           "multiple": true
         },
         "panel": {
           "selector": "[role='tabpanel'], .fs-tabs__panel:not([role])",
-          "description": "Innholdet til én fane, i samme rekkefølge som fanene.",
+          "description": "Innholdet til én fane, med id-en lenken peker på. Panelet heter det fanen heter: overskriften øverst i panelet er navnet når den sier det samme som fanen.",
           "content": "free",
           "multiple": true
         }
@@ -136,7 +144,7 @@
         },
         "server-controlled": {
           "type": "flag",
-          "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+          "description": "Serveren bestemmer om panelet er åpent. Komponenten setter ikke `open` tilbake når en oppdatering fra serveren fjerner det."
         }
       },
       "parts": {
@@ -197,7 +205,7 @@
         },
         "server-controlled": {
           "type": "flag",
-          "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+          "description": "Serveren bestemmer om lista er utvidet og hvilket alternativ som er markert. Komponenten setter dem ikke tilbake etter en oppdatering fra serveren."
         }
       },
       "parts": {
@@ -258,7 +266,7 @@
         },
         "server-controlled": {
           "type": "flag",
-          "description": "Serveren eier tilstanden brukeren har laget: valgt fane, åpent panel, åpen liste, åpen dialog. Komponenten setter den ikke tilbake når en morfing har fjernet den."
+          "description": "Fjerner en oppdatering fra serveren `open` fra `<dialog>` mens dialogen er åpen, lukker komponenten den og sender `dialog-toggle`, i stedet for å sette `open` tilbake."
         }
       },
       "parts": {
@@ -1675,13 +1683,13 @@
     "fs-tabs__list": {
       "component": "tabs",
       "title": "Tabs",
-      "description": "Fanerad koblet til panelene sine. Rammekomponent.",
+      "description": "Fanerad av lenker til panelene sine. Rammekomponent.",
       "link": "https://fristil.sobernetics.no/components/tabs/",
       "content": "free",
       "parts": {
         "tab": {
-          "selector": "[role='tab'], > button:not([role])",
-          "description": "En fane: `role=\"tab\"`, eller en knapp uten rolle når ingen knapp i raden har rollen. Fane nummer n styrer panel nummer n. Har en fane rollen, kan raden også ha andre knapper.",
+          "selector": "a[role='tab'][href^='#'], a[href^='#']:not([role])",
+          "description": "En fane: en lenke til panelet sitt, som `<a href=\"#vedlegg\">`. Har serveren skrevet `role=\"tab\"`, er bare lenkene med rollen faner, og raden kan ha andre lenker. `role=\"tab\"` på noe som ikke er en lenke, er ikke en fane.",
           "content": "text",
           "multiple": true
         }
@@ -1691,7 +1699,7 @@
     "fs-tabs__panel": {
       "component": "tabs",
       "title": "Tabs",
-      "description": "Fanerad koblet til panelene sine. Rammekomponent.",
+      "description": "Fanerad av lenker til panelene sine. Rammekomponent.",
       "link": "https://fristil.sobernetics.no/components/tabs/",
       "content": "free",
       "attributes": {}
@@ -4083,15 +4091,15 @@
           "type": {
             "kind": "text"
           },
-          "description": "Felles id-stamme. Kontrollen blir `${id}`, lista `${id}-list`."
+          "description": "Felles id-stamme. Kontrollen blir `${id}`, lista `${id}-list`, og alternativene `${id}-option-${nøkkel}`."
         },
         {
-          "name": "count",
+          "name": "keys",
           "required": false,
           "type": {
-            "kind": "number"
+            "kind": "textList"
           },
-          "description": "Antall alternativer serveren sender med. Standard: 0."
+          "description": "Én nøkkel per alternativ serveren sender med, fra dataene, som kommunenummeret. Nøkkelen gir alternativet id, så en oppdatering som sender lista på nytt, kjenner alternativene igjen. Tom nøkkel, mellomrom og to like kaster. Standard: ingen alternativer."
         },
         {
           "name": "activeIndex",
@@ -4323,31 +4331,23 @@
           "type": {
             "kind": "text"
           },
-          "description": "Felles id-stamme. Fanene blir `${id}-tab-0`, panelene `${id}-panel-0`."
+          "description": "Felles id-stamme. Panelene blir `${id}-${nøkkel}`, overskriftene i dem `${id}-${nøkkel}-heading`."
         },
         {
-          "name": "count",
+          "name": "keys",
           "required": true,
           "type": {
-            "kind": "number"
+            "kind": "textList"
           },
-          "description": "Antall faner."
-        },
-        {
-          "name": "selected",
-          "required": false,
-          "type": {
-            "kind": "number"
-          },
-          "description": "Indeksen på fanen som er valgt. Standard: 0."
+          "description": "Én nøkkel per fane, fra dataene, som `[\"soknaden\", \"vedlegg\"]`. Nøkkelen gir panelet id, og lenken peker på den. En indeks er ingen nøkkel: setter serveren inn en fane først, peker den samme indeksen på et annet panel. Tom nøkkel, mellomrom og to like kaster."
         },
         {
           "name": "label",
-          "required": false,
+          "required": true,
           "type": {
             "kind": "text"
           },
-          "description": "Tekst som sier hva fanene velger mellom. Blir `aria-label` på raden."
+          "description": "Hva fanene velger mellom. Blir `aria-label` på raden, som må ha et navn. Tom, eller bare mellomrom, kaster."
         }
       ],
       "returns": {
@@ -4363,6 +4363,12 @@
             }
           },
           "panels": {
+            "kind": "list",
+            "of": {
+              "kind": "attributes"
+            }
+          },
+          "headings": {
             "kind": "list",
             "of": {
               "kind": "attributes"

@@ -19,18 +19,24 @@
   "fs-tabs": {
     "prefix": "fs-tabs",
     "body": [
-      "<!-- Rollene, id-ene og koblingen setter komponenten. Vil du at en annen",
-      "     fane enn den første skal være valgt, sett `hidden` på de andre panelene. -->",
+      "<!-- Lenkene peker på panelene. Rollene, valget og `hidden` skriver",
+      "     komponenten. Uten JavaScript er dette en innholdsfortegnelse. -->",
       "<fs-tabs id=\"saksfaner\">",
-      "  <div class=\"fs-tabs__list\" aria-label=\"Deler av saken\">",
-      "    <button>Søknaden</button>",
-      "    <button>Vedlegg</button>",
-      "  </div>",
-      "  <div class=\"fs-tabs__panel\">Søknaden</div>",
-      "  <div class=\"fs-tabs__panel\">Vedlegg</div>",
+      "  <ul class=\"fs-tabs__list\" aria-label=\"Deler av saken\">",
+      "    <li><a href=\"#soknaden\">Søknaden</a></li>",
+      "    <li><a href=\"#vedlegg\">Vedlegg</a></li>",
+      "  </ul>",
+      "  <section class=\"fs-tabs__panel\" id=\"soknaden\">",
+      "    <h2>Søknaden</h2>",
+      "    <p>Søknaden ble sendt 4. mars 2026.</p>",
+      "  </section>",
+      "  <section class=\"fs-tabs__panel\" id=\"vedlegg\">",
+      "    <h2>Vedlegg</h2>",
+      "    <p>Tre vedlegg er lastet opp.</p>",
+      "  </section>",
       "</fs-tabs>"
     ],
-    "description": "Fanerad. Gir tastatur og fokus til en `.fs-tabs__list` med knapper og ett `.fs-tabs__panel` per knapp, og setter roller, id-er og kobling der markupen kom uten. Hvilken fane som er valgt leses fra `aria-selected`, ellers fra `hidden` på panelene."
+    "description": "Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri."
   },
   "fs-error-summary": {
     "prefix": "fs-error-summary",

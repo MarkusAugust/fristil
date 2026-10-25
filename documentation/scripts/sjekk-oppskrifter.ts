@@ -289,10 +289,14 @@ for (const [navn, f] of Object.entries(fs)) {
   if (typeof f !== "function") continue
   let svar: unknown
   try {
+    // `keys` fordi `fs.tabs()` og `fs.suggestion()` kaster uten. Da svelget
+    // `catch` feilen, fanenes klasser kom aldri inn i tabellen, og regelen
+    // om klasser skrevet for hånd var taus for dem.
     svar = (f as (o?: unknown) => unknown)({
       id: "x",
       titleId: "t",
       count: 1,
+      keys: ["a"],
       label: "L",
     })
   } catch {

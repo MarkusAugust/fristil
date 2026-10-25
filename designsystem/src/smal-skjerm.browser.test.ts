@@ -399,14 +399,16 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
   tabs: [
     {
       markup: `<fs-tabs>
-        <div class="fs-tabs__list">
-          <button>Søknaden</button><button>Vedlegg og dokumentasjon</button>
-          <button>Vedtak</button><button>Klage på vedtaket</button>
-        </div>
-        <div class="fs-tabs__panel">Søknaden kom 3. mars.</div>
-        <div class="fs-tabs__panel" hidden>To vedlegg.</div>
-        <div class="fs-tabs__panel" hidden>Ikke behandlet ennå.</div>
-        <div class="fs-tabs__panel" hidden>Ingen klage.</div>
+        <ul class="fs-tabs__list" aria-label="Deler av saken">
+          <li><a href="#smal-soknaden">Søknaden</a></li>
+          <li><a href="#smal-vedlegg">Vedlegg og dokumentasjon</a></li>
+          <li><a href="#smal-vedtak">Vedtak</a></li>
+          <li><a href="#smal-klage">Klage på vedtaket</a></li>
+        </ul>
+        <section class="fs-tabs__panel" id="smal-soknaden"><h2>Søknaden</h2>Søknaden kom 3. mars.</section>
+        <section class="fs-tabs__panel" id="smal-vedlegg"><h2>Vedlegg og dokumentasjon</h2>To vedlegg.</section>
+        <section class="fs-tabs__panel" id="smal-vedtak"><h2>Vedtak</h2>Ikke behandlet ennå.</section>
+        <section class="fs-tabs__panel" id="smal-klage"><h2>Klage på vedtaket</h2>Ingen klage.</section>
       </fs-tabs>`,
     },
   ],

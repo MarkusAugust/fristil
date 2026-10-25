@@ -560,7 +560,8 @@
     .fs-breadcrumbs li,
     .fs-file-upload-list li,
     .fs-pagination *,
-    .fs-select option
+    .fs-select option,
+    .fs-tabs__list a
   )[hidden]:not([hidden="until-found" i]) {
     /* biome-ignore lint/complexity/noImportantStyles: `hidden` skal vinne over komponentens `display`, slik nettleseren selv gjør */
     display: none !important;

@@ -77,21 +77,25 @@ describe("komponentene faller til ro", () => {
   })
 
   it("fanene, etter at brukeren har valgt", async () => {
-    const FANER = tabs({ id: "sak", count: 2 })
+    const FANER = tabs({
+      id: "sak",
+      keys: ["oversikt", "vedlegg"],
+      label: "Saken",
+    })
     const flate = monter(`
       <fs-tabs>
-        <div ${attr(FANER.list)}>
-          <button ${attr(FANER.tabs[0])}>Oversikt</button>
-          <button ${attr(FANER.tabs[1])}>Vedlegg</button>
-        </div>
-        <div ${attr(FANER.panels[0])}>Sammendrag</div>
-        <div ${attr(FANER.panels[1])}>Filer</div>
+        <ul ${attr(FANER.list)}>
+          <li><a ${attr(FANER.tabs[0])}>Oversikt</a></li>
+          <li><a ${attr(FANER.tabs[1])}>Vedlegg</a></li>
+        </ul>
+        <section ${attr(FANER.panels[0])}><h2 ${attr(FANER.headings[0])}>Oversikt</h2>Sammendrag</section>
+        <section ${attr(FANER.panels[1])}><h2 ${attr(FANER.headings[1])}>Vedlegg</h2>Filer</section>
       </fs-tabs>
     `)
     await ventPaTegning()
 
-    const knapper = [...flate.querySelectorAll("[role='tab']")] as HTMLElement[]
-    knapper[1].click()
+    const lenker = [...flate.querySelectorAll("[role='tab']")] as HTMLElement[]
+    lenker[1].click()
 
     expect(await mutasjonerEtterRo(flate)).toBe(0)
   })
@@ -115,7 +119,7 @@ describe("komponentene faller til ro", () => {
   })
 
   it("forslagsfeltet, etter at lista er åpnet og et alternativ markert", async () => {
-    const FORSLAG = suggestion({ id: "kommune", count: 2 })
+    const FORSLAG = suggestion({ id: "kommune", keys: ["a", "b"] })
     const flate = monter(`
       <fs-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>

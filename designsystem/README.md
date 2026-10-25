@@ -92,7 +92,7 @@ fs.errorSummary({ count: 2, id: "feil" })
 //   title:     { class: "fs-error-summary__title" } }
 ```
 
-`id` er påkrevd i `fs.field()`, `fs.suggestion()`, `fs.tabs()` og `fs.popover()`, og `titleId` i `fs.dialog()`. Grunnen er hydrering: lager funksjonen id-en selv, lager serveren og nettleseren hver sin, og koblingen mellom delene er brutt til React har rettet den opp. I React kommer den fra `useId()`. I `fs.errorSummary()` er den valgfri, siden den bare navngir boksen slik at noe annet kan peke på den.
+`id` er påkrevd i `fs.field()`, `fs.suggestion()`, `fs.tabs()` og `fs.popover()`, og `titleId` i `fs.dialog()`. `fs.tabs()` og `fs.suggestion()` tar også `keys`, én nøkkel fra dataene per fane eller alternativ, og `fs.tabs()` krever `label`, navnet på raden. Grunnen er hydrering: lager funksjonen id-en selv, lager serveren og nettleseren hver sin, og koblingen mellom delene er brutt til React har rettet den opp. I React kommer den fra `useId()`. I `fs.errorSummary()` er den valgfri, siden den bare navngir boksen slik at noe annet kan peke på den.
 
 Hele begrunnelsen, med testene bak, står på [Markup og oppførsel](https://fristil.sobernetics.no/markup-og-oppforsel/).
 

@@ -95,9 +95,9 @@ const TILFELLER: Tilfelle[] = [
     velger: ".fs-toggle-group__option",
   },
   {
-    regel: ".fs-tabs__list button:hover",
-    markup: `<div class="fs-tabs__list"><button type="button">Oversikt</button></div><div class="fs-tabs__panel">Oversikt</div>`,
-    velger: ".fs-tabs__list button",
+    regel: ".fs-tabs__list a:hover",
+    markup: `<ul class="fs-tabs__list"><li><a href="#oversikt">Oversikt</a></li></ul><section class="fs-tabs__panel" id="oversikt">Oversikt</section>`,
+    velger: ".fs-tabs__list a",
   },
   {
     regel: ".fs-suggestion__option:hover",

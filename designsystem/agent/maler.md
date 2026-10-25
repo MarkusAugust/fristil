@@ -271,7 +271,7 @@ Tre regler gjelder alle sammen:
 | Element | Kategori | Stilark | Registrering | Attributter | Hendelser | Klasser inni |
 | --- | --- | --- | --- | --- | --- | --- |
 | `<fs-field>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.35.0/src/components/ramme/field/field.css` | `defineFsField()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.35.0/dist/components/ramme/field/fs-field.js` | `disabled` (flag)<br>`optional` (flag)<br>`described-by` (text) | ingen | ingen |
-| `<fs-tabs>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.35.0/src/components/ramme/tabs/tabs.css` | `defineFsTabs()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.35.0/dist/components/ramme/tabs/fs-tabs.js` | `server-controlled` (flag) | `tab-select` (index) | `fs-tabs__list`<br>`fs-tabs__panel` |
+| `<fs-tabs>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.35.0/src/components/ramme/tabs/tabs.css` | `defineFsTabs()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.35.0/dist/components/ramme/tabs/fs-tabs.js` | `server-controlled` (flag)<br>`activation`: manual, automatic | `tab-select` (index) | `fs-tabs__list`<br>`fs-tabs__panel` |
 | `<fs-error-summary>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.35.0/src/components/ramme/error-summary/error-summary.css` | `defineFsErrorSummary()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.35.0/dist/components/ramme/error-summary/fs-error-summary.js` | `data-autofocus`: false, true<br>`hidden` (flag) | ingen | `fs-error-summary`<br>`fs-error-summary__title` |
 | `<fs-popover>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.35.0/src/components/ramme/popover/popover.css` | `defineFsPopover()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.35.0/dist/components/ramme/popover/fs-popover.js` | `open` (flag)<br>`placement`: bottom-start, bottom-end, top-start, top-end<br>`server-controlled` (flag) | `popover-toggle` (open) | `fs-popover` |
 | `<fs-suggestion>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.35.0/src/components/ramme/suggestion/suggestion.css` | `defineFsSuggestion()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.35.0/dist/components/ramme/suggestion/fs-suggestion.js` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `suggestion-select` (value, label) | `fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__value`<br>`fs-suggestion__empty` |
@@ -330,24 +330,24 @@ ingenting for det.
 
 Det forutsetter at patchen beholder elementene og bare endrer attributtene,
 slik en morfing gjør: Datastars `outer`, htmx med idiomorph-utvidelsen og
-Turbo 8 med morfing. Valget er knyttet til selve knappen. Bytter patchen ut
+Turbo 8 med morfing. Valget er knyttet til selve lenken. Bytter patchen ut
 nodene, som `innerHTML`, htmx' vanlige `innerHTML`- og `outerHTML`-bytte og
-Turbo uten morfing gjør, er fanen en annen, og komponenten følger markupen. Da
-må serveren skrive valget selv, med `aria-selected` og `hidden` på den riktige
-fanen og de andre panelene, eller bestemme tilstanden alene med
-`server-controlled`.
+Turbo uten morfing gjør, er fanen en annen, og komponenten velger den adressen
+peker på, ellers den serveren skjulte de andre panelene for, ellers den
+første. Vil serveren bestemme, skriver den `hidden="until-found"` på de andre
+panelene, eller bestemmer tilstanden alene med `server-controlled`.
 
 En morfing beholder et element bare når id-en stemmer: Datastar og idiomorph
-morfer ikke et element med id inn i et uten, de bytter det ut. Feltet i
-`<fs-field>` og `<fs-suggestion>` får aldri id av komponenten: skriv `for` på
-ledeteksten og `id` på feltet, eller legg ledeteksten rundt feltet. Fanene,
-panelene og panelet i sprettoppvinduet får id av komponenten når de mangler,
-og da byttes de ut ved neste patch som sender området på nytt, og det brukeren
-gjorde er borte. Skriv derfor id på fanene og panelene i `<fs-tabs>` og på
-panelet i `<fs-popover>`, de samme ved hver rendring. Lista og alternativene i
-`<fs-suggestion>` kan byttes ut; komponenten kobler dem på nytt og finner det
-markerte alternativet igjen på teksten. Komponenten sier fra i konsollen
-første gang en patch bytter ut noe brukeren hadde rørt.
+morfer ikke et element med id inn i et uten, de bytter det ut. Komponentene
+skriver derfor aldri id på det brukeren rører: feltet i `<fs-field>` og
+`<fs-suggestion>`, og fanene i `<fs-tabs>`. Skriv `for` på ledeteksten og `id`
+på feltet, eller legg ledeteksten rundt feltet. Fanene er lenker uten id, og
+panelene har den id-en lenken peker på, den samme ved hver rendring. Panelet i
+`<fs-popover>` trenger id på samme måte, for `popovertarget` og
+`aria-controls`. Lista og alternativene i `<fs-suggestion>` kan byttes ut;
+komponenten kobler dem på nytt og finner det markerte alternativet igjen på
+teksten. Komponenten sier fra i konsollen første gang en patch bytter ut noe
+brukeren hadde rørt.
 
 Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du
 det med `server-controlled`. Da bestemmer hver patch, og komponenten slutter å
@@ -355,12 +355,12 @@ sette brukerens valg tilbake:
 
 ```html
 <fs-tabs server-controlled>
-  <div class="fs-tabs__list" aria-label="Deler av saken">
-    <button>Søknaden</button>
-    <button>Vedlegg</button>
-  </div>
-  <div class="fs-tabs__panel">…</div>
-  <div class="fs-tabs__panel" hidden>…</div>
+  <ul class="fs-tabs__list" aria-label="Deler av saken">
+    <li><a href="#soknaden">Søknaden</a></li>
+    <li><a href="#vedlegg">Vedlegg</a></li>
+  </ul>
+  <section class="fs-tabs__panel" id="soknaden">…</section>
+  <section class="fs-tabs__panel" id="vedlegg" hidden="until-found">…</section>
 </fs-tabs>
 ```
 
@@ -430,7 +430,7 @@ finnes der, og skriv aldri en `version` du ikke har sett på Central.
 | Symptom | Årsak |
 | --- | --- |
 | Stilene mangler | `tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe |
-| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser det første panelet og `<fs-suggestion>` skjuler lista til de er registrert |
+| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser ett panel, det adressen peker på eller det første, og `<fs-suggestion>` skjuler lista til de er registrert |
 | En komponent snakker norsk på en side på et annet språk | Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<fs-toast>`, `offline-text` og `online-text` på `<fs-connection-status>`, `count-none`, `count-one` og `count-other` på `<fs-suggestion>`, og `--fs-label-required-text`, `--fs-label-optional-text` og `--fs-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://fristil.sobernetics.no/oversettelse/ |
 | Feilmeldingen vises aldri, og feltet regnes som gyldig | `hidden="false"` er satt på feilmeldingen, og det skjuler den like fullt. Attributtet må fjernes, ikke settes til `false` |
 | Komponenten gjør ingenting, og ingenting sier fra | Registreringen kjøres bare på serveren, der den ikke gjør noe. Den må også kjøre i nettleseren |

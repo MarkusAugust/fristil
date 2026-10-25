@@ -140,8 +140,8 @@ describe("React-inngangen dekker alle attributtene byggefunksjonene sender ut", 
 
     const medArgumenter: Record<string, unknown> = {
       popover: { id: "x" },
-      tabs: { id: "x", count: 2 },
-      suggestion: { id: "x", count: 2 },
+      tabs: { id: "x", keys: ["a", "b"], label: "Faner" },
+      suggestion: { id: "x", keys: ["a", "b"] },
       field: { id: "x", help: true, error: true },
     }
 

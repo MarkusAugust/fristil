@@ -87,11 +87,20 @@ describe("byggefunksjonene passer i JSX-deklarasjonene", () => {
     }
   })
 
-  it("fanene, som har tabIndex", () => {
-    const faner = fs.tabs({ id: "sak", count: 2 })
+  /**
+   * Fanene fra React-inngangen er lenker med `tabIndex` som tall, og
+   * listepunktet og panelet må passe i sine elementer. `tabindex: "0"` som
+   * streng kompilerte ikke i en React-app, og det var typen alene som sa fra.
+   */
+  it("fanene, som er lenker med tabIndex", () => {
+    const faner = fs.tabs({ id: "sak", keys: ["a", "b"], label: "Saken" })
     const [forste] = faner.tabs
-    const fane: JSX.IntrinsicElements["button"] = forste ?? {}
+    const fane: JSX.IntrinsicElements["a"] = forste ?? {}
+    const punkt: JSX.IntrinsicElements["li"] = faner.item
+    const panel: JSX.IntrinsicElements["section"] = faner.panels[0] ?? {}
 
     expect(fane.tabIndex).toBe(0)
+    expect(punkt.role).toBe("presentation")
+    expect(panel.tabIndex).toBe(0)
   })
 })

@@ -13,6 +13,26 @@ private fun requireId(builder: String, id: String): String {
     return id
 }
 
+/**
+ * Nøklene en byggefunksjon lager id-er av, sjekket som i TypeScript: tom, med
+ * mellomrom slik JavaScript regner det, eller to like kaster.
+ */
+private fun requireKeys(builder: String, keys: List<String>): List<String> {
+    val seen = HashSet<String>()
+    for (key in keys) {
+        require(key.isNotEmpty()) {
+            "Fs.$builder: en nøkkel i keys er tom. Nøklene blir id-er, og hver må være en fast verdi fra dataene."
+        }
+        require(key.none(::isJsWhitespace)) {
+            "Fs.$builder: nøkkelen «$key» har mellomrom. Nøklene blir id-er, og en id kan ikke ha mellomrom."
+        }
+        require(seen.add(key)) {
+            "Fs.$builder: nøkkelen «$key» står to ganger i keys. Nøklene blir id-er, og to like id-er peker på det samme elementet."
+        }
+    }
+    return keys
+}
+
 /** Ledeteksten for `fs.label` og `fs.legend`: `optional` gjelder bare uten `required`. */
 private fun marked(
     className: String,
@@ -167,20 +187,21 @@ fun Fs.suggestion(
     errorId: String? = null,
     describedBy: List<String>? = null,
     id: String,
-    count: Number? = null,
+    keys: List<String>? = null,
     activeIndex: Number? = null,
     open: Boolean? = null,
     pending: Boolean? = null,
 ): SuggestionParts {
     val field = computeField("suggestion", id, help, error, helpId, errorId, required, optional, invalid, disabled, describedBy)
-    val n = count?.toDouble() ?: 0.0
+    val optionKeys = requireKeys("suggestion", keys ?: emptyList())
+    val n = optionKeys.size.toDouble()
     val active = activeIndex?.toDouble() ?: -1.0
     val isOpen = open == true
     val listId = "$id-list"
     val statusId = "$id-status"
-    fun optionId(index: Int) = "$id-option-$index"
-    // Markeringen skrives bare når lista er åpen, som i TypeScript.
-    val marked = isOpen && active >= 0 && active < n
+    fun optionId(index: Int) = "$id-option-${optionKeys[index]}"
+    // Markeringen skrives bare når lista er åpen, og bare på et heltall, som i TypeScript.
+    val marked = isOpen && active % 1.0 == 0.0 && active >= 0 && active < n
 
     val control = LinkedHashMap(field.control)
     control["class"] = "fs-input"
@@ -203,7 +224,7 @@ fun Fs.suggestion(
         label = field.label,
         control = Attributes(control),
         list = Attributes(list),
-        options = (0 until arrayLength(n)).map { index ->
+        options = optionKeys.indices.map { index ->
             Attributes(
                 mapOf(
                     "class" to "fs-suggestion__option",
@@ -228,52 +249,35 @@ fun Fs.suggestion(
     )
 }
 
-/** Lengden `Array.from({ length })` gir: hele delen, og null for et negativt tall. */
-private fun arrayLength(n: Double): Int = if (n.isNaN() || n <= 0) 0 else minOf(n, Int.MAX_VALUE.toDouble()).toInt()
-
-/** `fs.tabs`: en fanerad med paneler. `<fs-tabs>` tar piltastene. */
+/**
+ * `fs.tabs`: en fanerad der fanene er lenker til panelene. Bare lenker, id-er
+ * og klasser: uten JavaScript er raden en innholdsfortegnelse, og panelene
+ * står etter hverandre. Rollene, valget og `hidden` skriver `<fs-tabs>`.
+ * Panelene får id av [keys], og [label] er navnet på raden; tom kaster. Den første fanen
+ * er valgt; en annen kommer fra adressen, som `#sak-vedlegg`.
+ */
 fun Fs.tabs(
     id: String,
-    count: Number,
-    selected: Number? = null,
-    label: String? = null,
+    keys: List<String>,
+    label: String,
 ): TabsParts {
     requireId("tabs", id)
-    val n = count.toDouble()
-    // Er `selected` utenfor rekkevidde, rettes den, som i TypeScript.
-    val valid = minOf(maxOf(selected?.toDouble() ?: 0.0, 0.0), maxOf(n - 1, 0.0))
-    val indices = 0 until arrayLength(maxOf(n, 0.0))
-    fun tabId(index: Int) = "$id-tab-$index"
-    fun panelId(index: Int) = "$id-panel-$index"
-
-    val list = linkedMapOf("class" to "fs-tabs__list", "role" to "tablist")
-    if (label != null) list["aria-label"] = label
+    require(id.none(::isJsWhitespace)) {
+        "Fs.tabs: id-en «$id» har mellomrom. Den blir en del av hver id, og en id kan ikke ha mellomrom."
+    }
+    // Mellomrom slik JavaScript regner det, som `trim()` i TypeScript.
+    require(!label.all(::isJsWhitespace)) {
+        "Fs.tabs: label mangler eller er tom. Raden må ha et navn som sier hva fanene velger mellom, ellers sier skjermleseren bare «faneliste»."
+    }
+    val tabKeys = requireKeys("tabs", keys)
+    fun panelId(key: String) = "$id-$key"
 
     return TabsParts(
-        list = Attributes(list),
-        tabs = indices.map { index ->
-            val chosen = index.toDouble() == valid
-            Attributes(
-                mapOf(
-                    "id" to tabId(index),
-                    "role" to "tab",
-                    "type" to "button",
-                    "aria-selected" to if (chosen) "true" else "false",
-                    "aria-controls" to panelId(index),
-                    "tabindex" to if (chosen) "0" else "-1",
-                ),
-            )
+        list = Attributes(mapOf("class" to "fs-tabs__list", "aria-label" to label)),
+        tabs = tabKeys.map { key -> Attributes(mapOf("href" to "#${panelId(key)}")) },
+        panels = tabKeys.map { key ->
+            Attributes(mapOf("id" to panelId(key), "class" to "fs-tabs__panel"))
         },
-        panels = indices.map { index ->
-            val panel = linkedMapOf(
-                "id" to panelId(index),
-                "class" to "fs-tabs__panel",
-                "role" to "tabpanel",
-                "aria-labelledby" to tabId(index),
-                "tabindex" to "0",
-            )
-            if (index.toDouble() != valid) panel["hidden"] = ""
-            Attributes(panel)
-        },
+        headings = tabKeys.map { key -> Attributes(mapOf("id" to "$id-$key-heading")) },
     )
 }

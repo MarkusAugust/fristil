@@ -16,11 +16,12 @@ import "./suggestion.css"
 import "../../css/sr-only/sr-only.css"
 
 const KOMMUNER = ["Bergen", "Bodø", "Oslo", "Tromsø"]
+const NOKLER = ["bergen", "bodo", "oslo", "tromso"]
 
 /** Markupen serveren sender. Feltet og lista finnes før skriptet har kjørt. */
 const FORSLAG = suggestion({
   id: "kommune",
-  count: KOMMUNER.length,
+  keys: NOKLER,
   help: true,
 })
 
@@ -279,7 +280,7 @@ describe("fs-suggestion som venter på det første svaret", () => {
   })
 
   beforeEach(async () => {
-    const tomt = suggestion({ id: "kommune", count: 0 })
+    const tomt = suggestion({ id: "kommune", keys: [] })
 
     monter(`
       <fs-suggestion prefiltered>
@@ -322,8 +323,8 @@ describe("fs-suggestion som venter på det første svaret", () => {
 
     // Slik en patch ville gjort det.
     liste.innerHTML = `
-      <li class="fs-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
-      <li class="fs-suggestion__option" id="kommune-option-1" role="option">Bodø</li>
+      <li class="fs-suggestion__option" id="kommune-option-bergen" role="option">Bergen</li>
+      <li class="fs-suggestion__option" id="kommune-option-bodo" role="option">Bodø</li>
     `
     await tegn()
 
@@ -348,7 +349,7 @@ describe("fs-suggestion med markeringen fra serveren", () => {
   beforeEach(async () => {
     const fra = suggestion({
       id: "kommune",
-      count: KOMMUNER.length,
+      keys: NOKLER,
       open: true,
       activeIndex: 2,
     })
@@ -551,6 +552,29 @@ describe("fs-suggestion lukker og rydder", () => {
     expect(getComputedStyle(tom).display).toBe("none")
   })
 
+  it("åpner ikke lista igjen når server-controlled settes og fjernes", async () => {
+    monter(markup())
+    const felt = await tegn()
+    const input = felt.querySelector("input") as HTMLInputElement
+    const liste = felt.querySelector("[role='listbox']") as HTMLElement
+    tast(input, "ArrowDown")
+    await tegn()
+    expect(liste.hidden).toBe(false)
+
+    // Serveren overtar og lukker lista. Så slipper den igjen. Husket
+    // komponenten at lista var åpen, åpnet den den igjen ved neste patch.
+    felt.setAttribute("server-controlled", "")
+    liste.hidden = true
+    input.setAttribute("aria-expanded", "false")
+    await tegn()
+    felt.removeAttribute("server-controlled")
+    input.setAttribute("aria-expanded", "false")
+    await tegn()
+
+    expect(liste.hidden).toBe(true)
+    expect(input.getAttribute("aria-expanded")).toBe("false")
+  })
+
   it("rydder markeringen når det markerte filtreres bort, også med server-controlled", async () => {
     monter(markup("server-controlled"))
     const felt = await tegn()
@@ -604,7 +628,7 @@ describe("fs-suggestion lukker og rydder", () => {
      * Alt den beholder inneholder også søkeordet, så komponentens filter
      * skjuler ingenting av det. Påstanden står i dokumentasjonen, og her.
      */
-    const smalt = suggestion({ id: "sted", count: 2 })
+    const smalt = suggestion({ id: "sted", keys: ["a", "b"] })
     monter(`
       <fs-suggestion>
         <label ${attr(smalt.label)}>Sted</label>
@@ -639,23 +663,32 @@ describe("fs.suggestion() skriver det komponenten ellers ville skrevet", () => {
     // At lista er lukket, står ikke her lenger: stilarket skjuler meldingen
     // etter en lukket liste, og «tommeldingen når appen filtrerer selv»
     // etterprøver at den faktisk ikke vises ved sidelasting.
-    expect(suggestion({ id: "k", count: 0 }).empty.hidden).toBe(undefined)
-    expect(suggestion({ id: "k", count: 0, pending: true }).empty.hidden).toBe(
+    expect(suggestion({ id: "k", keys: [] }).empty.hidden).toBe(undefined)
+    expect(suggestion({ id: "k", keys: [], pending: true }).empty.hidden).toBe(
       true,
     )
-    expect(suggestion({ id: "k", count: 2, open: true }).empty.hidden).toBe(
-      true,
-    )
+    expect(
+      suggestion({ id: "k", keys: ["a", "b"], open: true }).empty.hidden,
+    ).toBe(true)
   })
 
   it("skriver markeringen bare når lista er åpen, begge halvdelene sammen", () => {
-    const lukket = suggestion({ id: "k", count: 3, activeIndex: 1 })
+    const lukket = suggestion({
+      id: "k",
+      keys: ["a", "b", "c"],
+      activeIndex: 1,
+    })
     expect(lukket.options[1]["aria-selected"]).toBe("false")
     expect(lukket.control["aria-activedescendant"]).toBeUndefined()
 
-    const apen = suggestion({ id: "k", count: 3, activeIndex: 1, open: true })
+    const apen = suggestion({
+      id: "k",
+      keys: ["a", "b", "c"],
+      activeIndex: 1,
+      open: true,
+    })
     expect(apen.options[1]["aria-selected"]).toBe("true")
-    expect(apen.control["aria-activedescendant"]).toBe("k-option-1")
+    expect(apen.control["aria-activedescendant"]).toBe("k-option-b")
   })
 })
 
@@ -823,7 +856,7 @@ describe("tommeldingen når appen filtrerer selv", () => {
   })
 
   /** Slik en React-app rendrer feltet: bare treffene, og `prefiltered`. */
-  async function felt(valg: { count: number; pending?: boolean }) {
+  async function felt(valg: { keys: string[]; pending?: boolean }) {
     const forslag = suggestion({ id: "kommune", ...valg })
     monter(`
       <fs-suggestion prefiltered>
@@ -852,7 +885,7 @@ describe("tommeldingen når appen filtrerer selv", () => {
   it("viser ikke meldingen mens lista er lukket, selv uten treff", async () => {
     // Appen vet ikke om lista er åpen: den tilstanden er komponentens.
     // Stilarket skjuler meldingen etter en liste med `hidden`.
-    const { liste, tom } = await felt({ count: 0 })
+    const { liste, tom } = await felt({ keys: [] })
 
     expect(liste.hidden).toBe(true)
     expect(tom.hasAttribute("hidden")).toBe(false)
@@ -860,7 +893,7 @@ describe("tommeldingen når appen filtrerer selv", () => {
   })
 
   it("viser meldingen når lista åpnes og søket ga ingenting", async () => {
-    const { input, liste, tom } = await felt({ count: 0 })
+    const { input, liste, tom } = await felt({ keys: [] })
 
     input.focus()
     input.value = "xyz"
@@ -872,7 +905,7 @@ describe("tommeldingen når appen filtrerer selv", () => {
   })
 
   it("holder meldingen skjult mens svaret er underveis", async () => {
-    const { input, liste, tom } = await felt({ count: 0, pending: true })
+    const { input, liste, tom } = await felt({ keys: [], pending: true })
 
     input.focus()
     input.value = "xyz"
@@ -884,7 +917,7 @@ describe("tommeldingen når appen filtrerer selv", () => {
   })
 
   it("skjuler meldingen når det finnes treff", async () => {
-    const { tom } = await felt({ count: 2 })
+    const { tom } = await felt({ keys: ["a", "b"] })
     expect(tom.hasAttribute("hidden")).toBe(true)
   })
 })

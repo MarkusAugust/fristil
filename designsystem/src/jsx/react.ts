@@ -83,14 +83,21 @@ type FsFieldAttributes = Host & {
 }
 
 /**
- * `<fs-tabs>` har bare `server-controlled`.
+ * `<fs-tabs>` har `server-controlled` og `activation`, og ingen `selected`.
  *
  * Hvilken fane som er valgt står i markupen serveren sendte, som
  * `aria-selected` på fanen og `hidden` på panelene. Komponenten leser det
  * derfra i stedet for å ha sin egen `selected`, slik at de to aldri kan si
  * hver sin ting.
  */
-type FsTabsAttributes = Host & ServerControlled
+type FsTabsAttributes = Host &
+  ServerControlled & {
+    /**
+     * `manual`: piltastene flytter bare fokus, og Enter eller mellomrom
+     * velger. Standard: piltastene velger med en gang.
+     */
+    activation?: "manual" | "automatic"
+  }
 
 type FsErrorSummaryAttributes = Host & {
   /**
