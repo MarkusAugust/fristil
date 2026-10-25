@@ -118,12 +118,14 @@ describe("fs fra /react", () => {
      * den: uten den ville vakten prøvd et kall som ikke er lovlig, og fått en
      * advarsel i konsollen i tillegg.
      */
+    // `label` fordi `fs.tabs()` krever et navn på raden og kaster uten.
     const ekstra: Record<string, unknown>[] = [
       { id: "sak" },
       {
         id: "sak",
         count: 2,
         keys: ["a", "b"],
+        label: "Deler",
         help: true,
         error: true,
         invalid: true,
@@ -140,6 +142,7 @@ describe("fs fra /react", () => {
           id: "sak",
           count: 2,
           keys: ["a", "b"],
+          label: "Deler",
         })
     }
 
