@@ -1,12 +1,13 @@
-//! Kontrollerer et tema en konsument har skrevet selv.
+//! Checks a theme a consumer has written themselves.
 //!
-//! Generatoren holder løftene av konstruksjon. Skriver noen inn egne verdier,
-//! er løftene deres å holde, og da skylder vi dem et svar på hvilken celle som
-//! ryker. Uten dette er «du kan overstyre hva som helst» en felle.
+//! The generator keeps the promises by construction. When someone writes in
+//! their own values, the promises are theirs to keep, and then we owe them an
+//! answer on which cell breaks. Without this, "you can override anything" is
+//! a trap.
 //!
-//! Fila leses som tekst. Det eneste som betyr noe er hvilke `--lt-color-*`
-//! som står i hvilken blokk, og en verdi vi ikke kan regne på meldes som
-//! nettopp det framfor å hoppes over.
+//! The file is read as text. The only thing that matters is which
+//! `--lt-color-*` are in which block, and a value we cannot compute with is
+//! reported as exactly that rather than skipped.
 
 use super::contract::{
     build_matrix, check_promises, contract, promises_for, role_to_css, token_name, Appearance,
@@ -19,17 +20,17 @@ use cssparser::{
 };
 
 pub struct ParsedBlock {
-    /// Selektoren blokka sto under, brukt i meldingene.
+    /// The selector the block was under, used in the messages.
     pub selector: String,
-    /// Utseendet blokka gjelder, lest av `color-scheme` eller selektoren.
+    /// The appearance the block applies to, read from `color-scheme` or the selector.
     pub appearance: Appearance,
-    /// Tokennavn til verdi, slik de sto skrevet.
+    /// Token name to value, as they were written.
     pub declarations: Vec<(String, String)>,
-    /// Om blokka selv sa `color-scheme: light`, og ikke `dark` ved siden av.
+    /// Whether the block itself said `color-scheme: light`, and not `dark` next to it.
     pub light_scheme: bool,
 }
 
-/// Kommentarene tatt bort, til teksten i en selektor og en verdi.
+/// The comments removed, for the text of a selector and a value.
 fn without_comments(css: &str) -> String {
     let mut out = String::with_capacity(css.len());
     let mut rest = css;
@@ -44,27 +45,27 @@ fn without_comments(css: &str) -> String {
     out
 }
 
-/// En blokk slik CSS-en skriver den: selektoren, deklarasjonene i den, og
-/// blokkene inni.
+/// A block as the CSS writes it: the selector, the declarations in it, and
+/// the blocks inside.
 struct Node {
     selector: String,
     declarations: Vec<(String, String)>,
     children: Vec<Node>,
 }
 
-/// Det én regel i en blokk er: en deklarasjon, en nøstet blokk, eller noe
-/// sjekken ikke bryr seg om, som `@import`.
+/// What one rule in a block is: a declaration, a nested block, or something
+/// the check does not care about, like `@import`.
 enum Item {
     Declaration(String, String),
     Block(Node),
     Nothing,
 }
 
-/// Leseren cssparser kaller for hver regel. Den tar vare på teksten slik den
-/// sto, så meldingene viser selektoren konsumenten skrev.
+/// The reader cssparser calls for each rule. It keeps the text as it was, so
+/// the messages show the selector the consumer wrote.
 struct Reader;
 
-/// Alle tokenene som er igjen, som teksten de sto skrevet med.
+/// All the remaining tokens, as the text they were written with.
 fn rest_as_text<'i>(input: &mut Parser<'i>) -> String {
     let start = input.position();
     while input.next_including_whitespace_and_comments().is_ok() {}
@@ -100,11 +101,12 @@ impl<'i> DeclarationParser<'i> for Reader {
         input: &mut Parser<'i>,
         _start: &ParserState,
     ) -> Result<Item, ParseError<()>> {
-        // En verdi med en `{}`-blokk er ingen deklarasjon, men en nøstet regel
-        // som `html:not(…) { … }` eller `a:hover { … }`. CSS Syntax kaster den
-        // som deklarasjon, og først da leser cssparser den på nytt som regel.
-        // Svarte vi `Ok`, slukte den alt fram til neste semikolon, blokkene
-        // etter den med. En egendefinert variabel kan ha en blokk i verdien.
+        // A value with a `{}` block is no declaration, but a nested rule like
+        // `html:not(…) { … }` or `a:hover { … }`. CSS Syntax throws it out as
+        // a declaration, and only then does cssparser read it again as a
+        // rule. Had we answered `Ok`, it swallowed everything up to the next
+        // semicolon, the blocks after it included. A custom property can have
+        // a block in its value.
         let state = input.state();
         let mut block = false;
         while let Ok(token) = input.next() {
@@ -115,11 +117,11 @@ impl<'i> DeclarationParser<'i> for Reader {
         }
         input.reset(&state);
         let value = rest_as_text(input);
-        // Bare det sjekken bruker: LO-TEKs tokens, og `color-scheme`, som sier
-        // om blokka er lys eller mørk. Skriften og formen kontrolleres ikke,
-        // men skiller et tema uten farger fra en fil som ikke er et tema.
-        // Navnet på en egendefinert variabel skiller mellom store og små
-        // bokstaver, navnet på en egenskap gjør det ikke.
+        // Only what the check uses: LO-TEK's tokens, and `color-scheme`, which
+        // says whether the block is light or dark. The font and the shape are
+        // not checked, but they tell a theme without colours apart from a
+        // file that is not a theme. The name of a custom property is
+        // case-sensitive, the name of a property is not.
         if name.starts_with("--lt-") || name.eq_ignore_ascii_case("color-scheme") {
             let name = if name.starts_with("--") {
                 name.to_string()
@@ -199,25 +201,27 @@ impl<'i> RuleBodyItemParser<'i, Item, ()> for Reader {
     }
 }
 
-/// Fargene utenfor matrisen: avslått tilstand og flaten bak en modal. De er
-/// ingen celle, har ingen familie og ingen rolle, og lover ingen kontrast. En
-/// kontroll som er av, er unntatt kravet i WCAG 1.4.3. De samme som
-/// `SystemColorToken` i `designsystem/src/tokens/tokens.ts`, uten skyggen.
+/// The colours outside the matrix: the disabled state and the surface behind
+/// a modal. They are no cell, have no family and no role, and promise no
+/// contrast. A control that is disabled is exempt from the requirement in
+/// WCAG 1.4.3. The same as `SystemColorToken` in
+/// `designsystem/src/tokens/tokens.ts`, without the shadow.
 const SYSTEM_COLORS: [&str; 3] = [
     "--lt-color-disabled-surface",
     "--lt-color-disabled-text",
     "--lt-color-overlay",
 ];
 
-/// Blokkene i rekkefølgen de slutter, den innerste først, med selektorene
-/// over seg som sti. Systemfargene er ikke med, de telles i `others` sammen
-/// med de andre tokenene uten et kontrastløfte.
+/// The blocks in the order they end, the innermost first, with the selectors
+/// above them as a path. The system colours are not included; they are
+/// counted in `others` together with the other tokens without a contrast
+/// promise.
 ///
-/// `others` teller hvert `--lt-*`-navn som ikke er en farge med løfte, også
-/// et feilstavet. Komponentene har egne tokens, som `--lt-label-required-text`
-/// og `--lt-progress-height`, og en liste over kjente navn ville gitt feilkode
-/// for et tema som bare setter et av dem. Antallet står i svaret, så et
-/// feilstavet fargenavn synes der.
+/// `others` counts every `--lt-*` name that is not a colour with a promise,
+/// also a misspelt one. The components have their own tokens, like
+/// `--lt-label-required-text` and `--lt-progress-height`, and a list of known
+/// names would have given an error code for a theme that only sets one of
+/// them. The count is in the answer, so a misspelt colour name shows there.
 fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>, others: &mut usize) {
     path.push(node.selector);
     for child in node.children {
@@ -261,18 +265,18 @@ fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>, other
     path.pop();
 }
 
-/// Deler CSS-teksten i blokker, med en ramme per nivå.
+/// Splits the CSS text into blocks, with one frame per level.
 ///
-/// Lest med CSS-tokenizeren fra Servo, etter CSS Syntax Level 3, så en klamme
-/// eller et semikolon i en streng, en kommentar eller `url(…)` ikke deler en
-/// blokk, og nøstede regler og `@media` inni en blokk blir sine egne. En blokk
-/// som ikke er lukket, leses som om den slutter der fila slutter, slik
-/// nettleseren gjør.
+/// Read with the CSS tokenizer from Servo, following CSS Syntax Level 3, so a
+/// brace or a semicolon in a string, a comment or `url(…)` does not split a
+/// block, and nested rules and `@media` inside a block become their own. A
+/// block that is not closed is read as if it ends where the file ends, as the
+/// browser does.
 pub fn parse_blocks(css: &str) -> Vec<ParsedBlock> {
     read_blocks(css).0
 }
 
-/// Blokkene, og hvor mange andre `--lt-*`-tokens fila setter.
+/// The blocks, and how many other `--lt-*` tokens the file sets.
 fn read_blocks(css: &str) -> (Vec<ParsedBlock>, usize) {
     let mut parser = Parser::new(css);
     let mut reader = Reader;
@@ -286,8 +290,8 @@ fn read_blocks(css: &str) -> (Vec<ParsedBlock>, usize) {
     (blocks, others)
 }
 
-/// Klammene i teksten, `{` og `}`, utenom dem i strenger, kommentarer og
-/// escape-sekvenser.
+/// The braces in the text, `{` and `}`, apart from those in strings,
+/// comments and escape sequences.
 fn braces(css: &str) -> (usize, usize) {
     let (mut opened, mut closed) = (0, 0);
     let mut chars = css.chars().peekable();
@@ -323,7 +327,7 @@ fn braces(css: &str) -> (usize, usize) {
     (opened, closed)
 }
 
-/// `\s*!important\s*$`, uten hensyn til store bokstaver, tatt bort.
+/// `\s*!important\s*$`, ignoring case, removed.
 fn without_important(value: &str) -> &str {
     let trimmed = value.trim_end_matches(is_js_space);
     let lower = trimmed.to_lowercase();
@@ -333,10 +337,11 @@ fn without_important(value: &str) -> &str {
     value
 }
 
-/// Om blokka bare gjelder i lyst tema: selektoren har `light` som eget ord
-/// utenfor en `:not()`, den står i `@media not (prefers-color-scheme: dark)`,
-/// eller den står i en `@media` for `print`, som skrives ut lyst.
-/// `.highlight` og `.lightbox` er ikke lyst tema.
+/// Whether the block only applies in the light theme: the selector has
+/// `light` as a word of its own outside a `:not()`, it is in
+/// `@media not (prefers-color-scheme: dark)`, or it is in an `@media` for
+/// `print`, which prints light. `.highlight` and `.lightbox` are not the
+/// light theme.
 fn only_light(selector: &str) -> bool {
     let s = flip_negated_scheme(&without_not(selector)).to_ascii_lowercase();
     let words: Vec<&str> = s
@@ -353,7 +358,7 @@ fn only_light(selector: &str) -> bool {
         })
 }
 
-/// Selektoren med innholdet i hver `:not(…)` tatt bort.
+/// The selector with the content of every `:not(…)` removed.
 fn without_not(selector: &str) -> String {
     let mut out = String::new();
     let mut rest = selector;
@@ -380,16 +385,17 @@ fn without_not(selector: &str) -> String {
     out
 }
 
-/// Hver negerte mediespørring om fargeskjema skrevet som det den gjelder.
+/// Every negated media query about colour scheme rewritten as what it
+/// applies to.
 ///
-/// `not (prefers-color-scheme: dark)`, `not all and (…)` og `not screen and
-/// (…)` gjelder det motsatte skjemaet, og skrives som det. Ellers leses `dark`
-/// i dem som mørkt tema. Med en annen medietype, som i `not print and (…)`,
-/// gjelder blokka skjermen i begge skjemaer, og spørringen tas bort, så
-/// blokka leses som en blokk uten betingelse.
+/// `not (prefers-color-scheme: dark)`, `not all and (…)` and `not screen and
+/// (…)` apply to the opposite scheme, and are rewritten as that. Otherwise
+/// `dark` in them is read as the dark theme. With another media type, as in
+/// `not print and (…)`, the block applies to the screen in both schemes, and
+/// the query is removed, so the block is read as a block without a condition.
 fn flip_negated_scheme(selector: &str) -> String {
     let lower = selector.to_ascii_lowercase();
-    // Teksten etter nøkkelordet, når det står som eget ord.
+    // The text after the keyword, when it is a word of its own.
     fn after<'a>(rest: &'a str, keyword: &str) -> Option<&'a str> {
         rest.strip_prefix(keyword)
             .filter(|r| r.starts_with(is_js_space) || r.starts_with('('))
@@ -408,10 +414,11 @@ fn flip_negated_scheme(selector: &str) -> String {
         let Some(mut rest) = after(&lower[at..], "not") else {
             continue;
         };
-        // `not <medietype> and (…)` negerer hele spørringen, medietypen med.
-        // For `all` og `screen` gjelder blokka da det motsatte skjemaet på
-        // skjerm. For `print`, `tv` og de andre er `not` sann på hver skjerm,
-        // i lyst og i mørkt tema, og spørringen sier ingenting om skjema.
+        // `not <media type> and (…)` negates the whole query, the media type
+        // included. For `all` and `screen` the block then applies to the
+        // opposite scheme on screen. For `print`, `tv` and the others `not`
+        // is true on every screen, in the light and the dark theme, and the
+        // query says nothing about the scheme.
         let media_type = rest
             .find(|c: char| !(c.is_ascii_alphanumeric() || c == '-' || c == '_'))
             .map_or(rest, |end| &rest[..end]);
@@ -451,16 +458,18 @@ fn flip_negated_scheme(selector: &str) -> String {
     out
 }
 
-/// Mørkt eller lyst, lest av `color-scheme` først og av selektoren ellers.
+/// Dark or light, read from `color-scheme` first and from the selector
+/// otherwise.
 ///
-/// `scheme` er verdien i blokkas siste `color-scheme`, som vinner i kaskaden.
+/// `scheme` is the value of the block's last `color-scheme`, which wins in
+/// the cascade.
 fn read_appearance(selector: &str, scheme: Option<&str>) -> Appearance {
     let declared = scheme;
     if let Some(value) = declared {
-        // Verdien leses, den mønstermatches ikke. Grammatikken er
-        // `normal | [ light | dark | <custom-ident> ]+ && only?`, og `only`
-        // kan stå på begge sider. Står begge nøkkelordene, sier blokka at den
-        // virker i begge, og da er selektoren det beste svaret.
+        // The value is parsed, not pattern-matched. The grammar is
+        // `normal | [ light | dark | <custom-ident> ]+ && only?`, and `only`
+        // can be on either side. When both keywords are there, the block says
+        // it works in both, and then the selector is the best answer.
         let lowered = value.to_lowercase().replace("!important", "");
         let words: Vec<&str> = lowered
             .split(is_js_space)
@@ -476,8 +485,9 @@ fn read_appearance(selector: &str, scheme: Option<&str>) -> Appearance {
             };
         }
     }
-    // `dark` må stå som eget ord: `.darkmode-toggle` er ikke et mørkt tema.
-    // Det som står i `:not(…)` og etter `@media not` sier hva blokka ikke er.
+    // `dark` must be a word of its own: `.darkmode-toggle` is not a dark
+    // theme. What is in `:not(…)` and after `@media not` says what the block
+    // is not.
     let selector = flip_negated_scheme(&without_not(selector));
     let s: Vec<char> = selector.chars().collect();
     let letter = |c: Option<&char>| c.is_some_and(|c| c.is_ascii_alphabetic());
@@ -493,7 +503,7 @@ fn read_appearance(selector: &str, scheme: Option<&str>) -> Appearance {
     Appearance::Light
 }
 
-/// Rollenavnene slik de skrives i CSS, lengste først.
+/// The role names as they are written in CSS, longest first.
 fn role_names() -> Vec<(String, String)> {
     let mut names: Vec<(String, String)> = contract()
         .roles
@@ -504,11 +514,11 @@ fn role_names() -> Vec<(String, String)> {
     names
 }
 
-/// Deler `--lt-color-min-merkevare-text` i familie og rolle.
+/// Splits `--lt-color-my-brand-text` into family and role.
 ///
-/// Rollen leses som **endelsen**. Med familien som begynnelsen falt et
-/// familienavn med bindestrek utenfor uten et ord. `None` som rolle betyr et
-/// kjent lag, og de hører bare til den nøytrale familien.
+/// The role is read as the **suffix**. With the family as the prefix, a
+/// family name with a hyphen fell outside without a word. `None` as the role
+/// means a known layer, and those only belong to the neutral family.
 fn split_token(token: &str) -> Option<(String, Option<String>)> {
     let rest = token
         .strip_prefix("--lt-color-")
@@ -543,23 +553,23 @@ pub struct Problem {
 
 pub struct Report {
     pub problems: Vec<Problem>,
-    /// Blokker som faktisk ble lest.
+    /// Blocks that were actually read.
     pub blocks: usize,
-    /// Verdier konsumenten selv skrev, og som ble forstått.
+    /// Values the consumer wrote themselves, and that were understood.
     pub declarations: usize,
-    /// Løfter som faktisk ble kontrollert.
+    /// Promises that were actually checked.
     pub promises: usize,
-    /// Andre `--lt-*`-tokens fila setter, uten et kontrastløfte: skriften,
-    /// formen og systemfargene. Med dem og ingen farger er fila et tema uten
-    /// farger, ikke en fil uten tema.
+    /// Other `--lt-*` tokens the file sets, without a contrast promise: the
+    /// font, the shape and the system colours. With them and no colours, the
+    /// file is a theme without colours, not a file without a theme.
     pub others: usize,
 }
 
-/// Leser et tema og kontrollerer hvert løfte i hver blokk.
+/// Reads a theme and checks every promise in every block.
 ///
-/// Verdier som mangler fylles fra LO-TEKs eget tema, slik at en konsument som
-/// bare har overstyrt én celle får den kontrollert mot resten av systemet sitt
-/// framfor mot ingenting.
+/// Missing values are filled from LO-TEK's own theme, so a consumer who has
+/// only overridden one cell gets it checked against the rest of their system
+/// rather than against nothing.
 pub fn inspect_theme(css: &str) -> Report {
     if !super::contract::loaded() {
         return Report {
@@ -578,23 +588,24 @@ pub fn inspect_theme(css: &str) -> Report {
     let mut checked_promises = 0;
     let mut understood = 0;
 
-    // Klammene telles for seg: går de ikke opp, er fila trolig avkuttet, og
-    // det som skulle stått etter, er ikke kontrollert.
+    // The braces are counted on their own: when they do not balance, the
+    // file is probably truncated, and what should have come after is not
+    // checked.
     let (opened, closed) = braces(css);
     if opened != closed {
         problems.push(Problem {
-            selector: "(hele fila)".into(),
-            message: format!("Fila har {opened} «{{» og {closed} «}}». En blokk som ikke er lukket, leses til fila slutter, så noe av temaet kan mangle eller være lest feil."),
+            selector: "(whole file)".into(),
+            message: format!("The file has {opened} \"{{\" and {closed} \"}}\". A block that is not closed is read to the end of the file, so part of the theme may be missing or read wrongly."),
         });
     }
 
-    // Et tema uten farger, bare skrift og form, har ingen kontrast å
-    // kontrollere, og det er ikke et problem.
+    // A theme without colours, only typography and shape, has no contrast to
+    // check, and that is not a problem.
     if blocks.is_empty() {
         if others == 0 {
             problems.push(Problem {
-                selector: "(hele fila)".into(),
-                message: "Fant ingen --lt-color-*-verdier. Er dette et LO-TEK-tema, og står verdiene i en blokk?".into(),
+                selector: "(whole file)".into(),
+                message: "Found no --lt-color-* values. Is this a LO-TEK theme, and are the values inside a block?".into(),
             });
         }
         return Report {
@@ -612,9 +623,9 @@ pub fn inspect_theme(css: &str) -> Report {
         .collect::<Vec<_>>()
         .join(", ");
 
-    // En lys blokk som ikke er bundet til lyst tema (bar `:root`) gjelder også
-    // i mørkt, for tokenene ingen mørk blokk overstyrer. De kontrolleres mot
-    // de mørke standardverdiene.
+    // A light block that is not tied to the light theme (a bare `:root`) also
+    // applies in dark, for the tokens no dark block overrides. They are
+    // checked against the dark default values.
     let dark_names: Vec<&String> = blocks
         .iter()
         .filter(|b| b.appearance == Appearance::Dark)
@@ -633,7 +644,10 @@ pub fn inspect_theme(css: &str) -> Report {
             .collect();
         if !rest.is_empty() {
             checks.push(ParsedBlock {
-                selector: format!("{} (i mørkt tema, ingen mørk blokk overstyrer)", b.selector),
+                selector: format!(
+                    "{} (in the dark theme, no dark block overrides)",
+                    b.selector
+                ),
                 appearance: Appearance::Dark,
                 declarations: rest,
                 light_scheme: false,
@@ -645,7 +659,7 @@ pub fn inspect_theme(css: &str) -> Report {
 
     for (nth, block) in all.iter().enumerate() {
         let defaults = build_matrix(&contract().brands, block.appearance)
-            .expect("LO-TEKs egne farger skal alltid gi en matrise")
+            .expect("LO-TEK's own colours must always give a matrix")
             .tokens;
         let mut values: Vec<(String, String)> = defaults;
 
@@ -653,7 +667,7 @@ pub fn inspect_theme(css: &str) -> Report {
             if !is_hex(value) {
                 problems.push(Problem {
                     selector: block.selector.clone(),
-                    message: format!("{name} er «{value}». Kontrasten kan bare regnes på en heksfarge, så denne er ikke kontrollert."),
+                    message: format!("{name} is \"{value}\". The contrast can only be computed for a hex colour, so this one is not checked."),
                 });
                 continue;
             }
@@ -669,12 +683,12 @@ pub fn inspect_theme(css: &str) -> Report {
         let mut families: Vec<(String, Family)> = Vec::new();
         for (name, value) in &values {
             let Some((family, role)) = split_token(name) else {
-                // Bare navn konsumenten selv skrev meldes. Standardverdiene er
-                // våre egne, og de deles alltid.
+                // Only names the consumer wrote themselves are reported. The
+                // default values are our own, and they always split.
                 if block.declarations.iter().any(|(n, _)| n == name) {
                     problems.push(Problem {
                         selector: block.selector.clone(),
-                        message: format!("{name} er ikke et token i systemet. Navnet er --lt-color-<familie>-<rolle>, og rollene er {role_list}."),
+                        message: format!("{name} is not a token in the system. The name is --lt-color-<family>-<role>, and the roles are {role_list}."),
                     });
                 }
                 continue;
@@ -694,8 +708,8 @@ pub fn inspect_theme(css: &str) -> Report {
             }
         }
 
-        // En familie konsumenten fant på selv fylles ikke av standarden og kan
-        // ha hull. Den meldes som ufullstendig framfor å kastes.
+        // A family the consumer invented is not filled by the defaults and
+        // can have gaps. It is reported as incomplete rather than thrown away.
         let mut complete = Vec::new();
         for (name, family) in families {
             let missing: Vec<String> = contract()
@@ -707,11 +721,11 @@ pub fn inspect_theme(css: &str) -> Report {
             if missing.is_empty() {
                 complete.push((name, family));
             } else if nth < originals {
-                // Kontrollen i mørkt tema er den samme blokka, og den har alt
-                // meldt at familien mangler roller.
+                // The check in the dark theme is the same block, and it has
+                // already reported that the family is missing roles.
                 problems.push(Problem {
                     selector: block.selector.clone(),
-                    message: format!("{name} mangler {}. En familie må ha alle rollene for at løftene skal kunne kontrolleres.", missing.join(", ")),
+                    message: format!("{name} is missing {}. A family must have every role for the promises to be checked.", missing.join(", ")),
                 });
             }
         }
@@ -737,7 +751,7 @@ pub fn inspect_theme(css: &str) -> Report {
             problems.push(Problem {
                 selector: block.selector.clone(),
                 message: format!(
-                    "{}: {} er {}:1, kravet er {}:1.",
+                    "{}: {} is {}:1, the requirement is {}:1.",
                     violation.family,
                     violation.promise,
                     super::to_fixed2(violation.ratio),

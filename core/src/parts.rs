@@ -1,25 +1,27 @@
-//! `part-repeated`: en del med `unique` som står mer enn én gang.
+//! `part-repeated`: a part with `unique` that appears more than once.
 //!
-//! Regelen er drevet av `parts` i manifestet, både for elementene og for
-//! klassene, så en ny del i `metadata.ts` sjekkes uten en linje her. Den
-//! melder bare delene med `unique`: der en del til av samme slag er en feil,
-//! som et `<lt-field>` med to kontroller, der bare den første blir koblet.
-//! En del uten `unique` kan stå flere ganger og være vanlig innhold.
-//! `<lt-popover>` finner knappen med `aria-controls` mot panelet, ellers den
-//! første utenfor panelet, og knappene i panelet er menyens. Hver komponents egen
-//! regel for hvilken som er den riktige, står i komponenten og ikke her.
+//! The rule is driven by `parts` in the manifest, both for the elements and
+//! for the classes, so a new part in `metadata.ts` is checked without a line
+//! here. It only reports the parts with `unique`: where a second part of the
+//! same kind is an error, like an `<lt-field>` with two controls, where only
+//! the first is wired. A part without `unique` can appear several times and
+//! be ordinary content. `<lt-popover>` finds the button by `aria-controls`
+//! pointing at the panel, otherwise the first one outside the panel, and the
+//! buttons in the panel belong to the menu. Each component's own rule for
+//! which one is the right one lives in the component, not here.
 //!
-//! Et treff hører til den nærmeste verten: et felt inni et felt er det indre
-//! feltets, som `part.closest(host.localName) === host` i komponentene. Det
-//! som står i en `<template>`, er ikke i dokumentet og teller ikke. Står det
-//! malsyntaks i verten, sier regelen ingenting: en løkke, et `if`/`else`, et
-//! `v-if` eller et uttrykk i `{…}` kan gi to deler i kilden og én på siden.
+//! A match belongs to the nearest host: a field inside a field belongs to
+//! the inner field, like `part.closest(host.localName) === host` in the
+//! components. What is inside a `<template>` is not in the document and does
+//! not count. When there is template syntax in the host, the rule says
+//! nothing: a loop, an `if`/`else`, a `v-if` or an expression in `{…}` can
+//! give two parts in the source and one on the page.
 //!
-//! Selektorene leses av en liten selektorleser med akkurat det manifestet
-//! bruker: tagg, klasse, attributt med `=`, `^=` og flagget `i`, `:not()`
-//! med en enkel selektor, `:scope`, barn (`>`), etterkommer og komma. En
-//! selektor den ikke forstår, hoppes over framfor å gi et funn den ikke kan
-//! stå for.
+//! The selectors are read by a small selector reader with exactly what the
+//! manifest uses: tag, class, attribute with `=`, `^=` and the `i` flag,
+//! `:not()` with a compound selector, `:scope`, child (`>`), descendant and
+//! comma. A selector it does not understand is skipped rather than giving a
+//! finding it cannot stand behind.
 
 use crate::diagnose::{is_templated_content, tag_end};
 use crate::references::{value, Node};
@@ -30,7 +32,7 @@ use crate::types::*;
 enum Test {
     Tag(String),
     Class(String),
-    /// Navnet, og verdien med operator og om den sammenlignes uten store bokstaver.
+    /// The name, and the value with the operator and whether it is compared ignoring case.
     Attribute(String, Option<(Operator, String, bool)>),
     Not(Vec<Test>),
     Scope,
@@ -48,8 +50,8 @@ enum Combinator {
     Child,
 }
 
-/// En selektor uten komma: de enkle selektorene fra venstre, og
-/// kombinatoren foran hver av dem etter den første.
+/// A selector without commas: the compound selectors from the left, and the
+/// combinator before each of them after the first.
 #[derive(Debug, PartialEq)]
 pub(crate) struct Complex {
     compounds: Vec<Vec<Test>>,
@@ -113,7 +115,7 @@ impl Reader {
         self.eat(quote).then_some(value)
     }
 
-    /// `[navn]`, `[navn='v']`, `[navn^='v']` og `[navn="v" i]`.
+    /// `[name]`, `[name='v']`, `[name^='v']` and `[name="v" i]`.
     fn attribute(&mut self) -> Option<Test> {
         self.spaces();
         let name = self.ident()?.to_ascii_lowercase();
@@ -140,7 +142,7 @@ impl Reader {
             .then_some(Test::Attribute(name, Some((operator, wanted, insensitive))))
     }
 
-    /// En enkel selektor: alt fram til et mellomrom, `>`, `,` eller `)`.
+    /// A compound selector: everything up to a space, `>`, `,` or `)`.
     fn compound(&mut self) -> Option<Vec<Test>> {
         let mut tests = Vec::new();
         loop {
@@ -180,7 +182,7 @@ impl Reader {
         let mut compounds = Vec::new();
         let mut combinators = Vec::new();
         self.spaces();
-        // `> li` er relativ til verten, som `:scope > li`.
+        // `> li` is relative to the host, like `:scope > li`.
         if self.eat('>') {
             compounds.push(vec![Test::Scope]);
             combinators.push(Combinator::Child);
@@ -211,7 +213,7 @@ impl Reader {
     }
 }
 
-/// Selektorlista, eller `None` når den har noe matcheren ikke kjenner.
+/// The selector list, or `None` when it has something the matcher does not know.
 pub(crate) fn parse(selector: &str) -> Option<Vec<Complex>> {
     let mut reader = Reader::new(selector);
     let mut out = Vec::new();
@@ -252,8 +254,8 @@ fn test(nodes: &[Node], n: usize, host: usize, t: &Test) -> bool {
                 return true;
             };
             let have = a.value.clone().unwrap_or_default();
-            // HTML sammenligner noen verdier uten hensyn til store og små
-            // bokstaver, så `type="HIDDEN"` er skjult for nettleseren også.
+            // HTML compares some values ignoring case, so `type="HIDDEN"` is
+            // hidden for the browser too.
             let insensitive = *insensitive || name == "type" || name == "method";
             let (have, wanted) = if insensitive {
                 (lowercase(&have), utf16(&wanted.to_ascii_lowercase()))
@@ -272,7 +274,7 @@ fn compound_matches(nodes: &[Node], n: usize, host: usize, tests: &[Test]) -> bo
     tests.iter().all(|t| test(nodes, n, host, t))
 }
 
-/// Om noden `n` treffer de `k` første enkle selektorene, med den siste på `n`.
+/// Whether node `n` matches the first `k` compound selectors, with the last one on `n`.
 fn matches_at(nodes: &[Node], n: usize, host: usize, c: &Complex, k: usize) -> bool {
     if !compound_matches(nodes, n, host, &c.compounds[k]) {
         return false;
@@ -302,7 +304,7 @@ pub(crate) fn matches(nodes: &[Node], n: usize, host: usize, list: &[Complex]) -
         .any(|c| matches_at(nodes, n, host, c, c.compounds.len() - 1))
 }
 
-/// Om `a` er en forfar til `n`.
+/// Whether `a` is an ancestor of `n`.
 fn is_ancestor(nodes: &[Node], a: usize, n: usize) -> bool {
     let mut p = nodes[n].parent;
     while let Some(i) = p {
@@ -314,10 +316,11 @@ fn is_ancestor(nodes: &[Node], a: usize, n: usize) -> bool {
     false
 }
 
-/// Malsyntaks i innholdet som kan gi en annen markup på siden enn i kilden:
-/// det `is_templated_content` kjenner, og et uttrykk i `{…}` i teksten
-/// utenfor taggene, som i Astro og JSX. En `{` i en attributtverdi, som
-/// `count-one="{n} treff"` eller `data-signals="{…}"`, er ikke et uttrykk.
+/// Template syntax in the content that can give different markup on the page
+/// than in the source: what `is_templated_content` knows, and an expression
+/// in `{…}` in the text outside the tags, as in Astro and JSX. A `{` in an
+/// attribute value, like `count-one="{n} match"` or `data-signals="{…}"`, is
+/// not an expression.
 fn decides_markup(content: &[u16]) -> bool {
     if is_templated_content(content) {
         return true;
@@ -338,8 +341,8 @@ fn decides_markup(content: &[u16]) -> bool {
     false
 }
 
-/// Attributtene som tar bort eller gjentar et element i Vue og Angular.
-/// Alpine sine `x-if` og `x-for` står på en `<template>`, som ikke teller.
+/// The attributes that remove or repeat an element in Vue and Angular.
+/// Alpine's `x-if` and `x-for` go on a `<template>`, which does not count.
 const DIRECTIVES: &[&str] = &["v-if", "v-else", "v-else-if", "v-for", "*ngif", "*ngfor"];
 
 fn has_directive(node: &Node) -> bool {
@@ -348,7 +351,7 @@ fn has_directive(node: &Node) -> bool {
         .any(|a| DIRECTIVES.iter().any(|d| equals(&a.name, d)))
 }
 
-/// Om noden står i en `<template>`.
+/// Whether the node is inside a `<template>`.
 fn in_template(nodes: &[Node], n: usize) -> bool {
     let mut p = nodes[n].parent;
     while let Some(i) = p {
@@ -360,18 +363,18 @@ fn in_template(nodes: &[Node], n: usize) -> bool {
     false
 }
 
-/// En vert: et element eller en klasse med deler.
+/// A host: an element or a class with parts.
 struct Host<'a> {
     name: String,
-    /// Om verten er en web-komponent, som bruker den første delen, eller en klasse.
+    /// Whether the host is a web component, which uses the first part, or a class.
     element: bool,
     link: &'a str,
     parts: &'a [Part],
-    /// Om en node er en vert av samme slag.
+    /// Whether a node is a host of the same kind.
     is: Box<dyn Fn(&Node) -> bool + 'a>,
 }
 
-/// Første setning av beskrivelsen, uten kodemerkene.
+/// The first sentence of the description, without the code marks.
 fn first_sentence(description: &str) -> String {
     let plain = description.replace('`', "");
     match plain.find(". ") {
@@ -380,13 +383,14 @@ fn first_sentence(description: &str) -> String {
     }
 }
 
-/// Nodene som hører til verten `h`, og innholdet dens i teksten.
+/// The nodes that belong to the host `h`, and its content in the text.
 ///
-/// Nodene er etterkommerne der den nærmeste verten av samme slag er `h`,
-/// utenom det som står i en `<template>`: et felt inni et felt er det indre
-/// feltets, som `part.closest(host.localName) === host` i komponentene.
-/// Innholdet går fra slutten av åpningstaggen til sluttaggen, ikke vertens
-/// egne attributter og ikke teksten etter den. `None` når verten er tom.
+/// The nodes are the descendants whose nearest host of the same kind is `h`,
+/// apart from what is inside a `<template>`: a field inside a field belongs
+/// to the inner field, like `part.closest(host.localName) === host` in the
+/// components. The content runs from the end of the opening tag to the
+/// closing tag, not the host's own attributes and not the text after it.
+/// `None` when the host is empty.
 pub(crate) fn host_content(
     source: &[u16],
     nodes: &[Node],
@@ -428,8 +432,8 @@ pub(crate) fn host_content(
     Some((own, (from, to)))
 }
 
-/// Om malen avgjør markupen i verten: malsyntaks i innholdet, eller et
-/// `v-if` på en av delene. Da sier reglene ingenting.
+/// Whether the template decides the markup in the host: template syntax in
+/// the content, or a `v-if` on one of the parts. Then the rules say nothing.
 pub(crate) fn templated_host(
     source: &[u16],
     nodes: &[Node],
@@ -440,8 +444,8 @@ pub(crate) fn templated_host(
 }
 
 pub(crate) fn check_parts(source: &[u16], vocabulary: &Vocabulary, nodes: &[Node]) -> Vec<Finding> {
-    // Bare vertene som har en del med `unique` kan gi et funn, og bare dem
-    // som står i teksten.
+    // Only the hosts that have a part with `unique` can give a finding, and
+    // only those that appear in the text.
     let unique = |parts: &[Part]| parts.iter().any(|p| p.unique);
     let present = |name: &str| contains_str(source, name);
     let elements: Vec<&Element> = vocabulary
@@ -505,9 +509,9 @@ pub(crate) fn check_parts(source: &[u16], vocabulary: &Vocabulary, nodes: &[Node
                     .collect();
                 for &n in hits.iter().skip(1) {
                     let node = &nodes[n];
-                    // Nøstede verter med den samme delen, som klassen og
-                    // elementet i `<lt-session-timeout>`, melder den samme
-                    // noden bare én gang.
+                    // Nested hosts with the same part, like the class and the
+                    // element in `<lt-session-timeout>`, report the same node
+                    // only once.
                     if !reported.insert(node.name_start) {
                         continue;
                     }
@@ -517,13 +521,13 @@ pub(crate) fn check_parts(source: &[u16], vocabulary: &Vocabulary, nodes: &[Node
                         severity: Severity::Warning,
                         link: host.link.to_string(),
                         message: format!(
-                            "{} har delen «{}» mer enn én gang. {} {}",
+                            "{} has the part \"{}\" more than once. {} {}",
                             host.name,
                             part.name,
                             if host.element {
-                                "Web-komponenten bruker bare den første, og denne blir stående utenfor."
+                                "The web component only uses the first one, and this one is left out."
                             } else {
-                                "Den skal stå én gang."
+                                "It must appear once."
                             },
                             first_sentence(&part.description)
                         )
@@ -555,18 +559,18 @@ mod tests {
             .collect();
         assert!(
             selectors.len() > 50,
-            "fant bare {} selektorer",
+            "found only {} selectors",
             selectors.len()
         );
         for s in selectors {
-            assert!(parse(s).is_some(), "forstår ikke «{s}»");
+            assert!(parse(s).is_some(), "does not understand \"{s}\"");
         }
     }
 
     #[test]
     fn refuses_what_it_does_not_know() {
         for s in ["a ~ b", "a + b", "a:hover", "[a$='x']", ":is(a)", "a >", ""] {
-            assert!(parse(s).is_none(), "skulle avvist «{s}»");
+            assert!(parse(s).is_none(), "should have refused \"{s}\"");
         }
     }
 
@@ -582,7 +586,7 @@ mod tests {
     fn two_controls_in_a_field() {
         let found = rules(r#"<lt-field><label>Navn</label><input><input></lt-field>"#);
         assert_eq!(found.len(), 1, "{found:?}");
-        assert!(found[0].starts_with("<lt-field> har delen «control»"));
+        assert!(found[0].starts_with("<lt-field> has the part \"control\""));
     }
 
     #[test]
@@ -592,11 +596,11 @@ mod tests {
 
     #[test]
     fn only_unique_parts_are_reported() {
-        // Knappene i panelet er menyens, og en delt knapp er riktig.
+        // The buttons in the panel belong to the menu, and a split button is correct.
         assert!(rules(r#"<lt-popover><button>Lagre</button><button aria-controls="m">v</button><ul class="lt-popover" id="m"><li><button>A</button></li></ul></lt-popover>"#).is_empty());
-        // Flere overskrifter i en dialog er innhold.
+        // Several headings in a dialog are content.
         assert!(rules(r#"<lt-dialog><dialog aria-label="Innstillinger"><h2>Lyd</h2><h2>Bilde</h2></dialog></lt-dialog>"#).is_empty());
-        // Hver hjelpetekst i hvert sitt felt i et feltsett.
+        // Each help text in its own field in a fieldset.
         assert!(rules(r#"<fieldset class="lt-fieldset"><legend class="lt-legend">Adresse</legend><label>Gate</label><input><p class="lt-help-text">A</p><label>Postnummer</label><input><p class="lt-help-text">B</p></fieldset>"#).is_empty());
         assert_eq!(
             rules(r#"<lt-dialog><dialog></dialog><dialog></dialog></lt-dialog>"#).len(),
@@ -606,8 +610,8 @@ mod tests {
 
     #[test]
     fn a_nested_host_reports_a_node_once() {
-        // I manifestet har ingen to nøstede verter den samme delen med
-        // `unique`. Her får klassen i dialogen det også, så de to overlapper.
+        // In the manifest no two nested hosts have the same part with
+        // `unique`. Here the class in the dialog gets it too, so the two overlap.
         let mut v = (*crate::manifest::for_tests()).clone();
         for c in v
             .classes
@@ -638,8 +642,9 @@ mod tests {
 
     #[test]
     fn braces_and_words_that_are_not_templates_do_not_silence_it() {
-        // `{n}` i en attributtverdi på verten, `nav-form` som ligner `v-for`,
-        // en e-postadresse som ligner `@if`, og et uttrykk etter sluttaggen.
+        // `{n}` in an attribute value on the host, `nav-form` which looks like
+        // `v-for`, an email address that looks like `@if`, and an expression
+        // after the closing tag.
         let html = r#"<lt-suggestion count-one="{n} hits"><input class="nav-form" data-on:input="$n > 0 && go({a: 1})"><input><p>kontakt@ifi.uio.no</p></lt-suggestion>
 <lt-field><label>A</label><input><input></lt-field>
 {error && <p>Error</p>}"#;

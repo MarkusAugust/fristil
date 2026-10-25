@@ -9,35 +9,35 @@
     "problems": [
       {
         "selector": ":root",
-        "message": "accent: border mot canvas er 1.43:1, kravet er 3.1:1."
+        "message": "accent: border mot canvas is 1.43:1, the requirement is 3.1:1."
       },
       {
         "selector": ":root",
-        "message": "accent: border mot raised er 1.12:1, kravet er 3.1:1."
+        "message": "accent: border mot raised is 1.12:1, the requirement is 3.1:1."
       },
       {
         "selector": ":root",
-        "message": "accent: border mot egen surface er 1.27:1, kravet er 3.1:1."
+        "message": "accent: border mot egen surface is 1.27:1, the requirement is 3.1:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot canvas er 2.05:1, kravet er 4.6:1."
+        "message": "danger: text mot canvas is 2.05:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot surface er 1.82:1, kravet er 4.6:1."
+        "message": "danger: text mot surface is 1.82:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot raised er 1.61:1, kravet er 4.6:1."
+        "message": "danger: text mot raised is 1.61:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot egen surface er 1.81:1, kravet er 4.6:1."
+        "message": "danger: text mot egen surface is 1.81:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: content oppå text er 1.98:1, kravet er 4.6:1."
+        "message": "danger: content oppå text is 1.98:1, the requirement is 4.6:1."
       }
     ],
     "blocks": 1,
@@ -54,19 +54,19 @@
     "problems": [
       {
         "selector": ":root",
-        "message": "--lt-color-accent-fill er «var(--noe-annet)». Kontrasten kan bare regnes på en heksfarge, så denne er ikke kontrollert."
+        "message": "--lt-color-accent-fill is \"var(--noe-annet)\". The contrast can only be computed for a hex colour, so this one is not checked."
       },
       {
         "selector": ":root",
-        "message": "--lt-color-danger-text er «#ff9999cc». Kontrasten kan bare regnes på en heksfarge, så denne er ikke kontrollert."
+        "message": "--lt-color-danger-text is \"#ff9999cc\". The contrast can only be computed for a hex colour, so this one is not checked."
       },
       {
         "selector": ":root",
-        "message": "--lt-color-danger-txt er ikke et token i systemet. Navnet er --lt-color-<familie>-<rolle>, og rollene er border-subtle, border-strong, text-strong, text-subtle, surface, content, border, fill, text."
+        "message": "--lt-color-danger-txt is not a token in the system. The name is --lt-color-<family>-<role>, and the roles are border-subtle, border-strong, text-strong, text-subtle, surface, content, border, fill, text."
       },
       {
         "selector": ":root",
-        "message": "--lt-color-danger-canvas er ikke et token i systemet. Navnet er --lt-color-<familie>-<rolle>, og rollene er border-subtle, border-strong, text-strong, text-subtle, surface, content, border, fill, text."
+        "message": "--lt-color-danger-canvas is not a token in the system. The name is --lt-color-<family>-<role>, and the roles are border-subtle, border-strong, text-strong, text-subtle, surface, content, border, fill, text."
       }
     ],
     "blocks": 1,
@@ -77,7 +77,7 @@
     "problems": [
       {
         "selector": ":root",
-        "message": "brand4 mangler surface, border-subtle, border, border-strong, text, text-strong, text-subtle, content. En familie må ha alle rollene for at løftene skal kunne kontrolleres."
+        "message": "brand4 is missing surface, border-subtle, border, border-strong, text, text-strong, text-subtle, content. A family must have every role for the promises to be checked."
       }
     ],
     "blocks": 1,
@@ -88,7 +88,7 @@
     "problems": [
       {
         "selector": ":root",
-        "message": "min-merkevare mangler border-subtle, border, border-strong, fill, text-strong, text-subtle, content. En familie må ha alle rollene for at løftene skal kunne kontrolleres."
+        "message": "min-merkevare is missing border-subtle, border, border-strong, fill, text-strong, text-subtle, content. A family must have every role for the promises to be checked."
       }
     ],
     "blocks": 1,
@@ -105,23 +105,23 @@
     "problems": [
       {
         "selector": ":root",
-        "message": "danger: text mot canvas er 2.05:1, kravet er 4.6:1."
+        "message": "danger: text mot canvas is 2.05:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot surface er 1.82:1, kravet er 4.6:1."
+        "message": "danger: text mot surface is 1.82:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot raised er 1.61:1, kravet er 4.6:1."
+        "message": "danger: text mot raised is 1.61:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot egen surface er 1.81:1, kravet er 4.6:1."
+        "message": "danger: text mot egen surface is 1.81:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: content oppå text er 1.98:1, kravet er 4.6:1."
+        "message": "danger: content oppå text is 1.98:1, the requirement is 4.6:1."
       }
     ],
     "blocks": 2,
@@ -131,28 +131,28 @@
   "truncated": {
     "problems": [
       {
-        "selector": "(hele fila)",
-        "message": "Fila har 2 «{» og 1 «}». En blokk som ikke er lukket, leses til fila slutter, så noe av temaet kan mangle eller være lest feil."
+        "selector": "(whole file)",
+        "message": "The file has 2 \"{\" and 1 \"}\". A block that is not closed is read to the end of the file, so part of the theme may be missing or read wrongly."
       },
       {
-        "selector": ":root (i mørkt tema, ingen mørk blokk overstyrer)",
-        "message": "danger: text mot canvas er 1.84:1, kravet er 4.6:1."
+        "selector": ":root (in the dark theme, no dark block overrides)",
+        "message": "danger: text mot canvas is 1.84:1, the requirement is 4.6:1."
       },
       {
-        "selector": ":root (i mørkt tema, ingen mørk blokk overstyrer)",
-        "message": "danger: text mot surface er 1.52:1, kravet er 4.6:1."
+        "selector": ":root (in the dark theme, no dark block overrides)",
+        "message": "danger: text mot surface is 1.52:1, the requirement is 4.6:1."
       },
       {
-        "selector": ":root (i mørkt tema, ingen mørk blokk overstyrer)",
-        "message": "danger: text mot raised er 1.24:1, kravet er 4.6:1."
+        "selector": ":root (in the dark theme, no dark block overrides)",
+        "message": "danger: text mot raised is 1.24:1, the requirement is 4.6:1."
       },
       {
-        "selector": ":root (i mørkt tema, ingen mørk blokk overstyrer)",
-        "message": "danger: text mot egen surface er 1.54:1, kravet er 4.6:1."
+        "selector": ":root (in the dark theme, no dark block overrides)",
+        "message": "danger: text mot egen surface is 1.54:1, the requirement is 4.6:1."
       },
       {
-        "selector": ":root (i mørkt tema, ingen mørk blokk overstyrer)",
-        "message": "danger: content oppå text er 1.90:1, kravet er 4.6:1."
+        "selector": ":root (in the dark theme, no dark block overrides)",
+        "message": "danger: content oppå text is 1.90:1, the requirement is 4.6:1."
       }
     ],
     "blocks": 1,
@@ -165,8 +165,8 @@
     "promises": 0,
     "problems": [
       {
-        "selector": "(hele fila)",
-        "message": "Fant ingen --lt-color-*-verdier. Er dette et LO-TEK-tema, og står verdiene i en blokk?"
+        "selector": "(whole file)",
+        "message": "Found no --lt-color-* values. Is this a LO-TEK theme, and are the values inside a block?"
       }
     ]
   },

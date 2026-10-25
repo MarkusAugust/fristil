@@ -5,14 +5,14 @@
       "end": 130,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "<lt-field> har delen «control» mer enn én gang. Web-komponenten bruker bare den første, og denne blir stående utenfor. Kontrollen feltet kobler: et <input>, <textarea> eller <select> med sine <option>."
+      "message": "<lt-field> has the part \"control\" more than once. The web component only uses the first one, and this one is left out. The control the field wires: an <input>, <textarea> or <select> with its <option>s."
     },
     {
       "start": 800,
       "end": 807,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/table/",
-      "message": "lt-table har delen «caption» mer enn én gang. Den skal stå én gang. Tabellens navn."
+      "message": "lt-table has the part \"caption\" more than once. It must appear once. The name of the table."
     }
   ],
   "side": [
@@ -21,14 +21,14 @@
       "end": 130,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "<lt-field> har delen «control» mer enn én gang. Web-komponenten bruker bare den første, og denne blir stående utenfor. Kontrollen feltet kobler: et <input>, <textarea> eller <select> med sine <option>."
+      "message": "<lt-field> has the part \"control\" more than once. The web component only uses the first one, and this one is left out. The control the field wires: an <input>, <textarea> or <select> with its <option>s."
     },
     {
       "start": 800,
       "end": 807,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/table/",
-      "message": "lt-table har delen «caption» mer enn én gang. Den skal stå én gang. Tabellens navn."
+      "message": "lt-table has the part \"caption\" more than once. It must appear once. The name of the table."
     }
   ]
 }

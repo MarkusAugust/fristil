@@ -5,9 +5,9 @@
       "end": 32,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/connection-status/",
-      "message": "<lt-connection-status> har ikke attributtet «onlinetext». Mente du online-text?",
+      "message": "<lt-connection-status> has no attribute \"onlinetext\". Did you mean online-text?",
       "fix": {
-        "title": "Bytt til online-text",
+        "title": "Change to online-text",
         "edits": [
           {
             "start": 22,
@@ -23,9 +23,9 @@
       "end": 87,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "optional er et boolsk attributt: det står der eller ikke. optional=\"false\" betyr det samme som optional. Ta det bort for å slå det av.",
+      "message": "optional is a boolean attribute: it is either there or not. optional=\"false\" means the same as optional. Remove it to turn it off.",
       "fix": {
-        "title": "Ta bort optional",
+        "title": "Remove optional",
         "edits": [
           {
             "start": 78,
@@ -43,9 +43,9 @@
       "end": 32,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/connection-status/",
-      "message": "<lt-connection-status> har ikke attributtet «onlinetext». Mente du online-text?",
+      "message": "<lt-connection-status> has no attribute \"onlinetext\". Did you mean online-text?",
       "fix": {
-        "title": "Bytt til online-text",
+        "title": "Change to online-text",
         "edits": [
           {
             "start": 22,
@@ -61,9 +61,9 @@
       "end": 87,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "optional er et boolsk attributt: det står der eller ikke. optional=\"false\" betyr det samme som optional. Ta det bort for å slå det av.",
+      "message": "optional is a boolean attribute: it is either there or not. optional=\"false\" means the same as optional. Remove it to turn it off.",
       "fix": {
-        "title": "Ta bort optional",
+        "title": "Remove optional",
         "edits": [
           {
             "start": 78,

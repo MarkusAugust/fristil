@@ -1,10 +1,10 @@
-//! Ordforrådet: elementer, attributter, klasser og verdier.
+//! The vocabulary: elements, attributes, classes and values.
 //!
-//! Reglene sto først i TypeScript, i `diagnostics.ts`, og ble oversatt hit
-//! funksjon for funksjon med de samme meldingene. TypeScript-utgaven er
-//! borte: kjernen er den ene implementasjonen, og TypeScript, Kotlin og
-//! editorene kaller den. Hvert regulært uttrykk fra den tida er skrevet ut
-//! som en løkke, med det samme svaret.
+//! The rules were first written in TypeScript, in `diagnostics.ts`, and were
+//! translated here function by function with the same messages. The
+//! TypeScript version is gone: the core is the one implementation, and
+//! TypeScript, Kotlin and the editors call it. Every regular expression from
+//! that time is written out as a loop, with the same answer.
 
 use std::collections::HashMap;
 
@@ -62,27 +62,28 @@ fn is_global(name: &[u16]) -> bool {
             .any(|&c| c < 0x80 && b":@*[](){}%$#?".contains(&(c as u8)))
 }
 
-/// `/\{\{|\{%|\{#|<\?|<%|\$\{|@\(/`: Go, Jinja, PHP, ASP, JS-maler og Razor.
+/// `/\{\{|\{%|\{#|<\?|<%|\$\{|@\(/`: Go, Jinja, PHP, ASP, JS templates and Razor.
 pub fn is_templated(t: &[u16]) -> bool {
     ["{{", "{%", "{#", "<?", "<%", "${", "@("]
         .iter()
         .any(|m| contains_str(t, m))
 }
 
-/// En mal som skriver verdien som tekst: Go, Jinja, Handlebars, PHP og
-/// ERB/ASP. Der blir et boolsk attributt stående også når malen skriver
-/// «false» eller ingenting.
+/// A template that writes the value as text: Go, Jinja, Handlebars, PHP and
+/// ERB/ASP. There a boolean attribute stays even when the template writes
+/// "false" or nothing.
 ///
-/// Ikke `{…}`, `@(…)` og `${…}`: Astro, Svelte, JSX, Razor og JTE tar selv
-/// bort et boolsk attributt med usann verdi.
+/// Not `{…}`, `@(…)` and `${…}`: Astro, Svelte, JSX, Razor and JTE remove a
+/// boolean attribute with a false value themselves.
 pub fn is_text_template(t: &[u16]) -> bool {
     ["{{", "{%", "<?", "<%"].iter().any(|m| contains_str(t, m))
 }
 
-/// Om taggen har en betingelse i malspråket utenfor verdiene, som
-/// `{{ if .Open }} open="{{ .Open }}" {{ end }}`. Da står attributtet i
-/// betingelsen, og malen i verdien er ikke det som slår flagget på. En
-/// betingelse inne i verdien hjelper ikke: attributtet står uansett.
+/// Whether the tag has a condition in the template language outside the
+/// values, like `{{ if .Open }} open="{{ .Open }}" {{ end }}`. Then the
+/// attribute is inside the condition, and the template in the value is not
+/// what turns the flag on. A condition inside the value does not help: the
+/// attribute is there regardless.
 fn has_condition(body: &[u16], offset: usize, attributes: &[ReadAttribute]) -> bool {
     let inside = |i: usize| {
         attributes.iter().any(|a| {
@@ -114,7 +115,7 @@ fn has_condition(body: &[u16], offset: usize, attributes: &[ReadAttribute]) -> b
     .any(|m| contains_str(&compact, m))
 }
 
-/// En verdi i klammer er Astro eller Svelte, og et uttrykk: `/^\s*[@{]/`.
+/// A value in braces is Astro or Svelte, and an expression: `/^\s*[@{]/`.
 pub fn is_templated_value(t: &[u16]) -> bool {
     is_templated(t)
         || t.iter()
@@ -122,7 +123,7 @@ pub fn is_templated_value(t: &[u16]) -> bool {
             .is_some_and(|&c| c == b'@' as u16 || c == b'{' as u16)
 }
 
-/// Razor i innholdet, utenfor taggene.
+/// Razor in the content, outside the tags.
 pub(crate) fn is_templated_content(t: &[u16]) -> bool {
     if is_templated(t) {
         return true;
@@ -150,7 +151,7 @@ pub(crate) fn is_templated_content(t: &[u16]) -> bool {
     })
 }
 
-/// Navnet uten bindestreker og store bokstaver, for å kjenne igjen skrivefeil.
+/// The name without hyphens and upper case, to recognise typos.
 fn normalized(t: &[u16]) -> Utf16 {
     lowercase(t)
         .into_iter()
@@ -158,7 +159,7 @@ fn normalized(t: &[u16]) -> Utf16 {
         .collect()
 }
 
-/// Redigeringsavstanden, med ombytte av to nabotegn som én.
+/// The edit distance, with a swap of two adjacent characters counting as one.
 fn distance(a: &[u16], b: &[u16]) -> usize {
     let mut before: Vec<usize> = vec![0; b.len() + 1];
     let mut previous: Vec<usize> = (0..=b.len()).collect();
@@ -185,7 +186,7 @@ fn common_prefix(a: &[u16], b: &[u16]) -> usize {
 
 pub type Cache = HashMap<Utf16, Option<(String, bool)>>;
 
-/// Det nærmeste kjente navnet, når det er nært nok til å være en skrivefeil.
+/// The closest known name, when it is close enough to be a typo.
 pub fn closest(
     name: &[u16],
     candidates: &[&str],
@@ -231,20 +232,20 @@ fn find_closest(name: &[u16], candidates: &[&str]) -> Option<(String, bool)> {
     best.map(|(name, _)| (name.to_string(), false))
 }
 
-/// `[\s\S]*?` til det første treffet av `slutt`, eller til slutten av teksten.
+/// `[\s\S]*?` up to the first match of `end`, or to the end of the text.
 fn blank_range(out: &mut [u16], from: usize, to: usize) {
     blank(&mut out[from..to]);
 }
 
-/// `<script\b` og `<style\b`: navnet uten hensyn til store bokstaver, og
-/// ikke et ordtegn etter.
+/// `<script\b` and `<style\b`: the name ignoring case, and no word
+/// character after it.
 fn opens(t: &[u16], i: usize, name: &str) -> bool {
     starts_at(t, i, "<")
         && starts_at_ci(t, i + 1, name)
         && t.get(i + 1 + name.len()).is_none_or(|&c| !is_word(c))
 }
 
-/// Den første `</navn\s*>` fra `fra`, med indeksen der den slutter.
+/// The first `</name\s*>` from `from`, with the index where it ends.
 fn closer(t: &[u16], from: usize, name: &str) -> Option<(usize, usize)> {
     let mut i = from;
     while i < t.len() {
@@ -262,12 +263,12 @@ fn closer(t: &[u16], from: usize, name: &str) -> Option<(usize, usize)> {
     None
 }
 
-/// Kommentarene i malspråkene: det som står i dem, rendres ikke.
+/// The comments in the template languages: what is inside them is not rendered.
 ///
-/// Blade `{{-- --}}`, Go `{{/* */}}`, Jinja, Twig og Nunjucks `{# #}`, Razor
-/// `@* *@`, og JSP og ASP `<%-- --%>`. I motsetning til en HTML-kommentar
-/// blankes de bare når de er lukket: `{#` innleder også en blokk i Svelte,
-/// som `{#if}`, og en ulukket kommentar ville da blanket resten av fila.
+/// Blade `{{-- --}}`, Go `{{/* */}}`, Jinja, Twig and Nunjucks `{# #}`, Razor
+/// `@* *@`, and JSP and ASP `<%-- --%>`. Unlike an HTML comment they are
+/// only blanked when they are closed: `{#` also opens a block in Svelte,
+/// like `{#if}`, and an unclosed comment would then blank the rest of the file.
 const TEMPLATE_COMMENTS: [(&str, &str); 5] = [
     ("{{--", "--}}"),
     ("{{/*", "*/}}"),
@@ -276,10 +277,10 @@ const TEMPLATE_COMMENTS: [(&str, &str); 5] = [
     ("<%--", "--%>"),
 ];
 
-/// Teksten uten kommentarer, skript og stilark, med samme lengde.
+/// The text without comments, scripts and style sheets, with the same length.
 pub fn without_hidden(text: &[u16]) -> Utf16 {
     let mut out = text.to_vec();
-    // Kommentarene først, så skriptene og stilarkene i det som er igjen.
+    // The comments first, then the scripts and style sheets in what is left.
     let mut i = 0;
     while let Some(start) = find_at(&out, i, "<!--") {
         let end = find_at(&out, start + 4, "-->").map_or(out.len(), |e| e + 3);
@@ -290,8 +291,8 @@ pub fn without_hidden(text: &[u16]) -> Utf16 {
         let mut i = 0;
         while let Some(start) = find_at(&out, i, open) {
             i = start + 1;
-            // `{#if}` i Svelte er ingen kommentar: Jinja skriver mellomrom
-            // eller `-` etter `{#`.
+            // `{#if}` in Svelte is no comment: Jinja writes a space or `-`
+            // after `{#`.
             if open == "{#"
                 && !out
                     .get(start + 2)
@@ -322,7 +323,7 @@ pub fn without_hidden(text: &[u16]) -> Utf16 {
     out
 }
 
-/// Der taggen som begynner på `fra` slutter: indeksen til `>`.
+/// Where the tag that starts at `from` ends: the index of `>`.
 pub fn tag_end(t: &[u16], from: usize) -> Option<usize> {
     let mut quote: Option<u16> = None;
     let mut i = from;
@@ -354,13 +355,13 @@ pub struct ReadAttribute {
     pub name: Utf16,
     pub value: Option<Utf16>,
     pub start: usize,
-    /// Der navnet slutter.
+    /// Where the name ends.
     pub end: usize,
-    /// Der hele attributtet slutter, med verdi og anførselstegn.
+    /// Where the whole attribute ends, with value and quotes.
     pub value_end: usize,
-    /// Der mellomrommet foran attributtet begynner.
+    /// Where the whitespace before the attribute starts.
     pub space_start: usize,
-    /// Der selve verdien står, uten anførselstegn.
+    /// Where the value itself is, without quotes.
     pub value_start: usize,
 }
 
@@ -370,7 +371,7 @@ impl ReadAttribute {
     }
 }
 
-/// Attributtene i en tagg, lest fra teksten mellom navnet og `>`.
+/// The attributes in a tag, read from the text between the name and `>`.
 pub fn read_attributes(body: &[u16], offset: usize) -> Vec<ReadAttribute> {
     let mut out = Vec::new();
     let mut i = 0;
@@ -473,7 +474,7 @@ fn list<'a>(names: impl IntoIterator<Item = &'a str>) -> String {
     names.into_iter().collect::<Vec<_>>().join(", ")
 }
 
-/// `Number(verdi)` i JavaScript, og tomt er ikke et tall.
+/// `Number(value)` in JavaScript, and empty is not a number.
 fn is_number(value: &[u16]) -> bool {
     let t = trimmed(value);
     if t.is_empty() || t.iter().any(|&c| c >= 0x80) {
@@ -481,7 +482,7 @@ fn is_number(value: &[u16]) -> bool {
     }
     let s: String = t.iter().map(|&c| c as u8 as char).collect();
     let b = s.as_bytes();
-    // Heksadesimalt, oktalt og binært, uten fortegn.
+    // Hexadecimal, octal and binary, without a sign.
     if b.len() > 2 && b[0] == b'0' {
         let siffer = &s[2..];
         let valid = match b[1] {
@@ -495,7 +496,7 @@ fn is_number(value: &[u16]) -> bool {
     is_decimal(&s)
 }
 
-/// StrDecimalLiteral: fortegn, `Infinity`, sifre med punktum og eksponent.
+/// StrDecimalLiteral: sign, `Infinity`, digits with a point and an exponent.
 fn is_decimal(s: &str) -> bool {
     let s = s.strip_prefix(['+', '-']).unwrap_or(s);
     if s == "Infinity" {
@@ -557,9 +558,9 @@ fn check_attribute(
             return Some(findings(
                 "unknown-attribute",
                 Severity::Warning,
-                format!("<{tag}> har ikke attributtet «{name}». Mente du {meant}?"),
+                format!("<{tag}> has no attribute \"{name}\". Did you mean {meant}?"),
                 Some(Fix::one(
-                    format!("Bytt til {meant}"),
+                    format!("Change to {meant}"),
                     a.start,
                     a.end,
                     meant.clone(),
@@ -574,7 +575,7 @@ fn check_attribute(
             "unknown-attribute",
             Severity::Warning,
             format!(
-                "<{tag}> har ikke attributtet «{name}», og komponenten leser det ikke. Attributtene er {}.",
+                "<{tag}> has no attribute \"{name}\", and the component does not read it. The attributes are {}.",
                 list(element.attributes.iter().map(|(n, _)| n.as_str()))
             ),
             None,
@@ -589,7 +590,7 @@ fn check_attribute(
                 "boolean-with-value",
                 Severity::Warning,
                 format!(
-                    "{name} er et boolsk attributt, og malen skriver verdien som tekst: også «false» og en tom verdi slår det på. Skriv hele attributtet i en betingelse i malen."
+                    "{name} is a boolean attribute, and the template writes the value as text: \"false\" and an empty value turn it on too. Write the whole attribute inside a condition in the template."
                 ),
                 None,
             ));
@@ -608,10 +609,10 @@ fn check_attribute(
                     "boolean-with-value",
                     Severity::Warning,
                     format!(
-                        "{name} er et boolsk attributt: det står der eller ikke. {name}=\"{v}\" betyr det samme som {name}. Ta det bort for å slå det av."
+                        "{name} is a boolean attribute: it is either there or not. {name}=\"{v}\" means the same as {name}. Remove it to turn it off."
                     ),
                     Some(Fix::one(
-format!("Ta bort {name}"),
+format!("Remove {name}"),
 a.space_start,
 a.value_end,
 String::new(),
@@ -634,7 +635,7 @@ true,
                 "invalid-value",
                 Severity::Error,
                 format!(
-                    "{name} kan ikke være «{v}». Lovlige verdier: {}.",
+                    "{name} cannot be \"{v}\". Valid values: {}.",
                     list(values.iter().map(String::as_str))
                 ),
                 None,
@@ -644,7 +645,7 @@ true,
             Some(v) if !is_number(v) => Some(findings(
                 "not-a-number",
                 Severity::Error,
-                format!("{name} skal være et tall, ikke «{}».", lossy(v)),
+                format!("{name} must be a number, not \"{}\".", lossy(v)),
                 None,
             )),
             _ => None,
@@ -653,8 +654,8 @@ true,
     }
 }
 
-/// `/<(input|textarea|select)(?=[\s/>])/gi`, og den første kontrollen som
-/// ikke er `type="hidden"`.
+/// `/<(input|textarea|select)(?=[\s/>])/gi`, and the first control that is
+/// not `type="hidden"`.
 fn find_control(content: &[u16]) -> Option<Vec<ReadAttribute>> {
     let mut i = 0;
     while i < content.len() {
@@ -693,7 +694,7 @@ pub fn followed_by_end(t: &[u16], i: usize) -> bool {
         .is_some_and(|&c| is_space(c) || c == SLASH || c == GT)
 }
 
-/// Verdiene i hver `<label for>` i dokumentet, som
+/// The values of every `<label for>` in the document, like
 /// `/<label\b[^>]*?\sfor\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi`.
 fn label_targets(t: &[u16]) -> Vec<Utf16> {
     let mut out = Vec::new();
@@ -723,7 +724,7 @@ fn label_targets(t: &[u16]) -> Vec<Utf16> {
     out
 }
 
-/// `\sfor\s*=\s*(verdi)` ved `p`: verdien og der treffet slutter.
+/// `\sfor\s*=\s*(value)` at `p`: the value and where the match ends.
 fn for_at(t: &[u16], p: usize) -> Option<(Utf16, usize)> {
     if !t.get(p).is_some_and(|&c| is_space(c)) || !starts_at_ci(t, p + 1, "for") {
         return None;
@@ -759,7 +760,7 @@ fn for_at(t: &[u16], p: usize) -> Option<(Utf16, usize)> {
     (j > from).then(|| (t[from..j].to_vec(), j))
 }
 
-/// `/<navn(?=[\s/>])/i`
+/// `/<name(?=[\s/>])/i`
 fn has_tag(t: &[u16], name: &str) -> bool {
     (0..t.len()).any(|i| {
         t[i] == LT && starts_at_ci(t, i + 1, name) && followed_by_end(t, i + 1 + name.len())
@@ -795,7 +796,7 @@ fn check_field(
         return vec![findings(
             "field-without-control",
             format!(
-                "<{tag}> fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og feilmeldingen står uten et felt, og koblingen kan ikke lages. Sett inn et <input>, <textarea> eller <select>."
+                "<{tag}> found no control to wire up. The label, help text and error text have no field, so the wiring cannot be made. Add an <input>, <textarea> or <select>."
             ),
             None,
         )];
@@ -807,8 +808,9 @@ fn check_field(
     if has("aria-label").is_some() || has("aria-labelledby").is_some() {
         return vec![];
     }
-    // Bare kontrollens egen id. `<lt-field>` skriver ikke id på kontrollen,
-    // så en `<label for>` utenfor kan bare peke på en id malen har skrevet.
+    // Only the control's own id. `<lt-field>` does not write an id on the
+    // control, so a `<label for>` outside can only point at an id the
+    // template has written.
     let id = has("id").and_then(|a| a.value.clone());
     if id
         .as_ref()
@@ -817,20 +819,20 @@ fn check_field(
         return vec![];
     }
     let leading = &content[..indent];
-    // `\r` alene er også et linjeskift, som i `Lines`. Ellers havnet
-    // ledeteksten på linja til `<lt-field>` i et dokument med `\r`-linjeskift.
+    // `\r` alone is also a line break, as in `Lines`. Otherwise the label
+    // ended up on the line of `<lt-field>` in a document with `\r` line breaks.
     let newline = leading
         .iter()
         .any(|&c| c == b'\n' as u16 || c == b'\r' as u16);
-    // Rettingen settes bare inn når kontrollen har id. En `<label>` uten `for`
-    // ved siden av feltet er ikke koblet til det, og `<lt-field>` sier fra om
-    // nettopp den; å legge ledeteksten rundt feltet eller skrive id på det er
-    // mer enn én innsetting, så da står bare meldingen.
+    // The fix is only offered when the control has an id. A `<label>` without
+    // `for` next to the field is not wired to it, and `<lt-field>` warns about
+    // exactly that; putting the label around the field or writing an id on it
+    // is more than one insertion, so then only the message is given.
     let Some(id) = id.filter(|id| !id.is_empty()) else {
         return vec![findings(
             "field-without-label",
             format!(
-                "<{tag}> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn. Skriv <label for=\"…\"> og samme id på feltet, eller legg <label> rundt feltet."
+                "<{tag}> found no <label>. The field then has no label, and a screen reader announces it without a name. Write <label for=\"…\"> and the same id on the field, or put the <label> around the field."
             ),
             None,
         )];
@@ -838,16 +840,16 @@ fn check_field(
     vec![findings(
         "field-without-label",
         format!(
-            "<{tag}> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn."
+            "<{tag}> found no <label>. The field then has no label, and a screen reader announces it without a name."
         ),
         Some(Fix::one(
-"Sett inn en ledetekst".into(),
+"Add a label".into(),
 content_start + indent,
 content_start + indent,
-// Ledeteksten peker på kontrollens id: uten `for` har feltet ingen
-            // ledetekst før JavaScript har kjørt.
+// The label points at the control's id: without `for` the field has no
+            // label before JavaScript has run.
 format!(
-                "<label for=\"{}\">Ledetekst</label>{}",
+                "<label for=\"{}\">Label</label>{}",
                 lossy(&id),
                 if newline { lossy(leading) } else { String::new() }
             ),
@@ -872,14 +874,14 @@ fn check_session_timeout(
         severity: Severity::Warning,
         link: link.to_string(),
         message: format!(
-            "<{tag}> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
+            "<{tag}> found no <dialog>. The warning cannot be shown, and the session times out without warning."
         ),
         fix: None,
         rule: "timeout-without-dialog",
     }]
 }
 
-/// Navnet på blokken en klasse hører til: `app-button` for `app-button--primary`.
+/// The name of the block a class belongs to: `app-button` for `app-button--primary`.
 fn block(name: &str) -> &str {
     let end = [name.find("__"), name.find("--")]
         .into_iter()
@@ -889,14 +891,15 @@ fn block(name: &str) -> &str {
     &name[..end]
 }
 
-/// Om en klasse skal sjekkes mot ordforrådet.
+/// Whether a class should be checked against the vocabulary.
 ///
-/// Alt som begynner med `lt-` er LO-TEKs. En overtatt komponent har et annet
-/// navn, som `app-button`, og da sjekkes bare den blokken, med elementer og
-/// varianter: resten av prosjektets `app-*`-klasser er ikke LO-TEKs sak.
+/// Everything that starts with `lt-` is LO-TEK's. A taken-over component has
+/// another name, like `app-button`, and then only that block is checked, with
+/// elements and variants: the rest of the project's `app-*` classes are not
+/// LO-TEK's business.
 fn checked_class(vocabulary: &Vocabulary, token: &[u16]) -> bool {
     if starts_at(token, 0, "lt-") {
-        // Bootstraps `lt-1` til `lt-6` (skriftstørrelse) er ikke våre.
+        // Bootstrap's `lt-1` to `lt-6` (font size) are not ours.
         let rest = &token[3..];
         return !(!rest.is_empty()
             && rest
@@ -916,8 +919,8 @@ fn checked_class(vocabulary: &Vocabulary, token: &[u16]) -> bool {
         })
 }
 
-/// Om en tagg som begynner ved `at` er en av elementene i ordforrådet som
-/// ikke heter `lt-…`, som en overtatt `<app-dialog>`.
+/// Whether a tag that starts at `at` is one of the elements in the vocabulary
+/// not named `lt-…`, like a taken-over `<app-dialog>`.
 fn own_element_at(vocabulary: &Vocabulary, source: &[u16], at: usize) -> bool {
     vocabulary
         .elements
@@ -972,19 +975,27 @@ fn check_classes(
                 find_class(vocabulary, &utf16(m)).unwrap().link.clone()
             }),
             message: {
-                // En overtatt komponent er ikke lenger LO-TEKs.
+                // A taken-over component is no longer LO-TEK's.
                 let place = if starts_at(token, 0, "lt-") {
-                    "i LO-TEK"
+                    "in LO-TEK"
                 } else {
-                    "i manifestet for kopien"
+                    "in the manifest for the copy"
                 };
                 match &meant {
-                    Some((m, _)) => format!("Klassen «{t}» finnes ikke {place}. Mente du {m}?"),
-                    None => format!("Klassen «{t}» finnes ikke {place}."),
+                    Some((m, _)) => {
+                        format!("The class \"{t}\" does not exist {place}. Did you mean {m}?")
+                    }
+                    None => format!("The class \"{t}\" does not exist {place}."),
                 }
             },
             fix: meant.map(|(m, sure)| {
-                Fix::one(format!("Bytt til {m}"), start, start + token.len(), m, sure)
+                Fix::one(
+                    format!("Change to {m}"),
+                    start,
+                    start + token.len(),
+                    m,
+                    sure,
+                )
             }),
             rule: "unknown-class",
         });
@@ -1007,7 +1018,7 @@ fn check_classes(
                         severity: Severity::Warning,
                         link: info.link.clone(),
                         message: format!(
-                            "{} er et flagg på {}, og malen skriver verdien som tekst: også «false» og en tom verdi slår det på. Skriv hele attributtet i en betingelse i malen.",
+                            "{} is a flag on {}, and the template writes the value as text: \"false\" and an empty value turn it on too. Write the whole attribute inside a condition in the template.",
                             lossy(&a.name),
                             lossy(&lowercase(&utf16(&info.title)))
                         ),
@@ -1023,8 +1034,9 @@ fn check_classes(
                 continue;
             };
             if takes.flag {
-                // Stilarket spør bare om flagget står der, så `="false"` slår
-                // det på. Det samme som for et boolsk attributt på et element.
+                // The style sheet only asks whether the flag is there, so
+                // `="false"` turns it on. The same as for a boolean attribute
+                // on an element.
                 if lowercase(value) != a.name {
                     let name = lossy(&a.name);
                     let v = lossy(value);
@@ -1034,11 +1046,11 @@ fn check_classes(
                         severity: Severity::Warning,
                         link: info.link.clone(),
                         message: format!(
-                            "{name} er et flagg på {}: det står der eller ikke. {name}=\"{v}\" betyr det samme som {name}. Ta det bort for å slå det av.",
+                            "{name} is a flag on {}: it is either there or not. {name}=\"{v}\" means the same as {name}. Remove it to turn it off.",
                             lossy(&lowercase(&utf16(&info.title)))
                         ),
                         fix: Some(Fix::one(
-                            format!("Ta bort {name}"),
+                            format!("Remove {name}"),
                             a.space_start,
                             a.value_end,
                             String::new(),
@@ -1063,7 +1075,7 @@ fn check_classes(
             let shown = collapse_spaces(value);
             let name = lossy(&a.name);
             let end = match takes.default_value.as_deref() {
-                Some(d) => format!(", og {d} uten attributt."),
+                Some(d) => format!(", and {d} without the attribute."),
                 None => ".".into(),
             };
             findings.push(Finding {
@@ -1072,13 +1084,13 @@ fn check_classes(
                 severity: Severity::Warning,
                 link: info.link.clone(),
                 message: format!(
-                    "{name} kan ikke være «{shown}» på {}. Lovlige verdier: {}{end}",
+                    "{name} cannot be \"{shown}\" on {}. Valid values: {}{end}",
                     lossy(&lowercase(&utf16(&info.title))),
                     list(takes.values.iter().map(String::as_str))
                 ),
                 fix: meant.map(|(m, sure)| {
                     Fix::one(
-                        format!("Bytt til {m}"),
+                        format!("Change to {m}"),
                         a.value_start,
                         a.value_start + value.len(),
                         m,
@@ -1094,12 +1106,13 @@ fn check_classes(
     findings
 }
 
-/// En avslått lenke som fortsatt har `href`.
+/// A disabled link that still has `href`.
 ///
-/// `aria-disabled` sier fra til skjermleseren, og stilen slår av musa med
-/// `pointer-events: none`, men Enter følger fortsatt `href`. Lenken må
-/// skrives uten, med `role="link"` og `tabindex="0"` så den fortsatt er en
-/// lenke i tabrekkefølgen. Det er det `lt.link({ disabled: true })` gir.
+/// `aria-disabled` tells the screen reader, and the style turns off the mouse
+/// with `pointer-events: none`, but Enter still follows `href`. The link must
+/// be written without it, with `role="link"` and `tabindex="0"` so it is
+/// still a link in the tab order. That is what `lt.link({ disabled: true })`
+/// gives.
 fn check_disabled_link(present: &[&Class], attributes: &[ReadAttribute]) -> Option<Finding> {
     let info = present
         .iter()
@@ -1118,7 +1131,7 @@ fn check_disabled_link(present: &[&Class], attributes: &[ReadAttribute]) -> Opti
         severity: Severity::Warning,
         link: info.link.clone(),
         message: format!(
-            "{} er deaktivert med aria-disabled, men har href, og Enter følger den fortsatt. Ta bort href, og skriv role=\"link\" og tabindex=\"0\" så den fortsatt er en lenke i tabrekkefølgen.",
+            "{} is disabled with aria-disabled but has href, and Enter still follows it. Remove href, and write role=\"link\" and tabindex=\"0\" so it is still a link in the tab order.",
             info.name
         ),
         fix: None,
@@ -1144,18 +1157,17 @@ fn collapse_spaces(t: &[u16]) -> String {
     lossy(&out)
 }
 
-/// Siden om ikoner, der regelen for en knapp med bare ikon er forklart.
+/// The page on icons, where the rule for an icon-only button is explained.
 const ICON_LINK: &str = "https://lo-tek.sobernetics.no/components/icon/";
 
-/// Elementene som aldri har innhold, og derfor ingen lukketagg.
+/// The elements that never have content, and therefore no closing tag.
 const NO_CONTENT: &[&str] = &[
     "area", "br", "col", "embed", "hr", "img", "input", "source", "track", "wbr",
 ];
 
-/// Et attributt etter navnet, også bundet av et rammeverk. `:aria-label`,
-/// `x-bind:aria-label`, `data-attr:aria-label`, `[attr.aria-label]` og
-/// `th:title` blir det samme attributtet i siden, og store og små bokstaver
-/// er like.
+/// An attribute by name, also when bound by a framework. `:aria-label`,
+/// `x-bind:aria-label`, `data-attr:aria-label`, `[attr.aria-label]` and
+/// `th:title` become the same attribute on the page, and case is ignored.
 pub(crate) fn attribute<'a>(
     attributes: &'a [ReadAttribute],
     name: &str,
@@ -1169,14 +1181,15 @@ pub(crate) fn attribute<'a>(
     })
 }
 
-/// Et attributt slik det står, uten binding, med store og små bokstaver like.
+/// An attribute as written, without binding, ignoring case.
 fn plain<'a>(attributes: &'a [ReadAttribute], name: &str) -> Option<&'a ReadAttribute> {
     attributes
         .iter()
         .find(|a| equals(&lowercase(&a.name), name))
 }
 
-/// Om attributtet står der med noe annet enn mellomrom i, i en av formene.
+/// Whether the attribute is there with something other than whitespace in
+/// it, in one of the forms.
 fn has_text_value(attributes: &[ReadAttribute], name: &str) -> bool {
     attributes.iter().any(|a| {
         attribute(std::slice::from_ref(a), name).is_some()
@@ -1184,8 +1197,9 @@ fn has_text_value(attributes: &[ReadAttribute], name: &str) -> bool {
     })
 }
 
-/// Om noden selv er skjult for skjermleseren: `aria-hidden="true"` eller
-/// `hidden`. Bare slik det står: en bundet `:hidden` kan like gjerne være usann.
+/// Whether the node itself is hidden from the screen reader:
+/// `aria-hidden="true"` or `hidden`. Only as written: a bound `:hidden` may
+/// just as well be false.
 fn hides(attributes: &[ReadAttribute]) -> bool {
     plain(attributes, "hidden").is_some()
         || plain(attributes, "aria-hidden")
@@ -1193,7 +1207,7 @@ fn hides(attributes: &[ReadAttribute]) -> bool {
             .is_some_and(|v| equals(&lowercase(trimmed(v)), "true"))
 }
 
-/// Attributtene på en knapp eller lenke som ikke kan gi den et navn.
+/// The attributes on a button or link that cannot give it a name.
 const INERT: &[&str] = &[
     "class",
     "id",
@@ -1229,14 +1243,14 @@ const INERT: &[&str] = &[
     "commandfor",
 ];
 
-/// Om attributtet er vanlig HTML som ikke gir et navn.
+/// Whether the attribute is plain HTML that does not give a name.
 ///
-/// Regelen melder en feil, og må derfor bare melde det den kan se. Et
-/// navn kan komme fra en binding i hvert rammeverk, og formene er uten
-/// ende: `:aria-label`, `v-bind="$attrs"`, `x-bind`, `data-attr`,
-/// `th:attr`, `@attributes`, `{title}`, `{...props}`. Lista over dem ble
-/// aldri ferdig, så regelen spør motsatt vei: er alt på taggen kjent HTML,
-/// kan den vite at navnet mangler.
+/// The rule reports an error, and must therefore only report what it can
+/// see. A name can come from a binding in every framework, and the forms are
+/// endless: `:aria-label`, `v-bind="$attrs"`, `x-bind`, `data-attr`,
+/// `th:attr`, `@attributes`, `{title}`, `{...props}`. The list of them was
+/// never finished, so the rule asks the other way round: when everything on
+/// the tag is known HTML, it can know that the name is missing.
 fn is_inert(a: &ReadAttribute, own_data: &[&str]) -> bool {
     let name = lossy(&lowercase(&a.name));
     let plain_name = name
@@ -1244,19 +1258,19 @@ fn is_inert(a: &ReadAttribute, own_data: &[&str]) -> bool {
         .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
     plain_name
         && (INERT.contains(&name.as_str())
-            // Et navn i aria-label, aria-labelledby eller title sjekkes for
-            // seg. Står de tomme, gir de ikke noe navn.
+            // A name in aria-label, aria-labelledby or title is checked on
+            // its own. When they are empty, they give no name.
             || name == "title"
             || name.starts_with("aria-")
             || (name.starts_with("on") && name.len() > 2)
-            // Et `data-*` kan et hvilket som helst bibliotek fylle knappen
-            // fra, som `data-i18n`. LO-TEKs egne, som `data-variant`, og
-            // `data-testid` gjør det ikke.
+            // Any library can fill the button from a `data-*`, like
+            // `data-i18n`. LO-TEK's own, like `data-variant`, and
+            // `data-testid` do not.
             || name == "data-testid"
             || own_data.contains(&name.as_str()))
 }
 
-/// Attributtene et barn kan ha uten å kunne få tekst fra noe annet.
+/// The attributes a child can have without being able to get text from something else.
 const INERT_CHILD: &[&str] = &[
     "class",
     "id",
@@ -1267,21 +1281,21 @@ const INERT_CHILD: &[&str] = &[
     "dir",
 ];
 
-/// Om innholdet i en knapp eller lenke er ikoner og ingenting annet.
+/// Whether the content of a button or link is icons and nothing else.
 ///
-/// Det som står under `aria-hidden="true"` eller `hidden`, leser ikke
-/// skjermleseren, og teller ikke. Tekst ellers gir et navn, også i et
-/// `<title>` i en svg, og det gjør `alt`, `aria-label`, `aria-labelledby` og
-/// `title` på et barn som vises. `&nbsp;` er mellomrom.
+/// What is under `aria-hidden="true"` or `hidden` is not read by the screen
+/// reader, and does not count. Other text gives a name, also in a `<title>`
+/// in an svg, and so do `alt`, `aria-label`, `aria-labelledby` and `title` on
+/// a child that is shown. `&nbsp;` is whitespace.
 ///
-/// Et barn utenfor svg-en som har noe annet på seg enn `class`, `id`,
-/// `style` og skjuling, kan få tekst fra noe regelen ikke ser, som
-/// `x-text`, `v-t` eller `data-i18n`. Det samme gjelder en `<slot>` og en
-/// komponent med stor bokstav eller bindestrek i navnet. Da er svaret nei.
-/// Uten et ikon er svaret også nei: en tom knapp er oftest et område
-/// serveren eller et skript fyller senere.
+/// A child outside the svg that has anything on it other than `class`, `id`,
+/// `style` and hiding can get text from something the rule does not see,
+/// like `x-text`, `v-t` or `data-i18n`. The same goes for a `<slot>` and a
+/// component with an upper-case letter or a hyphen in its name. Then the
+/// answer is no. Without an icon the answer is also no: an empty button is
+/// usually a region the server or a script fills later.
 fn only_icons(content: &[u16]) -> bool {
-    // Navnet, om det er skjult, og om det står inni en svg.
+    // The name, whether it is hidden, and whether it is inside an svg.
     let mut open: Vec<(Utf16, bool, bool)> = Vec::new();
     let mut icon = false;
     let mut i = 0;
@@ -1363,10 +1377,11 @@ fn only_icons(content: &[u16]) -> bool {
     icon
 }
 
-/// Der hver `<label>` åpnes og lukkes på siden, i rekkefølge.
+/// Where each `<label>` opens and closes on the page, in order.
 ///
-/// Leses én gang per side. Første utgave lette bakover fra hver knapp, og
-/// på en side uten `<label>` gikk hvert søk helt til starten.
+/// Read once per page. The first version searched backwards from every
+/// button, and on a page without `<label>` every search went all the way to
+/// the start.
 fn label_bounds(source: &[u16]) -> (Vec<usize>, Vec<usize>) {
     let at = |pattern: &str| -> Vec<usize> {
         (0..source.len())
@@ -1379,7 +1394,7 @@ fn label_bounds(source: &[u16]) -> (Vec<usize>, Vec<usize>) {
     (at("<label"), at("</label"))
 }
 
-/// Om `at` står inni en `<label>` som ikke er lukket ennå.
+/// Whether `at` is inside a `<label>` that is not closed yet.
 fn inside_label((opens, closes): &(Vec<usize>, Vec<usize>), at: usize) -> bool {
     let last = |v: &Vec<usize>| v.partition_point(|&k| k < at).checked_sub(1).map(|i| v[i]);
     match (last(opens), last(closes)) {
@@ -1389,7 +1404,7 @@ fn inside_label((opens, closes): &(Vec<usize>, Vec<usize>), at: usize) -> bool {
     }
 }
 
-/// En `<button>` eller `<a href>` med bare et ikon i, og ikke noe navn.
+/// A `<button>` or `<a href>` with only an icon in it, and no name.
 fn check_icon_only(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     let mut findings = Vec::new();
     let mut labels: Option<Vec<Utf16>> = None;
@@ -1429,8 +1444,8 @@ fn check_icon_only(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
         {
             continue;
         }
-        // En `<label for>` som peker på knappen, eller en `<label>` rundt
-        // den, gir den navnet sitt.
+        // A `<label for>` that points at the button, or a `<label>` around
+        // it, gives it its name.
         if let Some(id) = plain(&attributes, "id").and_then(|a| a.non_empty_value()) {
             if labels
                 .get_or_insert_with(|| label_targets(source))
@@ -1452,20 +1467,20 @@ fn check_icon_only(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
         ) {
             continue;
         }
-        let kind = if name == "a" { "lenke" } else { "knapp" };
+        let kind = if name == "a" { "link" } else { "button" };
         findings.push(Finding {
             start: name_start,
             end: name_end,
             severity: Severity::Error,
             link: ICON_LINK.into(),
             message: format!(
-                "<{name}> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «{kind}» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen lt-sr-only."
+                "<{name}> has only an icon in it and no name: no text, and no aria-label, aria-labelledby or title. A screen reader announces it as \"{kind}\" without saying what it does. Give it an aria-label, or a text in an element with the class lt-sr-only."
             ),
             fix: Some(Fix::one(
-"Gi den et navn med aria-label".into(),
+"Give it a name with aria-label".into(),
 name_end,
 name_end,
-" aria-label=\"Beskriv handlingen\"".into(),
+" aria-label=\"Describe the action\"".into(),
 true,
 )),
             rule: "icon-without-name",
@@ -1474,7 +1489,7 @@ true,
     findings
 }
 
-/// `/<([a-z][a-z0-9-]*)(?=[\s/>])/gi` ved `i`: der navnet slutter.
+/// `/<([a-z][a-z0-9-]*)(?=[\s/>])/gi` at `i`: where the name ends.
 pub fn tag_name_end(t: &[u16], i: usize) -> Option<usize> {
     if t.get(i) != Some(&LT) || !t.get(i + 1).is_some_and(|&c| is_ascii_letter(c)) {
         return None;
@@ -1486,7 +1501,7 @@ pub fn tag_name_end(t: &[u16], i: usize) -> Option<usize> {
     followed_by_end(t, j).then_some(j)
 }
 
-/// Kroppen til en tagg, uten én `/` til slutt.
+/// The body of a tag, without one trailing `/`.
 fn tag_body(t: &[u16], from: usize, to: usize) -> &[u16] {
     let b = &t[from..to];
     b.strip_suffix(&[SLASH]).unwrap_or(b)
@@ -1505,7 +1520,7 @@ fn has_class_attribute(b: &[u16]) -> bool {
     })
 }
 
-/// `/<\/navn\b/gi` fra `fra`.
+/// `/<\/name\b/gi` from `from`.
 fn closing_tag(t: &[u16], from: usize, name: &str) -> Option<usize> {
     (from..t.len()).find(|&i| {
         t[i] == LT
@@ -1515,20 +1530,21 @@ fn closing_tag(t: &[u16], from: usize, name: &str) -> Option<usize> {
     })
 }
 
-/// Alle funn i teksten, i den rekkefølgen de står.
+/// All findings in the text, in the order they appear.
 pub fn diagnose(text: &[u16], vocabulary: &Vocabulary, page: bool) -> Vec<Finding> {
     diagnose_visible(without_hidden(text), vocabulary, page)
 }
 
-/// Som [`diagnose`], på tekst som alt er lest med [`without_hidden`].
-/// `page` er sant for en hel side, der id-ene komponentene lager selv er
-/// riktige, og usant for en mal, der de er kopiert inn fra DevTools.
+/// Like [`diagnose`], on text already read with [`without_hidden`].
+/// `page` is true for a whole page, where the ids the components create
+/// themselves are correct, and false for a template, where they have been
+/// copied in from DevTools.
 pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> Vec<Finding> {
     let mut findings = Vec::new();
     let mut labels: Option<Vec<Utf16>> = None;
     let mut cache = Cache::new();
 
-    // Klassene, på alle tagger.
+    // The classes, on every tag.
     let mut i = 0;
     while i < source.len() {
         let Some(name_end) = tag_name_end(&source, i) else {
@@ -1579,7 +1595,7 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
                 severity: Severity::Error,
                 link: DOCS.into(),
                 message: format!(
-                    "<{tag}> finnes ikke i LO-TEK. Elementene er {}.",
+                    "<{tag}> does not exist in LO-TEK. The elements are {}.",
                     list(vocabulary.elements.iter().map(|e| e.tag.as_str()))
                 ),
                 fix: None,
@@ -1595,11 +1611,11 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
         let attributes = read_attributes(b, name_end);
         let conditional = has_condition(b, name_end, &attributes);
         for a in &attributes {
-            // Et attributt som er tatt ut, med beskjed om hva som gjelder i
-            // stedet, fra `removed` i manifestet. Foran `unknown-attribute`,
-            // som ellers ville foreslått det nærmeste navnet.
-            // Også bundet, som `data-attr:invalid` i Datastar eller `:invalid`
-            // i Vue: det var slik den gamle oppskriften skrev det.
+            // An attribute that has been removed, with a note on what to use
+            // instead, from `removed` in the manifest. Before
+            // `unknown-attribute`, which would otherwise suggest the closest
+            // name. Also when bound, like `data-attr:invalid` in Datastar or
+            // `:invalid` in Vue: that is how the old recipe wrote it.
             let removed = element
                 .removed
                 .iter()
@@ -1611,9 +1627,12 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
                     end: a.end,
                     severity: Severity::Warning,
                     link: element.link.clone(),
-                    message: format!("{name} er tatt ut av <{tag}>. {}", note.replace('`', "")),
+                    message: format!(
+                        "{name} has been removed from <{tag}>. {}",
+                        note.replace('`', "")
+                    ),
                     fix: Some(Fix::one(
-                        format!("Ta bort {written}"),
+                        format!("Remove {written}"),
                         a.space_start,
                         a.value_end,
                         String::new(),
@@ -1660,9 +1679,10 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
         }
     }
     findings.extend(check_icon_only(&source, vocabulary));
-    // Treet bygges én gang og deles av reglene som trenger det. Bare når
-    // det står noe fra LO-TEK i teksten: på en side med tusenvis av tagger
-    // uten en eneste komponent kostet treet mer enn resten av sjekken.
+    // The tree is built once and shared by the rules that need it. Only when
+    // there is something from LO-TEK in the text: on a page with thousands of
+    // tags without a single component, the tree cost more than the rest of
+    // the check.
     if contains_str(&source, "lt-")
         || vocabulary
             .elements
@@ -1679,18 +1699,18 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
     findings
 }
 
-/// Det stilarkene ikke styler: en klasse ingen av dem nevner, og en verdi
-/// ingen selektor har en regel for.
+/// What the style sheets do not style: a class none of them mentions, and a
+/// value no selector has a rule for.
 ///
-/// Den første er et stilark som ikke er lastet, eller lastet etter en
-/// omskriving. Den andre er oftest en variant lagt til i manifestet for en
-/// overtatt komponent, uten at CSS-en fikk den: markupen er gyldig, men ser
-/// ut som standard.
+/// The first is a style sheet that is not loaded, or loaded after a rewrite.
+/// The second is usually a variant added to the manifest for a taken-over
+/// component without the CSS getting it: the markup is valid, but looks like
+/// the default.
 pub fn check_styles(text: &[u16], vocabulary: &Vocabulary, styles: &Styles) -> Vec<Finding> {
     check_styles_visible(&without_hidden(text), vocabulary, styles)
 }
 
-/// Som [`check_styles`], på tekst som alt er lest med [`without_hidden`].
+/// Like [`check_styles`], on text already read with [`without_hidden`].
 pub fn check_styles_visible(
     source: &[u16],
     vocabulary: &Vocabulary,
@@ -1742,7 +1762,7 @@ pub fn check_styles_visible(
                 severity: Severity::Warning,
                 link: info.link.clone(),
                 message: format!(
-                    "Klassen «{name}» står i markupen, men ingen av stilarkene styler den. Er lotek.css, eller stilarket til {}, lastet?",
+                    "The class \"{name}\" is in the markup, but none of the style sheets styles it. Is lotek.css, or the style sheet for {}, loaded?",
                     lossy(&lowercase(&utf16(&info.title)))
                 ),
                 fix: None,
@@ -1769,15 +1789,15 @@ pub fn check_styles_visible(
                         .default_value
                         .as_deref()
                         .is_some_and(|d| equals(value, d));
-                    // En ukjent verdi meldes av sjekken av ordforrådet, og
-                    // standardverdien trenger ingen regel.
+                    // An unknown value is reported by the vocabulary check,
+                    // and the default value needs no rule.
                     if !known || default {
                         break;
                     }
                     Some(lossy(value))
                 };
-                // Verdien kan styles på en annen klasse på det samme
-                // elementet, som tilstanden på lt-search, som styles på
+                // The value can be styled on another class on the same
+                // element, like the state on lt-search, which is styled on
                 // lt-input.
                 if tokens
                     .iter()
@@ -1795,7 +1815,7 @@ pub fn check_styles_visible(
                     severity: Severity::Warning,
                     link: info.link.clone(),
                     message: format!(
-                        "{shown} på {} har ingen regel i stilarkene, så den gjør ingenting synlig. Style verdien, eller ta den bort.",
+                        "{shown} on {} has no rule in the style sheets, so it does nothing visible. Style the value, or remove it.",
                         lossy(&lowercase(&utf16(&info.title)))
                     ),
                     fix: None,

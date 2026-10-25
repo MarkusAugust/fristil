@@ -1,11 +1,11 @@
-//! Formen på ordforrådet og på funnene.
+//! The shape of the vocabulary and of the findings.
 //!
-//! Ordforrådet leses fra manifestet (`designsystem/manifest/manifest.json`)
-//! når kjernen kjører. Rekkefølgen er den samme som i manifestet, og den betyr
-//! noe: den bestemmer hvilket forslag som vinner ved lik avstand, og hvordan
-//! listene i meldingene står.
+//! The vocabulary is read from the manifest (`designsystem/manifest/manifest.json`)
+//! when the core runs. The order is the same as in the manifest, and it
+//! matters: it decides which suggestion wins at equal distance, and the order
+//! of the lists in the messages.
 
-/// Et attributt et `<lt-…>`-element leser.
+/// An attribute an `<lt-…>` element reads.
 #[derive(Clone, Debug)]
 pub enum Attribute {
     Flag,
@@ -14,11 +14,11 @@ pub enum Attribute {
     Values(Vec<String>),
 }
 
-/// En del av et element eller en klasse, som kontrollen i `<lt-field>`, med
-/// selektoren komponenten finner den med. Uten `multiple` gjelder den første,
-/// og med `unique` er en del til av samme slag en feil. Med `stable_id` må
-/// delen ha en id fra serveren: komponenten skriver aldri en, siden en
-/// oppdatering ellers bytter delen ut.
+/// A part of an element or a class, like the control in `<lt-field>`, with
+/// the selector the component finds it by. Without `multiple` the first one
+/// counts, and with `unique` a second part of the same kind is an error. With
+/// `stable_id` the part must have an id from the server: the component never
+/// writes one, since an update would otherwise replace the part.
 #[derive(Clone, Debug)]
 pub struct Part {
     pub name: String,
@@ -35,12 +35,12 @@ pub struct Element {
     pub link: String,
     pub attributes: Vec<(String, Attribute)>,
     pub parts: Vec<Part>,
-    /// Attributter som er tatt ut, med hva som gjelder i stedet.
+    /// Attributes that have been removed, with what to use instead.
     pub removed: Vec<(String, String)>,
 }
 
-/// Et attributt en klasse tar, som `data-variant` på `lt-button`, eller et
-/// flagg, som `data-optional` på `lt-label`, som er på når det står der.
+/// An attribute a class takes, like `data-variant` on `lt-button`, or a
+/// flag, like `data-optional` on `lt-label`, which is on when present.
 #[derive(Clone, Debug)]
 pub struct ClassAttribute {
     pub values: Vec<String>,
@@ -57,10 +57,10 @@ pub struct Class {
     pub parts: Vec<Part>,
 }
 
-/// Alt stavekontrollen sjekker mot, lest fra ett manifest.
+/// Everything the spell check checks against, read from one manifest.
 #[derive(Clone, Debug)]
 pub struct Vocabulary {
-    /// Versjonen av `@lo-tek/interfaces` manifestet er skrevet fra.
+    /// The version of `@lo-tek/interfaces` the manifest was written from.
     pub version: String,
     pub schema_version: u32,
     pub elements: Vec<Element>,
@@ -73,7 +73,7 @@ pub enum Severity {
     Warning,
 }
 
-/// Én endring i en rettelse: bytt ut teksten fra `start` til `end` med `text`.
+/// One edit in a fix: replace the text from `start` to `end` with `text`.
 #[derive(Clone, Debug)]
 pub struct Edit {
     pub start: usize,
@@ -81,10 +81,10 @@ pub struct Edit {
     pub text: String,
 }
 
-/// En rettelse editoren kan tilby: én eller flere endringer som hører sammen,
-/// som `id` på feltet og `for` på ledeteksten. Endringene står i den
-/// rekkefølgen de har i teksten, og overlapper ikke; den som bruker dem,
-/// bruker dem bakfra, så posisjonene holder.
+/// A fix the editor can offer: one or more edits that belong together, like
+/// `id` on the field and `for` on the label. The edits are in text order and
+/// do not overlap; whoever applies them applies them from the end, so the
+/// positions hold.
 #[derive(Clone, Debug)]
 pub struct Fix {
     pub title: String,
@@ -93,7 +93,7 @@ pub struct Fix {
 }
 
 impl Fix {
-    /// En rettelse med én endring.
+    /// A fix with one edit.
     pub fn one(title: String, start: usize, end: usize, text: String, preferred: bool) -> Fix {
         Fix {
             title,
@@ -103,7 +103,7 @@ impl Fix {
     }
 }
 
-/// Ett funn. Posisjonene er UTF-16-indekser i den opprinnelige teksten.
+/// One finding. The positions are UTF-16 indices into the original text.
 #[derive(Clone, Debug)]
 pub struct Finding {
     pub start: usize,
@@ -112,12 +112,12 @@ pub struct Finding {
     pub link: String,
     pub message: String,
     pub fix: Option<Fix>,
-    /// Navnet på regelen, som `unknown-class`. Det er dette en kommentar som
-    /// `<!-- lotek-ignore-next unknown-class -->` viser til.
+    /// The name of the rule, like `unknown-class`. This is what a comment
+    /// like `<!-- lotek-ignore-next unknown-class -->` refers to.
     pub rule: &'static str,
 }
 
-/// Navnene på reglene, i den rekkefølgen de står i dokumentasjonen.
+/// The names of the rules, in the order they appear in the documentation.
 pub const RULES: &[&str] = &[
     "unknown-element",
     "unknown-attribute",
@@ -132,12 +132,12 @@ pub const RULES: &[&str] = &[
     "part-repeated",
     "field-without-label",
     "timeout-without-dialog",
-    "duplikat-id",
-    "id-finnes-ikke",
-    "for-peker-feil",
-    "oppsummering-peker-feil",
-    "kontroll-uten-ledetekst",
-    "tekst-ikke-koblet",
+    "duplicate-id",
+    "id-not-found",
+    "for-points-nowhere",
+    "summary-points-nowhere",
+    "control-without-label",
+    "text-not-wired",
     "unstyled-class",
     "unstyled-value",
     "control-without-wiring",

@@ -1,23 +1,25 @@
-//! Koblingen malen må skrive selv, for at komponentene skal virke uten
-//! JavaScript og overleve en oppdatering fra serveren.
+//! The wiring the template must write itself, for the components to work
+//! without JavaScript and survive an update from the server.
 //!
-//! Komponentene skriver aldri id på det brukeren rører: feltet, fanene og
-//! panelene. Datastar og idiomorph kjenner et element igjen på id, og et
-//! element med en id serveren ikke sendte, byttes ut ved neste oppdatering,
-//! med fokus og det brukeren skrev. Det som trengs for at feltet skal ha et
-//! navn uten JavaScript, `for` og `id` eller ledeteksten rundt feltet, er
-//! derfor malens. Reglene her sier fra når det mangler, i markupmodus som i
-//! sidemodus, med samme ord som komponentene bruker i konsollen.
+//! The components never write an id on what the user interacts with: the
+//! field, the tabs and the panels. Datastar and idiomorph recognise an
+//! element by its id, and an element with an id the server did not send is
+//! replaced at the next update, together with focus and what the user typed.
+//! What the field needs to have a name without JavaScript, `for` and `id` or
+//! the label around the field, is therefore the template's job. The rules
+//! here report when it is missing, in markup mode as in page mode, with the
+//! same words the components use in the console.
 //!
-//! Hvilke deler som må ha id fra serveren, står i manifestet som `stableId`
-//! på delen, så en ny del i `metadata.ts` sjekkes uten en linje her. Hver
-//! komponents egne regler, som fanene og forslagslista, står under sitt
-//! elementnavn.
+//! Which parts must have an id from the server is in the manifest as
+//! `stableId` on the part, so a new part in `metadata.ts` is checked without
+//! a line here. Each component's own rules, like the tabs and the suggestion
+//! list, are under its element name.
 //!
-//! Reglene tier der malen avgjør markupen: en løkke, et `if` eller et
-//! uttrykk i verten, et `v-if` på en del, en bundet id (`:id`, `v-bind:id`,
-//! `x-bind:id`, `data-attr:id`, `[id]`, `th:id`, `asp-for`) eller en id med
-//! malsyntaks i. Da vet bare serveren hva som havner på siden.
+//! The rules stay silent where the template decides the markup: a loop, an
+//! `if` or an expression in the host, a `v-if` on a part, a bound id (`:id`,
+//! `v-bind:id`, `x-bind:id`, `data-attr:id`, `[id]`, `th:id`, `asp-for`) or
+//! an id with template syntax in it. Then only the server knows what ends up
+//! on the page.
 
 use std::collections::{HashMap, HashSet};
 
@@ -29,8 +31,8 @@ use crate::types::*;
 
 const CONTROLS: &[&str] = &["input", "textarea", "select"];
 
-/// Id-ene komponentene lager selv, `uniqueId` i `host-element.ts`, pluss
-/// `createFieldId`: `lt-field-<tall>-<seks tegn>`.
+/// The ids the components create themselves, `uniqueId` in `host-element.ts`,
+/// plus `createFieldId`: `lt-field-<number>-<six characters>`.
 const GENERATED_PREFIXES: &[&str] = &[
     "lt-field-help-",
     "lt-field-error-",
@@ -43,19 +45,19 @@ const GENERATED_PREFIXES: &[&str] = &[
     "lt-suggestion-label-",
 ];
 
-/// Hva noden sier om id-en sin.
+/// What the node says about its id.
 enum Id {
-    /// Ingen id, og ingen binding som gir en.
+    /// No id, and no binding that gives one.
     Missing,
-    /// En binding eller malsyntaks gir id-en på siden, og bare serveren vet hva.
+    /// A binding or template syntax gives the id on the page, and only the server knows what.
     Unknown,
-    /// En id skrevet rett ut.
+    /// An id written out directly.
     Given(Utf16),
 }
 
-/// Om attributtet står bundet av et rammeverk, som `:for`, `v-bind:id`,
-/// `data-attr:id`, `[id]`, `[attr.for]` eller `th:id`. Da gir bindingen
-/// verdien på siden, og bare serveren vet hva den blir.
+/// Whether the attribute is bound by a framework, like `:for`, `v-bind:id`,
+/// `data-attr:id`, `[id]`, `[attr.for]` or `th:id`. Then the binding gives the
+/// value on the page, and only the server knows what it will be.
 fn bound(node: &Node, name: &str) -> bool {
     node.attributes.iter().any(|a| {
         let full = lossy(&lowercase(&a.name));
@@ -67,7 +69,7 @@ fn bound(node: &Node, name: &str) -> bool {
 }
 
 fn id_of(node: &Node) -> Id {
-    // `asp-for` i Razor gir både `id` og `name`, uten at navnet sier det.
+    // `asp-for` in Razor gives both `id` and `name`, without the name saying so.
     if bound(node, "id") || value(node, "asp-for").is_some() {
         return Id::Unknown;
     }
@@ -78,19 +80,19 @@ fn id_of(node: &Node) -> Id {
     }
 }
 
-/// Om noden selv har malsyntaks i et attributt eller en verdi.
+/// Whether the node itself has template syntax in an attribute or a value.
 fn templated_node(node: &Node) -> bool {
     node.attributes
         .iter()
         .any(|a| is_templated(&a.name) || a.value.as_deref().is_some_and(is_templated))
 }
 
-/// Om attributtet står der i en eller annen form, bundet eller rett ut.
+/// Whether the attribute is there in some form, bound or written out.
 fn has_attribute(node: &Node, name: &str) -> bool {
     attribute(&node.attributes, name).is_some()
 }
 
-/// Verdien slik den står, bare når attributtet er skrevet rett ut.
+/// The value as written, only when the attribute is written out directly.
 fn plain_value<'a>(node: &'a Node, name: &str) -> Option<&'a Utf16> {
     value(node, name).and_then(|a| a.value.as_ref())
 }
@@ -113,8 +115,8 @@ fn finding(
     }
 }
 
-/// En gyldig id laget av `name`: bokstaver, tall, bindestrek og understrek,
-/// og første tegn en bokstav. `items[0].email` og `kommune[]` er ikke det.
+/// A valid id made from `name`: letters, digits, hyphen and underscore, with
+/// a letter first. `items[0].email` and `country[]` are not.
 fn id_from_name(name: &[u16]) -> Option<String> {
     let text = lossy(name);
     let mut chars = text.chars();
@@ -128,12 +130,12 @@ fn id_from_name(name: &[u16]) -> Option<String> {
     Some(text)
 }
 
-/// Det som sitter i teksten, lest én gang per side.
+/// What is in the text, read once per page.
 struct Page<'a> {
     nodes: &'a [Node],
-    /// Hver id på siden, dekodet, og noden som har den.
+    /// Every id on the page, decoded, and the node that has it.
     ids: HashMap<Utf16, usize>,
-    /// Verdiene i hver `<label for>` på siden, dekodet.
+    /// The values of every `<label for>` on the page, decoded.
     label_for: HashSet<Utf16>,
 }
 
@@ -206,7 +208,7 @@ pub(crate) fn check_wiring(
     out
 }
 
-/// Én vert med delene sine, slik de står i manifestet.
+/// One host with its parts, as they are in the manifest.
 struct Host<'a> {
     page: &'a Page<'a>,
     element: &'a Element,
@@ -228,7 +230,7 @@ impl Host<'_> {
         &self.element.link
     }
 
-    /// Nodene i verten som er delen med navnet, i rekkefølge.
+    /// The nodes in the host that are the part with the name, in order.
     fn part(&self, name: &str) -> Vec<usize> {
         let Some(k) = self.element.parts.iter().position(|p| p.name == name) else {
             return Vec::new();
@@ -255,7 +257,7 @@ impl Host<'_> {
             .collect()
     }
 
-    /// Delene med `stableId`: en kontroll uten kobling, og et panel uten id.
+    /// The parts with `stableId`: a control without wiring, and a panel without an id.
     fn stable_ids(&self) -> Vec<Finding> {
         let mut out = Vec::new();
         for (k, part) in self.element.parts.iter().enumerate() {
@@ -285,10 +287,10 @@ impl Host<'_> {
                     node,
                     self.link(),
                     format!(
-                        "<{}> har delen «{}» uten id. {}",
+                        "<{}> has the part \"{}\" without an id. {}",
                         self.tag(),
                         part.name,
-                        // Meldingen er ren tekst; kodeskriften er for hoverboksen.
+                        // The message is plain text; the code font is for the hover box.
                         part.description.replace('`', "")
                     ),
                     None,
@@ -298,8 +300,8 @@ impl Host<'_> {
         out
     }
 
-    /// `control-without-wiring`: ledeteksten verken peker på feltet med `for`
-    /// eller står rundt det.
+    /// `control-without-wiring`: the label neither points at the field with
+    /// `for` nor is around it.
     fn control(&self, n: usize) -> Option<Finding> {
         let nodes = self.nodes();
         let control = &nodes[n];
@@ -310,17 +312,17 @@ impl Host<'_> {
             return None;
         }
         let labels = self.own_named("label");
-        // En ledetekst med bundet `for`, som `:for` eller `asp-for`, peker
-        // på noe bare serveren vet.
+        // A label with a bound `for`, like `:for` or `asp-for`, points at
+        // something only the server knows.
         if labels
             .iter()
             .any(|&l| bound(&nodes[l], "for") || value(&nodes[l], "asp-for").is_some())
         {
             return None;
         }
-        // Uten en ledetekst i det hele tatt sier `field-without-label` fra
-        // om <lt-field>. Forslagsfeltet har ingen slik regel, så der meldes
-        // det her.
+        // Without any label at all, `field-without-label` reports it for
+        // <lt-field>. The suggestion field has no such rule, so there it is
+        // reported here.
         if labels.is_empty() && self.tag() == "lt-field" {
             return None;
         }
@@ -337,11 +339,11 @@ impl Host<'_> {
         let what = format!("<{}>", control.name);
         let message = if labels.is_empty() {
             format!(
-                "Feltet har ingen ledetekst koblet til seg: ingen <label for> peker på {what}, og ingen <label> står rundt det. Uten kobling har feltet ikke noe navn uten JavaScript. Gi feltet en fast id fra det feltet står for, for eksempel id=\"kommune\", og skriv den samme i for på en <label>, eller legg ledeteksten rundt feltet."
+                "The field has no label wired to it: no <label for> points at {what}, and no <label> is around it. Without the wiring the field has no name without JavaScript. Give the field a fixed id based on what the field is for, for example id=\"country\", and write the same in for on a <label>, or put the label around the field."
             )
         } else {
             format!(
-                "Ledeteksten er ikke koblet til {what}. Uten kobling har feltet ikke noe navn uten JavaScript, og klikk på ledeteksten flytter ikke fokus dit. Gi feltet en fast id fra det feltet står for, for eksempel id=\"kommune\", og skriv den samme i for på ledeteksten, eller legg ledeteksten rundt feltet."
+                "The label is not wired to {what}. Without the wiring the field has no name without JavaScript, and a click on the label does not move focus to it. Give the field a fixed id based on what the field is for, for example id=\"country\", and write the same in for on the label, or put the label around the field."
             )
         };
         let fix = self.link_fix(n, &labels, id.is_none());
@@ -354,9 +356,9 @@ impl Host<'_> {
         ))
     }
 
-    /// «Gi feltet id «navn»»: `id` på kontrollen og `for` på ledeteksten,
-    /// bare når `name` kan være en id, ingen annen har den, kontrollen ikke
-    /// har noen id fra før, og ledeteksten i verten står uten `for`.
+    /// "Give the field the id "name"": `id` on the control and `for` on the
+    /// label, only when `name` can be an id, nothing else has it, the control
+    /// has no id already, and the label in the host has no `for`.
     fn link_fix(&self, n: usize, labels: &[usize], without_id: bool) -> Option<Fix> {
         if !without_id {
             return None;
@@ -390,13 +392,13 @@ impl Host<'_> {
         ];
         edits.sort_by_key(|e| e.start);
         Some(Fix {
-            title: format!("Gi feltet id «{id}»"),
+            title: format!("Give the field the id \"{id}\""),
             edits,
             preferred: true,
         })
     }
 
-    /// Fanene: hver lenke har et panel, raden har et navn, og en fane er en lenke.
+    /// The tabs: every link has a panel, the tab list has a name, and a tab is a link.
     fn tabs(&self) -> Vec<Finding> {
         let nodes = self.nodes();
         let mut out = Vec::new();
@@ -411,8 +413,8 @@ impl Host<'_> {
             if is_templated_value(href) {
                 continue;
             }
-            // Som nettleseren: fragmentet slik det står, og ellers dekodet,
-            // så `#s%C3%B8knaden` finner `id="søknaden"`.
+            // Like the browser: the fragment as written, and otherwise
+            // decoded, so `#s%C3%B8knaden` finds `id="søknaden"`.
             let target = &href[1..];
             if target.is_empty()
                 || self.page.has_id(target)
@@ -425,7 +427,7 @@ impl Host<'_> {
                 tab,
                 self.link(),
                 format!(
-                    "<{}> har en fane uten et panel: lenken peker på #{}, og ingen element har den id-en. Skriv id på hvert .lt-tabs__panel, den samme som lenken peker på. Fanen kan velges uten at noe vises.",
+                    "<{}> has a tab without a panel: the link points at #{}, and no element has that id. Write an id on every .lt-tabs__panel, the same one the link points at. The tab can be selected without anything being shown.",
                     self.tag(),
                     lossy(target)
                 ),
@@ -444,20 +446,20 @@ impl Host<'_> {
                     list,
                     self.link(),
                     format!(
-                        "<{}> har en fanerad uten navn. Skriv aria-label på .lt-tabs__list, som aria-label=\"Deler av saken\", eller aria-labelledby mot en overskrift. Uten navn sier skjermleseren bare «faneliste».",
+                        "<{}> has a tab list without a name. Write aria-label on .lt-tabs__list, like aria-label=\"Case sections\", or aria-labelledby pointing at a heading. Without a name the screen reader only says \"tab list\".",
                         self.tag()
                     ),
                     Some(Fix::one(
-                        "Gi raden et navn med aria-label".into(),
+                        "Give the tab list a name with aria-label".into(),
                         list.name_end,
                         list.name_end,
-                        " aria-label=\"Deler av saken\"".into(),
+                        " aria-label=\"Case sections\"".into(),
                         true,
                     )),
                 ));
             }
-            // Det serveren har kalt en fane i raden, men som ikke er en
-            // lenke til et panel.
+            // What the server has called a tab in the tab list, but is not a
+            // link to a panel.
             for &n in self.own {
                 let node = &nodes[n];
                 if !within(nodes, n, |m| std::ptr::eq(m, list)) || n == l {
@@ -480,7 +482,7 @@ impl Host<'_> {
                     node,
                     self.link(),
                     format!(
-                        "<{}> har en fane uten href: role=\"tab\" står på <{}>, som ikke er en lenke til et panel. Fanene er lenker, som <a href=\"#vedlegg\">, så de virker uten JavaScript. Komponenten rører ikke det som ikke er en lenke.",
+                        "<{}> has a tab without href: role=\"tab\" is on <{}>, which is not a link to a panel. The tabs are links, like <a href=\"#attachments\">, so they work without JavaScript. The component does not touch what is not a link.",
                         self.tag(),
                         node.name
                     ),
@@ -491,7 +493,7 @@ impl Host<'_> {
         out
     }
 
-    /// Forslagslista: `data-value` på alternativene og `.lt-suggestion__value` hører sammen.
+    /// The suggestion list: `data-value` on the options and `.lt-suggestion__value` belong together.
     fn suggestion(&self) -> Vec<Finding> {
         let nodes = self.nodes();
         let options = self.part("option");
@@ -510,7 +512,7 @@ impl Host<'_> {
                 &nodes[n],
                 self.link(),
                 format!(
-                    "<{}> har alternativer med data-value, men ikke noe .lt-suggestion__value. Koden brukeren velger, sendes da ikke med skjemaet, bare teksten i feltet. Skriv <input type=\"hidden\" class=\"lt-suggestion__value\" name=\"…\"> i feltet, så komponenten fyller det.",
+                    "<{}> has options with data-value, but no .lt-suggestion__value. The code the user picks is then not sent with the form, only the text in the field. Write <input type=\"hidden\" class=\"lt-suggestion__value\" name=\"…\"> in the field, so the component fills it.",
                     self.tag()
                 ),
                 None,
@@ -520,7 +522,7 @@ impl Host<'_> {
                 &nodes[f],
                 self.link(),
                 format!(
-                    "<{}> har et .lt-suggestion__value, men ingen alternativer med data-value. Feltet blir stående tomt. Gi hvert alternativ data-value med koden det står for.",
+                    "<{}> has an .lt-suggestion__value, but no options with data-value. The field stays empty. Give every option a data-value with the code it stands for.",
                     self.tag()
                 ),
                 None,
@@ -529,7 +531,7 @@ impl Host<'_> {
         }
     }
 
-    /// Feltet: en skjult feilmelding og `aria-invalid="true"` sier imot hverandre.
+    /// The field: a hidden error text and `aria-invalid="true"` contradict each other.
     fn field(&self) -> Vec<Finding> {
         let nodes = self.nodes();
         let (Some(e), Some(c)) = (self.first("error"), self.first("control")) else {
@@ -537,7 +539,7 @@ impl Host<'_> {
         };
         let error = &nodes[e];
         let control = &nodes[c];
-        // Et boolsk attributt har ingen verdi; det står der eller ikke.
+        // A boolean attribute has no value; it is either there or not.
         let hidden = value(error, "hidden").is_some();
         let invalid = plain_value(control, "aria-invalid")
             .is_some_and(|v| equals(&lowercase(trimmed(v)), "true"));
@@ -549,7 +551,7 @@ impl Host<'_> {
             error,
             self.link(),
             format!(
-                "Feilmeldingen har hidden, men <{}> har aria-invalid=\"true\". Komponenten regner feltet som ugyldig når feilmeldingen synes eller aria-invalid står der, så de to sier imot hverandre: skjermleseren hører «ugyldig» uten at brukeren ser hvorfor. Ta bort det ene.",
+                "The error text has hidden, but <{}> has aria-invalid=\"true\". The component treats the field as invalid when the error text is visible or aria-invalid is there, so the two contradict each other: the screen reader says \"invalid\" without the user seeing why. Remove one of them.",
                 control.name
             ),
             None,
@@ -557,7 +559,7 @@ impl Host<'_> {
     }
 }
 
-/// `text-in-label`: hjelpeteksten eller feilmeldingen står inni `<label>`.
+/// `text-in-label`: the help text or the error text is inside `<label>`.
 fn text_in_label(page: &Page, vocabulary: &Vocabulary) -> Vec<Finding> {
     let link = vocabulary
         .elements
@@ -575,16 +577,16 @@ fn text_in_label(page: &Page, vocabulary: &Vocabulary) -> Vec<Finding> {
             continue;
         }
         let what = if help {
-            "Hjelpeteksten"
+            "The help text"
         } else {
-            "Feilmeldingen"
+            "The error text"
         };
         out.push(finding(
             "text-in-label",
             node,
             link,
             format!(
-                "{what} står inni <label>, og blir en del av feltets navn. Skjermleseren leser den som navnet på feltet, og aria-describedby peker på noe inni navnet. Flytt den ut av <label>, ved siden av feltet."
+                "{what} is inside <label>, and becomes part of the field's name. The screen reader reads it as the name of the field, and aria-describedby points at something inside the name. Move it out of the <label>, next to the field."
             ),
             None,
         ));
@@ -592,9 +594,9 @@ fn text_in_label(page: &Page, vocabulary: &Vocabulary) -> Vec<Finding> {
     out
 }
 
-/// `id-from-component`: en id komponenten lagde selv i nettleseren, kopiert
-/// inn i malen fra DevTools. Bare i markupmodus: på en rendret side er den
-/// riktig.
+/// `id-from-component`: an id the component created itself in the browser,
+/// copied into the template from DevTools. Only in markup mode: on a rendered
+/// page it is correct.
 fn generated_ids(page: &Page, vocabulary: &Vocabulary) -> Vec<Finding> {
     let link = vocabulary
         .elements
@@ -617,7 +619,7 @@ fn generated_ids(page: &Page, vocabulary: &Vocabulary) -> Vec<Finding> {
             severity: Severity::Warning,
             link: link.to_string(),
             message: format!(
-                "id=\"{text}\" er en id komponenten lagde selv i nettleseren, og ser ut som kopiert fra DevTools. Komponenten lager en ny ved hver sidelasting, så ingenting kan peke på denne. Skriv din egen id, fra det elementet står for, eller la den stå tom."
+                "id=\"{text}\" is an id the component created itself in the browser, and looks copied from DevTools. The component creates a new one on every page load, so nothing can point at this one. Write your own id, based on what the element is for, or leave it empty."
             ),
             fix: None,
             rule: "id-from-component",
@@ -633,7 +635,7 @@ fn looks_generated(id: &str) -> bool {
                 .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit())
     };
     if let Some(rest) = id.strip_prefix("lt-field-") {
-        // `createFieldId`: `lt-field-<teller>-<seks tegn>`.
+        // `createFieldId`: `lt-field-<counter>-<six characters>`.
         if let Some((count, tail)) = rest.split_once('-') {
             if !count.is_empty() && count.chars().all(|c| c.is_ascii_digit()) && base36(tail, 6) {
                 return true;

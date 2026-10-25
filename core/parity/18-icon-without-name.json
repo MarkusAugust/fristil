@@ -5,14 +5,14 @@
       "end": 7,
       "severity": "error",
       "link": "https://lo-tek.sobernetics.no/components/icon/",
-      "message": "<button> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «knapp» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen lt-sr-only.",
+      "message": "<button> has only an icon in it and no name: no text, and no aria-label, aria-labelledby or title. A screen reader announces it as \"button\" without saying what it does. Give it an aria-label, or a text in an element with the class lt-sr-only.",
       "fix": {
-        "title": "Gi den et navn med aria-label",
+        "title": "Give it a name with aria-label",
         "edits": [
           {
             "start": 7,
             "end": 7,
-            "text": " aria-label=\"Beskriv handlingen\""
+            "text": " aria-label=\"Describe the action\""
           }
         ],
         "preferred": true
@@ -23,14 +23,14 @@
       "end": 142,
       "severity": "error",
       "link": "https://lo-tek.sobernetics.no/components/icon/",
-      "message": "<a> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «lenke» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen lt-sr-only.",
+      "message": "<a> has only an icon in it and no name: no text, and no aria-label, aria-labelledby or title. A screen reader announces it as \"link\" without saying what it does. Give it an aria-label, or a text in an element with the class lt-sr-only.",
       "fix": {
-        "title": "Gi den et navn med aria-label",
+        "title": "Give it a name with aria-label",
         "edits": [
           {
             "start": 142,
             "end": 142,
-            "text": " aria-label=\"Beskriv handlingen\""
+            "text": " aria-label=\"Describe the action\""
           }
         ],
         "preferred": true
@@ -43,14 +43,14 @@
       "end": 7,
       "severity": "error",
       "link": "https://lo-tek.sobernetics.no/components/icon/",
-      "message": "<button> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «knapp» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen lt-sr-only.",
+      "message": "<button> has only an icon in it and no name: no text, and no aria-label, aria-labelledby or title. A screen reader announces it as \"button\" without saying what it does. Give it an aria-label, or a text in an element with the class lt-sr-only.",
       "fix": {
-        "title": "Gi den et navn med aria-label",
+        "title": "Give it a name with aria-label",
         "edits": [
           {
             "start": 7,
             "end": 7,
-            "text": " aria-label=\"Beskriv handlingen\""
+            "text": " aria-label=\"Describe the action\""
           }
         ],
         "preferred": true
@@ -61,14 +61,14 @@
       "end": 142,
       "severity": "error",
       "link": "https://lo-tek.sobernetics.no/components/icon/",
-      "message": "<a> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «lenke» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen lt-sr-only.",
+      "message": "<a> has only an icon in it and no name: no text, and no aria-label, aria-labelledby or title. A screen reader announces it as \"link\" without saying what it does. Give it an aria-label, or a text in an element with the class lt-sr-only.",
       "fix": {
-        "title": "Gi den et navn med aria-label",
+        "title": "Give it a name with aria-label",
         "edits": [
           {
             "start": 142,
             "end": 142,
-            "text": " aria-label=\"Beskriv handlingen\""
+            "text": " aria-label=\"Describe the action\""
           }
         ],
         "preferred": true

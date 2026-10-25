@@ -5,9 +5,9 @@
       "end": 61,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "Ledeteksten er ikke koblet til <input>. Uten kobling har feltet ikke noe navn uten JavaScript, og klikk på ledeteksten flytter ikke fokus dit. Gi feltet en fast id fra det feltet står for, for eksempel id=\"kommune\", og skriv den samme i for på ledeteksten, eller legg ledeteksten rundt feltet.",
+      "message": "The label is not wired to <input>. Without the wiring the field has no name without JavaScript, and a click on the label does not move focus to it. Give the field a fixed id based on what the field is for, for example id=\"country\", and write the same in for on the label, or put the label around the field.",
       "fix": {
-        "title": "Gi feltet id «kommune»",
+        "title": "Give the field the id \"kommune\"",
         "edits": [
           {
             "start": 19,
@@ -28,7 +28,7 @@
       "end": 233,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/suggestion/",
-      "message": "Ledeteksten er ikke koblet til <input>. Uten kobling har feltet ikke noe navn uten JavaScript, og klikk på ledeteksten flytter ikke fokus dit. Gi feltet en fast id fra det feltet står for, for eksempel id=\"kommune\", og skriv den samme i for på ledeteksten, eller legg ledeteksten rundt feltet."
+      "message": "The label is not wired to <input>. Without the wiring the field has no name without JavaScript, and a click on the label does not move focus to it. Give the field a fixed id based on what the field is for, for example id=\"country\", and write the same in for on the label, or put the label around the field."
     }
   ],
   "side": [
@@ -37,9 +37,9 @@
       "end": 61,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "Ledeteksten er ikke koblet til <input>. Uten kobling har feltet ikke noe navn uten JavaScript, og klikk på ledeteksten flytter ikke fokus dit. Gi feltet en fast id fra det feltet står for, for eksempel id=\"kommune\", og skriv den samme i for på ledeteksten, eller legg ledeteksten rundt feltet.",
+      "message": "The label is not wired to <input>. Without the wiring the field has no name without JavaScript, and a click on the label does not move focus to it. Give the field a fixed id based on what the field is for, for example id=\"country\", and write the same in for on the label, or put the label around the field.",
       "fix": {
-        "title": "Gi feltet id «kommune»",
+        "title": "Give the field the id \"kommune\"",
         "edits": [
           {
             "start": 19,
@@ -60,7 +60,7 @@
       "end": 233,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/suggestion/",
-      "message": "Ledeteksten er ikke koblet til <input>. Uten kobling har feltet ikke noe navn uten JavaScript, og klikk på ledeteksten flytter ikke fokus dit. Gi feltet en fast id fra det feltet står for, for eksempel id=\"kommune\", og skriv den samme i for på ledeteksten, eller legg ledeteksten rundt feltet."
+      "message": "The label is not wired to <input>. Without the wiring the field has no name without JavaScript, and a click on the label does not move focus to it. Give the field a fixed id based on what the field is for, for example id=\"country\", and write the same in for on the label, or put the label around the field."
     }
   ]
 }

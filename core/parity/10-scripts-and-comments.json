@@ -5,7 +5,7 @@
       "end": 214,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/tag/",
-      "message": "data-variant kan ikke være «feil» på tag. Lovlige verdier: filled, og outline uten attributt."
+      "message": "data-variant cannot be \"feil\" on tag. Valid values: filled, and outline without the attribute."
     }
   ],
   "side": [
@@ -14,7 +14,7 @@
       "end": 214,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/tag/",
-      "message": "data-variant kan ikke være «feil» på tag. Lovlige verdier: filled, og outline uten attributt."
+      "message": "data-variant cannot be \"feil\" on tag. Valid values: filled, and outline without the attribute."
     }
   ]
 }

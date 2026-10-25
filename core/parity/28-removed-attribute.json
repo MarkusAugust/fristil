@@ -5,9 +5,9 @@
       "end": 17,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "invalid er tatt ut av <lt-field>. Feltet er ugyldig når feilmeldingen, .lt-error-text, står synlig, eller når serveren har skrevet aria-invalid på kontrollen. I Datastar: data-attr:hidden=\"!$ugyldig\" på feilmeldingen.",
+      "message": "invalid has been removed from <lt-field>. The field is invalid when the error text, .lt-error-text, is visible, or when the server has written aria-invalid on the control. In Datastar: data-attr:hidden=\"!$invalid\" on the error text.",
       "fix": {
-        "title": "Ta bort invalid",
+        "title": "Remove invalid",
         "edits": [
           {
             "start": 9,
@@ -23,9 +23,9 @@
       "end": 33,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "required-marker er tatt ut av <lt-field>. Påkrevd-merket står som data-required på <label>, og vises da også uten JavaScript.",
+      "message": "required-marker has been removed from <lt-field>. The required marker is data-required on <label>, and then shows without JavaScript too.",
       "fix": {
-        "title": "Ta bort required-marker",
+        "title": "Remove required-marker",
         "edits": [
           {
             "start": 17,
@@ -41,9 +41,9 @@
       "end": 48,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "control-id er tatt ut av <lt-field>. Skriv id på kontrollen og for på ledeteksten i malen. Komponenten skriver aldri id på kontrollen.",
+      "message": "control-id has been removed from <lt-field>. Write id on the control and for on the label in the template. The component never writes an id on the control.",
       "fix": {
-        "title": "Ta bort control-id",
+        "title": "Remove control-id",
         "edits": [
           {
             "start": 37,
@@ -61,9 +61,9 @@
       "end": 17,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "invalid er tatt ut av <lt-field>. Feltet er ugyldig når feilmeldingen, .lt-error-text, står synlig, eller når serveren har skrevet aria-invalid på kontrollen. I Datastar: data-attr:hidden=\"!$ugyldig\" på feilmeldingen.",
+      "message": "invalid has been removed from <lt-field>. The field is invalid when the error text, .lt-error-text, is visible, or when the server has written aria-invalid on the control. In Datastar: data-attr:hidden=\"!$invalid\" on the error text.",
       "fix": {
-        "title": "Ta bort invalid",
+        "title": "Remove invalid",
         "edits": [
           {
             "start": 9,
@@ -79,9 +79,9 @@
       "end": 33,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "required-marker er tatt ut av <lt-field>. Påkrevd-merket står som data-required på <label>, og vises da også uten JavaScript.",
+      "message": "required-marker has been removed from <lt-field>. The required marker is data-required on <label>, and then shows without JavaScript too.",
       "fix": {
-        "title": "Ta bort required-marker",
+        "title": "Remove required-marker",
         "edits": [
           {
             "start": 17,
@@ -97,9 +97,9 @@
       "end": 48,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "control-id er tatt ut av <lt-field>. Skriv id på kontrollen og for på ledeteksten i malen. Komponenten skriver aldri id på kontrollen.",
+      "message": "control-id has been removed from <lt-field>. Write id on the control and for on the label in the template. The component never writes an id on the control.",
       "fix": {
-        "title": "Ta bort control-id",
+        "title": "Remove control-id",
         "edits": [
           {
             "start": 37,

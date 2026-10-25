@@ -1,13 +1,13 @@
-//! Fargeregning: sRGB, OKLCH og kontrast.
+//! Colour arithmetic: sRGB, OKLCH and contrast.
 //!
-//! Regningen skjer i OKLCH og ikke i HSL. I HSL betyr lyshet noe annet for
-//! hver kulør: `hsl(60 100% 50%)` er knallgul og `hsl(240 100% 50%)` er nesten
-//! sort, med samme tall. I OKLCH er lysheten den samme opplevde lysheten
-//! uansett kulør, så kontrakten kan sette én lyshet per rolle og la den gjelde
-//! for alle farger.
+//! The arithmetic is done in OKLCH and not in HSL. In HSL lightness means
+//! something different for each hue: `hsl(60 100% 50%)` is bright yellow and
+//! `hsl(240 100% 50%)` is nearly black, with the same numbers. In OKLCH the
+//! lightness is the same perceived lightness whatever the hue, so the
+//! contract can set one lightness per role and let it apply to every colour.
 //!
-//! Kontrasten regnes med WCAG 2.1 sin formel, den samme som testene bruker,
-//! så kontrakten og kontrollen er enige.
+//! The contrast is computed with the WCAG 2.1 formula, the same one the tests
+//! use, so the contract and the check agree.
 
 use std::f64::consts::PI;
 
@@ -25,7 +25,7 @@ pub struct Oklch {
     pub h: f64,
 }
 
-/// Leser `#rrggbb` eller `#rgb`.
+/// Reads `#rrggbb` or `#rgb`.
 pub fn parse_hex(hex: &str) -> Result<Rgb, String> {
     let trimmed = crate::theme::js_trim(hex);
     let clean = trimmed.strip_prefix('#').unwrap_or(trimmed);
@@ -35,7 +35,7 @@ pub fn parse_hex(hex: &str) -> Result<Rgb, String> {
         clean.to_string()
     };
     if full.len() != 6 || !full.bytes().all(|b| b.is_ascii_hexdigit()) {
-        return Err(format!("«{hex}» er ikke en gyldig heksadesimal farge"));
+        return Err(format!("\"{hex}\" is not a valid hexadecimal colour"));
     }
     let channel = |i: usize| f64::from(u8::from_str_radix(&full[i..i + 2], 16).unwrap());
     Ok(Rgb {
@@ -45,7 +45,7 @@ pub fn parse_hex(hex: &str) -> Result<Rgb, String> {
     })
 }
 
-/// `Math.round`: halvparten rundes opp, også for negative tall.
+/// `Math.round`: a half rounds up, also for negative numbers.
 fn js_round(x: f64) -> f64 {
     (x + 0.5).floor()
 }
@@ -129,11 +129,11 @@ fn outside(rgb: Rgb) -> bool {
         .any(|&c| c < -margin || c > 255.0 + margin)
 }
 
-/// Gjør en OKLCH-farge om til rgb som finnes på en skjerm.
+/// Turns an OKLCH colour into rgb that exists on a screen.
 ///
-/// Ikke alle kombinasjoner av lyshet og metning kan vises i sRGB. Havner
-/// fargen utenfor, dempes metningen til den er innenfor, framfor å klippe
-/// kanalene hver for seg. Det siste ville endret kuløren.
+/// Not every combination of lightness and chroma can be shown in sRGB. When
+/// the colour falls outside, the chroma is reduced until it is inside, rather
+/// than clipping the channels one by one. The latter would change the hue.
 pub fn oklch_to_rgb(color: Oklch) -> Rgb {
     let attempt = oklch_to_rgb_raw(color);
     if !outside(attempt) {
@@ -156,7 +156,7 @@ fn luminance(rgb: Rgb) -> f64 {
     0.2126 * to_linear(rgb.r) + 0.7152 * to_linear(rgb.g) + 0.0722 * to_linear(rgb.b)
 }
 
-/// Kontrastforholdet mellom to farger, slik WCAG 2.1 regner det.
+/// The contrast ratio between two colours, as WCAG 2.1 computes it.
 pub fn contrast_ratio(a: Rgb, b: Rgb) -> f64 {
     let la = luminance(a);
     let lb = luminance(b);

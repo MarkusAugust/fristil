@@ -1,28 +1,30 @@
-//! LO-TEKs diagnostikk, én implementasjon for alle vertsspråk.
+//! LO-TEK's diagnostics, one implementation for every host language.
 //!
-//! Kjernen kompileres til en WebAssembly-modul uten importer. Den samme fila
-//! kjøres av Node, Bun og nettleseren, av JVM-en gjennom Chicory, og av hvert
-//! annet språk som har en WebAssembly-runtime.
+//! The core compiles to a WebAssembly module without imports. The same file
+//! runs in Node, Bun and the browser, on the JVM through Chicory, and in
+//! every other language that has a WebAssembly runtime.
 //!
-//! Grensesnittet er det minste alle runtimer forstår, uten bindingsverktøy:
+//! The interface is the smallest one every runtime understands, without
+//! binding tools:
 //!
-//! 1. `alloc(lengde)` gir en peker til et område i modulens minne.
-//! 2. Verten skriver HTML-en dit som UTF-8.
-//! 3. `diagnose_markup_raw(peker, lengde)` eller `diagnose_page_raw(…)` kjører
-//!    sjekken, frigjør inndataene og legger svaret i modulens minne.
-//! 4. `result_ptr()` og `result_len()` sier hvor svaret står: funnene som
-//!    JSON, i UTF-8, med de samme feltene som `Finding` i TypeScript, og i
-//!    tillegg `rule`, `line` og `column`.
+//! 1. `alloc(length)` gives a pointer to a region of the module's memory.
+//! 2. The host writes the HTML there as UTF-8.
+//! 3. `diagnose_markup_raw(ptr, length)` or `diagnose_page_raw(…)` runs the
+//!    check, frees the input and puts the response in the module's memory.
+//! 4. `result_ptr()` and `result_len()` say where the response is: the
+//!    findings as JSON, in UTF-8, with the same fields as `Finding` in
+//!    TypeScript, plus `rule`, `line` and `column`.
 //!
-//! Kjernen bærer ingen data. Verten gir den ordforrådet med
-//! `load_manifest_raw(peker, lengde)` og fargekontrakten med
-//! `load_contract_raw(peker, lengde)`, fra pakken den har. Hvert kall som
-//! leser, sjekker eller bygger, svarer 0, eller 1 med `{"error": …}`, også
-//! når dataene mangler. `version_raw()` gir kjernens versjon, manifestets
-//! eller `null`, og formen på manifestet kjernen forstår.
+//! The core carries no data. The host gives it the vocabulary with
+//! `load_manifest_raw(ptr, length)` and the colour contract with
+//! `load_contract_raw(ptr, length)`, from the package it has. Every call that
+//! reads, checks or builds answers 0, or 1 with `{"error": …}`, also when the
+//! data is missing. `version_raw()` gives the core's version, the manifest's
+//! or `null`, and the manifest format the core understands.
 //!
-//! Posisjonene i funnene er UTF-16-indekser, som i JavaScript og Kotlin.
-//! `line` og `column` begynner på 1, og kolonnen telles i UTF-16-enheter.
+//! The positions in the findings are UTF-16 indices, as in JavaScript and
+//! Kotlin. `line` and `column` start at 1, and the column is counted in
+//! UTF-16 units.
 
 pub mod diagnose;
 pub mod json;
@@ -36,14 +38,14 @@ pub mod theme;
 pub mod types;
 pub mod wiring;
 
-/// En fil i pakken, til testene: fra `designsystem/` ved siden av. Bygget
-/// leser den aldri.
+/// A file in the package, for the tests: from `designsystem/` next to this
+/// directory. The build never reads it.
 #[cfg(test)]
 pub(crate) fn package_file(path: &str) -> String {
     std::fs::read_to_string(
         concat!(env!("CARGO_MANIFEST_DIR"), "/../designsystem/").to_owned() + path,
     )
-    .unwrap_or_else(|e| panic!("testene trenger {path} i pakken: {e}"))
+    .unwrap_or_else(|e| panic!("the tests need {path} in the package: {e}"))
 }
 
 use std::cell::RefCell;
@@ -51,12 +53,12 @@ use std::cell::RefCell;
 use text::{utf16, Utf16};
 use types::{Finding, Severity, Vocabulary};
 
-/// Det `diagnoseMarkup` finner: ordforrådet, for en mal eller et fragment.
+/// What `diagnoseMarkup` finds: the vocabulary, for a template or a fragment.
 pub fn diagnose_markup(html: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     suppress::apply(html, diagnose::diagnose(html, vocabulary, false))
 }
 
-/// Det `diagnosePage` finner: ordforrådet og koblingen på en hel side.
+/// What `diagnosePage` finds: the vocabulary and the wiring on a whole page.
 pub fn diagnose_page(html: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     let page: Utf16 = references::page_source(html);
     let mut findings = diagnose::diagnose(&page, vocabulary, true);
@@ -65,12 +67,14 @@ pub fn diagnose_page(html: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     suppress::apply(&references::page_source_with_comments(html), findings)
 }
 
-/// Sjekken med stilarkene i tillegg: det `diagnose_markup`, eller
-/// `diagnose_page` når `page` er sann, finner, og det stilarkene ikke styler.
+/// The check with the style sheets as well: what `diagnose_markup`, or
+/// `diagnose_page` when `page` is true, finds, plus what the style sheets do
+/// not style.
 ///
-/// En hel side leses som `diagnose_page` leser den: det som står i en
-/// `<template>`, en `<textarea>` eller en attributtverdi, vises ikke, og
-/// sjekkes heller ikke mot stilarkene. Siden leses én gang for begge.
+/// A whole page is read the way `diagnose_page` reads it: what is inside a
+/// `<template>`, a `<textarea>` or an attribute value is not shown, and is
+/// not checked against the style sheets either. The page is read once for
+/// both.
 pub fn diagnose_styled(
     html: &[u16],
     vocabulary: &Vocabulary,
@@ -96,15 +100,15 @@ pub fn diagnose_styled(
     }
 }
 
-/// Hvor hver linje begynner, så linje og kolonne for et funn er et oppslag.
+/// Where each line starts, so the line and column of a finding are a lookup.
 ///
-/// Telte hvert funn linjeskiftene fra starten av teksten, vokste tiden med
-/// kvadratet av sidens lengde: 6000 funn på en side med 3000 linjer tok en
-/// kvart sekund.
+/// When every finding counted the line breaks from the start of the text,
+/// the time grew with the square of the page length: 6000 findings on a
+/// page with 3000 lines took a quarter of a second.
 ///
-/// Et linjeskift er `\n`, `\r\n` eller `\r` alene, som LSP krever. Med bare
-/// `\n` ble et dokument med `\r`-linjeskift én lang linje, og en klient som
-/// sender bufferen slik den er, fikk funnene på feil sted.
+/// A line break is `\n`, `\r\n` or `\r` alone, as LSP requires. With only
+/// `\n`, a document with `\r` line breaks became one long line, and a client
+/// that sends the buffer as it is got the findings in the wrong place.
 pub struct Lines {
     starts: Vec<usize>,
 }
@@ -117,31 +121,31 @@ impl Lines {
         starts.extend(
             text.iter()
                 .enumerate()
-                // `\r` foran `\n` er samme linjeskift, og linja begynner
-                // etter `\n`.
+                // `\r` before `\n` is the same line break, and the line
+                // starts after `\n`.
                 .filter(|&(i, &c)| c == LF || (c == CR && text.get(i + 1) != Some(&LF)))
                 .map(|(i, _)| i + 1),
         );
         Lines { starts }
     }
 
-    /// Linje og kolonne for en UTF-16-posisjon, begge fra 1.
+    /// Line and column for a UTF-16 position, both from 1.
     pub fn line_and_column(&self, at: usize) -> (usize, usize) {
-        // Linja er den siste som begynner på eller før `at`.
+        // The line is the last one that starts at or before `at`.
         let line = self.starts.partition_point(|&start| start <= at);
         (line, at - self.starts[line - 1] + 1)
     }
 }
 
-/// Linje og kolonne for én UTF-16-posisjon, begge fra 1.
+/// Line and column for one UTF-16 position, both from 1.
 pub fn line_and_column(text: &[u16], at: usize) -> (usize, usize) {
-    // Teksten tas med ett tegn forbi `at`: en `\r` rett før skal ikke telle
-    // som et linjeskift når den står foran `\n`.
+    // The text is taken one character past `at`: a `\r` right before must
+    // not count as a line break when it comes before `\n`.
     Lines::new(&text[..(at + 1).min(text.len())]).line_and_column(at)
 }
 
-/// Funnene som JSON, i samme form som `JSON.stringify` av `Finding[]`, med
-/// regelnavn, linje og kolonne i tillegg.
+/// The findings as JSON, in the same shape as `JSON.stringify` of
+/// `Finding[]`, plus rule name, line and column.
 pub fn to_json(findings: &[Finding], text: &[u16]) -> String {
     let lines = Lines::new(text);
     let mut out = String::from("[");
@@ -214,7 +218,7 @@ fn respond(json: String) {
     RESPONSE.with(|s| *s.borrow_mut() = json.into_bytes());
 }
 
-/// Et område på `lengde` byte i modulens minne, som verten skriver HTML-en til.
+/// A region of `length` bytes in the module's memory, which the host writes the HTML to.
 #[no_mangle]
 pub extern "C" fn alloc(length: usize) -> *mut u8 {
     let mut buf = Vec::<u8>::with_capacity(length.max(1));
@@ -223,34 +227,34 @@ pub extern "C" fn alloc(length: usize) -> *mut u8 {
     ptr
 }
 
-/// Frigjør et område fra `alloc`.
+/// Frees a region from `alloc`.
 ///
 /// # Safety
-/// `peker` og `lengde` må komme fra ett og samme kall til `alloc`.
+/// `ptr` and `length` must come from one and the same call to `alloc`.
 #[no_mangle]
 pub unsafe extern "C" fn dealloc(ptr: *mut u8, length: usize) {
     drop(Vec::from_raw_parts(ptr, 0, length.max(1)));
 }
 
-/// Leser inndataene, som `alloc` ga og verten fylte, og frigjør dem.
+/// Reads the input, which `alloc` gave and the host filled, and frees it.
 unsafe fn read_input(ptr: *mut u8, length: usize) -> String {
     let bytes = Vec::from_raw_parts(ptr, length, length.max(1));
     String::from_utf8_lossy(&bytes).into_owned()
 }
 
-/// Svarer med en feil, og gir 1. Uten data skal kjernen si hvorfor, ikke svare
-/// med en tom liste som ser ut som en side uten funn.
+/// Responds with an error, and returns 1. Without data the core must say
+/// why, not answer with an empty list that looks like a page without findings.
 fn refuse(error: &str) -> u32 {
     respond(format!("{{\"error\":{}}}", json_string(error)));
     1
 }
 
 const NO_MANIFEST: &str =
-    "Kjernen har ikke fått noe manifest. Gi den manifest.json fra pakken med load_manifest_raw først.";
+    "The core has not been given a manifest. Give it manifest.json from the package with load_manifest_raw first.";
 const NO_CONTRACT: &str = theme::contract::NOT_LOADED;
 
 /// # Safety
-/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+/// `ptr` and `length` must come from `alloc(length)`, filled with UTF-8.
 #[no_mangle]
 pub unsafe extern "C" fn diagnose_markup_raw(ptr: *mut u8, length: usize) -> u32 {
     let html = utf16(&read_input(ptr, length));
@@ -262,7 +266,7 @@ pub unsafe extern "C" fn diagnose_markup_raw(ptr: *mut u8, length: usize) -> u32
 }
 
 /// # Safety
-/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+/// `ptr` and `length` must come from `alloc(length)`, filled with UTF-8.
 #[no_mangle]
 pub unsafe extern "C" fn diagnose_page_raw(ptr: *mut u8, length: usize) -> u32 {
     let html = utf16(&read_input(ptr, length));
@@ -273,10 +277,10 @@ pub unsafe extern "C" fn diagnose_page_raw(ptr: *mut u8, length: usize) -> u32 {
     0
 }
 
-/// Gir kjernen ordforrådet: manifestet verten har skrevet inn.
+/// Gives the core the vocabulary: the manifest the host has written in.
 ///
 /// # Safety
-/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+/// `ptr` and `length` must come from `alloc(length)`, filled with UTF-8.
 #[no_mangle]
 pub unsafe extern "C" fn load_manifest_raw(ptr: *mut u8, length: usize) -> u32 {
     match manifest::from_json(&read_input(ptr, length)) {
@@ -289,10 +293,10 @@ pub unsafe extern "C" fn load_manifest_raw(ptr: *mut u8, length: usize) -> u32 {
     }
 }
 
-/// Gir kjernen fargekontrakten verten har skrevet inn.
+/// Gives the core the colour contract the host has written in.
 ///
 /// # Safety
-/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+/// `ptr` and `length` must come from `alloc(length)`, filled with UTF-8.
 #[no_mangle]
 pub unsafe extern "C" fn load_contract_raw(ptr: *mut u8, length: usize) -> u32 {
     match theme::contract::load(&read_input(ptr, length)) {
@@ -312,12 +316,12 @@ fn json_object(entries: &[(String, String)]) -> String {
     format!("{{{}}}", fields.join(","))
 }
 
-/// Bygger et tema av oppskriften verten har skrevet inn, som JSON: de samme
-/// feltene som `ThemeInput` i TypeScript. Svarer 0 med temaet, eller 1 med
-/// `{"error": …}`, som `load_manifest_raw`.
+/// Builds a theme from the recipe the host has written in, as JSON: the same
+/// fields as `ThemeInput` in TypeScript. Answers 0 with the theme, or 1 with
+/// `{"error": …}`, like `load_manifest_raw`.
 ///
 /// # Safety
-/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+/// `ptr` and `length` must come from `alloc(length)`, filled with UTF-8.
 #[no_mangle]
 pub unsafe extern "C" fn build_theme_raw(ptr: *mut u8, length: usize) -> u32 {
     if !theme::contract::loaded() {
@@ -352,11 +356,11 @@ pub unsafe extern "C" fn build_theme_raw(ptr: *mut u8, length: usize) -> u32 {
     }
 }
 
-/// Kontrollerer et tema verten har skrevet inn, som CSS-tekst. Gir 0 med
-/// rapporten, eller 1 når kjernen ikke har fått noen fargekontrakt.
+/// Checks a theme the host has written in, as CSS text. Returns 0 with the
+/// report, or 1 when the core has not been given a colour contract.
 ///
 /// # Safety
-/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+/// `ptr` and `length` must come from `alloc(length)`, filled with UTF-8.
 #[no_mangle]
 pub unsafe extern "C" fn inspect_theme_raw(ptr: *mut u8, length: usize) -> u32 {
     if !theme::contract::loaded() {
@@ -384,22 +388,23 @@ pub unsafe extern "C" fn inspect_theme_raw(ptr: *mut u8, length: usize) -> u32 {
     0
 }
 
-/// Det et stilark styler: klassene, attributtverdiene og `@import`-adressene.
+/// What a style sheet styles: the classes, the attribute values and the
+/// `@import` addresses.
 ///
 /// # Safety
-/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+/// `ptr` and `length` must come from `alloc(length)`, filled with UTF-8.
 #[no_mangle]
 pub unsafe extern "C" fn inspect_styles_raw(ptr: *mut u8, length: usize) {
     respond(styles_json(&styles::read_styles(&read_input(ptr, length))));
 }
 
-/// Sjekken med stilarkene: `{"html": "…", "css": ["…"], "page": true}` inn,
-/// funnene ut, som `diagnose_page_raw`. Gir 0, eller 1 med `{"error": "…"}`
-/// når inndata ikke har den formen. Et tomt svar skal bety ingen funn, ikke
-/// at ingenting ble sjekket.
+/// The check with the style sheets: `{"html": "…", "css": ["…"], "page": true}`
+/// in, the findings out, like `diagnose_page_raw`. Returns 0, or 1 with
+/// `{"error": "…"}` when the input does not have that shape. An empty answer
+/// must mean no findings, not that nothing was checked.
 ///
 /// # Safety
-/// `peker` og `lengde` må komme fra `alloc(lengde)`, fylt med UTF-8.
+/// `ptr` and `length` must come from `alloc(length)`, filled with UTF-8.
 #[no_mangle]
 pub unsafe extern "C" fn diagnose_styled_raw(ptr: *mut u8, length: usize) -> u32 {
     match styled_input(&read_input(ptr, length)) {
@@ -417,33 +422,33 @@ pub unsafe extern "C" fn diagnose_styled_raw(ptr: *mut u8, length: usize) -> u32
     }
 }
 
-/// Leser inndata til `diagnose_styled_raw`.
+/// Reads the input to `diagnose_styled_raw`.
 fn styled_input(text: &str) -> Result<(Utf16, styles::Styles, bool), String> {
     let input = json::parse(text)?;
     let html = input
         .get("html")
         .and_then(json::Json::as_str)
-        .ok_or("Inndata mangler «html» som tekst.")?;
+        .ok_or("The input is missing \"html\" as text.")?;
     let sheets = input
         .get("css")
         .and_then(json::Json::as_array)
-        .ok_or("Inndata mangler «css» som en liste med stilark.")?;
+        .ok_or("The input is missing \"css\" as an array of style sheets.")?;
     let mut styles = styles::Styles::default();
     for (i, css) in sheets.iter().enumerate() {
         let css = css
             .as_str()
-            .ok_or_else(|| format!("css[{i}] skal være teksten i et stilark."))?;
+            .ok_or_else(|| format!("css[{i}] must be the text of a style sheet."))?;
         styles.extend(styles::read_styles(css));
     }
     let page = match input.get("page") {
         None | Some(json::Json::Bool(false)) => false,
         Some(json::Json::Bool(true)) => true,
-        Some(_) => return Err("«page» skal være true eller false.".into()),
+        Some(_) => return Err("\"page\" must be true or false.".into()),
     };
     Ok((utf16(html), styles, page))
 }
 
-/// Det stilarkene styler, som JSON.
+/// What the style sheets style, as JSON.
 pub fn styles_json(styles: &styles::Styles) -> String {
     let classes: Vec<String> = styles.classes.iter().map(|c| json_string(c)).collect();
     let attributes: Vec<String> = styles
@@ -472,8 +477,8 @@ pub fn styles_json(styles: &styles::Styles) -> String {
     )
 }
 
-/// Legger versjonene i svaret, som JSON. Manifestets er `null` når verten
-/// ikke har gitt noe manifest.
+/// Puts the versions in the response, as JSON. The manifest's is `null` when
+/// the host has not given a manifest.
 #[no_mangle]
 pub extern "C" fn version_raw() {
     let manifest_version = manifest::current()
@@ -486,13 +491,13 @@ pub extern "C" fn version_raw() {
     ));
 }
 
-/// Hvor svaret fra siste kall står.
+/// Where the response from the last call is.
 #[no_mangle]
 pub extern "C" fn result_ptr() -> *const u8 {
     RESPONSE.with(|s| s.borrow().as_ptr())
 }
 
-/// Hvor langt svaret fra siste kall er, i byte.
+/// How long the response from the last call is, in bytes.
 #[no_mangle]
 pub extern "C" fn result_len() -> usize {
     RESPONSE.with(|s| s.borrow().len())
@@ -511,7 +516,7 @@ mod tests {
         let text = utf16("ab\nø🧾x");
         assert_eq!(line_and_column(&text, 0), (1, 1));
         assert_eq!(line_and_column(&text, 3), (2, 1));
-        // «🧾» er to UTF-16-enheter.
+        // "🧾" is two UTF-16 units.
         assert_eq!(line_and_column(&text, 6), (2, 4));
     }
 
@@ -524,7 +529,7 @@ mod tests {
         assert_eq!(found.len(), 1, "{found:?}");
         assert_eq!(found[0].rule, "boolean-with-value");
         assert!(
-            found[0].message.contains("flagg på label"),
+            found[0].message.contains("flag on label"),
             "{}",
             found[0].message
         );
@@ -545,8 +550,8 @@ mod tests {
         ] {
             assert!(markup(comment).is_empty(), "{comment}");
         }
-        // `{#if}` i Svelte er en blokk, ikke en kommentar, og en ulukket
-        // kommentar blanker ikke resten.
+        // `{#if}` in Svelte is a block, not a comment, and an unclosed
+        // comment does not blank the rest.
         assert_eq!(markup("{#if x}<lt-feil></lt-feil>{/if}").len(), 1);
         assert_eq!(markup("{{-- <lt-feil>").len(), 1);
     }
@@ -571,13 +576,13 @@ mod tests {
                 Some(newline) => at - newline,
                 None => at + 1,
             };
-            assert_eq!(lines.line_and_column(at), (line, column), "ved {at}");
+            assert_eq!(lines.line_and_column(at), (line, column), "at {at}");
         }
     }
 
     #[test]
     fn counts_every_line_break_lsp_knows() {
-        // `\r\n` er ett linjeskift, og `\r` alene er ett.
+        // `\r\n` is one line break, and `\r` alone is one.
         let text = utf16("a\r\nb\rc\nd\r\re");
         let lines = Lines::new(&text);
         let expected = [
@@ -594,8 +599,8 @@ mod tests {
             (6, 1),
         ];
         for (at, want) in expected.iter().enumerate() {
-            assert_eq!(lines.line_and_column(at), *want, "ved {at}");
-            assert_eq!(line_and_column(&text, at), *want, "ved {at}, alene");
+            assert_eq!(lines.line_and_column(at), *want, "at {at}");
+            assert_eq!(line_and_column(&text, at), *want, "at {at}, alone");
         }
         let found = check("<div>\r<div>\r<span class=\"lt-buton\">x</span></div></div>");
         let (line, column) = line_and_column(
@@ -608,20 +613,20 @@ mod tests {
     #[test]
     fn a_missing_id_gives_a_message_without_trailing_space() {
         for (attribute, ends) in [
-            ("for", "gjør lt.field({ id }) det."),
-            ("aria-describedby", "gjør lt.field({ id }) det."),
-            ("aria-labelledby", "gjør lt.field({ id }) det."),
-            ("aria-controls", "koblingen til det elementet styrer."),
+            ("for", "lt.field({ id }) does it."),
+            ("aria-describedby", "lt.field({ id }) does it."),
+            ("aria-labelledby", "lt.field({ id }) does it."),
+            ("aria-controls", "the wiring to what the element controls."),
         ] {
             let html = format!(r#"<label class="lt-label" {attribute}="borte">x</label>"#);
             let findings = check(&html);
             let found = findings
                 .iter()
-                .find(|f| f.rule == "id-finnes-ikke")
+                .find(|f| f.rule == "id-not-found")
                 .unwrap_or_else(|| panic!("{attribute}: {findings:?}"));
             assert!(
                 found.message.ends_with(ends),
-                "{attribute}: «{}»",
+                "{attribute}: \"{}\"",
                 found.message
             );
         }
@@ -637,17 +642,17 @@ mod tests {
     #[test]
     fn a_comment_that_is_text_suppresses_nothing_on_a_page() {
         let found = |html: &str| diagnose_page(&utf16(html), &manifest::for_tests());
-        // Kommentaren står i en textarea og er tekst, så funnet på feltet
-        // etter står.
+        // The comment is inside a textarea and is text, so the finding on
+        // the field after it stays.
         let in_textarea =
             found(r#"<textarea><!-- lotek-ignore-next --></textarea><input class="lt-inptu">"#);
         let rules: Vec<&str> = in_textarea.iter().map(|f| f.rule).collect();
         assert_eq!(
             rules,
-            ["kontroll-uten-ledetekst", "unknown-class"],
+            ["control-without-label", "unknown-class"],
             "{rules:?}"
         );
-        // En ekte kommentar undertrykker som før.
+        // A real comment suppresses as before.
         assert!(found(r#"<!-- lotek-ignore-next --><input class="lt-inptu">"#).is_empty());
     }
 
@@ -709,7 +714,7 @@ mod tests {
         let found =
             |html: &str| diagnose_styled(&utf16(html), &manifest::for_tests(), &styles, false);
         assert!(found(r#"<button class="lt-button" data-variant="ghost">x</button>"#).is_empty());
-        // Standardverdien trenger ingen regel.
+        // The default value needs no rule.
         assert!(found(r#"<button class="lt-button" data-variant="primary">x</button>"#).is_empty());
 
         let unstyled = found(r#"<button class="lt-button" data-variant="danger">x</button>"#);
@@ -720,23 +725,23 @@ mod tests {
         assert_eq!(missing[0].rule, "unstyled-class");
         assert!(missing[0].message.contains("lt-card"));
 
-        // Tilstanden på lt-search styles på lt-input, på det samme elementet.
+        // The state on lt-search is styled on lt-input, on the same element.
         assert!(found(r#"<input class="lt-search lt-input" data-state="invalid">"#).is_empty());
-        // Et flagg styles av en selektor som spør om det finnes.
+        // A flag is styled by a selector that asks whether it is present.
         assert!(found(r#"<label class="lt-label" data-optional>x</label>"#).is_empty());
-        // Klasser utenfor LO-TEK er ikke sjekkens sak.
+        // Classes outside LO-TEK are not the check's business.
         assert!(found(r#"<div class="kort">x</div>"#).is_empty());
-        // Markup som ikke vises på en hel side, sjekkes ikke mot stilarkene.
+        // Markup that is not shown on a whole page is not checked against the style sheets.
         let page =
             |html: &str| diagnose_styled(&utf16(html), &manifest::for_tests(), &styles, true);
         assert!(page(r#"<template><div class="lt-card"></div></template><textarea><div class="lt-card"></div></textarea><button data-x='<div class="lt-card">'>x</button>"#)
             .iter()
-            .all(|f| !f.rule.starts_with("ustylet")));
+            .all(|f| !f.rule.starts_with("unstyled")));
         assert_eq!(
             page(r#"<div class="lt-card"></div>"#)[0].rule,
             "unstyled-class"
         );
-        // Og en kommentar undertrykker, som for de andre reglene.
+        // And a comment suppresses, as for the other rules.
         assert!(
             found("<!-- lotek-ignore-next unstyled-class -->\n<div class=\"lt-card\">x</div>")
                 .is_empty()
@@ -748,7 +753,7 @@ mod tests {
         assert!(styled_input(r#"{"html": "<b></b>", "css": [".lt-x {}"], "page": true}"#).is_ok());
         assert!(styled_input(r#"{"html": "<b></b>", "css": []}"#).is_ok());
         for wrong in [
-            "ikke json",
+            "not json",
             r#"{"css": []}"#,
             r#"{"html": "x"}"#,
             r#"{"html": "x", "css": [42]}"#,
@@ -773,7 +778,7 @@ mod tests {
             assert_eq!(found.len(), 1, "{value}: {found:?}");
             assert_eq!(found[0].rule, "boolean-with-value");
             assert!(
-                found[0].message.contains("flagg på label"),
+                found[0].message.contains("flag on label"),
                 "{}",
                 found[0].message
             );
@@ -786,7 +791,7 @@ mod tests {
 
     #[test]
     fn a_template_that_drops_a_false_flag_is_left_alone() {
-        // Astro, Svelte, JSX, Razor og JTE tar selv bort attributtet.
+        // Astro, Svelte, JSX, Razor and JTE remove the attribute themselves.
         let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::for_tests());
         for value in [
             "{optional}",
@@ -799,14 +804,14 @@ mod tests {
             );
             assert!(markup(&html).is_empty(), "{value}: {:?}", markup(&html));
         }
-        // Står attributtet alt i en betingelse, er malen i verdien ufarlig.
+        // When the attribute is already inside a condition, the template in the value is harmless.
         for html in [
             r#"<lt-popover {{ if .Open }} open="{{ .Open }}" {{ end }}></lt-popover>"#,
             r#"<label class="lt-label" {% if optional %} data-optional="{{ optional }}" {% endif %}>Navn</label>"#,
         ] {
             assert!(markup(html).is_empty(), "{html}: {:?}", markup(html));
         }
-        // En mal i en verdi som ikke er et flagg, er ingen feil.
+        // A template in a value that is not a flag is no error.
         assert!(
             markup(r#"<label class="lt-label" data-required="{{ .Required }}">Navn</label>"#)
                 .is_empty()
@@ -819,7 +824,7 @@ mod tests {
             let found = check(&format!(r#"<p class="lt-{n}">Tekst</p>"#));
             assert!(found.is_empty(), "lt-{n}: {found:?}");
         }
-        // Et tall med noe etter er fortsatt en skrivefeil hos oss.
+        // A number with something after it is still a typo for us.
         assert_eq!(check(r#"<p class="lt-1x">Tekst</p>"#).len(), 1);
     }
 

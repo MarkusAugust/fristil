@@ -1,9 +1,9 @@
-//! Ordforrådet fra manifestet.
+//! The vocabulary from the manifest.
 //!
-//! Kjernen bærer ikke noe manifest selv. Verten gir det, med
-//! `load_manifest_raw`, og sjekker mot det manifestet prosjektet faktisk har
-//! installert, eller et der en overtatt komponent er med. Uten et manifest
-//! sjekker kjernen ingenting, og sier fra.
+//! The core carries no manifest of its own. The host gives it one, with
+//! `load_manifest_raw`, and checks against the manifest the project actually
+//! has installed, or one that includes a taken-over component. Without a
+//! manifest the core checks nothing, and says so.
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -11,27 +11,27 @@ use std::rc::Rc;
 use crate::json::{parse, Json};
 use crate::types::*;
 
-/// Formen på manifestet denne kjernen forstår.
+/// The manifest format this core understands.
 pub const SCHEMA_VERSION: u32 = 1;
 
 thread_local! {
     static CURRENT: RefCell<Option<Rc<Vocabulary>>> = const { RefCell::new(None) };
 }
 
-/// Ordforrådet verten har gitt, om den har gitt et.
+/// The vocabulary the host has given, if it has given one.
 pub fn current() -> Option<Rc<Vocabulary>> {
     CURRENT.with(|c| c.borrow().clone())
 }
 
-/// Bytter ordforrådet.
+/// Replaces the vocabulary.
 pub fn set_current(vocabulary: Vocabulary) {
     CURRENT.with(|c| *c.borrow_mut() = Some(Rc::new(vocabulary)));
 }
 
-/// Manifestet i pakken, til testene.
+/// The manifest in the package, for the tests.
 #[cfg(test)]
 pub fn for_tests() -> Rc<Vocabulary> {
-    Rc::new(from_json(&test_text()).expect("manifestet i pakken skal kunne leses"))
+    Rc::new(from_json(&test_text()).expect("the manifest in the package must be readable"))
 }
 
 #[cfg(test)]
@@ -43,13 +43,13 @@ fn text(value: &Json, path: &str) -> Result<String, String> {
     value
         .as_str()
         .map(str::to_string)
-        .ok_or_else(|| format!("{path} skal være tekst."))
+        .ok_or_else(|| format!("{path} must be text."))
 }
 
 fn texts(value: &Json, path: &str) -> Result<Vec<String>, String> {
     value
         .as_array()
-        .ok_or_else(|| format!("{path} skal være en liste."))?
+        .ok_or_else(|| format!("{path} must be an array."))?
         .iter()
         .enumerate()
         .map(|(i, v)| text(v, &format!("{path}[{i}]")))
@@ -59,17 +59,17 @@ fn texts(value: &Json, path: &str) -> Result<Vec<String>, String> {
 fn field<'a>(value: &'a Json, key: &str, path: &str) -> Result<&'a Json, String> {
     value
         .get(key)
-        .ok_or_else(|| format!("{path} mangler «{key}»."))
+        .ok_or_else(|| format!("{path} is missing \"{key}\"."))
 }
 
 fn entries<'a>(value: &'a Json, path: &str) -> Result<&'a [(String, Json)], String> {
     value
         .as_object()
-        .ok_or_else(|| format!("{path} skal være et objekt."))
+        .ok_or_else(|| format!("{path} must be an object."))
 }
 
-/// Delene i `parts`, når de står der. Et manifest uten, som et eldre
-/// fragment fra `lotek overta`, har ingen.
+/// The parts in `parts`, when present. A manifest without them, like an older
+/// fragment from `lotek takeover`, has none.
 fn parts(value: &Json, path: &str) -> Result<Vec<Part>, String> {
     let Some(parts) = value.get("parts") else {
         return Ok(Vec::new());
@@ -95,8 +95,8 @@ fn parts(value: &Json, path: &str) -> Result<Vec<Part>, String> {
         .collect()
 }
 
-/// Attributtene i `removed`, når de står der: navnet og beskjeden om hva som
-/// gjelder i stedet.
+/// The attributes in `removed`, when present: the name and the note on what
+/// to use instead.
 fn removed(value: &Json, path: &str) -> Result<Vec<(String, String)>, String> {
     let Some(removed) = value.get("removed") else {
         return Ok(Vec::new());
@@ -108,31 +108,31 @@ fn removed(value: &Json, path: &str) -> Result<Vec<(String, String)>, String> {
         .collect()
 }
 
-/// Leser et manifest. Feilmeldingen sier hva som er galt og hvor.
+/// Reads a manifest. The error message says what is wrong and where.
 pub fn from_json(source: &str) -> Result<Vocabulary, String> {
     from_value(&parse(source)?)
 }
 
-/// Manifestet med fragmentene lagt til.
+/// The manifest with the fragments added.
 ///
-/// Et fragment har samme form som manifestet, med elementene og klassene til
-/// én overtatt komponent, og skrives av `lotek overta` ved siden av kopien.
-/// Et navn som finnes fra før, byttes ut.
+/// A fragment has the same shape as the manifest, with the elements and
+/// classes of one taken-over component, and is written by `lotek takeover`
+/// next to the copy. A name that already exists is replaced.
 pub fn with_fragments(base: &str, fragments: &[&str]) -> Result<Vocabulary, String> {
     from_value(&merged(base, fragments)?)
 }
 
-/// Manifestet med fragmentene lagt til, som JSON.
+/// The manifest with the fragments added, as JSON.
 pub fn merged(base: &str, fragments: &[&str]) -> Result<Json, String> {
     let mut root = parse(base)?;
     for fragment in fragments {
         let fragment = parse(fragment)?;
-        let schema_version = field(&fragment, "schemaVersion", "fragmentet")?
+        let schema_version = field(&fragment, "schemaVersion", "The fragment")?
             .as_f64()
-            .ok_or("schemaVersion skal være et tall.")? as u32;
+            .ok_or("schemaVersion must be a number.")? as u32;
         if schema_version != SCHEMA_VERSION {
             return Err(format!(
-                "Fragmentet har schemaVersion {schema_version}, og denne kjernen forstår {SCHEMA_VERSION}."
+                "The fragment has schemaVersion {schema_version}, and this core understands {SCHEMA_VERSION}."
             ));
         }
         for section in ["elements", "classes"] {
@@ -141,12 +141,12 @@ pub fn merged(base: &str, fragments: &[&str]) -> Result<Json, String> {
             };
             let added = entries(added, section)?.to_vec();
             let Json::Object(root_entries) = &mut root else {
-                return Err("Manifestet skal være et objekt.".into());
+                return Err("The manifest must be an object.".into());
             };
             let Some((_, Json::Object(existing))) =
                 root_entries.iter_mut().find(|(k, _)| k == section)
             else {
-                return Err(format!("Manifestet mangler «{section}»."));
+                return Err(format!("The manifest is missing \"{section}\"."));
             };
             for (name, value) in added {
                 match existing.iter_mut().find(|(k, _)| *k == name) {
@@ -160,18 +160,18 @@ pub fn merged(base: &str, fragments: &[&str]) -> Result<Json, String> {
 }
 
 fn from_value(root: &Json) -> Result<Vocabulary, String> {
-    let schema_version = field(root, "schemaVersion", "manifestet")?
+    let schema_version = field(root, "schemaVersion", "The manifest")?
         .as_f64()
-        .ok_or("schemaVersion skal være et tall.")? as u32;
+        .ok_or("schemaVersion must be a number.")? as u32;
     if schema_version != SCHEMA_VERSION {
         return Err(format!(
-            "Manifestet har schemaVersion {schema_version}, og denne kjernen forstår {SCHEMA_VERSION}. Oppdater kjernen og manifestet til samme versjon av LO-TEK."
+            "The manifest has schemaVersion {schema_version}, and this core understands {SCHEMA_VERSION}. Update the core and the manifest to the same version of LO-TEK."
         ));
     }
-    let version = text(field(root, "version", "manifestet")?, "version")?;
+    let version = text(field(root, "version", "The manifest")?, "version")?;
 
     let mut elements = Vec::new();
-    for (tag, element) in entries(field(root, "elements", "manifestet")?, "elements")? {
+    for (tag, element) in entries(field(root, "elements", "The manifest")?, "elements")? {
         let path = format!("elements.{tag}");
         let mut attributes = Vec::new();
         for (name, attribute) in entries(
@@ -188,7 +188,11 @@ fn from_value(root: &Json) -> Result<Vocabulary, String> {
                     field(attribute, "values", &attribute_path)?,
                     &attribute_path,
                 )?),
-                other => return Err(format!("{attribute_path} har ukjent type «{other}».")),
+                other => {
+                    return Err(format!(
+                        "{attribute_path} has the unknown type \"{other}\"."
+                    ))
+                }
             };
             attributes.push((name.clone(), parsed));
         }
@@ -202,7 +206,7 @@ fn from_value(root: &Json) -> Result<Vocabulary, String> {
     }
 
     let mut classes = Vec::new();
-    for (name, class) in entries(field(root, "classes", "manifestet")?, "classes")? {
+    for (name, class) in entries(field(root, "classes", "The manifest")?, "classes")? {
         let path = format!("classes.{name}");
         let mut attributes = Vec::new();
         for (attribute_name, attribute) in entries(
@@ -258,7 +262,7 @@ mod tests {
         assert!(v.classes.iter().any(|c| c.name == "app-button"));
         assert!(
             v.classes.iter().any(|c| c.name == "lt-button"),
-            "LO-TEKs egne står"
+            "LO-TEK's own classes stay"
         );
         assert!(v.elements.iter().any(|e| e.tag == "app-dialog"));
         assert!(with_fragments(&base, &[r#"{"schemaVersion": 2}"#]).is_err());
@@ -274,7 +278,7 @@ mod tests {
     #[test]
     fn reads_stable_id_and_removed() {
         let v = from_json(
-            r#"{"schemaVersion": 1, "version": "0", "elements": {"lt-x": {"link": "", "attributes": {}, "parts": {"control": {"selector": "input", "stableId": true}, "help": {"selector": "p"}}, "removed": {"invalid": "Bruk en synlig feilmelding."}}}, "classes": {}}"#,
+            r#"{"schemaVersion": 1, "version": "0", "elements": {"lt-x": {"link": "", "attributes": {}, "parts": {"control": {"selector": "input", "stableId": true}, "help": {"selector": "p"}}, "removed": {"invalid": "Use a visible error text."}}}, "classes": {}}"#,
         )
         .unwrap();
         let element = &v.elements[0];
@@ -284,7 +288,7 @@ mod tests {
             element.removed,
             vec![(
                 "invalid".to_string(),
-                "Bruk en synlig feilmelding.".to_string()
+                "Use a visible error text.".to_string()
             )]
         );
 

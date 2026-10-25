@@ -1,17 +1,18 @@
-//! Undertrykking av funn med en kommentar i markupen.
+//! Suppressing findings with a comment in the markup.
 //!
 //! ```html
 //! <!-- lotek-ignore-next -->
-//! <lt-ny-ting>…</lt-ny-ting>
+//! <lt-new-thing>…</lt-new-thing>
 //!
 //! <!-- lotek-ignore-next unknown-class invalid-class-value -->
-//! <div class="lt-eksperiment">…</div>
+//! <div class="lt-experiment">…</div>
 //! ```
 //!
-//! Kommentaren gjelder den neste taggen: funn som begynner mellom `<` og `>` i
-//! den. Uten regelnavn gjelder den alle regler, med regelnavn bare dem.
-//! Merk at noen malmotorer, som Go sin `html/template`, fjerner kommentarer
-//! fra det de rendrer. Da virker kommentaren i malfila, men ikke i siden.
+//! The comment applies to the next tag: findings that start between its `<`
+//! and `>`. Without rule names it applies to every rule, with rule names only
+//! to those. Note that some template engines, like Go's `html/template`,
+//! strip comments from what they render. The comment then works in the
+//! template file but not on the page.
 
 use crate::diagnose::tag_end;
 use crate::text::*;
@@ -38,7 +39,7 @@ fn ignores(text: &[u16]) -> Vec<Ignore> {
         if !rest.is_empty() && !rest.starts_with(char::is_whitespace) {
             continue;
         }
-        // Den neste taggen: `<` fulgt av en bokstav.
+        // The next tag: `<` followed by a letter.
         let Some(lt) = (i..text.len())
             .find(|&k| text[k] == LT && text.get(k + 1).is_some_and(|&c| is_ascii_letter(c)))
         else {
@@ -53,7 +54,7 @@ fn ignores(text: &[u16]) -> Vec<Ignore> {
     out
 }
 
-/// Funnene uten dem en kommentar har undertrykt.
+/// The findings minus those a comment has suppressed.
 pub fn apply(text: &[u16], findings: Vec<Finding>) -> Vec<Finding> {
     let ignores = ignores(text);
     if ignores.is_empty() {

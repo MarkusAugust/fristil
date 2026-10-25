@@ -7,14 +7,14 @@
       "end": 47,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/button/",
-      "message": "data-variant=\"danger\" på button har ingen regel i stilarkene, så den gjør ingenting synlig. Style verdien, eller ta den bort."
+      "message": "data-variant=\"danger\" on button has no rule in the style sheets, so it does nothing visible. Style the value, or remove it."
     },
     {
       "start": 147,
       "end": 154,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/card/",
-      "message": "Klassen «lt-card» står i markupen, men ingen av stilarkene styler den. Er lotek.css, eller stilarket til card, lastet?"
+      "message": "The class \"lt-card\" is in the markup, but none of the style sheets styles it. Is lotek.css, or the style sheet for card, loaded?"
     }
   ]
 }

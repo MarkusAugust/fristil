@@ -5,14 +5,14 @@
       "end": 169,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/suggestion/",
-      "message": "<lt-suggestion> har alternativer med data-value, men ikke noe .lt-suggestion__value. Koden brukeren velger, sendes da ikke med skjemaet, bare teksten i feltet. Skriv <input type=\"hidden\" class=\"lt-suggestion__value\" name=\"…\"> i feltet, så komponenten fyller det."
+      "message": "<lt-suggestion> has options with data-value, but no .lt-suggestion__value. The code the user picks is then not sent with the form, only the text in the field. Write <input type=\"hidden\" class=\"lt-suggestion__value\" name=\"…\"> in the field, so the component fills it."
     },
     {
       "start": 432,
       "end": 437,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/suggestion/",
-      "message": "<lt-suggestion> har et .lt-suggestion__value, men ingen alternativer med data-value. Feltet blir stående tomt. Gi hvert alternativ data-value med koden det står for."
+      "message": "<lt-suggestion> has an .lt-suggestion__value, but no options with data-value. The field stays empty. Give every option a data-value with the code it stands for."
     }
   ],
   "side": [
@@ -21,14 +21,14 @@
       "end": 169,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/suggestion/",
-      "message": "<lt-suggestion> har alternativer med data-value, men ikke noe .lt-suggestion__value. Koden brukeren velger, sendes da ikke med skjemaet, bare teksten i feltet. Skriv <input type=\"hidden\" class=\"lt-suggestion__value\" name=\"…\"> i feltet, så komponenten fyller det."
+      "message": "<lt-suggestion> has options with data-value, but no .lt-suggestion__value. The code the user picks is then not sent with the form, only the text in the field. Write <input type=\"hidden\" class=\"lt-suggestion__value\" name=\"…\"> in the field, so the component fills it."
     },
     {
       "start": 432,
       "end": 437,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/suggestion/",
-      "message": "<lt-suggestion> har et .lt-suggestion__value, men ingen alternativer med data-value. Feltet blir stående tomt. Gi hvert alternativ data-value med koden det står for."
+      "message": "<lt-suggestion> has an .lt-suggestion__value, but no options with data-value. The field stays empty. Give every option a data-value with the code it stands for."
     }
   ]
 }

@@ -1,40 +1,42 @@
-//! Fargekontrakten: hva hver rolle er, og hva den lover.
+//! The colour contract: what each role is, and what it promises.
 //!
-//! Ett fargelag, ikke to. En farge er et punkt i en matrise av **familie**
-//! (hva den betyr) og **rolle** (hva den gjør), og hver familie har de samme
-//! rollene. Det er strukturen som gjør at familiene matcher.
+//! One colour layer, not two. A colour is a point in a matrix of **family**
+//! (what it means) and **role** (what it does), and every family has the
+//! same roles. That structure is what makes the families match.
 //!
-//! Kuløren er konsumentens, lysheten er rollens. Da er kontrasten garantert av
-//! konstruksjonen framfor av en sjekk i etterkant.
+//! The hue comes from the consumer, the lightness from the role. That way
+//! the contrast is guaranteed by construction rather than by a check
+//! afterwards.
 //!
-//! Tallene står i `designsystem/src/tokens/color-contract.json`, ikke her, så
-//! skriptene i TypeScript og kjernen leser de samme. Kjernen bærer ikke fila:
-//! verten gir den med `load_contract_raw`, som den gir manifestet. Tre valg
-//! i tallene som ikke er åpenbare:
+//! The numbers are in `designsystem/src/tokens/color-contract.json`, not
+//! here, so the TypeScript scripts and the core read the same ones. The core
+//! does not carry the file: the host gives it with `load_contract_raw`, as it
+//! gives the manifest. Three choices in the numbers that are not obvious:
 //!
-//! - `fill` styres av at `content` skal kunne leses oppå den, ikke av
-//!   avstanden til siden. Velges den etter siden alene, blir den for lys til å
-//!   bære tekst.
-//! - Tekst og kant har tre trinn hver. Brødtekst skal ikke ligge på
-//!   minstekravet: satt til `text` ble den `#4a4d51` framfor `#1a1a1a`, og det
-//!   er et ekte tap i lesbarhet selv om kravet holdt.
-//! - `textStrong` har lav metning, siden en sterk tekstfarge nesten er sort
-//!   eller hvit uansett kulør.
+//! - `fill` is set by `content` having to be readable on top of it, not by
+//!   the distance to the page. Chosen by the page alone, it becomes too light
+//!   to carry text.
+//! - Text and border have three steps each. Body text should not sit at the
+//!   minimum requirement: set to `text` it became `#4a4d51` rather than
+//!   `#1a1a1a`, and that is a real loss in readability even though the
+//!   requirement held.
+//! - `textStrong` has low chroma, since a strong text colour is nearly black
+//!   or white whatever the hue.
 //!
-//! Lyshetene er regnet fram mot et sveip rundt hele fargesirkelen, på høyeste
-//! metning sRGB kan vise for hver kulør. Endrer du et av tallene, er løftene
-//! det som sier fra.
+//! The lightness values were worked out against a sweep around the whole
+//! colour wheel, at the highest chroma sRGB can show for each hue. If you
+//! change one of the numbers, the promises are what tell you.
 //!
-//! `borderSubtle` står uten løfte med vilje: en dekorativ skillelinje er ikke
-//! nødvendig for å forstå siden, og WCAG 1.4.11 gjelder den ikke. Trenger
-//! kanten å bety noe, er `border` den riktige.
+//! `borderSubtle` has no promise on purpose: a decorative divider is not
+//! needed to understand the page, and WCAG 1.4.11 does not apply to it. When
+//! the border needs to mean something, `border` is the right one.
 
 use std::sync::{Arc, RwLock};
 
 use super::color::{contrast_ratio, oklch_to_rgb, parse_hex, rgb_to_oklch, to_hex, Oklch};
 use crate::json::{parse, Json};
 
-/// Lyst eller mørkt. Et tema er det ene eller det andre, aldri begge.
+/// Light or dark. A theme is one or the other, never both.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Appearance {
     Light,
@@ -50,7 +52,7 @@ impl Appearance {
     }
 }
 
-/// Lyshet i hvert utseende, og metningen som andel av merkefargens.
+/// Lightness in each appearance, and the chroma as a share of the brand colour's.
 #[derive(Clone, Debug)]
 pub struct Spec {
     pub light: f64,
@@ -67,13 +69,13 @@ impl Spec {
     }
 }
 
-/// Et løfte: forgrunnen holder kravet mot bakgrunnen.
+/// A promise: the foreground meets the requirement against the background.
 #[derive(Clone, Debug)]
 pub struct Promise {
     pub name: String,
     pub foreground: String,
     pub background: String,
-    /// Bakgrunnen er familiens egen rolle, ikke laget i den nøytrale familien.
+    /// The background is the family's own role, not the layer in the neutral family.
     pub own: bool,
     pub required: f64,
 }
@@ -81,34 +83,34 @@ pub struct Promise {
 #[derive(Clone, Debug)]
 pub struct Contract {
     pub families: Vec<String>,
-    /// LO-TEKs egne merkefarger, i rekkefølgen familiene står.
+    /// LO-TEK's own brand colours, in the order of the families.
     pub brands: Vec<(String, String)>,
-    /// Rollene, i den rekkefølgen tokenene skrives.
+    /// The roles, in the order the tokens are written.
     pub roles: Vec<(String, Spec)>,
     pub canvas: Spec,
     pub raised: Spec,
-    /// Kontrastkravene, med margin over WCAG: tekst og grafikk.
+    /// The contrast requirements, with a margin above WCAG: text and graphics.
     pub text_requirement: f64,
     pub graphic_requirement: f64,
     pub promises: Vec<Promise>,
 }
 
-/// Kontrakten verten har gitt, for hele prosessen og alle tråder.
+/// The contract the host has given, for the whole process and every thread.
 static CONTRACT: RwLock<Option<Arc<Contract>>> = RwLock::new(None);
 
-/// Svaret fra temaet når verten ikke har gitt noen kontrakt.
+/// The answer from the theme when the host has not given a contract.
 pub const NOT_LOADED: &str =
-    "Kjernen har ikke fått noen fargekontrakt. Gi den color-contract.json fra pakken med load_contract_raw først.";
+    "The core has not been given a colour contract. Give it color-contract.json from the package with load_contract_raw first.";
 
-/// Leser kontrakten verten har gitt, og bruker den fra nå av.
+/// Reads the contract the host has given, and uses it from now on.
 pub fn load(source: &str) -> Result<(), String> {
     let contract = read(source)?;
     *CONTRACT.write().unwrap_or_else(|e| e.into_inner()) = Some(Arc::new(contract));
     Ok(())
 }
 
-/// Om verten har gitt en kontrakt. `build_theme` og `inspect_theme` spør
-/// først, så `contract()` aldri kalles uten.
+/// Whether the host has given a contract. `build_theme` and `inspect_theme`
+/// ask first, so `contract()` is never called without one.
 pub fn loaded() -> bool {
     #[cfg(test)]
     if CONTRACT.read().unwrap_or_else(|e| e.into_inner()).is_none() {
@@ -117,7 +119,7 @@ pub fn loaded() -> bool {
     CONTRACT.read().unwrap_or_else(|e| e.into_inner()).is_some()
 }
 
-/// Kontrakten verten har gitt. I testene den i pakken.
+/// The contract the host has given. In the tests, the one in the package.
 pub fn contract() -> Arc<Contract> {
     #[cfg(test)]
     loaded();
@@ -149,7 +151,7 @@ fn read(source: &str) -> Result<Contract, String> {
     };
     let requirements = root
         .get("requirements")
-        .ok_or_else(|| wrong("requirements mangler"))?;
+        .ok_or_else(|| wrong("requirements is missing"))?;
     Ok(Contract {
         families: texts(root.get("families")).ok_or_else(|| wrong("families"))?,
         brands: root
@@ -205,7 +207,7 @@ fn read(source: &str) -> Result<Contract, String> {
     })
 }
 
-/// En familie: rollenavn til heksfarge, i rollenes rekkefølge.
+/// A family: role name to hex colour, in the order of the roles.
 pub type Family = Vec<(String, String)>;
 
 pub fn role<'a>(family: &'a Family, name: &str) -> Option<&'a str> {
@@ -215,7 +217,7 @@ pub fn role<'a>(family: &'a Family, name: &str) -> Option<&'a str> {
         .map(|(_, v)| v.as_str())
 }
 
-/// Rollenavnet slik det skrives i CSS. `textSubtle` blir `text-subtle`.
+/// The role name as written in CSS. `textSubtle` becomes `text-subtle`.
 pub fn role_to_css(role: &str) -> String {
     let mut out = String::with_capacity(role.len() + 2);
     for c in role.chars() {
@@ -229,7 +231,7 @@ pub fn role_to_css(role: &str) -> String {
     out
 }
 
-/// Bygger én familie fra én merkefarge.
+/// Builds one family from one brand colour.
 pub fn build_family(brand: &str, appearance: Appearance) -> Result<Family, String> {
     let Oklch { c, h, .. } = rgb_to_oklch(parse_hex(brand)?);
     Ok(contract()
@@ -246,7 +248,7 @@ pub fn build_family(brand: &str, appearance: Appearance) -> Result<Family, Strin
         .collect())
 }
 
-/// Siden, kortet og den hevede flaten, som bare den nøytrale familien har.
+/// The page, the card and the raised surface, which only the neutral family has.
 #[derive(Clone, Debug)]
 pub struct Layers {
     pub canvas: String,
@@ -273,7 +275,7 @@ pub struct Violation {
     pub required: f64,
 }
 
-/// Hvert løfte for én familie: navnet, forholdet og kravet.
+/// Every promise for one family: the name, the ratio and the requirement.
 pub fn promises_for(family: &Family, layers: &Layers) -> Result<Vec<(String, f64, f64)>, String> {
     let ratio = |a: &str, b: &str| -> Result<f64, String> {
         Ok(contrast_ratio(parse_hex(a)?, parse_hex(b)?))
@@ -294,7 +296,7 @@ pub fn promises_for(family: &Family, layers: &Layers) -> Result<Vec<(String, f64
         .collect()
 }
 
-/// Alle løfter i alle familier, med dem som ikke holder.
+/// All promises in all families, with those that do not hold.
 pub fn check_promises(
     families: &[(String, Family)],
     layers: &Layers,
@@ -315,33 +317,33 @@ pub fn check_promises(
     Ok(violations)
 }
 
-/// Tokennavnet for én celle i matrisen.
+/// The token name for one cell in the matrix.
 pub fn token_name(family: &str, role: &str) -> String {
     format!("--lt-color-{family}-{role}")
 }
 
 pub struct Matrix {
-    /// Tokennavn til heksverdi, for ett utseende.
+    /// Token name to hex value, for one appearance.
     pub tokens: Vec<(String, String)>,
-    /// Løfter som ikke holder. Tom når matrisen er i orden.
+    /// Promises that do not hold. Empty when the matrix is in order.
     pub violations: Vec<Violation>,
 }
 
-/// Bygger hele matrisen for ett utseende.
+/// Builds the whole matrix for one appearance.
 ///
-/// `neutral` får `canvas` og `raised` i tillegg til rollene sine. De hører bare
-/// dit: en rød side er ikke en tilstand systemet har.
+/// `neutral` gets `canvas` and `raised` in addition to its roles. They only
+/// belong there: a red page is not a state the system has.
 pub fn build_matrix(brands: &[(String, String)], appearance: Appearance) -> Result<Matrix, String> {
     let Some((_, neutral)) = brands.iter().find(|(n, _)| n == "neutral") else {
-        return Err("Matrisen trenger en nøytral familie. Den bærer siden, teksten og kantene, og de andre familiene måles mot den.".into());
+        return Err("The matrix needs a neutral family. It carries the page, the text and the borders, and the other families are checked against it.".into());
     };
     let families = brands
         .iter()
         .map(|(name, brand)| Ok((name.clone(), build_family(brand, appearance)?)))
         .collect::<Result<Vec<_>, String>>()?;
 
-    // Lagene regnes av den nøytrale kuløren, med enda mindre metning enn
-    // flatene: en side med kulør i seg ser malt ut, ikke nøytral.
+    // The layers are computed from the neutral hue, with even less chroma
+    // than the surfaces: a page with hue in it looks painted, not neutral.
     let Oklch { c, h, .. } = rgb_to_oklch(parse_hex(neutral)?);
     let layer = |spec: &Spec| {
         to_hex(oklch_to_rgb(Oklch {

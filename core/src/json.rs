@@ -1,19 +1,19 @@
-//! En liten JSON-leser, uten avhengigheter.
+//! A small JSON reader, without dependencies.
 //!
-//! Den leser manifestet, som LO-TEK selv skriver, men også filer brukeren har
-//! skrevet: oppskriften til `lotek tema`, package.json og meldingene fra
-//! editoren. Den trenger ikke være rask eller tilgivende, men den må svare som
-//! `JSON.parse`, som kommandolinja brukte da den var skrevet i TypeScript. Et
-//! objekt beholder rekkefølgen på nøklene, fordi rekkefølgen i manifestet er
-//! den meldingene lister verdiene i, og den som avgjør hvilket forslag som
-//! vinner ved lik avstand. En nøkkel som står to ganger, får den siste verdien
-//! på den første plassen, som i `JSON.parse`. Tall og strenger følger
-//! grammatikken i RFC 8259, så `0700`, `1.` og et rått linjeskift i en streng
-//! er feil, ikke tall og tekst.
+//! It reads the manifest, which LO-TEK writes itself, but also files the user
+//! has written: the recipe for `lotek theme`, package.json and the messages
+//! from the editor. It does not need to be fast or forgiving, but it must
+//! answer like `JSON.parse`, which the CLI used when it was written in
+//! TypeScript. An object keeps the order of its keys, because the order in
+//! the manifest is the order the messages list the values in, and the one
+//! that decides which suggestion wins at equal distance. A key that appears
+//! twice gets the last value in the first position, as in `JSON.parse`.
+//! Numbers and strings follow the grammar in RFC 8259, so `0700`, `1.` and a
+//! raw line break in a string are errors, not numbers and text.
 
-/// Så mange objekter og lister inni hverandre leses det. Leseren går ned i
-/// dybden rekursivt, og en fil med hundretusen `[` ville ellers sprengt
-/// stakken i stedet for å gi en feilmelding.
+/// How many objects and arrays nested inside each other are read. The reader
+/// descends recursively, and a file with a hundred thousand `[` would
+/// otherwise overflow the stack instead of giving an error message.
 const MAX_DEPTH: usize = 128;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -62,15 +62,15 @@ impl Json {
         }
     }
 
-    /// Verdien som tekst, rykket inn med to mellomrom, som
-    /// `JSON.stringify(verdi, null, 2)`.
+    /// The value as text, indented with two spaces, like
+    /// `JSON.stringify(value, null, 2)`.
     pub fn to_pretty(&self) -> String {
         let mut out = String::new();
         self.write(&mut out, 0);
         out
     }
 
-    /// Verdien som tekst på én linje, som `JSON.stringify(verdi)`.
+    /// The value as text on one line, like `JSON.stringify(value)`.
     pub fn to_compact(&self) -> String {
         let mut out = String::new();
         self.write_with(&mut out, None);
@@ -81,7 +81,7 @@ impl Json {
         self.write_with(out, Some(depth));
     }
 
-    /// `depth` er innrykket, eller `None` for alt på én linje.
+    /// `depth` is the indentation, or `None` for everything on one line.
     fn write_with(&self, out: &mut String, depth: Option<usize>) {
         let indent = |out: &mut String, depth: Option<usize>| {
             if let Some(depth) = depth {
@@ -94,8 +94,8 @@ impl Json {
         match self {
             Json::Null => out.push_str("null"),
             Json::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
-            // `JSON.stringify` skriver `Infinity` og `NaN` som `null`. Et tall
-            // som `1e400` leses som uendelig, som i `JSON.parse`.
+            // `JSON.stringify` writes `Infinity` and `NaN` as `null`. A number
+            // like `1e400` is read as infinity, as in `JSON.parse`.
             Json::Number(n) if !n.is_finite() => out.push_str("null"),
             Json::Number(n) => out.push_str(&crate::theme::js_number(*n)),
             Json::String(s) => out.push_str(&crate::json_string(s)),
@@ -131,7 +131,7 @@ impl Json {
     }
 }
 
-/// Leser én JSON-verdi. Feilmeldingen sier hvor i teksten den stoppet.
+/// Reads one JSON value. The error message says where in the text it stopped.
 pub fn parse(text: &str) -> Result<Json, String> {
     let mut parser = Parser {
         bytes: text.as_bytes(),
@@ -142,7 +142,7 @@ pub fn parse(text: &str) -> Result<Json, String> {
     let value = parser.value()?;
     parser.skip_space();
     if parser.at != parser.bytes.len() {
-        return Err(parser.error("tekst etter verdien"));
+        return Err(parser.error("text after the value"));
     }
     Ok(value)
 }
@@ -155,7 +155,7 @@ struct Parser<'a> {
 
 impl Parser<'_> {
     fn error(&self, what: &str) -> String {
-        format!("Ugyldig JSON ved byte {}: {what}.", self.at)
+        format!("Invalid JSON at byte {}: {what}.", self.at)
     }
 
     fn peek(&self) -> Option<u8> {
@@ -173,7 +173,7 @@ impl Parser<'_> {
             self.at += literal.len();
             Ok(())
         } else {
-            Err(self.error(&format!("ventet «{literal}»")))
+            Err(self.error(&format!("expected \"{literal}\"")))
         }
     }
 
@@ -182,7 +182,7 @@ impl Parser<'_> {
             Some(b'{' | b'[') => {
                 if self.depth == MAX_DEPTH {
                     return Err(self.error(&format!(
-                        "mer enn {MAX_DEPTH} objekter og lister inni hverandre"
+                        "more than {MAX_DEPTH} objects and arrays nested inside each other"
                     )));
                 }
                 self.depth += 1;
@@ -199,7 +199,7 @@ impl Parser<'_> {
             Some(b'f') => self.expect("false").map(|_| Json::Bool(false)),
             Some(b'n') => self.expect("null").map(|_| Json::Null),
             Some(b'-' | b'0'..=b'9') => self.number(),
-            _ => Err(self.error("ventet en verdi")),
+            _ => Err(self.error("expected a value")),
         }
     }
 
@@ -214,15 +214,15 @@ impl Parser<'_> {
         loop {
             self.skip_space();
             if self.peek() != Some(b'"') {
-                return Err(self.error("ventet en nøkkel"));
+                return Err(self.error("expected a key"));
             }
             let key = self.string()?;
             self.skip_space();
             self.expect(":")?;
             self.skip_space();
             let value = self.value()?;
-            // `JSON.parse` lar den siste verdien vinne, på plassen til den
-            // første.
+            // `JSON.parse` lets the last value win, in the position of the
+            // first.
             match entries.iter_mut().find(|entry| entry.0 == key) {
                 Some(existing) => existing.1 = value,
                 None => entries.push((key, value)),
@@ -234,7 +234,7 @@ impl Parser<'_> {
                     self.at += 1;
                     return Ok(Json::Object(entries));
                 }
-                _ => return Err(self.error("ventet «,» eller «}»")),
+                _ => return Err(self.error("expected \",\" or \"}\"")),
             }
         }
     }
@@ -257,7 +257,7 @@ impl Parser<'_> {
                     self.at += 1;
                     return Ok(Json::Array(items));
                 }
-                _ => return Err(self.error("ventet «,» eller «]»")),
+                _ => return Err(self.error("expected \",\" or \"]\"")),
             }
         }
     }
@@ -266,12 +266,12 @@ impl Parser<'_> {
         let digits = self
             .bytes
             .get(self.at..self.at + 4)
-            // Fire heksadesimale sifre, ikke mer: `from_str_radix` godtar et
-            // `+` foran, og `\u+041` er ikke gyldig JSON.
+            // Four hexadecimal digits, nothing more: `from_str_radix` accepts
+            // a leading `+`, and `\u+041` is not valid JSON.
             .filter(|b| b.iter().all(u8::is_ascii_hexdigit))
             .and_then(|b| std::str::from_utf8(b).ok())
             .and_then(|s| u32::from_str_radix(s, 16).ok())
-            .ok_or_else(|| self.error("ugyldig \\u-sekvens"))?;
+            .ok_or_else(|| self.error("invalid \\u sequence"))?;
         self.at += 4;
         Ok(digits)
     }
@@ -286,7 +286,7 @@ impl Parser<'_> {
             }
             out.push_str(
                 std::str::from_utf8(&self.bytes[start..self.at])
-                    .map_err(|_| self.error("ugyldig UTF-8"))?,
+                    .map_err(|_| self.error("invalid UTF-8"))?,
             );
             match self.peek() {
                 Some(b'"') => {
@@ -295,7 +295,7 @@ impl Parser<'_> {
                 }
                 Some(b'\\') => {
                     self.at += 1;
-                    let escape = self.peek().ok_or_else(|| self.error("strengen slutter"))?;
+                    let escape = self.peek().ok_or_else(|| self.error("the string ends"))?;
                     self.at += 1;
                     match escape {
                         b'"' => out.push('"'),
@@ -318,19 +318,19 @@ impl Parser<'_> {
                                 if (0xDC00..0xE000).contains(&second) {
                                     code = 0x10000 + ((first - 0xD800) << 10) + (second - 0xDC00);
                                 } else {
-                                    // Ikke et par: den andre leses for seg.
+                                    // Not a pair: the second is read on its own.
                                     self.at = back;
                                 }
                             }
-                            // En surrogat alene blir U+FFFD, som også er én
-                            // UTF-16-enhet, så posisjonene etter står.
+                            // A lone surrogate becomes U+FFFD, which is also one
+                            // UTF-16 unit, so the positions after it stay.
                             out.push(char::from_u32(code).unwrap_or('\u{fffd}'));
                         }
-                        _ => return Err(self.error("ukjent escape")),
+                        _ => return Err(self.error("unknown escape")),
                     }
                 }
-                Some(0..=0x1f) => return Err(self.error("kontrolltegn i en streng")),
-                _ => return Err(self.error("strengen slutter")),
+                Some(0..=0x1f) => return Err(self.error("control character in a string")),
+                _ => return Err(self.error("the string ends")),
             }
         }
     }
@@ -353,18 +353,18 @@ impl Parser<'_> {
             Some(b'0') => {
                 self.at += 1;
                 if matches!(self.peek(), Some(b'0'..=b'9')) {
-                    return Err(self.error("et tall kan ikke begynne med 0"));
+                    return Err(self.error("a number cannot start with 0"));
                 }
             }
             Some(b'1'..=b'9') => {
                 self.digits();
             }
-            _ => return Err(self.error("ugyldig tall")),
+            _ => return Err(self.error("invalid number")),
         }
         if self.peek() == Some(b'.') {
             self.at += 1;
             if self.digits() == 0 {
-                return Err(self.error("ugyldig tall"));
+                return Err(self.error("invalid number"));
             }
         }
         if matches!(self.peek(), Some(b'e' | b'E')) {
@@ -373,14 +373,14 @@ impl Parser<'_> {
                 self.at += 1;
             }
             if self.digits() == 0 {
-                return Err(self.error("ugyldig tall"));
+                return Err(self.error("invalid number"));
             }
         }
         std::str::from_utf8(&self.bytes[start..self.at])
             .ok()
             .and_then(|s| s.parse::<f64>().ok())
             .map(Json::Number)
-            .ok_or_else(|| self.error("ugyldig tall"))
+            .ok_or_else(|| self.error("invalid number"))
     }
 }
 
@@ -397,7 +397,7 @@ mod tests {
             .iter()
             .map(|(k, _)| k.as_str())
             .collect();
-        assert_eq!(keys, ["b", "a"], "rekkefølgen på nøklene står");
+        assert_eq!(keys, ["b", "a"], "the order of the keys is kept");
         assert_eq!(v.get("a").unwrap().as_str(), Some("x\"ø🧾"));
         assert_eq!(
             v.get("b").unwrap().as_array().unwrap()[1].as_f64(),
@@ -433,8 +433,9 @@ mod tests {
     #[test]
     fn reads_lone_surrogates_without_changing_the_length() {
         let utf16_len = |v: Json| v.as_str().unwrap().encode_utf16().count();
-        // To høye etter hverandre, en høy foran et linjeskift, og en lav alene:
-        // hver blir U+FFFD, og lengden i UTF-16 er den samme som i originalen.
+        // Two high surrogates in a row, a high one before a line break, and a
+        // low one alone: each becomes U+FFFD, and the UTF-16 length is the
+        // same as in the original.
         assert_eq!(utf16_len(parse(r#""\uD800\uD800""#).unwrap()), 2);
         assert_eq!(utf16_len(parse(r#""\uD800\n""#).unwrap()), 2);
         assert_eq!(utf16_len(parse(r#""\uDC00x""#).unwrap()), 2);
@@ -453,7 +454,7 @@ mod tests {
         for bad in [
             "0700", "01", "-01", "1.", "-.5", ".5", "+1", "1e", "1e+", "-", "1.e3", "--1",
         ] {
-            assert!(parse(bad).is_err(), "{bad} skulle vært ugyldig");
+            assert!(parse(bad).is_err(), "{bad} should have been invalid");
         }
         for (good, value) in [
             ("0", 0.0),
@@ -481,7 +482,7 @@ mod tests {
         assert!(parse(&deep(MAX_DEPTH)).is_ok());
         assert!(parse(&deep(MAX_DEPTH + 1))
             .unwrap_err()
-            .contains("inni hverandre"));
+            .contains("nested inside each other"));
         assert!(parse(&"[".repeat(200_000)).is_err());
         assert!(parse(&format!("{}{}", "{\"a\":".repeat(MAX_DEPTH + 1), "1")).is_err());
     }

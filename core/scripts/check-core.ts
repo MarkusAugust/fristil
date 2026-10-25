@@ -68,7 +68,7 @@ const REGLER = new Set(
     ).matchAll(/"([a-z-]+)"/g),
   ].map((m) => m[1]),
 )
-if (REGLER.size === 0) throw new Error("fant ikke RULES i core/src/types.rs")
+if (REGLER.size === 0) throw new Error("found no RULES in core/src/types.rs")
 
 /** Feltene fasiten har, i fast rekkefølge, så to like funn blir like strenger. */
 const kanonisk = (funn: Omit<Finding, "rule" | "line" | "column">[]) =>
@@ -121,32 +121,30 @@ function holder(navn: string, html: string) {
     try {
       funn = sjekk(html)
     } catch (e) {
-      feil.push(
-        `${navn} (${hva}): kastet ${e instanceof Error ? e.message : e}`,
-      )
+      feil.push(`${navn} (${hva}): threw ${e instanceof Error ? e.message : e}`)
       continue
     }
     funnTotalt += funn.length
     for (const f of funn) {
       const galt = !(0 <= f.start && f.start <= f.end && f.end <= html.length)
-        ? "utenfor teksten"
+        ? "outside the text"
         : plass(html, f.start).join(":") !== `${f.line}:${f.column}`
-          ? `linje og kolonne ${f.line}:${f.column}, ventet ${plass(html, f.start).join(":")}`
+          ? `line and column ${f.line}:${f.column}, expected ${plass(html, f.start).join(":")}`
           : !REGLER.has(f.rule)
-            ? `ukjent regel ${f.rule}`
+            ? `unknown rule ${f.rule}`
             : f.fix &&
                 !f.fix.edits.every(
                   (e) =>
                     0 <= e.start && e.start <= e.end && e.end <= html.length,
                 )
-              ? "rettelsen er utenfor teksten"
+              ? "the fix is outside the text"
               : f.fix?.edits.some(
                     (e, i) =>
                       i > 0 && e.start < (f.fix?.edits[i - 1]?.end ?? 0),
                   )
-                ? "endringene i rettelsen overlapper eller står i feil rekkefølge"
+                ? "the edits in the fix overlap or are in the wrong order"
                 : undefined
-      if (galt) feil.push(`${navn} (${hva}): ${galt} i ${JSON.stringify(f)}`)
+      if (galt) feil.push(`${navn} (${hva}): ${galt} in ${JSON.stringify(f)}`)
     }
   }
 }
@@ -180,7 +178,7 @@ for (const [navn, html] of fiksturer) {
     const svar = kanonisk(funn)
     if (svar !== ventet)
       feil.push(
-        `${navn} (${hva})\n  Fasit:  ${ventet.slice(0, 600)}\n  Kjerne: ${svar.slice(0, 600)}`,
+        `${navn} (${hva})\n  Expected: ${ventet.slice(0, 600)}\n  Core:     ${svar.slice(0, 600)}`,
       )
   }
   holder(navn, html)
@@ -188,7 +186,7 @@ for (const [navn, html] of fiksturer) {
 const udekket = [...REGLER].filter((r) => !dekket.has(r))
 if (udekket.length > 0)
   feil.push(
-    `ingen fikstur i parity/ utløser ${udekket.join(", ")}. Legg til en, så regelen også testes på JVM-en.`,
+    `no fixture in parity/ triggers ${udekket.join(", ")}. Add one, so the rule is also tested on the JVM.`,
   )
 
 /** En fasit med `stylet` uten stilark, eller omvendt, sjekker ingenting. */
@@ -196,7 +194,7 @@ function krevSammeNokler(navn: string, fasit: object, harCss: boolean) {
   const nokler = Object.keys(fasit).sort().join(",")
   const ventet = harCss ? "markup,side,stylet" : "markup,side"
   if (nokler !== ventet)
-    feil.push(`${navn}: fasiten har ${nokler}, ventet ${ventet}`)
+    feil.push(`${navn}: the expected file has ${nokler}, expected ${ventet}`)
 }
 
 // Temaet: oppskriftene og temaene i `theme/` mot fasiten ved siden av. Fasiten
@@ -213,11 +211,12 @@ const sortert = (verdi: unknown): string =>
   )
 const oppskrifter: Record<
   string,
-  { oppskrift: unknown; tema?: unknown; feil?: string }
+  { oppskrift: unknown; theme?: unknown; feil?: string }
 > = JSON.parse(readFileSync(join(TEMA, "recipes.json"), "utf8"))
-for (const [navn, { oppskrift, tema, feil: ventetFeil }] of Object.entries(
-  oppskrifter,
-)) {
+for (const [
+  navn,
+  { oppskrift, theme: tema, feil: ventetFeil },
+] of Object.entries(oppskrifter)) {
   antall += 1
   let svar: unknown
   try {
@@ -228,7 +227,7 @@ for (const [navn, { oppskrift, tema, feil: ventetFeil }] of Object.entries(
   const ventet = ventetFeil === undefined ? { tema } : { feil: ventetFeil }
   if (sortert(svar) !== sortert(ventet))
     feil.push(
-      `theme/recipes.json, ${navn}\n  Fasit:  ${sortert(ventet).slice(0, 400)}\n  Kjerne: ${sortert(svar).slice(0, 400)}`,
+      `theme/recipes.json, ${navn}\n  Expected: ${sortert(ventet).slice(0, 400)}\n  Core:     ${sortert(svar).slice(0, 400)}`,
     )
 }
 const rapporter: Record<string, unknown> = JSON.parse(
@@ -241,7 +240,7 @@ for (const [navn, ventet] of Object.entries(rapporter)) {
   )
   if (sortert(svar) !== sortert(ventet))
     feil.push(
-      `theme/${navn}.css\n  Fasit:  ${sortert(ventet).slice(0, 400)}\n  Kjerne: ${sortert(svar).slice(0, 400)}`,
+      `theme/${navn}.css\n  Expected: ${sortert(ventet).slice(0, 400)}\n  Core:     ${sortert(svar).slice(0, 400)}`,
     )
 }
 
@@ -294,7 +293,7 @@ for (let n = 0; n < ØDELAGTE_TEMAER; n++) {
     kjerne.inspectTheme(css)
   } catch (e) {
     feil.push(
-      `inspectTheme krasjet på ${JSON.stringify(css).slice(0, 300)}: ${e}`,
+      `inspectTheme crashed on ${JSON.stringify(css).slice(0, 300)}: ${e}`,
     )
   }
   // Den samme ødelagte CSS-en gjennom leseren for selektorer, og som
@@ -308,7 +307,7 @@ for (let n = 0; n < ØDELAGTE_TEMAER; n++) {
     )
   } catch (e) {
     feil.push(
-      `inspectStyles krasjet på ${JSON.stringify(css).slice(0, 300)}: ${e}`,
+      `inspectStyles crashed on ${JSON.stringify(css).slice(0, 300)}: ${e}`,
     )
   }
 }
@@ -326,7 +325,7 @@ for (const [navn, { oppskrift }] of Object.entries(oppskrifter)) {
     } catch (e) {
       if (!(e instanceof Error) || /unreachable|RuntimeError/.test(String(e)))
         feil.push(
-          `buildTheme krasjet på ${navn}, ${JSON.stringify(ødelagt)}: ${e}`,
+          `buildTheme crashed on ${navn}, ${JSON.stringify(ødelagt)}: ${e}`,
         )
     }
   }
@@ -345,12 +344,12 @@ const SKRIVEFEILEN: Record<string, string> = {
 for (const navn of readdirSync(MALER)) {
   antall += 1
   const funn = kjerne.diagnoseMarkup(readFileSync(join(MALER, navn), "utf8"))
-  const regler = funn.map((f) => f.rule).join(", ") || "ingen"
+  const regler = funn.map((f) => f.rule).join(", ") || "none"
   if (!(navn in SKRIVEFEILEN))
-    feil.push(`templates/${navn}: står ikke i SKRIVEFEILEN i check-core.ts`)
+    feil.push(`templates/${navn}: is not in SKRIVEFEILEN in check-core.ts`)
   else if (regler !== SKRIVEFEILEN[navn])
     feil.push(
-      `templates/${navn}: ventet ett funn, ${SKRIVEFEILEN[navn]}, fikk ${regler}: ${funn.map((f) => f.message).join(" | ")}`,
+      `templates/${navn}: expected one finding, ${SKRIVEFEILEN[navn]}, got ${regler}: ${funn.map((f) => f.message).join(" | ")}`,
     )
 }
 
@@ -440,17 +439,17 @@ for (let n = 0; n < ØDELAGTE; n++) {
         fiksturer[tilfeldig(fiksturer.length)][1].slice(0, tilfeldig(200))
   }
   holder(
-    `ødelagt #${n} fra ${navn}: ${JSON.stringify(html).slice(0, 300)}`,
+    `broken #${n} from ${navn}: ${JSON.stringify(html).slice(0, 300)}`,
     html,
   )
 }
 
 console.log(
-  `${antall} sjekker: ${fiksturer.length} fiksturer mot fasiten med ${dekket.size} av ${REGLER.size} regler, ${readdirSync(MALER).length} maler, ${Object.keys(oppskrifter).length + Object.keys(rapporter).length} temaer og ${ØDELAGTE_TEMAER} ødelagte, ${repofiler} filer fra repoet og ${ØDELAGTE} ødelagte, med ${funnTotalt} funn til sammen.`,
+  `${antall} checks: ${fiksturer.length} fixtures against the expected results with ${dekket.size} of ${REGLER.size} rules, ${readdirSync(MALER).length} templates, ${Object.keys(oppskrifter).length + Object.keys(rapporter).length} themes and ${ØDELAGTE_TEMAER} broken ones, ${repofiler} files from the repository and ${ØDELAGTE} broken ones, with ${funnTotalt} findings in total.`,
 )
 if (feil.length > 0) {
-  console.error(`\n${feil.length} feil:\n`)
+  console.error(`\n${feil.length} failures:\n`)
   for (const f of feil.slice(0, 15)) console.error(`${f}\n`)
   process.exit(1)
 }
-console.log("Kjernen svarer det den skal på alt.")
+console.log("The core answers what it should on everything.")

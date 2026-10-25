@@ -5,9 +5,9 @@
       "end": 48,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/card/",
-      "message": "data-interactive er et flagg på card: det står der eller ikke. data-interactive=\"true\" betyr det samme som data-interactive. Ta det bort for å slå det av.",
+      "message": "data-interactive is a flag on card: it is either there or not. data-interactive=\"true\" means the same as data-interactive. Remove it to turn it off.",
       "fix": {
-        "title": "Ta bort data-interactive",
+        "title": "Remove data-interactive",
         "edits": [
           {
             "start": 24,
@@ -23,9 +23,9 @@
       "end": 121,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/label/",
-      "message": "data-optional er et flagg på label: det står der eller ikke. data-optional=\"ja\" betyr det samme som data-optional. Ta det bort for å slå det av.",
+      "message": "data-optional is a flag on label: it is either there or not. data-optional=\"ja\" means the same as data-optional. Remove it to turn it off.",
       "fix": {
-        "title": "Ta bort data-optional",
+        "title": "Remove data-optional",
         "edits": [
           {
             "start": 102,
@@ -43,9 +43,9 @@
       "end": 48,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/card/",
-      "message": "data-interactive er et flagg på card: det står der eller ikke. data-interactive=\"true\" betyr det samme som data-interactive. Ta det bort for å slå det av.",
+      "message": "data-interactive is a flag on card: it is either there or not. data-interactive=\"true\" means the same as data-interactive. Remove it to turn it off.",
       "fix": {
-        "title": "Ta bort data-interactive",
+        "title": "Remove data-interactive",
         "edits": [
           {
             "start": 24,
@@ -61,9 +61,9 @@
       "end": 121,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/label/",
-      "message": "data-optional er et flagg på label: det står der eller ikke. data-optional=\"ja\" betyr det samme som data-optional. Ta det bort for å slå det av.",
+      "message": "data-optional is a flag on label: it is either there or not. data-optional=\"ja\" means the same as data-optional. Remove it to turn it off.",
       "fix": {
-        "title": "Ta bort data-optional",
+        "title": "Remove data-optional",
         "edits": [
           {
             "start": 102,

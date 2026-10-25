@@ -5,9 +5,9 @@
       "end": 46,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/button/",
-      "message": "data-variant kan ikke være «ghots» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt.",
+      "message": "data-variant cannot be \"ghots\" on button. Valid values: secondary, ghost, danger, and primary without the attribute.",
       "fix": {
-        "title": "Bytt til ghost",
+        "title": "Change to ghost",
         "edits": [
           {
             "start": 40,
@@ -23,14 +23,14 @@
       "end": 111,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/button/",
-      "message": "data-variant kan ikke være «outline» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt."
+      "message": "data-variant cannot be \"outline\" on button. Valid values: secondary, ghost, danger, and primary without the attribute."
     },
     {
       "start": 151,
       "end": 169,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/badge/",
-      "message": "data-color kan ikke være «lilla» på badge. Lovlige verdier: success, warning, danger, neutral, og info uten attributt."
+      "message": "data-color cannot be \"lilla\" on badge. Valid values: success, warning, danger, neutral, and info without the attribute."
     }
   ],
   "side": [
@@ -39,9 +39,9 @@
       "end": 46,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/button/",
-      "message": "data-variant kan ikke være «ghots» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt.",
+      "message": "data-variant cannot be \"ghots\" on button. Valid values: secondary, ghost, danger, and primary without the attribute.",
       "fix": {
-        "title": "Bytt til ghost",
+        "title": "Change to ghost",
         "edits": [
           {
             "start": 40,
@@ -57,14 +57,14 @@
       "end": 111,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/button/",
-      "message": "data-variant kan ikke være «outline» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt."
+      "message": "data-variant cannot be \"outline\" on button. Valid values: secondary, ghost, danger, and primary without the attribute."
     },
     {
       "start": 151,
       "end": 169,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/badge/",
-      "message": "data-color kan ikke være «lilla» på badge. Lovlige verdier: success, warning, danger, neutral, og info uten attributt."
+      "message": "data-color cannot be \"lilla\" on badge. Valid values: success, warning, danger, neutral, and info without the attribute."
     }
   ]
 }

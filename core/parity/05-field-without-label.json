@@ -3,32 +3,32 @@
     {
       "start": 1,
       "end": 9,
-      "link": "https://lo-tek.sobernetics.no/components/field/",
       "severity": "warning",
-      "message": "<lt-field> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn. Skriv <label for=\"…\"> og samme id på feltet, eller legg <label> rundt feltet."
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "<lt-field> found no <label>. The field then has no label, and a screen reader announces it without a name. Write <label for=\"…\"> and the same id on the field, or put the <label> around the field."
     },
     {
       "start": 63,
       "end": 71,
-      "link": "https://lo-tek.sobernetics.no/components/field/",
       "severity": "warning",
-      "message": "<lt-field> fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og feilmeldingen står uten et felt, og koblingen kan ikke lages. Sett inn et <input>, <textarea> eller <select>."
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "<lt-field> found no control to wire up. The label, help text and error text have no field, so the wiring cannot be made. Add an <input>, <textarea> or <select>."
     }
   ],
   "side": [
     {
       "start": 1,
       "end": 9,
-      "link": "https://lo-tek.sobernetics.no/components/field/",
       "severity": "warning",
-      "message": "<lt-field> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn. Skriv <label for=\"…\"> og samme id på feltet, eller legg <label> rundt feltet."
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "<lt-field> found no <label>. The field then has no label, and a screen reader announces it without a name. Write <label for=\"…\"> and the same id on the field, or put the <label> around the field."
     },
     {
       "start": 63,
       "end": 71,
-      "link": "https://lo-tek.sobernetics.no/components/field/",
       "severity": "warning",
-      "message": "<lt-field> fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og feilmeldingen står uten et felt, og koblingen kan ikke lages. Sett inn et <input>, <textarea> eller <select>."
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "<lt-field> found no control to wire up. The label, help text and error text have no field, so the wiring cannot be made. Add an <input>, <textarea> or <select>."
     }
   ]
 }

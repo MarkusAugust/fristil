@@ -5,14 +5,14 @@
       "end": 58,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/link/",
-      "message": "lt-link er deaktivert med aria-disabled, men har href, og Enter følger den fortsatt. Ta bort href, og skriv role=\"link\" og tabindex=\"0\" så den fortsatt er en lenke i tabrekkefølgen."
+      "message": "lt-link is disabled with aria-disabled but has href, and Enter still follows it. Remove href, and write role=\"link\" and tabindex=\"0\" so it is still a link in the tab order."
     },
     {
       "start": 98,
       "end": 112,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/button/",
-      "message": "lt-button er deaktivert med aria-disabled, men har href, og Enter følger den fortsatt. Ta bort href, og skriv role=\"link\" og tabindex=\"0\" så den fortsatt er en lenke i tabrekkefølgen."
+      "message": "lt-button is disabled with aria-disabled but has href, and Enter still follows it. Remove href, and write role=\"link\" and tabindex=\"0\" so it is still a link in the tab order."
     }
   ],
   "side": [
@@ -21,14 +21,14 @@
       "end": 58,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/link/",
-      "message": "lt-link er deaktivert med aria-disabled, men har href, og Enter følger den fortsatt. Ta bort href, og skriv role=\"link\" og tabindex=\"0\" så den fortsatt er en lenke i tabrekkefølgen."
+      "message": "lt-link is disabled with aria-disabled but has href, and Enter still follows it. Remove href, and write role=\"link\" and tabindex=\"0\" so it is still a link in the tab order."
     },
     {
       "start": 98,
       "end": 112,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/button/",
-      "message": "lt-button er deaktivert med aria-disabled, men har href, og Enter følger den fortsatt. Ta bort href, og skriv role=\"link\" og tabindex=\"0\" så den fortsatt er en lenke i tabrekkefølgen."
+      "message": "lt-button is disabled with aria-disabled but has href, and Enter still follows it. Remove href, and write role=\"link\" and tabindex=\"0\" so it is still a link in the tab order."
     }
   ]
 }

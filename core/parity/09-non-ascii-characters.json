@@ -5,7 +5,7 @@
       "end": 171,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/button/",
-      "message": "data-variant kan ikke være «sekundær» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt."
+      "message": "data-variant cannot be \"sekundær\" on button. Valid values: secondary, ghost, danger, and primary without the attribute."
     }
   ],
   "side": [
@@ -14,7 +14,7 @@
       "end": 171,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/button/",
-      "message": "data-variant kan ikke være «sekundær» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt."
+      "message": "data-variant cannot be \"sekundær\" on button. Valid values: secondary, ghost, danger, and primary without the attribute."
     }
   ]
 }

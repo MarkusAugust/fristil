@@ -5,7 +5,7 @@
       "end": 61,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "Hjelpeteksten står inni <label>, og blir en del av feltets navn. Skjermleseren leser den som navnet på feltet, og aria-describedby peker på noe inni navnet. Flytt den ut av <label>, ved siden av feltet."
+      "message": "The help text is inside <label>, and becomes part of the field's name. The screen reader reads it as the name of the field, and aria-describedby points at something inside the name. Move it out of the <label>, next to the field."
     }
   ],
   "side": [
@@ -14,7 +14,7 @@
       "end": 61,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/field/",
-      "message": "Hjelpeteksten står inni <label>, og blir en del av feltets navn. Skjermleseren leser den som navnet på feltet, og aria-describedby peker på noe inni navnet. Flytt den ut av <label>, ved siden av feltet."
+      "message": "The help text is inside <label>, and becomes part of the field's name. The screen reader reads it as the name of the field, and aria-describedby points at something inside the name. Move it out of the <label>, next to the field."
     }
   ]
 }

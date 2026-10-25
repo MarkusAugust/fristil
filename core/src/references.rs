@@ -1,9 +1,10 @@
-//! Koblingen på en hel side: at hver id det pekes på finnes, og at hvert felt
-//! og hver tekst er koblet.
+//! The wiring on a whole page: that every id pointed at exists, and that
+//! every field and every text is wired.
 //!
-//! Reglene sto først i TypeScript, i `references.ts`, og ble oversatt hit
-//! med de samme meldingene. TypeScript-utgaven er borte: kjernen er den ene
-//! implementasjonen, og TypeScript, Kotlin og editorene kaller den.
+//! The rules were first written in TypeScript, in `references.ts`, and were
+//! translated here with the same messages. The TypeScript version is gone:
+//! the core is the one implementation, and TypeScript, Kotlin and the
+//! editors call it.
 
 use std::collections::{HashMap, HashSet};
 
@@ -14,14 +15,14 @@ use crate::types::*;
 const LINK: &str = "https://lo-tek.sobernetics.no/components/field/";
 const SUMMARY_LINK: &str = "https://lo-tek.sobernetics.no/components/error-summary/";
 
-const HOW: &str = "Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør lt.field({ id }) det.";
+const HOW: &str = "Write for on the label and id on the field in the template, or put the label around the field. If the markup is built with JavaScript, lt.field({ id }) does it.";
 
-/// Attributtene som peker på id-er, og hva skjermleseren mister når de bommer.
+/// The attributes that point at ids, and what the screen reader loses when they miss.
 const REFERENCES: &[(&str, &str)] = &[
-    ("for", "ledeteksten"),
-    ("aria-describedby", "beskrivelsen"),
-    ("aria-labelledby", "navnet"),
-    ("aria-controls", "koblingen til det elementet styrer"),
+    ("for", "the label"),
+    ("aria-describedby", "the description"),
+    ("aria-labelledby", "the name"),
+    ("aria-controls", "the wiring to what the element controls"),
 ];
 
 const UNLABELLED_TYPES: &[&str] = &["hidden", "submit", "button", "reset", "image"];
@@ -59,7 +60,7 @@ pub(crate) fn has_class(node: &Node, test: impl Fn(&[u16]) -> bool) -> bool {
         .is_some_and(|v| words(v).iter().any(|(_, t)| test(t)))
 }
 
-/// Noden selv eller en forfar som oppfyller vilkåret.
+/// The node itself or an ancestor that meets the condition.
 pub(crate) fn within(nodes: &[Node], node: usize, test: impl Fn(&Node) -> bool) -> bool {
     let mut n = Some(node);
     while let Some(i) = n {
@@ -71,7 +72,7 @@ pub(crate) fn within(nodes: &[Node], node: usize, test: impl Fn(&Node) -> bool) 
     false
 }
 
-/// Om nettleseren skjuler noden, selv eller gjennom en forfar.
+/// Whether the browser hides the node, itself or through an ancestor.
 fn is_hidden(nodes: &[Node], node: usize) -> bool {
     let name = nodes[node].name.as_str();
     let mut n = Some(node);
@@ -100,8 +101,8 @@ const ENTITIES: &[(&str, char)] = &[
     ("nbsp", '\u{a0}'),
 ];
 
-/// Et kodepunkt som UTF-16. Et surrogat blir stående alene, som
-/// `String.fromCodePoint` gjør.
+/// A code point as UTF-16. A surrogate stays on its own, as
+/// `String.fromCodePoint` does.
 fn push_code_point(out: &mut Utf16, kode: u32) {
     if kode >= 0x10000 {
         let k = kode - 0x10000;
@@ -112,7 +113,7 @@ fn push_code_point(out: &mut Utf16, kode: u32) {
     }
 }
 
-/// Tallet i en entitet, eller `None` når det ikke er et tegn.
+/// The number in an entity, or `None` when it is not a character.
 fn parse_code(digits: &[u16], radix: u32) -> Option<u32> {
     let mut v: u64 = 0;
     for &c in digits {
@@ -124,7 +125,7 @@ fn parse_code(digits: &[u16], radix: u32) -> Option<u32> {
     (v > 0).then_some(v as u32)
 }
 
-/// En attributtverdi slik nettleseren leser den, med entitetene dekodet:
+/// An attribute value as the browser reads it, with the entities decoded:
 /// `/&(#x[0-9a-f]+|#[0-9]+|[a-z]+);/gi`.
 pub(crate) fn decode(t: &[u16]) -> Utf16 {
     let mut out = Vec::with_capacity(t.len());
@@ -196,7 +197,7 @@ pub(crate) fn decode(t: &[u16]) -> Utf16 {
     out
 }
 
-/// `decodeURIComponent`, eller `None` der den kaster `URIError`.
+/// `decodeURIComponent`, or `None` where it throws `URIError`.
 fn decode_uri_component(t: &[u16]) -> Option<Utf16> {
     let hex = |i: usize| -> Option<u8> {
         if t.get(i)? != &(b'%' as u16) {
@@ -234,15 +235,15 @@ fn decode_uri_component(t: &[u16]) -> Option<Utf16> {
             bytes.push(b);
             i += 3;
         }
-        // Rust avviser de samme sekvensene som JavaScript: for lange
-        // kodinger, surrogater og kodepunkter over U+10FFFF.
+        // Rust rejects the same sequences as JavaScript: overlong
+        // encodings, surrogates and code points above U+10FFFF.
         let chars_ = std::str::from_utf8(&bytes).ok()?;
         out.extend(chars_.encode_utf16());
     }
     Some(out)
 }
 
-/// Id-en en lenke som `href="#f%C3%B8dselsdato"` går til.
+/// The id a link like `href="#f%C3%B8dselsdato"` goes to.
 pub(crate) fn fragment(href: &[u16]) -> Utf16 {
     match decode_uri_component(href) {
         Some(d) => decode(&d),
@@ -250,8 +251,8 @@ pub(crate) fn fragment(href: &[u16]) -> Utf16 {
     }
 }
 
-/// `<(\/?)([a-z][a-z0-9-]*)(?=[\s/>])` ved `i`: om det er en lukketagg, og
-/// der navnet begynner og slutter.
+/// `<(\/?)([a-z][a-z0-9-]*)(?=[\s/>])` at `i`: whether it is a closing tag,
+/// and where the name starts and ends.
 fn tag_at(t: &[u16], i: usize) -> Option<(bool, usize, usize)> {
     if t.get(i) != Some(&LT) {
         return None;
@@ -268,21 +269,21 @@ fn tag_at(t: &[u16], i: usize) -> Option<(bool, usize, usize)> {
     followed_by_end(t, j).then_some((closer, name_start, j))
 }
 
-/// Siden slik den leses som en hel side, med samme lengde.
+/// The page as it is read as a whole page, with the same length.
 pub fn page_source(text: &[u16]) -> Utf16 {
     hidden(text, true)
 }
 
-/// Som [`page_source`], men med kommentarene urørt. Det er den
-/// `<!-- lotek-ignore-next -->` leses fra på en hel side: en kommentar i en
-/// `<textarea>`, en `<template>` eller en attributtverdi er tekst, og
-/// undertrykker ingenting.
+/// Like [`page_source`], but with the comments untouched. This is what
+/// `<!-- lotek-ignore-next -->` is read from on a whole page: a comment in a
+/// `<textarea>`, a `<template>` or an attribute value is text, and
+/// suppresses nothing.
 pub fn page_source_with_comments(text: &[u16]) -> Utf16 {
     hidden(text, false)
 }
 
-/// Teksten med det som ikke er en del av siden blanket ut, og kommentarene
-/// også når `comments` er sann.
+/// The text with what is not part of the page blanked out, and the comments
+/// too when `comments` is true.
 fn hidden(text: &[u16], comments: bool) -> Utf16 {
     let mut ranges: Vec<(usize, usize)> = Vec::new();
     let mut i = 0;
@@ -331,7 +332,7 @@ fn hidden(text: &[u16], comments: bool) -> Utf16 {
     out
 }
 
-/// `</navn\s*>` fra `fra`.
+/// `</name\s*>` from `from`.
 fn raw_close(t: &[u16], from: usize, name: &str) -> Option<usize> {
     (from..t.len()).find(|&i| {
         t[i] == LT && starts_at(t, i + 1, "/") && starts_at_ci(t, i + 2, name) && {
@@ -344,7 +345,7 @@ fn raw_close(t: &[u16], from: usize, name: &str) -> Option<usize> {
     })
 }
 
-/// Om taggen avsluttes med `/>`: `/(^|[\s"'])\/$/`.
+/// Whether the tag ends with `/>`: `/(^|[\s"'])\/$/`.
 fn self_closing(b: &[u16]) -> bool {
     b.last() == Some(&SLASH)
         && (b.len() == 1 || {
@@ -353,7 +354,7 @@ fn self_closing(b: &[u16]) -> bool {
         })
 }
 
-/// Elementene på siden som et tre, i den rekkefølgen de står.
+/// The elements on the page as a tree, in the order they appear.
 pub(crate) fn tree(source: &[u16]) -> Vec<Node> {
     let mut nodes: Vec<Node> = Vec::new();
     let mut stabel: Vec<usize> = Vec::new();
@@ -415,10 +416,10 @@ fn findings(
     }
 }
 
-/// Alle funn om koblingen på siden, i den rekkefølgen de står.
+/// All findings about the wiring on the page, in the order they appear.
 ///
-/// `page` er siden slik [`page_source`] leser den. `diagnose_page` har den
-/// fra før, og lager den ikke på nytt for hvert kall.
+/// `page` is the page as [`page_source`] reads it. `diagnose_page` already
+/// has it, and does not make it again for every call.
 pub fn check_references(page: &[u16]) -> Vec<Finding> {
     let nodes = tree(page);
     let mut out = Vec::new();
@@ -434,13 +435,13 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
                 ledig.insert(n);
             } else {
                 out.push(findings(
-                    "duplikat-id",
+                    "duplicate-id",
                     id.value_start,
                     id.value_start + v.len(),
                     Severity::Error,
                     LINK,
                     format!(
-                        "id=\"{}\" står mer enn én gang på siden. for og aria-describedby peker da på det første elementet, og koblingen til dette er brutt. Hver id må være unik.",
+                        "id=\"{}\" appears more than once on the page. for and aria-describedby then point at the first element, and the wiring to this one is broken. Every id must be unique.",
                         lossy(v)
                     ),
                 ));
@@ -468,18 +469,18 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
                 let at = a.value_start + offset;
                 match ids.get(&decode(target)) {
                     None => out.push(findings(
-                    "id-finnes-ikke",
+                    "id-not-found",
                         at,
                         at + target.len(),
                         Severity::Error,
                         LINK,
                         format!(
-                            "{name}=\"{}\" peker på id-en «{}», som ikke finnes på siden. Skjermleseren mister {loses}.{}",
+                            "{name}=\"{}\" points at the id \"{}\", which does not exist on the page. The screen reader loses {loses}.{}",
                             lossy(v),
                             lossy(target),
-                            // Oppskriften gjelder et felt, ikke det
-                            // aria-controls styrer, og mellomrommet står
-                            // bare sammen med den.
+                            // The advice is about a field, not what
+                            // aria-controls controls, and the space only
+                            // comes with it.
                             if *name == "aria-controls" { String::new() } else { format!(" {HOW}") }
                         ),
                     )),
@@ -487,13 +488,13 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
                         let f = &nodes[found].name;
                         if *name == "for" && node.name == "label" && !LABELABLE.contains(&f.as_str()) && !f.contains('-') {
                             out.push(findings(
-                    "for-peker-feil",
+                    "for-points-nowhere",
                                 at,
                                 at + target.len(),
                                 Severity::Error,
                                 LINK,
                                 format!(
-                                    "for=\"{}\" peker på et <{f}>, som ikke kan ha en ledetekst. for må peke på feltet selv: <input>, <select>, <textarea> eller en knapp. {HOW}",
+                                    "for=\"{}\" points at a <{f}>, which cannot have a label. for must point at the field itself: <input>, <select>, <textarea> or a button. {HOW}",
                                     lossy(v)
                                 ),
                             ));
@@ -517,13 +518,13 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
                 };
                 if !target.is_empty() && !ids.contains_key(&fragment(target)) {
                     out.push(findings(
-                    "oppsummering-peker-feil",
+                    "summary-points-nowhere",
                         href.value_start + 1,
                         href.value_start + target.len() + 1,
                         Severity::Error,
                         SUMMARY_LINK,
                         format!(
-                            "Lenken i feiloppsummeringen går til «#{}», som ikke finnes på siden. Den skal gå til feltet som feilet, slik at brukeren havner der feilen kan rettes.",
+                            "The link in the error summary goes to \"#{}\", which does not exist on the page. It must go to the field that failed, so the user lands where the error can be fixed.",
                             lossy(target)
                         ),
                     ));
@@ -551,13 +552,13 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
                 || value(node, "aria-labelledby").is_some();
             if !named {
                 out.push(findings(
-                    "kontroll-uten-ledetekst",
+                    "control-without-label",
                     node.name_start,
                     node.name_end,
                     Severity::Warning,
                     LINK,
                     format!(
-                        "<{}> har ingen ledetekst: ingen <label for> som peker på det, ingen <label> rundt, og verken aria-label eller aria-labelledby. En skjermleser leser feltet opp uten navn. {HOW}",
+                        "<{}> has no label: no <label for> pointing at it, no <label> around it, and no aria-label or aria-labelledby. A screen reader announces the field without a name. {HOW}",
                         node.name
                     ),
                 ));
@@ -565,9 +566,9 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
         }
 
         let kind = if has_class(node, |c| equals(c, "lt-error-text")) {
-            Some("Feilmeldingen")
+            Some("The error text")
         } else if has_class(node, |c| equals(c, "lt-help-text")) {
-            Some("Hjelpeteksten")
+            Some("The help text")
         } else {
             None
         };
@@ -582,20 +583,18 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
                 if id.is_none_or(|id| !described_by.contains(&decode(id))) {
                     let middle = match id {
                         Some(id) => format!(
-                            "id-en «{}» står ikke i aria-describedby på noe felt. ",
+                            "its id \"{}\" is not in aria-describedby on any field. ",
                             lossy(id)
                         ),
-                        None => {
-                            "den har ingen id, så ingen aria-describedby kan peke på den. ".into()
-                        }
+                        None => "it has no id, so no aria-describedby can point at it. ".into(),
                     };
                     out.push(findings(
-                    "tekst-ikke-koblet",
+                    "text-not-wired",
                         node.name_start,
                         node.name_end,
                         Severity::Warning,
                         LINK,
-                        format!("{kind} er ikke koblet til noe felt: {middle}En skjermleser leser den ikke opp sammen med feltet. {HOW}"),
+                        format!("{kind} is not wired to any field: {middle}A screen reader does not announce it together with the field. {HOW}"),
                     ));
                 }
             }

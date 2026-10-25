@@ -1,9 +1,10 @@
-//! Temaet: et helt fargetema av noen få merkefarger, og kontrollen av et tema
-//! en konsument har skrevet selv.
+//! The theme: a whole colour theme from a few brand colours, and the check of
+//! a theme a consumer has written themselves.
 //!
-//! Temaet er kontrakten anvendt på konsumentens kulører. Kuløren er deres,
-//! lysheten er rollens, og løftene holder av konstruksjon. Derfor finnes det
-//! ikke noe justeringspass her: det er ingenting å flytte på.
+//! The theme is the contract applied to the consumer's hues. The hue comes
+//! from them, the lightness from the role, and the promises hold by
+//! construction. That is why there is no adjustment pass here: there is
+//! nothing to move.
 
 pub mod check;
 pub mod color;
@@ -14,7 +15,7 @@ mod tests;
 use crate::json::Json;
 use contract::{build_matrix, contract, Appearance, Violation};
 
-/// `String.prototype.trim` i JavaScript: mellomrom slik JavaScript ser dem.
+/// `String.prototype.trim` in JavaScript: whitespace as JavaScript sees it.
 pub fn js_trim(s: &str) -> &str {
     s.trim_matches(is_js_space)
 }
@@ -33,12 +34,12 @@ pub fn is_js_space(c: char) -> bool {
     )
 }
 
-/// Et tall skrevet slik `String(tall)` gjør det i JavaScript: `600`, ikke
-/// `600.0`, `1e-7` og `1e+21` med eksponent, og `Infinity` og `NaN`.
+/// A number written the way `String(number)` does it in JavaScript: `600`,
+/// not `600.0`, `1e-7` and `1e+21` with an exponent, and `Infinity` and `NaN`.
 ///
-/// Reglene er Number::toString i ECMA-262: de korteste sifrene som leses
-/// tilbake til samme tall, som Rust også finner, med eksponent når tallet er
-/// under 1e-6 eller minst 1e21.
+/// The rules are Number::toString in ECMA-262: the shortest digits that read
+/// back to the same number, which Rust also finds, with an exponent when the
+/// number is below 1e-6 or at least 1e21.
 pub fn js_number(n: f64) -> String {
     if n.is_nan() {
         return "NaN".into();
@@ -46,16 +47,16 @@ pub fn js_number(n: f64) -> String {
     if n.is_infinite() {
         return if n > 0.0 { "Infinity" } else { "-Infinity" }.into();
     }
-    // `-0` skrives `0` i JavaScript.
+    // `-0` is written `0` in JavaScript.
     if n == 0.0 {
         return "0".into();
     }
-    // `{:e}` gir de korteste sifrene, som `1.2345e-7`.
+    // `{:e}` gives the shortest digits, like `1.2345e-7`.
     let scientific = format!("{:e}", n.abs());
     let (mantissa, exponent) = scientific.split_once('e').unwrap_or((&scientific, "0"));
     let digits = mantissa.replace('.', "");
     let k = digits.len() as i32;
-    // Tallet er 0,`digits` ganger 10 opphøyd i `point`.
+    // The number is 0.`digits` times 10 to the power of `point`.
     let point = exponent.parse::<i32>().unwrap_or(0) + 1;
     let text = if (k..=21).contains(&point) {
         format!("{digits}{}", "0".repeat((point - k) as usize))
@@ -81,7 +82,7 @@ pub fn js_number(n: f64) -> String {
     }
 }
 
-/// `tall.toFixed(2)` i JavaScript: likt avstand rundes opp, ikke til partall.
+/// `number.toFixed(2)` in JavaScript: a tie rounds up, not to even.
 pub fn to_fixed2(n: f64) -> String {
     let scaled = n * 100.0;
     let floor = scaled.floor();
@@ -92,7 +93,7 @@ pub fn to_fixed2(n: f64) -> String {
     format!("{n:.2}")
 }
 
-/// Knappene, feltene og flatene som deler hjørne i temaet.
+/// The buttons, fields and surfaces that share a corner radius in the theme.
 const BUTTONS: [&str; 3] = ["button", "pagination", "skip-link"];
 const FIELDS: [&str; 3] = ["input", "select", "textarea"];
 const SURFACES: [&str; 11] = [
@@ -109,11 +110,11 @@ const SURFACES: [&str; 11] = [
     "tooltip",
 ];
 
-/// Navnet brukeren skrev, til feilmeldingen.
+/// The name the user wrote, for the error message.
 ///
-/// Verdien lander i `--lt-button-radius`, men det var `buttonRadius` som ble
-/// skrevet. En feilmelding som navngir vår egen variabel sender leseren til
-/// feil sted i sin egen fil.
+/// The value ends up in `--lt-button-radius`, but what was written was
+/// `buttonRadius`. An error message that names our own variable sends the
+/// reader to the wrong place in their own file.
 fn recipe_name(variable: &str) -> String {
     let named = match variable {
         "--lt-font-family-base" => "fontFamily",
@@ -148,11 +149,12 @@ fn recipe_name(variable: &str) -> String {
     variable.into()
 }
 
-/// Om parenteser og anførselstegn går opp.
+/// Whether parentheses and quotes are balanced.
 ///
-/// En ubalansert `(` er nok alene: `1px (` åpner en blokk som sluker
-/// semikolonet, begge krøllparentesene og alt som står etter i fila. Testet i
-/// Chromium, der både temaet og konsumentens eget stilark forsvant.
+/// An unbalanced `(` is enough on its own: `1px (` opens a block that
+/// swallows the semicolon, both braces and everything after it in the file.
+/// Tested in Chromium, where both the theme and the consumer's own style
+/// sheet disappeared.
 fn balanced(value: &str) -> bool {
     let mut depth = 0i32;
     let mut quote: Option<char> = None;
@@ -177,15 +179,15 @@ fn balanced(value: &str) -> bool {
     depth == 0 && quote.is_none()
 }
 
-/// Avviser en verdi som kan bryte ut av regelen den skrives inn i.
+/// Refuses a value that can break out of the rule it is written into.
 ///
-/// Oppskriften kan komme fra et annet repo eller et byggesteg. Fire veier ut
-/// er etterprøvd i nettleser: `4px; } html { display: none } :root { --x: 1`
-/// lukket blokka, `1px (` slukte resten av fila, `Arial\` lot baksnabelen
-/// spise semikolonet, og `Arial</style><script>…` kjørte skriptet der CSS-en
-/// står inline i et `<style>`. Derfor både en liste over farlige tegn og et
-/// krav om at parenteser og anførselstegn går opp. `calc(1rem + 2px)` og
-/// `"Segoe UI", Arial` er fortsatt lovlige.
+/// The recipe can come from another repository or a build step. Four ways
+/// out were checked in a browser: `4px; } html { display: none } :root { --x: 1`
+/// closed the block, `1px (` swallowed the rest of the file, `Arial\` let the
+/// backslash eat the semicolon, and `Arial</style><script>…` ran the script
+/// where the CSS is inline in a `<style>`. Hence both a list of dangerous
+/// characters and a requirement that parentheses and quotes are balanced.
+/// `calc(1rem + 2px)` and `"Segoe UI", Arial` are still valid.
 fn checked(name: &str, value: &str) -> Result<String, String> {
     let dangerous = value.contains([';', '{', '}', '<', '>', '\\'])
         || value.contains("/*")
@@ -193,21 +195,21 @@ fn checked(name: &str, value: &str) -> Result<String, String> {
         || value.chars().any(|c| (c as u32) < 0x20);
     if dangerous {
         return Err(format!(
-            "Verdien til {} kan ikke inneholde «;», «{{», «}}», «<», «>», «\\», «/*» eller styretegn. Den skrives rett inn i en CSS-regel. Fikk: {value}",
+            "The value of {} cannot contain \";\", \"{{\", \"}}\", \"<\", \">\", \"\\\", \"/*\" or control characters. It is written straight into a CSS rule. Got: {value}",
             recipe_name(name)
         ));
     }
     if !balanced(value) {
         return Err(format!(
-            "Verdien til {} har en parentes eller et anførselstegn som ikke går opp. En parentes som ikke lukkes sluker resten av stilarket. Fikk: {value}",
+            "The value of {} has an unbalanced parenthesis or quote. A parenthesis that is not closed swallows the rest of the style sheet. Got: {value}",
             recipe_name(name)
         ));
     }
     Ok(value.to_string())
 }
 
-/// Verdien som tekst, slik `String(verdi)` gir den, eller ingenting når den
-/// ikke er oppgitt. `0` er oppgitt.
+/// The value as text, as `String(value)` gives it, or nothing when it is not
+/// given. `0` counts as given.
 fn given(value: Option<&Json>) -> Option<String> {
     match value? {
         Json::String(s) if s.is_empty() => None,
@@ -309,16 +311,16 @@ fn lines(declarations: &Declarations, indent: &str) -> String {
         .join("\n")
 }
 
-/// Temavelgeren må stå i konsumentens tema også, ellers byttet
-/// `.lt-theme-control` til LO-TEKs egne farger inne i et tema.
+/// The theme control must be in the consumer's theme too, otherwise
+/// `.lt-theme-control` switched to LO-TEK's own colours inside a theme.
 fn control(name: &str) -> String {
     format!(":root:has(.lt-theme-control[value=\"{name}\"]:checked)")
 }
 
-/// Setter temaet sammen, i sitt eget lag, `lotek-theme`, erklært etter
-/// `lotek`. Erklæringen avgjør rekkefølgen uavhengig av når stilarkene
-/// lastes: både Astro og TanStack Start legger bundlet CSS inn rett før
-/// `</head>`, etter en `<link>` appen selv har skrevet.
+/// Puts the theme together, in its own layer, `lotek-theme`, declared after
+/// `lotek`. The declaration decides the order regardless of when the style
+/// sheets load: both Astro and TanStack Start insert bundled CSS right before
+/// `</head>`, after a `<link>` the app has written itself.
 fn to_css(
     light: &Declarations,
     dark: &Declarations,
@@ -345,13 +347,13 @@ fn to_css(
     if !root.is_empty() {
         parts.push(format!("  :root {{\n{}\n  }}", lines(&root, "    ")));
     }
-    // Skriften settes som en ekte regel: LO-TEK arver skrift med vilje, så et
-    // token alene ville ikke endret én eneste bokstav.
+    // The font is set as a real rule: LO-TEK inherits the font on purpose, so
+    // a token alone would not change a single letter.
     if given(path(typography, "fontFamily")).is_some() {
         parts.push("  :root {\n    font-family: var(--lt-font-family-base);\n  }".into());
     }
-    // Begge attributtene skrives, ikke bare det mørke: `data-theme` er en
-    // temagrense og virker på et hvilket som helst element.
+    // Both attributes are written, not only the dark one: `data-theme` is a
+    // theme boundary and works on any element.
     if !dark.is_empty() {
         parts.push(format!(
             "  @media (prefers-color-scheme: dark) {{\n    :root:not([data-theme=\"light\"]) {{\n{}\n    }}\n  }}",
@@ -370,7 +372,7 @@ fn to_css(
     }
 
     Ok([
-        "/* Generert av @lo-tek/interfaces. Rediger oppskriften, ikke denne fila. */",
+        "/* Generated by @lo-tek/interfaces. Edit the recipe, not this file. */",
         "",
         "@layer lotek, lotek-theme;",
         "",
@@ -389,10 +391,10 @@ pub struct Theme {
     pub css: String,
 }
 
-/// Bygger temaet, og kontrollerer hvert løfte mens det bygges.
+/// Builds the theme, and checks every promise while it is built.
 ///
-/// `input` er oppskriften: merkefargene per familie, og `typography` og
-/// `shape`. En familie som utelates, arver LO-TEKs egen kulør.
+/// `input` is the recipe: the brand colours per family, and `typography` and
+/// `shape`. A family that is left out inherits LO-TEK's own hue.
 pub fn build_theme(input: &Json) -> Result<Theme, String> {
     if !contract::loaded() {
         return Err(contract::NOT_LOADED.into());
@@ -415,10 +417,12 @@ pub fn build_theme(input: &Json) -> Result<Theme, String> {
     let shape = input.get("shape").filter(|v| truthy(v));
 
     if given_families.is_empty() && typography.is_none() && shape.is_none() {
-        return Err("Temaet er tomt. Oppgi enten merkefarger, eller skrift og form.".into());
+        return Err(
+            "The theme is empty. Give either brand colours, or typography and shape.".into(),
+        );
     }
-    // Et tema uten farger er ikke en kuriositet: bruker organisasjonen
-    // LO-TEKs farger fra før, er det skriften og hjørnene som skiller.
+    // A theme without colours is not a curiosity: when the organisation
+    // already uses LO-TEK's colours, the font and the corners are what set it apart.
     if given_families.is_empty() {
         return Ok(Theme {
             light: vec![],
@@ -484,11 +488,11 @@ mod recipe_tests {
         let error = theme(r#"{"shape": {"buttonRadius": "4px; } html { display: none }"}}"#)
             .err()
             .unwrap();
-        assert!(error.starts_with("Verdien til buttonRadius"), "{error}");
+        assert!(error.starts_with("The value of buttonRadius"), "{error}");
         let error = theme(r#"{"typography": {"fontFamily": "Arial ("}}"#)
             .err()
             .unwrap();
-        assert!(error.contains("parentes"), "{error}");
+        assert!(error.contains("parenthesis"), "{error}");
     }
 
     #[test]
@@ -506,9 +510,10 @@ mod recipe_tests {
 
     #[test]
     fn the_theme_control_stands_in_a_consumer_theme_too() {
-        // Den samme asymmetrien som rammet `[data-theme="light"]` i 0.23.0:
-        // uten disse byttet velgeren til LO-TEKs egne farger inne i et
-        // konsumenttema, siden bare attributtblokkene hadde temaets verdier.
+        // The same asymmetry that hit `[data-theme="light"]` in 0.23.0:
+        // without these the control switched to LO-TEK's own colours inside
+        // a consumer theme, since only the attribute blocks had the theme's
+        // values.
         let css = theme(r##"{"accent": "#7c3aed"}"##).unwrap().css;
         assert!(css.contains(r#":root:has(.lt-theme-control[value="light"]:checked)"#));
         assert!(css.contains(r#":root:has(.lt-theme-control[value="dark"]:checked)"#));
@@ -516,17 +521,18 @@ mod recipe_tests {
 
     #[test]
     fn an_empty_recipe_is_an_error() {
-        assert!(theme("{}").err().unwrap().starts_with("Temaet er tomt"));
+        assert!(theme("{}").err().unwrap().starts_with("The theme is empty"));
         assert!(theme(r##"{"accent": "#zzz"}"##)
             .err()
             .unwrap()
-            .contains("gyldig heksadesimal"));
+            .contains("valid hexadecimal"));
     }
 
     #[test]
     fn a_theme_without_colors_passes_the_check() {
-        // Et tema laget med `tema` holder kravene, også et med bare skrift og
-        // form. Det har ingen kontrast å kontrollere, og det er ikke et brudd.
+        // A theme made with `theme` meets the requirements, also one with only
+        // typography and shape. It has no contrast to check, and that is not
+        // a violation.
         let css = theme(
             r#"{"typography": {"fontFamily": "Georgia, serif"}, "shape": {"buttonRadius": "1rem"}}"#,
         )
@@ -546,7 +552,7 @@ mod recipe_tests {
             report
                 .problems
                 .iter()
-                .any(|p| p.message.starts_with("accent: text mot canvas er 1.00:1")),
+                .any(|p| p.message.starts_with("accent: text mot canvas is 1.00:1")),
             "{:?}",
             report
                 .problems

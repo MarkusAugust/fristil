@@ -1,9 +1,11 @@
-//! At kontrakten holder, og at sjekken som skal si fra faktisk sier fra.
+//! That the contract holds, and that the check that should speak up actually
+//! does.
 //!
-//! Løftene er garantert av konstruksjonen og ikke av et justeringspass, så
-//! testene her er hele garantien. Ryker et av tallene i `color-contract.json`,
-//! er det disse som skal bli røde. De var `contract.browser.test.ts` mens
-//! temaet var skrevet i TypeScript, og påstandene er de samme.
+//! The promises are guaranteed by construction and not by an adjustment
+//! pass, so the tests here are the whole guarantee. If one of the numbers in
+//! `color-contract.json` breaks, these are the ones that must turn red. They
+//! were `contract.browser.test.ts` while the theme was written in TypeScript,
+//! and the assertions are the same.
 
 use super::check::{inspect_theme, parse_blocks, ParsedBlock, Report};
 use super::color::{contrast_ratio, parse_hex, rgb_to_oklch};
@@ -96,7 +98,7 @@ fn family_count() -> usize {
     contract().families.len()
 }
 
-// LO-TEKs eget tema.
+// LO-TEK's own theme.
 
 #[test]
 fn loteks_own_theme_keeps_every_promise() {
@@ -128,10 +130,10 @@ fn has_every_family_with_every_role() {
     }
 }
 
-// Kontrakten skal holde for en hvilken som helst kulør, ikke bare for våre.
-// De ekstreme er med med vilje: neon og magenta er der sRGB oppfører seg verst.
-// Den nøytrale varieres også, fra svart og hvitt til farget grått, siden
-// flatene og teksten i de andre rollene står på den.
+// The contract must hold for any hue, not only for ours. The extreme ones
+// are included on purpose: neon and magenta are where sRGB behaves worst.
+// The neutral one is varied too, from black and white to tinted grey, since
+// the surfaces and the text in the other roles sit on it.
 
 #[test]
 fn keeps_the_promises_for_any_neutral_and_hue() {
@@ -172,8 +174,9 @@ fn keeps_the_promises_for_any_neutral_and_hue() {
     );
 }
 
-// Løftene kan feile. Uten disse kunne `check_promises` svart tomt uansett, og
-// alle testene over ville meldt grønt på en sjekk som ikke sjekket.
+// The promises can fail. Without these, `check_promises` could have answered
+// empty regardless, and all the tests above would have reported green on a
+// check that did not check.
 
 #[test]
 fn reports_text_that_is_too_light() {
@@ -200,7 +203,7 @@ fn reports_content_on_fill_that_does_not_hold() {
     assert!(broken.iter().any(|v| v.promise == "content oppå fill"));
 }
 
-// Kravet ligger over WCAG, så en liten justering ikke bryter noe.
+// The requirement is above WCAG, so a small adjustment breaks nothing.
 
 #[test]
 fn the_requirements_have_a_margin_over_wcag() {
@@ -210,7 +213,7 @@ fn the_requirements_have_a_margin_over_wcag() {
 
 #[test]
 fn every_lightness_is_within_the_scale() {
-    // Over 0,1, siden 0,001 ikke er en lyshet noen rolle kan ha.
+    // Above 0.1, since 0.001 is not a lightness any role can have.
     for (_, spec) in &contract().roles {
         for l in [spec.light, spec.dark] {
             assert!(l > 0.1 && l <= 1.0, "{l}");
@@ -218,7 +221,7 @@ fn every_lightness_is_within_the_scale() {
     }
 }
 
-// Sjekken av et tema noen har skrevet selv.
+// The check of a theme someone has written themselves.
 
 #[test]
 fn says_nothing_about_a_theme_that_holds() {
@@ -273,14 +276,14 @@ fn reports_a_value_it_cannot_calculate() {
     );
     let report = inspect_theme(&css);
     assert_eq!(report.problems.len(), 1);
-    assert!(report.problems[0].message.contains("ikke kontrollert"));
+    assert!(report.problems[0].message.contains("not checked"));
 }
 
 #[test]
 fn reports_an_incomplete_family() {
     let report = inspect_theme(":root { color-scheme: light; --lt-color-brand4-fill: #336699; }");
     assert_eq!(messages(&report).len(), 1);
-    assert!(report.problems[0].message.contains("brand4 mangler"));
+    assert!(report.problems[0].message.contains("brand4 is missing"));
 }
 
 #[test]
@@ -290,15 +293,16 @@ fn says_so_when_the_file_has_no_theme() {
         "body { color: var(--lt-color-neutral-text) }",
     ] {
         let report = inspect_theme(css);
-        assert!(report.problems[0].message.contains("Fant ingen"), "{css}");
+        assert!(report.problems[0].message.contains("Found no"), "{css}");
         assert_eq!(report.others, 0, "{css}");
     }
 }
 
 #[test]
 fn a_theme_with_only_shape_and_system_colors_is_not_a_missing_theme() {
-    // Skriften, formen og systemfargene lover ingen kontrast. En fil med bare
-    // dem er et tema uten farger, også inni et `@layer` og en `@media`.
+    // The font, the shape and the system colours promise no contrast. A file
+    // with only them is a theme without colours, also inside an `@layer` and
+    // an `@media`.
     for css in [
         ":root { --lt-button-radius: 2.75rem }",
         "@layer lotek-theme { :root { --lt-font-family-base: Georgia, serif } }",
@@ -316,11 +320,12 @@ fn the_matrix_needs_a_neutral_family() {
     let error = build_matrix(&[("accent".into(), "#1362ae".into())], Appearance::Light)
         .err()
         .unwrap();
-    assert!(error.contains("nøytral"), "{error}");
+    assert!(error.contains("neutral"), "{error}");
 }
 
-// Lysheten er rollens, ikke merkefargens. To farger med samme lyshet har
-// alltid kontrast nær 1, så det som testes er selve lysheten.
+// The lightness comes from the role, not the brand colour. Two colours with
+// the same lightness always have a contrast near 1, so what is tested is the
+// lightness itself.
 
 #[test]
 fn every_role_has_the_same_lightness_whatever_the_brand() {
@@ -342,7 +347,8 @@ fn takes_the_hue_from_the_brand() {
     assert!((hue("#ff0000") - hue("#0000ff")).abs() > 60.0);
 }
 
-// Den hevede flaten er med i løftene: mørkest i lyst tema og lysest i mørkt.
+// The raised surface is part of the promises: darkest in the light theme and
+// lightest in the dark.
 
 #[test]
 fn border_fill_and_subtle_text_hold_against_raised() {
@@ -377,7 +383,7 @@ fn fails_when_the_border_is_too_weak_against_raised() {
     assert!(broken.iter().any(|v| v.promise == "border mot raised"));
 }
 
-// Sjekken leser CSS slik den faktisk skrives.
+// The check reads CSS the way it is actually written.
 
 #[test]
 fn keeps_a_value_before_a_nested_rule() {
@@ -399,8 +405,9 @@ fn reads_media_inside_root_as_its_own_block() {
 
 #[test]
 fn reads_a_nested_rule_that_starts_with_an_element_and_a_colon() {
-    // `html:not(…)` begynner som deklarasjonen `html` med verdien `not(…) {…}`.
-    // Ble den lest slik, forsvant blokka, og blokkene etter den med.
+    // `html:not(…)` starts like the declaration `html` with the value
+    // `not(…) {…}`. When it was read that way, the block disappeared, and the
+    // blocks after it too.
     for outer in [
         "@media (prefers-color-scheme: dark)",
         "@layer brand",
@@ -465,13 +472,13 @@ fn reports_a_token_name_the_system_does_not_have() {
     assert_eq!(report.problems.len(), 1);
     assert!(report.problems[0]
         .message
-        .contains("ikke et token i systemet"));
+        .contains("not a token in the system"));
 }
 
 #[test]
 fn checks_a_family_with_a_hyphen_in_its_name() {
-    // Rollen leses som endelsen. Med familien som begynnelsen falt sju
-    // gyldige roller på «min-merkevare» utenfor uten et ord.
+    // The role is read as the suffix. With the family as the prefix, seven
+    // valid roles on "min-merkevare" fell outside without a word.
     let css: String = [
         "surface",
         "border-subtle",
@@ -495,10 +502,10 @@ fn checks_a_family_with_a_hyphen_in_its_name() {
 fn reports_a_hex_color_with_alpha_instead_of_failing() {
     let report = inspect_theme(":root { --lt-color-danger-text: #ff9999cc }");
     assert_eq!(report.problems.len(), 1);
-    assert!(report.problems[0].message.contains("ikke kontrollert"));
+    assert!(report.problems[0].message.contains("not checked"));
 }
 
-// Sjekken teller hva den gjorde.
+// The check counts what it did.
 
 #[test]
 fn reports_blocks_and_promises() {
@@ -525,7 +532,7 @@ fn counts_no_promises_in_a_file_without_tokens() {
     assert_eq!(report.problems.len(), 1);
 }
 
-// Sjekken sier fra om det den ikke kunne lese.
+// The check reports what it could not read.
 
 #[test]
 fn reads_color_scheme_as_the_last_declaration_without_semicolon() {
@@ -571,17 +578,13 @@ fn does_not_read_a_custom_property_as_color_scheme() {
 #[test]
 fn keeps_the_brace_message_in_a_truncated_file() {
     let report = inspect_theme(":root { --lt-color-danger-text: #7a1f28");
-    assert!(messages(&report)
-        .iter()
-        .any(|m| m.contains("ikke er lukket")));
+    assert!(messages(&report).iter().any(|m| m.contains("not closed")));
 }
 
 #[test]
 fn reports_a_block_that_is_not_closed() {
     let report = inspect_theme(":root { --lt-color-danger-text: #7a1f28 } [data-theme=\"dark\"] {");
-    assert!(messages(&report)
-        .iter()
-        .any(|m| m.contains("ikke er lukket")));
+    assert!(messages(&report).iter().any(|m| m.contains("not closed")));
 }
 
 #[test]
@@ -590,7 +593,7 @@ fn reports_a_layer_on_another_family_than_neutral() {
     assert_eq!(report.problems.len(), 1);
     assert!(report.problems[0]
         .message
-        .contains("ikke et token i systemet"));
+        .contains("not a token in the system"));
 }
 
 #[test]
@@ -614,8 +617,9 @@ fn counts_the_consumers_own_values_not_the_defaults() {
     assert_eq!(whole.declarations, family_count() * role_count() + 2);
 }
 
-// Sjekken leser CSS med tokenizeren, slik nettleseren gjør. Den gamle lesingen
-// talte klammer og semikolon tegn for tegn, og ble lurt av alle disse.
+// The check reads CSS with the tokenizer, as the browser does. The old
+// reading counted braces and semicolons character by character, and was
+// fooled by all of these.
 
 #[test]
 fn a_brace_in_a_string_does_not_end_the_block() {
@@ -627,9 +631,7 @@ fn a_brace_in_a_string_does_not_end_the_block() {
         Some("#ff9999")
     );
     let report = inspect_theme(css);
-    assert!(!messages(&report)
-        .iter()
-        .any(|m| m.contains("ikke er lukket")));
+    assert!(!messages(&report).iter().any(|m| m.contains("not closed")));
     assert!(messages(&report).iter().any(|m| m.contains("danger: text")));
 }
 
@@ -663,24 +665,21 @@ fn a_comment_in_the_selector_is_not_shown() {
 fn reads_a_block_that_is_not_closed_to_the_end_of_the_file() {
     let report = inspect_theme(":root { --lt-color-danger-text: #ff9999");
     assert_eq!(report.blocks, 1);
-    assert!(messages(&report)
-        .iter()
-        .any(|m| m.contains("ikke er lukket")));
+    assert!(messages(&report).iter().any(|m| m.contains("not closed")));
     assert!(messages(&report).iter().any(|m| m.contains("danger: text")));
 }
 
-// En bar `:root` gjelder i begge temaer. LO-TEKs mørke blokk overstyrer
-// bare tokenene den selv har, så en lys verdi som ingen mørk blokk tar,
-// står også i mørkt.
+// A bare `:root` applies in both themes. LO-TEK's dark block only overrides
+// the tokens it has itself, so a light value no dark block takes also stands
+// in dark.
 
 #[test]
 fn checks_a_bare_root_against_the_dark_theme_too() {
     let report = inspect_theme(":root { --lt-color-neutral-text: #0d4e8c }");
     assert!(
-        report
-            .problems
-            .iter()
-            .any(|p| p.selector.contains("i mørkt tema") && p.message.contains("neutral: text")),
+        report.problems.iter().any(
+            |p| p.selector.contains("in the dark theme") && p.message.contains("neutral: text")
+        ),
         "{:?}",
         messages(&report)
     );
@@ -715,7 +714,7 @@ fn light_and_dark_together_is_both_themes() {
         report
             .problems
             .iter()
-            .any(|p| p.selector.contains("i mørkt tema")),
+            .any(|p| p.selector.contains("in the dark theme")),
         "{:?}",
         messages(&report)
     );
@@ -737,7 +736,7 @@ fn light_must_be_a_word() {
             report
                 .problems
                 .iter()
-                .any(|p| p.selector.contains("i mørkt tema")),
+                .any(|p| p.selector.contains("in the dark theme")),
             "{css}: {:?}",
             messages(&report)
         );
@@ -752,15 +751,14 @@ fn light_must_be_a_word() {
 
 #[test]
 fn not_dark_is_both_themes_and_not_light() {
-    // `:root:not([data-theme="dark"])` treffer også systemets mørke modus
-    // når `data-theme` mangler.
+    // `:root:not([data-theme="dark"])` also matches the system's dark mode
+    // when `data-theme` is missing.
     let report =
         inspect_theme(":root:not([data-theme=\"dark\"]) { --lt-color-neutral-text: #0d4e8c }");
     assert!(
-        report
-            .problems
-            .iter()
-            .any(|p| p.selector.contains("i mørkt tema") && p.message.contains("neutral: text")),
+        report.problems.iter().any(
+            |p| p.selector.contains("in the dark theme") && p.message.contains("neutral: text")
+        ),
         "{:?}",
         messages(&report)
     );
@@ -773,7 +771,7 @@ fn dark_inside_not_does_not_make_a_dark_block() {
     assert_eq!(blocks[0].appearance, Appearance::Light);
 }
 
-// Systemfargene er ingen celle, og lover ingen kontrast.
+// The system colours are no cell, and promise no contrast.
 
 #[test]
 fn loteks_own_tokens_css_has_no_problems() {
@@ -784,7 +782,7 @@ fn loteks_own_tokens_css_has_no_problems() {
 
 #[test]
 fn the_system_colors_are_not_cells() {
-    // Slik design-tokens.mdx ber om: overstyringen skrives på hver temagrense.
+    // As design-tokens.mdx asks: the override is written on every theme boundary.
     let css = "[data-theme=\"light\"] {
             --lt-color-disabled-surface: #e4e4e5;
             --lt-color-disabled-text: #8a8d91;
@@ -804,8 +802,9 @@ fn the_system_colors_are_not_cells() {
 
 #[test]
 fn media_not_dark_is_light_and_only_light() {
-    // `not` snur mediespørringen. Blokka gjelder i lyst tema, og bare der, så
-    // den kontrolleres heller ikke mot de mørke standardverdiene.
+    // `not` inverts the media query. The block applies in the light theme,
+    // and only there, so it is not checked against the dark default values
+    // either.
     for media in [
         "not (prefers-color-scheme: dark)",
         "not all and (prefers-color-scheme: dark)",
@@ -829,9 +828,9 @@ fn media_not_dark_is_light_and_only_light() {
 
 #[test]
 fn media_not_print_and_dark_applies_in_both_schemes() {
-    // `not print and (dark)` er not(print og mørkt): sann på hver skjerm, i
-    // lyst og i mørkt tema. Blokka er ikke bundet til lyst tema, og en lys
-    // verdi kontrolleres også mot de mørke standardverdiene.
+    // `not print and (dark)` is not(print and dark): true on every screen, in
+    // the light and the dark theme. The block is not tied to the light theme,
+    // and a light value is also checked against the dark default values.
     for media in [
         "not print and (prefers-color-scheme: dark)",
         "not tv and (prefers-color-scheme: dark)",
@@ -850,8 +849,8 @@ fn media_not_print_and_dark_applies_in_both_schemes() {
 
 #[test]
 fn media_not_type_without_and_stays_dark() {
-    // En medietype uten `and` foran skjemaet er ikke en negert spørring om
-    // fargeskjema, og `dark` leses som før.
+    // A media type without `and` before the scheme is not a negated query
+    // about colour scheme, and `dark` is read as before.
     let css = "@media not screen, (prefers-color-scheme: dark) { :root { --lt-color-danger-text: #f1a7ab } }";
     assert_eq!(parse_blocks(css)[0].appearance, Appearance::Dark);
 }
@@ -866,7 +865,7 @@ fn media_not_light_is_dark() {
 
 #[test]
 fn writes_numbers_like_string_in_javascript() {
-    // Fasiten er `String(tall)` i Node.
+    // The expected value is `String(number)` in Node.
     for (n, expected) in [
         (600.0, "600"),
         (2.5, "2.5"),

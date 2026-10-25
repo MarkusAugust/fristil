@@ -5,14 +5,14 @@
       "end": 19,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
-      "message": "<lt-session-timeout> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
+      "message": "<lt-session-timeout> found no <dialog>. The warning cannot be shown, and the session times out without warning."
     },
     {
       "start": 73,
       "end": 91,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
-      "message": "<lt-session-timeout> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
+      "message": "<lt-session-timeout> found no <dialog>. The warning cannot be shown, and the session times out without warning."
     }
   ],
   "side": [
@@ -21,14 +21,14 @@
       "end": 19,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
-      "message": "<lt-session-timeout> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
+      "message": "<lt-session-timeout> found no <dialog>. The warning cannot be shown, and the session times out without warning."
     },
     {
       "start": 73,
       "end": 91,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
-      "message": "<lt-session-timeout> fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten advarsel."
+      "message": "<lt-session-timeout> found no <dialog>. The warning cannot be shown, and the session times out without warning."
     }
   ]
 }

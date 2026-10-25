@@ -5,14 +5,14 @@
       "end": 15,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/tabs/",
-      "message": "<lt-tabs> har en fanerad uten navn. Skriv aria-label på .lt-tabs__list, som aria-label=\"Deler av saken\", eller aria-labelledby mot en overskrift. Uten navn sier skjermleseren bare «faneliste».",
+      "message": "<lt-tabs> has a tab list without a name. Write aria-label on .lt-tabs__list, like aria-label=\"Case sections\", or aria-labelledby pointing at a heading. Without a name the screen reader only says \"tab list\".",
       "fix": {
-        "title": "Gi raden et navn med aria-label",
+        "title": "Give the tab list a name with aria-label",
         "edits": [
           {
             "start": 15,
             "end": 15,
-            "text": " aria-label=\"Deler av saken\""
+            "text": " aria-label=\"Case sections\""
           }
         ],
         "preferred": true
@@ -25,14 +25,14 @@
       "end": 15,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/tabs/",
-      "message": "<lt-tabs> har en fanerad uten navn. Skriv aria-label på .lt-tabs__list, som aria-label=\"Deler av saken\", eller aria-labelledby mot en overskrift. Uten navn sier skjermleseren bare «faneliste».",
+      "message": "<lt-tabs> has a tab list without a name. Write aria-label on .lt-tabs__list, like aria-label=\"Case sections\", or aria-labelledby pointing at a heading. Without a name the screen reader only says \"tab list\".",
       "fix": {
-        "title": "Gi raden et navn med aria-label",
+        "title": "Give the tab list a name with aria-label",
         "edits": [
           {
             "start": 15,
             "end": 15,
-            "text": " aria-label=\"Deler av saken\""
+            "text": " aria-label=\"Case sections\""
           }
         ],
         "preferred": true

@@ -1,36 +1,38 @@
-//! Hva stilarkene styler: klassene og attributtverdiene i selektorene.
+//! What the style sheets style: the classes and the attribute values in the
+//! selectors.
 //!
-//! Manifestet er kilden til hva en klasse tar. Stilarkene er vitner: de sier
-//! hva som faktisk har en regel. Sammen svarer de på to ting kjernen ellers
-//! ikke ser:
+//! The manifest is the source for what a class takes. The style sheets are
+//! witnesses: they say what actually has a rule. Together they answer two
+//! things the core does not otherwise see:
 //!
-//! - en klasse står i markupen, men stilarket som styler den er ikke lastet;
-//! - en verdi står i manifestet, som en variant lagt til i en overtatt
-//!   komponent, men ingen selektor styler den.
+//! - a class is in the markup, but the style sheet that styles it is not
+//!   loaded;
+//! - a value is in the manifest, like a variant added to a taken-over
+//!   component, but no selector styles it.
 //!
-//! CSS-en leses med cssparser, tokenizeren fra fase 3. For hver selektor
-//! samles klassene og attributtene i hver sammensatte selektor, som
-//! `.lt-button[data-variant="ghost"]`. `:is()` og `:where()` leses som en del
-//! av den sammensatte selektoren de står i, og `&` i en nøstet regel som
-//! selektoren rundt. `:not()` og `:has()` handler om andre elementer, eller om
-//! at noe ikke er der: klassene i dem regnes som kjent, men verdiene som ikke
-//! stylet. `@media`, `@supports`, `@layer`,
-//! `@container` og `@scope` leses som om de ikke var der, og `@import` gir
-//! adressen.
+//! The CSS is read with cssparser, the tokenizer from phase 3. For each
+//! selector the classes and attributes in each compound selector are
+//! collected, like `.lt-button[data-variant="ghost"]`. `:is()` and `:where()`
+//! are read as part of the compound selector they are in, and `&` in a
+//! nested rule as the surrounding selector. `:not()` and `:has()` are about
+//! other elements, or about something not being there: the classes in them
+//! count as known, but the values as not styled. `@media`, `@supports`,
+//! `@layer`, `@container` and `@scope` are read as if they were not there,
+//! and `@import` gives the address.
 
 use std::collections::BTreeSet;
 
 use cssparser::{Parser, Token};
 
-/// Det stilarkene vitner om.
+/// What the style sheets bear witness to.
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct Styles {
-    /// Hver klasse som står i en selektor.
+    /// Every class that appears in a selector.
     pub classes: BTreeSet<String>,
-    /// Hver klasse med et attributt, og verdien når selektoren krever en, som
-    /// `("lt-button", "data-variant", Some("ghost"))`.
+    /// Every class with an attribute, and the value when the selector
+    /// requires one, like `("lt-button", "data-variant", Some("ghost"))`.
     pub attributes: BTreeSet<(String, String, Option<String>)>,
-    /// Adressene i `@import`, i rekkefølge.
+    /// The addresses in `@import`, in order.
     pub imports: Vec<String>,
 }
 
@@ -41,8 +43,8 @@ impl Styles {
         self.imports.extend(other.imports);
     }
 
-    /// Om en selektor styler attributtet på klassen: med verdien, eller med
-    /// en selektor som bare spør om attributtet finnes.
+    /// Whether a selector styles the attribute on the class: with the value,
+    /// or with a selector that only asks whether the attribute is present.
     pub fn styles_value(&self, class: &str, attribute: &str, value: Option<&str>) -> bool {
         let has = |v: Option<&str>| {
             self.attributes.contains(&(
@@ -55,18 +57,18 @@ impl Styles {
     }
 }
 
-/// Én mulig sammensatt selektor: klassene og attributtene som må stå på det
-/// samme elementet.
+/// One possible compound selector: the classes and attributes that must be
+/// on the same element.
 #[derive(Debug, Default, Clone)]
 struct Compound {
     classes: Vec<String>,
     attributes: Vec<(String, Option<String>)>,
 }
 
-/// Grensen for hvor mange varianter `:is()` kan gi én sammensatt selektor.
+/// The limit on how many alternatives `:is()` can give one compound selector.
 const MAX_ALTERNATIVES: usize = 64;
 
-/// Alle kombinasjonene av to lister med varianter.
+/// All combinations of two lists of alternatives.
 fn product(left: &[Compound], right: &[Compound]) -> Vec<Compound> {
     let mut out = Vec::new();
     for l in left {
@@ -83,8 +85,9 @@ fn product(left: &[Compound], right: &[Compound]) -> Vec<Compound> {
     out
 }
 
-/// Leser én selektorliste. Gir variantene av den siste sammensatte selektoren
-/// i hver selektor, den som styles, og legger alt den ser i `out`.
+/// Reads one selector list. Returns the alternatives of the last compound
+/// selector in each selector, the one that is styled, and puts everything it
+/// sees in `out`.
 fn selector_list(text: &str, parents: &[Compound], out: &mut Styles) -> Vec<Compound> {
     let mut parser = Parser::new(text);
     selector_list_in(&mut parser, parents, out)
@@ -104,15 +107,15 @@ fn record(compounds: &[Compound], out: &mut Styles) {
 
 fn selector_list_in(input: &mut Parser, parents: &[Compound], out: &mut Styles) -> Vec<Compound> {
     let mut subjects = Vec::new();
-    // Variantene av den sammensatte selektoren som leses nå.
+    // The alternatives of the compound selector being read now.
     let mut current = vec![Compound::default()];
-    // Om den har en klasse eller et attributt, og om den har noe i det hele
-    // tatt: `*` og `div` er sammensatte selektorer uten noe å vitne om.
+    // Whether it has a class or an attribute, and whether it has anything at
+    // all: `*` and `div` are compound selectors with nothing to bear witness to.
     let mut touched = false;
     let mut started = false;
-    // Den forrige sammensatte selektoren, avsluttet av et mellomrom eller en
-    // kombinator. Kommer det ingen etter den, er det den som styles:
-    // `:is(.a, .b )` og `.a , .b` har et mellomrom før skilletegnet.
+    // The previous compound selector, ended by a space or a combinator. When
+    // nothing comes after it, that is the one that is styled: `:is(.a, .b )`
+    // and `.a , .b` have a space before the separator.
     let mut last: Option<Vec<Compound>> = None;
     let finish = |current: &mut Vec<Compound>,
                   touched: &mut bool,
@@ -131,7 +134,7 @@ fn selector_list_in(input: &mut Parser, parents: &[Compound], out: &mut Styles) 
         *touched = false;
         *started = false;
     };
-    // Den som styles i selektoren som slutter her.
+    // The one that is styled in the selector that ends here.
     let subject =
         |current: Vec<Compound>, touched: bool, started: bool, last: Option<Vec<Compound>>| {
             if started {
@@ -209,9 +212,9 @@ fn selector_list_in(input: &mut Parser, parents: &[Compound], out: &mut Styles) 
                             touched = true;
                         }
                     } else if matches!(name.as_str(), "not" | "has") {
-                        // `:not()` og `:has()` styler ikke det de nevner, men
-                        // stilarket kjenner klassene, som `lt-theme-control`
-                        // i `:root:has(.lt-theme-control:checked)`.
+                        // `:not()` and `:has()` do not style what they name,
+                        // but the style sheet knows the classes, like
+                        // `lt-theme-control` in `:root:has(.lt-theme-control:checked)`.
                         let mut mentioned = Styles::default();
                         let _ = input.parse_nested_block(|i| {
                             selector_list_in(i, parents, &mut mentioned);
@@ -226,7 +229,7 @@ fn selector_list_in(input: &mut Parser, parents: &[Compound], out: &mut Styles) 
                     }
                 }
                 Ok(Token::Colon) => {
-                    // Et pseudoelement, som `::before`, med argumenter eller uten.
+                    // A pseudo-element, like `::before`, with or without arguments.
                     if let Ok(Token::Function(_)) = input.next_including_whitespace().cloned() {
                         let _ = input.parse_nested_block(|i| {
                             while i.next().is_ok() {}
@@ -252,8 +255,8 @@ fn selector_list_in(input: &mut Parser, parents: &[Compound], out: &mut Styles) 
     subjects
 }
 
-/// `[navn]`, `[navn="verdi"]` og `[navn~="verdi"]`. Andre sammenligninger,
-/// som `^=`, sier ikke hvilken verdi som styles, og telles ikke.
+/// `[name]`, `[name="value"]` and `[name~="value"]`. Other comparisons, like
+/// `^=`, do not say which value is styled, and are not counted.
 fn attribute(input: &mut Parser) -> Option<(String, Option<String>)> {
     let name = match input.next() {
         Ok(Token::Ident(name)) => name.to_ascii_lowercase(),
@@ -271,10 +274,10 @@ fn attribute(input: &mut Parser) -> Option<(String, Option<String>)> {
     }
 }
 
-/// Går gjennom reglene på ett nivå.
+/// Walks through the rules at one level.
 fn rules(input: &mut Parser, parents: &[Compound], out: &mut Styles) {
     loop {
-        // Teksten fram til `{` eller `;` er selektoren, eller at-regelen.
+        // The text up to `{` or `;` is the selector, or the at-rule.
         let start = input.position();
         let mut at_rule: Option<String> = None;
         let mut first = true;
@@ -330,7 +333,7 @@ fn rules(input: &mut Parser, parents: &[Compound], out: &mut Styles) {
             continue;
         }
         match at_rule.as_deref() {
-            // Reglene inni gjelder som om at-regelen ikke var der.
+            // The rules inside apply as if the at-rule were not there.
             Some(
                 "media" | "supports" | "layer" | "container" | "scope" | "document"
                 | "starting-style",
@@ -340,8 +343,8 @@ fn rules(input: &mut Parser, parents: &[Compound], out: &mut Styles) {
                     Ok::<_, cssparser::ParseError<()>>(())
                 });
             }
-            // `@keyframes`, `@font-face`, `@property` og de andre har ingen
-            // selektorer.
+            // `@keyframes`, `@font-face`, `@property` and the others have no
+            // selectors.
             Some(_) => {
                 let _ = input.parse_nested_block(|i| {
                     while i.next().is_ok() {}
@@ -360,7 +363,7 @@ fn rules(input: &mut Parser, parents: &[Compound], out: &mut Styles) {
     }
 }
 
-/// Det et stilark styler.
+/// What a style sheet styles.
 pub fn read_styles(css: &str) -> Styles {
     let mut out = Styles::default();
     let mut parser = Parser::new(css);
@@ -438,7 +441,7 @@ mod tests {
             .lt-y { background: url(".lt-url{}"); }"#,
         );
         assert!(!s.classes.contains("lt-kommentar"));
-        // Nevnt, men verdiene i `:not()` og `:has()` er ikke stylet.
+        // Named, but the values in `:not()` and `:has()` are not styled.
         assert!(s.classes.contains("lt-select") && s.classes.contains("lt-error-text"));
         assert!(!s.styles_value("lt-select", "data-size", Some("small")));
         assert!(!s.styles_value("lt-error-text", "data-x", Some("y")));
@@ -461,7 +464,7 @@ mod tests {
         assert!(s.styles_value("lt-alert", "data-color", Some("danger")));
         assert!(s.styles_value("lt-card", "data-color", Some("danger")));
         assert!(s.styles_value("lt-table", "data-size", Some("small")));
-        // `*` er det som styles, ikke `.lt-list`.
+        // `*` is what is styled, not `.lt-list`.
         assert!(!s.styles_value("lt-list", "data-x", Some("y")));
     }
 

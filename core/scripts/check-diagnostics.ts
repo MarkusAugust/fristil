@@ -78,7 +78,7 @@ const cases: Case[] = [
     name: "en knapp med bare et ikon og ikke noe navn",
     html: `<button class="lt-button"><svg class="lt-icon" aria-hidden="true"><path d="M0 0"/></svg><span aria-hidden="true">x</span></button>`,
     count: 1,
-    mentions: ["<button> har bare et ikon", "aria-label", "lt-sr-only"],
+    mentions: ["<button> has only an icon", "aria-label", "lt-sr-only"],
     severity: "error",
     covers: "button",
     coversAt: 1,
@@ -87,7 +87,7 @@ const cases: Case[] = [
     name: "en lenke med bare et bilde uten alt",
     html: `<a href="/hjem"><img src="hus.svg" alt=""></a>`,
     count: 1,
-    mentions: ["<a> har bare et ikon", "«lenke»"],
+    mentions: ["<a> has only an icon", '"link"'],
     severity: "error",
   },
   {
@@ -109,8 +109,8 @@ const cases: Case[] = [
     html: `<lt-field><label for="a">Telefon</label><input name="a" id="a"><select name="b"></select></lt-field>`,
     count: 1,
     mentions: [
-      "<lt-field> har delen «control» mer enn én gang",
-      "bare den første",
+      '<lt-field> has the part "control" more than once',
+      "only uses the first",
     ],
     severity: "warning",
     covers: "select",
@@ -119,14 +119,14 @@ const cases: Case[] = [
     name: "to hjelpetekster i et felt, der bare den første kobles",
     html: `<lt-field><label for="n">Navn</label><input name="n" id="n"><p class="lt-help-text">A</p><p class="lt-help-text">B</p></lt-field>`,
     count: 1,
-    mentions: ["«help»"],
+    mentions: ['"help"'],
     coversAt: 90,
   },
   {
     name: "en klasse med to av en del som skal stå én gang",
     html: `<table class="lt-table"><caption>A</caption><caption>B</caption><thead></thead><tbody></tbody></table>`,
     count: 1,
-    mentions: ["lt-table har delen «caption»", "skal stå én gang"],
+    mentions: ['lt-table has the part "caption"', "must appear once"],
     coversAt: 45,
   },
   {
@@ -144,7 +144,7 @@ const cases: Case[] = [
     html: `<lt-dialog><dialog></dialog><dialog></dialog></lt-dialog>
 <lt-dialog><dialog></dialog><div><dialog></dialog></div></lt-dialog>`,
     count: 1,
-    mentions: ["«dialog»"],
+    mentions: ['"dialog"'],
   },
   {
     name: "en skjult verdi er ikke en kontroll til, og en delt knapp er ikke to utløsere",
@@ -174,7 +174,7 @@ const cases: Case[] = [
     name: "et element som ikke finnes",
     html: `<lt-dialog><lt-dialog-header>Tittel</lt-dialog-header></lt-dialog>`,
     count: 1,
-    mentions: ["<lt-dialog-header> finnes ikke", "lt-dialog"],
+    mentions: ["<lt-dialog-header> does not exist", "lt-dialog"],
     severity: "error",
     covers: "lt-dialog-header",
   },
@@ -182,7 +182,7 @@ const cases: Case[] = [
     name: "et attributt elementet ikke har",
     html: `<lt-popover placemnet="top-start"></lt-popover>`,
     count: 1,
-    mentions: ["«placemnet»", "placement"],
+    mentions: ['"placemnet"', "placement"],
     severity: "warning",
     covers: "placemnet",
   },
@@ -210,13 +210,13 @@ const cases: Case[] = [
     name: "en web component som begynner på select er ingen kontroll",
     html: `<lt-field><label-x>N</label-x><select-all></select-all></lt-field>`,
     count: 1,
-    mentions: ["fant ingen kontroll"],
+    mentions: ["found no control"],
   },
   {
     name: "Alpine i taggen gjør ikke resten til en mal",
     html: `<lt-popover @click="a" placemnet="top-start"></lt-popover>`,
     count: 1,
-    mentions: ["«placemnet»"],
+    mentions: ['"placemnet"'],
   },
   {
     name: "en Razor-partial inne i feltet",
@@ -227,7 +227,7 @@ const cases: Case[] = [
     name: "en verdi utenfor lista",
     html: `<lt-popover placement="midt"></lt-popover>`,
     count: 1,
-    mentions: ["«midt»", "Lovlige verdier"],
+    mentions: ['"midt"', "Valid values"],
     severity: "error",
     covers: "placement",
   },
@@ -235,14 +235,14 @@ const cases: Case[] = [
     name: "et listeattributt uten verdi",
     html: `<lt-popover placement></lt-popover>`,
     count: 1,
-    mentions: ["Lovlige verdier"],
+    mentions: ["Valid values"],
     severity: "error",
   },
   {
     name: "et boolsk attributt med «false»",
     html: `<lt-field disabled="false"><label>N <input></label></lt-field>`,
     count: 1,
-    mentions: ["boolsk", 'disabled="false" betyr det samme som disabled'],
+    mentions: ["boolean", 'disabled="false" means the same as disabled'],
     severity: "warning",
   },
   {
@@ -259,7 +259,7 @@ const cases: Case[] = [
     name: "et tall som ikke er et tall",
     html: `<lt-toast duration="lenge"></lt-toast>`,
     count: 1,
-    mentions: ["skal være et tall", "«lenge»"],
+    mentions: ["must be a number", '"lenge"'],
     severity: "error",
   },
   {
@@ -271,7 +271,7 @@ const cases: Case[] = [
     name: "et felt uten kontroll",
     html: `<lt-field><label>Navn</label><p class="lt-help-text">Hjelp</p></lt-field>`,
     count: 1,
-    mentions: ["fant ingen kontroll", "<input>, <textarea> eller <select>"],
+    mentions: ["found no control", "<input>, <textarea> or <select>"],
     severity: "warning",
     covers: "lt-field",
   },
@@ -279,7 +279,7 @@ const cases: Case[] = [
     name: "en skjult input er ingen kontroll, som i komponenten",
     html: `<lt-field><label>X</label><input type="hidden" name="csrf"></lt-field>`,
     count: 1,
-    mentions: ["fant ingen kontroll"],
+    mentions: ["found no control"],
   },
   {
     name: "kontrollen etter en skjult input teller",
@@ -290,14 +290,14 @@ const cases: Case[] = [
     name: "et felt uten ledetekst",
     html: `<lt-field><input class="lt-input"></lt-field>`,
     count: 1,
-    mentions: ["fant ingen <label>", "uten navn"],
+    mentions: ["found no <label>", "without a name"],
     severity: "warning",
   },
   {
     name: "et varsel om økten uten dialog, slik det ble skrevet før",
     html: `<lt-session-timeout warn-at="1500"></lt-session-timeout>`,
     count: 1,
-    mentions: ["fant ingen <dialog>", "uten advarsel"],
+    mentions: ["found no <dialog>", "without warning"],
     severity: "warning",
     covers: "lt-session-timeout",
   },
@@ -340,7 +340,7 @@ const cases: Case[] = [
     name: "punktum i id-en er et punktum, ikke hva som helst",
     html: `<label for="ab">X</label><lt-field><input id="a.b"></lt-field>`,
     count: 1,
-    mentions: ["fant ingen <label>"],
+    mentions: ["found no <label>"],
   },
   {
     name: "aria-label på kontrollen",
@@ -381,7 +381,7 @@ const cases: Case[] = [
     name: "et ukjent element meldes også i en mal",
     html: `<lt-feild {{ if .X }}disabled{{ end }}></lt-feild>`,
     count: 1,
-    mentions: ["finnes ikke"],
+    mentions: ["does not exist"],
   },
   {
     name: "kommentarer, skript og stilark leses ikke",
@@ -398,7 +398,7 @@ const cases: Case[] = [
     name: "store bokstaver i tagg og attributt, og selvlukking",
     html: `<LT-TOAST DURATION="x"/>`,
     count: 1,
-    mentions: ["skal være et tall"],
+    mentions: ["must be a number"],
     covers: "DURATION",
   },
   {
@@ -410,13 +410,13 @@ const cases: Case[] = [
     name: "en verdi uten anførselstegn",
     html: `<lt-popover placement=top-start></lt-popover><lt-popover placement=topp></lt-popover>`,
     count: 1,
-    mentions: ["«topp»"],
+    mentions: ['"topp"'],
   },
   {
     name: "enkle anførselstegn",
     html: `<lt-popover placement='top-start'></lt-popover><lt-popover placement='topp'></lt-popover>`,
     count: 1,
-    mentions: ["«topp»"],
+    mentions: ['"topp"'],
   },
   {
     name: "en tagg over flere linjer",
@@ -437,13 +437,13 @@ const cases: Case[] = [
     name: "Alpine på kontrollen gjør ikke feltet til en mal",
     html: `<lt-field><input @input="x = 1"></lt-field>`,
     count: 1,
-    mentions: ["fant ingen <label>"],
+    mentions: ["found no <label>"],
   },
   {
     name: "Alpine på en knapp i feltet heller",
     html: `<lt-field><label>N</label><button @click="x">Send</button></lt-field>`,
     count: 1,
-    mentions: ["fant ingen kontroll"],
+    mentions: ["found no control"],
   },
   {
     name: "store bokstaver i felt: tomt felt er stille",
@@ -454,32 +454,32 @@ const cases: Case[] = [
     name: "store bokstaver i felt: uten ledetekst felles",
     html: `<LT-FIELD><INPUT></LT-FIELD>\n<label>x</label>`,
     count: 1,
-    mentions: ["fant ingen <label>"],
+    mentions: ["found no <label>"],
   },
   {
     name: "en skrivefeil som ligner et kjent attributt",
     html: `<lt-connection-status onlinetext="Tilkoblet"></lt-connection-status>`,
     count: 1,
-    mentions: ["Mente du online-text?"],
+    mentions: ["Did you mean online-text?"],
     covers: "onlinetext",
   },
   {
     name: "en skrivefeil uten bindestrek",
     html: `<lt-field describedBy="vilkar"><label>N <input></label></lt-field>`,
     count: 1,
-    mentions: ["Mente du described-by?"],
+    mentions: ["Did you mean described-by?"],
   },
   {
     name: "en uavsluttet kontroll leser ikke resten som sine attributter",
     html: `<lt-field><input placeholder=it's><span aria-label="x"></span></lt-field>`,
     count: 1,
-    mentions: ["fant ingen"],
+    mentions: ["found no"],
   },
   {
     name: "tall slik komponentene leser dem",
     html: `<lt-toast duration=" 5000 "></lt-toast><lt-toast duration="1e3"></lt-toast><lt-toast duration=""></lt-toast>`,
     count: 1,
-    mentions: ["skal være et tall"],
+    mentions: ["must be a number"],
   },
   {
     name: "en Jinja-kommentar i taggen",
@@ -490,30 +490,30 @@ const cases: Case[] = [
     name: "PHP i taggen avslutter den ikke, og feilen etter felles",
     html: `<lt-popover <?= $x ?> placement="midt"></lt-popover>`,
     count: 1,
-    mentions: ["«midt»"],
+    mentions: ['"midt"'],
   },
   {
     name: "en klasse som ikke finnes, med forslag og rettelse",
     html: `<button class="lt-buton">Send</button>`,
     count: 1,
-    mentions: ["«lt-buton» finnes ikke", "Mente du lt-button?"],
+    mentions: ['"lt-buton" does not exist', "Did you mean lt-button?"],
     severity: "warning",
     covers: "lt-buton",
     fixed: `<button class="lt-button">Send</button>`,
-    fixTitle: "Bytt til lt-button",
+    fixTitle: "Change to lt-button",
   },
   {
     name: "en klasse langt fra alle kjente får ikke forslag",
     html: `<button class="lt-knapp">Send</button>`,
     count: 1,
-    mentions: ["«lt-knapp» finnes ikke"],
-    notMentions: ["Mente du"],
+    mentions: ['"lt-knapp" does not exist'],
+    notMentions: ["Did you mean"],
   },
   {
     name: "en ren verdi i en tagg med mal sjekkes likevel",
     html: `<button class="lt-button" {{ if .X }}disabled{{ end }} data-variant="ghots"></button>`,
     count: 1,
-    mentions: ["«ghots»"],
+    mentions: ['"ghots"'],
   },
   {
     name: "en klasse med mal i navnet er ingen skrivefeil",
@@ -530,12 +530,12 @@ const cases: Case[] = [
     html: `<button class="lt-button" data-variant="ghots">Send</button>`,
     count: 1,
     mentions: [
-      "data-variant kan ikke være «ghots» på button",
+      'data-variant cannot be "ghots" on button',
       "secondary, ghost, danger",
-      "primary uten attributt",
+      "primary without the attribute",
     ],
     fixed: `<button class="lt-button" data-variant="ghost">Send</button>`,
-    fixTitle: "Bytt til ghost",
+    fixTitle: "Change to ghost",
   },
   {
     name: "lovlige varianter, standardverdien og type på input",
@@ -546,7 +546,7 @@ const cases: Case[] = [
     name: "et attributt en annen klasse tar, sjekkes ikke her",
     html: `<div class="lt-card" data-variant="ghost"></div><span class="lt-badge" data-size="xl"></span>`,
     count: 1,
-    mentions: ["data-variant kan ikke være «ghost» på card"],
+    mentions: ['data-variant cannot be "ghost" on card'],
   },
   {
     name: "variantverdi fra en mal sjekkes ikke",
@@ -558,14 +558,14 @@ const cases: Case[] = [
     html: `<lt-connection-status onlinetext="Tilkoblet"></lt-connection-status>`,
     count: 1,
     fixed: `<lt-connection-status online-text="Tilkoblet"></lt-connection-status>`,
-    fixTitle: "Bytt til online-text",
+    fixTitle: "Change to online-text",
   },
   {
     name: "rettelsen for et boolsk attributt tar med verdien og mellomrommet",
     html: `<lt-field disabled="false" id="x"><label>N <input></label></lt-field>`,
     count: 1,
     fixed: `<lt-field id="x"><label>N <input></label></lt-field>`,
-    fixTitle: "Ta bort disabled",
+    fixTitle: "Remove disabled",
     fixPreferred: true,
   },
   {
@@ -578,8 +578,8 @@ const cases: Case[] = [
     name: "rettelsen for et felt uten ledetekst",
     html: `<lt-field><input class="lt-input" id="navn"></lt-field>`,
     count: 1,
-    fixed: `<lt-field><label for="navn">Ledetekst</label><input class="lt-input" id="navn"></lt-field>`,
-    fixTitle: "Sett inn en ledetekst",
+    fixed: `<lt-field><label for="navn">Label</label><input class="lt-input" id="navn"></lt-field>`,
+    fixTitle: "Add a label",
   },
   {
     // En `<label>` uten `for` ved siden av feltet er ikke koblet til det.
@@ -587,35 +587,32 @@ const cases: Case[] = [
     name: "et felt uten ledetekst og uten id får ingen rettelse",
     html: `<lt-field><input class="lt-input"></lt-field>`,
     count: 1,
-    mentions: ["legg <label> rundt feltet"],
+    mentions: ["put the <label> around the field"],
     noFix: true,
   },
   {
     name: "ledeteksten får sin egen linje med samme innrykk",
     html: `<lt-field>\n  <input class="lt-input" id="navn">\n</lt-field>`,
     count: 1,
-    fixed: `<lt-field>\n  <label for="navn">Ledetekst</label>\n  <input class="lt-input" id="navn">\n</lt-field>`,
+    fixed: `<lt-field>\n  <label for="navn">Label</label>\n  <input class="lt-input" id="navn">\n</lt-field>`,
   },
   {
     name: "ledeteksten får sin egen linje også med \\r-linjeskift",
     html: `<lt-field>\r  <input class="lt-input" id="navn">\r</lt-field>`,
     count: 1,
-    fixed: `<lt-field>\r  <label for="navn">Ledetekst</label>\r  <input class="lt-input" id="navn">\r</lt-field>`,
+    fixed: `<lt-field>\r  <label for="navn">Label</label>\r  <input class="lt-input" id="navn">\r</lt-field>`,
   },
   {
     name: "data-required på ledetekst og legend",
     html: `<label class="lt-label" data-required="stjerne">N</label><legend class="lt-legend" data-required="text">G</legend>`,
     count: 1,
-    mentions: ["data-required kan ikke være «stjerne»", "symbol, text"],
+    mentions: ['data-required cannot be "stjerne"', "symbol, text"],
   },
   {
     name: "data-variant på input, som CSS-en leser",
     html: `<input class="lt-input" data-variant="dato" type="date"><input class="lt-input" data-variant="date" type="date">`,
     count: 1,
-    mentions: [
-      "data-variant kan ikke være «dato»",
-      "date, datetime-local, time",
-    ],
+    mentions: ['data-variant cannot be "dato"', "date, datetime-local, time"],
     fixed: `<input class="lt-input" data-variant="date" type="date"><input class="lt-input" data-variant="date" type="date">`,
   },
   {
@@ -627,39 +624,39 @@ const cases: Case[] = [
     name: "et kort navn får ikke forslag to tegn unna",
     html: `<div class="lt-tabs"></div>`,
     count: 1,
-    notMentions: ["Mente du"],
+    notMentions: ["Did you mean"],
   },
   {
     name: "en byttet plass er én feil, og forslaget er ikke foretrukket",
     html: `<button class="lt-button" data-variant="ghots"></button>`,
     count: 1,
-    fixTitle: "Bytt til ghost",
+    fixTitle: "Change to ghost",
     fixPreferred: false,
   },
   {
     name: "samme bokstaver er den sikre rettelsen",
     html: `<lt-connection-status onlinetext="x"></lt-connection-status>`,
     count: 1,
-    mentions: ["Mente du online-text"],
+    mentions: ["Did you mean online-text"],
     fixPreferred: true,
   },
   {
     name: "et langt navn får to tegns slingring",
     html: `<p class="lt-eror-txt"></p>`,
     count: 1,
-    mentions: ["Mente du lt-error-text?"],
+    mentions: ["Did you mean lt-error-text?"],
   },
   {
     name: "lengdefilteret slipper gjennom akkurat på grensen",
     html: `<a class="lt-lin"></a>`,
     count: 1,
-    mentions: ["Mente du lt-link?"],
+    mentions: ["Did you mean lt-link?"],
   },
   {
     name: "ved lik avstand vinner den som deler begynnelsen",
     html: `<table class="lt-tabel"></table>`,
     count: 1,
-    mentions: ["Mente du lt-table?"],
+    mentions: ["Did you mean lt-table?"],
   },
   {
     name: "«Ta bort» over flere linjer",
@@ -703,19 +700,19 @@ const cases: Case[] = [
     name: "klammer i klammer, og feilen etter dem felles fortsatt",
     html: `<lt-popover placement={c ? {a:1}.p : "top-start"} plasement="x"></lt-popover>`,
     count: 1,
-    mentions: ["«plasement»"],
+    mentions: ['"plasement"'],
   },
   {
     name: "Svelte: en klasse med et uttrykk i sjekkes ikke, de andre gjør",
     html: `<div class="lt-card lt-{b} lt-buton"></div>`,
     count: 1,
-    mentions: ["«lt-buton»"],
+    mentions: ['"lt-buton"'],
   },
   {
     name: "klammeverdi og så en ekte feil etter",
     html: `<lt-popover open={isOpen} placemnet="top-start"></lt-popover>`,
     count: 1,
-    mentions: ["«placemnet»"],
+    mentions: ['"placemnet"'],
     covers: "placemnet",
   },
   {
@@ -727,7 +724,7 @@ const cases: Case[] = [
     name: "samme bokstaver i en klasse er den sikre rettelsen",
     html: `<p class="lt-error_text"></p>`,
     count: 1,
-    fixTitle: "Bytt til lt-error-text",
+    fixTitle: "Change to lt-error-text",
     fixPreferred: true,
   },
   {
@@ -772,7 +769,7 @@ cases.push(
     count: 2,
     page: true,
     severity: "error",
-    mentions: ["for=", "«e-post»", "ledeteksten", "lt.field({ id })"],
+    mentions: ["for=", '"e-post"', "the label", "lt.field({ id })"],
     covers: "e-post",
   },
   {
@@ -784,7 +781,7 @@ cases.push(
     count: 1,
     page: true,
     severity: "error",
-    mentions: ["«epost-feil»", "beskrivelsen"],
+    mentions: ['"epost-feil"', "the description"],
     covers: "epost-feil",
   },
   {
@@ -792,14 +789,14 @@ cases.push(
     html: `<input class="lt-input" id="sok" aria-labelledby="sok-tittel">`,
     count: 1,
     page: true,
-    mentions: ["aria-labelledby", "navnet"],
+    mentions: ["aria-labelledby", "the name"],
   },
   {
     name: "side: aria-controls får ingen oppskrift om feltet",
     html: `<button class="lt-button" aria-controls="meny">Meny</button>`,
     count: 1,
     page: true,
-    mentions: ["aria-controls", "«meny»"],
+    mentions: ["aria-controls", '"meny"'],
     notMentions: ["lt.field("],
   },
   {
@@ -808,7 +805,7 @@ cases.push(
     count: 1,
     page: true,
     severity: "error",
-    mentions: ['id="epost"', "mer enn én gang"],
+    mentions: ['id="epost"', "more than once"],
     covers: "epost",
   },
   {
@@ -817,7 +814,7 @@ cases.push(
     count: 1,
     page: true,
     severity: "warning",
-    mentions: ["<input> har ingen ledetekst", "lt.field({ id })"],
+    mentions: ["<input> has no label", "lt.field({ id })"],
     covers: "input",
   },
   {
@@ -849,7 +846,7 @@ cases.push(
     html: `<lt-field><label class="lt-label" for="x">Navn</label><input class="lt-input" id="y"></lt-field>`,
     count: 2,
     page: true,
-    mentions: ["«x»"],
+    mentions: ['"x"'],
   },
   {
     name: "side: en hjelpetekst uten id",
@@ -857,14 +854,14 @@ cases.push(
     count: 1,
     page: true,
     severity: "warning",
-    mentions: ["Hjelpeteksten", "har ingen id"],
+    mentions: ["The help text", "has no id"],
   },
   {
     name: "side: en synlig feilmelding som ingen peker på",
     html: `<label class="lt-label" for="a">A</label><input class="lt-input" id="a"><p class="lt-error-text" id="a-feil">Feil</p>`,
     count: 1,
     page: true,
-    mentions: ["Feilmeldingen", "«a-feil»"],
+    mentions: ["The error text", '"a-feil"'],
   },
   {
     name: "side: en skjult feilmelding trenger ingen kobling",
@@ -877,21 +874,21 @@ cases.push(
     html: `<!-- <p id="hjelp"></p> --><label class="lt-label" for="hjelp">A</label><input class="lt-input" id="a">`,
     count: 2,
     page: true,
-    mentions: ["«hjelp»"],
+    mentions: ['"hjelp"'],
   },
   {
     name: "side: en ledetekst uten for inni <lt-suggestion> meldes, for malen skal skrive den",
     html: `<lt-suggestion><label class="lt-label">Kommune</label><input class="lt-input" type="text"></lt-suggestion>`,
     count: 1,
     page: true,
-    mentions: ["Ledeteksten er ikke koblet"],
+    mentions: ["The label is not wired"],
   },
   {
     name: "side: en hjelpetekst inni <lt-suggestion> må kobles",
     html: `<lt-suggestion><label class="lt-label" for="k">Kommune</label><input class="lt-input" type="text" id="k"><p class="lt-help-text">Hjelp</p></lt-suggestion>`,
     count: 1,
     page: true,
-    mentions: ["Hjelpeteksten"],
+    mentions: ["The help text"],
   },
   {
     name: "side: id-er i en shadow root har sitt eget rom",
@@ -916,7 +913,7 @@ cases.push(
     html: `<a href="/s" title="1+1=">x</a><input class="lt-input" id="q">`,
     count: 1,
     page: true,
-    mentions: ["<input> har ingen ledetekst"],
+    mentions: ["<input> has no label"],
   },
   {
     name: "side: for som peker på en <div>",
@@ -924,7 +921,7 @@ cases.push(
     count: 1,
     page: true,
     severity: "error",
-    mentions: ["<div>", "ikke kan ha en ledetekst"],
+    mentions: ["<div>", "cannot have a label"],
     covers: "boks",
   },
   {
@@ -933,7 +930,7 @@ cases.push(
     count: 1,
     page: true,
     severity: "error",
-    mentions: ["feiloppsummeringen", "«#e-post»"],
+    mentions: ["error summary", '"#e-post"'],
     covers: "e-post",
   },
   {
@@ -953,7 +950,7 @@ cases.push(
     html: `<dialog open><p class="lt-help-text">A</p></dialog>`,
     count: 1,
     page: true,
-    mentions: ["Hjelpeteksten"],
+    mentions: ["The help text"],
   },
   {
     name: "side: en hjelpetekst som er et statusfelt, trenger ingen kobling",
@@ -978,21 +975,21 @@ cases.push(
     html: `<button class="lt-button" data-code="<textarea>">Kopier</button><label class="lt-label" for="borte">X</label><label class="lt-label" for="t">T</label><textarea class="lt-textarea" id="t"></textarea>`,
     count: 1,
     page: true,
-    mentions: ["«borte»"],
+    mentions: ['"borte"'],
   },
   {
     name: "side: en <template> i en attributtverdi sluker ikke siden",
     html: `<button class="lt-button" data-code='<template>'>Kopier</button><label class="lt-label" for="borte">X</label><p>tekst</p><template></template>`,
     count: 1,
     page: true,
-    mentions: ["«borte»"],
+    mentions: ['"borte"'],
   },
   {
     name: "side: en kommentar i en attributtverdi sluker ikke siden",
     html: `<button class="lt-button" data-code="<!--">Kopier</button><label class="lt-label" for="borte">X</label><!-- slutt -->`,
     count: 1,
     page: true,
-    mentions: ["«borte»"],
+    mentions: ['"borte"'],
   },
   {
     name: "side: en tallentitet utenfor Unicode krasjer ikke",
@@ -1083,16 +1080,16 @@ const TABS = (
   rad: string,
   paneler = `<section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2></section><section class="lt-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>`,
 ) => `<lt-tabs>${rad}${paneler}</lt-tabs>`
-const RAD = `<ul class="lt-tabs__list" aria-label="Deler av saken"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`
+const RAD = `<ul class="lt-tabs__list" aria-label="Case sections"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`
 cases.push(
   {
     name: "en ledetekst uten for ved siden av et felt uten id",
     html: `<lt-field><label class="lt-label">Kommune</label><input class="lt-input" name="kommune"></lt-field>`,
     count: 1,
-    mentions: ["Ledeteksten er ikke koblet til <input>", "for på ledeteksten"],
+    mentions: ["The label is not wired to <input>", "for on the label"],
     severity: "warning",
     covers: "input",
-    fixTitle: "Gi feltet id «kommune»",
+    fixTitle: 'Give the field the id "kommune"',
     fixed: `<lt-field><label for="kommune" class="lt-label">Kommune</label><input id="kommune" class="lt-input" name="kommune"></lt-field>`,
     fixPreferred: true,
   },
@@ -1100,7 +1097,7 @@ cases.push(
     name: "en ledetekst som peker på en annen id enn feltets",
     html: `<lt-field><label class="lt-label" for="annen">Kommune</label><input class="lt-input" id="kommune" name="kommune"></lt-field>`,
     count: 1,
-    mentions: ["Ledeteksten er ikke koblet"],
+    mentions: ["The label is not wired"],
     noFix: true,
   },
   {
@@ -1149,21 +1146,21 @@ cases.push(
     name: "forslagsfeltet med ledetekst uten for",
     html: `<lt-suggestion><label class="lt-label">Sted</label><input class="lt-input" id="sted" name="sted"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     count: 1,
-    mentions: ["Ledeteksten er ikke koblet"],
+    mentions: ["The label is not wired"],
     noFix: true,
   },
   {
     name: "forslagsfeltet uten ledetekst i det hele tatt",
     html: `<lt-suggestion><input class="lt-input" name="sted"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     count: 1,
-    mentions: ["ingen ledetekst koblet til seg"],
+    mentions: ["no label wired to it"],
     noFix: true,
   },
   {
     name: "et panel i sprettoppvinduet uten id",
     html: `<lt-popover><button class="lt-button" type="button">Meny</button><div class="lt-popover" popover>Innhold</div></lt-popover>`,
     count: 1,
-    mentions: ["«panel» uten id", "aria-controls", "lager aldri en"],
+    mentions: ['"panel" without an id', "aria-controls", "never creates one"],
     covers: "div",
     noFix: true,
   },
@@ -1184,7 +1181,7 @@ cases.push(
       `<section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>`,
     ),
     count: 1,
-    mentions: ["#vedlegg", "ingen element har den id-en"],
+    mentions: ["#vedlegg", "no element has that id"],
     covers: "a",
   },
   {
@@ -1203,16 +1200,16 @@ cases.push(
   {
     name: "en knapp med role=tab i raden",
     html: TABS(
-      `<ul class="lt-tabs__list" aria-label="Deler av saken"><li><a href="#soknaden">Søknaden</a></li><li><button type="button" role="tab">Vedlegg</button></li></ul>`,
+      `<ul class="lt-tabs__list" aria-label="Case sections"><li><a href="#soknaden">Søknaden</a></li><li><button type="button" role="tab">Vedlegg</button></li></ul>`,
     ),
     count: 1,
-    mentions: ['role="tab" står på <button>', "Fanene er lenker"],
+    mentions: ['role="tab" is on <button>', "The tabs are links"],
     covers: "button",
   },
   {
     name: "en lenke med role=tab er en fane",
     html: TABS(
-      `<ul class="lt-tabs__list" aria-label="Deler av saken" role="tablist"><li role="presentation"><a href="#soknaden" role="tab">Søknaden</a></li><li role="presentation"><a href="#vedlegg" role="tab">Vedlegg</a></li></ul>`,
+      `<ul class="lt-tabs__list" aria-label="Case sections" role="tablist"><li role="presentation"><a href="#soknaden" role="tab">Søknaden</a></li><li role="presentation"><a href="#vedlegg" role="tab">Vedlegg</a></li></ul>`,
     ),
     count: 0,
   },
@@ -1222,11 +1219,11 @@ cases.push(
       `<ul class="lt-tabs__list"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`,
     ),
     count: 1,
-    mentions: ["fanerad uten navn", "«faneliste»"],
+    mentions: ["tab list without a name", '"tab list"'],
     covers: "ul",
-    fixTitle: "Gi raden et navn med aria-label",
+    fixTitle: "Give the tab list a name with aria-label",
     fixed: TABS(
-      `<ul aria-label="Deler av saken" class="lt-tabs__list"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`,
+      `<ul aria-label="Case sections" class="lt-tabs__list"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`,
     ),
   },
   {
@@ -1245,14 +1242,14 @@ cases.push(
     name: "hjelpeteksten inni ledeteksten",
     html: `<lt-field><label class="lt-label" for="epost">E-post <span class="lt-help-text">Vi sender aldri reklame.</span></label><input class="lt-input" id="epost" name="epost"></lt-field>`,
     count: 1,
-    mentions: ["Hjelpeteksten står inni <label>", "del av feltets navn"],
+    mentions: ["The help text is inside <label>", "part of the field's name"],
     covers: "span",
   },
   {
     name: "feilmeldingen inni ledeteksten",
     html: `<lt-field><label class="lt-label" for="epost">E-post <span class="lt-error-text">Skriv en e-postadresse.</span></label><input class="lt-input" id="epost" name="epost"></lt-field>`,
     count: 1,
-    mentions: ["Feilmeldingen står inni <label>"],
+    mentions: ["The error text is inside <label>"],
   },
   {
     name: "hjelpeteksten ved siden av ledeteksten",
@@ -1263,14 +1260,14 @@ cases.push(
     name: "alternativer med data-value uten verdifelt",
     html: `<lt-suggestion><label class="lt-label" for="k">Kommune</label><input class="lt-input" id="k" name="k"><ul class="lt-suggestion__list"><li data-value="4601">Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     count: 1,
-    mentions: ["data-value, men ikke noe .lt-suggestion__value"],
+    mentions: ["data-value, but no .lt-suggestion__value"],
     covers: "li",
   },
   {
     name: "et verdifelt uten alternativer med data-value",
     html: `<lt-suggestion><label class="lt-label" for="k">Kommune</label><input class="lt-input" id="k" name="k"><input type="hidden" class="lt-suggestion__value" name="nr"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     count: 1,
-    mentions: ["ingen alternativer med data-value"],
+    mentions: ["no options with data-value"],
     covers: "input",
   },
   {
@@ -1287,7 +1284,7 @@ cases.push(
     name: "en skjult feilmelding ved siden av aria-invalid",
     html: `<lt-field><label class="lt-label" for="fnr">Fødselsnummer</label><input class="lt-input" id="fnr" name="fnr" aria-invalid="true"><p class="lt-error-text" hidden>Skriv elleve siffer.</p></lt-field>`,
     count: 1,
-    mentions: ["Feilmeldingen har hidden", 'aria-invalid="true"'],
+    mentions: ["The error text has hidden", 'aria-invalid="true"'],
     covers: "p",
   },
   {
@@ -1304,9 +1301,9 @@ cases.push(
     name: "invalid på lt-field, slik det ble skrevet før",
     html: `<lt-field invalid><label class="lt-label" for="fnr">Fødselsnummer</label><input class="lt-input" id="fnr" name="fnr"></lt-field>`,
     count: 1,
-    mentions: ["invalid er tatt ut av <lt-field>", "aria-invalid"],
+    mentions: ["invalid has been removed from <lt-field>", "aria-invalid"],
     covers: "invalid",
-    fixTitle: "Ta bort invalid",
+    fixTitle: "Remove invalid",
     fixed: `<lt-field><label class="lt-label" for="fnr">Fødselsnummer</label><input class="lt-input" id="fnr" name="fnr"></lt-field>`,
   },
   {
@@ -1320,14 +1317,14 @@ cases.push(
     name: "en id komponenten lagde selv, kopiert inn i malen",
     html: `<lt-field><label class="lt-label" for="e">E-post</label><input class="lt-input" id="e" name="epost"><p class="lt-help-text" id="lt-field-help-a1b2c3d">Hjelp</p></lt-field>`,
     count: 1,
-    mentions: ["kopiert fra DevTools"],
+    mentions: ["copied from DevTools"],
     covers: "lt-field-help-a1b2c3d",
   },
   {
     name: "en id fra createFieldId, kopiert inn i malen",
     html: `<lt-field><label class="lt-label" for="lt-field-3-k2x9qa">E-post</label><input class="lt-input" id="lt-field-3-k2x9qa" name="epost"></lt-field>`,
     count: 1,
-    mentions: ["kopiert fra DevTools"],
+    mentions: ["copied from DevTools"],
   },
   {
     name: "den samme id-en på en rendret side er riktig",
@@ -1352,21 +1349,21 @@ cases.push(
     name: "invalid bundet i Datastar, slik den gamle oppskriften skrev det",
     html: `<lt-field data-attr:invalid="$ugyldig"><label class="lt-label" for="e">E-post</label><input class="lt-input" id="e"></lt-field>`,
     count: 1,
-    mentions: ["invalid er tatt ut av <lt-field>"],
-    fixTitle: "Ta bort data-attr:invalid",
+    mentions: ["invalid has been removed from <lt-field>"],
+    fixTitle: "Remove data-attr:invalid",
     fixed: `<lt-field><label class="lt-label" for="e">E-post</label><input class="lt-input" id="e"></lt-field>`,
   },
   {
     name: "invalid bundet i Vue",
     html: `<lt-field :invalid="ugyldig"><label class="lt-label" for="e">E-post</label><input class="lt-input" id="e"></lt-field>`,
     count: 1,
-    mentions: ["invalid er tatt ut av <lt-field>"],
+    mentions: ["invalid has been removed from <lt-field>"],
   },
   {
     name: "id-ene forslagsfeltet lager selv, kopiert inn i malen",
     html: `<lt-suggestion><label class="lt-label" for="k">Kommune</label><input class="lt-input" id="k"><ul class="lt-suggestion__list" id="lt-suggestion-list-a1b2c3d" aria-labelledby="lt-suggestion-label-z8y7x6w"><li id="lt-suggestion-option-q9w8e7r">Bergen</li></ul><span id="lt-suggestion-label-z8y7x6w"></span></lt-suggestion>`,
     count: 3,
-    mentions: ["kopiert fra DevTools"],
+    mentions: ["copied from DevTools"],
   },
   {
     name: "en bundet for på ledeteksten er serverens sak",
@@ -1403,17 +1400,17 @@ for (const c of cases) {
   try {
     found = c.page ? core.diagnosePage(c.html) : core.diagnoseMarkup(c.html)
   } catch (error) {
-    fail(`kastet: ${error instanceof Error ? error.message : String(error)}`)
+    fail(`threw: ${error instanceof Error ? error.message : String(error)}`)
     continue
   }
   // Tidsgrensen er en lokal vakt for hurtigbufferen, ikke en påstand om en
   // delt CI-maskin: der kan veggklokka gi rødt uten at noe er galt.
   const took = performance.now() - before
   if (c.maxMs && took > c.maxMs && !process.env.CI)
-    fail(`tok ${Math.round(took)} ms, og skal ta under ${c.maxMs}`)
+    fail(`took ${Math.round(took)} ms, and must take less than ${c.maxMs}`)
   if (found.length !== c.count) {
     fail(
-      `ventet ${c.count} funn, fikk ${found.length}: ${found.map((f) => f.message).join(" | ") || "ingen"}`,
+      `expected ${c.count} findings, got ${found.length}: ${found.map((f) => f.message).join(" | ") || "none"}`,
     )
     continue
   }
@@ -1421,27 +1418,27 @@ for (const c of cases) {
   const first = found[0]
   for (const m of c.mentions ?? [])
     if (!first.message.includes(m))
-      fail(`meldingen nevner ikke «${m}»: ${first.message}`)
+      fail(`the message does not mention "${m}": ${first.message}`)
   for (const m of c.notMentions ?? [])
     if (first.message.includes(m))
-      fail(`meldingen nevner «${m}»: ${first.message}`)
+      fail(`the message mentions "${m}": ${first.message}`)
   if (c.severity && first.severity !== c.severity)
-    fail(`ventet ${c.severity}, fikk ${first.severity}`)
+    fail(`expected ${c.severity}, got ${first.severity}`)
   if (c.covers) {
     const covered = c.html.slice(first.start, first.end)
     if (covered !== c.covers)
-      fail(`funnet dekker «${covered}», ikke «${c.covers}»`)
+      fail(`the finding covers "${covered}", not "${c.covers}"`)
   }
   if (c.coversAt !== undefined && first.start !== c.coversAt)
-    fail(`funnet begynner på ${first.start}, ikke på ${c.coversAt}`)
+    fail(`the finding starts at ${first.start}, not at ${c.coversAt}`)
   if (!first.link.startsWith("https://lo-tek.sobernetics.no/"))
-    fail(`lenken peker ikke på dokumentasjonen: ${first.link}`)
+    fail(`the link does not point at the documentation: ${first.link}`)
   if (c.noFix && first.fix)
     fail(
-      `funnet har en rettelse, «${first.fix.edits.map((e) => e.text).join("», «")}», og skulle ikke hatt det`,
+      `the finding has a fix, "${first.fix.edits.map((e) => e.text).join('", "')}", and should not have one`,
     )
   if (c.fixed !== undefined || c.fixTitle || c.fixPreferred !== undefined) {
-    if (!first.fix) fail("funnet har ingen rettelse")
+    if (!first.fix) fail("the finding has no fix")
     else {
       // Bakfra, så posisjonene i de første endringene holder.
       const applied = [...first.fix.edits]
@@ -1451,13 +1448,13 @@ for (const c of cases) {
           c.html,
         )
       if (c.fixed !== undefined && applied !== c.fixed)
-        fail(`rettelsen ga «${applied}», ikke «${c.fixed}»`)
+        fail(`the fix gave "${applied}", not "${c.fixed}"`)
       if (c.fixTitle && first.fix.title !== c.fixTitle)
-        fail(`rettelsen heter «${first.fix.title}», ikke «${c.fixTitle}»`)
+        fail(`the fix is called "${first.fix.title}", not "${c.fixTitle}"`)
       const preferred = first.fix.preferred ?? false
       if (c.fixPreferred !== undefined && preferred !== c.fixPreferred)
         fail(
-          `rettelsen er ${preferred ? "" : "ikke "}foretrukket, og skulle ${c.fixPreferred ? "" : "ikke "}vært det`,
+          `the fix is ${preferred ? "" : "not "}preferred, and should ${c.fixPreferred ? "" : "not "}have been`,
         )
     }
   }
@@ -1466,15 +1463,15 @@ for (const c of cases) {
 const elapsed = performance.now() - started
 if (elapsed > 2000)
   findings.push(
-    `alle tilfellene tok ${Math.round(elapsed)} ms, og skal ta under 2000`,
+    `all the cases took ${Math.round(elapsed)} ms, and must take less than 2000`,
   )
 
 if (findings.length) {
   console.error(
-    `Diagnostikken feiler på ${findings.length} punkt:\n  ${findings.join("\n  ")}`,
+    `The diagnostics fail on ${findings.length} points:\n  ${findings.join("\n  ")}`,
   )
   process.exit(1)
 }
 console.log(
-  `Diagnostikken består ${cases.length} tilfeller, ${Object.keys(all).length} elementer og ${Object.keys(classes).length} klasser.`,
+  `The diagnostics pass ${cases.length} cases, ${Object.keys(all).length} elements and ${Object.keys(classes).length} classes.`,
 )

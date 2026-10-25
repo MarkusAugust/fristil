@@ -5,7 +5,7 @@
       "end": 128,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/tabs/",
-      "message": "<lt-tabs> har en fane uten href: role=\"tab\" står på <button>, som ikke er en lenke til et panel. Fanene er lenker, som <a href=\"#vedlegg\">, så de virker uten JavaScript. Komponenten rører ikke det som ikke er en lenke."
+      "message": "<lt-tabs> has a tab without href: role=\"tab\" is on <button>, which is not a link to a panel. The tabs are links, like <a href=\"#attachments\">, so they work without JavaScript. The component does not touch what is not a link."
     }
   ],
   "side": [
@@ -14,7 +14,7 @@
       "end": 128,
       "severity": "warning",
       "link": "https://lo-tek.sobernetics.no/components/tabs/",
-      "message": "<lt-tabs> har en fane uten href: role=\"tab\" står på <button>, som ikke er en lenke til et panel. Fanene er lenker, som <a href=\"#vedlegg\">, så de virker uten JavaScript. Komponenten rører ikke det som ikke er en lenke."
+      "message": "<lt-tabs> has a tab without href: role=\"tab\" is on <button>, which is not a link to a panel. The tabs are links, like <a href=\"#attachments\">, so they work without JavaScript. The component does not touch what is not a link."
     }
   ]
 }

@@ -1,15 +1,15 @@
-//! Tekst som UTF-16, slik JavaScript og Kotlin ser den.
+//! Text as UTF-16, the way JavaScript and Kotlin see it.
 //!
-//! Hele kjernen jobber på UTF-16-enheter, ikke på Rusts UTF-8. Da er hver
-//! posisjon i et funn den samme indeksen som `String.slice` i JavaScript og
-//! `String.substring` i Kotlin bruker, uten omregning, også med «æøå» og
-//! emoji foran. Hjelperne her gjør det de regulære uttrykkene i
-//! TypeScript-versjonen gjorde, med de samme reglene for hva som er
-//! mellomrom, ordtegn og store bokstaver.
+//! The whole core works on UTF-16 units, not on Rust's UTF-8. That way every
+//! position in a finding is the same index `String.slice` in JavaScript and
+//! `String.substring` in Kotlin use, without conversion, also with "æøå" and
+//! emoji in front. The helpers here do what the regular expressions in the
+//! TypeScript version did, with the same rules for what counts as
+//! whitespace, word characters and upper case.
 
 pub type Utf16 = Vec<u16>;
 
-/// `\s` i JavaScript: mellomrom og linjeskift, også de utenfor ASCII.
+/// `\s` in JavaScript: spaces and line breaks, including those outside ASCII.
 pub fn is_space(c: u16) -> bool {
     matches!(
         c,
@@ -27,7 +27,7 @@ pub fn is_space(c: u16) -> bool {
     )
 }
 
-/// `\w` i JavaScript, som `\b` bygger på: ASCII-bokstaver, sifre og `_`.
+/// `\w` in JavaScript, which `\b` builds on: ASCII letters, digits and `_`.
 pub fn is_word(c: u16) -> bool {
     is_ascii_letter(c) || is_digit(c) || c == b'_' as u16
 }
@@ -40,7 +40,7 @@ pub fn is_digit(c: u16) -> bool {
     (b'0' as u16..=b'9' as u16).contains(&c)
 }
 
-/// `[a-z0-9-]` med flagget `i`. Uten flagget `u` treffer `i` bare ASCII.
+/// `[a-z0-9-]` with the `i` flag. Without the `u` flag, `i` only matches ASCII.
 pub fn is_name_char(c: u16) -> bool {
     is_ascii_letter(c) || is_digit(c) || c == b'-' as u16
 }
@@ -57,7 +57,7 @@ pub fn utf16(s: &str) -> Utf16 {
     s.encode_utf16().collect()
 }
 
-/// Til en Rust-streng for en melding. Et ensomt surrogat blir `U+FFFD`.
+/// To a Rust string for a message. A lone surrogate becomes `U+FFFD`.
 pub fn lossy(t: &[u16]) -> String {
     String::from_utf16_lossy(t)
 }
@@ -66,8 +66,8 @@ pub fn equals(t: &[u16], s: &str) -> bool {
     t.iter().copied().eq(s.encode_utf16())
 }
 
-/// Om `t` har `mønster` (små ASCII-bokstaver) på `ved`, uten hensyn til store
-/// og små bokstaver, som et regulært uttrykk med flagget `i`.
+/// Whether `t` has `pattern` (lower-case ASCII letters) at `at`, ignoring
+/// case, like a regular expression with the `i` flag.
 pub fn starts_at_ci(t: &[u16], at: usize, pattern: &str) -> bool {
     let m = pattern.as_bytes();
     at + m.len() <= t.len()
@@ -104,8 +104,8 @@ pub fn contains_str(t: &[u16], pattern: &str) -> bool {
     find_at(t, 0, pattern).is_some()
 }
 
-/// `toLowerCase()`: hele Unicode, med de samme reglene som JavaScript, også
-/// for sigma til slutt i et ord. Et ensomt surrogat står urørt.
+/// `toLowerCase()`: all of Unicode, with the same rules as JavaScript, also
+/// for a final sigma in a word. A lone surrogate is left untouched.
 pub fn lowercase(t: &[u16]) -> Utf16 {
     if t.iter().all(|&c| c < 0x80) {
         return t.iter().map(|&c| ascii_lower(c)).collect();
@@ -140,7 +140,7 @@ pub fn trimmed(t: &[u16]) -> &[u16] {
     &t[from..to]
 }
 
-/// Delene av `t` skilt av mellomrom, med posisjonen til hver: `/\S+/g`.
+/// The parts of `t` separated by whitespace, with the position of each: `/\S+/g`.
 pub fn words(t: &[u16]) -> Vec<(usize, &[u16])> {
     let mut out = Vec::new();
     let mut i = 0;
@@ -158,7 +158,7 @@ pub fn words(t: &[u16]) -> Vec<(usize, &[u16])> {
     out
 }
 
-/// Bytter hvert tegn med mellomrom, unntatt linjeskift, så posisjonene står.
+/// Replaces every character with a space, except line breaks, so the positions stay.
 pub fn blank(t: &mut [u16]) {
     for c in t.iter_mut() {
         if *c != b'\n' as u16 {
@@ -167,7 +167,7 @@ pub fn blank(t: &mut [u16]) {
     }
 }
 
-/// Hvor mange UTF-16-enheter en Rust-streng er, som `length` i JavaScript.
+/// How many UTF-16 units a Rust string is, like `length` in JavaScript.
 pub fn length(s: &str) -> usize {
     s.encode_utf16().count()
 }
