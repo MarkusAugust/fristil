@@ -78,25 +78,25 @@ The files in the two tables below are written by a script, and a change made dir
 
 | File | Source |
 | --- | --- |
-| `designsystem/src/tokens/matrix-cells.ts` | `src/tokens/color-contract.json` and the brand colours, computed by the core in `scripts/generate-matrix.ts` |
-| `designsystem/src/tokens/tokens.css` | `src/tokens/tokens.ts` and the colour matrix |
-| `designsystem/src/tailwind/tailwind.css` | the same tokens |
+| `interfaces/src/tokens/matrix-cells.ts` | `src/tokens/color-contract.json` and the brand colours, computed by the core in `scripts/generate-matrix.ts` |
+| `interfaces/src/tokens/tokens.css` | `src/tokens/tokens.ts` and the colour matrix |
+| `interfaces/src/tailwind/tailwind.css` | the same tokens |
 | the vocabulary, table below | `scripts/generate-vocabulary.ts` |
-| `designsystem/agent/*.md`, the rulebooks for coding agents | `scripts/generate-agent.ts` and `agent-parts.ts` |
-| `designsystem/manifest/manifest.json`, `build-cases.json` and `files.json` | `scripts/generate-manifest.ts`, from `src/lt.ts`, the vocabulary and the folders. `files.json` is the rulebooks and component files the CLI reads |
+| `interfaces/agent/*.md`, the rulebooks for coding agents | `scripts/generate-agent.ts` and `agent-parts.ts` |
+| `interfaces/manifest/manifest.json`, `build-cases.json` and `files.json` | `scripts/generate-manifest.ts`, from `src/lt.ts`, the vocabulary and the folders. `files.json` is the rulebooks and component files the CLI reads |
 
 The vocabulary also has its own command, `bun --filter @lo-tek/interfaces vocabulary`, which writes only these, all in the package. The editors read them: the VS Code extension copies the first two when it is built, and the IntelliJ plugin reads the classes from the project's manifest, with the manifest in the Kotlin package as a fallback.
 
 | File | What it is |
 | --- | --- |
-| `designsystem/html-data.json` | VS Code's format for tags and attributes |
-| `designsystem/snippets.json` | one snippet per element |
-| `designsystem/src/vocabulary/elements.ts` | the elements and attributes the manifest is written from |
-| `designsystem/src/vocabulary/classes.ts` | every `lt-` class, read by calling the builder functions |
-| `designsystem/web-types.json` | JetBrains' format, ships with the npm package |
-| `designsystem/src/components/events.ts` | the types of the events and the tag names, which extend `HTMLElementEventMap` and `HTMLElementTagNameMap` |
+| `interfaces/html-data.json` | VS Code's format for tags and attributes |
+| `interfaces/snippets.json` | one snippet per element |
+| `interfaces/src/vocabulary/elements.ts` | the elements and attributes the manifest is written from |
+| `interfaces/src/vocabulary/classes.ts` | every `lt-` class, read by calling the builder functions |
+| `interfaces/web-types.json` | JetBrains' format, ships with the npm package |
+| `interfaces/src/components/events.ts` | the types of the events and the tag names, which extend `HTMLElementEventMap` and `HTMLElementTagNameMap` |
 
-All six come from `designsystem/scripts/metadata.ts`, the CSS and the "Plain HTML" tabs on the component pages, through `scripts/generate-vocabulary.ts`. They are described in more detail under [The editor extension](#the-editor-extension).
+All six come from `interfaces/scripts/metadata.ts`, the CSS and the "Plain HTML" tabs on the component pages, through `scripts/generate-vocabulary.ts`. They are described in more detail under [The editor extension](#the-editor-extension).
 
 In the rulebooks the prose is in the generator, while the lists and numbers are read from the package: the classes, the elements, the builder functions and the token names are fetched from where they actually live, so a rulebook cannot promise something that does not exist. `check-agent.ts` checks both.
 
@@ -104,7 +104,7 @@ The build does not stop on an outdated file: `generate` writes them again before
 
 ## Changelog and releases
 
-`designsystem/CHANGELOG.md` is written as you go, not at release time. If you change something a consumer will notice, add the line under the heading `Unreleased` in the same pull request as the change. `bun run build` stops if the version in `package.json` has no heading in the changelog.
+`interfaces/CHANGELOG.md` is written as you go, not at release time. If you change something a consumer will notice, add the line under the heading `Unreleased` in the same pull request as the change. `bun run build` stops if the version in `package.json` has no heading in the changelog.
 
 When a version is to be released:
 
@@ -117,7 +117,7 @@ git push -u origin release-0.4.0 && gh pr create --fill
 
 The commit comes before `check`, not after: `Generated files are up to date` asks git whether the build changed anything, and `prepare-version` has just written fourteen tracked files, so run before the commit, `check` stops on them several minutes into the run.
 
-`prepare-version` renames the heading `Unreleased` to the number and the date, adds a new empty one above it, and sets the same number in `designsystem/package.json`, `bun.lock`, `web-types.json`, `kotlin/gradle.properties` and the presentation. Finally it runs `generate-agent.ts` and `generate-manifest.ts`, so `designsystem/agent/*.md` and `designsystem/manifest/*.json`, which also contain the version, carry the new number in the same commit. It refuses to set a version that is not higher than the current one, and to release an empty `Unreleased`, and all the checks come before it writes anything, so an aborted attempt leaves no half-written files.
+`prepare-version` renames the heading `Unreleased` to the number and the date, adds a new empty one above it, and sets the same number in `interfaces/package.json`, `bun.lock`, `web-types.json`, `kotlin/gradle.properties` and the presentation. Finally it runs `generate-agent.ts` and `generate-manifest.ts`, so `interfaces/agent/*.md` and `interfaces/manifest/*.json`, which also contain the version, carry the new number in the same commit. It refuses to set a version that is not higher than the current one, and to release an empty `Unreleased`, and all the checks come before it writes anything, so an aborted attempt leaves no half-written files.
 
 The tag is set only once the version is on master:
 
@@ -143,7 +143,7 @@ The tag starts `.github/workflows/publish.yml`, which builds the package and pub
 The very first release cannot be done this way, because a publisher can only be linked to a package that already exists. It is done from the machine, with `npm login` first:
 
 ```bash
-cd designsystem && npm publish --access public
+cd interfaces && npm publish --access public
 ```
 
 A version can never be published again or overwritten, and `npm unpublish` is closed after 72 hours. To take a version out of circulation, use `npm deprecate`.
@@ -171,11 +171,11 @@ built to WebAssembly. The same module is in the package, as
 copy in `dist/`. The core carries no data: every host gives it the manifest from
 the package, and the extension has a copy of it in `dist/manifest/` as a fallback.
 The manifest is written from
-`designsystem/src/vocabulary/elements.ts` and `classes.ts`. `classes.ts` is read
+`interfaces/src/vocabulary/elements.ts` and `classes.ts`. `classes.ts` is read
 from the package's CSS and from the builder functions in `lt`, called once per variant, so
 a new variant is included once `lt` returns it. The files are generated from
-`designsystem/scripts/metadata.ts`, the CSS and the "Plain HTML" tabs on the component pages,
-together with `designsystem/web-types.json` for JetBrains. If you change an
+`interfaces/scripts/metadata.ts`, the CSS and the "Plain HTML" tabs on the component pages,
+together with `interfaces/web-types.json` for JetBrains. If you change an
 attribute on a component, the type check stops until `metadata.ts` has a
 sentence about it. `bun run build` writes the files again before any check reads
 them, and does not fail on an outdated file; if you forget to commit what the build wrote,

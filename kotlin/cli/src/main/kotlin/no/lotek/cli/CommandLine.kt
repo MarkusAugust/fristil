@@ -5,7 +5,7 @@
  * The commands are written once, in Rust (`core/cli/`), and run here as a
  * WASI module with Chicory, compiled to bytecode when the jar is built. The
  * file does the same as the shell in the npm package
- * (`designsystem/src/cli.ts`), and only what WASI cannot:
+ * (`interfaces/src/cli.ts`), and only what WASI cannot:
  *
  * - opens the file system for the module, so both relative and absolute
  *   paths work;

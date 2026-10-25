@@ -62,7 +62,7 @@ jobs:
       # set wrongly is rejected before the build, not several minutes after.
       - name: Read the version
         id: version
-        working-directory: designsystem
+        working-directory: interfaces
         run: echo "number=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
       # The tag and the version in package.json must say the same. A tag
@@ -129,7 +129,7 @@ jobs:
       # Without it, `prepublishOnly` runs the whole build again.
       - name: Publish
         if: steps.registry.outputs.published == 'no'
-        working-directory: designsystem
+        working-directory: interfaces
         run: npm publish --ignore-scripts
 
       - name: The version was already published
@@ -214,7 +214,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if ! gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
-            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes "See CHANGELOG.md in designsystem/."
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes "See CHANGELOG.md in interfaces/."
           fi
           gh release upload "$GITHUB_REF_NAME" release/lotek.wasm release/lotek.jar release/SHA256SUMS --clobber
 

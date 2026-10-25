@@ -17,7 +17,7 @@ pub fn given() -> Option<PathBuf> {
     let given = given.or_else(|| {
         Some(PathBuf::from(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../designsystem"
+            "/../../interfaces"
         )))
     });
     given

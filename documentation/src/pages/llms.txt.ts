@@ -16,7 +16,7 @@
 
 import { getCollection } from "astro:content"
 import type { APIRoute } from "astro"
-import pakke from "../../../designsystem/package.json"
+import pakke from "../../../interfaces/package.json"
 import { markdownAdresse } from "../markdown-address"
 
 const BASE = pakke.homepage.replace(/\/$/, "")
@@ -26,7 +26,7 @@ const BASE = pakke.homepage.replace(/\/$/, "")
  * time. A path computed from `import.meta.url` points at the chunk after
  * bundling, not at the source.
  */
-const BØKER = import.meta.glob("../../../designsystem/agent/*.md", {
+const BØKER = import.meta.glob("../../../interfaces/agent/*.md", {
   query: "?raw",
   import: "default",
   eager: true,

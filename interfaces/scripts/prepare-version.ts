@@ -92,7 +92,7 @@ const date = [
 // The check comes before the first write: when it stopped afterwards, the
 // changelog, the manifest and bun.lock already carried the new number, and
 // the next attempt refused because the version was taken.
-const webTypesPath = join(monorepoRoot, "designsystem", "web-types.json")
+const webTypesPath = join(monorepoRoot, "interfaces", "web-types.json")
 let webTypes = ""
 try {
   webTypes = readFileSync(webTypesPath, "utf8")

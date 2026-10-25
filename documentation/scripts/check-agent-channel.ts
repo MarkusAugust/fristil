@@ -16,14 +16,14 @@ import { readdirSync, readFileSync, statSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url))
-const PACKAGE = `${ROOT}designsystem/agent/`
+const PACKAGE = `${ROOT}interfaces/agent/`
 const SITE = `${ROOT}documentation/dist/agent/`
 
 const problems: string[] = []
 
 const books = readdirSync(PACKAGE).filter((file) => file.endsWith(".md"))
 
-if (books.length === 0) problems.push("designsystem/agent/ has no rulebooks")
+if (books.length === 0) problems.push("interfaces/agent/ has no rulebooks")
 
 for (const file of books) {
   let onSite: string | null = null

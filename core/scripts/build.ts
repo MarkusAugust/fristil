@@ -6,7 +6,7 @@
  *
  * Two modules: `lotek-core.wasm`, the check and the theme, and `lotek.wasm`,
  * the command line (`cli/`) as a WASI module. The package fetches them from
- * there with `bun run core` in `designsystem/`. Neither is checked in.
+ * there with `bun run core` in `interfaces/`. Neither is checked in.
  *
  * Run with: bun core/scripts/build.ts. Requires Rust. `rust-toolchain.toml`
  * fetches the version and the targets.

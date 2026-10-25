@@ -55,9 +55,9 @@ const PARTS: Part[] = [
     name: "package",
     releases: "@lo-tek/interfaces on npm, and the CLI on GitHub Releases",
     prefix: "v",
-    version: () => readJson("designsystem/package.json").version,
+    version: () => readJson("interfaces/package.json").version,
     changelog: {
-      path: "designsystem/CHANGELOG.md",
+      path: "interfaces/CHANGELOG.md",
       heading: (v) => new RegExp(`^## ${v.replaceAll(".", "\\.")} \\(`, "m"),
     },
   },

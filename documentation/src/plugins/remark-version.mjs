@@ -6,7 +6,7 @@
  * meant changing all 74, and one that was forgotten would have sent the reader
  * to an old package without anything saying so. Now the placeholder
  * `@lo-tek/interfaces@VERSION` is in the source, and the version is read from
- * `designsystem/package.json` when the site is built.
+ * `interfaces/package.json` when the site is built.
  *
  * `check-documentation.ts` fails if someone writes the number by hand anyway.
  *
@@ -25,7 +25,7 @@ import { readFileSync } from "node:fs"
 const PLASSHOLDER = "@lo-tek/interfaces@VERSION"
 
 const { version } = JSON.parse(
-  readFileSync(new URL("../../../designsystem/package.json", import.meta.url)),
+  readFileSync(new URL("../../../interfaces/package.json", import.meta.url)),
 )
 
 const MED_VERSJON = `@lo-tek/interfaces@${version}`

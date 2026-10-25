@@ -12,7 +12,7 @@
  * bundled the page, as it also did for the changelog.
  */
 import { gzipSync } from "node:zlib"
-import css from "../../../designsystem/dist/lotek.css?raw"
+import css from "../../../interfaces/dist/lotek.css?raw"
 
 const kb = Math.round(Buffer.byteLength(css) / 1000)
 const gzipKb = Math.round(gzipSync(css).length / 1000)

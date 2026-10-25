@@ -49,7 +49,7 @@ export function defaultCore(): Core {
     bytes = fs.readFileSync(MODULE)
   } catch {
     throw new Error(
-      `Could not find the core at ${MODULE.pathname}. In the repository it is built with "bun run core" in designsystem/, which requires Rust.`,
+      `Could not find the core at ${MODULE.pathname}. In the repository it is built with "bun run core" in interfaces/, which requires Rust.`,
     )
   }
   // The manifest is only needed by the check, and the colour contract only

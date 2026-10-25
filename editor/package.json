@@ -162,7 +162,7 @@
     }
   },
   "scripts": {
-    "build": "bun build src/extension.ts --outfile dist/extension.js --target node --format cjs --external vscode && bun build src/server.ts --outfile dist/server.js --target node --format cjs && rm -f dist/lotek-core.wasm && cp ../designsystem/core/lotek.wasm dist/ && mkdir -p dist/manifest && cp ../designsystem/manifest/manifest.json dist/manifest/ && cp ../designsystem/html-data.json ../designsystem/snippets.json dist/",
+    "build": "bun build src/extension.ts --outfile dist/extension.js --target node --format cjs --external vscode && bun build src/server.ts --outfile dist/server.js --target node --format cjs && rm -f dist/lotek-core.wasm && cp ../interfaces/core/lotek.wasm dist/ && mkdir -p dist/manifest && cp ../interfaces/manifest/manifest.json dist/manifest/ && cp ../interfaces/html-data.json ../interfaces/snippets.json dist/",
     "check": "bun run build && vsce package --no-dependencies --out lotek.vsix",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },

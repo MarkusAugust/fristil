@@ -100,7 +100,7 @@ tasks.processResources {
     // The live templates are generated in the design system from the same
     // recipes as the snippets in VS Code. The file is copied in where
     // `plugin.xml` points.
-    from(rootDir.resolve("../designsystem/live-templates.xml")) {
+    from(rootDir.resolve("../interfaces/live-templates.xml")) {
         into("liveTemplates")
         rename { "Lotek.xml" }
     }
@@ -108,7 +108,7 @@ tasks.processResources {
 
 tasks.test {
     // The tests build a manifest for a project that has taken over components from the one in the package.
-    val manifest = rootDir.resolve("../designsystem/manifest/manifest.json")
+    val manifest = rootDir.resolve("../interfaces/manifest/manifest.json")
     systemProperty("manifest", manifest.absolutePath)
     inputs.file(manifest).withPathSensitivity(PathSensitivity.NONE)
 }

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://lo-tek.sobernetics.no/manifest.schema.json",
   "title": "LO-TEKs manifest",
-  "description": "Det LO-TEK lover: elementene, klassene med innholdet og delene sine, byggefunksjonene og tokenene. Generert av designsystem/scripts/generate-manifest.ts fra koden, aldri skrevet for hånd.",
+  "description": "Det LO-TEK lover: elementene, klassene med innholdet og delene sine, byggefunksjonene og tokenene. Generert av interfaces/scripts/generate-manifest.ts fra koden, aldri skrevet for hånd.",
   "type": "object",
   "required": [
     "schemaVersion",

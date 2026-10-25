@@ -22,7 +22,7 @@ import { Glob } from "bun"
 const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 
 const { version } = JSON.parse(
-  readFileSync(`${ROOT}designsystem/package.json`, "utf8"),
+  readFileSync(`${ROOT}interfaces/package.json`, "utf8"),
 ) as { version: string }
 
 const PLACEHOLDER = "@lo-tek/interfaces@VERSION"
@@ -75,7 +75,7 @@ for (const rel of new Glob("documentation/dist/**/*.html").scanSync(ROOT)) {
   if (
     rel !== "documentation/dist/changelog/index.html" &&
     (text.includes(PLACEHOLDER) ||
-      /designsystem[@-]?(?:&#\d+;)?VERSION/.test(text))
+      /interfaces[@-]?(?:&#\d+;)?VERSION/.test(text))
   )
     findings.push(`${rel} has a placeholder that was not replaced`)
 

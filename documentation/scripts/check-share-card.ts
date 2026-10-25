@@ -23,7 +23,7 @@ const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 const DIST = `${ROOT}documentation/dist/`
 
 const { homepage } = JSON.parse(
-  readFileSync(`${ROOT}designsystem/package.json`, "utf8"),
+  readFileSync(`${ROOT}interfaces/package.json`, "utf8"),
 ) as { homepage: string }
 
 // The expected value is built from the address in the package and the file in

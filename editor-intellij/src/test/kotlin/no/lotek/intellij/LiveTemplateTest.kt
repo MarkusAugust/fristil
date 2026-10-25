@@ -6,7 +6,7 @@ import com.intellij.codeInsight.template.impl.TemplateSettings
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 /**
- * That the live templates from `designsystem/live-templates.xml` are in the
+ * That the live templates from `interfaces/live-templates.xml` are in the
  * plugin, one per web component, and that the id is a variable mirrored in
  * `for`.
  */

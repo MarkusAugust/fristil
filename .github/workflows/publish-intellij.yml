@@ -79,7 +79,7 @@ jobs:
 
       - name: Build and test
         working-directory: editor-intellij
-        run: ./gradlew build -Plotek.package=../designsystem
+        run: ./gradlew build -Plotek.package=../interfaces
 
       # Marketplace has no OIDC. The token is created under the profile on
       # plugins.jetbrains.com (My Tokens) and stored as the secret
@@ -94,4 +94,4 @@ jobs:
             echo "The secret JETBRAINS_MARKETPLACE_TOKEN is missing." >&2
             exit 1
           fi
-          ./gradlew publishPlugin -Plotek.package=../designsystem
+          ./gradlew publishPlugin -Plotek.package=../interfaces

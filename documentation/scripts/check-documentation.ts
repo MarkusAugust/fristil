@@ -21,10 +21,10 @@ import {
   FAMILIES,
   ROLES,
   roleToCss,
-} from "../../designsystem/scripts/color-contract.ts"
+} from "../../interfaces/scripts/color-contract.ts"
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url))
-const COMPONENTS = `${ROOT}designsystem/src/components/`
+const COMPONENTS = `${ROOT}interfaces/src/components/`
 const PAGES = `${ROOT}documentation/src/content/docs/components/`
 const CUSTOMISING = `${ROOT}documentation/src/content/docs/customising.mdx`
 const DOCUMENTATION = `${ROOT}documentation/src/`
@@ -102,7 +102,7 @@ function classes(css: string): string[] {
  */
 const MANIFEST: {
   tokens: { components: Record<string, Record<string, string>> }
-} = JSON.parse(read(`${ROOT}designsystem/manifest/manifest.json`))
+} = JSON.parse(read(`${ROOT}interfaces/manifest/manifest.json`))
 const COMPONENT_VARIABLES = MANIFEST.tokens.components
 
 /**
@@ -281,7 +281,7 @@ const tokenPage = read(
  *
  * Everything that is not a cell is still required by name.
  */
-const tokenCss = read(`${ROOT}designsystem/src/tokens/tokens.css`)
+const tokenCss = read(`${ROOT}interfaces/src/tokens/tokens.css`)
 const allTokens = [...tokenCss.matchAll(/^\s*(--lt-[\w-]+):/gm)].map(
   (match) => match[1],
 )

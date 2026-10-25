@@ -4,7 +4,7 @@ import startlight from "@astrojs/starlight"
 import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "astro/config"
 import remarkGfm from "remark-gfm"
-import pakke from "../designsystem/package.json" with { type: "json" }
+import pakke from "../interfaces/package.json" with { type: "json" }
 import { markdownsider } from "./src/plugins/markdown-pages.mjs"
 import { rehypeTabellrull } from "./src/plugins/rehype-table-scroll.mjs"
 import { remarkVersjon } from "./src/plugins/remark-version.mjs"
@@ -19,7 +19,7 @@ import { DELINGSBILDE, metaAttributter } from "./src/share-image.mjs"
 const BASE = pakke.homepage.replace(/\/$/, "")
 const AGENTFILER = [
   `${BASE}/llms.txt`,
-  ...readdirSync(new URL("../designsystem/agent/", import.meta.url))
+  ...readdirSync(new URL("../interfaces/agent/", import.meta.url))
     .filter((fil) => fil.endsWith(".md"))
     .map((fil) => `${BASE}/agent/${fil}`),
 ]

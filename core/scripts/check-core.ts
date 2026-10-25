@@ -40,7 +40,7 @@ import { fileURLToPath } from "node:url"
 import {
   type Finding,
   loadCore,
-} from "../../designsystem/src/diagnostics/core.js"
+} from "../../interfaces/src/diagnostics/core.js"
 import { MODULE } from "./build.js"
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url))
@@ -48,11 +48,11 @@ const core = loadCore(readFileSync(MODULE))
 // The core carries no data. The check gives it the package's manifest and
 // colour contract, as every host does.
 core.loadManifest(
-  readFileSync(join(ROOT, "designsystem/manifest/manifest.json"), "utf8"),
+  readFileSync(join(ROOT, "interfaces/manifest/manifest.json"), "utf8"),
 )
 core.loadContract(
   readFileSync(
-    join(ROOT, "designsystem/src/tokens/color-contract.json"),
+    join(ROOT, "interfaces/src/tokens/color-contract.json"),
     "utf8",
   ),
 )
@@ -389,8 +389,8 @@ function* files(dir: string): Generator<string> {
 let repoFiles = 0
 for (const dir of [
   "documentation/src",
-  "designsystem/src",
-  "designsystem/agent",
+  "interfaces/src",
+  "interfaces/agent",
   "editor/src",
 ]) {
   for (const path of files(join(ROOT, dir))) {

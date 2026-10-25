@@ -13,7 +13,7 @@
  * metadata, otherwise the guard would only be checking itself.
  *
  * Run with: bun scripts/check-vocabulary.ts, or as part of `bun run build`.
- * Requires `designsystem/dist` to be built.
+ * Requires `interfaces/dist` to be built.
  *
  * In the build, `generate` has just written the files, so part 1 compares
  * against what was written and finds nothing; it is the CI step that checks
@@ -59,7 +59,7 @@ for (const [path, expected] of Object.entries(generated)) {
 // 2. Every element the package registers has an entry in metadata.ts.
 type Component = { observedAttributes: readonly string[] }
 const pkg = JSON.parse(
-  readFileSync(join(ROOT, "designsystem/package.json"), "utf8"),
+  readFileSync(join(ROOT, "interfaces/package.json"), "utf8"),
 )
 /*
  * Only the modules that export exactly one element count. The main entry
@@ -78,7 +78,7 @@ for (const target of Object.values(
   const js = typeof target === "string" ? target : target.import
   if (typeof js !== "string" || !js.endsWith(".js")) continue
   const module: Record<string, unknown> = await import(
-    join(ROOT, "designsystem", js)
+    join(ROOT, "interfaces", js)
   )
   const tags = Object.entries(module)
     .filter(
@@ -163,7 +163,7 @@ const sourceOf = (tag: string): string | null => {
   for (const category of ["frame", "standalone"]) {
     try {
       return readFileSync(
-        join(ROOT, "designsystem/src/components", category, slug, `${tag}.ts`),
+        join(ROOT, "interfaces/src/components", category, slug, `${tag}.ts`),
         "utf8",
       )
     } catch {
@@ -289,7 +289,7 @@ for (const [name, info] of Object.entries(classes)) {
 
 // 3. Every snippet shows its element. "Has markup" was not enough: the
 // dialog's snippet had a `<dialog>` and no `<lt-dialog>`.
-const snippets = JSON.parse(generated["designsystem/snippets.json"]) as Record<
+const snippets = JSON.parse(generated["interfaces/snippets.json"]) as Record<
   string,
   { body: string[] }
 >
@@ -316,7 +316,7 @@ for (const element of elements) {
 }
 
 // The IntelliJ live templates have the same ids as variables.
-const liveTemplates = generated["designsystem/live-templates.xml"] ?? ""
+const liveTemplates = generated["interfaces/live-templates.xml"] ?? ""
 for (const element of elements) {
   if (!liveTemplates.includes(`<template name="${element.tag}"`))
     findings.push(`Live templates are missing <${element.tag}>`)

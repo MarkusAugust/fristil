@@ -1,11 +1,11 @@
 ---
 import { createMarkdownProcessor } from "@astrojs/markdown-remark"
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro"
-import logg from "../../../designsystem/CHANGELOG.md?raw"
+import logg from "../../../interfaces/CHANGELOG.md?raw"
 import { rehypeTabellrull } from "../plugins/rehype-table-scroll.mjs"
 
 /*
- * The changelog is rendered from `designsystem/CHANGELOG.md`, which is the
+ * The changelog is rendered from `interfaces/CHANGELOG.md`, which is the
  * single source. The file is loaded with `?raw` and not with `readFileSync`: a
  * path computed from `import.meta.url` points the wrong way after the build
  * has bundled the page. The heading in the file is replaced by the page's own

@@ -7,7 +7,7 @@
  * have counted the test file itself, and a folder with only CSS would never
  * have been seen.
  *
- * Run with: bun designsystem/scripts/check-test-files.ts
+ * Run with: bun interfaces/scripts/check-test-files.ts
  */
 
 import { readdirSync, statSync } from "node:fs"

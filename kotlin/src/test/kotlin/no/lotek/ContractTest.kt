@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.MethodSource
 /**
  * That every builder function in Kotlin returns what `lt` in TypeScript returns.
  *
- * The build cases in `designsystem/manifest/build-cases.json` are written by
+ * The build cases in `interfaces/manifest/build-cases.json` are written by
  * `generate-manifest.ts`: every option alone, and the combinations of them,
  * with the result from TypeScript. Both the generated and the handwritten
  * builder functions are tested against all of them.

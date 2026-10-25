@@ -7,7 +7,7 @@
  */
 
 import type { APIRoute } from "astro"
-import pakke from "../../../designsystem/package.json"
+import pakke from "../../../interfaces/package.json"
 
 const BASE = pakke.homepage.replace(/\/$/, "")
 

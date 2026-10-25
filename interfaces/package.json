@@ -1,14 +1,14 @@
 {
   "name": "@lo-tek/interfaces",
   "version": "0.36.0",
-  "description": "Rammeverksuavhengig designsystem: tokens, CSS-komponenter og web components.",
+  "description": "Framework-agnostic design system: tokens, CSS components and web components.",
   "license": "MIT",
   "author": "August Søberg-Klyver",
   "homepage": "https://lo-tek.sobernetics.no",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MarkusAugust/lo-tek.git",
-    "directory": "designsystem"
+    "directory": "interfaces"
   },
   "bugs": {
     "url": "https://github.com/MarkusAugust/lo-tek/issues"

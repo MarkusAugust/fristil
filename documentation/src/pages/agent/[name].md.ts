@@ -17,7 +17,7 @@
 
 import type { APIRoute, GetStaticPaths } from "astro"
 
-const BOOKS = import.meta.glob("../../../../designsystem/agent/*.md", {
+const BOOKS = import.meta.glob("../../../../interfaces/agent/*.md", {
   query: "?raw",
   import: "default",
   eager: true,

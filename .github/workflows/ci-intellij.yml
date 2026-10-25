@@ -23,22 +23,22 @@ on:
       - "editor-intellij/**"
       - "kotlin/**"
       - "core/**"
-      - "designsystem/manifest/**"
-      - "designsystem/src/**"
-      - "designsystem/agent/**"
-      - "designsystem/scripts/**"
-      - "designsystem/package.json"
+      - "interfaces/manifest/**"
+      - "interfaces/src/**"
+      - "interfaces/agent/**"
+      - "interfaces/scripts/**"
+      - "interfaces/package.json"
       - ".github/workflows/ci-intellij.yml"
   pull_request:
     paths:
       - "editor-intellij/**"
       - "kotlin/**"
       - "core/**"
-      - "designsystem/manifest/**"
-      - "designsystem/src/**"
-      - "designsystem/agent/**"
-      - "designsystem/scripts/**"
-      - "designsystem/package.json"
+      - "interfaces/manifest/**"
+      - "interfaces/src/**"
+      - "interfaces/agent/**"
+      - "interfaces/scripts/**"
+      - "interfaces/package.json"
       - ".github/workflows/ci-intellij.yml"
   workflow_dispatch:
 
@@ -103,7 +103,7 @@ jobs:
 
       - name: Build and test
         working-directory: editor-intellij
-        run: ./gradlew build -Plotek.package=../designsystem
+        run: ./gradlew build -Plotek.package=../interfaces
 
       - name: Upload the plugin
         uses: actions/upload-artifact@v4

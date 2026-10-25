@@ -146,7 +146,7 @@ if (errors.length > 0) {
     `The package does not match what it promises:\n\n` +
       errors.map((line) => `  ${line}`).join("\n") +
       "\n\nRun `bun run build` again. If that is not enough, delete" +
-      " designsystem/tsconfig.tsbuildinfo and try again.\n",
+      " interfaces/tsconfig.tsbuildinfo and try again.\n",
   )
   process.exit(1)
 }

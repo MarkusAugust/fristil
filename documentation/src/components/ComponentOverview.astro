@@ -4,7 +4,7 @@
  *
  * Nothing here is written by hand. The title and description come from the
  * frontmatter of each component page, and the category from the folder the
- * component sits in under `designsystem/src/components/`. The list can then
+ * component sits in under `interfaces/src/components/`. The list can then
  * neither run empty nor drift from the pages: a new component appears by
  * itself, and a description changed here is the same one as on the page.
  *
@@ -22,7 +22,7 @@ import { getCollection } from "astro:content"
  * have evaluated every web component while building a page that does not use
  * them.
  */
-const KILDER = import.meta.glob("../../../designsystem/src/components/*/*/*.ts")
+const KILDER = import.meta.glob("../../../interfaces/src/components/*/*/*.ts")
 
 type Kategori = "css" | "frame" | "standalone"
 
@@ -81,7 +81,7 @@ const plassert = grupper.reduce((sum, g) => sum + g.sider.length, 0)
 if (plassert !== sider.length) {
   const borte = sider.filter((s) => !kategoriFor.has(s.navn)).map((s) => s.navn)
   throw new Error(
-    `ComponentOverview: ${plassert} of ${sider.length} pages ended up in a group. No folder under designsystem/src/components: ${borte.join(", ")}`,
+    `ComponentOverview: ${plassert} of ${sider.length} pages ended up in a group. No folder under interfaces/src/components: ${borte.join(", ")}`,
   )
 }
 ---

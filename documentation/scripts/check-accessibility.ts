@@ -1,7 +1,7 @@
 /**
  * Runs axe against the built documentation site, in both themes.
  *
- * The component tests in `designsystem` run against the components in
+ * The component tests in `interfaces` run against the components in
  * isolation. That is good, but it does not catch errors that only appear once
  * the components are placed on a page. The documentation for a design system
  * is a product in itself. Light grey body text on a white surface went

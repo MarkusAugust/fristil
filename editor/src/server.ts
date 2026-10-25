@@ -9,7 +9,7 @@
  */
 
 import { dirname, join } from "node:path"
-import { runCommandLine } from "../../designsystem/src/wasi-host.js"
+import { runCommandLine } from "../../interfaces/src/wasi-host.js"
 
 async function main() {
   // The path the file was started from. `__dirname` is replaced with the

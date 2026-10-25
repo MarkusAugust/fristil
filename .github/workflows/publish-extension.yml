@@ -56,7 +56,7 @@ jobs:
       # they should, before the extension is packed with them.
       - name: Check the vocabulary and the diagnostics
         run: |
-          (cd designsystem && bun run build:browser)
+          (cd interfaces && bun run build:browser)
           bun --filter @lo-tek/interfaces check:vocabulary
           bun core/scripts/check-diagnostics.ts
 

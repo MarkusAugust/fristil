@@ -15,7 +15,7 @@
  *     with Claude or Anthropic, `Claude-Session` and "Generated with Claude
  *     Code".
  *
- * Run with: bun designsystem/scripts/check-authors.ts. CI needs the whole
+ * Run with: bun interfaces/scripts/check-authors.ts. CI needs the whole
  * history (`fetch-depth: 0`).
  */
 

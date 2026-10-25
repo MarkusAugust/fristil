@@ -38,12 +38,12 @@ Installed from the repository: `cargo install --git https://github.com/MarkusAug
 
 The CLI used to be written in TypeScript. Every host gives the same answer, byte for
 byte, on standard output, standard error and the exit code, in every run in
-`designsystem/scripts/check-cli.ts`:
+`interfaces/scripts/check-cli.ts`:
 
 ```bash
 cargo build --release -p lotek
-LOTEK_COMPARE=$PWD/target/release/lotek bun ../designsystem/scripts/check-cli.ts
-LOTEK_COMPARE='["java", "-jar", "/path/to/lotek.jar"]' bun ../designsystem/scripts/check-cli.ts
+LOTEK_COMPARE=$PWD/target/release/lotek bun ../interfaces/scripts/check-cli.ts
+LOTEK_COMPARE='["java", "-jar", "/path/to/lotek.jar"]' bun ../interfaces/scripts/check-cli.ts
 ```
 
 Two explanations come from the host and are not identical: what is wrong in a

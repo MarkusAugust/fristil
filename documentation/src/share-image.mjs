@@ -1,4 +1,4 @@
-import pakke from "../../designsystem/package.json" with { type: "json" }
+import pakke from "../../interfaces/package.json" with { type: "json" }
 
 /*
  * The image a link to the documentation gets when it is shared. The Starlight

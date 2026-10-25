@@ -8,7 +8,7 @@
 //! the contrast is guaranteed by construction rather than by a check
 //! afterwards.
 //!
-//! The numbers are in `designsystem/src/tokens/color-contract.json`, not
+//! The numbers are in `interfaces/src/tokens/color-contract.json`, not
 //! here, so the TypeScript scripts and the core read the same ones. The core
 //! does not carry the file: the host gives it with `load_contract_raw`, as it
 //! gives the manifest. Three choices in the numbers that are not obvious:

@@ -104,7 +104,7 @@ for (const rel of new Glob(PAGES).scanSync(ROOT)) {
       )
     }
 
-    if (!existsSync(`${ROOT}designsystem/${filePath}`)) {
+    if (!existsSync(`${ROOT}interfaces/${filePath}`)) {
       findings.push(
         `${where} points to ${filePath}, which the package does not ship.`,
       )

@@ -42,7 +42,7 @@ kotlin/buildSrc/build/
 # Rust-kjernens byggemapper. Modulen bygges fra kildekoden.
 core/target/
 core/dist/
-designsystem/core/
+interfaces/core/
 
 # Tarballen `bun --filter @lo-tek/interfaces pack` lager for Kotlin-pakken
-designsystem/*.tgz
+interfaces/*.tgz

@@ -106,7 +106,7 @@ and other editors with LSP can use `lotek lsp`.
 The completion, the snippets and the lists the diagnostics check against are generated from
 the components and the component pages in the
 [repository](https://github.com/MarkusAugust/lo-tek). The elements come from
-`designsystem/scripts/metadata.ts`, the classes from the package's CSS, and what each class takes is read by
+`interfaces/scripts/metadata.ts`, the classes from the package's CSS, and what each class takes is read by
 calling the builder functions in `lt`, so `data-variant="ghost"` is allowed because
 `lt.button({ variant: "ghost" })` returns it. `bun run build` in the package writes
 the files again before any check reads them, and CI fails a change where what the build wrote

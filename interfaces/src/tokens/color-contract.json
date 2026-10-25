@@ -1,5 +1,5 @@
 {
-  "$comment": "The colour contract: the families, LO-TEK's brand colours, the lightness and saturation per role, the layers only the neutral family has, the contrast requirements and the promises. Read by the core (core/src/theme/) and by the scripts in designsystem/. A promise with own: true is checked against the family's own role, otherwise against the layer in the neutral family.",
+  "$comment": "The colour contract: the families, LO-TEK's brand colours, the lightness and saturation per role, the layers only the neutral family has, the contrast requirements and the promises. Read by the core (core/src/theme/) and by the scripts in interfaces/. A promise with own: true is checked against the family's own role, otherwise against the layer in the neutral family.",
   "families": [
     "accent",
     "visited",

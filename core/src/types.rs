@@ -1,6 +1,6 @@
 //! The shape of the vocabulary and of the findings.
 //!
-//! The vocabulary is read from the manifest (`designsystem/manifest/manifest.json`)
+//! The vocabulary is read from the manifest (`interfaces/manifest/manifest.json`)
 //! when the core runs. The order is the same as in the manifest, and it
 //! matters: it decides which suggestion wins at equal distance, and the order
 //! of the lists in the messages.

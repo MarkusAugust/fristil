@@ -2,7 +2,7 @@
 
 A framework-agnostic design system for the web: tokens, CSS components and web components. Everything is built on things the browser already understands, so the same components work in plain HTML, React, Astro and [Datastar](https://data-star.dev).
 
-> LO-TEK is pre-1.0. A minor version can contain breaking changes, and they are listed under "Breaking" (in versions up to 0.36.0, "Brytende") in the [changelog](https://github.com/MarkusAugust/lo-tek/blob/master/designsystem/CHANGELOG.md).
+> LO-TEK is pre-1.0. A minor version can contain breaking changes, and they are listed under "Breaking" (in versions up to 0.36.0, "Brytende") in the [changelog](https://github.com/MarkusAugust/lo-tek/blob/master/interfaces/CHANGELOG.md).
 
 The full documentation, with component pages, tokens, patterns and examples for four environments, is at **[lo-tek.sobernetics.no](https://lo-tek.sobernetics.no/)**.
 
