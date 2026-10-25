@@ -4,12 +4,12 @@
   "workspaces": [
     "interfaces",
     "documentation",
-    "editor"
+    "vscode"
   ],
   "scripts": {
     "dev": "bun --filter @lo-tek/documentation dev",
-    "build": "bun --filter @lo-tek/interfaces build && bun --filter interfaces check && bun --filter @lo-tek/documentation build",
-    "typecheck": "tsc -b && bun --filter @lo-tek/interfaces typecheck:scripts && bun --filter interfaces typecheck",
+    "build": "bun --filter @lo-tek/interfaces build && bun --filter vscode check && bun --filter @lo-tek/documentation build",
+    "typecheck": "tsc -b && bun --filter @lo-tek/interfaces typecheck:scripts && bun --filter vscode typecheck",
     "typecheck:tests": "bun --filter @lo-tek/interfaces typecheck:tests",
     "test": "bun --filter @lo-tek/interfaces test:browser && bun --filter @lo-tek/interfaces check:without-javascript && bun --filter @lo-tek/interfaces check:tailwind",
     "test:docs": "bun --filter @lo-tek/documentation test:docs",

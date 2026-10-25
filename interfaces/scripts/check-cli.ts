@@ -37,7 +37,7 @@ const cli = join(packageDir, "dist/cli.js")
 /*
  * The command under test. The default is the built file, which a consumer
  * gets. `LOTEK_CLI` points to another one, like the executable from
- * `core/cli`, so the same assertions are tested against it. `LOTEK_COMPARE`
+ * `cli`, so the same assertions are tested against it. `LOTEK_COMPARE`
  * runs every run with both and requires the same answer byte for byte:
  * standard output, standard error and the exit code. Both can be a JSON
  * list, a command with arguments, like `["java", "-jar", "lotek.jar"]`.

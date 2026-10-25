@@ -16,16 +16,16 @@ documentation/scripts/.lokal/
 # Midlertidige demoapper for etterprøving mot ekte SSR, ikke del av pakken
 demoer-lokalt/
 
-# Pakket utvidelse, lages av `bun --filter interfaces check`
+# Pakket utvidelse, lages av `bun --filter vscode check`
 *.vsix
 .vscode-test/
 
 # IntelliJ-pluginens byggemapper. `.intellijPlatform` er en hel IDE lastet
 # ned for å kompilere mot, rundt en gigabyte.
-editor-intellij/.gradle/
-editor-intellij/.kotlin/
-editor-intellij/.intellijPlatform/
-editor-intellij/build/
+intellij/.gradle/
+intellij/.kotlin/
+intellij/.intellijPlatform/
+intellij/build/
 presentation/index.html
 
 # Kotlin-prosjektets byggemapper
@@ -40,7 +40,7 @@ kotlin/buildSrc/.kotlin/
 kotlin/buildSrc/build/
 
 # Rust-kjernens byggemapper. Modulen bygges fra kildekoden.
-core/target/
+target/
 core/dist/
 interfaces/core/
 

@@ -51,10 +51,7 @@ core.loadManifest(
   readFileSync(join(ROOT, "interfaces/manifest/manifest.json"), "utf8"),
 )
 core.loadContract(
-  readFileSync(
-    join(ROOT, "interfaces/src/tokens/color-contract.json"),
-    "utf8",
-  ),
+  readFileSync(join(ROOT, "interfaces/src/tokens/color-contract.json"), "utf8"),
 )
 
 /**
@@ -391,7 +388,7 @@ for (const dir of [
   "documentation/src",
   "interfaces/src",
   "interfaces/agent",
-  "editor/src",
+  "vscode/src",
 ]) {
   for (const path of files(join(ROOT, dir))) {
     const text = readFileSync(path, "utf8")

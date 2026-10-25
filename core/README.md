@@ -3,7 +3,7 @@
 LO-TEK's check and theme generator in Rust, compiled to one WebAssembly module that every
 host language runs: Node, Bun and the browser directly (`@lo-tek/interfaces/diagnostics`),
 VS Code (`../editor`), the JVM through Chicory (`../kotlin`), IntelliJ
-(`../editor-intellij`), and Go, .NET and Python through their own runtimes.
+(`../intellij`), and Go, .NET and Python through their own runtimes.
 
 ## Why
 

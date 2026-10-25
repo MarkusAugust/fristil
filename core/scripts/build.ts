@@ -17,9 +17,12 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const CORE = fileURLToPath(new URL("..", import.meta.url))
-const WASM = join(CORE, "target/wasm32-unknown-unknown/release/lotek_core.wasm")
+const WASM = join(
+  CORE,
+  "../target/wasm32-unknown-unknown/release/lotek_core.wasm",
+)
 export const MODULE = join(CORE, "dist/lotek-core.wasm")
-const CLI = join(CORE, "target/wasm32-wasip1/release/lotek.wasm")
+const CLI = join(CORE, "../target/wasm32-wasip1/release/lotek.wasm")
 export const COMMAND_LINE = join(CORE, "dist/lotek.wasm")
 
 if (import.meta.main) {

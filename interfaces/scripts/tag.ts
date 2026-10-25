@@ -66,9 +66,9 @@ const PARTS: Part[] = [
     releases: "the VS Code extension on Marketplace",
     prefix: "extension-v",
     formerPrefixes: ["utvidelse-v"],
-    version: () => readJson("editor/package.json").version,
+    version: () => readJson("vscode/package.json").version,
     changelog: {
-      path: "editor/CHANGELOG.md",
+      path: "vscode/CHANGELOG.md",
       heading: (v) => new RegExp(`^## ${v.replaceAll(".", "\\.")}$`, "m"),
     },
   },
@@ -78,10 +78,9 @@ const PARTS: Part[] = [
     prefix: "intellij-v",
     version: () => {
       const match = /^pluginVersion=(.+)$/m.exec(
-        readFileSync(join(ROOT, "editor-intellij/gradle.properties"), "utf8"),
+        readFileSync(join(ROOT, "intellij/gradle.properties"), "utf8"),
       )
-      if (!match)
-        stop("Found no pluginVersion in editor-intellij/gradle.properties.")
+      if (!match) stop("Found no pluginVersion in intellij/gradle.properties.")
       return match[1].trim()
     },
   },

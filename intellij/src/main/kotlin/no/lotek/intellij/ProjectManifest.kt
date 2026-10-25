@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * The manifest the project is checked against, and completion reads the
  * classes from, found the way the language server finds it (`vocabulary()`
- * in `core/cli/src/lsp.rs`).
+ * in `cli/src/lsp.rs`).
  *
  * From the directory the file is in and upwards, up to and including the
  * project directory, or the content root the file belongs to when it is

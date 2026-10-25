@@ -48,7 +48,7 @@ Besides Bun it needs: Rust, since the check in the package is built from
 time, when VS Code is downloaded. On Linux without a display, meaning with neither `DISPLAY` nor
 `WAYLAND_DISPLAY` set, you also need `xvfb-run`; if the machine has a display, VS Code
 runs on it.
-Install [rustup](https://rustup.rs), and `core/rust-toolchain.toml` fetches
+Install [rustup](https://rustup.rs), and `rust-toolchain.toml` fetches
 the right version and the targets on the first call.
 
 The whole run takes about six minutes on a Mac with an M-series chip. Most of the time goes to
@@ -188,11 +188,11 @@ bun --filter @lo-tek/interfaces vocabulary
 The core has no VS Code in it, and `core/scripts/check-diagnostics.ts`
 runs it over every error type it is meant to catch, with the snippets as clean
 cases. If you add a rule in `core/src/`, add the case that fails it, and check
-that it actually fails by switching the rule off. See `core/README.md`. `bun --filter interfaces
+that it actually fails by switching the rule off. See `core/README.md`. `bun --filter vscode
 check` builds `dist/extension.js` and packs `lotek.vsix`.
 
-The extension has its own version number in `editor/package.json` and its own
-changelog in `editor/CHANGELOG.md`, and is released with its own tag:
+The extension has its own version number in `vscode/package.json` and its own
+changelog in `vscode/CHANGELOG.md`, and is released with its own tag:
 
 ```bash
 bun run tag extension
@@ -204,14 +204,14 @@ token from Azure DevOps with the scope "Marketplace: Manage", created by whoever
 controls the publisher `lotek` on marketplace.visualstudio.com. The publisher has to
 be created there before the first release.
 
-The IntelliJ plugin has its number in `editor-intellij/gradle.properties` and
+The IntelliJ plugin has its number in `intellij/gradle.properties` and
 `changeNotes` in `build.gradle.kts`, and is released with `bun run tag intellij`. See
-`editor-intellij/README.md`.
+`intellij/README.md`.
 
 **The extension and the plugin are also tagged as soon as the branch is merged,**
 for the same reason as the package: the editors page in the documentation describes what
 the latest version of each does, and is deployed the moment master changes. If
-the version in `editor/package.json` or `pluginVersion` has no tag, the
+the version in `vscode/package.json` or `pluginVersion` has no tag, the
 page promises something Marketplace does not have. `bun run tag` without arguments shows what
 is untagged, and `bun run tag` with one part reminds you of the others.
 

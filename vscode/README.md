@@ -12,7 +12,7 @@ where no compiler looks at the attributes.
 ## Getting started
 
 1. **Install the extension.** Search for "LO-TEK" under Extensions in VS Code,
-   or run `code --install-extension lo-tek.interfaces`.
+   or run `code --install-extension lo-tek.vscode`.
 2. **Install LO-TEK in the app.** The package has no dependencies:
 
    ```bash
@@ -97,8 +97,8 @@ from 0.15.0 the npm package includes `web-types.json`, JetBrains' format, and
 the IDE picks it up as soon as `@lo-tek/interfaces` is in
 `package.json`. Checked in IntelliJ IDEA Ultimate 2026.2, with completion of the elements, attributes
 and values, and hover with a link. The diagnostics and quick fixes
-come with the plugin "LO-TEK Interfaces" from JetBrains Marketplace, which also gives
-completion in HTML in a string marked with `@Language("HTML")`. See `../editor-intellij`. Neovim, Helix
+come with the plugin "LO-TEK for IntelliJ" from JetBrains Marketplace, which also gives
+completion in HTML in a string marked with `@Language("HTML")`. See `../intellij`. Neovim, Helix
 and other editors with LSP can use `lotek lsp`.
 
 ## How it is made

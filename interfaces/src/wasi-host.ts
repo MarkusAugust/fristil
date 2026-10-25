@@ -4,14 +4,14 @@
  * with Node's own `node:wasi`. Used by `cli.ts`, and by the VS Code
  * extension, which starts the language server, `lotek lsp`, this way.
  *
- * The commands are written once, in Rust (`core/cli/`). The same code is the
+ * The commands are written once, in Rust (`cli/`). The same code is the
  * executable from `cargo install` and what `java -jar` runs, so the answers
  * are the same everywhere. The host does only what WASI cannot:
  *
  * - opens the folders the module reads and writes in, the working directory
  *   and the rest of the file system, so both relative and absolute paths work;
  * - fetches the addresses `lotek check` gets, since WASI has no network, and
- *   gives the page to the module as a file (see `core/cli/src/fetch.rs`);
+ *   gives the page to the module as a file (see `cli/src/fetch.rs`);
  * - says when standard input is a terminal, which WASI cannot see.
  */
 

@@ -97,7 +97,7 @@ jobs:
       - name: The Rust CLI answers like the package
         run: |
           cargo build --release -p lotek --manifest-path core/Cargo.toml
-          LOTEK_COMPARE="$PWD/core/target/release/lotek" bun interfaces/scripts/check-cli.ts
+          LOTEK_COMPARE="$PWD/target/release/lotek" bun interfaces/scripts/check-cli.ts
 
       # The page as Chromium rendered it, with the stylesheets it loaded.
       - name: The rendered page
@@ -110,9 +110,9 @@ jobs:
       - name: Language server
         run: |
           bun interfaces/scripts/check-lsp.ts
-          LOTEK_CLI="$PWD/core/target/release/lotek" bun interfaces/scripts/check-lsp.ts
-          (cd editor && bun run build)
-          LOTEK_CLI="[\"node\",\"$PWD/editor/dist/server.js\"]" bun interfaces/scripts/check-lsp.ts
+          LOTEK_CLI="$PWD/target/release/lotek" bun interfaces/scripts/check-lsp.ts
+          (cd vscode && bun run build)
+          LOTEK_CLI="[\"node\",\"$PWD/vscode/dist/server.js\"]" bun interfaces/scripts/check-lsp.ts
 
       # VS Code is 300 MB, and is only fetched when the version in engines
       # changes.
@@ -120,11 +120,11 @@ jobs:
         uses: actions/cache@v6
         with:
           path: .vscode-test
-          key: vscode-${{ runner.os }}-${{ hashFiles('editor/package.json') }}
+          key: vscode-${{ runner.os }}-${{ hashFiles('vscode/package.json') }}
 
       # The extension in a real VS Code, with the language server connected.
       - name: VS Code extension
-        run: xvfb-run -a bun editor/scripts/check-vscode.ts
+        run: xvfb-run -a bun vscode/scripts/check-vscode.ts
 
       # Java 17, the lowest version the jar promises to run on.
       - uses: actions/setup-java@v5
@@ -197,7 +197,7 @@ jobs:
         run: |
           (cd interfaces && bun run core)
           (cd interfaces && bun run build:browser)
-          (cd editor && bun run build)
+          (cd vscode && bun run build)
 
       - name: The CLI through npx
         run: bun interfaces/scripts/check-cli.ts
@@ -206,12 +206,12 @@ jobs:
       - name: The executable answers like npx
         run: |
           cargo build --release -p lotek --manifest-path core/Cargo.toml
-          LOTEK_COMPARE="$(pwd -W)/core/target/release/lotek.exe" bun interfaces/scripts/check-cli.ts
+          LOTEK_COMPARE="$(pwd -W)/target/release/lotek.exe" bun interfaces/scripts/check-cli.ts
 
       - name: Language server
         run: |
           bun interfaces/scripts/check-lsp.ts
-          LOTEK_CLI="[\"node\",\"$(pwd -W)/editor/dist/server.js\"]" bun interfaces/scripts/check-lsp.ts
+          LOTEK_CLI="[\"node\",\"$(pwd -W)/vscode/dist/server.js\"]" bun interfaces/scripts/check-lsp.ts
 
   # The Rust core and the Kotlin package, next to the main job.
   #

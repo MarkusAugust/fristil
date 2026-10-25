@@ -29,7 +29,7 @@ A Bun monorepo with three workspaces, and one Gradle project alongside:
 | `interfaces/` | `@lo-tek/interfaces` | tokens, CSS components, web components, the theme generator |
 | `documentation/` | `@lo-tek/documentation` | Astro 6 + Starlight, the demos and the checks of them |
 | `editor/` | `interfaces` | the VS Code extension: completion, snippets and diagnostics |
-| `editor-intellij/` | not a bun workspace | the IntelliJ plugin, built with Gradle |
+| `intellij/` | not a bun workspace | the IntelliJ plugin, built with Gradle |
 
 The components live under `interfaces/src/components/`, split into three categories by who creates the markup and whether a web component adds behaviour to it:
 

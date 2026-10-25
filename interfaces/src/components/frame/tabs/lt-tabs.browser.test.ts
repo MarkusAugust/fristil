@@ -634,9 +634,7 @@ describe("lt-tabs wires bare structure", () => {
   })
 
   it("leaves an aria-label the server wrote", async () => {
-    mount(
-      BAR.replace('id="vedlegg"', 'id="vedlegg" aria-label="Alle vedlegg"'),
-    )
+    mount(BAR.replace('id="vedlegg"', 'id="vedlegg" aria-label="Alle vedlegg"'))
     await tegn()
     const { paneler: p } = barDeler()
 

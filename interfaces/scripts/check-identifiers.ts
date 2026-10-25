@@ -31,7 +31,7 @@ const SOURCES = [
     root: new URL("../src", import.meta.url).pathname,
     exempt: ["testing", "types"],
   },
-  { root: new URL("../../editor/src", import.meta.url).pathname, exempt: [] },
+  { root: new URL("../../vscode/src", import.meta.url).pathname, exempt: [] },
   { root: new URL("../../core/src", import.meta.url).pathname, exempt: [] },
   {
     root: new URL("../../kotlin/src/main", import.meta.url).pathname,

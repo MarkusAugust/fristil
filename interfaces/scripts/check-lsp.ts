@@ -3,10 +3,10 @@
  * output, the way an editor talks to it.
  *
  * The default is the built CLI in the package, run with Node. `LOTEK_CLI`
- * points at another one, like the executable from `core/cli` or
+ * points at another one, like the executable from `cli` or
  * `["java", "-jar", "lotek.jar"]`, so the same assertions are tested against
  * every host. The VS Code extension is tested with
- * `["node", "editor/dist/server.js"]`.
+ * `["node", "vscode/dist/server.js"]`.
  *
  * Run with: bun scripts/check-lsp.ts
  */

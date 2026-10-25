@@ -107,9 +107,9 @@ const PATTERNS = [
   "documentation/**/*.mdx",
   "documentation/**/*.astro",
   "documentation/**/*.css",
-  "editor/**/*.ts",
-  "editor-intellij/**/*.kt",
-  "editor-intellij/*.md",
+  "vscode/**/*.ts",
+  "intellij/**/*.kt",
+  "intellij/*.md",
   "presentation/**/*.html",
   "presentation/**/*.md",
   "*.md",
@@ -194,7 +194,7 @@ for (const pattern of PATTERNS) {
 const OLD_NAME = /\bfristil\b/giu
 const OLD_NAME_ALLOWED = new Set([
   "interfaces/CHANGELOG.md",
-  "editor/CHANGELOG.md",
+  "vscode/CHANGELOG.md",
   "interfaces/scripts/check-wording.ts",
 ])
 
