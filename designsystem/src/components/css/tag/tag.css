@@ -19,7 +19,7 @@
     border-color: transparent;
   }
 
-  /* Merkelappen kan velges av og på, og er da en ekte knapp. */
+  /* The tag can be toggled on and off, and is then a real button. */
   .lt-tag[data-selectable] {
     cursor: pointer;
   }
@@ -47,8 +47,8 @@
     cursor: not-allowed;
   }
 
-  /* Høykontrast: den valgte lappen skilles bare med farge. Systemfargene
-     slipper gjennom der våre egne ikke gjør det. */
+  /* High contrast: the selected tag differs only by colour. System colours
+     get through where ours do not. */
   @media (forced-colors: active) {
     .lt-tag[aria-pressed="true"] {
       background-color: Highlight;

@@ -1,78 +1,78 @@
 import type { HTMLAttributes, RefAttributes } from "react"
 
-// Typene til hendelsene og tagnavnene, så `querySelector("lt-dialog")` og
-// `addEventListener` er typet også for den som bare importerer denne
-// inngangen. Fila har ingen annen import fra komponentene, så uten linja ble
-// verken `HTMLElementEventMap` eller `HTMLElementTagNameMap` utvidet.
+// The types of the events and tag names, so `querySelector("lt-dialog")` and
+// `addEventListener` are typed also for someone who only imports this entry
+// point. The file has no other import from the components, so without the
+// line neither `HTMLElementEventMap` nor `HTMLElementTagNameMap` was extended.
 export type { LtEventMap } from "../components/events.js"
 
 /**
- * Typer for LO-TEKs web components i JSX.
+ * Types for the LO-TEK web components in JSX.
  *
- * Uten disse kjenner ikke TypeScript `<lt-field>` i det hele tatt, men sier
- * «Property 'lt-field' does not exist on type JSX.IntrinsicElements». Og
- * attributtene er bindestreksstrenger uten autofullføring, så `described-by`
- * og `server-controlled` er nettopp der en skrivefeil er lett å gjøre og vanskelig å
- * få øye på.
+ * Without them TypeScript does not know `<lt-field>` at all, and says
+ * "Property 'lt-field' does not exist on type JSX.IntrinsicElements". And the
+ * attributes are hyphenated strings without completion, so `described-by`
+ * and `server-controlled` are exactly where a typo is easy to make and hard
+ * to spot.
  *
- * Importer én gang i prosjektet, helst fra en `.d.ts`-fil så det ikke havner
- * i bygget:
+ * Import once in the project, preferably from a `.d.ts` file so it does not
+ * end up in the bundle:
  *
  * ```ts
  * // src/lotek.d.ts
  * import "@lo-tek/interfaces/react-jsx"
  * ```
  *
- * Astro trenger ikke dette: der er `<lt-field>` vanlig HTML, og ingen
- * typesjekk ser på elementnavnet.
+ * Astro does not need this: there `<lt-field>` is plain HTML, and no type
+ * check looks at the element name.
  */
 
 /**
- * Boolske attributter på web components.
+ * Boolean attributes on web components.
  *
- * Typen er `true | undefined`, ikke `boolean` og ikke `""`, og det er med
- * vilje. React behandler web components ulikt mellom versjoner, og
- * bare ett mønster er riktig i begge:
+ * The type is `true | undefined`, not `boolean` and not `""`, and that is
+ * deliberate. React treats web components differently between versions, and
+ * only one pattern is right in both:
  *
- *     React 18 setter attributter       React 19 setter egenskaper
- *     open=""          virker            aldri åpen
- *     open={true}      virker            virker
- *     open={false}     ALLTID åpen       virker
- *     open={undefined} virker            virker
+ *     React 18 sets attributes          React 19 sets properties
+ *     open=""          works             never open
+ *     open={true}      works             works
+ *     open={false}     ALWAYS open       works
+ *     open={undefined} works             works
  *
- * React 18 stringifiserer til `open="false"`. Attributtet finnes da, og er
- * dermed sant. React 19 setter egenskapen til `""`, som er usann, og
- * setteren i komponenten fjerner attributtet igjen.
+ * React 18 stringifies to `open="false"`. The attribute then exists, and is
+ * therefore true. React 19 sets the property to `""`, which is falsy, and
+ * the setter in the component removes the attribute again.
  *
- * Derfor sender byggefunksjonene `true` for et boolsk attributt på en vert,
- * ikke den tomme strengen. `data-*` er noe annet: React sender dem videre
- * som attributter i begge versjoner, og der er `""` den kanoniske formen.
+ * That is why the builder functions send `true` for a boolean attribute on a
+ * host, not the empty string. `data-*` is different: React passes those on
+ * as attributes in both versions, and there `""` is the canonical form.
  *
- * Skriver du det for hånd, skriv `open={apen || undefined}`. Typen her gjør
- * at de to andre variantene blir kompileringsfeil i stedet for noe du må
- * huske.
+ * When you write it by hand, write `open={isOpen || undefined}`. The type
+ * here makes the two other variants compile errors instead of something you
+ * have to remember.
  */
 type Flag = true | undefined
 
 /**
- * Serveren eier tilstanden i dette elementet.
+ * The server decides the state in this element.
  *
- * Komponentene setter tilbake det brukeren har gjort når en patch river det
- * bort: valgte fanen, det åpne sprettoppvinduet, den utvidede forslagslista.
- * Med dette gjør de ikke det, og hver patch bestemmer. Bruk den når serveren
- * skal kunne flytte fanen selv, som i «gå videre til steg 2».
+ * The components set back what the user has done when a patch tears it away:
+ * the selected tab, the open popover, the expanded suggestion list. With this
+ * they do not, and each patch decides. Use it when the server should be able
+ * to move the tab itself, as in "go on to step 2".
  */
 type ServerControlled = {
   "server-controlled"?: Flag
 }
 
 /**
- * Grunnformen for en web component i JSX.
+ * The base shape of a web component in JSX.
  *
- * `HTMLAttributes` alene har ikke `ref`. Den ligger i `RefAttributes`, og
- * uten den var `<lt-toast ref={kø} />` en typefeil, altså nøyaktig mønsteret
- * dokumentasjonen anbefaler for å kalle `.show()` og `.hide()`. `key` kommer
- * samme vei.
+ * `HTMLAttributes` alone has no `ref`. It is in `RefAttributes`, and without
+ * it `<lt-toast ref={queue} />` was a type error, which is exactly the
+ * pattern the documentation recommends for calling `.show()` and `.hide()`.
+ * `key` comes the same way.
  */
 type Host = HTMLAttributes<HTMLElement> & RefAttributes<HTMLElement>
 
@@ -83,104 +83,103 @@ type LtFieldAttributes = Host & {
 }
 
 /**
- * `<lt-tabs>` har `server-controlled` og `activation`, og ingen `selected`.
+ * `<lt-tabs>` has `server-controlled` and `activation`, and no `selected`.
  *
- * Hvilken fane som er valgt står i markupen serveren sendte, som
- * `aria-selected` på fanen og `hidden` på panelene. Komponenten leser det
- * derfra i stedet for å ha sin egen `selected`, slik at de to aldri kan si
- * hver sin ting.
+ * Which tab is selected is in the markup the server sent, as `aria-selected`
+ * on the tab and `hidden` on the panels. The component reads it from there
+ * instead of keeping a `selected` of its own, so the two can never disagree.
  */
 type LtTabsAttributes = Host &
   ServerControlled & {
     /**
-     * `manual`: piltastene flytter bare fokus, og Enter eller mellomrom
-     * velger. Standard: piltastene velger med en gang.
+     * `manual`: the arrow keys only move focus, and Enter or Space selects.
+     * Default: the arrow keys select straight away.
      */
     activation?: "manual" | "automatic"
   }
 
 type LtErrorSummaryAttributes = Host & {
   /**
-   * Boksen er skjult til det finnes feil å vise.
+   * The box is hidden until there are errors to show.
    *
-   * `HTMLAttributes` har alt `hidden` som `boolean`, men på en web component
-   * gjelder regelen for `open`: React 18 skriver `hidden={false}` som
-   * attributtet `hidden="false"`, og boksen er da alltid skjult. Typen er
-   * derfor `Flag` også her, så `hidden={harFeil ? undefined : true}` er det
-   * som kompilerer. `lt.errorSummary().host` sender det slik.
+   * `HTMLAttributes` already has `hidden` as `boolean`, but on a web
+   * component the rule for `open` applies: React 18 writes `hidden={false}`
+   * as the attribute `hidden="false"`, and the box is then always hidden. So
+   * the type is `Flag` here too, and `hidden={hasErrors ? undefined : true}`
+   * is what compiles. `lt.errorSummary().host` sends it that way.
    */
   hidden?: Flag
   /**
-   * Flytt fokus hit når boksen kommer til syne. Standard: på.
-   * Sett `"false"` for å la være.
+   * Move focus here when the box appears. Default: on.
+   * Set `"false"` to turn it off.
    */
   "data-autofocus"?: "false" | "true"
 }
 
 type LtSuggestionAttributes = Host & {
   /**
-   * Noen andre har alt filtrert, så komponenten skal la være.
+   * Someone else has already filtered, so the component should not.
    *
-   * Komponenten skjuler et alternativ når teksten ikke inneholder det som
-   * står i feltet. Filtrerer du på noe annet, blir de to uenige, og da er det
-   * ditt filter som skal gjelde. En React-app som rendrer bare treffene av et
-   * søk uten diakritikk er det vanligste tilfellet, ved siden av en
-   * Datastar-app der serveren sender lista på nytt.
+   * The component hides an option when its text does not contain what is in
+   * the field. If you filter on something else, the two disagree, and then
+   * your filter should win. A React app that renders only the matches of a
+   * search that ignores diacritics is the most common case, alongside a
+   * Datastar app where the server sends the list again.
    *
-   * Antall treff leses opp uansett hvem som filtrerte.
+   * The number of matches is announced whoever did the filtering.
    */
   prefiltered?: Flag
-  /** Opplesningen ved null treff, som «Ingen treff». */
+  /** The announcement for zero matches, such as "No matches". */
   "count-none"?: string
-  /** Opplesningen i formen `Intl.PluralRules` kaller `zero`. `{n}` er tallet. */
+  /** The announcement in the form `Intl.PluralRules` calls `zero`. `{n}` is the number. */
   "count-zero"?: string
-  /** Opplesningen for ett treff, som «{n} treff». `{n}` er tallet. */
+  /** The announcement for one match, such as "{n} match". `{n}` is the number. */
   "count-one"?: string
-  /** Opplesningen i formen `two`. `{n}` er tallet. */
+  /** The announcement in the form `two`. `{n}` is the number. */
   "count-two"?: string
-  /** Opplesningen i formen `few`. `{n}` er tallet. */
+  /** The announcement in the form `few`. `{n}` is the number. */
   "count-few"?: string
-  /** Opplesningen i formen `many`. `{n}` er tallet. */
+  /** The announcement in the form `many`. `{n}` is the number. */
   "count-many"?: string
-  /** Opplesningen for alle andre antall, og reserven. `{n}` er tallet. */
+  /** The announcement for every other count, and the fallback. `{n}` is the number. */
   "count-other"?: string
 } & ServerControlled
 
 type LtDialogAttributes = Host &
   ServerControlled & {
-    /** Dialogen er åpen. Komponenten kaller `showModal()`. */
+    /** The dialog is open. The component calls `showModal()`. */
     open?: Flag
   }
 
 type LtPopoverAttributes = Host &
   ServerControlled & {
     open?: Flag
-    /** Hvilken kant panelet henger fra. */
+    /** Which edge the panel hangs from. */
     placement?: "bottom-start" | "bottom-end" | "top-start" | "top-end"
   }
 
 type LtSessionTimeoutAttributes = Host & {
-  /** Sekunder uten aktivitet før varselet kommer. */
+  /** Seconds without activity before the warning appears. */
   "warn-at"?: number | string
-  /** Sekunder uten aktivitet før økten er ute. */
+  /** Seconds without activity before the session expires. */
   "expires-at"?: number | string
-  /** Sekunder mellom hver `session-activity` mens brukeren er aktiv. */
+  /** Seconds between each `session-activity` while the user is active. */
   "activity-interval"?: number | string
 }
 
 type LtConnectionStatusAttributes = Host & {
-  /** Teksten når forbindelsen er borte. */
+  /** The text when the connection is lost. */
   "offline-text"?: string
-  /** Teksten når den kommer tilbake. */
+  /** The text when it comes back. */
   "online-text"?: string
 }
 
 type LtToastAttributes = Host & {
-  /** Millisekunder før meldingene forsvinner. */
+  /** Milliseconds before the messages disappear. */
   duration?: number
-  /** Tekst som sier hva regionen er. */
+  /** Text that says what the region is. */
   label?: string
-  /** Hva lukkeknappen i hver melding heter for skjermleseren. */
+  /** The screen reader name of the close button in each message. */
   "close-label"?: string
 }
 

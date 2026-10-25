@@ -13,8 +13,8 @@
       text-decoration-color 120ms ease;
   }
 
-  /* Før `:hover`, med samme spesifisitet: den som står sist vinner, og en
-     besøkt lenke skal også skifte farge under musa. */
+  /* Before `:hover`, with the same specificity: the last one wins, and a
+     visited link should also change colour under the mouse. */
   .lt-link:visited {
     color: var(--lt-color-visited-text);
   }

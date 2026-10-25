@@ -9,7 +9,7 @@ import {
 export const TEXTAREA_CLASS = "lt-textarea" as const
 
 export type TextareaOptions = {
-  /** Valideringstilstand. Standard: `default`. */
+  /** Validation state. Default: `default`. */
   state?: FieldState
 }
 
@@ -20,7 +20,7 @@ export type TextareaAttributes = {
 }
 
 /**
- * Attributtene for et flerlinjet tekstfelt.
+ * The attributes for a multi-line text field.
  *
  * ```ts
  * <textarea {...textarea({ state: "invalid" })} />

@@ -7,8 +7,8 @@
     font-size: var(--lt-font-size-m);
     line-height: var(--lt-line-height-default);
     color: var(--lt-color-neutral-text-strong);
-    /* Tall som står under hverandre skal ha samme bredde per siffer, ellers
-       kan ikke kolonnen leses nedover. */
+    /* Numbers stacked under each other must have the same width per digit,
+       or the column cannot be read downwards. */
     font-variant-numeric: tabular-nums;
   }
 
@@ -53,11 +53,11 @@
   }
 
   /*
-   * En kolonne som kan sorteres har en knapp i overskriften, og knappen fyller
-   * cellen. Cellen mister sin egen luft og knappen tar den over, så teksten
-   * står der den ville stått uten knapp og hele cellen kan trykkes. Uten det
-   * fikk overskriften luft både fra cellen og fra knappen, og ble høyere og
-   * forskjøvet mot cellene under.
+   * A sortable column has a button in the header, and the button fills the
+   * cell. The cell gives up its padding and the button takes it over, so
+   * the text sits where it would without a button and the whole cell can be
+   * pressed. Without that the header got padding from both the cell and the
+   * button, and became taller and shifted against the cells below.
    */
   .lt-table th:has(> .lt-table__sort) {
     padding: 0;
@@ -80,7 +80,7 @@
     background: none;
     border: 0;
     border-radius: 0;
-    /* Kan også være en lenke, når serveren sorterer uten JavaScript. */
+    /* Can also be a link, when the server sorts without JavaScript. */
     text-decoration: none;
     cursor: pointer;
   }
@@ -99,13 +99,14 @@
   }
 
   /*
-   * Pila leses fra `aria-sort` på cellen, ikke fra en klasse. Det er det
-   * samme attributtet skjermleseren leser, så det som vises og det som sies
-   * kan ikke gli fra hverandre. Uten attributtet viser knappen begge pilene,
-   * dempet, så det synes at kolonnen kan sorteres.
+   * The arrow is read from `aria-sort` on the cell, not from a class. It is
+   * the same attribute the screen reader reads, so what is shown and what is
+   * said cannot drift apart. Without the attribute the button shows both
+   * arrows, muted, so it is visible that the column can be sorted.
    *
-   * Pila er en maske og ikke et bilde, så den tar tekstfargen og snur med
-   * temaet. Tomt `content` gjør at den aldri blir en del av knappens navn.
+   * The arrow is a mask and not an image, so it takes the text colour and
+   * flips with the theme. An empty `content` means it never becomes part of
+   * the button's name.
    */
   .lt-table__sort::after {
     content: "";
@@ -128,9 +129,9 @@
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 13 2 5H14z'/%3E%3C/svg%3E");
   }
 
-  /* Høykontrast: modusen tvinger bakgrunnsfargen til flatens farge, og da
-     ville pila blitt usynlig. En systemfarge får stå, så den tegnes i
-     systemets tekstfarge. */
+  /* High contrast: the mode forces the background colour to the surface
+     colour, and the arrow would then have become invisible. A system colour
+     is left alone, so it is drawn in the system text colour. */
   @media (forced-colors: active) {
     .lt-table__sort::after,
     .lt-table th[aria-sort] > .lt-table__sort::after {
@@ -138,14 +139,14 @@
     }
   }
 
-  /* Pila står foran teksten i en høyrestilt kolonne, så teksten slutter der
-     tallene under slutter. */
+  /* The arrow comes before the text in a right-aligned column, so the text
+     ends where the numbers below end. */
   .lt-table th[data-align="end"] > .lt-table__sort::after {
     order: -1;
   }
 
-  /* En tabell som er bredere enn skjermen må kunne rulles, og det området må
-     kunne nås med tastatur. Derfor tabindex="0" på beholderen. */
+  /* A table wider than the screen must be scrollable, and that area must be
+     reachable with the keyboard. Hence tabindex="0" on the container. */
   .lt-table-scroll {
     overflow-x: auto;
     max-inline-size: 100%;

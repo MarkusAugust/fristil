@@ -1,40 +1,41 @@
 /**
- * Hva som overlever en patch gjennom Datastars egen morfing.
+ * What survives a patch through Datastar's own morph.
  *
- * `morph.browser.test.ts` kjører Datastars attributtløkke på de samme
- * nodene, og forutsetter dermed at morfingen beholder dem. Det gjør den ikke
- * alltid. Datastar v1.0.4 matcher gamle og nye elementer slik
- * (`isSoftMatch` i `library/src/plugins/watchers/patchElements.ts`):
+ * `morph.browser.test.ts` runs Datastar's attribute loop on the same nodes,
+ * and so assumes the morph keeps them. It does not always. Datastar v1.0.4
+ * matches old and new elements like this (`isSoftMatch` in
+ * `library/src/plugins/watchers/patchElements.ts`):
  *
  * ```js
  * oldNode.tagName === newNode.tagName &&
  *   (!oldNode.id || oldNode.id === newNode.id)
  * ```
  *
- * Har elementet i siden en id, og serverens element har ingen eller en
- * annen, morfes det ikke. Det gamle fjernes og serverens settes inn. Lager
- * en komponent id-en selv, får hver patch fra en mal uten id-er dermed nye
- * noder, og det komponenten husket på den gamle noden er borte.
+ * If the element in the page has an id, and the server's element has none
+ * or a different one, it is not morphed. The old one is removed and the
+ * server's is inserted. If a component creates the id itself, every patch
+ * from a template without ids therefore gets new nodes, and what the
+ * component remembered on the old node is gone.
  *
- * Testene her kjører den ekte bundlen, ikke en gjengivelse av løkka:
- * `src/testing/datastar/datastar-v1.0.4.js`, hentet fra
+ * These tests run the real bundle, not a reproduction of the loop:
+ * `src/testing/datastar/datastar-v1.0.4.js`, taken from
  * `starfederation/datastar@v1.0.4/bundles/datastar.js` (sha256
- * `727844adfc825ee651fb93c544a2a739986f9a21820a94524b35f0cac470cf91`), med
- * den siste linja, `//# sourceMappingURL=datastar.js.map`, fjernet så Vite
- * ikke leter etter et kart som ikke er med. Det er versjonen
- * `agent/datastar.md` peker på. Fila ligger her fordi pakken på npm,
- * `@starfederation/datastar`, stopper på 1.0.0-beta.11: 1.0.x finnes bare
- * som fil i Git-repoet og på CDN. Patchen sendes som den samme
- * `datastar-fetch`-hendelsen SSE-leseren selv sender når den har tolket en
- * `datastar-patch-elements`, og én test går hele veien gjennom `@get` og en
- * strøm, så vi vet at snarveien er den samme.
+ * `727844adfc825ee651fb93c544a2a739986f9a21820a94524b35f0cac470cf91`), with
+ * the last line, `//# sourceMappingURL=datastar.js.map`, removed so Vite
+ * does not look for a map that is not included. It is the version
+ * `agent/datastar.md` points to. The file is here because the npm package,
+ * `@starfederation/datastar`, stops at 1.0.0-beta.11: 1.0.x exists only as
+ * a file in the Git repository and on the CDN. The patch is sent as the same
+ * `datastar-fetch` event the SSE reader itself sends once it has parsed a
+ * `datastar-patch-elements`, and one test goes all the way through `@get`
+ * and a stream, so we know the shortcut is the same.
  *
- * Fanene skriver ingen id: lenkene har ingen, og panelenes id kommer fra
- * serveren, siden `href` krever den. Datastar morfer dem derfor inn i de
- * gamle nodene, og valget står. Overskriften i panelet får id av komponenten,
- * for den har ingenting brukeren kan miste. Felt, forslagsfelt og
- * sprettoppvindu sier fra i konsollen når en patch byttet ut det brukeren
- * hadde gjort noe med, se den siste gruppa.
+ * The tabs write no id: the links have none, and the panels' ids come from
+ * the server, since `href` requires them. Datastar therefore morphs them into
+ * the old nodes, and the selection stays. The heading in the panel gets an
+ * id from the component, since it has nothing the user can lose. Field,
+ * suggestion field and popover warn in the console when a patch replaced
+ * something the user had interacted with; see the last group.
  */
 
 import {
@@ -59,7 +60,7 @@ import { tabs } from "./tabs"
 
 import "../../../testing/datastar/datastar-v1.0.4.js"
 
-/** Patcher som en `datastar-patch-elements` uten selektor: `outer` på id-en. */
+/** Patches like a `datastar-patch-elements` without a selector: `outer` on the id. */
 function patch(elements: string): void {
   document.dispatchEvent(
     new CustomEvent("datastar-fetch", {
@@ -72,7 +73,7 @@ function patch(elements: string): void {
   )
 }
 
-/** Om hver node fortsatt er den samme. */
+/** Whether each node is still the same. */
 function sammeNoder(før: Element[], etter: Element[]): boolean[] {
   return før.map((node, i) => node === etter[i])
 }
@@ -81,8 +82,8 @@ const NAVN = ["Søknaden", "Vedlegg", "Meldinger"]
 const NOKLER = ["soknaden", "vedlegg", "meldinger"]
 
 /**
- * Fanerad slik en Go- eller Kotlin-mal skriver den uten `lt.tabs()`: lenker
- * uten id, og id bare på panelene, som lenkene krever.
+ * A tab list as a Go or Kotlin template writes it without `lt.tabs()`: links
+ * without an id, and ids only on the panels, which the links require.
  */
 const BAR = `<lt-tabs id="saken">
   <ul class="lt-tabs__list" aria-label="Deler av saken">
@@ -91,7 +92,7 @@ const BAR = `<lt-tabs id="saken">
   ${NAVN.map((n, i) => `<section class="lt-tabs__panel" id="${NOKLER[i]}"><h2>${n}</h2><p>Innhold</p></section>`).join("\n  ")}
 </lt-tabs>`
 
-/** Det `lt.tabs()` skriver: lenker, panelenes id, overskriftenes id og klassene. */
+/** What `lt.tabs()` writes: links, the panels' ids, the headings' ids and the classes. */
 const FANER = tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
 const FRA_BYGGEFUNKSJONEN = `<lt-tabs id="saken">
   <ul ${attr(FANER.list)}>
@@ -114,7 +115,7 @@ function valgt(): (string | null)[] {
   return faner().map((fane) => fane.getAttribute("aria-selected"))
 }
 
-/** Klikker fane 2, patcher med `markup`, og sier hva som overlevde. */
+/** Clicks tab 2, patches with `markup`, and reports what survived. */
 async function klikkOgPatch(markup: string) {
   document.body.innerHTML = markup
   await customElements.whenDefined("lt-tabs")
@@ -152,24 +153,24 @@ async function klikkOgPatch(markup: string) {
   }
 }
 
-describe("lt-tabs gjennom Datastars morfing", () => {
+describe("lt-tabs through Datastar's morph", () => {
   beforeAll(() => {
     defineLtTabs()
   })
 
   beforeEach(async () => {
-    // Et klikk på en fane skriver adressen, og komponenten leser den ved
-    // lasting.
+    // A click on a tab writes the address, and the component reads it on
+    // load.
     await settAdresse("")
   })
 
-  it("bar markup: lenkene og panelene morfes, og valget står", async () => {
+  it("bare markup: the links and panels are morphed, and the selection stays", async () => {
     /*
-     * Komponenten skriver ingen id på lenkene, og panelenes id kommer fra
-     * serveren. Datastar har dermed noe å kjenne igjen i begge, og morfer dem
-     * inn i de gamle nodene. `chosenTab` peker på en node som fortsatt står
-     * i siden, og valget settes tilbake etter at morfingen tok
-     * `aria-selected`, `tabindex` og `hidden`.
+     * The component writes no id on the links, and the panels' ids come from
+     * the server. Datastar therefore has something to recognise in both, and
+     * morphs them into the old nodes. `chosenTab` points to a node that is
+     * still in the page, and the selection is restored after the morph took
+     * `aria-selected`, `tabindex` and `hidden`.
      */
     const r = await klikkOgPatch(BAR)
     expect(r.faner).toEqual([true, true, true])
@@ -180,14 +181,14 @@ describe("lt-tabs gjennom Datastars morfing", () => {
     expect(r.meldt).toEqual([])
   })
 
-  it("bar markup: panelene beholder navnet fra overskriften", async () => {
-    // Overskriften har ingen id fra serveren, så den kan byttes ut. Den nye
-    // får den samme id-en tilbake, og panelet peker fortsatt på den.
+  it("bare markup: the panels keep their name from the heading", async () => {
+    // The heading has no id from the server, so it can be replaced. The new
+    // one gets the same id back, and the panel still points to it.
     const r = await klikkOgPatch(BAR)
     expect(r.navn).toEqual(NAVN)
   })
 
-  it("markup fra lt.tabs(): det samme, og panelene skjules med until-found", async () => {
+  it("markup from lt.tabs(): the same, and the panels are hidden with until-found", async () => {
     const r = await klikkOgPatch(FRA_BYGGEFUNKSJONEN)
     expect(r.faner).toEqual([true, true, true])
     expect(r.paneler).toEqual([true, true, true])
@@ -197,11 +198,11 @@ describe("lt-tabs gjennom Datastars morfing", () => {
     expect(r.meldt).toEqual([])
   })
 
-  it("bar markup i en patch som omslutter raden: det samme", async () => {
+  it("bare markup in a patch that wraps the tab list: the same", async () => {
     /*
-     * Serveren patcher ofte et område, ikke selve raden. Da har `<lt-tabs>`
-     * ingen id, og morfes inn i den gamle, og lenkene inni beholdes på samme
-     * måte.
+     * The server often patches a region, not the tab list itself. Then
+     * `<lt-tabs>` has no id and is morphed into the old one, and the links
+     * inside are kept the same way.
      */
     const side = (innhold: string) => `<main id="side">${innhold}</main>`
     const uten = BAR.replace(' id="saken"', ' class="saken"')
@@ -225,12 +226,12 @@ describe("lt-tabs gjennom Datastars morfing", () => {
     ])
   })
 
-  it("hele veien gjennom @get og en SSE-strøm gir det samme", async () => {
+  it("all the way through @get and an SSE stream gives the same", async () => {
     /*
-     * Samme scenario som den første testen, men patchen kommer som en ekte
-     * `datastar-patch-elements` i en `text/event-stream`, hentet av
-     * `data-on:click="@get(…)"`. Bekrefter at hendelsen over er den samme
-     * veien bundlen selv går.
+     * The same scenario as the first test, but the patch arrives as a real
+     * `datastar-patch-elements` in a `text/event-stream`, fetched by
+     * `data-on:click="@get(…)"`. Confirms that the event above is the same
+     * path the bundle itself takes.
      */
     const oppdatert = BAR.replace("<p>Innhold</p>", "<p>Oppdatert</p>")
     const strøm = [
@@ -250,7 +251,7 @@ describe("lt-tabs gjennom Datastars morfing", () => {
       document.body.innerHTML = `${BAR}
         <button id="oppdater" data-on:click="@get('/saken')">Oppdater</button>`
       await ventPaTegning()
-      // Datastar leser `data-*` i en `setTimeout` etter at noden kom.
+      // Datastar reads `data-*` in a `setTimeout` after the node arrived.
       await new Promise((ferdig) => setTimeout(ferdig, 20))
 
       const før = faner()
@@ -260,7 +261,7 @@ describe("lt-tabs gjennom Datastars morfing", () => {
       expect(valgt()).toEqual(["false", "true", "false"])
 
       document.getElementById("oppdater")?.click()
-      // Lenkene beholdes, så patchen kjennes på innholdet i det første panelet.
+      // The links are kept, so the patch is recognised by the content of the first panel.
       await vi.waitFor(() =>
         expect(paneler()[0].textContent).toContain("Oppdatert"),
       )
@@ -271,14 +272,14 @@ describe("lt-tabs gjennom Datastars morfing", () => {
       expect(sammeNoder(panelFør, paneler())).toEqual([true, true, true])
       expect(valgt()).toEqual(["false", "true", "false"])
     } finally {
-      // Ellers svarte `fetch` med denne strømmen i resten av fila etter en
-      // feil her.
+      // Otherwise `fetch` answered with this stream for the rest of the file
+      // after a failure here.
       hent.mockRestore()
     }
   })
 })
 
-describe("lt-suggestion gjennom Datastars morfing", () => {
+describe("lt-suggestion through Datastar's morph", () => {
   beforeAll(() => {
     defineLtSuggestion()
   })
@@ -287,7 +288,7 @@ describe("lt-suggestion gjennom Datastars morfing", () => {
     document.body.innerHTML = ""
   })
 
-  /** Bar markup fra en mal: ledeteksten rundt feltet, ingen id-er, ingen roller. */
+  /** Bare markup from a template: the label around the field, no ids, no roles. */
   const FORSLAG_BAR = `<lt-suggestion id="kommune-vert">
   <div>
     <label>Kommune <input class="lt-input"></label>
@@ -334,12 +335,12 @@ describe("lt-suggestion gjennom Datastars morfing", () => {
     }
   }
 
-  it("bar markup: feltet morfes, og det brukeren skrev og fokus står", async () => {
+  it("bare markup: the field is morphed, and what the user typed and focus stay", async () => {
     /*
-     * Komponenten skriver ingen id på feltet, så Datastar har ingenting å
-     * kjenne det igjen på og morfer det. Lista får id fra komponenten og
-     * byttes ut, men den har ingen tilstand brukeren mister: komponenten
-     * kobler den nye og åpner den igjen.
+     * The component writes no id on the field, so Datastar has nothing to
+     * recognise it by and morphs it. The list gets an id from the component
+     * and is replaced, but it has no state the user loses: the component
+     * wires up the new one and opens it again.
      */
     const { sammeListe: _, ...r } = await skrivOgPatch(FORSLAG_BAR)
     expect(r).toEqual({
@@ -350,7 +351,7 @@ describe("lt-suggestion gjennom Datastars morfing", () => {
     })
   })
 
-  it("id fra serveren: feltet morfes, og teksten, fokus og lista står", async () => {
+  it("id from the server: the field is morphed, and the text, focus and list stay", async () => {
     const r = await skrivOgPatch(FORSLAG_MED_ID)
     expect(r).toEqual({
       sammeFelt: true,
@@ -362,7 +363,7 @@ describe("lt-suggestion gjennom Datastars morfing", () => {
   })
 })
 
-describe("lt-popover gjennom Datastars morfing", () => {
+describe("lt-popover through Datastar's morph", () => {
   beforeAll(() => {
     defineLtPopover()
   })
@@ -376,13 +377,13 @@ describe("lt-popover gjennom Datastars morfing", () => {
   <div class="lt-popover"><button>Slett</button></div>
 </lt-popover>`
 
-  /** Id fra serveren, men `popover` overlatt til komponenten. */
+  /** An id from the server, but `popover` left to the component. */
   const MENY_MED_ID = `<lt-popover id="meny-vert">
   <button class="lt-button" aria-controls="meny">Handlinger</button>
   <div class="lt-popover" id="meny"><button>Slett</button></div>
 </lt-popover>`
 
-  /** Det `lt.popover()` og Kotlin-bindingen skriver. */
+  /** What `lt.popover()` and the Kotlin binding write. */
   const MENY_MANUAL = `<lt-popover id="meny-vert">
   <button class="lt-button" aria-controls="meny">Handlinger</button>
   <div class="lt-popover" id="meny" popover="manual"><button>Slett</button></div>
@@ -413,10 +414,10 @@ describe("lt-popover gjennom Datastars morfing", () => {
     }
   }
 
-  it("bar markup: panelet morfes, står åpent, og fokus står", async () => {
-    // Komponenten skriver ingen id på panelet, så panelet i siden og det
-    // serveren sender er det samme for morfingen. Skrev den en id, ble
-    // panelet byttet ut, og fokus var borte.
+  it("bare markup: the panel is morphed, stays open, and focus stays", async () => {
+    // The component writes no id on the panel, so the panel in the page and
+    // the one the server sends are the same to the morph. When it wrote an
+    // id, the panel was replaced and focus was gone.
     const r = await åpneOgPatch(MENY_BAR)
     expect(r).toEqual({
       sammeKnapp: true,
@@ -426,12 +427,13 @@ describe("lt-popover gjennom Datastars morfing", () => {
     })
   })
 
-  it("id fra serveren uten popover: panelet morfes og står åpent", async () => {
+  it("id from the server without popover: the panel is morphed and stays open", async () => {
     /*
-     * Serveren sendte ikke `popover`, så morfingen tar det sammen med `open`
-     * på verten. Komponenten lukker, gjenåpner i neste mikrotask, og så
-     * kommer «closed» fra lukkingen som en egen oppgave. Den ble tatt som
-     * brukerens lukking, og vinduet sto lukket etter patchen.
+     * The server did not send `popover`, so the morph removes it along with
+     * `open` on the host. The component closes, reopens in the next
+     * microtask, and then "closed" from the closing arrives as a separate
+     * task. It was taken as the user closing it, and the popover stayed
+     * closed after the patch.
      */
     const r = await åpneOgPatch(MENY_MED_ID)
     expect(r).toEqual({
@@ -442,7 +444,7 @@ describe("lt-popover gjennom Datastars morfing", () => {
     })
   })
 
-  it("id og popover fra serveren: panelet morfes, står åpent, og fokus står", async () => {
+  it("id and popover from the server: the panel is morphed, stays open, and focus stays", async () => {
     const r = await åpneOgPatch(MENY_MANUAL)
     expect(r).toEqual({
       sammeKnapp: true,
@@ -453,7 +455,7 @@ describe("lt-popover gjennom Datastars morfing", () => {
   })
 })
 
-describe("komponentene sier fra når en patch byttet ut elementene", () => {
+describe("the components warn when a patch replaced the elements", () => {
   let advarsel: MockInstance<typeof console.warn>
 
   beforeAll(() => {
@@ -472,25 +474,25 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     advarsel.mockRestore()
   })
 
-  /** Advarslene som nevner at noe ble byttet ut. */
+  /** The warnings that mention that something was replaced. */
   function meldinger(): string[] {
     return advarsel.mock.calls
       .map((call) => String(call[0]))
-      .filter((m) => m.includes("byttet ut"))
+      .filter((m) => m.includes("replaced the"))
   }
 
   /**
-   * Venter til `warnAboutMarkup` har sjekket vilkåret sitt.
+   * Waits until `warnAboutMarkup` has checked its condition.
    *
-   * Den venter to tegninger etter at patchen landet, og dens to er
-   * registrert etter testens to, så én `ventPaTegning` er for lite.
+   * It waits two frames after the patch landed, and its two are registered
+   * after the test's two, so one `ventPaTegning` is not enough.
    */
   async function roSeg() {
     await ventPaTegning()
     await ventPaTegning()
   }
 
-  /** Patcher som en `datastar-patch-elements` med selektor og modus. */
+  /** Patches like a `datastar-patch-elements` with a selector and mode. */
   function patchInni(selector: string, elements: string): void {
     document.dispatchEvent(
       new CustomEvent("datastar-fetch", {
@@ -503,7 +505,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     )
   }
 
-  it("lt-tabs: sier ikke fra, for komponenten skriver ingen id som kan byttes ut", async () => {
+  it("lt-tabs: does not warn, since the component writes no id that could be replaced", async () => {
     await klikkOgPatch(BAR)
     await roSeg()
     expect(meldinger()).toEqual([])
@@ -516,7 +518,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("lt-tabs: ikke ved en smal patch, der valget står", async () => {
+  it("lt-tabs: not on a narrow patch, where the selection stays", async () => {
     document.body.innerHTML = BAR
     await ventPaTegning()
     faner()[1].click()
@@ -526,7 +528,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     await roSeg()
     expect(valgt()).toEqual(["false", "true", "false"])
     expect(paneler()[2].textContent).toBe("Tre nye meldinger.")
-    // Overskriften forsvant i patchen, så navnet er teksten på fanen.
+    // The heading disappeared in the patch, so the name is the tab's text.
     expect(paneler()[2].getAttribute("aria-label")).toBe("Meldinger")
     expect(meldinger()).toEqual([])
   })
@@ -552,7 +554,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     await roSeg()
   }
 
-  it("lt-suggestion: når id-en fra serveren endret seg mellom to rendringer", async () => {
+  it("lt-suggestion: when the id from the server changed between two renders", async () => {
     document.body.innerHTML = FORSLAG("kommune-1")
     await ventPaTegning()
     const felt = document.querySelector("input") as HTMLInputElement
@@ -564,16 +566,16 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     await roSeg()
     expect(meldinger()).toHaveLength(1)
     expect(meldinger()[0]).toContain(
-      "lt-suggestion: en oppdatering fra serveren byttet ut feltet",
+      "lt-suggestion: a server update replaced the field",
     )
   })
 
-  it("lt-suggestion: ikke når serveren skrev den samme id-en", async () => {
+  it("lt-suggestion: not when the server wrote the same id", async () => {
     await skrivOgPatchForslag(FORSLAG("kommune"), "B")
     expect(meldinger()).toEqual([])
   })
 
-  /** Et felt med ledeteksten rundt seg, og eventuelt en id fra serveren. */
+  /** A field wrapped in its label, optionally with an id from the server. */
   const FELT = (id: string, verdi = "") => `<lt-field id="navn-vert">
   <label>Navn <input class="lt-input" name="navn"${id}${verdi}></label>
 </lt-field>`
@@ -588,12 +590,12 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     return felt
   }
 
-  it("lt-field: bar markup beholder feltet og teksten, uten advarsel", async () => {
+  it("lt-field: bare markup keeps the field and the text, without a warning", async () => {
     /*
-     * Komponenten skriver ingen id på kontrollen, så Datastar har ingenting å
-     * kjenne den igjen på og morfer den. Noden, og teksten brukeren skrev,
-     * står. Før skrev komponenten en id, og nettopp den gjorde at feltet ble
-     * byttet ut.
+     * The component writes no id on the control, so Datastar has nothing to
+     * recognise it by and morphs it. The node, and the text the user typed,
+     * stay. The component used to write an id, and that id was exactly what
+     * made the field get replaced.
      */
     const gammel = await skrivOgPatchFelt(FELT(""), FELT(""), "Kari")
     const felt = document.querySelector("input") as HTMLInputElement
@@ -602,15 +604,15 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("lt-field: når id-en fra serveren endret seg mellom to rendringer", async () => {
+  it("lt-field: when the id from the server changed between two renders", async () => {
     await skrivOgPatchFelt(FELT(' id="navn-1"'), FELT(' id="navn-2"'), "Kari")
     expect(meldinger()).toHaveLength(1)
     expect(meldinger()[0]).toContain(
-      "lt-field: en oppdatering fra serveren byttet ut kontrollen",
+      "lt-field: a server update replaced the control",
     )
   })
 
-  it("lt-field: ikke når serveren skrev den samme id-en", async () => {
+  it("lt-field: not when the server wrote the same id", async () => {
     const gammel = await skrivOgPatchFelt(
       FELT(' id="navn"'),
       FELT(' id="navn"'),
@@ -620,14 +622,14 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("lt-field: ikke når brukeren ikke hadde skrevet noe", async () => {
+  it("lt-field: not when the user had not typed anything", async () => {
     await skrivOgPatchFelt(FELT(' id="navn-1"'), FELT(' id="navn-2"'), "")
     expect(meldinger()).toEqual([])
   })
 
-  it("lt-field: ikke når serveren sender teksten tilbake", async () => {
-    // Serveren gjorde det meldingen ber om. Da er ingenting mistet, selv om
-    // noden er ny.
+  it("lt-field: not when the server sends the text back", async () => {
+    // The server did what the message asks for. Then nothing is lost, even
+    // though the node is new.
     await skrivOgPatchFelt(
       FELT(' id="navn-1"'),
       FELT(' id="navn-2"', ' value="Kari"'),
@@ -639,10 +641,10 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("lt-field: ikke for en bar <select> brukeren lot stå", async () => {
-    // Nettleseren velger det første alternativet uten at noe er
-    // `defaultSelected`, så en sammenligning med det så et valg brukeren
-    // aldri gjorde.
+  it("lt-field: not for a bare <select> the user left alone", async () => {
+    // The browser selects the first option without anything being
+    // `defaultSelected`, so a comparison with that saw a choice the user
+    // never made.
     const valg = `<lt-field id="land-vert">
   <label>Land <select class="lt-select"><option>Norge</option><option>Sverige</option></select></label>
 </lt-field>`
@@ -653,7 +655,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("lt-field: en avkrysset boks uten id står etter patchen", async () => {
+  it("lt-field: a checked box without an id stays after the patch", async () => {
     const boks = `<lt-field id="samtykke-vert">
   <label><input class="lt-checkbox" type="checkbox" name="samtykke"> Samtykke</label>
 </lt-field>`
@@ -669,9 +671,9 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("lt-field: når en avkrysset boks byttes ut fordi id-en endret seg", async () => {
-    // `value` og `defaultValue` er alltid like på en avkrysningsboks, så
-    // en sammenligning av dem så aldri at krysset var borte.
+  it("lt-field: when a checked box is replaced because the id changed", async () => {
+    // `value` and `defaultValue` are always equal on a checkbox, so a
+    // comparison of them never saw that the check was gone.
     const boks = (id: string) => `<lt-field id="samtykke-vert">
   <label><input class="lt-checkbox" type="checkbox" name="samtykke" id="${id}"> Samtykke</label>
 </lt-field>`
@@ -685,7 +687,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     )
     expect(meldinger()).toHaveLength(1)
     expect(meldinger()[0]).toContain(
-      "lt-field: en oppdatering fra serveren byttet ut kontrollen",
+      "lt-field: a server update replaced the control",
     )
   })
 
@@ -705,8 +707,8 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     await roSeg()
   }
 
-  it("lt-popover: når id-en fra serveren endret seg mens vinduet sto åpent", async () => {
-    // Slik en mal skriver det når id-en lages av en teller.
+  it("lt-popover: when the id from the server changed while the popover was open", async () => {
+    // How a template writes it when the id is made from a counter.
     const meny = (id: string) => `<lt-popover id="meny-vert">
   <button class="lt-button" aria-controls="${id}">Handlinger</button>
   <div class="lt-popover" id="${id}" popover="manual"><button>Slett</button></div>
@@ -719,21 +721,21 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     await roSeg()
     expect(meldinger()).toHaveLength(1)
     expect(meldinger()[0]).toContain(
-      "lt-popover: en oppdatering fra serveren byttet ut panelet",
+      "lt-popover: a server update replaced the panel",
     )
   })
 
-  it("lt-popover: ikke når panelet er bart, for da beholdes det", async () => {
+  it("lt-popover: not when the panel is bare, since it is then kept", async () => {
     await apneOgPatchMeny(MENY(""), true)
     expect(meldinger()).toEqual([])
   })
 
-  it("lt-popover: ikke når serveren skrev id", async () => {
+  it("lt-popover: not when the server wrote an id", async () => {
     await apneOgPatchMeny(MENY(' id="meny"'), true)
     expect(meldinger()).toEqual([])
   })
 
-  it("lt-popover: ikke når vinduet var lukket", async () => {
+  it("lt-popover: not when the popover was closed", async () => {
     await apneOgPatchMeny(MENY(""), false)
     expect(meldinger()).toEqual([])
   })

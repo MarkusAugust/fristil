@@ -1,7 +1,7 @@
 @layer lotek {
-  /* Tekst som bare skjermlesere skal få. `display: none` og
-     `visibility: hidden` fjerner elementet også for dem, så innholdet må bli
-     stående i dokumentet og krympes bort visuelt i stedet. */
+  /* Text that only screen readers should get. `display: none` and
+     `visibility: hidden` remove the element for them too, so the content must
+     stay in the document and be shrunk away visually instead. */
   .lt-sr-only {
     position: absolute;
     width: 1px;

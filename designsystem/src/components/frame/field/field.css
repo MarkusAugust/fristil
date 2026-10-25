@@ -6,11 +6,11 @@
 @import "../../css/error-text/error-text.css";
 
 @layer lotek {
-  /* En web component er `display: inline` til noen sier noe annet, og
-     `<lt-field>` var det eneste som pakker inn andre elementer uten å si
-     det. Barna er blokker, så det så riktig ut helt til noen ga elementet en
-     avstand eller la det i et rutenett. `<lt-suggestion>` har alltid sagt
-     det samme om seg selv. */
+  /* A web component is `display: inline` until something says otherwise,
+     and `<lt-field>` was the only one that wraps other elements without
+     saying so. The children are blocks, so it looked right until someone
+     gave the element a margin or put it in a grid. `<lt-suggestion>` has
+     always said the same about itself. */
   lt-field {
     display: block;
   }

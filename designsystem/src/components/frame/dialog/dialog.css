@@ -1,7 +1,7 @@
 @layer lotek {
-  /* Verten er ikke en boks. Uten dette er den `inline` som alle andre
-     web components, og en tom `<lt-dialog>` i et oppsett med
-     `gap` flytter naboen sin. */
+  /* The host is not a box. Without this it is `inline` like every other
+     web component, and an empty `<lt-dialog>` in a layout with
+     `gap` moves its neighbour. */
   lt-dialog {
     display: contents;
   }
@@ -9,9 +9,9 @@
   .lt-dialog {
     box-sizing: border-box;
     /*
-     * `100%` og ikke bare `100vw`: en ekte dialog i topplaget måler seg mot
-     * vindusruten, men står den i en smalere boks, som i dokumentasjonen,
-     * stakk den utenfor. `min()` tar den minste av de tre.
+     * `100%` and not only `100vw`: a real dialog in the top layer sizes itself
+     * against the viewport, but in a narrower box, as in the documentation,
+     * it stuck out. `min()` takes the smallest of the three.
      */
     inline-size: var(
       --lt-dialog-width,
@@ -30,19 +30,20 @@
   }
 
   /*
-   * Kolonne, men bare når kroppen står der den skal.
+   * A column, but only when the body is where it should be.
    *
-   * `.lt-dialog__body` har hatt `overflow-y: auto` siden komponenten kom, uten
-   * å kunne rulle: dialogen er en blokk, så kroppens høyde er innholdsbestemt
-   * og blir aldri klippet. Det som rullet var dialogen selv, og bare når den
-   * var modal, så overskriften og knapperaden forsvant ut av syne sammen med
-   * teksten.
+   * `.lt-dialog__body` has had `overflow-y: auto` since the component arrived,
+   * without being able to scroll: the dialog is a block, so the body's height
+   * is set by its content and is never clipped. What scrolled was the dialog
+   * itself, and only when it was modal, so the heading and the button row
+   * disappeared from view along with the text.
    *
-   * Barnevelgeren er ikke pynt. Kolonnen virker bare når kroppen er et direkte
-   * barn, og den endrer samtidig hvordan alt annet legger seg: marger mellom
-   * avsnitt slutter å falle sammen, og tekst og knapper som står rett i
-   * dialogen blir egne rader i full bredde. Er kroppen pakket inn i noe, eller
-   * finnes den ikke, er blokkoppsettet fortsatt det riktige, og da står det.
+   * The child combinator is not decoration. The column works only when the
+   * body is a direct child, and it also changes how everything else is laid
+   * out: margins between paragraphs stop collapsing, and text and buttons
+   * placed directly in the dialog become rows of their own in full width. If
+   * the body is wrapped in something, or does not exist, the block layout is
+   * still the right one, and then it stays.
    */
   .lt-dialog:has(> .lt-dialog__body) {
     display: flex;
@@ -50,85 +51,85 @@
   }
 
   /*
-   * Og så tilbake det regelen over tok.
+   * And then back what the rule above took away.
    *
-   * En `<dialog>` uten `open` er skjult av nettleserens eget stilark, med
-   * `display: none`. En forfatterregel slår nettleserens uansett lag og
-   * spesifisitet, så i det klassen fikk en `display`, ble en lukket dialog
-   * synlig: den la seg som et kort oppå innholdet rundt, fra sidelasting og
-   * etter hver lukking. Testet i alle tre motorene.
+   * A `<dialog>` without `open` is hidden by the browser's own stylesheet,
+   * with `display: none`. An author rule beats the browser's whatever the
+   * layer and specificity, so the moment the class got a `display`, a closed
+   * dialog became visible: it lay as a card on top of the content around it,
+   * from page load and after every close. Tested in all three engines.
    *
-   * Regelen gjelder bare `<dialog>`. En `<div>` med klassen, som i
-   * forhåndsvisningen i dokumentasjonen, har ingen skjult tilstand å ta
-   * tilbake.
+   * The rule applies only to `<dialog>`. A `<div>` with the class, as in the
+   * preview in the documentation, has no hidden state to restore.
    *
-   * Unntaket for popover står der spesifikasjonens eget stilark har det. En
-   * popover setter aldri `open`, så uten det ble et
-   * `<dialog class="lt-dialog" popover>` vist med `showPopover()` usynlig, i
-   * alle tre motorene og uten et ord.
+   * The exception for popover is where the specification's own stylesheet has
+   * it. A popover never sets `open`, so without it a
+   * `<dialog class="lt-dialog" popover>` shown with `showPopover()` was
+   * invisible, in all three engines and without a word.
    *
-   * `:is()` rundt det er ikke pynt. `:not()` tar en ikke-tilgivende liste, så
-   * i en motor som kjenner `:has()` men ikke `:popover-open`, og det finnes et
-   * vindu der begge deler er sant, ville hele regelen vært ugyldig mens
-   * kolonnen over ble stående. Da er vi tilbake til det regelen finnes for:
-   * en lukket dialog liggende som et kort over innholdet. `:is()` er
-   * tilgivende, så en ukjent pseudoklasse inni den gjør bare det leddet
-   * usant. Etterprøvd i alle tre motorene med en pseudoklasse ingen av dem
-   * kjenner.
+   * The `:is()` around it is not decoration. `:not()` takes an unforgiving
+   * list, so in an engine that knows `:has()` but not `:popover-open`, and
+   * there is a window where both are true, the whole rule would have been
+   * invalid while the column above stayed. Then we are back to what the rule
+   * exists for: a closed dialog lying as a card over the content. `:is()` is
+   * forgiving, so an unknown pseudo-class inside it only makes that part
+   * false. Checked in all three engines with a pseudo-class none of them
+   * knows.
    */
   dialog.lt-dialog:not([open]):not(:is(:popover-open)) {
     display: none;
   }
 
-  /* Flaten bak dialogen. Den finnes bare når dialogen er åpnet med
-     showModal(); et vanlig show() gir ingen ::backdrop. */
+  /* The backdrop behind the dialog. It exists only when the dialog was
+     opened with showModal(); a plain show() gives no ::backdrop. */
   .lt-dialog::backdrop {
     background: var(--lt-color-overlay);
   }
 
   /*
-   * Dialogen står riktig før den er blitt en ekte modal.
+   * The dialog is in the right place before it has become a real modal.
    *
-   * En dialog serveren vil vise, sendes med `open`, ellers finnes ikke
-   * innholdet uten JavaScript. Nettleseren legger den da i den vanlige
-   * flyten, altså som en boks et sted i siden, og først når komponenten
-   * kaller `showModal()` flyttes den til topplaget og midtstilles. Mellom de
-   * to øyeblikkene hopper den, og på en treg forbindelse er hoppet godt
-   * synlig: testet i Chromium sto den på topp 0 og landet på topp 128.
+   * A dialog the server wants to show is sent with `open`, or the content
+   * does not exist without JavaScript. The browser then puts it in the normal
+   * flow, as a box somewhere on the page, and only when the component calls
+   * `showModal()` is it moved to the top layer and centred. Between those two
+   * moments it jumps, and on a slow connection the jump is clearly visible:
+   * tested in Chromium, it stood at top 0 and landed at top 128.
    *
-   * Her plasseres den som en modal allerede før den er det, så det ikke er
-   * noe å hoppe fra. Flaten bak males med en skygge, siden `::backdrop` bare
-   * finnes i topplaget.
+   * Here it is placed like a modal already before it is one, so there is
+   * nothing to jump from. The backdrop is painted with a shadow, since
+   * `::backdrop` exists only in the top layer.
    *
-   * Regelen gjelder bare inne i `<lt-dialog>`. En `.lt-dialog` som brukes
-   * uten komponenten, og med vilje ikke er modal, skal stå der den står.
+   * The rule applies only inside `<lt-dialog>`. A `.lt-dialog` used without
+   * the component, and deliberately not modal, stays where it is.
    */
   lt-dialog .lt-dialog[open]:not(:modal) {
     position: fixed;
     z-index: var(--lt-dialog-layer, 40);
 
     /*
-     * Samme geometri som en modal, ikke bare samme sted.
+     * The same geometry as a modal, not only the same place.
      *
-     * Verdiene er de samme som HTML-spesifikasjonens forslag til stilark gir
-     * en modal: `margin: auto` og de innlinje insettene fra grunnregelen for
-     * `dialog`, og blokkinsettene, `overflow` og maksmålene fra
-     * `dialog:modal`. Maksmålet på
-     * bredden er skrevet logisk, siden huset krever det, og de to formene er
-     * like i vannrett skriveretning. Uten det er bredden vår, og når dialogen
-     * blir modal klipper nettleseren den: testet på 390 piksler gikk den fra
-     * 358 til 352 piksler bred og flyttet seg tre piksler mot høyre. Det
-     * loddrette hoppet var borte, og et vannrett kom i stedet.
+     * The values are the ones the HTML specification's suggested stylesheet
+     * gives a modal: `margin: auto` and the inline insets from the base rule
+     * for `dialog`, and the block insets, `overflow` and the maximum sizes
+     * from `dialog:modal`. The maximum
+     * width is written logically, since the project requires logical properties, and the
+     * two forms are the same in horizontal writing modes. Without it the
+     * width is ours, and when the dialog becomes modal the browser clips it:
+     * tested at 390 pixels, it went from 358 to 352 pixels wide and moved
+     * three pixels to the right. The vertical jump was gone, and a horizontal
+     * one came instead.
      *
-     * `6px` og `2em` er nettleserens egne tall, ikke vår avstandsskala. De
-     * skal derfor ikke bli tokens: likheten er hele poenget med dem.
+     * `6px` and `2em` are the browser's own numbers, not our spacing scale.
+     * So they must not become tokens: being identical is the whole point.
      *
-     * Maksmålet på høyden står med vilje ikke her. `.lt-dialog` har det
-     * allerede, og en forfatterregel slår nettleserens `dialog:modal`, så den
-     * ene verdien gjelder i begge tilstandene. Sto den her også, ville denne
-     * vunnet på spesifisitet før dialogen ble modal og falt bort etterpå, og
-     * en høy dialog ville hoppet 13 piksler loddrett i stedet. Testet i alle
-     * tre motorene.
+     * The maximum height is deliberately not here. `.lt-dialog` already has
+     * it, and an author rule beats the browser's `dialog:modal`, so the one
+     * value applies in both states. Had it been here too, this one would have
+     * won on specificity before the dialog became modal and dropped away
+     * afterwards, and a tall dialog would have jumped 13 pixels vertically
+     * instead. Tested in all three engines.
      */
     inset: 0;
     margin: auto;
@@ -147,10 +148,10 @@
     line-height: var(--lt-line-height-compact);
   }
 
-  /* Den som ruller når dialogen er full. Et flekselement som ikke har
-     `overflow: visible` har automatisk minstestørrelse null, så den krymper
-     av seg selv; noen `min-block-size: 0` trengs ikke, og er etterprøvd i
-     alle tre motorene. */
+  /* The part that scrolls when the dialog is full. A flex item that does
+     not have `overflow: visible` has an automatic minimum size of zero, so
+     it shrinks by itself; no `min-block-size: 0` is needed, and that is
+     checked in all three engines. */
   .lt-dialog__body {
     margin: 0;
     overflow-y: auto;
@@ -165,14 +166,15 @@
   }
 
   /*
-   * En topp, som kan farges.
+   * A header, which can be coloured.
    *
-   * Med `.lt-dialog__header` som direkte barn flyttes luften fra dialogen til
-   * delene: toppen, kroppen og knapperaden får hver sin `padding`, så et
-   * farget bånd går helt ut i kantene. Uten toppen står alt som før. Vilkåret
-   * står i selektoren, som for kolonnen over: to dialoger i demoen skrev om
-   * padding på tre klasser for å få til dette, og det er en kobling til
-   * hvordan dialogen fordeler luften sin, som brakk ved en oppgradering.
+   * With `.lt-dialog__header` as a direct child the padding moves from the
+   * dialog to the parts: the header, the body and the button row each get
+   * their `padding`, so a coloured band reaches all the way to the edges.
+   * Without the header everything is as before. The condition is in the
+   * selector, as for the column above: two dialogs in the demo rewrote the
+   * padding on three classes to get this, and that is a dependency on how
+   * the dialog distributes its spacing, which broke on an upgrade.
    */
   .lt-dialog:has(> .lt-dialog__header) {
     padding: 0;
@@ -181,8 +183,8 @@
   .lt-dialog__header {
     flex: none;
     padding: var(--lt-dialog-padding, var(--lt-spacing-5));
-    /* Én piksel mindre enn dialogen: toppen står innenfor rammen, og
-       innsiden av et hjørne er radiusen minus rammens bredde. */
+    /* One pixel less than the dialog: the header sits inside the border,
+       and the inside of a corner is the radius minus the border width. */
     border-start-start-radius: calc(
       var(--lt-dialog-radius, var(--lt-spacing-2)) -
       1px
@@ -194,17 +196,18 @@
   }
 
   /*
-   * Uten farge er toppen ingen stripe. Bunnluften er overskriftens vanlige
-   * marg, og det som følger regner derfra: kroppen begynner uten egen
-   * toppluft, så avstanden ned til teksten er den samme som uten topp, og
-   * knapperaden får resten av dialogens luft, så avstanden dit også er den
-   * samme. Første utgave satte bunnluften til null, og en dialog med bare
-   * overskrift og knapper fikk da null piksler mellom dem.
+   * Without a colour the header is no stripe. The bottom spacing is the
+   * heading's normal margin, and what follows counts from there: the body
+   * starts without top spacing of its own, so the distance down to the text
+   * is the same as without a header, and the button row gets the rest of the
+   * dialog's spacing, so the distance there is the same too. The first
+   * version set the bottom spacing to zero, and a dialog with only a heading
+   * and buttons then got zero pixels between them.
    *
-   * Reglene gjelder alt som ikke er en av de fem fargene. Før traff de bare
-   * en dialog uten attributtet, og `neutral`, som er standardverdien og som
-   * editoren foreslår, fikk 20 piksler under overskriften i stedet for 8.
-   * Det samme fikk en tom verdi fra en mal.
+   * The rules apply to anything that is not one of the five colours. Before,
+   * they matched only a dialog without the attribute, and `neutral`, which is
+   * the default and which the editor suggests, got 20 pixels below the
+   * heading instead of 8. So did an empty value from a template.
    */
   .lt-dialog:not(
     [data-color="brand"],
@@ -248,8 +251,8 @@
     margin: 0;
   }
 
-  /* Samme farge som overskriften, uten opasitet: med 0,85 falt teksten
-     under 4,5:1 på suksess- og advarselsbåndet. */
+  /* The same colour as the heading, without opacity: at 0.85 the text fell
+     below 4.5:1 on the success and warning bands. */
   .lt-dialog__subtitle {
     margin: var(--lt-spacing-1) 0 0;
     font-size: var(--lt-font-size-s);
@@ -266,8 +269,8 @@
       var(--lt-dialog-padding, var(--lt-spacing-5));
   }
 
-  /* Fargene er varslerens, med merkefargen i tillegg. Teksten følger med,
-     så kontrasten holder på hvert bånd. */
+  /* The colours are the alert's, plus the brand colour. The text follows,
+     so the contrast holds on every band. */
   .lt-dialog[data-color="brand"] > .lt-dialog__header {
     color: var(--lt-color-accent-content);
     background: var(--lt-color-accent-fill);
@@ -293,8 +296,8 @@
     background: var(--lt-color-danger-surface);
   }
 
-  /* Høykontrast fjerner bakgrunnsfargene. En strek under toppen holder
-     skillet mellom toppen og kroppen. */
+  /* High contrast removes the background colours. A line below the header
+     keeps the header and the body apart. */
   @media (forced-colors: active) {
     .lt-dialog__header {
       border-block-end: 1px solid CanvasText;

@@ -4,9 +4,9 @@ export const CONNECTION_STATUS_CLASS = "lt-connection-status" as const
 export const CONNECTION_STATUS_BAR_CLASS = "lt-connection-status__bar" as const
 
 export type ConnectionStatusOptions = {
-  /** Teksten når forbindelsen er borte. */
+  /** The text when the connection is lost. */
   offlineText?: string
-  /** Teksten når den kommer tilbake. Vises en kort stund. */
+  /** The text when it comes back. Shown for a short while. */
   onlineText?: string
 }
 
@@ -18,12 +18,12 @@ export type ConnectionStatusAttributes = {
 }
 
 /**
- * Attributtene for linja som sier fra at forbindelsen er borte.
+ * The attributes for the bar that says the connection is lost.
  *
- * Serveren kan per definisjon ikke fortelle deg at den er utilgjengelig. Er
- * den nede, kommer det ingenting derfra å rendre. Derfor eier komponenten
- * alt innholdet, og `data-ignore-morph` hindrer at en senere patch river det
- * bort i det øyeblikket forbindelsen er tilbake.
+ * By definition the server cannot tell you it is unreachable. When it is
+ * down, nothing comes from it to render. So the component creates all the
+ * content itself, and `data-ignore-morph` stops a later patch from tearing
+ * it away the moment the connection is back.
  *
  * ```ts
  * <lt-connection-status {...lt.connectionStatus()} />

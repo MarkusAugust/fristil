@@ -28,18 +28,18 @@
     }
   }
 
-  /* Brukeren har bedt om mindre bevegelse. Da snurrer den saktere framfor å
-     stå stille: en indikator som ikke beveger seg sier ikke lenger at noe
-     pågår. */
+  /* The user has asked for less motion. It then spins more slowly rather
+     than standing still: an indicator that does not move no longer says that
+     something is going on. */
   @media (prefers-reduced-motion: reduce) {
     .lt-spinner {
       animation-duration: 2400ms;
     }
   }
 
-  /* Høykontrast: alle fire kantene tvinges til samme farge, og ringen blir en
-     jevn sirkel. Den snurrer fortsatt, men `Highlight` gir tilbake punktet
-     som viser at det skjer noe. */
+  /* High contrast: all four borders are forced to the same colour, and the
+     ring becomes an even circle. It still spins, but `Highlight` brings back
+     the mark that shows something is happening. */
   @media (forced-colors: active) {
     .lt-spinner {
       border-block-start-color: Highlight;

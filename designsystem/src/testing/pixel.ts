@@ -1,11 +1,12 @@
 import { page } from "vitest/browser"
 
 /**
- * Fargen på én piksel i et element, slik den faktisk er tegnet.
+ * The colour of one pixel in an element, as it is actually painted.
  *
- * For det computed style ikke kan svare på: et pseudoelement som
- * `::-webkit-progress-value`, eller hva som ligger øverst når to lag tegnes
- * oppå hverandre. `x` og `y` er andeler av bredden og høyden, fra 0 til 1.
+ * For what computed style cannot answer: a pseudo-element such as
+ * `::-webkit-progress-value`, or what lies on top when two layers are
+ * painted over each other. `x` and `y` are fractions of the width and
+ * height, from 0 to 1.
  */
 export async function piksel(
   element: HTMLElement,
@@ -19,7 +20,7 @@ export async function piksel(
   lerret.width = bilde.width
   lerret.height = bilde.height
   const tegning = lerret.getContext("2d")
-  if (tegning === null) throw new Error("Fikk ikke tegne på lerretet")
+  if (tegning === null) throw new Error("Could not draw on the canvas")
   tegning.drawImage(bilde, 0, 0)
   const [r, g, b] = tegning.getImageData(
     Math.min(Math.floor(bilde.width * x), bilde.width - 1),

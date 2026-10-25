@@ -1,13 +1,14 @@
 /**
- * Matrisen, som `@lo-tek/interfaces/matrix`: familie ganger rolle, som
- * ferdige tokens.
+ * The matrix, as `@lo-tek/interfaces/matrix`: family times role, as finished
+ * tokens.
  *
- * Ingen palett, ingen trinn, ingen pinner: rollen *er* fargen. Navnene følger
- * navnerommene til Tailwind, daisyUI og Digdir, altså systemprefiks, slag og
- * sti.
+ * No palette, no steps, no pins: the role *is* the colour. The names follow
+ * the namespaces of Tailwind, daisyUI and Digdir: system prefix, kind and
+ * path.
  *
- * Fargene regnes av kjernen. Her er LO-TEKs egne, og navnene. En matrise for
- * andre merkefarger er `light` og `dark` i temaet `buildTheme` gir.
+ * The colours are computed by the core. Here are LO-TEK's colours, and the
+ * names. A matrix for other brand colours is `light` and `dark` in the theme
+ * `buildTheme` returns.
  */
 
 import type { Role } from "./matrix-cells.js"
@@ -21,12 +22,12 @@ export {
   type MatrixToken,
 } from "./matrix-cells.js"
 
-/** Rollenavnet slik det skrives i CSS. `textSubtle` blir `text-subtle`. */
+/** The role name as it is written in CSS. `textSubtle` becomes `text-subtle`. */
 export function roleToCss(role: Role): string {
   return role.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
 }
 
-/** Tokennavnet for én celle i matrisen. */
+/** The token name for one cell in the matrix. */
 export function tokenName(family: string, role: string): string {
   return `--lt-color-${family}-${role}`
 }

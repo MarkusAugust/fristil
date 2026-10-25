@@ -12,38 +12,38 @@ import {
 export const LT_TABS_TAG = "lt-tabs" as const
 
 /**
- * Delene fanene finner, som selektorer relativt til elementet. Komponenten
- * finner delene med disse, og manifestet beskriver dem for den som setter
- * sammen markupen selv, så de to ikke kan si noe ulikt.
+ * The parts the tabs look for, as selectors relative to the element. The
+ * web component finds its parts with these, and the manifest describes them
+ * for anyone writing the markup by hand, so the two cannot disagree.
  */
 export const LT_TABS_PARTS = {
-  /** Raden: den serveren har gitt rollen, eller klassen fra `tabs.css`. */
+  /** The tab list: the one the server gave the role, or the class from `tabs.css`. */
   list: "[role='tablist'], .lt-tabs__list",
   /**
-   * En fane er en lenke til et panel i raden. En lenke er det eneste
-   * fanemønsteret som virker uten JavaScript: uten skriptet er raden en
-   * innholdsfortegnelse, og lenkene fører til panelene. Har serveren skrevet
-   * rollene, er bare lenkene med `role="tab"` faner.
+   * A tab is a link to a panel in the tab list. A link is the only tab
+   * pattern that works without JavaScript: without the script the tab list is
+   * a table of contents, and the links lead to the panels. If the server has
+   * written the roles, only the links with `role="tab"` are tabs.
    */
   tab: "a[role='tab'][href^='#'], .lt-tabs__list a[href^='#']:not([role])",
-  /** Et panel: rollen når den står der, ellers klassen uten rolle. */
+  /** A panel: the role when it is there, otherwise the class without a role. */
   panel: "[role='tabpanel'], .lt-tabs__panel:not([role])",
 } as const
 
 const LIST_SELECTOR = LT_TABS_PARTS.list
 const TAB_SELECTOR = LT_TABS_PARTS.tab
-/** Det serveren har kalt en fane, også det som ikke er en lenke. */
+/** What the server has called a tab, including what is not a link. */
 const ANY_TAB_SELECTOR = "[role='tab']"
-/** Overskriften i et panel, som gir panelet navnet sitt. */
+/** The heading in a panel, which gives the panel its name. */
 const HEADING_SELECTOR = ":scope > :is(h1, h2, h3, h4, h5, h6)"
 
 /**
- * Id-en en fane peker på, eller `null` når den ikke er en lenke til et
- * fragment. `href="#"` alene peker på ingenting.
+ * The id a tab points to, or `null` when it is not a link to a fragment.
+ * `href="#"` on its own points to nothing.
  *
- * `href` er sannheten, og `aria-controls` skrives fra den. Fragmentet slås
- * opp slik nettleseren gjør: som det står, og ellers dekodet, så både
- * `#vedlegg` og `#s%C3%B8knaden` finner panelet sitt.
+ * `href` is the truth, and `aria-controls` is written from it. The fragment
+ * is looked up the way the browser does: as written, and otherwise decoded,
+ * so both `#attachments` and `#s%C3%B8knaden` find their panel.
  */
 function linkTarget(tab: Element): string | null {
   if (tab.localName !== "a") return null
@@ -61,12 +61,12 @@ function decoded(fragment: string): string | null {
   }
 }
 
-/** Tekst slik et navn regnes ut: mellomrom slått sammen, uten luft rundt. */
+/** Text as a name is computed: whitespace collapsed, and trimmed. */
 function flat(text: string): string {
   return text.replace(/\s+/g, " ").trim()
 }
 
-/** Er elementet skjult for hjelpemidler: `hidden`, `aria-hidden` eller CSS? */
+/** Is the element hidden from assistive technology: `hidden`, `aria-hidden` or CSS? */
 function hiddenFromAT(element: Element): boolean {
   if (element.getAttribute("aria-hidden") === "true") return true
   if (element.hasAttribute("hidden")) return true
@@ -76,21 +76,22 @@ function hiddenFromAT(element: Element): boolean {
 }
 
 /**
- * Teksten et element gir et navn, slik AccName 1.2 regner den ut fra steg 2.
+ * The text an element contributes to a name, as AccName 1.2 computes it from
+ * step 2.
  *
- * `aria-labelledby` (2B), `aria-label` på noe inni, `alt` på et bilde, og
- * teksten, men ikke det som er skjult for hjelpemidler. `textContent` tok med
- * skjult tekst, som «Meldinger (3)», og ga et tomt navn til en fane med bare
- * et ikon og `aria-label`.
+ * `aria-labelledby` (2B), `aria-label` on something inside, `alt` on an
+ * image, and the text, but not what is hidden from assistive technology.
+ * `textContent` included hidden text, such as "Messages (3)", and gave an
+ * empty name to a tab with only an icon and `aria-label`.
  *
- * - `includeHidden`: pekes det direkte på et skjult element med
- *   `aria-labelledby`, tas det likevel med, og alt inni det (2A).
- * - `inReference`: noden står i en `aria-labelledby` som alt følges, og da
- *   følges ikke en til (2B).
+ * - `includeHidden`: when a hidden element is pointed to directly with
+ *   `aria-labelledby`, it is included anyway, with everything inside it (2A).
+ * - `inReference`: the node is inside an `aria-labelledby` that is already
+ *   being followed, and then another one is not followed (2B).
  *
- * Tekst fra CSS, `::before` og `::after` (2F.ii), tas ikke med. LO-TEKs
- * faner bruker det ikke, og å lese `content` riktig er mye kode for noe ingen
- * trenger (avgjort av eieren 23. oktober).
+ * Text from CSS, `::before` and `::after` (2F.ii), is not included. LO-TEK's
+ * tabs do not use it, and reading `content` correctly is a lot of code for
+ * something nobody needs (decided by the maintainer on 23 October).
  */
 function textOf(
   node: Node,
@@ -113,7 +114,7 @@ function textOf(
   return text
 }
 
-/** Teksten fra elementene `aria-labelledby` peker på, eller tom (AccName 2B). */
+/** The text from the elements `aria-labelledby` points to, or empty (AccName 2B). */
 function referencedText(element: Element): string {
   const ids = element.getAttribute("aria-labelledby")
   if (!ids) return ""
@@ -128,7 +129,7 @@ function referencedText(element: Element): string {
   )
 }
 
-/** Navnet på et element, slik en skjermleser regner det ut. */
+/** The name of an element, as a screen reader computes it. */
 function accessibleName(element: Element): string {
   const referenced = referencedText(element)
   if (referenced !== "") return referenced
@@ -141,191 +142,203 @@ function accessibleName(element: Element): string {
 }
 
 /**
- * Navnet et panel får når det peker på elementet med `aria-labelledby`.
+ * The name a panel gets when it points to the element with `aria-labelledby`.
  *
- * Ikke det samme som elementets eget navn: inni en `aria-labelledby` følges
- * ikke elementets egen `aria-labelledby` (AccName 2B), og et skjult element
- * tas med (2A). En overskrift med `aria-labelledby` mot «Vedlegg» og teksten
- * «Bilag» ga panelet navnet «Bilag», mens komponenten trodde det var
- * «Vedlegg».
+ * Not the same as the element's name: inside an `aria-labelledby`, the
+ * element's `aria-labelledby` is not followed (AccName 2B), and a hidden
+ * element is included (2A). A heading with `aria-labelledby` pointing to
+ * "Attachments" and the text "Enclosures" gave the panel the name
+ * "Enclosures", while the web component thought it was "Attachments".
  */
 function nameAsReferenced(element: Element): string {
   return flat(textOf(element, hiddenFromAT(element), true))
 }
 
 /**
- * Det komponenten sist skrev på en node, og hva serveren sist sa.
+ * What the web component last wrote on a node, and what the server last said.
  *
- * `aria-selected` på fanene og `hidden` på panelene både leses og skrives.
- * En naiv avlesning er komponentens eget ekko: bar markup fikk
- * `aria-selected="true"` på første fane av komponenten, og da serveren
- * byttet fane med en patch som bare rørte panelene, leste komponenten sin
- * egen markering tilbake og skjulte panelet serveren nettopp viste. Står
- * det noe annet enn det komponenten skrev, har serveren rørt det, og det er
- * serverens ord. Står det det samme, gjelder det serveren sa sist.
+ * `aria-selected` on the tabs and `hidden` on the panels are both read and
+ * written. A naive read is the web component's echo of itself: bare markup
+ * got `aria-selected="true"` on the first tab from the web component, and
+ * when the server switched tab with a patch that only touched the panels,
+ * the web component read its earlier selection back and hid the panel the
+ * server had just shown. If something other than what the web component
+ * wrote is there, the server has touched it, and it is the server's word. If
+ * the same is there, what the server said last applies.
  */
 type Word = { written: string | null; server: string | null }
 
 /**
- * Tastaturet i en fanerad, og koblingen når markupen kommer uten.
+ * Keyboard behaviour in a tab list, and the wiring when the markup comes
+ * without it.
  *
- * Fanene er lenker til panelene sine, slik GOV.UK gjør det:
+ * The tabs are links to their panels, the way GOV.UK does it:
  *
  * ```html
  * <lt-tabs>
- *   <ul class="lt-tabs__list" aria-label="Deler av saken">
- *     <li><a href="#soknaden">Søknaden</a></li>
- *     <li><a href="#vedlegg">Vedlegg</a></li>
+ *   <ul class="lt-tabs__list" aria-label="Parts of the case">
+ *     <li><a href="#application">Application</a></li>
+ *     <li><a href="#attachments">Attachments</a></li>
  *   </ul>
- *   <section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2>…</section>
- *   <section class="lt-tabs__panel" id="vedlegg"><h2>Vedlegg</h2>…</section>
+ *   <section class="lt-tabs__panel" id="application"><h2>Application</h2>…</section>
+ *   <section class="lt-tabs__panel" id="attachments"><h2>Attachments</h2>…</section>
  * </lt-tabs>
  * ```
  *
- * Uten JavaScript er det en innholdsfortegnelse med alle panelene etter
- * hverandre, og lenkene virker. Det malen skriver er id på panelene, og den
- * krever lenkene uansett.
+ * Without JavaScript this is a table of contents with all the panels one
+ * after another, and the links work. What the template writes is an id on
+ * the panels, and it needs the links anyway.
  *
- * Komponenten skriver aldri id på en fane eller et panel. Datastar og
- * idiomorph kjenner igjen et element på id, og et element med en id
- * serveren ikke sendte, blir byttet ut ved neste oppdatering, med fanevalget
- * og fokus. Panelenes id kommer fra serveren, så de beholdes. Det komponenten
- * fyller inn, regner den ut fra markupen: rollene, `aria-controls` fra
- * `href`, `role="presentation"` på listepunktene, og panelets navn, som er
- * fanens. Overskriften i panelet er navnet når den sier det samme som fanen.
- * Bare det valgte panelet er en tabbestopp.
+ * The web component never writes an id on a tab or a panel. Datastar and
+ * idiomorph recognise an element by its id, and an element with an id the
+ * server did not send is replaced at the next update, along with the tab
+ * selection and focus. The panels' ids come from the server, so they are
+ * kept. What the web component fills in, it computes from the markup: the
+ * roles, `aria-controls` from `href`, `role="presentation"` on the list
+ * items, and the panel's name, which is the tab's. The heading in the panel
+ * is the name when it says the same as the tab. Only the selected panel is a
+ * tab stop.
  *
- * Panelene som ikke er valgt, skjules med `hidden="until-found"`, så søk i
- * siden og en lenke til noe i et panel finner dem, og nettleseren sender
- * `beforematch`, som komponenten velger fanen fra. Har serveren skrevet
- * `hidden` selv, skrives det tilbake i serverens form, i hele raden:
- * `lt.tabs()` fra `@lo-tek/interfaces/react` gir `hidden=""`, fordi React
- * ikke kan skrive `until-found`. Adressen velger fanen når siden lastes og når
- * den endres, og hvert valg skrives i adressen, med mindre den alt peker på
- * det valgte panelet eller noe i det. Ved lasting gjelder serverens
- * `aria-selected` foran adressen, og under `server-controlled` velger
- * adressen aldri.
+ * The panels that are not selected are hidden with `hidden="until-found"`, so
+ * find in page and a link to something in a panel reach them, and the
+ * browser fires `beforematch`, which the web component selects the tab from.
+ * If the server wrote `hidden` itself, it is written back in the server's
+ * form, across the whole tab list: `lt.tabs()` from
+ * `@lo-tek/interfaces/react` gives `hidden=""`, because React cannot write
+ * `until-found`. The address selects the tab when the page loads and when it
+ * changes, and each selection is written to the address, unless it already
+ * points to the selected panel or something in it. On load the server's
+ * `aria-selected` comes before the address, and under `server-controlled`
+ * the address never selects.
  *
- * Det serveren har skrevet står. Hvilken fane som er valgt leses fra
- * `aria-selected`, og mangler den, fra hvilket panel som ikke er skjult; er
- * ingenting sagt, er det den første. Før komponenten er registrert viser
- * `tabs.css` bare det panelet komponenten kommer til å velge: det første
- * synlige, eller det adressen peker på, så innholdet ikke hopper når resten
- * skjules.
+ * What the server has written stays. Which tab is selected is read from
+ * `aria-selected`, and when that is missing, from which panel is not hidden;
+ * if nothing is said, it is the first. Before the web component is
+ * registered, `tabs.css` shows only the panel the web component is going to
+ * select: the first visible one, or the one the address points to, so the
+ * content does not jump when the rest are hidden.
  *
- * Det komponenten gjør etterpå er det nettleseren ikke gjør selv: Tab hopper
- * forbi hele raden og inn i panelet, mens piltastene flytter mellom fanene.
- * Med `activation="manual"` flytter piltastene bare fokus, og Enter eller
- * mellomrom velger.
+ * What the web component then does is what the browser does not do by
+ * itself: Tab skips past the whole tab list and into the panel, while the
+ * arrow keys move between the tabs. With `activation="manual"` the arrow keys
+ * only move focus, and Enter or Space selects.
  *
- * Fanevalget er brukerens, og komponenten setter det tilbake når en patch
- * river det bort. Skal serveren kunne flytte fanen, som i «gå videre til
- * steg 2», settes `server-controlled` på verten, og da bestemmer hver patch.
+ * The tab selection belongs to the user, and the web component restores it
+ * when a patch strips it. If the server needs to move the tab, as in
+ * "continue to step 2", set `server-controlled` on the host, and then every
+ * patch decides.
  */
 export class LtTabs extends HostElement {
   /**
-   * `server-controlled` og `activation`. Hvilken fane som er valgt står i
-   * markupen serveren sendte, som `aria-selected` på fanen og `hidden` på
-   * panelene, og leses derfra. Et eget `selected` ville vært en parallell
-   * utgave av det samme.
+   * `server-controlled` and `activation`. Which tab is selected is in the
+   * markup the server sent, as `aria-selected` on the tab and `hidden` on the
+   * panels, and is read from there. A separate `selected` would have been a
+   * parallel copy of the same thing.
    */
   static observedAttributes = [SERVER_CONTROLLED, "activation"] as const
 
   private observer?: MutationObserver
   /**
-   * Fanen brukeren valgte, husket så en patch ikke kan ta den.
+   * The tab the user selected, remembered so a patch cannot take it.
    *
-   * Selve noden, ikke indeksen og ikke `href`. En indeks er ingen identitet:
-   * setter serveren inn en fane først i lista, peker den samme indeksen på
-   * noe annet, og valget hopper til en fane brukeren aldri trykket på.
+   * The node itself, not the index and not `href`. An index is not an
+   * identity: if the server inserts a tab first in the list, the same index
+   * points to something else, and the selection jumps to a tab the user never
+   * pressed.
    *
-   * En morfing beholder lenkene, siden de ikke har id. Bytter patchen ut
-   * selve lenken, som `innerHTML` gjør, er fanen en annen, og da glemmer
-   * komponenten valget framfor å gjette; adressen har det da, se
-   * `selectFromAddress`.
+   * A morph keeps the links, since they have no id. If the patch replaces the
+   * link itself, as `innerHTML` does, the tab is a different one, and then
+   * the web component forgets the selection rather than guessing; the address
+   * still has it, see `selectFromAddress`.
    *
-   * `undefined` betyr at brukeren ikke har valgt noe ennå, og da er det
-   * serverens markup som gjelder.
+   * `undefined` means the user has not selected anything yet, and then the
+   * server's markup applies.
    */
   private chosenTab?: HTMLElement
   /**
-   * Roller komponenten selv har satt. Skiller en bar rad, der hver lenke er
-   * en fane, fra en rad serveren har skrevet rollene i, der en lenke uten
-   * rolle er noe annet, som en hjelpelenke.
+   * Roles the web component set itself. Tells a bare tab list, where every
+   * link is a tab, from one where the server wrote the roles, where a link
+   * without a role is something else, such as a help link.
    */
   private readonly roledByMe = new WeakSet<Element>()
   private selectedMemory = new WeakMap<Element, Word>()
   private hiddenMemory = new WeakMap<Element, Word>()
   /**
-   * Formen serveren skjuler panelene i, sist den skjulte noe: `""` fra
-   * `lt.tabs()`, `"until-found"` eller noe annet. Komponenten skriver
-   * `hidden` i den formen på alle panelene i raden, også på et panel
-   * serveren aldri har skjult. Ellers fikk ett panel `until-found` og de
-   * andre `""` i samme rad. Har serveren aldri skjult noe, er det
-   * `until-found`, så søk i siden finner panelet.
+   * The form the server hides panels in, the last time it hid something:
+   * `""` from `lt.tabs()`, `"until-found"` or something else. The web
+   * component writes `hidden` in that form on every panel in the tab list,
+   * including a panel the server never hid. Otherwise one panel got
+   * `until-found` and the others `""` in the same tab list. If the server has
+   * never hidden anything, it is `until-found`, so find in page reaches the
+   * panel.
    */
   private hiddenForm = "until-found"
   /**
-   * Id-en komponenten ga overskriften i et panel, per panel. En morfing
-   * river id-en av overskriften og `aria-labelledby` av panelet, siden
-   * ingen av dem sto i serverens HTML, og panelet skal få den samme tilbake,
-   * så en skjermleser ikke følger en peker som skifter under den.
+   * The id the web component gave the heading in a panel, per panel. A morph
+   * strips the id from the heading and `aria-labelledby` from the panel,
+   * since neither was in the server's HTML, and the panel must get the same
+   * one back, so a screen reader does not follow a reference that changes
+   * under it.
    */
   private readonly headingIds = new WeakMap<Element, string>()
-  /** Navnet komponenten skrev i `aria-label` på et panel uten overskrift. */
+  /** The name the web component wrote in `aria-label` on a panel without a heading. */
   private readonly labelByMe = new WeakMap<Element, string>()
   /**
-   * Fanen brukeren klikket under `server-controlled`, til serveren svarer.
+   * The tab the user clicked under `server-controlled`, until the server
+   * answers.
    *
-   * Det er ikke brukerens valg i betydningen `chosenTab`: det settes aldri
-   * tilbake mot serverens ord. Det står bare til noen andre har rørt
-   * `aria-selected` eller `hidden`, lagt til en fane eller et panel, fjernet
-   * fanen, eller tatt bort `server-controlled`. Uten det leste `repair()` serverens
-   * gamle ord fra minnet i neste mikrotask og angret klikket, så fanene lot
-   * seg ikke bytte, og en `data-attr:hidden` som skrev det samme som
-   * komponenten nettopp hadde skrevet, ble aldri sett.
+   * It is not the user's selection in the sense of `chosenTab`: it is never
+   * restored against the server's word. It only lasts until someone else has
+   * touched `aria-selected` or `hidden`, added a tab or a panel, removed the
+   * tab, or removed `server-controlled`. Without it, `repair()` read the
+   * server's old word from memory in the next microtask and undid the click,
+   * so the tabs could not be switched, and a `data-attr:hidden` that wrote the
+   * same as the web component had just written was never seen.
    */
   private pendingTab?: HTMLElement
   /**
-   * Panelet nettleseren holder på å avdekke etter `beforematch`.
+   * The panel the browser is revealing after `beforematch`.
    *
-   * Nettleseren fjerner `hidden` selv etter hendelsen, og går så videre til
-   * forfedrene, som et ytre panel eller en lukket `<details>`. Men bare så
-   * lenge panelet fortsatt har `hidden="until-found"` når hendelsen er ferdig.
-   * Kommer søket fra brukeren, kjører nettleseren mikrooppgavene etter hver
-   * lytter, også observatøren, og fjernet komponenten `hidden` i den runden,
-   * stoppet Chromium og WebKit. Treffet i en fanerad inne i et skjult panel
-   * ble stående usynlig. Panelet røres derfor ikke før i neste oppgave,
-   * når nettleseren er ferdig, se `revealed()`.
+   * The browser removes `hidden` itself after the event, and then moves on to
+   * the ancestors, such as an outer panel or a closed `<details>`. But only as
+   * long as the panel still has `hidden="until-found"` when the event is done.
+   * When the search comes from the user, the browser runs the microtasks after
+   * each listener, the observer included, and when the web component removed
+   * `hidden` in that round, Chromium and WebKit stopped. The match in a tab
+   * list inside a hidden panel stayed invisible. The panel is therefore not
+   * touched until the next task, when the browser is done, see `revealed()`.
    */
   private revealing?: Element
   /**
-   * Om raden er lastet: om adressen eller serverens valg er lest. Det skjer
-   * første gang raden har faner og adressen kan besvares, se `sync()`, ikke
-   * når elementet kobles til. En `<lt-tabs>` som serveren fyller etterpå,
-   * fikk ellers alltid første fane.
+   * Whether the tab list has loaded: whether the address or the server's
+   * selection has been read. That happens the first time the tab list has
+   * tabs and the address can be resolved, see `sync()`, not when the element
+   * is connected. An `<lt-tabs>` the server fills in later otherwise always
+   * got the first tab.
    */
   private started = false
   /**
-   * Rota `beforematch` lyttes etter på. Hendelsen bobler, men er ikke
-   * `composed`, så fra et panel i en shadow root når den aldri dokumentet.
+   * The root `beforematch` is listened for on. The event bubbles, but is not
+   * `composed`, so from a panel in a shadow root it never reaches the
+   * document.
    */
   private root?: Document | ShadowRoot
 
   connectedCallback(): void {
     /*
-     * Attributtene er med, ikke bare barna. En morfing river bort det som
-     * ikke står i serverens HTML, og fanevalget er nettopp det: noe brukeren
-     * gjorde etter at siden kom. Hver skriving sammenligner først, ellers
-     * ville observatøren utløst seg selv.
+     * The attributes are included, not just the children. A morph strips what
+     * is not in the server's HTML, and the tab selection is exactly that:
+     * something the user did after the page arrived. Every write compares
+     * first, or the observer would trigger itself.
      */
-    // Én lytter på verten, ikke én per fane. Fangstfasen, så en lytter på
-    // raden som stopper hendelsen, ikke tar klikk og piltaster fra fanene.
+    // One listener on the host, not one per tab. Capture phase, so a listener
+    // on the tab list that stops the event does not take clicks and arrow
+    // keys from the tabs.
     this.addEventListener("click", this.handleClick, true)
     this.addEventListener("keydown", this.handleKeydown, true)
-    // Søk i siden, eller en lenke til noe i et panel skjult med
-    // `until-found`. På dokumentet, ikke på verten: et panel kan stå utenfor
-    // `<lt-tabs>`, og da når hendelsen aldri verten.
+    // Find in page, or a link to something in a panel hidden with
+    // `until-found`. On the document, not on the host: a panel can be outside
+    // `<lt-tabs>`, and then the event never reaches the host.
     document.addEventListener("beforematch", this.handleBeforematch, true)
     const root = this.getRootNode() as Document | ShadowRoot
     if (root !== document) {
@@ -340,20 +353,20 @@ export class LtTabs extends HostElement {
       childList: true,
       subtree: true,
       attributes: true,
-      // Navnet på panelet er fanens. idiomorph endrer teksten i en
-      // tekstnode, uten noe annet observatøren ser.
+      // The panel's name is the tab's. idiomorph changes the text in a text
+      // node, with nothing else the observer sees.
       characterData: true,
-      // `disabled` er med fordi komponenten leser det: deaktiverer en patch
-      // fanen som er valgt, flyttes tabbestoppet til en som kan få fokus.
-      // `alt`, `aria-hidden` og `title` endrer navnet på en fane.
+      // `disabled` is included because the web component reads it: if a patch
+      // disables the selected tab, the tab stop moves to one that can take
+      // focus. `alt`, `aria-hidden` and `title` change the name of a tab.
       attributeFilter: [
         "aria-selected",
         "tabindex",
         "hidden",
         "disabled",
         "aria-disabled",
-        // Koblingen komponenten setter når markupen kom uten den, og setter
-        // tilbake når en patch tar den.
+        // The wiring the web component sets when the markup came without it,
+        // and restores when a patch removes it.
         "role",
         "id",
         "href",
@@ -369,16 +382,16 @@ export class LtTabs extends HostElement {
   }
 
   attributeChangedCallback(name: string): void {
-    // `server-controlled` slått på midt i: da skal komponenten slippe taket,
-    // og neste patch bestemmer.
+    // `server-controlled` switched on midway: the web component lets go, and
+    // the next patch decides.
     if (name === SERVER_CONTROLLED && isServerControlled(this)) {
       this.chosenTab = undefined
-      // Det som står der nå er utgangspunktet. Uten dette hoppet raden
-      // tilbake til fanen serveren sa sist, før brukeren valgte en annen.
-      // Men som når serveren svarer på et klikk: `aria-selected` som
-      // komponenten skrev, er ikke serverens. Ble alt regnet som serverens,
-      // gikk det foran `hidden`, og en server som flytter fanen med bare
-      // `hidden`, ble ikke hørt.
+      // What is there now is the starting point. Without this the tab list
+      // jumped back to the tab the server last named, before the user chose
+      // another. But as when the server answers a click: `aria-selected` the
+      // web component wrote is not the server's. When everything counted as
+      // the server's, it took precedence over `hidden`, and a server that
+      // moves the tab with `hidden` alone was not heard.
       this.releasePending()
     }
   }
@@ -392,16 +405,17 @@ export class LtTabs extends HostElement {
     this.root?.removeEventListener("beforematch", this.handleBeforematch, true)
     this.root = undefined
     window.removeEventListener("hashchange", this.handleHashchange)
-    // Kobles elementet til igjen, leses adressen på nytt.
+    // If the element is connected again, the address is read again.
     this.started = false
   }
 
   /**
-   * Fanene som hører til denne raden, og bare dem.
+   * The tabs that belong to this tab list, and only those.
    *
-   * Faner i faner er vanlig markup. Uten avgrensningen ble en indre rad en
-   * del av den ytre: et klikk på en indre fane skjulte det ytre panelet den
-   * sto i, og begge komponentene festet lyttere på de samme fanene.
+   * Tabs inside tabs are ordinary markup. Without the boundary an inner tab
+   * list became part of the outer one: a click on an inner tab hid the outer
+   * panel it was in, and both web components attached listeners to the same
+   * tabs.
    */
   private get tabs(): HTMLElement[] {
     return derivedParts<HTMLElement>(
@@ -412,7 +426,7 @@ export class LtTabs extends HostElement {
     ).filter((tab) => linkTarget(tab) !== null)
   }
 
-  /** Serverens ord om et attributt, mot hva komponenten selv skrev sist. */
+  /** The server's word about an attribute, against what the web component last wrote. */
   private serverWord(
     memory: WeakMap<Element, Word>,
     element: Element,
@@ -423,7 +437,7 @@ export class LtTabs extends HostElement {
     return now !== known.written ? now : known.server
   }
 
-  /** Står det noe annet på en fane eller et panel enn komponenten skrev? */
+  /** Is there something on a tab or a panel other than what the web component wrote? */
   private touchedByOthers(): boolean {
     return this.tabs.some((tab) => {
       const selected = this.selectedMemory.get(tab)
@@ -438,17 +452,20 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Slipper klikket, og gjør det som står i markupen nå til serverens ord.
+   * Releases the click, and makes what is in the markup now the server's
+   * word.
    *
-   * Minnet har serverens ord fra før klikket, og de er foreldet: serveren
-   * har svart. Et attributt serveren skrev likt med komponenten, kan ikke
-   * skilles fra et den ikke rørte, så de gamle ordene vant, og raden hoppet
-   * tilbake til fanen fra før klikket idet serveren bekreftet den nye.
+   * The memory holds the server's word from before the click, and it is
+   * stale: the server has answered. An attribute the server wrote the same as
+   * the web component cannot be told from one it did not touch, so the old
+   * words won, and the tab list jumped back to the tab from before the click
+   * just as the server confirmed the new one.
    *
-   * `hidden` på panelene leses derfor som det står. `aria-selected` leses
-   * som det står når serveren har rørt minst én fane, altså når serveren
-   * snakker i `aria-selected`. Har den ikke det, er verdiene komponentens
-   * egne fra klikket, og da sier panelene hvilken fane som gjelder.
+   * `hidden` on the panels is therefore read as it is. `aria-selected` is read
+   * as it is when the server has touched at least one tab, that is, when the
+   * server speaks through `aria-selected`. If it has not, the values are the
+   * ones the web component wrote for the click, and then the panels say which
+   * tab applies.
    */
   private releasePending(): void {
     this.pendingTab = undefined
@@ -456,9 +473,9 @@ export class LtTabs extends HostElement {
     const serverSpoke = tabs.some((tab) => {
       const now = tab.getAttribute("aria-selected")
       const known = this.selectedMemory.get(tab)
-      // En ny, bar fane har ikke sagt noe. Telte den, ble klikkets
-      // `aria-selected` lest som serverens, og en senere flytting med bare
-      // `hidden` ble satt tilbake.
+      // A new, bare tab has said nothing. Had it counted, the click's
+      // `aria-selected` was read as the server's, and a later move with
+      // `hidden` alone was undone.
       return known ? now !== known.written : now !== null
     })
     this.hiddenMemory = new WeakMap()
@@ -482,7 +499,7 @@ export class LtTabs extends HostElement {
     )
   }
 
-  /** Serverens ord om `hidden` på panelet: formen, eller `null` for synlig. */
+  /** The server's word about `hidden` on the panel: the form, or `null` for visible. */
   private serverHidden(panel: Element): string | null {
     return this.serverWord(
       this.hiddenMemory,
@@ -492,15 +509,15 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Kan noen av endringene angå raden?
+   * Can any of the changes concern the tab list?
    *
-   * Observatøren ser hele treet, og et forslagsfelt, en teller eller en
-   * indre fanerad i et panel endrer `aria-selected`, `hidden` og tekst for
-   * hvert tastetrykk. Hver av dem ga en hel runde, med stilen lest for
-   * navnene. Bare det som står dypt i et av radens paneler, hoppes over, og
-   * bare når det verken er en overskrift i panelet, noe `aria-labelledby`
-   * peker på, eller en id, som kan gjøre et element til noe en fane peker
-   * på. Alt annet gir en runde, som før.
+   * The observer sees the whole tree, and a suggestion field, a counter or an
+   * inner tab list in a panel changes `aria-selected`, `hidden` and text on
+   * every keystroke. Each of them gave a full round, with styles read for the
+   * names. Only what is deep inside one of the tab list's panels is skipped,
+   * and only when it is neither a heading in the panel, something
+   * `aria-labelledby` points to, nor an id, which can make an element
+   * something a tab points to. Everything else gives a round, as before.
    */
   private concerns(records: MutationRecord[]): boolean {
     let panels: HTMLElement[] | undefined
@@ -529,9 +546,10 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Id-ene `aria-labelledby` peker på fra fanene, det som er inni dem, og
-   * panelene. Før raden er lastet, også id-en adressen peker på: raden venter
-   * på det elementet, se `sync()`, og det kan komme dypt i et panel.
+   * The ids `aria-labelledby` points to from the tabs, what is inside them,
+   * and the panels. Before the tab list has loaded, also the id the address
+   * points to: the tab list waits for that element, see `sync()`, and it can
+   * arrive deep inside a panel.
    */
   private watchedIds(panels: HTMLElement[]): Set<string> {
     const ids = new Set<string>()
@@ -555,7 +573,7 @@ export class LtTabs extends HostElement {
     return ids
   }
 
-  /** Står elementet i et element med en av id-ene, eller er det selv ett? */
+  /** Is the element inside an element with one of the ids, or is it one itself? */
   private within(element: Element, ids: Set<string>): boolean {
     if (ids.size === 0) return false
     for (let e: Element | null = element; e; e = e.parentElement)
@@ -563,7 +581,7 @@ export class LtTabs extends HostElement {
     return false
   }
 
-  /** Har en lagt til eller fjernet node en av id-ene, selv eller inni seg? */
+  /** Does an added or removed node carry one of the ids, itself or inside it? */
   private carries(node: Node, ids: Set<string>): boolean {
     if (!(node instanceof Element) || ids.size === 0) return false
     if (node.id && ids.has(node.id)) return true
@@ -572,45 +590,45 @@ export class LtTabs extends HostElement {
     return false
   }
 
-  /** Raden fanene står i, når den er denne komponentens. */
+  /** The tab list the tabs are in, when it belongs to this web component. */
   private get list(): HTMLElement | null {
-    // Den første raden som er denne komponentens, ikke den første i treet:
-    // står panelene med en indre fanerad før den ytre raden, var den indre
-    // først.
+    // The first tab list that belongs to this web component, not the first in
+    // the tree: when the panels with an inner tab list come before the outer
+    // tab list, the inner one was first.
     for (const list of this.querySelectorAll<HTMLElement>(LIST_SELECTOR))
       if (list.closest(this.localName) === this) return list
     return null
   }
 
   /**
-   * Panelet en fane styrer, gjennom id-en den peker på.
+   * The panel a tab controls, through the id it points to.
    *
-   * Panelet kan stå utenfor verten. Det ligger likevel ikke i det
-   * komponenten observerer, så river en patch `hidden` av det, kommer det
-   * ikke tilbake av seg selv. Peker fanen på ingenting, er svaret
-   * ingenting, og komponenten sier fra. Rekkefølgen er ingen reserve: to
-   * faner kunne da fått det samme panelet, og de to skrev motsatt `hidden`
-   * på det i hver eneste runde.
+   * The panel can be outside the host. It is then not in what the web
+   * component observes, so if a patch strips `hidden` from it, it does not
+   * come back by itself. If the tab points to nothing, the answer is nothing,
+   * and the web component warns. The order is not a fallback: two tabs could
+   * then have got the same panel, and the two wrote opposite `hidden` on it in
+   * every single round.
    */
   private panelFor(tab: HTMLElement): HTMLElement | null {
     const target = linkTarget(tab)
     return target === null ? null : this.byFragment(target)
   }
 
-  /** Elementet et fragment peker på, som det står eller dekodet. */
+  /** The element a fragment points to, as written or decoded. */
   private byFragment(fragment: string): HTMLElement | null {
     const root = this.getRootNode() as Document | ShadowRoot
     const found = root.getElementById?.(fragment)
     if (found) return found
-    // Et fragment kan være kodet, som `#s%C3%B8knaden`.
+    // A fragment can be encoded, such as `#s%C3%B8knaden`.
     const plain = decoded(fragment)
     return plain === null ? null : (root.getElementById?.(plain) ?? null)
   }
 
   /**
-   * En fane som ikke kan velges, verken med mus eller tastatur: deaktivert,
-   * eller skjult med `hidden`. En skjult fane kan ikke få fokus, så valgte
-   * piltasten den, ble tabbestoppet stående på noe Tab aldri når.
+   * A tab that cannot be selected, with either mouse or keyboard: disabled,
+   * or hidden with `hidden`. A hidden tab cannot take focus, so when an arrow
+   * key selected it, the tab stop was left on something Tab never reaches.
    */
   private isDisabled(tab: HTMLElement): boolean {
     return (
@@ -620,19 +638,18 @@ export class LtTabs extends HostElement {
     )
   }
 
-  /** Piltastene flytter bare fokus, og Enter eller mellomrom velger. */
+  /** The arrow keys only move focus, and Enter or Space selects. */
   private get manual(): boolean {
     return this.getAttribute("activation") === "manual"
   }
 
   /**
-   * Indeksen på fanen som er markert, eller `-1` når ingen er det.
+   * The index of the marked tab, or `-1` when none is.
    *
-   * `selected` svarer 0 i det tilfellet, fordi den er offentlig API og en
-   * fanerad i praksis alltid har en valgt fane. Men den løgnen kan ikke
-   * brukes internt: sa den 0 når ingenting var markert, returnerte
-   * `select(0)` med en gang, og raden svarte ikke på et klikk i det hele
-   * tatt.
+   * `selected` answers 0 in that case, because it is public API and a tab
+   * list in practice always has a selected tab. But that lie cannot be used
+   * internally: when it said 0 with nothing marked, `select(0)` returned at
+   * once, and the tab list did not respond to a click at all.
    */
   private get markedIndex(): number {
     return this.tabs.findIndex(
@@ -640,35 +657,38 @@ export class LtTabs extends HostElement {
     )
   }
 
-  /** Indeksen på fanen som er valgt. */
+  /** The index of the selected tab. */
   get selected(): number {
     const index = this.markedIndex
     return index < 0 ? 0 : index
   }
 
   set selected(index: number) {
-    // React 19 skriver egenskapen når den finnes, og dokumentasjonen viser
-    // `faner.selected` som API. En getter alene kastet ved tilordning.
+    // React 19 writes the property when it exists, and the documentation
+    // shows `tabs.selected` as API. A getter alone threw on assignment.
     this.select(index)
   }
 
   private sync(): void {
     /*
-     * Første gang raden har faner, er den lastet. Har serveren sagt hvilken
-     * fane som er valgt, gjelder det: serveren ser ikke adressen, og
-     * React-inngangens `lt.tabs()` skriver `aria-selected`. Valgte
-     * komponenten fra adressen før React hydrerte, meldte React et avvik for
-     * hvert attributt den endret. Ellers velger adressen. Serverens ord leses
-     * før komponenten skriver noe.
+     * The first time the tab list has tabs, it has loaded. If the server has
+     * said which tab is selected, that applies: the server cannot see the
+     * address, and the React entry's `lt.tabs()` writes `aria-selected`.
+     * When the web component selected from the address before React
+     * hydrated, React reported a mismatch for every attribute it changed.
+     * Otherwise the address selects. The server's word is read before the
+     * web component writes anything.
      */
-    // Lastet når raden har faner og adressen kan besvares: den er tom, eller
-    // elementet den peker på finnes. Kom raden før panelene, eller innholdet
-    // etter panelet, fant adressen ellers ingenting, og den første fanen ble
-    // valgt over den brukeren ba om. Å vente på at alle fanene har panel
-    // holdt ikke: med én lenke som peker på ingenting, ble raden aldri
-    // lastet. Peker adressen på noe som aldri kommer, som `#/sak/1`, er det
-    // heller ingenting å velge. Serverens ord leses gjennom minnet, så en ny
-    // tilkobling ikke tar komponentens egen skriving for serverens.
+    // Loaded when the tab list has tabs and the address can be resolved: it
+    // is empty, or the element it points to exists. When the tab list came
+    // before the panels, or the content after the panel, the address
+    // otherwise found nothing, and the first tab was selected over the one
+    // the user asked for. Waiting for every tab to have a panel was not
+    // enough: with one link pointing to nothing, the tab list never loaded.
+    // If the address points to something that never comes, such as
+    // `#/case/1`, there is nothing to select either. The server's word is read
+    // through the memory, so a new connection does not take the web
+    // component's writes for the server's.
     const tabs = this.tabs
     const hash = location.hash.slice(1)
     const loading =
@@ -687,18 +707,19 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Fyller inn koblingen der markupen kom uten den.
+   * Fills in the wiring where the markup came without it.
    *
-   * Bare det som mangler, med ett unntak: `aria-controls` skrives fra
-   * `href`, siden de to er den samme opplysningen og `href` er den som virker
-   * uten JavaScript. Et attributt serveren ellers har skrevet er serverens
-   * ord, også når det sier noe annet enn komponenten ville sagt.
+   * Only what is missing, with one exception: `aria-controls` is written from
+   * `href`, since the two are the same information and `href` is the one that
+   * works without JavaScript. Any other attribute the server has written is
+   * the server's word, even when it says something other than the web
+   * component would have said.
    */
   private wire(): void {
     const list = this.list
     if (list && !list.hasAttribute("role")) setAttr(list, "role", "tablist")
-    // I en liste er hvert listepunkt bare innpakning rundt fanen. Uten
-    // rollen leser skjermleseren «liste, 2 punkter» før hver fane.
+    // In a list each list item is only a wrapper around the tab. Without the
+    // role a screen reader says "list, 2 items" before each tab.
     if (list && (list.localName === "ul" || list.localName === "ol")) {
       for (const item of list.children) {
         if (item.localName === "li" && !item.hasAttribute("role")) {
@@ -708,10 +729,10 @@ export class LtTabs extends HostElement {
     }
 
     /*
-     * Hvert panel får navnet sitt én gang, fra den første fanen som peker på
-     * det. Peker to faner på det samme, ved en feil i markupen, ga hver av
-     * dem panelet sitt navn i hver runde, og observatøren kalte seg selv i
-     * det uendelige.
+     * Each panel gets its name once, from the first tab that points to it.
+     * When two tabs pointed to the same one, through a mistake in the markup,
+     * each of them gave the panel its name in every round, and the observer
+     * called itself forever.
      */
     const named = new Set<HTMLElement>()
     for (const tab of this.tabs) {
@@ -734,18 +755,20 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Gir panelet et navn, når serveren ikke har gitt det ett.
+   * Gives the panel a name, when the server has not given it one.
    *
-   * Panelet heter det fanen heter, slik APG gir det. APG lar panelet peke på
-   * fanen, men fanen har ingen id her, og komponenten skriver ingen. Sier
-   * overskriften i panelet det samme som fanen, er overskriften navnet, og den
-   * kan få id av komponenten: den har ingen tilstand brukeren kan miste.
-   * Ellers er navnet fanens, som `aria-label`.
+   * The panel is named what the tab is named, as the APG does it. The APG
+   * lets the panel point to the tab, but the tab has no id here, and the web
+   * component writes none. If the heading in the panel says the same as the
+   * tab, the heading is the name, and it can get an id from the web
+   * component: it has no state the user can lose. Otherwise the name is the
+   * tab's, as `aria-label`.
    *
-   * En `aria-label` eller `aria-labelledby` serveren skrev, endres aldri, også
-   * når pekeren viser til noe som ikke finnes ennå. Til det kommer, står
-   * fanens navn som `aria-label`: en peker uten treff regnes ikke med når
-   * navnet regnes ut, og da gjelder `aria-label`.
+   * An `aria-label` or `aria-labelledby` the server wrote is never changed,
+   * even when the reference points to something that does not exist yet.
+   * Until it arrives, the tab's name stands as `aria-label`: a reference
+   * without a match is ignored when the name is computed, and then
+   * `aria-label` applies.
    */
   private name(panel: HTMLElement, tab: HTMLElement): void {
     const ownLabel = this.labelByMe.get(panel)
@@ -761,8 +784,8 @@ export class LtTabs extends HostElement {
       return
     }
 
-    // Uten et navn på fanen er det ingenting å gi panelet. Et tomt
-    // `aria-label` ville tatt navnet fra overskriften i tillegg.
+    // Without a name on the tab there is nothing to give the panel. An empty
+    // `aria-label` would also have taken the name from the heading.
     if (tabName === "") {
       this.dropOwnLabel(panel)
       return
@@ -770,8 +793,8 @@ export class LtTabs extends HostElement {
     const heading = panel.querySelector<HTMLElement>(HEADING_SELECTOR)
     if (heading && nameAsReferenced(heading) === tabName) {
       this.dropOwnLabel(panel)
-      // Er pekeren komponentens, og overskriften mistet id-en sin i en
-      // morfing, får den den samme tilbake.
+      // If the reference is the web component's, and the heading lost its id
+      // in a morph, it gets the same one back.
       let id = heading.id
       if (!id) {
         id = remembered ?? uniqueId("lt-tabs-heading")
@@ -789,20 +812,20 @@ export class LtTabs extends HostElement {
     this.setOwnLabel(panel, tabName)
   }
 
-  /** Skriver fanens navn som `aria-label`, og husker at det er komponentens. */
+  /** Writes the tab's name as `aria-label`, and remembers that the web component wrote it. */
   private setOwnLabel(panel: HTMLElement, text: string): void {
     setAttr(panel, "aria-label", text)
     this.labelByMe.set(panel, text)
   }
 
-  /** Tar bort reserven, når et navn som finnes har tatt over. */
+  /** Removes the fallback, when a name that exists has taken over. */
   private dropOwnLabel(panel: HTMLElement): void {
     if (!this.labelByMe.has(panel)) return
     setAttr(panel, "aria-label", null)
     this.labelByMe.delete(panel)
   }
 
-  /** Peker minst én av id-ene på et element som finnes? */
+  /** Does at least one of the ids point to an element that exists? */
   private resolves(ids: string): boolean {
     const root = this.getRootNode() as Document | ShadowRoot
     return ids
@@ -811,14 +834,15 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Fanen serveren sier er valgt, når brukeren ikke har valgt noe.
+   * The tab the server says is selected, when the user has not selected
+   * anything.
    *
-   * Serverens ord, ikke det som står der: det komponenten selv skrev
-   * teller ikke, se `Word`. `aria-selected` først. Mangler den, som i markup
-   * skrevet uten JavaScript, sier `hidden` på panelene det samme: det
-   * første panelet serveren viser hører til den valgte fanen. Sier markupen
-   * ingenting, eller skjuler den alle panelene, er det den første, som er
-   * det en fanerad uansett starter på.
+   * The server's word, not what is there: what the web component wrote does
+   * not count, see `Word`. `aria-selected` first. When that is missing, as in
+   * markup written without JavaScript, `hidden` on the panels says the same:
+   * the first panel the server shows belongs to the selected tab. If the
+   * markup says nothing, or hides every panel, it is the first, which is what
+   * a tab list starts on anyway.
    */
   private get derivedIndex(): number {
     const tabs = this.tabs
@@ -833,16 +857,17 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Setter brukerens valg tilbake etter en patch.
+   * Restores the user's selection after a patch.
    *
-   * Uten dette måtte malen skrive `data-preserve-attr="aria-selected tabindex"`
-   * på hver fane og `hidden` på hvert panel, altså liste opp attributtene
-   * komponenten kom til å røre. Ingen kompilator så på den lista.
+   * Without this the template had to write
+   * `data-preserve-attr="aria-selected tabindex"` on every tab and `hidden` on
+   * every panel, that is, list the attributes the web component was going to
+   * touch. No compiler looked at that list.
    *
-   * `apply()` kalles uansett om fanene ser riktige ut, for en patch kan ha
-   * rørt bare panelene. Det er den smale patchen dokumentasjonen selv
-   * anbefaler, og en sjekk på `aria-selected` alene så den ikke: fanen sa én
-   * ting og skjermen en annen.
+   * `apply()` is called whether or not the tabs look right, because a patch
+   * may have touched only the panels. That is the narrow patch the
+   * documentation itself recommends, and a check on `aria-selected` alone did
+   * not see it: the tab said one thing and the screen another.
    */
   private repair(): void {
     if (this.pendingTab) {
@@ -856,14 +881,14 @@ export class LtTabs extends HostElement {
 
     if (!this.chosenTab || isServerControlled(this)) {
       /*
-       * Ingen brukervalg å sette tilbake, så serverens ord bestemmer, og det
-       * skrives helt ut: `aria-selected`, tabbestoppet og `hidden` i takt.
-       * Bar struktur uten `aria-selected` får dermed den første fanen valgt
-       * og resten av panelene skjult, og en patch som bare rørte panelene
-       * flytter også markeringen. Det gjelder også under
-       * `server-controlled`: komponenten setter ikke brukerens valg tilbake
-       * der, men skriver fortsatt ut det serverens markup sier. Stemmer alt
-       * fra før, skriver `apply()` ingenting.
+       * No user selection to restore, so the server's word decides, and it
+       * is written out in full: `aria-selected`, the tab stop and `hidden` in
+       * step. Bare structure without `aria-selected` thus gets the first tab
+       * selected and the other panels hidden, and a patch that only touched
+       * the panels also moves the selection. That applies under
+       * `server-controlled` too: the web component does not restore the
+       * user's selection there, but still writes out what the server's
+       * markup says. If everything already matches, `apply()` writes nothing.
        */
       if (this.tabs.length > 0) {
         const index = this.derivedIndex
@@ -876,25 +901,27 @@ export class LtTabs extends HostElement {
     const index = this.tabs.indexOf(this.chosenTab)
     if (index < 0) {
       /*
-       * Fanen finnes ikke lenger. Serveren har sendt noe annet, og da er det
-       * serverens markup som gjelder.
+       * The tab no longer exists. The server has sent something else, and
+       * then the server's markup applies.
        *
-       * Med ett unntak: markupen må henge sammen etterpå. Fjernet patchen
-       * fanen som var markert, står raden igjen uten en eneste
-       * `aria-selected="true"`, alle panelene er skjult, og et klikk gjør
-       * ingenting. Da velger komponenten det serverens markup sier, på
-       * samme måte som når brukeren ikke hadde valgt noe: `aria-selected`,
-       * så det første panelet serveren viser, så den første fanen.
+       * With one exception: the markup must hang together afterwards. When
+       * the patch removed the marked tab, the tab list is left without a
+       * single `aria-selected="true"`, every panel is hidden, and a click
+       * does nothing. The web component then selects what the server's
+       * markup says, the same way as when the user had not selected
+       * anything: `aria-selected`, then the first panel the server shows,
+       * then the first tab.
        *
-       * Valget meldes, for dette er komponentens eget og ikke brukerens.
-       * Uten hendelsen ville en app som laster innholdet i panelet eller
-       * skriver valget i adressen aldri fått vite at det flyttet seg.
+       * The selection is announced with an event, because it was made by the
+       * web component and not by the user. Without the event an app that
+       * loads the panel's content or writes the selection to the address
+       * would never learn that it moved.
        */
       const lostPanel = this.panelFor(this.chosenTab)
       this.chosenTab = undefined
-      // Serveren markerte en fane selv. Da gjelder den, og panelene og
-      // tabbestoppet skrives i samsvar med den, også når ingenting annet ga
-      // observatøren en runde til.
+      // The server marked a tab itself. Then that applies, and the panels and
+      // the tab stop are written to match it, even when nothing else gave the
+      // observer another round.
       if (this.markedIndex >= 0) {
         const marked = this.derivedIndex
         this.apply(marked)
@@ -902,9 +929,10 @@ export class LtTabs extends HostElement {
         return
       }
       if (this.tabs.length > 0) {
-        // Adressen sier hvilken fane brukeren var på, og er det eneste som
-        // overlever at lenkene byttes ut. Er det det samme panelet som før,
-        // har valget ikke endret seg, bare lenkene, og da meldes ingenting.
+        // The address says which tab the user was on, and is the only thing
+        // that survives the links being replaced. If it is the same panel as
+        // before, the selection has not changed, only the links, and then
+        // nothing is announced.
         const fromAddress = this.addressIndex
         const index = fromAddress >= 0 ? fromAddress : this.derivedIndex
         const tab = this.tabs[index]
@@ -929,41 +957,44 @@ export class LtTabs extends HostElement {
     if (tabs.length === 0) {
       warnAboutMarkup(
         this,
-        "fant ingen faner. Raden trenger en .lt-tabs__list med lenker til " +
-          'panelene, som <a href="#vedlegg">. Uten dem sier skjermleseren ' +
-          "«lenke» der den skulle sagt «fane, 2 av 3, valgt», og piltastene " +
-          "gjør ingenting.",
-        // En tom `<lt-tabs>` er et område serveren ikke har fylt ennå, og
-        // det er ikke en feil i markupen.
+        "found no tabs. The tab list needs a .lt-tabs__list with links " +
+          'to the panels, such as <a href="#attachments">; without them a ' +
+          'screen reader says "link" where it should say "tab, 2 of 3, ' +
+          'selected", and the arrow keys do nothing.',
+        // An empty `<lt-tabs>` is a region the server has not filled yet,
+        // and that is not a mistake in the markup.
         () => this.childElementCount > 0 && this.tabs.length === 0,
       )
       return
     }
 
-    // Uten tallene i meldingen. Interpolerer den et tall, er hver runde en
-    // ny melding, og advarselen kommer på nytt for hvert panel som dukker
-    // opp framfor én gang.
+    // Without the numbers in the message. If it interpolates a number, every
+    // round is a new message, and the warning comes again for every panel
+    // that appears instead of once.
     warnAboutMarkup(
       this,
-      "har faner uten et panel: lenken peker på en id som ikke finnes. " +
-        "Skriv id på hvert .lt-tabs__panel, den samme som lenken peker på. " +
-        "Fanene uten et panel kan velges uten at noe vises.",
+      "has tabs without a panel: a link points to an id that does not " +
+        "exist. Write an id on each .lt-tabs__panel, the same one the " +
+        "link points to, or the tabs without a panel can be selected " +
+        "without anything being shown.",
       () => this.tabs.some((tab) => this.panelFor(tab) === null),
     )
 
     warnAboutMarkup(
       this,
-      'har en fane uten href: role="tab" står på noe som ikke er en lenke ' +
-        'til et panel. Fanene er lenker, som <a href="#vedlegg">, så de ' +
-        "virker uten JavaScript. Komponenten rører ikke det som ikke er en lenke.",
+      'has a tab without href: role="tab" is on something that is not ' +
+        "a link to a panel. Tabs are links, such as <a " +
+        'href="#attachments">, so they work without JavaScript, and the ' +
+        "component leaves anything that is not a link alone.",
       () => this.nonLinkTabs().length > 0,
     )
 
     warnAboutMarkup(
       this,
-      "har en fanerad uten navn. Skriv aria-label på .lt-tabs__list, som " +
-        'aria-label="Deler av saken", eller aria-labelledby mot en overskrift. ' +
-        "Uten navn sier skjermleseren bare «faneliste».",
+      "has a tab list without a name. Write aria-label on " +
+        '.lt-tabs__list, such as aria-label="Parts of the case", or ' +
+        "aria-labelledby pointing to a heading; without a name a screen " +
+        'reader only says "tab list".',
       () => {
         const list = this.list
         if (!list || this.tabs.length === 0) return false
@@ -977,7 +1008,7 @@ export class LtTabs extends HostElement {
     )
   }
 
-  /** Det serveren har kalt en fane i raden, men som ikke er en lenke til et panel. */
+  /** What the server has called a tab in the tab list, but is not a link to a panel. */
   private nonLinkTabs(): Element[] {
     const list = this.list
     if (!list) return []
@@ -988,10 +1019,10 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Fanen i denne raden hendelsen kom fra, eller -1.
+   * The tab in this tab list the event came from, or -1.
    *
-   * `indexOf` og ikke bare `closest`: en fanerad inne i et panel bobler
-   * klikkene sine hit også, og de er ikke denne radens.
+   * `indexOf` and not just `closest`: a tab list inside a panel bubbles its
+   * clicks up here too, and they do not belong to this tab list.
    */
   private tabIndexOf(event: Event): number {
     const target = event.target
@@ -1004,43 +1035,43 @@ export class LtTabs extends HostElement {
     const index = this.tabIndexOf(event)
     if (index < 0) return
     const tab = this.tabs[index]
-    // Med en modifikator åpner nettleseren lenken et annet sted, og det er
-    // brukerens valg, ikke et fanevalg.
+    // With a modifier the browser opens the link somewhere else, and that is
+    // the user's choice, not a tab selection.
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
       return
     }
-    // Uten dette hoppet siden til panelet.
+    // Without this the page jumped to the panel.
     event.preventDefault()
     if (this.isDisabled(tab)) return
     this.select(index)
   }
 
-  /** Søk i siden eller en lenke avdekket et skjult panel. */
+  /** Find in page or a link revealed a hidden panel. */
   private handleBeforematch = (event: Event): void => {
-    // Også under `server-controlled`, som et klikk: valget står til serveren
-    // svarer, og `tab-select` sier fra til appen. Ellers skjulte komponenten
-    // treffet igjen i neste runde.
+    // Also under `server-controlled`, like a click: the selection stands until
+    // the server answers, and `tab-select` tells the app. Otherwise the web
+    // component hid the match again in the next round.
     const panel = event.target
     const index = this.tabs.findIndex((tab) => this.panelFor(tab) === panel)
     if (index < 0 || !(panel instanceof Element)) return
-    // `hidden` på panelet fjerner nettleseren selv, se `revealing`.
+    // The browser removes `hidden` on the panel itself, see `revealing`.
     this.revealing = panel
     try {
       this.select(index)
     } finally {
-      // En hendelse fra et skript avdekker ingen nettleser etterpå.
+      // After an event from a script, the browser reveals nothing.
       if (event.isTrusted) setTimeout(() => this.revealed(panel), 0)
       else this.revealing = undefined
     }
   }
 
   /**
-   * Slipper panelet etter `beforematch`, i oppgaven etter at nettleseren er
-   * ferdig med å avdekke, og skriver raden.
+   * Releases the panel after `beforematch`, in the task after the browser has
+   * finished revealing, and writes the tab list.
    *
-   * Som regel har nettleseren fjernet `hidden` da. Det gjør den ikke når
-   * panelet ble tatt ut av dokumentet under hendelsen, og uten denne runden
-   * ble panelet stående skjult selv om fanen var valgt.
+   * Usually the browser has removed `hidden` by then. It has not when the
+   * panel was taken out of the document during the event, and without this
+   * round the panel stayed hidden even though the tab was selected.
    */
   private revealed(panel: Element): void {
     if (this.revealing !== panel) return
@@ -1053,8 +1084,8 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Indeksen på fanen adressen peker på, eller -1: panelet selv, som
-   * `#vedlegg`, eller noe inni det, som en overskrift i panelet.
+   * The index of the tab the address points to, or -1: the panel itself, such
+   * as `#attachments`, or something inside it, such as a heading in the panel.
    */
   private get addressIndex(): number {
     const hash = location.hash.slice(1)
@@ -1068,9 +1099,9 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Retter adressen når den peker på en annen fane i raden enn den som er
-   * valgt, som når serveren har flyttet valget. En adresse til noe utenfor
-   * raden står.
+   * Corrects the address when it points to another tab in the tab list than
+   * the selected one, as when the server has moved the selection. An address
+   * to something outside the tab list stays.
    */
   private alignAddress(index: number): void {
     const pointsAt = this.addressIndex
@@ -1078,36 +1109,36 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Skriver fanen i adressen, så den kan deles, og så valget overlever at
-   * serveren bytter ut lenkene.
+   * Writes the tab to the address, so it can be shared, and so the selection
+   * survives the server replacing the links.
    *
-   * Peker adressen alt på det valgte panelet eller noe i det, står den: en
-   * lenke inn til innholdet skal ikke gå tapt. `replaceState`, så valget ikke
-   * blir en oppføring i historikken.
+   * If the address already points to the selected panel or something in it,
+   * it stays: a link into the content must not be lost. `replaceState`, so
+   * the selection does not become an entry in the history.
    */
   private showInAddress(index: number): void {
     const tab = this.tabs[index]
     const panel = tab ? this.panelFor(tab) : null
     if (!tab || !panel) return
     if (this.addressIndex === index) return
-    // Løst mot adressen siden har, ikke mot `<base>`: med `<base href="/">`,
-    // som Angular har, ble stien byttet i stillhet, og med en `<base>` til et
-    // annet opphav kastet `replaceState`.
+    // Resolved against the page's address, not against `<base>`: with
+    // `<base href="/">`, which Angular has, the path was replaced silently,
+    // and with a `<base>` to another origin `replaceState` threw.
     const url = new URL(tab.getAttribute("href") ?? "", location.href).href
     try {
       history.replaceState(history.state, "", url)
     } catch {
-      // Safari kaster etter hundre kall på ti sekunder. Adressen er et
-      // tillegg, så valget gjelder uansett.
+      // Safari throws after a hundred calls in ten seconds. The address is an
+      // extra, so the selection applies anyway.
     }
   }
 
   /**
-   * Velger fanen adressen peker på.
+   * Selects the tab the address points to.
    *
-   * Ved lasting, ved `hashchange`, og når serveren bytter ut lenkene uten å
-   * si hvilken som er valgt: da står valget fortsatt i adressen. Ikke under
-   * `server-controlled`, der serveren bestemmer.
+   * On load, on `hashchange`, and when the server replaces the links without
+   * saying which one is selected: the selection is then still in the
+   * address. Not under `server-controlled`, where the server decides.
    */
   private selectFromAddress(): void {
     if (isServerControlled(this)) return
@@ -1116,29 +1147,30 @@ export class LtTabs extends HostElement {
   }
 
   private handleKeydown = (event: KeyboardEvent): void => {
-    // Hvert tastetrykk i et felt i et panel kommer hit. Det billige først.
+    // Every keystroke in a field in a panel comes here. The cheap checks first.
     if (!(event.target instanceof Element)) return
     if (!event.target.closest("[role='tab']")) return
     const tabs = this.tabs
     const current = this.tabIndexOf(event)
     if (current < 0) return
-    // Alt+venstrepil er «tilbake» i nettleseren, og Cmd+pil flytter i
-    // historikken på macOS. Med en modifikator er tasten ikke fanenes.
+    // Alt+Left is "back" in the browser, and Cmd+arrow moves through the
+    // history on macOS. With a modifier the key is not for the tabs.
     if (event.altKey || event.ctrlKey || event.metaKey) return
 
-    // Mellomrom velger ved manuell aktivering. En lenke gjør ingenting på
-    // mellomrom selv, og Enter sender et klikk, som `handleClick` tar.
+    // Space selects with manual activation. A link does nothing on Space by
+    // itself, and Enter sends a click, which `handleClick` handles.
     if (this.manual && event.key === " ") {
       event.preventDefault()
       this.select(current)
       return
     }
 
-    // I en side som leses fra høyre står neste fane til venstre. Uten dette
-    // flyttet høyrepil fokus visuelt bakover.
+    // On a page read from right to left the next tab is to the left. Without
+    // this the right arrow moved focus visually backwards.
     const rtl = getComputedStyle(this).direction === "rtl"
-    // Pil opp og ned stjal siderullingen i en vannrett rad og avvek fra
-    // WAI-ARIA. De gjelder bare når raden sier den står loddrett.
+    // Up and down arrows stole page scrolling in a horizontal tab list and
+    // departed from WAI-ARIA. They apply only when the tab list says it is
+    // vertical.
     const vertical =
       tabs[current]
         .closest("[role='tablist']")
@@ -1165,10 +1197,12 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Neste fane som kan velges, i en retning, rundt om nødvendig.
+   * The next tab that can be selected, in one direction, wrapping round if
+   * needed.
    *
-   * En fane som ikke kan velges, hoppes over. Ble en skjult fane valgt, fikk
-   * den tabbestoppet, og Tab nådde aldri raden. Tastaturbrukeren var låst ute.
+   * A tab that cannot be selected is skipped. When a hidden tab was selected,
+   * it got the tab stop, and Tab never reached the tab list. The keyboard
+   * user was locked out.
    */
   private nextEnabled(from: number, step: number): number | undefined {
     const tabs = this.tabs
@@ -1179,18 +1213,18 @@ export class LtTabs extends HostElement {
     return undefined
   }
 
-  /** Velger en fane og melder fra. */
+  /** Selects a tab and fires the event. */
   select(index: number): void {
     const tabs = this.tabs
     if (index < 0 || index >= tabs.length) return
     if (this.isDisabled(tabs[index])) return
-    // `markedIndex` og ikke `selected`: den siste svarer 0 også når ingenting
-    // er markert, og da lot den første fanen seg aldri velge.
+    // `markedIndex` and not `selected`: the latter answers 0 also when nothing
+    // is marked, and then the first tab could never be selected.
     if (index === this.markedIndex) return
 
-    // Ingen hukommelse når serveren bestemmer valget. Uten dette ville et
-    // valg gjort mens attributtet sto der blitt satt tilbake i det noen
-    // fjernet det igjen.
+    // No memory when the server decides the selection. Without this a
+    // selection made while the attribute was there would be restored the
+    // moment someone removed it again.
     if (!isServerControlled(this)) this.chosenTab = tabs[index]
     this.apply(index)
     if (isServerControlled(this)) this.pendingTab = tabs[index]
@@ -1198,7 +1232,7 @@ export class LtTabs extends HostElement {
     this.notify(index)
   }
 
-  /** Sier fra om hvilken fane som er valgt nå. */
+  /** Announces which tab is selected now. */
   private notify(index: number): void {
     this.dispatchEvent(
       new CustomEvent("tab-select", {
@@ -1210,33 +1244,34 @@ export class LtTabs extends HostElement {
   }
 
   /**
-   * Skriver valget ut i markupen.
+   * Writes the selection out into the markup.
    *
-   * Hver skriving sammenligner først. Komponenten observerer de samme
-   * attributtene den setter, så en skriving uten sammenligning ville utløst
-   * observatøren, som ville skrevet på nytt, i det uendelige.
+   * Every write compares first. The web component observes the same
+   * attributes it sets, so a write without a comparison would trigger the
+   * observer, which would write again, forever.
    */
   private apply(index: number): void {
     const tabs = this.tabs
     /*
-     * Tabbestoppet er den valgte fanen, med mindre en patch har deaktivert
-     * eller skjult den. Da får den neste fanen som kan velges det, ellers
-     * hopper Tab forbi hele raden.
+     * The tab stop is the selected tab, unless a patch has disabled or hidden
+     * it. Then the next tab that can be selected gets it, or Tab skips past
+     * the whole tab list.
      */
     const stop = this.isDisabled(tabs[index])
       ? (this.nextEnabled(index, 1) ?? index)
       : index
     /*
-     * Et panel er synlig når noen fane som peker på det er valgt, og skrives
-     * én gang. Peker to faner på det samme, ved en feil i markupen, ville de
-     * ellers skrevet motsatt `hidden` på det i hver runde, og siden frosset.
+     * A panel is visible when any tab pointing to it is selected, and is
+     * written once. When two tabs point to the same one, through a mistake in
+     * the markup, they would otherwise write opposite `hidden` on it in every
+     * round, and the page would freeze.
      */
     const panels = new Map<HTMLElement, boolean>()
 
     tabs.forEach((tab, i) => {
       const chosen = i === index
-      // Serverens ord noteres før skrivingen, ellers ble skrivingen lest
-      // som serverens i neste runde.
+      // The server's word is noted before the write, or the write was read as
+      // the server's in the next round.
       const server = this.serverSelected(tab)
       setAttr(tab, "aria-selected", String(chosen))
       this.selectedMemory.set(tab, { written: String(chosen), server })
@@ -1246,9 +1281,9 @@ export class LtTabs extends HostElement {
       if (panel) panels.set(panel, (panels.get(panel) ?? false) || chosen)
     })
 
-    // Formen leses fra et panel serveren skjuler før noe skrives, ellers ble
-    // et panel som skal skjules først i raden skrevet i en annen form enn
-    // de serveren skjuler.
+    // The form is read from a panel the server hides before anything is
+    // written, or a panel to be hidden first in the tab list was written in a
+    // different form from the ones the server hides.
     for (const panel of panels.keys()) {
       const form = this.serverHidden(panel)
       if (form !== null) {
@@ -1266,11 +1301,11 @@ export class LtTabs extends HostElement {
         this.hiddenMemory.set(panel, { written, server })
       }
       /*
-       * Bare det valgte panelet er en tabbestopp, så Tab fra raden går rett
-       * inn i innholdet som nettopp ble vist. Et panel med
-       * `hidden="until-found"` beholder boksen sin, så med `tabindex="0"` var
-       * det et usynlig stopp for tastaturet. En annen verdi serveren skrev,
-       * som `-1`, står.
+       * Only the selected panel is a tab stop, so Tab from the tab list goes
+       * straight into the content that was just shown. A panel with
+       * `hidden="until-found"` keeps its box, so with `tabindex="0"` it was
+       * an invisible stop for the keyboard. Another value the server wrote,
+       * such as `-1`, stays.
        */
       const tabindex = panel.getAttribute("tabindex")
       if (shown && tabindex === null) setAttr(panel, "tabindex", "0")

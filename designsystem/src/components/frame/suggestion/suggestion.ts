@@ -13,43 +13,43 @@ export const SUGGESTION_STATUS_CLASS = "lt-sr-only" as const
 
 export type SuggestionOptions = Omit<FieldOptions, "id"> & {
   /**
-   * Felles id-stamme. Kontrollen blir `${id}`, lista `${id}-list`, og
-   * alternativene `${id}-option-${nøkkel}`.
+   * Shared id stem. The control becomes `${id}`, the list `${id}-list`, and
+   * the options `${id}-option-${key}`.
    */
   id: string
   /**
-   * Én nøkkel per alternativ serveren sender med, fra dataene, som
-   * kommunenummeret. Nøkkelen gir alternativet id, så en oppdatering som
-   * sender lista på nytt, kjenner alternativene igjen. Tom nøkkel,
-   * mellomrom og to like kaster. Standard: ingen alternativer.
+   * One key per option the server sends, taken from the data, such as a
+   * record id. The key gives the option its id, so an update that sends the
+   * list again recognises the options. An empty key, whitespace or two
+   * identical keys throw. Default: no options.
    */
   keys?: string[]
-  /** Alternativet som er markert med piltastene. Standard: ingen. */
+  /** The option highlighted with the arrow keys. Default: none. */
   activeIndex?: number
-  /** Lista er åpen. Standard: lukket. */
+  /** The list is open. Default: closed. */
   open?: boolean
   /**
-   * Svaret på søket er ikke kommet ennå. Lista får `aria-busy`, og
-   * tommeldingen holdes skjult, så et asynkront søk ikke sier «Ingen treff» i
-   * oppholdet mellom tastetrykket og svaret.
+   * The answer to the search has not arrived yet. The list gets `aria-busy`,
+   * and the empty message stays hidden, so an asynchronous search does not
+   * say "No matches" in the gap between the keystroke and the answer.
    */
   pending?: boolean
 }
 
 /**
- * Attributtene for et felt med forslagsliste.
+ * The attributes for a field with a suggestion list.
  *
- * Serveren skriver både feltet og lista. Komponenten filtrerer, tar
- * piltastene og holder `aria-activedescendant` i synk. Den rendrer ingenting:
- * tidligere lagde den hele feltet selv, og da fantes det ikke noe å fylle ut
- * før skriptet hadde kjørt.
+ * The server writes both the field and the list. The web component filters,
+ * handles the arrow keys and keeps `aria-activedescendant` in sync. It
+ * renders nothing: it used to create the whole field itself, and then there
+ * was nothing to fill in before the script had run.
  *
- * Ingen bevaringsliste. Attributtene som endrer seg mens brukeren skriver er
- * komponentens egne, og den setter dem tilbake når en patch river dem bort.
- * Har noen andre alt filtrert, settes `prefiltered` på `<lt-suggestion>`, og
- * komponenten lar både alternativene og tommeldingen være i fred. Skal
- * serveren i tillegg bestemme om lista er utvidet og hvilket alternativ som er
- * markert, settes `server-controlled` ved siden av.
+ * No preserve list. The attributes that change while the user types are set
+ * by the web component, and it sets them back when a patch strips them. If
+ * something else has already filtered, set `prefiltered` on
+ * `<lt-suggestion>`, and the web component leaves both the options and the
+ * empty message alone. If the server should also decide whether the list is
+ * expanded and which option is highlighted, set `server-controlled` as well.
  */
 export const suggestion = ({
   id: givenId,
@@ -59,7 +59,7 @@ export const suggestion = ({
   pending = false,
   ...field
 }: SuggestionOptions) => {
-  // Reserven gjelder bare den som ikke har en typesjekk.
+  // The fallback only matters for callers without a type check.
   const id = idOrFallback("lt.suggestion()", givenId)
   const keys = checkedKeys("lt.suggestion()", givenKeys)
   const count = keys.length
@@ -68,9 +68,10 @@ export const suggestion = ({
   const labelId = `${id}-label`
   const statusId = `${id}-status`
   const optionId = (index: number) => `${id}-option-${keys[index]}`
-  // Markeringen skrives bare når lista er åpen, begge halvdelene sammen.
-  // Komponenten fjerner begge i det lista lukkes, og en lukket liste med et
-  // markert alternativ ville pekt `aria-activedescendant` inn i noe skjult.
+  // The highlight is written only when the list is open, both halves
+  // together. The web component removes both as the list closes, and a
+  // closed list with a highlighted option would point
+  // `aria-activedescendant` into something hidden.
   const marked =
     open &&
     Number.isInteger(activeIndex) &&
@@ -78,7 +79,7 @@ export const suggestion = ({
     activeIndex < count
 
   return {
-    // Ledeteksten gir også lista navnet sitt, gjennom `aria-labelledby`.
+    // The label also names the list, through `aria-labelledby`.
     label: attributes({ ...computed.label, id: labelId }, computed.label),
     control: attributes(
       {
@@ -98,9 +99,9 @@ export const suggestion = ({
       computed.control,
     ),
     /**
-     * Lista. Den står i det øverste laget, `popover="manual"`, så en forelder
-     * med `overflow` ikke klipper den. `hidden` er fortsatt det som sier om den
-     * er åpen; komponenten åpner og lukker vinduet etter det.
+     * The list. It sits in the top layer, `popover="manual"`, so a parent
+     * with `overflow` does not clip it. `hidden` still says whether it is
+     * open; the web component opens and closes the popover from that.
      */
     list: attributes({
       class: SUGGESTION_LIST_CLASS,
@@ -122,28 +123,29 @@ export const suggestion = ({
       }),
     ),
     /**
-     * Teksten som vises når ingenting passer.
+     * The text shown when nothing matches.
      *
-     * Den følger lista: synlig bare når lista er åpen og tom. At lista er
-     * lukket, tar stilarket seg av, med en regel som skjuler tommeldingen
-     * etter en liste med `hidden`. Byggefunksjonen sier derfor bare om det
-     * finnes treff, og om svaret er kommet (`pending`). Den leste `open`
-     * før, og med `prefiltered` styrer appen tommeldingen uten å vite om lista
-     * er åpen: den tilstanden er komponentens, så meldingen kunne aldri
-     * vises.
+     * It follows the list: visible only when the list is open and empty. The
+     * stylesheet handles a closed list, with a rule that hides the empty
+     * message after a list with `hidden`. The builder function therefore
+     * only says whether there are matches, and whether the answer has
+     * arrived (`pending`). It used to read `open`, and with `prefiltered` the
+     * app controls the empty message without knowing whether the list is
+     * open: that state belongs to the web component, so the message could
+     * never be shown.
      */
     empty: attributes({
       class: SUGGESTION_EMPTY_CLASS,
       hidden: count === 0 && !pending ? undefined : (true as const),
     }),
     /**
-     * Området som melder antall treff til skjermlesere.
+     * The region that announces the number of matches to screen readers.
      *
-     * Teksten skrives av komponenten mens brukeren taster, så den finnes ikke
-     * i serverens utgave. Tømmer en oppdatering elementet, skriver
-     * komponenten teksten på nytt. Elementet må likevel stå i markupen
-     * serveren sender, ellers finnes det ikke noe å melde i før skriptet har
-     * kjørt. `role="status"` gir `aria-live="polite"` av seg selv.
+     * The web component writes the text while the user types, so it is not
+     * in the server's version. If an update empties the element, the web
+     * component writes the text again. The element must still be in the
+     * markup the server sends, or there is nothing to announce into before
+     * the script has run. `role="status"` implies `aria-live="polite"`.
      */
     status: attributes({
       class: SUGGESTION_STATUS_CLASS,
@@ -151,13 +153,13 @@ export const suggestion = ({
       role: "status" as const,
     }),
     /**
-     * Det skjulte feltet som får koden til alternativet brukeren valgte.
+     * The hidden field that receives the code of the option the user chose.
      *
-     * Feltet viser teksten, og uten JavaScript er det teksten som sendes.
-     * Med JavaScript skriver komponenten `data-value` fra alternativet hit,
-     * eller teksten når alternativet ikke har `data-value`, og tømmer det når
-     * brukeren endrer teksten. `name` skriver du selv; det
-     * hører til skjemaet ditt.
+     * The field shows the text, and without JavaScript the text is what is
+     * submitted. With JavaScript the web component writes `data-value` from
+     * the option here, or the text when the option has no `data-value`, and
+     * empties it when the user changes the text. You write `name` yourself;
+     * it belongs to your form.
      */
     value: attributes({
       class: SUGGESTION_VALUE_CLASS,

@@ -20,10 +20,11 @@
     gap: var(--lt-breadcrumbs-gap, var(--lt-spacing-2));
   }
 
-  /* Skilletegnet er dekorasjon. Generert innhold leses likevel opp, så det
-     får en tom alternativ tekst etter skråstreken. Nettlesere som ikke kjenner
-     den formen, forkaster hele deklarasjonen, og da forsvant skilletegnet:
-     derfor står den bak `@supports`, og de beholder streken uten å tie. */
+  /* The separator is decoration. Generated content is still announced, so
+     it gets an empty alternative text after the slash. Browsers that do not
+     know that form discard the whole declaration, and the separator
+     disappeared: so it sits behind `@supports`, and those browsers keep the
+     slash without silencing it. */
   .lt-breadcrumbs li + li::before {
     content: "/";
     color: var(--lt-color-neutral-text-subtle);
@@ -41,9 +42,9 @@
     text-underline-offset: 0.14em;
   }
 
-  /* Gjeldende steg er unntatt. Uten `:not()` vant denne regelen på
-     spesifisitet over `[aria-current="page"]`, og siste steg ble blått under
-     musa selv om det ikke er et sted å gå. */
+  /* The current step is excluded. Without `:not()` this rule won on
+     specificity over `[aria-current="page"]`, and the last step turned blue
+     under the mouse even though it is not a place to go. */
   .lt-breadcrumbs a:not([aria-current="page"]):hover {
     color: var(--lt-color-accent-text-strong);
   }

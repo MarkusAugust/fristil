@@ -5,54 +5,54 @@ export const TABS_PANEL_CLASS = "lt-tabs__panel" as const
 
 export type TabsOptions = {
   /**
-   * Felles id-stamme. Panelene blir `${id}-${nøkkel}`, overskriftene i dem
-   * `${id}-${nøkkel}-heading`.
+   * The shared id stem. The panels become `${id}-${key}`, and the headings in
+   * them `${id}-${key}-heading`.
    */
   id: string
   /**
-   * Én nøkkel per fane, fra dataene, som `["soknaden", "vedlegg"]`. Nøkkelen
-   * gir panelet id, og lenken peker på den. En indeks er ingen nøkkel:
-   * setter serveren inn en fane først, peker den samme indeksen på et annet
-   * panel. Tom nøkkel, mellomrom og to like kaster.
+   * One key per tab, from the data, such as `["application", "attachments"]`.
+   * The key gives the panel its id, and the link points to it. An index is
+   * not a key: if the server inserts a tab first, the same index points to
+   * another panel. An empty key, whitespace and two identical keys throw.
    */
   keys: string[]
   /**
-   * Hva fanene velger mellom. Blir `aria-label` på raden, som må ha et navn.
-   * Tom, eller bare mellomrom, kaster.
+   * What the tabs choose between. Becomes `aria-label` on the tab list, which
+   * must have a name. Empty, or only whitespace, throws.
    */
   label: string
 }
 
 export type TabsAttributes = {
-  /** Raden, en `<ul>`. */
+  /** The tab list, a `<ul>`. */
   list: { class: typeof TABS_LIST_CLASS; "aria-label": string }
-  /** Hver fane, en lenke til panelet sitt. */
+  /** Each tab, a link to its panel. */
   tabs: Array<{ href: string }>
-  /** Hvert panel, med id-en lenken peker på. */
+  /** Each panel, with the id the link points to. */
   panels: Array<{ id: string; class: typeof TABS_PANEL_CLASS }>
-  /** Overskriften i hvert panel. */
+  /** The heading in each panel. */
   headings: Array<{ id: string }>
 }
 
-/** Det felles for begge utgavene: nøklene sjekket, og id-ene laget av dem. */
+/** What both versions share: the keys checked, and the ids made from them. */
 function prepare(
   builder: string,
   options: { id: string; keys: string[]; label: string },
 ) {
-  // Reserven gjelder bare den som ikke har en typesjekk.
+  // The fallback only matters to callers without a type check.
   const id = idOrFallback(builder, options.id)
-  // Stammen blir en del av hver id, og `aria-controls` deler på mellomrom:
-  // `"a b"` ga `aria-controls="a b-x"`, som er to id-er. Nøklene kaster på
-  // det samme.
+  // The stem becomes part of every id, and `aria-controls` splits on
+  // whitespace: `"a b"` gave `aria-controls="a b-x"`, which is two ids. The
+  // keys throw on the same thing.
   if (/\s/.test(id)) {
     throw new Error(
-      `${builder}: id-en «${id}» har mellomrom. Den blir en del av hver id, og en id kan ikke ha mellomrom.`,
+      `${builder}: the id "${id}" contains whitespace. It becomes part of every id, and an id cannot contain whitespace.`,
     )
   }
-  // Før nøklene, som i Kotlin, så de to kaster med samme melding.
+  // Before the keys, as in Kotlin, so the two throw with the same message.
   if (typeof options.label !== "string" || options.label.trim() === "") {
     throw new Error(
-      `${builder}: label mangler eller er tom. Raden må ha et navn som sier hva fanene velger mellom, ellers sier skjermleseren bare «faneliste».`,
+      `${builder}: label is missing or empty. The tab list needs a name that says what the tabs choose between, otherwise the screen reader says only "tab list".`,
     )
   }
   const keys = checkedKeys(builder, options.keys)
@@ -60,22 +60,24 @@ function prepare(
 }
 
 /**
- * Attributtene for en fanerad der fanene er lenker til panelene.
+ * The attributes for a tab list where the tabs are links to the panels.
  *
- * Bare lenker, id-er og klasser. Uten JavaScript er raden da en vanlig liste
- * med lenker, og panelene står etter hverandre: en innholdsfortegnelse som
- * virker for alle. Rollene, hvilken fane som er valgt og hvilke paneler som
- * er skjult skriver `<lt-tabs>`. Sto de her, ville markupen uten JavaScript
- * sagt «fane» om en lenke som ikke virker som en, og skjult panelene.
+ * Only links, ids and classes. Without JavaScript the tab list is then a
+ * plain list of links, and the panels follow one another: a table of
+ * contents that works for everyone. The roles, which tab is selected and
+ * which panels are hidden are written by `<lt-tabs>`. Had they been here, the
+ * markup without JavaScript would have said "tab" about a link that does not
+ * behave like one, and hidden the panels.
  *
- * Den første fanen er valgt når siden lastes. En annen kommer fra adressen,
- * som `#sak-vedlegg`, eller fra `selected` og `select()` på `<lt-tabs>`.
+ * The first tab is selected when the page loads. Another one comes from the
+ * address, such as `#case-attachments`, or from `selected` and `select()` on
+ * `<lt-tabs>`.
  *
- * React-appen bruker `lt.tabs()` fra `@lo-tek/interfaces/react`, som gir
- * hele tilstanden, så React hydrerer uten avvik.
+ * A React app uses `lt.tabs()` from `@lo-tek/interfaces/react`, which gives
+ * the whole state, so React hydrates without mismatches.
  *
  * ```ts
- * const faner = lt.tabs({ id: "sak", keys: ["soknaden", "vedlegg"], label: "Deler av saken" })
+ * const tabs = lt.tabs({ id: "case", keys: ["application", "attachments"], label: "Parts of the case" })
  * ```
  */
 export const tabs = (options: TabsOptions): TabsAttributes => {
@@ -91,7 +93,7 @@ export const tabs = (options: TabsOptions): TabsAttributes => {
 }
 
 export type TabsWithStateOptions = TabsOptions & {
-  /** Indeksen på fanen som er valgt. Standard: 0. */
+  /** The index of the selected tab. Default: 0. */
   selected?: number
 }
 
@@ -121,28 +123,30 @@ export type TabsWithStateAttributes = {
 }
 
 /**
- * Hele tilstanden, slik `<lt-tabs>` ville skrevet den. For React.
+ * The whole state, as `<lt-tabs>` would have written it. For React.
  *
- * React sammenligner attributtene på elementene den rendrer med det som står
- * i siden, og melder et avvik for hvert attributt den ikke rendret selv.
- * Skrev komponenten rollene og valget før React hydrerte, ga det ett avvik
- * per element. Her står alt fra start, så komponenten har ingenting å skrive.
+ * React compares the attributes on the elements it renders with what is in
+ * the page, and reports a mismatch for every attribute it did not render
+ * itself. When the web component wrote the roles and the selection before
+ * React hydrated, that gave one mismatch per element. Here everything is
+ * there from the start, so the web component has nothing to write.
  *
- * Lenkene får id fra serveren, og panelet peker på lenken sin, slik APG gjør.
- * En id serveren skriver er stabil; det er en id komponenten lager selv, som
- * får en oppdatering til å bytte ut elementet.
+ * The links get their id from the server, and each panel points to its link,
+ * as the APG does. An id the server writes is stable; it is an id the web
+ * component creates itself that makes an update replace the element.
  *
- * `hidden` er boolsk: React 19 skriver `hidden="until-found"` som
- * `hidden=""`. Søk i siden åpner derfor ikke et skjult panel i en React-app.
+ * `hidden` is boolean: React 19 writes `hidden="until-found"` as
+ * `hidden=""`. Find in page therefore does not open a hidden panel in a React
+ * app.
  */
 export const tabsWithState = (
   options: TabsWithStateOptions,
 ): TabsWithStateAttributes => {
   const { id, keys, panelId } = prepare("lt.tabs()", options)
-  // Er `selected` utenfor rekkevidde, rettes den her. Ellers ville markupen
-  // sagt noe annet enn det brukeren ser.
-  // Et tall som ikke er et heltall, som `NaN` eller 1,5, ga ingen valgt fane,
-  // alle panelene skjult og ingen tabbestopp.
+  // If `selected` is out of range, it is corrected here. Otherwise the markup
+  // would say something other than what the user sees.
+  // A number that is not an integer, such as `NaN` or 1.5, gave no selected
+  // tab, every panel hidden and no tab stop.
   const selected = Number.isInteger(options.selected)
     ? (options.selected as number)
     : 0
@@ -164,7 +168,7 @@ export const tabsWithState = (
           | "true"
           | "false",
         "aria-controls": panelId(key),
-        // Rullerende tabindex: bare den valgte fanen er en tabbestopp.
+        // Roving tabindex: only the selected tab is a tab stop.
         tabindex: (index === valid ? "0" : "-1") as "0" | "-1",
       }),
     ),
@@ -174,8 +178,8 @@ export const tabsWithState = (
         class: TABS_PANEL_CLASS,
         role: "tabpanel" as const,
         "aria-labelledby": tabId(key),
-        // Bare det valgte panelet er en tabbestopp. Et skjult panel som kan
-        // få fokus, er et usynlig stopp for tastaturet.
+        // Only the selected panel is a tab stop. A hidden panel that can take
+        // focus is an invisible stop for the keyboard.
         tabindex: index === valid ? ("0" as const) : undefined,
         hidden: index === valid ? undefined : (true as const),
       }),

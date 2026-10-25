@@ -1,15 +1,16 @@
 /// <reference path="./types/css.d.ts" />
 
 /*
- * Tilstander som tapte i kaskaden.
+ * States that lost in the cascade.
  *
- * Alle feilene her hadde samme form: to regler med lik spesifisitet, eller en
- * hover som var løftet over tilstanden, og utfallet avgjort av rekkefølgen i
- * fila eller av rekkefølgen stilarkene ble lastet i. Hviletilstanden var
- * riktig i hver av dem, så testene som bare leser den, så ingenting.
+ * Every bug here had the same shape: two rules with equal specificity, or a
+ * hover raised above the state, and the outcome decided by the order in the
+ * file or by the order the stylesheets were loaded in. The resting state
+ * was correct in each of them, so the tests that only read it saw nothing.
  *
- * Tilfellene som trenger musa står i `hover.browser.test.ts`. Nettlesersiden
- * har én mus, og to filer som hoverer samtidig flytter den for hverandre.
+ * The cases that need the mouse are in `hover.browser.test.ts`. The browser
+ * page has one mouse, and two files hovering at the same time move it for
+ * each other.
  */
 
 import { beforeEach, describe, expect, it } from "vitest"
@@ -26,11 +27,11 @@ import "./components/css/fieldset/fieldset.css"
 
 function stil(id: string, pseudo?: string) {
   const element = document.getElementById(id)
-  if (!(element instanceof HTMLElement)) throw new Error(`Mangler #${id}`)
+  if (!(element instanceof HTMLElement)) throw new Error(`Missing #${id}`)
   return getComputedStyle(element, pseudo)
 }
 
-/** `rgb(r, g, b)` fra nettleseren til tallene kontrastregningen tar. */
+/** `rgb(r, g, b)` from the browser to the numbers the contrast calculation takes. */
 function tilRgb(verdi: string) {
   const [r, g, b] = (verdi.match(/[\d.]+/g) ?? []).map(Number)
   return { r, g, b }
@@ -41,7 +42,7 @@ function utseende(id: string) {
   return [s.backgroundColor, s.color, s.borderTopColor].join(" / ")
 }
 
-describe("deaktivert knapp", () => {
+describe("disabled button", () => {
   const VARIANTER = ["secondary", "ghost", "danger"] as const
 
   beforeEach(() => {
@@ -57,7 +58,7 @@ describe("deaktivert knapp", () => {
   })
 
   for (const variant of VARIANTER) {
-    it(`ser deaktivert ut også som ${variant}`, () => {
+    it(`looks disabled also as ${variant}`, () => {
       expect(utseende(`${variant}-av`)).toBe(utseende("primary"))
       expect(utseende(`${variant}-aria`)).toBe(utseende("primary"))
       expect(utseende(`${variant}-av`)).not.toBe(utseende(`${variant}-pa`))
@@ -65,12 +66,13 @@ describe("deaktivert knapp", () => {
   }
 })
 
-describe("søkefeltet når input.css lastes sist", () => {
-  it("beholder ikonet i hver tilstand", async () => {
+describe("the search field when input.css loads last", () => {
+  it("keeps the icon in every state", async () => {
     /*
-     * Et eget dokument, siden rekkefølgen er selve saken: konsumenten lenker
-     * `search.css` og så `input.css`. `?inline` av `search.css` har alt
-     * `input.css` i seg først, og så legges den på en gang til etterpå.
+     * A separate document, since the order is the whole point: the consumer
+     * links `search.css` and then `input.css`. `?inline` of `search.css`
+     * already has `input.css` in it first, and then it is added once more
+     * afterwards.
      */
     const ramme = document.createElement("iframe")
     document.body.append(ramme)
@@ -91,7 +93,7 @@ describe("søkefeltet når input.css lastes sist", () => {
       const felt = dokument.getElementById(id) as HTMLElement
       expect(getComputedStyle(felt).backgroundImage, id).not.toBe("none")
     }
-    // Tilstanden skal fortsatt farge flaten.
+    // The state must still colour the surface.
     expect(
       getComputedStyle(dokument.getElementById("ugyldig") as HTMLElement)
         .backgroundColor,
@@ -103,7 +105,7 @@ describe("søkefeltet når input.css lastes sist", () => {
   })
 })
 
-describe("markeringene på ledetekst og legend", () => {
+describe("the markers on label and legend", () => {
   beforeEach(() => {
     monter(`
       <label class="lt-label" id="l-tekst" data-required="text">Navn</label>
@@ -121,23 +123,24 @@ describe("markeringene på ledetekst og legend", () => {
     `)
   })
 
-  it("skriver «påkrevd» riktig med escapen i stilarket", () => {
-    // At tegnet står som en escape, og ikke rått, vokter `package-css`.
-    expect(stil("l-tekst", "::after").content).toBe('" (påkrevd)"')
-    expect(stil("g-tekst", "::after").content).toBe('" (påkrevd)"')
+  it("shows the required text on both label and legend", () => {
+    // That the stylesheet stays ASCII outside comments is guarded by
+    // `package-css`.
+    expect(stil("l-tekst", "::after").content).toBe('" (required)"')
+    expect(stil("g-tekst", "::after").content).toBe('" (required)"')
   })
 
-  it("viser påkrevd når markupen har begge markeringene", () => {
-    // Byggefunksjonen velger påkrevd. CSS-en valgte «(valgfri)», siden den
-    // regelen sto sist.
+  it("shows required when the markup has both markers", () => {
+    // The builder function picks required. The CSS picked "(optional)",
+    // because that rule came last.
     expect(stil("l-begge", "::after").content).toBe('" *"')
-    expect(stil("g-begge", "::after").content).toBe('" (påkrevd)"')
+    expect(stil("g-begge", "::after").content).toBe('" (required)"')
   })
 
-  it("gir «(valgfri)» kontrast nok til å leses", () => {
+  it('gives "(optional)" enough contrast to be read', () => {
     for (const id of ["l-valgfri", "g-valgfri"]) {
       const merke = stil(id, "::after")
-      expect(merke.content).toBe('" (valgfri)"')
+      expect(merke.content).toBe('" (optional)"')
 
       const tekst = tilRgb(merke.color)
       const flate = tilRgb(getComputedStyle(document.body).backgroundColor)

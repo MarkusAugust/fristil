@@ -10,8 +10,8 @@
     border: 1px solid var(--lt-color-neutral-border);
     border-radius: var(--lt-spacing-4);
     background-color: var(--lt-color-neutral-surface);
-    /* Knappen er en gradient, ikke et pseudoelement: Firefox rendrer ikke
-       ::before og ::after på et <input>. */
+    /* The knob is a gradient, not a pseudo-element: Firefox does not render
+       ::before and ::after on an <input>. */
     background-image: radial-gradient(
       circle at center,
       var(--lt-color-neutral-text-strong) 0 34%,
@@ -19,8 +19,8 @@
     );
     background-repeat: no-repeat;
     background-size: var(--lt-switch-height, var(--lt-spacing-6)) 100%;
-    /* background-position har ingen logisk variant, så begge retningene
-       skrives for hånd. Av er på starten, på er på slutten. */
+    /* background-position has no logical variant, so both directions are
+       written by hand. Off is at the start, on is at the end. */
     background-position: left center;
     cursor: pointer;
     transition:
@@ -28,9 +28,9 @@
       background-position 120ms ease;
   }
 
-  /* Uten `:not(:disabled)`. Den løftet spesifisiteten over tilstandene
-     under, så musa tok bort rammen på en bryter som var på. Reglene for
-     valgt og deaktivert står etter denne og vinner på rekkefølgen. */
+  /* Without `:not(:disabled)`. It raised the specificity above the states
+     below, so the mouse removed the border of a switch that was on. The
+     rules for checked and disabled come after this one and win on order. */
   .lt-switch:hover {
     border-color: var(--lt-color-neutral-border-strong);
   }
@@ -70,8 +70,8 @@
     cursor: not-allowed;
   }
 
-  /* Brukeren har bedt om mindre bevegelse. Bryteren skal fortsatt bytte
-     tilstand, den skal bare ikke gli. */
+  /* The user has asked for less motion. The switch should still change
+     state, it just should not slide. */
   @media (prefers-reduced-motion: reduce) {
     .lt-switch {
       transition: none;
@@ -86,10 +86,11 @@
   }
 
   /*
-   * Høykontrast: knappen er en gradient, og forsvinner i modusen. Uten den er
-   * av og på helt like. Her faller vi tilbake til en vanlig avkryssingsboks.
-   * Bryteren mister formen sin, men `role="switch"` står fortsatt, så den
-   * leses opp som på og av, og tilstanden er synlig igjen.
+   * High contrast: the knob is a gradient, and disappears in the mode.
+   * Without it on and off look exactly alike. Here we fall back to a plain
+   * checkbox. The switch loses its shape, but `role="switch"` is still
+   * there, so it is announced as on and off, and the state is visible
+   * again.
    */
   @media (forced-colors: active) {
     .lt-switch,

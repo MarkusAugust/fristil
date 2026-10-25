@@ -8,11 +8,11 @@ export const DIALOG_BODY_CLASS = "lt-dialog__body" as const
 export const DIALOG_FOOTER_CLASS = "lt-dialog__footer" as const
 
 /**
- * Fargen på toppen, og hva den betyr.
+ * The colour of the header, and what it means.
  *
- * `neutral` er standard og gir ingen farge. De fire statusfargene er de
- * samme som varsleren bruker, og `brand` er merkefargen, for en topp som
- * sier hvem som snakker framfor hvordan det gikk.
+ * `neutral` is the default and gives no colour. The four status colours are
+ * the same ones the alert uses, and `brand` is the brand colour, for a header
+ * that says who is speaking rather than how it went.
  */
 export const dialogColors = [
   "neutral",
@@ -25,22 +25,22 @@ export const dialogColors = [
 export type DialogColor = (typeof dialogColors)[number]
 
 export type DialogOptions = {
-  /** Id på overskriften. Dialogen navngis av den med `aria-labelledby`. */
+  /** Id of the heading. The dialog takes its name from it with `aria-labelledby`. */
   titleId: string
   /**
-   * Dialogen er åpen. Standard: lukket.
+   * The dialog is open. Default: closed.
    *
-   * Dette er serverens beskjed til `<lt-dialog>`. Styrer du dialogen selv
-   * fra nettleseren, med `showModal()`, skal du la den være: kallet kaster
-   * `InvalidStateError` på en dialog som alt står åpen.
+   * This is the server telling `<lt-dialog>` to show it. If you control the
+   * dialog from the browser yourself, with `showModal()`, leave it out: the
+   * call throws `InvalidStateError` on a dialog that is already open.
    */
   open?: boolean
   /**
-   * Farge på toppen. Standard: ingen.
+   * Colour of the header. Default: none.
    *
-   * Fargen gjelder `header`, så den må stå i markupen for å synes:
-   * `<div {...boks.header}>` rundt overskriften. Uten en topp har fargen
-   * ingenting å farge.
+   * The colour applies to `header`, so the header must be in the markup for
+   * it to show: `<div {...box.header}>` around the heading. Without a header
+   * there is nothing to colour.
    */
   color?: DialogColor
 }
@@ -55,53 +55,54 @@ export type DialogAttributes = {
     open?: true
     "data-color"?: Exclude<DialogColor, "neutral">
   }
-  /** Toppen, med overskriften og en eventuell undertekst i. Valgfri. */
+  /** The header, holding the heading and an optional subtitle. Optional. */
   header: { class: typeof DIALOG_HEADER_CLASS }
   title: {
     class: typeof DIALOG_TITLE_CLASS
     id: string
   }
-  /** En linje under overskriften, inne i toppen. Valgfri. */
+  /** A line below the heading, inside the header. Optional. */
   subtitle: { class: typeof DIALOG_SUBTITLE_CLASS }
   body: { class: typeof DIALOG_BODY_CLASS }
   footer: { class: typeof DIALOG_FOOTER_CLASS }
 }
 
 /**
- * Attributtene for en dialog.
+ * The attributes for a dialog.
  *
- * Å åpne en dialog er et kall, ikke et attributt: bare `showModal()` flytter
- * fokus inn, holder fokus inne i dialogen, lukker på Escape og gjør resten
- * av siden utilgjengelig. Et `<dialog open>` i markupen er en boks på siden.
+ * Opening a dialog is a call, not an attribute: only `showModal()` moves
+ * focus in, keeps focus inside the dialog, closes on Escape and makes the
+ * rest of the page inert. A `<dialog open>` in the markup is a box on the page.
  *
- * Det er et problem for en server som bare sender HTML, for den kan ikke
- * kalle noe i nettleseren. Derfor sier serveren at dialogen er åpen, og
- * `<lt-dialog>` gjør kallet.
+ * That is a problem for a server that only sends HTML, since it cannot call
+ * anything in the browser. So the server says the dialog is open, and
+ * `<lt-dialog>` makes the call.
  *
- * De to `open`-ene er ikke det samme, og det er verdt å holde dem fra hverandre:
+ * The two `open`s are not the same, and it is worth keeping them apart:
  *
- * - `open` på **verten** er serverens beskjed om at dialogen skal vises. Den
- *   er ikke fredet. Hadde den vært det, kunne serveren aldri åpnet dialogen
- *   igjen etter at brukeren hadde lukket den én gang. Sender serveren
- *   området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen.
- *   Skal en avvisning vare, må appen si fra til serveren.
- * - `open` på **`<dialog>`** setter nettleseren selv når `showModal()`
- *   kalles. Det står ikke i serverens HTML, så en morfing river det bort, og
- *   komponenten setter det tilbake. Serveren skriver det i tillegg når den
- *   vet at dialogen skal vises: uten JavaScript er en `<dialog>` uten `open`
- *   skjult, og innholdet finnes da ikke for leseren. Med attributtet står
- *   det som en boks på siden til komponenten gjør den om til en modal.
+ * - `open` on the **host** is the server saying the dialog should be shown.
+ *   It is not preserved. If it were, the server could never open the dialog
+ *   again after the user had closed it once. If the server sends the region
+ *   again with `open` still set, the dialog opens again. For a dismissal to
+ *   last, the app must tell the server.
+ * - `open` on the **`<dialog>`** is set by the browser itself when
+ *   `showModal()` is called. It is not in the server's HTML, so a morph
+ *   removes it, and the component puts it back. The server also writes it
+ *   when it knows the dialog should be shown: without JavaScript a `<dialog>`
+ *   without `open` is hidden, and its content does not exist for the reader.
+ *   With the attribute it stands as a box on the page until the component
+ *   turns it into a modal.
  *
  * ```ts
- * const boks = lt.dialog({ titleId: "slett-tittel", open: true })
+ * const box = lt.dialog({ titleId: "delete-title", open: true })
  * ```
  * ```html
- * <lt-dialog {...boks.host}>
- *   <dialog {...boks.dialog}>
- *     <h2 {...boks.title}>Slette søknaden?</h2>
- *     <div {...boks.body}>Søknaden og vedleggene blir borte.</div>
- *     <form method="dialog" {...boks.footer}>
- *       <button class="lt-button" value="avbryt">Avbryt</button>
+ * <lt-dialog {...box.host}>
+ *   <dialog {...box.dialog}>
+ *     <h2 {...box.title}>Delete the application?</h2>
+ *     <div {...box.body}>The application and its attachments will be gone.</div>
+ *     <form method="dialog" {...box.footer}>
+ *       <button class="lt-button" value="cancel">Cancel</button>
  *     </form>
  *   </dialog>
  * </lt-dialog>
@@ -113,7 +114,7 @@ export const dialog = Object.assign(
     open = false,
     color = "neutral",
   }: DialogOptions): DialogAttributes => {
-    // Reserven gjelder bare den som ikke har en typesjekk.
+    // The fallback only matters to someone without a type check.
     const titleId = idOrFallback("lt.dialog()", givenId, "titleId")
 
     return {
@@ -124,17 +125,17 @@ export const dialog = Object.assign(
         class: DIALOG_CLASS,
         "aria-labelledby": titleId,
         /*
-         * `open` står begge steder når dialogen skal vises, og det er med
-         * vilje.
+         * `open` is in both places when the dialog should be shown, on
+         * purpose.
          *
-         * Uten JavaScript er `<dialog>` uten `open` skjult, så innholdet
-         * serveren ville vise fantes ikke for leseren. Med `open` står det
-         * der som en boks på siden, og komponenten gjør den om til en ekte
-         * modal med `showModal()` når den får kjøre.
+         * Without JavaScript a `<dialog>` without `open` is hidden, so the
+         * content the server wanted to show did not exist for the reader. With
+         * `open` it stands there as a box on the page, and the component turns
+         * it into a real modal with `showModal()` once it gets to run.
          *
-         * I React er det dessuten det eneste som stemmer: komponenten setter
-         * `open` på `<dialog>` før React hydrerer, og sto det ikke i serverens
-         * HTML, meldte React avvik ved hvert eneste oppslag.
+         * In React it is also the only thing that matches: the component sets
+         * `open` on the `<dialog>` before React hydrates, and when it was not in
+         * the server's HTML, React reported a mismatch on every single page load.
          */
         open: open ? (true as const) : undefined,
         "data-color": color === "neutral" ? undefined : color,
@@ -147,17 +148,17 @@ export const dialog = Object.assign(
     }
   },
   {
-    /** Klassen på selve `<dialog>`. */
+    /** The class on the `<dialog>` itself. */
     dialog: DIALOG_CLASS,
-    /** Klassen på toppen, som kan farges med `color`. */
+    /** The class on the header, which `color` can colour. */
     header: DIALOG_HEADER_CLASS,
-    /** Klassen på overskriften i dialogen. */
+    /** The class on the heading in the dialog. */
     title: DIALOG_TITLE_CLASS,
-    /** Klassen på underteksten i toppen. */
+    /** The class on the subtitle in the header. */
     subtitle: DIALOG_SUBTITLE_CLASS,
-    /** Klassen på innholdet, som ruller når dialogen blir for høy. */
+    /** The class on the content, which scrolls when the dialog gets too tall. */
     body: DIALOG_BODY_CLASS,
-    /** Klassen på raden med knapper nederst. */
+    /** The class on the row of buttons at the bottom. */
     footer: DIALOG_FOOTER_CLASS,
     colors: dialogColors,
     isColor: createGuard(dialogColors),

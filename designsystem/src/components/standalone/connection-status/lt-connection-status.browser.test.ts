@@ -36,34 +36,34 @@ describe("lt-connection-status", () => {
     await ventPaTegning()
   })
 
-  it("ber serveren la innholdet være i fred", () => {
-    // Serveren kan ikke fortelle deg at den er utilgjengelig, så komponenten
-    // eier alt inni. Uten dette river neste patch linja bort.
+  it("asks the server to leave the content alone", () => {
+    // The server cannot tell you it is unreachable, so the component creates
+    // everything inside. Without this the next patch tears the bar away.
     const vert = document.querySelector("lt-connection-status") as HTMLElement
     expect(vert.hasAttribute("data-ignore-morph")).toBe(true)
   })
 
-  it("viser ingenting så lenge alt virker", () => {
+  it("shows nothing while everything works", () => {
     expect(linje()).toBeNull()
   })
 
-  it("sier fra når appen melder at et kall feilet", async () => {
+  it("speaks up when the app reports a failed request", async () => {
     const status = document.querySelector(
       "lt-connection-status",
     ) as LtConnectionStatus
 
-    // navigator.onLine sier bare at maskinen har et nettverk, ikke at
-    // serveren svarer. Derfor melder appen selv fra.
+    // navigator.onLine only says the machine has a network, not that the
+    // server answers. So the app reports it itself.
     status.reportFailure()
     await ventPaTegning()
 
     const bar = linje() as HTMLElement
     expect(bar.dataset.state).toBe("offline")
     expect(bar.getAttribute("role")).toBe("status")
-    expect(bar.textContent).toContain("Ingen forbindelse")
+    expect(bar.textContent).toContain("No connection")
   })
 
-  it("kvitterer når forbindelsen er tilbake", async () => {
+  it("confirms when the connection is back", async () => {
     const status = document.querySelector(
       "lt-connection-status",
     ) as LtConnectionStatus
@@ -75,10 +75,10 @@ describe("lt-connection-status", () => {
 
     const bar = linje() as HTMLElement
     expect(bar.dataset.state).toBe("online")
-    expect(bar.textContent).toContain("tilbake")
+    expect(bar.textContent).toContain("restored")
   })
 
-  it("melder fra til appen begge veier", async () => {
+  it("notifies the app both ways", async () => {
     const status = document.querySelector(
       "lt-connection-status",
     ) as LtConnectionStatus
@@ -92,20 +92,20 @@ describe("lt-connection-status", () => {
     await ventPaTegning()
 
     expect(meldinger).toEqual(["connection-lost", "connection-restored"])
-    // Offline-teksten skrives i neste tegning, og skal ikke lande oppå
-    // kvitteringen når begge kom i samme tegning.
+    // The offline text is written in the next frame, and must not land on
+    // top of the receipt when both came in the same frame.
     expect(linje()?.dataset.state).toBe("online")
-    expect(linje()?.textContent).toContain("tilbake")
+    expect(linje()?.textContent).toContain("restored")
   })
 
-  it("reagerer på at nettverket forsvinner", async () => {
+  it("reacts to the network going away", async () => {
     window.dispatchEvent(new Event("offline"))
     await ventPaTegning()
 
     expect(linje()?.dataset.state).toBe("offline")
   })
 
-  it("lar egen tekst overstyre", async () => {
+  it("lets a custom text override", async () => {
     monter(
       `<lt-connection-status ${attr(connectionStatus({ offlineText: "Sambandet er nede." }))}></lt-connection-status>`,
     )
@@ -118,7 +118,7 @@ describe("lt-connection-status", () => {
     expect(linje()?.textContent).toBe("Sambandet er nede.")
   })
 
-  it("har ingen tilgjengelighetsbrudd når linja vises", async () => {
+  it("has no accessibility violations when the bar is shown", async () => {
     ;(
       document.querySelector("lt-connection-status") as LtConnectionStatus
     ).reportFailure()
@@ -128,7 +128,7 @@ describe("lt-connection-status", () => {
   })
 })
 
-describe("lt-connection-status sier fra én gang og kommer tilbake", () => {
+describe("lt-connection-status speaks up once and comes back", () => {
   beforeAll(() => {
     defineLtConnectionStatus()
   })
@@ -140,10 +140,10 @@ describe("lt-connection-status sier fra én gang og kommer tilbake", () => {
     return document.querySelector("lt-connection-status") as LtConnectionStatus
   }
 
-  it("melder connection-lost én gang selv om offline kommer flere ganger", async () => {
-    // Nettlesere fyrer gjerne flere `offline` på rad, og appen kan melde en
-    // feil oppå et nettverk som alt er borte. Hver ga en ny hendelse og en
-    // ny opplesning av den samme linja.
+  it("reports connection-lost once even when offline comes several times", async () => {
+    // Browsers often fire several `offline` events in a row, and the app can
+    // report a failure on top of a network that is already gone. Each one
+    // gave a new event and a new announcement of the same bar.
     const status = await monterLinje()
     const hendelser: string[] = []
     status.addEventListener("connection-lost", () => hendelser.push("lost"))
@@ -154,10 +154,10 @@ describe("lt-connection-status sier fra én gang og kommer tilbake", () => {
     await ventPaTegning()
 
     expect(hendelser).toEqual(["lost"])
-    expect(linje()?.textContent).toContain("Ingen forbindelse")
+    expect(linje()?.textContent).toContain("No connection")
   })
 
-  it("fjerner kvitteringen etter en stund", async () => {
+  it("removes the receipt after a while", async () => {
     const status = await monterLinje()
     status.reportFailure()
     await ventPaTegning()
@@ -173,7 +173,7 @@ describe("lt-connection-status sier fra én gang og kommer tilbake", () => {
     }
   })
 
-  it("kommer tilbake på nett når nettverket gjør det", async () => {
+  it("comes back online when the network does", async () => {
     await monterLinje()
     window.dispatchEvent(new Event("offline"))
     await ventPaTegning()
@@ -183,14 +183,14 @@ describe("lt-connection-status sier fra én gang og kommer tilbake", () => {
     expect(linje()?.dataset.state).toBe("online")
   })
 
-  it("lar ikke nettverket overstyre en feil appen har meldt", async () => {
+  it("does not let the network override a failure the app reported", async () => {
     const status = await monterLinje()
     status.reportFailure()
     await ventPaTegning()
     window.dispatchEvent(new Event("online"))
     await ventPaTegning()
 
-    expect(linje()?.dataset.state, "nettverket overstyrte appen").toBe(
+    expect(linje()?.dataset.state, "the network overrode the app").toBe(
       "offline",
     )
 
@@ -199,7 +199,7 @@ describe("lt-connection-status sier fra én gang og kommer tilbake", () => {
     expect(linje()?.dataset.state).toBe("online")
   })
 
-  it("lar online-text overstyre, også som egenskap", async () => {
+  it("lets online-text override, also as a property", async () => {
     const status = await monterLinje(
       attr(connectionStatus({ onlineText: "Tilbake." })),
     )
@@ -217,12 +217,12 @@ describe("lt-connection-status sier fra én gang og kommer tilbake", () => {
 })
 
 /*
- * Et sent registrert tagnavn. `lt-connection-status` har alt tatt
- * konstruktøren, så `defineLtConnectionStatus("lt-connection-status-sen")`
- * registrerer en underklasse av den.
+ * A tag name registered late. `lt-connection-status` has already taken the
+ * constructor, so `defineLtConnectionStatus("lt-connection-status-sen")`
+ * registers a subclass of it.
  */
-describe("reportFailure() og reportSuccess() venter på registreringen", () => {
-  it("gjør kallene i rekkefølge når elementet er oppgradert", async () => {
+describe("reportFailure() and reportSuccess() wait for the registration", () => {
+  it("makes the calls in order once the element is upgraded", async () => {
     monter(
       `<lt-connection-status-sen class="lt-connection-status"></lt-connection-status-sen>`,
     )
@@ -248,7 +248,7 @@ describe("reportFailure() og reportSuccess() venter på registreringen", () => {
   })
 })
 
-describe("lt-connection-status ute av dokumentet og inn igjen", () => {
+describe("lt-connection-status out of the document and back in", () => {
   beforeAll(() => {
     defineLtConnectionStatus()
   })
@@ -265,7 +265,7 @@ describe("lt-connection-status ute av dokumentet og inn igjen", () => {
     }
   }
 
-  it("fjerner kvitteringen selv om elementet var ute da tiden gikk", async () => {
+  it("removes the receipt even if the element was out when the time ran out", async () => {
     const { flate, status } = await monterNy()
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
     try {
@@ -284,7 +284,7 @@ describe("lt-connection-status ute av dokumentet og inn igjen", () => {
     }
   })
 
-  it("sier ikke offline når nettet kom tilbake mens elementet var ute", async () => {
+  it("does not say offline when the network came back while the element was out", async () => {
     const { flate, status } = await monterNy()
     window.dispatchEvent(new Event("offline"))
     expect(linje()?.dataset.state).toBe("offline")
@@ -297,7 +297,7 @@ describe("lt-connection-status ute av dokumentet og inn igjen", () => {
     expect(linje()?.dataset.state).toBe("online")
   })
 
-  it("lar appens egen feilmelding stå gjennom en flytting", async () => {
+  it("keeps the failure the app reported through a move", async () => {
     const { flate, status } = await monterNy()
     status.reportFailure()
 
@@ -308,12 +308,12 @@ describe("lt-connection-status ute av dokumentet og inn igjen", () => {
   })
 })
 
-describe("lt-connection-status når teksten byttes mens linja står", () => {
+describe("lt-connection-status when the text changes while the bar is showing", () => {
   beforeAll(() => {
     defineLtConnectionStatus()
   })
 
-  it("viser den nye teksten", async () => {
+  it("shows the new text", async () => {
     monter("<lt-connection-status></lt-connection-status>")
     await customElements.whenDefined("lt-connection-status")
     const status = document.querySelector(

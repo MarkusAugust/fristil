@@ -1,16 +1,18 @@
 /**
- * Fargekontrakten, som `@lo-tek/interfaces/contract`: hva hver rolle er, og
- * hva den lover.
+ * The colour contract, as `@lo-tek/interfaces/contract`: what each role is,
+ * and what it promises.
  *
- * Ett fargelag, ikke to. En farge er et punkt i en matrise av **familie** (hva
- * den betyr) og **rolle** (hva den gjør), og hver familie har de samme
- * rollene. Kuløren er konsumentens, lysheten er rollens, og da er kontrasten
- * garantert av konstruksjonen framfor av en sjekk i etterkant.
+ * One colour layer, not two. A colour is a point in a matrix of **family**
+ * (what it means) and **role** (what it does), and every family has the same
+ * roles. The hue comes from the consumer, the lightness from the role, and so
+ * the contrast is guaranteed by construction rather than by a check
+ * afterwards.
  *
- * Tallene står i `color-contract.json`, som kjernen leser, og regningen skjer
- * der. Her er dataene, for den som vil lese dem. Et tema bygges med
- * `buildTheme` fra `@lo-tek/interfaces/theme`, og et håndskrevet tema
- * kontrolleres med `inspectTheme` fra `@lo-tek/interfaces/theme-check`.
+ * The numbers are in `color-contract.json`, which the core reads, and the
+ * arithmetic happens there. Here is the data, for anyone who wants to read it.
+ * A theme is built with `buildTheme` from `@lo-tek/interfaces/theme`, and a
+ * hand-written theme is checked with `inspectTheme` from
+ * `@lo-tek/interfaces/theme-check`.
  */
 
 export {

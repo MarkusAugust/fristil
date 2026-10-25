@@ -1,6 +1,6 @@
 @layer lotek {
   .lt-checkbox {
-    /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset. */
+    /* The design system cannot assume the consumer has a CSS reset. */
     box-sizing: border-box;
 
     appearance: none;
@@ -18,10 +18,10 @@
     cursor: pointer;
   }
 
-  /* Uten `:not(:disabled)`. Den løftet spesifisiteten over tilstandene
-     under, så musa tok bort både feilrammen og rammen på en valgt. Reglene
-     for valgt, deaktivert og ugyldig står etter denne og vinner på
-     rekkefølgen. */
+  /* Without `:not(:disabled)`. It raised the specificity above the states
+     below, so the mouse removed both the error border and the border of a
+     checked box. The rules for checked, disabled and invalid come after
+     this one and win on order. */
   .lt-checkbox:hover {
     border-color: var(--lt-color-neutral-border-strong);
   }
@@ -37,9 +37,9 @@
     border-color: var(--lt-color-accent-fill);
   }
 
-  /* Haken er et token og ikke et bilde i denne fila, fordi en data-URL ikke
-     kan lese en CSS-variabel. Streken er malt inn i bildet, og må derfor snu
-     med temaet der de andre fargene snur. */
+  /* The tick is a token and not an image in this file, because a data URL
+     cannot read a CSS variable. The stroke is painted into the image, and
+     must therefore flip with the theme where the other colours flip. */
   .lt-checkbox:checked {
     background-image: var(--lt-icon-check);
   }
@@ -72,9 +72,9 @@
     border-color: var(--lt-color-success-text);
   }
 
-  /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
-     `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
-     var slått av under innsending så rødt ut, ikke avslått. */
+  /* Disabled wins over a state. `[data-state]` used to come after
+     `:disabled` with the same specificity, and an invalid field in a form
+     that was disabled during submission looked red, not disabled. */
   .lt-checkbox:disabled[data-state] {
     background-color: var(--lt-color-disabled-surface);
     border-color: var(--lt-color-disabled-surface);
@@ -85,7 +85,7 @@
     border-color: var(--lt-color-disabled-text);
   }
 
-  /* Boksen og teksten på én linje, med teksten på plass ved flere linjer. */
+  /* The box and the text on one line, with the text in place over several lines. */
   .lt-checkbox-row {
     display: flex;
     align-items: flex-start;
@@ -94,13 +94,14 @@
   }
 
   /*
-   * Høykontrast: la nettleseren tegne boksen selv.
+   * High contrast: let the browser draw the box itself.
    *
-   * Målt i modusen: gradienter og box-shadow fjernes, egne farger overstyres,
-   * og bare systemfarger, rammer, masker og data-URL-bilder overlever. Haken
-   * vår er hvit og malt inn i bildet, så den ville blitt usynlig mot den
-   * påtvungne flaten. Nettleserens egen avkryssingsboks er riktig i alle
-   * temaer brukeren kan velge, og koster oss ingenting å falle tilbake på.
+   * Tested in the mode: gradients and box-shadow are removed, custom colours
+   * are overridden, and only system colours, borders, masks and data URL
+   * images survive. Our tick is white and painted into the image, so it
+   * would have become invisible against the forced surface. The browser's
+   * own checkbox is correct in every theme the user can choose, and costs
+   * us nothing to fall back on.
    */
   @media (forced-colors: active) {
     .lt-checkbox,

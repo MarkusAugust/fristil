@@ -12,7 +12,7 @@ import { defineLtField, type LtField } from "./lt-field"
 import "../../../tokens/tokens.css"
 import "./field.css"
 
-/** Attributtnavnene på et element, sortert. */
+/** The attribute names on an element, sorted. */
 function navnene(element: Element): string[] {
   return [...element.attributes].map((a) => a.name).sort()
 }
@@ -66,12 +66,12 @@ describe("lt-field", () => {
     expect(describedBy).toContain(error.id)
   })
 
-  it("regner feltet som ugyldig når feilmeldingen synes, og gyldig når den er skjult", async () => {
+  it("treats the field as invalid when the error text is visible, and valid when it is hidden", async () => {
     /*
-     * Feilmeldingens synlighet er sannheten. En mal rendrer den når feltet er
-     * ugyldig, og klientkode slår `hidden` av og på. Komponenten rører den
-     * aldri: før skjulte den en feilmelding serveren hadde rendret synlig,
-     * fordi verten manglet `invalid`.
+     * The visibility of the error text is the truth. A template renders it
+     * when the field is invalid, and client code toggles `hidden`. The
+     * component never touches it: it used to hide an error text the server
+     * had rendered visible, because the host had no `invalid`.
      */
     document.body.innerHTML = `
       <lt-field>
@@ -101,7 +101,7 @@ describe("lt-field", () => {
     expect(error.hidden).toBe(true)
   })
 
-  it("rører ikke hidden på feilmeldingen", async () => {
+  it("does not touch hidden on the error text", async () => {
     document.body.innerHTML = `
       <lt-field>
         <label for="epost">E-post</label>
@@ -116,10 +116,10 @@ describe("lt-field", () => {
     expect(error.hasAttribute("aria-hidden")).toBe(false)
   })
 
-  it("lar serverens eget aria-invalid stå", async () => {
-    // Skrev serveren feltet med `lt.field()`, står `aria-invalid` på
-    // kontrollen. Da er attributtet serverens, og komponenten skal lese det,
-    // ikke fjerne det.
+  it("leaves the server's aria-invalid alone", async () => {
+    // If the server wrote the field with `lt.field()`, `aria-invalid` is on
+    // the control. The attribute is then the server's, and the component
+    // must read it, not remove it.
     document.body.innerHTML = `
       <lt-field>
         <label for="epost">E-post</label>
@@ -137,12 +137,12 @@ describe("lt-field", () => {
     expect(error.hidden).toBe(false)
   })
 
-  it("lar serverens aria-invalid stå, også når feilmeldingen skjules og vises igjen", async () => {
+  it("leaves the server's aria-invalid alone, also when the error text is hidden and shown again", async () => {
     /*
-     * To kilder som sier hver sin ting, og serveren vinner. Står
-     * `aria-invalid` på kontrollen i markupen serveren sendte, er det
-     * serverens ord om feltet, og den samme markupen skal gi det samme svaret
-     * uansett hva feilmeldingen har vært innom.
+     * Two sources that say different things, and the server wins. If
+     * `aria-invalid` is on the control in the markup the server sent, it is
+     * the server's word about the field, and the same markup must give the
+     * same answer whatever states the error text has been through.
      */
     document.body.innerHTML = `
       <lt-field>
@@ -166,13 +166,13 @@ describe("lt-field", () => {
     expect(input.getAttribute("data-state")).toBe("invalid")
   })
 
-  it("følger serveren når en patch bytter ut kontrollen", async () => {
+  it("follows the server when a patch replaces the control", async () => {
     /*
-     * Serveren kan si det samme på to måter, og bytte mellom dem i en patch:
-     * en synlig feilmelding i én runde, og en ferdig skrevet kontroll i den
-     * neste. Knytter komponenten «dette attributtet er mitt eget ekko» til seg
-     * selv framfor til kontrollen, regner den feltet som gyldig i det
-     * kontrollen byttes ut.
+     * The server can say the same thing in two ways, and switch between them
+     * in a patch: a visible error text in one round, and a fully written
+     * control in the next. If the component ties "this attribute is my own
+     * echo" to itself rather than to the control, it treats the field as
+     * valid the moment the control is replaced.
      */
     document.body.innerHTML = `
       <lt-field>
@@ -187,7 +187,7 @@ describe("lt-field", () => {
       "true",
     )
 
-    // Patchen: ny kontroll som selv sier ugyldig, og feilmeldingen skjult.
+    // The patch: a new control that itself says invalid, and the error text hidden.
     const gammel = document.querySelector("input") as HTMLInputElement
     const ny = document.createElement("input")
     ny.id = "epost"
@@ -205,16 +205,16 @@ describe("lt-field", () => {
     expect(error.hidden).toBe(true)
   })
 
-  it("skriver aldri id på kontrollen, heller ikke når en patch bytter den ut", async () => {
-    // Markupen i testen mangler ledetekst med vilje, og advarselen om det
-    // er ventet. Den skal ikke stå som støy i kjøringen.
+  it("never writes an id on the control, not even when a patch replaces it", async () => {
+    // The markup in the test has no label on purpose, and the warning about
+    // it is expected. It must not show up as noise in the run.
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     /*
-     * Datastar og idiomorph kjenner igjen en node på id, og en kontroll med en
-     * id serveren ikke sendte, blir byttet ut ved neste oppdatering, med fokus
-     * og det brukeren har skrevet. Komponenten fant før opp en id når
-     * kontrollen manglet en, og det var nettopp den som gjorde at feltet ble
-     * byttet ut. Mangler id-en, er det malens å skrive.
+     * Datastar and idiomorph recognise a node by its id, and a control with
+     * an id the server did not send is replaced on the next update, along
+     * with focus and what the user has typed. The component used to invent an
+     * id when the control had none, and that was exactly what made the field
+     * get replaced. If the id is missing, the template has to write it.
      */
     document.body.innerHTML = `
       <div>
@@ -238,7 +238,7 @@ describe("lt-field", () => {
     advarsel.mockRestore()
   })
 
-  it("skriver verken id eller for når ledeteksten står rundt kontrollen", async () => {
+  it("writes neither id nor for when the label wraps the control", async () => {
     document.body.innerHTML = `
       <lt-field>
         <label>E-post <input class="lt-input" type="email" /></label>
@@ -257,7 +257,7 @@ describe("lt-field", () => {
     expect(input.getAttribute("aria-describedby")).toBe(help.id)
   })
 
-  it("lar data-required serveren skrev stå, og markerer valgfrie felt", async () => {
+  it("leaves the data-required the server wrote, and marks optional fields", async () => {
     document.body.innerHTML = `
       <lt-field>
         <label id="label" for="navn" data-required="text">Navn</label>
@@ -284,8 +284,8 @@ describe("lt-field", () => {
   })
 })
 
-describe("lt-field tilgjengelighet", () => {
-  it("gir ingen brudd for et felt med hjelpetekst og feilmelding", async () => {
+describe("lt-field accessibility", () => {
+  it("has no violations for a field with help text and error text", async () => {
     monter(`
       <lt-field>
         <label for="epost" data-required="symbol">E-postadresse</label>
@@ -305,7 +305,7 @@ describe("lt-field tilgjengelighet", () => {
     await forventIngenTilgjengelighetsbrudd()
   })
 
-  it("gir ingen brudd for et felt uten hjelpetekst", async () => {
+  it("has no violations for a field without help text", async () => {
     monter(`
       <lt-field>
         <label>Fullt navn <input class="lt-input" type="text" /></label>
@@ -317,8 +317,8 @@ describe("lt-field tilgjengelighet", () => {
   })
 })
 
-describe("lt-field ledetekst", () => {
-  it("gir ledeteksten lt-label, slik at påkrevd-markeringen faktisk vises", async () => {
+describe("lt-field label", () => {
+  it("gives the label lt-label, so the required marker actually shows", async () => {
     monter(`
       <lt-field>
         <label for="epost" data-required="text">E-postadresse</label>
@@ -332,12 +332,12 @@ describe("lt-field ledetekst", () => {
     expect(label.classList.contains("lt-label")).toBe(true)
     expect(label.getAttribute("data-required")).toBe("text")
 
-    // Attributtet alene er dødt uten klassen. Markeringen kommer fra ::after
+    // The attribute alone does nothing without the class. The marker comes from ::after
     const markering = getComputedStyle(label, "::after").content
-    expect(markering).toContain("påkrevd")
+    expect(markering).toContain("required")
   })
 
-  it("markerer valgfrie felt på samme måte", async () => {
+  it("marks optional fields the same way", async () => {
     monter(`
       <lt-field optional>
         <label for="adresse">Adresse</label>
@@ -349,24 +349,24 @@ describe("lt-field ledetekst", () => {
 
     const label = document.querySelector("label") as HTMLLabelElement
     expect(label.classList.contains("lt-label")).toBe(true)
-    expect(getComputedStyle(label, "::after").content).toContain("valgfri")
+    expect(getComputedStyle(label, "::after").content).toContain("optional")
   })
 })
 
-describe("lt-field krangler ikke med serveren", () => {
+describe("lt-field does not fight the server", () => {
   /**
-   * Demoappene fanget dette, ikke enhetstestene.
+   * The demo apps caught this, not the unit tests.
    *
-   * Skrev serveren feltet med `lt.field()`, regnet komponenten ut sitt eget
-   * svar fra attributtene på verten, fant ingen `invalid` og ingen
-   * `required-marker`, og fjernet det serveren nettopp hadde skrevet. I React
-   * ble det en hydreringsfeil, i Datastar en feilmelding som dukket opp på et
-   * gyldig felt ved neste patch.
+   * If the server wrote the field with `lt.field()`, the component computed
+   * its own answer from the attributes on the host, found no `invalid` and
+   * no `required-marker`, and removed what the server had just written. In
+   * React it became a hydration error, in Datastar an error text that
+   * appeared on a valid field on the next patch.
    *
-   * Komponenten leser derfor tilstanden fra markupen, ikke fra et parallelt
-   * attributt.
+   * The component therefore reads the state from the markup, not from a
+   * parallel attribute.
    */
-  it("lar attributtene serveren skrev stå", async () => {
+  it("leaves the attributes the server wrote", async () => {
     const felt = computeFieldAttributes({
       id: "epost",
       help: true,
@@ -398,9 +398,9 @@ describe("lt-field krangler ikke med serveren", () => {
     expect(feilmelding.hidden).toBe(false)
   })
 
-  it("setter ikke aria-hidden på en skjult feilmelding", async () => {
-    // `hidden` tar den allerede ut av tilgjengelighetstreet, og et attributt
-    // serveren ikke skriver gir hydreringsfeil i React.
+  it("does not set aria-hidden on a hidden error text", async () => {
+    // `hidden` already takes it out of the accessibility tree, and an
+    // attribute the server does not write gives a hydration error in React.
     monter(`
       <lt-field>
         <label for="epost">E-postadresse</label>
@@ -418,16 +418,17 @@ describe("lt-field krangler ikke med serveren", () => {
 })
 
 /**
- * Dokumentasjonen viser hva serveren sender og hva som står i siden etterpå.
- * Den lista var feil: `aria-describedby` manglet id-en til feilmeldingen,
- * og ingenting sa fra, for ingen test leste den. Nå står påstanden her.
+ * The documentation shows what the server sends and what is on the page
+ * afterwards. That list was wrong: `aria-describedby` was missing the error
+ * text's id, and nothing said so, because no test read it. Now the claim is
+ * here.
  */
-describe("lt-field kobler markup som bare har struktur", () => {
+describe("lt-field connects markup that has only structure", () => {
   beforeAll(() => {
     defineLtField()
   })
 
-  it("gir hele koblingen av for, id og en synlig feilmelding", async () => {
+  it("gives the full wiring from for, id and a visible error text", async () => {
     monter(`
       <lt-field>
         <label data-required="symbol">E-post</label>
@@ -459,14 +460,14 @@ describe("lt-field kobler markup som bare har struktur", () => {
   })
 
   /*
-   * Komponenten leter etter hjelpetekst og feilmelding på systemets egne
-   * klasser, og bare der. Den leste en gang også `[data-role='help']` og
-   * `[data-role='error']`, en krok ingen dokumentasjon nevnte. `data-role` er
-   * uprefikset, og eies i praksis av andre: en app som bruker det til noe
-   * annet inne i et felt fikk sitt eget avsnitt adoptert som feilmelding,
-   * uten at noe sa fra.
+   * The component looks for the help text and the error text by the
+   * system's classes, and only there. It once also read `[data-role='help']`
+   * and `[data-role='error']`, a hook no documentation mentioned.
+   * `data-role` is unprefixed, and in practice used by others: an app that
+   * used it for something else inside a field had its paragraph adopted as
+   * the error text, without anything saying so.
    */
-  it("adopterer ikke et avsnitt som bare har en rolle på seg", async () => {
+  it("does not adopt a paragraph that only has a role on it", async () => {
     monter(`
       <lt-field>
         <label for="postnummer">Postnummer</label>
@@ -480,8 +481,9 @@ describe("lt-field kobler markup som bare har struktur", () => {
     const input = document.querySelector("input") as HTMLInputElement
     const avsnitt = document.querySelector(".egen-feil") as HTMLElement
 
-    // Ett positivt anker. Uten det ville testen bestått også om `sync()` ga
-    // opp før den kom så langt, og da påstår den bare at ingenting skjedde.
+    // One positive anchor. Without it the test would also pass if `sync()`
+    // gave up before getting that far, and then it only claims that nothing
+    // happened.
     expect(input.getAttribute("aria-invalid")).toBe("true")
 
     expect(navnene(avsnitt)).toEqual(["class", "data-role"])
@@ -489,15 +491,15 @@ describe("lt-field kobler markup som bare har struktur", () => {
   })
 })
 
-describe("lt-field er et blokkelement", () => {
+describe("lt-field is a block element", () => {
   beforeAll(() => {
     defineLtField()
   })
 
-  it("sier selv at det er en blokk", async () => {
-    // Uten dette er elementet `display: inline`, og en avstand satt utenpå
-    // det gjør ingenting. Barna er blokker, så feilen synes ikke før noen
-    // legger feltet i et rutenett eller gir det en margin.
+  it("declares itself a block", async () => {
+    // Without this the element is `display: inline`, and spacing set on the
+    // outside does nothing. The children are blocks, so the bug does not
+    // show until someone puts the field in a grid or gives it a margin.
     monter(`
       <lt-field>
         <label class="lt-label">E-post</label>
@@ -513,15 +515,16 @@ describe("lt-field er et blokkelement", () => {
 })
 
 /**
- * Komponenten rår bare over det den selv skrev.
+ * The component only controls what it wrote itself.
  *
- * Tre attributter leses fra kontrollen og skrives dit igjen: `aria-invalid`,
- * `aria-describedby` og `disabled`. For hvert av dem må komponenten vite hva
- * den skrev sist, ellers leser den sitt eget ekko som serverens ord. Det var
- * løst for `aria-invalid` alene, og de to andre hadde nøyaktig samme feil:
- * `aria-describedby` krympet aldri, og `disabled` lot seg ikke slå av igjen.
+ * Three attributes are read from the control and written back to it:
+ * `aria-invalid`, `aria-describedby` and `disabled`. For each of them the
+ * component must know what it wrote last, or it reads its own echo as the
+ * server's word. That was fixed for `aria-invalid` alone, and the other two
+ * had exactly the same bug: `aria-describedby` never shrank, and `disabled`
+ * could not be turned off again.
  */
-describe("lt-field rår bare over det den selv skrev", () => {
+describe("lt-field only controls what it wrote itself", () => {
   beforeAll(() => {
     defineLtField()
   })
@@ -530,7 +533,7 @@ describe("lt-field rår bare over det den selv skrev", () => {
     document.body.innerHTML = ""
   })
 
-  it("tar feilmeldingen ut av aria-describedby når den skjules", async () => {
+  it("takes the error text out of aria-describedby when it is hidden", async () => {
     document.body.innerHTML = `
       <lt-field>
         <label for="epost">E-post</label>
@@ -551,7 +554,7 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(input.getAttribute("aria-describedby")).toBe("h")
   })
 
-  it("tar hjelpeteksten ut av aria-describedby når en patch fjerner den", async () => {
+  it("takes the help text out of aria-describedby when a patch removes it", async () => {
     document.body.innerHTML = `
       <lt-field>
         <label for="epost">E-post</label>
@@ -570,7 +573,7 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(input.getAttribute("aria-describedby")).toBeNull()
   })
 
-  it("tar de ekstra id-ene ut igjen når described-by fjernes fra verten", async () => {
+  it("takes the extra ids out again when described-by is removed from the host", async () => {
     document.body.innerHTML = `
       <p id="ekstra">Les vilkårene først.</p>
       <lt-field described-by="ekstra">
@@ -590,10 +593,10 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(input.getAttribute("aria-describedby")).toBeNull()
   })
 
-  it("beholder id-er serveren selv la i aria-describedby", async () => {
-    // `lt.field({ describedBy: ["vilkar"] })` skriver id-en rett på
-    // kontrollen. Den er serverens, og skal stå, også etter at komponenten
-    // har skrevet attributtet på nytt for å ta bort feilmeldingen.
+  it("keeps ids the server put in aria-describedby", async () => {
+    // `lt.field({ describedBy: ["vilkar"] })` writes the id straight on the
+    // control. It is the server's, and must stay, also after the component
+    // has rewritten the attribute to remove the error text.
     document.body.innerHTML = `
       <p id="vilkar">Vilkår</p>
       <lt-field>
@@ -618,7 +621,7 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(input.getAttribute("aria-describedby")).toBe("epost-help vilkar")
   })
 
-  it("slår disabled av igjen når verten slår det av", async () => {
+  it("turns disabled off again when the host turns it off", async () => {
     document.body.innerHTML = `
       <lt-field disabled>
         <label for="epost">E-post</label>
@@ -631,7 +634,7 @@ describe("lt-field rår bare over det den selv skrev", () => {
     const label = document.querySelector("label") as HTMLLabelElement
     expect(input.disabled).toBe(true)
     expect(label.getAttribute("aria-disabled")).toBe("true")
-    // Et ekte `disabled` trenger ingen kopi, og `lt.field()` skriver ingen.
+    // A real `disabled` needs no copy, and `lt.field()` writes none.
     expect(input.hasAttribute("aria-disabled")).toBe(false)
 
     const felt = document.querySelector("lt-field") as LtField
@@ -642,7 +645,7 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(label.hasAttribute("aria-disabled")).toBe(false)
   })
 
-  it("lar et disabled serveren skrev på kontrollen stå", async () => {
+  it("leaves a disabled the server wrote on the control", async () => {
     document.body.innerHTML = `
       <lt-field>
         <label for="epost">E-post</label>
@@ -656,8 +659,8 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(input.getAttribute("disabled")).toBe("disabled")
     expect(label.getAttribute("aria-disabled")).toBe("true")
 
-    // Verten har vært innom `disabled` og ut igjen. Serverens ord på
-    // kontrollen står fortsatt.
+    // The host has had `disabled` and lost it again. The server's word on
+    // the control still stands.
     const felt = document.querySelector("lt-field") as LtField
     felt.disabled = true
     await Promise.resolve()
@@ -667,7 +670,7 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(input.getAttribute("disabled")).toBe("disabled")
   })
 
-  it("rører ikke et aria-disabled konsumenten selv skrev", async () => {
+  it("does not touch an aria-disabled the consumer wrote", async () => {
     document.body.innerHTML = `
       <lt-field>
         <label for="epost">E-post</label>
@@ -680,12 +683,13 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(input.getAttribute("aria-disabled")).toBe("true")
   })
 
-  it("husker hva den skrev også etter å ha blitt flyttet", async () => {
+  it("remembers what it wrote also after being moved", async () => {
     /*
-     * React kaster og lager noder på nytt ved en omstrukturering, og flytter
-     * dem ved en `key`-endring. Glemte komponenten hva den hadde skrevet i det
-     * den ble koblet fra, leste den sitt eget `aria-invalid="true"` som
-     * serverens ord da den kom tilbake, og feltet kunne aldri bli gyldig.
+     * React throws away and recreates nodes on a restructure, and moves them
+     * on a `key` change. If the component forgot what it had written the
+     * moment it was disconnected, it read its own `aria-invalid="true"` as
+     * the server's word when it came back, and the field could never become
+     * valid.
      */
     document.body.innerHTML = `
       <div id="a"></div>
@@ -714,7 +718,7 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(input.getAttribute("aria-invalid")).toBeNull()
   })
 
-  it("husker hva den skrev på en kontroll som forsvinner og kommer tilbake", async () => {
+  it("remembers what it wrote on a control that disappears and comes back", async () => {
     document.body.innerHTML = `
       <lt-field>
         <label for="epost">E-post</label>
@@ -739,10 +743,10 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(input.getAttribute("aria-invalid")).toBeNull()
   })
 
-  it("lar serverens aria-invalid=false stå", async () => {
-    // Gyldig og vanlig i håndskrevet HTML, altså nettopp markupen komponenten
-    // finnes for. Den ble strøket, og hver patch som sendte den fikk den
-    // strøket igjen.
+  it("leaves the server's aria-invalid=false alone", async () => {
+    // Valid and common in handwritten HTML, which is exactly the markup the
+    // component exists for. It was removed, and every patch that sent it had
+    // it removed again.
     document.body.innerHTML = `
       <lt-field>
         <label for="epost">E-post</label>
@@ -756,7 +760,7 @@ describe("lt-field rår bare over det den selv skrev", () => {
     const error = document.querySelector(".lt-error-text") as HTMLElement
     expect(input.getAttribute("aria-invalid")).toBe("false")
 
-    // Feilmeldingen vises og skjules igjen. Serverens «false» kommer tilbake.
+    // The error text is shown and hidden again. The server's "false" comes back.
     error.hidden = false
     await ventPaTegning()
     expect(input.getAttribute("aria-invalid")).toBe("true")
@@ -765,9 +769,9 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(input.getAttribute("aria-invalid")).toBe("false")
   })
 
-  it("lar serverens aria-invalid=spelling stå, og regner feltet som ugyldig", async () => {
-    // `grammar` og `spelling` er lovlige verdier og betyr ugyldig. De ble
-    // lest som «ikke true», og strøket.
+  it("leaves the server's aria-invalid=spelling alone, and treats the field as invalid", async () => {
+    // `grammar` and `spelling` are valid values and mean invalid. They were
+    // read as "not true", and removed.
     document.body.innerHTML = `
       <lt-field>
         <label for="tekst">Tekst</label>
@@ -784,10 +788,11 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(error.hidden).toBe(false)
   })
 
-  it("leser aria-invalid med tom streng som gyldig", async () => {
-    // ARIA sier at tom streng skal leses som `false`, og hjelpemidlene gjør
-    // det. Komponenten regnet den som ugyldig, og viste rød ramme og
-    // feilmelding på et felt skjermleseren kalte gyldig.
+  it("reads aria-invalid with an empty string as valid", async () => {
+    // ARIA says the empty string is read as `false`, and assistive
+    // technology does so. The component treated it as invalid, and showed a
+    // red border and an error text on a field the screen reader called
+    // valid.
     document.body.innerHTML = `
       <lt-field>
         <label for="epost">E-post</label>
@@ -801,8 +806,8 @@ describe("lt-field rår bare over det den selv skrev", () => {
     const error = document.querySelector(".lt-error-text") as HTMLElement
     expect(input.getAttribute("data-state")).toBeNull()
 
-    // Feilmeldingen vises og skjules igjen. Serverens tomme streng kommer
-    // tilbake.
+    // The error text is shown and hidden again. The server's empty string
+    // comes back.
     error.hidden = false
     await ventPaTegning()
     expect(input.getAttribute("aria-invalid")).toBe("true")
@@ -812,10 +817,10 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(input.getAttribute("data-state")).toBeNull()
   })
 
-  it("lar en id stå når serveren flytter hjelpeteksten ut og beholder den", async () => {
-    // Id-en har vært komponentens å forvalte. Peker den fortsatt på et
-    // element, er den serverens: det avgjøres av DOM-en, ikke av
-    // hva komponenten har vært borti før.
+  it("leaves an id when the server moves the help text out and keeps it", async () => {
+    // The id has been managed by the component. If it still points to an
+    // element, it is the server's: the DOM decides that, not what the
+    // component has dealt with before.
     document.body.innerHTML = `
       <div id="frame">
         <lt-field>
@@ -838,10 +843,10 @@ describe("lt-field rår bare over det den selv skrev", () => {
     expect(input.getAttribute("aria-describedby")).toBe("epost-help")
   })
 
-  it("regner ikke en fjernet hjelpetekst som serverens ekstra id", async () => {
-    // Serveren skrev `aria-describedby="epost-help"`. Et skript fjerner
-    // hjelpeteksten uten å røre kontrollen. Id-en var komponentens å
-    // forvalte, og skal ikke bli stående som om serveren la den til.
+  it("does not treat a removed help text as an extra id from the server", async () => {
+    // The server wrote `aria-describedby="epost-help"`. A script removes the
+    // help text without touching the control. The id was managed by the
+    // component, and must not stay as if the server had added it.
     document.body.innerHTML = `
       <lt-field>
         <label for="epost">E-post</label>
@@ -859,7 +864,7 @@ describe("lt-field rår bare over det den selv skrev", () => {
   })
 })
 
-describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
+describe("lt-field does not read its own echo from the label", () => {
   beforeAll(() => {
     defineLtField()
   })
@@ -880,7 +885,7 @@ describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
     }
   }
 
-  it("tar bort data-optional når optional fjernes fra verten", async () => {
+  it("removes data-optional when optional is removed from the host", async () => {
     const { vert, ledetekst } = await felt("optional")
     expect(ledetekst.hasAttribute("data-optional")).toBe(true)
 
@@ -890,7 +895,7 @@ describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
     expect(ledetekst.hasAttribute("data-optional")).toBe(false)
   })
 
-  it("lar markeringene serveren skrev på ledeteksten stå", async () => {
+  it("leaves the markers the server wrote on the label", async () => {
     monter(
       `<lt-field><label for="navn" data-required="text">Navn</label><input id="navn" class="lt-input" /></lt-field>`,
     )
@@ -899,16 +904,16 @@ describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
     const ledetekst = document.querySelector("label") as HTMLLabelElement
     const vert = document.querySelector("lt-field") as LtField
 
-    // En runde til, slik en patch ville utløst.
+    // One more round, as a patch would trigger.
     vert.setAttribute("described-by", "annet")
     await ventPaTegning()
 
     expect(ledetekst.getAttribute("data-required")).toBe("text")
   })
 
-  it("fjerner disabled og optional når egenskapen settes til undefined", async () => {
-    // Slik React 19 skriver en prop som er borte. `toggleAttribute` med
-    // `undefined` veksler, og attributtet kom tilbake.
+  it("removes disabled and optional when the property is set to undefined", async () => {
+    // This is how React 19 writes a prop that is gone. `toggleAttribute`
+    // with `undefined` toggles, and the attribute came back.
     const { vert } = await felt("")
     const egenskaper = vert as unknown as Record<string, boolean | undefined>
 
@@ -922,7 +927,7 @@ describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
     }
   })
 
-  it("lar en data-state malen skrev for hånd stå", async () => {
+  it("leaves a data-state the template wrote by hand", async () => {
     const { kontroll } = await felt(
       "",
       '<input id="navn" class="lt-input" data-state="invalid" />',
@@ -930,7 +935,7 @@ describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
     expect(kontroll.getAttribute("data-state")).toBe("invalid")
   })
 
-  it("fjerner fortsatt sin egen data-state når feltet blir gyldig", async () => {
+  it("still removes the data-state it wrote when the field becomes valid", async () => {
     const { kontroll } = await felt(
       "",
       '<input id="navn" class="lt-input" /><p class="lt-error-text">Feil</p>',
@@ -943,12 +948,13 @@ describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
     expect(kontroll.hasAttribute("data-state")).toBe(false)
   })
 
-  it("kobler bare sine egne deler når et felt står inni et annet", async () => {
+  it("connects only its own parts when a field is inside another", async () => {
     /*
-     * Et søkefelt i et sprettoppvindu inni feltet, eller et felt i et felt,
-     * er vanlig markup. `querySelector` over hele undertreet fant det
-     * innerste feltets kontroll først, og det ytre feltet skrev `for`,
-     * `aria-describedby` og `id` på den. Hvert felt skal se bare sine egne.
+     * A search field in a popover inside the field, or a field in a field, is
+     * ordinary markup. `querySelector` over the whole subtree found the
+     * innermost field's control first, and the outer field wrote `for`,
+     * `aria-describedby` and `id` on it. Each field must see only its own
+     * parts.
      */
     document.body.innerHTML = `
       <lt-field id="ytre">
@@ -987,9 +993,9 @@ describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
     expect(indreInput.getAttribute("aria-invalid")).toBe("true")
   })
 
-  it("regner en feilmelding skjult med en klasse som skjult", async () => {
-    // `display: none` fra en klasse, som en hjelpeklasse i appen, er like
-    // skjult som `hidden`. Bare inline-stilen ble lest før.
+  it("treats an error text hidden with a class as hidden", async () => {
+    // `display: none` from a class, such as a utility class in the app, is
+    // just as hidden as `hidden`. Only the inline style used to be read.
     document.body.innerHTML = `
       <style>.borte { display: none }</style>
       <lt-field>
@@ -1008,7 +1014,7 @@ describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
     expect(input.getAttribute("aria-invalid")).toBe("true")
   })
 
-  it("sier ingenting når ledeteksten står rundt hele elementet", async () => {
+  it("says nothing when the label wraps the whole element", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     document.body.innerHTML = `<label>Navn <lt-field><input class="lt-input" name="navn"></lt-field></label>`
     await ventPaTegning()
@@ -1020,7 +1026,7 @@ describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
     advarsel.mockRestore()
   })
 
-  it("skriver for om, og sier fra, når ledeteksten pekte på en annen id", async () => {
+  it("rewrites for, and reports it, when the label pointed to another id", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     document.body.innerHTML = `<lt-field><label class="lt-label" for="feil">Navn</label><input class="lt-input" id="navn"></lt-field>`
     await ventPaTegning()
@@ -1029,11 +1035,13 @@ describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
       "navn",
     )
     expect(advarsel).toHaveBeenCalledTimes(1)
-    expect(String(advarsel.mock.calls[0][0])).toContain("pekte på en annen id")
+    expect(String(advarsel.mock.calls[0][0])).toContain(
+      "pointed to a different id",
+    )
     advarsel.mockRestore()
   })
 
-  it("sier ingenting om en kontroll uten id som har navn fra aria-labelledby", async () => {
+  it("says nothing about a control without an id that is named by aria-labelledby", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     document.body.innerHTML = `<lt-field><label id="l">Navn</label><input class="lt-input" name="navn" aria-labelledby="l"></lt-field>`
     await ventPaTegning()
@@ -1042,7 +1050,7 @@ describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
     advarsel.mockRestore()
   })
 
-  it("peker ikke aria-describedby på en skjult feilmelding selv om serveren sier ugyldig", async () => {
+  it("does not point aria-describedby to a hidden error text even when the server says invalid", async () => {
     document.body.innerHTML = `<lt-field>
       <label class="lt-label" for="e">E-post</label>
       <input class="lt-input" id="e" aria-invalid="true">

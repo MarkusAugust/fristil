@@ -11,9 +11,9 @@ export type NonDefaultParagraphSize = Exclude<ParagraphSize, "medium">
 export type NonDefaultParagraphVariant = Exclude<ParagraphVariant, "default">
 
 export type ParagraphOptions = {
-  /** Tekststørrelse. Standard: `medium`. */
+  /** Text size. Default: `medium`. */
   size?: ParagraphSize
-  /** `lead` er ingressen rett under overskriften. Standard: `default`. */
+  /** `lead` is the introduction right below the heading. Default: `default`. */
   variant?: ParagraphVariant
 }
 
@@ -24,14 +24,14 @@ export type ParagraphAttributes = {
 }
 
 /**
- * Attributtene for et avsnitt.
+ * The attributes for a paragraph.
  *
- * Bredden er begrenset til 70 tegn. Lengre linjer gjør det vanskelig å finne
- * tilbake til starten av neste, og det er den vanligste grunnen til at en
- * tekst er tung å lese selv når skriften er stor nok.
+ * The width is limited to 70 characters. Longer lines make it hard to find
+ * the start of the next one, and that is the most common reason a text is
+ * hard to read even when the type is large enough.
  *
  * ```ts
- * <p {...paragraph({ variant: "lead" })}>Kort om hva siden handler om.</p>
+ * <p {...paragraph({ variant: "lead" })}>A short summary of what the page is about.</p>
  * ```
  */
 export const paragraph = Object.assign(

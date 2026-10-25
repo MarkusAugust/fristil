@@ -1,12 +1,11 @@
 /**
- * Sjekker markup mot LO-TEK, utenfor nettleseren.
+ * Checks markup against LO-TEK, outside the browser.
  *
- * `diagnoseMarkup(html)` er den samme sjekken som editorutvidelsene kjører
- * mens du skriver, og som `lotek sjekk` kjører på kommandolinjen. Den
- * finnes her fordi markup som blir til uten JavaScript, i en Go-mal, en
- * Kotlin-streng eller en Razor-visning, ikke har noen kompilator som ser
- * på attributtene. En test i appen kan da kjøre den over HTML-en serveren
- * faktisk sender:
+ * `diagnoseMarkup(html)` is the same check the editor extensions run while
+ * you type, and that `lotek check` runs on the command line. It is here
+ * because markup produced without JavaScript, in a Go template, a Kotlin
+ * string or a Razor view, has no compiler looking at the attributes. A test
+ * in the app can then run it over the HTML the server actually sends:
  *
  * ```ts
  * import { diagnosePage } from "@lo-tek/interfaces/diagnostics"
@@ -14,10 +13,11 @@
  * expect(diagnosePage(html)).toEqual([])
  * ```
  *
- * Sjekken er kjernen, skrevet i Rust og bygget til WebAssembly (se
- * `core.ts`). Modulen følger pakken, og lastes første gang en av funksjonene
- * kalles, i Node, Bun og Deno. I nettleseren, eller der modulen er pakket med
- * på en annen måte, laster `loadCore` den.
+ * The check is the core, written in Rust and built to WebAssembly (see
+ * `core.ts`). The module ships with the package, and is loaded the first
+ * time one of the functions is called, in Node, Bun and Deno. In the
+ * browser, or where the module is bundled some other way, `loadCore` loads
+ * it.
  */
 
 import type { Finding } from "./core.js"
@@ -39,18 +39,18 @@ export {
   type Violation,
 } from "./core.js"
 
-/** Valg for sjekken. */
+/** Options for the check. */
 export type DiagnoseOptions = {
   /**
-   * Stilarkene siden laster, som tekst. Med dem sier sjekken også fra om en
-   * klasse ingen av dem styler, som når stilarket til komponenten ikke er
-   * lastet, og om en verdi uten regel, som en variant lagt til i en overtatt
-   * komponent uten at CSS-en fikk den.
+   * The stylesheets the page loads, as text. With them the check also
+   * reports a class none of them styles, as when the component's stylesheet
+   * is not loaded, and a value without a rule, such as a variant added to a
+   * taken-over component without the CSS getting it.
    */
   css?: string[]
 }
 
-/** Alle funn i teksten: ordforrådet, for en mal eller en bit av en side. */
+/** Every finding in the text: the vocabulary, for a template or a fragment of a page. */
 export function diagnoseMarkup(
   text: string,
   options: DiagnoseOptions = {},
@@ -61,13 +61,13 @@ export function diagnoseMarkup(
 }
 
 /**
- * Alle funn på en hel side: det `diagnoseMarkup` finner, og i tillegg at
- * hver `for`, `aria-describedby`, `aria-labelledby` og `aria-controls` peker
- * på en id som finnes, at ingen id står to ganger, og at hvert LO-TEK-felt
- * og hver hjelpetekst og feilmelding er koblet.
+ * Every finding on a whole page: what `diagnoseMarkup` finds, and also that
+ * every `for`, `aria-describedby`, `aria-labelledby` and `aria-controls`
+ * points to an id that exists, that no id appears twice, and that every
+ * LO-TEK field and every help text and error text is wired.
  *
- * Bruk den på HTML-en serveren sender, ikke på en mal: i en mal som er delt
- * i biter, kan id-en stå i en annen fil.
+ * Use it on the HTML the server sends, not on a template: in a template split
+ * into pieces, the id can be in another file.
  *
  * ```ts
  * const html = await (await fetch("http://localhost:8080/form")).text()
@@ -83,18 +83,18 @@ export function diagnosePage(
     : defaultCore().diagnosePage(text)
 }
 
-/** Det `diagnoseRendered` trenger av en side: `evaluate`, som i Playwright. */
+/** What `diagnoseRendered` needs from a page: `evaluate`, as in Playwright. */
 export type RenderedPage = {
   evaluate<T>(script: () => Promise<T>): Promise<T>
 }
 
 /**
- * Leser den rendrede siden i nettleseren: DOM-en slik den står nå, og
- * teksten i hvert stilark, med det de importerer. Et stilark fra en annen
- * opprinnelse, som et CDN, kan ikke leses gjennom CSSOM uten `crossorigin`,
- * og hentes da på nytt med `fetch`.
+ * Reads the rendered page in the browser: the DOM as it stands now, and the
+ * text of every stylesheet, with what they import. A stylesheet from another
+ * origin, such as a CDN, cannot be read through the CSSOM without
+ * `crossorigin`, and is then fetched again with `fetch`.
  *
- * Funksjonen kjøres i nettleseren, og kan ikke bruke noe utenfor seg selv.
+ * The function runs in the browser, and cannot use anything outside itself.
  */
 export const READ_RENDERED_PAGE = async (): Promise<{
   html: string
@@ -114,7 +114,7 @@ export const READ_RENDERED_PAGE = async (): Promise<{
       const answer = await fetch(sheet.href)
       if (!answer.ok)
         throw new Error(
-          `Stilarket ${sheet.href} kunne ikke leses, og svarte ${answer.status} da det ble hentet på nytt.`,
+          `The stylesheet ${sheet.href} could not be read, and answered ${answer.status} when it was fetched again.`,
         )
       css.push(await answer.text())
       return
@@ -130,9 +130,10 @@ export const READ_RENDERED_PAGE = async (): Promise<{
 }
 
 /**
- * Sjekker siden slik nettleseren har rendret den, med stilarkene den har
- * lastet: det `diagnosePage` finner, og det stilarkene ikke styler. Markup
- * web-komponentene har lagt til, og en klasse JavaScript har satt, er med.
+ * Checks the page as the browser has rendered it, with the stylesheets it
+ * has loaded: what `diagnosePage` finds, and what the stylesheets do not
+ * style. Markup the web components have added, and a class JavaScript has
+ * set, are included.
  *
  * ```ts
  * import { diagnoseRendered } from "@lo-tek/interfaces/diagnostics"
@@ -141,7 +142,7 @@ export const READ_RENDERED_PAGE = async (): Promise<{
  * expect(await diagnoseRendered(page)).toEqual([])
  * ```
  *
- * `page` er en Playwright-side, eller hva som helst med `evaluate`.
+ * `page` is a Playwright page, or anything with `evaluate`.
  */
 export async function diagnoseRendered(page: RenderedPage): Promise<Finding[]> {
   const { html, css } = await page.evaluate(READ_RENDERED_PAGE)

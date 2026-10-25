@@ -11,8 +11,9 @@
     color: var(--lt-color-neutral-text-strong);
     background: var(--lt-color-neutral-surface);
     border-radius: var(--lt-alert-radius, var(--lt-spacing-1));
-    /* Hver farge har en strek på kanten og en svak flate, satt lenger ned.
-       Teksten holder kontrasten mot den flaten i begge temaer. */
+    /* Each colour has a line on the edge and a faint surface, set further
+       down. The text keeps its contrast against that surface in both
+       themes. */
     border-inline-start: var(--lt-alert-accent, var(--lt-spacing-1)) solid
       var(--lt-color-neutral-text);
   }
@@ -24,8 +25,8 @@
     line-height: var(--lt-line-height-default);
   }
 
-  /* Bare elementet teller, så marginen til en `lt-help-text` eller
-     `lt-error-text` i meldingen vinner, som i kortet. */
+  /* Only the element counts, so the margin of an `lt-help-text` or
+     `lt-error-text` in the message wins, as in the card. */
   :where(.lt-alert) p {
     margin: 0;
   }

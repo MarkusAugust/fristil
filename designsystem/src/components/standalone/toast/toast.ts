@@ -2,22 +2,22 @@ import { attributes } from "../../css/shared.js"
 import { DEFAULT_TEXTS } from "../../default-texts.js"
 
 /**
- * Klassen på verten, altså regionen meldingene ligger i.
+ * The class on the host, that is, the region the messages are in.
  *
- * Fram til 0.28.0 var dette klassen på hver melding, og regionen ble stylet
- * med elementnavnet. Registrert under et annet navn, med
- * `defineLtToast("min-toast")`, mistet den da plasseringen sin.
+ * Until 0.28.0 this was the class on each message, and the region was styled
+ * by its element name. Registered under another name, with
+ * `defineLtToast("my-toast")`, it then lost its position.
  */
 export const TOAST_CLASS = "lt-toast" as const
 export const TOAST_MESSAGE_CLASS = "lt-toast__message" as const
 export const TOAST_CLOSE_CLASS = "lt-toast__close" as const
 
 export type ToastOptions = {
-  /** Tekst som sier hva regionen er. Blir `aria-label`. */
+  /** Text that says what the region is. Becomes `aria-label`. */
   label?: string
   /**
-   * Hva lukkeknappen i hver melding heter for skjermleseren. Standard:
-   * «Lukk melding». `closeLabel` i `show()` overstyrer den for én melding.
+   * The screen reader name of the close button in each message. Default:
+   * "Close message". `closeLabel` in `show()` overrides it for one message.
    */
   closeLabel?: string
 }
@@ -37,16 +37,18 @@ export type ToastAttributes = {
 }
 
 /**
- * Attributtene for varselregionen.
+ * The attributes for the toast region.
  *
- * Regionen er `role="status"` og ikke `role="alert"`. En melding som kommer
- * fordi noe gikk bra skal ikke avbryte det skjermleseren holder på med.
+ * The region is `role="status"` and not `role="alert"`. A message that comes
+ * because something went well should not interrupt what the screen reader is
+ * doing.
  *
- * `data-ignore-morph` er ikke valgfri. `<lt-toast>` lager og fjerner sine egne
- * elementer inni regionen, og uten attributtet river Datastars morfing dem bort
- * ved neste patch, fordi serverens utgave av regionen er tom. Attributtet må
- * stå i HTML-en serveren sender: komponenten kan ikke sette det på seg selv,
- * siden morfingen leser det fra serverens node.
+ * `data-ignore-morph` is not optional. `<lt-toast>` creates and removes its
+ * message elements inside the region, and without the attribute the Datastar
+ * morph tears them away at the next patch, because the server's version of
+ * the region is empty. The attribute must be in the HTML the server sends:
+ * the component cannot set it on itself, since the morph reads it from the
+ * server's node.
  */
 export const toast = ({
   label = DEFAULT_TEXTS.toastRegion,
@@ -56,8 +58,8 @@ export const toast = ({
     class: TOAST_CLASS,
     role: "status" as const,
     "aria-live": "polite" as const,
-    // `status` er atomisk som standard, og da leses hele stabelen opp på
-    // nytt for hver melding som kommer til.
+    // `status` is atomic by default, and then the whole stack is announced
+    // again for every message that is added.
     "aria-atomic": "false" as const,
     "aria-label": label,
     "close-label": closeLabel,

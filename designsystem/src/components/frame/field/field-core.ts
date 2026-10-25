@@ -1,59 +1,61 @@
 import type { FieldState, RequiredMarker } from "../../css/shared.js"
 import { attributes, createFieldId, idOrFallback } from "../../css/shared.js"
 
-// Videreeksportert her, der den hørte hjemme før, så konsumenter som
-// importerer fra `./field-core` ikke merker flyttingen.
+// Re-exported here, where it used to live, so consumers that import from
+// `./field-core` do not notice the move.
 export { createFieldId }
 
 /**
- * Regner ut koblingen mellom ledetekst, felt, hjelpetekst og feilmelding.
+ * Computes the wiring between label, field, help text and error text.
  *
- * Dette er den ene implementasjonen av tilgjengelighetskontrakten i systemet.
- * `<lt-field>` bruker den på elementer som allerede står i DOM-en, og
- * `lt.field()` gir den samme utregningen som data, til den som skriver
- * markupen med JavaScript. Uten delingen ville kontrakten finnes to steder og kunne gå
- * fra hverandre.
+ * This is the one implementation of the accessibility contract in the system.
+ * `<lt-field>` applies it to elements already in the DOM, and `lt.field()`
+ * returns the same result as data, for whoever writes the markup with
+ * JavaScript. Without sharing it, the contract would exist in two places and
+ * could drift apart.
  */
 
 export type FieldOptions = {
   /**
-   * Id på kontrollen. Påkrevd.
+   * The id of the control. Required.
    *
-   * I React kommer den fra `useId()`. Ellers er feltets eget navn som regel
-   * det opplagte valget. Vet du sikkert at markupen rendres én gang, kall
-   * `createFieldId()` selv.
+   * In React it comes from `useId()`. Otherwise the field's name is usually
+   * the obvious choice. If you know for certain that the markup is rendered
+   * once, call `createFieldId()` yourself.
    *
-   * Den var valgfri, og funksjonen laget en når den manglet. Id-en er
-   * tilfeldig, så to kjøringer gir to ulike, og rendres det samme feltet på
-   * en server og så i nettleseren, peker `for` og `aria-describedby` på noe
-   * annet enn det som står der. React melder avvik ved hydreringen, og
-   * advarselen sier selv at avviket ikke blir rettet opp.
+   * It used to be optional, and the function created one when it was
+   * missing. That id is random, so two runs give two different ones, and if
+   * the same field is rendered on a server and then in the browser, `for`
+   * and `aria-describedby` point to something other than what is there.
+   * React reports a mismatch on hydration, and the warning itself says the
+   * mismatch is not repaired.
    *
-   * Kravet står i typen, og det er ikke nok alene: en konsument uten
-   * TypeScript ser ingen type. Utelates id-en likevel, lager funksjonen en og
-   * sier fra i konsollen. Da virker feltet, og utvikleren får vite hvorfor
-   * han likevel bør oppgi id-en. Uten reserven fikk han `for=""`,
-   * `aria-describedby="undefined-help"` og ingen kobling i det hele tatt,
-   * altså verre enn den ustabile id-en kravet skulle bli kvitt.
+   * The type requires it, and that is not enough on its own: a consumer
+   * without TypeScript sees no type. If the id is left out anyway, the
+   * function creates one and says so in the console. The field then works,
+   * and the developer learns why the id should be given anyway. Without the
+   * fallback they got `for=""`, `aria-describedby="undefined-help"` and no
+   * wiring at all, which is worse than the unstable id the requirement was
+   * meant to remove.
    */
   id: string
-  /** Feltet har en hjelpetekst som skal kobles med `aria-describedby`. */
+  /** The field has a help text to connect with `aria-describedby`. */
   help?: boolean
-  /** Feltet har en feilmelding. Den skjules til feltet er ugyldig. */
+  /** The field has an error text. It is hidden until the field is invalid. */
   error?: boolean
-  /** Egen id på hjelpeteksten. Utledes fra `id` hvis den utelates. */
+  /** A separate id for the help text. Derived from `id` if left out. */
   helpId?: string
-  /** Egen id på feilmeldingen. Utledes fra `id` hvis den utelates. */
+  /** A separate id for the error text. Derived from `id` if left out. */
   errorId?: string
-  /** Marker ledeteksten som påkrevd. */
+  /** Marks the label as required. */
   required?: RequiredMarker
-  /** Marker ledeteksten som valgfri. */
+  /** Marks the label as optional. */
   optional?: boolean
-  /** Feltet er ugyldig: viser feilmeldingen og setter `aria-invalid`. */
+  /** The field is invalid: shows the error text and sets `aria-invalid`. */
   invalid?: boolean
-  /** Kontrollen er slått av. */
+  /** The control is disabled. */
   disabled?: boolean
-  /** Ekstra id-er som skal med i `aria-describedby`. */
+  /** Extra ids to include in `aria-describedby`. */
   describedBy?: string[]
 }
 
@@ -74,17 +76,18 @@ export type FieldAttributes = {
   }
   help: { id: string }
   error: { id: string; hidden?: true }
-  /** Tilstanden kontrollen skal ha, til `input()`, `textarea()` og `select()`. */
+  /** The state the control should have, for `input()`, `textarea()` and `select()`. */
   state: FieldState
 }
 
 /**
- * Setter sammen `aria-describedby` av hjelpetekst, feilmelding og det
- * kalleren har lagt til selv.
+ * Joins `aria-describedby` from the help text, the error text and whatever
+ * the caller added.
  *
- * Feilmeldingen tas bare med når feltet faktisk er ugyldig. Ellers ville
- * `aria-describedby` pekt på et skjult element, og skjermlesere melder da
- * enten ingenting eller noe som ikke står på skjermen.
+ * The error text is only included when the field is actually invalid.
+ * Otherwise `aria-describedby` would point to a hidden element, and screen
+ * readers then announce either nothing or something that is not on the
+ * screen.
  */
 export function joinDescribedBy(
   ids: Array<string | undefined | false>,
@@ -111,7 +114,7 @@ export function computeFieldAttributes(options: FieldOptions): FieldAttributes {
     describedBy = [],
   } = options
 
-  // Reserven gjelder bare den som ikke har en typesjekk. Se `idOrFallback`.
+  // The fallback is only for callers without a type check. See `idOrFallback`.
   const id = idOrFallback("lt.field()", givenId)
   const helpId = options.helpId ?? `${id}-help`
   const errorId = options.errorId ?? `${id}-error`
@@ -132,9 +135,10 @@ export function computeFieldAttributes(options: FieldOptions): FieldAttributes {
         ...describedBy,
       ]),
       "aria-invalid": invalid ? ("true" as const) : undefined,
-      // Fargen følger med her, ikke fra input()/textarea()/select(). Ellers
-      // ville begge satt aria-invalid, og i maler som skriver ut attributtene
-      // bokstavelig, som Astro og ren HTML, ble de stående dobbelt.
+      // The colour comes from here, not from input()/textarea()/select().
+      // Otherwise both would set aria-invalid, and in templates that write
+      // the attributes out literally, such as Astro and plain HTML, it
+      // appeared twice.
       "data-state": invalid ? ("invalid" as const) : undefined,
       disabled: disabled ? (true as const) : undefined,
     }),

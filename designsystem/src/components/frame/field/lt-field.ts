@@ -14,9 +14,10 @@ import { computeFieldAttributes } from "./field-core.js"
 export const LT_FIELD_TAG = "lt-field" as const
 
 /**
- * Delene feltet finner, som selektorer relativt til elementet. Komponenten
- * finner delene med disse, og manifestet beskriver dem for den som setter
- * sammen markupen selv, så de to ikke kan si noe ulikt.
+ * The parts the field looks for, as selectors relative to the element. The
+ * component finds its parts with these, and the manifest describes them for
+ * whoever assembles the markup by hand, so the two cannot say different
+ * things.
  */
 export const LT_FIELD_PARTS = {
   label: "label",
@@ -36,13 +37,14 @@ function readMarker(value: string | null | undefined): Marker | undefined {
 }
 
 /**
- * Attributtene `<lt-field>` observerer. De fleste regner den ut selv, og
- * setter tilbake om de blir borte. `id` på kontrollen, og `hidden` og `style`
- * på feilmeldingen, leser den bare: de er malens.
+ * The attributes `<lt-field>` observes. It computes most of them itself, and
+ * sets them back if they disappear. `id` on the control, and `hidden` and
+ * `style` on the error text, it only reads: they come from the template.
  *
- * Det samme sto en gang i `FIELD_PRESERVED_ATTRIBUTES`, som malen måtte
- * skrive av inn i `data-preserve-attr`. Den lista finnes ikke lenger:
- * komponenten ser at attributtene er borte og setter dem tilbake.
+ * The same list once lived in `FIELD_PRESERVED_ATTRIBUTES`, which the
+ * template had to copy into `data-preserve-attr`. That list no longer
+ * exists: the component sees that the attributes are gone and sets them
+ * back.
  */
 const DERIVED_ATTRIBUTES = [
   "class",
@@ -56,30 +58,33 @@ const DERIVED_ATTRIBUTES = [
   "data-optional",
   "disabled",
   "hidden",
-  // `data-show` i Datastar skjuler feilmeldingen med `display: none`.
+  // `data-show` in Datastar hides the error text with `display: none`.
   "style",
 ]
 
 /**
- * Det komponenten sist skrev på en kontroll, og hva serveren sist sa.
+ * What the component last wrote on a control, and what the server last said.
  *
- * Tre attributter både leses fra kontrollen og skrives dit igjen:
- * `aria-invalid`, `aria-describedby` og `disabled`. De leses fordi serveren
- * kan ha skrevet feltet med `lt.field()`, og da står svaret allerede der. Men
- * en naiv avlesning er komponentens eget ekko fra forrige runde. For
- * `aria-invalid` gjorde det at `felt.invalid = false` fjernet flagget på
- * verten mens den røde rammen ble stående for godt. For `aria-describedby`
- * krympet lista aldri: feilmeldingens id sto igjen etter at feilen var
- * borte. For `disabled` lot feltet seg ikke slå på igjen fra verten.
+ * Three attributes are both read from the control and written back to it:
+ * `aria-invalid`, `aria-describedby` and `disabled`. They are read because
+ * the server may have written the field with `lt.field()`, and then the
+ * answer is already there. But a naive read is the component's echo from the
+ * previous round. For `aria-invalid` that meant `field.invalid = false`
+ * removed the flag on the host while the red border stayed for good. For
+ * `aria-describedby` the list never shrank: the error text's id stayed after
+ * the error was gone. For `disabled` the field could not be enabled again
+ * from the host.
  *
- * Løsningen er ikke å huske hva verten sa sist. Det ble prøvd, og gjorde
- * komponenten avhengig av historien sin: den samme markupen ga to ulike svar
- * alt etter om verten hadde hatt `invalid` innom en gang.
+ * The fix is not to remember what the host said last. That was tried, and
+ * made the component depend on its history: the same markup gave two
+ * different answers depending on whether the host had had `invalid` at some
+ * point.
  *
- * I stedet noteres verdien komponenten skrev, og på hvilken kontroll. Står
- * det noe annet der neste gang, har noen andre rørt attributtet, og det er
- * serverens ord. Avlesningen er dermed alltid utledet av en endring som
- * faktisk har skjedd, og det samme dokumentet gir alltid det samme svaret.
+ * Instead the component notes the value it wrote, and on which control. If
+ * something else is there next time, someone else has touched the
+ * attribute, and that is the server's word. The read is therefore always
+ * derived from a change that actually happened, and the same document always
+ * gives the same answer.
  */
 type ControlMemory = {
   written: ControlWord
@@ -87,10 +92,10 @@ type ControlMemory = {
 }
 
 /**
- * Det samme minnet for markeringene på ledeteksten. Komponenten både leser
- * og skriver `data-required` og `data-optional`, og uten å vite hva den selv
- * skrev, leste den sitt eget svar tilbake: `optional` og påkrevd-markeringen
- * lot seg ikke slå av igjen.
+ * The same memory for the markers on the label. The component both reads and
+ * writes `data-required` and `data-optional`, and without knowing what it
+ * wrote itself, it read its own answer back: `optional` and the required
+ * marker could not be turned off again.
  */
 type LabelWord = { required: string | null; optional: boolean }
 type LabelMemory = { written: LabelWord; server: LabelWord }
@@ -110,92 +115,93 @@ function readControlWord(control: Element): ControlWord {
 }
 
 /**
- * Kobler ledetekst, kontroll, hjelpetekst og feilmelding i vanlig DOM.
+ * Connects label, control, help text and error text in plain DOM.
  *
- * Komponenten er for markup som blir til uten JavaScript: en Go-mal, en
- * PHP-fil, en Razor-visning eller håndskrevet HTML. Lages markupen med
- * JavaScript, uansett hvor koden kjører, skal `lt.field()` skrive
- * attributtene i stedet, og da trengs ikke dette elementet.
+ * The component is for markup produced without JavaScript: a Go template, a
+ * PHP file, a Razor view or handwritten HTML. When the markup is written with
+ * JavaScript, wherever the code runs, `lt.field()` should write the
+ * attributes instead, and this element is not needed.
  *
- * Komponenten rendrer ingenting. Den satte tidligere et `<slot>`-element inn i
- * vanlig DOM, og siden serveren ikke visste om det, fjernet Datastars morfing
- * det ved hver patch.
+ * The component renders nothing. It used to insert a `<slot>` element into
+ * plain DOM, and since the server did not know about it, Datastar's morph
+ * removed it on every patch.
  *
- * Malen skriver det HTML krever for at feltet skal virke uten JavaScript:
- * `for` på ledeteksten og `id` på kontrollen, eller ledeteksten rundt
- * kontrollen. Komponenten skriver resten: id på hjelpeteksten og
- * feilmeldingen, `aria-describedby`, `aria-invalid` og klassene. River en
- * morfing det bort, ser komponenten det og setter det tilbake.
+ * The template writes what HTML requires for the field to work without
+ * JavaScript: `for` on the label and `id` on the control, or the label
+ * wrapping the control. The component writes the rest: the ids of the help
+ * text and the error text, `aria-describedby`, `aria-invalid` and the
+ * classes. If a morph removes them, the component sees it and sets them back.
  *
- * Komponenten skriver aldri id på kontrollen. Datastar og idiomorph kjenner
- * igjen en node på id, og en kontroll med en id serveren ikke sendte, blir
- * byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet.
+ * The component never writes an id on the control. Datastar and idiomorph
+ * recognise a node by its id, and a control with an id the server did not
+ * send is replaced on the next update, along with focus and what the user
+ * has typed.
  *
- * Feltet er ugyldig når feilmeldingen synes, altså når den står uten
- * `hidden`, eller når serveren har skrevet `aria-invalid` på kontrollen. Det
- * er ingen egen tilstand på verten: en mal rendrer feilmeldingen når feltet
- * er ugyldig, og klientkode slår `hidden` av og på.
+ * The field is invalid when the error text is visible, that is when it has
+ * no `hidden`, or when the server has written `aria-invalid` on the control.
+ * There is no separate state on the host: a template renders the error text
+ * when the field is invalid, and client code toggles `hidden`.
  */
 export class LtField extends HostElement {
   static observedAttributes = ["disabled", "optional", "described-by"] as const
 
   private observer?: MutationObserver
   /**
-   * Id-ene hjelpeteksten og feilmeldingen sist hadde, enten de kom fra
-   * markupen eller herfra, så en patch som river dem bort får den samme
-   * tilbake og ikke en ny. `managedIds` er alle id-er komponenten noen gang
-   * har forvaltet. Sammen med om id-en fortsatt peker på et element skiller
-   * det dem fra id-ene serveren selv la i `aria-describedby`.
+   * The ids the help text and the error text last had, whether they came
+   * from the markup or from here, so a patch that removes them gets the same
+   * one back and not a new one. `managedIds` is every id the component has
+   * ever managed. Together with whether the id still points to an element,
+   * that tells them apart from the ids the server put in `aria-describedby`.
    */
   private lastHelpId?: string
   private lastErrorId?: string
   private readonly managedIds = new Set<string>()
   /**
-   * Hva komponenten skrev på hver kontroll, nøklet på selve kontrollen.
+   * What the component wrote on each control, keyed on the control itself.
    *
-   * Et `WeakMap` og ikke et felt med «forrige kontroll». Minnet skal
-   * overleve at verten kobles fra og til igjen, som når React flytter et
-   * felt, og at kontrollen forsvinner og kommer tilbake i en patch. Et felt
-   * som ble nullstilt i `disconnectedCallback` gjorde at komponenten leste
-   * sitt eget `aria-invalid="true"` som serverens ord etter en flytting, og
-   * feltet kunne aldri bli gyldig igjen. Samtidig holder et `WeakMap` ingen
-   * løsrevet node i live: er kontrollen borte for godt, er minnet det også.
+   * A `WeakMap` and not a "previous control" property. The memory has to
+   * survive the host being disconnected and connected again, as when React
+   * moves a field, and the control disappearing and coming back in a patch.
+   * A property that was reset in `disconnectedCallback` made the component
+   * read its own `aria-invalid="true"` as the server's word after a move, and
+   * the field could never become valid again. A `WeakMap` also keeps no
+   * detached node alive: when the control is gone for good, so is the memory.
    */
   private readonly memory = new WeakMap<Element, ControlMemory>()
   private readonly labelMemory = new WeakMap<Element, LabelMemory>()
-  /** `for` komponenten selv skrev på ledeteksten. */
+  /** The `for` the component itself wrote on the label. */
   private readonly forByMe = new WeakMap<Element, string>()
   /**
-   * Ledetekster der serveren skrev en `for` som pekte på en annen id enn
-   * kontrollens. Komponenten skriver den om, men uten JavaScript sto feltet
-   * uten ledetekst, så det skal sies fra, én gang. Minnet nullstilles ikke:
-   * etter omskrivingen står den riktige der, og den kan ikke skilles fra en
-   * server som rettet seg.
+   * Labels where the server wrote a `for` pointing to a different id than
+   * the control's. The component rewrites it, but without JavaScript the
+   * field had no label, so it must be reported, once. The memory is not
+   * reset: after the rewrite the right value is there, and it cannot be told
+   * apart from a server that corrected itself.
    */
   private readonly wrongFor = new WeakSet<Element>()
   /**
-   * Kontrollen sist.
+   * The control last time.
    *
-   * Nok til å se at en oppdatering fra serveren byttet den ut fordi id-en
-   * endret seg: Datastar og idiomorph kjenner igjen en node på id, og en ny
-   * id fra serveren er en ny node for dem. Det skjer når malen lager id-en
-   * av noe som skifter mellom rendringene, som et tilfeldig tall eller en
-   * teller.
+   * Enough to see that a server update replaced it because the id changed:
+   * Datastar and idiomorph recognise a node by its id, and a new id from the
+   * server is a new node to them. That happens when the template builds the
+   * id from something that changes between renders, such as a random number
+   * or a counter.
    *
-   * En referanse, ikke bare et minne i `memory`: byttet ses ved å
-   * sammenligne den med kontrollen som står der nå, og det den gamle
-   * inneholdt må kunne leses etter at den er ute av treet. Den holder én
-   * løsrevet node i live til neste `sync()`, og det er med vilje.
+   * A reference, not just an entry in `memory`: the replacement is detected
+   * by comparing it with the control that is there now, and what the old one
+   * contained must be readable after it has left the tree. It keeps one
+   * detached node alive until the next `sync()`, on purpose.
    */
   private lastControl?: HTMLElement
-  /** Kontrollene der `data-state` er komponentens egen. */
+  /** The controls where `data-state` was written by the component. */
   private readonly stateByMe = new WeakSet<Element>()
 
   /**
-   * Egenskapene speiler attributtene.
+   * The properties mirror the attributes.
    *
-   * Tilstanden bor i attributtet og ikke i et felt på klassen, slik at det
-   * serveren sendte og det komponenten mener alltid er det samme.
+   * The state lives in the attribute and not in a field on the class, so what
+   * the server sent and what the component thinks are always the same.
    */
   get disabled(): boolean {
     return this.hasAttribute("disabled")
@@ -223,26 +229,26 @@ export class LtField extends HostElement {
 
   connectedCallback(): void {
     /*
-     * `slotchange` melder ikke fra i vanlig DOM, og innholdet byttes ut mens
-     * brukeren fyller ut skjemaet.
+     * `slotchange` does not fire in plain DOM, and the content is replaced
+     * while the user fills in the form.
      *
-     * Attributtene er med, ikke bare barna. En morfing river bort det som
-     * ikke står i serverens HTML, og koblingen mellom ledetekst, felt og
-     * hjelpetekst er nettopp det: noe komponenten regnet ut, ikke noe
-     * serveren sendte. Før måtte malen liste opp attributtene i
-     * `data-preserve-attr` for at de skulle overleve. Nå ser komponenten at
-     * de er borte, og setter dem tilbake.
+     * The attributes are observed, not just the children. A morph removes
+     * whatever is not in the server's HTML, and the wiring between label,
+     * field and help text is exactly that: something the component computed,
+     * not something the server sent. The template used to have to list the
+     * attributes in `data-preserve-attr` for them to survive. Now the
+     * component sees that they are gone, and sets them back.
      *
-     * Lista er avgrenset til det komponenten selv utleder. De andre
-     * komponentene gjør det samme med sin egen tilstand, hver med sin liste.
+     * The list is limited to what the component derives itself. The other
+     * components do the same with their state, each with its own list.
      *
-     * Hver skriving i `sync()` sammenligner først. Uten det ville
-     * observatøren utløst seg selv i det uendelige.
+     * Every write in `sync()` compares first. Without that the observer
+     * would trigger itself forever.
      */
     this.observer = new MutationObserver((records) => {
-      // `style` observeres for `display: none` på feilmeldingen. En
-      // stilskriving et annet sted i feltet, som et sprettoppvindu som
-      // plasserer panelet sitt, angår ikke koblingen.
+      // `style` is observed for `display: none` on the error text. A style
+      // write elsewhere in the field, such as a popover positioning its
+      // panel, does not concern the wiring.
       const onlyForeignStyle = records.every(
         (r) =>
           r.type === "attributes" &&
@@ -256,7 +262,7 @@ export class LtField extends HostElement {
       subtree: true,
       attributes: true,
       attributeFilter: DERIVED_ATTRIBUTES,
-      // En morfing kan bytte teksten i feilmeldingen uten å bytte noden.
+      // A morph can change the text of the error text without replacing the node.
       characterData: true,
     })
     this.sync()
@@ -272,17 +278,17 @@ export class LtField extends HostElement {
   }
 
   /**
-   * Ledeteksten feltet hører sammen med.
+   * The label the field belongs with.
    *
-   * Vanligvis står den inni elementet. Står den utenfor, med `for` som peker
-   * på kontrollen, er feltet like godt navngitt, og komponenten kobler den
-   * på samme måte. Én forskjell er verdt å vite: en ledetekst utenfor ligger
-   * ikke i det komponenten observerer, så river en patch klassen av den,
-   * kommer den ikke tilbake av seg selv.
+   * Usually it is inside the element. If it is outside, with `for` pointing
+   * to the control, the field is just as well named, and the component
+   * connects it the same way. One difference is worth knowing: a label
+   * outside is not in what the component observes, so if a patch removes its
+   * class, the class does not come back by itself.
    */
   /**
-   * Husker om serveren skrev en `for` som ikke var kontrollens id. Det
-   * komponenten selv skrev sist teller ikke.
+   * Remembers whether the server wrote a `for` that was not the control's
+   * id. What the component itself wrote last does not count.
    */
   private noteFor(label: Element, id: string): void {
     const current = label.getAttribute("for")
@@ -303,12 +309,12 @@ export class LtField extends HostElement {
   }
 
   /**
-   * Serverens ord om kontrollen, utledet av hva som står der nå mot hva
-   * komponenten selv skrev sist.
+   * The server's word about the control, derived from what is there now
+   * compared with what the component itself wrote last.
    *
-   * En kontroll komponenten aldri har skrevet på, sier bare serverens ord.
-   * Ellers er hvert attributt serverens hvis det er et annet enn det
-   * komponenten skrev, og uendret hvis det er det samme.
+   * A control the component has never written on holds only the server's
+   * word. Otherwise each attribute is the server's if it differs from what
+   * the component wrote, and unchanged if it is the same.
    */
   private serverLabelWord(label: Element | null): LabelWord {
     if (!label) return { required: null, optional: false }
@@ -352,13 +358,13 @@ export class LtField extends HostElement {
   }
 
   /**
-   * Delene som hører til dette feltet, og ikke til et felt lenger ned.
+   * The parts that belong to this field, and not to a field further down.
    *
-   * Et felt kan stå inni et annet: et søkefelt i et sprettoppvindu inni
-   * feltet, eller et `<lt-field>` i et `<lt-field>`. `querySelector` over
-   * hele undertreet fant da det innerste feltets kontroll først, og det ytre
-   * feltet skrev koblingen sin på den. Avgrensningen er den samme som
-   * `derivedParts()` i `host-element.ts` bruker for de andre komponentene.
+   * A field can be inside another: a search field in a popover inside the
+   * field, or an `<lt-field>` in an `<lt-field>`. `querySelector` over the
+   * whole subtree then found the innermost field's control first, and the
+   * outer field wrote its wiring on it. The scoping is the same as the one
+   * `derivedParts()` in `host-element.ts` uses for the other components.
    */
   private ownParts<T extends Element>(selector: string): T[] {
     return [...this.querySelectorAll<T>(selector)].filter(
@@ -371,17 +377,18 @@ export class LtField extends HostElement {
   }
 
   /**
-   * Sier fra når en oppdatering byttet ut kontrollen fordi id-en fra serveren
-   * endret seg.
+   * Reports when an update replaced the control because the id from the
+   * server changed.
    *
-   * Beskjeden kommer bare når brukeren hadde noe å miste: den gamle
-   * kontrollen er ute av treet, begge hadde en id fra serveren, id-ene er
-   * ulike, og det sto noe annet i den gamle enn i den nye. En server som med
-   * vilje sender et annet felt, har som regel også en annen ledetekst eller et
-   * annet `name`; da tier den. Det sammenlignes med den nye kontrollen, ikke
-   * med den gamles `defaultValue`: en `<select>` har alltid et valgt
-   * alternativ uten at noe er `defaultSelected`, og en server som sender
-   * teksten brukeren skrev tilbake, har ikke mistet noe.
+   * The message only comes when the user had something to lose: the old
+   * control has left the tree, both had an id from the server, the ids
+   * differ, and the old one contained something other than the new one. A
+   * server that sends a different field on purpose usually also has a
+   * different label or a different `name`; then it stays silent. The
+   * comparison is with the new control, not with the old one's
+   * `defaultValue`: a `<select>` always has a selected option without any
+   * being `defaultSelected`, and a server that sends back the text the user
+   * typed has lost nothing.
    */
   private warnAboutReplacedControl(
     lost: HTMLElement,
@@ -394,13 +401,14 @@ export class LtField extends HostElement {
 
     warnAboutMarkup(
       this,
-      "en oppdatering fra serveren byttet ut kontrollen, og det brukeren " +
-        "hadde skrevet i den gikk tapt. Id-en på kontrollen var en annen enn " +
-        "sist, og da kjenner oppdateringen ikke kontrollen igjen. Lag id-en av " +
-        "noe som er det samme hver gang, som navnet på feltet eller en nøkkel " +
-        "i dataene, ikke av et tilfeldig tall eller en teller.",
-      // Byttet har skjedd og kan ikke gå over av seg selv, med mindre en ny
-      // oppdatering alt har byttet kontrollen igjen.
+      "a server update replaced the control and lost what the user " +
+        "had typed in it, because the control's id was different from " +
+        "last time and the update did not recognise it. Build the id " +
+        "from something that is the same every time, such as the field " +
+        "name or a key in the data, not from a random number or a " +
+        "counter.",
+      // The replacement has happened and cannot undo itself, unless a new
+      // update has already replaced the control again.
       () =>
         !lost.isConnected &&
         this.ownPart<HTMLElement>(CONTROL_SELECTOR) === control,
@@ -408,11 +416,11 @@ export class LtField extends HostElement {
   }
 
   /**
-   * Sto det noe annet i den gamle kontrollen enn i den nye?
+   * Did the old control contain something other than the new one?
    *
-   * En avkrysningsboks og en radioknapp har samme `value` uansett, så der
-   * er det krysset som teller. Et `<select>` sammenlignes på de valgte
-   * alternativene, siden `value` bare er det første av dem.
+   * A checkbox and a radio button have the same `value` either way, so there
+   * the checked state is what counts. A `<select>` is compared on the
+   * selected options, since `value` is only the first of them.
    */
   private differs(lost: HTMLElement, control: HTMLElement): boolean {
     if (
@@ -445,11 +453,11 @@ export class LtField extends HostElement {
     if (!control) {
       warnAboutMarkup(
         this,
-        "fant ingen kontroll å koble til. Ledeteksten, hjelpeteksten og " +
-          "feilmeldingen står uten et felt, og koblingen kan ikke lages. " +
-          "Sett inn et <input>, <textarea> eller <select>.",
-        // Et tomt element er et område serveren ikke har fylt ennå, og det
-        // er ikke en feil i markupen.
+        "found no control to connect. Add an <input>, <textarea> or " +
+          "<select>, or the label, help text and error text have no field " +
+          "to be connected to.",
+        // An empty element is a region the server has not filled yet, and
+        // that is not an error in the markup.
         () =>
           this.childElementCount > 0 &&
           this.ownParts(CONTROL_SELECTOR).length === 0,
@@ -457,31 +465,31 @@ export class LtField extends HostElement {
       return
     }
 
-    // Koblingen gjelder én kontroll, og det er den første. En kontroll til i
-    // samme felt står uten ledetekst, hjelpetekst og feilmelding, og det
-    // skal sies fra om framfor at den stilltiende står ukoblet.
+    // The wiring applies to one control, and that is the first. Another
+    // control in the same field has no label, help text or error text, and
+    // that must be reported rather than left silently unconnected.
     warnAboutMarkup(
       this,
-      "har mer enn én kontroll. Bare den første får ledeteksten, " +
-        "hjelpeteksten og feilmeldingen koblet til seg. Gi hver kontroll " +
-        "sitt eget <lt-field>, eller legg en gruppe i et <fieldset> med " +
+      "has more than one control, and only the first gets the label, " +
+        "help text and error text connected to it. Give each control " +
+        "its own <lt-field>, or put a group in a <fieldset> with a " +
         "<legend>.",
       () => this.ownParts(CONTROL_SELECTOR).length > 1,
     )
 
-    // Ledeteksten kan stå utenfor elementet. Oppslaget må skje etter at
-    // kontrollen er funnet, siden det går via id-en hennes.
+    // The label can be outside the element. The lookup has to happen after
+    // the control is found, since it goes through the control's id.
     const label = this.resolveLabel(control)
 
     warnAboutMarkup(
       this,
-      "<label> er ikke koblet til feltet: feltet har ingen id, og " +
-        "ledeteksten står ikke rundt det. Uten JavaScript har feltet da ingen " +
-        "ledetekst, og en skjermleser leser det opp uten navn. Skriv id på " +
-        "feltet og samme for på ledeteksten, eller legg <label> rundt feltet. " +
-        "Komponenten lager ikke " +
-        "id-en selv: en id serveren ikke sendte, får en oppdatering fra " +
-        "serveren til å bytte ut feltet.",
+      "<label> is not connected to the field: the field has no id, " +
+        "and the label does not wrap it, so without JavaScript a screen " +
+        "reader announces the field without a name. Write an id on the " +
+        "field and the same value in for on the label, or wrap the " +
+        "field in the <label>; the component does not write the id " +
+        "itself, because an id the server did not send makes a server " +
+        "update replace the field.",
       () => {
         const now = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
         const labelNow = this.resolveLabel(now)
@@ -496,14 +504,14 @@ export class LtField extends HostElement {
       },
     )
 
-    // `for` går foran det at ledeteksten står rundt feltet. Peker den på en
-    // annen id, har feltet ingen ledetekst, også med JavaScript.
+    // `for` wins over the label wrapping the field. If it points to another
+    // id, the field has no label, with JavaScript too.
     warnAboutMarkup(
       this,
-      "<label> står rundt feltet, men for på ledeteksten peker på en annen " +
-        "id enn feltets. for går foran, så feltet har ingen ledetekst, og en " +
-        "skjermleser leser det opp uten navn. Ta bort for, eller gi feltet " +
-        "den samme id-en.",
+      "<label> wraps the field, but its for points to a different id " +
+        "than the field's, and for wins, so a screen reader announces " +
+        "the field without a name. Remove for, or give the field the " +
+        "same id.",
       () => {
         const now = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
         const labelNow = this.ownPart<HTMLLabelElement>(LT_FIELD_PARTS.label)
@@ -515,10 +523,10 @@ export class LtField extends HostElement {
 
     warnAboutMarkup(
       this,
-      "for på ledeteksten pekte på en annen id enn feltets. Komponenten " +
-        "skrev den om, men uten JavaScript hadde feltet da ingen ledetekst, " +
-        "og en skjermleser leste det opp uten navn. Gi ledeteksten feltets " +
-        "id i malen.",
+      "for on the label pointed to a different id than the field's. " +
+        "The component rewrote it, but without JavaScript the field has " +
+        "no label and a screen reader announces it without a name, so " +
+        "write the field's id in for in the template.",
       () => {
         const now = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
         const labelNow = this.resolveLabel(now)
@@ -528,19 +536,19 @@ export class LtField extends HostElement {
 
     warnAboutMarkup(
       this,
-      "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
-        "skjermleser leser det opp uten navn. Står ledeteksten utenfor " +
-        "<lt-field>, må for på den peke på id-en til feltet.",
+      "found no <label>, so the field has no label and a screen " +
+        "reader announces it without a name. If the label is outside " +
+        "<lt-field>, its for must point to the field's id.",
       /*
-       * Tre lovlige måter å gi feltet et navn på, og ingen av dem skal gi en
-       * advarsel: en `<label>` inni, en `<label for>` utenfor, eller
-       * `aria-label` og `aria-labelledby` på kontrollen, som i et søkefelt
-       * med bare et ikon.
+       * Three valid ways to give the field a name, and none of them should
+       * give a warning: a `<label>` inside, a `<label for>` outside, or
+       * `aria-label` and `aria-labelledby` on the control, as in a search
+       * field with only an icon.
        */
       () => {
         const named = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
         if (!named || this.resolveLabel(named)) return false
-        // En <label> rundt hele <lt-field> gir også kontrollen et navn.
+        // A <label> around the whole <lt-field> also gives the control a name.
         if (((named as HTMLInputElement).labels?.length ?? 0) > 0) return false
         return (
           !named.hasAttribute("aria-label") &&
@@ -550,13 +558,14 @@ export class LtField extends HostElement {
     )
 
     /*
-     * Id-ene hjelpeteksten og feilmeldingen sist hadde, husket mellom rundene.
+     * The ids the help text and the error text last had, remembered between
+     * rounds.
      *
-     * Markupen er kilden så lenge den har dem. River en morfing dem bort,
-     * ville en ny id blitt laget for hver eneste patch, og en skjermleser som
-     * står midt i en opplesning ville fulgt en peker som skiftet under den.
-     * Minnet er ikke en parallell utgave av tilstanden: står id-en i
-     * markupen, er det den som gjelder.
+     * The markup is the source as long as it has them. If a morph removes
+     * them, a new id would be created for every single patch, and a screen
+     * reader in the middle of announcing would follow a reference that
+     * changed under it. The memory is not a parallel copy of the state: if
+     * the id is in the markup, that is the one that applies.
      */
     if (help) {
       if (help.id) this.lastHelpId = help.id
@@ -575,56 +584,58 @@ export class LtField extends HostElement {
       this.managedIds.add(error.id)
     }
 
-    // Markeringene leses også fra markupen. Skrev serveren dem med
-    // `lt.field()`, står de på ledeteksten, og en komponent som bare så på
-    // sine egne attributter ville fjernet dem igjen. I React ga det en
-    // hydreringsfeil: serveren sendte `data-required="symbol"`, komponenten
-    // tok det bort, og så mente React at HTML-en ikke stemte.
+    // The markers are also read from the markup. If the server wrote them
+    // with `lt.field()`, they are on the label, and a component that only
+    // looked at its own attributes would remove them again. In React that
+    // gave a hydration error: the server sent `data-required="symbol"`, the
+    // component removed it, and then React decided the HTML did not match.
     const serverLabel = this.serverLabelWord(label)
     const marker = readMarker(serverLabel.required)
 
-    // Tilstanden leses fra markupen, ikke bare fra et attributt på verten.
-    // Skrev serveren feltet med `lt.field()`, står svaret allerede på
-    // kontrollen, og en komponent som regnet ut sitt eget ville fjernet det
-    // igjen. Da kranglet de to halvdelene av API-et med hverandre. Se
-    // `ControlMemory` for hvordan serverens ord skilles fra komponentens eget.
+    // The state is read from the markup, not just from an attribute on the
+    // host. If the server wrote the field with `lt.field()`, the answer is
+    // already on the control, and a component that computed its own would
+    // remove it again. The two halves of the API then fought each other. See
+    // `ControlMemory` for how the server's word is told apart from what the
+    // component wrote.
     const server = this.serverWord(control, readControlWord(control))
 
-    // `aria-invalid` har fire lovlige verdier, og både `grammar` og
-    // `spelling` betyr ugyldig. Fravær, `false` og tom streng betyr gyldig;
-    // ARIA sier at tom streng skal leses som `false`, og hjelpemidlene gjør
-    // det, så komponenten kan ikke vise rød ramme på den.
+    // `aria-invalid` has four valid values, and both `grammar` and
+    // `spelling` mean invalid. Absence, `false` and the empty string mean
+    // valid; ARIA says the empty string is read as `false`, and assistive
+    // technology does so, so the component cannot show a red border for it.
     const serverInvalid =
       server.invalid !== null &&
       server.invalid !== "false" &&
       server.invalid !== ""
-    // En feilmelding som synes, betyr at feltet er ugyldig. Den er ikke
-    // komponentens å skjule: malen rendrer den når feltet er ugyldig, og
-    // klientkode slår `hidden` av og på, eller `display: none` som
-    // `data-show` i Datastar. En tom feilmelding sier ingenting, som en
-    // beholder `data-text` fyller.
+    // A visible error text means the field is invalid. It is not the
+    // component's to hide: the template renders it when the field is
+    // invalid, and client code toggles `hidden`, or `display: none` as
+    // `data-show` in Datastar does. An empty error text says nothing, such as
+    // a container that `data-text` fills.
     const errorShown =
       error !== null &&
       !error.hasAttribute("hidden") &&
       (error.textContent ?? "").trim() !== "" &&
-      // Sist, siden den tvinger fram en stilberegning.
+      // Last, since it forces a style computation.
       getComputedStyle(error).display !== "none"
     const invalid = serverInvalid || errorShown
     const disabled = this.hasAttribute("disabled") || server.disabled
 
     /*
-     * Id-ene serveren selv la i `aria-describedby`, utenom dem komponenten
-     * forvalter. `lt.field({ describedBy })` skriver dem rett på kontrollen,
-     * og de skal med videre. De forvaltede strykes her og legges til igjen
-     * etter dagens tilstand, ellers ble feilmeldingens id stående etter at
-     * feilen var borte.
+     * The ids the server put in `aria-describedby`, apart from those the
+     * component manages. `lt.field({ describedBy })` writes them straight on
+     * the control, and they must be kept. The managed ones are removed here
+     * and added again from the current state, or the error text's id stayed
+     * after the error was gone.
      *
-     * Forvaltet er dagens hjelpetekst og feilmelding, og en id komponenten
-     * har forvaltet før som ikke lenger peker på noe. Det siste er for et
-     * skript som fjerner hjelpeteksten uten å røre kontrollen. Eierskapet
-     * avgjøres av DOM-en og ikke av historikken alene: peker id-en fortsatt
-     * på et element, som når serveren flytter hjelpeteksten ut av feltet og
-     * beholder id-en, er den serverens.
+     * Managed means the current help text and error text, and an id the
+     * component managed before that no longer points to anything. The latter
+     * is for a script that removes the help text without touching the
+     * control. Who an id belongs to is decided by the DOM and not by the
+     * history alone: if the id still points to an element, as when the
+     * server moves the help text out of the field and keeps the id, it is the
+     * server's.
      */
     const root = this.getRootNode() as Document | ShadowRoot
     const managedNow = (id: string) =>
@@ -636,13 +647,14 @@ export class LtField extends HostElement {
       .filter((id) => id && !managedNow(id))
 
     const computed = computeFieldAttributes({
-      // `computeFieldAttributes` krever en id. Kontrollens egen brukes når den
-      // finnes; ellers en stamme som aldri skrives, siden komponenten verken
-      // skriver id på kontrollen eller `for` ut fra den.
+      // `computeFieldAttributes` requires an id. The control's id is used
+      // when it exists; otherwise a stem that is never written, since the
+      // component writes neither an id on the control nor `for` from it.
       id: control.id || "lt-field",
       help: Boolean(help),
-      // Bare en synlig feilmelding beskriver feltet. Sier serveren ugyldig
-      // mens meldingen er skjult, skal ikke pekeren gå til noe skjult.
+      // Only a visible error text describes the field. If the server says
+      // invalid while the message is hidden, the reference must not point to
+      // something hidden.
       error: errorShown,
       helpId: help?.id,
       errorId: error?.id,
@@ -660,9 +672,10 @@ export class LtField extends HostElement {
 
     if (label) {
       addClass(label, computed.label.class)
-      // `for` og `id` er den samme opplysningen, og de to kan ikke få lov til
-      // å si hver sin ting. Den skrives fra kontrollens id, aldri motsatt, og
-      // ikke når ledeteksten står rundt kontrollen, der koblingen er implisitt.
+      // `for` and `id` are the same piece of information, and the two must
+      // not say different things. It is written from the control's id, never
+      // the other way round, and not when the label wraps the control, where
+      // the wiring is implicit.
       if (control.id && !label.contains(control)) {
         this.noteFor(label, control.id)
         setAttr(label, "for", control.id)
@@ -680,11 +693,11 @@ export class LtField extends HostElement {
       setAttr(label, "aria-disabled", computed.label["aria-disabled"])
     }
 
-    // Serverens ord står ordrett når det er serveren som sier feltet er
-    // ugyldig, også `spelling` og `grammar`. Ellers skriver komponenten
-    // `true` når verten sier det, og lar et `false` serveren skrev stå:
-    // det er gyldig og vanlig i håndskrevet HTML, og ble strøket ved hver
-    // patch.
+    // The server's word stays verbatim when it is the server that says the
+    // field is invalid, `spelling` and `grammar` included. Otherwise the
+    // component writes `true` when the host says so, and leaves a `false`
+    // the server wrote: it is valid and common in handwritten HTML, and used
+    // to be removed on every patch.
     const ariaInvalid = serverInvalid
       ? server.invalid
       : invalid
@@ -693,13 +706,13 @@ export class LtField extends HostElement {
 
     setAttr(control, "aria-describedby", computed.control["aria-describedby"])
     setAttr(control, "aria-invalid", ariaInvalid)
-    // `setFlag` og ikke `setAttr`: en mal kan ha skrevet
-    // `disabled="disabled"`, og den skal stå som den er. `setAttr` ville
-    // normalisert verdien til den tomme strengen, og siden `disabled` er
-    // blant attributtene komponenten observerer, ville serveren og
-    // komponenten skrevet hver sin verdi ved hver patch. Ingen `aria-disabled`
-    // ved siden av: et ekte `disabled` er alt synlig for hjelpemidlene, og
-    // `computeFieldAttributes` skriver det bare på ledeteksten.
+    // `setFlag` and not `setAttr`: a template may have written
+    // `disabled="disabled"`, and it must stay as it is. `setAttr` would
+    // normalise the value to the empty string, and since `disabled` is among
+    // the attributes the component observes, the server and the component
+    // would each write their own value on every patch. No `aria-disabled`
+    // alongside it: a real `disabled` is already visible to assistive
+    // technology, and `computeFieldAttributes` only writes it on the label.
     setFlag(control, "disabled", disabled)
 
     this.memory.set(control, {
@@ -711,10 +724,10 @@ export class LtField extends HostElement {
       server,
     })
 
-    // `data-state` settes bare på systemets egne kontroller, og bare når
-    // konsumenten ikke har satt den selv. Den fjernes bare når komponenten
-    // selv satte den og feltet ikke lenger er ugyldig. En `data-state` en
-    // mal har skrevet for hånd, er malens.
+    // `data-state` is only set on the system's controls, and only when the
+    // consumer has not set it. It is only removed when the component set it
+    // and the field is no longer invalid. A `data-state` a template wrote by
+    // hand stays as the template wrote it.
     const isSystemField =
       control.classList.contains("lt-input") ||
       control.classList.contains("lt-textarea") ||

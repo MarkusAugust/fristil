@@ -2,7 +2,7 @@ import { attributes, idOrFallback } from "../../css/shared.js"
 
 export const POPOVER_CLASS = "lt-popover" as const
 
-/** Hvilken kant av knappen panelet henger fra. `start` og `end` følger leseretningen. */
+/** Which edge of the button the panel hangs from. `start` and `end` follow the reading direction. */
 export const popoverPlacements = [
   "bottom-start",
   "bottom-end",
@@ -16,11 +16,11 @@ export function isPopoverPlacement(value: unknown): value is PopoverPlacement {
 }
 
 export type PopoverOptions = {
-  /** Id på panelet. Kobler knappen til panelet med `aria-controls`. */
+  /** Id of the panel. Connects the button to the panel with `aria-controls`. */
   id: string
-  /** Panelet er åpent. Standard: lukket. */
+  /** The panel is open. Default: closed. */
   open?: boolean
-  /** Hvilken kant panelet henger fra. Standard: `bottom-start`. */
+  /** Which edge the panel hangs from. Default: `bottom-start`. */
   placement?: PopoverPlacement
 }
 
@@ -42,18 +42,18 @@ export type PopoverAttributes = {
 }
 
 /**
- * Attributtene for et sprettoppvindu.
+ * The attributes for a popover.
  *
- * Serveren skriver både knappen og panelet med koblingen mellom dem.
- * `<lt-popover>` regner ut posisjonen og lukker ved klikk utenfor.
+ * The server writes both the button and the panel, with the wiring between
+ * them. `<lt-popover>` works out the position and closes on a click outside.
  *
  * ```ts
- * const boks = lt.popover({ id: "hjelp" })
+ * const box = lt.popover({ id: "help" })
  * ```
  * ```html
  * <lt-popover>
- *   <button {...boks.trigger}>Hva betyr dette?</button>
- *   <div {...boks.panel}>Vi bruker fødselsdatoen til å finne riktig sats.</div>
+ *   <button {...box.trigger}>What does this mean?</button>
+ *   <div {...box.panel}>We use the date of birth to find the right rate.</div>
  * </lt-popover>
  * ```
  */
@@ -63,21 +63,21 @@ export const popover = Object.assign(
     open = false,
     placement = "bottom-start",
   }: PopoverOptions): PopoverAttributes => {
-    // Reserven gjelder bare den som ikke har en typesjekk.
+    // The fallback only matters to someone without a type check.
     const id = idOrFallback("lt.popover()", givenId)
 
     return {
       host: attributes({
-        // `open` må stå på verten, ikke bare i knappens aria-expanded. Uten det
-        // sa markupen at panelet var åpent mens komponenten mente det var lukket.
-        // Ingen bevaringsliste: river en patch attributtet bort, setter
-        // komponenten det tilbake, og `server-controlled` slår av reparasjonen
-        // når serveren skal eie tilstanden.
+        // `open` must be on the host, not only in the button's aria-expanded.
+        // Without it the markup said the panel was open while the component
+        // thought it was closed. No preserve list: if a patch removes the
+        // attribute, the component puts it back, and `server-controlled` turns
+        // off the repair when the server is to decide the state.
         open: open ? (true as const) : undefined,
         placement: placement === "bottom-start" ? undefined : placement,
       }),
       trigger: attributes({
-        // En knapp uten `type` sender skjemaet den står i.
+        // A button without `type` submits the form it is in.
         type: "button" as const,
         "aria-expanded": (open ? "true" : "false") as "true" | "false",
         "aria-controls": id,
@@ -85,17 +85,18 @@ export const popover = Object.assign(
       panel: attributes({
         class: POPOVER_CLASS,
         id,
-        // `manual` og ikke `auto`: komponenten lukker selv, slik at knappen kan
-        // brukes til å lukke igjen uten at nettleseren rekker å lukke først.
+        // `manual` and not `auto`: the component closes the panel itself, so
+        // the button can close it again without the browser closing it first.
         popover: "manual" as const,
       }),
     }
   },
   {
-    // Vakten henger på funksjonen, som ellers i `lt`. Lista ligger ved siden
-    // av, som `popoverPlacements`, og ikke på funksjonen: `placement` styrer
-    // hvor JavaScript legger panelet og ikke CSS, og vaktposten for
-    // klassene krever at hver liste på en byggefunksjon gjør noe i CSS-en.
+    // The guard hangs on the function, as elsewhere in `lt`. The list sits
+    // next to it, as `popoverPlacements`, and not on the function: `placement`
+    // controls where JavaScript puts the panel, not CSS, and the guard for
+    // the classes requires every list on a builder function to do something
+    // in the CSS.
     isPlacement: isPopoverPlacement,
   },
 )

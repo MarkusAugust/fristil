@@ -1,28 +1,28 @@
 /**
- * Monterer markup i en shadow root, uten noen CSS-reset.
+ * Mounts markup in a shadow root, without any CSS reset.
  *
- * Et designsystem kan ikke regne med at konsumenten har en reset. Testsider
- * og rammeverk har som regel en. Tailwind setter for eksempel
- * `box-sizing: border-box` på alt, og det skjuler feil i komponentene våre.
- * `.lt-textarea` hadde `width: 100%` uten `box-sizing`, og ble derfor bredere
- * enn boksen sin hos alle uten reset. Ingen test fanget det, fordi alle
- * testene kjørte på sider som tilfeldigvis hadde en.
+ * A design system cannot count on the consumer having a reset. Test pages
+ * and frameworks usually have one. Tailwind, for example, sets
+ * `box-sizing: border-box` on everything, and that hides bugs in our
+ * components. `.lt-textarea` had `width: 100%` without `box-sizing`, and so
+ * was wider than its box for everyone without a reset. No test caught it,
+ * because all the tests ran on pages that happened to have one.
  *
- * Inne i en shadow root gjelder bare nettleserens egne standardverdier pluss
- * stilarket vi sender inn. Det er den ærligste testen.
+ * Inside a shadow root only the browser's defaults apply, plus the
+ * stylesheet we pass in. That is the most honest test.
  */
 
 export type IsolertFlate = {
-  /** Shadow rooten innholdet ligger i. */
+  /** The shadow root the content is in. */
   rot: ShadowRoot
-  /** Boksen innholdet ligger i, med den bredden testen ba om. */
+  /** The box the content is in, with the width the test asked for. */
   boks: HTMLElement
 }
 
 /**
- * @param css  Stilarket komponenten trenger, som tekst (`import "...css?inline"`)
- * @param html Markupen som skal prøves
- * @param bredde Bredden på boksen rundt, for eksempel "300px"
+ * @param css  The stylesheet the component needs, as text (`import "...css?inline"`)
+ * @param html The markup to test
+ * @param bredde The width of the surrounding box, for example "300px"
  */
 export function monterIsolert(
   css: string,
@@ -33,7 +33,7 @@ export function monterIsolert(
 
   const vert = document.getElementById("lt-isolert")
   if (!(vert instanceof HTMLElement)) {
-    throw new Error("Klarte ikke å montere den isolerte flaten")
+    throw new Error("Could not mount the isolated surface")
   }
 
   const rot = vert.attachShadow({ mode: "open" })
@@ -41,7 +41,7 @@ export function monterIsolert(
 
   const boks = rot.getElementById("boks")
   if (!(boks instanceof HTMLElement)) {
-    throw new Error("Klarte ikke å finne boksen")
+    throw new Error("Could not find the box")
   }
 
   return { rot, boks }
@@ -53,9 +53,9 @@ export type Overflyt = {
 }
 
 /**
- * Finner elementer som stikker utenfor boksen sin.
+ * Finds elements that stick out of their box.
  *
- * Returnerer tom liste når alt holder seg innenfor.
+ * Returns an empty list when everything stays inside.
  */
 export function finnOverflyt(boks: HTMLElement): Overflyt[] {
   const ramme = boks.getBoundingClientRect()

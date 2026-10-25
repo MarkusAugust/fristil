@@ -2,16 +2,16 @@ import { parseHex } from "../tokens/color.js"
 import { colorTokens, darkColorTokens } from "../tokens/tokens.js"
 
 /**
- * Tokenverdier som `rgb(r, g, b)`, slik `getComputedStyle` svarer.
+ * Token values as `rgb(r, g, b)`, the way `getComputedStyle` answers.
  *
- * En test som skriver av heksverdien til et token må rettes hver gang
- * kontrakten flytter en lyshet, og sier da ingenting om at komponenten bruker
- * riktig token. Den leser fargen herfra i stedet.
+ * A test that copies a token's hex value must be corrected every time the
+ * contract moves a lightness, and then says nothing about whether the
+ * component uses the right token. It reads the colour from here instead.
  */
 const LYS = colorTokens
 const MØRK = { ...colorTokens, ...darkColorTokens }
 
-/** Systemfargene peker på en celle i matrisen, så kjeden må følges. */
+/** The system colours point to a cell in the matrix, so the chain must be followed. */
 function løs(tabell: Record<string, string>, token: string): string {
   let verdi = tabell[token]
   let vakt = 0
@@ -26,15 +26,15 @@ export function farge(
 ): string {
   const hex = løs(utseende === "dark" ? MØRK : LYS, token)
   if (!hex?.startsWith("#")) {
-    throw new Error(`Ukjent token, eller ikke en heksfarge: ${token}`)
+    throw new Error(`Unknown token, or not a hex colour: ${token}`)
   }
   const { r, g, b } = parseHex(hex)
   return `rgb(${r}, ${g}, ${b})`
 }
 
 /**
- * Leser `rgb(r, g, b)` eller `rgba(r, g, b, a)` fra `getComputedStyle`, så en
- * test kan regne kontrast mellom to fargene den måler.
+ * Reads `rgb(r, g, b)` or `rgba(r, g, b, a)` from `getComputedStyle`, so a
+ * test can compute the contrast between the two colours it reads.
  */
 export function rgb(verdi: string): {
   r: number

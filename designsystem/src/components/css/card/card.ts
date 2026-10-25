@@ -1,7 +1,7 @@
 import { attributes, createGuard } from "../shared.js"
 
 export const CARD_CLASS = "lt-card" as const
-/** Overskriften inne i kortet. */
+/** The heading inside the card. */
 export const CARD_TITLE_CLASS = "lt-card__title" as const
 
 export const cardVariants = ["outline", "filled"] as const
@@ -10,9 +10,9 @@ export type CardVariant = (typeof cardVariants)[number]
 export type NonDefaultCardVariant = Exclude<CardVariant, "outline">
 
 export type CardOptions = {
-  /** Flate eller omriss. Standard: `outline`. */
+  /** Surface or outline. Default: `outline`. */
   variant?: CardVariant
-  /** Hele kortet er klikkbart. Bruk bare på `<a>` eller `<button>`. */
+  /** The whole card is clickable. Use only on `<a>` or `<button>`. */
   interactive?: boolean
 }
 
@@ -23,15 +23,15 @@ export type CardAttributes = {
 }
 
 /**
- * Attributtene for et kort.
+ * The attributes for a card.
  *
- * `interactive` gir hover og fokusmarkering, men gjør ingenting klikkbart av
- * seg selv. Skal hele kortet kunne trykkes på, må elementet være en `<a>`
- * eller en `<button>`. Et `<div>` med en klikklytter kan hverken nås med
- * tastatur eller meldes som noe å trykke på.
+ * `interactive` gives hover and a focus ring, but makes nothing clickable by
+ * itself. If the whole card should be pressable, the element must be an
+ * `<a>` or a `<button>`. A `<div>` with a click listener can neither be
+ * reached with the keyboard nor be announced as something to press.
  *
  * ```ts
- * <a {...card({ interactive: true })} href="/sak/481">…</a>
+ * <a {...card({ interactive: true })} href="/case/481">…</a>
  * ```
  */
 export const card = Object.assign(
@@ -42,7 +42,7 @@ export const card = Object.assign(
       "data-interactive": interactive ? ("" as const) : undefined,
     }),
   {
-    /** Klassen på overskriften inne i kortet. */
+    /** The class on the heading inside the card. */
     title: CARD_TITLE_CLASS,
     variants: cardVariants,
     isVariant: createGuard(cardVariants),

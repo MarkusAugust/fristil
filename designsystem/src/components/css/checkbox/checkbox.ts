@@ -7,11 +7,11 @@ import {
 } from "../shared.js"
 
 export const CHECKBOX_CLASS = "lt-checkbox" as const
-/** Raden som holder boksen og teksten ved siden av hverandre. */
+/** The row that holds the box and the text next to each other. */
 export const CHECKBOX_ROW_CLASS = "lt-checkbox-row" as const
 
 export type CheckboxOptions = {
-  /** Valideringstilstand. Standard: `default`. */
+  /** Validation state. Default: `default`. */
   state?: FieldState
 }
 
@@ -23,11 +23,11 @@ export type CheckboxAttributes = {
 }
 
 /**
- * Attributtene for en avkryssingsboks.
+ * The attributes for a checkbox.
  *
- * `type` settes her, slik at boksen ikke kan bli et tekstfelt med en boks sin
- * stil. Delvis avkrysset settes med `element.indeterminate = true` i
- * JavaScript, ikke som et attributt, fordi HTML ikke har noe slikt attributt.
+ * `type` is set here, so the box cannot become a text field with a box's
+ * styling. The indeterminate state is set with `element.indeterminate = true`
+ * in JavaScript, not as an attribute, because HTML has no such attribute.
  *
  * ```ts
  * <input {...checkbox({ state: "invalid" })} />
@@ -42,7 +42,7 @@ export const checkbox = Object.assign(
       "aria-invalid": state === "invalid" ? ("true" as const) : undefined,
     }),
   {
-    /** Klassen på raden rundt boksen og teksten. */
+    /** The class on the row around the box and the text. */
     row: CHECKBOX_ROW_CLASS,
     states: fieldStates,
     isState: isFieldState,

@@ -1,31 +1,32 @@
 /**
- * At felt og forslagsfelt, slik oppskriftene viser dem, virker uten
- * JavaScript og overlever at serveren sender området på nytt, på hver av
- * de tre måtene en side oppdateres på.
+ * That fields and suggestion fields, as the recipes show them, work without
+ * JavaScript and survive the server sending the region again, in each of the
+ * three ways a page is updated.
  *
- * Markupen leses rett fra «Plain HTML»-fanen på komponentsidene, så testen
- * og dokumentasjonen ikke kan si to ulike ting. Datastar og idiomorph, som
- * htmx morfer med, kjenner igjen et element på id. Et element uten id
- * beholdes, og et element med en id serveren ikke sendte, byttes ut.
- * Komponentene skriver derfor aldri id på feltet: `for` og `id` kommer fra
- * malen, eller så står ledeteksten rundt feltet. Det som gjelder for hver
- * måte:
+ * The markup is read straight from the "Plain HTML" tab on the component
+ * pages, so the test and the documentation cannot say different things.
+ * Datastar and idiomorph, which htmx morphs with, recognise an element by
+ * its id. An element without an id is kept, and an element with an id the
+ * server did not send is replaced. The components therefore never write an
+ * id on the field: `for` and `id` come from the template, or the label wraps
+ * the field. What holds for each way:
  *
- * - Datastar beholder feltet, fokus og teksten.
- * - idiomorph beholder feltet og fokus, men setter teksten og `checked` fra
- *   serverens HTML. Unntaket er feltet med fokus når `ignoreActiveValue` er
- *   slått på, som htmx-brukere gjør med
- *   `hx-swap="morph:{ignoreActiveValue:true}"`; den er av fra før. Serveren
- *   må altså sende verdiene tilbake.
- * - `innerHTML` bytter ut alt. Det nye feltet skal være koblet på nytt.
- * - Uten JavaScript finnes ingen oppdatering, og markupen må stå på egne
- *   bein: hvert felt har et navn, påkrevd-merket og feilmeldingen fra
- *   serveren synes, og lista i forslagsfeltet står ikke åpen.
+ * - Datastar keeps the field, focus and the text.
+ * - idiomorph keeps the field and focus, but sets the text and `checked`
+ *   from the server's HTML. The exception is the focused field when
+ *   `ignoreActiveValue` is on, as htmx users do with
+ *   `hx-swap="morph:{ignoreActiveValue:true}"`; it is off by default. The
+ *   server therefore has to send the values back.
+ * - `innerHTML` replaces everything. The new field must be connected again.
+ * - Without JavaScript there is no update, and the markup has to stand on
+ *   its own: every field has a name, the required marker and the error text
+ *   from the server are visible, and the list in the suggestion field is not
+ *   open.
  *
- * Mutasjonene som skal felle den: en id skrevet på feltet av komponenten
- * (tilfellene med ledeteksten rundt), `for`-skrivingen tatt ut av
- * komponenten (tilfellet med ledetekst uten `for`), og id tatt ut av
- * oppskriften (advarselen).
+ * The mutations that must fail it: an id written on the field by the
+ * component (the cases with the label wrapping the field), the `for` write
+ * taken out of the component (the case with a label without `for`), and the
+ * id taken out of the recipe (the warning).
  */
 
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
@@ -52,23 +53,23 @@ type Maate = "Datastar" | "idiomorph" | "innerHTML"
 const MAATER: Maate[] = ["Datastar", "idiomorph", "innerHTML"]
 
 /**
- * Oppskriften i «Plain HTML»-fanen på en komponentside: den første
- * html-blokken med elementet i, uten skriptene.
+ * The recipe in the "Plain HTML" tab on a component page: the first html
+ * block containing the element, without the scripts.
  */
 function oppskrift(side: string, tag: string): string {
   const fane = side.slice(side.indexOf('<TabItem label="Plain HTML">'))
   const blokker = [...fane.matchAll(/```html\n([\s\S]*?)```/g)].map((m) => m[1])
   const blokk = blokker.find((b) => b.includes(`<${tag}`))
-  if (!blokk) throw new Error(`fant ingen oppskrift med <${tag}> på siden`)
+  if (!blokk) throw new Error(`found no recipe with <${tag}> on the page`)
   return blokk.replace(/<script[\s\S]*?<\/script>/g, "")
 }
 
 const FELT = oppskrift(feltSide, "lt-field")
 const FORSLAG = oppskrift(forslagSide, "lt-suggestion")
-/** Oppskriften «Tekst og kode», med det skjulte feltet for koden. */
+/** The "Text and code" recipe, with the hidden field for the code. */
 const KODE = oppskrift(forslagSide, 'input class="lt-suggestion__value"')
 
-/** Oppskriften med ledeteksten rundt feltet, og ingen id. */
+/** The recipe with the label wrapping the field, and no id. */
 const FELT_RUNDT = `
   <lt-field>
     <label class="lt-label">Fullt navn <input class="lt-input" name="navn" type="text"></label>
@@ -89,19 +90,19 @@ const AVKRYSSING = (checked: boolean) => `
   </div>`
 
 /**
- * Området serveren sender, med id så Datastar finner det. En oppdatering
- * har et merke i seg, så hvert tilfelle kan se at patchen faktisk kom fram
- * og ikke bare at ingenting skjedde.
+ * The region the server sends, with an id so Datastar finds it. An update
+ * carries a marker, so each case can see that the patch actually arrived and
+ * not just that nothing happened.
  */
 const omraade = (innhold: string, oppdatert = false) =>
   `<div id="omraade">${oppdatert ? "<span hidden data-oppdatert></span>" : ""}${innhold}</div>`
 
 async function oppdater(maate: Maate, innhold: string): Promise<void> {
   const rot = document.getElementById("omraade") as HTMLElement
-  // Merket fra forrige oppdatering tas bort, så det er denne som må bringe det.
+  // The marker from the previous update is removed, so this one has to bring it.
   rot.querySelector("[data-oppdatert]")?.remove()
   if (maate === "Datastar") {
-    // Som en `datastar-patch-elements` uten selektor: `outer` på id-en.
+    // Like a `datastar-patch-elements` without a selector: `outer` on the id.
     document.dispatchEvent(
       new CustomEvent("datastar-fetch", {
         detail: {
@@ -122,23 +123,23 @@ async function oppdater(maate: Maate, innhold: string): Promise<void> {
   await roSeg()
   expect(
     document.querySelector("#omraade [data-oppdatert]"),
-    `oppdateringen med ${maate} kom ikke fram`,
+    `the update with ${maate} did not arrive`,
   ).not.toBeNull()
 }
 
-/** Venter til observatørene har kjørt. */
+/** Waits until the observers have run. */
 async function roSeg() {
   await ventPaTegning()
   await ventPaTegning()
 }
 
-/** Venter til `warnAboutMarkup` har sett siden falle til ro. */
+/** Waits until `warnAboutMarkup` has seen the page settle. */
 /*
- * 300 ms holder når tegningene kommer. I en skjult fane faller
- * `whenSettled` tilbake på ett sekund, og en stillhetstest ville da bestått
- * uten å ha sett noe; men «sier fra én gang når oppskriften mangler id»
- * venter like lenge og ville feilet, så kjøringen som helhet kan ikke bestå
- * tomt.
+ * 300 ms is enough when the frames come. In a hidden tab `whenSettled` falls
+ * back to one second, and a silence test would then pass without having
+ * seen anything; but "reports once when the recipe has no id on the field"
+ * waits just as long and would fail, so the run as a whole cannot pass
+ * empty.
  */
 const stille = () => new Promise((r) => setTimeout(r, 300))
 
@@ -150,7 +151,7 @@ async function monter(innhold: string) {
 const felt = () =>
   document.querySelector("input:not([type='checkbox'])") as HTMLInputElement
 
-describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
+describe("fields and suggestion fields through a server update", () => {
   beforeAll(() => {
     defineLtField()
     defineLtSuggestion()
@@ -161,18 +162,18 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
     document.body.innerHTML = ""
   })
 
-  it("leser oppskriftene fra komponentsidene", () => {
-    expect(FELT).toContain('for="navn"')
-    expect(FELT).toContain('id="navn"')
-    expect(FORSLAG).toContain('for="kommune"')
-    expect(FORSLAG).toContain('id="kommune"')
-    expect(KODE).toContain('data-value="4601"')
+  it("reads the recipes from the component pages", () => {
+    expect(FELT).toContain('for="name"')
+    expect(FELT).toContain('id="name"')
+    expect(FORSLAG).toContain('for="airport"')
+    expect(FORSLAG).toContain('id="airport"')
+    expect(KODE).toContain('data-value="BGO"')
   })
 
   for (const maate of MAATER) {
-    it(`et valgt forslag med kode: ${maate}`, async () => {
-      // Planens 6.1: velg et forslag, så oppdatering. Serveren sender
-      // verdifeltet tomt; med `innerHTML` må den sende begge verdiene tilbake.
+    it(`a chosen suggestion with a code: ${maate}`, async () => {
+      // The plan's 6.1: choose a suggestion, then update. The server sends
+      // the value field empty; with `innerHTML` it must send both values back.
       const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
       await monter(KODE)
       const input = felt()
@@ -182,20 +183,20 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
       const kode = () =>
         document.querySelector(".lt-suggestion__value") as HTMLInputElement
       expect(input.value).toBe("Bergen")
-      expect(kode().value).toBe("4601")
+      expect(kode().value).toBe("BGO")
 
       await oppdater(
         maate,
         maate === "innerHTML"
           ? KODE.replace('type="text"', 'type="text" value="Bergen"').replace(
               'type="hidden"',
-              'type="hidden" value="4601"',
+              'type="hidden" value="BGO"',
             )
           : KODE,
       )
 
       expect(felt().value).toBe("Bergen")
-      expect(kode().value).toBe("4601")
+      expect(kode().value).toBe("BGO")
       await stille()
       expect(advarsel).not.toHaveBeenCalled()
     })
@@ -203,25 +204,25 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
 
   const TILFELLER = [
     {
-      navn: "felt fra oppskriften",
+      navn: "field from the recipe",
       markup: FELT,
-      ledetekst: "Fullt navn",
-      id: "navn",
+      ledetekst: "Full name",
+      id: "name",
     },
     {
-      navn: "felt med ledeteksten rundt, ingen id",
+      navn: "field with the label wrapping it, no id",
       markup: FELT_RUNDT,
       ledetekst: "Fullt navn",
       id: "",
     },
     {
-      navn: "forslagsfelt fra oppskriften",
+      navn: "suggestion field from the recipe",
       markup: FORSLAG,
-      ledetekst: "Kommune",
-      id: "kommune",
+      ledetekst: "Airport",
+      id: "airport",
     },
     {
-      navn: "forslagsfelt med ledeteksten rundt, ingen id",
+      navn: "suggestion field with the label wrapping it, no id",
       markup: FORSLAG_RUNDT,
       ledetekst: "Kommune",
       id: "",
@@ -266,8 +267,8 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
     }
   }
 
-  it("idiomorph uten ignoreActiveValue setter også feltet med fokus fra serveren", async () => {
-    // Standarden i idiomorph, og dermed i htmx uten eget valg i `hx-swap`.
+  it("idiomorph without ignoreActiveValue also sets the focused field from the server", async () => {
+    // The default in idiomorph, and so in htmx without a setting in `hx-swap`.
     await monter(FELT)
     const input = felt()
     input.focus()
@@ -284,11 +285,11 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
   })
 
   for (const maate of ["Datastar", "idiomorph"] as const) {
-    it(`et felt uten fokus: ${maate} og det serveren sender tilbake`, async () => {
+    it(`a field without focus: ${maate} and what the server sends back`, async () => {
       /*
-       * Datastar lar teksten stå. idiomorph setter den fra serverens HTML, så
-       * med htmx må serveren sende verdien tilbake. Det er den ene setningen
-       * dokumentasjonen gir htmx-brukere, og den er etterprøvd her.
+       * Datastar leaves the text. idiomorph sets it from the server's HTML,
+       * so with htmx the server must send the value back. That is the one
+       * sentence the documentation gives htmx users, and it is checked here.
        */
       await monter(FELT)
       felt().value = "Kari"
@@ -297,15 +298,15 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
       await oppdater(maate, FELT)
       expect(felt().value).toBe(maate === "Datastar" ? "Kari" : "")
 
-      // Serveren sender en annen tekst enn den som står der. Begge morferne
-      // setter egenskapen når attributtet er et annet: Datastar i
-      // patchElements.ts (`oldElt.value = newValue`), idiomorph alltid.
+      // The server sends a different text from what is there. Both morphers
+      // set the property when the attribute differs: Datastar in
+      // patchElements.ts (`oldElt.value = newValue`), idiomorph always.
       felt().value = "Ola"
-      await oppdater(maate, FELT.replace('id="navn"', 'id="navn" value="Kari"'))
+      await oppdater(maate, FELT.replace('id="name"', 'id="name" value="Kari"'))
       expect(felt().value).toBe("Kari")
     })
 
-    it(`avkryssing: ${maate} og det serveren sender tilbake`, async () => {
+    it(`checkbox: ${maate} and what the server sends back`, async () => {
       await monter(AVKRYSSING(false))
       const boks = document.getElementById("vilkar") as HTMLInputElement
       boks.click()
@@ -315,25 +316,26 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
       expect(document.getElementById("vilkar")).toBe(boks)
       expect(boks.checked).toBe(maate === "Datastar")
 
-      // Serveren sender `checked` mens boksen står tom etter at brukeren
-      // rørte den. Begge morferne setter krysset fra serverens HTML.
+      // The server sends `checked` while the box is unchecked after the user
+      // touched it. Both morphers set the check from the server's HTML.
       boks.checked = false
       await oppdater(maate, AVKRYSSING(true))
       expect(boks.checked).toBe(true)
     })
 
-    it(`liste med id fra en nøkkel: teksten blir i riktig rad (${maate})`, async () => {
+    it(`list with ids from a key: the text stays in the right row (${maate})`, async () => {
       /*
-       * En id som følger plassen, flytter det brukeren skrev til feil rad når
-       * serveren setter inn en ny øverst. En id fra en nøkkel i dataene holder
-       * raden der den hører hjemme. Testen gjelder regelen dokumentasjonen gir
-       * malene, ikke komponentene: alle id-ene kommer fra serveren.
+       * An id that follows the position moves what the user typed to the
+       * wrong row when the server inserts a new one at the top. An id from a
+       * key in the data keeps the row where it belongs. The test is about the
+       * rule the documentation gives templates, not the components: all the
+       * ids come from the server.
        */
       const liste = (navn: string[]) =>
         navn
           .map((n) => {
             const k = n.toLowerCase()
-            // Id på raden også, slik `hx-target` og `hx-swap-oob` trenger den.
+            // An id on the row too, as `hx-target` and `hx-swap-oob` need it.
             return `<lt-field id="rad-${k}"><label class="lt-label" for="merknad-${k}">${n}</label><input class="lt-input" id="merknad-${k}" name="merknad-${k}"></lt-field>`
           })
           .join("")
@@ -356,28 +358,29 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
     })
   }
 
-  it("skriver for på en ledetekst uten, fra feltets id", async () => {
-    // Mutasjonen: ta `for`-skrivingen ut av komponenten.
-    await monter(FELT.replace(' for="navn"', ""))
+  it("writes for on a label without one, from the field's id", async () => {
+    // The mutation: take the `for` write out of the component.
+    await monter(FELT.replace(' for="name"', ""))
     const label = document.querySelector("label") as HTMLLabelElement
-    expect(label.htmlFor).toBe("navn")
+    expect(label.htmlFor).toBe("name")
   })
 
-  it("sier fra én gang når oppskriften mangler id på feltet", async () => {
+  it("reports once when the recipe has no id on the field", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    await monter(FELT.replace(' id="navn"', ""))
+    await monter(FELT.replace(' id="name"', ""))
     await stille()
     expect(advarsel).toHaveBeenCalledTimes(1)
-    expect(String(advarsel.mock.calls[0][0])).toContain("ikke koblet")
+    expect(String(advarsel.mock.calls[0][0])).toContain("not connected")
   })
 })
 
-describe("oppskriftene uten JavaScript", () => {
+describe("the recipes without JavaScript", () => {
   /*
-   * En iframe i sandkasse uten `allow-scripts` kjører ingen skript, så
-   * web-komponentene finnes ikke, og markupen må klare seg selv. Stilarkene
-   * legges inn som tekst; `@import` løses ikke opp i en `srcdoc`, så hvert
-   * stilark oppskriften lenker til, tas med for seg.
+   * A sandboxed iframe without `allow-scripts` runs no scripts, so the web
+   * components do not exist, and the markup has to manage by itself. The
+   * stylesheets are inlined as text; `@import` is not resolved in a
+   * `srcdoc`, so each stylesheet the recipe links to is included
+   * separately.
    */
   let dokument: Document
 
@@ -397,7 +400,7 @@ describe("oppskriftene uten JavaScript", () => {
     iframe.srcdoc = `<!doctype html><meta charset="utf-8"><style>${stil}</style>
       <script>document.documentElement.dataset.skript = "kjorte"</script>
       ${FELT}
-      <div id="ugyldig">${FELT.replace(" hidden>", ">").replaceAll('"navn"', '"navn-ugyldig"')}</div>
+      <div id="ugyldig">${FELT.replace(" hidden>", ">").replaceAll('"name"', '"name-invalid"')}</div>
       ${FORSLAG}
       ${AVKRYSSING(false)}`
     await new Promise((r) => {
@@ -407,26 +410,26 @@ describe("oppskriftene uten JavaScript", () => {
     dokument = iframe.contentDocument as Document
   })
 
-  it("kjører ingen skript", () => {
-    // Skriptet i sandkassen ville satt et merke. Det står ikke der.
+  it("runs no scripts", () => {
+    // The script in the sandbox would have set a marker. It is not there.
     expect(dokument.documentElement.dataset.skript).toBeUndefined()
     expect(dokument.defaultView?.customElements.get("lt-field")).toBeUndefined()
   })
 
-  it("hvert felt har et navn fra ledeteksten", () => {
+  it("every field has a name from the label", () => {
     for (const input of dokument.querySelectorAll("input")) {
       expect(input.labels?.length, input.outerHTML).toBe(1)
       expect(input.labels?.[0]?.htmlFor).toBe(input.id)
     }
   })
 
-  it("påkrevd-merket synes", () => {
-    const label = dokument.querySelector("label[for='navn']") as HTMLElement
+  it("the required marker is visible", () => {
+    const label = dokument.querySelector("label[for='name']") as HTMLElement
     const etter = dokument.defaultView?.getComputedStyle(label, "::after")
     expect(etter?.content).toContain("*")
   })
 
-  it("feilmeldingen fra serveren synes, og den skjulte ikke", () => {
+  it("the error text from the server is visible, and the hidden one is not", () => {
     const vindu = dokument.defaultView as Window
     const skjult = dokument.querySelector(
       ".lt-error-text[hidden]",
@@ -438,22 +441,23 @@ describe("oppskriftene uten JavaScript", () => {
     expect(vindu.getComputedStyle(synlig).display).toBe("block")
   })
 
-  it("lista i forslagsfeltet står ikke åpen", () => {
+  it("the list in the suggestion field is not open", () => {
     const liste = dokument.querySelector(".lt-suggestion__list") as HTMLElement
     expect(dokument.defaultView?.getComputedStyle(liste).display).toBe("none")
   })
 })
 
 /*
- * Sprettoppvinduet: komponenten skriver aldri id på panelet. Med id fra malen,
- * som oppskriften, og uten, kjenner Datastar og idiomorph panelet igjen, så
- * det står åpent med fokus der det var. Skrev komponenten en id selv, ble
- * panelet byttet ut. `innerHTML` bytter ut alt, også verten.
+ * The popover: the component never writes an id on the panel. With an id
+ * from the template, as in the recipe, and without one, Datastar and
+ * idiomorph recognise the panel, so it stays open with focus where it was.
+ * When the component wrote an id itself, the panel was replaced.
+ * `innerHTML` replaces everything, the host included.
  */
 const SPRETT = oppskrift(sprettSide, "lt-popover")
-const SPRETT_BAR = SPRETT.replace(' id="handlinger"', "")
+const SPRETT_BAR = SPRETT.replace(' id="actions"', "")
 
-describe("sprettoppvinduet gjennom en oppdatering fra serveren", () => {
+describe("the popover through a server update", () => {
   beforeAll(() => {
     defineLtPopover()
   })
@@ -463,14 +467,14 @@ describe("sprettoppvinduet gjennom en oppdatering fra serveren", () => {
     document.body.innerHTML = ""
   })
 
-  it("leser oppskriften fra komponentsiden, med id på panelet", () => {
-    expect(SPRETT).toContain('class="lt-popover" id="handlinger"')
-    expect(SPRETT_BAR).not.toContain("handlinger")
+  it("reads the recipe from the component page, with an id on the panel", () => {
+    expect(SPRETT).toContain('class="lt-popover" id="actions"')
+    expect(SPRETT_BAR).not.toContain('id="actions"')
   })
 
   for (const [navn, markup] of [
-    ["oppskriften", SPRETT],
-    ["bar markup uten id", SPRETT_BAR],
+    ["the recipe", SPRETT],
+    ["bare markup without an id", SPRETT_BAR],
   ] as const) {
     for (const maate of MAATER) {
       it(`${navn}: ${maate}`, async () => {

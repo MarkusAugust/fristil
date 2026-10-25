@@ -11,11 +11,11 @@ export type { RequiredMarker }
 export { requiredMarkers }
 
 export type LabelOptions = {
-  /** Marker feltet som påkrevd, med stjerne eller med ordet «(påkrevd)». */
+  /** Marks the field as required, with an asterisk or with the word "(required)". */
   required?: RequiredMarker
-  /** Marker feltet som valgfritt. Velg én av `required` og `optional`. */
+  /** Marks the field as optional. Choose one of `required` and `optional`. */
   optional?: boolean
-  /** Demper teksten når kontrollen er slått av. */
+  /** Mutes the text when the control is disabled. */
   disabled?: boolean
 }
 
@@ -27,13 +27,13 @@ export type LabelAttributes = {
 }
 
 /**
- * Attributtene for en ledetekst.
+ * The attributes for a label.
  *
- * Markeringen er bare visuell, så sett `required` på selve feltet i tillegg,
- * ellers får skjermleseren ikke vite at det må fylles ut.
+ * The marker is only visual, so set `required` on the field itself as well,
+ * or the screen reader is not told that it must be filled in.
  *
  * ```ts
- * <label {...label({ required: "symbol" })} htmlFor="epost">E-postadresse</label>
+ * <label {...label({ required: "symbol" })} htmlFor="email">Email address</label>
  * ```
  */
 export const label = Object.assign(

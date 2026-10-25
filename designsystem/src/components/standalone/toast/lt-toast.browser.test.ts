@@ -30,16 +30,16 @@ describe("lt-toast", () => {
     await tegn()
   })
 
-  it("er en høflig region, ikke en varsling som avbryter", async () => {
+  it("is a polite region, not an alert that interrupts", async () => {
     const toast = await tegn()
 
-    // En melding i hjørnet skal ikke avbryte det skjermleseren holder på med.
+    // A message in the corner should not interrupt what the screen reader is doing.
     expect(toast.getAttribute("role")).toBe("status")
     expect(toast.getAttribute("aria-live")).toBe("polite")
     expect(toast.getAttribute("aria-label")).toBe("Meldinger")
   })
 
-  it("viser en melding med lukkeknapp", async () => {
+  it("shows a message with a close button", async () => {
     const toast = await tegn()
     const melding = toast.show("Søknaden er sendt", { color: "success" })
 
@@ -47,12 +47,12 @@ describe("lt-toast", () => {
     expect(melding.dataset.color).toBe("success")
 
     const lukk = melding.querySelector(".lt-toast__close") as HTMLElement
-    // Lukkeknappen er alltid der. En melding som bare forsvinner av seg selv
-    // rekker ikke den som leser sakte.
-    expect(lukk.getAttribute("aria-label")).toBe("Lukk melding")
+    // The close button is always there. A message that only disappears by
+    // itself is gone before a slow reader gets to it.
+    expect(lukk.getAttribute("aria-label")).toBe("Close message")
   })
 
-  it("fjerner meldingen når lukkeknappen trykkes", async () => {
+  it("removes the message when the close button is pressed", async () => {
     const toast = await tegn()
     const melding = toast.show("Vedlegget er lastet opp")
     const lukk = melding.querySelector(".lt-toast__close") as HTMLElement
@@ -62,7 +62,7 @@ describe("lt-toast", () => {
     expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(0)
   })
 
-  it("lar en melding bli stående når levetiden er null", async () => {
+  it("keeps a message when the duration is zero", async () => {
     const toast = await tegn()
     toast.show("Blir stående", { duration: 0 })
 
@@ -71,7 +71,7 @@ describe("lt-toast", () => {
     expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(1)
   })
 
-  it("fjerner meldingen når levetiden er ute", async () => {
+  it("removes the message when the duration has passed", async () => {
     const toast = await tegn()
     toast.show("Forsvinner", { duration: 40 })
 
@@ -80,7 +80,7 @@ describe("lt-toast", () => {
     expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(0)
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     const toast = await tegn()
     toast.show("Søknaden er sendt", { color: "success", duration: 0 })
 
@@ -89,14 +89,15 @@ describe("lt-toast", () => {
   })
 })
 
-describe("lt-toast holder pausen og fokus", () => {
+describe("lt-toast keeps the pause and focus", () => {
   beforeAll(() => {
     defineLtToast()
   })
 
-  it("holder pausen til både musa og fokus har forlatt meldingen", async () => {
-    // Pausen var to uavhengige par: musa som gikk ut startet klokka igjen
-    // mens fokus sto i meldingen, og meldingen forsvant under brukeren.
+  it("keeps the pause until both the mouse and focus have left the message", async () => {
+    // The pause was two independent pairs: the mouse leaving restarted the
+    // clock while focus was in the message, and the message disappeared from
+    // under the user.
     monter(`<lt-toast></lt-toast><button id="annet">Annet</button>`)
     const toast = await tegn()
     const melding = toast.show("Lagret", { duration: 40 })
@@ -108,14 +109,14 @@ describe("lt-toast holder pausen og fokus", () => {
     await new Promise((r) => setTimeout(r, 120))
     expect(
       toast.querySelectorAll(".lt-toast__message"),
-      "forsvant med fokus i",
+      "disappeared with focus in it",
     ).toHaveLength(1)
     ;(document.getElementById("annet") as HTMLElement).focus()
     await new Promise((r) => setTimeout(r, 120))
     expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(0)
   })
 
-  it("flytter fokus til meldingen ved siden av når den som hadde fokus lukkes", async () => {
+  it("moves focus to the neighbouring message when the one with focus is closed", async () => {
     monter(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     const eldste = toast.show("Første", { duration: 0 })
@@ -127,11 +128,11 @@ describe("lt-toast holder pausen og fokus", () => {
     lukk.click()
 
     expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(2)
-    // Den under, altså den eldre, ikke den nyeste øverst.
+    // The one below, that is the older one, not the newest at the top.
     expect(document.activeElement).toBe(eldste.querySelector("button"))
   })
 
-  it("lar duration=0 på elementet bety at meldingene blir stående", async () => {
+  it("treats duration=0 on the element as keeping the messages", async () => {
     monter(`<lt-toast duration="0"></lt-toast>`)
     const toast = await tegn()
     toast.show("Blir stående")
@@ -139,28 +140,28 @@ describe("lt-toast holder pausen og fokus", () => {
     expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(1)
   })
 
-  it("lar et tomt duration bety standardverdien", async () => {
-    // `Number("")` er 0, og `<lt-toast duration>` lot meldingene stå.
+  it("treats an empty duration as the default", async () => {
+    // `Number("")` is 0, and `<lt-toast duration>` kept the messages.
     monter(`<lt-toast duration></lt-toast>`)
     const toast = await tegn()
     expect(toast.duration).toBe(6000)
   })
 
-  it("er ikke atomisk, så bare den nye meldingen leses opp", async () => {
+  it("is not atomic, so only the new message is announced", async () => {
     monter(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     expect(toast.getAttribute("aria-atomic")).toBe("false")
     expect(ltToast().host["aria-atomic"]).toBe("false")
   })
 
-  it("heter Varsler både i byggefunksjonen og i komponenten", async () => {
+  it("is named Notifications in both the builder function and the component", async () => {
     monter(`<lt-toast></lt-toast>`)
     const toast = await tegn()
-    expect(toast.getAttribute("aria-label")).toBe("Varsler")
-    expect(ltToast().host["aria-label"]).toBe("Varsler")
+    expect(toast.getAttribute("aria-label")).toBe("Notifications")
+    expect(ltToast().host["aria-label"]).toBe("Notifications")
   })
 
-  it("gir en ukjent farge ingen kant", async () => {
+  it("gives an unknown colour no border", async () => {
     monter(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     const melding = toast.show("Rar", {
@@ -170,7 +171,7 @@ describe("lt-toast holder pausen og fokus", () => {
     expect(melding.hasAttribute("data-color")).toBe(false)
   })
 
-  it("fjerner alle med clear()", async () => {
+  it("removes all of them with clear()", async () => {
     monter(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     toast.show("En", { duration: 0 })
@@ -181,11 +182,11 @@ describe("lt-toast holder pausen og fokus", () => {
 })
 
 /*
- * Et sent registrert tagnavn. `lt-toast` har alt tatt konstruktøren, så
- * `defineLtToast("lt-toast-sen")` registrerer en underklasse av den.
+ * A tag name registered late. `lt-toast` has already taken the constructor,
+ * so `defineLtToast("lt-toast-sen")` registers a subclass of it.
  */
-describe("showToast() venter på registreringen", () => {
-  it("viser meldingen først når elementet er oppgradert", async () => {
+describe("showToast() waits for the registration", () => {
+  it("shows the message only once the element is upgraded", async () => {
     monter(`<lt-toast-sen role="status" aria-live="polite"></lt-toast-sen>`)
     const element = document.querySelector("lt-toast-sen") as Element
 
@@ -209,12 +210,12 @@ describe("showToast() venter på registreringen", () => {
   })
 })
 
-describe("lt-toast under et annet tagnavn", () => {
-  it("ligger fortsatt fast i hjørnet", async () => {
+describe("lt-toast under another tag name", () => {
+  it("is still fixed in the corner", async () => {
     /*
-     * Plasseringen sto på elementnavnet, så en region registrert som noe
-     * annet enn `lt-toast` havnet i vanlig flyt. Den står nå på klassen, som
-     * komponenten setter selv.
+     * The position was on the element name, so a region registered as
+     * anything other than `lt-toast` ended up in normal flow. It is now on
+     * the class, which the component sets itself.
      */
     defineLtToast("annen-toast")
     monter("<annen-toast></annen-toast>")
@@ -228,19 +229,19 @@ describe("lt-toast under et annet tagnavn", () => {
     expect(region.querySelectorAll(".lt-toast__message")).toHaveLength(1)
   })
 
-  it("gir verten klassen fra byggefunksjonen", () => {
+  it("gives the host the class from the builder function", () => {
     expect(ltToast().host.class).toBe("lt-toast")
     expect(ltToast().message.class).toBe("lt-toast__message")
   })
 })
 
-describe("lt-toast og fokus og navn", () => {
+describe("lt-toast, focus and name", () => {
   beforeAll(() => {
     defineLtToast()
   })
 
-  it("sender fokus tilbake dit det kom fra når alle meldingene fjernes", () => {
-    // Før falt fokus til `body`, og neste Tab startet på toppen av siden.
+  it("sends focus back where it came from when all messages are removed", () => {
+    // Before, focus fell to `body`, and the next Tab started at the top of the page.
     monter(`<button id="ute">Lagre</button><lt-toast duration="0"></lt-toast>`)
     const region = document.querySelector("lt-toast") as LtToast
     const ute = document.getElementById("ute") as HTMLButtonElement
@@ -253,7 +254,7 @@ describe("lt-toast og fokus og navn", () => {
     expect(document.activeElement).toBe(ute)
   })
 
-  it("sender fokus tilbake når den siste meldingen lukkes", () => {
+  it("sends focus back when the last message is closed", () => {
     monter(`<button id="ute">Lagre</button><lt-toast duration="0"></lt-toast>`)
     const region = document.querySelector("lt-toast") as LtToast
     const ute = document.getElementById("ute") as HTMLButtonElement
@@ -267,9 +268,9 @@ describe("lt-toast og fokus og navn", () => {
     expect(document.activeElement).toBe(ute)
   })
 
-  it("glemmer hvor fokus kom fra når det går ut av regionen", () => {
-    // Før kom fokus senere tilbake til et element brukeren forlot for lenge
-    // siden, og siden rullet dit.
+  it("forgets where focus came from when it leaves the region", () => {
+    // Before, focus later came back to an element the user left long ago,
+    // and the page scrolled there.
     monter(`
       <button id="a">A</button><button id="b">B</button>
       <lt-toast duration="0"></lt-toast>`)
@@ -289,18 +290,18 @@ describe("lt-toast og fokus og navn", () => {
     expect(document.activeElement).not.toBe(a)
   })
 
-  it("gir regionen standardnavnet når label fjernes", () => {
+  it("gives the region the default name when label is removed", () => {
     monter(`<lt-toast label="Meldinger"></lt-toast>`)
     const region = document.querySelector("lt-toast") as LtToast
     expect(region.getAttribute("aria-label")).toBe("Meldinger")
 
     region.removeAttribute("label")
 
-    expect(region.getAttribute("aria-label")).toBe("Varsler")
+    expect(region.getAttribute("aria-label")).toBe("Notifications")
   })
 
-  it("lar en aria-label forfatteren har satt stå", () => {
-    // Før skrev `label` over den.
+  it("leaves an aria-label the author set", () => {
+    // Before, `label` overwrote it.
     monter(`<lt-toast aria-label="Forfatter"></lt-toast>`)
     const region = document.querySelector("lt-toast") as LtToast
 
@@ -312,12 +313,12 @@ describe("lt-toast og fokus og navn", () => {
 })
 
 /*
- * Regionen i en skyggerot, som hver forhåndsvisning i dokumentasjonen.
- * `document.activeElement` peker da på skyggeverten, ikke på lukkeknappen,
- * og komponenten trodde ingen melding hadde fokus: fokus falt til `body`
- * i stedet for til nabomeldingen eller dit det kom fra.
+ * The region in a shadow root, as in every preview in the documentation.
+ * `document.activeElement` then points to the shadow host, not the close
+ * button, and the component believed no message had focus: focus fell to
+ * `body` instead of to the neighbouring message or where it came from.
  */
-describe("lt-toast i en skyggerot", () => {
+describe("lt-toast in a shadow root", () => {
   beforeAll(() => {
     defineLtToast()
   })
@@ -332,7 +333,7 @@ describe("lt-toast i en skyggerot", () => {
     return { rot, region, ute }
   }
 
-  it("flytter fokus til meldingen ved siden av", () => {
+  it("moves focus to the neighbouring message", () => {
     const { rot, region } = monterISkygge()
     const eldste = region.show("Første")
     const nyeste = region.show("Andre")
@@ -344,7 +345,7 @@ describe("lt-toast i en skyggerot", () => {
     expect(rot.activeElement).toBe(eldste.querySelector("button"))
   })
 
-  it("sender fokus tilbake når den siste meldingen lukkes", () => {
+  it("sends focus back when the last message is closed", () => {
     const { region, ute } = monterISkygge()
     const melding = region.show("Lagret")
     const lukk = melding.querySelector("button") as HTMLButtonElement
@@ -356,7 +357,7 @@ describe("lt-toast i en skyggerot", () => {
     expect(document.activeElement).toBe(ute)
   })
 
-  it("sender fokus tilbake når alle meldingene fjernes", () => {
+  it("sends focus back when all messages are removed", () => {
     const { region, ute } = monterISkygge()
     const melding = region.show("Lagret")
     ute.focus()

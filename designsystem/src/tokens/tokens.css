@@ -1,4 +1,4 @@
-/* Generert. Rediger tokens.ts, ikke denne fila. */
+/* Generated. Edit tokens.ts, not this file. */
 
 @layer lotek {
   :root {
@@ -563,7 +563,7 @@
     .lt-select option,
     .lt-tabs__list a
   )[hidden]:not([hidden="until-found" i]) {
-    /* biome-ignore lint/complexity/noImportantStyles: `hidden` skal vinne over komponentens `display`, slik nettleseren selv gjør */
+    /* biome-ignore lint/complexity/noImportantStyles: `hidden` must win over the component's `display`, as the browser itself does */
     display: none !important;
   }
 }

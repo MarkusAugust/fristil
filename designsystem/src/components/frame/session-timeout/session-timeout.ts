@@ -9,19 +9,19 @@ export const SESSION_TIMEOUT_COUNT_CLASS = "lt-session-timeout__count" as const
 export const SESSION_TIMEOUT_ACTIONS_CLASS =
   "lt-session-timeout__actions" as const
 
-/** `value` på knappen som forlenger økten. */
+/** `value` on the button that extends the session. */
 export const SESSION_EXTEND = "extend" as const
-/** `value` på knappen som logger ut. */
+/** `value` on the button that logs out. */
 export const SESSION_LOGOUT = "logout" as const
 
 export type SessionTimeoutOptions = {
-  /** Id på overskriften. Dialogen navngis av den med `aria-labelledby`. */
+  /** Id of the heading. The dialog takes its name from it with `aria-labelledby`. */
   titleId: string
-  /** Sekunder uten aktivitet før varselet kommer. Standard: 25 minutter. */
+  /** Seconds without activity before the warning appears. Default: 25 minutes. */
   warnAt?: number
-  /** Sekunder uten aktivitet før økten er ute. Standard: 30 minutter. */
+  /** Seconds without activity before the session expires. Default: 30 minutes. */
   expiresAt?: number
-  /** Sekunder mellom hver `session-activity` mens brukeren er aktiv. Standard: 60. */
+  /** Seconds between each `session-activity` while the user is active. Default: 60. */
   activityInterval?: number
 }
 
@@ -39,13 +39,13 @@ export type SessionTimeoutAttributes = {
     "aria-labelledby": string
   }
   title: { class: typeof SESSION_TIMEOUT_TITLE_CLASS; id: string }
-  /** Avsnittet med tallet i. Opplesningen er dette avsnittet, med tallet uttalt. */
+  /** The paragraph holding the number. The announcement is this paragraph, with the number spoken. */
   text: { class: typeof SESSION_TIMEOUT_TEXT_CLASS }
-  /** Tallet. Står tomt i markupen, og komponenten fyller det inn. */
+  /** The number. Empty in the markup, and the component fills it in. */
   count: { class: typeof SESSION_TIMEOUT_COUNT_CLASS; "aria-hidden": "true" }
-  /** Opplesningen for skjermleser. Står tom i markupen. */
+  /** The screen reader announcement. Empty in the markup. */
   live: { class: "lt-sr-only"; role: "status" }
-  /** Skjemaet rundt knappene. `method="dialog"` lukker dialogen uten skript. */
+  /** The form around the buttons. `method="dialog"` closes the dialog without a script. */
   actions: { class: typeof SESSION_TIMEOUT_ACTIONS_CLASS; method: "dialog" }
   extend: { class: "lt-button"; value: typeof SESSION_EXTEND }
   logout: {
@@ -56,33 +56,34 @@ export type SessionTimeoutAttributes = {
 }
 
 /**
- * Attributtene for varselet om at innlogget økt går ut.
+ * The attributes for the warning that a signed-in session is about to expire.
  *
- * Den som rendrer, skriver dialogen og hele teksten, på sitt eget språk og
- * med sitt eget oversettelsesverktøy. Komponenten tar bare tiden: den åpner
- * og lukker dialogen, fyller inn tallet og leser opp nedtellingen.
+ * The renderer writes the dialog and all of the text, in its own language and
+ * with its own translation tool. The component only keeps time: it opens and
+ * closes the dialog, fills in the number and announces the countdown.
  *
- * Knappene er vanlige knapper i et `<form method="dialog">`. Nettleseren
- * lukker dialogen og setter `returnValue` til knappens `value`, og
- * komponenten leser det. `data-ignore-morph` ber Datastars morfing la
- * varselet være. Uten den tar morfingen `open` og tallet mens dialogen står i
- * topplaget. Komponenten setter `open` tilbake og tallet kommer igjen ved
- * neste tikk. Med attributtet står tallet hele tiden.
+ * The buttons are plain buttons in a `<form method="dialog">`. The browser
+ * closes the dialog and sets `returnValue` to the button's `value`, and the
+ * component reads it. `data-ignore-morph` asks Datastar's morph to leave the
+ * warning alone. Without it the morph takes `open` and the number while the
+ * dialog is in the top layer. The component puts `open` back, and the number
+ * comes back on the next tick. With the attribute the number stays the whole
+ * time.
  *
  * ```ts
- * const okt = lt.sessionTimeout({ titleId: "okt-tittel" })
+ * const session = lt.sessionTimeout({ titleId: "session-title" })
  * ```
  * ```html
- * <lt-session-timeout {...okt.host}>
- *   <dialog {...okt.dialog}>
- *     <h2 {...okt.title}>Du blir snart logget ut</h2>
- *     <p {...okt.text}>
- *       Vi logger deg ut om <span {...okt.count}></span>.
+ * <lt-session-timeout {...session.host}>
+ *   <dialog {...session.dialog}>
+ *     <h2 {...session.title}>You will soon be signed out</h2>
+ *     <p {...session.text}>
+ *       We will sign you out in <span {...session.count}></span>.
  *     </p>
- *     <span {...okt.live}></span>
- *     <form {...okt.actions}>
- *       <button {...okt.extend}>Fortsett å være innlogget</button>
- *       <button {...okt.logout}>Logg ut nå</button>
+ *     <span {...session.live}></span>
+ *     <form {...session.actions}>
+ *       <button {...session.extend}>Stay signed in</button>
+ *       <button {...session.logout}>Sign out now</button>
  *     </form>
  *   </dialog>
  * </lt-session-timeout>
@@ -95,7 +96,7 @@ export const sessionTimeout = Object.assign(
     expiresAt = 30 * 60,
     activityInterval = 60,
   }: SessionTimeoutOptions): SessionTimeoutAttributes => {
-    // Reserven gjelder bare den som ikke har en typesjekk.
+    // The fallback only matters to someone without a type check.
     const titleId = idOrFallback("lt.sessionTimeout()", givenId, "titleId")
 
     return {
@@ -109,8 +110,9 @@ export const sessionTimeout = Object.assign(
       }),
       dialog: attributes({
         class: SESSION_TIMEOUT_DIALOG_CLASS,
-        // alertdialog og ikke dialog: varselet er en avbrytelse brukeren ikke
-        // ba om, og da skal skjermleseren lese hele innholdet når det åpnes.
+        // alertdialog and not dialog: the warning is an interruption the user did
+        // not ask for, and then the screen reader should read all of the content
+        // when it opens.
         role: "alertdialog" as const,
         "aria-labelledby": titleId,
       }),
@@ -140,15 +142,15 @@ export const sessionTimeout = Object.assign(
     }
   },
   {
-    /** Klassen på selve `<dialog>`. */
+    /** The class on the `<dialog>` itself. */
     dialog: SESSION_TIMEOUT_DIALOG_CLASS,
-    /** Klassen på overskriften. */
+    /** The class on the heading. */
     title: SESSION_TIMEOUT_TITLE_CLASS,
-    /** Klassen på avsnittet med tallet i. */
+    /** The class on the paragraph holding the number. */
     text: SESSION_TIMEOUT_TEXT_CLASS,
-    /** Klassen på tallet komponenten fyller inn. */
+    /** The class on the number the component fills in. */
     count: SESSION_TIMEOUT_COUNT_CLASS,
-    /** Klassen på skjemaet med knappene. */
+    /** The class on the form with the buttons. */
     actions: SESSION_TIMEOUT_ACTIONS_CLASS,
   },
 )

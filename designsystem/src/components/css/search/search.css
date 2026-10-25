@@ -2,12 +2,12 @@
 
 @layer lotek {
   /*
-   * Begge klassene i selektoren, ikke bare .lt-search.
+   * Both classes in the selector, not just .lt-search.
    *
-   * .lt-input setter padding med kortformen, og .lt-search bare
-   * padding-inline-start. Med lik spesifisitet avgjør rekkefølgen stilarkene
-   * lastes i, og importerer konsumenten input.css sist, forsvinner plassen
-   * til ikonet. Med begge klassene vinner regelen uansett rekkefølge.
+   * .lt-input sets padding with the shorthand, and .lt-search only
+   * padding-inline-start. With equal specificity the order the stylesheets
+   * load in decides, and if the consumer imports input.css last, the room
+   * for the icon disappears. With both classes the rule wins in any order.
    */
   .lt-input.lt-search {
     padding-inline-start: var(--lt-search-icon-space, var(--lt-spacing-10));
@@ -21,8 +21,8 @@
     background-position: right var(--lt-spacing-3) center;
   }
 
-  /* Nettleserens eget kryss i et type="search"-felt. Safari og Chrome tegner
-     det ulikt, og Firefox ikke i det hele tatt. */
+  /* The browser's own cross in a type="search" field. Safari and Chrome draw
+     it differently, and Firefox not at all. */
   .lt-search::-webkit-search-cancel-button {
     cursor: pointer;
   }
@@ -38,8 +38,9 @@
     min-inline-size: 0;
   }
 
-  /* Høykontrast: forstørrelsesglasset er malt inn i bildet med fast farge, og
-     kan bli usynlig. Da er det bedre å ta det bort og gi plassen tilbake. */
+  /* High contrast: the magnifying glass is painted into the image with a
+     fixed colour, and can become invisible. It is better to remove it and
+     give the room back. */
   @media (forced-colors: active) {
     .lt-input.lt-search {
       background-image: none;

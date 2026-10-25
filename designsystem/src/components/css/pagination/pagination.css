@@ -12,8 +12,8 @@
     font-size: var(--lt-font-size-m);
   }
 
-  /* `span[aria-disabled]` er «Neste» på siste side: ikke en lenke, men den
-     skal ha samme boks, ellers hopper rekka når den byttes inn. */
+  /* `span[aria-disabled]` is "Next" on the last page: not a link, but it
+     must have the same box, or the row jumps when it is swapped in. */
   .lt-pagination a,
   .lt-pagination button,
   .lt-pagination span[aria-disabled="true"] {
@@ -21,8 +21,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    /* 40 piksler i begge retninger. WCAG 2.2 krever 24, og et nummer i en
-       lang rekke er lett å bomme på med finger. */
+    /* 40 pixels in both directions. WCAG 2.2 requires 24, and a number in a
+       long row is easy to miss with a finger. */
     min-inline-size: var(--lt-pagination-size, var(--lt-spacing-10));
     min-block-size: var(--lt-pagination-size, var(--lt-spacing-10));
     padding-inline: var(--lt-spacing-2);
@@ -37,9 +37,9 @@
     cursor: pointer;
   }
 
-  /* Gjeldende side er unntatt, og har sin egen hover under. Uten `:not()`
-     vant denne regelen på spesifisitet, og sidetallet brukeren står på ble
-     stående i `accent-content` på `accent-surface`, altså 1,09:1. */
+  /* The current page is excluded, and has its own hover below. Without
+     `:not()` this rule won on specificity, and the page number the user is
+     on stayed `accent-content` on `accent-surface`, that is 1.09:1. */
   .lt-pagination a:not([aria-current="page"]):hover,
   .lt-pagination button:hover:not(:disabled):not([aria-current="page"]) {
     background: var(--lt-color-accent-surface);
@@ -58,8 +58,8 @@
     font-weight: var(--lt-font-weight-semibold);
   }
 
-  /* Som knappen: bort fra `content`, altså mørkere i lyst tema og lysere i
-     mørkt, så teksten oppå blir stående. */
+  /* Like the button: away from `content`, so darker in the light theme and
+     lighter in the dark one, and the text on top stays readable. */
   .lt-pagination [aria-current="page"]:hover {
     background: var(--lt-color-accent-text);
     border-color: var(--lt-color-accent-text);
@@ -72,7 +72,7 @@
     cursor: not-allowed;
   }
 
-  /* Hoppet i nummerrekken, som «1 2 … 9 10». */
+  /* The gap in the row of numbers, as in "1 2 ... 9 10". */
   .lt-pagination__gap {
     display: inline-flex;
     align-items: center;
@@ -81,11 +81,11 @@
     color: var(--lt-color-neutral-text-subtle);
   }
 
-  /* Høykontrast: gjeldende side skilles bare med farge. */
+  /* High contrast: the current page differs only by colour. */
   @media (forced-colors: active) {
-    /* `:hover` med, ellers slo hover-regelen over denne på spesifisitet, og
-       bakgrunnen ble tvunget til `Canvas` under `HighlightText`: hvit på
-       hvit, eller svart på svart. */
+    /* `:hover` included, or the hover rule beat this one on specificity, and
+       the background was forced to `Canvas` under `HighlightText`: white on
+       white, or black on black. */
     .lt-pagination [aria-current="page"],
     .lt-pagination [aria-current="page"]:hover {
       background-color: Highlight;

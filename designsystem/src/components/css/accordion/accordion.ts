@@ -1,7 +1,7 @@
 import { attributes, createGuard } from "../shared.js"
 
 export const ACCORDION_CLASS = "lt-accordion" as const
-/** Innholdet som vises når panelet er åpent. */
+/** The content shown when the panel is open. */
 export const ACCORDION_CONTENT_CLASS = "lt-accordion__content" as const
 
 export const accordionVariants = ["default", "plain"] as const
@@ -10,7 +10,7 @@ export type AccordionVariant = (typeof accordionVariants)[number]
 export type NonDefaultAccordionVariant = Exclude<AccordionVariant, "default">
 
 export type AccordionOptions = {
-  /** Egen ramme, eller bare en strek mellom panelene. Standard: `default`. */
+  /** Its own frame, or just a line between the panels. Default: `default`. */
   variant?: AccordionVariant
 }
 
@@ -20,17 +20,17 @@ export type AccordionAttributes = {
 }
 
 /**
- * Attributtene for et panel som kan foldes ut.
+ * The attributes for a panel that can be expanded.
  *
- * Klassen hører på et `<details>` med et `<summary>` først. Nettleseren tar
- * seg av åpning, lukking, tastatur og at skjermlesere melder «utvidet» eller
- * «sammenfoldet». Bygger du det samme av knapper og `aria-expanded`, må alt
- * det skrives på nytt, og nettleserens søk i siden finner ikke lenger tekst
- * inne i et lukket panel.
+ * The class goes on a `<details>` with a `<summary>` first. The browser
+ * handles opening, closing, the keyboard and screen readers announcing
+ * "expanded" or "collapsed". Build the same thing from buttons and
+ * `aria-expanded`, and all of that must be written again, and the browser's
+ * find in page no longer finds text inside a closed panel.
  *
  * ```ts
  * <details {...accordion()}>
- *   <summary>Hvem kan søke?</summary>
+ *   <summary>Who can apply?</summary>
  *   <div class={accordion.content}>…</div>
  * </details>
  * ```
@@ -42,7 +42,7 @@ export const accordion = Object.assign(
       "data-variant": variant === "default" ? undefined : variant,
     }),
   {
-    /** Klassen på innholdet under overskriften. */
+    /** The class on the content below the summary. */
     content: ACCORDION_CONTENT_CLASS,
     variants: accordionVariants,
     isVariant: createGuard(accordionVariants),

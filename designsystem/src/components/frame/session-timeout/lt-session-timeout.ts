@@ -20,9 +20,9 @@ import {
 export const LT_SESSION_TIMEOUT_TAG = "lt-session-timeout" as const
 
 /**
- * Delene varselet finner, som selektorer relativt til elementet. Komponenten
- * finner delene med disse, og manifestet beskriver dem for den som setter
- * sammen markupen selv, så de to ikke kan si noe ulikt.
+ * The parts the warning finds, as selectors relative to the element. The
+ * component finds the parts with these, and the manifest describes them for
+ * whoever assembles the markup by hand, so the two cannot say different things.
  */
 export const LT_SESSION_TIMEOUT_PARTS = {
   dialog: "dialog",
@@ -36,32 +36,33 @@ export const LT_SESSION_TIMEOUT_PARTS = {
 const DEFAULT_WARN_AT = 25 * 60
 const DEFAULT_EXPIRES_AT = 30 * 60
 
-/** Sekundene som skal leses opp underveis. Hvert sekund ville vært uutholdelig. */
+/** The seconds to announce along the way. Every second would be unbearable. */
 const ANNOUNCE_AT = new Set([120, 60, 30, 10])
 
 /**
- * Aktiviteten som nullstiller klokka.
+ * The activity that resets the clock.
  *
- * `scroll` står her selv om den også kommer når kode ruller. En skjermleser
- * i lesemodus sender ingen tastetrykk til siden, bare rulling, og det
- * samme gjør et dra i rullefeltet. Uten `scroll` ble den som leste en lang
- * side, logget ut midt i lesingen. Det er verre enn at en side som ruller
- * selv, holder økten i live. `scroll` bobler ikke, så alt lyttes på i
- * fangstfasen, og rulling i et panel teller også.
+ * `scroll` is here even though it also fires when code scrolls. A screen
+ * reader in browse mode sends no key presses to the page, only scrolling, and
+ * so does dragging the scrollbar. Without `scroll`, someone reading a long
+ * page was signed out in the middle of reading. That is worse than a page
+ * that scrolls by itself keeping the session alive. `scroll` does not bubble,
+ * so everything is listened for in the capture phase, and scrolling in a
+ * panel counts too.
  */
 const ACTIVITY_EVENTS = ["pointerdown", "keydown", "scroll"] as const
 const ACTIVITY_OPTIONS = { passive: true, capture: true } as const
 
-/** Sekunder mellom hver `session-activity`. */
+/** Seconds between each `session-activity`. */
 const DEFAULT_ACTIVITY_INTERVAL = 60
 
 /**
- * Grunnene komponenten selv lukker dialogen med.
+ * The reasons the component itself closes the dialog with.
  *
- * De sammenlignes nøyaktig, og navnene er valgt så de ikke kolliderer med en
- * `value` den som rendrer har gitt en knapp.
- * `reset()` lukket før med «extend», og lukkingen ble da lest som at
- * brukeren trykket på knappen med den verdien.
+ * They are compared exactly, and the names are chosen so they do not collide
+ * with a `value` the renderer has given a button.
+ * `reset()` used to close with "extend", and the close was then read as the
+ * user pressing the button with that value.
  */
 const CLOSED_BY_RESET = "lt-session-reset"
 const CLOSED_BY_EXPIRY = "lt-session-expired"
@@ -73,12 +74,13 @@ function clock(seconds: number): string {
 }
 
 /**
- * Varigheten slik den uttales, på sidens språk.
+ * The duration as it is spoken, in the page's language.
  *
- * `Intl` kjenner ordene og bøyningen, så «2 minutter og 30 sekunder» blir
- * «2 minutes and 30 seconds» på en engelsk side uten at noen oversetter det.
- * Rundet av sa opplesningen «2 minutter» mens tallet viste 1:30, så sekundene
- * er med.
+ * `Intl` knows the words and the inflection, so "2 minutter og 30 sekunder"
+ * on a Norwegian page becomes "2 minutes and 30 seconds" on an English one
+ * without anyone translating it.
+ * Rounded off, the announcement said "2 minutes" while the number showed
+ * 1:30, so the seconds are included.
  */
 function spoken(seconds: number, lang: string | undefined): string {
   const unit = (value: number, name: "minute" | "second") =>
@@ -96,10 +98,11 @@ function spoken(seconds: number, lang: string | undefined): string {
 }
 
 /**
- * Teksten i en node, med tallet byttet ut med varigheten slik den uttales.
+ * The text in a node, with the number replaced by the duration as it is
+ * spoken.
  *
- * Teksten leses, den skrives ikke: en kopi av avsnittet med ny tekst i
- * ville vært en skriving, og ingen skriving i `frame/` går utenom hjelperne.
+ * The text is read, not written: a copy of the paragraph with new text in it
+ * would have been a write, and no write in `frame/` goes around the helpers.
  */
 function readAloud(
   node: Node,
@@ -120,11 +123,11 @@ function isSeconds(raw: string | null): boolean {
 }
 
 /**
- * Elementet som har fokus, uansett hvilken skyggerot det står i.
+ * The element that has focus, whatever shadow root it is in.
  *
- * `document.activeElement` stopper ved skyggeverten, og en skyggerots
- * `activeElement` er null når fokus står utenfor den. Nedstigningen går fra
- * dokumentet og inn gjennom hver åpne skyggerot til elementet selv.
+ * `document.activeElement` stops at the shadow host, and a shadow root's
+ * `activeElement` is null when focus is outside it. The descent goes from
+ * the document in through each open shadow root to the element itself.
  */
 function deepActiveElement(): HTMLElement | null {
   let active = document.activeElement
@@ -135,38 +138,39 @@ function deepActiveElement(): HTMLElement | null {
 }
 
 /**
- * Varsler før en innlogget økt går ut.
+ * Warns before a signed-in session expires.
  *
- * Dette er tingen hver store organisasjon bygger selv og gjør feil. Enten
- * kommer det ingen advarsel, og brukeren mister et halvutfylt søknadsskjema,
- * eller så stjeler dialogen fokus midt i en setning, eller så leser
- * skjermleseren nedtellingen hvert sekund.
+ * This is the thing every large organisation builds itself and gets wrong.
+ * Either no warning comes, and the user loses a half-filled application
+ * form, or the dialog steals focus in the middle of a sentence, or the
+ * screen reader reads the countdown every second.
  *
- * Den som rendrer, skriver dialogen og teksten, så varselet står på det
- * språket appen bruker, med det oversettelsesverktøyet appen alt har.
- * Komponenten tar tiden: den teller aktivitet, åpner dialogen med
- * `showModal()`, fyller inn tallet og leser opp nedtellingen. Det er alt den
- * skriver, sammen med det en mal kan ha glemt: klassen
- * `lt-session-timeout__dialog` på dialogen, `role="alertdialog"`, og navnet
- * fra den første overskriften, med en id på overskriften når den mangler.
+ * The renderer writes the dialog and the text, so the warning is in the
+ * language the app uses, with the translation tool the app already has. The
+ * component keeps time: it counts activity, opens the dialog with
+ * `showModal()`, fills in the number and announces the countdown. That is all
+ * it writes, along with what a template may have forgotten: the class
+ * `lt-session-timeout__dialog` on the dialog, `role="alertdialog"`, and the
+ * name from the first heading, with an id on the heading when it lacks one.
  *
- * Delene kjennes igjen på det som uansett må stå der: `<dialog>` inne i
- * verten, `.lt-session-timeout__count` for tallet, `[role=status]` for
- * opplesningen og knappene i et `<form method="dialog">`. En knapp med
- * `value="logout"` logger ut. Alle andre måter å lukke dialogen på, Escape
- * og knappen med `value="extend"` medregnet, betyr «jeg er her», og forlenger.
+ * The parts are recognised by what must be there anyway: a `<dialog>` inside
+ * the host, `.lt-session-timeout__count` for the number, `[role=status]` for
+ * the announcement and the buttons in a `<form method="dialog">`. A button
+ * with `value="logout"` logs out. Every other way of closing the dialog,
+ * Escape and the button with `value="extend"` included, means "I am here",
+ * and extends the session.
  *
  * ```html
  * <lt-session-timeout warn-at="1500" expires-at="1800" data-ignore-morph>
- *   <dialog class="lt-session-timeout__dialog" role="alertdialog" aria-labelledby="okt">
- *     <h2 class="lt-session-timeout__title" id="okt">Du blir snart logget ut</h2>
+ *   <dialog class="lt-session-timeout__dialog" role="alertdialog" aria-labelledby="session">
+ *     <h2 class="lt-session-timeout__title" id="session">You will soon be signed out</h2>
  *     <p class="lt-session-timeout__text">
- *       Vi logger deg ut om <span class="lt-session-timeout__count" aria-hidden="true"></span>.
+ *       We will sign you out in <span class="lt-session-timeout__count" aria-hidden="true"></span>.
  *     </p>
  *     <span class="lt-sr-only" role="status"></span>
  *     <form method="dialog" class="lt-session-timeout__actions">
- *       <button class="lt-button" value="extend">Fortsett å være innlogget</button>
- *       <button class="lt-button" data-variant="secondary" value="logout">Logg ut nå</button>
+ *       <button class="lt-button" value="extend">Stay signed in</button>
+ *       <button class="lt-button" data-variant="secondary" value="logout">Sign out now</button>
  *     </form>
  *   </dialog>
  * </lt-session-timeout>
@@ -174,7 +178,7 @@ function deepActiveElement(): HTMLElement | null {
  *
  * ```ts
  * document.querySelector("lt-session-timeout")
- *   .addEventListener("session-extend", () => fetch("/forleng", { method: "POST" }))
+ *   .addEventListener("session-extend", () => fetch("/extend", { method: "POST" }))
  * ```
  */
 export class LtSessionTimeout extends HostElement {
@@ -187,45 +191,47 @@ export class LtSessionTimeout extends HostElement {
   private ticker?: number
   private lastActivity = Date.now()
   /**
-   * Da komponenten sist sendte `session-activity`, og om brukeren har gjort
-   * noe siden.
+   * When the component last sent `session-activity`, and whether the user has
+   * done anything since.
    *
-   * Klokka nullstilles av aktivitet i nettleseren, men serverøkten vet ikke
-   * om den. En bruker som skrev i et langt skjema uten et eneste kall til
-   * serveren, fikk aldri varselet, og innsendingen feilet fordi serverøkten
-   * var ute. Hendelsen lar appen holde serverøkten i live. Den sendes i
-   * starten av et intervall, og på slutten hvis brukeren har gjort noe
-   * siden, så serveren aldri er mer enn ett intervall bak klokka her.
+   * The clock is reset by activity in the browser, but the server session does
+   * not know about it. A user typing in a long form without a single call to
+   * the server never got the warning, and the submission failed because the
+   * server session had expired. The event lets the app keep the server session
+   * alive. It is sent at the start of an interval, and at the end if the user
+   * has done something since, so the server is never more than one interval
+   * behind the clock here.
    */
   private lastActivityEvent = 0
   private activitySinceEvent = false
-  /** Sekundene som var igjen ved forrige tikk, så en terskel ikke hoppes over. */
+  /** The seconds left at the previous tick, so a threshold is not skipped. */
   private previousLeft?: number
   private previousFocus: HTMLElement | null = null
   /**
-   * Sant fra økten gikk ut, eller brukeren valgte å logge ut, til `extend()`
-   * eller `reset()` er kalt.
+   * True from when the session expired, or the user chose to sign out, until
+   * `extend()` or `reset()` is called.
    *
-   * Uten dette startet syklusen på nytt av seg selv, og en app som ikke
-   * navigerte bort fikk ny dialog og ny `session-expired` hvert
-   * `expires-at`-sekund, for en økt som alt var borte.
+   * Without this the cycle started again by itself, and an app that did not
+   * navigate away got a new dialog and a new `session-expired` every
+   * `expires-at` seconds, for a session that was already gone.
    */
   private expired = false
-  /** Id-en komponenten ga overskriften, så den samme kommer tilbake. */
+  /** The id the component gave the heading, so the same one comes back. */
   private titleId?: string
   /**
-   * Dialogen komponenten åpnet, til `close` er kommet.
+   * The dialog the component opened, until `close` has arrived.
    *
-   * `close` kommer i en senere oppgave enn klikket som lukket dialogen. Tikket
-   * klokka imellom, åpnet `tick()` dialogen igjen og nullstilte
-   * `returnValue`, og den køede hendelsen leste da `""` og forlenget økten:
-   * brukeren trykket «Logg ut nå», og appen fikk `session-extend`.
+   * `close` arrives in a later task than the click that closed the dialog.
+   * When the clock ticked in between, `tick()` opened the dialog again and
+   * cleared `returnValue`, and the queued event then read `""` and extended
+   * the session: the user pressed "Sign out now", and the app got
+   * `session-extend`.
    */
   private shownDialog?: HTMLDialogElement
-  /** Ser etter `open` som forsvinner fra en dialog i topplaget. Se `repairOpen()`. */
+  /** Watches for `open` disappearing from a dialog in the top layer. See `repairOpen()`. */
   private openObserver?: MutationObserver
 
-  /** Sekunder uten aktivitet før varselet kommer. */
+  /** Seconds without activity before the warning appears. */
   get warnAt(): number {
     return this.readSeconds("warn-at", DEFAULT_WARN_AT)
   }
@@ -234,7 +240,7 @@ export class LtSessionTimeout extends HostElement {
     setAttr(this, "warn-at", String(value))
   }
 
-  /** Sekunder mellom hver `session-activity` mens brukeren er aktiv. */
+  /** Seconds between each `session-activity` while the user is active. */
   get activityInterval(): number {
     return this.readSeconds("activity-interval", DEFAULT_ACTIVITY_INTERVAL)
   }
@@ -243,7 +249,7 @@ export class LtSessionTimeout extends HostElement {
     setAttr(this, "activity-interval", String(value))
   }
 
-  /** Sekunder uten aktivitet før økten er ute. */
+  /** Seconds without activity before the session expires. */
   get expiresAt(): number {
     return this.readSeconds("expires-at", DEFAULT_EXPIRES_AT)
   }
@@ -259,9 +265,9 @@ export class LtSessionTimeout extends HostElement {
       document.addEventListener(name, this.registerActivity, ACTIVITY_OPTIONS)
     }
     /*
-     * `close` bobler ikke, men den går gjennom verten i fangstfasen. Da
-     * fanges lukkingen også når den som rendrer har byttet ut dialogen,
-     * uten at komponenten må holde på en bestemt node.
+     * `close` does not bubble, but it passes through the host in the capture
+     * phase. So the close is caught even when the renderer has replaced the
+     * dialog, without the component having to hold on to a particular node.
      */
     this.addEventListener("close", this.handleClose, true)
     this.openObserver = new MutationObserver(() => this.repairOpen())
@@ -274,11 +280,11 @@ export class LtSessionTimeout extends HostElement {
     this.validate()
 
     /*
-     * Flyttes elementet mens varselet står, tar nettleseren dialogen ut av
-     * topplaget og lar `open` stå. Den var da en boks uten bakteppe og
-     * fokusfelle, og `tick()` åpnet den aldri på nytt, siden den alt var
-     * «åpen». `removeAttribute` og ikke `close()`: en lukking leses som at
-     * brukeren forlenget økten.
+     * If the element is moved while the warning is showing, the browser takes
+     * the dialog out of the top layer and leaves `open` in place. It was then a
+     * box without a backdrop or a focus trap, and `tick()` never opened it
+     * again, since it was already "open". `removeAttribute` and not `close()`:
+     * a close is read as the user extending the session.
      */
     const dialog = this.dialog
     if (dialog?.open && !dialog.matches(":modal")) {
@@ -306,7 +312,7 @@ export class LtSessionTimeout extends HostElement {
     if (this.isConnected) this.validate()
   }
 
-  /** Dialogen komponenten styrer: den første `<dialog>` inne i verten. */
+  /** The dialog the component controls: the first `<dialog>` inside the host. */
   private get dialog(): HTMLDialogElement | null {
     return this.querySelector(LT_SESSION_TIMEOUT_PARTS.dialog)
   }
@@ -317,77 +323,78 @@ export class LtSessionTimeout extends HostElement {
   }
 
   /**
-   * Sier fra om markup og tall som ikke henger sammen, framfor å tie.
+   * Says so when markup and numbers do not add up, instead of staying quiet.
    *
-   * `warn-at="1800" expires-at="1500"` ga `session-expired` uten at
-   * dialogen noen gang ble vist, og et negativt tall ga dialog i første
-   * tikk. Standardverdiene brukes når et tall ikke er et tall.
+   * `warn-at="1800" expires-at="1500"` gave `session-expired` without the
+   * dialog ever being shown, and a negative number gave a dialog on the first
+   * tick. The defaults are used when a number is not a number.
    */
   private validate(): void {
     warnAboutMarkup(
       this,
-      "har warn-at eller expires-at som ikke er et tall større enn eller " +
-        "lik null. Standardverdiene brukes i stedet.",
+      "has a warn-at or expires-at that is not a number greater than " +
+        "or equal to zero. The defaults are used instead.",
       () =>
         !isSeconds(this.getAttribute("warn-at")) ||
         !isSeconds(this.getAttribute("expires-at")),
     )
     warnAboutMarkup(
       this,
-      "har warn-at som ikke er mindre enn expires-at, så varselet kommer " +
-        "aldri før økten er ute.",
+      "has a warn-at that is not less than expires-at, so the warning " +
+        "never comes before the session expires.",
       () => this.warnAt >= this.expiresAt,
     )
     warnAboutMarkup(
       this,
-      "har activity-interval som ikke er et tall større enn null. " +
-        "session-activity sendes høyst én gang i sekundet, eller hvert " +
-        "60. sekund om verdien ikke er et tall.",
+      "has an activity-interval that is not a number greater than " +
+        "zero. session-activity is sent at most once a second, or every " +
+        "60 seconds if the value is not a number.",
       () => {
         const raw = this.getAttribute("activity-interval")
         return raw !== null && (!isSeconds(raw) || Number(raw) < 1)
       },
     )
-    // Et tomt element er et område som ikke er fylt ennå, og skal tie her.
-    // Det sies fra om i det varselet skulle vist seg. Se `openDialog()`.
+    // An empty element is a region that has not been filled yet, and stays
+    // quiet here. It is reported when the warning should have appeared. See
+    // `openDialog()`.
     warnAboutMarkup(
       this,
-      "fant ingen <dialog>. Varselet kan ikke vises, og økten går ut uten " +
-        "advarsel.",
+      "found no <dialog>. The warning cannot be shown, and the " +
+        "session expires without warning.",
       () => this.childElementCount > 0 && this.dialog === null,
     )
     this.validateParts()
   }
 
-  /** Delene inne i dialogen. Hver av dem gjør varselet dårligere å mangle. */
+  /** The parts inside the dialog. Each of them makes the warning worse when missing. */
   private validateParts(): void {
     const dialog = this.dialog
     if (!dialog) return
     warnAboutMarkup(
       this,
-      `fant ingen .${SESSION_TIMEOUT_COUNT_CLASS} i dialogen. Brukeren ser ` +
-        "ikke hvor lenge det er igjen.",
+      `found no .${SESSION_TIMEOUT_COUNT_CLASS} in the dialog. The user cannot see how much time is left.`,
       () => !this.dialog?.querySelector(LT_SESSION_TIMEOUT_PARTS.count),
     )
     warnAboutMarkup(
       this,
-      "fant ingen [role=status] i dialogen. Nedtellingen leses ikke opp for " +
-        "den som bruker skjermleser.",
+      "found no [role=status] in the dialog. The countdown is not " +
+        "announced to screen reader users.",
       () => !this.dialog?.querySelector(LT_SESSION_TIMEOUT_PARTS.status),
     )
     warnAboutMarkup(
       this,
-      'fant ingen knapp i et <form method="dialog">. Brukeren kan bare ' +
-        "forlenge økten med Escape, og kan ikke logge ut fra varselet.",
+      'found no button in a <form method="dialog">. The user can only ' +
+        "extend the session with Escape, and cannot log out from the " +
+        "warning.",
       () => !this.dialog?.querySelector(LT_SESSION_TIMEOUT_PARTS.button),
     )
   }
 
   /**
-   * Fyller inn det tilgjengeligheten krever og en mal kan ha glemt: rollen,
-   * og navnet fra den første overskriften. Bare det som mangler: et navn
-   * fra `aria-label` eller `aria-labelledby` er skrevet av den som rendrer,
-   * og blir stående.
+   * Fills in what accessibility requires and a template may have forgotten:
+   * the role, and the name from the first heading. Only what is missing: a
+   * name from `aria-label` or `aria-labelledby` was written by the renderer,
+   * and stays.
    */
   private wire(dialog: HTMLDialogElement): void {
     addClass(dialog, SESSION_TIMEOUT_DIALOG_CLASS)
@@ -408,16 +415,16 @@ export class LtSessionTimeout extends HostElement {
   }
 
   /**
-   * Setter `open` tilbake på en dialog som fortsatt står i topplaget.
+   * Puts `open` back on a dialog that is still in the top layer.
    *
-   * `showModal()` setter attributtet selv, og den som rendrer sendte det
-   * ikke. En morfing uten `data-ignore-morph` tar det derfor, og dialogen
-   * ble stående i topplaget, usynlig, med resten av siden inert. Siden sto
-   * fast. Tallet kommer tilbake ved neste tikk.
+   * `showModal()` sets the attribute itself, and the renderer did not send
+   * it. A morph without `data-ignore-morph` therefore removes it, and the
+   * dialog stayed in the top layer, invisible, with the rest of the page
+   * inert. The page was stuck. The number comes back on the next tick.
    *
-   * `:modal` og ikke `open` er vilkåret: lukker brukeren dialogen, forlater
-   * den topplaget, og da er det manglende attributtet ekte. Samme regel som
-   * i `<lt-dialog>`.
+   * The condition is `:modal` and not `open`: when the user closes the
+   * dialog, it leaves the top layer, and then the missing attribute is real.
+   * The same rule as in `<lt-dialog>`.
    */
   private repairOpen(): void {
     const dialog = this.dialog
@@ -433,23 +440,25 @@ export class LtSessionTimeout extends HostElement {
   }
 
   /**
-   * Sender `session-activity` når et intervall er gått og brukeren var aktiv.
+   * Sends `session-activity` when an interval has passed and the user was
+   * active.
    *
-   * Ikke mens varselet står eller etter at økten er ute: da holdt appen
-   * serverøkten i live mens klokka her talte ned mot `session-expired`.
-   * Intervallet er minst ett sekund, ellers sendte hver rulling et kall.
+   * Not while the warning is showing or after the session has expired: then
+   * the app kept the server session alive while the clock here counted down
+   * towards `session-expired`. The interval is at least one second, or every
+   * scroll sent a call.
    */
   private reportActivity(): void {
     if (!this.activitySinceEvent || this.dialog?.open || this.expired) return
     const now = Date.now()
-    // Har fanen stått fryst forbi utløpet, er aktiviteten foreldet. Da kom
-    // `session-activity` og `session-expired` i samme tikk, og appen holdt
-    // liv i en økt komponenten samtidig sa var ute.
+    // If the tab has been frozen past the expiry, the activity is stale. Then
+    // `session-activity` and `session-expired` came in the same tick, and the
+    // app kept alive a session the component was saying had expired.
     if (now - this.lastActivity >= this.expiresAt * 1000) {
       this.activitySinceEvent = false
       return
     }
-    // Rulling kommer i hver ramme. Det billige først, attributtet etterpå.
+    // Scrolling comes every frame. The cheap check first, the attribute after.
     const since = now - this.lastActivityEvent
     if (since < 1000) return
     if (since < Math.max(1, this.activityInterval) * 1000) return
@@ -459,12 +468,13 @@ export class LtSessionTimeout extends HostElement {
   }
 
   /**
-   * Brukeren lukket dialogen, eller komponenten gjorde det.
+   * The user closed the dialog, or the component did.
    *
-   * Komponentens egne lukkinger har sine egne grunner, og gjør ingenting her. `value="logout"` logger ut. Alt annet, Escape og
-   * knappen med `value="extend"` medregnet, er «jeg er her». Det gjelder
-   * også en knapp med en annen verdi: ellers ble dialogen lukket, og neste
-   * tikk åpnet den igjen ett sekund senere.
+   * The component's own closes have their own reasons, and do nothing here.
+   * `value="logout"` logs out. Everything else, Escape and the button with
+   * `value="extend"` included, is "I am here". That also applies to a button
+   * with another value: otherwise the dialog closed, and the next tick opened
+   * it again a second later.
    */
   private handleClose = (event: Event): void => {
     const dialog = event.target
@@ -479,9 +489,9 @@ export class LtSessionTimeout extends HostElement {
     const reason = dialog.returnValue
     if (reason === CLOSED_BY_RESET || reason === CLOSED_BY_EXPIRY) return
     if (reason === SESSION_LOGOUT) {
-      // Som ved utløp: komponenten står stille til `extend()` eller
-      // `reset()`. Ellers så neste tikk en lukket dialog etter
-      // varselgrensen og åpnet den igjen mens appen logget ut.
+      // As on expiry: the component stands still until `extend()` or
+      // `reset()`. Otherwise the next tick saw a closed dialog after the warning
+      // threshold and opened it again while the app was signing out.
       this.expired = true
       this.emit("session-logout")
       return
@@ -491,12 +501,13 @@ export class LtSessionTimeout extends HostElement {
 
   private tick(): void {
     if (this.expired) return
-    // Slutten av et intervall: brukeren var aktiv, men ingen hendelse er
-    // sendt siden starten.
+    // The end of an interval: the user was active, but no event has been sent
+    // since the start.
     this.reportActivity()
 
-    // En lukking er på vei. Vent på `close`, så den blir lest riktig. Er
-    // dialogen byttet ut imens, kommer den aldri, og da slippes minnet.
+    // A close is on its way. Wait for `close`, so it is read correctly. If the
+    // dialog has been replaced in the meantime, it never comes, and then the
+    // memory is released.
     const current = this.dialog
     if (this.shownDialog && this.shownDialog !== current) {
       this.shownDialog = undefined
@@ -508,15 +519,16 @@ export class LtSessionTimeout extends HostElement {
     const dialog = this.dialog
 
     if (left <= 0) {
-      // Flagget først, så lukkingen ikke leses som en forlengelse.
+      // The flag first, so the close is not read as an extension.
       this.expired = true
       this.closeDialog(CLOSED_BY_EXPIRY)
       this.emit("session-expired")
       return
     }
 
-    // Står dialogen alt åpen, går nedtellingen videre selv om `warn-at` er
-    // hevet imens. Ellers frøs tallet, og økten gikk ut uten flere varsler.
+    // If the dialog is already open, the countdown continues even if `warn-at`
+    // has been raised meanwhile. Otherwise the number froze, and the session
+    // expired without further warnings.
     if (elapsed < this.warnAt && !dialog?.open) return
 
     if (!dialog?.open) {
@@ -524,9 +536,9 @@ export class LtSessionTimeout extends HostElement {
       return
     }
     /*
-     * Når en terskel krysses, ikke bare når den treffes nøyaktig. Et tikk
-     * kan komme sent, eller strupes i en fane i bakgrunnen, og hoppet klokka
-     * fra 61 til 59, ble «1 minutt» aldri lest opp.
+     * When a threshold is crossed, not only when it is hit exactly. A tick can
+     * come late, or be throttled in a background tab, and when the clock jumped
+     * from 61 to 59, "1 minute" was never announced.
      */
     const previous = this.previousLeft ?? left + 1
     this.previousLeft = left
@@ -536,7 +548,7 @@ export class LtSessionTimeout extends HostElement {
     this.show(dialog, left, crossed)
   }
 
-  /** Skriver tallet, og opplesningen når `announce` er sant. */
+  /** Writes the number, and the announcement when `announce` is true. */
   private show(
     dialog: HTMLDialogElement,
     left: number,
@@ -550,12 +562,13 @@ export class LtSessionTimeout extends HostElement {
     if (!live) return
     const duration = spoken(left, languageOf(this))
     /*
-     * Opplesningen er avsnittet, med tallet uttalt. Da står den på det
-     * språket den som rendrer skrev, uten en egen tekst for skjermleseren.
-     * Uten et avsnitt med tallet i leses varigheten alene.
+     * The announcement is the paragraph, with the number spoken. That way it is
+     * in the language the renderer wrote, without a separate text for the
+     * screen reader. Without a paragraph holding the number, the duration is
+     * read on its own.
      */
     const text = dialog.querySelector(LT_SESSION_TIMEOUT_PARTS.text)
-    // Står tallet utenfor avsnittet, ville avsnittet blitt lest uten tall.
+    // If the number is outside the paragraph, the paragraph would be read without a number.
     if (!text || !count || !text.contains(count)) {
       setText(live, duration)
       return
@@ -567,14 +580,14 @@ export class LtSessionTimeout extends HostElement {
   private openDialog(left: number): void {
     const dialog = this.dialog
     if (!dialog) {
-      // Her har siden for lengst falt til ro, så et tomt element er ikke et
-      // område som venter på innhold. Det er et varsel som aldri kommer.
-      // Har elementet innhold uten dialog, har `validate()` alt sagt fra.
+      // By now the page has long since settled, so an empty element is not a
+      // region waiting for content. It is a warning that will never come. If the
+      // element has content without a dialog, `validate()` has already said so.
       warnAboutMarkup(
         this,
-        "skulle vist varselet, men fant ingen <dialog>. Den som rendrer må " +
-          "skrive dialogen og teksten selv. Brukeren får ingen advarsel før " +
-          "økten går ut.",
+        "was about to show the warning, but found no <dialog>. Whoever " +
+          "renders the page must write the dialog and its text, or the " +
+          "user gets no warning before the session expires.",
         () => this.dialog === null && this.childElementCount === 0,
       )
       return
@@ -582,27 +595,30 @@ export class LtSessionTimeout extends HostElement {
     if (dialog.open) return
 
     this.wire(dialog)
-    // Dialogen kan ha kommet etter tilkoblingen, med HTML som strømmer inn.
-    // Da så `validate()` den aldri.
+    // The dialog may have arrived after connecting, with HTML streaming in.
+    // Then `validate()` never saw it.
     this.validateParts()
-    // Fokus skal tilbake dit brukeren var. Uten dette starter neste
-    // tastetrykk på toppen av siden, midt i et skjema. Hentet fra dokumentet
-    // og nedover gjennom skyggerøttene, ikke fra én rot: `document` peker på
-    // skyggeverten når feltet står i et skyggetre, og komponentens egen rot
-    // er null når komponenten står i en skyggerot og feltet i siden, slik
-    // `<lt-error-summary>` også advarer om. Feltet kan stå på begge sider av
-    // skyggegrensen fra komponenten, så bare nedstigningen treffer det.
+    // Focus must go back to where the user was. Without this the next key
+    // press starts at the top of the page, in the middle of a form. Taken from
+    // the document down through the shadow roots, not from one root: `document`
+    // points to the shadow host when the field is in a shadow tree, and the
+    // component's root is null when the component is in a shadow root and the
+    // field is in the page, as `<lt-error-summary>` also warns about. The field
+    // can be on either side of the shadow boundary from the component, so only
+    // the descent finds it.
     this.previousFocus = deepActiveElement()
     /*
-     * Teksten skal stå før dialogen åpnes, siden `alertdialog` leses opp i
-     * det den kommer. Tallet i avsnittet er `aria-hidden`, så uten
-     * opplesningen her hørte skjermleseren avsnittet uten tall, og første
-     * tall kom først ved neste terskel, minutter senere.
+     * The text must be in place before the dialog opens, since `alertdialog` is
+     * announced as it appears. The number in the paragraph is `aria-hidden`, so
+     * without the announcement here the screen reader heard the paragraph
+     * without a number, and the first number came only at the next threshold,
+     * minutes later.
      */
     this.show(dialog, left, true)
     this.previousLeft = left
-    // Aktivitet før varselet er alt med i klokka her. Sendt mens varselet
-    // står, holdt den serverøkten i live mens brukeren ble bedt om å svare.
+    // Activity before the warning is already counted in the clock here. Sent
+    // while the warning is showing, it kept the server session alive while the
+    // user was being asked to respond.
     this.activitySinceEvent = false
     dialog.returnValue = ""
     dialog.showModal()
@@ -621,11 +637,11 @@ export class LtSessionTimeout extends HostElement {
   }
 
   /**
-   * Forlenger økten, lukker varselet og sender `session-extend`.
+   * Extends the session, closes the warning and sends `session-extend`.
    *
-   * Lytter appen på `session-extend` for å be serveren forlenge, skal den
-   * kalle `reset()` når svaret kommer, ikke denne. Ellers sender svaret en ny
-   * `session-extend`, som sender et nytt kall.
+   * If the app listens for `session-extend` to ask the server to extend, it
+   * should call `reset()` when the answer comes, not this. Otherwise the
+   * answer sends a new `session-extend`, which sends a new call.
    */
   extend(): void {
     this.reset()
@@ -633,11 +649,11 @@ export class LtSessionTimeout extends HostElement {
   }
 
   /**
-   * Nullstiller klokka uten å sende `session-extend`.
+   * Resets the clock without sending `session-extend`.
    *
-   * For en app som alt har forlenget økten på egen hånd, som når en
-   * autolagring gikk gjennom. `extend()` ville bedt serveren om det en gang
-   * til.
+   * For an app that has already extended the session itself, such as when an
+   * autosave went through. `extend()` would have asked the server a second
+   * time.
    */
   reset(): void {
     this.lastActivity = Date.now()
@@ -652,13 +668,13 @@ export function defineLtSessionTimeout(
   defineElement(tagName, LtSessionTimeout)
 }
 
-/** `element.extend()`, men venter først på registreringen. Se `whenUpgraded`. */
+/** `element.extend()`, but waits for the registration first. See `whenUpgraded`. */
 export async function extendSession(element: Element): Promise<void> {
   const session = await whenUpgraded<LtSessionTimeout>(element)
   session.extend()
 }
 
-/** `element.reset()`, men venter først på registreringen. Se `whenUpgraded`. */
+/** `element.reset()`, but waits for the registration first. See `whenUpgraded`. */
 export async function resetSession(element: Element): Promise<void> {
   const session = await whenUpgraded<LtSessionTimeout>(element)
   session.reset()

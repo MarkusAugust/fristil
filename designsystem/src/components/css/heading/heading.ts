@@ -8,7 +8,7 @@ export type HeadingSize = (typeof headingSizes)[number]
 export type NonDefaultHeadingSize = Exclude<HeadingSize, "l">
 
 export type HeadingOptions = {
-  /** Visuell størrelse. Standard: `l`. */
+  /** Visual size. Default: `l`. */
   size?: HeadingSize
 }
 
@@ -18,15 +18,15 @@ export type HeadingAttributes = {
 }
 
 /**
- * Attributtene for en overskrift.
+ * The attributes for a heading.
  *
- * Størrelsen og nivået er to forskjellige ting. Nivået er `<h1>` til `<h6>`
- * og bestemmer strukturen skjermlesere navigerer etter; `size` bestemmer bare
- * hvor stor teksten ser ut. En `<h2>` som skal se liten ut er riktig; en
- * `<h4>` valgt fordi den var liten nok, hopper over et nivå i strukturen.
+ * Size and level are two different things. The level is `<h1>` to `<h6>`
+ * and sets the structure screen readers navigate by; `size` only sets how
+ * large the text looks. An `<h2>` that should look small is correct; an
+ * `<h4>` chosen because it was small enough skips a level in the structure.
  *
  * ```ts
- * <h2 {...heading({ size: "m" })}>Vedlegg</h2>
+ * <h2 {...heading({ size: "m" })}>Attachments</h2>
  * ```
  */
 export const heading = Object.assign(

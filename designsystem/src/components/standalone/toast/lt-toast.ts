@@ -16,44 +16,44 @@ const DEFAULT_LABEL = DEFAULT_TEXTS.toastRegion
 const DEFAULT_CLOSE_LABEL = DEFAULT_TEXTS.toastClose
 
 export type ShowOptions = {
-  /** Hva meldingen betyr. Standard: `neutral`. */
+  /** What the message means. Default: `neutral`. */
   color?: ToastColor
-  /** Millisekunder før meldingen forsvinner. `0` lar den bli stående. */
+  /** Milliseconds before the message disappears. `0` keeps it. */
   duration?: number
   /**
-   * Hva lukkeknappen heter for skjermleseren. Standard: `close-label` på
-   * verten, og ellers «Lukk melding».
+   * The screen reader name of the close button. Default: `close-label` on
+   * the host, and otherwise "Close message".
    */
   closeLabel?: string
 }
 
 /**
- * Køen av korte meldinger i hjørnet av skjermen.
+ * The queue of short messages in the corner of the screen.
  *
- * Dette er en av de tre frittstående komponentene, og en del av pakken du
- * kaller i stedet for å skrive. Elementet er beholderen, ikke meldingen: du
- * legger det inn én gang i appen og kaller `show()` når noe skal meldes.
- * Meldingene finnes ikke før en hendelse på klienten skaper dem, så det er
- * ingenting for serveren å rendre.
+ * This is one of the standalone components, and part of the package you call
+ * instead of writing markup. The element is the container, not the message:
+ * you put it in the app once and call `show()` when there is something to
+ * report. The messages do not exist until an event on the client creates
+ * them, so there is nothing for the server to render.
  *
- * Serveren skriver beholderen med `lt.toast()`, og den setter
- * `data-ignore-morph`. Uten det river Datastars morfing meldingene bort ved
- * neste patch, fordi serverens utgave av regionen er tom.
+ * The server writes the container with `lt.toast()`, which sets
+ * `data-ignore-morph`. Without it the Datastar morph tears the messages away
+ * at the next patch, because the server's version of the region is empty.
  *
- * Beholderen er en `role="status"`-region, ikke `role="alert"`. En melding
- * som dukker opp i hjørnet skal ikke avbryte det skjermleseren holder på med;
- * er beskjeden så viktig at den må avbryte, hører den hjemme i en
- * [Alert](../../css/alert/alert.js) i selve siden. Regionen har
- * `aria-atomic="false"`: `status` er atomisk som standard, og da ble hele
- * stabelen lest opp på nytt for hver ny melding.
+ * The container is a `role="status"` region, not `role="alert"`. A message
+ * that appears in the corner should not interrupt what the screen reader is
+ * doing; if the message is important enough to interrupt, it belongs in an
+ * [Alert](../../css/alert/alert.js) in the page itself. The region has
+ * `aria-atomic="false"`: `status` is atomic by default, and then the whole
+ * stack was announced again for every new message.
  *
- * Meldinger som forsvinner av seg selv er en tilgjengelighetsfelle: den som
- * leser sakte eller bruker forstørrelse rekker ikke lese dem. Derfor er
- * lukkeknappen alltid der, og tiden stopper mens musa eller fokus er i
- * meldingen.
+ * Messages that disappear by themselves are an accessibility trap: someone
+ * who reads slowly or uses magnification does not have time to read them. So
+ * the close button is always there, and the timer stops while the mouse or
+ * focus is in the message.
  *
  * ```ts
- * document.querySelector("lt-toast").show("Søknaden er sendt", {
+ * document.querySelector("lt-toast").show("Application sent", {
  *   color: "success",
  * })
  * ```
@@ -62,8 +62,8 @@ export class LtToast extends HostElement {
   static observedAttributes = ["duration", "label", "close-label"] as const
 
   /**
-   * Hva lukkeknappen heter for skjermleseren, i hver melding som vises.
-   * `closeLabel` i `show()` overstyrer den for én melding.
+   * The screen reader name of the close button in each message shown.
+   * `closeLabel` in `show()` overrides it for one message.
    */
   get closeLabel(): string {
     return this.getAttribute("close-label") || DEFAULT_CLOSE_LABEL
@@ -73,12 +73,12 @@ export class LtToast extends HostElement {
     this.setAttribute("close-label", value)
   }
 
-  /** Standard levetid i millisekunder. `0` lar meldingene bli stående. */
+  /** Default lifetime in milliseconds. `0` keeps the messages. */
   get duration(): number {
-    // `0` er en gyldig verdi og betyr at meldingene blir stående. Uten
-    // sjekken mot null her forsvant de likevel etter seks sekunder, og bare
-    // `show(..., { duration: 0 })` virket. Et tomt attributt er ikke null:
-    // `Number("")` er 0, og `<lt-toast duration>` lot meldingene stå.
+    // `0` is a valid value and means the messages stay. Without the check
+    // against null here they still disappeared after six seconds, and only
+    // `show(..., { duration: 0 })` worked. An empty attribute is not null:
+    // `Number("")` is 0, and `<lt-toast duration>` kept the messages.
     const raw = this.getAttribute("duration")
     if (raw === null || raw.trim() === "") return DEFAULT_DURATION
     const value = Number(raw)
@@ -90,16 +90,17 @@ export class LtToast extends HostElement {
   }
 
   /**
-   * Om komponenten skrev `aria-label`. Før skrev `label` over en
-   * `aria-label` forfatteren hadde satt selv, og når `label` ble fjernet,
-   * ble den gamle stående.
+   * Whether the component wrote `aria-label`. Before, `label` overwrote an
+   * `aria-label` the author had set, and when `label` was removed, the old
+   * one stayed.
    */
   private ownsLabel = false
   /**
-   * Elementet fokus kom fra før det gikk inn i en melding. Fjernes den
-   * siste meldingen mens den har fokus, går fokus tilbake dit. Før falt det
-   * til `body`, og neste Tab startet på toppen av siden. Kom fokus fra en
-   * skjermleser eller F6, er det ikke kjent, og da faller det fortsatt.
+   * The element focus came from before it entered a message. If the last
+   * message is removed while it has focus, focus goes back there. Before, it
+   * fell to `body`, and the next Tab started at the top of the page. If
+   * focus came from a screen reader or F6, the origin is not known, and focus
+   * still falls.
    */
   private focusOrigin: HTMLElement | null = null
 
@@ -111,10 +112,11 @@ export class LtToast extends HostElement {
   }
 
   /**
-   * Fokus gikk ut av regionen til et annet sted. Da er opphavet utdatert:
-   * uten dette kom fokus senere tilbake til et element brukeren forlot for
-   * lenge siden, og siden rullet dit. Ikke når `relatedTarget` er `null`,
-   * for det er også det som skjer når meldingen med fokus fjernes.
+   * Focus left the region for somewhere else. Then the origin is stale:
+   * without this, focus later came back to an element the user left long
+   * ago, and the page scrolled there. Not when `relatedTarget` is `null`,
+   * because that is also what happens when the message with focus is
+   * removed.
    */
   private forgetOrigin = (event: FocusEvent): void => {
     const to = event.relatedTarget
@@ -122,11 +124,11 @@ export class LtToast extends HostElement {
   }
 
   /**
-   * Om fokus står i elementet. Lest fra komponentens egen rot, ikke fra
-   * `document`: står regionen i en skyggerot, som hver forhåndsvisning i
-   * dokumentasjonen, peker `document.activeElement` på skyggeverten. Da så
-   * det ut som om ingen melding hadde fokus, og fokus falt til `body` i
-   * stedet for til nabomeldingen eller dit det kom fra.
+   * Whether focus is in the element. Read from the component's root node,
+   * not from `document`: when the region is in a shadow root, as in every
+   * preview in the documentation, `document.activeElement` points to the
+   * shadow host. Then it looked as if no message had focus, and focus fell
+   * to `body` instead of to the neighbouring message or where it came from.
    */
   private holdsFocus(element: Element): boolean {
     const root = this.getRootNode() as Document | ShadowRoot
@@ -136,7 +138,7 @@ export class LtToast extends HostElement {
   private restoreFocus(): void {
     const origin = this.focusOrigin
     this.focusOrigin = null
-    // En gjenoppretting, ikke en navigasjon: siden skal ikke rulle.
+    // A restore, not a navigation: the page must not scroll.
     if (origin?.isConnected) origin.focus({ preventScroll: true })
   }
 
@@ -149,11 +151,13 @@ export class LtToast extends HostElement {
   connectedCallback(): void {
     this.addEventListener("focusin", this.rememberOrigin)
     this.addEventListener("focusout", this.forgetOrigin)
-    // Skrev serveren regionen med lt.toast(), står alt dette allerede. Her
-    // settes det bare når det mangler, så en ren HTML-side uten byggefunksjon også
-    // får en region skjermleseren forstår.
-    // Klassen bærer plasseringen. Den settes her også, så en region uten
-    // byggefunksjon, eller registrert under et annet navn, havner i hjørnet.
+    // If the server wrote the region with lt.toast(), all of this is
+    // already there. Here it is only set when missing, so a plain HTML page
+    // without a builder function also gets a region the screen reader
+    // understands.
+    // The class carries the position. It is set here too, so a region
+    // without a builder function, or registered under another name, ends up
+    // in the corner.
     this.classList.add(TOAST_CLASS)
     if (!this.hasAttribute("role")) this.setAttribute("role", "status")
     if (!this.hasAttribute("aria-live")) {
@@ -172,13 +176,13 @@ export class LtToast extends HostElement {
   }
 
   attributeChangedCallback(name: string, _old: string, value: string): void {
-    // `label` kan settes etter at elementet står i DOM-en, for eksempel av et
-    // rammeverk som fyller inn attributtene i et senere steg.
+    // `label` can be set after the element is in the DOM, for example by a
+    // framework that fills in the attributes in a later step.
     if (name !== "label" || !this.ownsLabel) return
     this.setAttribute("aria-label", value || DEFAULT_LABEL)
   }
 
-  /** Viser en melding, og returnerer elementet den ble lagt i. */
+  /** Shows a message, and returns the element it was put in. */
   show(message: string, options: ShowOptions = {}): HTMLElement {
     const {
       color = "neutral",
@@ -188,7 +192,7 @@ export class LtToast extends HostElement {
 
     const toast = document.createElement("div")
     toast.className = TOAST_MESSAGE_CLASS
-    // En ukjent farge gir ingen kant, framfor et `data-color` uten regel.
+    // An unknown colour gives no border, instead of a `data-color` without a rule.
     if (isToastColor(color) && color !== "neutral") toast.dataset.color = color
 
     const text = document.createElement("span")
@@ -209,10 +213,11 @@ export class LtToast extends HostElement {
       let timer = window.setTimeout(() => this.dismiss(toast), duration)
 
       /*
-       * Tiden stopper mens brukeren leser eller er på vei til lukkeknappen,
-       * og går først når verken musa eller fokus er i meldingen. Pausen var
-       * to uavhengige par, og musa som gikk ut startet klokka igjen mens
-       * fokus sto i meldingen: den forsvant under fingrene på brukeren.
+       * The timer stops while the user reads or is on the way to the close
+       * button, and only runs when neither the mouse nor focus is in the
+       * message. The pause used to be two independent pairs, and the mouse
+       * leaving restarted the clock while focus was in the message: it
+       * disappeared from under the user's fingers.
        */
       const holds = new Set<"pointer" | "focus">()
       const pause = (reason: "pointer" | "focus") => {
@@ -230,7 +235,7 @@ export class LtToast extends HostElement {
       toast.addEventListener("mouseleave", () => resume("pointer"))
       toast.addEventListener("focusin", () => pause("focus"))
       toast.addEventListener("focusout", (event) => {
-        // Innenfor meldingen, fra teksten til knappen: fortsatt pause.
+        // Within the message, from the text to the button: still paused.
         const next = event.relatedTarget
         if (next instanceof Node && toast.contains(next)) return
         resume("focus")
@@ -240,15 +245,15 @@ export class LtToast extends HostElement {
     return toast
   }
 
-  /** Fjerner en melding. */
+  /** Removes a message. */
   dismiss(toast: HTMLElement): void {
     if (!this.contains(toast)) return
 
     /*
-     * Sto fokus i meldingen, som på lukkeknappen etter Enter, faller det
-     * ellers til `body`, og neste Tab starter øverst på siden. Meldingen ved
-     * siden av er det nærmeste stedet å fortsette fra: den under, ellers den
-     * over.
+     * If focus was in the message, as on the close button after Enter, it
+     * would otherwise fall to `body`, and the next Tab starts at the top of
+     * the page. The neighbouring message is the nearest place to continue
+     * from: the one below, otherwise the one above.
      */
     const hadFocus = this.holdsFocus(toast)
     const neighbour = toast.nextElementSibling ?? toast.previousElementSibling
@@ -266,7 +271,7 @@ export class LtToast extends HostElement {
     )
   }
 
-  /** Fjerner alle meldingene. */
+  /** Removes all the messages. */
   clear(): void {
     if (this.holdsFocus(this)) this.restoreFocus()
     for (const toast of this.querySelectorAll(`.${TOAST_MESSAGE_CLASS}`)) {
@@ -280,10 +285,10 @@ export function defineLtToast(tagName: string = LT_TOAST_TAG): void {
 }
 
 /**
- * `element.show()`, men venter først på at `defineLtToast()` har kjørt.
+ * `element.show()`, but waits for `defineLtToast()` to have run first.
  *
- * Se `whenUpgraded` for hvorfor: et kall før registreringen traff et vanlig
- * `HTMLElement` uten `show`.
+ * See `whenUpgraded` for why: a call before the registration hit a plain
+ * `HTMLElement` without `show`.
  */
 export async function showToast(
   element: Element,

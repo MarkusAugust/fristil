@@ -9,24 +9,24 @@ import { defineLtTabs } from "./components/frame/tabs/lt-tabs"
 import { monter, ventPaTegning } from "./testing/a11y"
 
 /**
- * At en komponent sier fra når markupen den fikk ikke henger sammen, og bare
- * da.
+ * That a component speaks up when the markup it was given does not hold
+ * together, and only then.
  *
- * Komponentene fester oppførsel på markup noen andre har skrevet, og den
- * markupen kan komme fra en Go-mal, en PHP-fil eller en publiseringsløsning
- * der ingen TypeScript-kompilator ser etter. Fant ikke komponenten delene
- * sine, gjorde den ingenting, uten et ord. Feilen viste seg først når noen
- * leste siden med skjermleser.
+ * The components attach behaviour to markup someone else wrote, and that
+ * markup can come from a Go template, a PHP file or a publishing system where
+ * no TypeScript compiler is looking. If the component did not find its
+ * parts, it did nothing, without a word. The error only showed when someone
+ * read the page with a screen reader.
  *
- * Testen som betyr mest er den siste: at riktig markup ikke gir et eneste
- * ord. En advarsel som også kommer når alt er i orden blir slått av, og da
- * er den verdiløs.
+ * The test that matters most is the last one: that correct markup produces
+ * not a single word. A warning that also comes when everything is fine gets
+ * switched off, and then it is worthless.
  */
 
 /**
- * Advarselen kommer først når siden har falt til ro, altså etter to
- * tegninger. Her venter vi i to runder, slik at sjekken er ferdig uansett
- * hvilken av dem som ble planlagt først.
+ * The warning only comes once the page has settled, that is after two
+ * frames. Here we wait two rounds, so the check is done whichever of them
+ * was scheduled first.
  */
 async function ventTilRo(): Promise<void> {
   await ventPaTegning()
@@ -37,7 +37,7 @@ function meldinger(advarsel: { mock: { calls: unknown[][] } }): string[] {
   return advarsel.mock.calls.map((kall) => String(kall[0]))
 }
 
-describe("komponenten sier fra om markup som ikke henger sammen", () => {
+describe("the component reports markup that does not hold together", () => {
   beforeAll(() => {
     defineLtField()
     defineLtSuggestion()
@@ -56,7 +56,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     return vi.spyOn(console, "warn").mockImplementation(() => {})
   }
 
-  it("feltet uten en kontroll", async () => {
+  it("the field without a control", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -68,11 +68,11 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     await ventTilRo()
 
     expect(
-      meldinger(advarsel).some((m) => m.includes("fant ingen kontroll")),
+      meldinger(advarsel).some((m) => m.includes("found no control")),
     ).toBe(true)
   })
 
-  it("feltet uten en ledetekst", async () => {
+  it("the field without a label", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -85,9 +85,9 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(meldinger(advarsel).some((m) => m.includes("<label>"))).toBe(true)
   })
 
-  it("men ikke når feltet har navnet sitt fra aria-label", async () => {
-    // Et søkefelt med bare et ikon har ingen synlig ledetekst, og det er en
-    // lovlig løsning. En advarsel der ville vært feil.
+  it("but not when the field gets its name from aria-label", async () => {
+    // A search field with only an icon has no visible label, and that is a
+    // valid solution. A warning there would be wrong.
     const advarsel = lytt()
 
     monter(`
@@ -100,9 +100,9 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(advarsel).not.toHaveBeenCalled()
   })
 
-  it("men ikke når ledeteksten står utenfor elementet", async () => {
-    // En `<label for>` utenfor `<lt-field>` navngir feltet like godt, og
-    // komponenten kobler den på samme måte som en inni.
+  it("but not when the label is outside the element", async () => {
+    // A `<label for>` outside `<lt-field>` names the field just as well, and
+    // the component connects it the same way as one inside.
     const advarsel = lytt()
 
     const flate = monter(`
@@ -120,9 +120,9 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(label.getAttribute("data-required")).toBe("symbol")
   })
 
-  it("feltet med mer enn én kontroll", async () => {
-    // Bare den første kontrollen får koblingen. Den andre står uten
-    // ledetekst, og det skal sies fra om.
+  it("the field with more than one control", async () => {
+    // Only the first control gets the wiring. The second has no label, and
+    // that must be reported.
     const advarsel = lytt()
 
     monter(`
@@ -135,15 +135,15 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     await ventTilRo()
 
     expect(
-      meldinger(advarsel).filter((m) => m.includes("mer enn én kontroll")),
+      meldinger(advarsel).filter((m) => m.includes("more than one control")),
     ).toHaveLength(1)
   })
 
-  it("ledeteksten som verken har for eller står rundt feltet", async () => {
+  it("the label that neither has for nor wraps the field", async () => {
     /*
-     * Uten JavaScript har feltet da ingen ledetekst. Komponenten lager ikke
-     * id-en selv: en id serveren ikke sendte, får en oppdatering fra serveren
-     * til å bytte ut feltet, med fokus og det brukeren har skrevet.
+     * Without JavaScript the field then has no label. The component does not
+     * create the id itself: an id the server did not send makes a server
+     * update replace the field, along with focus and what the user has typed.
      */
     const advarsel = lytt()
 
@@ -157,13 +157,13 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
 
     expect(
       meldinger(advarsel).filter((m) =>
-        m.includes("er ikke koblet til feltet"),
+        m.includes("is not connected to the field"),
       ),
     ).toHaveLength(1)
     expect(flate.querySelector("input")?.hasAttribute("id")).toBe(false)
   })
 
-  it("men ikke når ledeteksten står rundt feltet", async () => {
+  it("but not when the label wraps the field", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -176,11 +176,11 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(advarsel).not.toHaveBeenCalled()
   })
 
-  it("feltet som ble byttet ut fordi id-en fra serveren endret seg", async () => {
+  it("the field that was replaced because the id from the server changed", async () => {
     /*
-     * En mal som lager id-en av et tilfeldig tall eller en teller, gir en ny
-     * id ved hver rendring, og en oppdatering fra serveren kjenner da ikke
-     * feltet igjen. Det brukeren skrev, går tapt.
+     * A template that builds the id from a random number or a counter gives a
+     * new id on every render, and a server update then does not recognise the
+     * field. What the user typed is lost.
      */
     const advarsel = lytt()
 
@@ -205,12 +205,12 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
 
     expect(
       meldinger(advarsel).filter((m) =>
-        m.includes("Id-en på kontrollen var en annen enn sist"),
+        m.includes("control's id was different from last time"),
       ),
     ).toHaveLength(1)
   })
 
-  it("men ikke når serveren sendte et annet felt med vilje", async () => {
+  it("but not when the server sent a different field on purpose", async () => {
     const advarsel = lytt()
 
     const flate = monter(`
@@ -235,9 +235,9 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(advarsel).not.toHaveBeenCalled()
   })
 
-  it("men ikke når den andre kontrollen står i et felt inni", async () => {
-    // Et felt i et felt er vanlig markup: et søkefelt i et sprettoppvindu
-    // inni feltet. Hvert felt har da sin egen kontroll.
+  it("but not when the second control is in a field inside", async () => {
+    // A field in a field is ordinary markup: a search field in a popover
+    // inside the field. Each field then has its own control.
     const advarsel = lytt()
 
     monter(`
@@ -256,9 +256,9 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(advarsel).not.toHaveBeenCalled()
   })
 
-  it("dialogen uten navn", async () => {
-    // Ingen aria-labelledby, ingen aria-label, og den eneste overskriften
-    // står i kroppen, der den er innholdets og ikke dialogens.
+  it("the dialog without a name", async () => {
+    // No aria-labelledby, no aria-label, and the only heading is in the
+    // body, where it belongs to the content and not to the dialog.
     const advarsel = lytt()
 
     monter(`
@@ -271,11 +271,11 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     await ventTilRo()
 
     expect(
-      meldinger(advarsel).filter((m) => m.includes("ikke noe navn")),
+      meldinger(advarsel).filter((m) => m.includes("has no name")),
     ).toHaveLength(1)
   })
 
-  it("men ikke om en tom dialog serveren ikke har fylt ennå", async () => {
+  it("but not about an empty dialog the server has not filled yet", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -288,9 +288,9 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(advarsel).not.toHaveBeenCalled()
   })
 
-  it("fanene uten lenker", async () => {
-    // Fanene er lenker til panelene. En rad med bare knapper, slik fanene
-    // var før, har ingen faner komponenten kan koble.
+  it("the tabs without links", async () => {
+    // The tabs are links to the panels. A row with only buttons, as the tabs
+    // used to be, has no tabs the component can connect.
     const advarsel = lytt()
 
     monter(`
@@ -303,12 +303,12 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     `)
     await ventTilRo()
 
-    expect(
-      meldinger(advarsel).some((m) => m.includes("fant ingen faner")),
-    ).toBe(true)
+    expect(meldinger(advarsel).some((m) => m.includes("found no tabs"))).toBe(
+      true,
+    )
   })
 
-  it("faner uten et panel", async () => {
+  it("tabs without a panel", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -323,11 +323,11 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     await ventTilRo()
 
     expect(
-      meldinger(advarsel).some((m) => m.includes("faner uten et panel")),
+      meldinger(advarsel).some((m) => m.includes("tabs without a panel")),
     ).toBe(true)
   })
 
-  it("dialogen uten en <dialog>", async () => {
+  it("the dialog without a <dialog>", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -342,7 +342,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(meldinger(advarsel).some((m) => m.includes("<dialog>"))).toBe(true)
   })
 
-  it("varselet om økten uten en <dialog>", async () => {
+  it("the session timeout without a <dialog>", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -357,7 +357,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(meldinger(advarsel).some((m) => m.includes("<dialog>"))).toBe(true)
   })
 
-  it("varselet om økten uten tall, opplesning eller knapper", async () => {
+  it("the session timeout without a count, announcement or buttons", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -378,9 +378,9 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(sagt.some((m) => m.includes('<form method="dialog">'))).toBe(true)
   })
 
-  it("forslagsfeltet uten et felt", async () => {
-    // Et `<input>` er nok: komponenten gir det rollen. Uten et felt i det
-    // hele tatt finner den ingenting å lytte på.
+  it("the suggestion field without a field", async () => {
+    // An `<input>` is enough: the component gives it the role. Without a
+    // field at all it finds nothing to listen to.
     const advarsel = lytt()
 
     monter(`
@@ -394,7 +394,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(meldinger(advarsel).some((m) => m.includes("combobox"))).toBe(true)
   })
 
-  it("forslagsfeltet uten en listboks", async () => {
+  it("the suggestion field without a listbox", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -409,10 +409,10 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(meldinger(advarsel).some((m) => m.includes("listbox"))).toBe(true)
   })
 
-  it("forslagsfeltet uten et statuselement", async () => {
-    // Antall treff leses opp i statuselementet. Uten det sto komponenten
-    // stille, og den som ikke ser skjermen fikk aldri vite at lista snevret
-    // seg inn.
+  it("the suggestion field without a status element", async () => {
+    // The number of matches is announced in the status element. Without it
+    // the component stayed silent, and someone who cannot see the screen
+    // never learnt that the list narrowed.
     const advarsel = lytt()
 
     monter(`
@@ -432,7 +432,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     )
   })
 
-  it("sprettoppvinduet uten et panel", async () => {
+  it("the popover without a panel", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -442,13 +442,13 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     `)
     await ventTilRo()
 
-    expect(
-      meldinger(advarsel).some((m) => m.includes("fant ingen panel")),
-    ).toBe(true)
+    expect(meldinger(advarsel).some((m) => m.includes("found no panel"))).toBe(
+      true,
+    )
   })
 
-  it("sprettoppvinduet med et panel uten id", async () => {
-    // Komponenten skriver aldri id på panelet, så knappen kan ikke kobles.
+  it("the popover with a panel without an id", async () => {
+    // The component never writes an id on the panel, so the button cannot be connected.
     const advarsel = lytt()
 
     monter(`
@@ -460,14 +460,15 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     await ventTilRo()
 
     const om = meldinger(advarsel).filter((m) =>
-      m.includes("panelet har ingen id"),
+      m.includes("the panel has no id"),
     )
     expect(om).toHaveLength(1)
   })
 
-  it("sprettoppvinduet uten en knapp", async () => {
-    // En knapp utenfor panelet er nok: komponenten kobler den. Uten en
-    // eneste, eller med bare en som peker på noe annet, finner den ingen.
+  it("the popover without a button", async () => {
+    // A button outside the panel is enough: the component connects it.
+    // Without a single one, or with only one pointing to something else, it
+    // finds none.
     const advarsel = lytt()
 
     monter(`
@@ -478,12 +479,12 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     `)
     await ventTilRo()
 
-    expect(
-      meldinger(advarsel).some((m) => m.includes("fant ingen knapp")),
-    ).toBe(true)
+    expect(meldinger(advarsel).some((m) => m.includes("found no button"))).toBe(
+      true,
+    )
   })
 
-  it("feiloppsummeringen med punkter som ikke lenker noe sted", async () => {
+  it("the error summary with items that link nowhere", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -494,15 +495,15 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     `)
     await ventTilRo()
 
-    expect(
-      meldinger(advarsel).some((m) => m.includes("fant ingen lenker")),
-    ).toBe(true)
+    expect(meldinger(advarsel).some((m) => m.includes("found no links"))).toBe(
+      true,
+    )
   })
 
-  it("feiloppsummeringen med lenker som peker på ingenting", async () => {
-    // Uten et klikk. En lenke som ikke fører noe sted er like ødelagt om
-    // ingen prøver den, og den som leser oppsummeringen har nettopp
-    // mislyktes med et skjema. Hver lenke sier fra om seg selv.
+  it("the error summary with links that point to nothing", async () => {
+    // Without a click. A link that leads nowhere is just as broken if nobody
+    // tries it, and whoever reads the summary has just failed with a form.
+    // Each link reports itself.
     const advarsel = lytt()
 
     monter(`
@@ -521,7 +522,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(sagt.some((m) => m.includes("#heller-ikke"))).toBe(true)
   })
 
-  it("sier det én gang, ikke én gang per synkronisering", async () => {
+  it("says it once, not once per sync", async () => {
     const advarsel = lytt()
 
     const flate = monter(`
@@ -532,24 +533,24 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const felt = flate.querySelector("lt-field") as HTMLElement
     await ventTilRo()
 
-    // Hver endring i barna utløser en ny synkronisering, slik en patch gjør.
+    // Every change to the children triggers a new sync, as a patch does.
     for (let n = 0; n < 5; n += 1) {
       felt.append(document.createElement("span"))
       await ventTilRo()
     }
 
     expect(
-      meldinger(advarsel).filter((m) => m.includes("fant ingen kontroll")),
+      meldinger(advarsel).filter((m) => m.includes("found no control")),
     ).toHaveLength(1)
   })
 
-  it("sier det også bare én gang når panelene kommer ett om gangen", async () => {
+  it("also says it only once when the panels arrive one at a time", async () => {
     /*
-     * Meldingen må være den samme hver runde.
+     * The message must be the same every round.
      *
-     * Sto tallene i teksten, som «har 3 faner, men 1 paneler», ville hver
-     * runde vært en ny melding, og dedupliseringen var borte: tre paneler som
-     * kom ett om gangen ga tre advarsler.
+     * If the numbers were in the text, as in "has 3 tabs but 1 panels", each
+     * round would be a new message, and the deduplication was gone: three
+     * panels arriving one at a time gave three warnings.
      */
     const advarsel = lytt()
 
@@ -565,7 +566,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const faner = flate.querySelector("lt-tabs") as HTMLElement
     await ventTilRo()
 
-    // To av tre paneler, ett om gangen. Den tredje fanen står uten panel hele tiden.
+    // Two of three panels, one at a time. The third tab has no panel throughout.
     for (const id of ["en", "to"]) {
       const panel = document.createElement("section")
       panel.className = "lt-tabs__panel"
@@ -575,16 +576,16 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     }
 
     expect(
-      meldinger(advarsel).filter((m) => m.includes("faner uten et panel")),
+      meldinger(advarsel).filter((m) => m.includes("tabs without a panel")),
     ).toHaveLength(1)
   })
 
-  it("sier ingenting om markup som blir ferdig i neste omgang", async () => {
+  it("says nothing about markup that is completed in the next round", async () => {
     /*
-     * HTML som strømmer fra en server leveres i pakker, og et brudd mellom
-     * ledeteksten og feltet er helt vanlig. Komponenten ser markupen sin i
-     * det den kobles til, og der er den halvferdig. Advarselen venter til
-     * siden har falt til ro, og sjekker på nytt.
+     * HTML streamed from a server arrives in chunks, and a break between the
+     * label and the field is entirely normal. The component sees its markup
+     * the moment it is connected, and there it is half finished. The warning
+     * waits until the page has settled, and checks again.
      */
     const advarsel = lytt()
 
@@ -603,7 +604,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(advarsel).not.toHaveBeenCalled()
   })
 
-  it("sier ingenting om et tomt område serveren ikke har fylt", async () => {
+  it("says nothing about an empty region the server has not filled", async () => {
     const advarsel = lytt()
 
     monter(`
@@ -622,7 +623,7 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     expect(advarsel).not.toHaveBeenCalled()
   })
 
-  it("sier ingenting om markup som henger sammen", async () => {
+  it("says nothing about markup that holds together", async () => {
     const advarsel = lytt()
 
     monter(`

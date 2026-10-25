@@ -18,9 +18,9 @@ import {
 export const LT_DIALOG_TAG = "lt-dialog" as const
 
 /**
- * Delene dialogen finner, som selektorer relativt til elementet. Komponenten
- * finner delene med disse, og manifestet beskriver dem for den som setter
- * sammen markupen selv, så de to ikke kan si noe ulikt.
+ * The parts the dialog finds, as selectors relative to the element. The
+ * component finds the parts with these, and the manifest describes them for
+ * whoever assembles the markup by hand, so the two cannot say different things.
  */
 export const LT_DIALOG_PARTS = {
   dialog: ":scope > dialog",
@@ -29,59 +29,60 @@ export const LT_DIALOG_PARTS = {
 } as const
 
 /**
- * En modal dialog en server kan åpne.
+ * A modal dialog a server can open.
  *
- * Å åpne en `<dialog>` er et kall og ikke et attributt. `showModal()` flytter
- * fokus inn, holder fokus inne i dialogen, lukker på Escape og gjør resten av
- * siden utilgjengelig. `<dialog open>` gjør ingen av delene: det er en boks
- * på siden.
+ * Opening a `<dialog>` is a call and not an attribute. `showModal()` moves
+ * focus in, keeps focus inside the dialog, closes on Escape and makes the rest
+ * of the page inert. `<dialog open>` does none of that: it is a box on the
+ * page.
  *
- * En server som bare sender HTML kan ikke kalle noe. Uten denne komponenten
- * kunne en app i Datastar, htmx eller en Go-mal altså ikke åpne en dialog i
- * det hele tatt, uten å skrive sitt eget skript ved siden av. Her sier
- * serveren i stedet at dialogen er åpen, og komponenten gjør kallet.
+ * A server that only sends HTML cannot call anything. Without this component
+ * an app in Datastar, htmx or a Go template could not open a dialog at all
+ * without writing a script of its own alongside. Here the server says instead
+ * that the dialog is open, and the component makes the call.
  *
- * Lukker brukeren dialogen, med Escape eller med en knapp i en
- * `<form method="dialog">`, fjernes `open` fra verten igjen, slik at
- * markupen sier det samme som skjermen. Komponenten melder fra med
- * `dialog-toggle`, som bærer `open` og `returnValue`. Et klikk på flaten bak
- * lukker den ikke: det gjør heller ikke en vanlig `<dialog>`, og komponenten
- * legger ingenting til.
+ * When the user closes the dialog, with Escape or with a button in a
+ * `<form method="dialog">`, `open` is removed from the host again, so the
+ * markup says the same as the screen. The component reports it with
+ * `dialog-toggle`, which carries `open` and `returnValue`. A click on the
+ * backdrop does not close it: neither does it on a plain `<dialog>`, and the
+ * component adds nothing.
  *
- * `open` på **verten** er serverens. Sender serveren området på nytt med
- * `open` fortsatt satt, åpnes dialogen igjen. `open` på selve `<dialog>` er
- * nettleserens, satt av `showModal()`, og det setter komponenten tilbake når
- * en patch river det bort. Malen trenger ingen `data-preserve-attr`.
+ * `open` on the **host** comes from the server. If the server sends the
+ * region again with `open` still set, the dialog opens again. `open` on the
+ * `<dialog>` itself comes from the browser, set by `showModal()`, and the
+ * component puts it back when a patch removes it. The template needs no
+ * `data-preserve-attr`.
  *
- * Skriv `open` på selve `<dialog>` også når dialogen skal vises. Uten
- * JavaScript er en `<dialog>` uten `open` skjult, og da finnes ikke
- * innholdet i det hele tatt. `lt.dialog({ open: true })` gir begge.
+ * Write `open` on the `<dialog>` itself too when the dialog should be shown.
+ * Without JavaScript a `<dialog>` without `open` is hidden, and then the
+ * content does not exist at all. `lt.dialog({ open: true })` gives both.
  *
- * `server-controlled` på verten slår av reparasjonen av `open` på
- * `<dialog>`. Da bestemmer hver patch om dialogen vises, også når den står i
- * topplaget.
+ * `server-controlled` on the host turns off the repair of `open` on the
+ * `<dialog>`. Then every patch decides whether the dialog is shown, also when
+ * it is in the top layer.
  *
  * ```html
  * <lt-dialog open>
- *   <dialog class="lt-dialog" aria-labelledby="tittel" open>
- *     <h2 class="lt-dialog__title" id="tittel">Vedtaket er registrert</h2>
- *     <div class="lt-dialog__body">Saken er ferdigbehandlet.</div>
+ *   <dialog class="lt-dialog" aria-labelledby="title" open>
+ *     <h2 class="lt-dialog__title" id="title">The decision is registered</h2>
+ *     <div class="lt-dialog__body">The case has been processed.</div>
  *     <form method="dialog" class="lt-dialog__footer">
- *       <button class="lt-button" value="lukk">Lukk</button>
+ *       <button class="lt-button" value="close">Close</button>
  *     </form>
  *   </dialog>
  * </lt-dialog>
  * ```
  */
 /**
- * Dialogene som er sett etter en lukking før oppgradering.
+ * The dialogs already checked for a close before upgrade.
  *
- * Sjekken gjelder bare første gang en dialog sees, ikke hver gang en vert
- * kobles til. En morfer som flytter verten, kobler den fra og til, og da sto
- * `returnValue` igjen fra en lukking brukeren gjorde for lenge siden.
- * Komponenten trodde den var lukket før skriptet kom, og tok `open` fra
- * verten serveren nettopp hadde åpnet. Mengden står utenfor klassen, så det
- * samme gjelder en dialog som flyttes inn i en ny vert.
+ * The check applies only the first time a dialog is seen, not every time a
+ * host is connected. A morph that moves the host disconnects and reconnects
+ * it, and then `returnValue` was left over from a close the user made long
+ * ago. The component thought it had been closed before the script arrived,
+ * and took `open` from the host the server had just opened. The set lives
+ * outside the class, so the same applies to a dialog moved into a new host.
  */
 const upgradeChecked = new WeakSet<HTMLDialogElement>()
 
@@ -90,28 +91,29 @@ export class LtDialog extends HostElement {
 
   private observer?: MutationObserver
   /**
-   * Egen observatør for `open` på selve `<dialog>`.
+   * A separate observer for `open` on the `<dialog>` itself.
    *
-   * Den kan ikke slås sammen med den andre. Lukker brukeren dialogen, fjerner
-   * nettleseren attributtet først og sender `close` etterpå, og en observatør
-   * som kjørte hele `sync()` der ville sett en vert som fortsatt sa «åpen» og
-   * en dialog som ikke var modal, og åpnet den igjen før `close` rakk å bli
-   * håndtert. Denne gjør bare én ting: setter attributtet tilbake på en
-   * dialog som fortsatt står i topplaget.
+   * It cannot be merged with the other one. When the user closes the dialog,
+   * the browser removes the attribute first and sends `close` afterwards, and
+   * an observer running all of `sync()` there would have seen a host still
+   * saying "open" and a dialog that was not modal, and opened it again before
+   * `close` was handled. This one does only one thing: it puts the attribute
+   * back on a dialog that is still in the top layer.
    */
   private openObserver?: MutationObserver
   private dialogElement?: HTMLDialogElement
   /**
-   * Det komponenten sist meldte, så den bare melder når tilstanden endrer seg.
+   * What the component last reported, so it reports only when the state
+   * changes.
    *
-   * En morfer som flytter verten eller dialogen, tar dialogen ut av
-   * topplaget, og komponenten åpner den igjen. Før meldte den da `open: true`
-   * for en dialog som hadde vært åpen hele tiden. Feltet overlever at verten
-   * kobles fra og til.
+   * A morph that moves the host or the dialog takes the dialog out of the top
+   * layer, and the component opens it again. Before, it then reported
+   * `open: true` for a dialog that had been open the whole time. The field
+   * survives the host being disconnected and reconnected.
    */
   private lastNotified?: boolean
 
-  /** Om dialogen er åpen. Speiler `open`-attributtet. */
+  /** Whether the dialog is open. Mirrors the `open` attribute. */
   get open(): boolean {
     return this.hasAttribute("open")
   }
@@ -122,28 +124,29 @@ export class LtDialog extends HostElement {
 
   connectedCallback(): void {
     /*
-     * Serveren kan sende dialogen inn i et område som allerede står i siden,
-     * og da finnes ikke `<dialog>` ennå når komponenten kobles til. Bare en
-     * endring blant vertens egne barn kjører hele `sync()`: dialogen er
-     * alltid et direkte barn, og innholdet inni den endrer seg ved hver
-     * patch uten at det sier noe om hvilken dialog som er komponentens.
+     * The server can send the dialog into a region already on the page, and
+     * then the `<dialog>` does not exist yet when the component connects. Only
+     * a change among the host's direct children runs all of `sync()`: the
+     * dialog is always a direct child, and the content inside it changes with
+     * every patch without saying anything about which dialog is the
+     * component's.
      *
-     * `open` på selve `<dialog>` er med. Nettleseren setter det når
-     * `showModal()` kalles, og en morfing river det bort igjen, siden
-     * serveren ikke sendte det. Uten dette forsvant en åpen dialog i det noe
-     * i området rundt ble patchet, og malen måtte skrive
-     * `data-preserve-attr="open"` for å hindre det.
+     * `open` on the `<dialog>` itself is included. The browser sets it when
+     * `showModal()` is called, and a morph removes it again, since the server
+     * did not send it. Without this an open dialog disappeared as soon as
+     * something in the region around it was patched, and the template had to
+     * write `data-preserve-attr="open"` to prevent it.
      */
     /*
-     * Attributtene er med for koblingen komponenten fyller inn når markupen
-     * kom uten den: klassen, overskriftens id og `aria-labelledby`. Men en
-     * attributtpost kjører bare koblingen, ikke hele `sync()`. `close()`
-     * fjerner `open` synkront og køer `close`-hendelsen som en egen oppgave,
-     * og observatøren kjører før den. Endret et klikk en klasse på knappen
-     * i samme oppgave som det lukket dialogen, så `sync()` en vert med `open`
-     * og en dialog som ikke var modal, og åpnet den igjen før lukkingen rakk
-     * å bli håndtert. Hver skriving sammenligner først, ellers ville
-     * observatøren utløst seg selv.
+     * The attributes are included for the wiring the component fills in when
+     * the markup came without it: the class, the heading's id and
+     * `aria-labelledby`. But an attribute record runs only the wiring, not all
+     * of `sync()`. `close()` removes `open` synchronously and queues the
+     * `close` event as a separate task, and the observer runs before it. When
+     * a click changed a class on the button in the same task as it closed the
+     * dialog, `sync()` saw a host with `open` and a dialog that was not modal,
+     * and opened it again before the close was handled. Every write compares
+     * first, or the observer would trigger itself.
      */
     this.observer = new MutationObserver((records) => {
       const swapped = records.some(
@@ -175,34 +178,35 @@ export class LtDialog extends HostElement {
   }
 
   /**
-   * Dialogen komponenten styrer.
+   * The dialog the component controls.
    *
-   * Bare et direkte barn. En `<dialog>` lenger ned i treet kan tilhøre noe
-   * annet, og skal ikke åpnes av denne komponenten.
+   * Only a direct child. A `<dialog>` further down the tree can belong to
+   * something else, and must not be opened by this component.
    */
   private get dialog(): HTMLDialogElement | null {
     return this.querySelector(LT_DIALOG_PARTS.dialog)
   }
 
-  /** Id-en komponenten ga overskriften, så en patch får den samme tilbake. */
+  /** The id the component gave the heading, so a patch gets the same one back. */
   private titleId?: string
 
-  /** Koblingen alene, for en attributtpost. Se observatøren. */
+  /** The wiring alone, for an attribute record. See the observer. */
   private rewire(): void {
     const dialog = this.dialog
     if (dialog?.isConnected) this.wire(dialog)
   }
 
   /**
-   * Overskriften som er dialogens tittel når serveren ikke pekte på en.
+   * The heading that is the dialog's title when the server did not point to
+   * one.
    *
-   * Den første overskriften i denne dialogen som ikke står i kroppen. En
-   * overskrift i `.lt-dialog__body` er en overskrift i innholdet, ikke
-   * dialogens navn: en dialog med innstillinger i tre avsnitt fikk det første
-   * avsnittets overskrift som tittel, med klassen og stilen som følger med.
-   * En overskrift i en nøstet dialog er den nøstede sin, og kroppen som
-   * teller er bare en kropp i denne dialogen: står denne dialogen selv i
-   * kroppen til en annen, er den ytre kroppen ikke dens.
+   * The first heading in this dialog that is not in the body. A heading in
+   * `.lt-dialog__body` is a heading in the content, not the dialog's name: a
+   * settings dialog in three sections got the first section's heading as its
+   * title, with the class and the styling that come with it. A heading in a
+   * nested dialog belongs to the nested one, and the body that counts is only
+   * a body in this dialog: if this dialog is itself in the body of another,
+   * the outer body is not its body.
    */
   private headingOf(dialog: HTMLDialogElement): HTMLElement | null {
     return (
@@ -217,8 +221,9 @@ export class LtDialog extends HostElement {
   }
 
   /**
-   * Om dialogen står uten navn: verken peker, `aria-label` eller tittel. En
-   * tom `<dialog>` er et område serveren ikke har fylt ennå, og teller ikke.
+   * Whether the dialog has no name: no reference, no `aria-label` and no
+   * title. An empty `<dialog>` is a region the server has not filled yet, and
+   * does not count.
    */
   private nameless(dialog: HTMLDialogElement): boolean {
     return (
@@ -230,20 +235,21 @@ export class LtDialog extends HostElement {
   }
 
   /**
-   * Fyller inn det en mal uten JavaScript ikke skrev: klassen på dialogen,
-   * og tittelen. Tittelen er det `aria-labelledby` peker på når serveren
-   * skrev det, ellers den første overskriften utenfor kroppen, og bare når
-   * dialogen ikke alt har et navn fra `aria-label`. Klassen og id-en skrives
-   * bare på tittelen: en overskrift i kroppen til en dialog med `aria-label`
-   * er ikke tittelen, og skal ikke stiles som den.
+   * Fills in what a template without JavaScript did not write: the class on
+   * the dialog, and the title. The title is what `aria-labelledby` points to
+   * when the server wrote it, otherwise the first heading outside the body,
+   * and only when the dialog does not already have a name from `aria-label`.
+   * The class and the id are written only on the title: a heading in the body
+   * of a dialog with `aria-label` is not the title, and must not be styled as
+   * one.
    */
   private wire(dialog: HTMLDialogElement): void {
     addClass(dialog, DIALOG_CLASS)
 
     const named = dialog.getAttribute("aria-labelledby")
     if (named) {
-      // Attributtet kan liste flere id-er. Tittelen er den første som står
-      // inne i dialogen.
+      // The attribute can list several ids. The title is the first one that
+      // is inside the dialog.
       const root = this.getRootNode() as Document | ShadowRoot
       const title = named
         .split(/\s+/)
@@ -258,10 +264,10 @@ export class LtDialog extends HostElement {
     if (!title) {
       warnAboutMarkup(
         this,
-        "dialogen har ikke noe navn. Den har verken aria-labelledby, " +
-          "aria-label eller en overskrift utenfor kroppen, så en skjermleser " +
-          "leser den opp som «dialog» uten å si hva den gjelder. Gi den en " +
-          "overskrift, eller aria-label på <dialog>.",
+        "the dialog has no name: it has no aria-labelledby, no " +
+          "aria-label and no heading outside the body, so a screen reader " +
+          'announces it as "dialog" without saying what it is about. Give ' +
+          "it a heading, or aria-label on the <dialog>.",
         () => {
           const now = this.dialog
           return now !== null && this.nameless(now)
@@ -283,8 +289,8 @@ export class LtDialog extends HostElement {
     this.dispatchEvent(
       new CustomEvent("dialog-toggle", {
         bubbles: true,
-        // Uten `composed` stopper hendelsen i en skyggerot, og en lytter
-        // utenfor får aldri vite at dialogen ble lukket.
+        // Without `composed` the event stops at a shadow root, and a listener
+        // outside never learns that the dialog was closed.
         composed: true,
         detail: { open, returnValue },
       }),
@@ -292,17 +298,18 @@ export class LtDialog extends HostElement {
   }
 
   /**
-   * Setter `open` tilbake på en dialog som fortsatt står i topplaget.
+   * Puts `open` back on a dialog that is still in the top layer.
    *
-   * `showModal()` setter attributtet selv, og serveren sendte det ikke, så
-   * morfingen tar det. Nettleserens egen stil skjuler da en `<dialog>` uten
-   * `open`, og dialogen forsvant for brukeren midt i noe hun holdt på med.
-   * Før måtte malen skrive `data-preserve-attr="open"` for å hindre det.
+   * `showModal()` sets the attribute itself, and the server did not send it,
+   * so the morph removes it. The browser's own stylesheet then hides a
+   * `<dialog>` without `open`, and the dialog disappeared for the user in the
+   * middle of what she was doing. Before, the template had to write
+   * `data-preserve-attr="open"` to prevent it.
    *
-   * `:modal` og ikke `this.open` er vilkåret, og det er presist: lukker
-   * brukeren dialogen, forlater den topplaget, og da er det manglende
-   * attributtet ekte. Bare en dialog som fortsatt er modal uten å si det, er
-   * en dialog noen har tatt attributtet fra.
+   * The condition is `:modal` and not `this.open`, and that is precise: when
+   * the user closes the dialog, it leaves the top layer, and then the missing
+   * attribute is real. Only a dialog that is still modal without saying so is
+   * a dialog someone has taken the attribute from.
    */
   private repairOpen(): void {
     const dialog = this.dialogElement
@@ -310,34 +317,36 @@ export class LtDialog extends HostElement {
       return
     }
 
-    // Attributtet må tilbake uansett: uten det gjør `close()` ingenting, og
-    // dialogen ble stående i topplaget, usynlig, med resten av siden inert.
+    // The attribute must come back either way: without it `close()` does
+    // nothing, and the dialog stayed in the top layer, invisible, with the
+    // rest of the page inert.
     setAttr(dialog, "open", "")
     if (!isServerControlled(this)) return
 
     /*
-     * Serveren eier tilstanden, og patchen tok `open` fra en modal dialog.
-     * Da er beskjeden at den skal lukkes, ikke settes tilbake. Uten dette
-     * sto dialogen med `:modal` og `display: none`, og ingenting på siden
-     * kunne klikkes. Verten følger med her, så `handleClose` har ingenting
-     * igjen å gjøre og hendelsen kommer én gang.
+     * The server decides the state, and the patch took `open` from a modal
+     * dialog. Then the message is that it should close, not be put back.
+     * Without this the dialog stood with `:modal` and `display: none`, and
+     * nothing on the page could be clicked. The host follows along here, so
+     * `handleClose` has nothing left to do and the event comes once.
      */
     dialog.close()
-    // Hendelsen kommer uansett hvem som fjernet `open` på verten. Har React
-    // alt tatt det, i sin rekkefølge med barn før forelder, er dette den ene
-    // gangen noen kan melde fra: `sync()` og `handleClose` ser etterpå en
-    // dialog som alt er lukket, og tier.
+    // The event comes whoever removed `open` from the host. If React has
+    // already taken it, in its order with children before parent, this is
+    // the one time anyone can report it: `sync()` and `handleClose` then see
+    // a dialog that is already closed, and stay quiet.
     if (this.open) this.removeAttribute("open")
     this.notify(false, dialog.returnValue)
   }
 
   private handleClose = (): void => {
-    // `close` er køet, ikke synkron. Rekker serveren å lukke og åpne igjen i
-    // samme oppgave, gjelder ikke denne hendelsen lenger, og uten sperren
-    // lukket komponenten dialogen den nettopp hadde åpnet.
+    // `close` is queued, not synchronous. If the server manages to close and
+    // open again in the same task, this event no longer applies, and without
+    // the guard the component closed the dialog it had just opened.
     if (this.dialog?.matches(":modal")) return
 
-    // Lukket serveren den, er verten alt i takt, og `sync()` har meldt fra.
+    // If the server closed it, the host is already in step, and `sync()` has
+    // reported it.
     if (!this.open) return
 
     this.removeAttribute("open")
@@ -347,15 +356,16 @@ export class LtDialog extends HostElement {
   private sync(): void {
     const dialog = this.dialog
 
-    // `showModal()` kaster «The element is not in a Document» hvis dialogen
-    // ikke står i siden. Det er ikke teoretisk: en morfer bygger serverens
-    // utgave i et løsrevet tre før den sammenlignes, og en web
-    // component tas i bruk der også. Uten denne linja kastet komponenten ved
-    // hver eneste patch som rørte dialogen. Står den løsrevet nå, kjøres
-    // `sync()` uansett på nytt når den kobles til.
+    // `showModal()` throws "The element is not in a Document" if the dialog
+    // is not on the page. That is not theoretical: a morph builds the
+    // server's version in a detached tree before comparing, and a web
+    // component is used there too. Without this line the component threw on
+    // every single patch that touched the dialog. If it is detached now,
+    // `sync()` runs again anyway when it is connected.
     if (!dialog?.isConnected) {
-      // Slipp taket i en dialog som er borte. Ellers ble observatøren og
-      // lytteren hengende på en løsrevet node så lenge verten levde.
+      // Let go of a dialog that is gone. Otherwise the observer and the
+      // listener stayed attached to a detached node for as long as the host
+      // lived.
       if (!dialog) {
         this.openObserver?.disconnect()
         this.openObserver = undefined
@@ -365,11 +375,12 @@ export class LtDialog extends HostElement {
 
       warnAboutMarkup(
         this,
-        "fant ingen <dialog> som direkte barn. Uten den kan ingenting " +
-          "åpnes modalt, og innholdet står som en vanlig boks på siden.",
-        // Er komponenten løsrevet, bygger en morfer serverens utgave i et
-        // eget tre, og da er det ingenting å si fra om. Et tomt element er
-        // et område serveren ikke har fylt ennå.
+        "found no <dialog> as a direct child. Without it nothing can " +
+          "open as a modal, and the content stays on the page as a plain " +
+          "box.",
+        // If the component is detached, a morph is building the server's
+        // version in a separate tree, and there is nothing to report. An
+        // empty element is a region the server has not filled yet.
         () => this.childElementCount > 0 && this.dialog === null,
       )
       return
@@ -391,26 +402,27 @@ export class LtDialog extends HostElement {
     this.repairOpen()
 
     /*
-     * Lukket brukeren dialogen før komponenten fikk kjøre?
+     * Did the user close the dialog before the component got to run?
      *
-     * Serveren skriver `open` begge steder, så innholdet finnes uten
-     * JavaScript, og `<form method="dialog">` lukker boksen uten JavaScript
-     * også. Skjer det før skriptet er lastet, finnes det ingen lytter, og
-     * første `sync()` ville sett en vert som sier «åpen» og en dialog som er
-     * lukket, og åpnet den igjen. Dialogen spratt altså opp igjen rett etter
-     * at brukeren hadde lukket den, og på mobil var vinduet stort nok til at
-     * det skjedde hver gang.
+     * The server writes `open` in both places, so the content exists without
+     * JavaScript, and `<form method="dialog">` closes the box without
+     * JavaScript too. If that happens before the script has loaded, there is
+     * no listener, and the first `sync()` would see a host saying "open" and a
+     * dialog that is closed, and open it again. So the dialog popped up again
+     * right after the user had closed it, and on mobile the window was large
+     * enough for it to happen every time.
      *
-     * `returnValue` skiller de to tilfellene. Nettleseren setter den til
-     * verdien på knappen som lukket dialogen, så en dialog som aldri har
-     * vært åpnet har den tom. En mal som bare skrev `open` på verten, som
-     * dokumentasjonen viste lenge, har den også tom, og skal åpnes som før.
+     * `returnValue` tells the two cases apart. The browser sets it to the
+     * value of the button that closed the dialog, so a dialog that has never
+     * been open has it empty. A template that only wrote `open` on the host,
+     * as the documentation showed for a long time, also has it empty, and is
+     * opened as before.
      *
-     * Det holder bare når knappen har en `value`. Lukkes dialogen med en
-     * knapp uten verdi, eller med `close()` uten argument, etterlater
-     * nettleseren ingenting å se etter, og dialogen åpner seg igjen slik den
-     * gjorde før. Derfor har hver `<form method="dialog">` i dokumentasjonen
-     * en `value`, og det er verdt å holde på.
+     * This works only when the button has a `value`. If the dialog is closed
+     * with a button without a value, or with `close()` without an argument,
+     * the browser leaves nothing to look for, and the dialog opens again as it
+     * did before. That is why every `<form method="dialog">` in the
+     * documentation has a `value`, and it is worth keeping.
      */
     if (!upgradeChecked.has(dialog)) {
       upgradeChecked.add(dialog)
@@ -420,22 +432,22 @@ export class LtDialog extends HostElement {
       }
     }
 
-    // `:modal` og ikke `open`. De to er ikke det samme: et `<dialog open>`
-    // i markupen, og en dialog som har vært flyttet i DOM-en mens den var
-    // åpen, har `open` uten å være modal. Da er den en boks på siden, uten
-    // fokusfelle og uten Escape, altså nøyaktig det komponenten finnes for å
-    // hindre.
+    // `:modal` and not `open`. The two are not the same: a `<dialog open>`
+    // in the markup, and a dialog that was moved in the DOM while it was
+    // open, have `open` without being modal. Then it is a box on the page,
+    // without a focus trap and without Escape, which is exactly what the
+    // component exists to prevent.
     const modal = dialog.matches(":modal")
 
     /*
-     * Brukeren har nettopp lukket dialogen med en knapp, og `close` er ikke
-     * kommet ennå. Nettleseren fjerner `open` med én gang og sender
-     * hendelsen i en senere oppgave, og verten sier fortsatt «åpen» til
-     * `handleClose` får kjøre. Skriver noe `open` på verten i mellomtiden,
-     * som et rammeverk som setter samme verdi på nytt, åpnet komponenten
-     * dialogen igjen og tømte `returnValue`, og en lytter på `close` leste
-     * en tom verdi i stedet for «slett». `returnValue` er tømt hver gang
-     * dialogen åpnes, så en verdi her kommer fra en knapp i denne runden.
+     * The user has just closed the dialog with a button, and `close` has not
+     * arrived yet. The browser removes `open` at once and sends the event in a
+     * later task, and the host still says "open" until `handleClose` gets to
+     * run. When something wrote `open` on the host in the meantime, such as a
+     * framework setting the same value again, the component opened the dialog
+     * again and cleared `returnValue`, and a listener on `close` read an empty
+     * value instead of "delete". `returnValue` is cleared every time the
+     * dialog opens, so a value here comes from a button in this round.
      */
     if (
       this.open &&
@@ -448,41 +460,43 @@ export class LtDialog extends HostElement {
 
     if (this.open && !modal) {
       /*
-       * `showModal()` kaster `InvalidStateError` når `open` står der fra før
-       * uten at dialogen er modal. Attributtet må altså bort først.
+       * `showModal()` throws `InvalidStateError` when `open` is already there
+       * without the dialog being modal. So the attribute must go first.
        *
-       * Men ikke med `close()`. Den sender en ekte `close`-hendelse, og
-       * siden serveren nå skriver `open` på `<dialog>` selv, ville den
-       * hendelsen kommet ved hver eneste lasting av en dialog som er åpen.
-       * En app som lytter på `close` rett på `<dialog>`, slik det komplette
-       * eksempelet i dokumentasjonen gjør, fikk da en spøkelseslukking før
-       * brukeren hadde sett dialogen. `removeAttribute` gir tillatelsen uten
-       * hendelsen.
+       * But not with `close()`. It sends a real `close` event, and since the
+       * server now writes `open` on the `<dialog>` itself, that event would
+       * have come on every single load of a dialog that is open. An app
+       * listening for `close` directly on the `<dialog>`, as the complete
+       * example in the documentation does, then got a phantom close before the
+       * user had seen the dialog. `removeAttribute` makes room without the
+       * event.
        */
       dialog.removeAttribute("open")
       /*
-       * Escape og `close()` uten argument lar forrige `returnValue` stå. En
-       * dialog serveren åpner på nytt, meldte da «slett» fra forrige gang
-       * når den ble lukket fra serveren, og appen som skiller «Avbryt» fra
-       * «Slett» på verdien, slettet noe brukeren aldri ba om.
+       * Escape and `close()` without an argument leave the previous
+       * `returnValue` in place. A dialog the server opened again then
+       * reported "delete" from last time when it was closed from the server,
+       * and the app that tells "Cancel" from "Delete" by the value deleted
+       * something the user never asked for.
        */
       dialog.returnValue = ""
       dialog.showModal()
       this.notify(true)
     } else if (!this.open && (modal || dialog.open)) {
       /*
-       * `modal` og ikke bare `dialog.open`: attributtet kan være borte mens
-       * dialogen fortsatt står i topplaget.
+       * `modal` and not only `dialog.open`: the attribute can be gone while
+       * the dialog is still in the top layer.
        *
-       * React er grunnen. Serveren skriver `open` på `<dialog>`, så React
-       * eier attributtet, og React oppdaterer barn før forelder. Lukker
-       * appen dialogen, fjerner React først `open` fra `<dialog>` og så fra
-       * `<lt-dialog>`. Så vi kommer hit med `dialog.open` alt usann.
+       * React is the reason. The server writes `open` on the `<dialog>`, so
+       * React manages the attribute, and React updates children before the
+       * parent. When the app closes the dialog, React first removes `open`
+       * from the `<dialog>` and then from `<lt-dialog>`. So we get here with
+       * `dialog.open` already false.
        *
-       * `close()` gjør ingenting uten attributtet, så uten dette ble
-       * dialogen stående i topplaget, usynlig, med resten av siden inert.
-       * Brukeren satt igjen med en side der ingenting kunne klikkes, og
-       * ingenting synlig som forklarte hvorfor.
+       * `close()` does nothing without the attribute, so without this the
+       * dialog stayed in the top layer, invisible, with the rest of the page
+       * inert. The user was left with a page where nothing could be clicked,
+       * and nothing visible to explain why.
        */
       setAttr(dialog, "open", "")
       dialog.close()

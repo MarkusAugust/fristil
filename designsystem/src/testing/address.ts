@@ -1,14 +1,16 @@
 /**
- * Setter adressen før en test, eller tømmer den, uten `history.replaceState`.
+ * Sets the address before a test, or clears it, without
+ * `history.replaceState`.
  *
- * WebKit kaster etter hundre kall til `replaceState` på ti sekunder, og
- * komponentene bruker av de samme kallene hver gang en fane velges. Da
- * testene selv også brukte dem, nådde fanetestene grensen, og hver test etter
- * det feilte i WebKit. `location.hash` teller ikke med (prøvd i alle tre
- * motorene).
+ * WebKit throws after a hundred calls to `replaceState` in ten seconds, and
+ * the components use up the same calls every time a tab is selected. When
+ * the tests used them too, the tab tests hit the limit, and every test after
+ * that failed in WebKit. `location.hash` does not count (tried in all three
+ * engines).
  *
- * Siden tømmes først, så navigasjonen ikke treffer komponenter fra forrige
- * test, og `hashchange` ventes ut, så den ikke kommer inn i testen.
+ * The page is cleared first, so the navigation does not reach components
+ * from the previous test, and `hashchange` is awaited, so it does not arrive
+ * during the test.
  */
 export async function settAdresse(hash: string): Promise<void> {
   document.body.innerHTML = ""
@@ -16,11 +18,12 @@ export async function settAdresse(hash: string): Promise<void> {
 }
 
 /**
- * Navigerer til et fragment i siden som står, slik nettleseren gjør når siden
- * lastes med adressen: elementet finnes, og blir `:target`.
+ * Navigates to a fragment in the current page, as the browser does when the
+ * page loads with the address: the element exists, and becomes `:target`.
  *
- * `:target` settes når nettleseren navigerer. Et element som kommer etterpå,
- * blir det ikke, så en test av `:target` må montere først og navigere etter.
+ * `:target` is set when the browser navigates. An element that arrives
+ * afterwards does not become it, so a test of `:target` must mount first and
+ * navigate afterwards.
  */
 export async function gåTil(hash: string): Promise<void> {
   const fragment = hash.replace(/^#/, "")

@@ -15,19 +15,22 @@
   }
 
   .lt-label[data-required="text"]::after {
-    /* `\e5` er å. Skrevet rett ut ble det «pÃ¥krevd» når siden manglet
-       `<meta charset>` og tjeneren ikke sendte tegnsettet. */
-    content: var(--lt-label-required-text, " (p\e5 krevd)");
+    /* Keep the fallback ASCII. A stylesheet without `@charset` inherits the
+       page's encoding, and a non-ASCII fallback came out garbled when the
+       page lacked `<meta charset>` and the server sent no charset. Write any
+       other character as an escape, such as `\e5`. */
+    content: var(--lt-label-required-text, " (required)");
     color: var(--lt-color-danger-text);
     font-weight: var(--lt-font-weight-regular);
     font-size: var(--lt-font-size-xs);
   }
 
-  /* Ikke når feltet også er merket påkrevd: byggefunksjonen velger påkrevd,
-     og håndskrevet markup med begge skal gi det samme. Fargen er ikke
-     `disabled-text`: teksten er ikke deaktivert, og den hadde 4,37:1. */
+  /* Not when the field is also marked required: the builder function picks
+     required, and hand-written markup with both must give the same result.
+     The colour is not `disabled-text`: the text is not disabled, and that
+     colour gave 4.37:1. */
   .lt-label[data-optional]:not([data-required])::after {
-    content: var(--lt-label-optional-text, " (valgfri)");
+    content: var(--lt-label-optional-text, " (optional)");
     color: var(--lt-color-neutral-text-subtle);
     font-weight: var(--lt-font-weight-regular);
     font-size: var(--lt-font-size-xs);

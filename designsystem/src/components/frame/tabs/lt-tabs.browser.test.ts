@@ -23,14 +23,14 @@ const INNHOLD = [
   "Ingen meldinger.",
 ]
 
-/** Markupen `lt.tabs()` gir: lenker, id-er og klasser. Resten skriver komponenten. */
+/** The markup `lt.tabs()` gives: links, ids and classes. The web component writes the rest. */
 const FANER = tabs({
   id: "sak",
   keys: NOKLER,
   label: "Deler av saken",
 })
 
-/** Lenkene i raden og panelene, fra byggefunksjonen, hver for seg. */
+/** The links in the tab list and the panels, from the builder function, separately. */
 function deler(
   faner: ReturnType<typeof tabs> = FANER,
   deaktivert: number[] = [],
@@ -65,7 +65,7 @@ const paneler = () => [
 ]
 const valgt = () =>
   faner().map((f) => f.getAttribute("aria-selected") === "true")
-// `hidden` i stedet for `.hidden`: egenskapen svarer «until-found» for den formen.
+// `hidden` instead of `.hidden`: the property answers "until-found" for that form.
 const skjult = () => paneler().map((p) => p.hasAttribute("hidden"))
 
 function tast(element: Element, key: string) {
@@ -78,8 +78,8 @@ async function tegn() {
 }
 
 beforeEach(async () => {
-  // Komponenten leser adressen ved lasting, og adressen lever videre mellom
-  // testene.
+  // The web component reads the address on load, and the address carries
+  // over between tests.
   await settAdresse("")
 })
 
@@ -93,7 +93,7 @@ describe("lt-tabs", () => {
     await tegn()
   })
 
-  it("setter rollene og koblingen på markup fra lt.tabs()", () => {
+  it("sets the roles and the wiring on markup from lt.tabs()", () => {
     const liste = document.querySelector(".lt-tabs__list") as HTMLElement
     const [fane] = faner()
     const panel = document.getElementById("sak-soknaden") as HTMLElement
@@ -106,15 +106,16 @@ describe("lt-tabs", () => {
     expect(panel.getAttribute("aria-labelledby")).toBe("sak-soknaden-heading")
   })
 
-  it("skriver ingen id på fanene", () => {
-    // Datastar og idiomorph kjenner igjen et element på id. En id serveren
-    // ikke sendte, gjør at elementet byttes ut ved neste oppdatering.
+  it("writes no id on the tabs", () => {
+    // Datastar and idiomorph recognise an element by its id. An id the server
+    // did not send makes the element get replaced at the next update.
     expect(faner().map((f) => f.id)).toEqual(["", "", ""])
   })
 
-  it("skjuler panelene som ikke er valgt med until-found", () => {
-    // `lt.tabs()` skriver ikke `hidden`, så panelene vises uten JavaScript.
-    // Komponenten skjuler dem, og med `until-found` finner søk i siden dem.
+  it("hides the panels that are not selected with until-found", () => {
+    // `lt.tabs()` does not write `hidden`, so the panels show without
+    // JavaScript. The web component hides them, and with `until-found` find in
+    // page reaches them.
     expect(paneler().map((p) => p.getAttribute("hidden"))).toEqual([
       null,
       "until-found",
@@ -122,21 +123,22 @@ describe("lt-tabs", () => {
     ])
   })
 
-  it("gir bare den valgte fanen en tabbestopp", () => {
-    // Ellers er det én tabbestopp per fane, og Tab kommer aldri inn i
-    // panelet uten å gå gjennom hele raden.
+  it("gives only the selected tab a tab stop", () => {
+    // Otherwise there is one tab stop per tab, and Tab never gets into the
+    // panel without going through the whole tab list.
     expect(faner().map((f) => f.tabIndex)).toEqual([0, -1, -1])
   })
 
-  it("ber ikke malen frede noe", () => {
-    // Fanevalget er brukerens, og komponenten setter det tilbake selv etter
-    // en patch. Kommer `data-preserve-attr` tilbake her, har noen gjenopptatt
-    // kontrakten malen måtte skrive av fra dokumentasjonen.
+  it("does not ask the template to preserve anything", () => {
+    // The tab selection belongs to the user, and the web component restores
+    // it itself after a patch. If `data-preserve-attr` comes back here,
+    // someone has revived the contract the template had to copy from the
+    // documentation.
     expect(faner()[0].hasAttribute("data-preserve-attr")).toBe(false)
     expect(paneler()[0].hasAttribute("data-preserve-attr")).toBe(false)
   })
 
-  it("flytter mellom fanene med piltastene", async () => {
+  it("moves between the tabs with the arrow keys", async () => {
     faner()[0].focus()
     tast(faner()[0], "ArrowRight")
     await tegn()
@@ -145,7 +147,7 @@ describe("lt-tabs", () => {
     expect(valgt()).toEqual([false, true, false])
   })
 
-  it("går rundt fra siste til første", async () => {
+  it("wraps from the last to the first", async () => {
     faner()[2].click()
     await tegn()
     tast(faner()[2], "ArrowRight")
@@ -154,7 +156,7 @@ describe("lt-tabs", () => {
     expect(document.activeElement).toBe(faner()[0])
   })
 
-  it("melder fra når en fane velges", async () => {
+  it("fires an event when a tab is selected", async () => {
     const meldinger: number[] = []
     document
       .querySelector("lt-tabs")
@@ -167,15 +169,16 @@ describe("lt-tabs", () => {
     expect(meldinger).toEqual([1])
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await ventPaTegning()
     await forventIngenTilgjengelighetsbrudd()
   })
 })
 
-describe("lt.tabs() og nøklene", () => {
-  it("lager lenker, panel-id-er og overskrifts-id-er av nøklene", () => {
-    // Hele formen står i krav I5, i `lt-tabs-krav.browser.test.ts`.
+describe("lt.tabs() and the keys", () => {
+  it("makes links, panel ids and heading ids from the keys", () => {
+    // The full form is in requirement I5, in
+    // `lt-tabs-requirements.browser.test.ts`.
     const f = tabs({ id: "sak", keys: ["a", "b"], label: "Saken" })
 
     expect(f.tabs.map((t) => t.href)).toEqual(["#sak-a", "#sak-b"])
@@ -186,7 +189,7 @@ describe("lt.tabs() og nøklene", () => {
     ])
   })
 
-  it("gir en tom rad for ingen nøkler", () => {
+  it("gives an empty tab list for no keys", () => {
     const f = tabs({ id: "tom", keys: [], label: "Tom" })
 
     expect(f.tabs).toEqual([])
@@ -194,30 +197,30 @@ describe("lt.tabs() og nøklene", () => {
     expect(f.headings).toEqual([])
   })
 
-  it("kaster på en nøkkel som ikke kan bli en id", () => {
-    expect(() => tabs({ id: "x", keys: [""], label: "Faner" })).toThrow(/tom/)
+  it("throws on a key that cannot become an id", () => {
+    expect(() => tabs({ id: "x", keys: [""], label: "Faner" })).toThrow(/empty/)
     expect(() => tabs({ id: "x", keys: ["a b"], label: "Faner" })).toThrow(
-      /mellomrom/,
+      /whitespace/,
     )
     expect(() => tabs({ id: "x", keys: ["a\tb"], label: "Faner" })).toThrow(
-      /mellomrom/,
+      /whitespace/,
     )
     expect(() => tabs({ id: "x", keys: ["a\u00a0b"], label: "Faner" })).toThrow(
-      /mellomrom/,
+      /whitespace/,
     )
     expect(() => tabs({ id: "x", keys: ["a", "a"], label: "Faner" })).toThrow(
-      /to ganger/,
+      /twice/,
     )
     expect(() => tabs({ id: "x", keys: [1 as never], label: "Faner" })).toThrow(
-      /ikke tekst/,
+      /not a string/,
     )
     expect(() => tabs({ id: "x", label: "Faner" } as never)).toThrow(
-      /keys mangler/,
+      /keys is missing/,
     )
   })
 })
 
-describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan velges", () => {
+describe("lt-tabs finds the panel through href and skips what cannot be selected", () => {
   beforeAll(() => {
     defineLtTabs()
   })
@@ -225,9 +228,10 @@ describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan ve
   const liste = (lenker: string) =>
     `<ul class="lt-tabs__list" role="tablist">${lenker}</ul>`
 
-  it("hopper over en deaktivert fane med piltastene, Home og End", async () => {
-    // Uten dette valgte piltasten den deaktiverte fanen, og raden sto uten
-    // en eneste fane som kunne få fokus. Tastaturbrukeren var låst ute.
+  it("skips a disabled tab with the arrow keys, Home and End", async () => {
+    // Without this the arrow key selected the disabled tab, and the tab list
+    // was left without a single tab that could take focus. The keyboard user
+    // was locked out.
     const første = deler(FANER, [1])
     monter(
       `<lt-tabs>${liste(første.lenker)}${første.paneler.join("")}</lt-tabs>`,
@@ -257,7 +261,7 @@ describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     expect(valgt()).toEqual([false, true, false])
   })
 
-  it("går til første og siste fane med Home og End", async () => {
+  it("goes to the first and last tab with Home and End", async () => {
     const { lenker, paneler: p } = deler()
     monter(`<lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>`)
     await tegn()
@@ -275,10 +279,9 @@ describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     expect(valgt()).toEqual([true, false, false])
   })
 
-  it("lar faner i faner være hver sin rad", async () => {
-    // `querySelectorAll` over hele undertreet gjorde en indre fanerad til en
-    // del av den ytre: et klikk på en indre fane skjulte det ytre panelet
-    // den sto i.
+  it("keeps tabs inside tabs as separate tab lists", async () => {
+    // `querySelectorAll` over the whole subtree made an inner tab list part of
+    // the outer one: a click on an inner tab hid the outer panel it was in.
     const ytre = tabs({ id: "ytre", keys: ["a", "b"], label: "Ytre" })
     const indre = tabs({ id: "indre", keys: ["a", "b"], label: "Indre" })
     const rad = (f: typeof ytre, navn: string) =>
@@ -318,9 +321,9 @@ describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     ).toBe("true")
   })
 
-  it("finner panelet gjennom href, ikke gjennom rekkefølgen", async () => {
-    // Koblingen står i markupen, og skal leses derfra. Med panelene i en
-    // annen rekkefølge viste et klikk på fane 1 panelet til en annen fane.
+  it("finds the panel through href, not through the order", async () => {
+    // The wiring is in the markup, and is read from there. With the panels in
+    // a different order, a click on tab 1 showed another tab's panel.
     const { lenker, paneler: p } = deler()
     const [forste, ...resten] = p
     monter(`<lt-tabs>${liste(lenker)}${[...resten, forste].join("")}</lt-tabs>`)
@@ -335,7 +338,7 @@ describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     expect(skjultId("sak-meldinger")).toBe(true)
   })
 
-  it("finner et panel som står utenfor verten", async () => {
+  it("finds a panel outside the host", async () => {
     const { lenker, paneler: p } = deler()
     monter(`
       <lt-tabs>${liste(lenker)}${p[0]}</lt-tabs>
@@ -352,9 +355,10 @@ describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     expect(skjultId("sak-vedlegg")).toBe(false)
   })
 
-  it("sier fra om en lenke som peker på ingenting, uten å fryse", async () => {
-    // Fant ikke komponenten panelet, kunne to faner få det samme og skrive
-    // motsatt `hidden` på det i hver runde, og siden frøs.
+  it("warns about a link that points to nothing, without freezing", async () => {
+    // When the web component did not find the panel, two tabs could get the
+    // same one and write opposite `hidden` on it in every round, and the page
+    // froze.
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     try {
       const { lenker, paneler: p } = deler()
@@ -381,7 +385,7 @@ describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan ve
       expect(skjultId("sak-meldinger")).toBe(true)
       expect(
         advarsel.mock.calls.some((k) =>
-          String(k[0]).includes("har faner uten et panel"),
+          String(k[0]).includes("has tabs without a panel"),
         ),
       ).toBe(true)
     } finally {
@@ -389,10 +393,10 @@ describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     }
   })
 
-  it("viser et panel to faner deler når en av dem er valgt", async () => {
-    // En feil i markupen, men et galt svar i stillhet er verre enn å vise
-    // panelet: skrev bare den første fanen, sto panelet skjult mens den
-    // andre var valgt.
+  it("shows a panel two tabs share when one of them is selected", async () => {
+    // A mistake in the markup, but a silent wrong answer is worse than showing
+    // the panel: when only the first tab wrote, the panel stayed hidden while
+    // the other was selected.
     const { lenker, paneler: p } = deler()
     monter(`
       <lt-tabs>${liste(
@@ -415,7 +419,7 @@ describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     expect(skjultId("sak-vedlegg")).toBe(true)
   })
 
-  it("flytter tabbestoppet når den valgte fanen deaktiveres av en patch", async () => {
+  it("moves the tab stop when a patch disables the selected tab", async () => {
     const { lenker, paneler: p } = deler()
     monter(`<lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>`)
     await tegn()
@@ -424,14 +428,14 @@ describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     faner()[1].setAttribute("aria-disabled", "true")
     await tegn()
 
-    // Valget står, men tabbestoppet er en fane som kan få fokus.
+    // The selection stays, but the tab stop is a tab that can take focus.
     expect(valgt()).toEqual([false, true, false])
     expect(faner().map((f) => f.tabIndex)).toEqual([-1, -1, 0])
   })
 
-  it("lar selected settes som egenskap", async () => {
-    // React 19 skriver egenskapen når den finnes, og dokumentasjonen viser
-    // `faner.selected` som API. En getter alene kastet ved tilordning.
+  it("lets selected be set as a property", async () => {
+    // React 19 writes the property when it exists, and the documentation
+    // shows `tabs.selected` as API. A getter alone threw on assignment.
     const { lenker, paneler: p } = deler()
     monter(`<lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>`)
     await tegn()
@@ -449,9 +453,9 @@ describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     expect(meldinger).toEqual([2])
   })
 
-  it("snur venstre og høyre pil i høyre-til-venstre", async () => {
-    // I en side som leses fra høyre står neste fane til venstre. Uten dette
-    // flyttet høyrepil fokus visuelt bakover.
+  it("swaps the left and right arrows in right-to-left", async () => {
+    // On a page read from right to left the next tab is to the left. Without
+    // this the right arrow moved focus visually backwards.
     const { lenker, paneler: p } = deler()
     monter(`
       <div dir="rtl">
@@ -473,9 +477,10 @@ describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan ve
 })
 
 /*
- * Markup skrevet uten JavaScript: en liste med lenker og ett panel per lenke,
- * uten roller, kobling eller `hidden`. Det malen må skrive er id på panelene,
- * og den krever lenkene uansett. Komponenten fyller inn resten.
+ * Markup written without JavaScript: a list of links and one panel per link,
+ * without roles, wiring or `hidden`. What the template must write is an id on
+ * the panels, and it needs the links anyway. The web component fills in the
+ * rest.
  */
 const BAR = `
   <lt-tabs>
@@ -489,7 +494,7 @@ const BAR = `
     <section class="lt-tabs__panel" id="meldinger"><h2>Meldinger</h2><p>Ingen meldinger.</p></section>
   </lt-tabs>`
 
-describe("lt-tabs kobler fra bar struktur", () => {
+describe("lt-tabs wires bare structure", () => {
   beforeAll(() => {
     defineLtTabs()
   })
@@ -505,13 +510,13 @@ describe("lt-tabs kobler fra bar struktur", () => {
     }
   }
 
-  it("setter roller, kobling og tabbestopp", async () => {
+  it("sets roles, wiring and tab stops", async () => {
     monter(BAR)
     await tegn()
     const { liste, punkter, lenker, paneler: p } = barDeler()
 
     expect(liste.getAttribute("role")).toBe("tablist")
-    // Uten rollen leser skjermleseren «liste, 3 punkter» før hver fane.
+    // Without the role a screen reader says "list, 3 items" before each tab.
     expect(punkter.map((li) => li.getAttribute("role"))).toEqual([
       "presentation",
       "presentation",
@@ -530,8 +535,8 @@ describe("lt-tabs kobler fra bar struktur", () => {
     lenker.forEach((lenke, i) => {
       expect(lenke.getAttribute("aria-controls")).toBe(p[i].id)
     })
-    // Bare det valgte panelet er en tabbestopp. Et skjult panel som kan få
-    // fokus, er et usynlig stopp for tastaturet.
+    // Only the selected panel is a tab stop. A hidden panel that can take
+    // focus is an invisible stop for the keyboard.
     expect(p.map((x) => x.getAttribute("tabindex"))).toEqual(["0", null, null])
 
     expect(lenker.map((l) => l.getAttribute("aria-selected"))).toEqual([
@@ -540,7 +545,7 @@ describe("lt-tabs kobler fra bar struktur", () => {
       "false",
     ])
     expect(lenker.map((l) => l.tabIndex)).toEqual([0, -1, -1])
-    // Uten `until-found` finner ikke søk i siden et skjult panel.
+    // Without `until-found`, find in page does not reach a hidden panel.
     expect(p.map((x) => x.getAttribute("hidden"))).toEqual([
       null,
       "until-found",
@@ -550,7 +555,7 @@ describe("lt-tabs kobler fra bar struktur", () => {
     await forventIngenTilgjengelighetsbrudd()
   })
 
-  it("skriver ingen id på lenker, listepunkter, raden eller panelene", async () => {
+  it("writes no id on links, list items, the tab list or the panels", async () => {
     monter(BAR)
     await tegn()
     const { liste, punkter, lenker, paneler: p } = barDeler()
@@ -564,11 +569,11 @@ describe("lt-tabs kobler fra bar struktur", () => {
       "",
       "",
     ])
-    // Panelenes id kommer fra serveren, og er den samme som før.
+    // The panels' ids come from the server, and are the same as before.
     expect(p.map((x) => x.id)).toEqual(["soknaden", "vedlegg", "meldinger"])
   })
 
-  it("gir panelet navn fra overskriften i det", async () => {
+  it("names the panel from the heading in it", async () => {
     monter(BAR)
     await tegn()
     const { paneler: p } = barDeler()
@@ -581,7 +586,7 @@ describe("lt-tabs kobler fra bar struktur", () => {
     }
   })
 
-  it("bruker teksten på fanen som navn når panelet ikke har overskrift", async () => {
+  it("uses the tab's text as the name when the panel has no heading", async () => {
     monter(BAR.replaceAll(/<h2>[^<]*<\/h2>/g, ""))
     await tegn()
     const { paneler: p } = barDeler()
@@ -594,9 +599,9 @@ describe("lt-tabs kobler fra bar struktur", () => {
     expect(p.some((x) => x.hasAttribute("aria-labelledby"))).toBe(false)
   })
 
-  it("bruker teksten på fanen som navn når aria-labelledby peker på ingenting", async () => {
-    // En `aria-labelledby` uten gyldig id regnes ikke med ved utregningen av
-    // navnet, og da tar `aria-label` over.
+  it("uses the tab's text as the name when aria-labelledby points to nothing", async () => {
+    // An `aria-labelledby` without a valid id is ignored when the name is
+    // computed, and then `aria-label` takes over.
     monter(
       BAR.replaceAll(/<h2>[^<]*<\/h2>/g, "").replace(
         'id="vedlegg"',
@@ -610,7 +615,7 @@ describe("lt-tabs kobler fra bar struktur", () => {
     expect(p[1].getAttribute("aria-labelledby")).toBe("finnes-ikke")
   })
 
-  it("lar et navn serveren skrev stå, og tar bort reserven når det kommer", async () => {
+  it("leaves a name the server wrote, and removes the fallback when it arrives", async () => {
     monter(
       BAR.replaceAll(/<h2>[^<]*<\/h2>/g, "").replace(
         'id="vedlegg"',
@@ -628,7 +633,7 @@ describe("lt-tabs kobler fra bar struktur", () => {
     expect(p[1].hasAttribute("aria-label")).toBe(false)
   })
 
-  it("lar en aria-label serveren skrev stå", async () => {
+  it("leaves an aria-label the server wrote", async () => {
     monter(
       BAR.replace('id="vedlegg"', 'id="vedlegg" aria-label="Alle vedlegg"'),
     )
@@ -639,7 +644,7 @@ describe("lt-tabs kobler fra bar struktur", () => {
     expect(p[1].hasAttribute("aria-labelledby")).toBe(false)
   })
 
-  it("leser valget fra hidden når ingen fane er markert", async () => {
+  it("reads the selection from hidden when no tab is marked", async () => {
     monter(
       BAR.replace('id="soknaden"', 'id="soknaden" hidden').replace(
         'id="meldinger"',
@@ -656,13 +661,13 @@ describe("lt-tabs kobler fra bar struktur", () => {
     ])
     expect(lenker.map((l) => l.tabIndex)).toEqual([-1, 0, -1])
     expect(p.map((x) => x.hasAttribute("hidden"))).toEqual([true, false, true])
-    // Formen serveren brukte, også på panelet den ikke hadde skjult.
+    // The form the server used, also on the panel it had not hidden.
     expect(p[0].getAttribute("hidden")).toBe("")
   })
 
-  it("lar det serveren skrev stå", async () => {
-    // Verdier komponenten aldri ville skrevet selv, så testen skiller «lot
-    // stå» fra «skrev det samme».
+  it("leaves what the server wrote", async () => {
+    // Values the web component would never write itself, so the test tells
+    // "left alone" from "wrote the same".
     monter(BAR.replace('id="vedlegg"', 'id="vedlegg" tabindex="-1"'))
     await tegn()
     const { paneler: p } = barDeler()
@@ -670,9 +675,9 @@ describe("lt-tabs kobler fra bar struktur", () => {
     expect(p[1].tabIndex).toBe(-1)
   })
 
-  it("skriver aria-controls fra href, også når serveren skrev en annen", async () => {
-    // De to er den samme opplysningen, og `href` er den som virker uten
-    // JavaScript.
+  it("writes aria-controls from href, also when the server wrote another", async () => {
+    // The two are the same information, and `href` is the one that works
+    // without JavaScript.
     monter(
       BAR.replace(
         '<a href="#vedlegg">',
@@ -685,14 +690,15 @@ describe("lt-tabs kobler fra bar struktur", () => {
     expect(lenker[1].getAttribute("aria-controls")).toBe("vedlegg")
   })
 
-  it("setter koblingen tilbake med den samme overskriftsid-en etter en patch", async () => {
+  it("restores the wiring with the same heading id after a patch", async () => {
     monter(BAR)
     await tegn()
     const { lenker, paneler: p } = barDeler()
     const overskrift = p[1].querySelector("h2") as HTMLElement
     const id = overskrift.id
 
-    // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
+    // As a morph does it: everything that was not in the server's HTML is
+    // removed.
     for (const navn of ["role", "aria-controls", "aria-selected", "tabindex"]) {
       lenker[1].removeAttribute(navn)
     }
@@ -710,12 +716,12 @@ describe("lt-tabs kobler fra bar struktur", () => {
     expect(p[1].getAttribute("hidden")).toBe("until-found")
   })
 
-  it("lar serveren bytte fane med bare hidden under server-controlled", async () => {
+  it("lets the server switch tab with hidden alone under server-controlled", async () => {
     /*
-     * Den idiomatiske Datastar-måten: `data-attr:hidden` på hvert panel, og
-     * ingenting på fanene. Komponenten hadde selv skrevet
-     * `aria-selected="true"` på den første, og leste den tilbake som
-     * serverens ord, så panelet serveren nettopp viste ble skjult igjen.
+     * The idiomatic Datastar way: `data-attr:hidden` on each panel, and
+     * nothing on the tabs. The web component had written
+     * `aria-selected="true"` on the first itself, and read it back as the
+     * server's word, so the panel the server had just shown was hidden again.
      */
     monter(BAR.replace("<lt-tabs>", "<lt-tabs server-controlled>"))
     await tegn()
@@ -735,9 +741,9 @@ describe("lt-tabs kobler fra bar struktur", () => {
     expect(lenker.map((l) => l.tabIndex)).toEqual([-1, 0, -1])
   })
 
-  it("lar en lenke uten rolle være i fred når serveren skrev rollene", async () => {
-    // Har serveren skrevet rollene selv, er en lenke uten rolle i raden noe
-    // annet enn en fane.
+  it("leaves a link without a role alone when the server wrote the roles", async () => {
+    // If the server has written the roles itself, a link without a role in
+    // the tab list is something other than a tab.
     monter(`
       <lt-tabs>
         <ul class="lt-tabs__list" role="tablist" aria-label="Deler av saken">
@@ -757,7 +763,7 @@ describe("lt-tabs kobler fra bar struktur", () => {
     expect(annen.tabIndex).toBe(0)
   })
 
-  it("tar imot en ny lenke i en bar rad som en fane", async () => {
+  it("takes a new link in a bare tab list as a tab", async () => {
     monter(BAR)
     await tegn()
     const { liste, paneler: p } = barDeler()
@@ -779,7 +785,7 @@ describe("lt-tabs kobler fra bar struktur", () => {
     expect(panel.getAttribute("hidden")).toBe("until-found")
   })
 
-  it("holder brukerens valg gjennom en patch som tar alt komponenten skrev", async () => {
+  it("keeps the user's selection through a patch that removes everything the web component wrote", async () => {
     monter(BAR)
     await tegn()
     const { lenker, paneler: p } = barDeler()
@@ -810,7 +816,7 @@ describe("lt-tabs under server-controlled", () => {
     defineLtTabs()
   })
 
-  /** Oppskriften fra Datastar-fanen på komponentsiden, bar struktur. */
+  /** The recipe from the Datastar tab on the component page, bare structure. */
   const FIRE = `
     <lt-tabs server-controlled>
       <ul class="lt-tabs__list" aria-label="Deler av saken">
@@ -830,11 +836,11 @@ describe("lt-tabs under server-controlled", () => {
     }
   }
 
-  it("lar et klikk stå etter at observatøren har kjørt", async () => {
+  it("lets a click stand after the observer has run", async () => {
     /*
-     * Klikket ble angret i neste mikrotask: `repair()` leste serverens gamle
-     * ord fra minnet. En test som leser rett etter klikket ser det ikke, så
-     * denne venter på tegningen først.
+     * The click was undone in the next microtask: `repair()` read the
+     * server's old word from memory. A test that reads right after the click
+     * does not see it, so this one waits for a frame first.
      */
     monter(FIRE)
     await tegn()
@@ -848,11 +854,11 @@ describe("lt-tabs under server-controlled", () => {
     })
   })
 
-  it("følger serveren som flytter med bare hidden, etter at server-controlled ble satt etter et klikk", async () => {
-    // Settes attributtet midt i, er det som står utgangspunktet. Men
-    // `aria-selected` på fanene skrev komponenten selv ved klikket. Ble det
-    // regnet som serverens, gikk det foran `hidden`, og serveren kunne ikke
-    // flytte fanen.
+  it("follows a server that moves with hidden alone, after server-controlled was set after a click", async () => {
+    // When the attribute is set midway, what is there is the starting point.
+    // But the web component wrote `aria-selected` on the tabs itself on the
+    // click. When that counted as the server's, it took precedence over
+    // `hidden`, and the server could not move the tab.
     monter(FIRE.replace("<lt-tabs server-controlled>", "<lt-tabs>"))
     await tegn()
     const vert = document.querySelector("lt-tabs") as HTMLElement
@@ -872,8 +878,8 @@ describe("lt-tabs under server-controlled", () => {
     })
   })
 
-  it("tar det som står som utgangspunkt når server-controlled settes, og reparerer igjen når det fjernes", async () => {
-    // Uten attributtet fra start, som når en patch setter det.
+  it("takes what is there as the starting point when server-controlled is set, and repairs again when it is removed", async () => {
+    // Without the attribute from the start, as when a patch sets it.
     monter(FIRE.replace("<lt-tabs server-controlled>", "<lt-tabs>"))
     await tegn()
     const vert = document.querySelector("lt-tabs") as HTMLElement
@@ -881,9 +887,9 @@ describe("lt-tabs under server-controlled", () => {
     lenker[1].click()
     await ventPaTegning()
 
-    // Serveren overtar, og en patch skriver panelet som det står. Uten at
-    // komponenten glemte minnet, hoppet raden tilbake til det serveren sa
-    // før klikket.
+    // The server takes over, and a patch writes the panel as it is. Unless
+    // the web component forgot its memory, the tab list jumped back to what
+    // the server said before the click.
     vert.setAttribute("server-controlled", "")
     const p = paneler()
     p[0].setAttribute("hidden", p[0].getAttribute("hidden") ?? "")
@@ -893,8 +899,8 @@ describe("lt-tabs under server-controlled", () => {
       skjult: [true, false],
     })
 
-    // Serveren slipper igjen og sender den første. Klikket fra før er glemt,
-    // og kommer ikke tilbake.
+    // The server lets go again and sends the first. The earlier click is
+    // forgotten, and does not come back.
     vert.removeAttribute("server-controlled")
     p[0].removeAttribute("hidden")
     p[1].setAttribute("hidden", "")
@@ -904,7 +910,7 @@ describe("lt-tabs under server-controlled", () => {
       skjult: [false, true],
     })
 
-    // Et nytt klikk står gjennom en patch som river det.
+    // A new click stands through a patch that strips it.
     lenker[1].click()
     await ventPaTegning()
     p[0].removeAttribute("hidden")
@@ -917,7 +923,7 @@ describe("lt-tabs under server-controlled", () => {
     })
   })
 
-  it("lar serveren flytte valget etter klikket", async () => {
+  it("lets the server move the selection after the click", async () => {
     monter(FIRE)
     await tegn()
     const p = paneler()
@@ -925,7 +931,7 @@ describe("lt-tabs under server-controlled", () => {
     document.querySelectorAll<HTMLElement>("lt-tabs a")[1].click()
     await ventPaTegning()
 
-    // Serveren sender den første fanen igjen, og rører bare panelene.
+    // The server sends the first tab again, and touches only the panels.
     p[0].removeAttribute("hidden")
     p[1].setAttribute("hidden", "")
     await ventPaTegning()
@@ -936,7 +942,7 @@ describe("lt-tabs under server-controlled", () => {
     })
   })
 
-  /** Tre faner: med to er «tilbake til den første» også det gale svaret. */
+  /** Three tabs: with two, "back to the first" is also the wrong answer. */
   const TRE = `
     <lt-tabs server-controlled>
       <ul class="lt-tabs__list" aria-label="Deler av saken">
@@ -960,10 +966,10 @@ describe("lt-tabs under server-controlled", () => {
     }
   }
 
-  it("følger serveren til en tredje fane, ikke tilbake til den første", async () => {
+  it("follows the server to a third tab, not back to the first", async () => {
     const { paneler: p } = await klikkAndre()
 
-    // Serveren svarer med den tredje, og rører bare panelene.
+    // The server answers with the third, and touches only the panels.
     p[1].setAttribute("hidden", "")
     p[2].removeAttribute("hidden")
     await ventPaTegning()
@@ -974,7 +980,7 @@ describe("lt-tabs under server-controlled", () => {
     })
   })
 
-  it("følger serveren når den flytter aria-selected til en tredje fane", async () => {
+  it("follows the server when it moves aria-selected to a third tab", async () => {
     const { lenker } = await klikkAndre()
 
     lenker[1].setAttribute("aria-selected", "false")
@@ -987,11 +993,11 @@ describe("lt-tabs under server-controlled", () => {
     })
   })
 
-  it("følger serveren også etter at en fane kom til mens klikket ventet", async () => {
+  it("follows the server also after a tab was added while the click was pending", async () => {
     const { paneler: p } = await klikkAndre()
     const vert = document.querySelector("lt-tabs") as HTMLElement
 
-    // En patch legger til en fjerde fane. Den har ikke sagt noe om valget.
+    // A patch adds a fourth tab. It has said nothing about the selection.
     vert
       .querySelector(".lt-tabs__list")
       ?.insertAdjacentHTML(
@@ -1005,7 +1011,7 @@ describe("lt-tabs under server-controlled", () => {
     await ventPaTegning()
     expect(tilstand().valgt).toEqual(["false", "true", "false", "false"])
 
-    // Så flytter serveren til den tredje, med bare `hidden`.
+    // Then the server moves to the third, with `hidden` alone.
     p[1].setAttribute("hidden", "")
     p[2].removeAttribute("hidden")
     await ventPaTegning()
@@ -1016,11 +1022,12 @@ describe("lt-tabs under server-controlled", () => {
     })
   })
 
-  it("står på den klikkede fanen når serveren bekrefter den med bar markup", async () => {
+  it("stays on the clicked tab when the server confirms it with bare markup", async () => {
     /*
-     * Morfingen river `aria-selected` av fanene, siden serverens markup ikke
-     * har den, og lar panelene stå: de er alt slik serveren sendte dem.
-     * Serverens gamle ord om panelene vant da, og raden hoppet tilbake.
+     * The morph strips `aria-selected` from the tabs, since the server's
+     * markup does not have it, and leaves the panels: they are already as the
+     * server sent them. The server's old word about the panels then won, and
+     * the tab list jumped back.
      */
     const { lenker } = await klikkAndre()
 
@@ -1033,7 +1040,7 @@ describe("lt-tabs under server-controlled", () => {
     })
   })
 
-  it("lar adressen være, så serveren bestemmer", async () => {
+  it("ignores the address, so the server decides", async () => {
     await settAdresse("#meldinger")
     monter(TRE)
     await tegn()
@@ -1041,7 +1048,7 @@ describe("lt-tabs under server-controlled", () => {
     expect(tilstand().valgt).toEqual(["true", "false", "false"])
   })
 
-  it("lar adressen være også når den endres", async () => {
+  it("ignores the address also when it changes", async () => {
     monter(TRE)
     await tegn()
 
@@ -1051,7 +1058,7 @@ describe("lt-tabs under server-controlled", () => {
     expect(tilstand().valgt).toEqual(["true", "false", "false"])
   })
 
-  it("melder et klikk med tab-select, og skriver det i adressen", async () => {
+  it("reports a click with tab-select, and writes it to the address", async () => {
     monter(TRE)
     await tegn()
     const meldt: number[] = []
@@ -1069,12 +1076,12 @@ describe("lt-tabs under server-controlled", () => {
   })
 })
 
-describe("lt-tabs når en patch rører panelene og lenkene", () => {
+describe("lt-tabs when a patch touches the panels and the links", () => {
   beforeAll(() => {
     defineLtTabs()
   })
 
-  it("gir et nytt panel med den samme id-en rollen, navnet og hidden", async () => {
+  it("gives a new panel with the same id the role, the name and hidden", async () => {
     monter(BAR)
     await tegn()
     const gammelt = document.getElementById("vedlegg") as HTMLElement
@@ -1089,17 +1096,18 @@ describe("lt-tabs når en patch rører panelene og lenkene", () => {
     expect(nytt.getAttribute("role")).toBe("tabpanel")
     expect(
       nytt.hasAttribute("hidden"),
-      "panelet til en fane som ikke er valgt står synlig",
+      "the panel of a tab that is not selected is visible",
     ).toBe(true)
-    // Overskriften sier noe annet enn fanen, så panelet heter det fanen heter.
+    // The heading says something other than the tab, so the panel is named
+    // what the tab is named.
     expect(nytt.getAttribute("aria-label")).toBe("Vedlegg")
   })
 
-  it("følger markupen når patchen bytter ut lenkene", async () => {
+  it("follows the markup when the patch replaces the links", async () => {
     /*
-     * Valget er knyttet til selve lenken og overlever bare en morfing som
-     * beholder nodene. `innerHTML` og htmx' vanlige bytte lager nye noder, og
-     * da gjelder det markupen sier, og ellers adressen.
+     * The selection is tied to the link itself and only survives a morph that
+     * keeps the nodes. `innerHTML` and htmx's default swap create new nodes,
+     * and then what the markup says applies, and otherwise the address.
      */
     const bar = BAR.slice(BAR.indexOf(">") + 1, BAR.lastIndexOf("<"))
     monter(BAR)
@@ -1110,12 +1118,12 @@ describe("lt-tabs når en patch rører panelene og lenkene", () => {
     expect(vert.selected).toBe(1)
     expect(location.hash).toBe("#vedlegg")
 
-    // Ingen fane markert av serveren: adressen sier hvor brukeren var.
+    // No tab marked by the server: the address says where the user was.
     vert.innerHTML = bar
     await ventPaTegning()
     expect(vert.selected).toBe(1)
 
-    // Serveren markerer en fane selv, og den vinner over adressen.
+    // The server marks a tab itself, and it wins over the address.
     vert.innerHTML = bar
       .replace(
         '<a href="#soknaden">',
@@ -1125,7 +1133,7 @@ describe("lt-tabs når en patch rører panelene og lenkene", () => {
     await ventPaTegning()
     expect(vert.selected).toBe(0)
 
-    // Ingenting i adressen heller: den første.
+    // Nothing in the address either: the first.
     history.replaceState(null, "", location.pathname + location.search)
     vert.innerHTML = bar
     await ventPaTegning()
@@ -1133,7 +1141,7 @@ describe("lt-tabs når en patch rører panelene og lenkene", () => {
     expect(faner()[0].getAttribute("aria-selected")).toBe("true")
   })
 
-  it("sier fra og lar de andre panelene være når ett er fjernet", async () => {
+  it("warns and leaves the other panels alone when one is removed", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     try {
       monter(BAR)
@@ -1149,7 +1157,7 @@ describe("lt-tabs når en patch rører panelene og lenkene", () => {
       expect(p[2].getAttribute("role")).toBe("tabpanel")
       expect(
         advarsel.mock.calls.some((k) =>
-          String(k[0]).includes("har faner uten et panel"),
+          String(k[0]).includes("has tabs without a panel"),
         ),
       ).toBe(true)
     } finally {
@@ -1157,7 +1165,7 @@ describe("lt-tabs når en patch rører panelene og lenkene", () => {
     }
   })
 
-  it("lar nettleserens egne snarveier med Alt og Cmd være", async () => {
+  it("leaves the browser's shortcuts with Alt and Cmd alone", async () => {
     monter(BAR)
     await tegn()
     faner()[0].focus()
@@ -1177,12 +1185,12 @@ describe("lt-tabs når en patch rører panelene og lenkene", () => {
   })
 })
 
-describe("lt-tabs som lenker", () => {
+describe("lt-tabs as links", () => {
   beforeAll(() => {
     defineLtTabs()
   })
 
-  it("skriver valget i adressen uten å hoppe, og uten ny historikkoppføring", async () => {
+  it("writes the selection to the address without jumping, and without a new history entry", async () => {
     monter(fraByggefunksjonen())
     await tegn()
     const lengde = history.length
@@ -1197,13 +1205,13 @@ describe("lt-tabs som lenker", () => {
     expect(valgt()).toEqual([false, true, false])
   })
 
-  it("velger fanen selv om adressen ikke lar seg skrive", async () => {
-    // Safari kaster etter hundre kall på ti sekunder. Kastet stoppet klikket
-    // før fanen ble valgt.
+  it("selects the tab even when the address cannot be written", async () => {
+    // Safari throws after a hundred calls in ten seconds. The throw stopped
+    // the click before the tab was selected.
     monter(fraByggefunksjonen())
     await tegn()
     const skriv = vi.spyOn(history, "replaceState").mockImplementation(() => {
-      throw new DOMException("For mange kall", "SecurityError")
+      throw new DOMException("Too many calls", "SecurityError")
     })
     try {
       faner()[1].click()
@@ -1216,13 +1224,13 @@ describe("lt-tabs som lenker", () => {
     }
   })
 
-  it("lar nettleseren åpne lenken når en modifikator er holdt nede", async () => {
+  it("lets the browser open the link when a modifier is held down", async () => {
     monter(fraByggefunksjonen())
     await tegn()
     const lenke = faner()[1]
 
-    // Lytteren på lenken kommer etter komponentens, og hindrer at testen
-    // faktisk navigerer.
+    // The listener on the link runs after the web component's, and stops the
+    // test from actually navigating.
     let forhindret: boolean | undefined
     lenke.addEventListener("click", (hendelse) => {
       forhindret = hendelse.defaultPrevented
@@ -1242,7 +1250,7 @@ describe("lt-tabs som lenker", () => {
     expect(location.hash).toBe("")
   })
 
-  it("velger fanen adressen peker på ved lasting", async () => {
+  it("selects the tab the address points to on load", async () => {
     await settAdresse("#sak-vedlegg")
     monter(fraByggefunksjonen())
     await tegn()
@@ -1251,7 +1259,7 @@ describe("lt-tabs som lenker", () => {
     expect(skjult()).toEqual([true, false, true])
   })
 
-  it("velger fanen når adressen endrer seg", async () => {
+  it("selects the tab when the address changes", async () => {
     monter(fraByggefunksjonen())
     await tegn()
 
@@ -1262,7 +1270,7 @@ describe("lt-tabs som lenker", () => {
     expect(valgt()).toEqual([false, false, true])
   })
 
-  it("velger fanen på beforematch", async () => {
+  it("selects the tab on beforematch", async () => {
     monter(BAR)
     await tegn()
 
@@ -1272,9 +1280,9 @@ describe("lt-tabs som lenker", () => {
     expect(valgt()).toEqual([false, false, true])
   })
 
-  it("lar et panel skjult med until-found ta ingen plass", async () => {
-    // Et skjult panel beholder boksen sin, så luften rundt innholdet må
-    // nulles, ellers står det et tomt felt under det valgte panelet.
+  it("lets a panel hidden with until-found take no space", async () => {
+    // A hidden panel keeps its box, so the spacing around the content must be
+    // zeroed, or there is an empty gap under the selected panel.
     monter(BAR)
     await tegn()
 
@@ -1285,9 +1293,9 @@ describe("lt-tabs som lenker", () => {
     expect(høyder[2]).toBe(0)
   })
 
-  it("skjuler panelene i den samme formen i hele raden", async () => {
-    // Serveren skjuler med `hidden=""`. Det første panelet var aldri skjult av
-    // serveren, men får samme form som de andre når det skjules.
+  it("hides the panels in the same form across the whole tab list", async () => {
+    // The server hides with `hidden=""`. The first panel was never hidden by
+    // the server, but gets the same form as the others when it is hidden.
     monter(
       BAR.replace('id="vedlegg"', 'id="vedlegg" hidden').replace(
         'id="meldinger"',
@@ -1306,7 +1314,7 @@ describe("lt-tabs som lenker", () => {
     ])
   })
 
-  it("flytter bare fokus med piltastene ved manuell aktivering, og velger med mellomrom", async () => {
+  it("only moves focus with the arrow keys under manual activation, and selects with Space", async () => {
     monter(fraByggefunksjonen(FANER, ' activation="manual"'))
     await tegn()
     faner()[0].focus()
@@ -1328,7 +1336,7 @@ describe("lt-tabs som lenker", () => {
     expect(valgt()).toEqual([false, true, false])
   })
 
-  it("velger med en gang som standard", async () => {
+  it("selects at once by default", async () => {
     monter(fraByggefunksjonen())
     await tegn()
     faner()[0].focus()
@@ -1340,7 +1348,7 @@ describe("lt-tabs som lenker", () => {
   })
 })
 
-describe("lt-tabs etter morfing og med piltaster", () => {
+describe("lt-tabs after a morph and with arrow keys", () => {
   beforeAll(() => {
     defineLtTabs()
   })
@@ -1370,9 +1378,9 @@ describe("lt-tabs etter morfing og med piltaster", () => {
     return document.querySelector("lt-tabs") as HTMLElement
   }
 
-  it("virker på faner en morfing har byttet ut", async () => {
-    // Én lytter på verten. Før fikk hver ny fane sine egne lyttere, og de
-    // gamle ble holdt fast i minnet.
+  it("works on tabs a morph has replaced", async () => {
+    // One listener on the host. Before, every new tab got its own listeners,
+    // and the old ones were kept in memory.
     const vert = await monterFaner()
     const rad = vert.querySelector(".lt-tabs__list") as HTMLElement
     for (let gang = 0; gang < 3; gang++) {
@@ -1392,9 +1400,10 @@ describe("lt-tabs etter morfing og med piltaster", () => {
     expect(document.activeElement).toBe(faner()[0])
   })
 
-  it("virker selv om noe på raden stopper hendelsene", async () => {
-    // Lytteren sitter på verten. Uten fangstfasen nådde ikke klikk og
-    // piltaster fram når raden hadde en lytter som stoppet dem.
+  it("works even when something on the tab list stops the events", async () => {
+    // The listener is on the host. Without the capture phase, clicks and
+    // arrow keys did not get through when the tab list had a listener that
+    // stopped them.
     const vert = await monterFaner()
     const rad = vert.querySelector(".lt-tabs__list") as HTMLElement
     rad.addEventListener("keydown", (event) => event.stopPropagation())
@@ -1412,8 +1421,8 @@ describe("lt-tabs etter morfing og med piltaster", () => {
     ).toBe(false)
   })
 
-  it("lar pil ned være i en vannrett rad", async () => {
-    // Før flyttet den fokus, og stjal siderullingen.
+  it("leaves the down arrow alone in a horizontal tab list", async () => {
+    // Before, it moved focus and stole page scrolling.
     await monterFaner()
     const forste = faner()[0]
     forste.focus()
@@ -1430,7 +1439,7 @@ describe("lt-tabs etter morfing og med piltaster", () => {
     expect(trykk.defaultPrevented).toBe(false)
   })
 
-  it("bruker pil ned i en loddrett rad", async () => {
+  it("uses the down arrow in a vertical tab list", async () => {
     const vert = await monterFaner()
     vert
       .querySelector("[role='tablist']")

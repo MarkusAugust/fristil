@@ -3,9 +3,9 @@
     display: block;
   }
 
-  /* Raden ser ut som faner bare når skript kjører. Uten JavaScript er den en
-     innholdsfortegnelse: en vanlig liste med lenker til panelene, som står
-     etter hverandre under den. */
+  /* The tab list looks like tabs only when scripts run. Without JavaScript it
+     is a table of contents: a plain list of links to the panels, which follow
+     one another below it. */
   @media (scripting: enabled) {
     .lt-tabs__list {
       display: flex;
@@ -30,8 +30,9 @@
       text-decoration: none;
       background: transparent;
       border: 0;
-      /* Streken under den valgte fanen tegnes på alle, gjennomsiktig på dem som
-         ikke er valgt. Da hopper ikke teksten når brukeren bytter fane. */
+      /* The line under the selected tab is drawn on every tab, transparent on
+         those that are not selected. The text then does not jump when the user
+         switches tab. */
       border-block-end: var(--lt-spacing-0-5) solid transparent;
       margin-block-end: -1px;
       cursor: pointer;
@@ -57,22 +58,23 @@
       cursor: not-allowed;
     }
 
-    /* Markup skrevet uten JavaScript kommer uten `hidden` på panelene, og
-       komponenten setter det først når den er registrert. Fram til da vises
-       bare ett panel, det komponenten kommer til å velge, så innholdet ikke
-       hopper når resten skjules:
-       - Skrev serveren `hidden` selv, gjelder det, og det første synlige er
-         det serveren valgte.
-       - Ellers panelet adressen peker på, eller panelet med det inni. Det er
-         også det en lenke i raden fører til når komponenten aldri blir
-         registrert.
-       - Ellers det første.
-       Under `server-controlled` velger adressen ikke, og det første synlige
-       vises. Linjene i regelen er i den rekkefølgen: alle etter det første
-       unntatt treffet, alle etter det første under `server-controlled`, og
-       det første når treffet står lenger ned. `:has()` kan ikke stå inni
-       `:has()`, derfor to former for treffet i den siste. Bare når skript
-       kjører: uten JavaScript vises alle. */
+    /* Markup written without JavaScript comes without `hidden` on the panels,
+       and the web component sets it only once it is registered. Until then
+       only one panel is shown, the one the web component is going to select,
+       so the content does not jump when the rest are hidden:
+       - If the server wrote `hidden` itself, that applies, and the first
+         visible panel is the one the server selected.
+       - Otherwise the panel the address points to, or the panel containing
+         it. That is also where a link in the tab list leads when the web
+         component is never registered.
+       - Otherwise the first.
+       Under `server-controlled` the address does not select, and the first
+       visible panel is shown. The lines of the rule are in that order: all
+       after the first except the match, all after the first under
+       `server-controlled`, and the first when the match is further down.
+       `:has()` cannot be nested in `:has()`, hence two forms of the match in
+       the last one. Only when scripts run: without JavaScript all are
+       shown. */
     lt-tabs:not(:defined) .lt-tabs__panel:not([hidden])
       ~ .lt-tabs__panel:not([hidden]):not(:target, :has(:target)),
     lt-tabs:not(:defined)[server-controlled]
@@ -87,9 +89,9 @@
     }
   }
 
-  /* Uten JavaScript er lenkene en innholdsfortegnelse, én per linje. Med
-     linjehøyden alene sto de så tett at trykkflaten var under 24 piksler
-     (WCAG 2.5.8). */
+  /* Without JavaScript the links are a table of contents, one per line. With
+     the line height alone they were so close together that the target size
+     was under 24 pixels (WCAG 2.5.8). */
   @media (scripting: none) {
     .lt-tabs__list a {
       display: inline-block;
@@ -102,9 +104,9 @@
     padding-block-start: var(--lt-tabs-panel-space, var(--lt-spacing-4));
   }
 
-  /* Et panel skjult med `until-found` har boksen sin, men ikke innholdet,
-     så søk i siden kan finne det. Luften må bort, ellers står det et tomt
-     felt under det valgte panelet for hver fane. */
+  /* A panel hidden with `until-found` keeps its box but not its content, so
+     find in page can reach it. The spacing must go, or there is an empty gap
+     under the selected panel for every tab. */
   .lt-tabs__panel[hidden="until-found" i] {
     padding: 0;
   }
@@ -114,9 +116,9 @@
     outline-offset: 2px;
   }
 
-  /* Høykontrast: streken under den valgte fanen tvinges til samme farge som
-     de gjennomsiktige strekene under de andre. `Highlight` slipper gjennom,
-     og gir tilbake forskjellen. */
+  /* High contrast: the line under the selected tab is forced to the same
+     colour as the transparent lines under the others. `Highlight` gets
+     through, and restores the difference. */
   @media (forced-colors: active) {
     .lt-tabs__list a[aria-selected="true"] {
       border-block-end-color: Highlight;

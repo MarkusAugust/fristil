@@ -1,8 +1,8 @@
 @layer lotek {
   .lt-help-text {
     display: block;
-    /* Hele margin settes, ikke bare toppen: uten dette arver <p>
-       nettleserens 1em i bunn hos konsumenter uten reset. */
+    /* The whole margin is set, not just the top: without it a <p> inherits
+       the browser's 1em at the bottom for consumers without a reset. */
     margin: var(--lt-spacing-1) 0 0;
     font-family: inherit;
     font-size: var(--lt-font-size-xs);

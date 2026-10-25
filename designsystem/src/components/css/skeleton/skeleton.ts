@@ -8,7 +8,7 @@ export type SkeletonVariant = (typeof skeletonVariants)[number]
 export type NonDefaultSkeletonVariant = Exclude<SkeletonVariant, "block">
 
 export type SkeletonOptions = {
-  /** Form. Standard: `block`. */
+  /** Shape. Default: `block`. */
   variant?: SkeletonVariant
 }
 
@@ -19,11 +19,11 @@ export type SkeletonAttributes = {
 }
 
 /**
- * Attributtene for en plassholder mens innholdet lastes.
+ * The attributes for a placeholder while the content loads.
  *
- * Formene er alltid skjult for skjermlesere. De sier ingenting om hva som
- * kommer, og en rekke tomme bokser som leses opp er verre enn stillhet. Si
- * fra om ventingen ett sted i stedet, med `role="status"`.
+ * The shapes are always hidden from screen readers. They say nothing about
+ * what is coming, and a row of empty boxes being announced is worse than
+ * silence. Announce the wait in one place instead, with `role="status"`.
  *
  * ```ts
  * <div {...skeleton({ variant: "text" })} />

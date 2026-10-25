@@ -2,12 +2,14 @@
 /// <reference types="@vitest/browser-playwright" />
 
 /**
- * Kravene til fanene, ett krav per test, med kravets nummer i navnet.
+ * The requirements for the tabs, one requirement per test, with the
+ * requirement's number in the name.
  *
- * Kravene står i `krav-faner.md` i utredningen, med kilde for hvert. Krav som
- * alt har en test som kan feile, står i `lt-tabs.browser.test.ts` og
- * `lt-tabs-morph.browser.test.ts`. Siden uten JavaScript prøves i
- * `scripts/check-without-javascript.ts`, siden Vitest selv er et skript.
+ * The requirements are in `krav-faner.md` in the investigation, with a
+ * source for each. Requirements that already have a test that can fail are
+ * in `lt-tabs.browser.test.ts` and `lt-tabs-morph.browser.test.ts`. The page
+ * without JavaScript is tested in `scripts/check-without-javascript.ts`,
+ * since Vitest is itself a script.
  */
 
 import axe from "axe-core"
@@ -50,7 +52,7 @@ type Bar = {
   inni?: (i: number) => string
 }
 
-/** Fanene slik en mal skriver dem for hånd: lenker, og id bare på panelene. */
+/** The tabs as a template writes them by hand: links, and ids only on the panels. */
 function bar(valg: Bar = {}): string {
   const overskrift = valg.overskrift ?? ((i) => NAVN[i])
   return `
@@ -65,7 +67,7 @@ function bar(valg: Bar = {}): string {
     </lt-tabs>`
 }
 
-/** Det `lt.tabs()` skriver, satt sammen slik en mal gjør det. */
+/** What `lt.tabs()` writes, put together the way a template does it. */
 function fraByggefunksjonen(): string {
   const f = tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
   return `
@@ -89,10 +91,10 @@ const valgt = () =>
 const skjult = () => paneler().map((p) => p.hasAttribute("hidden"))
 
 /**
- * Det utregnede navnet, etter AccName, slik en skjermleser får det.
+ * The computed name, by AccName, as a screen reader gets it.
  *
- * axe sine typer har ikke funksjonene som regner ut navnet fra treet, så de
- * typesettes her.
+ * axe's types do not include the functions that compute the name from the
+ * tree, so they are typed here.
  */
 const navneberegning = axe as unknown as {
   setup: (rot: Node) => void
@@ -112,8 +114,8 @@ function navn(element: Element): string {
 }
 
 /**
- * Tab, slik en tastaturbruker trykker den. WebKit på macOS hopper som Safari
- * over lenker med Tab, og der er det Alt+Tab som går til lenker.
+ * Tab, as a keyboard user presses it. WebKit on macOS, like Safari, skips
+ * links with Tab, and there it is Alt+Tab that moves to links.
  */
 async function tab() {
   if (server.browser === "webkit") await userEvent.keyboard("{Alt>}{Tab}{/Alt}")
@@ -126,13 +128,13 @@ async function tegn() {
 }
 
 /**
- * Stopper `hashchange`, slik søk i siden gjør: nettleseren avdekker treffet
- * og sender `beforematch`, men endrer ikke adressen. Uten dette valgte
- * adressen fanen, og en test av `beforematch` kunne ikke feile.
+ * Stops `hashchange`, as find in page does: the browser reveals the match
+ * and sends `beforematch`, but does not change the address. Without this the
+ * address selected the tab, and a test of `beforematch` could not fail.
  *
- * Kalles før `monter()`: Chromium kaller lytterne på `window` i den
- * rekkefølgen de ble lagt til, også en lytter i fangstfasen, så en stopper
- * lagt til etter komponentens stoppet ingenting der.
+ * Called before `monter()`: Chromium calls the listeners on `window` in the
+ * order they were added, a listener in the capture phase included, so a
+ * stopper added after the component's stopped nothing there.
  */
 function somSokISiden(): () => void {
   const stopp = (e: Event) => e.stopImmediatePropagation()
@@ -144,7 +146,7 @@ function lyttEtterAdvarsler() {
   return vi.spyOn(console, "warn").mockImplementation(() => {})
 }
 
-/** Advarslene som har kommet, når `warnAboutMarkup` har sjekket vilkåret sitt. */
+/** The warnings that have arrived, once `warnAboutMarkup` has checked its condition. */
 async function advarsler(spion: ReturnType<typeof lyttEtterAdvarsler>) {
   await ventPaTegning()
   await ventPaTegning()
@@ -163,9 +165,9 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe("A. Tre tilstander av siden", () => {
-  it("A6: registreringen gir markup fra lt.tabs() den samme tilstanden som håndskrevet markup, og endrer ingenting byggefunksjonen skrev", async () => {
-    /** Attributtene som bærer fanene, uten id-er, som er ulike i de to kildene. */
+describe("A. Three states of the page", () => {
+  it("A6: registration gives markup from lt.tabs() the same state as hand-written markup, and changes nothing the builder function wrote", async () => {
+    /** The attributes that carry the tabs, without ids, which differ between the two sources. */
     const tilstand = () =>
       [...document.querySelectorAll("lt-tabs, lt-tabs *")].map((e) =>
         [...e.attributes]
@@ -207,13 +209,14 @@ describe("A. Tre tilstander av siden", () => {
     await tegn()
     observatør.disconnect()
 
-    expect(endret, "registreringen endret noe byggefunksjonen skrev").toEqual(
-      [],
-    )
+    expect(
+      endret,
+      "registration changed something the builder function wrote",
+    ).toEqual([])
     expect(tilstand()).toEqual(forventet)
   })
 
-  /** En React-app som rendrer fanene med `lt.tabs()` fra React-inngangen. */
+  /** A React app that renders the tabs with `lt.tabs()` from the React entry point. */
   const App = ({ teller }: { teller: number }) => {
     const f = ltReact.tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
     return h(
@@ -241,7 +244,7 @@ describe("A. Tre tilstander av siden", () => {
     )
   }
 
-  it("A7: React hydrerer markup fra lt.tabs() i React-inngangen uten avvik, også når brukeren har byttet fane og React rendrer på nytt", async () => {
+  it("A7: React hydrates markup from lt.tabs() in the React entry point without mismatches, also when the user has switched tabs and React renders again", async () => {
     const avvik: string[] = []
     const feil = vi.spyOn(console, "error").mockImplementation((...a) => {
       avvik.push(a.map(String).join(" "))
@@ -267,7 +270,7 @@ describe("A. Tre tilstander av siden", () => {
     rot.unmount()
   })
 
-  it("A7 med D11: React hydrerer uten avvik også når adressen peker på en annen fane", async () => {
+  it("A7 with D11: React hydrates without mismatches also when the address points to another tab", async () => {
     await settAdresse("#sak-vedlegg")
     const avvik: string[] = []
     const feil = vi.spyOn(console, "error").mockImplementation((...a) => {
@@ -289,7 +292,7 @@ describe("A. Tre tilstander av siden", () => {
     rot.unmount()
   })
 
-  it("A9: komponenten skriver ingenting på markup fra lt.tabs() i React-inngangen", async () => {
+  it("A9: the component writes nothing on markup from lt.tabs() in the React entry point", async () => {
     const omslag = document.createElement("div")
     omslag.innerHTML = renderToString(h(App, { teller: 0 }))
     const poster: string[] = []
@@ -315,8 +318,8 @@ describe("A. Tre tilstander av siden", () => {
   })
 })
 
-describe("B. Semantikk og navn", () => {
-  it("B5: en fane med bare ikon gir panelet navnet fra aria-label, uten skjult tekst", async () => {
+describe("B. Semantics and names", () => {
+  it("B5: an icon-only tab gives the panel its name from aria-label, without hidden text", async () => {
     monter(
       bar({ overskrift: () => null })
         .replace(
@@ -333,7 +336,7 @@ describe("B. Semantikk og navn", () => {
     expect(paneler().map(navn)).toEqual(NAVN)
   })
 
-  it("B6: panelet heter det samme som fanen, også når overskriften sier noe annet", async () => {
+  it("B6: the panel has the same name as the tab, also when the heading says something else", async () => {
     monter(
       bar({
         overskrift: (i) => (i === 1 ? "Dokumenter du har lastet opp" : NAVN[i]),
@@ -344,7 +347,7 @@ describe("B. Semantikk og navn", () => {
     expect(paneler().map(navn)).toEqual(faner().map(navn))
   })
 
-  it("B7: en aria-labelledby serveren skrev endres ikke, også når den peker på noe som kommer senere", async () => {
+  it("B7: an aria-labelledby the server wrote is not changed, also when it points to something that arrives later", async () => {
     monter(
       bar({
         panel: (i) => (i === 1 ? ' aria-labelledby="kommer-senere"' : ""),
@@ -362,7 +365,7 @@ describe("B. Semantikk og navn", () => {
     expect(navn(panel)).toBe("Vedlegg")
   })
 
-  it("B8: navnet følger med når teksten på fanen endres i tekstnoden, slik idiomorph gjør det", async () => {
+  it("B8: the name follows when the tab's text changes in the text node, as idiomorph does it", async () => {
     monter(bar({ overskrift: () => null }))
     await tegn()
 
@@ -373,9 +376,10 @@ describe("B. Semantikk og navn", () => {
   })
 
   /*
-   * Hver rad bytter ut den andre fanen, overskriften i panelet dens og det
-   * som står utenfor raden. Navnene regnes ut av axe, slik en skjermleser
-   * gjør, og panelet skal hete det samme som fanen (B5, B6, D7).
+   * Each row replaces the second tab, the heading in its panel and what
+   * stands outside the tab list. The names are computed by axe, as a screen
+   * reader does, and the panel must have the same name as the tab (B5, B6,
+   * D7).
    */
   const NAVNEVARIANTER: Array<{
     hva: string
@@ -385,77 +389,77 @@ describe("B. Semantikk og navn", () => {
     navn: string
   }> = [
     {
-      hva: "tekst",
+      hva: "text",
       lenke: "Vedlegg",
       overskrift: "<h2>Vedlegg</h2>",
       navn: "Vedlegg",
     },
     {
-      hva: "uten overskrift",
+      hva: "without a heading",
       lenke: "Vedlegg",
       overskrift: "",
       navn: "Vedlegg",
     },
     {
-      hva: "overskrift med annen tekst",
+      hva: "heading with different text",
       lenke: "Vedlegg",
       overskrift: "<h2>Bilag</h2>",
       navn: "Vedlegg",
     },
     {
-      hva: "skjult overskrift",
+      hva: "hidden heading",
       lenke: "Vedlegg",
       overskrift: "<h2 hidden>Vedlegg</h2>",
       navn: "Vedlegg",
     },
     {
-      hva: "overskrift med aria-label lik fanen",
+      hva: "heading with aria-label equal to the tab",
       lenke: "Vedlegg",
       overskrift: '<h2 aria-label="Vedlegg">Bilag</h2>',
       navn: "Vedlegg",
     },
     {
-      hva: "overskrift med aria-label ulik fanen",
+      hva: "heading with aria-label different from the tab",
       lenke: "Vedlegg",
       overskrift: '<h2 aria-label="Noe annet">Vedlegg</h2>',
       navn: "Vedlegg",
     },
     {
-      // Peker panelet på overskriften, følges ikke overskriftens egen
-      // `aria-labelledby`, og panelet heter «Bilag».
-      hva: "overskrift med aria-labelledby",
+      // If the panel points to the heading, the heading's own
+      // `aria-labelledby` is not followed, and the panel is named "Bilag".
+      hva: "heading with aria-labelledby",
       lenke: "Vedlegg",
       overskrift: '<h2 aria-labelledby="ov-navn">Bilag</h2>',
       utenfor: '<span id="ov-navn">Vedlegg</span>',
       navn: "Vedlegg",
     },
     {
-      hva: "tekst skjult med CSS",
+      hva: "text hidden with CSS",
       lenke: 'Vedlegg<span style="display: none"> (2)</span>',
       overskrift: "",
       navn: "Vedlegg",
     },
     {
-      hva: "tekst med aria-hidden",
+      hva: "text with aria-hidden",
       lenke: 'Vedlegg<span aria-hidden="true"> (2)</span>',
       overskrift: "<h2>Vedlegg</h2>",
       navn: "Vedlegg",
     },
     {
-      hva: "bilde med alt",
+      hva: "image with alt",
       lenke: '<img alt="Vedlegg" width="1" height="1">',
       overskrift: "<h2>Vedlegg</h2>",
       navn: "Vedlegg",
     },
     {
-      hva: "aria-label på et barn",
+      hva: "aria-label on a child",
       lenke: '<span role="img" aria-label="Vedlegg">📎</span>',
       overskrift: "",
       navn: "Vedlegg",
     },
     {
-      // AccName 2B gjelder også et barn av fanen.
-      hva: "aria-labelledby på et barn, mot et skjult element",
+      // AccName 2B also applies to a child of the tab.
+      hva: "aria-labelledby on a child, pointing to a hidden element",
       lenke:
         '<svg role="img" aria-labelledby="ikon-navn" width="16" height="16"></svg>',
       overskrift: "",
@@ -463,15 +467,15 @@ describe("B. Semantikk og navn", () => {
       navn: "Bilag",
     },
     {
-      hva: "aria-labelledby på fanen, mot et skjult element",
+      hva: "aria-labelledby on the tab, pointing to a hidden element",
       lenke: "Vedlegg",
       overskrift: "",
       utenfor: '<span id="fane-navn" hidden>Bilag</span>',
       navn: "Bilag",
     },
     {
-      // Inni en `aria-labelledby` som alt følges, følges ikke en til.
-      hva: "aria-labelledby inni aria-labelledby",
+      // Inside an `aria-labelledby` that is already being followed, another one is not followed.
+      hva: "aria-labelledby inside aria-labelledby",
       lenke: "Vedlegg",
       overskrift: "",
       utenfor:
@@ -481,7 +485,7 @@ describe("B. Semantikk og navn", () => {
   ]
 
   for (const v of NAVNEVARIANTER) {
-    it(`B5 og B6: panelet heter det fanen heter, ${v.hva}`, async () => {
+    it(`B5 and B6: the panel has the tab's name, ${v.hva}`, async () => {
       const lenkeAttr = v.utenfor?.includes('id="fane-navn"')
         ? ' aria-labelledby="fane-navn"'
         : ""
@@ -500,7 +504,7 @@ describe("B. Semantikk og navn", () => {
     })
   }
 
-  it("B6: overskriften er navnet bare når navnet dens er det samme som fanens", async () => {
+  it("B6: the heading is the name only when its name is the same as the tab's", async () => {
     monter(
       bar().replace(
         "<h2>Vedlegg</h2>",
@@ -512,7 +516,7 @@ describe("B. Semantikk og navn", () => {
     expect(paneler().map(navn)).toEqual(NAVN)
   })
 
-  it("B5: en fane med aria-labelledby mot et skjult element heter det elementet sier", async () => {
+  it("B5: a tab with aria-labelledby pointing to a hidden element is named what that element says", async () => {
     monter(
       `<span id="skjult-navn" hidden>Bilag</span>${bar({
         overskrift: () => null,
@@ -526,7 +530,7 @@ describe("B. Semantikk og navn", () => {
     expect(navn(paneler()[1])).toBe("Bilag")
   })
 
-  it("B5: tekst skjult med CSS og en fane med bare title", async () => {
+  it("B5: text hidden with CSS and a tab with only a title", async () => {
     monter(
       bar({ overskrift: () => null })
         .replace(
@@ -543,22 +547,22 @@ describe("B. Semantikk og navn", () => {
     expect(paneler().map(navn)).toEqual(NAVN)
   })
 
-  it("B8: navnet følger med når teksten i overskriften endres", async () => {
+  it("B8: the name follows when the text in the heading changes", async () => {
     monter(bar())
     await tegn()
     expect(navn(paneler()[1])).toBe("Vedlegg")
 
-    // Slik idiomorph gjør det: bare tekstnoden endres.
+    // As idiomorph does it: only the text node changes.
     const tekst = paneler()[1].querySelector("h2")?.firstChild as Text
     tekst.nodeValue = "Bilag"
     await tegn()
 
-    // Overskriften sier ikke lenger det fanen sier, så panelet heter det
-    // fanen heter.
+    // The heading no longer says what the tab says, so the panel has the
+    // tab's name.
     expect(navn(paneler()[1])).toBe("Vedlegg")
   })
 
-  it("B8: navnet følger med når teksten aria-labelledby peker på inni et panel, endres", async () => {
+  it("B8: the name follows when the text aria-labelledby points to inside a panel changes", async () => {
     monter(
       bar({ overskrift: () => null })
         .replace(
@@ -573,7 +577,7 @@ describe("B. Semantikk og navn", () => {
     await tegn()
     expect(navn(paneler()[1])).toBe("Bilag")
 
-    // Teksten står inni elementet id-en peker på, ikke rett i det.
+    // The text is inside the element the id points to, not directly in it.
     const tekst = document.querySelector("#sent-navn b")?.firstChild as Text
     tekst.nodeValue = "Dokumenter"
     await tegn()
@@ -581,7 +585,7 @@ describe("B. Semantikk og navn", () => {
     expect(navn(paneler()[1])).toBe("Dokumenter")
   })
 
-  it("B8: det samme når aria-labelledby står på et barn av fanen", async () => {
+  it("B8: the same when aria-labelledby is on a child of the tab", async () => {
     monter(
       bar({ overskrift: () => null })
         .replace(
@@ -603,7 +607,7 @@ describe("B. Semantikk og navn", () => {
     expect(navn(paneler()[1])).toBe("Dokumenter")
   })
 
-  it("B7: reserven tas bort når elementet serverens aria-labelledby peker på, kommer inni et panel", async () => {
+  it("B7: the fallback is removed when the element the server's aria-labelledby points to arrives inside a panel", async () => {
     monter(
       bar({
         overskrift: () => null,
@@ -621,7 +625,7 @@ describe("B. Semantikk og navn", () => {
     expect(paneler()[1].getAttribute("aria-labelledby")).toBe("sent-navn")
   })
 
-  it("B8: navnet følger med når elementet aria-labelledby peker på, kommer inni et panel", async () => {
+  it("B8: the name follows when the element aria-labelledby points to arrives inside a panel", async () => {
     monter(
       bar({ overskrift: () => null }).replace(
         '<a href="#vedlegg">',
@@ -641,7 +645,7 @@ describe("B. Semantikk og navn", () => {
     expect(navn(paneler()[1])).toBe("Bilag")
   })
 
-  it("B8: navnet følger med når et element inni et panel får id-en aria-labelledby peker på", async () => {
+  it("B8: the name follows when an element inside a panel gets the id aria-labelledby points to", async () => {
     monter(
       bar({ overskrift: () => null })
         .replace(
@@ -662,7 +666,7 @@ describe("B. Semantikk og navn", () => {
     expect(navn(paneler()[1])).toBe("Bilag")
   })
 
-  it("D7: overskriften blir navnet når teksten dens endres til fanens", async () => {
+  it("D7: the heading becomes the name when its text changes to the tab's", async () => {
     monter(bar({ overskrift: (i) => (i === 1 ? "Bilag" : NAVN[i]) }))
     await tegn()
     expect(paneler()[1].getAttribute("aria-label")).toBe("Vedlegg")
@@ -675,7 +679,7 @@ describe("B. Semantikk og navn", () => {
     expect(paneler()[1].getAttribute("aria-labelledby")).toBe(overskrift.id)
   })
 
-  it("B8: navnet følger med når elementet aria-labelledby peker på, mister id-en sin inni et panel", async () => {
+  it("B8: the name follows when the element aria-labelledby points to loses its id inside a panel", async () => {
     monter(
       bar({ overskrift: () => null })
         .replace(
@@ -696,7 +700,7 @@ describe("B. Semantikk og navn", () => {
     expect(navn(paneler()[1])).toBe("Vedlegg")
   })
 
-  it("B8: navnet følger med når alt på et bilde i fanen endres", async () => {
+  it("B8: the name follows when alt on an image in the tab changes", async () => {
     monter(
       bar({ overskrift: () => null }).replace(
         '<a href="#vedlegg">Vedlegg</a>',
@@ -714,7 +718,7 @@ describe("B. Semantikk og navn", () => {
     expect(navn(paneler()[1])).toBe("Bilag")
   })
 
-  it("B9: komponenten sier fra når raden mangler navn", async () => {
+  it("B9: the component warns when the tab list has no name", async () => {
     const spion = lyttEtterAdvarsler()
     monter(bar({ liste: "" }))
     await tegn()
@@ -724,7 +728,7 @@ describe("B. Semantikk og navn", () => {
     )
   })
 
-  it("B9: komponenten sier ikke fra når raden har navn", async () => {
+  it("B9: the component does not warn when the tab list has a name", async () => {
     const spion = lyttEtterAdvarsler()
     monter(bar())
     await tegn()
@@ -734,9 +738,9 @@ describe("B. Semantikk og navn", () => {
     ).toEqual([])
   })
 
-  it("B9 og D8: lt.tabs() kaster når label mangler eller er tom", () => {
-    // Hardt mellomrom og BOM er mellomrom for JavaScript, og for Kotlin bare
-    // når den sjekker på samme måte.
+  it("B9 and D8: lt.tabs() throws when label is missing or empty", () => {
+    // A non-breaking space and a BOM are whitespace to JavaScript, and to
+    // Kotlin only when it checks the same way.
     for (const label of [undefined, "", "   ", "\u00a0\ufeff"]) {
       for (const bygg of [tabs, ltReact.tabs]) {
         expect(() =>
@@ -746,16 +750,16 @@ describe("B. Semantikk og navn", () => {
     }
   })
 
-  it("I1: label sjekkes før keys, som i Kotlin", () => {
+  it("I1: label is checked before keys, as in Kotlin", () => {
     expect(() => tabs({ id: "x", keys: [""], label: "" })).toThrow(/label/)
   })
 })
 
-describe("C. Tastatur og fokus", () => {
+describe("C. Keyboard and focus", () => {
   const rundt = (innhold: string) =>
     `<button type="button" id="foer">Før</button>${innhold}<button type="button" id="etter">Etter</button>`
 
-  it("C1: Tab inn i raden lander på den valgte fanen, og Tab videre går til det valgte panelet", async () => {
+  it("C1: Tab into the tab list lands on the selected tab, and Tab again moves to the selected panel", async () => {
     monter(rundt(bar()))
     await tegn()
     faner()[1].click()
@@ -768,7 +772,7 @@ describe("C. Tastatur og fokus", () => {
     expect(document.activeElement).toBe(paneler()[1])
   })
 
-  it("C2: ingenting i et panel som ikke er valgt, kan nås med Tab, heller ikke panelet selv", async () => {
+  it("C2: nothing in a panel that is not selected can be reached with Tab, the panel itself included", async () => {
     monter(
       rundt(
         bar({
@@ -795,7 +799,7 @@ describe("C. Tastatur og fokus", () => {
     expect(besokt[besokt.length - 1]?.id).toBe("etter")
   })
 
-  it("C3: venstrepil går rundt fra første til siste", async () => {
+  it("C3: left arrow wraps from the first to the last", async () => {
     monter(bar())
     await tegn()
     faner()[0].focus()
@@ -807,7 +811,7 @@ describe("C. Tastatur og fokus", () => {
     expect(valgt()).toEqual([false, false, true])
   })
 
-  it("C7: Enter velger ved manuell aktivering", async () => {
+  it("C7: Enter selects with manual activation", async () => {
     monter(bar({ vert: ' activation="manual"' }))
     await tegn()
     faner()[0].focus()
@@ -820,7 +824,7 @@ describe("C. Tastatur og fokus", () => {
     expect(valgt()).toEqual([false, true, false])
   })
 
-  it("C8: en fane med hidden hoppes over av piltastene og får aldri tabbestoppet", async () => {
+  it("C8: a tab with hidden is skipped by the arrow keys and never gets the tab stop", async () => {
     monter(
       rundt(bar().replace('<a href="#vedlegg">', '<a href="#vedlegg" hidden>')),
     )
@@ -839,7 +843,7 @@ describe("C. Tastatur og fokus", () => {
     expect(document.activeElement).toBe(faner()[2])
   })
 
-  it("C10: fokus synes på fanen og på panelet", async () => {
+  it("C10: focus is visible on the tab and on the panel", async () => {
     monter(rundt(bar()))
     await tegn()
     ;(document.getElementById("foer") as HTMLElement).focus()
@@ -857,18 +861,19 @@ describe("C. Tastatur og fokus", () => {
   })
 })
 
-describe("D. Mus og lenker", () => {
-  it("D2: et ekte midtklikk velger ikke fanen", async () => {
+describe("D. Mouse and links", () => {
+  it("D2: a real middle click does not select the tab", async () => {
     monter(bar())
     await tegn()
     const lenke = faner()[1]
     let klikk = 0
     lenke.addEventListener("click", () => klikk++)
-    // Et midtklikk åpner lenken i en ny fane. I testen ville den nye fanen
-    // lastet Vitests testside, som sender meldinger kjøringen ikke kjenner,
-    // og WebKit navigerer i samme side i stedet. Nettleserens handling
-    // stoppes, så testen spør bare om komponenten. Lytteren står på `window`
-    // og kjører sist, så den ser om noe før den har stoppet lenken.
+    // A middle click opens the link in a new browser tab. In the test the new
+    // tab would load Vitest's test page, which sends messages the run does
+    // not recognise, and WebKit navigates in the same page instead. The
+    // browser's default action is stopped, so the test asks only about the
+    // component. The listener is on `window` and runs last, so it sees
+    // whether anything before it has stopped the link.
     let stoppet: boolean | undefined
     const stopp = (e: Event) => {
       stoppet = e.defaultPrevented
@@ -888,7 +893,7 @@ describe("D. Mus og lenker", () => {
     expect(location.hash).toBe("")
   })
 
-  it('D3: en role="tab" uten href er ikke en fane, og komponenten sier fra', async () => {
+  it('D3: a role="tab" without href is not a tab, and the component warns', async () => {
     const spion = lyttEtterAdvarsler()
     monter(
       bar().replace(
@@ -905,8 +910,8 @@ describe("D. Mus og lenker", () => {
   })
 })
 
-describe("E. Adressen og søk i siden", () => {
-  it("E1: en adresse til noe inni et panel velger den fanen ved lasting", async () => {
+describe("E. The address and find in page", () => {
+  it("E1: an address to something inside a panel selects that tab on load", async () => {
     await settAdresse("#inne-meldinger")
     monter(bar())
     await tegn()
@@ -915,14 +920,14 @@ describe("E. Adressen og søk i siden", () => {
     expect(location.hash).toBe("#inne-meldinger")
   })
 
-  /** Raden med en fane til, som peker på et panel som ikke finnes. */
+  /** The tab list with one more tab, which points to a panel that does not exist. */
   const medFaneUtenPanel = (markup: string) =>
     markup.replace(
       '<li><a href="#vedlegg">',
       '<li><a href="#finnes-ikke">Mangler</a></li><li><a href="#vedlegg">',
     )
 
-  it("E1: en fane uten panel hindrer ikke adressen i å velge", async () => {
+  it("E1: a tab without a panel does not stop the address from selecting", async () => {
     lyttEtterAdvarsler()
     await settAdresse("#vedlegg")
     monter(medFaneUtenPanel(bar()))
@@ -935,13 +940,13 @@ describe("E. Adressen og søk i siden", () => {
     ["sent-innhold", "sent-innhold"],
     ["s%C3%B8knad-sent", "søknad-sent"],
   ]) {
-    it(`E1: innhold adressen peker på, som kommer etter panelet, velger fanen (#${fragment})`, async () => {
+    it(`E1: content the address points to, arriving after the panel, selects the tab (#${fragment})`, async () => {
       await settAdresse(`#${fragment}`)
       monter(bar({ inni: (i) => (i === 2 ? '<div id="beholder"></div>' : "") }))
       await tegn()
       expect(valgt()).toEqual([true, false, false])
 
-      // Dypt i panelet, der det som skjer ellers ikke gir en ny runde (F11).
+      // Deep in the panel, where what happens otherwise does not trigger a new round (F11).
       ;(document.getElementById("beholder") as HTMLElement).insertAdjacentHTML(
         "beforeend",
         `<p id="${id}">Kom senere</p>`,
@@ -954,15 +959,15 @@ describe("E. Adressen og søk i siden", () => {
   }
 
   for (const [hva, lag] of [
-    ["en hel rad", (m: string) => m],
-    ["en rad med en fane uten panel", medFaneUtenPanel],
+    ["a complete tab list", (m: string) => m],
+    ["a tab list with a tab without a panel", medFaneUtenPanel],
   ] as const) {
-    it(`E6: adressen rettes etter en patch, også i ${hva}`, async () => {
+    it(`E6: the address is corrected after a patch, also in ${hva}`, async () => {
       lyttEtterAdvarsler()
       monter(lag(bar()))
       await tegn()
 
-      // Appen flytter adressen uten å velge, og serveren rører et panel.
+      // The app moves the address without selecting, and the server touches a panel.
       history.replaceState(null, "", "#vedlegg")
       paneler()[0].setAttribute("data-patch", "1")
       paneler()[0].setAttribute("hidden", "")
@@ -974,7 +979,7 @@ describe("E. Adressen og søk i siden", () => {
     })
   }
 
-  it("G2: en adresse til noe som ikke finnes, står, og et klikk meldes én gang", async () => {
+  it("G2: an address to something that does not exist stays, and a click is reported once", async () => {
     await settAdresse("#/sak/1")
     monter(bar())
     await tegn()
@@ -992,7 +997,7 @@ describe("E. Adressen og søk i siden", () => {
     expect(meldt).toEqual([1])
   })
 
-  it("E1: raden først og panelene etterpå: adressen velger likevel", async () => {
+  it("E1: the tab list first and the panels afterwards: the address still selects", async () => {
     await settAdresse("#meldinger")
     const markup = bar()
     const slutt = markup.indexOf("</ul>") + "</ul>".length
@@ -1010,7 +1015,7 @@ describe("E. Adressen og søk i siden", () => {
     expect(location.hash).toBe("#meldinger")
   })
 
-  it("E1: kobles raden fra og til igjen, leses adressen på nytt", async () => {
+  it("E1: when the tab list is disconnected and reconnected, the address is read again", async () => {
     monter(bar())
     await tegn()
     faner()[1].click()
@@ -1027,7 +1032,7 @@ describe("E. Adressen og søk i siden", () => {
     expect(valgt()).toEqual([false, false, true])
   })
 
-  it("E3: en lenke til noe inni et skjult panel velger fanen gjennom beforematch", async () => {
+  it("E3: a link to something inside a hidden panel selects the tab through beforematch", async () => {
     const slipp = somSokISiden()
     let sett = 0
     try {
@@ -1035,7 +1040,7 @@ describe("E. Adressen og søk i siden", () => {
       await tegn()
       paneler()[1].addEventListener("beforematch", () => sett++)
 
-      // `hashchange` er stoppet, så det er `beforematch` som må velge.
+      // `hashchange` is stopped, so it is `beforematch` that must select.
       location.hash = "#inne-vedlegg"
       await tegn()
       await tegn()
@@ -1048,7 +1053,7 @@ describe("E. Adressen og søk i siden", () => {
     expect(skjult()).toEqual([true, false, true])
   })
 
-  it("E4: det samme når panelet står utenfor <lt-tabs>", async () => {
+  it("E4: the same when the panel is outside <lt-tabs>", async () => {
     const markup = bar()
     const [foran, bak] = markup.split(
       '<section class="lt-tabs__panel" id="vedlegg"',
@@ -1074,7 +1079,7 @@ describe("E. Adressen og søk i siden", () => {
     ).toEqual(["vedlegg"])
   })
 
-  /** Faner i faner: treffet `#dypt` står i det indre panelet `ib`, i det ytre `yb`. */
+  /** Tabs in tabs: the match `#dypt` is in the inner panel `ib`, inside the outer `yb`. */
   const FANER_I_FANER = (indre = "") => `
     <a href="#dypt" id="til-dypt">Til treffet</a>
     <lt-tabs id="ytre">
@@ -1095,13 +1100,14 @@ describe("E. Adressen og søk i siden", () => {
     )
 
   /*
-   * Et ekte klikk, ikke `location.hash` fra skriptet: kommer navigasjonen fra
-   * brukeren, kjører nettleseren mikrooppgavene etter hver lytter, midt i
-   * avdekkingen, slik den gjør ved søk i siden. Fra et skript gjør den ikke
-   * det, og testen kunne ikke feile. `hashchange` er stoppet, som ved søk i
-   * siden, ellers valgte adressen den ytre fanen etterpå.
+   * A real click, not `location.hash` from the script: when the navigation
+   * comes from the user, the browser runs the microtasks after each
+   * listener, in the middle of revealing, as it does with find in page. From
+   * a script it does not, and the test could not fail. `hashchange` is
+   * stopped, as with find in page, or the address selected the outer tab
+   * afterwards.
    */
-  it("E3: søk i siden avdekker et treff i en fanerad inne i et skjult panel", async () => {
+  it("E3: find in page reveals a match in a tab list inside a hidden panel", async () => {
     const slipp = somSokISiden()
     try {
       monter(FANER_I_FANER())
@@ -1119,7 +1125,7 @@ describe("E. Adressen og søk i siden", () => {
     expect(skjultI("ya", "yb", "ia", "ib")).toEqual([true, false, true, false])
   })
 
-  it("E3: det samme når den indre raden er server-controlled, og valget meldes én gang", async () => {
+  it("E3: the same when the inner tab list is server-controlled, and the selection is reported once", async () => {
     const slipp = somSokISiden()
     const meldt: number[] = []
     try {
@@ -1146,11 +1152,11 @@ describe("E. Adressen og søk i siden", () => {
     expect(meldt).toEqual([1])
   })
 
-  it("E3: søk i siden åpner en lukket <details> rundt raden", async (ctx) => {
+  it("E3: find in page opens a closed <details> around the tab list", async (ctx) => {
     const slipp = somSokISiden()
     try {
-      // Først uten faner: åpner ikke motoren en <details> selv, er det ikke
-      // komponenten testen kan si noe om.
+      // First without tabs: if the engine does not open a <details> itself,
+      // the test has nothing to say about the component.
       monter(
         '<a href="#kontroll-treff" id="til-kontroll">Til</a><details id="kontroll"><summary>K</summary><p id="kontroll-treff">Treff</p></details>',
       )
@@ -1185,10 +1191,10 @@ describe("E. Adressen og søk i siden", () => {
     expect(valgt()).toEqual([false, true, false])
   })
 
-  it("E3: tas panelet ut under avdekkingen og settes inn igjen, vises det", async () => {
-    // Nettleseren avdekker ikke et panel som ikke står i dokumentet etter
-    // `beforematch`. Uten en reserve ventet komponenten på det for alltid, og
-    // panelet ble stående skjult selv om fanen var valgt.
+  it("E3: a panel removed during revealing and inserted again is shown", async () => {
+    // The browser does not reveal a panel that is not in the document after
+    // `beforematch`. Without a fallback the component waited for it forever,
+    // and the panel stayed hidden even though the tab was selected.
     const slipp = somSokISiden()
     try {
       monter(`<a href="#inne-vedlegg" id="til-treff">Til treffet</a>${bar()}`)
@@ -1215,10 +1221,11 @@ describe("E. Adressen og søk i siden", () => {
     expect(skjult()).toEqual([true, false, true])
   })
 
-  it("E3: setter noe annet hidden under avdekkingen, vises panelet likevel", async () => {
-    // Nettleseren stopper når panelet ikke lenger har `until-found` etter
-    // `beforematch`. Endringen ga en runde mens komponenten ventet, og ingen
-    // runde kom etterpå, med mindre komponenten skrev raden selv.
+  it("E3: when something else sets hidden during revealing, the panel is still shown", async () => {
+    // The browser stops when the panel no longer has `until-found` after
+    // `beforematch`. The change triggered a round while the component was
+    // waiting, and no round came afterwards, unless the component wrote the
+    // tab list itself.
     const slipp = somSokISiden()
     try {
       monter(`<a href="#inne-vedlegg" id="til-treff">Til treffet</a>${bar()}`)
@@ -1240,9 +1247,9 @@ describe("E. Adressen og søk i siden", () => {
     expect(skjult()).toEqual([true, false, true])
   })
 
-  it("E3: en beforematch et skript sender, velger med en gang", async () => {
-    // Ingen nettleser avdekker panelet etter en hendelse fra et skript, så
-    // komponenten venter ikke på det.
+  it("E3: a beforematch sent by a script selects at once", async () => {
+    // No browser reveals the panel after an event from a script, so the
+    // component does not wait for it.
     monter(bar())
     await tegn()
 
@@ -1253,7 +1260,7 @@ describe("E. Adressen og søk i siden", () => {
     expect(skjult()).toEqual([true, true, false])
   })
 
-  it("E1: en tom <lt-tabs> som fylles etterpå, velger fanen adressen peker på", async () => {
+  it("E1: an empty <lt-tabs> filled afterwards selects the tab the address points to", async () => {
     await settAdresse("#meldinger")
     monter("<lt-tabs></lt-tabs>")
     await tegn()
@@ -1267,7 +1274,7 @@ describe("E. Adressen og søk i siden", () => {
     expect(valgt()).toEqual([false, false, true])
   })
 
-  it("E6: adressen rettes når serveren flytter valget med en patch", async () => {
+  it("E6: the address is corrected when the server moves the selection with a patch", async () => {
     monter(bar())
     await tegn()
     faner()[1].click()
@@ -1285,14 +1292,14 @@ describe("E. Adressen og søk i siden", () => {
     expect(location.hash).toBe("#soknaden")
   })
 
-  it("E6: adressen rettes når serveren flytter valget under server-controlled", async () => {
+  it("E6: the address is corrected when the server moves the selection under server-controlled", async () => {
     monter(bar({ vert: " server-controlled" }))
     await tegn()
     faner()[1].click()
     await tegn()
     expect(location.hash).toBe("#vedlegg")
 
-    // Serveren svarer med den første, og rører bare panelene.
+    // The server answers with the first one, and touches only the panels.
     paneler()[1].setAttribute("hidden", "")
     paneler()[0].removeAttribute("hidden")
     await tegn()
@@ -1301,14 +1308,14 @@ describe("E. Adressen og søk i siden", () => {
     expect(location.hash).toBe("#soknaden")
   })
 
-  it("E3: søk i siden velger fanen også under server-controlled, som et klikk", async () => {
+  it("E3: find in page selects the tab under server-controlled too, like a click", async () => {
     monter(bar({ vert: " server-controlled" }))
     await tegn()
     const meldt: number[] = []
     vert().addEventListener("tab-select", (e) => meldt.push(e.detail.index))
 
     paneler()[2].dispatchEvent(new Event("beforematch", { bubbles: true }))
-    // Nettleseren fjerner `hidden` selv etter hendelsen.
+    // The browser itself removes `hidden` after the event.
     paneler()[2].removeAttribute("hidden")
     await tegn()
     await tegn()
@@ -1318,7 +1325,7 @@ describe("E. Adressen og søk i siden", () => {
     expect(meldt).toEqual([2])
   })
 
-  it("E3: søk i siden velger fanen når raden står i en shadow root", async () => {
+  it("E3: find in page selects the tab when the tab list is in a shadow root", async () => {
     const flate = monter('<div id="vert-for-rot"></div>')
     const rot = (
       flate.querySelector("#vert-for-rot") as HTMLElement
@@ -1327,7 +1334,7 @@ describe("E. Adressen og søk i siden", () => {
     await tegn()
     const p = [...rot.querySelectorAll<HTMLElement>(".lt-tabs__panel")]
 
-    // Som nettleseren sender den: bobler, men er ikke `composed`.
+    // As the browser sends it: bubbles, but is not `composed`.
     p[2].dispatchEvent(new Event("beforematch", { bubbles: true }))
     await tegn()
 
@@ -1338,7 +1345,7 @@ describe("E. Adressen og søk i siden", () => {
     ).toEqual([false, false, true])
   })
 
-  it("E8: adressen skrives også med en <base> til et annet opphav", async () => {
+  it("E8: the address is written also with a <base> to another origin", async () => {
     const base = document.createElement("base")
     base.href = "https://eksempel.invalid/annet/"
     document.head.prepend(base)
@@ -1357,7 +1364,7 @@ describe("E. Adressen og søk i siden", () => {
     }
   })
 
-  it("D11: serverens aria-selected vinner over adressen når siden lastes", async () => {
+  it("D11: the server's aria-selected wins over the address when the page loads", async () => {
     await settAdresse("#vedlegg")
     monter(
       bar().replace(
@@ -1368,11 +1375,11 @@ describe("E. Adressen og søk i siden", () => {
     await tegn()
 
     expect(valgt()).toEqual([false, false, true])
-    // Adressen rettes til fanen som faktisk er valgt (E6).
+    // The address is corrected to the tab that is actually selected (E6).
     expect(location.hash).toBe("#meldinger")
   })
 
-  it("D11: en adresse til noe utenfor raden står når serveren har valgt", async () => {
+  it("D11: an address to something outside the tab list stays when the server has selected", async () => {
     await settAdresse("#annet")
     monter(
       `<p id="annet">Annet</p>${bar().replace('<a href="#meldinger">', '<a href="#meldinger" aria-selected="true">')}`,
@@ -1383,7 +1390,7 @@ describe("E. Adressen og søk i siden", () => {
     expect(location.hash).toBe("#annet")
   })
 
-  it("E8: et klikk endrer ikke stien i adressen, heller ikke med <base>", async () => {
+  it("E8: a click does not change the path in the address, not even with <base>", async () => {
     const base = document.createElement("base")
     base.href = "/en-annen-side/"
     document.head.prepend(base)
@@ -1402,7 +1409,7 @@ describe("E. Adressen og søk i siden", () => {
     }
   })
 
-  it("E5: en lenke til noe inni et skjult panel åpner fanen og ruller dit", async () => {
+  it("E5: a link to something inside a hidden panel opens the tab and scrolls there", async () => {
     monter(
       `${bar()}<div style="block-size: 200vh"></div><a href="#inne-meldinger" id="hopp">Til meldingene</a>`,
     )
@@ -1417,16 +1424,16 @@ describe("E. Adressen og søk i siden", () => {
     ).getBoundingClientRect()
 
     expect(valgt()).toEqual([false, false, true])
-    // Rullingen kan lande på en brøkdel av en piksel.
+    // The scroll can land on a fraction of a pixel.
     expect(mål.top).toBeGreaterThan(-1)
     expect(mål.bottom).toBeLessThanOrEqual(window.innerHeight)
   })
 
-  describe("E6: adressen peker på det valgte panelet etter hvert valg", () => {
+  describe("E6: the address points to the selected panel after every selection", () => {
     const veier: [string, () => Promise<void>, number][] = [
-      ["klikk", async () => faner()[2].click(), 2],
+      ["click", async () => faner()[2].click(), 2],
       [
-        "høyrepil",
+        "right arrow",
         async () => {
           faner()[0].focus()
           await userEvent.keyboard("{ArrowRight}")
@@ -1450,7 +1457,7 @@ describe("E. Adressen og søk i siden", () => {
         2,
       ],
       [
-        "søk i siden (beforematch)",
+        "find in page (beforematch)",
         async () => {
           paneler()[1].dispatchEvent(
             new Event("beforematch", { bubbles: true }),
@@ -1459,7 +1466,7 @@ describe("E. Adressen og søk i siden", () => {
         1,
       ],
       [
-        "reserven når den valgte fanen forsvinner",
+        "the fallback when the selected tab disappears",
         async () => {
           faner()[1].click()
           await tegn()
@@ -1482,7 +1489,7 @@ describe("E. Adressen og søk i siden", () => {
       })
     }
 
-    it("mellomrom og Enter ved manuell aktivering", async () => {
+    it("Space and Enter with manual activation", async () => {
       monter(bar({ vert: ' activation="manual"' }))
       await tegn()
       faner()[0].focus()
@@ -1497,7 +1504,7 @@ describe("E. Adressen og søk i siden", () => {
       expect(location.hash).toBe("#meldinger")
     })
 
-    it("en adresse til noe inni det valgte panelet står", async () => {
+    it("an address to something inside the selected panel stays", async () => {
       monter(bar())
       await tegn()
 
@@ -1510,7 +1517,7 @@ describe("E. Adressen og søk i siden", () => {
     })
   })
 
-  it("E7 med E6: etter innerHTML velges fanen brukeren sist valgte med piltasten", async () => {
+  it("E7 with E6: after innerHTML the tab the user last selected with the arrow key is selected", async () => {
     const innhold = bar()
     monter(innhold)
     await tegn()
@@ -1530,8 +1537,8 @@ describe("E. Adressen og søk i siden", () => {
   })
 })
 
-describe("F. Oppdatering fra serveren", () => {
-  it("F11: det som skjer dypt i et panel, gir ingen ny runde", async () => {
+describe("F. Updates from the server", () => {
+  it("F11: what happens deep in a panel does not trigger a new round", async () => {
     monter(
       bar({
         inni: (i) =>
@@ -1546,7 +1553,7 @@ describe("F. Oppdatering fra serveren", () => {
       "sync",
     )
 
-    // Slik et forslagsfelt og en teller i panelet gjør det for hvert tastetrykk.
+    // As a suggestion field and a counter in the panel do it on every keystroke.
     const valg = document.querySelector('[role="option"]') as HTMLElement
     valg.setAttribute("aria-selected", "true")
     ;(document.getElementById("forslag") as HTMLElement).hidden = true
@@ -1559,9 +1566,9 @@ describe("F. Oppdatering fra serveren", () => {
     expect(runder).not.toHaveBeenCalled()
   })
 
-  it("F11: det samme når adressen peker på noe som ikke finnes, som i en app med ruting", async () => {
+  it("F11: the same when the address points to something that does not exist, as in an app with routing", async () => {
     await settAdresse("#/sak/1")
-    // I en beholder: det som legges rett i panelet, kan være en overskrift.
+    // In a container: what is put directly in the panel could be a heading.
     monter(
       bar({ inni: (i) => (i === 1 ? '<div><p id="teller">0</p></div>' : "") }),
     )
@@ -1582,7 +1589,7 @@ describe("F. Oppdatering fra serveren", () => {
     expect(runder).not.toHaveBeenCalled()
   })
 
-  it("F11: en patch på panelet selv gir en ny runde", async () => {
+  it("F11: a patch on the panel itself triggers a new round", async () => {
     monter(bar())
     await tegn()
     const runder = vi.spyOn(
@@ -1597,8 +1604,8 @@ describe("F. Oppdatering fra serveren", () => {
     expect(skjult()).toEqual([false, true, true])
   })
 
-  it("F1: en indre fanerad før den ytre raden tar ikke rollene fra den ytre", async () => {
-    // Panelene står før raden, og det første panelet har en egen fanerad.
+  it("F1: an inner tab list before the outer tab list does not take the roles from the outer one", async () => {
+    // The panels come before the tab list, and the first panel has a tab list of its own.
     monter(`
       <lt-tabs id="ytre">
         <section class="lt-tabs__panel" id="ya"><h2>YA</h2>
@@ -1621,19 +1628,20 @@ describe("F. Oppdatering fra serveren", () => {
   })
 
   /**
-   * F3: en morfing med idiomorph beholder lenkene og panelene, og valget står.
+   * F3: a morph with idiomorph keeps the links and panels, and the
+   * selection stays.
    *
-   * idiomorph kjenner et element igjen på id, som Datastar. Serveren sender
-   * markupen slik malen skriver den, uten `aria-selected` og uten `hidden`,
-   * så morfingen river alt komponenten skrev. Lenkene har ingen id, og
-   * panelene har serverens, så nodene beholdes, og komponenten skriver
-   * valget tilbake på de samme nodene.
+   * idiomorph recognises an element by its id, as Datastar does. The server
+   * sends the markup as the template writes it, without `aria-selected` and
+   * without `hidden`, so the morph strips everything the component wrote.
+   * The links have no id, and the panels have the server's, so the nodes are
+   * kept, and the component writes the selection back on the same nodes.
    */
   for (const [kilde, markup] of [
-    ["bar markup", bar],
-    ["markup fra lt.tabs()", fraByggefunksjonen],
+    ["bare markup", bar],
+    ["markup from lt.tabs()", fraByggefunksjonen],
   ] as const) {
-    it(`F3: idiomorph beholder lenkene og panelene, og valget står (${kilde})`, async () => {
+    it(`F3: idiomorph keeps the links and panels, and the selection stays (${kilde})`, async () => {
       const spion = lyttEtterAdvarsler()
       const flate = monter(markup())
       await tegn()
@@ -1670,7 +1678,7 @@ describe("F. Oppdatering fra serveren", () => {
     })
   }
 
-  it("G2 med F4: tab-select sendes ikke når innerHTML bare bytter ut lenkene", async () => {
+  it("G2 with F4: tab-select is not sent when innerHTML only replaces the links", async () => {
     monter(bar())
     await tegn()
     faner()[1].click()
@@ -1688,7 +1696,7 @@ describe("F. Oppdatering fra serveren", () => {
     expect(meldt).toEqual([])
   })
 
-  it("I2: et kodet fragment finner panelet sitt", async () => {
+  it("I2: an encoded fragment finds its panel", async () => {
     monter(`
       <lt-tabs>
         <ul class="lt-tabs__list" aria-label="Deler"><li><a href="#s%C3%B8knaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>
@@ -1705,13 +1713,13 @@ describe("F. Oppdatering fra serveren", () => {
     expect(skjult()).toEqual([false, true])
   })
 
-  it("F7: velger serveren en fane etter at valget ble borte, står panelene og tabbestoppet i samsvar", async () => {
+  it("F7: when the server selects a tab after the selection was lost, the panels and the tab stop agree", async () => {
     monter(bar())
     await tegn()
     faner()[1].click()
     await tegn()
 
-    // Serveren bytter ut raden med full markup, og markerer den tredje.
+    // The server replaces the tab list with full markup, and marks the third.
     vert().querySelector("ul")?.remove()
     vert().insertAdjacentHTML(
       "afterbegin",
@@ -1732,8 +1740,8 @@ describe("F. Oppdatering fra serveren", () => {
   })
 })
 
-describe("G. API og hendelser", () => {
-  it("G2: tab-select sendes når adressen velger fanen ved lasting", async () => {
+describe("G. API and events", () => {
+  it("G2: tab-select is sent when the address selects the tab on load", async () => {
     const meldt: number[] = []
     const lytter = (e: Event) =>
       meldt.push((e as CustomEvent<{ index: number }>).detail.index)
@@ -1748,7 +1756,7 @@ describe("G. API og hendelser", () => {
     }
   })
 
-  it("G2: tab-select sendes når søk i siden velger fanen", async () => {
+  it("G2: tab-select is sent when find in page selects the tab", async () => {
     monter(bar())
     await tegn()
     const meldt: number[] = []
@@ -1760,7 +1768,7 @@ describe("G. API og hendelser", () => {
     expect(meldt).toEqual([2])
   })
 
-  it("G2: tab-select sendes ikke ved klikk på fanen som alt er valgt", async () => {
+  it("G2: tab-select is not sent on a click on the tab that is already selected", async () => {
     monter(bar())
     await tegn()
     faner()[1].click()
@@ -1775,7 +1783,7 @@ describe("G. API og hendelser", () => {
     expect(meldt).toEqual([])
   })
 
-  it("G2: tab-select sendes ikke når adressen endres til fanen som alt er valgt", async () => {
+  it("G2: tab-select is not sent when the address changes to the tab that is already selected", async () => {
     monter(bar())
     await tegn()
     const meldt: number[] = []
@@ -1789,7 +1797,7 @@ describe("G. API og hendelser", () => {
     expect(meldt).toEqual([])
   })
 
-  it("G3: tab-select sendes ikke når serveren flytter valget", async () => {
+  it("G3: tab-select is not sent when the server moves the selection", async () => {
     monter(bar({ vert: " server-controlled" }))
     await tegn()
     const meldt: number[] = []
@@ -1804,8 +1812,8 @@ describe("G. API og hendelser", () => {
   })
 })
 
-describe("H. Utseende", () => {
-  it("H1: den valgte fanen skiller seg ut med mer enn farge", async () => {
+describe("H. Appearance", () => {
+  it("H1: the selected tab stands out by more than colour", async () => {
     monter(bar())
     await tegn()
     const [valgte, annen] = faner().map((f) => getComputedStyle(f))
@@ -1816,7 +1824,7 @@ describe("H. Utseende", () => {
   })
 
   for (const utseende of ["light", "dark"] as const) {
-    it(`H2: kontrasten på fanene og streken holder i ${utseende === "light" ? "lyst" : "mørkt"} tema`, async () => {
+    it(`H2: the contrast of the tabs and the underline holds in the ${utseende} theme`, async () => {
       document.documentElement.dataset.theme = utseende
       try {
         monter(bar())
@@ -1830,15 +1838,15 @@ describe("H. Utseende", () => {
 
         expect(
           contrastRatio(rgb(valgte.color), flate),
-          "tekst, valgt",
+          "text, selected",
         ).toBeGreaterThanOrEqual(4.5)
         expect(
           contrastRatio(rgb(annen.color), flate),
-          "tekst, ikke valgt",
+          "text, not selected",
         ).toBeGreaterThanOrEqual(4.5)
         expect(
           contrastRatio(rgb(valgte.borderBottomColor), flate),
-          "streken",
+          "the underline",
         ).toBeGreaterThanOrEqual(3)
       } finally {
         delete document.documentElement.dataset.theme
@@ -1846,39 +1854,42 @@ describe("H. Utseende", () => {
     })
   }
 
-  describe.skipIf(server.browser !== "chromium")("H3 i kontrastmodus", () => {
-    afterEach(async () => {
-      await cdp().send("Emulation.setEmulatedMedia", { features: [] })
-      await ventPaTegning()
-    })
-
-    it("H3: den valgte fanen synes", async () => {
-      monter(bar())
-      await tegn()
-      await cdp().send("Emulation.setEmulatedMedia", {
-        features: [{ name: "forced-colors", value: "active" }],
+  describe.skipIf(server.browser !== "chromium")(
+    "H3 in forced colours mode",
+    () => {
+      afterEach(async () => {
+        await cdp().send("Emulation.setEmulatedMedia", { features: [] })
+        await ventPaTegning()
       })
-      await ventPaTegning()
-      const [valgte, annen] = faner().map((f) => getComputedStyle(f))
 
-      expect(valgte.borderBottomStyle).toBe("solid")
-      expect(valgte.borderBottomColor).not.toBe(annen.borderBottomColor)
-      expect(valgte.color).not.toBe(annen.color)
-    })
-  })
+      it("H3: the selected tab is visible", async () => {
+        monter(bar())
+        await tegn()
+        await cdp().send("Emulation.setEmulatedMedia", {
+          features: [{ name: "forced-colors", value: "active" }],
+        })
+        await ventPaTegning()
+        const [valgte, annen] = faner().map((f) => getComputedStyle(f))
+
+        expect(valgte.borderBottomStyle).toBe("solid")
+        expect(valgte.borderBottomColor).not.toBe(annen.borderBottomColor)
+        expect(valgte.color).not.toBe(annen.color)
+      })
+    },
+  )
 })
 
-describe("I. Byggefunksjonen", () => {
-  it("I2: en id-stamme med mellomrom kaster, som nøklene", () => {
+describe("I. The builder function", () => {
+  it("I2: an id stem with whitespace throws, like the keys", () => {
     expect(() => tabs({ id: "a b", keys: ["x"], label: "Faner" })).toThrow(
-      /mellomrom/,
+      /whitespace/,
     )
     expect(() =>
       ltReact.tabs({ id: "a b", keys: ["x"], label: "Faner" }),
-    ).toThrow(/mellomrom/)
+    ).toThrow(/whitespace/)
   })
 
-  it("I6: selected som ikke er et heltall, gir den første fanen", () => {
+  it("I6: a selected that is not an integer gives the first tab", () => {
     for (const selected of [Number.NaN, 1.5]) {
       const f = ltReact.tabs({
         id: "sak",
@@ -1891,7 +1902,7 @@ describe("I. Byggefunksjonen", () => {
     }
   })
 
-  it("I6: lt.tabs() i React-inngangen gir hele tilstanden", () => {
+  it("I6: lt.tabs() in the React entry point gives the whole state", () => {
     expect(
       ltReact.tabs({
         id: "sak",
@@ -1943,7 +1954,7 @@ describe("I. Byggefunksjonen", () => {
     })
   })
 
-  it("I5: lt.tabs() skriver bare lenker, id-er og klasser", () => {
+  it("I5: lt.tabs() writes only links, ids and classes", () => {
     expect(
       tabs({ id: "sak", keys: ["a", "b"], label: "Deler av saken" }),
     ).toEqual({

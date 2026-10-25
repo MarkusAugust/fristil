@@ -4,17 +4,18 @@
   }
 
   .lt-popover {
-    /* Panelet ligger i topplaget, så posisjonen er mot vindusruten. Verdiene
-       settes av komponenten, som regner dem ut mot knappen. */
+    /* The panel is in the top layer, so the position is relative to the
+       viewport. The values are set by the component, which works them out
+       against the button. */
     position: fixed;
     inset: auto;
     inset-block-start: var(--lt-popover-top, 0);
     inset-inline-start: var(--lt-popover-left, 0);
     margin: 0;
-    /* Panelet er ofte en `<ul>` med handlinger. Nullstillingen hører her og
-       ikke hos konsumenten: `data-variant="plain"` traff ingen regel på
-       `.lt-popover`, så lista sto med nettleserens kuler. Innrykket var alt borte, siden
-       `padding` settes i den samme regelen. */
+    /* The panel is often a `<ul>` of actions. The reset belongs here and
+       not with the consumer: `data-variant="plain"` matched no rule on
+       `.lt-popover`, so the list kept the browser's bullets. The indent was
+       already gone, since `padding` is set in the same rule. */
     list-style: none;
     box-sizing: border-box;
     inline-size: max-content;
@@ -33,10 +34,11 @@
     box-shadow: var(--lt-shadow-overlay);
   }
 
-  /* Posisjonen er fysisk: `--lt-popover-left` er avstanden fra venstre
-     vinduskant, regnet ut mot knappen. `inset-inline-start` er høyre kant i
-     et dokument som leses fra høyre, så der snus den, slik ikonene i
-     bakgrunnen snus med `:dir(rtl)`. */
+  /* The position is physical: `--lt-popover-left` is the distance from the
+     left edge of the viewport, worked out against the button.
+     `inset-inline-start` is the right edge in a right-to-left document, so
+     there it is flipped, the way background icons are flipped with
+     `:dir(rtl)`. */
   .lt-popover:dir(rtl) {
     inset-inline-start: auto;
     inset-inline-end: var(--lt-popover-left, 0);

@@ -14,24 +14,25 @@ import "./switch.css"
 import "../label/label.css"
 
 /**
- * Lagringseksempelet på siden, kjørt slik leseren limer det inn.
+ * The saving example on the page, run the way a reader pastes it.
  *
- * Kodeblokkene på komponentsidene kjøres ikke av noe annet. «Plain HTML»-fanen
- * under «Lagring med en gang» lover at bryteren går tilbake når lagringen
- * feiler, og siden lover at tastaturet virker som for en vanlig boks. Før
- * slo eksemplet av bryteren mens den lagret, og da tok nettleseren fokuset
- * fra den uten å gi det tilbake, og `fetch` avviser ikke et svar med
- * feilkode, så et avslag fra serveren ble meldt som at det gikk bra.
+ * Nothing else runs the code blocks on the component pages. The "Plain HTML"
+ * tab under "Saving immediately" promises that the switch flips back when
+ * saving fails, and the page promises that the keyboard works as for a plain
+ * checkbox. The example used to disable the switch while it saved, and then
+ * the browser took focus from it without giving it back; and `fetch` does
+ * not reject a response with an error status, so a refusal from the server
+ * was reported as a success.
  */
-describe("lagringseksempelet på siden", () => {
-  /** Markupen og skriptet i «Plain HTML»-fanen, lest fra siden. */
+describe("the saving example on the page", () => {
+  /** The markup and script in the "Plain HTML" tab, read from the page. */
   function lesFanen(): { markup: string; skript: string } {
     const fane = /<TabItem label="Plain HTML">\s*```html\n([\s\S]*?)```/.exec(
       side,
     )?.[1]
-    if (fane === undefined) throw new Error("Fant ingen «Plain HTML»-fane")
+    if (fane === undefined) throw new Error('Found no "Plain HTML" tab')
     const skript = /<script type="module">([\s\S]*?)<\/script>/.exec(fane)?.[1]
-    if (skript === undefined) throw new Error("Fant ikke skriptet i fanen")
+    if (skript === undefined) throw new Error("Found no script in the tab")
     return { markup: fane.replace(/<script[\s\S]*<\/script>/, ""), skript }
   }
   const { markup, skript } = lesFanen()
@@ -40,7 +41,7 @@ describe("lagringseksempelet på siden", () => {
     vi.unstubAllGlobals()
   })
 
-  /** Monterer eksemplet med en server som svarer `status`, og slår bryteren. */
+  /** Mounts the example with a server that answers `status`, and flips the switch. */
   function slaOm(status: number) {
     monter(markup)
     let kall = 0
@@ -52,42 +53,48 @@ describe("lagringseksempelet på siden", () => {
     })
     new Function(skript)()
 
-    const bryter = document.getElementById("varsler") as HTMLInputElement
-    const melding = document.getElementById("varsler-status") as HTMLElement
+    const bryter = document.getElementById("notifications") as HTMLInputElement
+    const melding = document.getElementById(
+      "notifications-status",
+    ) as HTMLElement
     bryter.focus()
     bryter.click()
 
     return { bryter, melding, kall: () => kall }
   }
 
-  it("ruller tilbake og sier fra når serveren svarer med en feilkode", async () => {
+  it("rolls back and reports it when the server answers with an error status", async () => {
     const { bryter, melding } = slaOm(500)
     expect(bryter.checked).toBe(true)
 
     await vi.waitFor(() => expect(melding.textContent).not.toBe(""))
 
     expect(bryter.checked).toBe(false)
-    expect(melding.textContent).toBe("Klarte ikke å lagre. Prøv igjen.")
+    expect(melding.textContent).toBe("Could not save. Try again.")
   })
 
-  it("beholder fokus og sperrer et nytt trykk mens den lagrer", async () => {
+  it("keeps focus and blocks another press while it saves", async () => {
     const { bryter, melding, kall } = slaOm(200)
     expect(document.activeElement).toBe(bryter)
 
-    // Et nytt trykk under lagringen skal verken slå bryteren eller sende.
+    // Another press while saving should neither flip the switch nor send.
     bryter.click()
     expect(bryter.checked).toBe(true)
 
-    await vi.waitFor(() => expect(melding.textContent).toBe("Varsler er på."))
+    await vi.waitFor(() =>
+      expect(melding.textContent).toBe("Notifications are on."),
+    )
 
     expect(document.activeElement).toBe(bryter)
     expect(kall()).toBe(1)
 
-    // Og etterpå virker den som før.
+    // And afterwards it works as before.
     bryter.click()
     expect(bryter.checked).toBe(false)
     expect(kall()).toBe(2)
-    await vi.waitFor(() => expect(melding.textContent).toBe("Varsler er av."))
+    await vi.waitFor(() =>
+      expect(melding.textContent).toBe("Notifications are off."),
+    )
   })
 })
 
@@ -105,16 +112,16 @@ describe("lt-switch", () => {
     `)
   })
 
-  it("melder seg som en bryter, ikke en avkryssingsboks", () => {
+  it("announces itself as a switch, not a checkbox", () => {
     const bryter = document.getElementById("varsler") as HTMLInputElement
 
-    // role="switch" gjør at skjermlesere sier «på» og «av». Selve elementet
-    // er fortsatt en avkryssingsboks, så FormData finner den som før.
+    // role="switch" makes screen readers say "on" and "off". The element is
+    // still a checkbox, so FormData finds it as before.
     expect(bryter.getAttribute("role")).toBe("switch")
     expect(bryter.type).toBe("checkbox")
   })
 
-  it("flytter knappen til høyre når den er på", () => {
+  it("moves the knob to the right when it is on", () => {
     const pa = getComputedStyle(document.getElementById("varsler") as Element)
     const av = getComputedStyle(document.getElementById("sms") as Element)
 
@@ -122,7 +129,7 @@ describe("lt-switch", () => {
     expect(pa.backgroundColor).not.toBe(av.backgroundColor)
   })
 
-  it("sendes med i skjemaet som en avkryssingsboks", () => {
+  it("is submitted with the form like a checkbox", () => {
     document.body.innerHTML = `
       <form id="skjema">
         <input class="lt-switch" type="checkbox" role="switch"
@@ -134,7 +141,7 @@ describe("lt-switch", () => {
     expect(Object.fromEntries(new FormData(skjema))).toEqual({ varsler: "ja" })
   })
 
-  it("setter attributtene fra byggefunksjonen", () => {
+  it("sets the attributes from the builder function", () => {
     expect(switchControl()).toEqual({
       class: "lt-switch",
       type: "checkbox",
@@ -144,7 +151,7 @@ describe("lt-switch", () => {
     expect(switchControl.row).toBe("lt-switch-row")
   })
 
-  it("har ingen tilgjengelighetsbrudd", async () => {
+  it("has no accessibility violations", async () => {
     await ventPaTegning()
     await forventIngenTilgjengelighetsbrudd()
   })

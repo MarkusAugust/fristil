@@ -1,7 +1,7 @@
 @layer lotek {
-  /* Både elementet og klassen. `lt.connectionStatus()` sender ut
-     `lt-connection-status`, og en klasse en byggefunksjon reklamerer med må gjøre
-     noe. Her sto bare elementvelgeren, så klassen var død. */
+  /* Both the element and the class. `lt.connectionStatus()` outputs
+     `lt-connection-status`, and a class a builder function advertises must do
+     something. Only the element selector was here, so the class was dead. */
   lt-connection-status,
   .lt-connection-status {
     display: contents;
@@ -30,8 +30,9 @@
     border-block-end-color: var(--lt-color-success-text);
   }
 
-  /* Høykontrastmodus fjerner egne farger og bakgrunner. Uten en ramme ville
-     linja vært usynlig, og det er nettopp den som sier at noe er galt. */
+  /* Forced colours mode removes custom colours and backgrounds. Without a
+     border the bar would be invisible, and it is the bar that says something
+     is wrong. */
   @media (forced-colors: active) {
     .lt-connection-status__bar {
       border: 2px solid CanvasText;

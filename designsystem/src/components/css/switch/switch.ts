@@ -1,13 +1,14 @@
 import { attributes } from "../shared.js"
 
 export const SWITCH_CLASS = "lt-switch" as const
-/** Raden som holder bryteren og teksten ved siden av hverandre. */
+/** The row that holds the switch and the text next to each other. */
 export const SWITCH_ROW_CLASS = "lt-switch-row" as const
 
 export type SwitchOptions = {
   /**
-   * Kontrollen er slått av. Ikke bruk det til å sperre bryteren mens en
-   * lagring pågår: `disabled` tar fokuset fra den, og det kommer ikke tilbake.
+   * The control is disabled. Do not use it to lock the switch while a save
+   * is in progress: `disabled` takes focus away from it, and focus does not
+   * come back.
    */
   disabled?: boolean
 }
@@ -20,15 +21,15 @@ export type SwitchAttributes = {
 }
 
 /**
- * Attributtene for en av- og på-bryter.
+ * The attributes for an on/off switch.
  *
- * Bryteren er en avkryssingsboks med `role="switch"`. Da leser skjermlesere
- * den opp som «på» og «av» framfor «avkrysset», mens tastaturet og
- * `FormData` virker som for en vanlig boks.
+ * The switch is a checkbox with `role="switch"`. Screen readers then
+ * announce it as "on" and "off" rather than "checked", while the keyboard
+ * and `FormData` work as for a plain checkbox.
  *
- * Bryteren har ingen valideringstilstand. Et valg som er på eller av kan ikke
- * være ugyldig i seg selv; er det påkrevd å slå den på, hører kravet hjemme i
- * en avkryssingsboks med `required`.
+ * The switch has no validation state. A choice that is on or off cannot be
+ * invalid in itself; if turning it on is required, the requirement belongs
+ * in a checkbox with `required`.
  *
  * ```ts
  * <input {...switchControl()} />
@@ -43,7 +44,7 @@ export const switchControl = Object.assign(
       disabled: disabled ? (true as const) : undefined,
     }),
   {
-    /** Klassen på raden rundt bryteren og teksten. */
+    /** The class on the row around the switch and the text. */
     row: SWITCH_ROW_CLASS,
   },
 )

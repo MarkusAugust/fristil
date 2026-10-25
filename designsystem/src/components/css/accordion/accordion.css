@@ -26,8 +26,8 @@
     );
     font-weight: var(--lt-font-weight-semibold);
     cursor: pointer;
-    /* Trekanten fra nettleseren er ulik i hver av dem. Den byttes ut med en
-       som er lik overalt, og som snur med panelet. */
+    /* The browser's triangle differs in each of them. It is replaced with
+       one that is the same everywhere, and that turns with the panel. */
     list-style: none;
   }
 
@@ -49,9 +49,10 @@
     transform: rotate(225deg) translate(-2px, -2px);
   }
 
-  /* Kantene er logiske og bytter side i høyre-til-venstre, men `rotate` er
-     fysisk. Uten disse pekte pila sidelengs: mot venstre lukket og mot høyre
-     åpen. Vinkelen og forskyvningen snus, så den peker ned og opp som ellers. */
+  /* The borders are logical and switch sides in right-to-left, but `rotate`
+     is physical. Without these the arrow pointed sideways: left when closed
+     and right when open. The angle and the offset are flipped, so it points
+     down and up as it otherwise does. */
   .lt-accordion summary:dir(rtl)::after {
     transform: rotate(-45deg) translate(2px, -2px);
   }
@@ -69,17 +70,17 @@
     outline-offset: -2px;
   }
 
-  /* Dokumentasjonen viser en overskrift i `summary`, så panelene får en
-     plass i dokumentets disposisjon. Uten dette fikk den nettleserens marg og
-     størrelse, og raden ble høyere og teksten større enn uten overskrift.
-     `:where` lar en klasse fra Heading på overskriften vinne. */
+  /* The documentation shows a heading in `summary`, so the panels get a
+     place in the document outline. Without this it got the browser's margin
+     and size, and the row became taller and the text larger than without a
+     heading. `:where` lets a class from Heading on the heading win. */
   :where(.lt-accordion summary) > :where(h2, h3, h4, h5, h6) {
     margin: 0;
     font: inherit;
   }
 
-  /* Samme luft til sidene som overskriften, så tekst og innhold står i
-     samme linje også når den endres. */
+  /* The same space at the sides as the summary, so text and content line up
+     also when it changes. */
   .lt-accordion__content {
     padding: 0 var(--lt-accordion-padding-inline, var(--lt-spacing-4))
       var(--lt-spacing-4);

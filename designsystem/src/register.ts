@@ -1,15 +1,16 @@
 /**
- * Registrerer alle web-komponentene i ett kall.
+ * Registers all the web components in one call.
  *
- * Hver komponent har sin egen `defineLt*`, og en app som bare bruker feltet
- * kan nøye seg med `defineLtField()` og holde resten utenfor det som bygges. Men de
- * fleste appene bruker flere, og spilldemoen sto med sju kall i en
- * `useEffect`, altså etter første tegning. Da er elementene i markupen
- * vanlige `HTMLElement` i det React tegner dem, og det første kallet på
- * `reportSuccess()` kom før effekten. Ett kall, ved import, lukker gapet.
+ * Each component has its own `defineLt*`, and an app that only uses the field
+ * can settle for `defineLtField()` and keep the rest out of its bundle. But
+ * most apps use several, and a demo app had seven calls in a `useEffect`,
+ * that is, after the first paint. Then the elements in the markup are plain
+ * `HTMLElement`s when React paints them, and the first call to
+ * `reportSuccess()` came before the effect. One call, at import, closes the
+ * gap.
  *
- * Funksjonen gjør ingenting på en server, som de enkelte gjør, så den kan stå
- * øverst i en modul som kjøres begge steder.
+ * Like the individual functions, it does nothing on a server, so it can sit
+ * at the top of a module that runs in both places.
  */
 
 import { defineLtDialog } from "./components/frame/dialog/lt-dialog.js"
@@ -22,10 +23,11 @@ import { defineLtTabs } from "./components/frame/tabs/lt-tabs.js"
 import { defineLtConnectionStatus } from "./components/standalone/connection-status/lt-connection-status.js"
 import { defineLtToast } from "./components/standalone/toast/lt-toast.js"
 
-// Typene til hendelsene og tagnavnene, så `querySelector("lt-dialog")` og
-// `addEventListener` er typet også for den som bare importerer denne
-// inngangen. Uten linja forsvant importene over fra `.d.ts`-fila, og verken
-// `HTMLElementEventMap` eller `HTMLElementTagNameMap` ble utvidet.
+// The types of the events and tag names, so `querySelector("lt-dialog")` and
+// `addEventListener` are typed also for someone who only imports this entry
+// point. Without the line the imports above disappeared from the `.d.ts`
+// file, and neither `HTMLElementEventMap` nor `HTMLElementTagNameMap` was
+// extended.
 export type { LtEventMap } from "./components/events.js"
 
 export function defineLt(): void {

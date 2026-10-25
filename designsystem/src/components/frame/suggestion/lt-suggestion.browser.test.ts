@@ -18,7 +18,7 @@ import "../../css/sr-only/sr-only.css"
 const KOMMUNER = ["Bergen", "Bodø", "Oslo", "Tromsø"]
 const NOKLER = ["bergen", "bodo", "oslo", "tromso"]
 
-/** Markupen serveren sender. Feltet og lista finnes før skriptet har kjørt. */
+/** The markup the server sends. The field and the list exist before the script has run. */
 const FORSLAG = suggestion({
   id: "kommune",
   keys: NOKLER,
@@ -60,9 +60,9 @@ describe("lt-suggestion", () => {
     await tegn()
   })
 
-  it("er et ekte felt før skriptet har kjørt", () => {
-    // Komponenten rendret tidligere hele feltet selv. Da fantes det ikke noe
-    // å fylle ut, og ingenting ble med i innsendingen.
+  it("is a real field before the script has run", () => {
+    // The web component used to render the whole field itself. Then there was
+    // nothing to fill in, and nothing was included in the submission.
     const input = document.querySelector("input") as HTMLInputElement
     const label = document.querySelector("label") as HTMLLabelElement
 
@@ -74,11 +74,11 @@ describe("lt-suggestion", () => {
     expect(document.querySelectorAll("[role='option']")).toHaveLength(4)
   })
 
-  it("ber ikke malen frede noe", () => {
-    // Det lista viser og hva som er markert er brukerens, og komponenten
-    // setter det tilbake selv etter en patch. Kommer `data-preserve-attr`
-    // tilbake her, har noen gjenopptatt kontrakten malen måtte skrive av fra
-    // dokumentasjonen.
+  it("does not ask the template to preserve anything", () => {
+    // What the list shows and what is highlighted come from the user, and the
+    // web component sets them back itself after a patch. If
+    // `data-preserve-attr` comes back here, someone has revived the contract
+    // the template had to copy from the documentation.
     const input = document.querySelector("input") as HTMLInputElement
     const liste = document.querySelector("[role='listbox']") as HTMLElement
     const valg = document.querySelectorAll("[role='option']")
@@ -89,7 +89,7 @@ describe("lt-suggestion", () => {
       expect(v.hasAttribute("data-preserve-attr")).toBe(false)
   })
 
-  it("snevrer inn forslagene mens brukeren skriver", async () => {
+  it("narrows the suggestions while the user types", async () => {
     const felt = await tegn()
     skriv(felt, "bo")
     await tegn()
@@ -101,16 +101,16 @@ describe("lt-suggestion", () => {
     expect(synlige.map((o) => o.textContent?.trim())).toEqual(["Bodø"])
   })
 
-  it("melder antall treff til skjermlesere", async () => {
+  it("announces the number of matches to screen readers", async () => {
     const felt = await tegn()
     skriv(felt, "bod")
     await tegn()
 
     const status = felt.querySelector("[role='status']") as HTMLElement
-    expect(status.textContent).toBe("Ett treff")
+    expect(status.textContent).toBe("One match")
   })
 
-  it("flytter markeringen med piltastene og peker på den med aria", async () => {
+  it("moves the highlight with the arrow keys and points to it with aria", async () => {
     const felt = await tegn()
     const input = felt.querySelector("input") as HTMLInputElement
 
@@ -121,12 +121,12 @@ describe("lt-suggestion", () => {
 
     const aktiv = felt.querySelector("[aria-selected='true']") as HTMLElement
     expect(aktiv.textContent?.trim()).toBe("Bergen")
-    // Fokus blir i feltet. aria-activedescendant er det som gjør at
-    // skjermleseren likevel leser opp alternativet.
+    // Focus stays in the field. aria-activedescendant is what makes the
+    // screen reader announce the option anyway.
     expect(input.getAttribute("aria-activedescendant")).toBe(aktiv.id)
   })
 
-  it("velger med Enter og melder fra", async () => {
+  it("chooses with Enter and reports it", async () => {
     const felt = await tegn()
     const input = felt.querySelector("input") as HTMLInputElement
     const valgt: string[] = []
@@ -148,7 +148,7 @@ describe("lt-suggestion", () => {
     expect(input.getAttribute("aria-expanded")).toBe("false")
   })
 
-  it("sier fra når ingenting passer", async () => {
+  it("says so when nothing matches", async () => {
     const felt = await tegn()
     skriv(felt, "xyz")
     await tegn()
@@ -157,10 +157,10 @@ describe("lt-suggestion", () => {
     expect(tom.hidden).toBe(false)
     expect(
       (felt.querySelector("[role='status']") as HTMLElement).textContent,
-    ).toBe("Ingen treff")
+    ).toBe("No matches")
   })
 
-  it("lukker lista på Escape", async () => {
+  it("closes the list on Escape", async () => {
     const felt = await tegn()
     const input = felt.querySelector("input") as HTMLInputElement
     skriv(felt, "bo")
@@ -176,26 +176,26 @@ describe("lt-suggestion", () => {
     expect(input.getAttribute("aria-expanded")).toBe("false")
   })
 
-  it("filtrerer ikke når noen andre alt har gjort det", async () => {
+  it("does not filter when something else already has", async () => {
     const felt = await tegn()
     felt.setAttribute("prefiltered", "")
     skriv(felt, "xyz")
     await tegn()
 
-    // Serveren eller React har alt bestemt hva som vises. Da skal komponenten
-    // holde fingrene av fatet.
+    // The server or React has already decided what is shown. Then the web
+    // component must keep its hands off.
     const synlige = [
       ...felt.querySelectorAll<HTMLElement>("[role='option']"),
     ].filter((o) => !o.hidden)
     expect(synlige).toHaveLength(4)
   })
 
-  it("kan settes som egenskap, slik React 19 gjør det", async () => {
+  it("can be set as a property, the way React 19 does it", async () => {
     /*
-     * React skriver egenskapen framfor attributtet når en web
-     * component har en med det navnet. Med bare en getter kastet skrivingen
-     * «Cannot set property», attributtet landet aldri, og komponenten skjulte
-     * det React nettopp hadde rendret.
+     * React writes the property rather than the attribute when a web
+     * component has one with that name. With only a getter the write threw
+     * "Cannot set property", the attribute never landed, and the web component
+     * hid what React had just rendered.
      */
     const felt = await tegn()
 
@@ -206,12 +206,13 @@ describe("lt-suggestion", () => {
     expect(felt.hasAttribute("prefiltered")).toBe(false)
   })
 
-  it("melder antall treff når den som filtrerte har rendret lista", async () => {
+  it("announces the number of matches when whoever filtered has rendered the list", async () => {
     /*
-     * Beskjeden følger lista, ikke tastetrykket. `prefiltered` slår av
-     * skjulingen, ikke opplesningen: første utgave returnerte med en gang, og
-     * da satt en Datastar-app igjen uten beskjed om hvor mange treff som var
-     * igjen. Det sto ikke noe sted, og den som ikke ser skjermen merket det.
+     * The message follows the list, not the keystroke. `prefiltered` turns off
+     * the hiding, not the announcement: the first version returned at once,
+     * and then a Datastar app was left with no word of how many matches were
+     * left. It was not written anywhere, and people who cannot see the screen
+     * noticed.
      */
     const felt = await tegn()
     felt.prefiltered = true
@@ -221,43 +222,47 @@ describe("lt-suggestion", () => {
     await tegn()
     expect(
       status.textContent,
-      "leste opp et antall før den som filtrerte hadde svart",
+      "announced a count before whoever filtered had answered",
     ).toBe("")
 
-    // Slik en server eller React ville gjort det: alt utenom ett skjules.
+    // The way a server or React would do it: everything except one is hidden.
     const valg = [...felt.querySelectorAll<HTMLElement>("[role='option']")]
     for (const [i, alternativ] of valg.entries()) alternativ.hidden = i !== 0
     await tegn()
 
-    expect(status.textContent).toBe("Ett treff")
+    expect(status.textContent).toBe("One match")
   })
 
-  it("lar tommeldingen være i fred når noen andre filtrerte", async () => {
+  it("leaves the empty message alone when something else filtered", async () => {
     /*
-     * Tommeldingen er en del av det lista viser, og det bestemmer den som
-     * filtrerte. Komponenten kan ikke se forskjell på «søket ga ingenting» og
-     * «svaret er ikke kommet ennå», og satte derfor meldingen synlig igjen
-     * midt i et asynkront søk, uten at det fantes en vei utenom.
+     * The empty message is part of what the list shows, and whoever filtered
+     * decides that. The web component cannot tell "the search found nothing"
+     * from "the answer has not arrived yet", and so made the message visible
+     * again in the middle of an asynchronous search, with no way around it.
      */
     const felt = await tegn()
     felt.prefiltered = true
     const tom = felt.querySelector(".lt-suggestion__empty") as HTMLElement
 
-    // Appen venter på svar: ingen alternativer, og meldingen holdes skjult.
+    // The app is waiting for an answer: no options, and the message stays hidden.
     for (const alternativ of felt.querySelectorAll("[role='option']"))
       alternativ.remove()
     skriv(felt, "xyz")
     await tegn()
-    expect(tom.hidden, "komponenten viste «Ingen treff» selv").toBe(true)
+    expect(tom.hidden, 'the web component showed "No matches" itself').toBe(
+      true,
+    )
 
-    // Appen svarer med at ingenting passet, og viser meldingen selv.
+    // The app answers that nothing matched, and shows the message itself.
     tom.hidden = false
     skriv(felt, "xyzæ")
     await tegn()
-    expect(tom.hidden, "komponenten skjulte appens «Ingen treff»").toBe(false)
+    expect(tom.hidden, 'the web component hid the app\'s "No matches"').toBe(
+      false,
+    )
   })
 
-  it("har ingen tilgjengelighetsbrudd med lista åpen", async () => {
+  it("has no accessibility violations with the list open", async () => {
     const felt = await tegn()
     skriv(felt, "o")
     await tegn()
@@ -267,14 +272,16 @@ describe("lt-suggestion", () => {
 })
 
 /**
- * Et prefiltrert felt som ennå ikke har fått noe å vise.
+ * A prefiltered field that has not yet got anything to show.
  *
- * Dette er markupen fra Datastar-fanen i dokumentasjonen: lista er tom til
- * serveren har sendt noe. Talte komponenten ved fokus, meldte feltet «Ingen
- * treff» før brukeren hadde skrevet et tegn, altså til nettopp den som ikke
- * ser skjermen, og tommeldingen sto synlig på et felt ingen hadde søkt i.
+ * This is the markup from the Datastar tab in the documentation: the list is
+ * empty until the server has sent something. Had the web component counted
+ * on focus, the field would have announced "No matches" before the user had
+ * typed a character, to exactly the people who cannot see the screen, and
+ * the empty message would have been visible on a field nobody had searched
+ * in.
  */
-describe("lt-suggestion som venter på det første svaret", () => {
+describe("lt-suggestion waiting for the first answer", () => {
   beforeAll(() => {
     defineLtSuggestion()
   })
@@ -296,7 +303,7 @@ describe("lt-suggestion som venter på det første svaret", () => {
     await tegn()
   })
 
-  it("sier ingenting ved fokus", async () => {
+  it("says nothing on focus", async () => {
     const felt = await tegn()
     const input = felt.querySelector("input") as HTMLInputElement
 
@@ -305,23 +312,23 @@ describe("lt-suggestion som venter på det første svaret", () => {
 
     const status = felt.querySelector("[role='status']") as HTMLElement
     expect(status.textContent).toBe("")
-    // Byggefunksjonen skriver ikke `hidden` på en tom liste lenger. Det
-    // som holder meldingen borte er at en tom liste under et tomt felt
-    // ikke åpnes, og at stilarket skjuler meldingen etter en lukket liste.
+    // The builder function no longer writes `hidden` on an empty list. What
+    // keeps the message away is that an empty list below an empty field is not
+    // opened, and that the stylesheet hides the message after a closed list.
     const liste = felt.querySelector("ul") as HTMLElement
     const tom = felt.querySelector(".lt-suggestion__empty") as HTMLElement
-    expect(liste.hidden, "en tom liste åpnet seg ved fokus").toBe(true)
+    expect(liste.hidden, "an empty list opened on focus").toBe(true)
     expect(
       getComputedStyle(tom).display,
-      "viste «Ingen treff» før noen hadde søkt",
+      'showed "No matches" before anyone had searched',
     ).toBe("none")
   })
 
-  it("melder fra når serveren har sendt lista", async () => {
+  it("reports when the server has sent the list", async () => {
     const felt = await tegn()
     const liste = felt.querySelector("[role='listbox']") as HTMLElement
 
-    // Slik en patch ville gjort det.
+    // The way a patch would do it.
     liste.innerHTML = `
       <li class="lt-suggestion__option" id="kommune-option-bergen" role="option">Bergen</li>
       <li class="lt-suggestion__option" id="kommune-option-bodo" role="option">Bodø</li>
@@ -329,19 +336,19 @@ describe("lt-suggestion som venter på det første svaret", () => {
     await tegn()
 
     const status = felt.querySelector("[role='status']") as HTMLElement
-    expect(status.textContent).toBe("2 treff")
+    expect(status.textContent).toBe("2 matches")
   })
 })
 
 /**
- * Serveren kan også bestemme hvilket alternativ som er aktivt.
+ * The server can also decide which option is active.
  *
- * `lt.suggestion({ activeIndex })` skriver `aria-selected="true"` på ett av
- * dem. Holdt komponenten en egen teller ved siden av, ville første piltast
- * hoppe til toppen av lista i stedet for til neste alternativ, og
- * markeringen serveren nettopp sendte var borte.
+ * `lt.suggestion({ activeIndex })` writes `aria-selected="true"` on one of
+ * them. Had the web component kept a separate counter, the first arrow key
+ * would jump to the top of the list instead of to the next option, and the
+ * highlight the server had just sent would be gone.
  */
-describe("lt-suggestion med markeringen fra serveren", () => {
+describe("lt-suggestion with the highlight from the server", () => {
   beforeAll(() => {
     defineLtSuggestion()
   })
@@ -370,7 +377,7 @@ describe("lt-suggestion med markeringen fra serveren", () => {
     await tegn()
   })
 
-  it("går videre fra det serveren markerte", async () => {
+  it("moves on from what the server highlighted", async () => {
     const felt = document.querySelector("lt-suggestion") as LtSuggestion
     const input = felt.querySelector("input") as HTMLInputElement
     const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
@@ -384,13 +391,13 @@ describe("lt-suggestion med markeringen fra serveren", () => {
 
     expect(
       valg[3].getAttribute("aria-selected"),
-      "piltasten hoppet ikke til alternativet etter det serveren markerte",
+      "the arrow key did not move to the option after the one the server highlighted",
     ).toBe("true")
     expect(input.getAttribute("aria-activedescendant")).toBe(valg[3].id)
   })
 })
 
-describe("lt-suggestion med pil opp", () => {
+describe("lt-suggestion with arrow up", () => {
   beforeAll(() => {
     defineLtSuggestion()
   })
@@ -412,7 +419,7 @@ describe("lt-suggestion med pil opp", () => {
     await tegn()
   })
 
-  it("åpner lista og går til det siste alternativet", async () => {
+  it("opens the list and goes to the last option", async () => {
     const felt = document.querySelector("lt-suggestion") as LtSuggestion
     const input = felt.querySelector("input") as HTMLInputElement
     const liste = felt.querySelector("[role='listbox']") as HTMLElement
@@ -423,21 +430,21 @@ describe("lt-suggestion med pil opp", () => {
     )
     await ventPaTegning()
 
-    // Uten åpningen pekte aria-activedescendant inn i en liste feltet
-    // samtidig meldte som lukket.
-    expect(liste.hidden, "lista ble ikke åpnet").toBe(false)
+    // Without the opening, aria-activedescendant pointed into a list the
+    // field at the same time reported as closed.
+    expect(liste.hidden, "the list was not opened").toBe(false)
     expect(input.getAttribute("aria-expanded")).toBe("true")
 
     const siste = valg[valg.length - 1]
     expect(
       siste.getAttribute("aria-selected"),
-      "pil opp gikk ikke til det siste alternativet",
+      "arrow up did not go to the last option",
     ).toBe("true")
     expect(input.getAttribute("aria-activedescendant")).toBe(siste.id)
   })
 })
 
-describe("lt-suggestion lukker og rydder", () => {
+describe("lt-suggestion closes and cleans up", () => {
   beforeAll(() => {
     defineLtSuggestion()
   })
@@ -462,9 +469,9 @@ describe("lt-suggestion lukker og rydder", () => {
   const tast = (input: HTMLInputElement, key: string) =>
     input.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }))
 
-  it("lukker lista når fokus forlater feltet", async () => {
-    // Tab gikk videre til neste felt, og lista ble stående over det med
-    // `aria-expanded="true"` på et felt som ikke lenger hadde fokus.
+  it("closes the list when focus leaves the field", async () => {
+    // Tab moved on to the next field, and the list stayed over it with
+    // `aria-expanded="true"` on a field that no longer had focus.
     monter(markup())
     const felt = await tegn()
     const input = felt.querySelector("input") as HTMLInputElement
@@ -480,9 +487,10 @@ describe("lt-suggestion lukker og rydder", () => {
     expect(input.getAttribute("aria-expanded")).toBe("false")
   })
 
-  it("lukker lista når fokus går ut av komponenten via en knapp inni den", async () => {
-    // En knapp ved siden av feltet er inne i komponenten, så lista står når
-    // fokus går dit. Går fokus videre ut derfra, skal lista lukkes da også.
+  it("closes the list when focus leaves the web component through a button inside it", async () => {
+    // A button next to the field is inside the web component, so the list
+    // stays when focus goes there. If focus moves on out from there, the list
+    // must close then too.
     monter(`
       <lt-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
@@ -504,17 +512,17 @@ describe("lt-suggestion lukker og rydder", () => {
     await tegn()
     ;(document.getElementById("tom-knapp") as HTMLElement).focus()
     await tegn()
-    expect(liste.hidden, "lista lukket seg for en knapp inni").toBe(false)
+    expect(liste.hidden, "the list closed for a button inside").toBe(false)
     ;(document.getElementById("neste-felt") as HTMLElement).focus()
     await tegn()
 
     expect(liste.hidden).toBe(true)
   })
 
-  it("holder lista åpen når brukeren klikker i feltet inne i en skyggerot", async () => {
-    // Dokumentasjonens forhåndsvisninger ligger i en skyggerot. Lytteren på
-    // `document` så `event.target` omdirigert til skyggeverten, regnet
-    // klikket som utenfor, og lukket lista i samme klikk som åpnet den.
+  it("keeps the list open when the user clicks the field inside a shadow root", async () => {
+    // The documentation's previews live in a shadow root. The listener on
+    // `document` saw `event.target` retargeted to the shadow host, counted the
+    // click as outside, and closed the list in the same click that opened it.
     const vert = document.createElement("div")
     document.body.append(vert)
     const rot = vert.attachShadow({ mode: "open" })
@@ -530,13 +538,15 @@ describe("lt-suggestion lukker og rydder", () => {
     )
     await ventPaTegning()
 
-    expect(liste.hidden, "lista ble lukket av klikket i feltet").toBe(false)
+    expect(liste.hidden, "the list was closed by the click in the field").toBe(
+      false,
+    )
     vert.remove()
   })
 
-  it("skjuler «Ingen treff» sammen med lista", async () => {
-    // Tommeldingen er søsken til lista, ikke barn, så `hidden` på lista
-    // skjulte den ikke, og den ble stående under et lukket felt.
+  it('hides "No matches" together with the list', async () => {
+    // The empty message is a sibling of the list, not a child, so `hidden` on
+    // the list did not hide it, and it stayed below a closed field.
     monter(markup())
     const felt = await tegn()
     const input = felt.querySelector("input") as HTMLInputElement
@@ -552,7 +562,7 @@ describe("lt-suggestion lukker og rydder", () => {
     expect(getComputedStyle(tom).display).toBe("none")
   })
 
-  it("åpner ikke lista igjen når server-controlled settes og fjernes", async () => {
+  it("does not open the list again when server-controlled is set and removed", async () => {
     monter(markup())
     const felt = await tegn()
     const input = felt.querySelector("input") as HTMLInputElement
@@ -561,8 +571,9 @@ describe("lt-suggestion lukker og rydder", () => {
     await tegn()
     expect(liste.hidden).toBe(false)
 
-    // Serveren overtar og lukker lista. Så slipper den igjen. Husket
-    // komponenten at lista var åpen, åpnet den den igjen ved neste patch.
+    // The server takes over and closes the list. Then it lets go again. Had
+    // the web component remembered that the list was open, it would have
+    // opened it again on the next patch.
     felt.setAttribute("server-controlled", "")
     liste.hidden = true
     input.setAttribute("aria-expanded", "false")
@@ -575,7 +586,7 @@ describe("lt-suggestion lukker og rydder", () => {
     expect(input.getAttribute("aria-expanded")).toBe("false")
   })
 
-  it("rydder markeringen når det markerte filtreres bort, også med server-controlled", async () => {
+  it("clears the highlight when the highlighted option is filtered out, also with server-controlled", async () => {
     monter(markup("server-controlled"))
     const felt = await tegn()
     const input = felt.querySelector("input") as HTMLInputElement
@@ -593,7 +604,7 @@ describe("lt-suggestion lukker og rydder", () => {
     expect(input.getAttribute("aria-activedescendant")).toBeNull()
   })
 
-  it("finner alternativene på rollen, ikke på klassen", async () => {
+  it("finds the options by role, not by class", async () => {
     monter(`
       <lt-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
@@ -622,11 +633,12 @@ describe("lt-suggestion lukker og rydder", () => {
     )
   })
 
-  it("lar et smalere filter i appen stå", async () => {
+  it("leaves a narrower filter in the app alone", async () => {
     /*
-     * Appen rendrer bare treffene av et `startsWith`-søk, uten `prefiltered`.
-     * Alt den beholder inneholder også søkeordet, så komponentens filter
-     * skjuler ingenting av det. Påstanden står i dokumentasjonen, og her.
+     * The app renders only the matches of a `startsWith` search, without
+     * `prefiltered`. Everything it keeps also contains the search term, so the
+     * web component's filter hides none of it. The claim is in the
+     * documentation, and here.
      */
     const smalt = suggestion({ id: "sted", keys: ["a", "b"] })
     monter(`
@@ -654,15 +666,15 @@ describe("lt-suggestion lukker og rydder", () => {
     expect(synlige.map((o) => o.textContent)).toEqual(["Oslo", "Odda"])
     expect(
       (felt.querySelector("[role='status']") as HTMLElement).textContent,
-    ).toBe("2 treff")
+    ).toBe("2 matches")
   })
 })
 
-describe("lt.suggestion() skriver det komponenten ellers ville skrevet", () => {
-  it("skriver hidden på tommeldingen når det finnes treff eller svaret er underveis", () => {
-    // At lista er lukket, står ikke her lenger: stilarket skjuler meldingen
-    // etter en lukket liste, og «tommeldingen når appen filtrerer selv»
-    // etterprøver at den faktisk ikke vises ved sidelasting.
+describe("lt.suggestion() writes what the web component would otherwise write", () => {
+  it("writes hidden on the empty message when there are matches or the answer is on its way", () => {
+    // That the list is closed is no longer checked here: the stylesheet hides
+    // the message after a closed list, and "the empty message when the app
+    // filters itself" checks that it is actually not shown on page load.
     expect(suggestion({ id: "k", keys: [] }).empty.hidden).toBe(undefined)
     expect(suggestion({ id: "k", keys: [], pending: true }).empty.hidden).toBe(
       true,
@@ -672,7 +684,7 @@ describe("lt.suggestion() skriver det komponenten ellers ville skrevet", () => {
     ).toBe(true)
   })
 
-  it("skriver markeringen bare når lista er åpen, begge halvdelene sammen", () => {
+  it("writes the highlight only when the list is open, both halves together", () => {
     const lukket = suggestion({
       id: "k",
       keys: ["a", "b", "c"],
@@ -693,11 +705,12 @@ describe("lt.suggestion() skriver det komponenten ellers ville skrevet", () => {
 })
 
 /*
- * Markup skrevet uten JavaScript: ledetekst med `for`, felt med `id`, liste
- * med `<li>` og et statuselement, uten roller eller kobling ellers. `for` og
- * `id` er det HTML krever for at feltet skal ha navn uten JavaScript, og
- * komponenten skriver aldri id på feltet. Den fyller inn resten.
- * Statuselementet må skrives: det er innhold serveren sender.
+ * Markup written without JavaScript: a label with `for`, a field with `id`,
+ * a list with `<li>` and a status element, with no roles or wiring
+ * otherwise. `for` and `id` are what HTML requires for the field to have a
+ * name without JavaScript, and the web component never writes an id on the
+ * field. It fills in the rest. The status element must be written: it is
+ * content the server sends.
  */
 const BAR = `
   <lt-suggestion>
@@ -712,7 +725,7 @@ const BAR = `
     </div>
   </lt-suggestion>`
 
-describe("lt-suggestion kobler fra bar struktur", () => {
+describe("lt-suggestion wires up from bare structure", () => {
   beforeAll(() => {
     defineLtSuggestion()
   })
@@ -727,7 +740,7 @@ describe("lt-suggestion kobler fra bar struktur", () => {
     }
   }
 
-  it("setter roller, id-er og kobling, og holder lista lukket", async () => {
+  it("sets roles, ids and wiring, and keeps the list closed", async () => {
     monter(BAR)
     await tegn()
     const { felt, label, input, liste, valg } = deler()
@@ -757,13 +770,13 @@ describe("lt-suggestion kobler fra bar struktur", () => {
       "Bodø",
     ])
     expect(document.querySelector("[role='status']")?.textContent).toBe(
-      "2 treff",
+      "2 matches",
     )
 
     await forventIngenTilgjengelighetsbrudd()
   })
 
-  it("lar det serveren skrev stå", async () => {
+  it("leaves what the server wrote", async () => {
     monter(
       BAR.replace('<label for="kommune">', '<label for="egen">')
         .replace(
@@ -782,19 +795,19 @@ describe("lt-suggestion kobler fra bar struktur", () => {
     expect(label.htmlFor).toBe("egen")
     expect(liste.id).toBe("egen-liste")
     expect(input.getAttribute("aria-controls")).toBe("egen-liste")
-    // Serveren sa at lista er åpen, og da står den åpen.
+    // The server said the list is open, and then it stays open.
     expect(input.getAttribute("aria-expanded")).toBe("true")
     expect(liste.hidden).toBe(false)
   })
 
-  it("setter koblingen tilbake med de samme id-ene etter en patch", async () => {
+  it("sets the wiring back with the same ids after a patch", async () => {
     monter(BAR)
     await tegn()
     const { label, input, liste, valg } = deler()
     const ider = [input.id, liste.id, valg[0].id]
 
-    // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
-    // Feltets id og ledetekstens `for` sto der, og blir stående.
+    // The way a morph does it: everything not in the server's HTML is
+    // removed. The field's id and the label's `for` were there, and stay.
     for (const navn of [
       "role",
       "aria-controls",
@@ -815,9 +828,9 @@ describe("lt-suggestion kobler fra bar struktur", () => {
     expect(liste.hidden).toBe(true)
   })
 
-  it("skriver ingenting på markup fra lt.suggestion()", async () => {
-    // Den direkte påstanden bak «det serveren skrev står»: null
-    // mutasjonsposter fra komponentens første runde.
+  it("writes nothing on markup from lt.suggestion()", async () => {
+    // The direct claim behind "what the server wrote stays": zero mutation
+    // records from the web component's first round.
     const omslag = document.createElement("div")
     omslag.innerHTML = `
       <lt-suggestion>
@@ -850,12 +863,12 @@ describe("lt-suggestion kobler fra bar struktur", () => {
   })
 })
 
-describe("tommeldingen når appen filtrerer selv", () => {
+describe("the empty message when the app filters itself", () => {
   beforeAll(() => {
     defineLtSuggestion()
   })
 
-  /** Slik en React-app rendrer feltet: bare treffene, og `prefiltered`. */
+  /** The way a React app renders the field: only the matches, and `prefiltered`. */
   async function felt(valg: { keys: string[]; pending?: boolean }) {
     const forslag = suggestion({ id: "kommune", ...valg })
     monter(`
@@ -882,9 +895,10 @@ describe("tommeldingen når appen filtrerer selv", () => {
   const synlig = (element: HTMLElement) =>
     getComputedStyle(element).display !== "none"
 
-  it("viser ikke meldingen mens lista er lukket, selv uten treff", async () => {
-    // Appen vet ikke om lista er åpen: den tilstanden er komponentens.
-    // Stilarket skjuler meldingen etter en liste med `hidden`.
+  it("does not show the message while the list is closed, even without matches", async () => {
+    // The app does not know whether the list is open: that state belongs to
+    // the web component. The stylesheet hides the message after a list with
+    // `hidden`.
     const { liste, tom } = await felt({ keys: [] })
 
     expect(liste.hidden).toBe(true)
@@ -892,7 +906,7 @@ describe("tommeldingen når appen filtrerer selv", () => {
     expect(synlig(tom)).toBe(false)
   })
 
-  it("viser meldingen når lista åpnes og søket ga ingenting", async () => {
+  it("shows the message when the list opens and the search found nothing", async () => {
     const { input, liste, tom } = await felt({ keys: [] })
 
     input.focus()
@@ -900,11 +914,11 @@ describe("tommeldingen når appen filtrerer selv", () => {
     input.dispatchEvent(new Event("input", { bubbles: true }))
     await tegn()
 
-    expect(liste.hidden, "lista åpnet seg ikke").toBe(false)
+    expect(liste.hidden, "the list did not open").toBe(false)
     expect(synlig(tom)).toBe(true)
   })
 
-  it("holder meldingen skjult mens svaret er underveis", async () => {
+  it("keeps the message hidden while the answer is on its way", async () => {
     const { input, liste, tom } = await felt({ keys: [], pending: true })
 
     input.focus()
@@ -916,23 +930,23 @@ describe("tommeldingen når appen filtrerer selv", () => {
     expect(synlig(tom)).toBe(false)
   })
 
-  it("skjuler meldingen når det finnes treff", async () => {
+  it("hides the message when there are matches", async () => {
     const { tom } = await felt({ keys: ["a", "b"] })
     expect(tom.hasAttribute("hidden")).toBe(true)
   })
 })
 
-describe("lt-suggestion når en patch bytter ut feltet eller lista", () => {
+describe("lt-suggestion when a patch replaces the field or the list", () => {
   beforeAll(() => {
     defineLtSuggestion()
   })
 
-  it("skriver aldri id på et nytt felt, og gir lista den id-en feltet peker på", async () => {
+  it("never writes an id on a new field, and gives the list the id the field points to", async () => {
     /*
-     * Komponenten fant før opp en id til et nytt felt uten id. Det var nettopp
-     * den id-en som gjorde at neste oppdatering fra serveren byttet ut feltet,
-     * med fokus og det brukeren hadde skrevet. Lista har ingen tilstand
-     * brukeren mister, og får fortsatt id-en feltet alt peker på.
+     * The web component used to invent an id for a new field without one. That
+     * very id made the next update from the server replace the field, with
+     * focus and what the user had typed. The list holds no state the user can
+     * lose, and still gets the id the field already points to.
      */
     monter(`
       <lt-suggestion>
@@ -962,16 +976,16 @@ describe("lt-suggestion når en patch bytter ut feltet eller lista", () => {
     await tegn()
 
     expect(nyttFelt.hasAttribute("id")).toBe(false)
-    expect(nyListe.id, "aria-controls peker på ingenting").toBe(listepeker)
+    expect(nyListe.id, "aria-controls points to nothing").toBe(listepeker)
   })
 })
 
-describe("lt-suggestion leser opp antallet på sidens språk", () => {
+describe("lt-suggestion announces the count in the page's language", () => {
   beforeAll(() => {
     defineLtSuggestion()
   })
 
-  /** Forslagsfeltet på en side med `lang`, og tekstene som attributter. */
+  /** The suggestion field on a page with `lang`, and the texts as attributes. */
   async function felt(lang: string, attributter: string) {
     monter(`
       <div lang="${lang}">
@@ -996,7 +1010,7 @@ describe("lt-suggestion leser opp antallet på sidens språk", () => {
     return (element.querySelector("[role='status']") as HTMLElement).textContent
   }
 
-  it("bruker formen språket krever, med tallet satt inn", async () => {
+  it("uses the form the language requires, with the number filled in", async () => {
     const element = await felt(
       "en",
       'count-none="No results" count-one="{n} result" count-other="{n} results"',
@@ -1007,17 +1021,18 @@ describe("lt-suggestion leser opp antallet på sidens språk", () => {
     expect(await opplest(element, "xyz")).toBe("No results")
   })
 
-  it("faller tilbake på count-other når en form mangler", async () => {
-    // Engelsk har formen `one`. Står bare `count-other`, skal den gjelde
-    // også for ett treff, framfor at opplesningen blir norsk.
+  it("falls back to count-other when a form is missing", async () => {
+    // English has the form `one`. When only `count-other` is set, it must
+    // apply to one match as well, rather than the announcement falling back to
+    // the default text.
     const element = await felt("en", 'count-other="{n} results"')
 
     expect(await opplest(element, "bod")).toBe("1 results")
     expect(await opplest(element, "xyz")).toBe("0 results")
   })
 
-  it("velger bøyningen etter språket, ikke etter tallet alene", async () => {
-    // Polsk har fire former. 2, 3 og 4 er `few`, og 1 er `one`.
+  it("picks the inflection by language, not by the number alone", async () => {
+    // Polish has four forms. 2, 3 and 4 are `few`, and 1 is `one`.
     const element = await felt(
       "pl",
       'count-one="{n} wynik" count-few="{n} wyniki" count-many="{n} wyników" count-other="{n} wyniku"',
@@ -1027,18 +1042,18 @@ describe("lt-suggestion leser opp antallet på sidens språk", () => {
     expect(await opplest(element, "bod")).toBe("1 wynik")
   })
 
-  it("er norsk når ingen tekst er satt", async () => {
+  it("uses the default text when no text is set", async () => {
     const element = await felt("en", "")
 
-    expect(await opplest(element, "bod")).toBe("Ett treff")
-    expect(await opplest(element, "o")).toBe("3 treff")
+    expect(await opplest(element, "bod")).toBe("One match")
+    expect(await opplest(element, "o")).toBe("3 matches")
   })
 })
 
 /**
- * Etterligner verdisporingen React legger på et kontrollert felt: en egen
- * `value` på noden som husker siste verdi satt gjennom den, og `onChange`
- * bare når verdien fra prototypen er en annen.
+ * Imitates the value tracking React adds to a controlled field: a `value`
+ * of its own on the node that remembers the last value set through it, and
+ * `onChange` only when the value from the prototype differs.
  */
 function kontrollertAvReact(felt: HTMLInputElement | HTMLTextAreaElement) {
   const opprinnelig = Object.getOwnPropertyDescriptor(
@@ -1067,7 +1082,7 @@ function kontrollertAvReact(felt: HTMLInputElement | HTMLTextAreaElement) {
   return endringer
 }
 
-describe("lt-suggestion med et felt React styrer", () => {
+describe("lt-suggestion with a field React controls", () => {
   beforeAll(() => {
     defineLtSuggestion()
   })
@@ -1076,9 +1091,9 @@ describe("lt-suggestion med et felt React styrer", () => {
     '<input id="kommune" role="combobox" aria-controls="kommune-liste" aria-expanded="false" aria-autocomplete="list">',
     '<textarea id="kommune" role="combobox" aria-controls="kommune-liste" aria-expanded="false" aria-autocomplete="list"></textarea>',
   ]) {
-    it(`gir onChange det valgte (${kontroll.slice(1, 6)})`, async () => {
-      // Satt rett på noden så React ingen endring, og skrev den gamle teksten
-      // tilbake ved neste rendring.
+    it(`gives onChange the chosen option (${kontroll.slice(1, 6)})`, async () => {
+      // Set directly on the node, React saw no change, and wrote the old text
+      // back on the next render.
       monter(`
         <lt-suggestion>
           <label for="kommune">Kommune</label>
@@ -1113,8 +1128,9 @@ describe("lt-suggestion med et felt React styrer", () => {
 })
 
 /*
- * Markup slik en mal skriver den når skjemaet skal sende koden: alternativene
- * har `data-value`, og et skjult `.lt-suggestion__value` får koden.
+ * Markup the way a template writes it when the form should submit the code:
+ * the options have `data-value`, and a hidden `.lt-suggestion__value` gets
+ * the code.
  */
 const MED_KODE = `
   <lt-suggestion>
@@ -1142,7 +1158,7 @@ function tast(input: HTMLElement, key: string, init: KeyboardEventInit = {}) {
   return hendelse
 }
 
-describe("lt-suggestion velger riktig", () => {
+describe("lt-suggestion chooses correctly", () => {
   beforeAll(() => {
     defineLtSuggestion()
   })
@@ -1156,7 +1172,7 @@ describe("lt-suggestion velger riktig", () => {
     }
   }
 
-  it("viser teksten i feltet og legger koden i verdifeltet og hendelsen", async () => {
+  it("shows the text in the field and puts the code in the value field and the event", async () => {
     monter(MED_KODE)
     const vert = await tegn()
     const { input, kode, valg } = deler()
@@ -1174,8 +1190,8 @@ describe("lt-suggestion velger riktig", () => {
     expect(detaljer).toEqual([{ value: "4601", label: "Bergen" }])
   })
 
-  it("tømmer verdifeltet når brukeren endrer teksten etter et valg", async () => {
-    // Ellers ville skjemaet sendt koden for Bergen med «Bodø» i feltet.
+  it("empties the value field when the user changes the text after a choice", async () => {
+    // Otherwise the form would have submitted the code for Bergen with "Bodø" in the field.
     monter(MED_KODE)
     await tegn()
     const { input, kode, valg } = deler()
@@ -1190,9 +1206,9 @@ describe("lt-suggestion velger riktig", () => {
     expect(kode.value).toBe("")
   })
 
-  it("setter koden tilbake når en oppdatering tømmer verdifeltet", async () => {
-    // Verdifeltets `value` er et attributt, og en morfing skriver serverens
-    // tomme verdi over koden brukeren valgte.
+  it("sets the code back when an update empties the value field", async () => {
+    // The value field's `value` is an attribute, and a morph writes the
+    // server's empty value over the code the user chose.
     monter(MED_KODE)
     await tegn()
     const { input, kode, valg } = deler()
@@ -1207,9 +1223,9 @@ describe("lt-suggestion velger riktig", () => {
     expect(kode.value).toBe("0301")
   })
 
-  it("lar en annen kode fra serveren stå", async () => {
-    // Bare en tømt verdi settes tilbake. En kode serveren sender, som etter å
-    // ha slått opp et tvetydig navn, er serverens ord.
+  it("leaves a different code from the server alone", async () => {
+    // Only an emptied value is set back. A code the server sends, for instance
+    // after looking up an ambiguous name, is the server's word.
     monter(MED_KODE)
     await tegn()
     const { input, kode, valg } = deler()
@@ -1225,8 +1241,8 @@ describe("lt-suggestion velger riktig", () => {
     expect(kode.value).toBe("4602")
   })
 
-  it("sender input og change på verdifeltet når koden skrives og tømmes", async () => {
-    // Ellers ser verken `data-bind` i Datastar eller tilstanden i React koden.
+  it("dispatches input and change on the value field when the code is written and emptied", async () => {
+    // Otherwise neither `data-bind` in Datastar nor the state in React sees the code.
     monter(MED_KODE)
     await tegn()
     const { input, kode, valg } = deler()
@@ -1247,8 +1263,8 @@ describe("lt-suggestion velger riktig", () => {
     ])
   })
 
-  it("lukker en åpen liste når feltet blir readonly", async () => {
-    // Reparasjonen holdt den åpen, og Escape gjør ingenting i et låst felt.
+  it("closes an open list when the field becomes readonly", async () => {
+    // The repair kept it open, and Escape does nothing in a locked field.
     monter(MED_KODE)
     await tegn()
     const { input, liste } = deler()
@@ -1265,11 +1281,11 @@ describe("lt-suggestion velger riktig", () => {
     expect(input.getAttribute("aria-expanded")).toBe("false")
   })
 
-  it("velger på click alene, og ikke på mousedown alene", async () => {
+  it("chooses on click alone, and not on mousedown alone", async () => {
     /*
-     * Hjelpemidler som aktiverer et element, sender `click`. Valget skjedde
-     * før på `mousedown`, og en `click` alene valgte ingenting. `mousedown`
-     * holder fortsatt fokus i feltet.
+     * Assistive technology that activates an element sends `click`. The choice
+     * used to happen on `mousedown`, and a `click` alone chose nothing.
+     * `mousedown` still keeps focus in the field.
      */
     monter(MED_KODE)
     await tegn()
@@ -1285,7 +1301,7 @@ describe("lt-suggestion velger riktig", () => {
     expect(input.value).toBe("Bodø")
   })
 
-  it("hopper over et alternativ med aria-disabled, med tastatur og mus", async () => {
+  it("skips an option with aria-disabled, with keyboard and mouse", async () => {
     monter(
       MED_KODE.replace(
         '<li data-value="4601">Bergen</li>',
@@ -1304,7 +1320,7 @@ describe("lt-suggestion velger riktig", () => {
     expect(input.value).toBe("Bodø")
   })
 
-  it("åpner ikke lista og endrer ikke verdien i et readonly-felt", async () => {
+  it("does not open the list or change the value in a readonly field", async () => {
     monter(
       MED_KODE.replace('name="kommune-tekst"', 'name="kommune-tekst" readonly'),
     )
@@ -1321,8 +1337,8 @@ describe("lt-suggestion velger riktig", () => {
     expect(input.value).toBe("")
   })
 
-  it("lar tastene under en IME-komposisjon være", async () => {
-    // Enter bekrefter tegnene i komposisjonen, og skal ikke velge noe.
+  it("leaves the keys alone during IME composition", async () => {
+    // Enter confirms the characters in the composition, and must not choose anything.
     monter(MED_KODE)
     await tegn()
     const { input } = deler()
@@ -1335,7 +1351,7 @@ describe("lt-suggestion velger riktig", () => {
     expect(input.value).toBe("")
   })
 
-  it("går til første og siste alternativ med PgUp og PgDn, og rører ikke Home og End", async () => {
+  it("goes to the first and last option with PgUp and PgDn, and leaves Home and End alone", async () => {
     monter(MED_KODE)
     await tegn()
     const { input, valg } = deler()
@@ -1347,14 +1363,14 @@ describe("lt-suggestion velger riktig", () => {
     tast(input, "PageUp")
     expect(input.getAttribute("aria-activedescendant")).toBe(valg[0].id)
 
-    // Home og End flytter markøren i teksten. Komponenten tar dem ikke.
+    // Home and End move the caret in the text. The web component leaves them alone.
     expect(tast(input, "Home").defaultPrevented).toBe(false)
     expect(tast(input, "End").defaultPrevented).toBe(false)
   })
 
-  it("finner det markerte alternativet igjen på teksten når lista byttes ut", async () => {
-    // Lista og alternativene får id av komponenten, og en oppdatering som
-    // sender lista på nytt bytter dem ut. Markeringen følger teksten.
+  it("finds the highlighted option again by its text when the list is replaced", async () => {
+    // The list and the options get ids from the web component, and an update
+    // that sends the list again replaces them. The highlight follows the text.
     monter(MED_KODE)
     await tegn()
     const { input, liste } = deler()
@@ -1379,9 +1395,10 @@ describe("lt-suggestion velger riktig", () => {
     expect(input.getAttribute("aria-activedescendant")).toBe(bodoe.id)
   })
 
-  it("skriver antall treff på nytt når en oppdatering tømmer statuselementet", async () => {
-    // Teksten finnes ikke i serverens utgave, så uten dette måtte malen
-    // skrive Datastars `data-ignore-morph`, som ikke betyr noe for htmx.
+  it("writes the number of matches again when an update empties the status element", async () => {
+    // The text is not in the server's version, so without this the template
+    // would have to write Datastar's `data-ignore-morph`, which means nothing to
+    // htmx.
     monter(MED_KODE)
     await tegn()
     const { input } = deler()
@@ -1400,9 +1417,10 @@ describe("lt-suggestion velger riktig", () => {
     expect(status.textContent).toBe(lest)
   })
 
-  it("legger lista rett under feltet også når hjelpeteksten står etter", async () => {
-    // Verten er posisjonsboksen. Uten egen `inset-block-start` får lista sin
-    // statiske plass, rett etter feltet i flyten, og ikke under hjelpeteksten.
+  it("places the list right below the field also when the help text comes after", async () => {
+    // The host is the positioning box. Without its own `inset-block-start`
+    // the list gets its static position, right after the field in the flow, and
+    // not below the help text.
     monter(
       MED_KODE.replace(
         "</lt-suggestion>",
@@ -1424,7 +1442,7 @@ describe("lt-suggestion velger riktig", () => {
     expect(hjelp.getBoundingClientRect().top).toBeLessThan(boks.bottom)
   })
 
-  it("skiller to alternativer med samme tekst på koden når lista byttes ut", async () => {
+  it("tells two options with the same text apart by code when the list is replaced", async () => {
     monter(
       MED_KODE.replace(
         '<li data-value="0301">Oslo</li>',
@@ -1451,10 +1469,10 @@ describe("lt-suggestion velger riktig", () => {
     expect(valgt.getAttribute("data-value")).toBe("3419")
   })
 
-  it("setter koden tilbake til serverens når skjemaet tilbakestilles", async () => {
-    // Et skjult felt har ingen standardverdi å gå tilbake til, siden koden
-    // skrives som attributt. Uten dette sendte skjemaet koden for Bodø med
-    // tom tekst etter en tilbakestilling.
+  it("sets the code back to the server's when the form is reset", async () => {
+    // A hidden field has no default value to go back to, since the code is
+    // written as an attribute. Without this the form submitted the code for
+    // Bodø with empty text after a reset.
     monter(
       `<form>${MED_KODE.replace('name="kommune-tekst"', 'name="kommune-tekst" value="Bergen"').replace('class="lt-suggestion__value" name="kommune"', 'class="lt-suggestion__value" name="kommune" value="4601"')}</form>`,
     )
@@ -1473,7 +1491,7 @@ describe("lt-suggestion velger riktig", () => {
     expect(input.value).toBe("Bergen")
     expect(kode.value).toBe("4601")
 
-    // Og uten kode fra serveren: tomt.
+    // And with no code from the server: empty.
     monter(`<form>${MED_KODE}</form>`)
     await tegn()
     const andre = deler()
@@ -1487,9 +1505,9 @@ describe("lt-suggestion velger riktig", () => {
     expect(andre.kode.value).toBe("")
   })
 
-  it("skriver for fra feltets id, og sier fra, når ledeteksten pekte et annet sted", async () => {
-    // Samme regel som i <lt-field>: `for` og `id` er den samme opplysningen.
-    // Men uten JavaScript sto feltet uten ledetekst, så det skal sies fra.
+  it("writes for from the field's id, and reports it, when the label pointed elsewhere", async () => {
+    // Same rule as in <lt-field>: `for` and `id` are the same information.
+    // But without JavaScript the field had no label, so it must be reported.
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     monter(MED_KODE.replace('for="kommune"', 'for="feil"'))
     await tegn()
@@ -1498,13 +1516,15 @@ describe("lt-suggestion velger riktig", () => {
       "kommune",
     )
     expect(advarsel).toHaveBeenCalledTimes(1)
-    expect(String(advarsel.mock.calls[0][0])).toContain("pekte på en annen id")
+    expect(String(advarsel.mock.calls[0][0])).toContain(
+      "pointed to a different id",
+    )
     advarsel.mockRestore()
   })
 
-  it("lar ikke hendelsene på verdifeltet boble til verten", async () => {
-    // Oppskriften henter forslag med `data-on:input` på <lt-suggestion>.
-    // Fyrte koden den, ble det et søk på «4601» ved hvert valg.
+  it("does not let the events on the value field bubble to the host", async () => {
+    // The recipe fetches suggestions with `data-on:input` on <lt-suggestion>.
+    // Had the code fired it, every choice would have searched for "4601".
     monter(MED_KODE)
     const vert = await tegn()
     const { input, valg } = deler()
@@ -1523,16 +1543,16 @@ describe("lt-suggestion velger riktig", () => {
     expect(paaVerten).toEqual(["kommune-tekst", "kommune-tekst"])
   })
 
-  it("beholder koden ved tilbakestilling når serveren har sendt valget tilbake", async () => {
-    // Med htmx sender serveren teksten og koden tilbake. Da er det valgte
-    // også skjemaets standardverdi, og en tilbakestilling skal lande der.
+  it("keeps the code on reset when the server has sent the choice back", async () => {
+    // With htmx the server sends the text and the code back. Then the chosen
+    // one is also the form's default value, and a reset must land there.
     monter(`<form>${MED_KODE}</form>`)
     await tegn()
     const { input, kode, valg } = deler()
     input.focus()
     valg[0].click()
     await ventPaTegning()
-    // Serverens svar: begge verdiene som attributter, slik en morfing skriver.
+    // The server's answer: both values as attributes, the way a morph writes them.
     input.setAttribute("value", "Bergen")
     kode.setAttribute("value", "4601")
     await ventPaTegning()
@@ -1546,9 +1566,9 @@ describe("lt-suggestion velger riktig", () => {
     expect(kode.value).toBe("4601")
   })
 
-  it("finner koden fra alternativet når teksten etter tilbakestilling er et annet valg", async () => {
-    // Serveren sendte Bodø tilbake etter at brukeren valgte det, og brukeren
-    // skrev videre. Tilbakestillingen gir «Bodø», og koden følger alternativet.
+  it("finds the code from the option when the text after reset is a different choice", async () => {
+    // The server sent Bodø back after the user chose it, and the user kept
+    // typing. The reset gives "Bodø", and the code follows the option.
     monter(`<form>${MED_KODE}</form>`)
     await tegn()
     const { input, kode, valg } = deler()
@@ -1571,9 +1591,9 @@ describe("lt-suggestion velger riktig", () => {
     expect(kode.value).toBe("1804")
   })
 
-  it("skriver ikke antallet tilbake når noen andre filtrerer", async () => {
-    // En patch er da svaret på et tastetrykk, og det nye antallet leses
-    // opp av `announceFiltered` rett etter. To tall på rad er støy.
+  it("does not write the count back when something else filters", async () => {
+    // A patch is then the answer to a keystroke, and `announceFiltered`
+    // announces the new count right after. Two numbers in a row are noise.
     monter(MED_KODE.replace("<lt-suggestion>", "<lt-suggestion prefiltered>"))
     await tegn()
     const { input, liste } = deler()
@@ -1591,7 +1611,7 @@ describe("lt-suggestion velger riktig", () => {
     expect(status.textContent).toBe("")
   })
 
-  it("sier ingenting når ledeteksten står rundt hele elementet", async () => {
+  it("says nothing when the label wraps the whole element", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     monter(
       `<label>Kommune <lt-suggestion><input class="lt-input" name="kommune"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion></label>`,
@@ -1605,10 +1625,10 @@ describe("lt-suggestion velger riktig", () => {
     advarsel.mockRestore()
   })
 
-  it("følger skjemaet når form på feltet peker på et annet", async () => {
-    // Lytteren på `reset` hører til skjemaet feltet tilhører nå. `form` på
-    // feltet kan peke på et annet skjema uten at noe flyttes, og en patch
-    // kan endre det.
+  it("follows the form when form on the field points to another", async () => {
+    // The `reset` listener belongs to the form the field belongs to now.
+    // `form` on the field can point to another form without anything moving,
+    // and a patch can change it.
     monter(`<form id="a">${MED_KODE}</form><form id="b"></form>`)
     await tegn()
     const { input, kode, valg } = deler()
@@ -1631,13 +1651,13 @@ describe("lt-suggestion velger riktig", () => {
     await new Promise((r) => setTimeout(r, 20))
     await ventPaTegning()
 
-    // Teksten går tilbake til tom, og koden følger.
+    // The text goes back to empty, and the code follows.
     expect(input.value).toBe("")
     expect(kode.value).toBe("")
   })
 
-  it("skriver ikke antallet tilbake når lista er lukket", async () => {
-    // Hver patch av området ville ellers lest det gamle antallet opp igjen.
+  it("does not write the count back when the list is closed", async () => {
+    // Every patch of the region would otherwise announce the old count again.
     monter(MED_KODE)
     await tegn()
     const { input } = deler()
@@ -1657,9 +1677,9 @@ describe("lt-suggestion velger riktig", () => {
     expect(status.textContent).toBe("")
   })
 
-  it("gir koden tilbake i det brukeren skriver det valgte på nytt", async () => {
-    // Etter at en morfing tømte både tekst og kode, som idiomorph gjør uten
-    // ignoreActiveValue, skal ikke koden vente på en tilfeldig neste patch.
+  it("gives the code back as soon as the user types the chosen text again", async () => {
+    // After a morph emptied both text and code, as idiomorph does without
+    // ignoreActiveValue, the code must not wait for some random next patch.
     monter(MED_KODE)
     await tegn()
     const { input, kode, valg } = deler()
@@ -1678,7 +1698,7 @@ describe("lt-suggestion velger riktig", () => {
     expect(kode.value).toBe("4601")
   })
 
-  it("sier ingenting om et felt uten id som har navn fra aria-labelledby", async () => {
+  it("says nothing about a field without an id that is named by aria-labelledby", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     monter(
       `<lt-suggestion><label id="l">Kommune</label><input class="lt-input" name="kommune" aria-labelledby="l"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
@@ -1689,9 +1709,9 @@ describe("lt-suggestion velger riktig", () => {
     advarsel.mockRestore()
   })
 
-  it("går tilbake til serverens Våler når brukeren hadde valgt det andre", async () => {
-    // To alternativer med samme tekst: ved tilbakestilling er teksten
-    // serverens, og da gjelder serverens kode, ikke det brukeren valgte.
+  it("goes back to the server's Våler when the user had chosen the other one", async () => {
+    // Two options with the same text: on reset the text is the server's, and
+    // then the server's code applies, not the one the user chose.
     monter(
       `<form>${MED_KODE.replace(
         'name="kommune-tekst"',
@@ -1721,7 +1741,7 @@ describe("lt-suggestion velger riktig", () => {
     expect(kode.value).toBe("3419")
   })
 
-  it("gir en ledetekst utenfor elementet klassen, som lt-field gjør", async () => {
+  it("gives a label outside the element the class, as lt-field does", async () => {
     monter(
       `<label for="kommune">Kommune</label><lt-suggestion><input class="lt-input" id="kommune"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     )

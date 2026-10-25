@@ -4,9 +4,10 @@ export const ICON_CLASS = "lt-icon" as const
 
 export type IconOptions = {
   /**
-   * Hva ikonet betyr, når det står alene og betyr noe, som et varseltegn uten
-   * tekst ved siden av. Blir `aria-label` med `role="img"`. Uten det er
-   * ikonet pynt, og skjules for skjermlesere.
+   * What the icon means, when it stands alone and means something, such as a
+   * warning sign with no text next to it. Becomes `aria-label` with
+   * `role="img"`. Without it the icon is decoration, and is hidden from
+   * screen readers.
    */
   label?: string
 }
@@ -19,17 +20,17 @@ export type IconAttributes = {
 }
 
 /**
- * Attributtene for et ikon. Klassen hører på en `<svg>`, og svg-en kommer fra
- * appens eget ikonsett: LO-TEK sender ingen ikoner.
+ * The attributes for an icon. The class goes on an `<svg>`, and the svg comes
+ * from the app's icon set: LO-TEK ships no icons.
  *
- * Ikonet er like stort som teksten rundt, og tegnes i fargen svg-en sier,
- * som bør være `currentColor`. Uten `label` er det pynt, og står det alene i
- * en knapp, må knappen få navnet sitt et annet sted: `aria-label` på knappen,
- * eller en tekst med `lt-sr-only`. Kjernen sier fra om en knapp som mangler
- * det.
+ * The icon is as large as the text around it, and is drawn in the colour the
+ * svg says, which should be `currentColor`. Without `label` it is decoration,
+ * and if it stands alone in a button, the button must get its name somewhere
+ * else: `aria-label` on the button, or a text with `lt-sr-only`. The core
+ * reports a button that lacks one.
  *
  * ```ts
- * <button {...button()} aria-label="Slett søknaden">
+ * <button {...button()} aria-label="Delete the application">
  *   <svg {...icon()} viewBox="0 0 24 24">…</svg>
  * </button>
  * ```

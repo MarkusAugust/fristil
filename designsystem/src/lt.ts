@@ -51,25 +51,25 @@ import { toast } from "./components/standalone/toast/toast.js"
 import { setAttributes } from "./dom.js"
 
 /**
- * Hele komponent-API-et på ett sted.
+ * The whole component API in one place.
  *
- * Hver komponent er en funksjon som tar et objekt med valg og returnerer
- * attributtene du sprer inn i elementet:
+ * Each component is a function that takes an object of options and returns
+ * the attributes you spread onto the element:
  *
  * ```ts
  * import { lt } from "@lo-tek/interfaces"
  *
- * <button {...lt.button({ variant: "secondary" })}>Lagre utkast</button>
+ * <button {...lt.button({ variant: "secondary" })}>Save draft</button>
  * <input {...lt.input({ type: "email", state: "invalid" })} />
- * <span {...lt.badge({ color: "success" })}>Innvilget</span>
+ * <span {...lt.badge({ color: "success" })}>Approved</span>
  * ```
  *
- * Formen er den samme for alle, så du lærer den én gang. Skriv `lt.` i
- * editoren for å se hva som finnes; skriv `lt.button.` for å se de lovlige
- * variantene og vakten som validerer verdier utenfra.
+ * The shape is the same for all of them, so you learn it once. Type `lt.` in
+ * the editor to see what exists; type `lt.button.` to see the allowed
+ * variants and the guard that validates values from outside.
  *
- * Returverdiene er vanlige objekter. Det er grunnen til at det samme API-et
- * virker i React, Astro, Datastar og ren HTML.
+ * The return values are plain objects. That is why the same API works in
+ * React, Astro, Datastar and plain HTML.
  */
 export const lt = {
   accordion,
@@ -81,35 +81,36 @@ export const lt = {
   card,
   checkbox,
   /**
-   * Linja som sier fra at forbindelsen til serveren er borte. Serveren kan
-   * ikke melde det selv, så `<lt-connection-status>` eier innholdet.
+   * The bar that says the connection to the server is lost. The server
+   * cannot report that itself, so `<lt-connection-status>` creates the
+   * content.
    */
   connectionStatus,
   dialog,
   divider,
   errorText,
   /**
-   * Feiloppsummeringen over et skjema. Serveren skriver hele boksen, også
-   * overskriften, og `<lt-error-summary>` flytter bare fokus.
+   * The error summary above a form. The server writes the whole box, heading
+   * included, and `<lt-error-summary>` only moves focus.
    */
   errorSummary,
   /**
-   * Kobler sammen ledetekst, felt, hjelpetekst og feilmelding.
+   * Connects the label, field, help text and error text.
    *
    * ```ts
-   * const felt = lt.field({ id: "epost", required: "text", help: true, error: true, invalid })
+   * const field = lt.field({ id: "email", required: "text", help: true, error: true, invalid })
    *
-   * <label {...felt.label}>E-postadresse</label>
-   * <input {...lt.input({ type: "email", state: felt.state })} {...felt.control} />
-   * <p {...lt.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
-   * <p {...lt.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
+   * <label {...field.label}>Email address</label>
+   * <input {...lt.input({ type: "email", state: field.state })} {...field.control} />
+   * <p {...lt.helpText()} {...field.help}>We send the receipt here.</p>
+   * <p {...lt.errorText()} {...field.error}>Enter a valid address.</p>
    * ```
    *
-   * Samme utregning som `<lt-field>` gjør, men som data, for markup som
-   * lages med JavaScript. Da trengs ingen web component.
+   * The same calculation `<lt-field>` does, but as data, for markup created
+   * with JavaScript. Then no web component is needed.
    */
   field: computeFieldAttributes,
-  /** Gruppe av kontroller som hører sammen. Ledeteksten er `lt.legend`. */
+  /** A group of controls that belong together. Its label is `lt.legend`. */
   fieldset,
   heading,
   fileUpload,
@@ -123,65 +124,67 @@ export const lt = {
   pagination,
   paragraph,
   /**
-   * Knappen og panelet i et sprettoppvindu. `<lt-popover>` regner ut
-   * posisjonen, serveren skriver koblingen.
+   * The button and panel of a popover. `<lt-popover>` calculates the
+   * position, the server writes the wiring.
    */
   popover,
   radio,
   search,
   select,
   /**
-   * Varselet om at innlogget økt går ut. Nedtellingen er klientens klokke,
-   * så `<lt-session-timeout>` eier innholdet.
+   * The warning that a signed-in session is about to expire. The countdown
+   * runs on the client's clock, so `<lt-session-timeout>` is responsible for
+   * the content.
    */
   sessionTimeout,
   skeleton,
   skipLink,
   progress,
   spinner,
-  /** Tekst bare skjermlesere skal få. Krever `sr-only.css`. */
+  /** Text only screen readers get. Requires `sr-only.css`. */
   srOnly,
   /**
-   * Feltet og forslagslista. `<lt-suggestion>` tar tastaturet og
-   * filtreringen, serveren skriver markupen.
+   * The field and the suggestion list. `<lt-suggestion>` handles the
+   * keyboard and the filtering, the server writes the markup.
    */
   suggestion,
-  /** Av og på. Heter `switchControl` når du importerer den direkte. */
+  /** On and off. Named `switchControl` when you import it directly. */
   switch: switchControl,
   /**
-   * Fanerad med paneler. Serveren skriver rollene og skjuler panelene som
-   * ikke er valgt, `<lt-tabs>` tar piltastene.
+   * A tab list with panels. The server writes the roles and hides the panels
+   * that are not selected, `<lt-tabs>` handles the arrow keys.
    */
   tabs,
   /**
-   * Varselregionen. Setter `data-ignore-morph`, fordi `<lt-toast>` lager og
-   * fjerner sine egne meldinger inni den.
+   * The toast region. Sets `data-ignore-morph`, because `<lt-toast>` creates
+   * and removes its messages inside it.
    */
   toast,
   toggleGroup,
   tooltip,
   table,
   /**
-   * Overskriften og knappen i en kolonne som kan sorteres. `aria-sort` på
-   * `<th>` er tilstanden, og pila tegnes fra den. Sorteringen er appens.
+   * The header and button in a sortable column. `aria-sort` on the `<th>` is
+   * the state, and the arrow is drawn from it. The sorting is up to the app.
    */
   tableSort,
   tag,
   textarea,
 
   /**
-   * Bruker et attributtsett på et element i vanlig DOM.
+   * Applies an attribute set to an element in the plain DOM.
    *
-   * I JSX sprer du objektet. Uten JSX gjør denne jobben det, og rydder bort
-   * det byggefunksjonen forvalter fra forrige tilstand. Flere sett sendes
-   * hver for seg: `lt.setAttributes(felt, lt.input(), kobling.control)`.
+   * In JSX you spread the object. Without JSX this function does the job,
+   * and cleans up what the builder function manages from the previous state.
+   * Several sets are passed separately:
+   * `lt.setAttributes(field, lt.input(), wiring.control)`.
    */
   setAttributes,
 
-  /** Valideringstilstandene som deles av input, textarea og select. */
+  /** The validation states shared by input, textarea and select. */
   states: fieldStates,
   isState: isFieldState,
-  /** Måtene et påkrevd felt kan markeres på. */
+  /** The ways a required field can be marked. */
   markers: requiredMarkers,
   isMarker: isRequiredMarker,
 } as const

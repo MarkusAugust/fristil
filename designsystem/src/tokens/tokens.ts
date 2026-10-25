@@ -29,54 +29,54 @@ export type Breakpoint = keyof typeof Breakpoints
 export type Container = keyof typeof Containers
 
 /*
- * Hva hver familie, rolle og hvert lag er til, med samme ord som
- * `design-tokens.mdx`. Manifestet skriver dem ut, så et verktøy kan velge en
- * farge etter hva den betyr framfor etter navnet. Typet mot aksene i
- * matrisen: en ny familie eller rolle krever en setning her.
+ * What each family, role and layer is for, in the same words as
+ * `design-tokens.mdx`. The manifest writes them out, so a tool can choose a
+ * colour by what it means rather than by its name. Typed against the axes of
+ * the matrix: a new family or role needs a sentence here.
  */
 export const FAMILY_DESCRIPTIONS: Record<Family, string> = {
-  accent: "Lenker, primærknapp, fokus, valgt tilstand",
-  visited: "Besøkte lenker",
+  accent: "Links, primary button, focus, selected state",
+  visited: "Visited links",
   brand1:
-    "Første merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+    "First brand colour: surfaces, sections and categories. Carries no meaning of its own",
   brand2:
-    "Andre merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
+    "Second brand colour: surfaces, sections and categories. Carries no meaning of its own",
   brand3:
-    "Tredje merkefarge: flater, seksjoner og kategorier. Betyr ikke noe i seg selv",
-  neutral: "Siden, brødteksten, kantene",
-  danger: "Feil, sletting, avslag",
-  warning: "Krever oppmerksomhet",
-  success: "Fullført, godkjent",
+    "Third brand colour: surfaces, sections and categories. Carries no meaning of its own",
+  neutral: "The page, body text, borders",
+  danger: "Errors, deletion, rejection",
+  warning: "Needs attention",
+  success: "Completed, approved",
 }
 
 export const ROLE_DESCRIPTIONS: Record<Role, string> = {
-  surface: "Tonet flate: et merke, et varsel, en seksjon",
-  borderSubtle: "Dekorativ strek, som mellom to rader",
-  border: "Rammen rundt et felt eller en flate",
-  borderStrong: "Feltrammen når musa er over, og en tabellstrek",
-  fill: "Fylt flate: en knapp, en avkryssingsboks som er huket av",
-  content: "Teksten oppå fill, og oppå text på en knapp ved hover",
-  textSubtle: "Dempet tekst: hjelpetekst, plassholdere",
-  text: "Familiens farge som tekst, og knappen ved hover",
-  textStrong: "Brødtekst, overskrifter og lenka ved hover",
+  surface: "Tinted surface: a badge, an alert, a section",
+  borderSubtle: "Decorative line, such as between two rows",
+  border: "The border around a field or a surface",
+  borderStrong: "The field border on hover, and a table line",
+  fill: "Filled surface: a button, a checked checkbox",
+  content: "The text on top of fill, and on top of text on a button on hover",
+  textSubtle: "Muted text: help text, placeholders",
+  text: "The family's colour as text, and the button on hover",
+  textStrong: "Body text, headings and the link on hover",
 }
 
-/** Lagene bare den nøytrale familien har, fordi den bærer siden selv. */
+/** The layers only the neutral family has, because it carries the page itself. */
 export const LAYER_DESCRIPTIONS: Record<"canvas" | "raised", string> = {
-  canvas: "Siden",
-  raised: "En flate som ligger over et kort",
+  canvas: "The page",
+  raised: "A surface that lies above a card",
 }
 
 /**
- * Alt som ikke er farge.
+ * Everything that is not colour.
  *
- * Fargene står ikke her. De regnes av kjernen fra fargekontrakten
- * (`color-contract.json`) og skrives til `matrix-cells.ts`, så systemets egne farger
- * er den samme kontrakten anvendt på systemets egne kulører. Se `colorTokens`
- * under.
+ * The colours are not here. The core computes them from the colour contract
+ * (`color-contract.json`) and writes them to `matrix-cells.ts`, so the
+ * system's colours are the same contract applied to the system's hues. See
+ * `colorTokens` below.
  */
 export const cssTokens = {
-  // Tekststørrelser
+  // Font sizes
   "--lt-font-size-reference": "16px",
   "--lt-font-size-xxs": "0.625rem",
   "--lt-font-size-xs": "0.75rem",
@@ -88,31 +88,32 @@ export const cssTokens = {
   "--lt-font-size-mega": "2.625rem",
 
   /*
-   * Skriftvekter og linjeavstander står her, ikke i hver komponent, fordi en
-   * organisasjon som tar systemet i bruk gjerne har sin egen typografi. Et
-   * annet norsk designsystem har fete knapper med linjeavstand 1,666, våre er
-   * halvfete med 1,5, og forskjellen skal settes ett sted.
+   * Font weights and line heights are here, not in each component, because
+   * an organisation adopting the system often has its own typography.
+   * Another Norwegian design system has bold buttons with a line height of
+   * 1.666, ours are semibold with 1.5, and the difference should be set in
+   * one place.
    */
   "--lt-font-weight-regular": "400",
   "--lt-font-weight-medium": "500",
   "--lt-font-weight-semibold": "600",
   "--lt-font-weight-bold": "700",
 
-  /** Kontroller og knapper. */
+  /** Controls and buttons. */
   "--lt-line-height-default": "1.5",
-  /** Overskrifter. */
+  /** Headings. */
   "--lt-line-height-heading": "1.2",
-  /** Brødtekst i en artikkel. */
+  /** Body text in an article. */
   "--lt-line-height-article": "1.6",
-  /** Tettere tekst i små flater: merkelapper, hjelpebobler. */
+  /** Tighter text on small surfaces: tags, tooltips. */
   "--lt-line-height-compact": "1.4",
 
   /*
-   * Avstandsskalaen, med 4 piksler som grunnenhet.
+   * The spacing scale, with 4 pixels as the base unit.
    *
-   * Én skala, ikke to. Tailwind har ett navnerom for både avstand og
-   * størrelse, `--spacing-*`, og regner `p-4` som `calc(var(--spacing) * 4)`.
-   * To skalaer ville betydd at bare den ene kunne kobles dit.
+   * One scale, not two. Tailwind has one namespace for both spacing and
+   * size, `--spacing-*`, and computes `p-4` as `calc(var(--spacing) * 4)`.
+   * Two scales would have meant only one of them could be mapped there.
    */
   "--lt-spacing-px": "1px",
   "--lt-spacing-0-5": "0.125rem",
@@ -129,10 +130,11 @@ export const cssTokens = {
   "--lt-spacing-16": "4rem",
 
   /*
-   * Ikonene er bilder med streken malt inn, så de følger ikke matrisen.
+   * The icons are images with the stroke painted in, so they do not follow
+   * the matrix.
    *
-   * Et ikon tegnet inn i en bakgrunn kan ikke lese en CSS-variabel. De har
-   * derfor en mørk og en lys utgave, og snur med temaet.
+   * An icon drawn into a background cannot read a CSS variable. They
+   * therefore have a dark and a light version, and switch with the theme.
    */
   "--lt-icon-search":
     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234d4d4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='21' y2='21'/%3E%3C/svg%3E\")",
@@ -147,17 +149,17 @@ export const cssTokens = {
 } as const
 
 /**
- * Hvert variabelnavn systemet sender ut.
+ * Every variable name the system ships.
  *
- * Fargene er med, selv om de ikke ligger i `cssTokens`: de regnes av
- * kontrakten og har derfor ingen literal i kilden. `ColorToken` regner dem ut
- * av aksene i stedet. Uten fargene her var oppslagstabellen typet for alt
- * *utenom* det konsumenten oftest skriver, og en skrivefeil i et fargenavn ga
- * ingen feil i editoren.
+ * The colours are included even though they are not in `cssTokens`: they are
+ * computed by the contract and so have no literal in the source. `ColorToken`
+ * derives them from the axes instead. Without the colours here, the lookup
+ * table was typed for everything *except* what the consumer writes most
+ * often, and a typo in a colour name gave no error in the editor.
  */
 export type CssToken = keyof typeof cssTokens | ColorToken
 
-/** Ikonene i mørkt tema, med lysere strek. */
+/** The icons in dark theme, with a lighter stroke. */
 export const darkTokens = {
   "--lt-icon-search":
     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b2b2b2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16.5' y1='16.5' x2='21' y2='21'/%3E%3C/svg%3E\")",
@@ -172,14 +174,15 @@ export const darkTokens = {
 } as const satisfies Partial<Record<CssToken, string>>
 
 /**
- * Systemfarger som ikke er en celle i matrisen.
+ * System colours that are not a cell in the matrix.
  *
- * Avslått tilstand er unntatt kontrastkravet i WCAG 1.4.3, og verdien er med
- * vilje lav: en kontroll som er slått av skal se av. 3,44:1 mot flaten er
- * fortsatt lesbart, mens en lysere grå ga 1,83 og var det ikke.
+ * The disabled state is exempt from the contrast requirement in WCAG 1.4.3,
+ * and the value is low on purpose: a disabled control should look disabled.
+ * 3.44:1 against the surface is still readable, while a lighter grey gave
+ * 1.83 and was not.
  *
- * Flaten bak en modal og skyggen under et panel er gjennomsiktig sort i begge
- * temaer, altså ikke en farge fra en skala.
+ * The backdrop behind a modal and the shadow under a panel are translucent
+ * black in both themes, not a colour from a scale.
  */
 const SYSTEM_COLORS = {
   "--lt-color-disabled-surface": "var(--lt-color-neutral-raised)",
@@ -188,19 +191,19 @@ const SYSTEM_COLORS = {
 } as const
 
 /**
- * Fargene, regnet av kontrakten.
+ * The colours, computed by the contract.
  *
- * Systemets egne farger er den samme kontrakten anvendt på systemets egne
- * kulører. Det er ingen håndplukket palett ved siden av, så det finnes ikke en
- * utgave som kan komme ut av takt med løftene.
+ * The system's colours are the same contract applied to the system's hues.
+ * There is no hand-picked palette beside it, so there is no version that can
+ * drift out of step with the promises.
  */
-/** Fargenavnene som ikke er en celle: avslått tilstand, ring, flate, skygge. */
+/** The colour names that are not a cell: disabled state, ring, backdrop, shadow. */
 type SystemColorToken =
   | keyof typeof SYSTEM_COLORS
   | "--lt-color-overlay"
   | "--lt-shadow-overlay"
 
-/** Hvert fargenavn systemet sender ut. */
+/** Every colour name the system ships. */
 export type ColorToken = MatrixToken | SystemColorToken
 
 export const colorTokens: Record<ColorToken, string> = {

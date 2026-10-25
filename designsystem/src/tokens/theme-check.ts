@@ -1,35 +1,37 @@
 import { defaultCore } from "../diagnostics/default-core.js"
 
 /**
- * Kontrollerer et tema en konsument har skrevet selv.
+ * Checks a theme a consumer has written by hand.
  *
- * Generatoren holder løftene av konstruksjon. Skriver noen inn egne verdier,
- * er løftene deres å holde, og da skylder vi dem et svar på hvilken celle som
- * ryker. Uten dette er «du kan overstyre hva som helst» en felle.
+ * The generator keeps the promises by construction. When someone writes in
+ * values of their choosing, keeping the promises is up to them, and then we
+ * owe them an answer about which cell breaks. Without this, "you can override
+ * anything" is a trap.
  *
- * Det eneste som betyr noe er hvilke `--lt-color-*` som står i hvilken blokk,
- * og om blokka er lys eller mørk, lest av `color-scheme` eller selektoren. En
- * verdi som ikke kan regnes på, meldes som nettopp det framfor å hoppes over,
- * og verdier som mangler fylles fra LO-TEKs eget tema, så den som bare har
- * overstyrt én celle får den kontrollert mot resten av systemet.
+ * All that matters is which `--lt-color-*` is in which block, and whether the
+ * block is light or dark, read from `color-scheme` or the selector. A value
+ * that cannot be computed is reported as exactly that instead of being
+ * skipped, and missing values are filled from LO-TEK's default theme, so
+ * someone who has overridden a single cell gets it checked against the rest
+ * of the system.
  *
- * Sjekken er kjernen, skrevet i Rust, den samme som `lotek sjekk-tema`
- * bruker.
+ * The check is the core, written in Rust, the same one `lotek check-theme`
+ * uses.
  */
 
 export type ThemeReport = {
   problems: ThemeProblem[]
-  /** Blokker som faktisk ble lest. */
+  /** Blocks that were actually read. */
   blocks: number
   /**
-   * Verdier konsumenten selv skrev, og som ble forstått.
+   * Values the consumer wrote, and that were understood.
    *
-   * Løftetallet alene duger ikke som mål på arbeid: standardverdiene fyller
-   * hullene, så én linje gir like mange løfter som et helt tema. Dette tallet
-   * teller det fila faktisk inneholdt.
+   * The promise count alone is no proof of work: the defaults fill the gaps,
+   * so one line gives as many promises as a whole theme. This number counts
+   * what the file actually contained.
    */
   declarations: number
-  /** Løfter som faktisk ble kontrollert. */
+  /** Promises that were actually checked. */
   promises: number
 }
 
@@ -38,12 +40,12 @@ export type ThemeProblem = {
   message: string
 }
 
-/** Leser et tema og kontrollerer hvert løfte i hver blokk. */
+/** Reads a theme and checks every promise in every block. */
 export function inspectTheme(css: string): ThemeReport {
   return defaultCore().inspectTheme(css)
 }
 
-/** Bare problemene, for den som ikke trenger tellingen. */
+/** Only the problems, for anyone who does not need the counts. */
 export function checkTheme(css: string): ThemeProblem[] {
   return inspectTheme(css).problems
 }

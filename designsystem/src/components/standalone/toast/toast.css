@@ -1,11 +1,11 @@
 @layer lotek {
-  /* Elementnavnet og klassen. Navnet holder plasseringen når en morfing
-     eller et `className` fra React river klassen bort, og klassen bærer den
-     når komponenten er registrert under et annet navn. */
+  /* The element name and the class. The name keeps the position when a
+     morph or a `className` from React tears the class away, and the class
+     carries it when the component is registered under another name. */
   lt-toast,
   .lt-toast {
-    /* Beholderen ligger fast i hjørnet og slipper klikk gjennom, så den ikke
-       stenger for knapper under seg når den er tom. */
+    /* The container is fixed in the corner and lets clicks through, so it
+       does not block buttons beneath it when it is empty. */
     position: fixed;
     inset-block-end: var(--lt-toast-space, var(--lt-spacing-4));
     inset-inline-end: var(--lt-toast-space, var(--lt-spacing-4));

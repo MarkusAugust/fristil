@@ -49,10 +49,10 @@ describe("lt-label", () => {
     expect(after.content).toBe('" *"')
   })
 
-  it("required text: ::after shows (påkrevd) in danger color", () => {
+  it("required text: ::after shows (required) in danger color", () => {
     const after = css("required-text", "::after")
     expect(after.color).toBe(farge("--lt-color-danger-text"))
-    expect(after.content).toBe('" (påkrevd)"')
+    expect(after.content).toBe('" (required)"')
   })
 
   it("optional: ::after has muted color", () => {
@@ -61,8 +61,8 @@ describe("lt-label", () => {
   })
 })
 
-describe("lt-label tilgjengelighet", () => {
-  it("kobler ledetekst til felt i alle markeringer", async () => {
+describe("lt-label accessibility", () => {
+  it("connects the label to the field in every marker", async () => {
     monter(`
       <label class="lt-label" for="a11y-navn">Fullt navn</label>
       <input class="lt-input" id="a11y-navn" type="text" />
@@ -82,30 +82,32 @@ describe("lt-label tilgjengelighet", () => {
   })
 })
 
-describe("teksten i markeringen kan byttes ut", () => {
-  it("er norsk når variablene ikke er satt", () => {
+describe("the text in the marker can be replaced", () => {
+  it("is English when the variables are not set", () => {
     monter(`
       <label id="krav" class="lt-label" data-required="text">Navn</label>
       <label id="valg" class="lt-label" data-optional>Mellomnavn</label>
     `)
 
-    expect(css("krav", "::after").content).toBe('" (påkrevd)"')
-    expect(css("valg", "::after").content).toBe('" (valgfri)"')
+    expect(css("krav", "::after").content).toBe('" (required)"')
+    expect(css("valg", "::after").content).toBe('" (optional)"')
   })
 
-  it("leser teksten fra variablene, så den kan oversettes", () => {
-    // En pakke kan ikke sende med alle språk, så teksten hører til appen.
-    // `:lang(en)` er én måte, en variabel satt fra i18next en annen.
+  it("reads the text from the variables, so it can be translated", () => {
+    // A package cannot ship every language, so the text belongs to the app.
+    // `:lang(nb)` is one way, a variable set from i18next another. The
+    // values differ from the defaults, so the test fails if the variables
+    // are not read.
     monter(`
-      <div style="--lt-label-required-text: ' (required)'; --lt-label-optional-text: ' (optional)'; --lt-label-required-symbol: ' †'">
+      <div style="--lt-label-required-text: ' (påkrevd)'; --lt-label-optional-text: ' (valgfri)'; --lt-label-required-symbol: ' †'">
         <label id="krav" class="lt-label" data-required="text">Name</label>
         <label id="valg" class="lt-label" data-optional>Middle name</label>
         <label id="tegn" class="lt-label" data-required>Email</label>
       </div>
     `)
 
-    expect(css("krav", "::after").content).toBe('" (required)"')
-    expect(css("valg", "::after").content).toBe('" (optional)"')
+    expect(css("krav", "::after").content).toBe('" (påkrevd)"')
+    expect(css("valg", "::after").content).toBe('" (valgfri)"')
     expect(css("tegn", "::after").content).toBe('" †"')
   })
 })

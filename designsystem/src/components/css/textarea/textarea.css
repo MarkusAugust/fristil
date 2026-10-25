@@ -1,8 +1,8 @@
 @layer lotek {
   .lt-textarea {
-    /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
-       Uten border-box legges padding og ramme utenpå width, og feltet
-       blir bredere enn boksen det ligger i. */
+    /* The design system cannot assume the consumer has a CSS reset. Without
+       border-box, padding and border are added outside the width, and the
+       field becomes wider than the box it sits in. */
     box-sizing: border-box;
 
     display: block;
@@ -41,15 +41,15 @@
     background: var(--lt-color-disabled-surface);
     color: var(--lt-color-disabled-text);
     border-color: var(--lt-color-disabled-surface);
-    /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
-       deaktivert felt, og pointer-events ville bare hindret markøren i å
-       vises. Elementet blir da ikke truffet av musa i det hele tatt. */
+    /* No pointer-events: none here. The browser already blocks a disabled
+       field, and pointer-events would only stop the cursor from showing. The
+       element is then not hit by the mouse at all. */
     cursor: not-allowed;
   }
 
-  /* aria-disabled er bare en opplysning til skjermlesere; elementet virker
-     fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
-     Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
+  /* aria-disabled is only information for screen readers; the element still
+     works. Here pointer-events stops the mouse, at the cost of the cursor.
+     If the field should really be off, use `disabled` or `readonly`. */
   .lt-textarea[aria-disabled="true"] {
     pointer-events: none;
   }
@@ -72,9 +72,9 @@
     outline-color: var(--lt-color-success-text);
   }
 
-  /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
-     `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
-     var slått av under innsending så rødt ut, ikke avslått. */
+  /* Disabled wins over a state. `[data-state]` used to come after
+     `:disabled` with the same specificity, and an invalid field in a form
+     that was disabled during submission looked red, not disabled. */
   .lt-textarea:is(:disabled, [aria-disabled="true"])[data-state] {
     background: var(--lt-color-disabled-surface);
     color: var(--lt-color-disabled-text);

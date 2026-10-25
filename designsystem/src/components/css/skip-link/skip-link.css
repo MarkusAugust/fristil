@@ -1,7 +1,7 @@
 @layer lotek {
-  /* Lenken ligger utenfor skjermen til den får fokus. Den kan ikke skjules
-     med display eller visibility, for da kan tastaturet heller ikke nå den,
-     og hele poenget forsvinner. */
+  /* The link sits off screen until it gets focus. It cannot be hidden with
+     display or visibility, because then the keyboard cannot reach it either,
+     and the whole point is lost. */
   .lt-skip-link {
     position: absolute;
     inset-inline-start: var(--lt-spacing-2);
@@ -22,10 +22,10 @@
     text-decoration: underline;
   }
 
-  /* `:focus` og ikke `:focus-visible`. Fokus satt fra kode etter et
-     museklikk regnes ikke som «synlig fokus», og lenken ville da blitt
-     stående skjult for den som hopper dit fra et skript. Etter et tastetrykk
-     regnes det som synlig, men det er museklikket som avgjør valget. */
+  /* `:focus` and not `:focus-visible`. Focus set from code after a mouse
+     click does not count as "visible focus", and the link would then stay
+     hidden for someone a script sends there. After a key press it counts as
+     visible, but it is the mouse click that decides. */
   .lt-skip-link:focus {
     transform: translateY(0);
     outline: var(--lt-focus-ring);

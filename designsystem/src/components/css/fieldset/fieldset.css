@@ -8,8 +8,8 @@
     gap: var(--lt-fieldset-gap, var(--lt-spacing-2));
     margin: 0;
     padding: 0;
-    /* Nettleserens egen ramme og innrykk på <fieldset> hører til et utseende
-       fra 1996, og kan ikke slås av med mindre begge nullstilles her. */
+    /* The browser's own border and indentation on <fieldset> belong to a look
+       from 1996, and cannot be turned off unless both are reset here. */
     border: 0;
     min-inline-size: 0;
   }
@@ -24,8 +24,8 @@
     color: var(--lt-color-neutral-text-strong);
   }
 
-  /* Samme markering som på en ledetekst. Reglene står her og ikke i
-     label.css, fordi <legend> er et annet element med egne standardverdier. */
+  /* The same marker as on a label. The rules are here and not in label.css,
+     because <legend> is a different element with its own defaults. */
   .lt-legend[data-required]::after {
     content: var(--lt-label-required-symbol, " *");
     color: var(--lt-color-danger-text);
@@ -33,19 +33,22 @@
   }
 
   .lt-legend[data-required="text"]::after {
-    /* `\e5` er å. Skrevet rett ut ble det «pÃ¥krevd» når siden manglet
-       `<meta charset>` og tjeneren ikke sendte tegnsettet. */
-    content: var(--lt-label-required-text, " (p\e5 krevd)");
+    /* Keep the fallback ASCII. A stylesheet without `@charset` inherits the
+       page's encoding, and a non-ASCII fallback came out garbled when the
+       page lacked `<meta charset>` and the server sent no charset. Write any
+       other character as an escape, such as `\e5`. */
+    content: var(--lt-label-required-text, " (required)");
     color: var(--lt-color-danger-text);
     font-weight: var(--lt-font-weight-regular);
     font-size: var(--lt-font-size-xs);
   }
 
-  /* Ikke når feltet også er merket påkrevd: byggefunksjonen velger påkrevd,
-     og håndskrevet markup med begge skal gi det samme. Fargen er ikke
-     `disabled-text`: teksten er ikke deaktivert, og den hadde 4,37:1. */
+  /* Not when the field is also marked required: the builder function picks
+     required, and hand-written markup with both must give the same result.
+     The colour is not `disabled-text`: the text is not disabled, and that
+     colour gave 4.37:1. */
   .lt-legend[data-optional]:not([data-required])::after {
-    content: var(--lt-label-optional-text, " (valgfri)");
+    content: var(--lt-label-optional-text, " (optional)");
     color: var(--lt-color-neutral-text-subtle);
     font-weight: var(--lt-font-weight-regular);
     font-size: var(--lt-font-size-xs);
@@ -55,9 +58,9 @@
     color: var(--lt-color-danger-text);
   }
 
-  /* Feltsettet har de samme tilstandene som kontrollene det inneholder, og
-     `lt.fieldset.states` har alltid oppgitt begge. Uten denne regelen
-     skrev byggefunksjonen ut et attributt som ikke gjorde noe. */
+  /* The fieldset has the same states as the controls it contains, and
+     `lt.fieldset.states` has always listed both. Without this rule the
+     builder function wrote out an attribute that did nothing. */
   .lt-fieldset[data-state="success"] .lt-legend {
     color: var(--lt-color-success-text);
   }

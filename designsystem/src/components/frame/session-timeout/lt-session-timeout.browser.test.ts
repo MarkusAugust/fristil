@@ -28,12 +28,12 @@ import "../../../tokens/tokens.css"
 import "./session-timeout.css"
 
 /**
- * Kort økt: varsel etter 3 sekunder, ute etter 13.
+ * A short session: warning after 3 seconds, expired after 13.
  *
- * Hvert simulerte sekund er ett kall til tidtakeren, og i Firefox koster hvert
- * av dem en rundtur. Med minutter i testen tok den over et minutt å kjøre.
- * Tallene er valgt slik at nedtellingen passerer 10 sekunder, som er den
- * terskelen komponenten leser opp.
+ * Every simulated second is one call to the timer, and in Firefox each of
+ * them costs a round trip. With minutes in the test it took over a minute to
+ * run. The numbers are chosen so the countdown passes 10 seconds, which is
+ * the threshold the component announces.
  */
 const KORT = { warnAt: 3, expiresAt: 13 }
 
@@ -61,7 +61,7 @@ const ENGELSK: Tekster = {
   ut: "Sign out now",
 }
 
-/** Varselet slik den som rendrer skriver det, med byggefunksjonen. */
+/** The warning as the renderer writes it, with the builder function. */
 function varsel(
   valg: Partial<SessionTimeoutOptions> = KORT,
   tekster: Tekster = NORSK,
@@ -94,23 +94,23 @@ function opplest(): string {
 }
 
 /**
- * Flytter klokka uten å vente på den.
+ * Moves the clock without waiting for it.
  *
- * Her ventes det bare på tidtakeren, ikke på en tegning. Komponenten gjør alt
- * arbeidet synkront inne i intervallet, så en `requestAnimationFrame` ville
- * bare vært noe ekstra å vente på, og i Firefox fyrte den ikke mens dialogen
- * åpnet seg. Testen hang da uten feilmelding.
+ * Only the timer is awaited here, not a frame. The component does all its
+ * work synchronously inside the interval, so a `requestAnimationFrame` would
+ * only be something extra to wait for, and in Firefox it did not fire while
+ * the dialog was opening. The test then hung without an error.
  */
 async function gaFram(sekunder: number) {
   await vi.advanceTimersByTimeAsync(sekunder * 1000)
 }
 
 /**
- * Lukker dialogen og venter på `close`.
+ * Closes the dialog and waits for `close`.
  *
- * `close` er en køet oppgave, og i Firefox kom tegningen før hendelsen én
- * gang av ti. Komponentens lytter står på verten i fangstfasen, og kjører
- * derfor før denne, som står på dialogen.
+ * `close` is a queued task, and in Firefox the frame came before the event
+ * one time in ten. The component's listener is on the host in the capture
+ * phase, and so runs before this one, which is on the dialog.
  */
 async function lukk(handling: () => void) {
   const lukket = new Promise((r) =>
@@ -130,8 +130,8 @@ function lytt(element: HTMLElement, navn: string[]) {
   return hendelser
 }
 
-// requestAnimationFrame må være ekte. Faker vi den også, henger
-// ventPaTegning, fordi ingenting flytter klokka mens den venter.
+// requestAnimationFrame must be real. If we fake it too, ventPaTegning
+// hangs, because nothing moves the clock while it waits.
 function falskKlokke() {
   vi.useFakeTimers({
     toFake: [
@@ -159,18 +159,18 @@ describe("lt-session-timeout", () => {
     vi.useRealTimers()
   })
 
-  it("ber serveren la dialogen være i fred", () => {
-    // Uten dette river Datastars morfing `open` bort mens dialogen står i
-    // topplaget.
+  it("asks the server to leave the dialog alone", () => {
+    // Without this Datastar's morph removes `open` while the dialog is in the
+    // top layer.
     expect(vert().hasAttribute("data-ignore-morph")).toBe(true)
   })
 
-  it("viser ingenting før varselet skal komme", async () => {
+  it("shows nothing before the warning is due", async () => {
     await gaFram(2)
     expect(dialog().open).toBe(false)
   })
 
-  it("varsler når det har vært stille lenge nok", async () => {
+  it("warns when it has been quiet long enough", async () => {
     await gaFram(4)
 
     expect(dialog().open).toBe(true)
@@ -178,33 +178,33 @@ describe("lt-session-timeout", () => {
     expect(dialog().getAttribute("role")).toBe("alertdialog")
   })
 
-  it("teller ned mot utløpet", async () => {
+  it("counts down towards the expiry", async () => {
     await gaFram(5)
 
     const tall = dialog().querySelector(
       ".lt-session-timeout__count",
     ) as HTMLElement
-    // 13 - 5 = 8 sekunder igjen
+    // 13 - 5 = 8 seconds left
     expect(tall.textContent).toBe("0:08")
-    // Tallet endrer seg hvert sekund. Leses det opp hver gang, er dialogen
-    // ubrukelig med skjermleser.
+    // The number changes every second. If it is announced every time, the
+    // dialog is unusable with a screen reader.
     expect(tall.getAttribute("aria-hidden")).toBe("true")
   })
 
-  it("leser opp avsnittet ved noen terskler, ikke hvert sekund", async () => {
+  it("announces the paragraph at a few thresholds, not every second", async () => {
     await gaFram(3)
     expect(opplest()).toBe(
       "Vi logger deg ut om 10 sekunder for å beskytte opplysningene dine.",
     )
 
     await gaFram(1)
-    // Ingen ny opplesning ett sekund senere.
+    // No new announcement one second later.
     expect(opplest()).toBe(
       "Vi logger deg ut om 10 sekunder for å beskytte opplysningene dine.",
     )
   })
 
-  it("forlenger når brukeren trykker på knappen med value=extend", async () => {
+  it("extends when the user presses the button with value=extend", async () => {
     await gaFram(4)
     const hendelser = lytt(vert(), ["session-extend"])
 
@@ -213,12 +213,12 @@ describe("lt-session-timeout", () => {
     expect(dialog().open).toBe(false)
     expect(hendelser).toEqual(["session-extend"])
 
-    // Og klokka er nullstilt, så varselet kommer ikke rett tilbake.
+    // And the clock is reset, so the warning does not come straight back.
     await gaFram(2)
     expect(dialog().open).toBe(false)
   })
 
-  it("melder fra når økten faktisk er ute", async () => {
+  it("reports when the session has actually expired", async () => {
     const hendelser = lytt(vert(), ["session-expired"])
 
     await gaFram(14)
@@ -227,7 +227,7 @@ describe("lt-session-timeout", () => {
     expect(dialog().open).toBe(false)
   })
 
-  it("har ingen tilgjengelighetsbrudd med varselet oppe", async () => {
+  it("has no accessibility violations with the warning open", async () => {
     await gaFram(4)
     expect(dialog().open).toBe(true)
 
@@ -238,7 +238,7 @@ describe("lt-session-timeout", () => {
   })
 })
 
-describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
+describe("lt-session-timeout handles Escape, wrong numbers and an expiry", () => {
   beforeAll(() => {
     defineLtSessionTimeout()
   })
@@ -258,10 +258,10 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     return vert()
   }
 
-  it("forlenger når brukeren lukker med Escape, og åpner ikke igjen", async () => {
-    // Escape kommer fra nettleseren og lukker uten returverdi. Uten en lytter
-    // på `close` så neste tikk en lukket dialog etter varselgrensen, og
-    // åpnet den igjen hvert sekund.
+  it("extends when the user closes with Escape, and does not open again", async () => {
+    // Escape comes from the browser and closes without a return value.
+    // Without a listener on `close` the next tick saw a closed dialog after
+    // the warning threshold, and opened it again every second.
     const element = await monterKort()
     const hendelser = lytt(element, ["session-warn", "session-extend"])
     await gaFram(4)
@@ -275,9 +275,9 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(hendelser).toEqual(["session-warn", "session-extend"])
   })
 
-  it("forlenger også for en knapp med en verdi komponenten ikke kjenner", async () => {
-    // Uten dette ble dialogen lukket, og neste tikk åpnet den igjen ett
-    // sekund senere, så brukeren kom seg aldri ut.
+  it("also extends for a button with a value the component does not know", async () => {
+    // Without this the dialog closed, and the next tick opened it again a
+    // second later, so the user never got out.
     const element = await monterKort(
       varsel().replace('value="extend"', 'value="ok"'),
     )
@@ -291,9 +291,10 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(dialog().open).toBe(false)
   })
 
-  it("leser opp tiden som er igjen i det dialogen åpnes", async () => {
-    // Tallet i avsnittet er `aria-hidden`, så uten dette hørte skjermleseren
-    // avsnittet uten tall, og første tall kom først ved neste terskel.
+  it("announces the time left as the dialog opens", async () => {
+    // The number in the paragraph is `aria-hidden`, so without this the screen
+    // reader heard the paragraph without a number, and the first number came
+    // only at the next threshold.
     await monterKort(varsel({ warnAt: 3, expiresAt: 30 }))
     await gaFram(3)
 
@@ -303,7 +304,7 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     )
   })
 
-  it("sier fra om tall som ikke henger sammen", async () => {
+  it("reports numbers that do not add up", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     await monterKort(varsel({ warnAt: 10, expiresAt: 5 }))
     await ventPaTegning()
@@ -311,7 +312,7 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
 
     expect(
       advarsel.mock.calls.some((k) =>
-        String(k[0]).includes("ikke er mindre enn"),
+        String(k[0]).includes("is not less than"),
       ),
     ).toBe(true)
 
@@ -323,16 +324,17 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     await ventPaTegning()
     await ventPaTegning()
 
-    expect(advarsel.mock.calls.some((k) => String(k[0]).includes("tall"))).toBe(
-      true,
-    )
+    expect(
+      advarsel.mock.calls.some((k) => String(k[0]).includes("not a number")),
+    ).toBe(true)
     expect(element.warnAt).toBe(25 * 60)
     expect(element.expiresAt).toBe(30 * 60)
   })
 
-  it("stopper etter utløpet, til extend() kalles", async () => {
-    // En app som ikke navigerer bort fikk ny dialog og ny `session-expired`
-    // hvert `expires-at`-sekund, for en økt som alt var borte.
+  it("stops after the expiry, until extend() is called", async () => {
+    // An app that does not navigate away got a new dialog and a new
+    // `session-expired` every `expires-at` seconds, for a session that was
+    // already gone.
     const element = await monterKort()
     const hendelser = lytt(element, ["session-warn", "session-expired"])
 
@@ -348,7 +350,7 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(dialog().open).toBe(true)
   })
 
-  it("lar warnAt og expiresAt settes som egenskaper", async () => {
+  it("lets warnAt and expiresAt be set as properties", async () => {
     const element = await monterKort()
     element.warnAt = 5
     element.expiresAt = 9
@@ -357,10 +359,11 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(element.warnAt).toBe(5)
   })
 
-  it("teller rulling i en boks som aktivitet", async () => {
-    // `scroll` bobler ikke. Lyttet uten fangst telte bare rulling av selve
-    // siden, mens dokumentasjonen lovet «rulling». En skjermleser i
-    // lesemodus sender bare rulling, ingen tastetrykk.
+  it("counts scrolling in a box as activity", async () => {
+    // `scroll` does not bubble. Listened for without capture, only scrolling
+    // of the page itself counted, while the documentation promised
+    // "scrolling". A screen reader in browse mode sends only scrolling, no
+    // key presses.
     await monterKort(
       `${varsel()}<div id="boks" style="overflow: auto; height: 20px"><div style="height: 200px"></div></div>`,
     )
@@ -376,8 +379,8 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(dialog().open).toBe(true)
   })
 
-  it("melder ikke aktivitet etter at fanen har stått fryst forbi utløpet", async () => {
-    // Før kom `session-activity` og `session-expired` i samme tikk.
+  it("does not report activity after the tab has been frozen past the expiry", async () => {
+    // Before, `session-activity` and `session-expired` came in the same tick.
     const element = await monterKort(
       varsel({ warnAt: 100, expiresAt: 130, activityInterval: 20 }),
     )
@@ -392,7 +395,7 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(hendelser).toEqual(["session-activity", "session-expired"])
   })
 
-  it("sender høyst én aktivitet i sekundet, også med activity-interval 0", async () => {
+  it("sends at most one activity a second, also with activity-interval 0", async () => {
     const element = await monterKort(
       varsel({ warnAt: 100, expiresAt: 130 }).replace(
         "<lt-session-timeout ",
@@ -407,10 +410,10 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(hendelser).toEqual(["session-activity"])
   })
 
-  it("melder ikke aktivitet mens varselet står", async () => {
-    // Aktiviteten ved 1 sekund ventet på slutten av intervallet, som kom
-    // etter at varselet åpnet ved 3. Da holdt appen serverøkten i live mens
-    // brukeren ble bedt om å svare.
+  it("does not report activity while the warning is showing", async () => {
+    // The activity at 1 second waited for the end of the interval, which came
+    // after the warning opened at 3. Then the app kept the server session
+    // alive while the user was being asked to respond.
     const element = await monterKort(
       varsel({ warnAt: 3, expiresAt: 13, activityInterval: 5 }),
     )
@@ -424,10 +427,10 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(hendelser).toEqual(["session-activity"])
   })
 
-  it("melder aktivitet i starten og slutten av et intervall", async () => {
-    // Serverøkten vet ikke om aktivitet i nettleseren. Bare i starten ville
-    // serveren vært opptil et helt intervall bak klokka her, og logget ut
-    // før varselet var ferdig.
+  it("reports activity at the start and the end of an interval", async () => {
+    // The server session does not know about activity in the browser. Only
+    // at the start, the server would have been up to a whole interval behind
+    // the clock here, and signed out before the warning was done.
     const element = await monterKort(
       varsel({ warnAt: 100, expiresAt: 130, activityInterval: 20 }),
     )
@@ -444,13 +447,13 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
       await gaFram(10)
     }
 
-    // Aktivitet ved 0, 10, 20, 30 og 40. Én hendelse ved 0, så én for hvert
-    // intervall der det var aktivitet: ved 20 og 40, i det tastetrykket kom,
-    // og ikke flere.
+    // Activity at 0, 10, 20, 30 and 40. One event at 0, then one for each
+    // interval with activity: at 20 and 40, as the key press came, and no
+    // more.
     expect(tider).toEqual([0, 20, 40])
   })
 
-  it("melder aktivitet på slutten av intervallet, også uten nytt tastetrykk", async () => {
+  it("reports activity at the end of the interval, also without a new key press", async () => {
     const element = await monterKort(
       varsel({ warnAt: 100, expiresAt: 130, activityInterval: 20 }),
     )
@@ -465,11 +468,11 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     document.body.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true }))
     await gaFram(30)
 
-    // Det siste tastetrykket ved 5 når serveren ved 20, ikke aldri.
+    // The last key press at 5 reaches the server at 20, not never.
     expect(tider).toEqual([0, 20])
   })
 
-  it("nullstiller uten å melde fra med reset()", async () => {
+  it("resets without reporting anything with reset()", async () => {
     const element = await monterKort()
     const hendelser = lytt(element, ["session-extend"])
     await gaFram(4)
@@ -483,7 +486,7 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(dialog().open).toBe(false)
   })
 
-  it("melder session-logout når brukeren logger ut, uten å forlenge", async () => {
+  it("reports session-logout when the user signs out, without extending", async () => {
     const element = await monterKort()
     const hendelser = lytt(element, [
       "session-logout",
@@ -497,16 +500,17 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(dialog().open).toBe(false)
     expect(hendelser).toEqual(["session-warn", "session-logout"])
 
-    // Og den kommer ikke tilbake mens appen logger ut.
+    // And it does not come back while the app is signing out.
     await gaFram(3)
     expect(dialog().open).toBe(false)
     expect(hendelser).toEqual(["session-warn", "session-logout"])
   })
 
-  it("melder utlogging selv om klokka tikker før close kommer", async () => {
-    // `close` kommer i en senere oppgave enn klikket. Tikket klokka imellom,
-    // åpnet komponenten dialogen igjen, og den køede hendelsen ble lest som
-    // en forlengelse: appen fikk `session-extend` og aldri `session-logout`.
+  it("reports the sign-out even when the clock ticks before close arrives", async () => {
+    // `close` arrives in a later task than the click. When the clock ticked
+    // in between, the component opened the dialog again, and the queued event
+    // was read as an extension: the app got `session-extend` and never
+    // `session-logout`.
     const element = await monterKort()
     const hendelser = lytt(element, [
       "session-warn",
@@ -527,10 +531,11 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(dialog().open).toBe(false)
   })
 
-  it("setter open tilbake når en morfing tar det mens varselet står", async () => {
-    // Datastars morfing uten data-ignore-morph fjerner `open`, siden den som
-    // rendrer ikke sendte det. Dialogen ble stående i topplaget, usynlig, og
-    // resten av siden var inert. Etterprøvd med ekte Datastar 1.0.4.
+  it("puts open back when a morph takes it while the warning is showing", async () => {
+    // Datastar's morph without data-ignore-morph removes `open`, since the
+    // renderer did not send it. The dialog stayed in the top layer,
+    // invisible, and the rest of the page was inert. Checked with real
+    // Datastar 1.0.4.
     await monterKort(varsel().replace("data-ignore-morph", ""))
     await gaFram(4)
     expect(dialog().matches(":modal")).toBe(true)
@@ -542,9 +547,9 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(dialog().matches(":modal")).toBe(true)
   })
 
-  it("lar open være borte når brukeren har lukket dialogen", async () => {
-    // Vilkåret er `:modal`. En lukket dialog har forlatt topplaget, og skal
-    // ikke åpnes igjen av reparasjonen.
+  it("leaves open removed when the user has closed the dialog", async () => {
+    // The condition is `:modal`. A closed dialog has left the top layer, and
+    // must not be opened again by the repair.
     await monterKort()
     await gaFram(4)
 
@@ -554,9 +559,10 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(dialog().open).toBe(false)
   })
 
-  it("fyller inn rollen og navnet på en bar dialog", async () => {
-    // En mal uten byggefunksjonen kan glemme dem. Tilgjengeligheten krever
-    // begge, så komponenten setter dem når de mangler, og bare da.
+  it("fills in the role and the name on a bare dialog", async () => {
+    // A template without the builder function may forget them. Accessibility
+    // requires both, so the component sets them when they are missing, and
+    // only then.
     await monterKort(`
       <lt-session-timeout warn-at="3" expires-at="13">
         <dialog>
@@ -576,7 +582,7 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
     expect(tittel?.textContent).toBe("Du blir snart logget ut")
   })
 
-  it("lar et navn den som rendrer har skrevet, stå", async () => {
+  it("leaves a name the renderer has written in place", async () => {
     await monterKort(
       varsel().replace(
         'aria-labelledby="okt-tittel"',
@@ -590,7 +596,7 @@ describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
   })
 })
 
-describe("lt-session-timeout rører ikke markupen fra byggefunksjonen", () => {
+describe("lt-session-timeout does not touch the markup from the builder function", () => {
   beforeAll(() => {
     defineLtSessionTimeout()
   })
@@ -603,9 +609,10 @@ describe("lt-session-timeout rører ikke markupen fra byggefunksjonen", () => {
     vi.useRealTimers()
   })
 
-  it("gir ingen mutasjonsposter før varselet", async () => {
-    // Den direkte påstanden bak «det den som rendrer skrev, står»: markup fra
-    // byggefunksjonen har alt komponenten ville fylt inn.
+  it("gives no mutation records before the warning", async () => {
+    // The direct claim behind "what the renderer wrote stays": markup from
+    // the builder function already has everything the component would fill
+    // in.
     const flate = monter(`<div id="flate" lang="nb"></div>`)
     const beholder = flate.querySelector("#flate") as HTMLElement
     const poster: MutationRecord[] = []
@@ -629,12 +636,12 @@ describe("lt-session-timeout rører ikke markupen fra byggefunksjonen", () => {
 })
 
 /*
- * Et sent registrert tagnavn. `lt-session-timeout` har alt tatt
- * konstruktøren, så `defineLtSessionTimeout("lt-session-timeout-sen")`
- * registrerer en underklasse av den.
+ * A tag name registered late. `lt-session-timeout` has already taken the
+ * constructor, so `defineLtSessionTimeout("lt-session-timeout-sen")`
+ * registers a subclass of it.
  */
-describe("extendSession() og resetSession() venter på registreringen", () => {
-  it("sender session-extend først når elementet er oppgradert", async () => {
+describe("extendSession() and resetSession() wait for the registration", () => {
+  it("sends session-extend only once the element is upgraded", async () => {
     monter(
       `<lt-session-timeout-sen class="lt-session-timeout" warn-at="3" expires-at="13"></lt-session-timeout-sen>`,
     )
@@ -655,7 +662,7 @@ describe("extendSession() og resetSession() venter på registreringen", () => {
     await løfte
     expect(forlenget).toHaveLength(1)
 
-    // `reset()` sender ingenting, så kallet må ses på metoden selv.
+    // `reset()` sends nothing, so the call must be seen on the method itself.
     const nullstilt = vi.spyOn(LtSessionTimeout.prototype, "reset")
     await resetSession(element)
     expect(nullstilt).toHaveBeenCalledTimes(1)
@@ -664,7 +671,7 @@ describe("extendSession() og resetSession() venter på registreringen", () => {
   })
 })
 
-describe("lt-session-timeout: en terskel som hoppes over", () => {
+describe("lt-session-timeout: a threshold that is skipped", () => {
   beforeAll(() => {
     defineLtSessionTimeout()
   })
@@ -677,9 +684,9 @@ describe("lt-session-timeout: en terskel som hoppes over", () => {
     vi.useRealTimers()
   })
 
-  it("leser opp når klokka hopper forbi en terskel", async () => {
-    // Et tikk som kommer sent, eller strupes i en fane i bakgrunnen, kan
-    // hoppe fra 61 til 59. Før krevde opplesningen nøyaktig 60.
+  it("announces when the clock jumps past a threshold", async () => {
+    // A tick that comes late, or is throttled in a background tab, can jump
+    // from 61 to 59. Before, the announcement required exactly 60.
     monter(`<div lang="nb">${varsel({ warnAt: 1, expiresAt: 70 })}</div>`)
     await customElements.whenDefined("lt-session-timeout")
     await gaFram(9)
@@ -695,7 +702,7 @@ describe("lt-session-timeout: en terskel som hoppes over", () => {
   })
 })
 
-describe("lt-session-timeout: opplesning på sidens språk, og flytting", () => {
+describe("lt-session-timeout: announcements in the page language, and moving", () => {
   beforeAll(() => {
     defineLtSessionTimeout()
   })
@@ -708,8 +715,9 @@ describe("lt-session-timeout: opplesning på sidens språk, og flytting", () => 
     vi.useRealTimers()
   })
 
-  it("leser opp det samme som tallet viser når det ikke er hele minutter", async () => {
-    // Rundet av sa opplesningen «2 minutter» mens tallet viste 1:30.
+  it("announces the same as the number shows when it is not whole minutes", async () => {
+    // Rounded off, the announcement said "2 minutter" while the number
+    // showed 1:30.
     monter(`<div lang="nb">${varsel({ warnAt: 1, expiresAt: 91 })}</div>`)
     await customElements.whenDefined("lt-session-timeout")
     await gaFram(1)
@@ -719,7 +727,7 @@ describe("lt-session-timeout: opplesning på sidens språk, og flytting", () => 
     )
   })
 
-  it("leser opp på engelsk på en engelsk side, uten at noen oversetter tiden", async () => {
+  it("announces in English on an English page, without anyone translating the time", async () => {
     monter(
       `<div lang="en">${varsel({ warnAt: 1, expiresAt: 91 }, ENGELSK)}</div>`,
     )
@@ -731,9 +739,9 @@ describe("lt-session-timeout: opplesning på sidens språk, og flytting", () => 
     )
   })
 
-  it("leser opp med nettleserens språk når lang ikke er en språkkode", async () => {
-    // `Intl` kaster på en ugyldig kode. Da er nettleserens språk bedre enn
-    // ingen opplesning.
+  it("announces in the browser's language when lang is not a language code", async () => {
+    // `Intl` throws on an invalid code. Then the browser's language is better
+    // than no announcement.
     monter(`<div lang="!!">${varsel({ warnAt: 1, expiresAt: 91 })}</div>`)
     await customElements.whenDefined("lt-session-timeout")
     await gaFram(1)
@@ -741,12 +749,12 @@ describe("lt-session-timeout: opplesning på sidens språk, og flytting", () => 
     expect(opplest()).toMatch(/1.*30/)
   })
 
-  it("finner lang utenfor en skyggerot", async () => {
-    // `closest()` stopper ved skyggeroten. Hver forhåndsvisning i
-    // dokumentasjonen ligger i en, og uten dette leste demoen opp på
-    // nettleserens språk på en norsk side.
-    // Norsk og ikke engelsk: nettleseren testene kjører i, har engelsk som
-    // eget språk, og da ville engelsk gått gjennom også uten rettingen.
+  it("finds lang outside a shadow root", async () => {
+    // `closest()` stops at the shadow root. Every preview in the
+    // documentation is in one, and without this the demo announced in the
+    // browser's language on a Norwegian page.
+    // Norwegian and not English: the browser the tests run in has English as
+    // its language, and then English would have passed without the fix too.
     const flate = monter(`<div lang="nb"><div id="vert"></div></div>`)
     const rot = (flate.querySelector("#vert") as HTMLElement).attachShadow({
       mode: "open",
@@ -760,9 +768,10 @@ describe("lt-session-timeout: opplesning på sidens språk, og flytting", () => 
     )
   })
 
-  it("leser opp tiden alene når tallet står utenfor avsnittet", async () => {
-    // Ellers ble avsnittet lest uten tall, og tallet på skjermen er
-    // `aria-hidden`, så skjermleseren hørte aldri hvor lang tid som var igjen.
+  it("announces the time alone when the number is outside the paragraph", async () => {
+    // Otherwise the paragraph was read without a number, and the number on
+    // screen is `aria-hidden`, so the screen reader never heard how much time
+    // was left.
     monter(`
       <div lang="nb">
         <lt-session-timeout warn-at="1" expires-at="91">
@@ -781,15 +790,15 @@ describe("lt-session-timeout: opplesning på sidens språk, og flytting", () => 
   })
 
   /**
-   * Komponenten i en skyggerot, slik et skall med skygge-DOM eller en
-   * forhåndsvisning setter den. Feltet brukeren sto i kan være i siden eller
-   * i samme skyggerot, og begge skal få fokus tilbake.
+   * The component in a shadow root, as a shell with shadow DOM or a preview
+   * places it. The field the user was in can be in the page or in the same
+   * shadow root, and both must get focus back.
    *
-   * Nettleseren setter selv fokus tilbake inne i `close()`, før
-   * `close`-hendelsen komponenten lytter på. Fokus flyttes derfor vekk igjen
-   * etter `close()`, så det er komponentens eget minne som vises når
-   * hendelsen kommer. Står minnet tomt, eller peker det på skyggeverten,
-   * blir fokus stående på knappen.
+   * The browser itself restores focus inside `close()`, before the `close`
+   * event the component listens for. So focus is moved away again after
+   * `close()`, so that it is the component's memory that shows when the
+   * event arrives. If the memory is empty, or points to the shadow host,
+   * focus stays on the button.
    */
   async function husketFokus(
     rot: ShadowRoot,
@@ -810,9 +819,9 @@ describe("lt-session-timeout: opplesning på sidens språk, og flytting", () => 
     return rotenTilFeltet.activeElement
   }
 
-  it("gir fokus tilbake til et felt i siden når komponenten står i en skyggerot", async () => {
-    // Komponentens egen rot har ingen `activeElement` når fokus står
-    // utenfor den, så lest derfra husket komponenten ingenting.
+  it("gives focus back to a field in the page when the component is in a shadow root", async () => {
+    // The component's root has no `activeElement` when focus is outside it,
+    // so read from there the component remembered nothing.
     const flate = monter(
       `<div lang="nb"><input id="felt"><button id="annet">Annet</button><div id="vert"></div></div>`,
     )
@@ -827,9 +836,9 @@ describe("lt-session-timeout: opplesning på sidens språk, og flytting", () => 
     expect(await husketFokus(rot, felt, annet)).toBe(felt)
   })
 
-  it("gir fokus tilbake til et felt i samme skyggerot", async () => {
-    // `document.activeElement` er skyggeverten her, og `focus()` på den
-    // gjorde ingenting.
+  it("gives focus back to a field in the same shadow root", async () => {
+    // `document.activeElement` is the shadow host here, and `focus()` on it
+    // did nothing.
     const flate = monter(
       `<div lang="nb"><button id="annet">Annet</button><div id="vert"></div></div>`,
     )
@@ -844,7 +853,7 @@ describe("lt-session-timeout: opplesning på sidens språk, og flytting", () => 
     expect(await husketFokus(rot, felt, annet)).toBe(felt)
   })
 
-  it("er fortsatt modal etter at elementet er flyttet mens varselet står", async () => {
+  it("is still modal after the element has been moved while the warning is showing", async () => {
     const flate = monter(`${varsel()}<div id="annet"></div>`)
     await customElements.whenDefined("lt-session-timeout")
     await gaFram(3)
@@ -857,7 +866,7 @@ describe("lt-session-timeout: opplesning på sidens språk, og flytting", () => 
   })
 })
 
-describe("lt-session-timeout når warn-at heves mens varselet står", () => {
+describe("lt-session-timeout when warn-at is raised while the warning is showing", () => {
   beforeAll(() => {
     defineLtSessionTimeout()
   })
@@ -870,7 +879,7 @@ describe("lt-session-timeout når warn-at heves mens varselet står", () => {
     vi.useRealTimers()
   })
 
-  it("lar nedtellingen gå videre", async () => {
+  it("lets the countdown continue", async () => {
     monter(varsel())
     await customElements.whenDefined("lt-session-timeout")
     await gaFram(4)
@@ -881,6 +890,6 @@ describe("lt-session-timeout når warn-at heves mens varselet står", () => {
     await gaFram(3)
 
     expect(dialog().open).toBe(true)
-    expect(tall(), "tallet frøs").not.toBe(for_)
+    expect(tall(), "the number froze").not.toBe(for_)
   })
 })

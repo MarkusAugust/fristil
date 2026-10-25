@@ -13,10 +13,10 @@
     cursor: pointer;
   }
 
-  /* Uten `:not(:disabled)`. Den løftet spesifisiteten over tilstandene
-     under, så musa tok bort både feilrammen og rammen på en valgt. Reglene
-     for valgt, deaktivert og ugyldig står etter denne og vinner på
-     rekkefølgen. */
+  /* Without `:not(:disabled)`. It raised the specificity above the states
+     below, so the mouse removed both the error border and the border of a
+     selected button. The rules for selected, disabled and invalid come
+     after this one and win on order. */
   .lt-radio:hover {
     border-color: var(--lt-color-neutral-border-strong);
   }
@@ -26,8 +26,8 @@
     outline-offset: 2px;
   }
 
-  /* Prikken er en gradient og ikke et bilde, så den tar farge fra tokenet
-     direkte og trenger ingen egen variant for mørkt tema. */
+  /* The dot is a gradient and not an image, so it takes its colour from the
+     token directly and needs no separate variant for the dark theme. */
   .lt-radio:checked {
     background-color: var(--lt-color-accent-fill);
     border-color: var(--lt-color-accent-fill);
@@ -61,9 +61,9 @@
     border-color: var(--lt-color-success-text);
   }
 
-  /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
-     `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
-     var slått av under innsending så rødt ut, ikke avslått. */
+  /* Disabled wins over a state. `[data-state]` used to come after
+     `:disabled` with the same specificity, and an invalid field in a form
+     that was disabled during submission looked red, not disabled. */
   .lt-radio:disabled[data-state] {
     background-color: var(--lt-color-disabled-surface);
     border-color: var(--lt-color-disabled-surface);
@@ -81,8 +81,9 @@
     line-height: var(--lt-line-height-default);
   }
 
-  /* Høykontrast: prikken er en gradient, og gradienter fjernes i modusen.
-     Nettleserens egen radioknapp tegnes riktig i alle temaer. */
+  /* High contrast: the dot is a gradient, and gradients are removed in the
+     mode. The browser's own radio button is drawn correctly in every
+     theme. */
   @media (forced-colors: active) {
     .lt-radio,
     .lt-radio:checked {

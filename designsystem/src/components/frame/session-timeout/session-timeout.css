@@ -1,12 +1,12 @@
 @import "../../css/button/button.css";
-/* Opplesningen står i markupen med `lt-sr-only`, og må være skjult uten at
-   konsumenten laster noe mer. */
+/* The announcement is in the markup with `lt-sr-only`, and must be hidden
+   without the consumer loading anything more. */
 @import "../../css/sr-only/sr-only.css";
 
 @layer lotek {
-  /* Både elementet og klassen. `lt.sessionTimeout()` sender ut
-     `lt-session-timeout`, og en klasse en byggefunksjon reklamerer med må gjøre
-     noe. Her sto bare elementvelgeren, så klassen var død. */
+  /* Both the element and the class. `lt.sessionTimeout()` outputs
+     `lt-session-timeout`, and a class a builder function advertises must do
+     something. Only the element selector was here, so the class was dead. */
   lt-session-timeout,
   .lt-session-timeout {
     display: contents;

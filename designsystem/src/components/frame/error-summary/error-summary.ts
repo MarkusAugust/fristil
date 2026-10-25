@@ -4,9 +4,9 @@ export const ERROR_SUMMARY_CLASS = "lt-error-summary" as const
 export const ERROR_SUMMARY_TITLE_CLASS = "lt-error-summary__title" as const
 
 export type ErrorSummaryOptions = {
-  /** Antall feil serveren fant. Er det null, skjules boksen. */
+  /** The number of errors the server found. When it is zero, the box is hidden. */
   count?: number
-  /** Id på boksen, slik at skjemaet kan flytte fokus hit etter innsending. */
+  /** The id of the box, so the form can move focus here after submission. */
   id?: string
 }
 
@@ -24,19 +24,20 @@ export type ErrorSummaryAttributes = {
 }
 
 /**
- * Attributtene for en feiloppsummering.
+ * The attributes for an error summary.
  *
- * Serveren skriver hele boksen, også overskriften og lista. `<lt-error-summary>`
- * flytter bare fokus og håndterer klikk på lenkene. Tidligere lagde komponenten
- * overskriften selv, og da forsvant den ved hver morfing i Datastar.
+ * The server writes the whole box, including the heading and the list.
+ * `<lt-error-summary>` only moves focus and handles clicks on the links. The
+ * component used to create the heading itself, and then it disappeared on
+ * every morph in Datastar.
  *
  * ```ts
- * const feil = lt.errorSummary({ count: errors.length, id: "feil" })
+ * const summary = lt.errorSummary({ count: errors.length, id: "errors" })
  * ```
  * ```html
- * <lt-error-summary {...feil.host}>
- *   <h2 {...feil.title}>Du må rette 2 feil</h2>
- *   <ul><li><a href="#epost">E-posten mangler @</a></li></ul>
+ * <lt-error-summary {...summary.host}>
+ *   <h2 {...summary.title}>You need to fix 2 errors</h2>
+ *   <ul><li><a href="#email">The email address is missing an @</a></li></ul>
  * </lt-error-summary>
  * ```
  */

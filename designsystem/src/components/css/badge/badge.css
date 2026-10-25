@@ -1,8 +1,8 @@
 @layer lotek {
   .lt-badge {
-    /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
-       Uten border-box legges padding og ramme utenpå width, og feltet
-       blir bredere enn boksen det ligger i. */
+    /* The design system cannot assume the consumer has a CSS reset. Without
+       border-box, padding and border are added outside the width, and the
+       element becomes wider than the box it sits in. */
     box-sizing: border-box;
 
     display: inline-flex;

@@ -12,9 +12,10 @@ import {
 export const LT_ERROR_SUMMARY_TAG = "lt-error-summary" as const
 
 /**
- * Delene feiloppsummeringen finner, som selektorer relativt til elementet. Komponenten
- * finner delene med disse, og manifestet beskriver dem for den som setter
- * sammen markupen selv, så de to ikke kan si noe ulikt.
+ * The parts the error summary looks for, as selectors relative to the
+ * element. The component finds its parts with these, and the manifest
+ * describes them for whoever assembles the markup by hand, so the two cannot
+ * say different things.
  */
 export const LT_ERROR_SUMMARY_PARTS = {
   title: "h1, h2, h3, h4, h5, h6",
@@ -22,36 +23,37 @@ export const LT_ERROR_SUMMARY_PARTS = {
 } as const
 
 /**
- * Sender brukeren fra en feil i oppsummeringen til feltet som feilet.
+ * Takes the user from an error in the summary to the field that failed.
  *
- * Serveren skriver innholdet: overskriften og lista med lenker. Lages
- * markupen med JavaScript, skriver `lt.errorSummary()` også klassen,
- * `role="alert"` og `tabindex="-1"` på boksen, og komponenten lar det stå.
- * Kommer markupen fra en mal uten JavaScript, fyller komponenten inn de
- * tre, og klassen på overskriften, og setter dem tilbake når en patch
- * river dem bort. Komponenten lager ingen noder: den gjorde det før, og da
- * forsvant overskriften ved første morfing i Datastar uten å komme tilbake.
+ * The server writes the content: the heading and the list of links. When the
+ * markup is written with JavaScript, `lt.errorSummary()` also writes the
+ * class, `role="alert"` and `tabindex="-1"` on the box, and the component
+ * leaves them alone. When the markup comes from a template without
+ * JavaScript, the component fills in those three and the class on the
+ * heading, and sets them back when a patch removes them. The component
+ * creates no nodes: it used to, and then the heading disappeared on the
+ * first morph in Datastar and never came back.
  *
- * Det som er igjen er to ting nettleseren ikke gjør selv:
+ * What is left are two things the browser does not do by itself:
  *
- * 1. Fokus flyttes til boksen når den kommer til syne, så den som hører siden
- *    får vite at innsendingen stoppet.
- * 2. Fokus gis til selve kontrollen når en lenke følges. En vanlig ankerlenke
- *    gir bare fokus til et mål som kan få det; peker den på en ledetekst
- *    eller en overskrift, blir `document.activeElement` `<body>`, og
- *    skjermleseren får ikke beskjed om hvor brukeren er. Tab fortsetter fra
- *    målet uansett.
+ * 1. Focus moves to the box when it becomes visible, so someone listening to
+ *    the page learns that the submission stopped.
+ * 2. Focus goes to the control itself when a link is followed. A plain anchor
+ *    link only gives focus to a target that can take it; if it points to a
+ *    label or a heading, `document.activeElement` becomes `<body>`, and the
+ *    screen reader is not told where the user is. Tab continues from the
+ *    target either way.
  *
  * ```html
  * <lt-error-summary>
- *   <h2>Skjemaet har to feil</h2>
+ *   <h2>The form has two errors</h2>
  *   <ul class="lt-list">
- *     <li><a href="#epost">Skriv en gyldig e-postadresse</a></li>
+ *     <li><a href="#email">Enter a valid email address</a></li>
  *   </ul>
  * </lt-error-summary>
  * ```
  */
-/** Dekoder et fragment, og gir det tilbake urørt hvis det ikke er gyldig. */
+/** Decodes a fragment, and returns it untouched if it is not valid. */
 function decodeFragment(fragment: string): string {
   try {
     return decodeURIComponent(fragment)
@@ -65,26 +67,28 @@ export class LtErrorSummary extends HostElement {
 
   private hasFocused = false
   /**
-   * Om komponenten har prøvd å flytte fokus siden boksen sist ble synlig.
+   * Whether the component has tried to move focus since the box last became
+   * visible.
    *
-   * Første forsøk skjer uansett hvor fokus står: en ny innsending har
-   * feilet, og det er beskjeden. Landet det ikke, fordi boksen sto i et
-   * skjult panel, prøver komponenten igjen ved neste endring i lista, men
-   * bare når ingen står i et felt. Uten det skillet rev gjenforsøket fokus
-   * ut av feltet brukeren rettet i, i det live-valideringen patchet lista.
+   * The first attempt happens wherever focus is: a new submission has
+   * failed, and that is the message. If it did not land, because the box was
+   * in a hidden panel, the component tries again on the next change to the
+   * list, but only when nobody is in a field. Without that distinction the
+   * retry pulled focus out of the field the user was correcting, as soon as
+   * live validation patched the list.
    */
   private focusAttempted = false
   private observer?: MutationObserver
 
   connectedCallback(): void {
-    // Én lytter på verten, ikke én per lenke. Settet med lenker ble bare
-    // tømt ved frakobling, så hver lenke en patch byttet ut, ble liggende
-    // i minnet.
+    // One listener on the host, not one per link. The set of links was only
+    // emptied on disconnect, so every link a patch replaced stayed in
+    // memory.
     this.addEventListener("click", this.handleLinkClick)
-    // Feilene kommer og går mens brukeren retter, og `slotchange` melder ikke
-    // fra i vanlig DOM. Attributtene er de komponenten selv fyller inn, så
-    // en patch som river dem bort får dem tilbake. Hver skriving
-    // sammenligner først, ellers ville observatøren utløst seg selv.
+    // The errors come and go while the user corrects them, and `slotchange`
+    // does not fire in plain DOM. The attributes are the ones the component
+    // fills in itself, so a patch that removes them gets them back. Every
+    // write compares first, or the observer would trigger itself.
     this.observer = new MutationObserver(() => this.sync())
     this.observer.observe(this, {
       childList: true,
@@ -96,9 +100,9 @@ export class LtErrorSummary extends HostElement {
   }
 
   attributeChangedCallback(): void {
-    // Serveren kan sende boksen skjult og senere bare ta bort `hidden` på
-    // den samme noden. Uten dette får en oppsummering som nettopp ble synlig
-    // aldri fokus, og det er hele grunnen til at komponenten finnes.
+    // The server can send the box hidden and later only remove `hidden` on
+    // the same node. Without this, a summary that just became visible never
+    // gets focus, and that is the whole reason the component exists.
     if (this.isConnected) this.sync()
   }
 
@@ -109,28 +113,29 @@ export class LtErrorSummary extends HostElement {
   }
 
   /**
-   * Om boksen skal ta fokus når den blir synlig. Standard: ja.
+   * Whether the box takes focus when it becomes visible. Default: yes.
    *
-   * Attributtet heter `data-autofocus` og ikke `autofocus`, selv om det
-   * siste leser bedre. `autofocus` er en boolsk egenskap på `HTMLElement`,
-   * og React 19 setter egenskaper framfor attributter på web
-   * components. `autofocus="false"` ble da til `el.autofocus = "false"`, som
-   * er sant, mens attributtet aldri kom i markupen, og avslaget virket ikke.
-   * `data-*` sendes videre som attributt i alle React-versjoner.
+   * The attribute is called `data-autofocus` and not `autofocus`, even
+   * though the latter reads better. `autofocus` is a boolean property on
+   * `HTMLElement`, and React 19 sets properties rather than attributes on web
+   * components. `autofocus="false"` then became `el.autofocus = "false"`,
+   * which is true, while the attribute never reached the markup, and the
+   * opt-out did not work. `data-*` is passed on as an attribute in every
+   * React version.
    */
   private get shouldFocus(): boolean {
     return this.dataset.autofocus !== "false"
   }
 
   /**
-   * Fyller inn det en mal uten JavaScript ikke skrev. Bare det som mangler:
-   * en rolle serveren har valgt selv står, og det gjør en `tabindex` også.
+   * Fills in what a template without JavaScript did not write. Only what is
+   * missing: a role the server chose stays, and so does a `tabindex`.
    */
   private wire(): void {
     addClass(this, ERROR_SUMMARY_CLASS)
     if (!this.hasAttribute("role")) setAttr(this, "role", "alert")
-    // Uten `tabindex` gjør `focus()` ingenting, og hele grunnen til
-    // komponenten forsvinner i stillhet.
+    // Without `tabindex`, `focus()` does nothing, and the whole reason for
+    // the component silently disappears.
     if (!this.hasAttribute("tabindex")) setAttr(this, "tabindex", "-1")
 
     const title = this.querySelector(LT_ERROR_SUMMARY_PARTS.title)
@@ -144,30 +149,31 @@ export class LtErrorSummary extends HostElement {
       ...this.querySelectorAll<HTMLAnchorElement>(LT_ERROR_SUMMARY_PARTS.link),
     ]
 
-    // Skjuler serveren boksen igjen, er den innsendingen over. Uten denne
-    // nullstillingen tok boksen fokus bare første gang: mønsteret i en
-    // Datastar-app er at lista står med de samme lenkene hele veien og bare
-    // `hidden` slås av og på, så «har jeg flyttet fokus hit før» er ikke et
-    // svar på om dette er en ny innsending. Den står før returen for en tom
-    // liste: React fjerner punktene før den setter `hidden` på verten, og da
-    // er lista alt tom i den runden boksen skjules.
+    // If the server hides the box again, that submission is over. Without
+    // this reset the box only took focus the first time: the pattern in a
+    // Datastar app is that the list keeps the same links throughout and only
+    // `hidden` is toggled, so "have I moved focus here before" does not
+    // answer whether this is a new submission. It comes before the return
+    // for an empty list: React removes the items before it sets `hidden` on
+    // the host, so the list is already empty in the round where the box is
+    // hidden.
     if (this.hidden) {
       this.hasFocused = false
       this.focusAttempted = false
     }
 
     if (links.length === 0) {
-      // Flaggene nullstilles ikke av en tom liste, bare av `hidden` over. En
-      // synlig liste som tømmes og fylles mens brukeren retter, rykket
-      // ellers fokus ut av feltet han sto i.
+      // The flags are not reset by an empty list, only by `hidden` above. A
+      // visible list that is emptied and filled while the user corrects
+      // would otherwise pull focus out of the field they were in.
       warnAboutMarkup(
         this,
-        'fant ingen lenker til feltene. Hvert punkt trenger en <a href="#id"> ' +
-          "som peker på kontrollen eller ledeteksten, ellers kommer brukeren " +
-          "seg ikke fra feilen til feltet.",
-        // En tom boks er ikke en feil: mønsteret er at serveren lar den stå
-        // med `hidden` og fyller den når innsendingen feiler. En boks med
-        // punkter, men uten lenker til feltene, er noe annet.
+        "found no links to the fields. Each item needs an <a " +
+          'href="#id"> pointing to the control or its label, or the user ' +
+          "cannot get from the error to the field.",
+        // An empty box is not an error: the pattern is that the server leaves
+        // it with `hidden` and fills it when the submission fails. A box with
+        // items but no links to the fields is something else.
         () =>
           this.querySelector("li") !== null &&
           this.querySelector(LT_ERROR_SUMMARY_PARTS.link) === null,
@@ -177,22 +183,20 @@ export class LtErrorSummary extends HostElement {
 
     for (const link of links) {
       /*
-       * En lenke som ikke fører noe sted, meldt her og ikke først ved et
-       * klikk.
+       * A link that leads nowhere, reported here and not only on a click.
        *
-       * Sjekken sto bare i klikkhåndtereren, og da var en boks med en lenke
-       * til et felt som ikke finnes helt taus til noen faktisk fulgte den.
-       * En feiloppsummering leses av den som nettopp mislyktes med et skjema,
-       * og en lenke som ikke virker er akkurat det som gjør boksen verdiløs.
-       * Id-en står i meldingen, og hver lenke har sin egen, så en boks med to
-       * ødelagte lenker sier fra om begge.
+       * The check used to be only in the click handler, and then a box with a
+       * link to a field that does not exist was completely silent until
+       * someone actually followed it. An error summary is read by someone who
+       * just failed with a form, and a link that does not work is exactly
+       * what makes the box worthless. The id is in the message, and each link
+       * has its own, so a box with two broken links reports both.
        */
       const id = link.getAttribute("href")?.slice(1)
       if (id) {
         warnAboutMarkup(
           this,
-          `lenken peker på #${id}, men det finnes ikke noe element med den ` +
-            "id-en. Lenken ruller ingen steder, og fokus blir stående.",
+          `the link points to #${id}, but no element has that id. The link scrolls nowhere, and focus stays where it is.`,
           () => this.resolveTarget(id) === null,
         )
       }
@@ -200,16 +204,17 @@ export class LtErrorSummary extends HostElement {
 
     if (this.hidden) return
 
-    // Er boksen synlig nå, og vi ikke har flyttet fokus hit ennå, er det
-    // denne innsendingen som feilet. Flagget settes bare når fokus faktisk
-    // landet: står boksen i et skjult panel eller en lukket dialog, gjør
-    // `focus()` ingenting, og da skal neste forsøk få lov, så sant ingen
-    // står i et felt.
+    // If the box is visible now and we have not moved focus here yet, it is
+    // this submission that failed. The flag is only set when focus actually
+    // landed: if the box is in a hidden panel or a closed dialog, `focus()`
+    // does nothing, and the next attempt is then allowed, as long as nobody
+    // is in a field.
     if (this.shouldFocus && !this.hasFocused) {
-      // `document.activeElement` og ikke rotas: står boksen i en skyggerot
-      // og feltet i vanlig DOM, er rotas `activeElement` null, og brukeren
-      // ville blitt regnet som «ingen». Dokumentets peker på skyggeverten når
-      // fokus står i et skyggetre, og er aldri null for et felt i siden.
+      // `document.activeElement` and not the root's: if the box is in a
+      // shadow root and the field in plain DOM, the root's `activeElement` is
+      // null, and the user would have counted as "nobody". The document's
+      // points to the shadow host when focus is in a shadow tree, and is
+      // never null for a field on the page.
       const active = document.activeElement
       const nobodyTyping = !active || active === document.body
       if (this.focusAttempted && !nobodyTyping) return
@@ -229,21 +234,23 @@ export class LtErrorSummary extends HostElement {
   }
 
   /**
-   * Tar fokus tilbake én gang, hvis det gikk tilbake dit det var.
+   * Takes focus back once, if it went back to where it was.
    *
-   * React gir fokus tilbake til elementet som hadde det før en commit, rett
-   * etter at DOM-en er endret. Boksen flytter fokus i det `hidden` tas bort
-   * eller den kobles til, altså inne i den samme commiten, så fokus endte på
-   * innsendingsknappen igjen i Chromium og Firefox, og på feltet i alle tre
-   * motorene når skjemaet ble sendt med Enter. En mikrotask kjører etter commiten. Står fokus da på det samme
-   * elementet som før, er det rammeverket som tok det, og boksen tar det
-   * igjen. Har et skript flyttet fokus til noe annet, står det.
+   * React gives focus back to the element that had it before a commit, right
+   * after the DOM has changed. The box moves focus as `hidden` is removed or
+   * as it is connected, that is inside the same commit, so focus ended up on
+   * the submit button again in Chromium and Firefox, and on the field in all
+   * three engines when the form was submitted with Enter. A microtask runs
+   * after the commit. If focus is then on the same element as before, the
+   * framework took it, and the box takes it again. If a script has moved
+   * focus somewhere else, it stays.
    *
-   * Bare når boksen står rett i dokumentet. React går ikke inn i en
-   * skyggerot når det gjenoppretter fokus, og der er `document.activeElement`
-   * skyggeverten både før og etter, så sammenligningen ville tatt fokus fra
-   * et felt i den samme rota. Vilkåret er med vilje grovt: en boks portalert
-   * inn i en skyggerot fra en React-app i vanlig DOM tar ikke fokus tilbake.
+   * Only when the box is directly in the document. React does not enter a
+   * shadow root when it restores focus, and there `document.activeElement`
+   * is the shadow host both before and after, so the comparison would take
+   * focus from a field in the same root. The condition is deliberately
+   * coarse: a box portalled into a shadow root from a React app in plain DOM
+   * does not take focus back.
    */
   private reclaimFocusFrom(previous: Element): void {
     queueMicrotask(() => {
@@ -257,18 +264,19 @@ export class LtErrorSummary extends HostElement {
   }
 
   /**
-   * Elementet en lenke peker på.
+   * The element a link points to.
    *
-   * Oppslaget går mot rota komponenten selv står i, ikke mot `document`.
-   * Ligger skjemaet i en skyggerot, som i en forhåndsvisning eller inne i en
-   * annen komponent, finner `document.getElementById` ingenting, og lenken
-   * blir en vanlig ankerlenke uten fokusflytting.
+   * The lookup goes to the root the component is in, not to `document`. If
+   * the form is in a shadow root, as in a preview or inside another
+   * component, `document.getElementById` finds nothing, and the link becomes
+   * a plain anchor link without moving focus.
    */
   private resolveTarget(raw: string): HTMLElement | null {
     const root = this.getRootNode() as Document | ShadowRoot
-    // En lenke til et felt med æ, ø eller å i id-en er gjerne prosentkodet,
-    // `#f%C3%B8dselsdato`. Nettleseren dekoder den når lenken følges, så
-    // oppslaget må gjøre det samme, ellers meldes en lenke som virker.
+    // A link to a field with non-ASCII characters in its id is often
+    // percent-encoded, `#f%C3%B8dselsdato`. The browser decodes it when the
+    // link is followed, so the lookup must do the same, or a working link is
+    // reported.
     for (const id of new Set([raw, decodeFragment(raw)])) {
       const target = root.getElementById?.(id) ?? document.getElementById(id)
       if (target) return target
@@ -284,18 +292,18 @@ export class LtErrorSummary extends HostElement {
     const id = link.getAttribute("href")?.slice(1)
     if (!id) return
 
-    // Vakten står igjen for kappløpet: målet kan ha forsvunnet i en patch
-    // mellom synkroniseringen og klikket. `sync()` har alt meldt fra om en
-    // lenke som aldri har hatt et mål.
+    // The guard stays for the race: the target may have disappeared in a
+    // patch between the sync and the click. `sync()` has already reported a
+    // link that never had a target.
     const target = this.resolveTarget(id)
     if (!target) return
 
     event.preventDefault()
 
-    // Er lenken til en ledetekst, skal fokus til det den hører til, enten
-    // den peker med `for` eller omslutter kontrollen. `control` dekker begge
-    // for ekte kontroller; peker `for` på noe annet, som en gruppe, følges
-    // id-en dit.
+    // If the link is to a label, focus goes to what the label belongs to,
+    // whether it points with `for` or wraps the control. `control` covers
+    // both for real controls; if `for` points to something else, such as a
+    // group, the id is followed there.
     const focusable =
       target instanceof HTMLLabelElement
         ? (target.control ??
@@ -303,17 +311,18 @@ export class LtErrorSummary extends HostElement {
           target)
         : target
 
-    // Et mål som ikke kan få fokus, som en overskrift, får en `tabindex`
-    // for dette ene hoppet. Det er en skriving på markup serveren eier, og
-    // en patch kan ta den igjen; da har hoppet alt skjedd.
+    // A target that cannot take focus, such as a heading, gets a `tabindex`
+    // for this one jump. It is a write on markup that comes from the server,
+    // and a patch may remove it again; by then the jump has happened.
     if (!focusable.hasAttribute("tabindex") && !isFocusable(focusable)) {
       setAttr(focusable, "tabindex", "-1")
     }
 
     focusable.focus()
-    // Uten `behavior`: sidens egen `scroll-behavior` bestemmer. Nettleseren
-    // slår ikke av `smooth` av seg selv under `prefers-reduced-motion`, så
-    // det er sidens sak, og «Tilgjengelighet» i dokumentasjonen sier det.
+    // Without `behavior`: the page's own `scroll-behavior` decides. The
+    // browser does not turn off `smooth` by itself under
+    // `prefers-reduced-motion`, so that is up to the page, and "Accessibility"
+    // in the documentation says so.
     focusable.scrollIntoView({ block: "center" })
   }
 }

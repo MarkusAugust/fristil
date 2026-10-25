@@ -1,7 +1,7 @@
 import { attributes, createGuard } from "../shared.js"
 
 export const AVATAR_CLASS = "lt-avatar" as const
-/** Flere profilbilder som overlapper. */
+/** Several profile pictures that overlap. */
 export const AVATAR_STACK_CLASS = "lt-avatar-stack" as const
 
 export const avatarSizes = ["small", "medium", "large"] as const
@@ -13,9 +13,9 @@ export type NonDefaultAvatarSize = Exclude<AvatarSize, "medium">
 export type NonDefaultAvatarVariant = Exclude<AvatarVariant, "circle">
 
 export type AvatarOptions = {
-  /** Størrelse. Standard: `medium`. */
+  /** Size. Default: `medium`. */
   size?: AvatarSize
-  /** Rund eller avrundet firkant. Standard: `circle`. */
+  /** Round or rounded square. Default: `circle`. */
   variant?: AvatarVariant
 }
 
@@ -26,11 +26,11 @@ export type AvatarAttributes = {
 }
 
 /**
- * Attributtene for et profilbilde eller initialer.
+ * The attributes for a profile picture or initials.
  *
- * Står navnet allerede ved siden av, er bildet pynt: sett `aria-hidden="true"`
- * på det, ellers leses navnet opp to ganger. Står bildet alene, må det ha en
- * tekst som sier hvem det er.
+ * If the name is already next to it, the picture is decoration: set
+ * `aria-hidden="true"` on it, or the name is announced twice. If the
+ * picture stands alone, it must have a text that says who it is.
  *
  * ```ts
  * <span {...avatar({ size: "small" })} aria-hidden="true">ON</span>
@@ -47,7 +47,7 @@ export const avatar = Object.assign(
       "data-variant": variant === "circle" ? undefined : variant,
     }),
   {
-    /** Klassen på lista med profilbilder som overlapper. */
+    /** The class on the list of overlapping profile pictures. */
     stack: AVATAR_STACK_CLASS,
     sizes: avatarSizes,
     isSize: createGuard(avatarSizes),

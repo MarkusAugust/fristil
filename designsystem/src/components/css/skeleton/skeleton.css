@@ -6,9 +6,9 @@
     block-size: var(--lt-skeleton-height, var(--lt-spacing-4));
     border-radius: var(--lt-skeleton-radius, var(--lt-spacing-1));
     background: var(--lt-color-neutral-surface);
-    /* Skimmeret er en gradient som beveger seg over flaten, ikke en
-       gjennomsiktighet som pulserer. Da blir kontrasten mot sideflaten den
-       samme hele veien. */
+    /* The shimmer is a gradient moving across the surface, not an opacity
+       that pulses. The contrast against the page surface then stays the
+       same all the way. */
     background-image: linear-gradient(
       90deg,
       transparent 0%,
@@ -20,8 +20,8 @@
     animation: lt-skeleton-shimmer 1600ms ease-in-out infinite;
   }
 
-  /* Tekstlinjene er lave, så standardradien er mindre. Variabelen gjelder
-     her også. */
+  /* The text lines are low, so the default radius is smaller. The variable
+     applies here too. */
   .lt-skeleton[data-variant="text"] {
     block-size: var(--lt-font-size-m);
     border-radius: var(--lt-skeleton-radius, var(--lt-spacing-0-5));
@@ -49,8 +49,9 @@
     }
   }
 
-  /* Høykontrast: flaten og skimmeret er bakgrunner, og begge tvinges til
-     sideflatens farge. Uten en kant var plassholderen usynlig. */
+  /* High contrast: the surface and the shimmer are backgrounds, and both are
+     forced to the page surface colour. Without a border the placeholder was
+     invisible. */
   @media (forced-colors: active) {
     .lt-skeleton {
       border: 1px solid GrayText;

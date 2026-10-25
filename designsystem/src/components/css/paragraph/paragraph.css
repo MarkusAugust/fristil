@@ -5,8 +5,8 @@
     font-size: var(--lt-font-size-m);
     line-height: var(--lt-paragraph-line-height, var(--lt-line-height-article));
     color: var(--lt-color-neutral-text-strong);
-    /* Under 75 tegn per linje. Lengre linjer gjør det vanskelig å finne
-       tilbake til starten av neste. */
+    /* Under 75 characters per line. Longer lines make it hard to find the
+       start of the next one. */
     max-inline-size: var(--lt-paragraph-width, 70ch);
   }
 

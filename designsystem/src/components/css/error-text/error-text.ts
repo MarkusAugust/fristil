@@ -8,7 +8,7 @@ export type ErrorTextVariant = (typeof errorTextVariants)[number]
 export type NonDefaultErrorTextVariant = Exclude<ErrorTextVariant, "error">
 
 export type ErrorTextOptions = {
-  /** Om feilen stopper innsending eller bare advarer. Standard: `error`. */
+  /** Whether the error stops submission or only warns. Default: `error`. */
   variant?: ErrorTextVariant
 }
 
@@ -18,7 +18,7 @@ export type ErrorTextAttributes = {
 }
 
 /**
- * Attributtene for en feilmelding under et felt.
+ * The attributes for an error text below a field.
  *
  * ```ts
  * <p {...errorText({ variant: "warning" })}>…</p>

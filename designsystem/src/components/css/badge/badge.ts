@@ -14,7 +14,7 @@ export type BadgeColor = (typeof badgeColors)[number]
 export type NonInfoBadgeColor = Exclude<BadgeColor, "info">
 
 export type BadgeOptions = {
-  /** Hva tilstanden betyr. Standard: `info`. */
+  /** What the status means. Default: `info`. */
   color?: BadgeColor
 }
 
@@ -24,10 +24,10 @@ export type BadgeAttributes = {
 }
 
 /**
- * Attributtene for et statusmerke.
+ * The attributes for a status badge.
  *
  * ```ts
- * <span {...badge({ color: "success" })}>Innvilget</span>
+ * <span {...badge({ color: "success" })}>Approved</span>
  * ```
  */
 export const badge = Object.assign(

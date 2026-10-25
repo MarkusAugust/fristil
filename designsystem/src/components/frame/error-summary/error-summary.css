@@ -5,8 +5,8 @@
     display: none;
   }
 
-  /* Klassen settes på selve elementet av komponenten. Konsumentens markup
-     blir stående der den er. */
+  /* The component sets the class on the element itself. The consumer's
+     markup stays where it is. */
   .lt-error-summary {
     display: block;
     box-sizing: border-box;

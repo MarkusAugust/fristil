@@ -5,8 +5,8 @@
   }
 
   .lt-tooltip__bubble {
-    /* Bredden i `--lt-tooltip-width` er hele boblen, også i en side uten
-       en CSS-reset som setter border-box. */
+    /* The width in `--lt-tooltip-width` is the whole bubble, also on a page
+       without a CSS reset that sets border-box. */
     box-sizing: border-box;
     position: absolute;
     inset-block-end: calc(100% + var(--lt-spacing-2));
@@ -21,20 +21,21 @@
     color: var(--lt-color-neutral-canvas);
     background: var(--lt-color-neutral-text-strong);
     border-radius: var(--lt-tooltip-radius, var(--lt-spacing-1));
-    /* Boblen er skjult til utløseren får fokus eller musa. `display: none`
-       og ikke bare `visibility`: en skjult boble tok fortsatt plass, og ved
-       høyre kant ga den sidelengs rulling på en smal skjerm.
-       `aria-describedby` leser teksten den peker på også mens boblen er
-       skjult. */
+    /* The bubble is hidden until the trigger gets focus or the mouse.
+       `display: none` and not just `visibility`: a hidden bubble still took
+       up room, and at the right edge it caused sideways scrolling on a
+       narrow screen. `aria-describedby` reads the text it points to also
+       while the bubble is hidden. */
     display: none;
     opacity: 0;
-    /* Mens den tones ut, står boblen et øyeblikk med `display` på. Uten
-       dette tok den og broen klikk som var ment for det som lå under. */
+    /* While it fades out, the bubble briefly has `display` on. Without this
+       it and the bridge took clicks meant for what was underneath. */
     pointer-events: none;
   }
 
-  /* `inset-inline-start` snur med retningen, `translateX` gjør det ikke. Uten
-     denne sto boblen en hel boblebredde til venstre for knappen. */
+  /* `inset-inline-start` flips with the direction, `translateX` does not.
+     Without this the bubble sat a whole bubble width to the left of the
+     button. */
   .lt-tooltip__bubble:dir(rtl) {
     transform: translateX(50%);
   }
@@ -46,10 +47,11 @@
     pointer-events: auto;
   }
 
-  /* En usynlig bro over gapet mellom knappen og boblen, så bred som
-     knappen. Uten den slapp `:hover` på vei opp, og boblen forsvant før
-     musa nådde den. Den står bare mens boblen vises, og ikke bredere enn
-     knappen, så den tar ikke klikk fra innholdet ved siden av. */
+  /* An invisible bridge over the gap between the button and the bubble, as
+     wide as the button. Without it `:hover` let go on the way up, and the
+     bubble disappeared before the mouse reached it. It is only there while
+     the bubble shows, and no wider than the button, so it does not take
+     clicks from the content next to it. */
   .lt-tooltip:is(:hover, :focus-within)::before {
     content: "";
     position: absolute;
@@ -58,8 +60,9 @@
     block-size: var(--lt-spacing-2);
   }
 
-  /* Inntoningen begynner fra usynlig også når boblen går fra `display:
-     none`. Uten støtte for dette vises den bare uten toning. */
+  /* The fade-in starts from invisible also when the bubble comes from
+     `display: none`. Without support for this it just appears without
+     fading. */
   @starting-style {
     .lt-tooltip:hover .lt-tooltip__bubble,
     .lt-tooltip:focus-within .lt-tooltip__bubble {
@@ -75,8 +78,9 @@
     }
   }
 
-  /* Høykontrast: boblen har ingen ramme, og flatene tvinges til samme farge
-     som siden. Uten en kant flyter teksten rett oppå innholdet under. */
+  /* High contrast: the bubble has no border, and the surfaces are forced to
+     the same colour as the page. Without an edge the text floats right on
+     top of the content below. */
   @media (forced-colors: active) {
     .lt-tooltip__bubble {
       border: 1px solid CanvasText;

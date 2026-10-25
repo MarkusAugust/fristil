@@ -14,9 +14,9 @@
     cursor: pointer;
   }
 
-  /* Knappen inne i feltet er nettleserens egen, og kan bare styles gjennom
-     denne pseudoklassen. Teksten på den kommer fra nettleseren og språket i
-     operativsystemet, så den kan ikke oversettes herfra. */
+  /* The button inside the field is the browser's own, and can only be styled
+     through this pseudo-element. Its text comes from the browser and the
+     operating system's language, so it cannot be translated from here. */
   .lt-file-upload::file-selector-button {
     margin-inline-end: var(--lt-spacing-3);
     padding: var(--lt-spacing-2) var(--lt-spacing-4);
@@ -59,17 +59,17 @@
     border-color: var(--lt-color-success-text);
   }
 
-  /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
-     `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
-     var slått av under innsending så rødt ut, ikke avslått. */
+  /* Disabled wins over a state. `[data-state]` used to come after
+     `:disabled` with the same specificity, and an invalid field in a form
+     that was disabled during submission looked red, not disabled. */
   .lt-file-upload:disabled[data-state] {
     background: var(--lt-color-disabled-surface);
     color: var(--lt-color-disabled-text);
     border-color: var(--lt-color-disabled-surface);
   }
 
-  /* Lista over filene som er valgt. Den skriver du selv, siden bare du vet
-     hva som skal skje når en fil fjernes. */
+  /* The list of the selected files. You write it yourself, since only you
+     know what should happen when a file is removed. */
   .lt-file-upload-list {
     display: flex;
     flex-direction: column;
@@ -88,13 +88,14 @@
     padding: var(--lt-spacing-2) var(--lt-spacing-3);
     background: var(--lt-color-neutral-surface);
     border-radius: var(--lt-file-upload-radius, var(--lt-spacing-1));
-    /* Filnavn har sjelden mellomrom å brekke i, og knappeteksten gjentar
-       navnet. Uten dette presser raden seg bredere enn skjermen på mobil. */
+    /* File names rarely have spaces to break at, and the button text repeats
+       the name. Without this the row pushes wider than the screen on
+       mobile. */
     overflow-wrap: anywhere;
   }
 
-  /* Et flex-element kan som standard ikke bli smalere enn innholdet sitt.
-     Uten dette brekker ikke filnavnet, uansett hva vi sier over. */
+  /* A flex item cannot by default become narrower than its content. Without
+     this the file name does not break, whatever we say above. */
   .lt-file-upload-list li > * {
     min-inline-size: 0;
   }

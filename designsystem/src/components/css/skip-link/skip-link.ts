@@ -7,15 +7,15 @@ export type SkipLinkAttributes = {
 }
 
 /**
- * Attributtene for en hopp-til-innhold-lenke.
+ * The attributes for a skip-to-content link.
  *
- * Lenken skal være det første elementet i `<body>`, og peke på id-en til
- * hovedinnholdet. Den ligger utenfor skjermen til den får fokus, og kan
- * derfor ikke skjules med `display: none`: da kan tastaturet heller ikke nå
- * den, og hele poenget forsvinner.
+ * The link must be the first element in `<body>`, and point to the id of the
+ * main content. It sits off screen until it gets focus, and therefore cannot
+ * be hidden with `display: none`: the keyboard could not reach it either,
+ * and the whole point is lost.
  *
  * ```ts
- * <a {...skipLink()} href="#hovedinnhold">Hopp til hovedinnhold</a>
+ * <a {...skipLink()} href="#main-content">Skip to main content</a>
  * ```
  */
 export const skipLink = (): SkipLinkAttributes =>

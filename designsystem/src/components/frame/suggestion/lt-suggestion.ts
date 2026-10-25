@@ -22,8 +22,8 @@ import {
 } from "./suggestion.js"
 
 /**
- * Tekstene for antall treff, ett attributt per form. `count-none` er null
- * treff, og resten er formene `Intl.PluralRules` kjenner.
+ * The texts for the number of matches, one attribute per form. `count-none`
+ * is zero matches, and the rest are the forms `Intl.PluralRules` knows.
  */
 const COUNT_ATTRIBUTES = [
   "count-none",
@@ -38,20 +38,20 @@ const COUNT_ATTRIBUTES = [
 export const LT_SUGGESTION_TAG = "lt-suggestion" as const
 
 /**
- * Delene forslagsfeltet finner, som selektorer relativt til elementet. Komponenten
- * finner delene med disse, og manifestet beskriver dem for den som setter
- * sammen markupen selv, så de to ikke kan si noe ulikt.
+ * The parts the suggestion field finds, as selectors relative to the element.
+ * The web component finds its parts with these, and the manifest describes
+ * them for whoever writes the markup by hand, so the two cannot disagree.
  */
 export const LT_SUGGESTION_PARTS = {
-  /** Feltet: rollen når den står der, ellers det første inndatafeltet. */
+  /** The field: the role when present, otherwise the first input. */
   control: "[role='combobox'], input:not([type='hidden'])",
-  /** Lista: rollen når den står der, ellers klassen. */
+  /** The list: the role when present, otherwise the class. */
   list: `[role='listbox'], .${SUGGESTION_LIST_CLASS}`,
-  /** Et alternativ: rollen når den står der, ellers en `<li>` uten rolle i lista. */
+  /** An option: the role when present, otherwise an `<li>` without a role in the list. */
   option: `[role='option'], .${SUGGESTION_LIST_CLASS} > li:not([role])`,
   empty: `.${SUGGESTION_EMPTY_CLASS}`,
   status: "[role='status']",
-  /** Det skjulte feltet som får koden til alternativet brukeren valgte. */
+  /** The hidden field that receives the code of the option the user chose. */
   value: `input.${SUGGESTION_VALUE_CLASS}`,
 } as const
 
@@ -60,48 +60,52 @@ const LIST_SELECTOR = LT_SUGGESTION_PARTS.list
 const OPTION_SELECTOR = LT_SUGGESTION_PARTS.option
 
 /**
- * Tastaturet og filtreringen i et felt med forslagsliste.
+ * The keyboard and the filtering in a field with a suggestion list.
  *
- * Serveren skriver feltet og lista. Lages markupen med JavaScript, skriver
- * `lt.suggestion()` rollene, id-ene og koblingen. Kommer den fra en mal uten
- * JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, eller
- * legger ledeteksten rundt feltet, som HTML krever for at feltet skal ha navn
- * uten JavaScript. Resten holder det med: en `.lt-suggestion__list` med `<li>`
- * og et `[role="status"]`. Komponenten setter rollene, gir lista og
- * alternativene id, kobler lista til feltet, og lukker lista til brukeren
- * rører feltet. Bare det som mangler, så det serveren skrev står.
+ * The server writes the field and the list. When the markup is made with
+ * JavaScript, `lt.suggestion()` writes the roles, the ids and the wiring.
+ * When it comes from a template without JavaScript, the template writes
+ * `for` on the label and `id` on the field, or wraps the field in the label,
+ * which HTML requires for the field to have a name without JavaScript. The
+ * rest is enough: a `.lt-suggestion__list` with `<li>` and a
+ * `[role="status"]`. The web component sets the roles, gives the list and the
+ * options ids, connects the list to the field, and closes the list until the
+ * user touches the field. Only what is missing, so what the server wrote
+ * stays.
  *
- * Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen
- * en node på id, og et felt med en id serveren ikke sendte, blir byttet ut ved
- * neste oppdatering, med fokus og det brukeren har skrevet.
+ * The web component never writes an id on the field. Datastar and idiomorph
+ * recognise a node by its id, and a field with an id the server did not send
+ * is replaced on the next update, along with focus and what the user has
+ * typed.
  *
- * Feltet viser alltid teksten til alternativet. Har serveren skrevet et
- * skjult `.lt-suggestion__value`, får det koden fra `data-value`, eller
- * teksten når alternativet ikke har noen. Uten JavaScript sendes teksten, og serveren
- * slår opp. Komponenten rendrer ingenting. Den lagde tidligere
- * hele feltet selv, og da fantes det verken ledetekst eller inndatafelt før
- * skriptet hadde kjørt, og ingenting ble med i innsendingen.
+ * The field always shows the option's text. If the server has written a
+ * hidden `.lt-suggestion__value`, it receives the code from `data-value`, or
+ * the text when the option has none. Without JavaScript the text is
+ * submitted, and the server looks it up. The web component renders nothing.
+ * It used to create the whole field itself, and then there was neither a
+ * label nor an input before the script had run, and nothing was included in
+ * the submission.
  *
- * Det komponenten gjør er det nettleseren ikke gjør: filtrerer alternativene
- * mens brukeren skriver, flytter markeringen med piltastene, og holder
- * `aria-activedescendant` i synk slik at skjermleseren leser opp alternativet
- * uten at fokus forlater feltet.
+ * What the web component does is what the browser does not: it filters the
+ * options while the user types, moves the highlight with the arrow keys, and
+ * keeps `aria-activedescendant` in sync so the screen reader announces the
+ * option without focus leaving the field.
  *
- * Har noen andre alt filtrert, en server eller en React-komponent som
- * rendrer bare treffene, sier `prefiltered` fra, og komponenten lar
- * alternativene være i fred.
+ * If something else has already filtered, a server or a React component that
+ * renders only the matches, `prefiltered` says so, and the web component
+ * leaves the options alone.
  *
  * ```html
  * <lt-suggestion>
- *   <label class="lt-label" for="kommune">Kommune</label>
- *   <input class="lt-input" id="kommune" role="combobox" aria-controls="kommune-list"
+ *   <label class="lt-label" for="city">City</label>
+ *   <input class="lt-input" id="city" role="combobox" aria-controls="city-list"
  *          aria-expanded="false" aria-autocomplete="list" autocomplete="off"
- *          aria-describedby="kommune-status">
- *   <ul class="lt-suggestion__list" id="kommune-list" role="listbox" hidden>
- *     <li class="lt-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
+ *          aria-describedby="city-status">
+ *   <ul class="lt-suggestion__list" id="city-list" role="listbox" hidden>
+ *     <li class="lt-suggestion__option" id="city-option-0" role="option">Bergen</li>
  *   </ul>
- *   <p class="lt-suggestion__empty">Ingen treff</p>
- *   <span class="lt-sr-only" id="kommune-status" role="status"></span>
+ *   <p class="lt-suggestion__empty">No matches</p>
+ *   <span class="lt-sr-only" id="city-status" role="status"></span>
  * </lt-suggestion>
  * ```
  */
@@ -116,92 +120,96 @@ export class LtSuggestion extends HostElement {
   private control?: HTMLInputElement
   private list?: HTMLElement
   private empty?: HTMLElement
-  /** Alternativene som alt har fått lytteren sin. */
+  /** The options that already have their listener. */
   private readonly bound = new WeakSet<HTMLElement>()
-  /** Id-ene komponenten selv har laget, per node, så en patch får de samme tilbake. */
+  /** The ids the web component created, per node, so a patch gets the same ones back. */
   private readonly ids = new WeakMap<Element, string>()
-  /** Rollene komponenten selv har satt. Se `derivedParts`. */
+  /** The roles the web component set. See `derivedParts`. */
   private readonly roledByMe = new WeakSet<Element>()
-  /** Sant mens komponenten selv sender hendelser, så den ikke svarer seg selv. */
+  /** True while the web component dispatches events, so it does not answer itself. */
   private choosing = false
   /**
-   * Teksten og koden til valget som står i feltet, når verdifeltet er i bruk.
+   * The text and code of the choice in the field, when the value field is in
+   * use.
    *
-   * Paret er det koden i verdifeltet gjelder for. Endrer brukeren teksten,
-   * gjelder koden ikke lenger, og verdifeltet tømmes; ellers ville skjemaet
-   * sendt koden for Bergen med teksten «Bodø» i feltet. Står teksten igjen
-   * etter en oppdatering, settes koden tilbake: verdifeltets `value` er et
-   * attributt, og en morfing skriver serverens over det komponenten satte.
+   * The pair is what the code in the value field applies to. If the user
+   * changes the text, the code no longer applies, and the value field is
+   * emptied; otherwise the form would submit the code for Bergen with the
+   * text "Bodø" in the field. If the text is still there after an update, the
+   * code is set back: the value field's `value` is an attribute, and a morph
+   * writes the server's over what the web component set.
    */
   private chosen?: { label: string; value: string }
   /**
-   * Det serveren sendte som tekst og kode, sist noen andre enn komponenten
-   * skrev koden. Tilbakestilles skjemaet, går teksten tilbake til serverens,
-   * og koden skal følge med: et skjult felt har ingen egen standardverdi å
-   * gå tilbake til, siden komponenten skriver koden som attributt.
+   * What the server sent as text and code, the last time something other
+   * than the web component wrote the code. When the form is reset, the text
+   * goes back to the server's, and the code must follow: a hidden field has
+   * no default value of its own to go back to, since the web component
+   * writes the code as an attribute.
    */
   private serverChoice?: { label: string; value: string }
-  /** Koden komponenten selv skrev sist. Står noe annet der, var det serveren. */
+  /** The code the web component wrote last. If something else is there, the server wrote it. */
   private writtenCode?: string
-  /** Skjemaet `reset` lyttes på. Følger feltet, som en patch kan flytte. */
+  /** The form listened to for `reset`. Follows the field, which a patch can move. */
   private boundForm?: HTMLFormElement | null
-  /** `for` komponenten selv skrev på ledeteksten. */
+  /** The `for` the web component wrote on the label. */
   private readonly forByMe = new WeakMap<Element, string>()
   /**
-   * Navnet komponenten ga lista, per liste: `aria-labelledby` mot
-   * ledeteksten, eller `aria-label` med teksten i den. Står noe annet der,
-   * er det serverens, og det står.
+   * The name the web component gave the list, per list: `aria-labelledby`
+   * pointing to the label, or `aria-label` with its text. If something else
+   * is there, the server wrote it, and it stays.
    */
   private readonly listNameByMe = new WeakMap<
     Element,
     { name: "aria-labelledby" | "aria-label"; value: string }
   >()
   /**
-   * Ledetekster der serveren skrev en `for` som pekte på en annen id. Sies
-   * fra om én gang; minnet nullstilles ikke, siden den omskrevne `for` ikke
-   * kan skilles fra en server som rettet seg.
+   * Labels where the server wrote a `for` pointing to another id. Reported
+   * once; the memory is not reset, since the rewritten `for` cannot be told
+   * apart from a server that corrected itself.
    */
   private readonly wrongFor = new WeakSet<Element>()
   /**
-   * Om lista står åpen, og hvilket alternativ som er markert.
+   * Whether the list is open, and which option is highlighted.
    *
-   * Begge deler er brukerens: hun skrev noe, og hun blar med piltastene.
-   * Ingenting av det står i HTML-en serveren sendte, så en morfing river det
-   * bort. Før måtte malen liste opp `aria-expanded`,
-   * `aria-activedescendant` og `hidden` i `data-preserve-attr`. Nå setter
-   * komponenten det tilbake, så lenge morfingen beholder feltet. Det gjør
-   * den bare når id-en stemmer, se `warnAboutReplacedControl`.
+   * Both come from the user: she typed something, and she moves with the
+   * arrow keys. None of it is in the HTML the server sent, so a morph strips
+   * it. The template used to list `aria-expanded`, `aria-activedescendant`
+   * and `hidden` in `data-preserve-attr`. Now the web component sets it back,
+   * as long as the morph keeps the field. It only does so when the id
+   * matches, see `warnAboutReplacedControl`.
    */
   private wantOpen?: boolean
   /**
-   * Alternativet som er markert, husket med både id og tekst.
+   * The highlighted option, remembered by both id and text.
    *
-   * Id-ene fra `lt.suggestion()` er posisjonelle, så en ny liste fra serveren
-   * gjenbruker dem. Med id alene satte komponenten markeringen tilbake på
-   * alternativ nummer to i en helt annen liste, og skjermleseren leste opp en
-   * kommune brukeren aldri navigerte til. Teksten er identiteten; id-en er
-   * bare der `aria-activedescendant` skal peke.
+   * The ids from `lt.suggestion()` are positional, so a new list from the
+   * server reuses them. With the id alone the web component put the
+   * highlight back on option number two in an entirely different list, and
+   * the screen reader announced a place the user never navigated to. The
+   * text is the identity; the id is only where `aria-activedescendant`
+   * points.
    */
   private active?: { id: string; label: string; value: string | null }
   /**
-   * Antallet som sist ble lest opp, når noen andre filtrerer.
+   * The count last announced, when something else filters.
    *
-   * Bare endringer skal leses opp, og det første antallet er
-   * utgangspunktet og ikke en nyhet. Se `announceFiltered`.
+   * Only changes are announced, and the first count is the starting point,
+   * not news. See `announceFiltered`.
    */
   private announcedCount?: number
   /**
-   * Teksten som sist ble skrevet i statuselementet.
+   * The text last written in the status element.
    *
-   * Teksten finnes ikke i serverens utgave, så en oppdatering som sender
-   * området på nytt tømmer elementet. `repair()` skriver den tilbake.
+   * The text is not in the server's version, so an update that sends the
+   * region again empties the element. `repair()` writes it back.
    */
   private announcedText?: string
 
   connectedCallback(): void {
     /*
-     * Attributtene er med, ikke bare barna. Hver skriving under sammenligner
-     * først, ellers ville observatøren utløst seg selv i det uendelige.
+     * The attributes are included, not just the children. Every write below
+     * compares first, or the observer would trigger itself forever.
      */
     this.observer = new MutationObserver(() => this.sync())
     this.observer.observe(this, {
@@ -213,7 +221,7 @@ export class LtSuggestion extends HostElement {
         "aria-expanded",
         "aria-selected",
         "aria-activedescendant",
-        // Koblingen komponenten fyller inn når markupen kom uten den.
+        // The wiring the web component fills in when the markup arrived without it.
         "role",
         "id",
         "for",
@@ -221,19 +229,19 @@ export class LtSuggestion extends HostElement {
         "autocomplete",
         "aria-autocomplete",
         "class",
-        // Verdifeltets `value` er et attributt, og en morfing kan skrive
-        // serverens tomme verdi over koden brukeren valgte.
+        // The value field's `value` is an attribute, and a morph can write
+        // the server's empty value over the code the user chose.
         "value",
-        // `form` på feltet velger hvilket skjema tilbakestillingen hører til.
+        // `form` on the field picks which form the reset belongs to.
         "form",
-        // Et felt som blir `readonly` eller `disabled` skal lukke lista.
+        // A field that becomes `readonly` or `disabled` must close the list.
         "readonly",
         "disabled",
         "aria-disabled",
-        // Lista står i det øverste laget. En morfing som tar `popover`,
-        // lukker vinduet, og komponenten setter det tilbake.
+        // The list sits in the top layer. A morph that removes `popover`
+        // closes the popover, and the web component sets it back.
         "popover",
-        // Navnet på lista, fra ledeteksten.
+        // The list's name, from the label.
         "aria-labelledby",
         "aria-label",
       ],
@@ -241,10 +249,11 @@ export class LtSuggestion extends HostElement {
     this.sync()
     window.addEventListener("resize", this.reposition)
     window.addEventListener("scroll", this.reposition, true)
-    // Lista lukkes når fokus forlater komponenten, med Tab som med alt annet.
-    // På verten og ikke på feltet: går fokus via en knapp inni komponenten og
-    // så videre ut, skal lista lukkes da også. Uten dette ble den stående
-    // over neste felt, med `aria-expanded` sann på et felt uten fokus.
+    // The list closes when focus leaves the web component, with Tab as with
+    // anything else. On the host and not on the field: if focus goes through
+    // a button inside the web component and then out, the list must close
+    // then too. Without this it stayed over the next field, with
+    // `aria-expanded` true on a field without focus.
     this.addEventListener("focusout", this.handleFocusOut)
   }
 
@@ -255,15 +264,15 @@ export class LtSuggestion extends HostElement {
     }
 
     /*
-     * Attributtet kan komme og gå mens siden lever, og da skal lista rettes
-     * opp med en gang framfor ved neste tastetrykk. `this.observer` er
-     * beskjeden om at komponenten står i dokumentet: tilbakekallet kommer
-     * også under oppgraderingen, før barna finnes.
+     * The attribute can come and go while the page is alive, and then the
+     * list must be corrected at once rather than on the next keystroke.
+     * `this.observer` signals that the web component is in the document: the
+     * callback also fires during the upgrade, before the children exist.
      */
     if (name === "prefiltered" && this.observer) {
-      // Antallet som står der i det attributtet settes er utgangspunktet, og
-      // ikke noe å lese opp. Uten dette ble den første endringen etterpå
-      // regnet som utgangspunktet, og gikk tapt.
+      // The count present when the attribute is set is the starting point,
+      // and nothing to announce. Without this the first change afterwards
+      // was taken as the starting point, and was lost.
       this.announcedCount = this.prefiltered ? this.visible.length : undefined
       this.filter()
     }
@@ -278,11 +287,12 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Åpner og lukker vinduet lista står i, etter `hidden`.
+   * Opens and closes the popover the list sits in, following `hidden`.
    *
-   * `hidden` er fortsatt det som sier om lista er åpen, fra serveren som fra
-   * komponenten, og vinduet følger etter. Lista står i det øverste laget, så
-   * en forelder med `overflow`, som kroppen i en dialog, ikke klipper den.
+   * `hidden` still says whether the list is open, from the server as from
+   * the web component, and the popover follows. The list sits in the top
+   * layer, so a parent with `overflow`, such as the body of a dialog, does
+   * not clip it.
    */
   private mirrorPopover(): void {
     const list = this.listElement
@@ -292,17 +302,18 @@ export class LtSuggestion extends HostElement {
       if (!list.hidden && !shown) list.showPopover()
       else if (list.hidden && shown) list.hidePopover()
     } catch {
-      // Et element som er på vei ut av treet, kan ikke vises. Neste runde
-      // ser det igjen.
+      // An element on its way out of the tree cannot be shown. The next
+      // round sees it again.
       return
     }
     if (!list.hidden) this.reposition()
   }
 
   /**
-   * Legger lista rett under feltet, like bred som det. Er det ikke plass
-   * under, legges den over, og klemmes inn i vinduet uansett, som panelet i
-   * `<lt-popover>`. Posisjonen er fysisk, regnet ut fra feltets boks.
+   * Places the list right below the field, as wide as it. If there is no
+   * room below, it goes above, and it is squeezed into the viewport either
+   * way, like the panel in `<lt-popover>`. The position is physical,
+   * computed from the field's box.
    */
   private reposition = (): void => {
     const list = this.listElement
@@ -331,13 +342,13 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Gir lista et navn fra ledeteksten, når markupen kom uten.
+   * Names the list from the label, when the markup arrived without a name.
    *
-   * Med `aria-labelledby` når ledeteksten står ved siden av feltet; den får
-   * id av komponenten når den mangler, siden den ikke har noe brukeren kan
-   * miste. Står ledeteksten rundt feltet, får den ingen id: en morfing ville
-   * da byttet ut ledeteksten, og feltet med den. Da får lista teksten i
-   * ledeteksten som `aria-label`, uten verdien i feltet.
+   * With `aria-labelledby` when the label is next to the field; the web
+   * component gives it an id when it has none, since it holds nothing the
+   * user can lose. If the label wraps the field, it gets no id: a morph would
+   * then replace the label, and the field with it. In that case the list
+   * gets the label's text as `aria-label`, without the field's value.
    */
   private nameList(list: HTMLElement, control: HTMLInputElement): void {
     const mine = this.listNameByMe.get(list)
@@ -388,7 +399,7 @@ export class LtSuggestion extends HostElement {
     })
   }
 
-  /** Id-en et element skal ha: sin egen, ellers den komponenten laget sist. */
+  /** The id an element should have: the one it has, otherwise the one the web component created last. */
   private rememberedId(element: Element, prefix: string): string {
     if (element.id) return element.id
     let id = this.ids.get(element)
@@ -400,12 +411,13 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Fyller inn koblingen der markupen kom uten den. Bare det som mangler.
+   * Fills in the wiring where the markup arrived without it. Only what is
+   * missing.
    *
-   * Lista lukkes når markupen ikke sier noe om den, altså når verken
-   * `aria-expanded` på feltet eller `hidden` på lista står der. Sier
-   * markupen én av delene, er det serverens ord om begge, som med
-   * `lt.suggestion({ open: true })`.
+   * The list is closed when the markup says nothing about it, that is when
+   * neither `aria-expanded` on the field nor `hidden` on the list is there.
+   * If the markup states one of them, that is the server's word on both, as
+   * with `lt.suggestion({ open: true })`.
    */
   private wire(): void {
     const control = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
@@ -423,10 +435,10 @@ export class LtSuggestion extends HostElement {
 
     if (label) {
       addClass(label, LABEL_CLASS)
-      // `for` og `id` er den samme opplysningen, og skrives fra feltets id,
-      // aldri motsatt: komponenten skriver ikke id på feltet. Står
-      // ledeteksten rundt feltet, er koblingen implisitt. Samme regel som i
-      // `<lt-field>`.
+      // `for` and `id` are the same information, and are written from the
+      // field's id, never the other way round: the web component does not
+      // write an id on the field. If the label wraps the field, the wiring
+      // is implicit. Same rule as in `<lt-field>`.
       if (control.id && !label.contains(control)) {
         const current = label.getAttribute("for")
         if (
@@ -441,10 +453,10 @@ export class LtSuggestion extends HostElement {
       }
       warnAboutMarkup(
         this,
-        "for på ledeteksten pekte på en annen id enn feltets. Komponenten " +
-          "skrev den om, men uten JavaScript hadde feltet da ingen ledetekst, " +
-          "og en skjermleser leste det opp uten navn. Gi ledeteksten feltets " +
-          "id i malen.",
+        "for on the label pointed to a different id than the field's. " +
+          "The component rewrote it, but without JavaScript the field has " +
+          "no label and a screen reader announces it without a name, so " +
+          "write the field's id in for in the template.",
         () => {
           const now = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
           const labelNow = this.querySelector("label")
@@ -455,13 +467,13 @@ export class LtSuggestion extends HostElement {
       )
       warnAboutMarkup(
         this,
-        "<label> er ikke koblet til feltet: feltet har ingen id, og " +
-          "ledeteksten står ikke rundt det. Uten JavaScript har feltet da " +
-          "ingen ledetekst, og en skjermleser leser det opp uten navn. Skriv " +
-          "id på feltet og samme for på ledeteksten, eller legg <label> rundt " +
-          "feltet. Komponenten lager ikke " +
-          "id-en selv: en id serveren ikke sendte, får en oppdatering fra " +
-          "serveren til å bytte ut feltet.",
+        "<label> is not connected to the field: the field has no id, " +
+          "and the label does not wrap it, so without JavaScript a screen " +
+          "reader announces the field without a name. Write an id on the " +
+          "field and the same value in for on the label, or wrap the " +
+          "field in the <label>; the component does not write the id " +
+          "itself, because an id the server did not send makes a server " +
+          "update replace the field.",
         () => {
           const now = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
           const labelNow = this.querySelector("label")
@@ -475,14 +487,14 @@ export class LtSuggestion extends HostElement {
           )
         },
       )
-      // `for` går foran det at ledeteksten står rundt feltet. Peker den på en
-      // annen id, har feltet ingen ledetekst, også med JavaScript.
+      // `for` wins over the label wrapping the field. If it points to another
+      // id, the field has no label, with JavaScript as well.
       warnAboutMarkup(
         this,
-        "<label> står rundt feltet, men for på ledeteksten peker på en annen " +
-          "id enn feltets. for går foran, så feltet har ingen ledetekst, og en " +
-          "skjermleser leser det opp uten navn. Ta bort for, eller gi feltet " +
-          "den samme id-en.",
+        "<label> wraps the field, but its for points to a different id " +
+          "than the field's, and for wins, so a screen reader announces " +
+          "the field without a name. Remove for, or give the field the " +
+          "same id.",
         () => {
           const now = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
           const labelNow = this.querySelector("label")
@@ -492,9 +504,9 @@ export class LtSuggestion extends HostElement {
         },
       )
     } else {
-      // Uten ledetekst inni kan den stå utenfor, med `for` på feltets id.
-      // Den får klassen, som i `<lt-field>`; en patch av dette området
-      // rører den ikke, så den trenger ingen reparasjon.
+      // With no label inside, it can be outside, with `for` set to the field's
+      // id. It gets the class, as in `<lt-field>`; a patch of this region does
+      // not touch it, so it needs no repair.
       if (control.id) {
         const outside = (
           this.getRootNode() as Document | ShadowRoot
@@ -503,13 +515,13 @@ export class LtSuggestion extends HostElement {
       }
       warnAboutMarkup(
         this,
-        "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
-          "skjermleser leser det opp uten navn. Står ledeteksten utenfor " +
-          "<lt-suggestion>, må for på den peke på id-en til feltet.",
+        "found no <label>, so the field has no label and a screen " +
+          "reader announces it without a name. If the label is outside " +
+          "<lt-suggestion>, its for must point to the field's id.",
         () => {
           const now = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
           if (!now || this.querySelector("label")) return false
-          // En <label> rundt hele <lt-suggestion> gir også feltet et navn.
+          // A <label> around the whole <lt-suggestion> also names the field.
           if ((now.labels?.length ?? 0) > 0) return false
           if (
             now.hasAttribute("aria-label") ||
@@ -530,8 +542,8 @@ export class LtSuggestion extends HostElement {
       addClass(list, SUGGESTION_LIST_CLASS)
       if (!list.hasAttribute("role")) setAttr(list, "role", "listbox")
       if (!list.id) {
-        // Samme regel som for feltet: peker `aria-controls` på ingenting,
-        // er det den id-en den nye lista skal ha.
+        // Same rule as for the field: if `aria-controls` points to nothing,
+        // that is the id the new list should have.
         const wanted = control.getAttribute("aria-controls")
         const free = wanted && !root.getElementById?.(wanted)
         if (free) this.ids.set(list, wanted)
@@ -557,8 +569,9 @@ export class LtSuggestion extends HostElement {
       if (!option.id) {
         setAttr(option, "id", this.rememberedId(option, "lt-suggestion-option"))
       }
-      // Fra starten, ikke først når lista lukkes: ellers sto alternativene
-      // serveren sendte, uten til da, mens resten av lista hadde det.
+      // From the start, not only when the list closes: otherwise the options
+      // the server sent were without it until then, while the rest of the list
+      // had it.
       if (!option.hasAttribute("aria-selected")) {
         setAttr(option, "aria-selected", "false")
       }
@@ -566,16 +579,17 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Setter brukerens tilstand tilbake etter en patch.
+   * Sets the user's state back after a patch.
    *
-   * Filtreringen regnes ut på nytt av det som står i feltet, så den trenger
-   * ingen hukommelse. Det lista viser og hva som er markert gjør det.
+   * The filtering is recomputed from what is in the field, so it needs no
+   * memory. What the list shows and what is highlighted do.
    */
   private repair(): void {
     if (!this.control) return
 
-    // Koden settes tilbake også under `server-controlled`. Attributtet gjelder
-    // om lista står åpen og hva som er markert, ikke hva brukeren valgte.
+    // The code is set back under `server-controlled` too. The attribute is
+    // about whether the list is open and what is highlighted, not what the user
+    // chose.
     const valueField = this.valueField
     if (
       valueField &&
@@ -586,11 +600,11 @@ export class LtSuggestion extends HostElement {
       this.writeCode(valueField, this.chosen.value)
     }
 
-    // Et tømt statuselement får teksten tilbake mens lista står åpen, der
-    // antallet er det brukeren holder på med. Ikke ellers: hver patch av
-    // området ville ellers lest det gamle antallet opp på nytt. Og ikke når
-    // noen andre filtrerer: da er en patch svaret på et tastetrykk, og
-    // `announceFiltered` leser det nye antallet rett etter.
+    // An emptied status element gets its text back while the list is open,
+    // where the count is what the user is working on. Not otherwise: every
+    // patch of the region would announce the old count again. And not when
+    // something else filters: then a patch is the answer to a keystroke, and
+    // `announceFiltered` announces the new count right after.
     const status = this.querySelector<HTMLElement>(LT_SUGGESTION_PARTS.status)
     if (
       status &&
@@ -604,16 +618,16 @@ export class LtSuggestion extends HostElement {
 
     if (isServerControlled(this)) return
 
-    // Et felt som ble `readonly` eller `disabled` mens lista sto åpen, lukker
-    // den. Ellers holdt reparasjonen den åpen, og Escape gjør ingenting i et
-    // låst felt.
+    // A field that became `readonly` or `disabled` while the list was open
+    // closes it. Otherwise the repair kept it open, and Escape does nothing in
+    // a locked field.
     if (this.locked && this.wantOpen) this.setOpen(false)
 
     if (this.wantOpen !== undefined) {
       /*
-       * Begge delene sjekkes hver for seg. En patch som bare rører feltet lot
-       * `aria-expanded="false"` stå mens alternativene var synlige, og
-       * skjermleseren meldte at lista var lukket mens den sto på skjermen.
+       * Each half is checked separately. A patch that touched only the field left
+       * `aria-expanded="false"` while the options were visible, and the screen
+       * reader said the list was closed while it was on screen.
        */
       const list = this.listElement
       const expanded = this.control.getAttribute("aria-expanded")
@@ -628,12 +642,12 @@ export class LtSuggestion extends HostElement {
 
     if (this.active) {
       /*
-       * Teksten er det som gjelder, og alternativet må være synlig. Ellers
-       * markerte komponenten noe serveren nettopp hadde filtrert bort, og
-       * `aria-activedescendant` pekte på et skjult element. Id-en er en
-       * reserve: sender serveren lista på nytt, byttes alternativene ut og
-       * får nye id-er, og markeringen gjenfinnes på teksten. Koden teller
-       * med, siden to kommuner kan hete det samme.
+       * The text is what counts, and the option must be visible. Otherwise the
+       * web component highlighted something the server had just filtered out, and
+       * `aria-activedescendant` pointed to a hidden element. The id is a
+       * fallback: if the server sends the list again, the options are replaced
+       * and get new ids, and the highlight is found again by its text. The code
+       * counts too, since two places can have the same name.
        */
       const sameText = (o: HTMLElement) =>
         (o.textContent ?? "").trim() === this.active?.label &&
@@ -642,18 +656,19 @@ export class LtSuggestion extends HostElement {
         this.visible.find((o) => o.id === this.active?.id && sameText(o)) ??
         this.visible.find(sameText)
       if (!option) {
-        // Pekeren må bort sammen med markeringen. Uten dette pekte
-        // `aria-activedescendant` på et alternativ som nå heter noe annet, og
-        // skjermleseren leste opp en kommune brukeren aldri navigerte til.
+        // The pointer must go together with the highlight. Without this
+        // `aria-activedescendant` pointed to an option that is now called
+        // something else, and the screen reader announced a place the user never
+        // navigated to.
         this.active = undefined
         this.control.removeAttribute("aria-activedescendant")
       } else if (
         option.getAttribute("aria-selected") !== "true" ||
         this.control.getAttribute("aria-activedescendant") !== option.id
       ) {
-        // Begge sidene av koblingen sjekkes. Rev patchen bare
-        // `aria-activedescendant`, mens markeringen sto igjen, mistet
-        // skjermleseren lesepunktet sitt uten at noe annet så galt ut.
+        // Both sides of the wiring are checked. If the patch stripped only
+        // `aria-activedescendant` while the highlight remained, the screen reader
+        // lost its reading position without anything else looking wrong.
         this.markOption(option)
       }
     }
@@ -669,18 +684,19 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Noen andre har alt filtrert, så komponenten skal la være.
+   * Something else has already filtered, so the web component leaves the
+   * options alone.
    *
-   * Navnet het `server-filtered` før, og det var misvisende: det handler ikke
-   * om servere. En React-app som rendrer bare treffene har filtrert like
-   * fullt, uten at noen server er involvert.
+   * The name used to be `server-filtered`, and that was misleading: it is not
+   * about servers. A React app that renders only the matches has filtered all
+   * the same, without any server involved.
    *
-   * Komponenten skjuler et alternativ når teksten ikke inneholder det som
-   * står i feltet. Filtrerer du på noe annet, uten diakritikk, på en kode som
-   * ikke vises eller uskarpt, blir de to uenige, og da er det ditt filter som
-   * skal gjelde. Attributtet slår av både skjulingen og tommeldingen, altså
-   * alt som handler om hva lista viser. Opplesningen av antall treff blir
-   * igjen, siden den ikke er markup.
+   * The web component hides an option when its text does not contain what is
+   * in the field. If you filter on something else, without diacritics, on a
+   * code that is not shown, or fuzzily, the two disagree, and then your filter
+   * should win. The attribute turns off both the hiding and the empty
+   * message, that is everything about what the list shows. The announcement
+   * of the number of matches remains, since it is not markup.
    */
   get prefiltered(): boolean {
     return this.hasAttribute("prefiltered")
@@ -688,12 +704,12 @@ export class LtSuggestion extends HostElement {
 
   set prefiltered(on: boolean) {
     /*
-     * Setteren er ikke pynt. React 19 skriver egenskapen framfor attributtet
-     * når en web component har en med det navnet, og en getter alene
-     * kaster «Cannot set property prefiltered». Attributtet landet aldri, og
-     * komponenten skjulte det React nettopp hadde rendret. Bindestreken i det
-     * gamle navnet skjulte problemet: `server-filtered` kan ikke være et
-     * egenskapsnavn, så React sendte det som attributt.
+     * The setter is not decoration. React 19 writes the property rather than
+     * the attribute when a web component has one with that name, and a getter
+     * alone throws "Cannot set property prefiltered". The attribute never
+     * landed, and the web component hid what React had just rendered. The
+     * hyphen in the old name hid the problem: `server-filtered` cannot be a
+     * property name, so React sent it as an attribute.
      */
     setFlag(this, "prefiltered", on)
   }
@@ -710,17 +726,18 @@ export class LtSuggestion extends HostElement {
     return this.querySelector<HTMLInputElement>(LT_SUGGESTION_PARTS.value)
   }
 
-  /** Feltet tar ikke imot noe: `readonly` eller `disabled`. */
+  /** The field accepts no input: `readonly` or `disabled`. */
   private get locked(): boolean {
     return Boolean(this.control?.readOnly || this.control?.disabled)
   }
 
   /**
-   * Alternativene, kjent igjen på rollen og ikke på klassen.
+   * The options, recognised by the role and not by the class.
    *
-   * Rollen må stå der uansett, for skjermleseren. En mal som skriver
-   * `<li role="option">` med egen styling fikk verken filtrering eller
-   * piltaster da komponenten så etter klassen, og ingen sa fra.
+   * The role must be there anyway, for the screen reader. A template that
+   * wrote `<li role="option">` with its own styling got neither filtering nor
+   * arrow keys when the web component looked for the class, and nothing said
+   * so.
    */
   private get options(): HTMLElement[] {
     return derivedParts<HTMLElement>(
@@ -732,14 +749,14 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Hvilket synlig alternativ som er markert nå.
+   * Which visible option is highlighted now.
    *
-   * Den leses fra `aria-selected` i markupen, ikke fra en teller inni
-   * komponenten. Serveren kan sette markeringen selv med
-   * `lt.suggestion({ activeIndex })`, og en parallell teller ville hoppet
-   * til toppen av lista ved første piltast i stedet for til alternativet
-   * etter. Filtreringen flytter også på alternativene, og da svarer
-   * oppslaget riktig av seg selv.
+   * It is read from `aria-selected` in the markup, not from a counter inside
+   * the web component. The server can set the highlight itself with
+   * `lt.suggestion({ activeIndex })`, and a parallel counter would have jumped
+   * to the top of the list on the first arrow key instead of to the next
+   * option. The filtering also moves the options around, and then the lookup
+   * gives the right answer by itself.
    */
   private get activeIndex(): number {
     return this.selectable.findIndex(
@@ -747,15 +764,15 @@ export class LtSuggestion extends HostElement {
     )
   }
 
-  /** Alternativene som er synlige nå. */
+  /** The options that are visible now. */
   private get visible(): HTMLElement[] {
     return this.options.filter((option) => !option.hidden)
   }
 
   /**
-   * De synlige alternativene som kan velges. Et alternativ med
-   * `aria-disabled="true"` vises, men hoppes over av piltastene og kan ikke
-   * velges, verken med tastatur eller mus.
+   * The visible options that can be chosen. An option with
+   * `aria-disabled="true"` is shown, but the arrow keys skip it and it cannot
+   * be chosen, with neither keyboard nor mouse.
    */
   private get selectable(): HTMLElement[] {
     return this.visible.filter(
@@ -780,13 +797,13 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Sier fra når en oppdatering byttet ut feltet fordi id-en fra serveren
-   * endret seg.
+   * Reports when an update replaced the field because the id from the server
+   * changed.
    *
-   * Beskjeden kommer bare når brukeren hadde noe å miste: det gamle feltet er
-   * ute av treet, begge hadde en id fra serveren, id-ene er ulike, `name` er
-   * det samme, og det sto noe annet i det gamle feltet enn i det nye. En
-   * server som sender teksten tilbake, har ikke mistet den.
+   * The message comes only when the user had something to lose: the old field
+   * is out of the tree, both had an id from the server, the ids differ, `name`
+   * is the same, and the old field held something other than the new one. A
+   * server that sends the text back has not lost it.
    */
   private warnAboutReplacedControl(
     lost: HTMLInputElement,
@@ -799,13 +816,14 @@ export class LtSuggestion extends HostElement {
 
     warnAboutMarkup(
       this,
-      "en oppdatering fra serveren byttet ut feltet, og det brukeren hadde " +
-        "skrevet gikk tapt, sammen med fokus og lista. Id-en på feltet var en " +
-        "annen enn sist, og da kjenner oppdateringen ikke feltet igjen. Lag " +
-        "id-en av noe som er det samme hver gang, som navnet på feltet eller en " +
-        "nøkkel i dataene, ikke av et tilfeldig tall eller en teller.",
-      // Byttet har skjedd og kan ikke gå over av seg selv, med mindre en ny
-      // oppdatering alt har byttet feltet igjen.
+      "a server update replaced the field and lost what the user had " +
+        "typed, along with focus and the list, because the field's id " +
+        "was different from last time and the update did not recognise " +
+        "it. Build the id from something that is the same every time, " +
+        "such as the field name or a key in the data, not from a random " +
+        "number or a counter.",
+      // The replacement has happened and cannot undo itself, unless another
+      // update has already replaced the field again.
       () =>
         !lost.isConnected &&
         this.querySelector<HTMLInputElement>(CONTROL_SELECTOR) === control,
@@ -817,17 +835,17 @@ export class LtSuggestion extends HostElement {
     if (!control) {
       warnAboutMarkup(
         this,
-        'fant ingen felt: verken et <input> eller en [role="combobox"]. ' +
-          "Uten det vet komponenten ikke hvilket felt den skal lytte på, " +
-          "og verken filtrering eller piltaster virker.",
-        // Et tomt element er et område serveren ikke har fylt ennå, og det
-        // er ikke en feil i markupen.
+        'found no field: neither an <input> nor a [role="combobox"]. ' +
+          "Without one the component does not know which field to listen " +
+          "to, and neither filtering nor the arrow keys work.",
+        // An empty element is a region the server has not filled yet, and not
+        // an error in the markup.
         () =>
           this.childElementCount > 0 &&
           this.querySelector(CONTROL_SELECTOR) === null,
       )
-      // Feltet er borte. Firefox sender ingen `focusout` når noden med fokus
-      // fjernes, så lista ville ellers stått åpen uten et felt.
+      // The field is gone. Firefox sends no `focusout` when the focused node is
+      // removed, so the list would otherwise stay open without a field.
       this.wantOpen = undefined
       this.active = undefined
       const orphan = this.listElement
@@ -837,20 +855,20 @@ export class LtSuggestion extends HostElement {
 
     warnAboutMarkup(
       this,
-      'fant ingen liste: verken en [role="listbox"] eller en ' +
-        ".lt-suggestion__list. Alternativene kan da verken vises, " +
-        "filtreres eller velges med tastaturet.",
+      'found no list: neither a [role="listbox"] nor a ' +
+        ".lt-suggestion__list. The options cannot be shown, filtered or " +
+        "chosen with the keyboard.",
       () => this.querySelector(CONTROL_SELECTOR) !== null && !this.listElement,
     )
 
-    // Antall treff leses opp i et statuselement serveren sender. Uten det
-    // får den som ikke ser skjermen ingen beskjed om at lista snevret seg
-    // inn, og før sto komponenten da bare stille.
+    // The number of matches is announced in a status element the server
+    // sends. Without it, people who cannot see the screen get no word that the
+    // list narrowed, and the web component used to stay silent then.
     warnAboutMarkup(
       this,
-      'fant ingen [role="status"]. Antall treff leses da ikke opp for den ' +
-        "som ikke ser skjermen. Skriv et tomt element med rollen, som " +
-        "`lt.suggestion()` gjør.",
+      'found no [role="status"], so the number of matches is not ' +
+        "announced to people who cannot see the screen. Write an empty " +
+        "element with that role, as `lt.suggestion()` does.",
       () =>
         this.querySelector(CONTROL_SELECTOR) !== null &&
         this.listElement !== null &&
@@ -859,11 +877,11 @@ export class LtSuggestion extends HostElement {
 
     if (control !== this.control) {
       if (this.control) this.warnAboutReplacedControl(this.control, control)
-      // Det nye feltet har ikke fokus. Åpen liste og markering hørte til det
-      // gamle.
+      // The new field has no focus. The open list and the highlight belonged to
+      // the old one.
       this.wantOpen = undefined
       this.active = undefined
-      // Et verdifelt serveren fylte, gjelder teksten som står i feltet nå.
+      // A value field the server filled applies to the text in the field now.
       const valueField = this.valueField
       this.serverChoice =
         valueField && valueField.value !== ""
@@ -878,8 +896,8 @@ export class LtSuggestion extends HostElement {
       control.addEventListener("focus", this.handleFocus)
       this.control = control
     }
-    // Skjemaet leses hver gang: `form` på feltet kan peke på et annet uten
-    // at noe flyttes.
+    // The form is read every time: `form` on the field can point to another
+    // one without anything moving.
     const form = control.form
     if (form !== this.boundForm) {
       this.boundForm?.removeEventListener("reset", this.handleReset)
@@ -892,16 +910,16 @@ export class LtSuggestion extends HostElement {
       code !== this.writtenCode &&
       code !== this.chosen?.value
     ) {
-      // Noen andre enn komponenten skrev koden: serverens ord.
+      // Something other than the web component wrote the code: the server's word.
       this.serverChoice = { label: control.value, value: code }
       this.chosen = this.serverChoice
     }
 
     /*
-     * Et trykk i lista eller på tommeldingen skal ikke ta fokus fra feltet,
-     * heller ikke på rullefeltet. Ellers lukket `focusout` lista før valget
-     * rakk å skje. Begge kan byttes ut av en patch, så lytterne følger
-     * elementene.
+     * A press in the list or on the empty message must not take focus from the
+     * field, not on the scrollbar either. Otherwise `focusout` closed the list
+     * before the choice could happen. Both can be replaced by a patch, so the
+     * listeners follow the elements.
      */
     const list = this.listElement
     if (list !== this.list) {
@@ -916,10 +934,11 @@ export class LtSuggestion extends HostElement {
       this.empty = empty ?? undefined
     }
 
-    // Alternativene byttes ut uavhengig av feltet: i en Datastar-app sender
-    // serveren en ny liste mens brukeren skriver. Lå dette bak sjekken over,
-    // fikk de nye alternativene aldri lytteren sin, og valg med mus sluttet
-    // å virke etter første oppdatering.
+    // The options are replaced independently of the field: in a Datastar app
+    // the server sends a new list while the user types. Had this been behind
+    // the check above, the new options would never have got their listener,
+    // and choosing with the mouse would have stopped working after the first
+    // update.
     for (const option of this.options) {
       if (this.bound.has(option)) continue
       option.addEventListener("mousedown", this.handleOptionMouseDown)
@@ -930,10 +949,10 @@ export class LtSuggestion extends HostElement {
 
   private setOpen(open: boolean): void {
     /*
-     * En liste uten alternativer under et tomt felt har ingenting å vise,
-     * og åpnes ikke. Uten dette åpnet fokus en tom liste, og et felt som
-     * venter på sitt første søk viste «Ingen treff» før brukeren hadde
-     * skrevet et tegn: tommeldingen følger lista, og lista var åpen.
+     * A list without options below an empty field has nothing to show, and is
+     * not opened. Without this, focus opened an empty list, and a field waiting
+     * for its first search showed "No matches" before the user had typed a
+     * character: the empty message follows the list, and the list was open.
      */
     const show = open && this.hasSomethingToShow()
     this.wantOpen = show
@@ -944,7 +963,7 @@ export class LtSuggestion extends HostElement {
     return this.options.length > 0 || (this.control?.value ?? "").trim() !== ""
   }
 
-  /** Skriver tilstanden ut i markupen, uten å endre hva brukeren ville. */
+  /** Writes the state into the markup, without changing what the user wanted. */
   private applyOpen(open: boolean): void {
     const list = this.listElement
     if (!list || !this.control) return
@@ -963,11 +982,12 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Tommeldingen følger lista: synlig bare når lista er åpen og tom.
+   * The empty message follows the list: visible only when the list is open and
+   * empty.
    *
-   * Den er søsken til lista og ikke barn, så `hidden` på lista skjulte den
-   * ikke, og «Ingen treff» ble stående under et lukket felt etter Escape.
-   * Har noen andre filtrert, styrer de også tommeldingen.
+   * It is a sibling of the list and not a child, so `hidden` on the list did
+   * not hide it, and "No matches" stayed below a closed field after Escape.
+   * If something else has filtered, it also controls the empty message.
    */
   private syncEmpty(): void {
     if (this.prefiltered) return
@@ -978,25 +998,26 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Skjuler det som ikke passer, og melder hvor mange som er igjen.
+   * Hides what does not match, and announces how many are left.
    *
-   * Kjøres når brukeren skriver eller setter fokus i feltet, og på nytt
-   * etter en patch mens lista er åpen, siden patchen kan ha byttet ut
-   * alternativene.
+   * Runs when the user types or focuses the field, and again after a patch
+   * while the list is open, since the patch may have replaced the options.
    */
   private filter(): void {
     /*
-     * Har noen andre filtrert, bestemmer de hva lista viser, og tommeldingen er
-     * en del av det. Komponenten rører derfor ingenting her, og opplesningen
-     * kommer fra `announceFiltered` i stedet.
+     * If something else has filtered, it decides what the list shows, and the
+     * empty message is part of that. The web component therefore touches
+     * nothing here, and the announcement comes from `announceFiltered`
+     * instead.
      *
-     * To utgaver var feil før denne. Den første returnerte med en gang, og
-     * da satt en Datastar-app igjen uten opplesning av antall treff i det
-     * hele tatt. Den andre telte her: da meldte et tomt felt «Ingen treff»
-     * allerede ved fokus, før brukeren hadde skrevet et tegn, og et
-     * asynkront søk meldte det på nytt ved hvert tastetrykk mens svaret
-     * fortsatt var underveis. Komponenten satte samtidig tommeldingen synlig
-     * igjen etter at appen hadde skjult den, og det fantes ingen vei utenom.
+     * Two versions before this one were wrong. The first returned at once, and
+     * then a Datastar app had no announcement of the number of matches at all.
+     * The second counted here: then an empty field announced "No matches"
+     * already on focus, before the user had typed a character, and an
+     * asynchronous search announced it again on every keystroke while the
+     * answer was still on its way. The web component also made the empty
+     * message visible again after the app had hidden it, and there was no way
+     * around it.
      */
     if (this.prefiltered) return
 
@@ -1012,12 +1033,12 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Tar bort markeringen fra et alternativ filtreringen nettopp skjulte.
+   * Removes the highlight from an option the filtering just hid.
    *
-   * Ryddingen hører her, der skjulingen skjer, og ikke bare i `repair()`:
-   * den returnerer med en gang under `server-controlled`, og da pekte
-   * `aria-activedescendant` på et skjult alternativ, som skjermleseren leste
-   * opp likevel.
+   * The cleanup belongs here, where the hiding happens, and not only in
+   * `repair()`: that returns at once under `server-controlled`, and then
+   * `aria-activedescendant` pointed to a hidden option, which the screen
+   * reader announced anyway.
    */
   private dropHiddenMark(): void {
     const control = this.control
@@ -1041,16 +1062,15 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Leser opp antallet når noen andre har filtrert.
+   * Announces the count when something else has filtered.
    *
-   * Lista endrer seg da ikke av et tastetrykk, men av at appen rendrer på
-   * nytt, og det er nettopp den endringen observatøren ser. Beskjeden hører
-   * hjemme her og ikke i `filter()`, for mellom tastetrykket og det nye
-   * svaret kan det gå et halvt sekund over nettverket.
+   * The list then changes not from a keystroke but from the app rendering
+   * again, and that is exactly the change the observer sees. The message
+   * belongs here and not in `filter()`, because half a second over the
+   * network can pass between the keystroke and the new answer.
    *
-   * Bare endringer leses opp. Det første antallet er utgangspunktet og ikke
-   * en nyhet, og det står ofte 0 der fordi appen ikke har rendret lista
-   * ennå.
+   * Only changes are announced. The first count is the starting point and not
+   * news, and it is often 0 because the app has not rendered the list yet.
    */
   private announceFiltered(): void {
     if (!this.prefiltered) return
@@ -1064,12 +1084,12 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Melder antall treff.
+   * Announces the number of matches.
    *
-   * Uten dette får den som ikke ser skjermen ingen beskjed om at lista
-   * snevret seg inn mens hun skrev. Teksten er klientgenerert, og
-   * `repair()` skriver den tilbake når en oppdatering tømmer elementet.
-   * Mangler elementet, har `bind()` alt sagt fra.
+   * Without this, people who cannot see the screen get no word that the list
+   * narrowed while they typed. The text is generated on the client, and
+   * `repair()` writes it back when an update empties the element. If the
+   * element is missing, `bind()` has already reported it.
    */
   private announce(hits: number): void {
     const status = this.querySelector<HTMLElement>(LT_SUGGESTION_PARTS.status)
@@ -1080,12 +1100,13 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Teksten for et antall, på sidens språk.
+   * The text for a count, in the page's language.
    *
-   * `count-none` gjelder null treff, siden «Ingen treff» er en egen setning
-   * og ikke en bøyning. Ellers velger `Intl.PluralRules` formen språket
-   * krever, og `count-<form>` gir teksten, med `{n}` for tallet. Mangler
-   * formen, gjelder `count-other`. Mangler den også, er teksten norsk.
+   * `count-none` applies to zero matches, since "No matches" is a sentence of
+   * its own and not an inflection. Otherwise `Intl.PluralRules` picks the form
+   * the language requires, and `count-<form>` gives the text, with `{n}` for
+   * the number. If the form is missing, `count-other` applies. If that is
+   * missing too, the default text from `DEFAULT_TEXTS` applies.
    */
   private countText(hits: number): string {
     const lang = languageOf(this)
@@ -1116,7 +1137,7 @@ export class LtSuggestion extends HostElement {
     shown[next].scrollIntoView({ block: "nearest" })
   }
 
-  /** Markerer ett alternativ, og husker hvilket. */
+  /** Highlights one option, and remembers which. */
   private markOption(option: HTMLElement): void {
     if (!this.control) return
 
@@ -1129,8 +1150,8 @@ export class LtSuggestion extends HostElement {
       label: (option.textContent ?? "").trim(),
       value: option.getAttribute("data-value"),
     }
-    // aria-activedescendant flytter skjermleserens lesepunkt uten at fokus
-    // forlater feltet. Uten den leses alternativet aldri opp.
+    // aria-activedescendant moves the screen reader's reading position without
+    // focus leaving the field. Without it the option is never announced.
     setAttr(this.control, "aria-activedescendant", option.id)
   }
 
@@ -1141,11 +1162,11 @@ export class LtSuggestion extends HostElement {
     const label = (option.textContent ?? "").trim()
     const value = option.getAttribute("data-value") ?? label
     /*
-     * Setteren fra prototypekjeden, forbi en `value` React har lagt på selve
-     * noden for å følge med. Satt rett på noden så React ingen endring,
-     * `onChange` kom aldri, og ved neste rendring skrev React den gamle
-     * teksten tilbake i feltet. Kjeden og ikke bare nærmeste prototype, så
-     * `<textarea>` og en underklasse av `<input>` også virker.
+     * The setter from the prototype chain, past a `value` React has put on the
+     * node itself to track it. Set directly on the node, React saw no change,
+     * `onChange` never came, and on the next render React wrote the old text
+     * back into the field. The chain and not just the nearest prototype, so
+     * `<textarea>` and a subclass of `<input>` work too.
      */
     let setter: ((v: string) => void) | undefined
     for (
@@ -1155,9 +1176,9 @@ export class LtSuggestion extends HostElement {
     ) {
       setter = Object.getOwnPropertyDescriptor(proto, "value")?.set
     }
-    // Feltet viser teksten. Koden går til verdifeltet, når serveren har
-    // skrevet et, og i hendelsen. Før havnet `data-value` i feltet, og
-    // brukeren som valgte Bergen, så «4601».
+    // The field shows the text. The code goes to the value field, when the
+    // server has written one, and in the event. `data-value` used to end up in
+    // the field, and the user who chose Bergen saw "4601".
     if (setter) setter.call(this.control, label)
     else this.control.value = label
 
@@ -1167,9 +1188,9 @@ export class LtSuggestion extends HostElement {
       this.chosen = { label, value }
     }
 
-    // Flagget må stå før hendelsene sendes. `input` er den samme hendelsen
-    // komponenten selv lytter på, så uten dette åpner lista seg igjen i det
-    // øyeblikket brukeren har valgt noe.
+    // The flag must be set before the events are dispatched. `input` is the
+    // same event the web component listens to, so without this the list opens
+    // again the moment the user has chosen something.
     this.choosing = true
     this.control.dispatchEvent(new Event("input", { bubbles: true }))
     this.control.dispatchEvent(new Event("change", { bubbles: true }))
@@ -1186,32 +1207,32 @@ export class LtSuggestion extends HostElement {
   }
 
   /**
-   * Skriver koden i verdifeltet og sender `input` og `change` på det, så
-   * `data-bind` i Datastar ser koden. Hendelsene bobler ikke: en
-   * `data-on:input` på verten, som oppskriften bruker til å hente forslag,
-   * skal ikke utløse et søk på koden hver gang brukeren velger.
+   * Writes the code in the value field and dispatches `input` and `change` on
+   * it, so `data-bind` in Datastar sees the code. The events do not bubble: a
+   * `data-on:input` on the host, which the recipe uses to fetch suggestions,
+   * must not trigger a search for the code every time the user chooses.
    */
   private writeCode(valueField: HTMLInputElement, code: string): void {
     if (valueField.value === code) return
     this.writtenCode = code
     setAttr(valueField, "value", code)
-    // Et skjult felt leser attributtet. Har feltet en annen type, og en
-    // morfing alt har satt egenskapen, teller ikke attributtet lenger.
+    // A hidden field reads the attribute. If the field has another type and a
+    // morph has already set the property, the attribute no longer counts.
     if (valueField.value !== code) valueField.value = code
     valueField.dispatchEvent(new Event("input"))
     valueField.dispatchEvent(new Event("change"))
   }
 
   /**
-   * Skjemaet tilbakestilles. Nettleseren setter teksten tilbake til
-   * serverens etter at hendelsen er sendt, så koden settes i neste omgang,
-   * etter at tilbakestillingen er gjort. Teksten som står der da avgjør:
-   * er den serverens, gjelder serverens kode; er den det valgte, står koden;
-   * ellers koden til alternativet med den teksten, ellers ingen. Serverens
-   * står først fordi to alternativer kan hete det samme: valgte brukeren det
-   * andre Våler, går tilbakestillingen til serverens. Serveren kan også ha
-   * sendt det valgte tilbake, og da er det serverens ord like mye som
-   * brukerens.
+   * The form is reset. The browser sets the text back to the server's after
+   * the event has been dispatched, so the code is set in the next turn, after
+   * the reset is done. The text there then decides: if it is the server's,
+   * the server's code applies; if it is the chosen one, the code stays;
+   * otherwise the code of the option with that text, otherwise none. The
+   * server's comes first because two options can have the same name: if the
+   * user chose the second Våler, the reset goes back to the server's. The
+   * server may also have sent the chosen one back, and then it is as much the
+   * server's word as the user's.
    */
   private handleReset = (): void => {
     setTimeout(() => {
@@ -1236,9 +1257,9 @@ export class LtSuggestion extends HostElement {
 
   private handleInput = (): void => {
     if (this.choosing) return
-    // Brukeren endret teksten etter et valg. Koden gjelder ikke lenger.
-    // Skriver brukeren det valgte på nytt, etter at en oppdatering tømte
-    // begge, kommer koden tilbake med en gang.
+    // The user changed the text after a choice. The code no longer applies.
+    // If the user types the chosen text again, after an update emptied both,
+    // the code comes back at once.
     const valueField = this.valueField
     if (valueField && this.chosen) {
       if (this.control?.value !== this.chosen.label) {
@@ -1260,16 +1281,16 @@ export class LtSuggestion extends HostElement {
   }
 
   private handleFocusOut = (event: FocusEvent): void => {
-    // Går fokus til noe inne i komponenten, som en knapp ved siden av
-    // feltet, står lista.
+    // If focus goes to something inside the web component, such as a button
+    // next to the field, the list stays.
     const next = event.relatedTarget
     if (next instanceof Node && this.contains(next)) return
     this.setOpen(false)
   }
 
   private handleKeydown = (event: KeyboardEvent): void => {
-    // Under en IME-komposisjon hører tastene til komposisjonen. Enter
-    // bekrefter tegnene, og skal ikke velge det markerte alternativet.
+    // During IME composition the keys belong to the composition. Enter
+    // confirms the characters, and must not choose the highlighted option.
     if (event.isComposing || event.keyCode === 229) return
     if (this.locked) return
     const open = this.listElement?.hidden === false
@@ -1283,24 +1304,25 @@ export class LtSuggestion extends HostElement {
       this.markActive(this.activeIndex + 1)
     } else if (event.key === "ArrowUp") {
       event.preventDefault()
-      // Lista må åpnes først, som med pil ned. Uten det pekte
-      // `aria-activedescendant` på et alternativ i en liste feltet samtidig
-      // meldte som lukket, og skjermleseren leste opp noe som ikke sto på
-      // skjermen.
+      // The list must open first, as with arrow down. Without that
+      // `aria-activedescendant` pointed to an option in a list the field at the
+      // same time reported as closed, and the screen reader announced something
+      // that was not on screen.
       if (!open) {
         this.filter()
         this.setOpen(true)
       }
-      // Er ingenting markert, går pil opp til det siste. `activeIndex - 1`
-      // ville gitt det nest siste, siden ingenting markert er -1.
+      // If nothing is highlighted, arrow up goes to the last one.
+      // `activeIndex - 1` would have given the second to last, since nothing
+      // highlighted is -1.
       this.markActive(this.activeIndex < 0 ? -1 : this.activeIndex - 1)
     } else if (
       (event.key === "PageUp" || event.key === "PageDown") &&
       open &&
       this.selectable.length > 0
     ) {
-      // Home og End flytter markøren i teksten, og røres ikke. PgUp og PgDn
-      // går til første og siste alternativ.
+      // Home and End move the caret in the text, and are left alone. PgUp and
+      // PgDn go to the first and last option.
       event.preventDefault()
       this.markActive(event.key === "PageUp" ? 0 : this.selectable.length - 1)
     } else if (event.key === "Enter" && open && this.activeIndex >= 0) {
@@ -1318,15 +1340,15 @@ export class LtSuggestion extends HostElement {
   }
 
   private handleOptionMouseDown = (event: Event): void => {
-    // Holder fokus i feltet. Uten dette mistet feltet fokus før `click`, og
-    // `focusout` lukket lista før valget rakk å skje.
+    // Keeps focus in the field. Without this the field lost focus before
+    // `click`, and `focusout` closed the list before the choice could happen.
     event.preventDefault()
   }
 
   private handleOptionClick = (event: Event): void => {
-    // Valget skjer på `click`, som hjelpemidler også sender når de aktiverer
-    // et element. Før skjedde det på `mousedown`, og en `click` alene valgte
-    // ingenting.
+    // The choice happens on `click`, which assistive technology also sends
+    // when it activates an element. It used to happen on `mousedown`, and a
+    // `click` alone chose nothing.
     this.choose(event.currentTarget as HTMLElement)
   }
 }
