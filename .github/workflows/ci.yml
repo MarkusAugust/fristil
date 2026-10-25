@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   # Ingen commit skal ha en kodeagent som forfatter. Se CONTRIBUTING.md.
-  forfattere:
+  authors:
     name: Forfattere
     runs-on: ubuntu-latest
 
@@ -33,7 +33,7 @@ jobs:
       - name: Ingen agent som forfatter
         run: bun designsystem/scripts/check-authors.ts
 
-  sjekk:
+  check:
     name: Lint, typer og tester
     runs-on: ubuntu-latest
 

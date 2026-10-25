@@ -131,7 +131,7 @@ og kjernen fra forrige utgivelse.
 
 `lotek.pakke` er tarballen eller mappa den ligger i, regnet fra `kotlin/`,
 også når bygget tas inn med `includeBuild`. Er den en mappe, brukes
-`lotek-designsystem-<versjon>.tgz`. Pakk på nytt når pakken er endret:
+`lo-tek-interfaces-<versjon>.tgz`. Pakk på nytt når pakken er endret:
 Gradle bruker tarballen som ligger der, også en gammel. Bygget stopper hvis tarballen har en
 annen versjon enn `gradle.properties`, og `bun run prepare-version` setter
 begge.

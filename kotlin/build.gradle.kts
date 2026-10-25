@@ -59,7 +59,7 @@ val hentPakke = tasks.register<no.lotek.build.FetchPackage>("hentPakke") {
 val lokalPakke = providers.gradleProperty("lotek.pakke").orNull?.let { rootDir.resolve(it) }
 val pakkeTgz: Provider<RegularFile> =
     if (lokalPakke != null) {
-        val tgz = if (lokalPakke.isDirectory) lokalPakke.resolve("lotek-designsystem-$version.tgz") else lokalPakke
+        val tgz = if (lokalPakke.isDirectory) lokalPakke.resolve("lo-tek-interfaces-$version.tgz") else lokalPakke
         check(tgz.isFile) { "Fant ikke npm-pakken $tgz. Pakk den med bun --filter @lo-tek/interfaces pack." }
         provider { layout.projectDirectory.file(tgz.absolutePath) }
     } else {
