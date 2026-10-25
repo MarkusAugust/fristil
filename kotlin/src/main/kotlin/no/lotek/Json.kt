@@ -1,15 +1,15 @@
 package no.lotek
 
 /**
- * En liten JSON-leser, så pakken ikke trenger noen avhengighet for å lese
- * svarene fra kjernen.
+ * A small JSON reader, so the package needs no dependency to read the
+ * results from the core.
  *
- * Gir `Map` (i rekkefølgen nøklene står), `List`, `String`, `Double`,
- * `Boolean` og `null`. Kjernen skriver selv JSON-en den leser, så feil i den
- * er en feil i LO-TEK, og meldingen sier hvor.
+ * Gives `Map` (in the order the keys appear), `List`, `String`, `Double`,
+ * `Boolean` and `null`. The core writes the JSON it reads, so an error in it
+ * is a bug in LO-TEK, and the message says where.
  */
 internal object Json {
-    /** En tekst som en JSON-streng, med anførselstegn. */
+    /** A text as a JSON string, with quotes. */
     fun string(text: String): String =
         buildString {
             append('"')
@@ -28,8 +28,8 @@ internal object Json {
         }
 
     /**
-     * Det motsatte av [parse]: `Map`, `List`, `String`, tall, `Boolean` og
-     * `null` som JSON. Et heltall skrives uten desimaler, som JavaScript.
+     * The opposite of [parse]: `Map`, `List`, `String`, numbers, `Boolean` and
+     * `null` as JSON. An integer is written without decimals, as in JavaScript.
      */
     fun write(value: Any?): String =
         when (value) {
@@ -40,21 +40,21 @@ internal object Json {
             is Number -> value.toDouble().let { if (it % 1.0 == 0.0 && !it.isInfinite()) it.toLong().toString() else it.toString() }
             is Map<*, *> -> value.entries.joinToString(",", "{", "}") { (k, v) -> "${string(k.toString())}:${write(v)}" }
             is List<*> -> value.joinToString(",", "[", "]") { write(it) }
-            else -> throw IllegalArgumentException("Kan ikke skrive ${value::class.simpleName} som JSON.")
+            else -> throw IllegalArgumentException("Cannot write ${value::class.simpleName} as JSON.")
         }
 
     fun parse(text: String): Any? {
         val reader = Reader(text)
         val value = reader.value()
         reader.space()
-        if (reader.i != text.length) reader.fail("tekst etter verdien")
+        if (reader.i != text.length) reader.fail("text after the value")
         return value
     }
 
     private class Reader(val s: String) {
         var i = 0
 
-        fun fail(what: String): Nothing = throw IllegalArgumentException("Ugyldig JSON ved tegn $i: $what.")
+        fun fail(what: String): Nothing = throw IllegalArgumentException("Invalid JSON at character $i: $what.")
 
         fun space() {
             while (i < s.length && s[i] in " \t\n\r") i++
@@ -62,7 +62,7 @@ internal object Json {
 
         fun value(): Any? {
             space()
-            if (i >= s.length) fail("slutten kom for tidlig")
+            if (i >= s.length) fail("unexpected end")
             return when (s[i]) {
                 '{' -> obj()
                 '[' -> array()
@@ -75,7 +75,7 @@ internal object Json {
         }
 
         fun word(word: String, value: Any?): Any? {
-            if (!s.startsWith(word, i)) fail("ventet $word")
+            if (!s.startsWith(word, i)) fail("expected $word")
             i += word.length
             return value
         }
@@ -87,17 +87,17 @@ internal object Json {
             if (s.getOrNull(i) == '}') return out.also { i++ }
             while (true) {
                 space()
-                if (s.getOrNull(i) != '"') fail("ventet en nøkkel")
+                if (s.getOrNull(i) != '"') fail("expected a key")
                 val key = string()
                 space()
-                if (s.getOrNull(i) != ':') fail("ventet :")
+                if (s.getOrNull(i) != ':') fail("expected :")
                 i++
                 out[key] = value()
                 space()
                 when (s.getOrNull(i)) {
                     ',' -> i++
                     '}' -> return out.also { i++ }
-                    else -> fail("ventet , eller }")
+                    else -> fail("expected , or }")
                 }
             }
         }
@@ -113,7 +113,7 @@ internal object Json {
                 when (s.getOrNull(i)) {
                     ',' -> i++
                     ']' -> return out.also { i++ }
-                    else -> fail("ventet , eller ]")
+                    else -> fail("expected , or ]")
                 }
             }
         }
@@ -122,11 +122,11 @@ internal object Json {
             val out = StringBuilder()
             i++
             while (true) {
-                if (i >= s.length) fail("teksten ble ikke avsluttet")
+                if (i >= s.length) fail("unterminated string")
                 when (val c = s[i++]) {
                     '"' -> return out.toString()
                     '\\' -> {
-                        if (i >= s.length) fail("teksten ble ikke avsluttet")
+                        if (i >= s.length) fail("unterminated string")
                         when (val e = s[i++]) {
                             '"', '\\', '/' -> out.append(e)
                             'b' -> out.append('\b')
@@ -135,11 +135,11 @@ internal object Json {
                             'r' -> out.append('\r')
                             't' -> out.append('\t')
                             'u' -> {
-                                if (i + 4 > s.length) fail("ufullstendig \\u")
+                                if (i + 4 > s.length) fail("incomplete \\u")
                                 out.append(s.substring(i, i + 4).toInt(16).toChar())
                                 i += 4
                             }
-                            else -> fail("ukjent escape \\$e")
+                            else -> fail("unknown escape \\$e")
                         }
                     }
                     else -> out.append(c)
@@ -150,7 +150,7 @@ internal object Json {
         fun number(): Double {
             val start = i
             while (i < s.length && s[i] in "+-0123456789.eE") i++
-            return s.substring(start, i).toDoubleOrNull() ?: fail("ventet en verdi")
+            return s.substring(start, i).toDoubleOrNull() ?: fail("expected a value")
         }
     }
 }

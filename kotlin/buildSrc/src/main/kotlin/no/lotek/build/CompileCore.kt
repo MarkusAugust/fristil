@@ -14,26 +14,26 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
 /**
- * Gjør WebAssembly-modulen om til JVM-bytekode når pakken bygges.
+ * Turns the WebAssembly module into JVM bytecode when the package is built.
  *
- * Chicory kan kompilere modulen når den lastes, men det tar rundt et sekund,
- * og det må gjøres på nytt for hver instans. Kompilert her er det en vanlig
- * klasse i jar-en, og en ny instans koster nesten ingenting.
+ * Chicory can compile the module when it is loaded, but that takes about a
+ * second, and it has to be done again for every instance. Compiled here, it
+ * is an ordinary class in the jar, and a new instance costs almost nothing.
  */
 abstract class CompileCore : DefaultTask() {
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val wasm: RegularFileProperty
 
-    /** Klassene for modulen, og en kopi av modulen selv uten funksjonskroppene. */
+    /** The classes for the module, and a copy of the module itself without the function bodies. */
     @get:OutputDirectory
     abstract val classes: DirectoryProperty
 
-    /** Java-klassen som laster modulen. */
+    /** The Java class that loads the module. */
     @get:OutputDirectory
     abstract val sources: DirectoryProperty
 
-    /** Navnet på klassen, med pakken. Kjernen er `no.lotek.LotekCore`. */
+    /** The name of the class, with the package. The core is `no.lotek.LotekCore`. */
     @get:Input
     abstract val className: Property<String>
 
@@ -55,7 +55,7 @@ abstract class CompileCore : DefaultTask() {
                 .build()
         val generator = Generator(config)
         val interpreted = generator.generateResources()
-        check(interpreted.isEmpty()) { "Chicory kunne ikke kompilere funksjonene $interpreted i ${className.get()}." }
+        check(interpreted.isEmpty()) { "Chicory could not compile the functions $interpreted in ${className.get()}." }
         generator.generateMetaWasm(interpreted)
         generator.generateSources()
     }

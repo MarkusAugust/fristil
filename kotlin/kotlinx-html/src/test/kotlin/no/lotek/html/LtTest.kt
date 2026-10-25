@@ -30,58 +30,58 @@ import no.lotek.errorSummary
 import no.lotek.field
 
 /**
- * At en side bygget med kotlinx.html og LO-TEKs byggefunksjoner er riktig
- * markup, sjekket av den samme kjernen som `lotek sjekk`.
+ * That a page built with kotlinx.html and LO-TEK's builder functions is
+ * correct markup, checked by the same core as `lotek check`.
  */
 class LtTest {
-    /** Et søknadsskjema med feil i e-postfeltet, slik en Ktor-app ville rendret det. */
-    private fun soknad(ugyldig: Boolean): String =
+    /** An application form with an error in the email field, as a Ktor app would render it. */
+    private fun application(invalid: Boolean): String =
         createHTML().html {
             head {
-                title("Søknad")
+                title("Application")
                 link(rel = "stylesheet", href = LotekWebJar.CSS)
             }
             body {
-                form(action = "/soknad", method = FormMethod.post) {
-                    val feil = Lt.errorSummary(count = if (ugyldig) 1 else 0, id = "feil")
-                    div { lt(feil.host)
-                        h2 { lt(feil.title); +"Du må rette 1 feil" }
-                        ul { li { +"E-postadressen mangler @" } }
+                form(action = "/application", method = FormMethod.post) {
+                    val summary = Lt.errorSummary(count = if (invalid) 1 else 0, id = "errors")
+                    div { lt(summary.host)
+                        h2 { lt(summary.title); +"Fix 1 error" }
+                        ul { li { +"The email address is missing @" } }
                     }
-                    val felt = Lt.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
-                    label { lt(felt.label); +"E-postadresse" }
-                    input { lt(Lt.input(type = InputType.EMAIL, state = felt.state), felt.control); name = "epost" }
-                    p { lt(Lt.helpText(), felt.help); +"Vi sender kvittering hit." }
-                    p { lt(Lt.errorText(), felt.error); +"Skriv en gyldig adresse." }
+                    val field = Lt.field(id = "email", required = RequiredMarker.TEXT, help = true, error = true, invalid = invalid)
+                    label { lt(field.label); +"Email address" }
+                    input { lt(Lt.input(type = InputType.EMAIL, state = field.state), field.control); name = "email" }
+                    p { lt(Lt.helpText(), field.help); +"We send the receipt here." }
+                    p { lt(Lt.errorText(), field.error); +"Enter a valid address." }
                     button { lt(Lt.button()); +"Send" }
-                    button { lt(Lt.button(variant = ButtonVariant.SECONDARY)); +"Lagre utkast" }
+                    button { lt(Lt.button(variant = ButtonVariant.SECONDARY)); +"Save draft" }
                 }
             }
         }
 
     @Test
-    fun `siden er riktig markup, med og uten feil`() {
-        assertLotek(soknad(ugyldig = false))
-        assertLotek(soknad(ugyldig = true))
+    fun `the page is correct markup, with and without errors`() {
+        assertLotek(application(invalid = false))
+        assertLotek(application(invalid = true))
     }
 
     @Test
-    fun `koblingen mellom ledetekst, felt og feilmelding står i HTML-en`() {
-        val html = soknad(ugyldig = true)
-        assertContains(html, """for="epost"""")
-        assertContains(html, """aria-describedby="epost-help epost-error"""")
+    fun `the wiring between label, field and error text is in the HTML`() {
+        val html = application(invalid = true)
+        assertContains(html, """for="email"""")
+        assertContains(html, """aria-describedby="email-help email-error"""")
         assertContains(html, """aria-invalid="true"""")
     }
 
     @Test
-    fun `klassene legges til dem taggen har`() {
-        val html = createHTML().div(classes = "min-egen") { lt(Lt.card(), mapOf("class" to "min-egen ekstra")) }
-        assertContains(html, """class="min-egen lt-card ekstra"""")
+    fun `the classes are added to the ones the tag has`() {
+        val html = createHTML().div(classes = "my-own") { lt(Lt.card(), mapOf("class" to "my-own extra")) }
+        assertContains(html, """class="my-own lt-card extra"""")
     }
 
     @Test
-    fun `en skrivefeil i en egen klasse fanges av sjekken`() {
-        val html = createHTML().span { lt(Lt.badge(), mapOf("class" to "lt-badg")); +"Ny" }
+    fun `a typo in a custom class is caught by the check`() {
+        val html = createHTML().span { lt(Lt.badge(), mapOf("class" to "lt-badg")); +"New" }
         assertFailsWith<AssertionError> { assertLotek(html, fragment = true) }
     }
 }

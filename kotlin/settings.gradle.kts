@@ -1,12 +1,12 @@
 rootProject.name = "lo-tek-interfaces"
 
-// Utvidelsene for kotlinx.html, som egen pakke: hovedpakken skal ikke ta med
-// kotlinx.html til den som ikke bruker det.
+// The extensions for kotlinx.html, as a separate package: the main package
+// should not bring kotlinx.html to those who do not use it.
 include("kotlinx-html")
 
-// Kommandolinja som `java -jar lotek.jar`, gitt ut som fil på GitHub. På
-// Maven ligger den vanlige jar-en, som Gradle-pluginen avhenger av.
+// The CLI as `java -jar lotek.jar`, released as a file on GitHub. Maven has
+// the ordinary jar, which the Gradle plugin depends on.
 include("cli")
 
-// Gradle-pluginen, som kjører kommandolinja i bygget.
+// The Gradle plugin, which runs the CLI in the build.
 include("gradle-plugin")

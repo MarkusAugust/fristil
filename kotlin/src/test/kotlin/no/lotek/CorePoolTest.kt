@@ -6,7 +6,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** At instansene av kjernen deles mellom trådene, og ikke hoper seg opp. */
+/** That the core instances are shared between threads, and do not pile up. */
 class CorePoolTest {
     @Test
     fun `many threads get the same answer and keep few cores`() {
@@ -16,10 +16,10 @@ class CorePoolTest {
         val answers = (1..2000).map { pool.submit<List<Finding>> { Lotek.diagnoseMarkup(html) } }
         val results = answers.map { it.get(60, TimeUnit.SECONDS) }
         pool.shutdown()
-        assertTrue(results.all { it == expected }, "alle trådene skal få det samme svaret")
+        assertTrue(results.all { it == expected }, "all the threads must get the same result")
         assertTrue(
             Lotek.idleCores() <= Runtime.getRuntime().availableProcessors(),
-            "${Lotek.idleCores()} ledige instanser etter 64 tråder",
+            "${Lotek.idleCores()} idle instances after 64 threads",
         )
         assertEquals(1, expected.size)
     }

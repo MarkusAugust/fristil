@@ -6,33 +6,34 @@ import com.intellij.codeInsight.template.impl.TemplateSettings
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 /**
- * At live templates fra `designsystem/live-templates.xml` er med i pluginen,
- * én per web-komponent, og at id-en er en variabel som speiles i `for`.
+ * That the live templates from `designsystem/live-templates.xml` are in the
+ * plugin, one per web component, and that the id is a variable mirrored in
+ * `for`.
  */
 class LiveTemplateTest : BasePlatformTestCase() {
-    fun `test har en mal per web-komponent`() {
-        val maler = TemplateSettings.getInstance().templates.filter { it.groupName == "LO-TEK" }
-        val navn = maler.map { it.key }.sorted()
-        assertTrue("fant $navn", navn.containsAll(listOf("lt-dialog", "lt-field", "lt-popover", "lt-suggestion", "lt-tabs")))
+    fun `test has one template per web component`() {
+        val templates = TemplateSettings.getInstance().templates.filter { it.groupName == "LO-TEK" }
+        val names = templates.map { it.key }.sorted()
+        assertTrue("found $names", names.containsAll(listOf("lt-dialog", "lt-field", "lt-popover", "lt-suggestion", "lt-tabs")))
     }
 
-    fun `test feltet har id-en som variabel, speilet i for`() {
-        val mal = TemplateSettings.getInstance().getTemplate("lt-field", "LO-TEK")
-        assertNotNull("lt-field mangler", mal)
-        val tekst = mal!!.string
-        assertTrue("id-en skal være en variabel: $tekst", tekst.contains("id=\"\$navn\$\""))
-        assertTrue("for skal speile den: $tekst", tekst.contains("for=\"\$navn\$\""))
-        // Skjemaet rundt feltet har sin egen id, og den er også en variabel.
-        assertTrue("variablene var ${mal.variables.map { it.name }}", mal.variables.map { it.name }.contains("navn"))
+    fun `test the field has the id as a variable, mirrored in for`() {
+        val template = TemplateSettings.getInstance().getTemplate("lt-field", "LO-TEK")
+        assertNotNull("lt-field is missing", template)
+        val text = template!!.string
+        assertTrue("the id should be a variable: $text", text.contains("id=\"\$navn\$\""))
+        assertTrue("for should mirror it: $text", text.contains("for=\"\$navn\$\""))
+        // The form around the field has its own id, and it is a variable too.
+        assertTrue("the variables were ${template.variables.map { it.name }}", template.variables.map { it.name }.contains("navn"))
     }
 
-    fun `test malen utvides i en HTML-fil`() {
+    fun `test the template expands in an HTML file`() {
         TemplateManagerImpl.setTemplateTesting(testRootDisposable)
         myFixture.configureByText("test.html", "<caret>")
-        val mal = TemplateSettings.getInstance().getTemplate("lt-field", "LO-TEK")!!
-        TemplateManager.getInstance(project).startTemplate(myFixture.editor, mal)
-        val tekst = myFixture.editor.document.text
-        assertTrue("markupen skal stå der: $tekst", tekst.contains("<lt-field>") && tekst.contains("id=\"navn\""))
-        assertFalse("variabelen skal være byttet ut: $tekst", tekst.contains("\$navn\$"))
+        val template = TemplateSettings.getInstance().getTemplate("lt-field", "LO-TEK")!!
+        TemplateManager.getInstance(project).startTemplate(myFixture.editor, template)
+        val text = myFixture.editor.document.text
+        assertTrue("the markup should be there: $text", text.contains("<lt-field>") && text.contains("id=\"navn\""))
+        assertFalse("the variable should be replaced: $text", text.contains("\$navn\$"))
     }
 }

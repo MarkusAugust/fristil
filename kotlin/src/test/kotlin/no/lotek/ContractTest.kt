@@ -9,31 +9,31 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
 /**
- * At hver byggefunksjon i Kotlin svarer det `lt` i TypeScript svarer.
+ * That every builder function in Kotlin returns what `lt` in TypeScript returns.
  *
- * Byggetilfellene i `designsystem/manifest/build-cases.json` er skrevet av
- * `generate-manifest.ts`: hvert valg alene, og kombinasjonene av dem, med
- * svaret fra TypeScript. Både de genererte og de håndskrevne
- * byggefunksjonene prøves mot alle.
+ * The build cases in `designsystem/manifest/build-cases.json` are written by
+ * `generate-manifest.ts`: every option alone, and the combinations of them,
+ * with the result from TypeScript. Both the generated and the handwritten
+ * builder functions are tested against all of them.
  */
 class ContractTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("builders")
-    fun `svarer det samme som TypeScript`(builder: String) {
+    fun `returns the same as TypeScript`(builder: String) {
         val cases = CASES.filter { it["builder"] == builder }
-        assertTrue(cases.isNotEmpty(), "Ingen byggetilfeller for $builder")
+        assertTrue(cases.isNotEmpty(), "No build cases for $builder")
         for (case in cases) {
             val options = case["options"] as Map<String, Any?>
-            // TypeScript kastet på dette tilfellet, som en tom nøkkel. Kotlin skal også.
+            // TypeScript threw on this case, like an empty key. Kotlin must too.
             if (case.containsKey("throws")) {
-                val feil = assertFailsWith<IllegalArgumentException>("$builder($options) skulle kastet: ${case["throws"]}") {
+                val error = assertFailsWith<IllegalArgumentException>("$builder($options) should have thrown: ${case["throws"]}") {
                     Dispatch.call(builder, options)
                 }
-                // Meldingen er den samme etter navnet, som er `lt.tabs()` i TypeScript og `Lt.tabs` her.
+                // The message is the same after the name, which is `lt.tabs()` in TypeScript and `Lt.tabs` here.
                 assertEquals(
                     (case["throws"] as String).substringAfter(": "),
-                    feil.message?.substringAfter(": "),
-                    "$builder($options) kastet med en annen melding",
+                    error.message?.substringAfter(": "),
+                    "$builder($options) threw with a different message",
                 )
                 continue
             }
@@ -42,15 +42,15 @@ class ContractTest {
     }
 
     @Test
-    fun `hver byggefunksjon har byggetilfeller`() {
+    fun `every builder function has build cases`() {
         assertEquals(Dispatch.names.sorted(), CASES.map { it["builder"] as String }.distinct().sorted())
     }
 
     @Test
-    fun `attributtene skrives som HTML`() {
-        val felt = Lt.field(id = "epost", invalid = true, error = true)
-        assertEquals("""id="epost-error"""", felt.error.toHtml())
-        assertEquals("""class="lt-label" for="epost"""", felt.label.toHtml())
+    fun `the attributes are written as HTML`() {
+        val field = Lt.field(id = "email", invalid = true, error = true)
+        assertEquals("""id="email-error"""", field.error.toHtml())
+        assertEquals("""class="lt-label" for="email"""", field.label.toHtml())
         assertEquals(
             """class="lt-button" data-variant="secondary" title="a &amp; &quot;b&quot;"""",
             (Lt.button(variant = ButtonVariant.SECONDARY) + mapOf("title" to "a & \"b\"")).toHtml(),
@@ -59,7 +59,7 @@ class ContractTest {
     }
 
     @Test
-    fun `tall skrives som i JavaScript`() {
+    fun `numbers are written as in JavaScript`() {
         assertEquals("3", jsNumber(3))
         assertEquals("3", jsNumber(3.0))
         assertEquals("0.5", jsNumber(0.5))
@@ -85,7 +85,7 @@ class ContractTest {
         assertEquals("9007199254740994", jsNumber(9007199254740994L))
         assertEquals("Infinity", jsNumber(Double.POSITIVE_INFINITY))
         assertEquals("NaN", jsNumber(Double.NaN))
-        // Toerpotenser: tallet under er nærmere, men gir ikke tallet tilbake.
+        // Powers of two: the number below is closer, but does not give the number back.
         assertEquals("5.960464477539063e-8", jsNumber(Math.pow(2.0, -24.0)))
         assertEquals("6.189700196426902e+26", jsNumber(Math.pow(2.0, 89.0)))
         assertEquals("-5.684341886080802e-14", jsNumber(-Math.pow(2.0, -44.0)))
@@ -102,8 +102,8 @@ class ContractTest {
         fun builders(): List<String> = Dispatch.names
 
         /**
-         * Svaret fra TypeScript har `true` for et flagg, Kotlin har den tomme
-         * teksten, slik HTML skriver det. Ellers er formen den samme.
+         * The result from TypeScript has `true` for a flag, Kotlin has the
+         * empty text, the way HTML writes it. Otherwise the shape is the same.
          */
         private fun normalize(value: Any?): Any? =
             when (value) {

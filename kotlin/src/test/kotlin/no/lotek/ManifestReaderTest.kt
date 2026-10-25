@@ -8,8 +8,9 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
- * At `Manifest` leser alt manifestet har, uten å miste noe på veien, og at
- * et manifest den ikke forstår gir en feil som sier hvor.
+ * That `Manifest` reads everything the manifest has, without losing anything
+ * on the way, and that a manifest it does not understand gives an error that
+ * says where.
  */
 class ManifestReaderTest {
     private val text = File(System.getProperty("manifest")).readText()
@@ -21,17 +22,17 @@ class ManifestReaderTest {
     private fun Any?.map() = this as Map<String, Any?>
 
     /*
-     * Testene under sammenligner feltene leseren kjenner. Et nytt felt i
-     * skjemaet ville de ikke sett, så hvert rå objekt må ha bare disse.
+     * The tests below compare the fields the reader knows. They would not see
+     * a new field in the schema, so every raw object must have only these.
      */
     private fun known(obj: Any?, vararg keys: String, at: String) {
         val unknown = obj.map().keys - keys.toSet()
-        assertTrue(unknown.isEmpty(), "$at har $unknown, som Manifest ikke leser.")
+        assertTrue(unknown.isEmpty(), "$at has $unknown, which Manifest does not read.")
     }
 
     @Test
     fun `the package manifest is the one in the jar`() {
-        known(raw, "\$schema", "schemaVersion", "version", "elements", "classes", "builders", "tokens", at = "manifestet")
+        known(raw, "\$schema", "schemaVersion", "version", "elements", "classes", "builders", "tokens", at = "the manifest")
         assertEquals(Manifest.parse(text), Lotek.manifest)
         assertEquals(raw["version"], Lotek.manifest.version)
     }
@@ -74,8 +75,8 @@ class ManifestReaderTest {
                 attributes += 1
             }
         }
-        assertTrue(attributes > 0, "Ingen klasse hadde attributter, så sammenligningen sa ingenting.")
-        assertTrue(parts > 0 && partOf > 0, "Fant $parts deler og $partOf klasser med partOf, så sammenligningen sa ingenting.")
+        assertTrue(attributes > 0, "No class had attributes, so the comparison said nothing.")
+        assertTrue(parts > 0 && partOf > 0, "Found $parts parts and $partOf classes with partOf, so the comparison said nothing.")
     }
 
     @Test
@@ -121,11 +122,11 @@ class ManifestReaderTest {
                 events += 1
             }
         }
-        assertTrue(parts > 0 && events > 0, "Fant $parts deler og $events hendelser, så sammenligningen sa ingenting.")
-        assertTrue(stable > 0 && removed > 0, "Fant $stable deler med stableId og $removed utgåtte attributter, så de grenene i leseren er uprøvd.")
+        assertTrue(parts > 0 && events > 0, "Found $parts parts and $events events, so the comparison said nothing.")
+        assertTrue(stable > 0 && removed > 0, "Found $stable parts with stableId and $removed removed attributes, so those branches in the reader are untested.")
     }
 
-    /** Formen på et svar slik rå-JSON-en skriver den, med `optional` bare når den står der. */
+    /** The shape of a result as the raw JSON writes it, with `optional` only when it is there. */
     private fun returnsJson(r: Returns): Map<String, Any?> =
         buildMap {
             when (r) {
@@ -187,28 +188,28 @@ class ManifestReaderTest {
             }
             shapesIn(expected["returns"])
             assertEquals(expected["returns"], returnsJson(read.returns), "${read.name} returns")
-            // Kartene har manifestets rekkefølge, og `Map.equals` over ser ikke den.
+            // The maps have the manifest's order, and `Map.equals` above does not see it.
             val group = expected["returns"].map()["fields"]?.map()
-            if (group != null) assertEquals(group.keys.toList(), (read.returns as Returns.Group).fields.keys.toList(), "${read.name} rekkefølgen på feltene")
+            if (group != null) assertEquals(group.keys.toList(), (read.returns as Returns.Group).fields.keys.toList(), "${read.name} the order of the fields")
         }
-        assertTrue(options > 0, "Ingen byggefunksjon hadde valg, så sammenligningen sa ingenting.")
-        assertEquals(setOf("values", "flag", "text", "number", "textList"), kinds, "hver type valg skal finnes i manifestet, ellers er en gren i leseren uprøvd")
-        // Ingen byggefunksjon gir en ren tekst i dag, så den grenen prøves under, med et manifest skrevet om.
-        assertTrue(shapes.containsAll(setOf("attributes", "values", "list", "group")), "formene i manifestet var $shapes, så en gren i leseren er uprøvd")
+        assertTrue(options > 0, "No builder function had options, so the comparison said nothing.")
+        assertEquals(setOf("values", "flag", "text", "number", "textList"), kinds, "every option type must be in the manifest, otherwise a branch in the reader is untested")
+        // No builder function returns plain text today, so that branch is tested below, with a rewritten manifest.
+        assertTrue(shapes.containsAll(setOf("attributes", "values", "list", "group")), "the shapes in the manifest were $shapes, so a branch in the reader is untested")
         val asText = Manifest.parse(text.replaceFirst("\"returns\": {\n        \"kind\": \"attributes\"", "\"returns\": {\n        \"kind\": \"text\""))
         assertEquals(Returns.Text(), asText.builders.first().returns)
-        // Heller ikke et valgfritt felt i en gruppe finnes i dag; `host` i den første gruppen gjøres valgfri.
+        // Nor is there an optional field in a group today; `host` in the first group is made optional.
         val withOptional = Manifest.parse(text.replaceFirst("\"host\": {\n            \"kind\": \"attributes\"", "\"host\": {\n            \"kind\": \"attributes\", \"optional\": true"))
         val group = withOptional.builders.first { it.returns is Returns.Group }.returns as Returns.Group
         assertEquals(Returns.Attributes(optional = true), group.fields.getValue("host"))
-        // Hvert valg har en beskrivelse i dag, så et valg uten prøves ved å ta den første bort.
-        // Beskrivelsen står sist i valget, så kommaet foran må med, ellers blir JSON-en ugyldig.
-        // Den samme setningen står på klasseattributtet lenger opp, så byttet gjøres fra «builders» og utover.
+        // Every option has a description today, so an option without one is tested by removing the first.
+        // The description is last in the option, so the comma before it must go too, or the JSON becomes invalid.
+        // The same sentence is on the class attribute further up, so the replacement is made from «builders» onwards.
         val buildersAt = text.indexOf("\"builders\"")
         val firstDescription = Regex(",\\n\\s*\"description\": \"(?:[^\"\\\\]|\\\\.)*\"").find(text, buildersAt)!!
         val withoutDescription = Manifest.parse(text.substring(0, buildersAt) + text.substring(buildersAt).replaceFirst(firstDescription.value, ""))
         assertEquals(null, withoutDescription.builders.first().options.first().description)
-        assertTrue(Lotek.manifest.builders.first().options.first().description != null, "omskrivingen skal ha tatt bort en beskrivelse som finnes")
+        assertTrue(Lotek.manifest.builders.first().options.first().description != null, "the rewrite must have removed a description that exists")
     }
 
     @Test
@@ -234,7 +235,7 @@ class ManifestReaderTest {
         }
         assertTrue(
             read.spacing.size > 0 && read.breakpoints.size > 0 && read.containers.size > 0 && read.colors.families.size > 0 && read.colors.roles.size > 0 && read.colors.tokens.size > 0 && variables > 0,
-            "En av listene var tom, så sammenligningen sa ingenting.",
+            "One of the lists was empty, so the comparison said nothing.",
         )
         assertEquals("768px", read.breakpoints["md"])
         assertEquals("var(--lt-spacing-2) var(--lt-spacing-4)", read.components.getValue("button").getValue("--lt-button-padding"))
@@ -276,9 +277,10 @@ class ManifestReaderTest {
 
     @Test
     fun `a manifest from before 0_34 is read without tokens and contents`() {
-        // Slik et manifest fra 0.33.0 ser ut: samme schemaVersion, uten
-        // tokens og uten innhold og deler på klassene. IntelliJ leser
-        // prosjektets eget manifest, og det kan være fra en eldre pakke.
+        // What a manifest from 0.33.0 looks like: the same schemaVersion,
+        // without tokens and without content and parts on the classes.
+        // IntelliJ reads the project's own manifest, and it can be from an
+        // older package.
         @Suppress("UNCHECKED_CAST")
         val old = (Json.parse(text) as Map<String, Any?>).toMutableMap()
         old.remove("tokens")
@@ -307,9 +309,9 @@ class ManifestReaderTest {
             "elements.lt-tabs.link",
         )
         assertContains(error(text.replaceFirst("\"content\": \"text\"", "\"content\": \"tekst\"")), "«tekst»")
-        assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": []}"""), "classes skulle vært et objekt")
-        // Uten tokens er manifestet fra før 0.34 og leses; med feil form kaster det.
-        assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": {}, "builders": [], "tokens": 3}"""), "tokens skulle vært et objekt")
+        assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": []}"""), "classes should have been an object")
+        // Without tokens the manifest is from before 0.34 and is read; with the wrong shape it throws.
+        assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": {}, "builders": [], "tokens": 3}"""), "tokens should have been an object")
         assertContains(error(text.replaceFirst("\"kind\": \"flag\"", "\"kind\": \"flagg\"")), "«flagg»")
     }
 }

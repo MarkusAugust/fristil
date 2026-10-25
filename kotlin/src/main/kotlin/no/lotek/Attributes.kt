@@ -1,24 +1,24 @@
 package no.lotek
 
 /**
- * Attributtene en byggefunksjon gir: navn og verdi, i rekkefølgen de ble satt.
+ * The attributes a builder function returns: name and value, in the order they were set.
  *
- * Et flagg som `hidden` eller `disabled` har den tomme teksten som verdi, slik
- * HTML skriver det. Settet er et vanlig `Map`, så det kan gis til hvilken som
- * helst malmotor. Uten malmotor skriver [toHtml] det ut.
+ * A flag like `hidden` or `disabled` has the empty text as its value, the way
+ * HTML writes it. The set is an ordinary `Map`, so it can be passed to any
+ * template engine. Without a template engine, [toHtml] writes it out.
  *
  * ```kotlin
- * val knapp = Lt.button(variant = ButtonVariant.SECONDARY)
- * "<button ${knapp.toHtml()}>Lagre utkast</button>"
+ * val button = Lt.button(variant = ButtonVariant.SECONDARY)
+ * "<button ${button.toHtml()}>Save draft</button>"
  * ```
  */
 class Attributes(values: Map<String, String> = emptyMap()) : Map<String, String> by LinkedHashMap(values) {
-    /** Settet med attributtene fra [other] i tillegg. De fra [other] vinner. */
+    /** The set with the attributes from [other] added. Those from [other] win. */
     operator fun plus(other: Map<String, String>): Attributes = Attributes(LinkedHashMap(this).apply { putAll(other) })
 
     /**
-     * Attributtene som HTML, med verdiene escapet: `class="lt-button" hidden`.
-     * Den tomme teksten skrives som navnet alene, som i HTML betyr det samme.
+     * The attributes as HTML, with the values escaped: `class="lt-button" hidden`.
+     * The empty text is written as the name alone, which means the same in HTML.
      */
     fun toHtml(): String =
         entries.joinToString(" ") { (name, value) ->
@@ -48,24 +48,25 @@ class Attributes(values: Map<String, String> = emptyMap()) : Map<String, String>
 }
 
 /**
- * Et tall skrevet slik JavaScript skriver det, så attributtene blir de samme
- * som fra TypeScript: `3`, ikke `3.0`, `1e+21`, ikke `1.0E21`, og `0.1`, ikke
- * `0.1000000000000000055511151231257827`.
+ * A number written the way JavaScript writes it, so the attributes are the
+ * same as from TypeScript: `3`, not `3.0`, `1e+21`, not `1.0E21`, and `0.1`,
+ * not `0.1000000000000000055511151231257827`.
  *
- * Sifrene er de færreste som gir tilbake det samme tallet, som i JavaScript
- * (ECMA-262, `Number::toString`). Er det flere med like mange sifre, vinner
- * det som ligger nærmest, og ved likt det med et partall sist. Begge naboene
- * med `p` sifre prøves, ikke bare den nærmeste: under en toerpotens er
- * avstanden til tallet under halvparten av den over, så den nærmeste kan
- * bomme der den over treffer. `2^-24` er `5.960464477539063e-8`, ikke
- * `5.9604644775390625e-8`. Formen følger de samme reglene: vanlig
- * skrivemåte fra 1e-6 og opp til 1e21, og ellers eksponent med fortegn.
+ * The digits are the fewest that give back the same number, as in JavaScript
+ * (ECMA-262, `Number::toString`). If several have the same number of digits,
+ * the closest wins, and on a tie the one ending in an even digit. Both
+ * neighbours with `p` digits are tried, not just the closest: below a power of
+ * two the gap to the number below is half the gap to the one above, so the
+ * closest can miss where the one above hits. `2^-24` is
+ * `5.960464477539063e-8`, not `5.9604644775390625e-8`. The form follows the
+ * same rules: plain notation from 1e-6 up to 1e21, and otherwise an exponent
+ * with a sign.
  */
 internal fun jsNumber(n: Number): String {
     val d = n.toDouble()
     if (d.isNaN()) return "NaN"
     if (d.isInfinite()) return if (d > 0) "Infinity" else "-Infinity"
-    // `-0` skrives `0` i JavaScript.
+    // `-0` is written `0` in JavaScript.
     if (d == 0.0) return "0"
     val exact = java.math.BigDecimal(Math.abs(d))
     val modes = listOf(java.math.RoundingMode.FLOOR, java.math.RoundingMode.CEILING)
@@ -83,7 +84,7 @@ internal fun jsNumber(n: Number): String {
             .first { it != null }!!
     val digits = shortest.unscaledValue().toString()
     val k = digits.length
-    // Tallet er 0,`digits` ganger 10 opphøyd i `point`.
+    // The number is 0.`digits` times 10 to the power of `point`.
     val point = k - shortest.scale()
     val text =
         when {

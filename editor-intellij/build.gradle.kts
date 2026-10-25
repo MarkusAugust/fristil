@@ -11,17 +11,17 @@ group = "no.lotek"
 version = providers.gradleProperty("pluginVersion").get()
 
 /*
- * Versjonen av LO-TEK for Kotlin, fra `gradle.properties` i den pakken.
- * `includeBuild` bytter inn bygget ved siden av uansett hvilken versjon som
- * står her, men et versjonskrav som ikke finnes, villedet den som leste fila.
- * Når pakken ligger på Maven Central, er det denne versjonen pluginen henter
- * uten `includeBuild`.
+ * The version of LO-TEK for Kotlin, from `gradle.properties` in that package.
+ * `includeBuild` substitutes the build next to it whatever version is here,
+ * but a version requirement that does not exist misled whoever read the
+ * file. Once the package is on Maven Central, this is the version the plugin
+ * fetches without `includeBuild`.
  */
 val lotekVersion =
     Properties()
         .apply { rootDir.resolve("../kotlin/gradle.properties").reader().use { load(it) } }
         .getProperty("version")
-        ?: error("Fant ingen version i ../kotlin/gradle.properties.")
+        ?: error("Found no version in ../kotlin/gradle.properties.")
 
 repositories {
     mavenCentral()
@@ -36,10 +36,10 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 
     /*
-     * Diagnostikken: Rust-kjernen kompilert til JVM-bytekode, kjørt av
-     * Chicory. Kommer fra `../kotlin` gjennom `includeBuild`, så pluginen
-     * alltid har den samme kjernen som resten av repoet. IDE-en har sitt
-     * eget Kotlin-standardbibliotek, så pakkens utgave holdes utenfor.
+     * The diagnostics: the Rust core compiled to JVM bytecode, run by
+     * Chicory. It comes from `../kotlin` through `includeBuild`, so the
+     * plugin always has the same core as the rest of the repository. The IDE
+     * has its own Kotlin standard library, so the package's copy is left out.
      */
     implementation("io.github.markusaugust:lo-tek-interfaces:$lotekVersion") {
         exclude(group = "org.jetbrains.kotlin")
@@ -52,11 +52,11 @@ kotlin {
 
 intellijPlatform {
     pluginConfiguration {
-        // `id`, `name` og `vendor` står i `plugin.xml`. Versjonen og
-        // byggrammen settes her, siden de kommer fra `gradle.properties`.
+        // `id`, `name` and `vendor` are in `plugin.xml`. The version and the
+        // build range are set here, since they come from `gradle.properties`.
         version = providers.gradleProperty("pluginVersion")
-        // Vises på Marketplace og i IDE-en ved oppdatering, og må være på
-        // engelsk som beskrivelsen. Skriv en ny linje for hver versjon.
+        // Shown on the Marketplace and in the IDE on update, and must be in
+        // English like the description. Write a new line for each version.
         changeNotes = """
             <b>0.4.0</b>: Live templates for every web component, generated from the
             same recipes as the VS Code snippets, with the id as a variable that
@@ -87,18 +87,19 @@ intellijPlatform {
             untilBuild = provider { null }
         }
     }
-    // Tokenet kommer fra hemmeligheten JETBRAINS_MARKETPLACE_TOKEN i
-    // `publish-intellij.yml`. Pluginen signeres ikke med eget sertifikat:
-    // uten `signPlugin.certificateChain` og `privateKey` hopper Gradle over
-    // signeringen, og Marketplace signerer den selv.
+    // The token comes from the secret JETBRAINS_MARKETPLACE_TOKEN in
+    // `publish-intellij.yml`. The plugin is not signed with its own
+    // certificate: without `signPlugin.certificateChain` and `privateKey`
+    // Gradle skips signing, and the Marketplace signs it itself.
     publishing {
         token = providers.gradleProperty("intellijPlatformPublishingToken")
     }
 }
 
 tasks.processResources {
-    // Live templates genereres i designsystemet fra de samme oppskriftene
-    // som snippetene i VS Code. Fila kopieres inn der `plugin.xml` peker.
+    // The live templates are generated in the design system from the same
+    // recipes as the snippets in VS Code. The file is copied in where
+    // `plugin.xml` points.
     from(rootDir.resolve("../designsystem/live-templates.xml")) {
         into("liveTemplates")
         rename { "Lotek.xml" }
@@ -106,7 +107,7 @@ tasks.processResources {
 }
 
 tasks.test {
-    // Testene bygger et manifest for et overtatt prosjekt av det i pakken.
+    // The tests build a manifest for a project that has taken over components from the one in the package.
     val manifest = rootDir.resolve("../designsystem/manifest/manifest.json")
     systemProperty("manifest", manifest.absolutePath)
     inputs.file(manifest).withPathSensitivity(PathSensitivity.NONE)

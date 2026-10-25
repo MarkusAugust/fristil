@@ -3,193 +3,198 @@ package no.lotek.intellij
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 /**
- * At klassene foreslås der de skal, og tier der de ikke skal.
+ * That the classes are suggested where they should be, and nothing is
+ * suggested where they should not be.
  *
- * Pluginen finnes fordi `web-types.json` gir fullføring i HTML-filer, men
- * ikke i HTML som er injisert i en streng. Testene dekker begge deler: at
- * fullføringen virker i en vanlig fil, og at den virker i et fragment.
+ * The plugin exists because `web-types.json` gives completion in HTML files,
+ * but not in HTML injected into a string. The tests cover both: that
+ * completion works in an ordinary file, and that it works in a fragment.
  */
 class CompletionTest : BasePlatformTestCase() {
     /**
-     * Forslagene fullføringen gir på dette stedet.
+     * The suggestions completion gives at this place.
      *
-     * Finnes det bare ett treff, setter IntelliJ det inn med en gang og
-     * lukker lista, og da er `lookupElementStrings` null. Det er ikke det
-     * samme som at ingenting ble foreslått, så det ene treffet leses ut av
-     * dokumentet i stedet. Uten dette så en vellykket autofullføring ut som
-     * en tom liste, og testen felte riktig kode.
+     * If there is only one match, IntelliJ inserts it at once and closes the
+     * list, and then `lookupElementStrings` is null. That is not the same as
+     * nothing being suggested, so the one match is read from the document
+     * instead. Without this, a successful autocompletion looked like an empty
+     * list, and the test failed correct code.
      */
-    private fun forslag(
-        filnavn: String,
-        innhold: String,
+    private fun suggestions(
+        fileName: String,
+        content: String,
     ): List<String> {
-        myFixture.configureByText(filnavn, innhold)
-        val elementer = myFixture.completeBasic()
+        myFixture.configureByText(fileName, content)
+        val elements = myFixture.completeBasic()
 
         myFixture.lookupElementStrings?.let { return it }
-        if (elementer != null) return elementer.map { it.lookupString }
+        if (elements != null) return elements.map { it.lookupString }
 
         /*
-         * `completeBasic` gir null når den satte inn det ene treffet selv.
+         * `completeBasic` returns null when it inserted the one match itself.
          *
-         * Da er lista lukket, og det som ble satt inn må leses ut av
-         * dokumentet. Teksten foran markøren sammenlignes med det som sto der
-         * før: er den uendret, skjedde ingenting, og det er ikke det samme
-         * som et forslag. Uten den sammenligningen rapporterte hjelperen
-         * brukerens egen tekst som om pluginen hadde levert den.
+         * Then the list is closed, and what was inserted must be read from
+         * the document. The text before the caret is compared with what was
+         * there before: if it is unchanged, nothing happened, and that is not
+         * the same as a suggestion. Without that comparison the helper
+         * reported the user's own text as if the plugin had delivered it.
          */
-        val før = innhold.substringBefore("<caret>").takeLastWhile { !it.isWhitespace() && it != '"' && it != '\'' }
-        val tekst = myFixture.editor.document.text
-        val slutt = myFixture.editor.caretModel.offset
-        val start = tekst.lastIndexOfAny(charArrayOf(' ', '"', '\'', '\n', '='), slutt - 1) + 1
-        val etter = tekst.substring(start, slutt)
+        val before = content.substringBefore("<caret>").takeLastWhile { !it.isWhitespace() && it != '"' && it != '\'' }
+        val text = myFixture.editor.document.text
+        val end = myFixture.editor.caretModel.offset
+        val start = text.lastIndexOfAny(charArrayOf(' ', '"', '\'', '\n', '='), end - 1) + 1
+        val after = text.substring(start, end)
 
-        return if (etter != før && etter.startsWith("lt-")) listOf(etter) else emptyList()
+        return if (after != before && after.startsWith("lt-")) listOf(after) else emptyList()
     }
 
-    fun `test foreslår klasser i en vanlig HTML-fil`() {
-        val ut = forslag("test.html", """<button class="lt-<caret>">Lagre</button>""")
-        assertTrue("lt-button skal være med, fikk $ut", ut.contains("lt-button"))
-        assertTrue("lt-table skal være med", ut.contains("lt-table"))
+    fun `test suggests classes in an ordinary HTML file`() {
+        val out = suggestions("test.html", """<button class="lt-<caret>">Save</button>""")
+        assertTrue("lt-button should be included, got $out", out.contains("lt-button"))
+        assertTrue("lt-table should be included", out.contains("lt-table"))
     }
 
-    fun `test finner riktig klasse av et lengre prefiks`() {
-        val ut = forslag("test.html", """<table class="lt-tab<caret>">""")
-        assertTrue("lt-table skal være med, fikk $ut", ut.contains("lt-table"))
+    fun `test finds the right class from a longer prefix`() {
+        val out = suggestions("test.html", """<table class="lt-tab<caret>">""")
+        assertTrue("lt-table should be included, got $out", out.contains("lt-table"))
     }
 
-    fun `test finner klasse nummer to i en verdi med flere`() {
-        val ut = forslag("test.html", """<button class="min-egen lt-but<caret>">""")
-        assertTrue("lt-button skal være med, fikk $ut", ut.contains("lt-button"))
+    fun `test finds the second class in a value with several`() {
+        val out = suggestions("test.html", """<button class="my-own lt-but<caret>">""")
+        assertTrue("lt-button should be included, got $out", out.contains("lt-button"))
     }
 
     /*
-     * At prefikset faktisk filtrerer, ikke bare at noe kommer ut.
+     * That the prefix actually filters, not just that something comes out.
      *
-     * Uten denne passerte alle testene også da fullføringen la ut hele lista
-     * uansett hva som sto foran markøren. Den skiller «fant riktig klasse»
-     * fra «fant alle klasser, og én av dem var riktig».
+     * Without this, all the tests passed even when completion listed the
+     * whole list regardless of what was before the caret. It tells «found
+     * the right class» apart from «found all classes, and one of them was
+     * right».
      */
-    fun `test filtrerer på det som alt er skrevet`() {
-        val alle = forslag("test.html", """<button class="lt-<caret>">""")
-        val smalt = forslag("test.html", """<button class="lt-tab<caret>">""")
+    fun `test filters on what is already typed`() {
+        val all = suggestions("test.html", """<button class="lt-<caret>">""")
+        val narrow = suggestions("test.html", """<button class="lt-tab<caret>">""")
 
-        assertTrue("lt- skal gi hele lista, fikk ${alle.size}", alle.size > 50)
-        assertTrue("lt-tab skal gi færre, fikk ${smalt.size}", smalt.size < alle.size)
-        assertTrue("lt-table skal være blant dem", smalt.contains("lt-table"))
-        assertFalse("lt-button skal ikke være med", smalt.contains("lt-button"))
+        assertTrue("lt- should give the whole list, got ${all.size}", all.size > 50)
+        assertTrue("lt-tab should give fewer, got ${narrow.size}", narrow.size < all.size)
+        assertTrue("lt-table should be among them", narrow.contains("lt-table"))
+        assertFalse("lt-button should not be included", narrow.contains("lt-button"))
     }
 
-    fun `test tier utenfor en class-verdi`() {
-        val ut = forslag("test.html", """<button id="lt-<caret>">""")
-        assertFalse("skal ikke foreslå i id, fikk $ut", ut.contains("lt-button"))
+    fun `test suggests nothing outside a class value`() {
+        val out = suggestions("test.html", """<button id="lt-<caret>">""")
+        assertFalse("should not suggest in id, got $out", out.contains("lt-button"))
     }
 
-    fun `test virker på en verdi uten anførselstegn`() {
-        // Bar verdi er gyldig HTML. Da bare anførselstegn talte, ga
-        // `class=lt-` ingenting.
-        val ut = forslag("test.html", """<div class=lt-tab<caret>""")
-        assertTrue("lt-table skal være med, fikk $ut", ut.contains("lt-table"))
+    fun `test works on an unquoted value`() {
+        // An unquoted value is valid HTML. When only quotes counted,
+        // `class=lt-` gave nothing.
+        val out = suggestions("test.html", """<div class=lt-tab<caret>""")
+        assertTrue("lt-table should be included, got $out", out.contains("lt-table"))
     }
 
-    fun `test tier i et bundet class-attributt`() {
+    fun `test suggests nothing in a bound class attribute`() {
         /*
-         * Vue og Alpine tar et JavaScript-uttrykk i `:class` og
-         * `x-bind:class`. Et bart `lt-button` der blir en variabelreferanse,
-         * ikke en klasse, så forslaget ville gitt kode som ikke virker.
+         * Vue and Alpine take a JavaScript expression in `:class` and
+         * `x-bind:class`. A bare `lt-button` there becomes a variable
+         * reference, not a class, so the suggestion would give code that
+         * does not work.
          */
-        for (attributt in listOf(":class", "x-bind:class", "v-bind:class")) {
-            val ut = forslag("test.html", """<div $attributt="lt-<caret>">""")
-            assertFalse("skal tie i $attributt, fikk $ut", ut.contains("lt-button"))
+        for (attribute in listOf(":class", "x-bind:class", "v-bind:class")) {
+            val out = suggestions("test.html", """<div $attribute="lt-<caret>">""")
+            assertFalse("should suggest nothing in $attribute, got $out", out.contains("lt-button"))
         }
     }
 
-    fun `test lar seg ikke lure av et class-likhetstegn i en annen verdi`() {
-        // Løkka bryter på det lukkende anførselstegnet, og uten kravet om at
-        // `=` står rett foran navnet sto `=` fra verdiens innhold igjen.
-        val ut = forslag("test.html", """<div title="class=" lt-<caret>""")
-        assertFalse("skal ikke foreslå her, fikk $ut", ut.contains("lt-button"))
+    fun `test is not fooled by a class equals sign in another value`() {
+        // The loop stops at the closing quote, and without the requirement
+        // that `=` stands right before the name, the `=` from the value's
+        // content was left.
+        val out = suggestions("test.html", """<div title="class=" lt-<caret>""")
+        assertFalse("should not suggest here, got $out", out.contains("lt-button"))
     }
 
-    fun `test tier i vanlig tekst`() {
-        val ut = forslag("test.html", """<p>lt-<caret></p>""")
-        assertFalse("skal ikke foreslå i brødtekst, fikk $ut", ut.contains("lt-button"))
+    fun `test suggests nothing in plain text`() {
+        val out = suggestions("test.html", """<p>lt-<caret></p>""")
+        assertFalse("should not suggest in body text, got $out", out.contains("lt-button"))
     }
 
-    fun `test tier i tekst rett etter en lukket tagg`() {
+    fun `test suggests nothing in text right after a closed tag`() {
         /*
-         * Taggen er lukket, så markøren står i innhold og ikke i et attributt.
+         * The tag is closed, so the caret is in content and not in an
+         * attribute.
          *
-         * Uten sjekken på at taggen er åpen finner koden `class=` lenger bak
-         * i den samme taggen, og ser ingen mellomrom mellom det og markøren.
-         * Testen over fanger ikke dette: der finnes det ikke noe `=` i det
-         * hele tatt, så den stopper av en annen grunn.
+         * Without the check that the tag is open, the code finds `class=`
+         * further back in the same tag, and sees no whitespace between it and
+         * the caret. The test above does not catch this: there is no `=` at
+         * all there, so it stops for another reason.
          */
-        val ut = forslag("test.html", """<div class="a">lt-<caret>""")
-        assertFalse("skal ikke foreslå etter en lukket tagg, fikk $ut", ut.contains("lt-button"))
+        val out = suggestions("test.html", """<div class="a">lt-<caret>""")
+        assertFalse("should not suggest after a closed tag, got $out", out.contains("lt-button"))
     }
 
-    fun `test foreslår i HTML injisert i en Kotlin-streng`() {
-        // Dette er hele grunnen til at pluginen finnes. `language=HTML` er
-        // IntelliJs kommentarbaserte injeksjon og gir samme fragment som
+    fun `test suggests in HTML injected into a Kotlin string`() {
+        // This is the whole reason the plugin exists. `language=HTML` is
+        // IntelliJ's comment-based injection and gives the same fragment as
         // @Language("HTML").
-        val ut =
-            forslag(
-                "Visning.kt",
+        val out =
+            suggestions(
+                "View.kt",
                 """
                 // language=HTML
-                val tabell = ""${'"'}
+                val table = ""${'"'}
                     <table class="lt-<caret>">
                 ""${'"'}
                 """.trimIndent(),
             )
-        assertTrue("lt-table skal være med i en injisert streng, fikk $ut", ut.contains("lt-table"))
+        assertTrue("lt-table should be included in an injected string, got $out", out.contains("lt-table"))
     }
 
-    /** Manifestet i pakken med `lt-card` byttet ut med `lt-kort`, som etter `lotek overta`. */
-    private val overtatt =
+    /** The manifest in the package with `lt-card` replaced by `lt-kort`, as after `lotek takeover`. */
+    private val takenOver =
         java.io.File(System.getProperty("manifest")).readText().replace("\"lt-card\": {", "\"lt-kort\": {")
 
-    fun `test foreslår klassene i prosjektets manifest`() {
-        // Det samme manifestet som sjekken går mot (DiagnosticsTest), så
-        // fullføringen ikke foreslår lt-card rett før annotatoren streker den
-        // under. Før leste den alltid pakkens manifest.
-        myFixture.addFileToProject("build/lotek/manifest.json", overtatt)
-        val ut = forslag("test.html", """<div class="lt-<caret>">""")
-        assertTrue("lt-kort skal være med, fikk $ut", ut.contains("lt-kort"))
-        assertFalse("lt-card skal ikke være med, fikk $ut", ut.contains("lt-card"))
+    fun `test suggests the classes in the project's manifest`() {
+        // The same manifest the check runs against (DiagnosticsTest), so
+        // completion does not suggest lt-card right before the annotator
+        // underlines it. It used to read the package's manifest always.
+        myFixture.addFileToProject("build/lotek/manifest.json", takenOver)
+        val out = suggestions("test.html", """<div class="lt-<caret>">""")
+        assertTrue("lt-kort should be included, got $out", out.contains("lt-kort"))
+        assertFalse("lt-card should not be included, got $out", out.contains("lt-card"))
     }
 
-    fun `test foreslår fra prosjektets manifest i et injisert fragment`() {
-        myFixture.addFileToProject("node_modules/@lo-tek/interfaces/manifest/manifest.json", overtatt)
-        val ut =
-            forslag(
-                "Visning.kt",
+    fun `test suggests from the project's manifest in an injected fragment`() {
+        myFixture.addFileToProject("node_modules/@lo-tek/interfaces/manifest/manifest.json", takenOver)
+        val out =
+            suggestions(
+                "View.kt",
                 """
                 // language=HTML
-                val kort = ""${'"'}
+                val card = ""${'"'}
                     <div class="lt-<caret>">
                 ""${'"'}
                 """.trimIndent(),
             )
-        assertTrue("lt-kort skal være med i en injisert streng, fikk $ut", ut.contains("lt-kort"))
-        assertFalse("lt-card skal ikke være med, fikk $ut", ut.contains("lt-card"))
+        assertTrue("lt-kort should be included in an injected string, got $out", out.contains("lt-kort"))
+        assertFalse("lt-card should not be included, got $out", out.contains("lt-card"))
     }
 
-    fun `test et manifest kjernen ikke kan lese gir pakkens klasser`() {
+    fun `test a manifest the core cannot read gives the package's classes`() {
         myFixture.addFileToProject("build/lotek/manifest.json", "{}")
-        val ut = forslag("test.html", """<div class="lt-<caret>">""")
-        assertTrue("lt-button skal være med, fikk $ut", ut.contains("lt-button"))
+        val out = suggestions("test.html", """<div class="lt-<caret>">""")
+        assertTrue("lt-button should be included, got $out", out.contains("lt-button"))
     }
 
-    fun `test katalogen har klassene fra pakken`() {
-        assertTrue("katalogen skal ikke være tom", Katalog.klasser.isNotEmpty())
-        assertNotNull("lt-button skal finnes", Katalog.finn("lt-button"))
-        assertNull("en oppdiktet klasse skal ikke finnes", Katalog.finn("lt-modal"))
+    fun `test the catalogue has the classes from the package`() {
+        assertTrue("the catalogue should not be empty", Catalogue.classes.isNotEmpty())
+        assertNotNull("lt-button should exist", Catalogue.find("lt-button"))
+        assertNull("an invented class should not exist", Catalogue.find("lt-modal"))
     }
 
-    fun `test hver klasse har komponent og lenke`() {
-        val uten = Katalog.klasser.filter { it.komponent.isEmpty() || it.lenke.isEmpty() }
-        assertTrue("alle skal ha komponentnavn og lenke, mangler: $uten", uten.isEmpty())
+    fun `test every class has a component and a link`() {
+        val without = Catalogue.classes.filter { it.component.isEmpty() || it.link.isEmpty() }
+        assertTrue("all should have a component name and a link, missing: $without", without.isEmpty())
     }
 }

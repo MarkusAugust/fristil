@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-/** Sjekken med stilarkene: det CSS-en siden laster ikke styler. */
+/** The check with the stylesheets: what the CSS the page loads does not style. */
 class StylesTest {
     private val css = listOf(""".lt-button { } .lt-button[data-variant="ghost"] { }""")
 
@@ -17,9 +17,9 @@ class StylesTest {
         assertEquals(listOf("unstyled-value", "unstyled-class"), findings.map { it.rule })
         assertEquals("lt-card", html.substring(findings[1].start, findings[1].end))
         assertTrue(Lotek.diagnoseMarkup("""<button class="lt-button" data-variant="ghost">x</button>""", css).isEmpty())
-        // Uten stilark er det som før.
+        // Without stylesheets it is as before.
         assertTrue(Lotek.diagnoseMarkup(html).isEmpty())
-        // En tom liste er en side uten stilark, som i TypeScript.
+        // An empty list is a page without stylesheets, as in TypeScript.
         assertEquals(listOf("unstyled-class", "unstyled-class"), Lotek.diagnoseMarkup(html, emptyList()).map { it.rule })
     }
 

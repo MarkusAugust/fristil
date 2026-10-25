@@ -8,17 +8,19 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.icons.AllIcons
 
 /**
- * Foreslår LO-TEKs klasser inne i `class="…"`.
+ * Suggests LO-TEK's classes inside `class="…"`.
  *
- * Registrert på HTML-språket, ikke på Kotlin. Injiserer IntelliJ HTML i en
- * streng, blir fragmentet et ekte `PsiFile` med HTML-språk, og denne kalles
- * for det. Den samme registreringen dekker derfor vanlige `.html`-filer,
- * Kotlin-strenger og TypeScript-strenger.
+ * Registered on the HTML language, not on Kotlin. When IntelliJ injects HTML
+ * into a string, the fragment becomes a real `PsiFile` with the HTML
+ * language, and this is called for it. The same registration therefore
+ * covers ordinary `.html` files, Kotlin strings and TypeScript strings.
  *
- * Det er nettopp hullet pluginen finnes for: `web-types.json` gir fullføring
- * i HTML-filer uten noe plugin, men leses ikke inn i injiserte fragmenter.
+ * That is exactly the gap the plugin exists for: `web-types.json` gives
+ * completion in HTML files without any plugin, but is not read into
+ * injected fragments.
  *
- * Klassene er de i manifestet fila sjekkes mot, se [Katalog.klasserFor].
+ * The classes are the ones in the manifest the file is checked against, see
+ * [Catalogue.classesFor].
  */
 class LotekCompletionContributor : CompletionContributor() {
     override fun fillCompletionVariants(
@@ -27,25 +29,25 @@ class LotekCompletionContributor : CompletionContributor() {
     ) {
         if (parameters.completionType != CompletionType.BASIC) return
 
-        val tekst = parameters.originalFile.text
-        val posisjon = parameters.offset
-        if (!iKlasseverdi(tekst, posisjon)) return
+        val text = parameters.originalFile.text
+        val offset = parameters.offset
+        if (!inClassValue(text, offset)) return
 
         /*
-         * Prefikset er IntelliJs eget.
+         * The prefix is IntelliJ's own.
          *
-         * Her sto først en egen matcher som leste bakover til nærmeste
-         * mellomrom, skrevet på antakelsen om at IntelliJ deler ord på
-         * bindestrek. Den antakelsen var feil: testet i en attributtverdi gir
-         * `class="lt-` hele lista, og `class="min-egen lt-but` fullfører til
-         * `lt-button`, med og uten matcheren. Koden gjorde altså ingenting,
-         * og er borte.
+         * There was first a custom matcher here that read backwards to the
+         * nearest whitespace, written on the assumption that IntelliJ splits
+         * words on hyphens. That assumption was wrong: tested in an attribute
+         * value, `class="lt-` gives the whole list, and
+         * `class="my-own lt-but` completes to `lt-button`, with and without
+         * the matcher. The code did nothing, and is gone.
          */
-        for (klasse in Katalog.klasserFor(parameters.originalFile)) {
+        for (cls in Catalogue.classesFor(parameters.originalFile)) {
             result.addElement(
-                LookupElementBuilder.create(klasse.navn)
+                LookupElementBuilder.create(cls.name)
                     .withIcon(AllIcons.Xml.Css_class)
-                    .withTypeText(klasse.komponent, true)
+                    .withTypeText(cls.component, true)
                     .withCaseSensitivity(false),
             )
         }
@@ -53,87 +55,88 @@ class LotekCompletionContributor : CompletionContributor() {
 
     private companion object {
         /**
-         * Om markøren står inne i verdien til et `class`-attributt.
+         * Whether the caret is inside the value of a `class` attribute.
          *
-         * Leser bakover i teksten framfor å gå i PSI-treet. Et injisert
-         * fragment kan være ufullstendig mens du skriver, og da er treet
-         * ustabilt: `<table class="lt-` har ingen lukket tagg og ingen
-         * attributtnode å spørre. Teksten bakover er den samme uansett.
+         * Reads backwards in the text rather than walking the PSI tree. An
+         * injected fragment can be incomplete while you type, and then the
+         * tree is unstable: `<table class="lt-` has no closed tag and no
+         * attribute node to ask. The text backwards is the same regardless.
          */
-        fun iKlasseverdi(
-            tekst: String,
-            posisjon: Int,
+        fun inClassValue(
+            text: String,
+            offset: Int,
         ): Boolean {
-            if (posisjon <= 0 || posisjon > tekst.length) return false
+            if (offset <= 0 || offset > text.length) return false
 
             /*
-             * Finn taggen markøren står i.
+             * Find the tag the caret is in.
              *
-             * `<` kan ikke stå i en attributtverdi i gyldig HTML, så den
-             * siste før markøren åpner taggen. Er det et `>` etter den, er
-             * taggen lukket og markøren står i vanlig tekst.
+             * `<` cannot appear in an attribute value in valid HTML, so the
+             * last one before the caret opens the tag. If there is a `>`
+             * after it, the tag is closed and the caret is in plain text.
              */
-            val tagg = tekst.lastIndexOf('<', posisjon - 1)
-            if (tagg < 0) return false
-            if (tekst.indexOf('>', tagg).let { it in 0 until posisjon }) return false
+            val tag = text.lastIndexOf('<', offset - 1)
+            if (tag < 0) return false
+            if (text.indexOf('>', tag).let { it in 0 until offset }) return false
 
             /*
-             * Åpnende eller lukkende anførselstegn?
+             * Opening or closing quote?
              *
-             * Å gå bakover til nærmeste anførselstegn er ikke nok:
-             * `<div title="class=" lt-` bryter på det *lukkende*, og da står
-             * `=` fra verdiens innhold igjen og ser ut som et attributt.
-             * Antallet anførselstegn fra taggens start avgjør: oddetall betyr
-             * at det siste åpnet en verdi vi fortsatt står i.
+             * Going back to the nearest quote is not enough:
+             * `<div title="class=" lt-` stops at the *closing* one, and then
+             * the `=` from the value's content is left and looks like an
+             * attribute. The number of quotes from the start of the tag
+             * decides: an odd number means the last one opened a value we
+             * are still in.
              */
-            var antall = 0
-            var sisteSitat = -1
-            for (j in tagg until posisjon) {
-                if (tekst[j] == '"' || tekst[j] == '\'') {
-                    antall++
-                    sisteSitat = j
+            var count = 0
+            var lastQuote = -1
+            for (j in tag until offset) {
+                if (text[j] == '"' || text[j] == '\'') {
+                    count++
+                    lastQuote = j
                 }
             }
 
-            val før =
-                if (antall % 2 == 1) {
-                    // I en sitert verdi. Mellomrom skiller klasser, ikke noe
-                    // mer, så alt fram til anførselstegnet hører til verdien.
-                    val utenSitat = tekst.substring(tagg, sisteSitat).trimEnd()
-                    if (!utenSitat.endsWith("=")) return false
-                    utenSitat.dropLast(1)
+            val before =
+                if (count % 2 == 1) {
+                    // In a quoted value. Whitespace separates classes, nothing
+                    // more, so everything up to the quote belongs to the value.
+                    val withoutQuote = text.substring(tag, lastQuote).trimEnd()
+                    if (!withoutQuote.endsWith("=")) return false
+                    withoutQuote.dropLast(1)
                 } else {
                     /*
-                     * Utenfor en verdi, eller i en bar en. Bar verdi er
-                     * gyldig HTML, og `<div class=lt-` ga ingenting da bare
-                     * anførselstegn talte. Her avslutter et mellomrom
-                     * verdien, i motsetning til i den siterte.
+                     * Outside a value, or in an unquoted one. An unquoted
+                     * value is valid HTML, and `<div class=lt-` gave nothing
+                     * when only quotes counted. Here whitespace ends the
+                     * value, unlike in the quoted one.
                      */
-                    val fra = tekst.substring(tagg, posisjon)
-                    val likhet = fra.lastIndexOf('=')
-                    if (likhet < 0) return false
-                    if (fra.substring(likhet + 1).any { it.isWhitespace() }) return false
-                    fra.substring(0, likhet)
+                    val fromTag = text.substring(tag, offset)
+                    val equalsSign = fromTag.lastIndexOf('=')
+                    if (equalsSign < 0) return false
+                    if (fromTag.substring(equalsSign + 1).any { it.isWhitespace() }) return false
+                    fromTag.substring(0, equalsSign)
                 }
 
             /*
-             * Attributtet må hete `class` og ingenting annet.
+             * The attribute must be named `class` and nothing else.
              *
-             * `takeLastWhile` alene gjorde `:class` og `x-bind:class` til
-             * `class`, fordi kolon ikke er med i settet. Der tar Vue og
-             * Alpine et JavaScript-uttrykk, så et bart `lt-button` blir en
-             * variabelreferanse og ikke en klasse. `data-class` gikk fri alt,
-             * siden bindestrek er med.
+             * `takeLastWhile` alone turned `:class` and `x-bind:class` into
+             * `class`, because the colon is not in the set. There Vue and
+             * Alpine take a JavaScript expression, so a bare `lt-button`
+             * becomes a variable reference and not a class. `data-class` got
+             * through too, since the hyphen is in the set.
              *
-             * Derfor kreves en ekte attributtgrense foran: mellomrom, eller
-             * at attributtet er det første etter tagnavnet.
+             * So a real attribute boundary is required in front: whitespace,
+             * or the attribute being the first after the tag name.
              */
-            val foran = før.trimEnd()
-            val navn = foran.takeLastWhile { it.isLetterOrDigit() || it == '-' }
-            if (!navn.equals("class", ignoreCase = true)) return false
+            val ahead = before.trimEnd()
+            val name = ahead.takeLastWhile { it.isLetterOrDigit() || it == '-' }
+            if (!name.equals("class", ignoreCase = true)) return false
 
-            val tegnForan = foran.dropLast(navn.length).lastOrNull() ?: return false
-            return tegnForan.isWhitespace()
+            val charBefore = ahead.dropLast(name.length).lastOrNull() ?: return false
+            return charBefore.isWhitespace()
         }
     }
 }

@@ -7,50 +7,50 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * At WebJar-en har det en side trenger, og at hver modul i den kan lastes.
+ * That the WebJar has what a page needs, and that every module in it can be loaded.
  *
- * En nettleser kan ikke slå opp et pakkenavn som `@lo-tek/interfaces` eller
- * `node:fs`. Importerer én modul noe som ikke ligger i WebJar-en, feiler den
- * først i nettleseren, så det sjekkes her: hver import i hver modul skal peke
- * på en fil som finnes.
+ * A browser cannot resolve a package name like `@lo-tek/interfaces` or
+ * `node:fs`. If one module imports something that is not in the WebJar, it
+ * fails only in the browser, so it is checked here: every import in every
+ * module must point to a file that exists.
  */
 class WebJarTest {
     private val root = File(System.getProperty("webjar"))
 
     @Test
-    fun `stilarket og registreringen ligger der konstantene sier`() {
+    fun `the stylesheet and the registration are where the constants say`() {
         for (path in listOf(LotekWebJar.CSS, LotekWebJar.REGISTER)) {
             val resource = "META-INF/resources$path"
             val stream = javaClass.classLoader.getResourceAsStream(resource)
-            assertNotNull(stream, "$resource finnes ikke på klassestien")
-            assertTrue(stream.use { it.readBytes().isNotEmpty() }, "$resource er tom")
+            assertNotNull(stream, "$resource is not on the classpath")
+            assertTrue(stream.use { it.readBytes().isNotEmpty() }, "$resource is empty")
         }
         assertTrue(LotekWebJar.ROOT.endsWith("/${LotekWebJar.VERSION}"))
     }
 
     @Test
-    fun `stilarket for hver komponent ligger med samme sti som i npm-pakken`() {
+    fun `the stylesheet for each component has the same path as in the npm package`() {
         assertTrue(File(root, "src/components/css/button/button.css").isFile)
         assertTrue(File(root, "src/tokens/tokens.css").isFile)
     }
 
     @Test
-    fun `det som bare er for Node eller React er ikke med`() {
+    fun `what is only for Node or React is left out`() {
         for (path in listOf("dist/cli.js", "dist/takeover.js", "dist/react.js", "dist/diagnostics", "dist/tokens/theme.js")) {
-            assertTrue(!File(root, path).exists(), "$path skal ikke være i WebJar-en")
+            assertTrue(!File(root, path).exists(), "$path must not be in the WebJar")
         }
     }
 
     @Test
-    fun `hver import i hver modul peker på en fil i WebJar-en`() {
+    fun `every import in every module points to a file in the WebJar`() {
         val modules = root.walkTopDown().filter { it.extension == "js" }.toList()
-        assertTrue(modules.size > 20, "for få moduler: ${modules.size}")
+        assertTrue(modules.size > 20, "too few modules: ${modules.size}")
         val missing = mutableListOf<String>()
         for (module in modules) {
             for (specifier in imports(module.readText())) {
                 val target = module.parentFile.resolve(specifier).normalize()
                 if (!specifier.startsWith(".") || !target.isFile) {
-                    missing += "${module.relativeTo(root)} importerer «$specifier»"
+                    missing += "${module.relativeTo(root)} imports «$specifier»"
                 }
             }
         }
@@ -58,8 +58,8 @@ class WebJarTest {
     }
 
     private companion object {
-        // Bare ekte importer: linjer som begynner med import eller export, ikke
-        // eksemplene i kommentarene, som begynner med `*`.
+        // Only real imports: lines that start with import or export, not the
+        // examples in the comments, which start with `*`.
         val STATIC = Regex("""^\s*(?:import|export)\b[^;]*?\bfrom\s*["']([^"']+)["']""", RegexOption.MULTILINE)
         val BARE = Regex("""^\s*import\s*["']([^"']+)["']""", RegexOption.MULTILINE)
         val DYNAMIC = Regex("""\bimport\(\s*["']([^"']+)["']\s*\)""")

@@ -22,35 +22,37 @@ import no.lotek.Fix
 import no.lotek.Lotek
 
 /**
- * LO-TEKs feilmeldinger i editoren, fra den samme Rust-kjernen som
- * `lotek sjekk` og VS Code bruker.
+ * LO-TEK's diagnostics in the editor, from the same Rust core that
+ * `lotek check` and VS Code use.
  *
- * Kjernen kjøres av Chicory i IDE-ens egen JVM, via Maven-pakken i
- * `../kotlin`. Ingen Node, ingen prosess å starte.
+ * The core is run by Chicory in the IDE's own JVM, through the Maven package
+ * in `../kotlin`. No Node, no process to start.
  *
- * Et vanlig `Annotator`, ikke et `ExternalAnnotator`: IntelliJ kjører
- * annotatorer også på HTML som er injisert i en streng, og det er der
- * pluginen trengs mest. Den kalles for `XmlDocument`, som dekker hele
- * fragmentet, så kjernen leser hver fil én gang per gjennomgang.
+ * An ordinary `Annotator`, not an `ExternalAnnotator`: IntelliJ also runs
+ * annotators on HTML injected into a string, and that is where the plugin
+ * is needed most. It is called for `XmlDocument`, which covers the whole
+ * fragment, so the core reads each file once per pass.
  *
- * Sjekken er `diagnoseMarkup`, ikke `diagnosePage`: en fil eller et fragment
- * er en mal, og en id det pekes på kan godt stå i en annen mal. Den går mot
- * prosjektets manifest når det har et, se [ProjectManifest].
+ * The check is `diagnoseMarkup`, not `diagnosePage`: a file or a fragment is
+ * a template, and an id something points to may well be in another
+ * template. It runs against the project's manifest when it has one, see
+ * [ProjectManifest].
  */
 class LotekAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (element !is XmlDocument) return
         val file = element.containingFile ?: return
-        // Ingen snarvei på «lt-» i teksten: regelen icon-without-name gjelder
-        // markup uten en eneste LO-TEK-klasse, og kjernen bruker
-        // millisekunder på en fil. Med snarveien tidde IntelliJ om en
-        // ikonknapp uten navn som `lotek sjekk` og VS Code meldte.
+        // No shortcut on «lt-» in the text: the rule icon-without-name applies
+        // to markup without a single LO-TEK class, and the core takes
+        // milliseconds on a file. With the shortcut IntelliJ said nothing
+        // about an icon button without a name that `lotek check` and VS Code
+        // reported.
         val text = file.text
 
         val bounds = element.textRange
         for (finding in diagnose(file, text)) {
             val range = TextRange(finding.start, maxOf(finding.end, finding.start))
-            // Et funn utenfor dokumentet kan ikke festes til det.
+            // A finding outside the document cannot be attached to it.
             if (!bounds.contains(range)) continue
             val builder =
                 holder
@@ -63,9 +65,9 @@ class LotekAnnotator : Annotator {
     }
 
     /**
-     * Mot prosjektets manifest når det har et, ellers manifestet i
-     * Kotlin-pakken. Et manifest kjernen ikke kan lese, gir en advarsel i
-     * loggen og sjekk mot pakkens.
+     * Against the project's manifest when it has one, otherwise the manifest
+     * in the Kotlin package. A manifest the core cannot read gives a warning
+     * in the log and a check against the package's.
      */
     private fun diagnose(file: PsiFile, text: String): List<Finding> {
         val manifest = ProjectManifest.forFile(file) ?: return Lotek.diagnoseMarkup(text)
@@ -86,13 +88,13 @@ class LotekAnnotator : Annotator {
 }
 
 /**
- * Rettelsen kjernen foreslår: én eller flere endringer, hver et bytte av
- * teksten fra `start` til `end`. De brukes bakfra, så posisjonene i de
- * første holder når de siste er gjort.
+ * The fix the core suggests: one or more edits, each a replacement of the
+ * text from `start` to `end`. They are applied from the end, so the
+ * positions of the first ones hold when the last ones are done.
  *
- * Posisjonene gjelder teksten slik den var da funnet ble gjort. IntelliJ
- * kaster annotasjonene og kjører annotatoren på nytt når teksten endres, så
- * rettelsen som tilbys, hører alltid til den siste gjennomgangen.
+ * The positions refer to the text as it was when the finding was made.
+ * IntelliJ discards the annotations and runs the annotator again when the
+ * text changes, so the fix offered always belongs to the latest pass.
  */
 private class ReplaceFix(private val fix: Fix) : IntentionAction, PriorityAction {
     override fun getText(): String = fix.title
@@ -113,17 +115,18 @@ private class ReplaceFix(private val fix: Fix) : IntentionAction, PriorityAction
         if (end > document.textLength) return
         val injected = InjectedLanguageManager.getInstance(project)
         if (injected.isInjectedFragment(file)) {
-            // Et injisert fragment: dokumentet er fragmentets, med teksten
-            // slik den er uten rømming. En endring skrevet rett i det havner
-            // urømt i vertsfila, og `aria-label="…"` i en "…"-streng i Kotlin
-            // brøt literalen. Hver endring regnes derfor om til vertsfila og
-            // skrives gjennom vertsstrengens manipulator, som rømmer den.
-            // Hele fragmentet på én gang holdt ikke: en mal som `$navn` deler
-            // fragmentet i flere deler av strengen, og plassholderen ble
-            // skrevet inn i stedet for `$navn`.
+            // An injected fragment: the document is the fragment's, with the
+            // text as it is without escaping. An edit written straight into it
+            // ends up unescaped in the host file, and `aria-label="…"` in a
+            // "…" string in Kotlin broke the literal. Each edit is therefore
+            // mapped to the host file and written through the host string's
+            // manipulator, which escapes it. The whole fragment at once did
+            // not work: a template like `$name` splits the fragment into
+            // several parts of the string, and the placeholder was written in
+            // place of `$name`.
             val hostFile = injected.getTopLevelFile(file)
             val hostDocument = PsiDocumentManager.getInstance(project).getDocument(hostFile) ?: return
-            // Alle omregnet før noe endres, og brukt bakfra i vertsfila.
+            // All mapped before anything changes, and applied from the end in the host file.
             val targets =
                 fix.edits
                     .map { injected.injectedToHost(file, TextRange(it.start, it.end)) to it.text }
@@ -134,7 +137,7 @@ private class ReplaceFix(private val fix: Fix) : IntentionAction, PriorityAction
                 val host =
                     PsiTreeUtil.getParentOfType(at, PsiLanguageInjectionHost::class.java, false) ?: return
                 val inHost = ElementManipulators.getValueTextRange(host).shiftRight(host.textRange.startOffset)
-                // En endring som ikke står inni én del av strengen, rører ikke vi.
+                // We leave alone an edit that is not inside one part of the string.
                 if (!inHost.contains(range)) return
                 ElementManipulators.handleContentChange(host, range.shiftLeft(host.textRange.startOffset), text)
             }

@@ -5,45 +5,45 @@ import no.lotek.Lotek
 import no.lotek.Manifest
 
 /**
- * En klasse fra LO-TEK, slik editoren viser den.
+ * A class from LO-TEK, as the editor shows it.
  *
- * @property navn klassenavnet, for eksempel `lt-button`
- * @property komponent komponenten den hører til, vist som detalj i lista
- * @property beskrivelse hva komponenten er, vist i dokumentasjonsruta
- * @property lenke adressen til komponentsiden
+ * @property name the class name, for example `lt-button`
+ * @property component the component it belongs to, shown as detail in the list
+ * @property description what the component is, shown in the documentation popup
+ * @property link the address of the component page
  */
-data class Klasse(
-    val navn: String,
-    val komponent: String,
-    val beskrivelse: String,
-    val lenke: String,
+data class CatalogueClass(
+    val name: String,
+    val component: String,
+    val description: String,
+    val link: String,
 )
 
 /**
- * Klassene LO-TEK sender ut.
+ * The classes LO-TEK ships.
  *
- * [klasserFor] er klassene i manifestet fila sjekkes mot: prosjektets når det
- * har et, ellers [klasser], manifestet i Kotlin-pakken. Det er det samme
- * manifestet [LotekAnnotator] gir kjernen, funnet av [ProjectManifest], så
- * fullføringen foreslår aldri en klasse diagnostikken avviser, og den
- * foreslår klassene i komponenter prosjektet har overtatt. Før leste
- * fullføringen alltid pakkens manifest, mens annotatoren leste prosjektets,
- * og med en eldre pakke installert ble en klasse foreslått og streket under
- * rett etterpå.
+ * [classesFor] is the classes in the manifest the file is checked against:
+ * the project's when it has one, otherwise [classes], the manifest in the
+ * Kotlin package. It is the same manifest [LotekAnnotator] gives the core,
+ * found by [ProjectManifest], so completion never suggests a class the
+ * diagnostics reject, and it suggests the classes in components the project
+ * has taken over. Completion used to read the package's manifest always,
+ * while the annotator read the project's, and with an older package
+ * installed a class was suggested and underlined right after.
  */
-object Katalog {
-    /** Klassene i manifestet i Kotlin-pakken. */
-    val klasser: List<Klasse> by lazy { fra(Lotek.manifest) }
+object Catalogue {
+    /** The classes in the manifest in the Kotlin package. */
+    val classes: List<CatalogueClass> by lazy { from(Lotek.manifest) }
 
-    /** Klassene i manifestet [file] sjekkes mot, se [ProjectManifest]. */
-    fun klasserFor(file: PsiFile): List<Klasse> = ProjectManifest.classesFor(file) ?: klasser
+    /** The classes in the manifest [file] is checked against, see [ProjectManifest]. */
+    fun classesFor(file: PsiFile): List<CatalogueClass> = ProjectManifest.classesFor(file) ?: classes
 
-    internal fun fra(manifest: Manifest): List<Klasse> =
-        manifest.classes.values.map { Klasse(it.name, it.title, it.description, it.link) }
+    internal fun from(manifest: Manifest): List<CatalogueClass> =
+        manifest.classes.values.map { CatalogueClass(it.name, it.title, it.description, it.link) }
 
-    private val etterNavn: Map<String, Klasse> by lazy {
-        klasser.associateBy { it.navn }
+    private val byName: Map<String, CatalogueClass> by lazy {
+        classes.associateBy { it.name }
     }
 
-    fun finn(navn: String): Klasse? = etterNavn[navn]
+    fun find(name: String): CatalogueClass? = byName[name]
 }

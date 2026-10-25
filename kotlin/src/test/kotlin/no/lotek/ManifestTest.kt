@@ -7,13 +7,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 /**
- * At sjekken kan gå mot prosjektets eget manifest, slik språkserveren og
- * IntelliJ-pluginen gjør, og at manifestet i pakken gjelder ellers.
+ * That the check can run against the project's own manifest, as the
+ * language server and the IntelliJ plugin do, and that the package manifest
+ * applies otherwise.
  */
 class ManifestTest {
     private val packageManifest = File(System.getProperty("manifest")).readText()
 
-    /** Manifestet med `lt-card` byttet ut med `lt-kort`. */
+    /** The manifest with `lt-card` replaced by `lt-kort`. */
     private val takenOver = packageManifest.replace("\"lt-card\": {", "\"lt-kort\": {")
 
     private fun rules(html: String, manifest: String? = null) =
@@ -37,9 +38,9 @@ class ManifestTest {
     }
 
     /*
-     * De to under bruker én instans direkte. Gjennom poolen kunne neste kall
-     * fått en annen instans, som aldri hadde lastet noe, og testen ville
-     * bestått også uten at manifestet ble satt tilbake.
+     * The two below use one instance directly. Through the pool the next
+     * call could have got another instance, which had never loaded anything,
+     * and the test would have passed even without the manifest being reset.
      */
     private fun Core.rules(html: String, manifest: String? = null): List<String> {
         use(manifest)

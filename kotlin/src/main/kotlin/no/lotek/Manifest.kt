@@ -1,53 +1,55 @@
 package no.lotek
 
 /**
- * Ordforrådet i `manifest.json`: elementene og klassene LO-TEK har, slik
- * `manifest.schema.json` beskriver dem. Det samme manifestet kjernen sjekker
- * mot, så et verktøy som viser fullføring eller dokumentasjon fra det, er
- * aldri ute av takt med diagnostikken.
+ * The vocabulary in `manifest.json`: the elements and classes LO-TEK has, as
+ * `manifest.schema.json` describes them. It is the same manifest the core
+ * checks against, so a tool that shows completion or documentation from it
+ * is never out of step with the diagnostics.
  *
- * Klassene har innholdet og delene sine, så et verktøy kan sette sammen
- * markupen av dem, og [Manifest.tokens] har avstandene, brekkpunktene,
- * containerbreddene, fargeaksene og komponentvariablene det kan style med.
- * [Lotek.manifest] er manifestet i pakken. [parse] leser et annet, som det
- * `lotek manifest` og Gradle-oppgaven `lotekManifest` skriver for et
- * prosjekt som har overtatt komponenter. Byggefunksjonene står i [builders]
- * med valgene og formen på svaret, så et verktøy kan lage et panel av dem.
- * Tabellen generatoren bak `Lt` bruker, er utelatt: den er for generatoren.
+ * The classes have their content and parts, so a tool can assemble the
+ * markup from them, and [Manifest.tokens] has the spacing, breakpoints,
+ * container widths, colour axes and component variables it can style with.
+ * [Lotek.manifest] is the manifest in the package. [parse] reads another,
+ * like the one `lotek manifest` and the Gradle task `lotekManifest` write for
+ * a project that has taken over components. The builder functions are in
+ * [builders] with their options and the shape of the result, so a tool can
+ * build a panel from them. The table the generator behind `Lt` uses is left
+ * out: it is for the generator.
  *
- * Kartene har nøklene i den rekkefølgen manifestet har dem.
+ * The maps have their keys in the order the manifest has them.
  */
 data class Manifest(
-    /** Versjonen av `@lo-tek/interfaces` manifestet er skrevet fra. */
+    /** The version of `@lo-tek/interfaces` the manifest was written from. */
     val version: String,
-    /** Hvert `<lt-…>`-element, etter taggen. */
+    /** Every `<lt-…>` element, by tag. */
     val elements: Map<String, ManifestElement>,
-    /** Hver `lt-`-klasse, etter navnet. */
+    /** Every `lt-` class, by name. */
     val classes: Map<String, ManifestClass>,
     /**
-     * Tokenene: avstandsskalaen, brekkpunktene, containerbreddene, fargeaksene
-     * og komponentvariablene. `null` i et manifest fra før 0.34, som ikke har
-     * dem; `schemaVersion` er den samme, så leseren tåler at de mangler.
+     * The tokens: the spacing scale, the breakpoints, the container widths,
+     * the colour axes and the component variables. `null` in a manifest from
+     * before 0.34, which does not have them; `schemaVersion` is the same, so
+     * the reader tolerates them missing.
      */
     val tokens: ManifestTokens?,
-    /** Hver byggefunksjon i `lt`, i manifestets rekkefølge, med valgene og formen på svaret. */
+    /** Every builder function in `lt`, in the manifest's order, with its options and the shape of the result. */
     val builders: List<Builder>,
 ) {
     companion object {
-        /** Skjemaversjonen denne leseren forstår. */
+        /** The schema version this reader understands. */
         const val SCHEMA_VERSION = 1
 
         /**
-         * Leser [json], teksten i et `manifest.json`. Et manifest med en annen
-         * skjemaversjon, eller som ikke har formen skjemaet krever, kaster
-         * [IllegalArgumentException] med stien til det som er galt.
+         * Reads [json], the text of a `manifest.json`. A manifest with another
+         * schema version, or without the shape the schema requires, throws
+         * [IllegalArgumentException] with the path to what is wrong.
          */
         fun parse(json: String): Manifest {
-            val root = Json.parse(json).obj("manifestet")
+            val root = Json.parse(json).obj("the manifest")
             val schema = root["schemaVersion"].num("schemaVersion")
             require(schema == SCHEMA_VERSION.toDouble()) {
                 val shown = if (schema % 1.0 == 0.0) schema.toLong().toString() else schema.toString()
-                "Manifestet har schemaVersion $shown, og denne utgaven av LO-TEK leser bare $SCHEMA_VERSION."
+                "The manifest has schemaVersion $shown, and this version of LO-TEK reads only $SCHEMA_VERSION."
             }
             return Manifest(
                 version = root["version"].str("version"),
@@ -55,7 +57,7 @@ data class Manifest(
                 classes = root["classes"].obj("classes").mapValues { (name, c) -> klass(name, c.obj("classes.$name"), "classes.$name") },
                 tokens = root["tokens"]?.let { tokens(it.obj("tokens"), "tokens") },
                 builders =
-                    (root["builders"] as? List<*> ?: wrong("builders", "en liste")).mapIndexed { i, b ->
+                    (root["builders"] as? List<*> ?: wrong("builders", "a list")).mapIndexed { i, b ->
                         builder(b.obj("builders[$i]"), "builders[$i]")
                     },
             )
@@ -65,12 +67,12 @@ data class Manifest(
             Builder(
                 name = b["name"].str("$at.name"),
                 options =
-                    (b["options"] as? List<*> ?: wrong("$at.options", "en liste")).mapIndexed { i, o ->
+                    (b["options"] as? List<*> ?: wrong("$at.options", "a list")).mapIndexed { i, o ->
                         val path = "$at.options[$i]"
                         val option = o.obj(path)
                         BuilderOption(
                             name = option["name"].str("$path.name"),
-                            required = option["required"] as? Boolean ?: wrong("$path.required", "sant eller usant"),
+                            required = option["required"] as? Boolean ?: wrong("$path.required", "true or false"),
                             type = optionType(option["type"].obj("$path.type"), "$path.type"),
                             description = option["description"]?.str("$path.description"),
                         )
@@ -85,7 +87,7 @@ data class Manifest(
                 "text" -> OptionType.Text
                 "number" -> OptionType.Number
                 "textList" -> OptionType.TextList
-                else -> wrong("$at.kind", "en av «values», «flag», «text», «number», «textList», ikke «$kind»")
+                else -> wrong("$at.kind", "one of «values», «flag», «text», «number», «textList», not «$kind»")
             }
 
         private fun returns(r: Map<String, Any?>, at: String): Returns {
@@ -96,7 +98,7 @@ data class Manifest(
                 "values" -> Returns.Values(r["values"].strings("$at.values"), optional)
                 "list" -> Returns.ListOf(returns(r["of"].obj("$at.of"), "$at.of"), optional)
                 "group" -> Returns.Group(r["fields"].obj("$at.fields").mapValues { (field, f) -> returns(f.obj("$at.fields.$field"), "$at.fields.$field") }, optional)
-                else -> wrong("$at.kind", "en av «attributes», «text», «values», «list», «group», ikke «$kind»")
+                else -> wrong("$at.kind", "one of «attributes», «text», «values», «list», «group», not «$kind»")
             }
         }
 
@@ -186,43 +188,43 @@ data class Manifest(
             )
 
         @Suppress("UNCHECKED_CAST")
-        private fun Any?.obj(at: String): Map<String, Any?> = this as? Map<String, Any?> ?: wrong(at, "et objekt")
+        private fun Any?.obj(at: String): Map<String, Any?> = this as? Map<String, Any?> ?: wrong(at, "an object")
 
-        private fun Any?.str(at: String): String = this as? String ?: wrong(at, "en tekst")
+        private fun Any?.str(at: String): String = this as? String ?: wrong(at, "a text")
 
-        private fun Any?.num(at: String): Double = this as? Double ?: wrong(at, "et tall")
+        private fun Any?.num(at: String): Double = this as? Double ?: wrong(at, "a number")
 
         private fun Any?.strings(at: String): List<String> =
-            (this as? List<*> ?: wrong(at, "en liste")).mapIndexed { i, v -> v.str("$at[$i]") }
+            (this as? List<*> ?: wrong(at, "a list")).mapIndexed { i, v -> v.str("$at[$i]") }
 
         private inline fun <reified E : Enum<E>> enumOf(value: String, at: String): E =
             enumValues<E>().firstOrNull { it.json == value }
-                ?: wrong(at, "en av ${enumValues<E>().joinToString { "«${it.json}»" }}, ikke «$value»")
+                ?: wrong(at, "one of ${enumValues<E>().joinToString { "«${it.json}»" }}, not «$value»")
 
         private val Enum<*>.json get() = name.lowercase()
 
         private fun wrong(at: String, expected: String): Nothing =
-            throw IllegalArgumentException("Manifestet kan ikke leses: $at skulle vært $expected.")
+            throw IllegalArgumentException("The manifest cannot be read: $at should have been $expected.")
     }
 }
 
-/** Et `<lt-…>`-element, med attributtene komponenten leser og delene den finner. */
+/** An `<lt-…>` element, with the attributes the component reads and the parts it finds. */
 data class ManifestElement(
     val tag: String,
-    /** Adressen til komponentsiden. */
+    /** The address of the component page. */
     val link: String,
-    /** Hva elementet gjør, i én eller to setninger. */
+    /** What the element does, in one or two sentences. */
     val description: String?,
     val attributes: Map<String, ElementAttribute>,
-    /** Delene i markupen, med selektoren komponenten leter med. Tom når elementet lager sine egne noder. */
+    /** The parts in the markup, with the selector the component searches with. Empty when the element creates its own nodes. */
     val parts: Map<String, Part>,
-    /** Hendelsene elementet sender. Alle bobler. */
+    /** The events the element dispatches. All bubble. */
     val events: Map<String, ElementEvent>,
-    /** Attributter som er tatt ut av elementet, med hva som gjelder i stedet. */
+    /** Attributes that were removed from the element, with what applies instead. */
     val removed: Map<String, String>,
 )
 
-/** Et attributt på et element, som `server-controlled`. [values] er tom utenom for [AttributeType.VALUES]. */
+/** An attribute on an element, like `server-controlled`. [values] is empty except for [AttributeType.VALUES]. */
 data class ElementAttribute(
     val type: AttributeType,
     val values: List<String>,
@@ -232,11 +234,12 @@ data class ElementAttribute(
 enum class AttributeType { FLAG, TEXT, NUMBER, VALUES }
 
 /**
- * En del av et element, som kontrollen i `<lt-field>`. [selector] er den
- * komponenten finner delen med, relativt til elementet. Uten [multiple]
- * gjelder den første, og med [unique] er en del til av samme slag en feil,
- * ikke vanlig innhold. Uten [optional] trenger elementet delen. Med
- * [stableId] må delen ha en id fra serveren: komponenten skriver aldri en.
+ * A part of an element, like the control in `<lt-field>`. [selector] is the
+ * one the component finds the part with, relative to the element. Without
+ * [multiple] the first applies, and with [unique] another part of the same
+ * kind is an error, not ordinary content. Without [optional] the element
+ * needs the part. With [stableId] the part must have an id from the server:
+ * the component never writes one.
  */
 data class Part(
     val selector: String,
@@ -249,26 +252,26 @@ data class Part(
 )
 
 /**
- * Hva en del tar: [TEXT] er tekst og frasering uten interaktive elementer,
- * [FREE] fritt innhold, [PARTS] bare de andre delene, og [NONE] ingen tekst,
- * som en kontroll eller et element komponenten fyller.
+ * What a part takes: [TEXT] is text and phrasing content without interactive
+ * elements, [FREE] any content, [PARTS] only the other parts, and [NONE] no
+ * text, like a control or an element the component fills.
  */
 enum class PartContent { TEXT, FREE, PARTS, NONE }
 
-/** En hendelse et element sender. [detail] er feltene i `event.detail` med typen sin: `boolean`, `string` eller `number`. */
+/** An event an element dispatches. [detail] is the fields of `event.detail` with their type: `boolean`, `string` or `number`. */
 data class ElementEvent(
     val detail: Map<String, String>,
 )
 
-/** En byggefunksjon i `lt`, som `button`, med valgene den tar og formen på det den gir. */
+/** A builder function in `lt`, like `button`, with the options it takes and the shape of what it returns. */
 data class Builder(
     val name: String,
-    /** Valgene i manifestets rekkefølge. */
+    /** The options in the manifest's order. */
     val options: List<BuilderOption>,
     val returns: Returns,
 )
 
-/** Ett valg, som `variant` i `lt.button()`. [description] er første avsnitt av kommentaren på valget i typen. */
+/** One option, like `variant` in `lt.button()`. [description] is the first paragraph of the comment on the option in the type. */
 data class BuilderOption(
     val name: String,
     val required: Boolean,
@@ -276,7 +279,7 @@ data class BuilderOption(
     val description: String?,
 )
 
-/** Hva et valg tar: en lukket liste, et flagg, tekst, et tall eller en liste med tekst. */
+/** What an option takes: a closed list, a flag, text, a number or a list of texts. */
 sealed interface OptionType {
     data class Values(val values: List<String>) : OptionType
 
@@ -290,10 +293,10 @@ sealed interface OptionType {
 }
 
 /**
- * Formen på det en byggefunksjon gir: et attributtsett, en tekst, en av noen
- * verdier, en liste av en form, eller en gruppe av navngitte former, som
- * `dialog` med `host`, `dialog` og `title`. [optional] gjelder et felt i en
- * gruppe som kan mangle.
+ * The shape of what a builder function returns: an attribute set, a text,
+ * one of a few values, a list of a shape, or a group of named shapes, like
+ * `dialog` with `host`, `dialog` and `title`. [optional] applies to a field
+ * in a group that can be missing.
  */
 sealed interface Returns {
     val optional: Boolean
@@ -310,58 +313,59 @@ sealed interface Returns {
 }
 
 /**
- * Tokenene: det et stilark utenfor pakken kan bygge på. Fargene står som akser
- * med hva de er til, ikke som verdier, siden et tema kan ha andre verdier enn
- * LO-TEKs egne.
+ * The tokens: what a stylesheet outside the package can build on. The colours
+ * are listed as axes with what they are for, not as values, since a theme can
+ * have other values than LO-TEK's.
  */
 data class ManifestTokens(
-    /** Avstandsskalaen, navn til verdi, som `--lt-spacing-4` til `1rem`. */
+    /** The spacing scale, name to value, like `--lt-spacing-4` to `1rem`. */
     val spacing: Map<String, String>,
-    /** Brekkpunktene, navn til bredde, som `md` til `768px`. */
+    /** The breakpoints, name to width, like `md` to `768px`. */
     val breakpoints: Map<String, String>,
-    /** Containerbreddene, navn til bredde, som `aside` til `384px`. */
+    /** The container widths, name to width, like `aside` to `384px`. */
     val containers: Map<String, String>,
     val colors: ManifestColors,
-    /** Komponentvariablene per komponent, som `--lt-button-padding` under `button`, med standardverdien. */
+    /** The component variables per component, like `--lt-button-padding` under `button`, with the default value. */
     val components: Map<String, Map<String, String>>,
 )
 
-/** Fargeaksene. Et fargetoken heter `--lt-color-<familie>-<rolle>`. */
+/** The colour axes. A colour token is named `--lt-color-<family>-<role>`. */
 data class ManifestColors(
-    /** Familiene, med hva hver er til. */
+    /** The families, with what each is for. */
     val families: Map<String, String>,
-    /** Rollene slik de skrives i CSS, med hva hver er til. */
+    /** The roles as they are written in CSS, with what each is for. */
     val roles: Map<String, String>,
-    /** Lagene bare den nøytrale familien har, som `canvas`. */
+    /** The layers only the neutral family has, like `canvas`. */
     val layers: Map<String, String>,
-    /** Hvert `--lt-color-*`-navn pakken sender ut. */
+    /** Every `--lt-color-*` name the package ships. */
     val tokens: List<String>,
 )
 
 /**
- * En klasse i manifestet, som `lt-button`, med komponenten den hører til,
- * hva elementet med klassen tar som innhold, og delene markupen består av.
+ * A class in the manifest, like `lt-button`, with the component it belongs
+ * to, what the element with the class takes as content, and the parts the
+ * markup consists of.
  */
 data class ManifestClass(
     val name: String,
-    /** Adressen til komponentsiden, relativt, som `button`. */
+    /** The address of the component page, relative, like `button`. */
     val component: String,
     val title: String,
     val description: String,
     val link: String,
-    /** Hva elementet med klassen tar som innhold, med samme ord som delene. `null` i et manifest fra før 0.34. */
+    /** What the element with the class takes as content, in the same words as the parts. `null` in a manifest from before 0.34. */
     val content: PartContent?,
-    /** Klassen denne er en del av, som `lt-card` for `lt-card__title`. Forelderen har en del som treffer den. */
+    /** The class this one is part of, like `lt-card` for `lt-card__title`. The parent has a part that matches it. */
     val partOf: String?,
-    /** Delene markupen består av, med selektoren relativt til elementet med klassen. Tom for klassene uten en fast struktur. */
+    /** The parts the markup consists of, with the selector relative to the element with the class. Empty for the classes without a fixed structure. */
     val parts: Map<String, Part>,
     val attributes: Map<String, ClassAttribute>,
 )
 
 /**
- * Et attributt en klasse tar, som `data-variant` på `lt-button`. Et [flag]
- * virker ved å stå der, og har ingen [values]. [default] er verdien
- * fraværet betyr.
+ * An attribute a class takes, like `data-variant` on `lt-button`. A [flag]
+ * works by being present, and has no [values]. [default] is the value its
+ * absence means.
  */
 data class ClassAttribute(
     val values: List<String>,

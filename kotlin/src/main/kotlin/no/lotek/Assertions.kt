@@ -1,40 +1,41 @@
 package no.lotek
 
 /**
- * Feiler med funnene som melding hvis LO-TEK finner noe i [html].
+ * Fails with the findings as the message if LO-TEK finds anything in [html].
  *
- * Til vanlige tester, med hvilket testrammeverk som helst: den kaster en
- * `AssertionError`, som JUnit, Kotest og TestNG alle forstår.
+ * For ordinary tests, with any test framework: it throws an
+ * `AssertionError`, which JUnit, Kotest and TestNG all understand.
  *
  * ```kotlin
  * @Test
- * fun `skjemaet er koblet riktig`() {
+ * fun `the form is wired correctly`() {
  *     assertLotek(app.render("/form"))
  * }
  * ```
  *
- * Som standard sjekkes en hel side, med [Lotek.diagnosePage]: at hver id
- * det pekes på finnes, og at hvert felt er koblet. Er [html] en bit av en
- * side, som en mal eller en komponent, settes [fragment], og da sjekkes bare
- * ordforrådet, med [Lotek.diagnoseMarkup].
+ * By default a whole page is checked, with [Lotek.diagnosePage]: that every
+ * id something points to exists, and that every field is wired. If [html] is
+ * a piece of a page, like a template or a component, set [fragment], and
+ * then only the vocabulary is checked, with [Lotek.diagnoseMarkup].
  *
- * Med [css], teksten i stilarkene siden laster, sier den også fra om en
- * klasse ingen av dem styler, og om en verdi uten regel.
+ * With [css], the text of the stylesheets the page loads, it also reports a
+ * class none of them styles, and a value without a rule.
  *
- * Meldingen har én linje per funn, som `12:30: feil: melding [regel]`, og det
- * er den en kodeagent leser og retter etter.
+ * The message has one line per finding, like `12:30: error: message [rule]`,
+ * and that is what a coding agent reads and fixes from.
  */
 fun assertLotek(html: String, fragment: Boolean = false, css: List<String>? = null) {
     report(if (fragment) Lotek.diagnoseMarkup(html, css) else Lotek.diagnosePage(html, css))
 }
 
 /**
- * Feiler med funnene som melding hvis LO-TEK finner noe på siden slik
- * nettleseren har rendret den, med stilarkene den lastet: det
- * [assertLotek] finner, og en klasse ingen stilark styler, eller en verdi
- * uten regel.
+ * Fails with the findings as the message if LO-TEK finds anything on the
+ * page as the browser rendered it, with the stylesheets it loaded: what
+ * [assertLotek] finds, and a class no stylesheet styles, or a value without
+ * a rule.
  *
- * [evaluate] kjører et skript på siden og gir svaret. Med Playwright for Java:
+ * [evaluate] runs a script on the page and returns the result. With
+ * Playwright for Java:
  *
  * ```kotlin
  * page.navigate("http://localhost:8080/form")
@@ -43,15 +44,15 @@ fun assertLotek(html: String, fragment: Boolean = false, css: List<String>? = nu
  */
 fun assertLotekRendered(evaluate: (String) -> Any?) {
     val rendered = evaluate(Lotek.READ_RENDERED_PAGE) as? Map<*, *>
-        ?: throw IllegalStateException("Skriptet som leser siden, ga ikke et objekt med html og css.")
+        ?: throw IllegalStateException("The script that reads the page did not return an object with html and css.")
     report(Lotek.diagnoseRendered(rendered))
 }
 
 private fun report(findings: List<Finding>) {
     if (findings.isEmpty()) return
     val lines = findings.joinToString("\n") { "${it.line}:${it.column}: ${severityWord(it)}: ${it.message} [${it.rule}]" }
-    val count = if (findings.size == 1) "ett funn" else "${findings.size} funn"
-    throw AssertionError("LO-TEK fant $count:\n$lines")
+    val count = if (findings.size == 1) "one finding" else "${findings.size} findings"
+    throw AssertionError("LO-TEK found $count:\n$lines")
 }
 
-private fun severityWord(finding: Finding): String = if (finding.severity == "error") "feil" else "advarsel"
+private fun severityWord(finding: Finding): String = if (finding.severity == "error") "error" else "warning"

@@ -1,39 +1,40 @@
 package no.lotek
 
 /*
- * Byggefunksjonene der valgene virker sammen, så de ikke kan skrives som en
- * tabell i manifestet. Resten genereres fra manifestet (`Lt.kt`). Alle testes
- * mot svarene fra TypeScript i `ContractTest`, så de ikke kan gå fra
- * hverandre.
+ * The builder functions whose options interact, so they cannot be written as
+ * a table in the manifest. The rest are generated from the manifest
+ * (`Lt.kt`). All are tested against the results from TypeScript in
+ * `ContractTest`, so they cannot drift apart.
  */
 
-/** Id-en må være oppgitt. TypeScript lager en tilfeldig, men den gir ulik markup ved hver kjøring. */
+/** The id must be given. TypeScript makes a random one, but that gives different markup on every run. */
 private fun requireId(builder: String, id: String): String {
-    require(id.isNotBlank()) { "Lt.$builder: id kan ikke være tom. Bruk feltets navn eller en annen fast id." }
+    require(id.isNotBlank()) { "Lt.$builder: id cannot be empty. Use the field's name or another fixed id." }
     return id
 }
 
 /**
- * Nøklene en byggefunksjon lager id-er av, sjekket som i TypeScript: tom, med
- * mellomrom slik JavaScript regner det, eller to like kaster.
+ * The keys a builder function makes ids from, checked as in TypeScript: an
+ * empty key, one with whitespace as JavaScript counts it, or two equal keys
+ * throw.
  */
 private fun requireKeys(builder: String, keys: List<String>): List<String> {
     val seen = HashSet<String>()
     for (key in keys) {
         require(key.isNotEmpty()) {
-            "Lt.$builder: en nøkkel i keys er tom. Nøklene blir id-er, og hver må være en fast verdi fra dataene."
+            "Lt.$builder: a key in keys is empty. The keys become ids, and each must be a fixed value from the data."
         }
         require(key.none(::isJsWhitespace)) {
-            "Lt.$builder: nøkkelen «$key» har mellomrom. Nøklene blir id-er, og en id kan ikke ha mellomrom."
+            "Lt.$builder: the key «$key» contains whitespace. The keys become ids, and an id cannot contain whitespace."
         }
         require(seen.add(key)) {
-            "Lt.$builder: nøkkelen «$key» står to ganger i keys. Nøklene blir id-er, og to like id-er peker på det samme elementet."
+            "Lt.$builder: the key «$key» appears twice in keys. The keys become ids, and two equal ids point to the same element."
         }
     }
     return keys
 }
 
-/** Ledeteksten for `lt.label` og `lt.legend`: `optional` gjelder bare uten `required`. */
+/** The label for `lt.label` and `lt.legend`: `optional` applies only without `required`. */
 private fun marked(
     className: String,
     required: RequiredMarker?,
@@ -47,21 +48,21 @@ private fun marked(
     return a
 }
 
-/** `lt.label`: en ledetekst. Markeringen er bare visuell, så sett `required` på feltet også. */
+/** `lt.label`: a label. The marker is only visual, so set `required` on the field too. */
 fun Lt.label(
     required: RequiredMarker? = null,
     optional: Boolean? = null,
     disabled: Boolean? = null,
 ): Attributes = Attributes(marked("lt-label", required, optional, disabled))
 
-/** `lt.legend`: ledeteksten for en gruppe, med samme markering som [label]. */
+/** `lt.legend`: the label for a group, with the same marker as [label]. */
 fun Lt.legend(
     required: RequiredMarker? = null,
     optional: Boolean? = null,
     disabled: Boolean? = null,
 ): Attributes = Attributes(marked("lt-legend", required, optional, disabled))
 
-/** `lt.errorSummary`: feiloppsummeringen. Boksen skjules når [count] er null. */
+/** `lt.errorSummary`: the error summary. The box is hidden when [count] is zero. */
 fun Lt.errorSummary(
     count: Number? = null,
     id: String? = null,
@@ -72,7 +73,7 @@ fun Lt.errorSummary(
     return ErrorSummaryParts(host = Attributes(host), title = Attributes(mapOf("class" to "lt-error-summary__title")))
 }
 
-/** Id-ene i `aria-describedby`, delt på mellomrom slik JavaScript deler dem, uten tomme og doble. */
+/** The ids in `aria-describedby`, split on whitespace as JavaScript splits them, without empty ones and duplicates. */
 private fun joinDescribedBy(ids: List<String?>): String? {
     val unique = LinkedHashSet<String>()
     for (id in ids) {
@@ -82,7 +83,7 @@ private fun joinDescribedBy(ids: List<String?>): String? {
     return if (unique.isEmpty()) null else unique.joinToString(" ")
 }
 
-/** Det samme som `text.split(/\s+/)` i JavaScript, med JavaScripts definisjon av mellomrom. */
+/** The same as `text.split(/\s+/)` in JavaScript, with JavaScript's definition of whitespace. */
 private fun splitJsWhitespace(text: String): List<String> {
     val out = ArrayList<String>()
     val current = StringBuilder()
@@ -106,12 +107,12 @@ private fun isJsWhitespace(c: Char): Boolean =
         c == ' ' || c == ' ' || c == ' ' || c == '　' || c == '﻿'
 
 /**
- * `lt.field`: kobler ledetekst, kontroll, hjelpetekst og feilmelding.
+ * `lt.field`: wires the label, control, help text and error text.
  *
  * ```kotlin
- * val felt = Lt.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
- * "<label ${felt.label.toHtml()}>E-postadresse</label>"
- * "<input ${(Lt.input(type = InputType.EMAIL, state = felt.state) + felt.control).toHtml()}>"
+ * val field = Lt.field(id = "email", required = RequiredMarker.TEXT, help = true, error = true, invalid = invalid)
+ * "<label ${field.label.toHtml()}>Email address</label>"
+ * "<input ${(Lt.input(type = InputType.EMAIL, state = field.state) + field.control).toHtml()}>"
  * ```
  */
 fun Lt.field(
@@ -175,7 +176,7 @@ private fun computeField(
     )
 }
 
-/** `lt.suggestion`: et felt med forslagsliste. `<lt-suggestion>` tar tastaturet og filtreringen. */
+/** `lt.suggestion`: a field with a suggestion list. `<lt-suggestion>` handles the keyboard and the filtering. */
 fun Lt.suggestion(
     invalid: Boolean? = null,
     error: Boolean? = null,
@@ -201,7 +202,7 @@ fun Lt.suggestion(
     val labelId = "$id-label"
     val statusId = "$id-status"
     fun optionId(index: Int) = "$id-option-${optionKeys[index]}"
-    // Markeringen skrives bare når lista er åpen, og bare på et heltall, som i TypeScript.
+    // The active option is written only when the list is open, and only for an integer, as in TypeScript.
     val marked = isOpen && active % 1.0 == 0.0 && active >= 0 && active < n
 
     val control = LinkedHashMap(field.control)
@@ -229,7 +230,7 @@ fun Lt.suggestion(
     if (!(n == 0.0 && pending != true)) empty["hidden"] = ""
 
     return SuggestionParts(
-        // Ledeteksten gir også lista navnet sitt, gjennom `aria-labelledby`.
+        // The label also gives the list its name, through `aria-labelledby`.
         label = field.label + mapOf("id" to labelId),
         control = Attributes(control),
         list = Attributes(list),
@@ -259,11 +260,12 @@ fun Lt.suggestion(
 }
 
 /**
- * `lt.tabs`: en fanerad der fanene er lenker til panelene. Bare lenker, id-er
- * og klasser: uten JavaScript er raden en innholdsfortegnelse, og panelene
- * står etter hverandre. Rollene, valget og `hidden` skriver `<lt-tabs>`.
- * Panelene får id av [keys], og [label] er navnet på raden; tom kaster. Den første fanen
- * er valgt; en annen kommer fra adressen, som `#sak-vedlegg`.
+ * `lt.tabs`: a tab list where the tabs are links to the panels. Only links,
+ * ids and classes: without JavaScript the list is a table of contents, and
+ * the panels follow one another. `<lt-tabs>` writes the roles, the selection
+ * and `hidden`. The panels get ids from [keys], and [label] is the name of
+ * the list; an empty one throws. The first tab is selected; another comes
+ * from the address, like `#case-attachments`.
  */
 fun Lt.tabs(
     id: String,
@@ -272,11 +274,11 @@ fun Lt.tabs(
 ): TabsParts {
     requireId("tabs", id)
     require(id.none(::isJsWhitespace)) {
-        "Lt.tabs: id-en «$id» har mellomrom. Den blir en del av hver id, og en id kan ikke ha mellomrom."
+        "Lt.tabs: the id «$id» contains whitespace. It becomes part of every id, and an id cannot contain whitespace."
     }
-    // Mellomrom slik JavaScript regner det, som `trim()` i TypeScript.
+    // Whitespace as JavaScript counts it, like `trim()` in TypeScript.
     require(!label.all(::isJsWhitespace)) {
-        "Lt.tabs: label mangler eller er tom. Raden må ha et navn som sier hva fanene velger mellom, ellers sier skjermleseren bare «faneliste»."
+        "Lt.tabs: label is missing or empty. The tab list needs a name that says what the tabs choose between, otherwise the screen reader says only «tab list»."
     }
     val tabKeys = requireKeys("tabs", keys)
     fun panelId(key: String) = "$id-$key"

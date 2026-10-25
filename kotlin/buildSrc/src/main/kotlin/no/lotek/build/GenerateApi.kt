@@ -11,17 +11,18 @@ import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 
 /**
- * Skriver Kotlin-API-et fra manifestet.
+ * Writes the Kotlin API from the manifest.
  *
- * Manifestet (`designsystem/manifest/manifest.json`) er skrevet av pakken fra
- * TypeScript-koden. Herfra kommer de lovlige verdiene som `enum`-er, hver
- * byggefunksjon som har en tabell, og typene for svarene som har flere sett.
- * De få byggefunksjonene der valgene virker sammen, har ingen tabell og står
- * skrevet for hånd i `src/main/kotlin/no/lotek/Handwritten.kt`. Alle testes
- * mot byggetilfellene i `ContractTest`.
+ * The manifest (`designsystem/manifest/manifest.json`) is written by the
+ * package from the TypeScript code. From it come the allowed values as
+ * `enum`s, every builder function that has a table, and the types for the
+ * results that have several sets. The few builder functions whose options
+ * interact have no table and are written by hand in
+ * `src/main/kotlin/no/lotek/Handwritten.kt`. All are tested against the
+ * build cases in `ContractTest`.
  *
- * Filene skrives til `build/generated` ved hvert bygg og sjekkes ikke inn.
- * Manifestet er sjekket inn, og det er der en endring synes.
+ * The files are written to `build/generated` on every build and are not
+ * checked in. The manifest is checked in, and that is where a change shows.
  */
 abstract class GenerateApi : DefaultTask() {
     @get:InputFile
@@ -42,14 +43,14 @@ abstract class GenerateApi : DefaultTask() {
     }
 }
 
-/** Det generatoren gjør, uten Gradle, så det kan leses for seg. */
+/** What the generator does, without Gradle, so it can be read on its own. */
 class Generator(manifest: Map<String, Any?>) {
     private val version = manifest["version"] as String
 
     @Suppress("UNCHECKED_CAST")
     private val builders = manifest["builders"] as List<Map<String, Any?>>
 
-    /** De lovlige verdiene som brukes flere steder, får ett felles navn. */
+    /** Allowed values used in several places get one shared name. */
     private val shared = mapOf(
         "state" to "FieldState",
         "required" to "RequiredMarker",
@@ -121,11 +122,11 @@ class Generator(manifest: Map<String, Any?>) {
             |package no.lotek
             |
             |/**
-            | * Stiene til CSS-en og JavaScript-en i WebJar-en som følger pakken.
+            | * The paths to the CSS and JavaScript in the WebJar that comes with the package.
             | *
-            | * Filene ligger under `META-INF/resources/webjars/lo-tek/$version/`, med de
-            | * samme stiene som i npm-pakken. Spring Boot og Servlet-containere serverer
-            | * dem som de er. I Ktor: `staticResources("/webjars", "META-INF/resources/webjars")`.
+            | * The files are under `META-INF/resources/webjars/lo-tek/$version/`, with the
+            | * same paths as in the npm package. Spring Boot and servlet containers serve
+            | * them as they are. In Ktor: `staticResources("/webjars", "META-INF/resources/webjars")`.
             | *
             | * ```kotlin
             | * ""${'"'}
@@ -138,37 +139,37 @@ class Generator(manifest: Map<String, Any?>) {
             | * ```
             | */
             |object LotekWebJar {
-            |    /** Versjonen av LO-TEK, den samme som npm-pakken. */
+            |    /** The version of LO-TEK, the same as the npm package. */
             |    const val VERSION = "$version"
             |
-            |    /** Mappa filene serveres fra. En fil i npm-pakken, som `dist/lotek.css`, ligger under den med samme sti. */
+            |    /** The directory the files are served from. A file in the npm package, like `dist/lotek.css`, is under it with the same path. */
             |    const val ROOT = "/webjars/lo-tek/${'$'}VERSION"
             |
-            |    /** Alle stilarkene i én fil. */
+            |    /** All the stylesheets in one file. */
             |    const val CSS = "${'$'}ROOT/dist/lotek.css"
             |
-            |    /** Modulen som registrerer alle web-komponentene med `defineLt()`. */
+            |    /** The module that registers all the web components with `defineLt()`. */
             |    const val REGISTER = "${'$'}ROOT/dist/register.js"
             |}
             |""".trimMargin()
 
-    private val header = "// Generert fra manifestet til @lo-tek/interfaces $version. Ikke rediger.\n"
+    private val header = "// Generated from the manifest of @lo-tek/interfaces $version. Do not edit.\n"
 
     private fun valuesFile(): String {
         val written = mutableMapOf<String, ValueSet>()
         val out = StringBuilder(header).append("package no.lotek\n")
         for ((set, users) in uses.entries.sortedBy { enumName(it.key, it.value.first()) }) {
             val name = enumName(set, users.first())
-            // To ulike sett med samme navn ville gitt én av dem feil type.
-            written.put(name, set)?.let { error("$name brukes for både ${it.values} og ${set.values}. Gi dem hvert sitt navn i Generator.shared.") }
+            // Two different sets with the same name would give one of them the wrong type.
+            written.put(name, set)?.let { error("$name is used for both ${it.values} and ${set.values}. Give them separate names in Generator.shared.") }
             val where = users.sorted().joinToString(", ") { "`lt.$it`" }
-            out.append("\n/** De lovlige verdiene for `${set.option}` i $where. */\n")
+            out.append("\n/** The allowed values for `${set.option}` in $where. */\n")
             out.append("enum class $name(val value: String) {\n")
             for (v in set.values) out.append("    ${constant(v)}(\"$v\"),\n")
             out.append("    ;\n\n")
             out.append("    override fun toString(): String = value\n\n")
             out.append("    companion object {\n")
-            out.append("        /** Verdien med denne teksten, eller `null` når teksten ikke er en lovlig verdi. */\n")
+            out.append("        /** The value with this text, or `null` when the text is not an allowed value. */\n")
             out.append("        fun of(value: String): $name? = entries.firstOrNull { it.value == value }\n")
             out.append("    }\n}\n")
         }
@@ -182,7 +183,7 @@ class Generator(manifest: Map<String, Any?>) {
             "text" -> "String"
             "number" -> "Number"
             "textList" -> "List<String>"
-            else -> error("Ukjent valgtype ${o.kind} i ${b["name"]}")
+            else -> error("Unknown option type ${o.kind} in ${b["name"]}")
         }
         return if (o.required) base else "$base? = null"
     }
@@ -195,9 +196,9 @@ class Generator(manifest: Map<String, Any?>) {
 
     private fun ltFile(): String {
         val out = StringBuilder(header).append("package no.lotek\n\n")
-        out.append("/**\n * Byggefunksjonene, med de samme navnene og valgene som `lt` i TypeScript.\n *\n")
-        out.append(" * Hver returnerer attributtene du legger på elementet. Byggefunksjonene\n")
-        out.append(" * der valgene virker sammen, står i `Handwritten.kt`.\n */\n")
+        out.append("/**\n * The builder functions, with the same names and options as `lt` in TypeScript.\n *\n")
+        out.append(" * Each returns the attributes you put on the element. The builder functions\n")
+        out.append(" * whose options interact are in `Handwritten.kt`.\n */\n")
         out.append("object Lt {\n")
         for (b in builders) {
             @Suppress("UNCHECKED_CAST")
@@ -224,7 +225,7 @@ class Generator(manifest: Map<String, Any?>) {
         return out.toString()
     }
 
-    /** Uttrykket for en verdi i tabellen: tekst, eller verdien av et valg. */
+    /** The expression for a value in the table: text, or the value of an option. */
     private fun valueExpression(b: Map<String, Any?>, value: String): String {
         val placeholder = Regex("^\\{(\\w+)}$").find(value)?.groupValues?.get(1)
         val option = placeholder?.let { p -> options(b).firstOrNull { it.name == p } }
@@ -301,11 +302,11 @@ class Generator(manifest: Map<String, Any?>) {
             val name = returnType(b)
             @Suppress("UNCHECKED_CAST")
             val fields = r["fields"] as Map<String, Map<String, Any?>>
-            out.append("\n/** Settene `lt.${b["name"]}` svarer med. */\n")
+            out.append("\n/** The sets `lt.${b["name"]}` returns. */\n")
             out.append("data class $name(\n")
             for ((field, f) in fields) out.append("    val ${identifier(field)}: ${fieldType(b, field, f)},\n")
             out.append(") {\n")
-            out.append("    /** Svaret som verdier, i samme form som TypeScript gir det. */\n")
+            out.append("    /** The result as values, in the same shape TypeScript gives it. */\n")
             out.append("    fun toMap(): Map<String, Any> = buildMap {\n")
             for ((field, f) in fields) {
                 val id = identifier(field)
@@ -328,15 +329,15 @@ class Generator(manifest: Map<String, Any?>) {
             "list" -> "List<Attributes>"
             "values" -> enumName(ValueSet(field, f["values"] as List<String>), "${b["name"]}()")
             "text" -> "String"
-            else -> error("Ukjent svarform ${f["kind"]} i ${b["name"]}.$field")
+            else -> error("Unknown result shape ${f["kind"]} in ${b["name"]}.$field")
         }
         return if (f["optional"] == true) "$base?" else base
     }
 
     private fun dispatchFile(): String {
         val out = StringBuilder(header).append("package no.lotek\n\n")
-        out.append("/**\n * Kaller en byggefunksjon med valg lest fra JSON. Brukes av testene som\n")
-        out.append(" * sammenligner hvert byggetilfelle med svaret fra TypeScript.\n */\n")
+        out.append("/**\n * Calls a builder function with options read from JSON. Used by the tests that\n")
+        out.append(" * compare every build case with the result from TypeScript.\n */\n")
         out.append("internal object Dispatch {\n")
         out.append("    val names: List<String> = listOf(${builders.joinToString(", ") { literal(it["name"] as String) }})\n\n")
         out.append("    fun call(name: String, o: Map<String, Any?>): Any = when (name) {\n")
@@ -351,7 +352,7 @@ class Generator(manifest: Map<String, Any?>) {
                     "text" -> "o[$key] as String?"
                     "number" -> "o[$key] as Number?"
                     "textList" -> "(o[$key] as List<*>?)?.map { it as String }"
-                    else -> error("Ukjent valgtype ${opt.kind}")
+                    else -> error("Unknown option type ${opt.kind}")
                 }
                 val value = if (opt.required) "($read)!!" else read
                 out.append("            ${identifier(opt.name)} = $value,\n")
@@ -359,7 +360,7 @@ class Generator(manifest: Map<String, Any?>) {
             val result = if (returnType(b) == "Attributes") "" else ".toMap()"
             out.append("        )$result\n")
         }
-        out.append("        else -> error(\"Ingen byggefunksjon heter \$name.\")\n")
+        out.append("        else -> error(\"No builder function is named \$name.\")\n")
         out.append("    }\n}\n")
         return out.toString()
     }
@@ -372,7 +373,7 @@ class Generator(manifest: Map<String, Any?>) {
 
         fun constant(v: String): String = v.uppercase().replace('-', '_')
 
-        /** `switch` er et vanlig navn i TypeScript og et nøkkelord i ingen av språkene, men andre kan være det. */
+        /** `switch` is an ordinary name in TypeScript and a keyword in neither language, but other names can be keywords. */
         fun identifier(s: String): String = if (s in KEYWORDS) "`$s`" else s
 
         fun literal(s: String): String =

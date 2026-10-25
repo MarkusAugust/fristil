@@ -4,57 +4,58 @@ import com.dylibso.chicory.runtime.ExportFunction
 import com.dylibso.chicory.runtime.Instance
 
 /**
- * LO-TEKs diagnostikk på JVM-en, uten Node og uten JavaScript.
+ * LO-TEK's diagnostics on the JVM, without Node and without JavaScript.
  *
- * Diagnostikken er skrevet i Rust (`core/`) og kompilert til én
- * WebAssembly-modul. Den samme modulen kjøres av Node og nettleseren. Her
- * kjøres den av Chicory, en WebAssembly-runtime skrevet i ren Java: en
- * vanlig Maven-avhengighet, uten JNI og uten noe å installere.
+ * The diagnostics are written in Rust (`core/`) and compiled to one
+ * WebAssembly module. Node and the browser run the same module. Here it is
+ * run by Chicory, a WebAssembly runtime written in pure Java: an ordinary
+ * Maven dependency, with no JNI and nothing to install.
  *
  * ```kotlin
- * val html = client.get("/soknad").bodyAsText()
+ * val html = client.get("/application").bodyAsText()
  * assertEquals(emptyList(), Lotek.diagnosePage(html))
  * ```
  *
- * Posisjonene er tegnindekser i UTF-16, de samme indeksene en Kotlin-`String`
- * bruker. `html.substring(funn.start, funn.end)` gir derfor nøyaktig teksten
- * funnet gjelder.
+ * Positions are UTF-16 character indices, the same indices a Kotlin `String`
+ * uses. `html.substring(finding.start, finding.end)` therefore gives exactly
+ * the text the finding is about.
  */
 object Lotek {
     /**
-     * Det `diagnoseMarkup` finner: ordforrådet, for en mal eller et fragment.
+     * What `diagnoseMarkup` finds: the vocabulary, for a template or a fragment.
      *
-     * Med [css], teksten i stilarkene siden laster, sier den også fra om en
-     * klasse ingen av dem styler, og om en verdi uten regel. En tom liste er
-     * en side uten stilark, der ingenting er stylet, som i TypeScript: et
-     * glob som ikke traff noe, skal felle testen, ikke slå sjekken av.
+     * With [css], the text of the stylesheets the page loads, it also reports
+     * a class none of them styles, and a value without a rule. An empty list
+     * is a page without stylesheets, where nothing is styled, as in
+     * TypeScript: a glob that matched nothing should fail the test, not turn
+     * the check off.
      *
-     * Med [manifest], teksten i et `manifest.json`, sjekkes markupen mot det
-     * i stedet for manifestet i pakken. Det er manifestet `lotek manifest`
-     * og Gradle-oppgaven `lotekManifest` skriver, med komponentene
-     * prosjektet har overtatt. Et manifest kjernen ikke kan lese, kaster
-     * [IllegalArgumentException] med grunnen.
+     * With [manifest], the text of a `manifest.json`, the markup is checked
+     * against it instead of the manifest in the package. That is the manifest
+     * `lotek manifest` and the Gradle task `lotekManifest` write, with the
+     * components the project has taken over. A manifest the core cannot read
+     * throws [IllegalArgumentException] with the reason.
      */
     fun diagnoseMarkup(html: String, css: List<String>? = null, manifest: String? = null): List<Finding> =
         if (css == null) diagnose(MARKUP, html, manifest) else diagnoseStyled(html, css, page = false, manifest)
 
     /**
-     * Det `diagnosePage` finner: ordforrådet, og i tillegg at hver id det
-     * pekes på finnes, at ingen id står to ganger, og at hvert felt er koblet.
-     * Bruk den på HTML-en serveren sender, ikke på en mal. [css] og
-     * [manifest] som for [diagnoseMarkup].
+     * What `diagnosePage` finds: the vocabulary, and in addition that every
+     * id something points to exists, that no id appears twice, and that every
+     * field is wired. Use it on the HTML the server sends, not on a template.
+     * [css] and [manifest] as for [diagnoseMarkup].
      */
     fun diagnosePage(html: String, css: List<String>? = null, manifest: String? = null): List<Finding> =
         if (css == null) diagnose(PAGE, html, manifest) else diagnoseStyled(html, css, page = true, manifest)
 
     /**
-     * Skriptet som leser den rendrede siden i nettleseren: DOM-en slik den
-     * står nå, og teksten i hvert stilark. Gi det til `page.evaluate` i
-     * Playwright, eller bruk [assertLotekRendered].
+     * The script that reads the rendered page in the browser: the DOM as it
+     * stands now, and the text of every stylesheet. Pass it to
+     * `page.evaluate` in Playwright, or use [assertLotekRendered].
      *
-     * Svaret er et objekt med `html` og `css`. Det samme skriptet står i
-     * `@lo-tek/interfaces/diagnostics`. Teksten er bare funksjonen, uten
-     * kommentarer rundt: Playwright pakker den inn i parenteser og kaller den.
+     * The result is an object with `html` and `css`. The same script is in
+     * `@lo-tek/interfaces/diagnostics`. The text is only the function, with
+     * no comments around it: Playwright wraps it in parentheses and calls it.
      */
     const val READ_RENDERED_PAGE: String = """async () => {
   const sheets = [...document.styleSheets, ...document.adoptedStyleSheets]
@@ -68,7 +69,7 @@ object Lotek {
       const answer = await fetch(sheet.href)
       if (!answer.ok)
         throw new Error(
-          `Stilarket ${'$'}{sheet.href} kunne ikke leses, og svarte ${'$'}{answer.status} da det ble hentet på nytt.`,
+          `The stylesheet ${'$'}{sheet.href} could not be read, and answered ${'$'}{answer.status} when it was fetched again.`,
         )
       css.push(await answer.text())
       return
@@ -83,8 +84,8 @@ object Lotek {
 }"""
 
     /**
-     * Sjekker svaret fra [READ_RENDERED_PAGE]: siden slik nettleseren rendret
-     * den, med stilarkene den lastet.
+     * Checks the result of [READ_RENDERED_PAGE]: the page as the browser
+     * rendered it, with the stylesheets it loaded.
      */
     fun diagnoseRendered(rendered: Map<*, *>): List<Finding> =
         diagnoseStyled(
@@ -94,18 +95,19 @@ object Lotek {
         )
 
     /**
-     * Bygger et fargetema av oppskriften, slik `lotek tema` gjør.
+     * Builds a colour theme from the recipe, as `lotek theme` does.
      *
-     * [recipe] er JSON-teksten i en oppskriftsfil: de ni fargene med norske
-     * eller engelske nøkler (`aksent` eller `accent`, `fare` eller `danger`,
-     * og så videre), `typografi` eller `typography`, og `form` eller `shape`.
-     * En nøkkel som ikke finnes, og en oppskrift kjernen avviser, kaster
-     * [IllegalArgumentException] med forklaringen. Løftene holder av
-     * konstruksjon, så [Theme.violations] er tom for en oppskrift med gyldige
-     * farger. Sjekk den likevel før du skriver [Theme.css] til en fil:
-     * `lotek tema` nekter å skrive når den ikke er tom, mens denne gir
-     * temaet tilbake med lista, som `buildTheme` i TypeScript.
-     * Mangler fargekontrakten i jar-en, kastes [IllegalStateException].
+     * [recipe] is the JSON text of a recipe file: the nine colours with
+     * English or Norwegian keys (`accent` or `aksent`, `danger` or `fare`,
+     * and so on), `typography` or `typografi`, and `shape` or `form`.
+     * An unknown key, and a recipe the core rejects, throw
+     * [IllegalArgumentException] with the explanation. The promises hold by
+     * construction, so [Theme.violations] is empty for a recipe with valid
+     * colours. Check it anyway before you write [Theme.css] to a file:
+     * `lotek theme` refuses to write when it is not empty, while this returns
+     * the theme with the list, like `buildTheme` in TypeScript.
+     * If the colour contract is missing from the jar, it throws
+     * [IllegalStateException].
      */
     fun buildTheme(recipe: String): Theme {
         val input = Json.write(ThemeRecipe.toCore(recipe))
@@ -130,10 +132,10 @@ object Lotek {
     }
 
     /**
-     * Kontrollerer hvert løfte i et tema skrevet som CSS, slik
-     * `lotek sjekk-tema` gjør. [ThemeReport.problems] er tom når temaet
-     * holder; tallene sier hvor mye som faktisk ble lest, så et tomt svar
-     * ikke kan forveksles med et tema uten tokens.
+     * Checks every promise in a theme written as CSS, as `lotek check-theme`
+     * does. [ThemeReport.problems] is empty when the theme holds; the counts
+     * say how much was actually read, so an empty result cannot be mistaken
+     * for a theme without tokens.
      */
     fun inspectTheme(css: String): ThemeReport {
         val (status, answer) = withCore { it.useContract(); it.callWithStatus(INSPECT_THEME, css) }
@@ -159,15 +161,15 @@ object Lotek {
     }
 
     /*
-     * En instans har sitt eget minne, og svaret fra et kall ligger der til
-     * neste kall. To tråder kan derfor ikke bruke den samme samtidig. Hvert
-     * kall låner en instans og leverer den tilbake, så kallene ikke venter på
-     * hverandre.
+     * An instance has its own memory, and the result of a call stays there
+     * until the next call. Two threads therefore cannot use the same one at
+     * once. Each call borrows an instance and hands it back, so calls do not
+     * wait for each other.
      *
-     * Med én instans per tråd fikk hver tråd i en stor pool, som de IntelliJ
-     * kjører sjekken på, sin egen, og ingen ble frigjort. Her beholdes aldri
-     * flere ledige enn maskinen har kjerner, og en ny koster nesten ingenting,
-     * siden modulen er kompilert til bytekode.
+     * With one instance per thread, every thread in a large pool, like the
+     * ones IntelliJ runs the check on, got its own, and none was released.
+     * Here no more idle instances are kept than the machine has cores, and a
+     * new one costs almost nothing, since the module is compiled to bytecode.
      */
     private val idle = java.util.concurrent.ConcurrentLinkedQueue<Core>()
     private val idleCount = java.util.concurrent.atomic.AtomicInteger()
@@ -182,7 +184,7 @@ object Lotek {
         }
     }
 
-    /** Hvor mange ledige instanser som er beholdt. For testene. */
+    /** How many idle instances are kept. For the tests. */
     internal fun idleCores(): Int = idleCount.get()
 
     private fun diagnose(entry: String, html: String, manifest: String?): List<Finding> {
@@ -191,34 +193,35 @@ object Lotek {
                 it.use(manifest)
                 it.callWithStatus(entry, html)
             }
-        // Et tomt svar skal bety ingen funn, ikke at ingenting ble sjekket.
+        // An empty result must mean no findings, not that nothing was checked.
         if (status != 0L) throw IllegalArgumentException((Json.parse(answer) as Map<*, *>)["error"] as String)
         return (Json.parse(answer) as List<*>).map { finding(it as Map<*, *>) }
     }
 
     /**
-     * Manifestet i pakken, som ligger i jar-en. Kjernen bærer ingen data, så
-     * det er dette sjekken går mot når `manifest` ikke er gitt.
+     * The manifest in the package, which is in the jar. The core carries no
+     * data, so this is what the check runs against when `manifest` is not
+     * given.
      */
     internal val PACKAGE_MANIFEST: String by lazy {
         Lotek::class.java.getResourceAsStream("/no/lotek/manifest.json")?.use {
             it.readBytes().toString(Charsets.UTF_8)
-        } ?: error("manifest.json mangler i jar-en")
+        } ?: error("manifest.json is missing from the jar")
     }
 
-    /** Fargekontrakten i pakken, som ligger i jar-en. Temaet regnes av den. */
+    /** The colour contract in the package, which is in the jar. The theme is computed from it. */
     internal val PACKAGE_CONTRACT: String by lazy {
         Lotek::class.java.getResourceAsStream("/no/lotek/color-contract.json")?.use {
             it.readBytes().toString(Charsets.UTF_8)
-        } ?: error("color-contract.json mangler i jar-en")
+        } ?: error("color-contract.json is missing from the jar")
     }
 
     /**
-     * Manifestet i pakken, det samme sjekken går mot: elementene med
-     * attributter, deler og hendelser, klassene med attributtene, de lovlige
-     * verdiene, innholdet og delene, tokenene, og byggefunksjonene med
-     * valgene og formen på svaret. Et prosjekts eget manifest leses med
-     * [Manifest.parse].
+     * The manifest in the package, the same one the check runs against: the
+     * elements with attributes, parts and events, the classes with their
+     * attributes, the allowed values, the content and parts, the tokens, and
+     * the builder functions with their options and the shape of the result.
+     * A project's own manifest is read with [Manifest.parse].
      */
     val manifest: Manifest by lazy { Manifest.parse(PACKAGE_MANIFEST) }
 
@@ -255,13 +258,13 @@ object Lotek {
         )
 }
 
-/** Én instans av modulen, med funksjonene den eksporterer. */
+/** One instance of the module, with the functions it exports. */
 internal class Core {
     /*
-     * `LotekCore` er modulen kompilert til JVM-bytekode da pakken ble bygget
-     * (se `buildSrc/`). Den kjører med JIT-en, ikke i Chicorys tolk, som
-     * brukte sekunder på en side dette bruker millisekunder på, og en ny
-     * instans koster nesten ingenting.
+     * `LotekCore` is the module compiled to JVM bytecode when the package was
+     * built (see `buildSrc/`). It runs on the JIT, not in Chicory's
+     * interpreter, which took seconds on a page this takes milliseconds on,
+     * and a new instance costs almost nothing.
      */
     private val instance: Instance =
         Instance.builder(LotekCore.load()).withMachineFactory(LotekCore::create).build()
@@ -270,30 +273,30 @@ internal class Core {
     private val resultLen: ExportFunction = instance.export("result_len")
 
     /*
-     * Manifestet instansen sjekker mot nå, `null` før det første er gitt. En
-     * instans lånes ut igjen etter kallet, så den husker hva som er lastet,
-     * og det samme manifestet leses bare én gang per instans.
+     * The manifest the instance checks against now, `null` before the first
+     * is given. An instance is lent out again after the call, so it remembers
+     * what is loaded, and the same manifest is read only once per instance.
      */
     private var manifest: String? = null
 
-    /** Gir instansen [manifest], eller manifestet i pakken med `null`. */
+    /** Gives the instance [manifest], or the manifest in the package with `null`. */
     fun use(manifest: String?) {
         val wanted = manifest ?: Lotek.PACKAGE_MANIFEST
         if (wanted === this.manifest || wanted == this.manifest) return
         val (status, answer) = callWithStatus("load_manifest_raw", wanted)
         if (status != 0L) {
-            // Kjernen beholder det forrige ved en feil. Neste kall gir det
-            // ønskede på nytt, framfor å stole på hva som ligger der.
+            // The core keeps the previous one on an error. The next call gives
+            // the wanted one again, rather than trusting what is there.
             this.manifest = null
             throw IllegalArgumentException((Json.parse(answer) as Map<*, *>)["error"] as String)
         }
         this.manifest = wanted
     }
 
-    /** Om fargekontrakten er gitt. Det er alltid pakkens, så én gang per instans holder. */
+    /** Whether the colour contract is given. It is always the package's, so once per instance is enough. */
     private var contractLoaded = false
 
-    /** Gir instansen fargekontrakten i pakken, første gang den trengs. */
+    /** Gives the instance the colour contract in the package, the first time it is needed. */
     fun useContract() {
         if (contractLoaded) return
         val (status, answer) = callWithStatus("load_contract_raw", Lotek.PACKAGE_CONTRACT)
@@ -301,7 +304,7 @@ internal class Core {
         contractLoaded = true
     }
 
-    /** Kaller en av funksjonene som tar en tekst, og gir tallet den gir tilbake, der 0 er i orden, og svaret. */
+    /** Calls one of the functions that take a text, and returns the number it returns, where 0 is success, and the result. */
     fun callWithStatus(entry: String, text: String): Pair<Long, String> {
         val bytes = text.toByteArray(Charsets.UTF_8)
         val pointer = alloc.apply(bytes.size.toLong())[0]
@@ -311,7 +314,7 @@ internal class Core {
     }
 }
 
-/** Ett funn, med de samme feltene som `Finding` i TypeScript, og regel, linje og kolonne. */
+/** One finding, with the same fields as `Finding` in TypeScript, plus rule, line and column. */
 data class Finding(
     val start: Int,
     val end: Int,
@@ -325,20 +328,20 @@ data class Finding(
 )
 
 /**
- * Et tema bygd av [Lotek.buildTheme]: tokenene per utseende, løftene som
- * ryker, og CSS-en, de samme feltene som `CoreTheme` i TypeScript.
+ * A theme built by [Lotek.buildTheme]: the tokens per scheme, the promises
+ * that break, and the CSS, the same fields as `CoreTheme` in TypeScript.
  */
 data class Theme(
-    /** Hvert `--lt-color-*`-token med verdien i lyst utseende. */
+    /** Every `--lt-color-*` token with its value in the light scheme. */
     val light: Map<String, String>,
     val dark: Map<String, String>,
-    /** Løfter som ikke holder. Tom når temaet er i orden. */
+    /** Promises that do not hold. Empty when the theme is in order. */
     val violations: List<ThemeViolation>,
-    /** Temaet som CSS, klart til å lenkes etter `tokens.css`. */
+    /** The theme as CSS, ready to be linked after `tokens.css`. */
     val css: String,
 )
 
-/** Et løfte som ryker: kontrasten [ratio] mot kravet [required], for [promise] i [family]. */
+/** A promise that breaks: the contrast [ratio] against the requirement [required], for [promise] in [family]. */
 data class ThemeViolation(
     val family: String,
     val promise: String,
@@ -346,30 +349,30 @@ data class ThemeViolation(
     val required: Double,
 )
 
-/** Det [Lotek.inspectTheme] fant, de samme feltene som `CoreThemeReport` i TypeScript. */
+/** What [Lotek.inspectTheme] found, the same fields as `CoreThemeReport` in TypeScript. */
 data class ThemeReport(
     val problems: List<ThemeProblem>,
-    /** Blokker som faktisk ble lest. */
+    /** Blocks that were actually read. */
     val blocks: Int,
-    /** Verdier konsumenten selv skrev, og som ble forstått. */
+    /** Values the consumer wrote, and that were understood. */
     val declarations: Int,
-    /** Løfter som faktisk ble kontrollert. */
+    /** Promises that were actually checked. */
     val promises: Int,
 )
 
-/** Et løfte som ikke holder i et håndskrevet tema, med selektoren det står i. */
+/** A promise that does not hold in a handwritten theme, with the selector it is in. */
 data class ThemeProblem(
     val selector: String,
     val message: String,
 )
 
 /**
- * Oppskriften slik `lotek tema` leser den, oversatt til det kjernen tar.
+ * The recipe as `lotek theme` reads it, translated to what the core takes.
  *
- * Fila kan skrive fargene, skriften og formen på norsk eller engelsk, og
- * kjernen tar bare engelsk. Nøklene er de samme som i `core/cli/src/theme.rs`,
- * og en nøkkel som ikke står der kaster, siden en skrivefeil ellers ville
- * sett ut som en oppskrift som virket.
+ * The file can write the colours, the typography and the shape in English or
+ * Norwegian, and the core takes only English. The keys are the same as in
+ * `core/cli/src/theme.rs`, and a key that is not there throws, since a typo
+ * would otherwise look like a recipe that worked.
  */
 internal object ThemeRecipe {
     private val COLORS =
@@ -393,7 +396,7 @@ internal object ThemeRecipe {
         val parsed = Json.parse(recipe)
         val file =
             parsed as? Map<*, *>
-                ?: throw IllegalArgumentException("Oppskriften er gyldig JSON, men ikke et objekt med fargene i seg.")
+                ?: throw IllegalArgumentException("The recipe is valid JSON, but not an object with the colours in it.")
         val topLevel = COLORS.flatMap { (n, e) -> listOf(n, e) } + listOf("typografi", "typography", "form", "shape", "\$schema")
         val unknown = file.keys.map { it.toString() }.filter { it !in topLevel }.toMutableList()
         val typography = spread(file["typography"] ?: file["typografi"])
@@ -402,7 +405,7 @@ internal object ThemeRecipe {
         unknown += unknownKeys(spread(typography["weights"]), WEIGHT_KEYS, "typografi.weights")
         unknown += unknownKeys(spread(typography["lineHeights"]), LINE_KEYS, "typografi.lineHeights")
         unknown += unknownKeys(shape, SHAPE_KEYS, "form")
-        if (unknown.isNotEmpty()) throw IllegalArgumentException("Ukjent nøkkel i oppskriften: ${unknown.joinToString(", ")}")
+        if (unknown.isNotEmpty()) throw IllegalArgumentException("Unknown key in the recipe: ${unknown.joinToString(", ")}")
 
         val input = linkedMapOf<String, Any?>()
         for ((norwegian, english) in COLORS) {
@@ -415,9 +418,9 @@ internal object ThemeRecipe {
     }
 
     /**
-     * `{ ...verdi }` slik JavaScript sprer den, som `spread` i `theme.rs`: en
-     * liste får indeksene som nøkler og en streng ett tegn per nøkkel, så
-     * `"typografi": "Inter"` meldes som ukjente nøkler framfor å forsvinne.
+     * `{ ...value }` as JavaScript spreads it, like `spread` in `theme.rs`: a
+     * list gets its indices as keys and a string one character per key, so
+     * `"typografi": "Inter"` is reported as unknown keys rather than vanishing.
      */
     private fun spread(value: Any?): Map<String, Any?> =
         when (value) {
@@ -431,7 +434,7 @@ internal object ThemeRecipe {
         value.keys.filter { it !in allowed }.map { "$path.$it" }
 }
 
-/** Én endring i en rettelse: bytt ut teksten fra `start` til `end` med `text`. */
+/** One edit in a fix: replace the text from `start` to `end` with `text`. */
 data class Edit(
     val start: Int,
     val end: Int,
@@ -439,8 +442,8 @@ data class Edit(
 )
 
 /**
- * En rettelse: én eller flere endringer som hører sammen, i tekstens
- * rekkefølge og uten overlapp. Bruk dem bakfra, så posisjonene holder.
+ * A fix: one or more edits that belong together, in text order and without
+ * overlap. Apply them from the end, so the positions hold.
  */
 data class Fix(
     val title: String,

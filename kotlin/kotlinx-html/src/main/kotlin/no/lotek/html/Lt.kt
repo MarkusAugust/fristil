@@ -3,21 +3,22 @@ package no.lotek.html
 import kotlinx.html.Tag
 
 /**
- * Legger attributtene fra LO-TEKs byggefunksjoner på en tagg i kotlinx.html.
+ * Puts the attributes from LO-TEK's builder functions on a tag in kotlinx.html.
  *
  * ```kotlin
- * val felt = Lt.field(id = "epost", required = RequiredMarker.TEXT, error = true, invalid = ugyldig)
+ * val field = Lt.field(id = "email", required = RequiredMarker.TEXT, error = true, invalid = invalid)
  *
- * label { lt(felt.label); +"E-postadresse" }
- * input { lt(Lt.input(type = InputType.EMAIL, state = felt.state), felt.control); name = "epost" }
- * p { lt(Lt.errorText(), felt.error); +"Skriv en gyldig adresse." }
+ * label { lt(field.label); +"Email address" }
+ * input { lt(Lt.input(type = InputType.EMAIL, state = field.state), field.control); name = "email" }
+ * p { lt(Lt.errorText(), field.error); +"Enter a valid address." }
  * ```
  *
- * Settene legges på i rekkefølge, og et senere vinner over et tidligere,
- * som `{...a} {...b}` i JSX. `class` er unntaket: klassene legges til dem
- * taggen allerede har, så `div(classes = "min-egen") { lt(Lt.card()) }` gir
- * begge. Et flagg som `hidden` har den tomme teksten som verdi, og kotlinx.html
- * skriver det som `hidden=""`, som betyr det samme i HTML.
+ * The sets are applied in order, and a later one wins over an earlier one,
+ * like `{...a} {...b}` in JSX. `class` is the exception: the classes are
+ * added to the ones the tag already has, so
+ * `div(classes = "my-own") { lt(Lt.card()) }` gives both. A flag like
+ * `hidden` has the empty text as its value, and kotlinx.html writes it as
+ * `hidden=""`, which means the same in HTML.
  */
 fun Tag.lt(vararg sets: Map<String, String>) {
     for (set in sets) {
@@ -27,7 +28,7 @@ fun Tag.lt(vararg sets: Map<String, String>) {
     }
 }
 
-/** Klassene i begge, i rekkefølge og uten doble. */
+/** The classes in both, in order and without duplicates. */
 private fun joinClasses(existing: String?, added: String): String =
     (existing.orEmpty().split(' ') + added.split(' '))
         .filter { it.isNotBlank() }

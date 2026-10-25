@@ -6,18 +6,19 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 
 /**
- * Sjekker de åpne filene på nytt når et manifest kommer, endres eller blir
- * borte, som språkserveren gjør.
+ * Checks the open files again when a manifest appears, changes or goes
+ * away, as the language server does.
  *
- * En ny `build/lotek/manifest.json` etter `gradle assemble` er ingen
- * endring i fila som står åpen, så uten dette ble de gamle funnene stående
- * til brukeren skrev noe.
+ * A new `build/lotek/manifest.json` after `gradle assemble` is no change to
+ * the file that is open, so without this the old findings stayed until the
+ * user typed something.
  */
 class ManifestListener : BulkFileListener {
     override fun after(events: List<VFileEvent>) {
-        // Lages eller slettes en hel mappe, som `build/lotek` ved første
-        // bygg eller `node_modules` ved `npm install`, kommer det én hendelse
-        // for mappa og ingen for fila inni. Derfor også mappene på stien.
+        // When a whole directory is created or deleted, like `build/lotek` on
+        // the first build or `node_modules` on `npm install`, there is one
+        // event for the directory and none for the file inside. Hence the
+        // directories on the path too.
         val touched =
             events.any { event ->
                 ProjectManifest.CANDIDATES.any { candidate ->
