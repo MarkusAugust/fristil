@@ -15,6 +15,12 @@ export type ProgressOptions = {
   color?: ProgressColor
   /** Hva som pågår. Blir `aria-label`, så stolpen har et navn. */
   label?: string
+  /**
+   * Hvor langt det er kommet, med ord. Blir `aria-valuetext`, som
+   * skjermleseren leser i stedet for prosenten: «Steg 3 av 7» sier mer enn
+   * «43 prosent», og `max` leses sjelden opp.
+   */
+  valueText?: string
 }
 
 export type ProgressAttributes = {
@@ -23,6 +29,7 @@ export type ProgressAttributes = {
   max: string
   "data-color"?: ProgressColor
   "aria-label"?: string
+  "aria-valuetext"?: string
 }
 
 /**
@@ -51,6 +58,7 @@ export const progress = Object.assign(
     max = 100,
     color,
     label,
+    valueText,
   }: ProgressOptions = {}): ProgressAttributes =>
     attributes({
       class: PROGRESS_CLASS,
@@ -60,6 +68,7 @@ export const progress = Object.assign(
       max: String(max),
       "data-color": color,
       "aria-label": label,
+      "aria-valuetext": valueText,
     }),
   {
     colors: progressColors,

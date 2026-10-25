@@ -77,6 +77,8 @@ panel.addEventListener("toggle", () => {
 <details class="fs-accordion" name="sporsmal">…</details>
 ```
 
+Sender serveren panelet på nytt i en oppdatering, lukkes et åpent panel: `open` er nettleserens eget attributt, og serverens utgave har det ikke. Skal det stå åpent, sender serveren `open` tilbake, i Datastar med `data-preserve-attr="open"` på panelet. Og TalkBack i Firefox på Android åpner ikke `<details>` ved aktivering; der må brukeren trykke på selve `<summary>`.
+
 ## Overskrift inni
 
 Skal panelene være en del av sidens struktur, legg en overskrift inne i `<summary>`:

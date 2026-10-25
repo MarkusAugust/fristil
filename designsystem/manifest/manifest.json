@@ -3416,6 +3416,14 @@
             "kind": "text"
           },
           "description": "Hva som pågår. Blir `aria-label`, så stolpen har et navn."
+        },
+        {
+          "name": "valueText",
+          "required": false,
+          "type": {
+            "kind": "text"
+          },
+          "description": "Hvor langt det er kommet, med ord. Blir `aria-valuetext`, som skjermleseren leser i stedet for prosenten: «Steg 3 av 7» sier mer enn «43 prosent», og `max` leses sjelden opp."
         }
       ],
       "returns": {
@@ -3461,6 +3469,15 @@
               },
               "empty": {
                 "aria-label": ""
+              }
+            },
+            "valueText": {
+              "cases": {},
+              "template": {
+                "aria-valuetext": "{valueText}"
+              },
+              "empty": {
+                "aria-valuetext": ""
               }
             }
           }
