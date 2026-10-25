@@ -1049,14 +1049,27 @@ cases.push(
 
 // Snippetene fra komponentsidene skal være rene, også som hele sider: de
 // skal kunne limes inn og virke, koblingen medregnet.
+/**
+ * Snippeten slik den står i dokumentet etter at brukeren har godtatt
+ * tabbestoppene: `${1:navn}` blir `navn`, og `$1` det samme, slik VS Code
+ * speiler dem. Rømmingen tas bort til slutt.
+ */
+function utenTabbestopp(body: string[]): string {
+  const text = body.join("\n")
+  const defaults = new Map<string, string>()
+  for (const m of text.matchAll(/\$\{(\d+):([^}]*)\}/g)) defaults.set(m[1], m[2])
+  return text
+    .replace(/\$\{(\d+):([^}]*)\}/g, (_, _n, value: string) => value)
+    .replace(/(?<!\\)\$(\d+)\b/g, (_, n: string) => defaults.get(n) ?? "")
+    .replace(/\\\$/g, "$")
+    .replace(/\\\\/g, "\\")
+}
+
 for (const [tag, snippet] of Object.entries(snippets()))
   for (const page of [false, true])
     cases.push({
       name: `snippeten for <${tag}>${page ? " som hel side" : ""}`,
-      html: snippet.body
-        .join("\n")
-        .replace(/\\\$/g, "$")
-        .replace(/\\\\/g, "\\"),
+      html: utenTabbestopp(snippet.body),
       count: 0,
       page,
     })

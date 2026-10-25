@@ -1,9 +1,10 @@
 //! Ordforrådet: elementer, attributter, klasser og verdier.
 //!
-//! En oversettelse av `designsystem/src/diagnostics/diagnostics.ts`, funksjon
-//! for funksjon og med de samme meldingene. Kommentarene der forklarer
-//! hvorfor reglene er som de er; her står bare det som er annerledes i Rust.
-//! Hvert regulært uttrykk er skrevet ut som en løkke, med det samme svaret.
+//! Reglene sto først i TypeScript, i `diagnostics.ts`, og ble oversatt hit
+//! funksjon for funksjon med de samme meldingene. TypeScript-utgaven er
+//! borte: kjernen er den ene implementasjonen, og TypeScript, Kotlin og
+//! editorene kaller den. Hvert regulært uttrykk fra den tida er skrevet ut
+//! som en løkke, med det samme svaret.
 
 use std::collections::HashMap;
 

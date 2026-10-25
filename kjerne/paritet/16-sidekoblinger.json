@@ -6,21 +6,21 @@
       "end": 17,
       "severity": "error",
       "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "for=\"hjelp\" peker på et <p>, som ikke kan ha en ledetekst. for må peke på feltet selv: <input>, <select>, <textarea> eller en knapp. Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren."
+      "message": "for=\"hjelp\" peker på et <p>, som ikke kan ha en ledetekst. for må peke på feltet selv: <input>, <select>, <textarea> eller en knapp. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det."
     },
     {
       "start": 103,
       "end": 104,
       "severity": "warning",
       "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "Hjelpeteksten er ikke koblet til noe felt: id-en «hjelp» står ikke i aria-describedby på noe felt. En skjermleser leser den ikke opp sammen med feltet. Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren."
+      "message": "Hjelpeteksten er ikke koblet til noe felt: id-en «hjelp» står ikke i aria-describedby på noe felt. En skjermleser leser den ikke opp sammen med feltet. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det."
     },
     {
       "start": 157,
       "end": 158,
       "severity": "warning",
       "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "Feilmeldingen er ikke koblet til noe felt: den har ingen id, så ingen aria-describedby kan peke på den. En skjermleser leser den ikke opp sammen med feltet. Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren."
+      "message": "Feilmeldingen er ikke koblet til noe felt: den har ingen id, så ingen aria-describedby kan peke på den. En skjermleser leser den ikke opp sammen med feltet. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det."
     },
     {
       "start": 286,

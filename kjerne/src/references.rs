@@ -1,8 +1,9 @@
 //! Koblingen på en hel side: at hver id det pekes på finnes, og at hvert felt
 //! og hver tekst er koblet.
 //!
-//! En oversettelse av `designsystem/src/diagnostics/references.ts`, med de
-//! samme meldingene. Kommentarene der forklarer reglene.
+//! Reglene sto først i TypeScript, i `references.ts`, og ble oversatt hit
+//! med de samme meldingene. TypeScript-utgaven er borte: kjernen er den ene
+//! implementasjonen, og TypeScript, Kotlin og editorene kaller den.
 
 use std::collections::{HashMap, HashSet};
 
@@ -13,7 +14,7 @@ use crate::types::*;
 const LINK: &str = "https://fristil.sobernetics.no/components/field/";
 const SUMMARY_LINK: &str = "https://fristil.sobernetics.no/components/error-summary/";
 
-const HOW: &str = "Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren.";
+const HOW: &str = "Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det.";
 
 /// Attributtene som peker på id-er, og hva skjermleseren mister når de bommer.
 const REFERENCES: &[(&str, &str)] = &[

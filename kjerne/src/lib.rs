@@ -608,15 +608,9 @@ mod tests {
     #[test]
     fn a_missing_id_gives_a_message_without_trailing_space() {
         for (attribute, ends) in [
-            ("for", "<fs-field>, som setter den i nettleseren."),
-            (
-                "aria-describedby",
-                "<fs-field>, som setter den i nettleseren.",
-            ),
-            (
-                "aria-labelledby",
-                "<fs-field>, som setter den i nettleseren.",
-            ),
+            ("for", "gjør fs.field({ id }) det."),
+            ("aria-describedby", "gjør fs.field({ id }) det."),
+            ("aria-labelledby", "gjør fs.field({ id }) det."),
             ("aria-controls", "koblingen til det elementet styrer."),
         ] {
             let html = format!(r#"<label class="fs-label" {attribute}="borte">x</label>"#);
