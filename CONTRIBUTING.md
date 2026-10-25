@@ -40,7 +40,7 @@ the CI machine what your machine already has. Locally, the Java you
 have installed is used. If `ci.yml` contains something the script does not understand, such as `env`,
 `if` or `defaults`, it stops before it runs anything.
 
-The step `Ingenting er ugenerert` ("nothing is ungenerated") asks git whether the build changed anything, so run `check` after
+The step `Generated files are up to date` asks git whether the build changed anything, so run `check` after
 the change is committed. Otherwise the step fails on your own changes.
 
 Besides Bun it needs: Rust, since the check in the package is built from
@@ -100,11 +100,11 @@ All six come from `designsystem/scripts/metadata.ts`, the CSS and the "Plain HTM
 
 In the rulebooks the prose is in the generator, while the lists and numbers are read from the package: the classes, the elements, the builder functions and the token names are fetched from where they actually live, so a rulebook cannot promise something that does not exist. `check-agent.ts` checks both.
 
-The build does not stop on an outdated file: `generate` writes them again before any check reads them, so `check:vocabulary` and `check:agent` always compare against what was just written. If you forget to regenerate, or to commit what was generated, CI tells you: the step `Ingenting er ugenerert` runs `git status --porcelain` after the build and fails if the build changed a tracked file.
+The build does not stop on an outdated file: `generate` writes them again before any check reads them, so `check:vocabulary` and `check:agent` always compare against what was just written. If you forget to regenerate, or to commit what was generated, CI tells you: the step `Generated files are up to date` runs `git status --porcelain` after the build and fails if the build changed a tracked file.
 
 ## Changelog and releases
 
-`designsystem/CHANGELOG.md` is written as you go, not at release time. If you change something a consumer will notice, add the line under the heading `Ikke utgitt` ("unreleased") in the same pull request as the change. `bun run build` stops if the version in `package.json` has no heading in the changelog.
+`designsystem/CHANGELOG.md` is written as you go, not at release time. If you change something a consumer will notice, add the line under the heading `Unreleased` in the same pull request as the change. `bun run build` stops if the version in `package.json` has no heading in the changelog.
 
 When a version is to be released:
 
@@ -115,18 +115,18 @@ bun run check
 git push -u origin release-0.4.0 && gh pr create --fill
 ```
 
-The commit comes before `check`, not after: `Ingenting er ugenerert` asks git whether the build changed anything, and `prepare-version` has just written fourteen tracked files, so run before the commit, `check` stops on them several minutes into the run.
+The commit comes before `check`, not after: `Generated files are up to date` asks git whether the build changed anything, and `prepare-version` has just written fourteen tracked files, so run before the commit, `check` stops on them several minutes into the run.
 
-`prepare-version` renames the heading `Ikke utgitt` to the number and the date, adds a new empty one above it, and sets the same number in `designsystem/package.json`, `bun.lock`, `web-types.json`, `kotlin/gradle.properties` and the presentation. Finally it runs `generate-agent.ts` and `generate-manifest.ts`, so `designsystem/agent/*.md` and `designsystem/manifest/*.json`, which also contain the version, carry the new number in the same commit. It refuses to set a version that is not higher than the current one, and to release an empty `Ikke utgitt`, and all the checks come before it writes anything, so an aborted attempt leaves no half-written files.
+`prepare-version` renames the heading `Unreleased` to the number and the date, adds a new empty one above it, and sets the same number in `designsystem/package.json`, `bun.lock`, `web-types.json`, `kotlin/gradle.properties` and the presentation. Finally it runs `generate-agent.ts` and `generate-manifest.ts`, so `designsystem/agent/*.md` and `designsystem/manifest/*.json`, which also contain the version, carry the new number in the same commit. It refuses to set a version that is not higher than the current one, and to release an empty `Unreleased`, and all the checks come before it writes anything, so an aborted attempt leaves no half-written files.
 
 The tag is set only once the version is on master:
 
 ```bash
 git checkout master && git pull
-bun run tag pakke
+bun run tag package
 ```
 
-`bun run tag` without arguments shows the versions on the commit and which of them are tagged. With `pakke` (the npm package), `utvidelse` (the VS Code extension) or `intellij`, several at once if you like, it sets the tags and pushes them. It refuses when you are not on master as it is on GitHub, when the working tree has changes, when the tag already exists, and when the version is missing from the changelog. `--prøv` shows what would have happened.
+`bun run tag` without arguments shows the versions on the commit and which of them are tagged. With `package` (the npm package), `extension` (the VS Code extension) or `intellij`, several at once if you like, it sets the tags and pushes them. It refuses when you are not on master as it is on GitHub, when the working tree has changes, when the tag already exists, and when the version is missing from the changelog. `--dry-run` shows what would happen. The extension's tags are called `extension-v<version>`; up to 0.9.0 they were `utvidelse-v<version>`, and the script counts a version tagged that way as released.
 
 **Tag as soon as the branch is merged.** The documentation is deployed by
 Netlify the moment master changes, and the recipes there point to
@@ -179,7 +179,7 @@ together with `designsystem/web-types.json` for JetBrains. If you change an
 attribute on a component, the type check stops until `metadata.ts` has a
 sentence about it. `bun run build` writes the files again before any check reads
 them, and does not fail on an outdated file; if you forget to commit what the build wrote,
-the step `Ingenting er ugenerert` in CI does. The files can also be written on their own:
+the step `Generated files are up to date` in CI does. The files can also be written on their own:
 
 ```bash
 bun --filter @lo-tek/interfaces vocabulary
@@ -195,7 +195,7 @@ The extension has its own version number in `editor/package.json` and its own
 changelog in `editor/CHANGELOG.md`, and is released with its own tag:
 
 ```bash
-bun run tag utvidelse
+bun run tag extension
 ```
 
 The tag starts `.github/workflows/publish-extension.yml`. Marketplace has
@@ -251,7 +251,7 @@ git config user.name "MASK"
 git config user.email "m.a.sobergklyver@gmail.com"
 ```
 
-The CI job **Forfattere** (`authors`, `bun run check:authors`) goes through the whole history and fails on both. Branches get descriptive names, not `claude/…`.
+The CI job **Authors** (`authors`, `bun run check:authors`) goes through the whole history and fails on both. Branches get descriptive names, not `claude/…`.
 
 ## When CI is red on master
 

@@ -101,7 +101,7 @@ The rules are in `src/types.rs` (`RULES`).
 ```bash
 bun core/scripts/build.ts         # the modules, to core/dist/
 bun core/scripts/check-core.ts    # the expected results and the requirements
-bun --filter @lo-tek/interfaces pack && (cd kotlin && ./gradlew test -Plotek.pakke=../designsystem)
+bun --filter @lo-tek/interfaces pack && (cd kotlin && ./gradlew test -Plotek.package=../designsystem)
 ```
 
 Requires Rust. `rust-toolchain.toml` fetches the version and the targets

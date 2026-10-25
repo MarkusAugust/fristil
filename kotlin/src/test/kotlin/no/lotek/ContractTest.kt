@@ -94,7 +94,7 @@ class ContractTest {
     companion object {
         @Suppress("UNCHECKED_CAST")
         private val CASES: List<Map<String, Any?>> by lazy {
-            val file = File(System.getProperty("byggetilfeller"))
+            val file = File(System.getProperty("buildCases"))
             (Json.parse(file.readText()) as Map<String, Any?>)["cases"] as List<Map<String, Any?>>
         }
 

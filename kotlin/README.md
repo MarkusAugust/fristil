@@ -98,7 +98,7 @@ the dependencies in it, is on Maven as `lo-tek-cli`, because
 the Gradle plugin runs it.
 
 ```bash
-cd kotlin && ./gradlew :cli:samletJar -Plotek.pakke=../designsystem
+cd kotlin && ./gradlew :cli:fatJar -Plotek.package=../designsystem
 java -jar cli/build/libs/lotek.jar --help
 ```
 
@@ -113,7 +113,7 @@ small project with Gradle TestKit, also with the configuration cache.
 
 ```bash
 bun --filter @lo-tek/interfaces pack
-cd kotlin && ./gradlew test -Plotek.pakke=../designsystem
+cd kotlin && ./gradlew test -Plotek.package=../designsystem
 ```
 
 The build needs only Java. Everything the package consists of comes from the npm package
@@ -124,12 +124,12 @@ the same version are therefore built from the same files.
 
 With nothing more, the version is fetched from npm, and the file is compared with the integrity
 the registry states. Between two releases the code here is newer than what is
-on npm, and then the tarball is packed from the repository and passed with `lotek.pakke`, as
+on npm, and then the tarball is packed from the repository and passed with `lotek.package`, as
 the commands above and CI do. Packing needs Bun and Rust, but Gradle does
 not. Against the npm release the tests give wrong answers: the expected results below are from the repository,
 and the core from the previous release.
 
-`lotek.pakke` is the tarball or the folder it is in, relative to `kotlin/`,
+`lotek.package` is the tarball or the folder it is in, relative to `kotlin/`,
 also when the build is included with `includeBuild`. If it is a folder,
 `lo-tek-interfaces-<version>.tgz` is used. Pack again when the package has changed:
 Gradle uses the tarball that is there, even an old one. The build stops if the tarball has a

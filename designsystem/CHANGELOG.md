@@ -1,27 +1,147 @@
-# Endringer i @fristil/designsystem
+# Changes in @lo-tek/interfaces
 
-Versjonsnumrene følger [semantisk versjonering](https://semver.org/lang/no/).
-Det offentlige API-et er større enn funksjonene pakken eksporterer, så disse
-regnes som brytende endringer og krever en ny hovedversjon:
+Version numbers follow [semantic versioning](https://semver.org/). The
+public API is larger than the functions the package exports, so these count
+as breaking changes and require a new major version:
 
-- et klassenavn, et `data-*`-attributt eller en lovlig verdi som forsvinner
-  eller endrer betydning,
-- et hvilket som helst annet attributt en byggefunksjon skriver ut, `aria-*`
-  medregnet, som forsvinner eller endrer betydning. Det byggefunksjonene
-  sender ut står i konsumentens markup, og kan styles og testes mot. Det en
-  web component setter i nettleseren er ikke API på samme måte: det er
-  oppførsel, og rettes som oppførsel,
-- et `part`-navn i en komponent med shadow DOM,
-- et tokennavn eller en `--fs-*`-variabel,
-- en funksjon eller en type i `fs`,
-- en oppføring i `exports` i `package.json`.
+- a class name, a `data-*` attribute or an allowed value that disappears or
+  changes meaning,
+- any other attribute a builder function writes, `aria-*` included, that
+  disappears or changes meaning. What the builder functions write ends up in
+  the consumer's markup, where it can be styled and tested against. What a
+  web component sets in the browser is not API in the same way: it is
+  behaviour, and is fixed as behaviour,
+- a `part` name in a component with shadow DOM,
+- a token name or an `--lt-*` variable,
+- a function or a type in `lt`,
+- an entry in `exports` in `package.json`.
 
-Nye komponenter, nye valgfrie attributter, nye attributter en byggefunksjon
-legger til, og rettelser som ikke endrer markup kommer i et nytt undertall.
-Før 1.0 kan et undertall også ha brytende endringer, og da står de under en
-egen overskrift «Brytende».
+New components, new optional attributes, new attributes a builder function
+adds, and fixes that do not change markup come in a new minor version.
+Before 1.0 a minor version can also contain breaking changes, and they are
+listed under a heading of their own, "Breaking". Versions up to and
+including 0.36.0 were written in Norwegian, and list them under "Brytende".
 
-## Ikke utgitt
+## Unreleased
+
+### Breaking
+
+- **Fristil is now LO-TEK, and everything is in English.** The package, the
+  prefix, the API, the command line, the check, the default texts, the
+  documentation and its addresses all have new names. Nothing else about the
+  architecture changes: the same markup, written with the new prefix, behaves
+  as before. The old packages stay where they are. `@fristil/designsystem` is
+  deprecated on npm with a pointer to `@lo-tek/interfaces`, and the last
+  version of each old Maven artifact carries a relocation to the new one, so
+  Maven and Gradle follow it and warn. Nothing is deleted. **How to update:**
+  install `@lo-tek/interfaces`, then replace the names in the tables below.
+
+  | Before | Now |
+  |---|---|
+  | `@fristil/designsystem` | `@lo-tek/interfaces` |
+  | `fristil.sobernetics.no` | `lo-tek.sobernetics.no` (every old address redirects) |
+  | `github.com/MarkusAugust/fristil` | `github.com/MarkusAugust/lo-tek` |
+  | `fs-button`, `<fs-field>`, every `fs-` class and element | `lt-button`, `<lt-field>`, `lt-` |
+  | `--fs-…`, every token and component variable | `--lt-…` |
+  | `@layer fristil` | `@layer lotek` (`@layer theme, base, lotek, components, utilities;`) |
+  | `fristil-tema` (the theme layer) | `lotek-theme` |
+  | `data-fs-boundary` | `data-lt-boundary` |
+  | `fs` (the builder object) | `lt` |
+  | `defineFs()`, `defineFsField()` and the others | `defineLt()`, `defineLtField()` |
+  | `FS_FIELD_TAG`, `FS_FIELD_PARTS` and the others | `LT_FIELD_TAG`, `LT_FIELD_PARTS` |
+  | `FsField` and the other classes, `FsEventMap` | `LtField`, `LtEventMap` |
+  | `dist/fristil.css` | `dist/lotek.css` (`@lo-tek/interfaces/lotek.css`) |
+  | exports `./tema`, `./farge`, `./kontrakt`, `./matrise`, `./tema-sjekk` | `./theme`, `./color`, `./contract`, `./matrix`, `./theme-check` |
+  | exports `./fargekontrakt.json`, `./kjerne.wasm` | `./color-contract.json`, `./core.wasm` |
+  | source folders `ramme/`, `frittstaende/` (in `lotek takeover`) | `frame/`, `standalone/` |
+  | the binary `fristil` | `lotek` |
+  | `fristil.tema.json` | `lotek.theme.json` |
+  | env `FRISTIL_PACKAGE` | `LOTEK_PACKAGE` |
+  | the comment `fristil-ignore-next` | `lotek-ignore-next` |
+  | Kotlin `no.fristil`, `Fs`, `Fristil`, `Tag.fs(…)` | `no.lotek`, `Lt`, `Lotek`, `Tag.lt(…)` |
+  | Maven `io.github.markusaugust:fristil`, `fristil-kotlinx-html`, `fristil-kommandolinje`, `fristil-gradle-plugin` | `lo-tek-interfaces`, `lo-tek-kotlinx-html`, `lo-tek-cli`, `lo-tek-gradle-plugin` |
+  | Gradle plugin `io.github.markusaugust.fristil`, tasks `fristilSjekk`, `fristilTema`, `fristilManifest` | `io.github.markusaugust.lo-tek`, `lotekCheck`, `lotekTheme`, `lotekManifest` |
+  | WebJar `webjars/fristil/` | `webjars/lo-tek/` |
+  | VS Code `Fristil.fristil-vscode` | `lo-tek.interfaces` ("LO-TEK Interfaces") |
+  | IntelliJ `no.fristil` | `no.lotek` ("LO-TEK Interfaces") |
+  | rulebook `agent/maler.md` | `agent/templates.md` |
+
+- **The command line has English verbs, flags and recipe keys.** There are
+  no Norwegian aliases.
+
+  | Before | Now |
+  |---|---|
+  | `sjekk`, `sjekk-tema`, `overta`, `tema` | `check`, `check-theme`, `takeover`, `theme` |
+  | `--rendret`, `--ut`, `--rammeverk`, `--overskriv=ja`, `--hjelp` | `--rendered`, `--out`, `--framework`, `--overwrite=yes`, `--help` |
+  | `--aksent`, `--fare`, `--suksess`, `--advarsel`, `--noytral`, `--besokt`, `--merke1..3` | `--accent`, `--danger`, `--success`, `--warning`, `--neutral`, `--visited`, `--brand1..3` |
+  | `--skrift`, `--knapp-hjorner`, `--felt-hjorner`, `--flate-hjorner`, `--knapp-ramme`, `--knapp-vekt` | `--font`, `--button-radius`, `--field-radius`, `--surface-radius`, `--button-border`, `--button-weight` |
+  | recipe keys `aksent` … `merke3`, `typografi`, `form` | `accent` … `brand3`, `typography`, `shape` |
+
+- **The check's rule ids are English.** A filter or a suppression on an id
+  must use the new one.
+
+  | Before | Now |
+  |---|---|
+  | `boolsk-med-verdi` | `boolean-with-value` |
+  | `deaktivert-med-href` | `disabled-with-href` |
+  | `del-flere-ganger` | `part-repeated` |
+  | `fane-uten-lenke` | `tab-without-link` |
+  | `fanelenke-uten-panel` | `tab-link-without-panel` |
+  | `fanerad-uten-navn` | `tab-list-without-name` |
+  | `feilmelding-motsier` | `error-text-contradicts` |
+  | `felt-uten-kontroll` | `field-without-control` |
+  | `felt-uten-ledetekst` | `field-without-label` |
+  | `id-fra-komponenten` | `id-from-component` |
+  | `ikke-tall` | `not-a-number` |
+  | `ikon-uten-navn` | `icon-without-name` |
+  | `kontroll-uten-kobling` | `control-without-wiring` |
+  | `panel-uten-id` | `panel-without-id` |
+  | `tekst-i-ledetekst` | `text-in-label` |
+  | `tidsavbrudd-uten-dialog` | `timeout-without-dialog` |
+  | `ugyldig-klasseverdi` | `invalid-class-value` |
+  | `ugyldig-verdi` | `invalid-value` |
+  | `ukjent-attributt` | `unknown-attribute` |
+  | `ukjent-element` | `unknown-element` |
+  | `ukjent-klasse` | `unknown-class` |
+  | `ustylet-klasse` | `unstyled-class` |
+  | `ustylet-verdi` | `unstyled-value` |
+  | `utgatt-attributt` | `removed-attribute` |
+  | `verdi-uten-felt` | `value-without-field` |
+  | `duplikat-id` | `duplicate-id` |
+  | `id-finnes-ikke` | `id-not-found` |
+  | `for-peker-feil` | `for-points-nowhere` |
+  | `oppsummering-peker-feil` | `summary-points-nowhere` |
+  | `kontroll-uten-ledetekst` | `control-without-label` |
+  | `tekst-ikke-koblet` | `text-not-wired` |
+
+  Every message from the check, the components' console warnings and the
+  errors the builder functions throw are in English too.
+
+- **The default texts are English.** Each can still be replaced, as before.
+
+  | Before | Now |
+  |---|---|
+  | «Varsler» | "Notifications" |
+  | «Lukk melding» | "Close message" |
+  | «Ingen forbindelse. Det du skriver blir ikke lagret.» | "No connection. What you type is not being saved." |
+  | «Forbindelsen er tilbake.» | "Connection restored." |
+  | «Ingen treff», «Ett treff», «{n} treff» | "No matches", "One match", "{n} matches" |
+  | « (påkrevd)», « (valgfri)» | " (required)", " (optional)" |
+
+  **How to update:** a Norwegian page that relied on the defaults sets them
+  as the translation page shows.
+
+- **The documentation is in English, at new addresses.** Every old address
+  redirects to its new one, and `/components/…` is unchanged.
+
+  | Before | Now |
+  |---|---|
+  | `/introduksjon/`, `/kom-i-gang/`, `/rammeverk/` | `/introduction/`, `/getting-started/`, `/frameworks/` |
+  | `/markup-og-oppforsel/`, `/tilpasning/`, `/tilgjengelighet/` | `/markup-and-behaviour/`, `/customising/`, `/accessibility/` |
+  | `/oversettelse/`, `/eget-tema/`, `/typesikker-bruk/` | `/translation/`, `/your-own-theme/`, `/type-safe-use/` |
+  | `/editoren/`, `/kommandolinjen/`, `/kodeagenter/` | `/the-editor/`, `/command-line/`, `/coding-agents/` |
+  | `/lisens/`, `/veikart/`, `/versjonslogg/` | `/licence/`, `/roadmap/`, `/changelog/` |
+  | `/monster/skjema/`, `liste`, `sideskjelett`, `bekreftelse`, `dato`, `tema` | `/patterns/form/`, `list`, `page-skeleton`, `confirmation`, `date`, `theme` |
 
 ## 0.36.0 (2026-10-25)
 

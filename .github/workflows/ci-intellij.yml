@@ -1,18 +1,20 @@
 #
-# IntelliJ-pluginen bygges for seg, ikke i hovedrekka.
+# The IntelliJ plugin is built on its own, not in the main sequence.
 #
-# `bun run check` kjøres før hver push, og leser stegene i ci.yml. Et Gradle-bygg
-# laster ned en hel IDE å kompilere mot, rundt en gigabyte, og ville gjort
-# det løftet umulig å holde. Derfor en egen arbeidsflyt med `paths`, som bare
-# kjører når pluginen eller dataene den leser faktisk er endret.
+# `bun run check` runs before every push, and reads the steps in ci.yml. A
+# Gradle build downloads a whole IDE to compile against, around a gigabyte,
+# and would make that promise impossible to keep. Hence a separate workflow
+# with `paths`, which only runs when the plugin or the data it reads has
+# actually changed.
 #
-# Klassene leses fra prosjektets manifest, med manifestet i `../kotlin` som
-# reserve, og feilmeldingene kommer fra Rust-kjernen gjennom den samme
-# pakken, som bygges med pluginen. Derfor står
-# `core/**`, `kotlin/**` og manifestet også i `paths`: endrer noen
-# klasselista, skal pluginen bygges på nytt selv om ingen rørte Kotlin-koden.
+# The classes are read from the project's manifest, with the manifest in
+# `../kotlin` as the fallback, and the diagnostics come from the Rust core
+# through the same package, which is built with the plugin. That is why
+# `core/**`, `kotlin/**` and the manifest are in `paths` too: if someone
+# changes the class list, the plugin is built again even when nobody touched
+# the Kotlin code.
 #
-name: IntelliJ-plugin
+name: IntelliJ plugin
 
 on:
   push:
@@ -46,7 +48,7 @@ concurrency:
 
 jobs:
   plugin:
-    name: Bygg og test
+    name: Build and test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -58,52 +60,52 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # Kotlin-pakken bygges av npm-pakken. Pluginen bruker den fra
-      # `../kotlin`, som er nyere enn det som ligger på npm, så tarballen
-      # pakkes her fra denne commiten, med Bun og Rust.
+      # The Kotlin package is built from the npm package. The plugin uses it
+      # from `../kotlin`, which is newer than what is on npm, so the tarball
+      # is packed here from this commit, with Bun and Rust.
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
 
-      - name: Installer avhengigheter
+      - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # `rust-toolchain.toml` i `core/` bestemmer versjonen. rustup finnes
-      # på maskinen og henter den ved første kall.
-      - name: Rust-versjon
+      # `rust-toolchain.toml` in `core/` decides the version. rustup is on the
+      # machine and fetches it on the first call.
+      - name: Rust version
         working-directory: core
         run: rustc --version
 
-      - name: Pakk npm-pakken
+      - name: Pack the npm package
         run: bun --filter @lo-tek/interfaces pack
 
-      # Plattformen er en hel IDE på rundt en gigabyte, og den endrer seg bare
-      # når `platformVersion` gjør det. Nøkkelen leser derfor den ene linja,
-      # ikke hele `gradle.properties`: `pluginVersion` står i den samme fila,
-      # og en versjonsbump ville ellers kastet cachen og lastet ned IDE-en på
-      # nytt uten grunn.
-      - name: Les plattformversjonen
-        id: plattform
+      # The platform is a whole IDE of around a gigabyte, and it only changes
+      # when `platformVersion` does. The key therefore reads that one line,
+      # not all of `gradle.properties`: `pluginVersion` is in the same file,
+      # and a version bump would otherwise throw away the cache and download
+      # the IDE again for no reason.
+      - name: Read the platform version
+        id: platform
         working-directory: editor-intellij
         run: |
-          versjon=$(grep '^platformVersion=' gradle.properties | cut -d= -f2)
-          if [ -z "$versjon" ]; then
-            echo "Fant ingen platformVersion i gradle.properties"
+          version=$(grep '^platformVersion=' gradle.properties | cut -d= -f2)
+          if [ -z "$version" ]; then
+            echo "Found no platformVersion in gradle.properties"
             exit 1
           fi
-          echo "versjon=$versjon" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Hent IntelliJ-plattformen fra cache
+      - name: Restore the IntelliJ platform from cache
         uses: actions/cache@v4
         with:
           path: editor-intellij/.intellijPlatform
-          key: intellij-${{ steps.plattform.outputs.versjon }}
+          key: intellij-${{ steps.platform.outputs.version }}
 
-      - name: Bygg og test
+      - name: Build and test
         working-directory: editor-intellij
-        run: ./gradlew build -Plotek.pakke=../designsystem
+        run: ./gradlew build -Plotek.package=../designsystem
 
-      - name: Last opp pluginen
+      - name: Upload the plugin
         uses: actions/upload-artifact@v4
         with:
           name: lo-tek-intellij

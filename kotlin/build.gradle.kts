@@ -42,65 +42,65 @@ java {
  * `io.github.markusaugust:lo-tek-interfaces` is built from exactly the files
  * `@lo-tek/interfaces` with the same version consists of.
  *
- * Without `-Plotek.pakke` the version is fetched from npm. Between two
+ * Without `-Plotek.package` the version is fetched from npm. Between two
  * releases the code here is newer than what is there, and then the tarball
  * is packed from the repository and passed with
- * `-Plotek.pakke=<path to .tgz>`, as CI does.
+ * `-Plotek.package=<path to .tgz>`, as CI does.
  */
-val hentPakke = tasks.register<no.lotek.build.FetchPackage>("hentPakke") {
+val fetchPackage = tasks.register<no.lotek.build.FetchPackage>("fetchPackage") {
     packageVersion.set(version.toString())
     tarball.set(layout.buildDirectory.file("npm/interfaces-$version.tgz"))
 }
 
 /*
- * `lotek.pakke` is the tarball, or the directory `npm pack` wrote it to. In
+ * `lotek.package` is the tarball, or the directory `npm pack` wrote it to. In
  * a directory, the file with the version in its name is used, so an old
  * tarball next to it is not picked up by mistake. Chosen here and not with
- * `orElse`, which loses the dependency on `hentPakke`.
+ * `orElse`, which loses the dependency on `fetchPackage`.
  */
-val lokalPakke = providers.gradleProperty("lotek.pakke").orNull?.let { rootDir.resolve(it) }
-val pakkeTgz: Provider<RegularFile> =
-    if (lokalPakke != null) {
-        val tgz = if (lokalPakke.isDirectory) lokalPakke.resolve("lo-tek-interfaces-$version.tgz") else lokalPakke
+val localPackage = providers.gradleProperty("lotek.package").orNull?.let { rootDir.resolve(it) }
+val packageTgz: Provider<RegularFile> =
+    if (localPackage != null) {
+        val tgz = if (localPackage.isDirectory) localPackage.resolve("lo-tek-interfaces-$version.tgz") else localPackage
         check(tgz.isFile) { "Could not find the npm package $tgz. Pack it with bun --filter @lo-tek/interfaces pack." }
         provider { layout.projectDirectory.file(tgz.absolutePath) }
     } else {
-        hentPakke.flatMap { it.tarball }
+        fetchPackage.flatMap { it.tarball }
     }
 
-val pakkUt = tasks.register<Sync>("pakkUt") {
+val unpackPackage = tasks.register<Sync>("unpackPackage") {
     // npm puts everything under `package/` in the tarball.
-    from(tarTree(pakkeTgz)) {
+    from(tarTree(packageTgz)) {
         eachFile { relativePath = RelativePath(true, *relativePath.segments.drop(1).toTypedArray()) }
     }
     includeEmptyDirs = false
-    into(layout.buildDirectory.dir("lotek-pakke"))
-    val forventet = version.toString()
+    into(layout.buildDirectory.dir("lotek-package"))
+    val expected = version.toString()
     // Otherwise the task counts as up to date when only the version changed, and the check is skipped.
-    inputs.property("versjon", forventet)
+    inputs.property("version", expected)
     doLast {
-        val pakke = groovy.json.JsonSlurper().parse(destinationDir.resolve("package.json")) as Map<*, *>
-        check(pakke["name"] == "@lo-tek/interfaces" && pakke["version"] == forventet) {
-            "The tarball is ${pakke["name"]}@${pakke["version"]}, but the Kotlin package is $forventet. " +
+        val pkg = groovy.json.JsonSlurper().parse(destinationDir.resolve("package.json")) as Map<*, *>
+        check(pkg["name"] == "@lo-tek/interfaces" && pkg["version"] == expected) {
+            "The tarball is ${pkg["name"]}@${pkg["version"]}, but the Kotlin package is $expected. " +
                 "The version in kotlin/gradle.properties and designsystem/package.json must be the same."
         }
     }
 }
 
-val pakke = pakkUt.map { it.destinationDir }
-val manifestFil = pakke.map { layout.projectDirectory.file(it.resolve("manifest/manifest.json").absolutePath) }
-val kontraktFil = pakke.map { layout.projectDirectory.file(it.resolve("src/tokens/color-contract.json").absolutePath) }
+val unpacked = unpackPackage.map { it.destinationDir }
+val manifestFile = unpacked.map { layout.projectDirectory.file(it.resolve("manifest/manifest.json").absolutePath) }
+val contractFile = unpacked.map { layout.projectDirectory.file(it.resolve("src/tokens/color-contract.json").absolutePath) }
 
 // The module is turned into JVM bytecode here, not when it is loaded. See `buildSrc/`.
-val kompilerKjerne = tasks.register<no.lotek.build.CompileCore>("kompilerKjerne") {
-    wasm.set(pakke.map { layout.projectDirectory.file(it.resolve("core/lotek-core.wasm").absolutePath) })
+val compileCore = tasks.register<no.lotek.build.CompileCore>("compileCore") {
+    wasm.set(unpacked.map { layout.projectDirectory.file(it.resolve("core/lotek-core.wasm").absolutePath) })
     classes.set(layout.buildDirectory.dir("chicory/classes"))
     sources.set(layout.buildDirectory.dir("chicory/sources"))
 }
 
 // The API is generated from the manifest: the values as `enum`s, and the builder functions that have a table.
-val genererApi = tasks.register<no.lotek.build.GenerateApi>("genererApi") {
-    manifest.set(manifestFil)
+val generateApi = tasks.register<no.lotek.build.GenerateApi>("generateApi") {
+    manifest.set(manifestFile)
     output.set(layout.buildDirectory.dir("generated/lotek"))
 }
 
@@ -113,7 +113,7 @@ val genererApi = tasks.register<no.lotek.build.GenerateApi>("genererApi") {
  */
 val webjar = tasks.register<Sync>("webjar") {
     into(layout.buildDirectory.dir("webjar"))
-    from(pakke) {
+    from(unpacked) {
         include("dist/**/*.js", "dist/lotek.css", "src/components/**/*.css", "src/tokens/**/*.css")
         exclude(
             "dist/cli.js", "dist/wasi-host.js", "dist/react.js", "dist/diagnostics/**", "dist/jsx/**",
@@ -128,20 +128,20 @@ val webjar = tasks.register<Sync>("webjar") {
 // the manifest when a consumer does not pass its own, and the contract when
 // the theme is built.
 tasks.processResources {
-    from(manifestFil) { into("no/lotek") }
-    from(kontraktFil) { into("no/lotek") }
+    from(manifestFile) { into("no/lotek") }
+    from(contractFile) { into("no/lotek") }
 }
 
 sourceSets.main {
     resources.srcDir(webjar)
-    kotlin.srcDir(genererApi)
-    java.srcDir(kompilerKjerne.map { it.sources })
+    kotlin.srcDir(generateApi)
+    java.srcDir(compileCore.map { it.sources })
     // The classes for the module are already compiled, so they go into the jar as they are.
-    resources.srcDir(kompilerKjerne.map { it.classes })
+    resources.srcDir(compileCore.map { it.classes })
 }
 
 dependencies {
-    compileOnly(files(kompilerKjerne.map { it.classes }))
+    compileOnly(files(compileCore.map { it.classes }))
 }
 
 tasks.test {
@@ -152,20 +152,20 @@ tasks.test {
      * here. CI packs the tarball from the same commit, so the two are always
      * the same age.
      */
-    val kjerne = rootDir.resolve("../core")
+    val core = rootDir.resolve("../core")
     val designsystem = rootDir.resolve("../designsystem")
-    systemProperty("parity", kjerne.resolve("parity").absolutePath)
-    systemProperty("theme", kjerne.resolve("theme").absolutePath)
+    systemProperty("parity", core.resolve("parity").absolutePath)
+    systemProperty("theme", core.resolve("theme").absolutePath)
     // The fixtures and the build cases are read through a path, so Gradle
     // does not see them without this, and a new fixture would leave the test
     // counted as up to date.
-    inputs.dir(kjerne.resolve("parity")).withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.dir(kjerne.resolve("theme")).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir(core.resolve("parity")).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir(core.resolve("theme")).withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file(designsystem.resolve("manifest/build-cases.json")).withPathSensitivity(PathSensitivity.NONE)
-    inputs.file(manifestFil).withPathSensitivity(PathSensitivity.NONE)
-    val manifestSti = manifestFil.map { it.asFile.absolutePath }
-    jvmArgumentProviders.add(CommandLineArgumentProvider { listOf("-Dmanifest=${manifestSti.get()}") })
-    systemProperty("byggetilfeller", designsystem.resolve("manifest/build-cases.json").absolutePath)
+    inputs.file(manifestFile).withPathSensitivity(PathSensitivity.NONE)
+    val manifestPath = manifestFile.map { it.asFile.absolutePath }
+    jvmArgumentProviders.add(CommandLineArgumentProvider { listOf("-Dmanifest=${manifestPath.get()}") })
+    systemProperty("buildCases", designsystem.resolve("manifest/build-cases.json").absolutePath)
     systemProperty("webjar", layout.buildDirectory.dir("webjar/META-INF/resources/webjars/lo-tek/$version").get().asFile.absolutePath)
     testLogging { events("failed") }
 }

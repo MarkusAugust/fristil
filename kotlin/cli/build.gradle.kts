@@ -41,10 +41,10 @@ java {
 }
 
 // The command line and the files it reads, from the npm package the root project has unpacked.
-val pakke = rootProject.tasks.named<Sync>("pakkUt").map { it.destinationDir }
+val unpacked = rootProject.tasks.named<Sync>("unpackPackage").map { it.destinationDir }
 
-val kompilerKommandolinje = tasks.register<no.lotek.build.CompileCore>("kompilerKommandolinje") {
-    wasm.set(pakke.map { layout.projectDirectory.file(it.resolve("core/lotek.wasm").absolutePath) })
+val compileCli = tasks.register<no.lotek.build.CompileCore>("compileCli") {
+    wasm.set(unpacked.map { layout.projectDirectory.file(it.resolve("core/lotek.wasm").absolutePath) })
     className.set("no.lotek.cli.LotekCli")
     classes.set(layout.buildDirectory.dir("chicory/classes"))
     sources.set(layout.buildDirectory.dir("chicory/sources"))
@@ -57,19 +57,19 @@ val kompilerKommandolinje = tasks.register<no.lotek.build.CompileCore>("kompiler
  * it the folder as `LOTEK_PACKAGE`.
  */
 tasks.processResources {
-    from(pakke) {
+    from(unpacked) {
         include("package.json", "manifest/manifest.json", "manifest/files.json", "src/tokens/color-contract.json", "agent/*.md", "src/components/**")
-        into("lotek-pakke")
+        into("lotek-package")
     }
 }
 
 sourceSets.main {
-    java.srcDir(kompilerKommandolinje.map { it.sources })
-    resources.srcDir(kompilerKommandolinje.map { it.classes })
+    java.srcDir(compileCli.map { it.sources })
+    resources.srcDir(compileCli.map { it.classes })
 }
 
 dependencies {
-    compileOnly(files(kompilerKommandolinje.map { it.classes }))
+    compileOnly(files(compileCli.map { it.classes }))
 }
 
 /*
@@ -77,7 +77,7 @@ dependencies {
  * installation. The plain jar is without the dependencies, and is the one
  * the Gradle plugin uses.
  */
-val samletJar = tasks.register<Jar>("samletJar") {
+val fatJar = tasks.register<Jar>("fatJar") {
     archiveFileName.set("lotek.jar")
     manifest { attributes("Main-Class" to "no.lotek.cli.MainKt") }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -86,4 +86,4 @@ val samletJar = tasks.register<Jar>("samletJar") {
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "META-INF/versions/**/module-info.class", "module-info.class")
 }
 
-tasks.assemble { dependsOn(samletJar) }
+tasks.assemble { dependsOn(fatJar) }

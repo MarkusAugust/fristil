@@ -1,200 +1,214 @@
 /**
- * Kontrollerer at versjonsloggen følger pakken, og at `engines` sier sant.
+ * Checks that the changelog follows the package, and that `engines` is true.
  *
- * En versjonslogg som ikke stemmer er verre enn ingen: den som leser den tror
- * den er ajour. Sjekken er derfor en del av byggesteget, ikke noe man husker.
+ * A changelog that does not match is worse than none: whoever reads it
+ * believes it is up to date. The check is therefore part of the build, not
+ * something to remember.
  *
- * Kjør med: bun run check:version
+ * Run with: bun run check:version
  */
 
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { englishDate, MONTHS } from "./english-date.js"
 
-const ROT = fileURLToPath(new URL("..", import.meta.url))
-const pakke = await Bun.file(join(ROT, "package.json")).json()
-const logg = await Bun.file(join(ROT, "CHANGELOG.md")).text()
-const dekk = await Bun.file(
-  join(ROT, "../presentation/design-system-architecture.html"),
+const ROOT = fileURLToPath(new URL("..", import.meta.url))
+const pkg = await Bun.file(join(ROOT, "package.json")).json()
+const changelog = await Bun.file(join(ROOT, "CHANGELOG.md")).text()
+const deck = await Bun.file(
+  join(ROOT, "../presentation/design-system-architecture.html"),
 ).text()
 
-const feil: string[] = []
+const errors: string[] = []
 
-const overskrifter = [...logg.matchAll(/^## (.+)$/gm)].map((treff) => treff[1])
+const headings = [...changelog.matchAll(/^## (.+)$/gm)].map((m) => m[1])
 
-if (overskrifter[0] !== "Ikke utgitt") {
-  feil.push(
-    "Første overskrift i CHANGELOG.md skal være «Ikke utgitt», slik at det finnes et sted å skrive endringer som ikke er sluppet ennå.",
+if (headings[0] !== "Unreleased") {
+  errors.push(
+    'The first heading in CHANGELOG.md must be "Unreleased", so there is a place to write changes that are not released yet.',
   )
 }
 
-const utgitt = overskrifter
+const released = headings
   .slice(1)
-  .map((tekst) => tekst.match(/^(\d+\.\d+\.\d+)/)?.[1])
+  .map((text) => text.match(/^(\d+\.\d+\.\d+)/)?.[1])
 
-if (utgitt.some((versjon) => versjon === undefined)) {
-  feil.push(
-    "Hver overskrift under «Ikke utgitt» skal begynne med et versjonsnummer, for eksempel «## 0.2.0 (2026-09-21)».",
+if (released.some((version) => version === undefined)) {
+  errors.push(
+    'Every heading below "Unreleased" must start with a version number, for example "## 0.2.0 (2026-09-21)".',
   )
 }
 
-if (!utgitt.includes(pakke.version)) {
-  feil.push(
-    `Versjonen i package.json er ${pakke.version}, men CHANGELOG.md har ingen overskrift for den. Skriv om «Ikke utgitt» til «## ${pakke.version} (${new Date().toISOString().slice(0, 10)})» når du slipper den.`,
+if (!released.includes(pkg.version)) {
+  errors.push(
+    `The version in package.json is ${pkg.version}, but CHANGELOG.md has no heading for it. Run bun run prepare-version ${pkg.version}, or add "## ${pkg.version} (${new Date().toISOString().slice(0, 10)})" below "Unreleased".`,
   )
 }
 
-// Versjonene skal stå med den nyeste øverst.
-const sortert = [...utgitt].sort((a, b) =>
+// The versions must be listed newest first.
+const sorted = [...released].sort((a, b) =>
   (b ?? "").localeCompare(a ?? "", undefined, { numeric: true }),
 )
-if (utgitt.join() !== sortert.join()) {
-  feil.push("Versjonene i CHANGELOG.md skal stå med den nyeste øverst.")
+if (released.join() !== sorted.join()) {
+  errors.push("The versions in CHANGELOG.md must be listed newest first.")
 }
 
-// Filen må være med i pakken, ellers ser ingen den på npm.
-if (!(pakke.files as string[]).includes("CHANGELOG.md")) {
-  feil.push("CHANGELOG.md må stå i «files» i package.json for å bli sendt ut.")
+// The file must be in the package, or nobody sees it on npm.
+if (!(pkg.files as string[]).includes("CHANGELOG.md")) {
+  errors.push(
+    'CHANGELOG.md must be listed in "files" in package.json to be published.',
+  )
 }
 
 /*
- * Merket i presentasjonen bærer versjonen, og hadde ingenting som holdt det i
- * takt. Det sto på 0.15.0 mens pakken var på 0.19.0, altså fire versjoner bak,
- * og det er det første en tilskuer ser.
+ * The badge in the presentation carries the version, and nothing kept it in
+ * step. It said 0.15.0 while the package was at 0.19.0, four versions
+ * behind, and it is the first thing an audience sees.
  *
- * `prepare-version` skriver det nå. Men et omskrivingssteg må finne den gamle
- * verdien for å bytte den, og det er nettopp det som svikter stille, slik det
- * gjorde for CDN-adressene i dokumentasjonen. Derfor denne.
+ * `prepare-version` writes it now. But a rewrite step has to find the old
+ * value to replace it, and that is exactly what fails silently, as it did for
+ * the CDN addresses in the documentation. Hence this check.
  */
-const iDekket = /Design system architecture · LO-TEK ([^\s·]+) · ([^<]+)/.exec(
-  dekk,
+const inDeck = /Design system architecture · LO-TEK ([^\s·]+) · ([^<]+)/.exec(
+  deck,
 )
 
 /*
- * Datoen har en fasit: den dagen versjonen ble gitt ut, som står i overskriften
- * i versjonsloggen. Uten denne kunne noen satt versjonen for hånd og latt
- * datoen bli stående, og merket ville løyet om halvparten.
+ * The date has a source of truth: the day the version was released, which is
+ * in the changelog heading. Without this, someone could set the version by
+ * hand and leave the date, and the badge would be half wrong.
  */
-const utgittDato = new RegExp(
-  `^## ${pakke.version.replace(/\./g, "\\.")} \\((\\d{4}-\\d{2}-\\d{2})\\)`,
+const releaseDate = new RegExp(
+  `^## ${pkg.version.replace(/\./g, "\\.")} \\((\\d{4}-\\d{2}-\\d{2})\\)`,
   "m",
-).exec(logg)?.[1]
+).exec(changelog)?.[1]
 
-if (!iDekket) {
-  feil.push(
-    "Fant ikke merket med versjonen i presentation/design-system-architecture.html. Står det fortsatt der, og heter det det samme?",
+if (!inDeck) {
+  errors.push(
+    "Found no version badge in presentation/design-system-architecture.html. Is it still there, with the same name?",
   )
 } else {
-  if (iDekket[1] !== pakke.version) {
-    feil.push(
-      `Presentasjonen står på ${iDekket[1]}, mens pakken er ${pakke.version}. Kjør bun run prepare-version, eller rett merket for hånd.`,
+  if (inDeck[1] !== pkg.version) {
+    errors.push(
+      `The presentation says ${inDeck[1]}, while the package is ${pkg.version}. Run bun run prepare-version, or fix the badge by hand.`,
     )
   }
 
   /*
-   * Mangler datoen i overskrifta, hoppes datosjekken over, og merket kan stå
-   * med hva som helst. Et vilkår som slår av en sjekk er farligere enn en sjekk
-   * som mangler, så det feller i stedet. Den eksisterende sjekken over krever
-   * bare at overskrifta begynner med et versjonsnummer, så «## 0.19.0» uten
-   * dato passerer den.
+   * Without a date in the heading, the date check would be skipped, and the
+   * badge could say anything. A condition that switches a check off is more
+   * dangerous than a missing check, so it fails instead. The check above
+   * only requires the heading to start with a version number, so "## 0.19.0"
+   * without a date passes it.
    */
-  if (!utgittDato) {
-    feil.push(
-      `Overskrifta for ${pakke.version} i CHANGELOG.md mangler en dato på formen «## ${pakke.version} (2026-09-28)», så datoen i presentasjonen kan ikke kontrolleres.`,
+  if (!releaseDate) {
+    errors.push(
+      `The heading for ${pkg.version} in CHANGELOG.md has no date of the form "## ${pkg.version} (2026-09-28)", so the date in the presentation cannot be checked.`,
     )
-  } else if (iDekket[2].trim() !== englishDate(utgittDato)) {
-    feil.push(
-      `Presentasjonen er datert «${iDekket[2].trim()}», mens ${pakke.version} ble gitt ut ${englishDate(utgittDato)}.`,
+  } else if (inDeck[2].trim() !== englishDate(releaseDate)) {
+    errors.push(
+      `The presentation is dated "${inDeck[2].trim()}", while ${pkg.version} was released on ${englishDate(releaseDate)}.`,
     )
   }
 }
 
 /*
- * Tallene i avhengighetsgrafen må si når de ble sjekket.
+ * The numbers in the dependency graph must say when they were checked.
  *
- * Tallene der er lest av `package-lock.json` en bestemt dag, og de eldes: en
- * graf uten dato leses som en påstand om nåtid. Datoen kan ikke utledes av noe
- * i repoet, så vakten kan bare kreve at den står der, og at den er en dato.
- * Det er nok til at den ikke kan bli borte i stillhet.
+ * They were read from `package-lock.json` on a particular day, and they age:
+ * a graph without a date reads as a claim about the present. The date cannot
+ * be derived from anything in the repository, so the guard can only require
+ * that it is there, and that it is a date. That is enough to keep it from
+ * disappearing silently.
  */
-const maalt = new RegExp(
+const checked = new RegExp(
   `class="[^"]*\\bavh-maalt\\b[^"]*"\\s*>\\s*Checked (\\d{1,2} (?:${MONTHS.join("|")}) \\d{4})`,
-).exec(dekk)
+).exec(deck)
 
-if (!maalt) {
-  feil.push(
-    "Avhengighetsgrafen i presentasjonen sier ikke når tallene ble sjekket. Den skal ha «Checked <day> <Month> <year>», for eksempel «Checked 12 October 2026», i et element med klassen avh-maalt.",
+if (!checked) {
+  errors.push(
+    'The dependency graph in the presentation does not say when the numbers were checked. It must have "Checked <day> <Month> <year>", for example "Checked 12 October 2026", in an element with the class avh-maalt.',
   )
 }
 
-// Kotlin-pakken bygges av npm-pakken med sitt eget versjonsnummer, så et
-// nummer som står bak gir en Maven-utgivelse av forrige versjon.
-const kotlinVersjon = /^version=(.+)$/m.exec(
-  await Bun.file(join(ROT, "../kotlin/gradle.properties")).text(),
+// The Kotlin package is built from the npm package with its own version
+// number, so a number that lags behind gives a Maven release of the previous
+// version.
+const kotlinVersion = /^version=(.+)$/m.exec(
+  await Bun.file(join(ROOT, "../kotlin/gradle.properties")).text(),
 )?.[1]
-if (kotlinVersjon !== pakke.version) {
-  feil.push(
-    `kotlin/gradle.properties har version=${kotlinVersjon ?? "(mangler)"}, mens package.json har ${pakke.version}. De skal være like.`,
+if (kotlinVersion !== pkg.version) {
+  errors.push(
+    `kotlin/gradle.properties has version=${kotlinVersion ?? "(missing)"}, while package.json has ${pkg.version}. They must be the same.`,
   )
 }
 
 /*
- * Versjonen til hver workspace står også i `bun.lock`, og `bun install`
- * skriver den ikke på nytt når bare versjonen er endret. `prepare-version`
- * gjør det for pakken, men utvidelsen fikk 0.8.0 i `package.json` mens
- * låsefila sto på 0.7.0. Kravet gjelder derfor hver workspace som har en
- * versjon. `documentation` har ingen, og hoppes over.
+ * The version of every workspace is also in `bun.lock`, and `bun install`
+ * does not rewrite it when only the version has changed. `prepare-version`
+ * does it for the package, but the extension got 0.8.0 in `package.json`
+ * while the lockfile still said 0.7.0. The requirement therefore applies to
+ * every workspace that has a version. `documentation` has none, and is
+ * skipped.
  */
-const rotpakke = await Bun.file(join(ROT, "../package.json")).json()
-const laas = await Bun.file(join(ROT, "../bun.lock")).text()
+const rootPackage = await Bun.file(join(ROOT, "../package.json")).json()
+const lock = await Bun.file(join(ROOT, "../bun.lock")).text()
 let workspaces = 0
-for (const mappe of rotpakke.workspaces as string[]) {
-  const ws = await Bun.file(join(ROT, "..", mappe, "package.json")).json()
+for (const dir of rootPackage.workspaces as string[]) {
+  const ws = await Bun.file(join(ROOT, "..", dir, "package.json")).json()
   if (ws.version === undefined) continue
-  const iLaas = new RegExp(
-    `"${mappe}": \\{\\s*"name": "${ws.name}",\\s*"version": "([^"]+)"`,
-  ).exec(laas)?.[1]
-  if (iLaas !== ws.version)
-    feil.push(
-      `bun.lock har ${ws.name} ${iLaas ?? "uten versjon"}, mens ${mappe}/package.json har ${ws.version}. Rett versjonen i bun.lock.`,
+  const inLock = new RegExp(
+    `"${dir}": \\{\\s*"name": "${ws.name}",\\s*"version": "([^"]+)"`,
+  ).exec(lock)?.[1]
+  if (inLock !== ws.version)
+    errors.push(
+      `bun.lock has ${ws.name} ${inLock ?? "without a version"}, while ${dir}/package.json has ${ws.version}. Fix the version in bun.lock.`,
     )
   workspaces += 1
 }
 if (workspaces === 0)
-  feil.push("Fant ingen workspace med versjon å sjekke mot bun.lock.")
+  errors.push("Found no workspace with a version to check against bun.lock.")
 
 /*
- * Kjernen lastes med `process.getBuiltinModule`, som kom i Node 20.16 og
- * 22.3. Versjonene er ikke ordnet i én rekke: Node 21 og 22.0 til 22.2 er nyere
- * enn 20.16 og mangler den likevel. `>=20.16` slapp dem inn, og den som
- * kjørte Node 22.1 fikk høre at versjonen var eldre enn 20.16. Intervallet må
- * derfor ha to grenser, og det kontrolleres med versjoner på hver side av dem.
+ * The core is loaded with `process.getBuiltinModule`, which arrived in Node
+ * 20.16 and 22.3. The versions are not in one line: Node 21 and 22.0 to 22.2
+ * are newer than 20.16 and still lack it. `>=20.16` let them in, and whoever
+ * ran Node 22.1 was told the version was older than 20.16. The range
+ * therefore needs two bounds, and it is checked with versions on each side of
+ * them.
  */
-const motor = pakke.engines?.node as string | undefined
-if (!motor) {
-  feil.push("package.json mangler engines.node.")
+const engine = pkg.engines?.node as string | undefined
+if (!engine) {
+  errors.push("package.json is missing engines.node.")
 } else {
-  const skalInn = ["20.16.0", "20.19.5", "22.3.0", "22.22.0", "24.0.0"]
-  const skalUt = ["18.20.0", "20.15.1", "21.0.0", "21.7.3", "22.0.0", "22.2.0"]
-  for (const versjon of skalInn)
-    if (!Bun.semver.satisfies(versjon, motor))
-      feil.push(
-        `engines.node er «${motor}», og slipper ikke inn Node ${versjon}, som har process.getBuiltinModule.`,
+  const mustPass = ["20.16.0", "20.19.5", "22.3.0", "22.22.0", "24.0.0"]
+  const mustFail = [
+    "18.20.0",
+    "20.15.1",
+    "21.0.0",
+    "21.7.3",
+    "22.0.0",
+    "22.2.0",
+  ]
+  for (const version of mustPass)
+    if (!Bun.semver.satisfies(version, engine))
+      errors.push(
+        `engines.node is "${engine}", and does not let in Node ${version}, which has process.getBuiltinModule.`,
       )
-  for (const versjon of skalUt)
-    if (Bun.semver.satisfies(versjon, motor))
-      feil.push(
-        `engines.node er «${motor}», og slipper inn Node ${versjon}, som mangler process.getBuiltinModule.`,
+  for (const version of mustFail)
+    if (Bun.semver.satisfies(version, engine))
+      errors.push(
+        `engines.node is "${engine}", and lets in Node ${version}, which lacks process.getBuiltinModule.`,
       )
 }
 
-if (feil.length > 0) {
+if (errors.length > 0) {
   console.error(
-    `Versjonsloggen stemmer ikke:\n\n${feil.map((f) => `  ${f}`).join("\n")}\n`,
+    `The changelog does not match:\n\n${errors.map((e) => `  ${e}`).join("\n")}\n`,
   )
   process.exit(1)
 }
 
 console.log(
-  `Versjonsloggen stemmer: ${pakke.version} er beskrevet, «Ikke utgitt» står øverst, presentasjonen står på ${iDekket?.[1]} datert ${iDekket?.[2].trim()}, avhengighetsgrafen er ${maalt?.[1]}, og engines «${motor}» holder Node uten getBuiltinModule ute.`,
+  `The changelog matches: ${pkg.version} is described, "Unreleased" is at the top, the presentation says ${inDeck?.[1]} dated ${inDeck?.[2].trim()}, the dependency graph is ${checked?.[1]}, and engines "${engine}" keeps out Node without getBuiltinModule.`,
 )

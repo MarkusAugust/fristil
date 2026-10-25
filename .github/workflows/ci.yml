@@ -4,37 +4,37 @@ on:
   push:
     branches: [master]
   pull_request:
-  # Lar en gren kjøres før det finnes en PR, så feil i selve arbeidsflyten
-  # kommer fram med en gang.
+  # Lets a branch run before there is a PR, so mistakes in the workflow
+  # itself show up straight away.
   workflow_dispatch:
 
-# En ny push til samme gren avbryter forrige kjøring. Det er ingen vits i å
-# kjøre tre nettlesere gjennom en versjon ingen skal se igjen.
+# A new push to the same branch cancels the previous run. There is no point in
+# running three browsers over a version nobody will look at again.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # Ingen commit skal ha en kodeagent som forfatter. Se CONTRIBUTING.md.
+  # No commit may have a coding agent as its author. See CONTRIBUTING.md.
   authors:
-    name: Forfattere
+    name: Authors
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v7
         with:
-          # Hele historikken, ikke bare siste commit.
+          # The whole history, not just the last commit.
           fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
 
-      - name: Ingen agent som forfatter
+      - name: No agent as author
         run: bun designsystem/scripts/check-authors.ts
 
   check:
-    name: Lint, typer og tester
+    name: Lint, types and tests
     runs-on: ubuntu-latest
 
     steps:
@@ -44,87 +44,89 @@ jobs:
         with:
           bun-version: 1.3.14
 
-      # Arbeidsflyten som publiserer kjører alltid nyeste npm, og `npm pack`
-      # er en del av byggesjekkene. Møter ikke CI samme npm, viser en endring
-      # i npm seg først når en versjon skal ut.
-      - name: Oppdater npm
+      # The publishing workflow always runs the latest npm, and `npm pack` is
+      # part of the build checks. If CI does not use the same npm, a change in
+      # npm only shows up when a version is being released.
+      - name: Update npm
         run: npm install --global npm@latest
 
-      - name: Installer avhengigheter
+      - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # Nettleserne er store, og endrer seg bare når Playwright gjør det.
-      - name: Hent nettlesere fra hurtigbufferen
-        id: nettlesere
+      # The browsers are large, and only change when Playwright does.
+      - name: Restore browsers from cache
+        id: browsers
         uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
 
-      # Pakkens egen Playwright, ikke `bunx playwright`, som kan hente en
-      # annen versjon enn den vitest bruker.
-      - name: Installer nettlesere
+      # The package's own Playwright, not `bunx playwright`, which can fetch a
+      # different version from the one vitest uses.
+      - name: Install browsers
         working-directory: designsystem
         run: ./node_modules/.bin/playwright install --with-deps chromium firefox webkit
 
       - name: Lint
         run: bun run lint
 
-      - name: Typesjekk
+      - name: Type check
         run: bun run typecheck
 
-      - name: Typesjekk av testene
+      - name: Type check the tests
         run: bun run typecheck:tests
 
-      # Kjører komponenttestene i Chromium, Firefox og WebKit, og kontrollerer
-      # at Tailwind-temaet gir LO-TEKs verdier.
-      - name: Tester
+      # Runs the component tests in Chromium, Firefox and WebKit, and checks
+      # that the Tailwind theme gives LO-TEK's values.
+      - name: Tests
         run: bun run test
 
-      # Pakken har kjernen med seg, bygget fra Rust. `rust-toolchain.toml` i
-      # `core/` bestemmer versjonen, og rustup henter den ved første kall.
-      - name: Rust-versjon
+      # The package carries the core, built from Rust. `rust-toolchain.toml` in
+      # `core/` decides the version, and rustup fetches it on the first call.
+      - name: Rust version
         working-directory: core
         run: rustc --version
 
-      # Bygger pakken og dokumentasjonen, og kontrollerer at pakken inneholder
-      # det den lover.
-      - name: Bygg
+      # Builds the package and the documentation, and checks that the package
+      # contains what it promises.
+      - name: Build
         run: bun run build
 
-      # Kommandolinja skrevet i Rust skal svare det samme som den i pakken,
-      # byte for byte, på hver kjøring i check-cli.ts.
-      - name: Kommandolinja i Rust svarer som den i pakken
+      # The CLI written in Rust must answer the same as the one in the
+      # package, byte for byte, on every run in check-cli.ts.
+      - name: The Rust CLI answers like the package
         run: |
           cargo build --release -p lotek --manifest-path core/Cargo.toml
-          LOTEK_SAMMENLIGN="$PWD/core/target/release/lotek" bun designsystem/scripts/check-cli.ts
+          LOTEK_COMPARE="$PWD/core/target/release/lotek" bun designsystem/scripts/check-cli.ts
 
-      # Siden slik Chromium har rendret den, med stilarkene den lastet.
-      - name: Den rendrede siden
+      # The page as Chromium rendered it, with the stylesheets it loaded.
+      - name: The rendered page
         working-directory: designsystem
         run: bun scripts/check-rendered.ts
 
-      # Språkserveren over ekte standard inn og ut, i hver vert: Node, den
-      # kjørbare fila og VS Code-utvidelsens server. Jar-en prøves under.
-      - name: Språkserveren
+      # The language server over real standard input and output, in every
+      # host: Node, the executable and the VS Code extension's server. The jar
+      # is tested below.
+      - name: Language server
         run: |
           bun designsystem/scripts/check-lsp.ts
           LOTEK_CLI="$PWD/core/target/release/lotek" bun designsystem/scripts/check-lsp.ts
           (cd editor && bun run build)
           LOTEK_CLI="[\"node\",\"$PWD/editor/dist/server.js\"]" bun designsystem/scripts/check-lsp.ts
 
-      # VS Code er 300 MB, og hentes bare når versjonen i engines endres.
-      - name: Hent VS Code fra hurtigbufferen
+      # VS Code is 300 MB, and is only fetched when the version in engines
+      # changes.
+      - name: Restore VS Code from cache
         uses: actions/cache@v6
         with:
           path: .vscode-test
           key: vscode-${{ runner.os }}-${{ hashFiles('editor/package.json') }}
 
-      # Utvidelsen i en ekte VS Code, med språkserveren koblet til.
-      - name: VS Code-utvidelsen
+      # The extension in a real VS Code, with the language server connected.
+      - name: VS Code extension
         run: xvfb-run -a bun editor/scripts/check-vscode.ts
 
-      # Java 17, den laveste versjonen jar-en lover å virke på.
+      # Java 17, the lowest version the jar promises to run on.
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -132,42 +134,42 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # Og det samme for `java -jar lotek.jar`, som kjører WASI-modulen med
-      # Chicory. Jar-en bygges av npm-pakken, her pakket fra denne commiten,
-      # siden koden er nyere enn det som ligger på npm.
-      - name: Kommandolinja på JVM-en svarer som den i pakken
+      # And the same for `java -jar lotek.jar`, which runs the WASI module with
+      # Chicory. The jar is built from the npm package, packed here from this
+      # commit, since the code is newer than what is on npm.
+      - name: The CLI on the JVM answers like the package
         run: |
           (cd designsystem && npm pack --ignore-scripts --silent)
-          (cd kotlin && ./gradlew :cli:samletJar -Plotek.pakke=../designsystem)
-          LOTEK_SAMMENLIGN="[\"java\",\"-jar\",\"$PWD/kotlin/cli/build/libs/lotek.jar\"]" bun designsystem/scripts/check-cli.ts
+          (cd kotlin && ./gradlew :cli:fatJar -Plotek.package=../designsystem)
+          LOTEK_COMPARE="[\"java\",\"-jar\",\"$PWD/kotlin/cli/build/libs/lotek.jar\"]" bun designsystem/scripts/check-cli.ts
           LOTEK_CLI="[\"java\",\"-jar\",\"$PWD/kotlin/cli/build/libs/lotek.jar\"]" bun designsystem/scripts/check-lsp.ts
 
-      # De genererte filene skal være de generatoren ville skrevet nå.
+      # The generated files must be what the generator would write now.
       #
-      # `build` kjører `generate` før noen sjekk leser filene, så vaktpostene
-      # sammenligner alltid med det som nettopp ble skrevet, og en utdatert
-      # fil på disk kan ikke felle dem. Her spørres git i stedet: står det
-      # noe å commite etter bygget, er en generert fil merget uten å være
-      # regenerert, og filene på GitHub er det agenter og npm-lesere faktisk
-      # får.
-      - name: Ingenting er ugenerert
+      # `build` runs `generate` before any check reads the files, so the
+      # guards always compare against what was just written, and an outdated
+      # file on disk cannot fail them. Here git is asked instead: if there is
+      # something to commit after the build, a generated file was merged
+      # without being regenerated, and the files on GitHub are what agents
+      # and npm readers actually get.
+      - name: Generated files are up to date
         run: |
           if [ -n "$(git status --porcelain)" ]; then
-            echo "Bygget endret sporede filer. Kjør bun run build og commit:"
+            echo "The build changed tracked files. Run bun run build and commit:"
             git status --porcelain
             git diff
             exit 1
           fi
 
-      # Kjører axe mot hver bygde side i begge temaer, og kontrollerer at
-      # dokumentasjonen følger koden.
-      - name: Dokumentasjon
+      # Runs axe against every built page in both themes, and checks that the
+      # documentation follows the code.
+      - name: Documentation
         run: bun run test:docs
 
-  # Kommandolinja og språkserveren på Windows, der stiene, stasjonene og
-  # prosessene oppfører seg annerledes. Verten åpner hver stasjon for
-  # WASI-modulen, og en feil der ødela både npx og VS Code-utvidelsen uten at
-  # Linux merket noe.
+  # The CLI and the language server on Windows, where paths, drives and
+  # processes behave differently. The host opens every drive for the WASI
+  # module, and a mistake there broke both npx and the VS Code extension
+  # without Linux noticing.
   windows:
     name: Windows
     runs-on: windows-latest
@@ -182,43 +184,43 @@ jobs:
         with:
           bun-version: 1.3.14
 
-      - name: Installer avhengigheter
+      - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Rust-versjon
+      - name: Rust version
         working-directory: core
         run: rustc --version
 
-      # Kjernen og kommandolinja som WASI-modul, og pakken kompilert til
-      # dist/, som npx kjører.
-      - name: Bygg kjernen og pakken
+      # The core and the CLI as a WASI module, and the package compiled to
+      # dist/, which npx runs.
+      - name: Build the core and the package
         run: |
           (cd designsystem && bun run core)
           (cd designsystem && bun run build:browser)
           (cd editor && bun run build)
 
-      - name: Kommandolinja gjennom npx
+      - name: The CLI through npx
         run: bun designsystem/scripts/check-cli.ts
 
-      # Den kjørbare fila for Windows skal svare det samme, byte for byte.
-      - name: Den kjørbare fila svarer som npx
+      # The Windows executable must answer the same, byte for byte.
+      - name: The executable answers like npx
         run: |
           cargo build --release -p lotek --manifest-path core/Cargo.toml
-          LOTEK_SAMMENLIGN="$(pwd -W)/core/target/release/lotek.exe" bun designsystem/scripts/check-cli.ts
+          LOTEK_COMPARE="$(pwd -W)/core/target/release/lotek.exe" bun designsystem/scripts/check-cli.ts
 
-      - name: Språkserveren
+      - name: Language server
         run: |
           bun designsystem/scripts/check-lsp.ts
           LOTEK_CLI="[\"node\",\"$(pwd -W)/editor/dist/server.js\"]" bun designsystem/scripts/check-lsp.ts
 
-  # Rust-kjernen og Kotlin-pakken, ved siden av hovedjobben.
+  # The Rust core and the Kotlin package, next to the main job.
   #
-  # Uten filter på stier, i motsetning til IntelliJ-pluginen: kjernen leser
-  # manifestet, og en endring i en komponent skal kunne felle den selv om
-  # ingen rørte Rust-koden. En jobb som alltid kjører, kan også gjøres
-  # påkrevd uten å bli stående og vente.
+  # No path filter, unlike the IntelliJ plugin: the core reads the manifest,
+  # and a change in a component should be able to fail it even when nobody
+  # touched the Rust code. A job that always runs can also be made required
+  # without being left waiting.
   core:
-    name: Rust-kjernen og Kotlin
+    name: Rust core and Kotlin
     runs-on: ubuntu-latest
 
     steps:
@@ -228,43 +230,46 @@ jobs:
         with:
           bun-version: 1.3.14
 
-      - name: Installer avhengigheter
+      - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # `rust-toolchain.toml` i `core/` bestemmer versjonen. rustup finnes
-      # på maskinen og henter den ved første kall.
-      - name: Rust-versjon
+      # `rust-toolchain.toml` in `core/` decides the version. rustup is on the
+      # machine and fetches it on the first call.
+      - name: Rust version
         working-directory: core
         run: rustc --version
 
-      # Kjernen bygges for nettleseren og vertene (wasm32-unknown-unknown),
-      # kommandolinja for maskinen og som WASI-modul (wasm32-wasip1).
-      - name: Formatering og lint i Rust
+      # The core is built for the browser and the hosts
+      # (wasm32-unknown-unknown), the CLI for the machine and as a WASI module
+      # (wasm32-wasip1).
+      - name: Rust formatting and lint
         working-directory: core
         run: |
           cargo fmt --all --check
           cargo clippy --release --target wasm32-unknown-unknown -- -D warnings
           cargo clippy --release -p lotek --tests -- -D warnings
 
-      - name: Enhetstester i Rust
+      - name: Rust unit tests
         working-directory: core
         run: cargo test --workspace
 
-      - name: Kommandolinja som WASI-modul
+      - name: The CLI as a WASI module
         working-directory: core
         run: cargo build --release -p lotek --target wasm32-wasip1
 
-      - name: Bygg kjernen
+      - name: Build the core
         run: bun core/scripts/build.ts
 
-      # Fiksturene, malene og temaene mot fasiten, og markupen i repoet og
-      # 4000 ødelagte sider mot kravene et svar må holde.
-      - name: Kjernen svarer det den skal
+      # The fixtures, the templates and the themes against the expected
+      # results, and the markup in the repository and 4000 broken pages
+      # against the requirements an answer must meet.
+      - name: The core answers as it should
         run: bun core/scripts/check-core.ts
 
-      # Hver regel feller det den skal, og bare det, med ordforrådet fra
-      # metadataen og snippetene fra komponentsidene som rene tilfeller.
-      - name: Diagnostikken feller det den skal
+      # Every rule fails what it should, and only that, with the vocabulary
+      # from the metadata and the snippets from the component pages as clean
+      # cases.
+      - name: The diagnostics fail what they should
         run: bun core/scripts/check-diagnostics.ts
 
       - uses: actions/setup-java@v5
@@ -274,12 +279,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # Kotlin-pakken bygges av npm-pakken og trenger verken Rust eller Bun.
-      # Tarballen pakkes likevel her, fra denne commiten, siden koden er nyere
-      # enn det som ligger på npm.
-      - name: Pakk npm-pakken
+      # The Kotlin package is built from the npm package and needs neither
+      # Rust nor Bun. The tarball is packed here anyway, from this commit,
+      # since the code is newer than what is on npm.
+      - name: Pack the npm package
         run: bun --filter @lo-tek/interfaces pack
 
       - name: Kotlin
         working-directory: kotlin
-        run: ./gradlew test -Plotek.pakke=../designsystem
+        run: ./gradlew test -Plotek.package=../designsystem

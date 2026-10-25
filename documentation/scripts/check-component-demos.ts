@@ -373,7 +373,9 @@ await on(
   async (page, id) => {
     await page.evaluate((id) => {
       const root = document.getElementById(id)?.shadowRoot
-      ;(root?.getElementById("demo-connection-off") as HTMLElement | null)?.click()
+      ;(
+        root?.getElementById("demo-connection-off") as HTMLElement | null
+      )?.click()
     }, id)
     // The bar is inserted empty and filled on the next frame, so the live
     // region exists before the content arrives. Wait for the text, not the

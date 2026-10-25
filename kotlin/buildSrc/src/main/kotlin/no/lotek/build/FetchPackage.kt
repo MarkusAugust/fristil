@@ -52,7 +52,7 @@ abstract class FetchPackage : DefaultTask() {
             throw GradleException(
                 "@lo-tek/interfaces@$version is not on npm (status ${metadata.statusCode()}). " +
                     "If you build from the repository between two releases, pack the package yourself and pass it with " +
-                    "-Plotek.pakke=<path to .tgz>. See kotlin/README.md.",
+                    "-Plotek.package=<path to .tgz>. See kotlin/README.md.",
             )
         }
         val dist = (JsonSlurper().parseText(metadata.body()) as Map<*, *>)["dist"] as Map<*, *>

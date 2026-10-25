@@ -64,7 +64,7 @@ so pack it from the repository first, as in `kotlin/README.md`:
 
 ```bash
 bun --filter @lo-tek/interfaces pack
-cd editor-intellij && ./gradlew build -Plotek.pakke=../designsystem
+cd editor-intellij && ./gradlew build -Plotek.package=../designsystem
 ```
 
 ## The string has to be marked

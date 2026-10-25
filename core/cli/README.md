@@ -42,8 +42,8 @@ byte, on standard output, standard error and the exit code, in every run in
 
 ```bash
 cargo build --release -p lotek
-LOTEK_SAMMENLIGN=$PWD/target/release/lotek bun ../designsystem/scripts/check-cli.ts
-LOTEK_SAMMENLIGN='["java", "-jar", "/path/to/lotek.jar"]' bun ../designsystem/scripts/check-cli.ts
+LOTEK_COMPARE=$PWD/target/release/lotek bun ../designsystem/scripts/check-cli.ts
+LOTEK_COMPARE='["java", "-jar", "/path/to/lotek.jar"]' bun ../designsystem/scripts/check-cli.ts
 ```
 
 Two explanations come from the host and are not identical: what is wrong in a

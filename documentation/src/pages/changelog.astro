@@ -11,12 +11,11 @@ import { rehypeTabellrull } from "../plugins/rehype-table-scroll.mjs"
  * has bundled the page. The heading in the file is replaced by the page's own
  * title, or there would be two `<h1>` on the page. The unreleased section is in
  * the file at all times, empty too right after a release, and is only included
- * when there is something under it. Both the Norwegian and the English heading
- * are recognised, so the page does not depend on which one the file uses.
+ * when there is something under it.
  */
 const kilde = logg
   .replace(/^# .*\n/, "")
-  .replace(/^## (?:Ikke utgitt|Unreleased)\s*\n(?=## )/m, "")
+  .replace(/^## Unreleased\s*\n(?=## )/m, "")
 
 /*
  * The page bypasses Starlight's own markdown, so what the other pages get has

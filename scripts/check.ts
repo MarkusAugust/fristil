@@ -1,18 +1,19 @@
 /**
- * `bun run check`: stegene i `.github/workflows/ci.yml`, kjørt her.
+ * `bun run check`: the steps in `.github/workflows/ci.yml`, run here.
  *
- * Rekka sto før skrevet av for hånd i `package.json`, og gled fra CI uten at
- * noe sa fra. Den rendrede siden, språkserveren, VS Code, jar-en, Rust-lint
- * og «Ingenting er ugenerert» manglet, så en push som var grønn lokalt kunne
- * feile i CI på noe den lokale rekka aldri kjørte. Nå leses stegene fra
- * `ci.yml`, og hvert `run:` kjøres som CI kjører det: med bash, `-eo
- * pipefail`, i `working-directory`, i den rekkefølgen jobbene og stegene står.
+ * The sequence used to be copied out by hand in `package.json`, and drifted
+ * from CI without anything saying so. The rendered page, the language
+ * server, VS Code, the jar, Rust lint and "Generated files are up to date"
+ * were missing, so a push that was green locally could fail in CI on
+ * something the local sequence never ran. Now the steps are read from
+ * `ci.yml`, and every `run:` is run the way CI runs it: with bash, `-eo
+ * pipefail`, in `working-directory`, in the order the jobs and steps appear.
  *
- * Det som ikke kjøres her, står i `SKIPPED` med grunnen. Et navn der som ikke
- * finnes i `ci.yml`, feller kjøringen, så lista kan ikke råtne: et steg som
- * får nytt navn, kjøres her fra da av.
+ * What is not run here is in `SKIPPED` with the reason. A name there that
+ * does not exist in `ci.yml` fails the run, so the list cannot rot: a step
+ * that is renamed runs here from then on.
  *
- * Kjør med: bun run check
+ * Run with: bun run check
  */
 
 import { fileURLToPath } from "node:url"
@@ -27,20 +28,20 @@ type Step = {
 }
 type Job = { name?: string; steps: Step[] }
 
-/** Jobb og steg som ikke kjøres lokalt, med grunnen. */
+/** Jobs and steps that are not run locally, with the reason. */
 const SKIPPED: Record<string, string> = {
   windows:
-    "jobben kjører på Windows, og stiene og stasjonene den tester finnes ikke her",
-  "check/Oppdater npm": "endrer den globale npm-en på maskinen",
-  "check/Installer nettlesere":
-    "henter nettlesere fra nettet. Hent dem én gang med `bun --filter @lo-tek/interfaces browsers`",
+    "the job runs on Windows, and the paths and drives it tests do not exist here",
+  "check/Update npm": "changes the global npm on the machine",
+  "check/Install browsers":
+    "downloads browsers. Fetch them once with `bun --filter @lo-tek/interfaces browsers`",
 }
 
 /*
- * Det skriptet forstår av et steg. Står det noe annet, som `env`, `if`,
- * `shell` eller `continue-on-error`, eller `defaults` på jobben, ville
- * skriptet kjørt steget på en annen måte enn CI uten å si fra. Da stopper
- * det heller, og må læres opp.
+ * What the script understands of a step. Anything else, such as `env`, `if`,
+ * `shell` or `continue-on-error`, or `defaults` on the job, would make the
+ * script run the step differently from CI without saying so. It stops
+ * instead, and has to be taught.
  */
 const STEP_KEYS = new Set([
   "name",
@@ -66,8 +67,8 @@ const WORKFLOW_KEYS = new Set([
   "permissions",
 ])
 
-/** Om maskinen har en skjerm VS Code kan åpnes på. Se bruken under. */
-const HAR_SKJERM =
+/** Whether the machine has a display VS Code can open on. See the use below. */
+const HAS_DISPLAY =
   process.platform !== "linux" ||
   Boolean(process.env.DISPLAY || process.env.WAYLAND_DISPLAY)
 
@@ -93,8 +94,8 @@ for (const [jobId, job] of Object.entries(workflow.jobs)) {
     for (const key of Object.keys(step))
       if (!STEP_KEYS.has(key))
         unknown.push(`${jobId}/${step.name ?? step.uses ?? step.run}: ${key}`)
-    // Et steg med `uses` setter opp noe CI-maskinen mangler, som Java eller
-    // en hurtigbuffer. Maskinen her har det fra før.
+    // A step with `uses` sets up something the CI machine lacks, such as Java
+    // or a cache. The machine here has it already.
     if (step.run === undefined) {
       actions += 1
       continue
@@ -104,12 +105,12 @@ for (const [jobId, job] of Object.entries(workflow.jobs)) {
       used.add(key)
       continue
     }
-    // VS Code trenger en skjerm. På Linux uten skjerm, som i CI, gir xvfb-run
-    // den. Har maskinen sin egen, på macOS eller på Linux med `DISPLAY` eller
-    // `WAYLAND_DISPLAY` satt, tas xvfb-run bort: den kjørte før på all Linux,
-    // og en maskin med skjerm, men uten xvfb installert, stoppet på
-    // «xvfb-run: command not found».
-    const run = HAR_SKJERM ? step.run.replace(/^xvfb-run -a /gm, "") : step.run
+    // VS Code needs a display. On Linux without one, as in CI, xvfb-run
+    // provides it. If the machine has its own, on macOS or on Linux with
+    // `DISPLAY` or `WAYLAND_DISPLAY` set, xvfb-run is removed: it used to run
+    // on all Linux, and a machine with a display but without xvfb installed
+    // stopped on "xvfb-run: command not found".
+    const run = HAS_DISPLAY ? step.run.replace(/^xvfb-run -a /gm, "") : step.run
     steps.push({
       key,
       run,
@@ -120,7 +121,7 @@ for (const [jobId, job] of Object.entries(workflow.jobs)) {
 
 if (unknown.length > 0) {
   console.error(
-    `✗ ci.yml har noe scripts/check.ts ikke vet hvordan det skal kjøres: ${unknown.join(", ")}. Lær skriptet det, så stegene kjøres som i CI.`,
+    `✗ ci.yml has something scripts/check.ts does not know how to run: ${unknown.join(", ")}. Teach the script, so the steps run as in CI.`,
   )
   process.exit(1)
 }
@@ -128,12 +129,12 @@ if (unknown.length > 0) {
 const stale = Object.keys(SKIPPED).filter((key) => !used.has(key))
 if (stale.length > 0) {
   console.error(
-    `✗ Unntakene i scripts/check.ts finnes ikke i ci.yml: ${stale.join(", ")}. Rett navnet, eller ta unntaket bort.`,
+    `✗ The exceptions in scripts/check.ts do not exist in ci.yml: ${stale.join(", ")}. Fix the name, or remove the exception.`,
   )
   process.exit(1)
 }
 if (steps.length === 0) {
-  console.error("✗ Fant ingen steg å kjøre i ci.yml.")
+  console.error("✗ Found no steps to run in ci.yml.")
   process.exit(1)
 }
 
@@ -152,11 +153,11 @@ for (const step of steps) {
   const seconds = ((performance.now() - at) / 1000).toFixed(1)
   if (result.exitCode !== 0) {
     console.error(
-      `\n✗ ${step.key} feilet etter ${seconds} s, som steg ${done + 1} av ${steps.length}.`,
+      `\n✗ ${step.key} failed after ${seconds} s, as step ${done + 1} of ${steps.length}.`,
     )
-    if (step.key.endsWith("Ingenting er ugenerert"))
+    if (step.key.endsWith("Generated files are up to date"))
       console.error(
-        "  Steget spør git om noe er endret. Lokalt teller også det du ikke har committet ennå, så commit først og kjør på nytt.",
+        "  The step asks git whether anything has changed. Locally that includes what you have not committed yet, so commit first and run again.",
       )
     process.exit(result.exitCode ?? 1)
   }
@@ -166,5 +167,5 @@ for (const step of steps) {
 
 const minutes = ((performance.now() - started) / 60000).toFixed(1)
 console.log(
-  `\n${done} av ${steps.length} steg fra ci.yml er grønne, på ${minutes} min. Hoppet over: ${Object.keys(SKIPPED).join(", ")}, og ${actions} steg som setter opp CI-maskinen.`,
+  `\n${done} of ${steps.length} steps from ci.yml are green, in ${minutes} min. Skipped: ${Object.keys(SKIPPED).join(", ")}, and ${actions} steps that set up the CI machine.`,
 )

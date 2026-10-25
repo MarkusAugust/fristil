@@ -101,7 +101,7 @@ object CommandLine {
     /*
      * The package the command line reads from: the manifest, the colour
      * contract, the rulebooks and the components. The module carries none of
-     * them, and the jar has them under `lotek-pakke/`. WASI reads files and
+     * them, and the jar has them under `lotek-package/`. WASI reads files and
      * not resources, so in a jar they are unpacked once, to a folder in temp
      * named after the jar's size and modification time, which the next run of
      * the same jar uses again. The folder is moved into place only when it is
@@ -109,18 +109,18 @@ object CommandLine {
      * package. From a folder, as in the tests, the folder is used as it is.
      */
     private val packageDir: Path by lazy {
-        val uri = CommandLine::class.java.getResource("/lotek-pakke/manifest/manifest.json")?.toURI()
-            ?: error("lotek-pakke is missing from the jar")
+        val uri = CommandLine::class.java.getResource("/lotek-package/manifest/manifest.json")?.toURI()
+            ?: error("lotek-package is missing from the jar")
         if (uri.scheme != "jar") return@lazy Path.of(uri).parent.parent
         // The jar is opened as a file, not through the URI: a file system for
         // the URI may already be open by something else in the same JVM.
         val jarFile = Path.of(CommandLine::class.java.protectionDomain.codeSource.location.toURI())
         val tmp = Path.of(System.getProperty("java.io.tmpdir"))
-        val target = tmp.resolve("lotek-pakke-${Files.size(jarFile)}-${Files.getLastModifiedTime(jarFile).toMillis()}")
+        val target = tmp.resolve("lotek-package-${Files.size(jarFile)}-${Files.getLastModifiedTime(jarFile).toMillis()}")
         if (Files.isDirectory(target)) return@lazy target
-        val partial = Files.createTempDirectory(tmp, "lotek-pakke-")
+        val partial = Files.createTempDirectory(tmp, "lotek-package-")
         FileSystems.newFileSystem(jarFile).use { jar ->
-            val root = jar.getPath("/lotek-pakke")
+            val root = jar.getPath("/lotek-package")
             Files.walk(root).use { paths ->
                 for (source in paths) {
                     val copy = partial.resolve(root.relativize(source).toString())

@@ -1,18 +1,19 @@
-name: Publiser utvidelsen
+name: Publish the extension
 
-# Kjører når en tagg på formen utvidelse-v* dyttes opp, og kan startes for
-# hånd. Utvidelsen har sitt eget nummer, adskilt fra pakkens v*-tagger.
+# Runs when a tag of the form extension-v* is pushed, and can be started by
+# hand. The extension has its own number, separate from the package's v*
+# tags. Until 0.9.0 the tags were called utvidelse-v*.
 on:
   push:
-    tags: ["utvidelse-v*"]
+    tags: ["extension-v*"]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  publiser:
-    name: Pakk og publiser
+  publish:
+    name: Pack and publish
     runs-on: ubuntu-latest
 
     steps:
@@ -22,49 +23,49 @@ jobs:
         with:
           bun-version: 1.3.14
 
-      - name: Installer avhengigheter
+      - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Les versjonen
-        id: versjon
+      - name: Read the version
+        id: version
         working-directory: editor
-        run: echo "nummer=$(bun -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+        run: echo "number=$(bun -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - name: Se at taggen og versjonen stemmer
+      - name: Check that the tag and the version agree
         if: github.ref_type == 'tag'
         run: |
-          tagg="${GITHUB_REF_NAME#utvidelse-v}"
-          if [ "$tagg" != "${{ steps.versjon.outputs.nummer }}" ]; then
-            echo "Taggen $GITHUB_REF_NAME sier $tagg, mens editor/package.json sier ${{ steps.versjon.outputs.nummer }}. Rett opp før du publiserer." >&2
+          tag="${GITHUB_REF_NAME#extension-v}"
+          if [ "$tag" != "${{ steps.version.outputs.number }}" ]; then
+            echo "The tag $GITHUB_REF_NAME says $tag, while editor/package.json says ${{ steps.version.outputs.number }}. Fix it before publishing." >&2
             exit 1
           fi
 
-      # Generatoren leser komponentklassene fra dist, så pakken må bygges
-      # først. `bun run typecheck` gjør det med repoets egen tsc, og
-      # typesjekker utvidelsen i samme slengen.
-      - name: Bygg pakken
+      # The generator reads the component classes from dist, so the package
+      # has to be built first. `bun run typecheck` does that with the
+      # repository's own tsc, and type checks the extension at the same time.
+      - name: Build the package
         run: bun run typecheck
 
-      # Utvidelsen har kjernen med seg i dist/, bygget fra Rust. rustup henter
-      # versjonen i `core/rust-toolchain.toml`.
-      - name: Bygg kjernen
+      # The extension carries the core in dist/, built from Rust. rustup
+      # fetches the version in `core/rust-toolchain.toml`.
+      - name: Build the core
         run: bun --filter @lo-tek/interfaces core
 
-      # Kontrollerer at ordforrådet og editorfilene i pakken er de generatoren
-      # ville skrevet nå, og at diagnostikken feller det den skal, før
-      # utvidelsen pakkes med dem.
-      - name: Sjekk ordforrådet og diagnostikken
+      # Checks that the vocabulary and the editor files in the package are
+      # what the generator would write now, and that the diagnostics fail what
+      # they should, before the extension is packed with them.
+      - name: Check the vocabulary and the diagnostics
         run: |
           (cd designsystem && bun run build:browser)
           bun --filter @lo-tek/interfaces check:vocabulary
           bun core/scripts/check-diagnostics.ts
 
-      - name: Pakk
+      - name: Pack
         run: bun --filter interfaces check
 
-      # Marketplace har ingen OIDC. Tokenet lages under utgiveren på
-      # marketplace.visualstudio.com og legges inn som hemmeligheten VSCE_PAT.
-      - name: Publiser
+      # Marketplace has no OIDC. The token is created under the publisher on
+      # marketplace.visualstudio.com and stored as the secret VSCE_PAT.
+      - name: Publish
         working-directory: editor
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
