@@ -320,8 +320,14 @@ export class FsSuggestion extends HostElement {
     top = Math.max(space, Math.min(top, window.innerHeight - height - space))
 
     list.style.setProperty("--fs-suggestion-top", `${Math.round(top)}px`)
-    list.style.setProperty("--fs-suggestion-left", `${Math.round(field.left)}px`)
-    list.style.setProperty("--fs-suggestion-width", `${Math.round(field.width)}px`)
+    list.style.setProperty(
+      "--fs-suggestion-left",
+      `${Math.round(field.left)}px`,
+    )
+    list.style.setProperty(
+      "--fs-suggestion-width",
+      `${Math.round(field.width)}px`,
+    )
   }
 
   /**
@@ -350,7 +356,10 @@ export class FsSuggestion extends HostElement {
     if (labelElement.contains(control)) {
       let text = ""
       for (const node of labelElement.childNodes)
-        if (node !== control && !(node instanceof Element && node.contains(control)))
+        if (
+          node !== control &&
+          !(node instanceof Element && node.contains(control))
+        )
           text += node.textContent ?? ""
       text = text.replace(/\s+/g, " ").trim()
       if (labelledby !== null) setAttr(list, "aria-labelledby", null)
@@ -365,11 +374,18 @@ export class FsSuggestion extends HostElement {
     }
 
     if (!labelElement.id) {
-      setAttr(labelElement, "id", this.rememberedId(labelElement, "fs-suggestion-label"))
+      setAttr(
+        labelElement,
+        "id",
+        this.rememberedId(labelElement, "fs-suggestion-label"),
+      )
     }
     if (label !== null) setAttr(list, "aria-label", null)
     setAttr(list, "aria-labelledby", labelElement.id)
-    this.listNameByMe.set(list, { name: "aria-labelledby", value: labelElement.id })
+    this.listNameByMe.set(list, {
+      name: "aria-labelledby",
+      value: labelElement.id,
+    })
   }
 
   /** Id-en et element skal ha: sin egen, ellers den komponenten laget sist. */

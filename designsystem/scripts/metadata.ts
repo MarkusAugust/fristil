@@ -265,7 +265,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
     },
     list: {
       description:
-        "Lista med forslag. Den står i det øverste laget når den er åpen, `popover=\"manual\"`, og har ledeteksten som navn.",
+        'Lista med forslag. Den står i det øverste laget når den er åpen, `popover="manual"`, og har ledeteksten som navn.',
       content: "parts",
       unique: true,
     },

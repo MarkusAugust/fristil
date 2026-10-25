@@ -127,7 +127,12 @@ describe("lista har et navn", () => {
   })
 
   it("lar et navn serveren skrev stå", async () => {
-    monter(BAR.replace('<ul class="fs-suggestion__list">', '<ul class="fs-suggestion__list" aria-label="Kommuner i Norge">'))
+    monter(
+      BAR.replace(
+        '<ul class="fs-suggestion__list">',
+        '<ul class="fs-suggestion__list" aria-label="Kommuner i Norge">',
+      ),
+    )
     await tegn()
     expect(liste().getAttribute("aria-label")).toBe("Kommuner i Norge")
     expect(liste().hasAttribute("aria-labelledby")).toBe(false)
@@ -151,9 +156,12 @@ describe("hvert alternativ sier om det er valgt", () => {
     // Firefox leser et alternativ uten `aria-selected` som valgt.
     monter(BAR)
     await tegn()
-    expect(alternativer().map((o) => o.getAttribute("aria-selected"))).toEqual(
-      ["false", "false", "false", "false"],
-    )
+    expect(alternativer().map((o) => o.getAttribute("aria-selected"))).toEqual([
+      "false",
+      "false",
+      "false",
+      "false",
+    ])
   })
 })
 
@@ -223,7 +231,10 @@ describe("lista står i det øverste laget", () => {
     await apne()
     const siste = alternativer()[3]
     const r = siste.getBoundingClientRect()
-    const treff = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)
+    const treff = document.elementFromPoint(
+      r.left + r.width / 2,
+      r.top + r.height / 2,
+    )
     expect(treff).toBe(siste)
   })
 
