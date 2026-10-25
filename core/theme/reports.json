@@ -101,7 +101,7 @@
     "declarations": 4,
     "promises": 612
   },
-  "nostet": {
+  "nested": {
     "problems": [
       {
         "selector": ":root",
@@ -128,7 +128,7 @@
     "declarations": 2,
     "promises": 459
   },
-  "avkuttet": {
+  "truncated": {
     "problems": [
       {
         "selector": "(hele fila)",
@@ -170,7 +170,7 @@
       }
     ]
   },
-  "systemfarger": {
+  "system-colors": {
     "problems": [],
     "blocks": 1,
     "declarations": 1,

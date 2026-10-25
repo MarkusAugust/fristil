@@ -737,10 +737,10 @@ mod tests {
             "ustylet-klasse"
         );
         // Og en kommentar undertrykker, som for de andre reglene.
-        assert!(found(
-            "<!-- lotek-ignore-next ustylet-klasse -->\n<div class=\"lt-card\">x</div>"
-        )
-        .is_empty());
+        assert!(
+            found("<!-- lotek-ignore-next ustylet-klasse -->\n<div class=\"lt-card\">x</div>")
+                .is_empty()
+        );
     }
 
     #[test]

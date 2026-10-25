@@ -83,8 +83,7 @@ mod tests {
 
     #[test]
     fn suppresses_the_next_tag_only() {
-        let html =
-            r#"<!-- lotek-ignore-next --><b class="lt-buton"></b><i class="lt-buton"></i>"#;
+        let html = r#"<!-- lotek-ignore-next --><b class="lt-buton"></b><i class="lt-buton"></i>"#;
         assert_eq!(rules(html), ["ukjent-klasse"]);
     }
 

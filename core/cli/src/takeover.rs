@@ -721,10 +721,7 @@ mod tests {
     fn rewrites_imports_in_style_sheets() {
         let path = "src/components/css/search/search.css";
         let planned = rewrite_references(
-            &file(
-                path,
-                "@import \"../input/input.css\";\n\n@layer lotek {}\n",
-            ),
+            &file(path, "@import \"../input/input.css\";\n\n@layer lotek {}\n"),
             &entries(),
             &own(&[path]),
         );

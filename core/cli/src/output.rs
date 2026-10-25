@@ -75,7 +75,7 @@ mod tests {
             r"C:\Users\a\galt.html"
         );
         assert_eq!(shown_with("/d", true), r"D:\");
-        assert_eq!(shown_with("templates/a.html", true), r"maler\a.html");
+        assert_eq!(shown_with("templates/a.html", true), r"templates\a.html");
         assert_eq!(shown_with("http://localhost/x", true), "http://localhost/x");
         assert_eq!(shown_with("stdin", true), "stdin");
         assert_eq!(shown_with("/c/Users/a.html", false), "/c/Users/a.html");

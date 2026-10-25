@@ -69,7 +69,10 @@ fn detect_framework() -> (String, String) {
         // Go, Kotlin, PHP og Razor har ingen package.json. Da er markupen
         // serverens, og malregelboka er den som forteller hvordan sjekken
         // leser malsyntaks.
-        return ("templates".into(), "ingen package.json i denne mappa".into());
+        return (
+            "templates".into(),
+            "ingen package.json i denne mappa".into(),
+        );
     };
     let manifest = match parse(&text) {
         Ok(Json::Null | Json::Bool(_) | Json::Number(_) | Json::String(_)) => {

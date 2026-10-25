@@ -3,7 +3,7 @@
     "oppskrift": {
       "accent": "#7c3aed"
     },
-    "theme": {
+    "tema": {
       "light": {
         "--lt-color-accent-surface": "#f2efff",
         "--lt-color-accent-border-subtle": "#d8d0ff",
@@ -190,7 +190,7 @@
       "warning": "#8a5a00",
       "success": "#00e676"
     },
-    "theme": {
+    "tema": {
       "light": {
         "--lt-color-accent-surface": "#ffedea",
         "--lt-color-accent-border-subtle": "#ffc8bf",
@@ -370,7 +370,7 @@
       "accent": "#f0a",
       "neutral": "#333"
     },
-    "theme": {
+    "tema": {
       "light": {
         "--lt-color-accent-surface": "#ffecf4",
         "--lt-color-accent-border-subtle": "#ffc3df",
@@ -566,7 +566,7 @@
         "buttonFontWeight": 600
       }
     },
-    "theme": {
+    "tema": {
       "light": {},
       "dark": {},
       "violations": [],
@@ -581,7 +581,7 @@
         "fontFamily": "Inter"
       }
     },
-    "theme": {
+    "tema": {
       "light": {
         "--lt-color-accent-surface": "#e5f7ee",
         "--lt-color-accent-border-subtle": "#c4dfd2",
