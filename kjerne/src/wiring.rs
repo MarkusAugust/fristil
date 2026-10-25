@@ -40,6 +40,7 @@ const GENERATED_PREFIXES: &[&str] = &[
     "fs-tabs-heading-",
     "fs-suggestion-list-",
     "fs-suggestion-option-",
+    "fs-suggestion-label-",
 ];
 
 /// Hva noden sier om id-en sin.

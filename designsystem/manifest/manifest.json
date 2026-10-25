@@ -225,7 +225,7 @@
         },
         "list": {
           "selector": "[role='listbox'], .fs-suggestion__list",
-          "description": "Lista med forslag.",
+          "description": "Lista med forslag. Den står i det øverste laget når den er åpen, `popover=\"manual\"`, og har ledeteksten som navn.",
           "content": "parts",
           "unique": true
         },
@@ -4148,7 +4148,7 @@
           "type": {
             "kind": "flag"
           },
-          "description": "Svaret på søket er ikke kommet ennå. Tommeldingen holdes da skjult, så et asynkront søk ikke sier «Ingen treff» i oppholdet mellom tastetrykket og svaret."
+          "description": "Svaret på søket er ikke kommet ennå. Lista får `aria-busy`, og tommeldingen holdes skjult, så et asynkront søk ikke sier «Ingen treff» i oppholdet mellom tastetrykket og svaret."
         }
       ],
       "returns": {
@@ -4918,7 +4918,6 @@
         "--fs-spinner-thickness": "2px"
       },
       "suggestion": {
-        "--fs-suggestion-layer": "30",
         "--fs-suggestion-max-height": "calc(var(--fs-spacing-10) * 4)",
         "--fs-suggestion-radius": "var(--fs-spacing-1)",
         "--fs-suggestion-option-padding": "var(--fs-spacing-2) var(--fs-spacing-3)"

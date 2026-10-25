@@ -224,7 +224,7 @@ export const elements: Elements = {
       },
       "list": {
         "selector": "[role='listbox'], .fs-suggestion__list",
-        "description": "Lista med forslag.",
+        "description": "Lista med forslag. Den står i det øverste laget når den er åpen, `popover=\"manual\"`, og har ledeteksten som navn.",
         "content": "parts",
         "unique": true
       },

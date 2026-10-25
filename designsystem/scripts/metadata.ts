@@ -263,7 +263,12 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       unique: true,
       stableId: true,
     },
-    list: { description: "Lista med forslag.", content: "parts", unique: true },
+    list: {
+      description:
+        "Lista med forslag. Den står i det øverste laget når den er åpen, `popover=\"manual\"`, og har ledeteksten som navn.",
+      content: "parts",
+      unique: true,
+    },
     option: {
       description:
         'Ett forslag i lista: `role="option"`, eller et `<li>` uten rolle.',
