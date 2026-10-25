@@ -105,11 +105,17 @@ exports.run = async () => {
   await editor.insertSnippet(
     new vscode.SnippetString(snippets["fs-field"].body.join("\n")),
   )
+  // Første tabbestopp er skjemaets id, det andre feltets, speilet i `for`.
+  await vscode.commands.executeCommand("jumpToNextSnippetPlaceholder")
   await vscode.commands.executeCommand("type", { text: "epost" })
   const text = third.getText()
   assert.ok(
     text.includes('id="epost"') && text.includes('for="epost"'),
     `id og for følger ikke hverandre i snippeten: ${text}`,
   )
-  assert.ok(!text.includes("navn"), `plassholderen står igjen: ${text}`)
+  assert.ok(
+    text.includes('id="kontaktskjema"'),
+    `det første tabbestoppet skulle stått urørt: ${text}`,
+  )
+  assert.ok(!text.includes('id="navn"'), `plassholderen står igjen: ${text}`)
 }
