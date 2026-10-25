@@ -6,42 +6,42 @@ description: Ett navnerom, én form. Autofullføring på hele systemet, uten å 
 Klasser og dataattributter gjør komponentene rammeverksuavhengige, men alt er strenger:
 
 ```html
-<button class="fs-button" data-variant="secundary">Lagre utkast</button>
+<button class="lt-button" data-variant="secundary">Lagre utkast</button>
 ```
 
-Knappen får primærstilen. Ingen feilmelding, bare en variant som stille aldri ble brukt. Derfor finnes `fs`. Skriver du HTML uten TypeScript, tar [utvidelsen for VS Code](../editoren/) den samme feilen.
+Knappen får primærstilen. Ingen feilmelding, bare en variant som stille aldri ble brukt. Derfor finnes `lt`. Skriver du HTML uten TypeScript, tar [utvidelsen for VS Code](../the-editor/) den samme feilen.
 
-## Navnerommet `fs`
+## Navnerommet `lt`
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-<button {...fs.button({ variant: "secondary" })}>Lagre utkast</button>
-<input {...fs.input({ type: "email", state: "invalid" })} />
-<span {...fs.badge({ color: "success" })}>Innvilget</span>
-<a {...fs.link()} href="/kvittering">Se kvittering</a>
+<button {...lt.button({ variant: "secondary" })}>Lagre utkast</button>
+<input {...lt.input({ type: "email", state: "invalid" })} />
+<span {...lt.badge({ color: "success" })}>Innvilget</span>
+<a {...lt.link()} href="/kvittering">Se kvittering</a>
 ```
 
-Skriv `fs.` i editoren, så ser du hele systemet. Hver komponent er en funksjon som tar et objekt med valg og returnerer attributtene du sprer inn i elementet. Formen er den samme for alle.
+Skriv `lt.` i editoren, så ser du hele systemet. Hver komponent er en funksjon som tar et objekt med valg og returnerer attributtene du sprer inn i elementet. Formen er den samme for alle.
 
 Returverdiene er vanlige objekter. Derfor virker samme API i React, Astro, Datastar og ren HTML.
 
 :::note[Bruker du React?]
-Importer fra `@fristil/designsystem/react` i stedet. Kallstedene er identiske, men returverdien bruker `className` og `htmlFor`.
+Importer fra `@lo-tek/interfaces/react` i stedet. Kallstedene er identiske, men returverdien bruker `className` og `htmlFor`.
 
-`fs` returnerer `class` og `for`, slik attributtene faktisk heter i HTML. React godtar dem, og de havner riktig i DOM-en, men utviklingsbygget skriver «Invalid DOM property `class`. Did you mean `className`?» i konsollen for hvert element. Med et helt felt blir det to advarsler per felt.
+`lt` returnerer `class` og `for`, slik attributtene faktisk heter i HTML. React godtar dem, og de havner riktig i DOM-en, men utviklingsbygget skriver «Invalid DOM property `class`. Did you mean `className`?» i konsollen for hvert element. Med et helt felt blir det to advarsler per felt.
 
 Ren HTML, Astro og Datastar tar `class` og `for` som de er, og bruker hovedinngangen.
 :::
 
 ## I vanlig DOM
 
-I JSX sprer du objektet rett inn i elementet. Uten JSX gjør `fs.setAttributes` jobben:
+I JSX sprer du objektet rett inn i elementet. Uten JSX gjør `lt.setAttributes` jobben:
 
 ```ts
 const felt = document.querySelector<HTMLInputElement>("#epost")
 
-fs.setAttributes(felt, fs.input({ type: "email", state: "invalid" }))
+lt.setAttributes(felt, lt.input({ type: "email", state: "invalid" }))
 ```
 
 Kall den på nytt for å endre tilstand. Det byggefunksjonen forvalter og som ikke er med i det nye settet, blir fjernet. Ellers ville feltet blitt stående rødt etter at feilen var rettet.
@@ -50,33 +50,33 @@ En byggefunksjon forvalter attributtene den har et valg for, og bare dem:
 
 | Kall | På elementet fra før | Etterpå |
 | --- | --- | --- |
-| `fs.button({ variant })` | `disabled`, `type="submit"` | Begge står. Knappefunksjonen har ikke noe valg for dem |
-| `fs.switch()` | `disabled` | Fjernet. Bryteren har valget `disabled`, og du sendte det ikke |
-| `fs.spinner()` | `role`, `aria-label` | Fjernet. Spinneren har valget `label`, som skriver begge |
+| `lt.button({ variant })` | `disabled`, `type="submit"` | Begge står. Knappefunksjonen har ikke noe valg for dem |
+| `lt.switch()` | `disabled` | Fjernet. Bryteren har valget `disabled`, og du sendte det ikke |
+| `lt.spinner()` | `role`, `aria-label` | Fjernet. Spinneren har valget `label`, som skriver begge |
 
-Regelen er altså: har byggefunksjonen et valg for attributtet, sier du det gjennom valget, hver gang. Skriver du `aria-label` for hånd på en spinner og kaller `fs.spinner({ size: "large" })`, tar funksjonen den bort. `id` og `for` fjernes aldri, og `data-testid`, `name` og dine egne klasser røres ikke.
+Regelen er altså: har byggefunksjonen et valg for attributtet, sier du det gjennom valget, hver gang. Skriver du `aria-label` for hånd på en spinner og kaller `lt.spinner({ size: "large" })`, tar funksjonen den bort. `id` og `for` fjernes aldri, og `data-testid`, `name` og dine egne klasser røres ikke.
 
-Skal to sett på samme element, som feltets utseende og koblingen fra `fs.field()`, sender du dem hver for seg:
+Skal to sett på samme element, som feltets utseende og koblingen fra `lt.field()`, sender du dem hver for seg:
 
 ```ts
-const kobling = fs.field({ id: "epost", error: true, invalid: true })
+const kobling = lt.field({ id: "epost", error: true, invalid: true })
 
-fs.setAttributes(felt, fs.input({ type: "email" }), kobling.control)
+lt.setAttributes(felt, lt.input({ type: "email" }), kobling.control)
 ```
 
-Spre dem ikke sammen til ett objekt. `{ ...fs.input(), ...kobling.control }` er et nytt objekt, og da vet ikke funksjonen hvilke byggefunksjoner det kom fra. Attributtene settes, men bare `data-*` ryddes ved neste kall. Funksjonen sier fra i konsollen første gang den får et slikt sett med en `fs-`-klasse i.
+Spre dem ikke sammen til ett objekt. `{ ...lt.input(), ...kobling.control }` er et nytt objekt, og da vet ikke funksjonen hvilke byggefunksjoner det kom fra. Attributtene settes, men bare `data-*` ryddes ved neste kall. Funksjonen sier fra i konsollen første gang den får et slikt sett med en `lt-`-klasse i.
 
 ## Standardverdier
 
 ```ts
-fs.button()
-// { class: "fs-button" }
+lt.button()
+// { class: "lt-button" }
 
-fs.button({ variant: "primary" })
-// { class: "fs-button" }, primær er standard i CSS-en
+lt.button({ variant: "primary" })
+// { class: "lt-button" }, primær er standard i CSS-en
 
-fs.button({ variant: "danger" })
-// { class: "fs-button", "data-variant": "danger" }
+lt.button({ variant: "danger" })
+// { class: "lt-button", "data-variant": "danger" }
 ```
 
 Du sier alltid hvilken variant du vil ha; funksjonen vet når attributtet kan utelates.
@@ -84,22 +84,22 @@ Du sier alltid hvilken variant du vil ha; funksjonen vet når attributtet kan ut
 ## Lovlige verdier og vakter
 
 ```ts
-fs.button.variants
+lt.button.variants
 // readonly ["primary", "secondary", "ghost", "danger"]
 
-fs.button.isVariant("ghost")  // true
-fs.button.isVariant("gost")   // false
+lt.button.isVariant("ghost")  // true
+lt.button.isVariant("gost")   // false
 ```
 
-Samme mønster overalt: `fs.badge.colors` og `fs.badge.isColor`, `fs.input.types` og `fs.input.isType`.
+Samme mønster overalt: `lt.badge.colors` og `lt.badge.isColor`, `lt.input.types` og `lt.input.isType`.
 
 Kommer verdien fra et API, en URL eller `localStorage`, er den en `string` TypeScript ikke kan garantere noe om. Vakten gir en gyldig verdi eller en trygg reserve:
 
 ```ts
 const svar = await hentKnappeoppsett()
-const variant = fs.button.isVariant(svar.variant) ? svar.variant : "primary"
+const variant = lt.button.isVariant(svar.variant) ? svar.variant : "primary"
 
-fs.button({ variant })
+lt.button({ variant })
 ```
 
 Etter vakten vet TypeScript at verdien er en `ButtonVariant`.
@@ -116,62 +116,62 @@ Etter vakten vet TypeScript at verdien er en `ButtonVariant`.
 `state` er én type på tvers av feltkomponentene, så en verdi kan sendes mellom dem uten konvertering:
 
 ```ts
-const tilstand = fs.isState(fraServer) ? fraServer : "default"
+const tilstand = lt.isState(fraServer) ? fraServer : "default"
 
-fs.input({ state: tilstand })
-fs.textarea({ state: tilstand })
-fs.select({ state: tilstand })
+lt.input({ state: tilstand })
+lt.textarea({ state: tilstand })
+lt.select({ state: tilstand })
 ```
 
 ## Web-komponentene
 
-TypeScript kjenner ikke `<fs-field>`, `<fs-session-timeout>` og `<fs-connection-status>` uten videre. Importer typene én gang i en `.d.ts`-fil:
+TypeScript kjenner ikke `<lt-field>`, `<lt-session-timeout>` og `<lt-connection-status>` uten videre. Importer typene én gang i en `.d.ts`-fil:
 
 ```ts
-// src/fristil.d.ts
-import "@fristil/designsystem/react-jsx"
+// src/lotek.d.ts
+import "@lo-tek/interfaces/react-jsx"
 ```
 
 Da får attributtene autofullføring og sjekk:
 
 ```tsx
-<fs-field described-by="vilkar" />      // ok
-<fs-field describedBy="vilkar" />       // feil: attributtet heter described-by
-<fs-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
-<fs-connection-status offline="Nede" />  // feil: ukjent attributt
+<lt-field described-by="vilkar" />      // ok
+<lt-field describedBy="vilkar" />       // feil: attributtet heter described-by
+<lt-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
+<lt-connection-status offline="Nede" />  // feil: ukjent attributt
 ```
 
-Ren HTML, Astro og Datastar trenger ikke dette. Der er `<fs-field>` bare en HTML-tagg.
+Ren HTML, Astro og Datastar trenger ikke dette. Der er `<lt-field>` bare en HTML-tagg.
 
 ### Hendelsene
 
-Hendelsene web-komponentene sender, som `dialog-toggle` og `tab-select`, har typet `detail` i `addEventListener`. Typene følger med hver inngang til web-komponentene, også `@fristil/designsystem/register`, `/react` og `/react-jsx`, så det du alt importerer, er nok. Det samme gjelder tagnavnene: `document.querySelector("fs-dialog")` gir `FsDialog | null`, ikke `Element | null`. Hendelsestypene og tagkartet utvider DOM-typene `HTMLElementEventMap`, `DocumentEventMap` og `HTMLElementTagNameMap`, og har ingenting med React å gjøre: det samme gjelder i et TypeScript-skript i Astro eller i en Datastar-app, og i React gjennom en `ref`. Siden hendelsene bobler, er også en lytter på `document` typet.
+Hendelsene web-komponentene sender, som `dialog-toggle` og `tab-select`, har typet `detail` i `addEventListener`. Typene følger med hver inngang til web-komponentene, også `@lo-tek/interfaces/register`, `/react` og `/react-jsx`, så det du alt importerer, er nok. Det samme gjelder tagnavnene: `document.querySelector("lt-dialog")` gir `LtDialog | null`, ikke `Element | null`. Hendelsestypene og tagkartet utvider DOM-typene `HTMLElementEventMap`, `DocumentEventMap` og `HTMLElementTagNameMap`, og har ingenting med React å gjøre: det samme gjelder i et TypeScript-skript i Astro eller i en Datastar-app, og i React gjennom en `ref`. Siden hendelsene bobler, er også en lytter på `document` typet.
 
 ```ts
-import { defineFsDialog } from "@fristil/designsystem/dialog"
+import { defineLtDialog } from "@lo-tek/interfaces/dialog"
 
-defineFsDialog()
+defineLtDialog()
 
-document.querySelector("fs-dialog")?.addEventListener("dialog-toggle", (event) => {
+document.querySelector("lt-dialog")?.addEventListener("dialog-toggle", (event) => {
   event.detail.open         // boolean
   event.detail.returnValue  // string, verdien til knappen som lukket den
 })
 ```
 
-Hver hendelse og feltene i `detail` står også som `FsEventMap` i hovedinngangen. En prop som `onDialogToggle` eller `ondialog-toggle` får ingen type. React 18 kobler ingen av dem, og React 19 bare den siste, så i React 18 ville lytteren aldri blitt kalt, uten at noe sa fra.
+Hver hendelse og feltene i `detail` står også som `LtEventMap` i hovedinngangen. En prop som `onDialogToggle` eller `ondialog-toggle` får ingen type. React 18 kobler ingen av dem, og React 19 bare den siste, så i React 18 ville lytteren aldri blitt kalt, uten at noe sa fra.
 
 ## Hva typene ikke fanger
 
-**Attributtene kan spres på feil element.** `<div {...fs.button({ variant: "danger" })} />` kompilerer, for returverdien er bare et objekt med HTML-attributter.
+**Attributtene kan spres på feil element.** `<div {...lt.button({ variant: "danger" })} />` kompilerer, for returverdien er bare et objekt med HTML-attributter.
 
-**Returtypen på `type` er bredere enn verdien du sendte inn.** `fs.input({ type: "date" }).type` er hele unionen, ikke `"date"`.
+**Returtypen på `type` er bredere enn verdien du sendte inn.** `lt.input({ type: "date" }).type` er hele unionen, ikke `"date"`.
 
 ## Uten TypeScript
 
-`fs` er valgfritt. Uten TypeScript eller byggesteg er dette like gyldig:
+`lt` er valgfritt. Uten TypeScript eller byggesteg er dette like gyldig:
 
 ```html
-<button class="fs-button" data-variant="secondary">Lagre utkast</button>
+<button class="lt-button" data-variant="secondary">Lagre utkast</button>
 ```
 
 Resultatet er identisk. Forskjellen er hvor tidlig du får vite at du skrev `secundary`.
@@ -179,7 +179,7 @@ Resultatet er identisk. Forskjellen er hvor tidlig du får vite at du skrev `sec
 Vil du bare ha én komponent:
 
 ```ts
-import { button } from "@fristil/designsystem/button"
+import { button } from "@lo-tek/interfaces/button"
 ```
 
-Subpath-ene returnerer `class` og `for`, som hovedinngangen. React-varianten finnes bare som samlet `fs`.
+Subpath-ene returnerer `class` og `for`, som hovedinngangen. React-varianten finnes bare som samlet `lt`.

@@ -1,5 +1,5 @@
 {
-  "$comment": "Fargekontrakten: familiene, Fristils merkefarger, lysheten og metningen per rolle, lagene bare den nøytrale familien har, kontrastkravene og løftene. Lest av kjernen (kjerne/src/theme/) og av skriptene i designsystem/. Et løfte med own: true måles mot familiens egen rolle, ellers mot laget i den nøytrale familien.",
+  "$comment": "Fargekontrakten: familiene, LO-TEKs merkefarger, lysheten og metningen per rolle, lagene bare den nøytrale familien har, kontrastkravene og løftene. Lest av kjernen (core/src/theme/) og av skriptene i designsystem/. Et løfte med own: true måles mot familiens egen rolle, ellers mot laget i den nøytrale familien.",
   "families": [
     "accent",
     "visited",

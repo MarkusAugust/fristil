@@ -1,17 +1,17 @@
 /**
  * At versjonen faktisk ble satt inn i det bygde resultatet.
  *
- * Adressene i eksemplene står som `@fristil/designsystem@VERSJON` i kilden, og
- * `remark-versjon.mjs` bytter plassholderen når siden bygges. To vaktposter
+ * Adressene i eksemplene står som `@lo-tek/interfaces@VERSJON` i kilden, og
+ * `remark-version.mjs` bytter plassholderen når siden bygges. To vaktposter
  * passer på kilden, og ingen passet på resultatet.
  *
  * Det er ikke en teoretisk mangel. `astro.config.mjs` sier selv at
  * `markdown.remarkPlugins` er merket som utfaset, og at MDX-veien er det eneste
  * som holder den i live. Slutter plugin-en å kjøre, går alle adressene ut med
  * ordet VERSJON i seg, «Ren HTML»- og Datastar-sporet er dødt for leseren, og
- * `bun run sjekk` er grønn hele veien.
+ * `bun run check` er grønn hele veien.
  *
- * Kjør med: bun documentation/scripts/sjekk-bygget-versjon.ts
+ * Kjør med: bun documentation/scripts/check-built-version.ts
  * Krever at `documentation/dist` er bygd.
  */
 
@@ -25,8 +25,8 @@ const { version } = JSON.parse(
   readFileSync(`${ROT}designsystem/package.json`, "utf8"),
 ) as { version: string }
 
-const PLASSHOLDER = "@fristil/designsystem@VERSJON"
-const MED_VERSJON = `@fristil/designsystem@${version}`
+const PLASSHOLDER = "@lo-tek/interfaces@VERSJON"
+const MED_VERSJON = `@lo-tek/interfaces@${version}`
 
 const funn: string[] = []
 
@@ -34,7 +34,7 @@ const funn: string[] = []
  * Det forventede kommer fra kilden, ikke fra det bygde.
  *
  * Første utgave talte hver adresse i `dist` som hadde versjonen i seg, og kom
- * til 320. Men 172 av dem skrives av `Eksempel.astro` på hver eneste
+ * til 320. Men 172 av dem skrives av `Example.astro` på hver eneste
  * eksempelside, og de går aldri gjennom remark. Tallet kunne altså stå høyt og
  * grønt selv om hver eneste plassholder forsvant ut av kilden, og vakten påsto
  * arbeid den ikke hadde gjort.
@@ -52,7 +52,7 @@ for (const rel of new Glob("documentation/src/**/*.{mdx,md,astro}").scanSync(
   const tekst = readFileSync(ROT + rel, "utf8")
 
   for (const treff of tekst.matchAll(
-    /@fristil\/designsystem@VERSJON(\/[^"'`\s)]+)/g,
+    /@lotek\/designsystem@VERSJON(\/[^"'`\s)]+)/g,
   )) {
     iKilden.add(treff[1])
   }
@@ -71,7 +71,7 @@ for (const rel of new Glob("documentation/dist/**/*.html").scanSync(ROT)) {
   // Versjonsloggen er unntatt ved navn: den rendres fra CHANGELOG.md, som
   // nevner plassholderen der den ble innført, og har ingen CDN-adresser.
   if (
-    rel !== "documentation/dist/versjonslogg/index.html" &&
+    rel !== "documentation/dist/changelog/index.html" &&
     (tekst.includes(PLASSHOLDER) ||
       /designsystem[@-]?(?:&#\d+;)?VERSJON/.test(tekst))
   )
@@ -88,7 +88,7 @@ for (const filsti of iKilden) {
 
 /*
  * Maven-koordinatene og WebJar-stien på Kotlin-siden har også plassholderen,
- * og `remark-versjon.mjs` bytter dem for seg. Regexen over ser bare
+ * og `remark-version.mjs` bytter dem for seg. Regexen over ser bare
  * npm-navnet, så uten dette kunne Gradle-eksemplene gå ut med ordet VERSJON
  * i seg mens sjekken var grønn. Hver av de tre formene kontrolleres begge
  * veier: at den står med versjonen i det bygde, og at plassholderen ikke
@@ -102,9 +102,9 @@ for (const filsti of iKilden) {
  * `&#x22;`. Første utgave lette etter `version "VERSJON"` og var død.
  */
 const MAVEN = [
-  ["markusaugust:fristil:VERSJON", `markusaugust:fristil:${version}`],
+  ["markusaugust:lo-tek-interfaces:VERSJON", `markusaugust:lo-tek-interfaces:${version}`],
   ["version &#x22;VERSJON&#x22;", `version &#x22;${version}&#x22;`],
-  ["webjars/fristil/VERSJON/", `webjars/fristil/${version}/`],
+  ["webjars/lo-tek/VERSJON/", `webjars/lo-tek/${version}/`],
 ]
 for (const [igjen, medVersjon] of MAVEN) {
   if (!bygget.some((tekst) => tekst.includes(medVersjon))) {

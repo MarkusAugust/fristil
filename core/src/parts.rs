@@ -3,9 +3,9 @@
 //! Regelen er drevet av `parts` i manifestet, både for elementene og for
 //! klassene, så en ny del i `metadata.ts` sjekkes uten en linje her. Den
 //! melder bare delene med `unique`: der en del til av samme slag er en feil,
-//! som et `<fs-field>` med to kontroller, der bare den første blir koblet.
+//! som et `<lt-field>` med to kontroller, der bare den første blir koblet.
 //! En del uten `unique` kan stå flere ganger og være vanlig innhold.
-//! `<fs-popover>` finner knappen med `aria-controls` mot panelet, ellers den
+//! `<lt-popover>` finner knappen med `aria-controls` mot panelet, ellers den
 //! første utenfor panelet, og knappene i panelet er menyens. Hver komponents egen
 //! regel for hvilken som er den riktige, står i komponenten og ikke her.
 //!
@@ -506,7 +506,7 @@ pub(crate) fn check_parts(source: &[u16], vocabulary: &Vocabulary, nodes: &[Node
                 for &n in hits.iter().skip(1) {
                     let node = &nodes[n];
                     // Nøstede verter med den samme delen, som klassen og
-                    // elementet i `<fs-session-timeout>`, melder den samme
+                    // elementet i `<lt-session-timeout>`, melder den samme
                     // noden bare én gang.
                     if !reported.insert(node.name_start) {
                         continue;
@@ -580,26 +580,26 @@ mod tests {
 
     #[test]
     fn two_controls_in_a_field() {
-        let found = rules(r#"<fs-field><label>Navn</label><input><input></fs-field>"#);
+        let found = rules(r#"<lt-field><label>Navn</label><input><input></lt-field>"#);
         assert_eq!(found.len(), 1, "{found:?}");
-        assert!(found[0].starts_with("<fs-field> har delen «control»"));
+        assert!(found[0].starts_with("<lt-field> har delen «control»"));
     }
 
     #[test]
     fn a_field_inside_a_field_is_its_own() {
-        assert!(rules(r#"<fs-field><label>A</label><input><fs-field><label>B</label><input></fs-field></fs-field>"#).is_empty());
+        assert!(rules(r#"<lt-field><label>A</label><input><lt-field><label>B</label><input></lt-field></lt-field>"#).is_empty());
     }
 
     #[test]
     fn only_unique_parts_are_reported() {
         // Knappene i panelet er menyens, og en delt knapp er riktig.
-        assert!(rules(r#"<fs-popover><button>Lagre</button><button aria-controls="m">v</button><ul class="fs-popover" id="m"><li><button>A</button></li></ul></fs-popover>"#).is_empty());
+        assert!(rules(r#"<lt-popover><button>Lagre</button><button aria-controls="m">v</button><ul class="lt-popover" id="m"><li><button>A</button></li></ul></lt-popover>"#).is_empty());
         // Flere overskrifter i en dialog er innhold.
-        assert!(rules(r#"<fs-dialog><dialog aria-label="Innstillinger"><h2>Lyd</h2><h2>Bilde</h2></dialog></fs-dialog>"#).is_empty());
+        assert!(rules(r#"<lt-dialog><dialog aria-label="Innstillinger"><h2>Lyd</h2><h2>Bilde</h2></dialog></lt-dialog>"#).is_empty());
         // Hver hjelpetekst i hvert sitt felt i et feltsett.
-        assert!(rules(r#"<fieldset class="fs-fieldset"><legend class="fs-legend">Adresse</legend><label>Gate</label><input><p class="fs-help-text">A</p><label>Postnummer</label><input><p class="fs-help-text">B</p></fieldset>"#).is_empty());
+        assert!(rules(r#"<fieldset class="lt-fieldset"><legend class="lt-legend">Adresse</legend><label>Gate</label><input><p class="lt-help-text">A</p><label>Postnummer</label><input><p class="lt-help-text">B</p></fieldset>"#).is_empty());
         assert_eq!(
-            rules(r#"<fs-dialog><dialog></dialog><dialog></dialog></fs-dialog>"#).len(),
+            rules(r#"<lt-dialog><dialog></dialog><dialog></dialog></lt-dialog>"#).len(),
             1
         );
     }
@@ -612,13 +612,13 @@ mod tests {
         for c in v
             .classes
             .iter_mut()
-            .filter(|c| c.name == "fs-session-timeout__dialog")
+            .filter(|c| c.name == "lt-session-timeout__dialog")
         {
             for p in c.parts.iter_mut().filter(|p| p.name == "text") {
                 p.unique = true;
             }
         }
-        let html = r#"<fs-session-timeout class="fs-session-timeout"><dialog class="fs-session-timeout__dialog"><p class="fs-session-timeout__text">A</p><p class="fs-session-timeout__text">B</p></dialog></fs-session-timeout>"#;
+        let html = r#"<lt-session-timeout class="lt-session-timeout"><dialog class="lt-session-timeout__dialog"><p class="lt-session-timeout__text">A</p><p class="lt-session-timeout__text">B</p></dialog></lt-session-timeout>"#;
         let found = check_parts(&utf16(html), &v, &crate::references::tree(&utf16(html)));
         assert_eq!(found.len(), 1, "{found:?}");
     }
@@ -626,44 +626,44 @@ mod tests {
     #[test]
     fn what_a_template_hides_or_decides_does_not_count() {
         assert!(rules(
-            r#"<fs-field><label>A</label><input><template><input></template></fs-field>"#
+            r#"<lt-field><label>A</label><input><template><input></template></lt-field>"#
         )
         .is_empty());
         assert!(
-            rules(r#"<fs-field><label>A</label>{lang ? <textarea /> : <input />}</fs-field>"#)
+            rules(r#"<lt-field><label>A</label>{lang ? <textarea /> : <input />}</lt-field>"#)
                 .is_empty()
         );
-        assert!(rules(r#"<fs-field><label>A</label><input v-if="kort"><textarea v-else></textarea></fs-field>"#).is_empty());
+        assert!(rules(r#"<lt-field><label>A</label><input v-if="kort"><textarea v-else></textarea></lt-field>"#).is_empty());
     }
 
     #[test]
     fn braces_and_words_that_are_not_templates_do_not_silence_it() {
         // `{n}` i en attributtverdi på verten, `nav-form` som ligner `v-for`,
         // en e-postadresse som ligner `@if`, og et uttrykk etter sluttaggen.
-        let html = r#"<fs-suggestion count-one="{n} hits"><input class="nav-form" data-on:input="$n > 0 && go({a: 1})"><input><p>kontakt@ifi.uio.no</p></fs-suggestion>
-<fs-field><label>A</label><input><input></fs-field>
+        let html = r#"<lt-suggestion count-one="{n} hits"><input class="nav-form" data-on:input="$n > 0 && go({a: 1})"><input><p>kontakt@ifi.uio.no</p></lt-suggestion>
+<lt-field><label>A</label><input><input></lt-field>
 {error && <p>Error</p>}"#;
         assert_eq!(rules(html).len(), 2, "{:?}", rules(html));
     }
 
     #[test]
     fn a_spinner_is_not_a_second_status() {
-        assert!(rules(r#"<fs-suggestion><label>A</label><input><ul class="fs-suggestion__list"></ul><span role="status"></span><span class="fs-spinner" role="status" aria-label="Henter"></span></fs-suggestion>"#).is_empty());
+        assert!(rules(r#"<lt-suggestion><label>A</label><input><ul class="lt-suggestion__list"></ul><span role="status"></span><span class="lt-spinner" role="status" aria-label="Henter"></span></lt-suggestion>"#).is_empty());
     }
 
     #[test]
     fn type_is_compared_without_case() {
-        assert!(rules(r#"<fs-field><input type="HIDDEN" name="x"><input type="checkbox" name="y"><label>A</label></fs-field>"#).is_empty());
+        assert!(rules(r#"<lt-field><input type="HIDDEN" name="x"><input type="checkbox" name="y"><label>A</label></lt-field>"#).is_empty());
     }
 
     #[test]
     fn says_nothing_when_a_template_decides() {
-        assert!(rules("<fs-field><label>A</label>{{if .Lang}}<textarea></textarea>{{else}}<input>{{end}}</fs-field>").is_empty());
+        assert!(rules("<lt-field><label>A</label>{{if .Lang}}<textarea></textarea>{{else}}<input>{{end}}</lt-field>").is_empty());
     }
 
     #[test]
     fn classes_have_parts_too() {
-        assert_eq!(rules(r#"<table class="fs-table"><caption>A</caption><caption>B</caption><thead></thead><tbody></tbody></table>"#).len(), 1);
-        assert!(rules(r#"<div class="fs-card"><h3 class="fs-card__title">A</h3><div class="fs-card"><h3 class="fs-card__title">B</h3></div></div>"#).is_empty());
+        assert_eq!(rules(r#"<table class="lt-table"><caption>A</caption><caption>B</caption><thead></thead><tbody></tbody></table>"#).len(), 1);
+        assert!(rules(r#"<div class="lt-card"><h3 class="lt-card__title">A</h3><div class="lt-card"><h3 class="lt-card__title">B</h3></div></div>"#).is_empty());
     }
 }

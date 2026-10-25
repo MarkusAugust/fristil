@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
-  defineFsToast,
-  FsToast,
-} from "./components/frittstaende/toast/fs-toast"
+  defineLtToast,
+  LtToast,
+} from "./components/standalone/toast/lt-toast"
 import { defineElement, whenUpgraded } from "./components/host-element"
 import * as pakke from "./index"
-import { defineFs } from "./register"
+import { defineLt } from "./register"
 
 /*
  * Tagnavnene hentes fra hovedinngangen, ikke fra `register.ts`. Da feller
@@ -17,7 +17,7 @@ const tagger = Object.entries(pakke)
   .filter(([navn]) => navn.endsWith("_TAG"))
   .map(([, verdi]) => verdi as string)
 
-describe("defineFs()", () => {
+describe("defineLt()", () => {
   it("tåler at en komponent alt er registrert under et eget navn", () => {
     /*
      * En konstruktør kan bare stå i registeret én gang. Var klassen alt
@@ -25,21 +25,21 @@ describe("defineFs()", () => {
      * NotSupportedError, og komponentene etter den i lista ble aldri
      * registrert.
      */
-    defineFsToast("app-toast")
+    defineLtToast("app-toast")
 
-    expect(() => defineFs()).not.toThrow()
+    expect(() => defineLt()).not.toThrow()
 
     for (const tag of tagger) {
       expect(customElements.get(tag), tag).toBeDefined()
     }
-    expect(document.createElement("app-toast")).toBeInstanceOf(FsToast)
-    expect(document.createElement("fs-toast")).toBeInstanceOf(FsToast)
+    expect(document.createElement("app-toast")).toBeInstanceOf(LtToast)
+    expect(document.createElement("lt-toast")).toBeInstanceOf(LtToast)
   })
 
   it("registrerer hver web component pakken har", () => {
     expect(tagger.length).toBeGreaterThanOrEqual(9)
 
-    defineFs()
+    defineLt()
 
     for (const tag of tagger) {
       expect(customElements.get(tag), tag).toBeDefined()
@@ -47,38 +47,38 @@ describe("defineFs()", () => {
   })
 
   it("tåler å bli kalt to ganger", () => {
-    defineFs()
-    expect(() => defineFs()).not.toThrow()
+    defineLt()
+    expect(() => defineLt()).not.toThrow()
   })
 })
 
 describe("defineElement()", () => {
   it("registrerer samme klasse under to navn", () => {
     class Egen extends HTMLElement {}
-    defineElement("fs-egen-første", Egen)
+    defineElement("lt-egen-første", Egen)
 
-    expect(() => defineElement("fs-egen-andre", Egen)).not.toThrow()
+    expect(() => defineElement("lt-egen-andre", Egen)).not.toThrow()
 
-    expect(customElements.get("fs-egen-andre")).toBeDefined()
-    expect(document.createElement("fs-egen-andre")).toBeInstanceOf(Egen)
+    expect(customElements.get("lt-egen-andre")).toBeDefined()
+    expect(document.createElement("lt-egen-andre")).toBeInstanceOf(Egen)
   })
 
   it("klarer seg uten customElements.getName", () => {
     // Chrome før 117, Firefox før 116 og Safari før 17 har ikke `getName`.
     class Egen extends HTMLElement {}
-    defineElement("fs-egen-uten-getname", Egen)
+    defineElement("lt-egen-uten-getname", Egen)
     Object.defineProperty(customElements, "getName", {
       value: undefined,
       configurable: true,
     })
 
     try {
-      expect(() => defineElement("fs-egen-uten-getname-to", Egen)).not.toThrow()
+      expect(() => defineElement("lt-egen-uten-getname-to", Egen)).not.toThrow()
     } finally {
       Reflect.deleteProperty(customElements, "getName")
     }
 
-    expect(document.createElement("fs-egen-uten-getname-to")).toBeInstanceOf(
+    expect(document.createElement("lt-egen-uten-getname-to")).toBeInstanceOf(
       Egen,
     )
   })
@@ -93,7 +93,7 @@ describe("whenUpgraded()", () => {
   it("sier fra én gang om et element ingen registrerer", async () => {
     vi.useFakeTimers()
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    const element = document.createElement("fs-aldri-registrert")
+    const element = document.createElement("lt-aldri-registrert")
 
     void whenUpgraded(element)
     void whenUpgraded(element)
@@ -103,7 +103,7 @@ describe("whenUpgraded()", () => {
     vi.advanceTimersByTime(1)
     expect(advarsel).toHaveBeenCalledTimes(1)
     expect(String(advarsel.mock.calls[0]?.[0])).toContain(
-      "<fs-aldri-registrert> er ikke registrert",
+      "<lt-aldri-registrert> er ikke registrert",
     )
   })
 
@@ -120,10 +120,10 @@ describe("whenUpgraded()", () => {
   it("tier når registreringen kommer før fristen", async () => {
     vi.useFakeTimers()
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    const element = document.createElement("fs-registrert-i-tide")
+    const element = document.createElement("lt-registrert-i-tide")
 
     const løfte = whenUpgraded(element)
-    customElements.define("fs-registrert-i-tide", class extends HTMLElement {})
+    customElements.define("lt-registrert-i-tide", class extends HTMLElement {})
     await løfte
     vi.advanceTimersByTime(3000)
 

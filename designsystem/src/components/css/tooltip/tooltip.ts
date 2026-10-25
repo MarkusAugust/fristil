@@ -1,8 +1,8 @@
 import { attributes } from "../shared.js"
 
-export const TOOLTIP_CLASS = "fs-tooltip" as const
+export const TOOLTIP_CLASS = "lt-tooltip" as const
 /** Selve boblen med teksten. */
-export const TOOLTIP_BUBBLE_CLASS = "fs-tooltip__bubble" as const
+export const TOOLTIP_BUBBLE_CLASS = "lt-tooltip__bubble" as const
 
 export type TooltipAttributes = {
   class: typeof TOOLTIP_CLASS

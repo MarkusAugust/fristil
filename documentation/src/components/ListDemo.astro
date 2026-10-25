@@ -19,25 +19,25 @@ import Preview from "./Preview.astro"
 	layout="stabel"
 	maxWidth="34rem"
 	ekstraCss={`
-		/* Oppsettet er appens, ikke systemets: Fristil gir søkefeltet,
+		/* Oppsettet er appens, ikke systemets: LO-TEK gir søkefeltet,
 		   merkelappene og tabellen, mens luften mellom dem hører til siden
 		   som setter dem sammen. */
 		#demo-liste-rot {
 			display: flex;
 			flex-direction: column;
-			gap: var(--fs-spacing-5);
+			gap: var(--lt-spacing-5);
 		}
 
 		.demo-filtre {
 			display: flex;
 			flex-wrap: wrap;
 			align-items: center;
-			gap: var(--fs-spacing-2);
+			gap: var(--lt-spacing-2);
 		}
 
 		.demo-filtre h3 {
 			flex-basis: 100%;
-			margin: 0 0 var(--fs-spacing-1);
+			margin: 0 0 var(--lt-spacing-1);
 		}
 
 		#demo-last-om-igjen {
@@ -46,10 +46,10 @@ import Preview from "./Preview.astro"
 	`}
 >
 	<div id="demo-liste-rot">
-		<form role="search" class="fs-search-row" id="demo-sok-skjema">
-			<label class="fs-label fs-sr-only" for="demo-sok">Søk i saker</label>
+		<form role="search" class="lt-search-row" id="demo-sok-skjema">
+			<label class="lt-label lt-sr-only" for="demo-sok">Søk i saker</label>
 			<input
-				class="fs-input fs-search"
+				class="lt-input lt-search"
 				type="search"
 				id="demo-sok"
 				name="q"
@@ -58,17 +58,17 @@ import Preview from "./Preview.astro"
 		</form>
 
 		<div role="group" aria-labelledby="demo-filtre" class="demo-filtre">
-			<h3 class="fs-heading" data-size="xs" id="demo-filtre">Status</h3>
-			<button class="fs-tag" data-selectable aria-pressed="false" type="button" data-status="Innvilget">Innvilget</button>
-			<button class="fs-tag" data-selectable aria-pressed="false" type="button" data-status="Under behandling">Under behandling</button>
-			<button class="fs-tag" data-selectable aria-pressed="false" type="button" data-status="Avslått">Avslått</button>
+			<h3 class="lt-heading" data-size="xs" id="demo-filtre">Status</h3>
+			<button class="lt-tag" data-selectable aria-pressed="false" type="button" data-status="Innvilget">Innvilget</button>
+			<button class="lt-tag" data-selectable aria-pressed="false" type="button" data-status="Under behandling">Under behandling</button>
+			<button class="lt-tag" data-selectable aria-pressed="false" type="button" data-status="Avslått">Avslått</button>
 		</div>
 
-		<p class="fs-sr-only" role="status" id="demo-treff"></p>
+		<p class="lt-sr-only" role="status" id="demo-treff"></p>
 
 		<div id="demo-resultat"></div>
 
-		<button class="fs-button" data-variant="secondary" type="button" id="demo-last-om-igjen">
+		<button class="lt-button" data-variant="secondary" type="button" id="demo-last-om-igjen">
 			Last listen på nytt
 		</button>
 	</div>
@@ -85,7 +85,7 @@ import Preview from "./Preview.astro"
 	]
 
 	/*
-	 * Sorteringen er demoens, ikke systemets. Fristil gir knappen og pila, og
+	 * Sorteringen er demoens, ikke systemets. LO-TEK gir knappen og pila, og
 	 * leser retningen fra `aria-sort`. Hvilken kolonne som er sortert, står
 	 * bare her, og skrives ut som `aria-sort` på én overskrift.
 	 */
@@ -108,7 +108,7 @@ import Preview from "./Preview.astro"
 	function overskrift(kolonne: Kolonne, tekst: string): string {
 		const sortert = sortering.kolonne === kolonne
 		return `<th scope="col"${sortert ? ` aria-sort="${sortering.retning}"` : ""}>
-			<button type="button" class="fs-table__sort" data-kolonne="${kolonne}">${tekst}</button>
+			<button type="button" class="lt-table__sort" data-kolonne="${kolonne}">${tekst}</button>
 		</th>`
 	}
 
@@ -122,7 +122,7 @@ import Preview from "./Preview.astro"
 	let lastinger = 0
 
 	function valgteFiltre(): string[] {
-		return [...(rot?.querySelectorAll(".fs-tag[aria-pressed='true']") ?? [])].map(
+		return [...(rot?.querySelectorAll(".lt-tag[aria-pressed='true']") ?? [])].map(
 			(knapp) => (knapp as HTMLElement).dataset.status ?? "",
 		)
 	}
@@ -131,7 +131,7 @@ import Preview from "./Preview.astro"
 		if (!resultat) return
 		resultat.innerHTML = `
 			<div aria-busy="true">
-				${'<div class="fs-skeleton" data-variant="text" aria-hidden="true"></div>'.repeat(3)}
+				${'<div class="lt-skeleton" data-variant="text" aria-hidden="true"></div>'.repeat(3)}
 			</div>`
 		if (treff) treff.textContent = "Henter saker"
 	}
@@ -139,8 +139,8 @@ import Preview from "./Preview.astro"
 	function visFeil() {
 		if (!resultat) return
 		resultat.innerHTML = `
-			<div class="fs-alert" data-color="danger" role="alert">
-				<p class="fs-alert__title">Klarte ikke å hente sakene</p>
+			<div class="lt-alert" data-color="danger" role="alert">
+				<p class="lt-alert__title">Klarte ikke å hente sakene</p>
 				<p>Nettverket svarte ikke. Prøv igjen.</p>
 			</div>`
 		// Varselet har role="alert" og leses opp selv. Statusfeltet tømmes, så
@@ -152,9 +152,9 @@ import Preview from "./Preview.astro"
 		if (!resultat) return
 		resultat.innerHTML = `
 			<div>
-				<p class="fs-paragraph"><strong id="demo-tomt"></strong></p>
-				<p class="fs-paragraph" data-size="small">Prøv et annet søkeord, eller fjern filtrene.</p>
-				<button class="fs-button" data-variant="secondary" type="button" id="demo-nullstill">
+				<p class="lt-paragraph"><strong id="demo-tomt"></strong></p>
+				<p class="lt-paragraph" data-size="small">Prøv et annet søkeord, eller fjern filtrene.</p>
+				<button class="lt-button" data-variant="secondary" type="button" id="demo-nullstill">
 					Nullstill søket
 				</button>
 			</div>`
@@ -168,7 +168,7 @@ import Preview from "./Preview.astro"
 
 		flate?.getElementById("demo-nullstill")?.addEventListener("click", () => {
 			if (sok) sok.value = ""
-			for (const knapp of rot?.querySelectorAll(".fs-tag") ?? []) {
+			for (const knapp of rot?.querySelectorAll(".lt-tag") ?? []) {
 				knapp.setAttribute("aria-pressed", "false")
 			}
 			tegn()
@@ -179,9 +179,9 @@ import Preview from "./Preview.astro"
 		if (!resultat) return
 		viste = saker
 		resultat.innerHTML = `
-			<div class="fs-table-scroll" tabindex="0" role="region" aria-label="Saker">
-				<table class="fs-table" data-variant="striped">
-					<caption class="fs-sr-only">Saker som passer med søket. Kolonner med knapp kan sorteres.</caption>
+			<div class="lt-table-scroll" tabindex="0" role="region" aria-label="Saker">
+				<table class="lt-table" data-variant="striped">
+					<caption class="lt-sr-only">Saker som passer med søket. Kolonner med knapp kan sorteres.</caption>
 					<thead>
 						<tr>${overskrift("nummer", "Saksnummer")}${overskrift("sendt", "Sendt")}<th scope="col">Status</th></tr>
 					</thead>
@@ -244,7 +244,7 @@ import Preview from "./Preview.astro"
 		tegn()
 	})
 
-	for (const knapp of rot?.querySelectorAll(".fs-tag[data-selectable]") ?? []) {
+	for (const knapp of rot?.querySelectorAll(".lt-tag[data-selectable]") ?? []) {
 		knapp.addEventListener("click", () => {
 			const valgt = knapp.getAttribute("aria-pressed") === "true"
 			knapp.setAttribute("aria-pressed", String(!valgt))
@@ -258,7 +258,7 @@ import Preview from "./Preview.astro"
 	// rekkefølge. Tabellen byttes ut, så fokus må settes tilbake på knappen
 	// brukeren trykket på, ellers havner det på `<body>`.
 	resultat?.addEventListener("click", (hendelse) => {
-		const knapp = (hendelse.target as Element).closest<HTMLElement>(".fs-table__sort")
+		const knapp = (hendelse.target as Element).closest<HTMLElement>(".lt-table__sort")
 		const kolonne = knapp?.dataset.kolonne as Kolonne | undefined
 		if (!kolonne) return
 
@@ -271,7 +271,7 @@ import Preview from "./Preview.astro"
 		}
 		visSaker(viste)
 		resultat
-			.querySelector<HTMLElement>(`.fs-table__sort[data-kolonne="${kolonne}"]`)
+			.querySelector<HTMLElement>(`.lt-table__sort[data-kolonne="${kolonne}"]`)
 			?.focus()
 	})
 

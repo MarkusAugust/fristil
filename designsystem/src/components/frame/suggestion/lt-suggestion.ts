@@ -35,14 +35,14 @@ const COUNT_ATTRIBUTES = [
   "count-other",
 ] as const
 
-export const FS_SUGGESTION_TAG = "fs-suggestion" as const
+export const LT_SUGGESTION_TAG = "lt-suggestion" as const
 
 /**
  * Delene forslagsfeltet finner, som selektorer relativt til elementet. Komponenten
  * finner delene med disse, og manifestet beskriver dem for den som setter
  * sammen markupen selv, så de to ikke kan si noe ulikt.
  */
-export const FS_SUGGESTION_PARTS = {
+export const LT_SUGGESTION_PARTS = {
   /** Feltet: rollen når den står der, ellers det første inndatafeltet. */
   control: "[role='combobox'], input:not([type='hidden'])",
   /** Lista: rollen når den står der, ellers klassen. */
@@ -55,18 +55,18 @@ export const FS_SUGGESTION_PARTS = {
   value: `input.${SUGGESTION_VALUE_CLASS}`,
 } as const
 
-const CONTROL_SELECTOR = FS_SUGGESTION_PARTS.control
-const LIST_SELECTOR = FS_SUGGESTION_PARTS.list
-const OPTION_SELECTOR = FS_SUGGESTION_PARTS.option
+const CONTROL_SELECTOR = LT_SUGGESTION_PARTS.control
+const LIST_SELECTOR = LT_SUGGESTION_PARTS.list
+const OPTION_SELECTOR = LT_SUGGESTION_PARTS.option
 
 /**
  * Tastaturet og filtreringen i et felt med forslagsliste.
  *
  * Serveren skriver feltet og lista. Lages markupen med JavaScript, skriver
- * `fs.suggestion()` rollene, id-ene og koblingen. Kommer den fra en mal uten
+ * `lt.suggestion()` rollene, id-ene og koblingen. Kommer den fra en mal uten
  * JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, eller
  * legger ledeteksten rundt feltet, som HTML krever for at feltet skal ha navn
- * uten JavaScript. Resten holder det med: en `.fs-suggestion__list` med `<li>`
+ * uten JavaScript. Resten holder det med: en `.lt-suggestion__list` med `<li>`
  * og et `[role="status"]`. Komponenten setter rollene, gir lista og
  * alternativene id, kobler lista til feltet, og lukker lista til brukeren
  * rører feltet. Bare det som mangler, så det serveren skrev står.
@@ -76,7 +76,7 @@ const OPTION_SELECTOR = FS_SUGGESTION_PARTS.option
  * neste oppdatering, med fokus og det brukeren har skrevet.
  *
  * Feltet viser alltid teksten til alternativet. Har serveren skrevet et
- * skjult `.fs-suggestion__value`, får det koden fra `data-value`, eller
+ * skjult `.lt-suggestion__value`, får det koden fra `data-value`, eller
  * teksten når alternativet ikke har noen. Uten JavaScript sendes teksten, og serveren
  * slår opp. Komponenten rendrer ingenting. Den lagde tidligere
  * hele feltet selv, og da fantes det verken ledetekst eller inndatafelt før
@@ -92,20 +92,20 @@ const OPTION_SELECTOR = FS_SUGGESTION_PARTS.option
  * alternativene være i fred.
  *
  * ```html
- * <fs-suggestion>
- *   <label class="fs-label" for="kommune">Kommune</label>
- *   <input class="fs-input" id="kommune" role="combobox" aria-controls="kommune-list"
+ * <lt-suggestion>
+ *   <label class="lt-label" for="kommune">Kommune</label>
+ *   <input class="lt-input" id="kommune" role="combobox" aria-controls="kommune-list"
  *          aria-expanded="false" aria-autocomplete="list" autocomplete="off"
  *          aria-describedby="kommune-status">
- *   <ul class="fs-suggestion__list" id="kommune-list" role="listbox" hidden>
- *     <li class="fs-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
+ *   <ul class="lt-suggestion__list" id="kommune-list" role="listbox" hidden>
+ *     <li class="lt-suggestion__option" id="kommune-option-0" role="option">Bergen</li>
  *   </ul>
- *   <p class="fs-suggestion__empty">Ingen treff</p>
- *   <span class="fs-sr-only" id="kommune-status" role="status"></span>
- * </fs-suggestion>
+ *   <p class="lt-suggestion__empty">Ingen treff</p>
+ *   <span class="lt-sr-only" id="kommune-status" role="status"></span>
+ * </lt-suggestion>
  * ```
  */
-export class FsSuggestion extends HostElement {
+export class LtSuggestion extends HostElement {
   static observedAttributes = [
     "prefiltered",
     SERVER_CONTROLLED,
@@ -176,7 +176,7 @@ export class FsSuggestion extends HostElement {
   /**
    * Alternativet som er markert, husket med både id og tekst.
    *
-   * Id-ene fra `fs.suggestion()` er posisjonelle, så en ny liste fra serveren
+   * Id-ene fra `lt.suggestion()` er posisjonelle, så en ny liste fra serveren
    * gjenbruker dem. Med id alene satte komponenten markeringen tilbake på
    * alternativ nummer to i en helt annen liste, og skjermleseren leste opp en
    * kommune brukeren aldri navigerte til. Teksten er identiteten; id-en er
@@ -302,7 +302,7 @@ export class FsSuggestion extends HostElement {
   /**
    * Legger lista rett under feltet, like bred som det. Er det ikke plass
    * under, legges den over, og klemmes inn i vinduet uansett, som panelet i
-   * `<fs-popover>`. Posisjonen er fysisk, regnet ut fra feltets boks.
+   * `<lt-popover>`. Posisjonen er fysisk, regnet ut fra feltets boks.
    */
   private reposition = (): void => {
     const list = this.listElement
@@ -319,13 +319,13 @@ export class FsSuggestion extends HostElement {
     }
     top = Math.max(space, Math.min(top, window.innerHeight - height - space))
 
-    list.style.setProperty("--fs-suggestion-top", `${Math.round(top)}px`)
+    list.style.setProperty("--lt-suggestion-top", `${Math.round(top)}px`)
     list.style.setProperty(
-      "--fs-suggestion-left",
+      "--lt-suggestion-left",
       `${Math.round(field.left)}px`,
     )
     list.style.setProperty(
-      "--fs-suggestion-width",
+      "--lt-suggestion-width",
       `${Math.round(field.width)}px`,
     )
   }
@@ -377,7 +377,7 @@ export class FsSuggestion extends HostElement {
       setAttr(
         labelElement,
         "id",
-        this.rememberedId(labelElement, "fs-suggestion-label"),
+        this.rememberedId(labelElement, "lt-suggestion-label"),
       )
     }
     if (label !== null) setAttr(list, "aria-label", null)
@@ -405,7 +405,7 @@ export class FsSuggestion extends HostElement {
    * Lista lukkes når markupen ikke sier noe om den, altså når verken
    * `aria-expanded` på feltet eller `hidden` på lista står der. Sier
    * markupen én av delene, er det serverens ord om begge, som med
-   * `fs.suggestion({ open: true })`.
+   * `lt.suggestion({ open: true })`.
    */
   private wire(): void {
     const control = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
@@ -426,7 +426,7 @@ export class FsSuggestion extends HostElement {
       // `for` og `id` er den samme opplysningen, og skrives fra feltets id,
       // aldri motsatt: komponenten skriver ikke id på feltet. Står
       // ledeteksten rundt feltet, er koblingen implisitt. Samme regel som i
-      // `<fs-field>`.
+      // `<lt-field>`.
       if (control.id && !label.contains(control)) {
         const current = label.getAttribute("for")
         if (
@@ -493,7 +493,7 @@ export class FsSuggestion extends HostElement {
       )
     } else {
       // Uten ledetekst inni kan den stå utenfor, med `for` på feltets id.
-      // Den får klassen, som i `<fs-field>`; en patch av dette området
+      // Den får klassen, som i `<lt-field>`; en patch av dette området
       // rører den ikke, så den trenger ingen reparasjon.
       if (control.id) {
         const outside = (
@@ -505,11 +505,11 @@ export class FsSuggestion extends HostElement {
         this,
         "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
           "skjermleser leser det opp uten navn. Står ledeteksten utenfor " +
-          "<fs-suggestion>, må for på den peke på id-en til feltet.",
+          "<lt-suggestion>, må for på den peke på id-en til feltet.",
         () => {
           const now = this.querySelector<HTMLInputElement>(CONTROL_SELECTOR)
           if (!now || this.querySelector("label")) return false
-          // En <label> rundt hele <fs-suggestion> gir også feltet et navn.
+          // En <label> rundt hele <lt-suggestion> gir også feltet et navn.
           if ((now.labels?.length ?? 0) > 0) return false
           if (
             now.hasAttribute("aria-label") ||
@@ -535,7 +535,7 @@ export class FsSuggestion extends HostElement {
         const wanted = control.getAttribute("aria-controls")
         const free = wanted && !root.getElementById?.(wanted)
         if (free) this.ids.set(list, wanted)
-        setAttr(list, "id", this.rememberedId(list, "fs-suggestion-list"))
+        setAttr(list, "id", this.rememberedId(list, "lt-suggestion-list"))
       }
       if (!control.hasAttribute("aria-controls")) {
         setAttr(control, "aria-controls", list.id)
@@ -555,7 +555,7 @@ export class FsSuggestion extends HostElement {
         this.roledByMe.add(option)
       }
       if (!option.id) {
-        setAttr(option, "id", this.rememberedId(option, "fs-suggestion-option"))
+        setAttr(option, "id", this.rememberedId(option, "lt-suggestion-option"))
       }
       // Fra starten, ikke først når lista lukkes: ellers sto alternativene
       // serveren sendte, uten til da, mens resten av lista hadde det.
@@ -591,7 +591,7 @@ export class FsSuggestion extends HostElement {
     // området ville ellers lest det gamle antallet opp på nytt. Og ikke når
     // noen andre filtrerer: da er en patch svaret på et tastetrykk, og
     // `announceFiltered` leser det nye antallet rett etter.
-    const status = this.querySelector<HTMLElement>(FS_SUGGESTION_PARTS.status)
+    const status = this.querySelector<HTMLElement>(LT_SUGGESTION_PARTS.status)
     if (
       status &&
       this.wantOpen === true &&
@@ -703,11 +703,11 @@ export class FsSuggestion extends HostElement {
   }
 
   private get emptyElement(): HTMLElement | null {
-    return this.querySelector<HTMLElement>(FS_SUGGESTION_PARTS.empty)
+    return this.querySelector<HTMLElement>(LT_SUGGESTION_PARTS.empty)
   }
 
   private get valueField(): HTMLInputElement | null {
-    return this.querySelector<HTMLInputElement>(FS_SUGGESTION_PARTS.value)
+    return this.querySelector<HTMLInputElement>(LT_SUGGESTION_PARTS.value)
   }
 
   /** Feltet tar ikke imot noe: `readonly` eller `disabled`. */
@@ -736,7 +736,7 @@ export class FsSuggestion extends HostElement {
    *
    * Den leses fra `aria-selected` i markupen, ikke fra en teller inni
    * komponenten. Serveren kan sette markeringen selv med
-   * `fs.suggestion({ activeIndex })`, og en parallell teller ville hoppet
+   * `lt.suggestion({ activeIndex })`, og en parallell teller ville hoppet
    * til toppen av lista ved første piltast i stedet for til alternativet
    * etter. Filtreringen flytter også på alternativene, og da svarer
    * oppslaget riktig av seg selv.
@@ -838,7 +838,7 @@ export class FsSuggestion extends HostElement {
     warnAboutMarkup(
       this,
       'fant ingen liste: verken en [role="listbox"] eller en ' +
-        ".fs-suggestion__list. Alternativene kan da verken vises, " +
+        ".lt-suggestion__list. Alternativene kan da verken vises, " +
         "filtreres eller velges med tastaturet.",
       () => this.querySelector(CONTROL_SELECTOR) !== null && !this.listElement,
     )
@@ -850,11 +850,11 @@ export class FsSuggestion extends HostElement {
       this,
       'fant ingen [role="status"]. Antall treff leses da ikke opp for den ' +
         "som ikke ser skjermen. Skriv et tomt element med rollen, som " +
-        "`fs.suggestion()` gjør.",
+        "`lt.suggestion()` gjør.",
       () =>
         this.querySelector(CONTROL_SELECTOR) !== null &&
         this.listElement !== null &&
-        this.querySelector(FS_SUGGESTION_PARTS.status) === null,
+        this.querySelector(LT_SUGGESTION_PARTS.status) === null,
     )
 
     if (control !== this.control) {
@@ -1072,7 +1072,7 @@ export class FsSuggestion extends HostElement {
    * Mangler elementet, har `bind()` alt sagt fra.
    */
   private announce(hits: number): void {
-    const status = this.querySelector<HTMLElement>(FS_SUGGESTION_PARTS.status)
+    const status = this.querySelector<HTMLElement>(LT_SUGGESTION_PARTS.status)
     if (!status) return
 
     this.announcedText = this.countText(hits)
@@ -1331,6 +1331,6 @@ export class FsSuggestion extends HostElement {
   }
 }
 
-export function defineFsSuggestion(tagName: string = FS_SUGGESTION_TAG): void {
-  defineElement(tagName, FsSuggestion)
+export function defineLtSuggestion(tagName: string = LT_SUGGESTION_TAG): void {
+  defineElement(tagName, LtSuggestion)
 }

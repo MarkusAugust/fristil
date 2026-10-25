@@ -1,4 +1,4 @@
-package no.fristil.html
+package no.lotek.html
 
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -20,49 +20,49 @@ import kotlinx.html.span
 import kotlinx.html.stream.createHTML
 import kotlinx.html.title
 import kotlinx.html.ul
-import no.fristil.ButtonVariant
-import no.fristil.Fs
-import no.fristil.FristilWebJar
-import no.fristil.InputType
-import no.fristil.RequiredMarker
-import no.fristil.assertFristil
-import no.fristil.errorSummary
-import no.fristil.field
+import no.lotek.ButtonVariant
+import no.lotek.Lt
+import no.lotek.LotekWebJar
+import no.lotek.InputType
+import no.lotek.RequiredMarker
+import no.lotek.assertLotek
+import no.lotek.errorSummary
+import no.lotek.field
 
 /**
- * At en side bygget med kotlinx.html og Fristils byggefunksjoner er riktig
- * markup, sjekket av den samme kjernen som `fristil sjekk`.
+ * At en side bygget med kotlinx.html og LO-TEKs byggefunksjoner er riktig
+ * markup, sjekket av den samme kjernen som `lotek sjekk`.
  */
-class FsTest {
+class LtTest {
     /** Et søknadsskjema med feil i e-postfeltet, slik en Ktor-app ville rendret det. */
     private fun soknad(ugyldig: Boolean): String =
         createHTML().html {
             head {
                 title("Søknad")
-                link(rel = "stylesheet", href = FristilWebJar.CSS)
+                link(rel = "stylesheet", href = LotekWebJar.CSS)
             }
             body {
                 form(action = "/soknad", method = FormMethod.post) {
-                    val feil = Fs.errorSummary(count = if (ugyldig) 1 else 0, id = "feil")
-                    div { fs(feil.host)
-                        h2 { fs(feil.title); +"Du må rette 1 feil" }
+                    val feil = Lt.errorSummary(count = if (ugyldig) 1 else 0, id = "feil")
+                    div { lt(feil.host)
+                        h2 { lt(feil.title); +"Du må rette 1 feil" }
                         ul { li { +"E-postadressen mangler @" } }
                     }
-                    val felt = Fs.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
-                    label { fs(felt.label); +"E-postadresse" }
-                    input { fs(Fs.input(type = InputType.EMAIL, state = felt.state), felt.control); name = "epost" }
-                    p { fs(Fs.helpText(), felt.help); +"Vi sender kvittering hit." }
-                    p { fs(Fs.errorText(), felt.error); +"Skriv en gyldig adresse." }
-                    button { fs(Fs.button()); +"Send" }
-                    button { fs(Fs.button(variant = ButtonVariant.SECONDARY)); +"Lagre utkast" }
+                    val felt = Lt.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
+                    label { lt(felt.label); +"E-postadresse" }
+                    input { lt(Lt.input(type = InputType.EMAIL, state = felt.state), felt.control); name = "epost" }
+                    p { lt(Lt.helpText(), felt.help); +"Vi sender kvittering hit." }
+                    p { lt(Lt.errorText(), felt.error); +"Skriv en gyldig adresse." }
+                    button { lt(Lt.button()); +"Send" }
+                    button { lt(Lt.button(variant = ButtonVariant.SECONDARY)); +"Lagre utkast" }
                 }
             }
         }
 
     @Test
     fun `siden er riktig markup, med og uten feil`() {
-        assertFristil(soknad(ugyldig = false))
-        assertFristil(soknad(ugyldig = true))
+        assertLotek(soknad(ugyldig = false))
+        assertLotek(soknad(ugyldig = true))
     }
 
     @Test
@@ -75,13 +75,13 @@ class FsTest {
 
     @Test
     fun `klassene legges til dem taggen har`() {
-        val html = createHTML().div(classes = "min-egen") { fs(Fs.card(), mapOf("class" to "min-egen ekstra")) }
-        assertContains(html, """class="min-egen fs-card ekstra"""")
+        val html = createHTML().div(classes = "min-egen") { lt(Lt.card(), mapOf("class" to "min-egen ekstra")) }
+        assertContains(html, """class="min-egen lt-card ekstra"""")
     }
 
     @Test
     fun `en skrivefeil i en egen klasse fanges av sjekken`() {
-        val html = createHTML().span { fs(Fs.badge(), mapOf("class" to "fs-badg")); +"Ny" }
-        assertFailsWith<AssertionError> { assertFristil(html, fragment = true) }
+        val html = createHTML().span { lt(Lt.badge(), mapOf("class" to "lt-badg")); +"Ny" }
+        assertFailsWith<AssertionError> { assertLotek(html, fragment = true) }
     }
 }

@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const BUTTON_CLASS = "fs-button" as const
+export const BUTTON_CLASS = "lt-button" as const
 
 export const buttonVariants = [
   "primary",

@@ -4,8 +4,8 @@
       "start": 13,
       "end": 15,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/tabs/",
-      "message": "<fs-tabs> har en fanerad uten navn. Skriv aria-label på .fs-tabs__list, som aria-label=\"Deler av saken\", eller aria-labelledby mot en overskrift. Uten navn sier skjermleseren bare «faneliste».",
+      "link": "https://lo-tek.sobernetics.no/components/tabs/",
+      "message": "<lt-tabs> har en fanerad uten navn. Skriv aria-label på .lt-tabs__list, som aria-label=\"Deler av saken\", eller aria-labelledby mot en overskrift. Uten navn sier skjermleseren bare «faneliste».",
       "fix": {
         "title": "Gi raden et navn med aria-label",
         "edits": [
@@ -24,8 +24,8 @@
       "start": 13,
       "end": 15,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/tabs/",
-      "message": "<fs-tabs> har en fanerad uten navn. Skriv aria-label på .fs-tabs__list, som aria-label=\"Deler av saken\", eller aria-labelledby mot en overskrift. Uten navn sier skjermleseren bare «faneliste».",
+      "link": "https://lo-tek.sobernetics.no/components/tabs/",
+      "message": "<lt-tabs> har en fanerad uten navn. Skriv aria-label på .lt-tabs__list, som aria-label=\"Deler av saken\", eller aria-labelledby mot en overskrift. Uten navn sier skjermleseren bare «faneliste».",
       "fix": {
         "title": "Gi raden et navn med aria-label",
         "edits": [

@@ -1,13 +1,13 @@
-package no.fristil.intellij
+package no.lotek.intellij
 
 import com.intellij.psi.PsiFile
-import no.fristil.Fristil
-import no.fristil.Manifest
+import no.lotek.Lotek
+import no.lotek.Manifest
 
 /**
- * En klasse fra Fristil, slik editoren viser den.
+ * En klasse fra LO-TEK, slik editoren viser den.
  *
- * @property navn klassenavnet, for eksempel `fs-button`
+ * @property navn klassenavnet, for eksempel `lt-button`
  * @property komponent komponenten den hører til, vist som detalj i lista
  * @property beskrivelse hva komponenten er, vist i dokumentasjonsruta
  * @property lenke adressen til komponentsiden
@@ -20,11 +20,11 @@ data class Klasse(
 )
 
 /**
- * Klassene Fristil sender ut.
+ * Klassene LO-TEK sender ut.
  *
  * [klasserFor] er klassene i manifestet fila sjekkes mot: prosjektets når det
  * har et, ellers [klasser], manifestet i Kotlin-pakken. Det er det samme
- * manifestet [FristilAnnotator] gir kjernen, funnet av [ProjectManifest], så
+ * manifestet [LotekAnnotator] gir kjernen, funnet av [ProjectManifest], så
  * fullføringen foreslår aldri en klasse diagnostikken avviser, og den
  * foreslår klassene i komponenter prosjektet har overtatt. Før leste
  * fullføringen alltid pakkens manifest, mens annotatoren leste prosjektets,
@@ -33,7 +33,7 @@ data class Klasse(
  */
 object Katalog {
     /** Klassene i manifestet i Kotlin-pakken. */
-    val klasser: List<Klasse> by lazy { fra(Fristil.manifest) }
+    val klasser: List<Klasse> by lazy { fra(Lotek.manifest) }
 
     /** Klassene i manifestet [file] sjekkes mot, se [ProjectManifest]. */
     fun klasserFor(file: PsiFile): List<Klasse> = ProjectManifest.classesFor(file) ?: klasser

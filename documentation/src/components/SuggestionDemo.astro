@@ -1,5 +1,5 @@
 ---
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 import Preview from "./Preview.astro"
 
 // Nøkkelen er kommunenummeret: den gir hvert alternativ en fast id, så en
@@ -14,7 +14,7 @@ const kommuner = [
 ]
 
 // Serveren skriver feltet og lista. Komponenten filtrerer og tar tastaturet.
-const forslag = fs.suggestion({
+const forslag = lt.suggestion({
   id: "demo-kommune",
   keys: kommuner.map((k) => k.nr),
   help: true,
@@ -22,7 +22,7 @@ const forslag = fs.suggestion({
 ---
 
 <Preview id="demo-suggestion" stiler={["suggestion", "label", "input", "help-text", "sr-only"]} maxWidth="30rem">
-	<fs-suggestion>
+	<lt-suggestion>
 		<label {...forslag.label}>Kommune</label>
 		<input {...forslag.control} name="kommune" placeholder="Begynn å skrive" />
 		<ul {...forslag.list}>
@@ -30,12 +30,12 @@ const forslag = fs.suggestion({
 		</ul>
 		<p {...forslag.empty}>Ingen treff</p>
 		<span {...forslag.status}></span>
-		<p class="fs-help-text" {...forslag.help}>Vi fyller ut resten av adressen for deg.</p>
-	</fs-suggestion>
+		<p class="lt-help-text" {...forslag.help}>Vi fyller ut resten av adressen for deg.</p>
+	</lt-suggestion>
 </Preview>
 
 <script>
-	import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
+	import { defineLtSuggestion } from "@lo-tek/interfaces/suggestion"
 
-	defineFsSuggestion()
+	defineLtSuggestion()
 </script>

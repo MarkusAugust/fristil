@@ -1,15 +1,15 @@
 [package]
-name = "fristil"
+name = "lotek"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Kommandolinja til Fristil: sjekker markup og temaer mot designsystemet, og lager temaer."
-repository = "https://github.com/MarkusAugust/fristil"
+description = "Kommandolinja til LO-TEK: sjekker markup og temaer mot designsystemet, og lager temaer."
+repository = "https://github.com/MarkusAugust/lo-tek"
 publish = false
 
 [[bin]]
-name = "fristil"
+name = "lotek"
 path = "src/main.rs"
 
 [dependencies]
-fristil-kjerne = { path = ".." }
+lotek-core = { path = ".." }

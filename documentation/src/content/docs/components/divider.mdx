@@ -3,48 +3,48 @@ title: Divider
 description: Skillelinje mellom deler av innholdet. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Klassen settes på et vanlig `<hr>`. Nettleserens egen strek har både ramme og høyde, og begge må nullstilles før fargen fra tokenene er den eneste som vises. Den har også auto-marger til sidene, som i en flex-kolonne gjør streken 0 piksler bred. Klassen nullstiller dem, så streken fyller bredden.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "divider.css"]}
+<Example importer={["tokens.css", "divider.css"]}
   stiler={["divider"]} layout="flyt" maxWidth="32rem" kode={`
 <p>Saken er registrert.</p>
-<hr class="fs-divider" />
+<hr class="lt-divider" />
 <p>Du får svar innen tre uker.</p>
-<hr class="fs-divider" data-variant="strong" />
+<hr class="lt-divider" data-variant="strong" />
 <p>Kontakt oss hvis noe er uklart.</p>
-<hr class="fs-divider" data-variant="subtle" />
+<hr class="lt-divider" data-variant="subtle" />
 <p>Saksnummer 2026-0481.</p>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<hr {...fs.divider({ variant: "subtle" })} />
+<hr {...lt.divider({ variant: "subtle" })} />
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const strek = document.createElement("hr")
 
-fs.setAttributes(strek, fs.divider({ variant: "subtle" }))
+lt.setAttributes(strek, lt.divider({ variant: "subtle" }))
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -57,7 +57,7 @@ fs.setAttributes(strek, fs.divider({ variant: "subtle" }))
 `<hr>` melder seg som et skille i innholdet. Er streken bare pynt mellom to bokser som allerede er atskilt visuelt, si fra at den ikke betyr noe:
 
 ```html
-<hr class="fs-divider" data-variant="subtle" aria-hidden="true" />
+<hr class="lt-divider" data-variant="subtle" aria-hidden="true" />
 ```
 
 Skiller den derimot to virkelige deler av siden, skal den bli stående i tilgjengelighetstreet. Den er da den eneste måten skjermleseren får vite at et emne er slutt.
@@ -66,13 +66,13 @@ Skiller den derimot to virkelige deler av siden, skal den bli stående i tilgjen
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-divider` | Streken. Styrken kommer fra `data-variant`. |
+| `.lt-divider` | Streken. Styrken kommer fra `data-variant`. |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-divider-space` | `var(--fs-spacing-4)` |
+| `--lt-divider-space` | `var(--lt-spacing-4)` |
 
-`--fs-divider-space` er luften over og under streken. Se [Tilpasning](../../tilpasning/).
+`--lt-divider-space` er luften over og under streken. Se [Tilpasning](../../customising/).
 
 ## Tilgjengelighet
 

@@ -3,7 +3,7 @@ title: Radio
 description: Radioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Ren CSS på et vanlig `<input type="radio">`. Knappene i en gruppe kobles sammen av `name`, og det er den koblingen som gjør at bare én kan være valgt, og at piltastene flytter mellom dem.
 
@@ -11,71 +11,71 @@ Kan brukeren velge flere, bruk [Checkbox](../checkbox/). Er alternativene mange,
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "radio.css", "fieldset.css", "label.css"]}
+<Example importer={["tokens.css", "radio.css", "fieldset.css", "label.css"]}
   stiler={["radio", "label", "fieldset"]} layout="stabel" maxWidth="28rem" kode={`
-<fieldset class="fs-fieldset">
-  <legend class="fs-legend" data-required="symbol">Hvordan vil du ha svaret?</legend>
+<fieldset class="lt-fieldset">
+  <legend class="lt-legend" data-required="symbol">Hvordan vil du ha svaret?</legend>
 
-  <div class="fs-radio-row">
-    <input class="fs-radio" type="radio" id="svar-digital" name="svar" value="digital" checked />
-    <label class="fs-label" for="svar-digital">I digital postkasse</label>
+  <div class="lt-radio-row">
+    <input class="lt-radio" type="radio" id="svar-digital" name="svar" value="digital" checked />
+    <label class="lt-label" for="svar-digital">I digital postkasse</label>
   </div>
 
-  <div class="fs-radio-row">
-    <input class="fs-radio" type="radio" id="svar-post" name="svar" value="post" />
-    <label class="fs-label" for="svar-post">Som brev i posten</label>
+  <div class="lt-radio-row">
+    <input class="lt-radio" type="radio" id="svar-post" name="svar" value="post" />
+    <label class="lt-label" for="svar-post">Som brev i posten</label>
   </div>
 
-  <div class="fs-radio-row">
-    <input class="fs-radio" type="radio" id="svar-hentes" name="svar" value="hentes" disabled />
-    <label class="fs-label" for="svar-hentes">Hentes på kontoret</label>
+  <div class="lt-radio-row">
+    <input class="lt-radio" type="radio" id="svar-hentes" name="svar" value="hentes" disabled />
+    <label class="lt-label" for="svar-hentes">Hentes på kontoret</label>
   </div>
 </fieldset>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<div className={fs.radio.row}>
-  <input {...fs.radio()} id="svar-digital" name="svar" value="digital" />
-  <label {...fs.label()} htmlFor="svar-digital">Digitalt</label>
+<div className={lt.radio.row}>
+  <input {...lt.radio()} id="svar-digital" name="svar" value="digital" />
+  <label {...lt.label()} htmlFor="svar-digital">Digitalt</label>
 </div>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const knapper = document.querySelectorAll<HTMLInputElement>("[name='svar']")
 
 function marker(ugyldig: boolean) {
   for (const knapp of knapper) {
-    fs.setAttributes(knapp, fs.radio({ state: ugyldig ? "invalid" : "default" }))
+    lt.setAttributes(knapp, lt.radio({ state: ugyldig ? "invalid" : "default" }))
   }
 }
 ```
 
-`name` setter du selv, siden bare du vet hva gruppen heter. `fs.radio.row` gir klassen på raden rundt. Se [Typesikker bruk](../../typesikker-bruk/).
+`name` setter du selv, siden bare du vet hva gruppen heter. `lt.radio.row` gir klassen på raden rundt. Se [Typesikker bruk](../../type-safe-use/).
 
 </Fragment>
-</Eksempel>
+</Example>
 
 Gruppen hører alltid hjemme i en [Fieldset](../fieldset/). Uten den leses bare alternativet opp, ikke spørsmålet det svarer på.
 
 ## Tilstander
 
-<Eksempel stiler={["radio", "label"]} layout="stabel" maxWidth="28rem" kode={`
-<div class="fs-radio-row">
-  <input class="fs-radio" type="radio" id="ugyldig" name="eksempel" data-state="invalid" aria-invalid="true" />
-  <label class="fs-label" for="ugyldig">Du må velge ett alternativ</label>
+<Example stiler={["radio", "label"]} layout="stabel" maxWidth="28rem" kode={`
+<div class="lt-radio-row">
+  <input class="lt-radio" type="radio" id="ugyldig" name="eksempel" data-state="invalid" aria-invalid="true" />
+  <label class="lt-label" for="ugyldig">Du må velge ett alternativ</label>
 </div>
 `} />
 
@@ -91,14 +91,14 @@ Feiler valideringen, sett tilstanden på alle knappene i gruppen. Det er gruppen
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-radio` | Selve knappen |
-| `.fs-radio-row` | Raden som holder knappen og teksten ved siden av hverandre |
+| `.lt-radio` | Selve knappen |
+| `.lt-radio-row` | Raden som holder knappen og teksten ved siden av hverandre |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-radio-size` | `var(--fs-spacing-5)` |
+| `--lt-radio-size` | `var(--lt-spacing-5)` |
 
-Prikken er en gradient tegnet i `--fs-color-accent-content`, så den følger temaet uten et eget bilde. Se [Tilpasning](../../tilpasning/).
+Prikken er en gradient tegnet i `--lt-color-accent-content`, så den følger temaet uten et eget bilde. Se [Tilpasning](../../customising/).
 
 ## Tilgjengelighet
 

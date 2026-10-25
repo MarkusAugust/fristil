@@ -5,7 +5,7 @@
  *
  * Trenger nettverk og en skjerm, så i CI kjøres den med `xvfb-run`.
  *
- * Kjør med: bun run build && xvfb-run -a bun scripts/sjekk-vscode.ts
+ * Kjør med: bun run build && xvfb-run -a bun scripts/check-vscode.ts
  */
 
 import { readFileSync } from "node:fs"

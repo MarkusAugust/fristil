@@ -10,7 +10,7 @@
  * Sidene under `demo/` er unntatt. De vises i en `<iframe>` på mønstersidene
  * og er eksempler leseren kopierer, så delingstagger hører ikke hjemme i dem.
  *
- * Kjør med: bun documentation/scripts/sjekk-delingskort.ts
+ * Kjør med: bun documentation/scripts/check-share-card.ts
  * Krever at `documentation/dist` er bygd.
  */
 

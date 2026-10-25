@@ -1,11 +1,11 @@
 {
-  "eget-tema-holder": {
+  "own-theme-holds": {
     "problems": [],
     "blocks": 2,
     "declarations": 166,
     "promises": 306
   },
-  "for-lys-tekst": {
+  "text-too-light": {
     "problems": [
       {
         "selector": ":root",
@@ -44,36 +44,36 @@
     "declarations": 2,
     "promises": 306
   },
-  "morkt-i-media": {
+  "dark-in-media": {
     "problems": [],
     "blocks": 1,
     "declarations": 83,
     "promises": 153
   },
-  "verdier-som-ikke-kan-regnes": {
+  "values-that-cannot-be-computed": {
     "problems": [
       {
         "selector": ":root",
-        "message": "--fs-color-accent-fill er «var(--noe-annet)». Kontrasten kan bare regnes på en heksfarge, så denne er ikke kontrollert."
+        "message": "--lt-color-accent-fill er «var(--noe-annet)». Kontrasten kan bare regnes på en heksfarge, så denne er ikke kontrollert."
       },
       {
         "selector": ":root",
-        "message": "--fs-color-danger-text er «#ff9999cc». Kontrasten kan bare regnes på en heksfarge, så denne er ikke kontrollert."
+        "message": "--lt-color-danger-text er «#ff9999cc». Kontrasten kan bare regnes på en heksfarge, så denne er ikke kontrollert."
       },
       {
         "selector": ":root",
-        "message": "--fs-color-danger-txt er ikke et token i systemet. Navnet er --fs-color-<familie>-<rolle>, og rollene er border-subtle, border-strong, text-strong, text-subtle, surface, content, border, fill, text."
+        "message": "--lt-color-danger-txt er ikke et token i systemet. Navnet er --lt-color-<familie>-<rolle>, og rollene er border-subtle, border-strong, text-strong, text-subtle, surface, content, border, fill, text."
       },
       {
         "selector": ":root",
-        "message": "--fs-color-danger-canvas er ikke et token i systemet. Navnet er --fs-color-<familie>-<rolle>, og rollene er border-subtle, border-strong, text-strong, text-subtle, surface, content, border, fill, text."
+        "message": "--lt-color-danger-canvas er ikke et token i systemet. Navnet er --lt-color-<familie>-<rolle>, og rollene er border-subtle, border-strong, text-strong, text-subtle, surface, content, border, fill, text."
       }
     ],
     "blocks": 1,
     "declarations": 0,
     "promises": 153
   },
-  "ufullstendig-familie": {
+  "incomplete-family": {
     "problems": [
       {
         "selector": ":root",
@@ -84,7 +84,7 @@
     "declarations": 1,
     "promises": 153
   },
-  "bindestrek-i-familien": {
+  "hyphen-in-family": {
     "problems": [
       {
         "selector": ":root",
@@ -95,7 +95,7 @@
     "declarations": 2,
     "promises": 306
   },
-  "color-scheme-varianter": {
+  "color-scheme-variants": {
     "problems": [],
     "blocks": 4,
     "declarations": 4,
@@ -159,14 +159,14 @@
     "declarations": 1,
     "promises": 306
   },
-  "ingen-tokens": {
+  "no-tokens": {
     "blocks": 0,
     "declarations": 0,
     "promises": 0,
     "problems": [
       {
         "selector": "(hele fila)",
-        "message": "Fant ingen --fs-color-*-verdier. Er dette et Fristil-tema, og står verdiene i en blokk?"
+        "message": "Fant ingen --lt-color-*-verdier. Er dette et LO-TEK-tema, og står verdiene i en blokk?"
       }
     ]
   },
@@ -176,7 +176,7 @@
     "declarations": 1,
     "promises": 153
   },
-  "uten-farger": {
+  "without-colors": {
     "problems": [],
     "blocks": 0,
     "declarations": 0,

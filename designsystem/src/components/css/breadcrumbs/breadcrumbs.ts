@@ -1,6 +1,6 @@
 import { attributes } from "../shared.js"
 
-export const BREADCRUMBS_CLASS = "fs-breadcrumbs" as const
+export const BREADCRUMBS_CLASS = "lt-breadcrumbs" as const
 
 export type BreadcrumbsAttributes = {
   class: typeof BREADCRUMBS_CLASS

@@ -13,14 +13,14 @@ import Preview from "./Preview.astro"
 		.flate { min-block-size: 10rem; }
 	`}
 >
-	<button class="fs-button" id="demo-toast-knapp" type="button">Lagre søknaden</button>
-	<fs-toast id="demo-toast-kø" label="Meldinger"></fs-toast>
+	<button class="lt-button" id="demo-toast-knapp" type="button">Lagre søknaden</button>
+	<lt-toast id="demo-toast-kø" label="Meldinger"></lt-toast>
 </Preview>
 
 <script>
-	import { defineFsToast } from "@fristil/designsystem/toast"
+	import { defineLtToast } from "@lo-tek/interfaces/toast"
 
-	defineFsToast()
+	defineLtToast()
 
 	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
 	const flate = document.getElementById("demo-toast")?.shadowRoot

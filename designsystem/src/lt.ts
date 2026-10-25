@@ -39,15 +39,15 @@ import { tag } from "./components/css/tag/tag.js"
 import { textarea } from "./components/css/textarea/textarea.js"
 import { toggleGroup } from "./components/css/toggle-group/toggle-group.js"
 import { tooltip } from "./components/css/tooltip/tooltip.js"
-import { connectionStatus } from "./components/frittstaende/connection-status/connection-status.js"
-import { toast } from "./components/frittstaende/toast/toast.js"
-import { dialog } from "./components/ramme/dialog/dialog.js"
-import { errorSummary } from "./components/ramme/error-summary/error-summary.js"
-import { computeFieldAttributes } from "./components/ramme/field/field-core.js"
-import { popover } from "./components/ramme/popover/popover.js"
-import { sessionTimeout } from "./components/ramme/session-timeout/session-timeout.js"
-import { suggestion } from "./components/ramme/suggestion/suggestion.js"
-import { tabs } from "./components/ramme/tabs/tabs.js"
+import { connectionStatus } from "./components/standalone/connection-status/connection-status.js"
+import { toast } from "./components/standalone/toast/toast.js"
+import { dialog } from "./components/frame/dialog/dialog.js"
+import { errorSummary } from "./components/frame/error-summary/error-summary.js"
+import { computeFieldAttributes } from "./components/frame/field/field-core.js"
+import { popover } from "./components/frame/popover/popover.js"
+import { sessionTimeout } from "./components/frame/session-timeout/session-timeout.js"
+import { suggestion } from "./components/frame/suggestion/suggestion.js"
+import { tabs } from "./components/frame/tabs/tabs.js"
 import { setAttributes } from "./dom.js"
 
 /**
@@ -57,21 +57,21 @@ import { setAttributes } from "./dom.js"
  * attributtene du sprer inn i elementet:
  *
  * ```ts
- * import { fs } from "@fristil/designsystem"
+ * import { lt } from "@lo-tek/interfaces"
  *
- * <button {...fs.button({ variant: "secondary" })}>Lagre utkast</button>
- * <input {...fs.input({ type: "email", state: "invalid" })} />
- * <span {...fs.badge({ color: "success" })}>Innvilget</span>
+ * <button {...lt.button({ variant: "secondary" })}>Lagre utkast</button>
+ * <input {...lt.input({ type: "email", state: "invalid" })} />
+ * <span {...lt.badge({ color: "success" })}>Innvilget</span>
  * ```
  *
- * Formen er den samme for alle, så du lærer den én gang. Skriv `fs.` i
- * editoren for å se hva som finnes; skriv `fs.button.` for å se de lovlige
+ * Formen er den samme for alle, så du lærer den én gang. Skriv `lt.` i
+ * editoren for å se hva som finnes; skriv `lt.button.` for å se de lovlige
  * variantene og vakten som validerer verdier utenfra.
  *
  * Returverdiene er vanlige objekter. Det er grunnen til at det samme API-et
  * virker i React, Astro, Datastar og ren HTML.
  */
-export const fs = {
+export const lt = {
   accordion,
   alert,
   avatar,
@@ -82,7 +82,7 @@ export const fs = {
   checkbox,
   /**
    * Linja som sier fra at forbindelsen til serveren er borte. Serveren kan
-   * ikke melde det selv, så `<fs-connection-status>` eier innholdet.
+   * ikke melde det selv, så `<lt-connection-status>` eier innholdet.
    */
   connectionStatus,
   dialog,
@@ -90,26 +90,26 @@ export const fs = {
   errorText,
   /**
    * Feiloppsummeringen over et skjema. Serveren skriver hele boksen, også
-   * overskriften, og `<fs-error-summary>` flytter bare fokus.
+   * overskriften, og `<lt-error-summary>` flytter bare fokus.
    */
   errorSummary,
   /**
    * Kobler sammen ledetekst, felt, hjelpetekst og feilmelding.
    *
    * ```ts
-   * const felt = fs.field({ id: "epost", required: "text", help: true, error: true, invalid })
+   * const felt = lt.field({ id: "epost", required: "text", help: true, error: true, invalid })
    *
    * <label {...felt.label}>E-postadresse</label>
-   * <input {...fs.input({ type: "email", state: felt.state })} {...felt.control} />
-   * <p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
-   * <p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
+   * <input {...lt.input({ type: "email", state: felt.state })} {...felt.control} />
+   * <p {...lt.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
+   * <p {...lt.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
    * ```
    *
-   * Samme utregning som `<fs-field>` gjør, men som data, for markup som
+   * Samme utregning som `<lt-field>` gjør, men som data, for markup som
    * lages med JavaScript. Da trengs ingen web component.
    */
   field: computeFieldAttributes,
-  /** Gruppe av kontroller som hører sammen. Ledeteksten er `fs.legend`. */
+  /** Gruppe av kontroller som hører sammen. Ledeteksten er `lt.legend`. */
   fieldset,
   heading,
   fileUpload,
@@ -123,7 +123,7 @@ export const fs = {
   pagination,
   paragraph,
   /**
-   * Knappen og panelet i et sprettoppvindu. `<fs-popover>` regner ut
+   * Knappen og panelet i et sprettoppvindu. `<lt-popover>` regner ut
    * posisjonen, serveren skriver koblingen.
    */
   popover,
@@ -132,7 +132,7 @@ export const fs = {
   select,
   /**
    * Varselet om at innlogget økt går ut. Nedtellingen er klientens klokke,
-   * så `<fs-session-timeout>` eier innholdet.
+   * så `<lt-session-timeout>` eier innholdet.
    */
   sessionTimeout,
   skeleton,
@@ -142,7 +142,7 @@ export const fs = {
   /** Tekst bare skjermlesere skal få. Krever `sr-only.css`. */
   srOnly,
   /**
-   * Feltet og forslagslista. `<fs-suggestion>` tar tastaturet og
+   * Feltet og forslagslista. `<lt-suggestion>` tar tastaturet og
    * filtreringen, serveren skriver markupen.
    */
   suggestion,
@@ -150,11 +150,11 @@ export const fs = {
   switch: switchControl,
   /**
    * Fanerad med paneler. Serveren skriver rollene og skjuler panelene som
-   * ikke er valgt, `<fs-tabs>` tar piltastene.
+   * ikke er valgt, `<lt-tabs>` tar piltastene.
    */
   tabs,
   /**
-   * Varselregionen. Setter `data-ignore-morph`, fordi `<fs-toast>` lager og
+   * Varselregionen. Setter `data-ignore-morph`, fordi `<lt-toast>` lager og
    * fjerner sine egne meldinger inni den.
    */
   toast,
@@ -174,7 +174,7 @@ export const fs = {
    *
    * I JSX sprer du objektet. Uten JSX gjør denne jobben det, og rydder bort
    * det byggefunksjonen forvalter fra forrige tilstand. Flere sett sendes
-   * hver for seg: `fs.setAttributes(felt, fs.input(), kobling.control)`.
+   * hver for seg: `lt.setAttributes(felt, lt.input(), kobling.control)`.
    */
   setAttributes,
 
@@ -186,4 +186,4 @@ export const fs = {
   isMarker: isRequiredMarker,
 } as const
 
-export type Fs = typeof fs
+export type Lt = typeof lt

@@ -1,8 +1,8 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const CARD_CLASS = "fs-card" as const
+export const CARD_CLASS = "lt-card" as const
 /** Overskriften inne i kortet. */
-export const CARD_TITLE_CLASS = "fs-card__title" as const
+export const CARD_TITLE_CLASS = "lt-card__title" as const
 
 export const cardVariants = ["outline", "filled"] as const
 

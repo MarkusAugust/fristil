@@ -9,14 +9,14 @@ import {
   ERROR_SUMMARY_CLASS,
   ERROR_SUMMARY_TITLE_CLASS,
 } from "./error-summary.js"
-export const FS_ERROR_SUMMARY_TAG = "fs-error-summary" as const
+export const LT_ERROR_SUMMARY_TAG = "lt-error-summary" as const
 
 /**
  * Delene feiloppsummeringen finner, som selektorer relativt til elementet. Komponenten
  * finner delene med disse, og manifestet beskriver dem for den som setter
  * sammen markupen selv, så de to ikke kan si noe ulikt.
  */
-export const FS_ERROR_SUMMARY_PARTS = {
+export const LT_ERROR_SUMMARY_PARTS = {
   title: "h1, h2, h3, h4, h5, h6",
   link: "li a[href^='#']",
 } as const
@@ -25,7 +25,7 @@ export const FS_ERROR_SUMMARY_PARTS = {
  * Sender brukeren fra en feil i oppsummeringen til feltet som feilet.
  *
  * Serveren skriver innholdet: overskriften og lista med lenker. Lages
- * markupen med JavaScript, skriver `fs.errorSummary()` også klassen,
+ * markupen med JavaScript, skriver `lt.errorSummary()` også klassen,
  * `role="alert"` og `tabindex="-1"` på boksen, og komponenten lar det stå.
  * Kommer markupen fra en mal uten JavaScript, fyller komponenten inn de
  * tre, og klassen på overskriften, og setter dem tilbake når en patch
@@ -43,12 +43,12 @@ export const FS_ERROR_SUMMARY_PARTS = {
  *    målet uansett.
  *
  * ```html
- * <fs-error-summary>
+ * <lt-error-summary>
  *   <h2>Skjemaet har to feil</h2>
- *   <ul class="fs-list">
+ *   <ul class="lt-list">
  *     <li><a href="#epost">Skriv en gyldig e-postadresse</a></li>
  *   </ul>
- * </fs-error-summary>
+ * </lt-error-summary>
  * ```
  */
 /** Dekoder et fragment, og gir det tilbake urørt hvis det ikke er gyldig. */
@@ -60,7 +60,7 @@ function decodeFragment(fragment: string): string {
   }
 }
 
-export class FsErrorSummary extends HostElement {
+export class LtErrorSummary extends HostElement {
   static observedAttributes = ["data-autofocus", "hidden"] as const
 
   private hasFocused = false
@@ -133,7 +133,7 @@ export class FsErrorSummary extends HostElement {
     // komponenten forsvinner i stillhet.
     if (!this.hasAttribute("tabindex")) setAttr(this, "tabindex", "-1")
 
-    const title = this.querySelector(FS_ERROR_SUMMARY_PARTS.title)
+    const title = this.querySelector(LT_ERROR_SUMMARY_PARTS.title)
     if (title) addClass(title, ERROR_SUMMARY_TITLE_CLASS)
   }
 
@@ -141,7 +141,7 @@ export class FsErrorSummary extends HostElement {
     this.wire()
 
     const links = [
-      ...this.querySelectorAll<HTMLAnchorElement>(FS_ERROR_SUMMARY_PARTS.link),
+      ...this.querySelectorAll<HTMLAnchorElement>(LT_ERROR_SUMMARY_PARTS.link),
     ]
 
     // Skjuler serveren boksen igjen, er den innsendingen over. Uten denne
@@ -170,7 +170,7 @@ export class FsErrorSummary extends HostElement {
         // punkter, men uten lenker til feltene, er noe annet.
         () =>
           this.querySelector("li") !== null &&
-          this.querySelector(FS_ERROR_SUMMARY_PARTS.link) === null,
+          this.querySelector(LT_ERROR_SUMMARY_PARTS.link) === null,
       )
       return
     }
@@ -278,7 +278,7 @@ export class FsErrorSummary extends HostElement {
 
   private handleLinkClick = (event: Event): void => {
     const link = (event.target as Element | null)?.closest?.(
-      FS_ERROR_SUMMARY_PARTS.link,
+      LT_ERROR_SUMMARY_PARTS.link,
     )
     if (!link || !this.contains(link)) return
     const id = link.getAttribute("href")?.slice(1)
@@ -328,8 +328,8 @@ function isFocusable(element: Element): boolean {
   )
 }
 
-export function defineFsErrorSummary(
-  tagName: string = FS_ERROR_SUMMARY_TAG,
+export function defineLtErrorSummary(
+  tagName: string = LT_ERROR_SUMMARY_TAG,
 ): void {
-  defineElement(tagName, FsErrorSummary)
+  defineElement(tagName, LtErrorSummary)
 }

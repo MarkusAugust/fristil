@@ -3,7 +3,7 @@ title: Tooltip
 description: Liten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 En boble med et tillegg til noe som allerede står på skjermen. Den må aldri bære informasjon brukeren trenger: på en berøringsskjerm finnes hverken hover eller fokus før noe trykkes.
 
@@ -13,7 +13,7 @@ Er teksten nødvendig for å fylle ut et felt, hører den hjemme i [Help Text](.
 
 Boblen er skjult til utløseren får musa eller fokus. Hold musa over knappen under, eller gå til den med Tab, så kommer den fram:
 
-<Eksempel
+<Example
   importer={["tokens.css", "tooltip.css", "button.css"]}
   stiler={["tooltip", "button"]}
   layout="stabel"
@@ -21,49 +21,49 @@ Boblen er skjult til utløseren får musa eller fokus. Hold musa over knappen un
   visningsCss={`
     /* Boblen ligger over utløseren, og trenger litt luft i denne boksen for
        å ikke bli klippet. I en ekte side er det plassen på siden som avgjør. */
-    .fs-tooltip { margin-block-start: var(--fs-spacing-8); }
+    .lt-tooltip { margin-block-start: var(--lt-spacing-8); }
   `}
   kode={`
-<span class="fs-tooltip">
-  <button class="fs-button" data-variant="ghost" type="button" aria-describedby="arkiv-hint">
+<span class="lt-tooltip">
+  <button class="lt-button" data-variant="ghost" type="button" aria-describedby="arkiv-hint">
     Arkiver
   </button>
-  <span class="fs-tooltip__bubble" role="tooltip" id="arkiv-hint">
+  <span class="lt-tooltip__bubble" role="tooltip" id="arkiv-hint">
     Saken flyttes til arkivet og kan hentes fram igjen
   </span>
 </span>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<span {...fs.tooltip()}>
-  <button {...fs.button({ variant: "ghost" })} type="button" aria-describedby="hjelp">?</button>
-  <span className={fs.tooltip.bubble} id="hjelp" role="tooltip">Vi sender aldri spam.</span>
+<span {...lt.tooltip()}>
+  <button {...lt.button({ variant: "ghost" })} type="button" aria-describedby="hjelp">?</button>
+  <span className={lt.tooltip.bubble} id="hjelp" role="tooltip">Vi sender aldri spam.</span>
 </span>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const omslag = document.querySelector<HTMLElement>("#arkiv")
 
-fs.setAttributes(omslag, fs.tooltip())
+lt.setAttributes(omslag, lt.tooltip())
 ```
 
-`fs.tooltip.bubble` gir klassen på boblen. Se [Typesikker bruk](../../typesikker-bruk/).
+`lt.tooltip.bubble` gir klassen på boblen. Se [Typesikker bruk](../../type-safe-use/).
 
 </Fragment>
-</Eksempel>
+</Example>
 
 To ting må stemme:
 
@@ -79,12 +79,12 @@ Boblen vises på `:hover` og på `:focus-within`. Fokusdelen er ikke valgfri: en
 En knapp med bare et ikon trenger et navn, ikke en hjelpeboble. De to er forskjellige ting:
 
 ```html
-<span class="fs-tooltip">
-  <button class="fs-button" data-variant="ghost" type="button"
+<span class="lt-tooltip">
+  <button class="lt-button" data-variant="ghost" type="button"
     aria-label="Arkiver saken" aria-describedby="arkiv-hint">
     <svg aria-hidden="true" width="20" height="20">…</svg>
   </button>
-  <span class="fs-tooltip__bubble" role="tooltip" id="arkiv-hint">
+  <span class="lt-tooltip__bubble" role="tooltip" id="arkiv-hint">
     Saken kan hentes fram igjen senere
   </span>
 </span>
@@ -96,25 +96,25 @@ En knapp med bare et ikon trenger et navn, ikke en hjelpeboble. De to er forskje
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-tooltip` | Omslaget rundt utløseren og boblen |
-| `.fs-tooltip__bubble` | Boblen med teksten |
+| `.lt-tooltip` | Omslaget rundt utløseren og boblen |
+| `.lt-tooltip__bubble` | Boblen med teksten |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-tooltip-width` | `16rem` |
-| `--fs-tooltip-padding` | `var(--fs-spacing-1) var(--fs-spacing-2)` |
-| `--fs-tooltip-radius` | `var(--fs-spacing-1)` |
+| `--lt-tooltip-width` | `16rem` |
+| `--lt-tooltip-padding` | `var(--lt-spacing-1) var(--lt-spacing-2)` |
+| `--lt-tooltip-radius` | `var(--lt-spacing-1)` |
 
 Boblen ligger over utløseren. Står utløseren helt øverst på siden, må du flytte den ned selv:
 
 ```css
-.fs-tooltip__bubble {
+.lt-tooltip__bubble {
 	inset-block-end: auto;
-	inset-block-start: calc(100% + var(--fs-spacing-2));
+	inset-block-start: calc(100% + var(--lt-spacing-2));
 }
 
 /* Broen over gapet må med ned, ellers forsvinner boblen på vei til den. */
-.fs-tooltip:is(:hover, :focus-within)::before {
+.lt-tooltip:is(:hover, :focus-within)::before {
 	inset-block-end: auto;
 	inset-block-start: 100%;
 }
@@ -122,7 +122,7 @@ Boblen ligger over utløseren. Står utløseren helt øverst på siden, må du f
 
 Boblen er `display: none` når den er skjult, så den ikke tar plass, og tones inn med `opacity`. En skjult boble er ute av tilgjengelighetstreet, men `aria-describedby` leser teksten den peker på også når den er skjult, så beskrivelsen følger knappen før boblen vises.
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

@@ -1,4 +1,4 @@
-package no.fristil.intellij
+package no.lotek.intellij
 
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.diagnostic.Logger
@@ -7,19 +7,19 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
-import no.fristil.Manifest
+import no.lotek.Manifest
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Manifestet prosjektet sjekkes mot, og fullføringen leser klassene fra,
  * funnet slik språkserveren finner det (`vocabulary()` i
- * `kjerne/cli/src/lsp.rs`).
+ * `core/cli/src/lsp.rs`).
  *
  * Fra mappa fila ligger i og oppover, til og med prosjektmappa, eller
  * innholdsrota fila hører til når den ligger utenfor prosjektmappa:
- * først `build/fristil/manifest.json`, som Gradle-oppgaven `fristilManifest`
+ * først `build/lotek/manifest.json`, som Gradle-oppgaven `lotekManifest`
  * skriver når prosjektet har overtatt komponenter, så manifestet i
- * `node_modules/@fristil/designsystem`. Ikke over den: en pakke i
+ * `node_modules/@lo-tek/interfaces`. Ikke over den: en pakke i
  * hjemmemappa er ikke prosjektets. En fil utenfor prosjektet, som en
  * kladdefil, sjekkes derfor mot manifestet i Kotlin-pakken. Finnes ingen av
  * dem, gjelder det samme. Språkserveren prøver i tillegg rota av hvert
@@ -31,8 +31,8 @@ import java.util.concurrent.ConcurrentHashMap
 internal object ProjectManifest {
     val CANDIDATES =
         listOf(
-            "build/fristil/manifest.json",
-            "node_modules/@fristil/designsystem/manifest/manifest.json",
+            "build/lotek/manifest.json",
+            "node_modules/@lo-tek/interfaces/manifest/manifest.json",
         )
 
     private val log = Logger.getInstance(ProjectManifest::class.java)
@@ -99,7 +99,7 @@ internal object ProjectManifest {
             try {
                 VfsUtilCore.loadText(file)
             } catch (unreadable: java.io.IOException) {
-                log.warn("Fristil kunne ikke lese ${file.presentableUrl}, og sjekker mot manifestet i Kotlin-pakken.", unreadable)
+                log.warn("LO-TEK kunne ikke lese ${file.presentableUrl}, og sjekker mot manifestet i Kotlin-pakken.", unreadable)
                 return null
             }
         val fresh = Read(stamp, text)
@@ -112,7 +112,7 @@ internal object ProjectManifest {
     fun rejectedBy(text: String, reason: String) {
         val url = read.entries.firstOrNull { it.value.text === text }?.key ?: return
         if (rejected.add(url)) {
-            log.warn("Fristil kunne ikke bruke $url, og sjekker mot manifestet i Kotlin-pakken: $reason")
+            log.warn("LO-TEK kunne ikke bruke $url, og sjekker mot manifestet i Kotlin-pakken: $reason")
         }
     }
 }

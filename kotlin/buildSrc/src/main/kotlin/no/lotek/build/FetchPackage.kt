@@ -1,4 +1,4 @@
-package no.fristil.build
+package no.lotek.build
 
 import groovy.json.JsonSlurper
 import org.gradle.api.DefaultTask
@@ -17,11 +17,11 @@ import java.time.Duration
 import java.util.Base64
 
 /**
- * Henter npm-pakken `@fristil/designsystem` for versjonen fra registeret.
+ * Henter npm-pakken `@lo-tek/interfaces` for versjonen fra registeret.
  *
  * Kotlin-pakken bygges av det npm-pakken inneholder: kjernen, kommandolinja,
- * manifestet og filene for nettleseren. Da er `io.github.markusaugust:fristil`
- * og `@fristil/designsystem` med samme versjon bygd av de samme filene, og
+ * manifestet og filene for nettleseren. Da er `io.github.markusaugust:lo-tek-interfaces`
+ * og `@lo-tek/interfaces` med samme versjon bygd av de samme filene, og
  * bygget trenger verken Rust eller Bun.
  *
  * Fila sammenlignes med `dist.integrity` fra registeret, samme kontroll som
@@ -44,14 +44,14 @@ abstract class FetchPackage : DefaultTask() {
                 .connectTimeout(Duration.ofSeconds(30))
                 .build()
         fun get(url: String) = HttpRequest.newBuilder(URI(url)).timeout(Duration.ofMinutes(2)).build()
-        val registry = "https://registry.npmjs.org/@fristil/designsystem"
+        val registry = "https://registry.npmjs.org/@lo-tek/interfaces"
 
         val metadata = client.send(get("$registry/$version"), HttpResponse.BodyHandlers.ofString())
         if (metadata.statusCode() != 200) {
             throw GradleException(
-                "@fristil/designsystem@$version finnes ikke på npm (svar ${metadata.statusCode()}). " +
+                "@lo-tek/interfaces@$version finnes ikke på npm (svar ${metadata.statusCode()}). " +
                     "Bygger du fra repoet mellom to utgivelser, pakk pakken selv og oppgi den med " +
-                    "-Pfristil.pakke=<sti til .tgz>. Se kotlin/README.md.",
+                    "-Plotek.pakke=<sti til .tgz>. Se kotlin/README.md.",
             )
         }
         val dist = (JsonSlurper().parseText(metadata.body()) as Map<*, *>)["dist"] as Map<*, *>

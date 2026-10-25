@@ -4,7 +4,7 @@
       "start": 195,
       "end": 214,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/tag/",
+      "link": "https://lo-tek.sobernetics.no/components/tag/",
       "message": "data-variant kan ikke være «feil» på tag. Lovlige verdier: filled, og outline uten attributt."
     }
   ],
@@ -13,7 +13,7 @@
       "start": 195,
       "end": 214,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/tag/",
+      "link": "https://lo-tek.sobernetics.no/components/tag/",
       "message": "data-variant kan ikke være «feil» på tag. Lovlige verdier: filled, og outline uten attributt."
     }
   ]

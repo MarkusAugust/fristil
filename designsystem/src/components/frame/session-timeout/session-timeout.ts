@@ -1,13 +1,13 @@
 import { attributes, idOrFallback } from "../../css/shared.js"
 
-export const SESSION_TIMEOUT_CLASS = "fs-session-timeout" as const
+export const SESSION_TIMEOUT_CLASS = "lt-session-timeout" as const
 export const SESSION_TIMEOUT_DIALOG_CLASS =
-  "fs-session-timeout__dialog" as const
-export const SESSION_TIMEOUT_TITLE_CLASS = "fs-session-timeout__title" as const
-export const SESSION_TIMEOUT_TEXT_CLASS = "fs-session-timeout__text" as const
-export const SESSION_TIMEOUT_COUNT_CLASS = "fs-session-timeout__count" as const
+  "lt-session-timeout__dialog" as const
+export const SESSION_TIMEOUT_TITLE_CLASS = "lt-session-timeout__title" as const
+export const SESSION_TIMEOUT_TEXT_CLASS = "lt-session-timeout__text" as const
+export const SESSION_TIMEOUT_COUNT_CLASS = "lt-session-timeout__count" as const
 export const SESSION_TIMEOUT_ACTIONS_CLASS =
-  "fs-session-timeout__actions" as const
+  "lt-session-timeout__actions" as const
 
 /** `value` på knappen som forlenger økten. */
 export const SESSION_EXTEND = "extend" as const
@@ -44,12 +44,12 @@ export type SessionTimeoutAttributes = {
   /** Tallet. Står tomt i markupen, og komponenten fyller det inn. */
   count: { class: typeof SESSION_TIMEOUT_COUNT_CLASS; "aria-hidden": "true" }
   /** Opplesningen for skjermleser. Står tom i markupen. */
-  live: { class: "fs-sr-only"; role: "status" }
+  live: { class: "lt-sr-only"; role: "status" }
   /** Skjemaet rundt knappene. `method="dialog"` lukker dialogen uten skript. */
   actions: { class: typeof SESSION_TIMEOUT_ACTIONS_CLASS; method: "dialog" }
-  extend: { class: "fs-button"; value: typeof SESSION_EXTEND }
+  extend: { class: "lt-button"; value: typeof SESSION_EXTEND }
   logout: {
-    class: "fs-button"
+    class: "lt-button"
     "data-variant": "secondary"
     value: typeof SESSION_LOGOUT
   }
@@ -70,10 +70,10 @@ export type SessionTimeoutAttributes = {
  * neste tikk. Med attributtet står tallet hele tiden.
  *
  * ```ts
- * const okt = fs.sessionTimeout({ titleId: "okt-tittel" })
+ * const okt = lt.sessionTimeout({ titleId: "okt-tittel" })
  * ```
  * ```html
- * <fs-session-timeout {...okt.host}>
+ * <lt-session-timeout {...okt.host}>
  *   <dialog {...okt.dialog}>
  *     <h2 {...okt.title}>Du blir snart logget ut</h2>
  *     <p {...okt.text}>
@@ -85,7 +85,7 @@ export type SessionTimeoutAttributes = {
  *       <button {...okt.logout}>Logg ut nå</button>
  *     </form>
  *   </dialog>
- * </fs-session-timeout>
+ * </lt-session-timeout>
  * ```
  */
 export const sessionTimeout = Object.assign(
@@ -96,7 +96,7 @@ export const sessionTimeout = Object.assign(
     activityInterval = 60,
   }: SessionTimeoutOptions): SessionTimeoutAttributes => {
     // Reserven gjelder bare den som ikke har en typesjekk.
-    const titleId = idOrFallback("fs.sessionTimeout()", givenId, "titleId")
+    const titleId = idOrFallback("lt.sessionTimeout()", givenId, "titleId")
 
     return {
       host: attributes({
@@ -121,7 +121,7 @@ export const sessionTimeout = Object.assign(
         "aria-hidden": "true" as const,
       }),
       live: attributes({
-        class: "fs-sr-only" as const,
+        class: "lt-sr-only" as const,
         role: "status" as const,
       }),
       actions: attributes({
@@ -129,11 +129,11 @@ export const sessionTimeout = Object.assign(
         method: "dialog" as const,
       }),
       extend: attributes({
-        class: "fs-button" as const,
+        class: "lt-button" as const,
         value: SESSION_EXTEND,
       }),
       logout: attributes({
-        class: "fs-button" as const,
+        class: "lt-button" as const,
         "data-variant": "secondary" as const,
         value: SESSION_LOGOUT,
       }),

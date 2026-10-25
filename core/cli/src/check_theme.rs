@@ -1,4 +1,4 @@
-//! `fristil sjekk-tema <fil…>`: kontrollerer et tema noen har skrevet selv.
+//! `lotek sjekk-tema <fil…>`: kontrollerer et tema noen har skrevet selv.
 //!
 //! Generatoren holder løftene av konstruksjon, men et tema skrevet for hånd er
 //! konsumentens ansvar. Uten denne kommandoen er «du kan overstyre hvilken som
@@ -10,7 +10,7 @@
 use std::io::ErrorKind;
 
 use crate::output::{count, error, fail, log, shown};
-use fristil_kjerne::theme::check::inspect_theme;
+use lotek_core::theme::check::inspect_theme;
 
 pub fn run(arguments: &[String]) {
     // Et ukjent flagg skal stoppe kjøringen, ikke forsvinne: en skrivefeil i
@@ -22,12 +22,12 @@ pub fn run(arguments: &[String]) {
         .collect();
     if !unknown.is_empty() {
         fail(&format!(
-            "Ukjent flagg: {}.\n\n`fristil sjekk-tema` tar bare filnavn.\n",
+            "Ukjent flagg: {}.\n\n`lotek sjekk-tema` tar bare filnavn.\n",
             unknown.join(", ")
         ));
     }
     if arguments.is_empty() {
-        fail("Oppgi minst én CSS-fil: `fristil sjekk-tema tema.css`.\n\nKommandoen leser --fs-color-*-verdiene i fila og kontrollerer at hvert kontrastløfte holder, i hver blokk.\n");
+        fail("Oppgi minst én CSS-fil: `lotek sjekk-tema theme.css`.\n\nKommandoen leser --lt-color-*-verdiene i fila og kontrollerer at hvert kontrastløfte holder, i hver blokk.\n");
     }
 
     // Filer som ikke lot seg lese samles og meldes samlet.
@@ -97,7 +97,7 @@ pub fn run(arguments: &[String]) {
     }
     if declarations == 0 && problems == 0 {
         fail(&format!(
-            "Fant ingen --fs-color-*-verdier i {files}. Sjekken har ikke sett på noe."
+            "Fant ingen --lt-color-*-verdier i {files}. Sjekken har ikke sett på noe."
         ));
     }
     if problems > 0 {

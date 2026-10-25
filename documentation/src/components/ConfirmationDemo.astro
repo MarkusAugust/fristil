@@ -8,34 +8,34 @@ import Preview from "./Preview.astro"
 	layout="stabel"
 	maxWidth="34rem"
 >
-	<p class="fs-paragraph">Søknad 2026-0481, sendt 4. mars.</p>
+	<p class="lt-paragraph">Søknad 2026-0481, sendt 4. mars.</p>
 
-	<button class="fs-button" data-variant="danger" type="button" id="demo-slett">
+	<button class="lt-button" data-variant="danger" type="button" id="demo-slett">
 		Slett søknaden
 	</button>
 
-	<dialog class="fs-dialog" id="demo-dialog" aria-labelledby="demo-dialog-tittel">
-		<h2 class="fs-dialog__title" id="demo-dialog-tittel">Slette søknaden?</h2>
+	<dialog class="lt-dialog" id="demo-dialog" aria-labelledby="demo-dialog-tittel">
+		<h2 class="lt-dialog__title" id="demo-dialog-tittel">Slette søknaden?</h2>
 
-		<div class="fs-dialog__body">
-			<p class="fs-paragraph">
+		<div class="lt-dialog__body">
+			<p class="lt-paragraph">
 				Søknaden og vedleggene blir borte. Dette kan ikke angres.
 			</p>
 		</div>
 
-		<form method="dialog" class="fs-dialog__footer">
-			<button class="fs-button" data-variant="secondary" value="avbryt">Avbryt</button>
-			<button class="fs-button" data-variant="danger" value="slett">Slett søknaden</button>
+		<form method="dialog" class="lt-dialog__footer">
+			<button class="lt-button" data-variant="secondary" value="avbryt">Avbryt</button>
+			<button class="lt-button" data-variant="danger" value="slett">Slett søknaden</button>
 		</form>
 	</dialog>
 
-	<fs-toast id="demo-meldinger" label="Meldinger"></fs-toast>
+	<lt-toast id="demo-meldinger" label="Meldinger"></lt-toast>
 </Preview>
 
 <script>
-	import { defineFsToast } from "@fristil/designsystem/toast"
+	import { defineLtToast } from "@lo-tek/interfaces/toast"
 
-	defineFsToast()
+	defineLtToast()
 
 	const flate = document.getElementById("demo-bekreft")?.shadowRoot
 	const dialog = flate?.getElementById("demo-dialog") as HTMLDialogElement | null

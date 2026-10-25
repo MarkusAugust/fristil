@@ -1,13 +1,13 @@
 /**
- * Prøver språkserveren, `fristil lsp`, over ekte standard inn og ut, slik en
+ * Prøver språkserveren, `lotek lsp`, over ekte standard inn og ut, slik en
  * editor snakker med den.
  *
- * Standard er den bygde kommandolinja i pakken, kjørt med Node. `FRISTIL_CLI`
- * peker på en annen, som den kjørbare fila fra `kjerne/cli` eller
- * `["java", "-jar", "fristil.jar"]`, så de samme påstandene prøves mot hver
+ * Standard er den bygde kommandolinja i pakken, kjørt med Node. `LOTEK_CLI`
+ * peker på en annen, som den kjørbare fila fra `core/cli` eller
+ * `["java", "-jar", "lotek.jar"]`, så de samme påstandene prøves mot hver
  * vert. VS Code-utvidelsen prøves med `["node", "editor/dist/server.js"]`.
  *
- * Kjør med: bun scripts/sjekk-lsp.ts
+ * Kjør med: bun scripts/check-lsp.ts
  */
 
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises"
@@ -21,12 +21,12 @@ const pakke = fileURLToPath(new URL("..", import.meta.url))
 // Eksplisitt, siden `Bun.spawn` ikke arver endringer i `process.env`.
 const ENVIRONMENT = {
   ...process.env,
-  FRISTIL_PACKAGE: process.env.FRISTIL_PACKAGE ?? pakke,
+  LOTEK_PACKAGE: process.env.LOTEK_PACKAGE ?? pakke,
 }
-const KOMMANDO: string[] = process.env.FRISTIL_CLI
-  ? process.env.FRISTIL_CLI.startsWith("[")
-    ? JSON.parse(process.env.FRISTIL_CLI)
-    : [process.env.FRISTIL_CLI]
+const KOMMANDO: string[] = process.env.LOTEK_CLI
+  ? process.env.LOTEK_CLI.startsWith("[")
+    ? JSON.parse(process.env.LOTEK_CLI)
+    : [process.env.LOTEK_CLI]
   : ["node", join(pakke, "dist/cli.js")]
 
 type Melding = {
@@ -120,7 +120,7 @@ async function økt(arbeidsmappe: string) {
   return { prosess, send, vent, diagnostikk, mottatt }
 }
 
-const rot = await mkdtemp(join(tmpdir(), "fristil-lsp-"))
+const rot = await mkdtemp(join(tmpdir(), "lotek-lsp-"))
 try {
   const s = await økt(rot)
   s.send({
@@ -146,7 +146,7 @@ try {
   s.send({ method: "initialized", params: {} })
 
   // Et dokument med en skrivefeil, etter tegn som er to UTF-16-enheter.
-  const uri = pathToFileURL(join(rot, "skjema.html")).href
+  const uri = pathToFileURL(join(rot, "form.html")).href
   s.send({
     method: "textDocument/didOpen",
     params: {
@@ -154,7 +154,7 @@ try {
         uri,
         languageId: "html",
         version: 1,
-        text: '<p>🧾</p>\n<button class="fs-buton">Send</button>',
+        text: '<p>🧾</p>\n<button class="lt-buton">Send</button>',
       },
     },
   })
@@ -197,19 +197,19 @@ try {
     edit: { changes: Record<string, { newText: string }[]> }
   }[]
   krev(
-    rettelser[0]?.title === "Bytt til fs-button",
+    rettelser[0]?.title === "Bytt til lt-button",
     `feil rettelse: ${rettelser[0]?.title}`,
   )
   krev(
-    rettelser[0]?.edit.changes[uri]?.[0]?.newText === "fs-button",
-    "rettelsen bytter ikke til fs-button",
+    rettelser[0]?.edit.changes[uri]?.[0]?.newText === "lt-button",
+    "rettelsen bytter ikke til lt-button",
   )
 
   s.send({
     method: "textDocument/didChange",
     params: {
       textDocument: { uri, version: 2 },
-      contentChanges: [{ text: '<button class="fs-button">Send</button>' }],
+      contentChanges: [{ text: '<button class="lt-button">Send</button>' }],
     },
   })
   const andre = (await s.diagnostikk(uri, 2)).params as {
@@ -221,7 +221,7 @@ try {
   )
 
   // Et manifest i arbeidsområdet gjelder fra neste sjekk, uten omstart.
-  await mkdir(join(rot, "build/fristil"), { recursive: true })
+  await mkdir(join(rot, "build/lotek"), { recursive: true })
   const manifest = Bun.spawnSync(
     ["node", join(pakke, "dist/cli.js"), "manifest"],
     {
@@ -236,7 +236,7 @@ try {
     attributes: {},
   }
   await writeFile(
-    join(rot, "build/fristil/manifest.json"),
+    join(rot, "build/lotek/manifest.json"),
     JSON.stringify(medKopi),
   )
   s.send({
@@ -254,7 +254,7 @@ try {
   krev(
     tredje.diagnostics.length === 1 &&
       tredje.diagnostics[0].message.includes("app-button--x"),
-    `manifestet i build/fristil ble ikke lest: ${JSON.stringify(tredje.diagnostics)}`,
+    `manifestet i build/lotek ble ikke lest: ${JSON.stringify(tredje.diagnostics)}`,
   )
 
   s.send({

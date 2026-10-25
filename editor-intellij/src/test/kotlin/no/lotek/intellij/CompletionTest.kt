@@ -1,4 +1,4 @@
-package no.fristil.intellij
+package no.lotek.intellij
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
@@ -9,7 +9,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
  * ikke i HTML som er injisert i en streng. Testene dekker begge deler: at
  * fullføringen virker i en vanlig fil, og at den virker i et fragment.
  */
-class FullforingTest : BasePlatformTestCase() {
+class CompletionTest : BasePlatformTestCase() {
     /**
      * Forslagene fullføringen gir på dette stedet.
      *
@@ -44,23 +44,23 @@ class FullforingTest : BasePlatformTestCase() {
         val start = tekst.lastIndexOfAny(charArrayOf(' ', '"', '\'', '\n', '='), slutt - 1) + 1
         val etter = tekst.substring(start, slutt)
 
-        return if (etter != før && etter.startsWith("fs-")) listOf(etter) else emptyList()
+        return if (etter != før && etter.startsWith("lt-")) listOf(etter) else emptyList()
     }
 
     fun `test foreslår klasser i en vanlig HTML-fil`() {
-        val ut = forslag("test.html", """<button class="fs-<caret>">Lagre</button>""")
-        assertTrue("fs-button skal være med, fikk $ut", ut.contains("fs-button"))
-        assertTrue("fs-table skal være med", ut.contains("fs-table"))
+        val ut = forslag("test.html", """<button class="lt-<caret>">Lagre</button>""")
+        assertTrue("lt-button skal være med, fikk $ut", ut.contains("lt-button"))
+        assertTrue("lt-table skal være med", ut.contains("lt-table"))
     }
 
     fun `test finner riktig klasse av et lengre prefiks`() {
-        val ut = forslag("test.html", """<table class="fs-tab<caret>">""")
-        assertTrue("fs-table skal være med, fikk $ut", ut.contains("fs-table"))
+        val ut = forslag("test.html", """<table class="lt-tab<caret>">""")
+        assertTrue("lt-table skal være med, fikk $ut", ut.contains("lt-table"))
     }
 
     fun `test finner klasse nummer to i en verdi med flere`() {
-        val ut = forslag("test.html", """<button class="min-egen fs-but<caret>">""")
-        assertTrue("fs-button skal være med, fikk $ut", ut.contains("fs-button"))
+        val ut = forslag("test.html", """<button class="min-egen lt-but<caret>">""")
+        assertTrue("lt-button skal være med, fikk $ut", ut.contains("lt-button"))
     }
 
     /*
@@ -71,49 +71,49 @@ class FullforingTest : BasePlatformTestCase() {
      * fra «fant alle klasser, og én av dem var riktig».
      */
     fun `test filtrerer på det som alt er skrevet`() {
-        val alle = forslag("test.html", """<button class="fs-<caret>">""")
-        val smalt = forslag("test.html", """<button class="fs-tab<caret>">""")
+        val alle = forslag("test.html", """<button class="lt-<caret>">""")
+        val smalt = forslag("test.html", """<button class="lt-tab<caret>">""")
 
-        assertTrue("fs- skal gi hele lista, fikk ${alle.size}", alle.size > 50)
-        assertTrue("fs-tab skal gi færre, fikk ${smalt.size}", smalt.size < alle.size)
-        assertTrue("fs-table skal være blant dem", smalt.contains("fs-table"))
-        assertFalse("fs-button skal ikke være med", smalt.contains("fs-button"))
+        assertTrue("lt- skal gi hele lista, fikk ${alle.size}", alle.size > 50)
+        assertTrue("lt-tab skal gi færre, fikk ${smalt.size}", smalt.size < alle.size)
+        assertTrue("lt-table skal være blant dem", smalt.contains("lt-table"))
+        assertFalse("lt-button skal ikke være med", smalt.contains("lt-button"))
     }
 
     fun `test tier utenfor en class-verdi`() {
-        val ut = forslag("test.html", """<button id="fs-<caret>">""")
-        assertFalse("skal ikke foreslå i id, fikk $ut", ut.contains("fs-button"))
+        val ut = forslag("test.html", """<button id="lt-<caret>">""")
+        assertFalse("skal ikke foreslå i id, fikk $ut", ut.contains("lt-button"))
     }
 
     fun `test virker på en verdi uten anførselstegn`() {
         // Bar verdi er gyldig HTML. Da bare anførselstegn talte, ga
-        // `class=fs-` ingenting.
-        val ut = forslag("test.html", """<div class=fs-tab<caret>""")
-        assertTrue("fs-table skal være med, fikk $ut", ut.contains("fs-table"))
+        // `class=lt-` ingenting.
+        val ut = forslag("test.html", """<div class=lt-tab<caret>""")
+        assertTrue("lt-table skal være med, fikk $ut", ut.contains("lt-table"))
     }
 
     fun `test tier i et bundet class-attributt`() {
         /*
          * Vue og Alpine tar et JavaScript-uttrykk i `:class` og
-         * `x-bind:class`. Et bart `fs-button` der blir en variabelreferanse,
+         * `x-bind:class`. Et bart `lt-button` der blir en variabelreferanse,
          * ikke en klasse, så forslaget ville gitt kode som ikke virker.
          */
         for (attributt in listOf(":class", "x-bind:class", "v-bind:class")) {
-            val ut = forslag("test.html", """<div $attributt="fs-<caret>">""")
-            assertFalse("skal tie i $attributt, fikk $ut", ut.contains("fs-button"))
+            val ut = forslag("test.html", """<div $attributt="lt-<caret>">""")
+            assertFalse("skal tie i $attributt, fikk $ut", ut.contains("lt-button"))
         }
     }
 
     fun `test lar seg ikke lure av et class-likhetstegn i en annen verdi`() {
         // Løkka bryter på det lukkende anførselstegnet, og uten kravet om at
         // `=` står rett foran navnet sto `=` fra verdiens innhold igjen.
-        val ut = forslag("test.html", """<div title="class=" fs-<caret>""")
-        assertFalse("skal ikke foreslå her, fikk $ut", ut.contains("fs-button"))
+        val ut = forslag("test.html", """<div title="class=" lt-<caret>""")
+        assertFalse("skal ikke foreslå her, fikk $ut", ut.contains("lt-button"))
     }
 
     fun `test tier i vanlig tekst`() {
-        val ut = forslag("test.html", """<p>fs-<caret></p>""")
-        assertFalse("skal ikke foreslå i brødtekst, fikk $ut", ut.contains("fs-button"))
+        val ut = forslag("test.html", """<p>lt-<caret></p>""")
+        assertFalse("skal ikke foreslå i brødtekst, fikk $ut", ut.contains("lt-button"))
     }
 
     fun `test tier i tekst rett etter en lukket tagg`() {
@@ -125,8 +125,8 @@ class FullforingTest : BasePlatformTestCase() {
          * Testen over fanger ikke dette: der finnes det ikke noe `=` i det
          * hele tatt, så den stopper av en annen grunn.
          */
-        val ut = forslag("test.html", """<div class="a">fs-<caret>""")
-        assertFalse("skal ikke foreslå etter en lukket tagg, fikk $ut", ut.contains("fs-button"))
+        val ut = forslag("test.html", """<div class="a">lt-<caret>""")
+        assertFalse("skal ikke foreslå etter en lukket tagg, fikk $ut", ut.contains("lt-button"))
     }
 
     fun `test foreslår i HTML injisert i en Kotlin-streng`() {
@@ -139,53 +139,53 @@ class FullforingTest : BasePlatformTestCase() {
                 """
                 // language=HTML
                 val tabell = ""${'"'}
-                    <table class="fs-<caret>">
+                    <table class="lt-<caret>">
                 ""${'"'}
                 """.trimIndent(),
             )
-        assertTrue("fs-table skal være med i en injisert streng, fikk $ut", ut.contains("fs-table"))
+        assertTrue("lt-table skal være med i en injisert streng, fikk $ut", ut.contains("lt-table"))
     }
 
-    /** Manifestet i pakken med `fs-card` byttet ut med `fs-kort`, som etter `fristil overta`. */
+    /** Manifestet i pakken med `lt-card` byttet ut med `lt-kort`, som etter `lotek overta`. */
     private val overtatt =
-        java.io.File(System.getProperty("manifest")).readText().replace("\"fs-card\": {", "\"fs-kort\": {")
+        java.io.File(System.getProperty("manifest")).readText().replace("\"lt-card\": {", "\"lt-kort\": {")
 
     fun `test foreslår klassene i prosjektets manifest`() {
-        // Det samme manifestet som sjekken går mot (DiagnostikkTest), så
-        // fullføringen ikke foreslår fs-card rett før annotatoren streker den
+        // Det samme manifestet som sjekken går mot (DiagnosticsTest), så
+        // fullføringen ikke foreslår lt-card rett før annotatoren streker den
         // under. Før leste den alltid pakkens manifest.
-        myFixture.addFileToProject("build/fristil/manifest.json", overtatt)
-        val ut = forslag("test.html", """<div class="fs-<caret>">""")
-        assertTrue("fs-kort skal være med, fikk $ut", ut.contains("fs-kort"))
-        assertFalse("fs-card skal ikke være med, fikk $ut", ut.contains("fs-card"))
+        myFixture.addFileToProject("build/lotek/manifest.json", overtatt)
+        val ut = forslag("test.html", """<div class="lt-<caret>">""")
+        assertTrue("lt-kort skal være med, fikk $ut", ut.contains("lt-kort"))
+        assertFalse("lt-card skal ikke være med, fikk $ut", ut.contains("lt-card"))
     }
 
     fun `test foreslår fra prosjektets manifest i et injisert fragment`() {
-        myFixture.addFileToProject("node_modules/@fristil/designsystem/manifest/manifest.json", overtatt)
+        myFixture.addFileToProject("node_modules/@lo-tek/interfaces/manifest/manifest.json", overtatt)
         val ut =
             forslag(
                 "Visning.kt",
                 """
                 // language=HTML
                 val kort = ""${'"'}
-                    <div class="fs-<caret>">
+                    <div class="lt-<caret>">
                 ""${'"'}
                 """.trimIndent(),
             )
-        assertTrue("fs-kort skal være med i en injisert streng, fikk $ut", ut.contains("fs-kort"))
-        assertFalse("fs-card skal ikke være med, fikk $ut", ut.contains("fs-card"))
+        assertTrue("lt-kort skal være med i en injisert streng, fikk $ut", ut.contains("lt-kort"))
+        assertFalse("lt-card skal ikke være med, fikk $ut", ut.contains("lt-card"))
     }
 
     fun `test et manifest kjernen ikke kan lese gir pakkens klasser`() {
-        myFixture.addFileToProject("build/fristil/manifest.json", "{}")
-        val ut = forslag("test.html", """<div class="fs-<caret>">""")
-        assertTrue("fs-button skal være med, fikk $ut", ut.contains("fs-button"))
+        myFixture.addFileToProject("build/lotek/manifest.json", "{}")
+        val ut = forslag("test.html", """<div class="lt-<caret>">""")
+        assertTrue("lt-button skal være med, fikk $ut", ut.contains("lt-button"))
     }
 
     fun `test katalogen har klassene fra pakken`() {
         assertTrue("katalogen skal ikke være tom", Katalog.klasser.isNotEmpty())
-        assertNotNull("fs-button skal finnes", Katalog.finn("fs-button"))
-        assertNull("en oppdiktet klasse skal ikke finnes", Katalog.finn("fs-modal"))
+        assertNotNull("lt-button skal finnes", Katalog.finn("lt-button"))
+        assertNull("en oppdiktet klasse skal ikke finnes", Katalog.finn("lt-modal"))
     }
 
     fun `test hver klasse har komponent og lenke`() {

@@ -1,4 +1,4 @@
-package no.fristil
+package no.lotek
 
 import java.io.File
 import kotlin.test.Test
@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 /**
  * At WebJar-en har det en side trenger, og at hver modul i den kan lastes.
  *
- * En nettleser kan ikke slå opp et pakkenavn som `@fristil/designsystem` eller
+ * En nettleser kan ikke slå opp et pakkenavn som `@lo-tek/interfaces` eller
  * `node:fs`. Importerer én modul noe som ikke ligger i WebJar-en, feiler den
  * først i nettleseren, så det sjekkes her: hver import i hver modul skal peke
  * på en fil som finnes.
@@ -19,13 +19,13 @@ class WebJarTest {
 
     @Test
     fun `stilarket og registreringen ligger der konstantene sier`() {
-        for (path in listOf(FristilWebJar.CSS, FristilWebJar.REGISTER)) {
+        for (path in listOf(LotekWebJar.CSS, LotekWebJar.REGISTER)) {
             val resource = "META-INF/resources$path"
             val stream = javaClass.classLoader.getResourceAsStream(resource)
             assertNotNull(stream, "$resource finnes ikke på klassestien")
             assertTrue(stream.use { it.readBytes().isNotEmpty() }, "$resource er tom")
         }
-        assertTrue(FristilWebJar.ROOT.endsWith("/${FristilWebJar.VERSION}"))
+        assertTrue(LotekWebJar.ROOT.endsWith("/${LotekWebJar.VERSION}"))
     }
 
     @Test

@@ -13,7 +13,7 @@
  * løkka agenten retter seg selv i.
  *
  * Kjør med: bun run generate
- * `scripts/sjekk-agent.ts` kjører det samme i minnet og feller hvis filene på
+ * `scripts/check-agent.ts` kjører det samme i minnet og feller hvis filene på
  * disk er utdaterte.
  */
 
@@ -34,20 +34,20 @@ import {
   tokenListe,
   VERSJON,
   webTabell,
-} from "./agent-deler.js"
+} from "./agent-parts.js"
 
 /** Pakkenavnet, som bundles slår opp. */
-const PAKKENAVN = (komponent: string) => `@fristil/designsystem/${komponent}`
+const PAKKENAVN = (komponent: string) => `@lo-tek/interfaces/${komponent}`
 
 /** Stilarket, slik det skrives der det finnes et byggesteg. */
 const STILARK_PAKKE = (komponent: string) =>
-  `@fristil/designsystem/${komponent}.css`
+  `@lo-tek/interfaces/${komponent}.css`
 
 /**
  * Stilarket uten byggesteg: hele adressen.
  *
  * Kolonna sto med bare filnavnet, og da måtte leseren gjette stien. `field.css`
- * ligger under `ramme/`, ikke under `css/`, så en agent som generaliserte fra
+ * ligger under `frame/`, ikke under `css/`, så en agent som generaliserte fra
  * knappe-eksempelet fikk 404 på ni av komponentene.
  */
 const STILARK_URL = (komponent: string) => cdnTil(`${komponent}.css`)
@@ -94,12 +94,12 @@ type Oppskrift = {
 const kortversjon = (oppskrift: Oppskrift) => `## Kortversjon
 
 1. ${oppskrift.stilarkRegel}
-2. **Bruk bare klassene og elementene i tabellene under.** \`fs-modal\`,
-   \`fs-datepicker\` og \`data-variant="outlined"\` finnes i andre
-   designsystemer, ikke i Fristil. Er du usikker på om noe finnes, står det her
+2. **Bruk bare klassene og elementene i tabellene under.** \`lt-modal\`,
+   \`lt-datepicker\` og \`data-variant="outlined"\` finnes i andre
+   designsystemer, ikke i LO-TEK. Er du usikker på om noe finnes, står det her
    eller så gjør det ikke det.
-3. **Ingen hardkodede farger eller piksler.** \`var(--fs-color-…)\` og
-   \`var(--fs-spacing-…)\`.
+3. **Ingen hardkodede farger eller piksler.** \`var(--lt-color-…)\` og
+   \`var(--lt-spacing-…)\`.
 4. ${oppskrift.punktFire}
 5. ${
   oppskrift.punktFem ??
@@ -107,32 +107,32 @@ const kortversjon = (oppskrift: Oppskrift) => `## Kortversjon
    hver klasse, hvert element, hvert attributt og hver lovlige verdi, skriver
    \`fil:linje:kolonne: feil: melding\`, eller \`advarsel:\`, og avslutter med feilkode hvis den finner
    noe. Med appen i gang, sjekk også hver side du har endret:
-   \`npx @fristil/designsystem sjekk http://localhost:8080/side\`. Da kreves
+   \`npx @lo-tek/interfaces sjekk http://localhost:8080/side\`. Da kreves
    det i tillegg at hver \`for\` og \`aria-describedby\` peker på en id som
    finnes, og at hvert felt har en ledetekst. Du er ferdig når begge svarer
-   «Markupen stemmer med Fristil».`
+   «Markupen stemmer med LO-TEK».`
 }`
 
 const hvaSomFinnes = (oppskrift: Oppskrift) => `## 2. Hva som finnes
 
 ${antallCssKomponenter()} CSS-komponenter og ${antallElementer()} web components, og dette er
-hele lista. Klassene er \`fs-\` + kebab-case. Varianter er alltid
+hele lista. Klassene er \`lt-\` + kebab-case. Varianter er alltid
 \`data-*\`-attributter, aldri egne klasser: \`data-variant="secondary"\`, ikke
-\`fs-button--secondary\`. Standardvarianten har ingen attributt.
+\`lt-button--secondary\`. Standardvarianten har ingen attributt.
 
 ### CSS-komponenter (ingen JavaScript)
 
 ${cssTabell(oppskrift.stilarkAdresse)}
 
-I tillegg finnes \`fs-theme-control\`, en klasse på en radioknapp som lar
+I tillegg finnes \`lt-theme-control\`, en klasse på en radioknapp som lar
 brukeren velge tema. Den står i \`tokens.css\`, og er beskrevet under Tokens.`
 
 const TOKENS = `## 3. Tokens
 
 Ett lag. En farge er en celle i en matrise av **familie**, altså hva den
 betyr, og **rolle**, altså hva den gjør, og navnet er
-\`--fs-color-<familie>-<rolle>\`. Hver familie har hver rolle, så
-\`--fs-color-danger-border\` og \`--fs-color-success-border\` finnes begge.
+\`--lt-color-<familie>-<rolle>\`. Hver familie har hver rolle, så
+\`--lt-color-danger-border\` og \`--lt-color-success-border\` finnes begge.
 Rollene er de samme uansett familie: \`surface\` er en tonet flate,
 \`fill\` en fylt, \`content\` teksten oppå \`fill\`, \`border\` en
 ramme, og \`text\` familiens farge som tekst. Kant og tekst har et svakere og
@@ -159,25 +159,25 @@ const temaEksempel = (oppskrift: Oppskrift) =>
   oppskrift.navn === "react"
     ? `\`\`\`tsx
 <div data-theme="light">
-  <button {...fs.button()}>Lagre</button>
+  <button {...lt.button()}>Lagre</button>
 </div>
 \`\`\``
     : `\`\`\`html
 <div data-theme="light">
-  <button class="fs-button">Lagre</button>
+  <button class="lt-button">Lagre</button>
 </div>
 \`\`\``
 
 const grenseEksempel = (oppskrift: Oppskrift) =>
   oppskrift.navn === "react"
     ? `\`\`\`tsx
-<div data-fs-boundary data-theme="light">
-  <button {...fs.button()}>Lagre</button>
+<div data-lt-boundary data-theme="light">
+  <button {...lt.button()}>Lagre</button>
 </div>
 \`\`\``
     : `\`\`\`html
-<div data-fs-boundary data-theme="light">
-  <button class="fs-button">Lagre</button>
+<div data-lt-boundary data-theme="light">
+  <button class="lt-button">Lagre</button>
 </div>
 \`\`\``
 
@@ -191,14 +191,14 @@ const velgerEksempel = (oppskrift: Oppskrift) => {
   const react = oppskrift.navn === "react"
   const attr = react ? "className" : "class"
   const linje = (verdi: string, tekst: string, valgt = false) =>
-    `  <label ${attr}="fs-toggle-group__option">
-    <input ${attr}="fs-theme-control" type="radio" name="tema"
+    `  <label ${attr}="lt-toggle-group__option">
+    <input ${attr}="lt-theme-control" type="radio" name="tema"
            value="${verdi}"${valgt ? (react ? " defaultChecked" : " checked") : ""} /> ${tekst}
   </label>`
 
   return `\`\`\`${react ? "tsx" : "html"}
-<fieldset ${attr}="fs-toggle-group">
-  <legend ${attr}="fs-sr-only">Tema</legend>
+<fieldset ${attr}="lt-toggle-group">
+  <legend ${attr}="lt-sr-only">Tema</legend>
 ${linje("auto", "Følg systemet", true)}
 ${linje("light", "Lyst")}
 ${linje("dark", "Mørkt")}
@@ -215,7 +215,7 @@ bestemme selv setter \`data-theme="light"\` eller \`data-theme="dark"\` på
 Attributtet er en **temagrense** og virker på et hvilket som helst element,
 ikke bare på roten. Et tema kan ligge inne i et annet, begge veier.
 
-Det er dette en innebygd komponent skal bruke. Legger du Fristil inn i en side
+Det er dette en innebygd komponent skal bruke. Legger du LO-TEK inn i en side
 du ikke eier, setter du attributtet på komponentens eget rotelement:
 
 ${temaEksempel(oppskrift)}
@@ -224,26 +224,26 @@ Da er komponenten lys uansett hva maskinen står på, og verten røres ikke.
 
 **Vertens CSS stopper ved grensen.** Verten har ofte regler uten lag, som
 \`button { background: none; border: none }\` eller en normalize, og de slår
-\`@layer fristil\`. Sett da \`data-fs-boundary\` på det samme rotelementet:
+\`@layer lotek\`. Sett da \`data-lt-boundary\` på det samme rotelementet:
 
 ${grenseEksempel(oppskrift)}
 
 Under rotelementet ser nettleseren bort fra CSS uten lag, innenfor
-spesifisiteten under, og Fristils lag gjelder igjen. Regelen ligger i \`fristil.css\` og i
-\`@fristil/designsystem/boundary.css\`. Skrift og annet som arves kommer
-fortsatt fra verten, og \`--fs-*\`-variablene virker. Tre ting følger av den:
+spesifisiteten under, og LO-TEKs lag gjelder igjen. Regelen ligger i \`lotek.css\` og i
+\`@lo-tek/interfaces/boundary.css\`. Skrift og annet som arves kommer
+fortsatt fra verten, og \`--lt-*\`-variablene virker. Tre ting følger av den:
 
-- Egen CSS inne i grensen skal ligge i et lag etter \`fristil\`. CSS uten lag
+- Egen CSS inne i grensen skal ligge i et lag etter \`lotek\`. CSS uten lag
   forsvinner der på samme måte som vertens.
-- Elementer uten Fristil-klasse mister vertens CSS uten lag. Et lag verten
-  har erklært før \`fristil\`, som Tailwinds Preflight i \`base\`, gjelder
-  fortsatt der Fristil ikke setter noe.
+- Elementer uten LO-TEK-klasse mister vertens CSS uten lag. Et lag verten
+  har erklært før \`lotek\`, som Tailwinds Preflight i \`base\`, gjelder
+  fortsatt der LO-TEK ikke setter noe.
 - Grensen har spesifisiteten (0,2,0). En regel fra verten med samme
   spesifisitet vinner hvis den lastes etter grensen, og en med mer vinner
   alltid. Det samme gjør \`!important\` og lag verten har erklært etter
-  \`fristil\`.
+  \`lotek\`.
 
-Fristil setter **ikke** \`color-scheme\` på \`:root\`. Egenskapen styrer
+LO-TEK setter **ikke** \`color-scheme\` på \`:root\`. Egenskapen styrer
 nettleserens egne flater, altså rullefelt, nedtrekkslister og kalenderpanel,
 og den arves nedover. Et barn kan melde seg ut med \`color-scheme: normal\`,
 men det er en motregel verten aldri ba om å måtte skrive: sto verdien på
@@ -254,12 +254,12 @@ temavelgeren under: bruker du den, setter hvert valg \`color-scheme\` selv.
 
 ### La brukeren velge tema
 
-\`fs-theme-control\` på en radioknapp gjør \`value\` til et temavalg. Det er
+\`lt-theme-control\` på en radioknapp gjør \`value\` til et temavalg. Det er
 ren CSS, uten en linje JavaScript:
 
 ${velgerEksempel(oppskrift)}
 
-Valget styrer to ting. Fristils farger kommer fra tokenene, og nettleserens
+Valget styrer to ting. LO-TEKs farger kommer fra tokenene, og nettleserens
 **egne** flater fra \`color-scheme\`: \`light\` gir \`light\`, \`dark\` gir \`dark\`, og
 \`auto\` gir \`light dark\`. \`light dark\` er ikke et tema, men beskjeden om at
 siden fungerer i begge, så nettleseren kan velge etter systemet.
@@ -268,7 +268,7 @@ siden fungerer i begge, så nettleseren kan velge etter systemet.
 blokk treffer ingenting, og da gjelder mediespørringen igjen.
 
 Du skal ikke skrive \`color-scheme\` selv når velgeren er i bruk. En slik
-regel utenfor et lag slår \`@layer fristil\` og låser nettleserens flater til
+regel utenfor et lag slår \`@layer lotek\` og låser nettleserens flater til
 systemet mens brukeren har valgt noe annet.
 
 \`light\` og \`dark\` vinner over \`data-theme\` på \`<html>\`, slik at serveren kan
@@ -292,7 +292,7 @@ Tre regler gjelder alle sammen:
 2. **Boolske attributter er sanne så lenge de finnes.** \`hidden="false"\`,
    \`disabled="false"\` og \`open="false"\` slår *på*. Skal noe av det bort, må
    attributtet fjernes helt.
-3. **Du skriver markupen, komponenten fester oppførselen.** \`<fs-field>\`
+3. **Du skriver markupen, komponenten fester oppførselen.** \`<lt-field>\`
    lager ikke ledeteksten eller kontrollen din. Du skriver \`for\` på
    ledeteksten og \`id\` på kontrollen, eller legger \`<label>\` rundt den, så
    feltet har navn også uten JavaScript. Komponenten kobler hjelpeteksten og
@@ -314,12 +314,12 @@ ${rader.map(([symptom, årsak]) => `| ${symptom} | ${årsak} |`).join("\n")}`
 
 const AVSLUTNING = `## Når CSS ikke strekker til
 
-Komponentene tilpasses med tokens og \`--fs-\`-variabler. Holder ikke det,
-kopierer \`npx @fristil/designsystem overta <komponent>\` kildekoden til én
+Komponentene tilpasses med tokens og \`--lt-\`-variabler. Holder ikke det,
+kopierer \`npx @lo-tek/interfaces overta <komponent>\` kildekoden til én
 komponent inn i prosjektet, så du eier den. Et helt fargetema av merkefargene
-dine lages med \`npx @fristil/designsystem tema\`.
+dine lages med \`npx @lo-tek/interfaces tema\`.
 
-Alt dette, med levende eksempler: https://fristil.sobernetics.no/`
+Alt dette, med levende eksempler: https://lo-tek.sobernetics.no/`
 
 // Fallgruvene, samlet her fordi flere miljøer deler dem.
 const STILER_MANGLER: [string, string] = [
@@ -327,12 +327,12 @@ const STILER_MANGLER: [string, string] = [
   "`tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe",
 ]
 const INGEN_DEFINE: [string, string] = [
-  "En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting",
-  "`define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser ett panel, det adressen peker på eller det første, og `<fs-suggestion>` skjuler lista til de er registrert",
+  "En `<lt-toast>` eller `<lt-connection-status>` viser ingenting, et `<lt-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting",
+  "`define`-funksjonen har ikke kjørt. `<lt-toast>` og `<lt-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<lt-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<lt-tabs>` bare viser ett panel, det adressen peker på eller det første, og `<lt-suggestion>` skjuler lista til de er registrert",
 ]
 const NORSK_TEKST: [string, string] = [
   "En komponent snakker norsk på en side på et annet språk",
-  "Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<fs-toast>`, `offline-text` og `online-text` på `<fs-connection-status>`, `count-none`, `count-one` og `count-other` på `<fs-suggestion>`, og `--fs-label-required-text`, `--fs-label-optional-text` og `--fs-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://fristil.sobernetics.no/oversettelse/",
+  "Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<lt-toast>`, `offline-text` og `online-text` på `<lt-connection-status>`, `count-none`, `count-one` og `count-other` på `<lt-suggestion>`, og `--lt-label-required-text`, `--lt-label-optional-text` og `--lt-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://lo-tek.sobernetics.no/translation/",
 ]
 const ALDRI_UGYLDIG: [string, string] = [
   "Feilmeldingen vises aldri, og feltet regnes som gyldig",
@@ -356,14 +356,14 @@ sjekke. Sjekk da siden slik serveren sender den, som en hel side, med
 koblingen medregnet:
 
 \`\`\`bash
-npx @fristil/designsystem sjekk http://localhost:8080/skjema
-curl -s http://localhost:8080/skjema | npx @fristil/designsystem sjekk --rendret
+npx @lo-tek/interfaces sjekk http://localhost:8080/form
+curl -s http://localhost:8080/form | npx @lo-tek/interfaces sjekk --rendret
 \`\`\`
 
 I en test skrevet i JavaScript gjør \`diagnosePage\` det samme:
 
 \`\`\`js
-import { diagnosePage } from "@fristil/designsystem/diagnostics"
+import { diagnosePage } from "@lo-tek/interfaces/diagnostics"
 
 const funn = diagnosePage(html)
 // funn er tom når siden stemmer
@@ -373,37 +373,37 @@ const OPPSKRIFTER: Oppskrift[] = [
   {
     navn: "html",
     stilarkAdresse: STILARK_URL,
-    tittel: "Fristil i ren HTML",
-    innledning: `Regelboka for Fristil i et prosjekt uten byggesteg:
+    tittel: "LO-TEK i ren HTML",
+    innledning: `Regelboka for LO-TEK i et prosjekt uten byggesteg:
 håndskrevet HTML, der nettleseren laster filene direkte. Bruker du bundles,
 React, Astro eller Datastar, eller lager serveren markupen, er det en annen fil
 i denne mappa som gjelder.`,
-    stilarkRegel: `**Én \`<link>\` til \`fristil.css\`, før alt annet.**
+    stilarkRegel: `**Én \`<link>\` til \`lotek.css\`, før alt annet.**
    Mangler den, ser komponentene ustilte ut. Svaret er da å legge inn lenka,
    aldri å skrive egen CSS for å få dem til å se riktige ut.`,
-    punktFire: `**Web components registreres én gang med \`defineFs*()\`** i en
+    punktFire: `**Web components registreres én gang med \`defineLt*()\`** i en
    \`<script type="module">\`, og et boolsk attributt er sant så lenge det står
    der: \`hidden="false"\` skjuler feilmeldingen likevel.`,
-    registreringRegel: `**\`defineFs*()\` kjøres én gang** i en
+    registreringRegel: `**\`defineLt*()\` kjøres én gang** i en
    \`<script type="module">\` i sidemalen, før elementet brukes, ikke én gang
    per komponent.`,
     adresse: URL_TIL,
-    sjekk: "npx @fristil/designsystem sjekk side.html",
+    sjekk: "npx @lo-tek/interfaces sjekk side.html",
     stilark: `## 1. Stilarket
 
 Én fil med alt, og det enkleste og raskeste uten bundles:
 
 \`\`\`html
-<link rel="stylesheet" href="${cdnTil("fristil.css")}">
+<link rel="stylesheet" href="${cdnTil("lotek.css")}">
 \`\`\`
 
 Eller fra \`node_modules\`, hvis du serverer mappa:
 
 \`\`\`html
-<link rel="stylesheet" href="/node_modules/@fristil/designsystem/dist/fristil.css">
+<link rel="stylesheet" href="/node_modules/@lo-tek/interfaces/dist/lotek.css">
 \`\`\`
 
-\`fristil.css\` er ${SAMLET_STØRRELSE}, og har alle
+\`lotek.css\` er ${SAMLET_STØRRELSE}, og har alle
 komponentene. Velg den. Alternativet er ett stilark per komponent, og da gjelder
 at ${TOKENS_FØRST}
 
@@ -413,28 +413,28 @@ at ${TOKENS_FØRST}
 \`\`\`
 
 De enkelte stilarkene henter delene sine med \`@import\`, som nettleseren først
-ser når fila er lastet. \`dist/fristil.css\` har alt flatet ut, uten
+ser når fila er lastet. \`dist/lotek.css\` har alt flatet ut, uten
 \`@import\`, og er derfor raskere når du lenker.`,
     markup: `## 5. Et helt skjema
 
 \`\`\`html
-<link rel="stylesheet" href="${cdnTil("fristil.css")}">
+<link rel="stylesheet" href="${cdnTil("lotek.css")}">
 
 <form id="kontaktskjema" novalidate>
-  <fs-field>
-    <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
-    <input class="fs-input" id="navn" type="text" name="navn" required />
-    <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
-  </fs-field>
+  <lt-field>
+    <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
+    <input class="lt-input" id="navn" type="text" name="navn" required />
+    <p class="lt-error-text" hidden>Fyll inn navnet ditt.</p>
+  </lt-field>
 
-  <button class="fs-button" type="submit">Send</button>
+  <button class="lt-button" type="submit">Send</button>
 </form>
 
 <script type="module">
-  import { defineFsField } from
+  import { defineLtField } from
     "${cdnTil("field")}"
 
-  defineFsField()
+  defineLtField()
 </script>
 \`\`\`
 
@@ -442,7 +442,7 @@ Feltet blir ugyldig når feilmeldingen vises, ikke ved å bytte klasse:
 
 \`\`\`js
 const navn = document.getElementById("navn")
-const feil = navn.closest("fs-field").querySelector(".fs-error-text")
+const feil = navn.closest("lt-field").querySelector(".lt-error-text")
 
 feil.hidden = navn.value.trim() !== ""
 \`\`\`
@@ -453,14 +453,14 @@ nettleseren som vanlig JavaScript, og \`hendelse as CustomEvent<…>\` gir
     ekstra: `## 6. Sjekk det du har skrevet
 
 \`\`\`bash
-npx @fristil/designsystem sjekk side.html
+npx @lo-tek/interfaces sjekk side.html
 \`\`\`
 
 Mønsteret utvides av skallet, så det skal ikke stå i hermetegn: kommandoen
 leser hvert argument som en filsti og utvider ingenting selv. Ett funn gir
 feilkode, så den kan stå i CI. Den fanger et element som ikke
-finnes, et attributt elementet ikke har, en verdi utenfor lista, \`fs-buton\`,
-\`data-variant="secundary"\`, og \`<fs-field>\` uten kontroll eller ledetekst.
+finnes, et attributt elementet ikke har, en verdi utenfor lista, \`lt-buton\`,
+\`data-variant="secundary"\`, og \`<lt-field>\` uten kontroll eller ledetekst.
 
 ${SJEKK_I_TESTER}`,
     fallgruver: [
@@ -472,14 +472,14 @@ ${SJEKK_I_TESTER}`,
     ],
   },
   {
-    navn: "maler",
+    navn: "templates",
     stilarkAdresse: STILARK_URL,
-    tittel: "Fristil i maler og serverskrevet HTML",
-    innledning: `Regelboka for Fristil der serveren lager markupen: Go-maler,
+    tittel: "LO-TEK i maler og serverskrevet HTML",
+    innledning: `Regelboka for LO-TEK der serveren lager markupen: Go-maler,
 Razor, PHP, Blade, Twig, Jinja, Django, ERB, Liquid, Handlebars, Nunjucks og
 Edge, og HTML bygget som strenger i Kotlin, Java, C# eller Python.
 
-Dette er miljøet Fristil er laget for. Komponentene er CSS-klasser og web
+Dette er miljøet LO-TEK er laget for. Komponentene er CSS-klasser og web
 components, altså ting nettleseren forstår direkte, så en Go-mal får de samme
 komponentene som en React-app uten å ta inn noe JavaScript-rammeverk.
 
@@ -487,27 +487,27 @@ Det er også miljøet med minst sikkerhetsnett. Ingen kompilator ser på
 attributtene i en mal, og ingen type stopper \`data-variant="outlined"\`. Derfor
 gjelder punkt 5 strengere her enn noe annet sted: sjekken er det eneste som
 leser markupen din.`,
-    stilarkRegel: `**Én \`<link>\` til \`fristil.css\` i sidemalen,** én gang
+    stilarkRegel: `**Én \`<link>\` til \`lotek.css\` i sidemalen,** én gang
    for hele appen. Mangler den, ser komponentene ustilte ut. Svaret er da å
    legge inn lenka, aldri å skrive egen CSS for å få dem til å se riktige ut.`,
-    punktFire: `**Web components registreres én gang med \`defineFs*()\`** i
+    punktFire: `**Web components registreres én gang med \`defineLt*()\`** i
    sidemalen, og et boolsk attributt er sant så lenge det står der. I en mal
    betyr det en betingelse rundt hele attributtet,
    \`{{if .Laast}}disabled{{end}}\`, ikke \`disabled="{{.Laast}}"\`.`,
-    registreringRegel: `**\`defineFs*()\` kjøres én gang** i sidemalen, ikke én
+    registreringRegel: `**\`defineLt*()\` kjøres én gang** i sidemalen, ikke én
    gang per komponent.`,
     adresse: URL_TIL,
-    sjekk: "npx @fristil/designsystem sjekk maler/*.html",
+    sjekk: "npx @lo-tek/interfaces sjekk templates/*.html",
     stilark: `## 1. Stilarket
 
 Én lenke i sidemalen, med alle komponentene:
 
 \`\`\`html
-<link rel="stylesheet" href="${cdnTil("fristil.css")}">
+<link rel="stylesheet" href="${cdnTil("lotek.css")}">
 \`\`\`
 
 Eller fra egen server, hvis du kopierer fila inn i de statiske ressursene dine.
-\`fristil.css\` er ${SAMLET_STØRRELSE}, og har alt flatet ut
+\`lotek.css\` er ${SAMLET_STØRRELSE}, og har alt flatet ut
 uten \`@import\`, og er det raskeste valget når du lenker.
 
 Vil du bare ha stilarkene sidene faktisk bruker, gjelder at ${TOKENS_FØRST}
@@ -517,11 +517,11 @@ er én fil nesten alltid riktig valg.`,
     markup: `## 5. Et felt i en mal
 
 \`\`\`html
-<fs-field>
-  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
-  <input class="fs-input" id="navn" type="text" name="navn" value="{{.Navn}}" required />
-  {{if .Feil}}<p class="fs-error-text">{{.Feil}}</p>{{end}}
-</fs-field>
+<lt-field>
+  <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
+  <input class="lt-input" id="navn" type="text" name="navn" value="{{.Navn}}" required />
+  {{if .Feil}}<p class="lt-error-text">{{.Feil}}</p>{{end}}
+</lt-field>
 \`\`\`
 
 Feilmeldingen rendres bare når feltet er ugyldig, og det er nok: komponenten
@@ -533,10 +533,10 @@ teller:
 
 \`\`\`html
 {{range .Kommuner}}
-<fs-field>
+<lt-field>
   <label for="merknad-{{.Kode}}">{{.Navn}}</label>
-  <input class="fs-input" id="merknad-{{.Kode}}" name="merknad-{{.Kode}}" value="{{.Merknad}}" />
-</fs-field>
+  <input class="lt-input" id="merknad-{{.Kode}}" name="merknad-{{.Kode}}" value="{{.Merknad}}" />
+</lt-field>
 {{end}}
 \`\`\`
 
@@ -544,17 +544,17 @@ Registreringen, én gang i sidemalen:
 
 \`\`\`html
 <script type="module">
-  import { defineFsField } from
+  import { defineLtField } from
     "${cdnTil("field")}"
 
-  defineFsField()
+  defineLtField()
 </script>
 \`\`\``,
     ekstra: `## 6. Når serveren sender ny HTML
 
 Patcher du siden underveis, med htmx, Turbo, Datastar eller en egen
 \`innerHTML\`-oppdatering, er spørsmålet hvem som bestemmer tilstanden. Som
-standard gjør web-komponenten det: \`<fs-tabs>\` husker fanen brukeren valgte, og setter den
+standard gjør web-komponenten det: \`<lt-tabs>\` husker fanen brukeren valgte, og setter den
 tilbake når en patch river markeringen bort. Malen trenger ingenting for det.
 
 Det forutsetter at patchen beholder elementene og bare endrer attributtene,
@@ -568,12 +568,12 @@ panelene, eller bestemmer tilstanden alene med \`server-controlled\`.
 
 En morfing beholder et element bare når id-en stemmer: Datastar og idiomorph
 morfer ikke et element med id inn i et uten, de bytter det ut. Komponentene
-skriver derfor aldri id på det brukeren rører: feltet i \`<fs-field>\` og
-\`<fs-suggestion>\`, og fanene i \`<fs-tabs>\`. Skriv \`for\` på ledeteksten og
+skriver derfor aldri id på det brukeren rører: feltet i \`<lt-field>\` og
+\`<lt-suggestion>\`, og fanene i \`<lt-tabs>\`. Skriv \`for\` på ledeteksten og
 \`id\` på feltet, eller legg ledeteksten rundt feltet. Fanene er lenker uten
 id, og panelene har den id-en lenken peker på, den samme ved hver rendring.
-Panelet i \`<fs-popover>\` trenger id på samme måte, for \`aria-controls\` på
-knappen; komponenten lager ingen. Lista og alternativene i \`<fs-suggestion>\` kan byttes ut;
+Panelet i \`<lt-popover>\` trenger id på samme måte, for \`aria-controls\` på
+knappen; komponenten lager ingen. Lista og alternativene i \`<lt-suggestion>\` kan byttes ut;
 komponenten kobler dem på nytt og finner det markerte alternativet igjen på
 teksten. Komponenten sier fra i konsollen første gang en patch bytter ut noe
 brukeren hadde rørt.
@@ -583,29 +583,29 @@ med \`server-controlled\`. Da bestemmer hver patch, og komponenten slutter å
 sette brukerens valg tilbake:
 
 \`\`\`html
-<fs-tabs server-controlled>
-  <ul class="fs-tabs__list" aria-label="Deler av saken">
+<lt-tabs server-controlled>
+  <ul class="lt-tabs__list" aria-label="Deler av saken">
     <li><a href="#soknaden">Søknaden</a></li>
     <li><a href="#vedlegg">Vedlegg</a></li>
   </ul>
-  <section class="fs-tabs__panel" id="soknaden">…</section>
-  <section class="fs-tabs__panel" id="vedlegg" hidden="until-found">…</section>
-</fs-tabs>
+  <section class="lt-tabs__panel" id="soknaden">…</section>
+  <section class="lt-tabs__panel" id="vedlegg" hidden="until-found">…</section>
+</lt-tabs>
 \`\`\`
 
-Attributtet finnes på \`<fs-tabs>\`, \`<fs-popover>\`, \`<fs-dialog>\` og
-\`<fs-suggestion>\`. Uten det ville serveren og komponenten kjempet om samme
+Attributtet finnes på \`<lt-tabs>\`, \`<lt-popover>\`, \`<lt-dialog>\` og
+\`<lt-suggestion>\`. Uten det ville serveren og komponenten kjempet om samme
 tilstand. Merk at tilstanden alltid står i markupen serveren sendte, altså
 \`aria-selected\` på fanen, \`hidden\` på panelet, ikke i et eget attributt.
 
 ## 7. Sjekken er det eneste som leser markupen din
 
 \`\`\`bash
-npx @fristil/designsystem sjekk maler/*.html
+npx @lo-tek/interfaces sjekk templates/*.html
 \`\`\`
 
 Ett funn gir feilkode, så den hører i CI ved siden av testene. Den fanger
-\`fs-buton\`, \`data-variant="secundary"\`, \`<fs-modal>\` og \`<fs-field>\`
+\`lt-buton\`, \`data-variant="secundary"\`, \`<lt-modal>\` og \`<lt-field>\`
 uten kontroll eller ledetekst.
 
 Den er laget for maler. Kommentarer, \`<script>\` og \`<style>\` hoppes over, og
@@ -613,29 +613,29 @@ Den er laget for maler. Kommentarer, \`<script>\` og \`<style>\` hoppes over, og
 etterprøvde og gir ingen falske funn:
 
 \`\`\`html
-<button class="fs-button {{.Ekstra}}">Send</button>
-<button class="fs-button" data-variant="{{.Variant}}">Send</button>
-<span class="fs-badge" data-color="{% if x %}danger{% endif %}">1</span>
-<button class="fs-button" data-variant="<?= $variant ?>">Send</button>
-<button class="fs-button" data-variant="@variant">Send</button>
-<button class="fs-button" data-variant="<%= variant %>">Send</button>
+<button class="lt-button {{.Ekstra}}">Send</button>
+<button class="lt-button" data-variant="{{.Variant}}">Send</button>
+<span class="lt-badge" data-color="{% if x %}danger{% endif %}">1</span>
+<button class="lt-button" data-variant="<?= $variant ?>">Send</button>
+<button class="lt-button" data-variant="@variant">Send</button>
+<button class="lt-button" data-variant="<%= variant %>">Send</button>
 \`\`\`
 
 ${SJEKK_I_TESTER}
 
-Sjekken finnes også i editoren mens du skriver. VS Code-utvidelsen «Fristil»
+Sjekken finnes også i editoren mens du skriver. VS Code-utvidelsen «LO-TEK»
 gir fullføring, forklaring, feilmeldinger og hurtigrettelser i seksten
 malspråk. WebStorm og IntelliJ IDEA Ultimate leser \`web-types.json\` fra
-pakken uten noen utvidelse, og pluginen «Fristil» fra JetBrains Marketplace
+pakken uten noen utvidelse, og pluginen «LO-TEK» fra JetBrains Marketplace
 legger til feilmeldingene og fullføring i HTML i en streng merket med
 \`@Language("HTML")\` eller \`// language=HTML\`.
 
-På JVM-en uten Node finnes Fristil for Kotlin
-(https://fristil.sobernetics.no/kotlin/). \`fristil.jar\` er kommandolinja
-som \`java -jar fristil.jar sjekk\`, og ligger ved hver utgivelse på
-GitHub: https://github.com/MarkusAugust/fristil/releases/latest. Maven-pakken
-\`io.github.markusaugust:fristil\` med \`assertFristil(html)\` og Gradle-pluginen
-\`io.github.markusaugust.fristil\` ligger på Maven Central, med samme versjon
+På JVM-en uten Node finnes LO-TEK for Kotlin
+(https://lo-tek.sobernetics.no/kotlin/). \`lotek.jar\` er kommandolinja
+som \`java -jar lotek.jar sjekk\`, og ligger ved hver utgivelse på
+GitHub: https://github.com/MarkusAugust/lo-tek/releases/latest. Maven-pakken
+\`io.github.markusaugust:lo-tek-interfaces\` med \`assertLotek(html)\` og Gradle-pluginen
+\`io.github.markusaugust.lo-tek\` ligger på Maven Central, med samme versjon
 som npm-pakken. Ikke hver npm-versjon finnes på Maven: bruk den nyeste som
 finnes der, og skriv aldri en \`version\` du ikke har sett på Central.`,
     fallgruver: [
@@ -650,27 +650,27 @@ finnes der, og skriv aldri en \`version\` du ikke har sett på Central.`,
   {
     navn: "bundles",
     stilarkAdresse: STILARK_PAKKE,
-    tittel: "Fristil med bundles",
-    innledning: `Regelboka for Fristil i et prosjekt med et byggesteg, der
+    tittel: "LO-TEK med bundles",
+    innledning: `Regelboka for LO-TEK i et prosjekt med et byggesteg, der
 markupen er vanlig HTML: Vue, Svelte, Solid, Lit, og vanlig TypeScript med Vite,
 Rollup, esbuild eller webpack.
 
 Det disse har til felles er de tre tingene som betyr noe her: stilarkene
 importeres i inngangsmodulen, attributtene heter det de heter i HTML, og
-\`defineFs*()\` kjøres øverst i \`main.ts\`. Skriver du React, er attributtnavnene
+\`defineLt*()\` kjøres øverst i \`main.ts\`. Skriver du React, er attributtnavnene
 annerledes og \`react.md\` gjelder i stedet. Skriver du Astro, importeres
 stilarkene i frontmatteret og \`astro.md\` gjelder.`,
     stilarkRegel: `**Importer stilarkene i inngangsmodulen**, \`tokens.css\`
    først. Mangler de, ser komponentene ustilte ut. Svaret er da å legge inn
    importen, aldri å skrive egen CSS for å få dem til å se riktige ut.`,
-    punktFire: `**\`defineFs*()\` kjøres øverst i \`main.ts\`,** ikke i en
+    punktFire: `**\`defineLt*()\` kjøres øverst i \`main.ts\`,** ikke i en
    livsløpskrok, og et boolsk attributt er sant så lenge det står der. Sjekk at
    det som havner i DOM-en ikke er \`hidden="false"\`: attributtet må fjernes,
    ikke settes til \`false\`.`,
-    registreringRegel: `**\`defineFs*()\` kjøres én gang** øverst i
+    registreringRegel: `**\`defineLt*()\` kjøres én gang** øverst i
    inngangsmodulen, før appen monteres.`,
     adresse: PAKKENAVN,
-    sjekk: "npx @fristil/designsystem sjekk src/komponenter/*.vue",
+    sjekk: "npx @lo-tek/interfaces sjekk src/komponenter/*.vue",
     stilark: `## 1. Stilarkene
 
 ${TOKENS_FØRST} Deretter ett per komponent du bruker, så en side med bare knapper
@@ -678,27 +678,27 @@ ikke laster CSS for en dialog:
 
 \`\`\`ts
 // main.ts, øverst
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/button.css"
-import "@fristil/designsystem/field.css"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/button.css"
+import "@lo-tek/interfaces/field.css"
 \`\`\`
 
 Navnet på hvert stilark står i tabellene under. Pakken har ingen avhengigheter,
 og ingenting registreres ved import alene, så en side som bare bruker
 CSS-komponentene tar ikke med JavaScript fra pakken.
 
-Trenger du alt i én fil, finnes \`@fristil/designsystem/fristil.css\`, men med
+Trenger du alt i én fil, finnes \`@lo-tek/interfaces/lotek.css\`, men med
 bundles er det sjelden riktig: da laster du CSS for komponenter siden ikke
 bruker.`,
     markup: `## 5. Registrering og markup
 
 \`\`\`ts
 // main.ts, øverst, ikke i en livsløpskrok
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/field.css"
-import { defineFsField } from "@fristil/designsystem/field"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/field.css"
+import { defineLtField } from "@lo-tek/interfaces/field"
 
-defineFsField()
+defineLtField()
 \`\`\`
 
 Kallet står i modulen, ikke i \`mounted\`, \`onMount\` eller en effekt. En krok
@@ -709,27 +709,27 @@ kjører etter første tegning, og elementene i markupen er da vanlige
 Markupen er vanlig HTML, i malen rammeverket ditt bruker:
 
 \`\`\`html
-<fs-field>
-  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
-  <input class="fs-input" id="navn" type="text" name="navn" required />
-  <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
-</fs-field>
+<lt-field>
+  <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
+  <input class="lt-input" id="navn" type="text" name="navn" required />
+  <p class="lt-error-text" hidden>Fyll inn navnet ditt.</p>
+</lt-field>
 
-<button class="fs-button" type="submit">Send</button>
+<button class="lt-button" type="submit">Send</button>
 \`\`\`
 
 \`class\` og \`for\`, ikke \`className\` og \`htmlFor\`. Det er React som skriver
 om attributtnavnene, og det gjelder ikke her.`,
     ekstra: `## 6. Typede byggefunksjoner
 
-Har prosjektet TypeScript, kan klassene komme fra \`fs\` i stedet for å skrives
+Har prosjektet TypeScript, kan klassene komme fra \`lt\` i stedet for å skrives
 som strenger. Da blir en variant som ikke finnes en kompileringsfeil:
 
 \`\`\`ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-fs.button({ variant: "secondary" })
-// { class: "fs-button", "data-variant": "secondary" }
+lt.button({ variant: "secondary" })
+// { class: "lt-button", "data-variant": "secondary" }
 \`\`\`
 
 Byggefunksjonene gir et objekt med HTML-attributtnavn, som spres inn der malspråket
@@ -738,37 +738,37 @@ byggefunksjonene:
 
 ${byggefunksjoner()}
 
-Der malspråket ikke kan spre et objekt, setter \`fs.setAttributes()\`
+Der malspråket ikke kan spre et objekt, setter \`lt.setAttributes()\`
 attributtene på et element i vanlig DOM:
 
 \`\`\`ts
 const felt = document.querySelector<HTMLInputElement>("#epost")
-const kobling = fs.field({ id: "epost", error: true, invalid: true })
+const kobling = lt.field({ id: "epost", error: true, invalid: true })
 
-fs.setAttributes(felt, fs.input({ type: "email" }), kobling.control)
+lt.setAttributes(felt, lt.input({ type: "email" }), kobling.control)
 \`\`\`
 
 Kall den på nytt for å endre tilstand. Tre regler:
 
 - **Har byggefunksjonen et valg for et attributt, tar et kall uten valget
   attributtet bort.** Send derfor valgene på nytt hver gang.
-  \`fs.spinner()\` uten \`label\` fjerner \`role\` og \`aria-label\`.
-- **Det byggefunksjonen ikke har et valg for, står.** \`fs.button()\` rører
+  \`lt.spinner()\` uten \`label\` fjerner \`role\` og \`aria-label\`.
+- **Det byggefunksjonen ikke har et valg for, står.** \`lt.button()\` rører
   ikke \`disabled\` eller \`type\`. \`id\` og \`for\` fjernes aldri.
 - **To sett på samme element sendes hver for seg**, som over. Spres de sammen
-  til ett objekt, \`{ ...fs.input(), ...kobling.control }\`, settes
+  til ett objekt, \`{ ...lt.input(), ...kobling.control }\`, settes
   attributtene, men bare \`data-*\` ryddes ved neste kall.
 
 ## 7. Sjekk markupen
 
 \`\`\`bash
-npx @fristil/designsystem sjekk src/komponenter/*.vue
+npx @lo-tek/interfaces sjekk src/komponenter/*.vue
 \`\`\`
 
 Sjekken leser filer som tekst, så den virker på \`.vue\`, \`.svelte\`, \`.html\`
 og hva malen din nå ligger i. Ett funn gir feilkode, så den hører i CI. Den
-fanger \`fs-buton\`, \`data-variant="secundary"\`, \`<fs-modal>\` og
-\`<fs-field>\` uten kontroll eller ledetekst, altså alt det typene ikke ser, fordi
+fanger \`lt-buton\`, \`data-variant="secundary"\`, \`<lt-modal>\` og
+\`<lt-field>\` uten kontroll eller ledetekst, altså alt det typene ikke ser, fordi
 markupen din er en streng for kompilatoren.
 
 ${SJEKK_I_TESTER}`,
@@ -783,8 +783,8 @@ ${SJEKK_I_TESTER}`,
   {
     navn: "react",
     stilarkAdresse: STILARK_PAKKE,
-    tittel: "Fristil i React",
-    innledning: `Regelboka for Fristil i en React-app.
+    tittel: "LO-TEK i React",
+    innledning: `Regelboka for LO-TEK i en React-app.
 
 React skiller seg fra alle de andre miljøene på én ting, og den er viktig nok
 til å ha sin egen fil: React skriver om attributtnavnene. \`class\` heter
@@ -794,32 +794,32 @@ element. Derfor har pakken en egen React-inngang.`,
     stilarkRegel: `**Importer stilarkene i \`main.tsx\`**, \`tokens.css\`
    først. Mangler de, ser komponentene ustilte ut. Svaret er da å legge inn
    importen, aldri å skrive egen CSS for å få dem til å se riktige ut.`,
-    punktFire: `**\`defineFs*()\` kjøres øverst i \`main.tsx\`,** ikke i en
+    punktFire: `**\`defineLt*()\` kjøres øverst i \`main.tsx\`,** ikke i en
    \`useEffect\`, og et boolsk attributt på en web component settes som
    \`open={åpen || undefined}\`. De to andre skrivemåtene er feil i én av
    React-versjonene hver.`,
-    registreringRegel: `**\`defineFs*()\` kjøres én gang** øverst i modulen, før
+    registreringRegel: `**\`defineLt*()\` kjøres én gang** øverst i modulen, før
    \`createRoot\`, ikke i en \`useEffect\`.`,
     adresse: PAKKENAVN,
-    sjekk: "npx @fristil/designsystem sjekk src/*.tsx",
-    punktFem: `**Typene er sjekken din.** \`fs.button({ variant })\` fra
-   \`@fristil/designsystem/react\` gjør en variant som ikke finnes til en
-   kompileringsfeil, og \`@fristil/designsystem/react-jsx\`, importert én
+    sjekk: "npx @lo-tek/interfaces sjekk src/*.tsx",
+    punktFem: `**Typene er sjekken din.** \`lt.button({ variant })\` fra
+   \`@lo-tek/interfaces/react\` gjør en variant som ikke finnes til en
+   kompileringsfeil, og \`@lo-tek/interfaces/react-jsx\`, importert én
    gang i en \`.d.ts\`-fil, gjør det samme for attributtene på
    web-komponentene. Kjør \`tsc\`. En håndskrevet \`className\` eller
    \`data-variant\` ser ingen av dem, og heller ikke
-   \`npx @fristil/designsystem sjekk\`, som leser \`class\`, ikke
+   \`npx @lo-tek/interfaces sjekk\`, som leser \`class\`, ikke
    \`className\`, så bruk byggefunksjonene. HTML og maler sjekkes med
-   \`npx @fristil/designsystem sjekk <fil>\`.`,
+   \`npx @lo-tek/interfaces sjekk <fil>\`.`,
     stilark: `## 1. Stilarkene
 
 ${TOKENS_FØRST} Deretter ett per komponent du bruker:
 
 \`\`\`tsx
 // main.tsx, øverst
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/field.css"
-import "@fristil/designsystem/button.css"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/field.css"
+import "@lo-tek/interfaces/button.css"
 \`\`\`
 
 Navnet på hvert stilark står i tabellene under.`,
@@ -827,12 +827,12 @@ Navnet på hvert stilark står i tabellene under.`,
 
 \`\`\`tsx
 // main.tsx, kjøres én gang når appen starter
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/field.css"
-import "@fristil/designsystem/button.css"
-import { defineFs } from "@fristil/designsystem/register"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/field.css"
+import "@lo-tek/interfaces/button.css"
+import { defineLt } from "@lo-tek/interfaces/register"
 
-defineFs()
+defineLt()
 \`\`\`
 
 Kallet står øverst i modulen, ikke i en \`useEffect\`. En effekt kjører etter
@@ -840,22 +840,22 @@ første tegning, så elementene er vanlige \`HTMLElement\` i det React tegner de
 og et kall på \`show()\` eller \`reportFailure()\` før effekten feiler med «is not
 a function». Funksjonen gjør ingenting på en server, så den kan stå i en
 rotmodul som kjøres begge steder. Brukes bare én komponent, har den sin egen
-funksjon, som \`defineFsTabs()\` i \`@fristil/designsystem/tabs\`.
+funksjon, som \`defineLtTabs()\` i \`@lo-tek/interfaces/tabs\`.
 
 \`\`\`ts
-// src/fristil.d.ts, gir web-komponentene typer i JSX
-import "@fristil/designsystem/react-jsx"
+// src/lotek.d.ts, gir web-komponentene typer i JSX
+import "@lo-tek/interfaces/react-jsx"
 \`\`\`
 
-Et felt skrives med \`fs.field()\`. Koblingen står da i markupen React selv
-rendrer, på serveren som i nettleseren. \`<fs-field>\` skriver koblingen på
+Et felt skrives med \`lt.field()\`. Koblingen står da i markupen React selv
+rendrer, på serveren som i nettleseren. \`<lt-field>\` skriver koblingen på
 elementene før React hydrerer, og med server-rendring melder React avvik på
 ledeteksten, feltet og feilmeldingen. Uten server virker den, men
-\`fs.field()\` er veien i begge.
+\`lt.field()\` er veien i begge.
 
 \`\`\`tsx
 // Kontaktskjema.tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 import { useId, useState } from "react"
 
 export function Kontaktskjema() {
@@ -863,7 +863,7 @@ export function Kontaktskjema() {
   const [berørt, setBerørt] = useState(false)
 
   const ugyldig = berørt && navn.trim() === ""
-  const felt = fs.field({
+  const felt = lt.field({
     id: useId(),
     required: "symbol",
     error: true,
@@ -874,7 +874,7 @@ export function Kontaktskjema() {
     <form onSubmit={(e) => e.preventDefault()}>
       <label {...felt.label}>Fullt navn</label>
       <input
-        {...fs.input({ type: "text" })}
+        {...lt.input({ type: "text" })}
         {...felt.control}
         name="navn"
         required
@@ -882,9 +882,9 @@ export function Kontaktskjema() {
         onChange={(e) => setNavn(e.target.value)}
         onBlur={() => setBerørt(true)}
       />
-      <p {...fs.errorText()} {...felt.error}>Fyll inn navnet ditt.</p>
+      <p {...lt.errorText()} {...felt.error}>Fyll inn navnet ditt.</p>
 
-      <button {...fs.button()} type="submit">Send</button>
+      <button {...lt.button()} type="submit">Send</button>
     </form>
   )
 }
@@ -892,7 +892,7 @@ export function Kontaktskjema() {
 
 Id-en kommer fra \`useId()\`, så serveren og nettleseren lager den samme.
 
-\`fs\` importeres fra \`@fristil/designsystem/react\`, aldri fra hovedinngangen:
+\`lt\` importeres fra \`@lo-tek/interfaces/react\`, aldri fra hovedinngangen:
 React-inngangen gir \`className\` og \`htmlFor\`, hovedinngangen gir \`class\`
 og \`for\`. De ${antallByggefunksjoner()} byggefunksjonene finnes i begge:
 
@@ -900,7 +900,7 @@ ${byggefunksjoner()}`,
     ekstra: `## 6. Bare \`open={åpen || undefined}\` virker
 
 Det gjelder hvert boolske attributt på en web component, som \`open\` på
-\`<fs-dialog>\` og \`<fs-popover>\`. React behandler web components ulikt
+\`<lt-dialog>\` og \`<lt-popover>\`. React behandler web components ulikt
 mellom versjoner, og bare dette mønsteret er riktig i begge:
 
 | Skrivemåte | React 18 (setter attributt) | React 19 (setter egenskap) |
@@ -913,22 +913,22 @@ React 18 stringifiserer \`false\` til attributtet \`open="false"\`.
 Attributtet finnes da, og er dermed sant. React 19 setter egenskapen til
 \`""\`, og komponenten leser den tomme strengen som usann.
 
-Importerer du \`@fristil/designsystem/react-jsx\`, blir de to første
+Importerer du \`@lo-tek/interfaces/react-jsx\`, blir de to første
 variantene kompileringsfeil.
 
-Byggefunksjonene sender \`true\` eller ingenting, så \`{...fs.dialog({ titleId,
+Byggefunksjonene sender \`true\` eller ingenting, så \`{...lt.dialog({ titleId,
 open: åpen }).host}\` er alt riktig.
 
 ## 7. Typene
 
-Uten \`@fristil/designsystem/react-jsx\` kjenner ikke TypeScript \`<fs-field>\` i
-det hele tatt, og du får \`Property 'fs-field' does not exist on type
+Uten \`@lo-tek/interfaces/react-jsx\` kjenner ikke TypeScript \`<lt-field>\` i
+det hele tatt, og du får \`Property 'lt-field' does not exist on type
 'JSX.IntrinsicElements'\`. Med den får du autofullføring og feil på attributtene:
 
 \`\`\`tsx
-<fs-field describedBy="vilkar" />       // feil: attributtet heter described-by
-<fs-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
-<fs-connection-status offline="Nede" />  // feil: ukjent attributt
+<lt-field describedBy="vilkar" />       // feil: attributtet heter described-by
+<lt-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
+<lt-connection-status offline="Nede" />  // feil: ukjent attributt
 \`\`\`
 
 Typene virker ved at pakken utvider Reacts \`JSX.IntrinsicElements\`. Har
@@ -943,44 +943,44 @@ forblir ukjente. Kjør \`npm ls @types/react\` hvis noe ser rart ut.`,
       SERVERRENDERING,
       [
         "«Invalid DOM property `class`»",
-        "`fs` er importert fra hovedinngangen. Bruk `@fristil/designsystem/react`",
+        "`lt` er importert fra hovedinngangen. Bruk `@lo-tek/interfaces/react`",
       ],
       [
-        "`Property 'fs-field' does not exist`",
-        "`@fristil/designsystem/react-jsx` er ikke importert i en `.d.ts`-fil",
+        "`Property 'lt-field' does not exist`",
+        "`@lo-tek/interfaces/react-jsx` er ikke importert i en `.d.ts`-fil",
       ],
     ],
   },
   {
     navn: "astro",
     stilarkAdresse: STILARK_PAKKE,
-    tittel: "Fristil i Astro",
-    innledning: `Regelboka for Fristil i et Astro-prosjekt.
+    tittel: "LO-TEK i Astro",
+    innledning: `Regelboka for LO-TEK i et Astro-prosjekt.
 
 En \`.astro\`-fil er HTML med frontmatter over. Stilarkene importeres der, og
 byggefunksjonene brukes rett i malen, siden Astro støtter spredning som JSX. Det
-særegne er at alt dette kjøres ved bygging: ut kommer ren HTML, og \`fs\` er
+særegne er at alt dette kjøres ved bygging: ut kommer ren HTML, og \`lt\` er
 borte når siden er bygd. Null JavaScript sendt til nettleseren.`,
     stilarkRegel: `**Importer stilarkene i frontmatteret**, \`tokens.css\`
    først. Mangler de, ser komponentene ustilte ut. Svaret er da å legge inn
    importen, aldri å skrive egen CSS for å få dem til å se riktige ut.`,
-    punktFire: `**\`defineFs*()\` hører i en \`<script>\` i malen, aldri i
+    punktFire: `**\`defineLt*()\` hører i en \`<script>\` i malen, aldri i
    frontmatteret:** frontmatteret kjøres på serveren, der
    \`customElements\` ikke finnes. Og et boolsk attributt er sant så lenge det
    står der.`,
-    registreringRegel: `**\`defineFs*()\` kjøres én gang** i en \`<script>\` i
+    registreringRegel: `**\`defineLt*()\` kjøres én gang** i en \`<script>\` i
    malen. Astro pakker \`<script>\`-tagger og kjører dem på klienten.`,
     adresse: PAKKENAVN,
-    sjekk: "npx @fristil/designsystem sjekk src/pages/*.astro",
+    sjekk: "npx @lo-tek/interfaces sjekk src/pages/*.astro",
     stilark: `## 1. Stilarkene
 
 ${TOKENS_FØRST} Importene står i frontmatteret:
 
 \`\`\`astro
 ---
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/button.css"
-import "@fristil/designsystem/badge.css"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/button.css"
+import "@lo-tek/interfaces/badge.css"
 ---
 \`\`\`
 
@@ -990,48 +990,48 @@ Navnet på hvert stilark står i tabellene under. Har du et layoutkomponent, hø
 
 \`\`\`astro
 ---
-import { fs } from "@fristil/designsystem"
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/button.css"
-import "@fristil/designsystem/badge.css"
+import { lt } from "@lo-tek/interfaces"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/button.css"
+import "@lo-tek/interfaces/badge.css"
 ---
 
-<button {...fs.button({ variant: "secondary" })}>Lagre utkast</button>
-<span {...fs.badge({ color: "success" })}>Innvilget</span>
+<button {...lt.button({ variant: "secondary" })}>Lagre utkast</button>
+<span {...lt.badge({ color: "success" })}>Innvilget</span>
 \`\`\`
 
 Kjøres ved bygging. Ut kommer ren HTML:
 
 \`\`\`html
-<button class="fs-button" data-variant="secondary">Lagre utkast</button>
-<span class="fs-badge" data-color="success">Innvilget</span>
+<button class="lt-button" data-variant="secondary">Lagre utkast</button>
+<span class="lt-badge" data-color="success">Innvilget</span>
 \`\`\`
 
-\`fs\` importeres fra hovedinngangen, som gir \`class\` og \`for\`. De
+\`lt\` importeres fra hovedinngangen, som gir \`class\` og \`for\`. De
 ${antallByggefunksjoner()} byggefunksjonene:
 
 ${byggefunksjoner()}`,
     ekstra: `## 6. Felt uten JavaScript
 
-\`fs.field()\` regner ut koblingen mellom ledetekst, kontroll, hjelpetekst og
+\`lt.field()\` regner ut koblingen mellom ledetekst, kontroll, hjelpetekst og
 feilmelding i frontmatteret, så også den blir statisk HTML:
 
 \`\`\`astro
 ---
-import { fs } from "@fristil/designsystem"
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/field.css"
+import { lt } from "@lo-tek/interfaces"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/field.css"
 
-const epost = fs.field({ id: "epost", required: "symbol", help: true, error: true })
+const epost = lt.field({ id: "epost", required: "symbol", help: true, error: true })
 ---
 
 <label {...epost.label}>E-postadresse</label>
-<input {...fs.input({ type: "email" })} {...epost.control} name="epost" required />
-<p {...fs.helpText()} {...epost.help}>Vi sender kvittering hit.</p>
-<p {...fs.errorText()} {...epost.error}>Skriv en gyldig adresse.</p>
+<input {...lt.input({ type: "email" })} {...epost.control} name="epost" required />
+<p {...lt.helpText()} {...epost.help}>Vi sender kvittering hit.</p>
+<p {...lt.errorText()} {...epost.error}>Skriv en gyldig adresse.</p>
 \`\`\`
 
-Ingen \`<fs-field>\`, ingen kjøretid.
+Ingen \`<lt-field>\`, ingen kjøretid.
 
 ## 7. Web components i Astro
 
@@ -1040,19 +1040,19 @@ registreres. Den kobler feilmeldingen til feltet når den vises:
 
 \`\`\`astro
 ---
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/field.css"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/field.css"
 ---
 
-<fs-field>
-  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
-  <input class="fs-input" id="navn" type="text" name="navn" required />
-  <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
-</fs-field>
+<lt-field>
+  <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
+  <input class="lt-input" id="navn" type="text" name="navn" required />
+  <p class="lt-error-text" hidden>Fyll inn navnet ditt.</p>
+</lt-field>
 
 <script>
-  import { defineFsField } from "@fristil/designsystem/field"
-  defineFsField()
+  import { defineLtField } from "@lo-tek/interfaces/field"
+  defineLtField()
 </script>
 \`\`\`
 
@@ -1074,35 +1074,35 @@ vanlige web components, og trenger verken en Astro-integrasjon eller et
   {
     navn: "datastar",
     stilarkAdresse: STILARK_URL,
-    tittel: "Fristil med Datastar",
-    innledning: `Regelboka for Fristil sammen med
+    tittel: "LO-TEK med Datastar",
+    innledning: `Regelboka for LO-TEK sammen med
 [Datastar](https://data-star.dev), som legger reaktivitet på vanlig HTML med
-\`data-*\`-attributter. Ett skript, ingen byggesteg, altså samme premiss som Fristil.
+\`data-*\`-attributter. Ett skript, ingen byggesteg, altså samme premiss som LO-TEK.
 
 Det betyr to ting for denne fila: adressene er URL-er, siden en nettleser uten
 bundles ikke slår opp et pakkenavn, og tilstanden styres med attributter, som er
 nøyaktig det \`ramme\`-komponentene forventer.`,
-    stilarkRegel: `**Én \`<link>\` til \`fristil.css\`, før alt annet.** Mangler
+    stilarkRegel: `**Én \`<link>\` til \`lotek.css\`, før alt annet.** Mangler
    den, ser komponentene ustilte ut. Svaret er da å legge inn lenka, aldri å
    skrive egen CSS for å få dem til å se riktige ut.`,
-    punktFire: `**\`defineFs*()\` kjøres én gang i en \`<script type="module">\`
+    punktFire: `**\`defineLt*()\` kjøres én gang i en \`<script type="module">\`
    med hele URL-en,** og tilstanden settes med \`data-attr:\`, som legger på og
    fjerner attributtet. \`hidden="false"\` ville skjult feilmeldingen likevel.`,
-    registreringRegel: `**\`defineFs*()\` kjøres én gang** i en
+    registreringRegel: `**\`defineLt*()\` kjøres én gang** i en
    \`<script type="module">\` i sidemalen.`,
     adresse: URL_TIL,
-    sjekk: "npx @fristil/designsystem sjekk side.html",
+    sjekk: "npx @lo-tek/interfaces sjekk side.html",
     stilark: `## 1. Stilarket og Datastar
 
 \`\`\`html
-<link rel="stylesheet" href="${cdnTil("fristil.css")}">
+<link rel="stylesheet" href="${cdnTil("lotek.css")}">
 <script
   type="module"
   src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
 ></script>
 \`\`\`
 
-\`fristil.css\` er ${SAMLET_STØRRELSE}, og har alle
+\`lotek.css\` er ${SAMLET_STØRRELSE}, og har alle
 komponentene. Vil du bare ha det du bruker, gjelder at ${TOKENS_FØRST}`,
     markup: `## 5. Et skjema med Datastar
 
@@ -1111,27 +1111,27 @@ komponentene. Vil du bare ha det du bruker, gjelder at ${TOKENS_FØRST}`,
   data-signals="{navn: '', beroert: false}"
   data-computed:ugyldig="$beroert && $navn.trim() === ''"
 >
-  <fs-field>
-    <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
+  <lt-field>
+    <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
     <input
-      class="fs-input"
+      class="lt-input"
       id="navn"
       type="text"
       name="navn"
       data-bind:navn
       data-on:blur="$beroert = true"
     />
-    <p class="fs-error-text" hidden data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
-  </fs-field>
+    <p class="lt-error-text" hidden data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
+  </lt-field>
 
-  <button class="fs-button" type="submit">Send</button>
+  <button class="lt-button" type="submit">Send</button>
 </form>
 
 <script type="module">
-  import { defineFsField } from
+  import { defineLtField } from
     "${cdnTil("field")}"
 
-  defineFsField()
+  defineLtField()
 </script>
 \`\`\`
 
@@ -1141,32 +1141,32 @@ valideringen av den, \`data-bind:navn\` binder feltet begge veier, og
 
 \`data-attr:hidden\` på feilmeldingen er koblingen til komponenten: den setter
 \`hidden\` når feltet er gyldig og fjerner det når det er ugyldig, og
-\`<fs-field>\` regner feltet som ugyldig når feilmeldingen synes. Ingen av React-fellene finnes her. Datastar jobber direkte på
+\`<lt-field>\` regner feltet som ugyldig når feilmeldingen synes. Ingen av React-fellene finnes her. Datastar jobber direkte på
 attributtene.`,
     ekstra: `## 6. HTML fra serveren
 
 Datastar kan la serveren sende HTML underveis, over Server-Sent Events. En web
 component oppgraderer seg selv når den settes inn i dokumentet, så
-lenge \`defineFsField()\` har kjørt én gang. Serveren kan derfor sende dette som
+lenge \`defineLtField()\` har kjørt én gang. Serveren kan derfor sende dette som
 ren HTML:
 
 \`\`\`html
-<fs-field>
-  <label class="fs-label" for="epost" data-required="text">E-postadresse</label>
-  <input class="fs-input" id="epost" type="email" value="ola@" />
-  <p class="fs-help-text">Vi sender kvittering hit.</p>
-  <p class="fs-error-text">Skriv en gyldig adresse.</p>
-</fs-field>
+<lt-field>
+  <label class="lt-label" for="epost" data-required="text">E-postadresse</label>
+  <input class="lt-input" id="epost" type="email" value="ola@" />
+  <p class="lt-help-text">Vi sender kvittering hit.</p>
+  <p class="lt-error-text">Skriv en gyldig adresse.</p>
+</lt-field>
 \`\`\`
 
-Komponenten setter da \`fs-label\`, gir hjelpeteksten og feilmeldingen id,
+Komponenten setter da \`lt-label\`, gir hjelpeteksten og feilmeldingen id,
 legger på \`aria-invalid\` fordi feilmeldingen synes, og bygger
 \`aria-describedby\`, uten at det sendes JavaScript
 med for akkurat dette feltet. Det er poenget med at \`ramme\`-komponentene bor i
 vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
 
 Patcher serveren en komponent som holder tilstand, er spørsmålet hvem som
-bestemmer den. Som standard gjør web-komponenten det: \`<fs-tabs>\` husker fanen brukeren
+bestemmer den. Som standard gjør web-komponenten det: \`<lt-tabs>\` husker fanen brukeren
 valgte, og setter den tilbake når en patch med \`outer\` river den bort: \`outer\`
 morfer, og valget er knyttet til selve lenken. \`inner\` og \`replace\` bytter
 ut nodene, og da velger komponenten fanen adressen peker på, ellers den
@@ -1174,30 +1174,30 @@ serveren skjulte de andre panelene for med \`hidden="until-found"\`, ellers
 den første. Og \`outer\` morfer bare når id-ene stemmer: et element med en id
 serveren ikke sendte byttes ut. Komponentene skriver derfor aldri id på det
 brukeren rører. Fanene er lenker uten id, og panelene har den id-en lenken
-peker på, den samme ved hver rendring, som \`fs.tabs()\` skriver den. Panelet i
-\`<fs-popover>\` trenger id på samme måte; komponenten lager ingen. Kontrollen i \`<fs-field>\` og
-feltet i \`<fs-suggestion>\` får aldri id fra komponenten: \`for\` og \`id\`
+peker på, den samme ved hver rendring, som \`lt.tabs()\` skriver den. Panelet i
+\`<lt-popover>\` trenger id på samme måte; komponenten lager ingen. Kontrollen i \`<lt-field>\` og
+feltet i \`<lt-suggestion>\` får aldri id fra komponenten: \`for\` og \`id\`
 skriver malen, som HTML krever for at feltet skal ha navn uten JavaScript, eller
 så står ledeteksten rundt feltet og ingen id trengs. Komponenten sier fra i
 konsollen første gang en patch bytter ut noe brukeren hadde rørt. Skal
 serveren kunne flytte fanen, sier du det med \`server-controlled\`:
 
 \`\`\`html
-<fs-tabs server-controlled data-on:tab-select="$fane = evt.detail.index">
-  <ul class="fs-tabs__list" aria-label="Deler av saken">
+<lt-tabs server-controlled data-on:tab-select="$fane = evt.detail.index">
+  <ul class="lt-tabs__list" aria-label="Deler av saken">
     <li><a href="#soknaden">Søknaden</a></li>
     <li><a href="#vedlegg">Vedlegg</a></li>
   </ul>
-  <section class="fs-tabs__panel" id="soknaden">…</section>
-  <section class="fs-tabs__panel" id="vedlegg" hidden="until-found">…</section>
-</fs-tabs>
+  <section class="lt-tabs__panel" id="soknaden">…</section>
+  <section class="lt-tabs__panel" id="vedlegg" hidden="until-found">…</section>
+</lt-tabs>
 \`\`\`
 
-Attributtet finnes på \`<fs-tabs>\`, \`<fs-popover>\`, \`<fs-dialog>\` og
-\`<fs-suggestion>\`. Uten det ville serveren og komponenten kjempet om samme
+Attributtet finnes på \`<lt-tabs>\`, \`<lt-popover>\`, \`<lt-dialog>\` og
+\`<lt-suggestion>\`. Uten det ville serveren og komponenten kjempet om samme
 tilstand.
 
-\`fs\` kan brukes på serveren eller i et byggesteg. Datastar trenger den ikke i
+\`lt\` kan brukes på serveren eller i et byggesteg. Datastar trenger den ikke i
 nettleseren.`,
     fallgruver: [
       STILER_MANGLER,
@@ -1225,7 +1225,7 @@ function sammensett(oppskrift: Oppskrift): string {
     `${[
       `# ${oppskrift.tittel}`,
       oppskrift.innledning,
-      `Dette er @fristil/designsystem ${VERSJON}. Fila er generert av pakken og følger versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.`,
+      `Dette er @lo-tek/interfaces ${VERSJON}. Fila er generert av pakken og følger versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.`,
       kortversjon(oppskrift),
       oppskrift.stilark,
       hvaSomFinnes(oppskrift),

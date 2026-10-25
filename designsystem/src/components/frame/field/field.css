@@ -5,13 +5,13 @@
 @import "../../css/help-text/help-text.css";
 @import "../../css/error-text/error-text.css";
 
-@layer fristil {
+@layer lotek {
   /* En web component er `display: inline` til noen sier noe annet, og
-     `<fs-field>` var det eneste som pakker inn andre elementer uten å si
+     `<lt-field>` var det eneste som pakker inn andre elementer uten å si
      det. Barna er blokker, så det så riktig ut helt til noen ga elementet en
-     avstand eller la det i et rutenett. `<fs-suggestion>` har alltid sagt
+     avstand eller la det i et rutenett. `<lt-suggestion>` har alltid sagt
      det samme om seg selv. */
-  fs-field {
+  lt-field {
     display: block;
   }
 }

@@ -1,5 +1,5 @@
 /**
- * Fargekontrakten, som `@fristil/designsystem/kontrakt`: hva hver rolle er, og
+ * Fargekontrakten, som `@lo-tek/interfaces/kontrakt`: hva hver rolle er, og
  * hva den lover.
  *
  * Ett fargelag, ikke to. En farge er et punkt i en matrise av **familie** (hva
@@ -7,10 +7,10 @@
  * rollene. Kuløren er konsumentens, lysheten er rollens, og da er kontrasten
  * garantert av konstruksjonen framfor av en sjekk i etterkant.
  *
- * Tallene står i `fargekontrakt.json`, som kjernen leser, og regningen skjer
+ * Tallene står i `color-contract.json`, som kjernen leser, og regningen skjer
  * der. Her er dataene, for den som vil lese dem. Et tema bygges med
- * `buildTheme` fra `@fristil/designsystem/tema`, og et håndskrevet tema
- * kontrolleres med `inspectTheme` fra `@fristil/designsystem/tema-sjekk`.
+ * `buildTheme` fra `@lo-tek/interfaces/theme`, og et håndskrevet tema
+ * kontrolleres med `inspectTheme` fra `@lo-tek/interfaces/tema-sjekk`.
  */
 
 export {
@@ -19,4 +19,4 @@ export {
   REQUIREMENT,
   ROLES,
   type Role,
-} from "./matrise.js"
+} from "./matrix-cells.js"

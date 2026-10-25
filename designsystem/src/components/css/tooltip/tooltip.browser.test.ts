@@ -15,13 +15,13 @@ import "../../../tokens/tokens.css"
 import "./tooltip.css"
 import "../button/button.css"
 
-describe("fs-tooltip", () => {
+describe("lt-tooltip", () => {
   beforeEach(() => {
     monter(`
-      <span class="fs-tooltip">
-        <button class="fs-button" data-variant="ghost" type="button"
+      <span class="lt-tooltip">
+        <button class="lt-button" data-variant="ghost" type="button"
           aria-describedby="hint" id="utloser">Arkiver</button>
-        <span class="fs-tooltip__bubble" role="tooltip" id="hint">
+        <span class="lt-tooltip__bubble" role="tooltip" id="hint">
           Saken flyttes til arkivet
         </span>
       </span>
@@ -60,7 +60,7 @@ describe("fs-tooltip", () => {
     // mus, og en annen testfil som flytter den samtidig, ga tilfeldige feil
     // i Firefox.
     const utloser = document.getElementById("utloser") as HTMLElement
-    const omslag = utloser.closest(".fs-tooltip") as HTMLElement
+    const omslag = utloser.closest(".lt-tooltip") as HTMLElement
     const boble = document.getElementById("hint") as HTMLElement
     utloser.focus()
     await ventPaTegning()
@@ -128,9 +128,9 @@ describe("fs-tooltip", () => {
     monter(`
       <div style="inline-size: 320px; overflow: auto" id="smal">
         <div style="display: flex; justify-content: flex-end">
-          <span class="fs-tooltip">
+          <span class="lt-tooltip">
             <button type="button" aria-describedby="kant">i</button>
-            <span class="fs-tooltip__bubble" role="tooltip" id="kant">En lang forklaring som er bredere enn knappen</span>
+            <span class="lt-tooltip__bubble" role="tooltip" id="kant">En lang forklaring som er bredere enn knappen</span>
           </span>
         </div>
       </div>`)
@@ -140,8 +140,8 @@ describe("fs-tooltip", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(tooltip()).toEqual({ class: "fs-tooltip" })
-    expect(tooltip.bubble).toBe("fs-tooltip__bubble")
+    expect(tooltip()).toEqual({ class: "lt-tooltip" })
+    expect(tooltip.bubble).toBe("lt-tooltip__bubble")
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {

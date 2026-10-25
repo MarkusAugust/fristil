@@ -1,7 +1,7 @@
-# Fristil-kjernen
+# LO-TEK-kjernen
 
-Fristils sjekk og temagenerator i Rust, kompilert til én WebAssembly-modul som alle
-vertsspråk kjører: Node, Bun og nettleseren direkte (`@fristil/designsystem/diagnostics`),
+LO-TEKs sjekk og temagenerator i Rust, kompilert til én WebAssembly-modul som alle
+vertsspråk kjører: Node, Bun og nettleseren direkte (`@lo-tek/interfaces/diagnostics`),
 VS Code (`../editor`), JVM-en gjennom Chicory (`../kotlin`), IntelliJ
 (`../editor-intellij`), og Go, .NET og Python gjennom sine egne runtimer.
 
@@ -37,14 +37,14 @@ JavaScript og Kotlin: hele kjernen jobber på UTF-16-enheter, så ingen
 posisjon må regnes om. Linja og kolonnen begynner på 1.
 
 Lasteren for JavaScript står i `designsystem/src/diagnostics/core.ts`, og
-den for Kotlin i `../kotlin/src/main/kotlin/no/fristil/Fristil.kt`. Hver er
+den for Kotlin i `../kotlin/src/main/kotlin/no/lotek/Lotek.kt`. Hver er
 rundt 40 linjer.
 
 ## Temaet
 
 `src/theme/` bygger et fargetema av merkefarger og kontrollerer et tema skrevet
 som CSS. Fargekontrakten, altså lysheten per rolle, kravene og løftene, er data i
-`designsystem/src/tokens/fargekontrakt.json`, som verten gir kjernen.
+`designsystem/src/tokens/color-contract.json`, som verten gir kjernen.
 `build_theme_raw(peker, lengde)` tar oppskriften som JSON og svarer 0 med temaet
 eller 1 med `{"error": …}`. `inspect_theme_raw(peker, lengde)` tar CSS-en og
 svarer med funnene og hva som ble kontrollert.
@@ -65,8 +65,8 @@ med en forklaring.
 En kommentar gjelder den neste taggen:
 
 ```html
-<!-- fristil-ignore-next -->
-<!-- fristil-ignore-next ukjent-klasse ugyldig-klasseverdi -->
+<!-- lotek-ignore-next -->
+<!-- lotek-ignore-next ukjent-klasse ugyldig-klasseverdi -->
 ```
 
 Uten regelnavn undertrykkes alle funn i taggen, med regelnavn bare dem.
@@ -75,7 +75,7 @@ Reglene står i `src/types.rs` (`RULES`).
 ## Testene
 
 - `cargo test`: enhetstestene i Rust.
-- `scripts/sjekk-kjerne.ts`: fiksturene i `paritet/` mot fasiten ved siden
+- `scripts/check-core.ts`: fiksturene i `parity/` mot fasiten ved siden
   av, felt for felt, og krav om at de til sammen utløser hver regel i
   `RULES`. En fikstur med en `.css` ved siden av sjekkes også med
   stilarket. Fasiten for de ti første ble skrevet av TypeScript-utgaven, de
@@ -85,30 +85,30 @@ Reglene står i `src/types.rs` (`RULES`).
   ødelagte varianter av fiksturene, med et fast frø, mot kravene et svar må
   holde: ingen unntak, hvert funn innenfor teksten, riktig linje og kolonne,
   og en regel som finnes.
-- `scripts/sjekk-diagnostikk.ts`: tilfeller som hver sier hvor mange
+- `scripts/check-diagnostics.ts`: tilfeller som hver sier hvor mange
   funn de skal gi, hva meldingen skal nevne, hva funnet skal dekke og
   hva rettelsen skal gjøre. Også tidsgrenser for store sider.
 - `src/theme/tests.rs`: kontrakten og kontrollen av et tema, med tolv
   aksentfarger, fra knallrød og neon til nesten svart, mot ti nøytrale, fra
   svart og hvitt til farget grått, i begge utseender: 240 kombinasjoner.
-- `tema/`: oppskrifter og temaer med svaret ved siden av, skrevet av
-  TypeScript-utgaven av temaet før den ble slettet. `sjekk-kjerne.ts` krever
+- `theme/`: oppskrifter og temaer med svaret ved siden av, skrevet av
+  TypeScript-utgaven av temaet før den ble slettet. `check-core.ts` krever
   det samme svaret, og at 2000 ødelagte temaer ikke krasjer kjernen.
 - `../kotlin`: den samme fasiten fra JVM-en.
 
 ## Kjør
 
 ```bash
-bun kjerne/scripts/bygg.ts         # modulene, til kjerne/dist/
-bun kjerne/scripts/sjekk-kjerne.ts # fasiten og kravene
-bun --filter @fristil/designsystem pakk && (cd kotlin && ./gradlew test -Pfristil.pakke=../designsystem)
+bun core/scripts/build.ts         # modulene, til core/dist/
+bun core/scripts/check-core.ts # fasiten og kravene
+bun --filter @lo-tek/interfaces pack && (cd kotlin && ./gradlew test -Plotek.pakke=../designsystem)
 ```
 
 Krever Rust. `rust-toolchain.toml` henter versjonen og målene
 `wasm32-unknown-unknown` og `wasm32-wasip1` ved første kall.
 
-Kjernen leser ingenting utenfor `kjerne/` når den bygges. Pakken henter
-modulene med `bun --filter @fristil/designsystem kjerne`, og Kotlin-pakken
+Kjernen leser ingenting utenfor `core/` når den bygges. Pakken henter
+modulene med `bun --filter @lo-tek/interfaces core`, og Kotlin-pakken
 får dem fra npm-pakken, så Gradle-bygget trenger verken Rust eller Bun.
 
 ## Ytelse

@@ -1,8 +1,8 @@
 /**
- * Formen på ordforrådet: elementene og klassene Fristil har.
+ * Formen på ordforrådet: elementene og klassene LO-TEK har.
  *
  * `elements.ts` og `classes.ts` ved siden av genereres av
- * `scripts/generate-ordforrad.ts`, og er kilden manifestet skrives fra
+ * `scripts/generate-vocabulary.ts`, og er kilden manifestet skrives fra
  * (`scripts/generate-manifest.ts`). Kjernen og alle verktøyene leser
  * manifestet, ikke disse filene, så de er ikke en del av pakkens API.
  */
@@ -13,7 +13,7 @@ export type Attribute = (
 ) & { description?: string }
 
 /**
- * En del av et element, som kontrollen i `<fs-field>`. `selector` er den
+ * En del av et element, som kontrollen i `<lt-field>`. `selector` er den
  * komponenten finner delen med, relativt til elementet. `content` er hva
  * delen tar: `text` er tekst og frasering uten interaktive elementer, `free`
  * fritt innhold, `parts` bare de andre delene, og `none` ingen tekst: delen
@@ -57,10 +57,10 @@ export type Element = {
 export type Elements = Record<string, Element>
 
 /**
- * Et attributt en klasse tar, som `data-variant` på `fs-button`.
+ * Et attributt en klasse tar, som `data-variant` på `lt-button`.
  *
  * `flag` er et attributt som virker ved å stå der, som `data-interactive` på
- * `fs-card`. Stilarket spør bare om det finnes, så det har ingen verdier.
+ * `lt-card`. Stilarket spør bare om det finnes, så det har ingen verdier.
  */
 export type ClassAttribute = {
   values: readonly string[]
@@ -78,7 +78,7 @@ export type ClassInfo = {
   content: Part["content"]
   /**
    * Klassen denne er en del av, når den bare er en del av en annen
-   * komponents markup, som `fs-card__title` i `fs-card`. Forelderen har en
+   * komponents markup, som `lt-card__title` i `lt-card`. Forelderen har en
    * del som treffer den.
    */
   partOf?: string
@@ -93,7 +93,7 @@ export type Classes = Record<string, ClassInfo>
 /**
  * Tokenene i manifestet: det et stilark utenfor pakken kan bygge på.
  * Fargene står som akser med hva de er til, ikke som verdier, siden et tema
- * kan ha andre verdier enn Fristils egne. `components` er komponentvariablene
+ * kan ha andre verdier enn LO-TEKs egne. `components` er komponentvariablene
  * per komponent, med reserven i stilarket som verdi.
  */
 export type ManifestTokens = {
@@ -108,7 +108,7 @@ export type ManifestTokens = {
     roles: Record<string, string>
     /** Lagene bare den nøytrale familien har. */
     layers: Record<string, string>
-    /** Hvert `--fs-color-*`-navn pakken sender ut. */
+    /** Hvert `--lt-color-*`-navn pakken sender ut. */
     tokens: readonly string[]
   }
   /** Komponent til variabelnavn til standardverdien. */
@@ -129,7 +129,7 @@ export type BuilderReturns = { optional?: boolean } & (
 )
 
 /**
- * En byggefunksjon i `fs`, som `button`, med valgene og formen på svaret.
+ * En byggefunksjon i `lt`, som `button`, med valgene og formen på svaret.
  * `table`, som generatoren bak Kotlin-utgaven bruker, er utelatt her.
  */
 export type Builder = {

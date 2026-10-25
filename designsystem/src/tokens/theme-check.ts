@@ -7,13 +7,13 @@ import { defaultCore } from "../diagnostics/default-core.js"
  * er løftene deres å holde, og da skylder vi dem et svar på hvilken celle som
  * ryker. Uten dette er «du kan overstyre hva som helst» en felle.
  *
- * Det eneste som betyr noe er hvilke `--fs-color-*` som står i hvilken blokk,
+ * Det eneste som betyr noe er hvilke `--lt-color-*` som står i hvilken blokk,
  * og om blokka er lys eller mørk, lest av `color-scheme` eller selektoren. En
  * verdi som ikke kan regnes på, meldes som nettopp det framfor å hoppes over,
- * og verdier som mangler fylles fra Fristils eget tema, så den som bare har
+ * og verdier som mangler fylles fra LO-TEKs eget tema, så den som bare har
  * overstyrt én celle får den kontrollert mot resten av systemet.
  *
- * Sjekken er kjernen, skrevet i Rust, den samme som `fristil sjekk-tema`
+ * Sjekken er kjernen, skrevet i Rust, den samme som `lotek sjekk-tema`
  * bruker.
  */
 

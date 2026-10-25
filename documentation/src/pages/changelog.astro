@@ -2,7 +2,7 @@
 import { createMarkdownProcessor } from "@astrojs/markdown-remark"
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro"
 import logg from "../../../designsystem/CHANGELOG.md?raw"
-import { rehypeTabellrull } from "../plugins/rehype-tabellrull.mjs"
+import { rehypeTabellrull } from "../plugins/rehype-table-scroll.mjs"
 
 /*
  * Versjonsloggen rendres fra `designsystem/CHANGELOG.md`, som er den ene
@@ -34,7 +34,7 @@ const overskrifter = metadata.headings.filter((h) => h.depth === 2)
 <StarlightPage
   frontmatter={{
     title: "Versjonslogg",
-    description: "Hva som er endret i hver versjon av @fristil/designsystem.",
+    description: "Hva som er endret i hver versjon av @lo-tek/interfaces.",
   }}
   headings={overskrifter}
 >

@@ -3,7 +3,7 @@ title: Fieldset
 description: Gruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 `<fieldset>` med `<legend>` er den ene måten å gi et sett radioknapper eller avkryssingsbokser en felles ledetekst som skjermlesere leser opp før hvert alternativ. En overskrift over gruppen ser likedan ut, men høres ikke.
 
@@ -11,56 +11,56 @@ Komponenten er i praksis to ting: en nullstilling av nettleserens ramme fra 1996
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "fieldset.css", "radio.css"]}
+<Example importer={["tokens.css", "fieldset.css", "radio.css"]}
   stiler={["fieldset", "radio", "label"]} layout="stabel" maxWidth="28rem" kode={`
-<fieldset class="fs-fieldset">
-  <legend class="fs-legend" data-required="symbol">Hvem søker du på vegne av?</legend>
+<fieldset class="lt-fieldset">
+  <legend class="lt-legend" data-required="symbol">Hvem søker du på vegne av?</legend>
 
-  <div class="fs-radio-row">
-    <input class="fs-radio" type="radio" id="selv" name="soker" value="selv" checked />
-    <label class="fs-label" for="selv">Meg selv</label>
+  <div class="lt-radio-row">
+    <input class="lt-radio" type="radio" id="selv" name="soker" value="selv" checked />
+    <label class="lt-label" for="selv">Meg selv</label>
   </div>
 
-  <div class="fs-radio-row">
-    <input class="fs-radio" type="radio" id="annen" name="soker" value="annen" />
-    <label class="fs-label" for="annen">En annen person</label>
+  <div class="lt-radio-row">
+    <input class="lt-radio" type="radio" id="annen" name="soker" value="annen" />
+    <label class="lt-label" for="annen">En annen person</label>
   </div>
 </fieldset>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<fieldset {...fs.fieldset({ state: "invalid" })}>
-  <legend {...fs.legend()}>Hvordan vil du ha svar?</legend>
+<fieldset {...lt.fieldset({ state: "invalid" })}>
+  <legend {...lt.legend()}>Hvordan vil du ha svar?</legend>
 </fieldset>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const gruppe = document.querySelector<HTMLFieldSetElement>("#levering")
 const tittel = document.querySelector<HTMLLegendElement>("#levering-tittel")
 
-fs.setAttributes(gruppe, fs.fieldset({ state: "invalid" }))
-fs.setAttributes(tittel, fs.legend({ required: "symbol" }))
+lt.setAttributes(gruppe, lt.fieldset({ state: "invalid" }))
+lt.setAttributes(tittel, lt.legend({ required: "symbol" }))
 ```
 
-Gruppen og ledeteksten er to funksjoner, fordi de settes på to elementer. Se [Typesikker bruk](../../typesikker-bruk/).
+Gruppen og ledeteksten er to funksjoner, fordi de settes på to elementer. Se [Typesikker bruk](../../type-safe-use/).
 
 </Fragment>
-</Eksempel>
+</Example>
 
-| Attributt på `.fs-legend` | Effekt |
+| Attributt på `.lt-legend` | Effekt |
 | --- | --- |
 | *(utelatt)* | Vanlig ledetekst |
 | `data-required="symbol"` | ` *` i farefargen |
@@ -73,26 +73,26 @@ Velg én av `data-required` og `data-optional`, og hold deg til den gjennom skje
 
 Gruppen kan ha hjelpetekst og feilmelding som feltene ellers. Koblingen til skjermlesere går via `aria-describedby` på `<fieldset>`, ikke på hver knapp.
 
-<Eksempel stiler={["fieldset", "radio", "label", "help-text", "error-text"]} layout="stabel" maxWidth="28rem" kode={`
-<fieldset class="fs-fieldset" data-state="invalid" aria-describedby="levering-hjelp levering-feil">
-  <legend class="fs-legend" data-required="symbol">Leveringsmåte</legend>
-  <p class="fs-help-text" id="levering-hjelp">Vi sender innen tre virkedager.</p>
+<Example stiler={["fieldset", "radio", "label", "help-text", "error-text"]} layout="stabel" maxWidth="28rem" kode={`
+<fieldset class="lt-fieldset" data-state="invalid" aria-describedby="levering-hjelp levering-feil">
+  <legend class="lt-legend" data-required="symbol">Leveringsmåte</legend>
+  <p class="lt-help-text" id="levering-hjelp">Vi sender innen tre virkedager.</p>
 
-  <div class="fs-radio-row">
-    <input class="fs-radio" type="radio" id="lev-post" name="levering" value="post" data-state="invalid" aria-invalid="true" />
-    <label class="fs-label" for="lev-post">Vanlig post</label>
+  <div class="lt-radio-row">
+    <input class="lt-radio" type="radio" id="lev-post" name="levering" value="post" data-state="invalid" aria-invalid="true" />
+    <label class="lt-label" for="lev-post">Vanlig post</label>
   </div>
 
-  <div class="fs-radio-row">
-    <input class="fs-radio" type="radio" id="lev-hentes" name="levering" value="hentes" data-state="invalid" aria-invalid="true" />
-    <label class="fs-label" for="lev-hentes">Hentes på kontoret</label>
+  <div class="lt-radio-row">
+    <input class="lt-radio" type="radio" id="lev-hentes" name="levering" value="hentes" data-state="invalid" aria-invalid="true" />
+    <label class="lt-label" for="lev-hentes">Hentes på kontoret</label>
   </div>
 
-  <p class="fs-error-text" id="levering-feil">Velg hvordan du vil ha varen levert.</p>
+  <p class="lt-error-text" id="levering-feil">Velg hvordan du vil ha varen levert.</p>
 </fieldset>
 `} />
 
-`data-state="invalid"` på gruppen farger ledeteksten. Selve knappene må få den samme tilstanden hver for seg, siden det er de som har rammen brukeren ser. De trenger også `aria-invalid` for skjermleseren, og `fs.radio({ state: "invalid" })` gir begge.
+`data-state="invalid"` på gruppen farger ledeteksten. Selve knappene må få den samme tilstanden hver for seg, siden det er de som har rammen brukeren ser. De trenger også `aria-invalid` for skjermleseren, og `lt.radio({ state: "invalid" })` gir begge.
 
 `data-state="success"` farger ledeteksten grønn på samme måte, og brukes når gruppen er ferdig utfylt og godkjent. Fargen er det eneste som skiller de to, så den kan ikke stå alene: si i teksten hva som er galt eller hva som er i orden.
 
@@ -101,8 +101,8 @@ Gruppen kan ha hjelpetekst og feilmelding som feltene ellers. Koblingen til skje
 `disabled` på `<fieldset>` slår av alt inni, også felt som legges til senere:
 
 ```html
-<fieldset class="fs-fieldset" disabled>
-  <legend class="fs-legend" aria-disabled="true">Leveringsmåte</legend>
+<fieldset class="lt-fieldset" disabled>
+  <legend class="lt-legend" aria-disabled="true">Leveringsmåte</legend>
 </fieldset>
 ```
 
@@ -112,19 +112,19 @@ Merk at `disabled` på gruppen ikke setter `disabled` på hver kontroll. Egenska
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-fieldset` | Gruppen. Tilstanden kommer fra `data-state`. |
-| `.fs-legend` | Ledeteksten på gruppen |
+| `.lt-fieldset` | Gruppen. Tilstanden kommer fra `data-state`. |
+| `.lt-legend` | Ledeteksten på gruppen |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-fieldset-gap` | `var(--fs-spacing-2)` |
-| `--fs-label-required-symbol` | `" *"` |
-| `--fs-label-required-text` | `" (påkrevd)"` |
-| `--fs-label-optional-text` | `" (valgfri)"` |
+| `--lt-fieldset-gap` | `var(--lt-spacing-2)` |
+| `--lt-label-required-symbol` | `" *"` |
+| `--lt-label-required-text` | `" (påkrevd)"` |
+| `--lt-label-optional-text` | `" (valgfri)"` |
 
-De tre siste er teksten i markeringen bak `data-required` og `data-optional` på `.fs-legend`. De er de samme som på [Label](../label/), så én innstilling gjelder begge. Se [Oversettelse](../../oversettelse/).
+De tre siste er teksten i markeringen bak `data-required` og `data-optional` på `.lt-legend`. De er de samme som på [Label](../label/), så én innstilling gjelder begge. Se [Oversettelse](../../translation/).
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

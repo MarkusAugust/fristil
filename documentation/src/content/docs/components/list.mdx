@@ -3,60 +3,60 @@ title: List
 description: Punktliste, nummerert liste og lister uten punkter. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Klassen settes på `<ul>` eller `<ol>` og gir listen riktig luft og innrykk. Variantene fjerner punktene visuelt uten å fjerne selve listen. Unntaket er Safari, der VoiceOver kan la være å lese en `<ul>` uten synlige punkter som en liste. En `<ol>` og en liste i `<nav>` beholder den. Er antallet viktig for den som hører siden, sett `role="list"` på `<ul>`.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "list.css"]}
+<Example importer={["tokens.css", "list.css"]}
   stiler={["list"]} layout="stabel" maxWidth="32rem" kode={`
-<ul class="fs-list">
+<ul class="lt-list">
   <li>Fødselsattest</li>
   <li>Bekreftelse fra arbeidsgiver</li>
   <li>Kopi av leiekontrakt</li>
 </ul>
 
-<ol class="fs-list">
+<ol class="lt-list">
   <li>Fyll ut skjemaet</li>
   <li>Last opp vedlegg</li>
   <li>Send søknaden</li>
 </ol>
 
-<ul class="fs-list" data-variant="divided">
+<ul class="lt-list" data-variant="divided">
   <li>Faktura 2026-0481, forfaller 4. mars</li>
   <li>Faktura 2026-0482, forfaller 4. april</li>
 </ul>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<ul {...fs.list({ variant: "divided" })}>
+<ul {...lt.list({ variant: "divided" })}>
   <li>Søknad om bostøtte</li>
   <li>Søknad om startlån</li>
 </ul>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const liste = document.querySelector<HTMLUListElement>("#vedlegg")
 
-fs.setAttributes(liste, fs.list({ variant: "divided" }))
+lt.setAttributes(liste, lt.list({ variant: "divided" }))
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -68,17 +68,17 @@ fs.setAttributes(liste, fs.list({ variant: "divided" }))
 
 Uten `plain` ville folk skrevet `<div>` for å bli kvitt punktene, og da forsvinner opplysningen om at dette er en liste med fire elementer. Varianten fjerner utseendet, ikke betydningen, med unntaket for Safari over.
 
-<Eksempel stiler={["list", "card"]} layout="stabel" maxWidth="32rem" kode={`
-<ul class="fs-list" data-variant="plain">
+<Example stiler={["list", "card"]} layout="stabel" maxWidth="32rem" kode={`
+<ul class="lt-list" data-variant="plain">
   <li>
-    <div class="fs-card">
-      <h3 class="fs-card__title">Søknad om bostøtte</h3>
+    <div class="lt-card">
+      <h3 class="lt-card__title">Søknad om bostøtte</h3>
       <p>Sendt 4. mars.</p>
     </div>
   </li>
   <li>
-    <div class="fs-card">
-      <h3 class="fs-card__title">Søknad om barnehageplass</h3>
+    <div class="lt-card">
+      <h3 class="lt-card__title">Søknad om barnehageplass</h3>
       <p>Under behandling.</p>
     </div>
   </li>
@@ -89,13 +89,13 @@ Uten `plain` ville folk skrevet `<div>` for å bli kvitt punktene, og da forsvin
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-list` | Listen. Varianten kommer fra `data-variant`. |
+| `.lt-list` | Listen. Varianten kommer fra `data-variant`. |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-list-gap` | `var(--fs-spacing-1)`, og `var(--fs-spacing-2)` i `divided` |
+| `--lt-list-gap` | `var(--lt-spacing-1)`, og `var(--lt-spacing-2)` i `divided` |
 
-`--fs-list-gap` er avstanden mellom elementene, og blir til luft over og under hver rad i `divided`. De to har ulik standardverdi, så setter du variabelen gjelder tallet ditt begge steder. Se [Tilpasning](../../tilpasning/).
+`--lt-list-gap` er avstanden mellom elementene, og blir til luft over og under hver rad i `divided`. De to har ulik standardverdi, så setter du variabelen gjelder tallet ditt begge steder. Se [Tilpasning](../../customising/).
 
 ## Tilgjengelighet
 

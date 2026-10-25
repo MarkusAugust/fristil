@@ -7,7 +7,7 @@ import { compile } from "tailwindcss"
 import Preview, { type Stilark } from "./Preview.astro"
 
 interface Props {
-  /** Fristil-stilarkene eksempelet trenger. */
+  /** LO-TEK-stilarkene eksempelet trenger. */
   stiler?: Stilark[]
   /** `rad` legger innholdet side om side, `stabel` under hverandre. */
   layout?: "rad" | "stabel"
@@ -45,32 +45,32 @@ const compiler = await compile(
   `
 	@import "tailwindcss/theme.css" layer(theme);
 	@import "tailwindcss/utilities.css" layer(utilities);
-	@import "@fristil/designsystem/tailwind.css";
+	@import "@lo-tek/interfaces/tailwind.css";
 	`,
   { base: process.cwd(), loadStylesheet: lastStilark },
 )
 
 /*
- * En klasse fra Fristils navnerom som ikke finnes, skal felle bygget.
+ * En klasse fra LO-TEKs navnerom som ikke finnes, skal felle bygget.
  *
  * Tailwind sier ingenting om en klasse den ikke kjenner: den lager bare ingen
  * regel, og eksempelet ser ut som det virker. Siden sto med tolv navn fra
  * fargesystemet slik det het før matrisen, og ingenting sa fra. Bare
- * `-fs-`-klassene kontrolleres, siden de er våre; `p-4` og `rounded-xl` er
+ * `-lt-`-klassene kontrolleres, siden de er våre; `p-4` og `rounded-xl` er
  * Tailwinds egne.
  *
  * Målet er om `build()` ga noe nytt, ikke om en selektor står i utdata.
  * Selektoren måtte i så fall bygges av klassenavnet, og Tailwind escaper `/`,
- * `[`, `!` og et halvt dusin tegn til, så `hover:bg-fs-accent-fill/50` ville
+ * `[`, `!` og et halvt dusin tegn til, så `hover:bg-lt-accent-fill/50` ville
  * blitt meldt som ukjent selv om den finnes. `build()` er dessuten
- * kumulativ, så et navn som er et prefiks av et annet, som `text-fs-accent`
- * mot `text-fs-accent-text`, ikke slipper gjennom på et delstrengtreff.
+ * kumulativ, så et navn som er et prefiks av et annet, som `text-lt-accent`
+ * mot `text-lt-accent-text`, ikke slipper gjennom på et delstrengtreff.
  */
 const ukjente: string[] = []
 let lengde = compiler.build([]).length
 
 for (const klasse of new Set(klasser)) {
-  if (!klasse.includes("-fs-")) continue
+  if (!klasse.includes("-lt-")) continue
   const ny = compiler.build([klasse]).length
   if (ny <= lengde) ukjente.push(klasse)
   lengde = Math.max(lengde, ny)

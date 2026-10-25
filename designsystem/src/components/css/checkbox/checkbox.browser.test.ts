@@ -21,25 +21,25 @@ function stil(id: string) {
   return getComputedStyle(element)
 }
 
-describe("fs-checkbox", () => {
+describe("lt-checkbox", () => {
   beforeEach(() => {
     monter(`
-      <div class="fs-checkbox-row">
-        <input class="fs-checkbox" type="checkbox" id="vilkar" />
-        <label class="fs-label" for="vilkar">Jeg godtar vilkårene</label>
+      <div class="lt-checkbox-row">
+        <input class="lt-checkbox" type="checkbox" id="vilkar" />
+        <label class="lt-label" for="vilkar">Jeg godtar vilkårene</label>
       </div>
-      <div class="fs-checkbox-row">
-        <input class="fs-checkbox" type="checkbox" id="nyhetsbrev" checked />
-        <label class="fs-label" for="nyhetsbrev">Send meg nyhetsbrev</label>
+      <div class="lt-checkbox-row">
+        <input class="lt-checkbox" type="checkbox" id="nyhetsbrev" checked />
+        <label class="lt-label" for="nyhetsbrev">Send meg nyhetsbrev</label>
       </div>
-      <div class="fs-checkbox-row">
-        <input class="fs-checkbox" type="checkbox" id="delvis" />
-        <label class="fs-label" for="delvis">Velg alle vedlegg</label>
+      <div class="lt-checkbox-row">
+        <input class="lt-checkbox" type="checkbox" id="delvis" />
+        <label class="lt-label" for="delvis">Velg alle vedlegg</label>
       </div>
-      <div class="fs-checkbox-row">
-        <input class="fs-checkbox" type="checkbox" id="ugyldig"
+      <div class="lt-checkbox-row">
+        <input class="lt-checkbox" type="checkbox" id="ugyldig"
           data-state="invalid" aria-invalid="true" />
-        <label class="fs-label" for="ugyldig">Jeg bekrefter opplysningene</label>
+        <label class="lt-label" for="ugyldig">Jeg bekrefter opplysningene</label>
       </div>
     `)
 
@@ -74,14 +74,14 @@ describe("fs-checkbox", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(checkbox()).toEqual({ class: "fs-checkbox", type: "checkbox" })
+    expect(checkbox()).toEqual({ class: "lt-checkbox", type: "checkbox" })
     expect(checkbox({ state: "invalid" })).toEqual({
-      class: "fs-checkbox",
+      class: "lt-checkbox",
       type: "checkbox",
       "data-state": "invalid",
       "aria-invalid": "true",
     })
-    expect(checkbox.row).toBe("fs-checkbox-row")
+    expect(checkbox.row).toBe("lt-checkbox-row")
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {

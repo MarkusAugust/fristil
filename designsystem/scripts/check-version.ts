@@ -4,18 +4,18 @@
  * En versjonslogg som ikke stemmer er verre enn ingen: den som leser den tror
  * den er ajour. Sjekken er derfor en del av byggesteget, ikke noe man husker.
  *
- * Kjør med: bun run sjekk:versjon
+ * Kjør med: bun run check:version
  */
 
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { MAANEDER, norskDato } from "./norsk-dato.js"
+import { MAANEDER, norskDato } from "./norwegian-date.js"
 
 const ROT = fileURLToPath(new URL("..", import.meta.url))
 const pakke = await Bun.file(join(ROT, "package.json")).json()
 const logg = await Bun.file(join(ROT, "CHANGELOG.md")).text()
 const dekk = await Bun.file(
-  join(ROT, "../presentasjon/designsystemarkitektur.html"),
+  join(ROT, "../presentation/design-system-architecture.html"),
 ).text()
 
 const feil: string[] = []
@@ -66,7 +66,7 @@ if (!(pakke.files as string[]).includes("CHANGELOG.md")) {
  * verdien for å bytte den, og det er nettopp det som svikter stille, slik det
  * gjorde for CDN-adressene i dokumentasjonen. Derfor denne.
  */
-const iDekket = /Designsystemarkitektur · Fristil ([^\s·]+) · ([^<]+)/.exec(
+const iDekket = /Designsystemarkitektur · LO-TEK ([^\s·]+) · ([^<]+)/.exec(
   dekk,
 )
 
@@ -82,7 +82,7 @@ const utgittDato = new RegExp(
 
 if (!iDekket) {
   feil.push(
-    "Fant ikke merket med versjonen i presentasjon/designsystemarkitektur.html. Står det fortsatt der, og heter det det samme?",
+    "Fant ikke merket med versjonen i presentation/design-system-architecture.html. Står det fortsatt der, og heter det det samme?",
   )
 } else {
   if (iDekket[1] !== pakke.version) {

@@ -1,12 +1,12 @@
 [data-theme="light"] {
-  --fs-color-disabled-surface: #e4e4e5;
-  --fs-color-disabled-text: #8a8d91;
-  --fs-color-overlay: #1a1a1a80;
-  --fs-color-danger-text: #7a1f28;
+  --lt-color-disabled-surface: #e4e4e5;
+  --lt-color-disabled-text: #8a8d91;
+  --lt-color-overlay: #1a1a1a80;
+  --lt-color-danger-text: #7a1f28;
 }
 
 [data-theme="dark"] {
-  --fs-color-disabled-surface: var(--fs-color-neutral-raised);
-  --fs-color-disabled-text: var(--fs-color-neutral-border);
-  --fs-color-overlay: rgba(0, 0, 0, 0.72);
+  --lt-color-disabled-surface: var(--lt-color-neutral-raised);
+  --lt-color-disabled-text: var(--lt-color-neutral-border);
+  --lt-color-overlay: rgba(0, 0, 0, 0.72);
 }

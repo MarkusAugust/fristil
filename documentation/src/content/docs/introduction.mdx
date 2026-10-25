@@ -1,9 +1,9 @@
 ---
 title: Introduksjon
-description: Hva Fristil er, hvordan komponentene er delt inn, og hvorfor de er delt inn slik.
+description: Hva LO-TEK er, hvordan komponentene er delt inn, og hvorfor de er delt inn slik.
 ---
 
-Fristil er et designsystem som ikke krever et bestemt rammeverk. Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Bruker teamet ditt React, Astro, Datastar eller ingenting i det hele tatt, er det samme system og samme API.
+LO-TEK er et designsystem som ikke krever et bestemt rammeverk. Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Bruker teamet ditt React, Astro, Datastar eller ingenting i det hele tatt, er det samme system og samme API.
 
 Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
 
@@ -16,7 +16,7 @@ Komponentene er delt i tre: de som bare er CSS, de som fester oppførsel på HTM
 En CSS-klasse på et vanlig HTML-element. Ingen JavaScript lastes.
 
 ```html
-<button class="fs-button" data-variant="secondary">Lagre utkast</button>
+<button class="lt-button" data-variant="secondary">Lagre utkast</button>
 ```
 
 Varianter styres med `data-`-attributter. Dette er den største gruppen, og dekker knapper, lenker, merker, skjemafelt, tabeller, kort, varsler og typografi. Felles for dem er at utfordringen er hvordan de ser ut, ikke hva de gjør.
@@ -26,25 +26,25 @@ Varianter styres med `data-`-attributter. Dette er den største gruppen, og dekk
 En web component du legger dine egne HTML-elementer inn i. Den lager ingen markup selv, men setter attributtene som kobler dem sammen.
 
 ```html
-<fs-field>
-  <label class="fs-label" for="epost" data-required="symbol">E-postadresse</label>
-  <input class="fs-input" id="epost" type="email" value="ola@" />
-  <p class="fs-help-text">Vi sender kvittering til denne adressen.</p>
-  <p class="fs-error-text">Skriv en e-postadresse med krøllalfa.</p>
-</fs-field>
+<lt-field>
+  <label class="lt-label" for="epost" data-required="symbol">E-postadresse</label>
+  <input class="lt-input" id="epost" type="email" value="ola@" />
+  <p class="lt-help-text">Vi sender kvittering til denne adressen.</p>
+  <p class="lt-error-text">Skriv en e-postadresse med krøllalfa.</p>
+</lt-field>
 ```
 
-`for` og `id` står i markupen, som HTML krever for at feltet skal ha et navn uten JavaScript. Resten av koblingen, `aria-describedby` og `aria-invalid`, skriver serveren med `fs.field()`. Komponenten finnes for servere som ikke kan kalle den, og regner feltet som ugyldig fordi feilmeldingen synes. Elementene blir liggende i vanlig DOM, så `FormData`, testverktøy og skjemabiblioteker finner dem som før.
+`for` og `id` står i markupen, som HTML krever for at feltet skal ha et navn uten JavaScript. Resten av koblingen, `aria-describedby` og `aria-invalid`, skriver serveren med `lt.field()`. Komponenten finnes for servere som ikke kan kalle den, og regner feltet som ugyldig fordi feilmeldingen synes. Elementene blir liggende i vanlig DOM, så `FormData`, testverktøy og skjemabiblioteker finner dem som før.
 
 ### frittstående
 
 En web component som lager alt innholdet sitt selv, fordi det ikke finnes noe for serveren å sende.
 
 ```html
-<fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
+<lt-connection-status class="lt-connection-status" data-ignore-morph></lt-connection-status>
 ```
 
-Kategorien er et unntak med et vilkår, ikke en tredje likeverdig vei. Den gjelder bare flater som oppstår som følge av noe på klienten, og som ikke bærer en verdi inn i en innsending. Det er én av dem: [`<fs-connection-status>`](../components/connection-status/), der serveren per definisjon ikke kan melde fra om at den er utilgjengelig. I tillegg står [`<fs-toast>`](../components/toast/), som er et imperativt API du kaller framfor å skrive.
+Kategorien er et unntak med et vilkår, ikke en tredje likeverdig vei. Den gjelder bare flater som oppstår som følge av noe på klienten, og som ikke bærer en verdi inn i en innsending. Det er én av dem: [`<lt-connection-status>`](../components/connection-status/), der serveren per definisjon ikke kan melde fra om at den er utilgjengelig. I tillegg står [`<lt-toast>`](../components/toast/), som er et imperativt API du kaller framfor å skrive.
 
 ## Hvorfor tre kategorier
 
@@ -58,21 +58,21 @@ Delingen gjør også at du laster det komponenten trenger og ikke mer: en knapp 
 
 ## To lag: markup og oppførsel
 
-Ingen `ramme`-komponent lager sitt eget innhold i DOM-en. Den som lager markupen beholder den, og komponenten fester bare oppførsel oppå. Det gjelder like mye i en React-app som rendrer alt i nettleseren, i en server-rendret app med hydrering, og i en Datastar-app der serveren sender HTML hele veien. Hele begrunnelsen, og svaret på når du bruker byggefunksjonen framfor elementet, står i [Markup og oppførsel](../markup-og-oppforsel/).
+Ingen `ramme`-komponent lager sitt eget innhold i DOM-en. Den som lager markupen beholder den, og komponenten fester bare oppførsel oppå. Det gjelder like mye i en React-app som rendrer alt i nettleseren, i en server-rendret app med hydrering, og i en Datastar-app der serveren sender HTML hele veien. Hele begrunnelsen, og svaret på når du bruker byggefunksjonen framfor elementet, står i [Markup og oppførsel](../markup-and-behaviour/).
 
 Ingen komponent bruker shadow DOM. Alle elementene står i vanlig DOM, og CSS-en din når fram overalt.
 
 | Komponent | Kategori | Stilark |
 | --- | --- | --- |
-| `<fs-field>` | ramme | `field.css` |
-| `<fs-tabs>` | ramme | `tabs.css` |
-| `<fs-error-summary>` | ramme | `error-summary.css` |
-| `<fs-popover>` | ramme | `popover.css` |
-| `<fs-suggestion>` | ramme | `suggestion.css` |
-| `<fs-dialog>` | ramme | `dialog.css` |
-| `<fs-toast>` | frittstående | `toast.css` |
-| `<fs-session-timeout>` | ramme | `session-timeout.css` |
-| `<fs-connection-status>` | frittstående | `connection-status.css` |
+| `<lt-field>` | ramme | `field.css` |
+| `<lt-tabs>` | ramme | `tabs.css` |
+| `<lt-error-summary>` | ramme | `error-summary.css` |
+| `<lt-popover>` | ramme | `popover.css` |
+| `<lt-suggestion>` | ramme | `suggestion.css` |
+| `<lt-dialog>` | ramme | `dialog.css` |
+| `<lt-toast>` | frittstående | `toast.css` |
+| `<lt-session-timeout>` | ramme | `session-timeout.css` |
+| `<lt-connection-status>` | frittstående | `connection-status.css` |
 
 ## Design tokens
 
@@ -80,9 +80,9 @@ Alle farger, størrelser og skriftstørrelser er CSS-variabler i `tokens.css`, o
 
 ```css
 .min-komponent {
-	color: var(--fs-color-accent-fill);
-	padding: var(--fs-spacing-4);
-	font-size: var(--fs-font-size-m);
+	color: var(--lt-color-accent-fill);
+	padding: var(--lt-spacing-4);
+	font-size: var(--lt-font-size-m);
 }
 ```
 
@@ -90,25 +90,25 @@ De samme verdiene finnes som TypeScript-konstanter og som et Tailwind-tema. Se [
 
 ## Tailwind
 
-Fristil forutsetter ikke Tailwind, men står ikke i veien. La Tailwind styre oppsettet og Fristil styre komponentene:
+LO-TEK forutsetter ikke Tailwind, men står ikke i veien. La Tailwind styre oppsettet og LO-TEK styre komponentene:
 
 ```html
 <section class="mx-auto max-w-3xl p-6">
   <h2 class="mb-4 text-2xl font-bold">Handlinger</h2>
   <div class="flex flex-wrap gap-3">
-    <button class="fs-button">Send søknad</button>
-    <button class="fs-button" data-variant="secondary">Lagre utkast</button>
+    <button class="lt-button">Send søknad</button>
+    <button class="lt-button" data-variant="secondary">Lagre utkast</button>
   </div>
 </section>
 ```
 
-Skal Tailwind-klassene bruke Fristils verdier, importer `@fristil/designsystem/tailwind.css`. Det er en vanlig CSS-fil, så pakken har ingen avhengighet til Tailwind, og din versjon er den eneste i bildet. Se [Tailwind](../tailwind/).
+Skal Tailwind-klassene bruke LO-TEKs verdier, importer `@lo-tek/interfaces/tailwind.css`. Det er en vanlig CSS-fil, så pakken har ingen avhengighet til Tailwind, og din versjon er den eneste i bildet. Se [Tailwind](../tailwind/).
 
 ## Videre
 
-- [Kom i gang](../kom-i-gang/): installasjon og oppsett, med og uten byggverktøy
-- [Rammeverk](../rammeverk/): oppsett for ren HTML, React, Astro og Datastar
+- [Kom i gang](../getting-started/): installasjon og oppsett, med og uten byggverktøy
+- [Rammeverk](../frameworks/): oppsett for ren HTML, React, Astro og Datastar
 - [Design tokens](../design-tokens/): farger, størrelser og typografi
-- [Typesikker bruk](../typesikker-bruk/): mønsteret som gir autofullføring på varianter
-- [Skjema med validering](../monster/skjema/): komponentene satt sammen, med avgjørelsene rundt dem
-- [Tailwind](../tailwind/): oppsett, lagrekkefølge og Fristils verdier som utility-klasser
+- [Typesikker bruk](../type-safe-use/): mønsteret som gir autofullføring på varianter
+- [Skjema med validering](../patterns/form/): komponentene satt sammen, med avgjørelsene rundt dem
+- [Tailwind](../tailwind/): oppsett, lagrekkefølge og LO-TEKs verdier som utility-klasser

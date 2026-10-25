@@ -17,28 +17,28 @@
  * Løkka forutsetter at nodene er de samme, og det er de ikke alltid. Datastar
  * morfer ikke et element med id inn i et uten, det byttes ut, og det rammer
  * bar markup der komponenten har laget id-ene selv. Det testes mot den ekte
- * bundlen i `components/ramme/tabs/fs-tabs-morph.browser.test.ts`.
+ * bundlen i `components/frame/tabs/lt-tabs-morph.browser.test.ts`.
  */
 
 import { beforeEach, describe, expect, it } from "vitest"
-import { dialog } from "./components/ramme/dialog/dialog"
-import { defineFsDialog } from "./components/ramme/dialog/fs-dialog"
-import { defineFsField } from "./components/ramme/field/fs-field"
-import { defineFsPopover } from "./components/ramme/popover/fs-popover"
-import { popover } from "./components/ramme/popover/popover"
-import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion"
-import { suggestion } from "./components/ramme/suggestion/suggestion"
-import { defineFsTabs } from "./components/ramme/tabs/fs-tabs"
-import { tabs } from "./components/ramme/tabs/tabs"
-import { settAdresse } from "./testing/adresse"
+import { dialog } from "./components/frame/dialog/dialog"
+import { defineLtDialog } from "./components/frame/dialog/lt-dialog"
+import { defineLtField } from "./components/frame/field/lt-field"
+import { defineLtPopover } from "./components/frame/popover/lt-popover"
+import { popover } from "./components/frame/popover/popover"
+import { defineLtSuggestion } from "./components/frame/suggestion/lt-suggestion"
+import { suggestion } from "./components/frame/suggestion/suggestion"
+import { defineLtTabs } from "./components/frame/tabs/lt-tabs"
+import { tabs } from "./components/frame/tabs/tabs"
+import { settAdresse } from "./testing/address"
 
 import "./tokens/tokens.css"
 
-defineFsField()
-defineFsSuggestion()
-defineFsPopover()
-defineFsTabs()
-defineFsDialog()
+defineLtField()
+defineLtSuggestion()
+defineLtPopover()
+defineLtTabs()
+defineLtDialog()
 
 /** Datastars attributtsynkronisering, på ett element. */
 function morfElement(live: Element, server: Element): void {
@@ -47,7 +47,7 @@ function morfElement(live: Element, server: Element): void {
   // løkka ingenting for nettopp det attributtet, og testen etterprøver
   // ingenting. Fixturene kommer to veier, og hver vei har sin vakt: noen
   // bygges av `dialog()`, `popover()`, `suggestion()` og `tabs()`, og der
-  // feller folketellingen i `fs.browser.test.ts` en byggefunksjon som begynner
+  // feller folketellingen i `lt.browser.test.ts` en byggefunksjon som begynner
   // å sende ut lista. Andre er skrevet for hånd, som en Go-mal ville gjort, og
   // der er det denne linja som feller den.
   const bevar = (server.getAttribute("data-preserve-attr") ?? "")
@@ -122,16 +122,16 @@ describe("morfing river ikke bort det komponenten setter", () => {
    * bort. Komponenten ser at attributtene er borte og setter dem tilbake.
    */
   const FELT = `
-    <fs-field>
-      <label class="fs-label" for="epost">E-post</label>
-      <input class="fs-input" id="epost" />
-      <p class="fs-help-text">Vi sender aldri spam.</p>
-      <p class="fs-error-text">Skriv en gyldig adresse.</p>
-    </fs-field>`
+    <lt-field>
+      <label class="lt-label" for="epost">E-post</label>
+      <input class="lt-input" id="epost" />
+      <p class="lt-help-text">Vi sender aldri spam.</p>
+      <p class="lt-error-text">Skriv en gyldig adresse.</p>
+    </lt-field>`
 
   it("holder feltet koblet gjennom en patch, uten en bevaringsliste", async () => {
     const felt = monterMarkup(FELT)
-    await customElements.whenDefined("fs-field")
+    await customElements.whenDefined("lt-field")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const kontroll = felt.querySelector("input") as HTMLInputElement
@@ -157,7 +157,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
 
     expect(label.htmlFor).toBe("epost")
     expect(document.getElementById(label.htmlFor)).toBe(kontroll)
-    expect(label.classList.contains("fs-label")).toBe(true)
+    expect(label.classList.contains("lt-label")).toBe(true)
   })
 
   it("skriver ingen id på kontrollen når ledeteksten står rundt den", async () => {
@@ -168,12 +168,12 @@ describe("morfing river ikke bort det komponenten setter", () => {
      * ut kontrollen ved neste patch, med fokus og det brukeren hadde skrevet.
      */
     const RUNDT = `
-      <fs-field>
-        <label class="fs-label">E-post <input class="fs-input" /></label>
-        <p class="fs-help-text">Vi sender aldri spam.</p>
-      </fs-field>`
+      <lt-field>
+        <label class="lt-label">E-post <input class="lt-input" /></label>
+        <p class="lt-help-text">Vi sender aldri spam.</p>
+      </lt-field>`
     const felt = monterMarkup(RUNDT)
-    await customElements.whenDefined("fs-field")
+    await customElements.whenDefined("lt-field")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const kontroll = felt.querySelector("input") as HTMLInputElement
@@ -194,13 +194,13 @@ describe("morfing river ikke bort det komponenten setter", () => {
      * id. Koblingen til hjelpeteksten og feilmeldingen skrives på den nye.
      */
     const felt = monterMarkup(FELT)
-    await customElements.whenDefined("fs-field")
+    await customElements.whenDefined("lt-field")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const label = felt.querySelector("label") as HTMLLabelElement
     const gammel = felt.querySelector("input") as HTMLInputElement
     const ny = document.createElement("input")
-    ny.className = "fs-input"
+    ny.className = "lt-input"
     ny.id = "epost"
     gammel.replaceWith(ny)
 
@@ -222,15 +222,15 @@ describe("morfing river ikke bort det komponenten setter", () => {
   it("lar serveren åpne en dialog brukeren har lukket", async () => {
     const boks = dialog({ titleId: "tittel", open: true })
     const MARKUP = `
-      <fs-dialog ${attr(boks.host)}>
+      <lt-dialog ${attr(boks.host)}>
         <dialog ${attr(boks.dialog)}>
           <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
           <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
         </dialog>
-      </fs-dialog>`
+      </lt-dialog>`
 
     const vert = monterMarkup(MARKUP)
-    await customElements.whenDefined("fs-dialog")
+    await customElements.whenDefined("lt-dialog")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const d = vert.querySelector("dialog") as HTMLDialogElement
@@ -267,15 +267,15 @@ describe("morfing river ikke bort det komponenten setter", () => {
     const boks = dialog({ titleId: "tittel", open: true })
     const { open: _serverensOpen, ...dialogUtenOpen } = boks.dialog
     const MARKUP = `
-      <fs-dialog ${attr(boks.host)}>
+      <lt-dialog ${attr(boks.host)}>
         <dialog ${attr(dialogUtenOpen)}>
           <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
           <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
         </dialog>
-      </fs-dialog>`
+      </lt-dialog>`
 
     const vert = monterMarkup(MARKUP)
-    await customElements.whenDefined("fs-dialog")
+    await customElements.whenDefined("lt-dialog")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const d = vert.querySelector("dialog") as HTMLDialogElement
@@ -306,7 +306,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
       .join(" ")
 
   const FELT_MED_FORSLAG = `
-    <fs-suggestion>
+    <lt-suggestion>
       <label ${attr(FORSLAG.label)}>Kommune</label>
       <div>
         <input ${attr(FORSLAG.control)} name="kommune">
@@ -317,7 +317,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
         <p ${attr(FORSLAG.empty)}>Ingen treff</p>
         <span ${attr(FORSLAG.status)}></span>
       </div>
-    </fs-suggestion>`
+    </lt-suggestion>`
 
   it("holder forslagslista åpen og markeringen gjennom en patch", async () => {
     /*
@@ -328,7 +328,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
      * det tilbake.
      */
     const felt = monterMarkup(FELT_MED_FORSLAG)
-    await customElements.whenDefined("fs-suggestion")
+    await customElements.whenDefined("lt-suggestion")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const kontroll = felt.querySelector("input") as HTMLInputElement
@@ -362,11 +362,11 @@ describe("morfing river ikke bort det komponenten setter", () => {
 
   it("lar serveren styre forslagslista når den sier at den eier den", async () => {
     const SERVERENS = FELT_MED_FORSLAG.replace(
-      "<fs-suggestion>",
-      "<fs-suggestion server-controlled>",
+      "<lt-suggestion>",
+      "<lt-suggestion server-controlled>",
     )
     const felt = monterMarkup(SERVERENS)
-    await customElements.whenDefined("fs-suggestion")
+    await customElements.whenDefined("lt-suggestion")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const kontroll = felt.querySelector("input") as HTMLInputElement
@@ -392,7 +392,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
      * brukeren får ikke lest opp alternativet hun står på.
      */
     const felt = monterMarkup(FELT_MED_FORSLAG)
-    await customElements.whenDefined("fs-suggestion")
+    await customElements.whenDefined("lt-suggestion")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const kontroll = felt.querySelector("input") as HTMLInputElement
@@ -417,13 +417,13 @@ describe("morfing river ikke bort det komponenten setter", () => {
 
   it("glemmer markeringen når serveren sender en helt ny liste", async () => {
     /*
-     * Id-ene fra `fs.suggestion()` er posisjonelle, så en ny liste gjenbruker
+     * Id-ene fra `lt.suggestion()` er posisjonelle, så en ny liste gjenbruker
      * dem. Husket komponenten bare id-en, satte den markeringen tilbake på
      * alternativ nummer to i en helt annen liste, og skjermleseren leste opp
      * en kommune brukeren aldri navigerte til. Teksten er identiteten.
      */
     const felt = monterMarkup(FELT_MED_FORSLAG)
-    await customElements.whenDefined("fs-suggestion")
+    await customElements.whenDefined("lt-suggestion")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const kontroll = felt.querySelector("input") as HTMLInputElement
@@ -464,14 +464,14 @@ describe("morfing river ikke bort det komponenten setter", () => {
 
   it("lar «Ingen treff» bli skjult gjennom en patch", async () => {
     const felt = monterMarkup(FELT_MED_FORSLAG)
-    await customElements.whenDefined("fs-suggestion")
+    await customElements.whenDefined("lt-suggestion")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const kontroll = felt.querySelector("input") as HTMLInputElement
     kontroll.value = "Be"
     kontroll.dispatchEvent(new Event("input", { bubbles: true }))
 
-    const tom = felt.querySelector(".fs-suggestion__empty") as HTMLElement
+    const tom = felt.querySelector(".lt-suggestion__empty") as HTMLElement
     expect(tom.hidden, "«Ingen treff» sto framme selv om Bergen passet").toBe(
       true,
     )
@@ -495,18 +495,18 @@ describe("morfing river ikke bort det komponenten setter", () => {
   })
 
   const FANEMARKUP = `
-    <fs-tabs>
+    <lt-tabs>
       <ul ${attr(FANER.list)}>
         <li><a ${attr(FANER.tabs[0])}>Oversikt</a></li>
         <li><a ${attr(FANER.tabs[1])}>Vedlegg</a></li>
       </ul>
       <section ${attr(FANER.panels[0])}><h2 ${attr(FANER.headings[0])}>Oversikt</h2>Sammendrag</section>
       <section ${attr(FANER.panels[1])}><h2 ${attr(FANER.headings[1])}>Vedlegg</h2>Filer</section>
-    </fs-tabs>`
+    </lt-tabs>`
 
   it("holder på hvilken fane som er valgt gjennom en patch", async () => {
     const felt = monterMarkup(FANEMARKUP)
-    await customElements.whenDefined("fs-tabs")
+    await customElements.whenDefined("lt-tabs")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const lenker = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
@@ -545,17 +545,17 @@ describe("morfing river ikke bort det komponenten setter", () => {
      * hele tatt, og ingenting sa fra.
      */
     const UTEN_IDER = `
-      <fs-tabs>
-        <ul class="fs-tabs__list" role="tablist">
+      <lt-tabs>
+        <ul class="lt-tabs__list" role="tablist">
           <li role="presentation"><a href="#oversikt" role="tab" aria-selected="true" tabindex="0">Oversikt</a></li>
           <li role="presentation"><a href="#vedlegg" role="tab" aria-selected="false" tabindex="-1">Vedlegg</a></li>
         </ul>
-        <section class="fs-tabs__panel" id="oversikt" role="tabpanel" tabindex="0">Sammendrag</section>
-        <section class="fs-tabs__panel" id="vedlegg" role="tabpanel" tabindex="0" hidden>Filer</section>
-      </fs-tabs>`
+        <section class="lt-tabs__panel" id="oversikt" role="tabpanel" tabindex="0">Sammendrag</section>
+        <section class="lt-tabs__panel" id="vedlegg" role="tabpanel" tabindex="0" hidden>Filer</section>
+      </lt-tabs>`
 
     const felt = monterMarkup(UTEN_IDER)
-    await customElements.whenDefined("fs-tabs")
+    await customElements.whenDefined("lt-tabs")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const lenker = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
@@ -591,7 +591,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
      * svarte.
      */
     const felt = monterMarkup(FANEMARKUP)
-    await customElements.whenDefined("fs-tabs")
+    await customElements.whenDefined("lt-tabs")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const lenker = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
@@ -636,11 +636,11 @@ describe("morfing river ikke bort det komponenten setter", () => {
      * patch.
      */
     const SERVERENS = FANEMARKUP.replace(
-      "<fs-tabs>",
-      "<fs-tabs server-controlled>",
+      "<lt-tabs>",
+      "<lt-tabs server-controlled>",
     )
     const felt = monterMarkup(SERVERENS)
-    await customElements.whenDefined("fs-tabs")
+    await customElements.whenDefined("lt-tabs")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const lenker = [...felt.querySelectorAll("[role='tab']")] as HTMLElement[]
@@ -665,14 +665,14 @@ describe("morfing river ikke bort det komponenten setter", () => {
   const SPRETT = popover({ id: "meny" })
 
   const SPRETTMARKUP = `
-    <fs-popover ${attr(SPRETT.host)}>
+    <lt-popover ${attr(SPRETT.host)}>
       <button ${attr(SPRETT.trigger)}>Handlinger</button>
       <ul ${attr(SPRETT.panel)}><li>Arkiver</li></ul>
-    </fs-popover>`
+    </lt-popover>`
 
   it("holder sprettoppvinduet åpent gjennom en patch", async () => {
     const felt = monterMarkup(SPRETTMARKUP)
-    await customElements.whenDefined("fs-popover")
+    await customElements.whenDefined("lt-popover")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const knapp = felt.querySelector("button") as HTMLButtonElement
@@ -697,11 +697,11 @@ describe("morfing river ikke bort det komponenten setter", () => {
 
   it("lar serveren lukke sprettoppvinduet når den sier at den eier det", async () => {
     const SERVERENS = SPRETTMARKUP.replace(
-      "<fs-popover ",
-      "<fs-popover server-controlled ",
+      "<lt-popover ",
+      "<lt-popover server-controlled ",
     )
     const vindu = monterMarkup(SERVERENS) as HTMLElement & { show(): void }
-    await customElements.whenDefined("fs-popover")
+    await customElements.whenDefined("lt-popover")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     vindu.show()
@@ -725,7 +725,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
      * overtar tilstanden, og vinduet ble stående åpent etterpå.
      */
     const vindu = monterMarkup(SPRETTMARKUP) as HTMLElement & { show(): void }
-    await customElements.whenDefined("fs-popover")
+    await customElements.whenDefined("lt-popover")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     vindu.show()
@@ -754,7 +754,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
       show(): void
       open: boolean
     }
-    await customElements.whenDefined("fs-popover")
+    await customElements.whenDefined("lt-popover")
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     vindu.show()

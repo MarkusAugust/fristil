@@ -1,8 +1,8 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const TABLE_CLASS = "fs-table" as const
+export const TABLE_CLASS = "lt-table" as const
 /** Beholderen som lar en bred tabell rulles sidelengs. */
-export const TABLE_SCROLL_CLASS = "fs-table-scroll" as const
+export const TABLE_SCROLL_CLASS = "lt-table-scroll" as const
 
 export const tableVariants = ["default", "striped"] as const
 
@@ -50,7 +50,7 @@ export const table = Object.assign(
 )
 
 /** Klassen på knappen i en kolonneoverskrift som kan sorteres. */
-export const TABLE_SORT_CLASS = "fs-table__sort" as const
+export const TABLE_SORT_CLASS = "lt-table__sort" as const
 
 export const tableSortDirections = ["ascending", "descending"] as const
 
@@ -83,7 +83,7 @@ export type TableSortAttributes = {
  * vises kan ikke gli fra hverandre. Selve sorteringen er appens.
  *
  * ```ts
- * const dato = fs.tableSort({ direction: "descending" })
+ * const dato = lt.tableSort({ direction: "descending" })
  * ```
  * ```html
  * <th scope="col" {...dato.header}>

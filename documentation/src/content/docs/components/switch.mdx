@@ -4,7 +4,7 @@ description: Bryter for en innstilling som slår inn med en gang. CSS-komponent 
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 En avkryssingsboks med `role="switch"`. Skjermlesere sier da «på» og «av» framfor «avkrysset», mens tastaturet og `FormData` virker som for en vanlig boks.
 
@@ -12,66 +12,66 @@ En avkryssingsboks med `role="switch"`. Skjermlesere sier da «på» og «av» f
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "switch.css", "label.css", "help-text.css"]}
+<Example importer={["tokens.css", "switch.css", "label.css", "help-text.css"]}
   stiler={["switch", "label"]} layout="stabel" maxWidth="28rem" kode={`
-<div class="fs-switch-row">
-  <input class="fs-switch" type="checkbox" role="switch" id="epost" checked />
-  <label class="fs-label" for="epost">Varsle meg på e-post</label>
+<div class="lt-switch-row">
+  <input class="lt-switch" type="checkbox" role="switch" id="epost" checked />
+  <label class="lt-label" for="epost">Varsle meg på e-post</label>
 </div>
 
-<div class="fs-switch-row">
-  <input class="fs-switch" type="checkbox" role="switch" id="sms" />
-  <label class="fs-label" for="sms">Varsle meg på SMS</label>
+<div class="lt-switch-row">
+  <input class="lt-switch" type="checkbox" role="switch" id="sms" />
+  <label class="lt-label" for="sms">Varsle meg på SMS</label>
 </div>
 
-<div class="fs-switch-row">
-  <input class="fs-switch" type="checkbox" role="switch" id="brev" disabled />
-  <label class="fs-label" for="brev">Varsle meg i posten</label>
+<div class="lt-switch-row">
+  <input class="lt-switch" type="checkbox" role="switch" id="brev" disabled />
+  <label class="lt-label" for="brev">Varsle meg i posten</label>
 </div>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<div className={fs.switch.row}>
-  <input {...fs.switch()} id="varsler" />
-  <label {...fs.label()} htmlFor="varsler">Varsle meg på e-post</label>
+<div className={lt.switch.row}>
+  <input {...lt.switch()} id="varsler" />
+  <label {...lt.label()} htmlFor="varsler">Varsle meg på e-post</label>
 </div>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const bryter = document.querySelector<HTMLInputElement>("#varsler")
 
 // Serveren sendte en avkryssingsboks. Nå er den en bryter.
-fs.setAttributes(bryter, fs.switch())
+lt.setAttributes(bryter, lt.switch())
 
 // En innstilling brukeren ikke får endre.
-fs.setAttributes(bryter, fs.switch({ disabled: true }))
+lt.setAttributes(bryter, lt.switch({ disabled: true }))
 ```
 
-Funksjonen setter både `type` og `role`, som er de to tingene som må stå sammen for at bryteren skal leses opp riktig. `fs.switch.row` gir klassen på raden rundt.
+Funksjonen setter både `type` og `role`, som er de to tingene som må stå sammen for at bryteren skal leses opp riktig. `lt.switch.row` gir klassen på raden rundt.
 
 Ikke slå av bryteren for å hindre et nytt trykk mens en lagring pågår. `disabled` tar fokuset fra en bryter som har det, fokuset kommer ikke tilbake når den slås på igjen, og et nytt mellomromstrykk gjør ingenting. Se [Lagring med en gang](#lagring-med-en-gang) for hvordan et nytt trykk sperres uten.
 
-Importerer du den direkte i stedet for gjennom `fs`, heter den `switchControl`, siden `switch` er et reservert ord i JavaScript:
+Importerer du den direkte i stedet for gjennom `lt`, heter den `switchControl`, siden `switch` er et reservert ord i JavaScript:
 
 ```ts
-import { switchControl } from "@fristil/designsystem"
+import { switchControl } from "@lo-tek/interfaces"
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
 ## Lagring med en gang
 
@@ -80,11 +80,11 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
 <Tabs>
   <TabItem label="Ren HTML">
     ```html
-    <div class="fs-switch-row">
-      <input class="fs-switch" type="checkbox" role="switch" id="varsler" />
-      <label class="fs-label" for="varsler">Varsle meg på e-post</label>
+    <div class="lt-switch-row">
+      <input class="lt-switch" type="checkbox" role="switch" id="varsler" />
+      <label class="lt-label" for="varsler">Varsle meg på e-post</label>
     </div>
-    <p class="fs-help-text" id="varsler-status" role="status"></p>
+    <p class="lt-help-text" id="varsler-status" role="status"></p>
 
     <script type="module">
       const bryter = document.getElementById("varsler")
@@ -122,7 +122,7 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
   <TabItem label="React">
     ```tsx
     import { useState } from "react"
-    import { fs } from "@fristil/designsystem/react"
+    import { lt } from "@lo-tek/interfaces/react"
 
     export function Varslingsbryter({ start }: { start: boolean }) {
       const [pa, settPa] = useState(start)
@@ -158,16 +158,16 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
 
       return (
         <>
-          <div className={fs.switch.row}>
+          <div className={lt.switch.row}>
             <input
-              {...fs.switch()}
+              {...lt.switch()}
               id="varsler"
               checked={pa}
               onChange={(e) => endret(e.currentTarget.checked)}
             />
-            <label {...fs.label()} htmlFor="varsler">Varsle meg på e-post</label>
+            <label {...lt.label()} htmlFor="varsler">Varsle meg på e-post</label>
           </div>
-          <p {...fs.helpText()} role="status">{status}</p>
+          <p {...lt.helpText()} role="status">{status}</p>
         </>
       )
     }
@@ -181,14 +181,14 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
     <script type="module"
             src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"></script>
 
-    <div class="fs-switch-row"
+    <div class="lt-switch-row"
          data-signals="{varsler: false, status: ''}">
-      <input class="fs-switch" type="checkbox" role="switch" id="varsler"
+      <input class="lt-switch" type="checkbox" role="switch" id="varsler"
              data-bind:varsler
              data-on:change="@put('/api/varsler')" />
-      <label class="fs-label" for="varsler">Varsle meg på e-post</label>
+      <label class="lt-label" for="varsler">Varsle meg på e-post</label>
     </div>
-    <p class="fs-help-text" role="status" data-text="$status"></p>
+    <p class="lt-help-text" role="status" data-text="$status"></p>
     ```
 
     Serveren bestemmer utfallet her. `@put` sender signalene, og svaret setter `status` og, når lagringen feilet, `varsler` tilbake dit den var. Tilbakerullingen står altså i serveren og ikke i siden, som for all annen tilstand serveren bestemmer. Et nytt trykk mens lagringen pågår sender en ny `@put`, og serveren avgjør den også; en `disabled`-vakt i siden ville tatt fokuset fra bryteren.
@@ -201,15 +201,15 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-switch` | Selve bryteren |
-| `.fs-switch-row` | Raden som holder bryteren og teksten ved siden av hverandre |
+| `.lt-switch` | Selve bryteren |
+| `.lt-switch-row` | Raden som holder bryteren og teksten ved siden av hverandre |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-switch-width` | `var(--fs-spacing-10)` |
-| `--fs-switch-height` | `var(--fs-spacing-6)` |
+| `--lt-switch-width` | `var(--lt-spacing-10)` |
+| `--lt-switch-height` | `var(--lt-spacing-6)` |
 
-Knappen inni er en gradient og ikke et pseudoelement, fordi Firefox ikke rendrer `::before` og `::after` på et `<input>`. Den følger derfor høyden på bryteren av seg selv. Se [Tilpasning](../../tilpasning/).
+Knappen inni er en gradient og ikke et pseudoelement, fordi Firefox ikke rendrer `::before` og `::after` på et `<input>`. Den følger derfor høyden på bryteren av seg selv. Se [Tilpasning](../../customising/).
 
 Bryteren glir mellom av og på. Har brukeren bedt om mindre bevegelse i systemet sitt, bytter den i stedet tilstand uten overgang.
 

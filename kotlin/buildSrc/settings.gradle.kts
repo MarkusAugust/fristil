@@ -1,1 +1,1 @@
-rootProject.name = "fristil-build"
+rootProject.name = "lotek-build"

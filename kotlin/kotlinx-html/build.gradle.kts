@@ -4,10 +4,10 @@ plugins {
     kotlin("jvm")
 }
 
-// Samme versjon og navnerom som hovedpakken: io.github.markusaugust:fristil-kotlinx-html.
+// Samme versjon og navnerom som hovedpakken: io.github.markusaugust:lo-tek-kotlinx-html.
 group = rootProject.group
 version = rootProject.version
-base.archivesName = "fristil-kotlinx-html"
+base.archivesName = "lo-tek-kotlinx-html"
 
 repositories {
     mavenCentral()

@@ -1,7 +1,7 @@
 import { attributes } from "../../css/shared.js"
 
-export const CONNECTION_STATUS_CLASS = "fs-connection-status" as const
-export const CONNECTION_STATUS_BAR_CLASS = "fs-connection-status__bar" as const
+export const CONNECTION_STATUS_CLASS = "lt-connection-status" as const
+export const CONNECTION_STATUS_BAR_CLASS = "lt-connection-status__bar" as const
 
 export type ConnectionStatusOptions = {
   /** Teksten når forbindelsen er borte. */
@@ -26,7 +26,7 @@ export type ConnectionStatusAttributes = {
  * bort i det øyeblikket forbindelsen er tilbake.
  *
  * ```ts
- * <fs-connection-status {...fs.connectionStatus()} />
+ * <lt-connection-status {...lt.connectionStatus()} />
  * ```
  */
 export const connectionStatus = ({

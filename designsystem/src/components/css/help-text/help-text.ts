@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const HELP_TEXT_CLASS = "fs-help-text" as const
+export const HELP_TEXT_CLASS = "lt-help-text" as const
 
 export const helpTextVariants = [
   "muted",

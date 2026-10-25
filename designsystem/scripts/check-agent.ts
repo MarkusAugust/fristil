@@ -4,30 +4,30 @@
  * En agent-instruksjon med en feil i er verre enn ingen instruksjon: den ser
  * autoritativ ut, og agenten skriver feilen inn i konsumentens app uten å
  * spørre. Derfor etterprøves hver påstand i hver regelbok mot det pakken
- * faktisk sender ut, på samme måte som `sjekk-oppskrifter.ts` gjør for
+ * faktisk sender ut, på samme måte som `check-recipes.ts` gjør for
  * komponentsidene.
  *
  *   - filene på disk er de generatoren ville skrevet nå;
  *   - hver klasse og hvert element pakken har, står i hver regelbok;
- *   - hver markupblokk går gjennom Fristils egen sjekk uten funn;
- *   - hvert `@fristil/designsystem/…` finnes i `exports`;
- *   - hver `defineFsX` svarer til et element som finnes;
- *   - hver `fs.x()` er en byggefunksjon som finnes;
+ *   - hver markupblokk går gjennom LO-TEKs egen sjekk uten funn;
+ *   - hvert `@lo-tek/interfaces/…` finnes i `exports`;
+ *   - hver `defineLtX` svarer til et element som finnes;
+ *   - hver `lt.x()` er en byggefunksjon som finnes;
  *   - hvert tokennavn står i `tokens.css`;
  *   - bare React-regelboka viser React-inngangen, `useEffect` og `createRoot`;
  *   - ingen markup for nettleseren importerer et pakkenavn.
  *
- * Kjør med: bun scripts/sjekk-agent.ts, eller som en del av `bun run build`.
+ * Kjør med: bun scripts/check-agent.ts, eller som en del av `bun run build`.
  */
 
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { diagnoseMarkup } from "../src/diagnostics/index.js"
-import { fs } from "../src/index.js"
+import { lt } from "../src/index.js"
 import { classes } from "../src/vocabulary/classes.js"
 import { elements } from "../src/vocabulary/elements.js"
-import { PAKKE, pakke } from "./agent-deler.js"
-import { FAMILIES, ROLES, roleToCss } from "./fargekontrakt.js"
+import { PAKKE, pakke } from "./agent-parts.js"
+import { FAMILIES, ROLES, roleToCss } from "./color-contract.js"
 import { filer, NAVN } from "./generate-agent.js"
 
 const avvik: string[] = []
@@ -65,12 +65,12 @@ let sjekkedeAkser = 0
  *
  * Denne vakten fanger ikke akkurat det tilfellet i dag, og det skal stå her
  * framfor å bli trodd: malen i `generate-agent.ts` har to fargenavn skrevet
- * inn i prosaen, så `--fs-color-` blir lest i hver bok selv om `tokenListe()`
+ * inn i prosaen, så `--lt-color-` blir lest i hver bok selv om `tokenListe()`
  * ga tom streng. Det er aksesjekken under som feller et tomt kodegjerde. Denne
- * feller et slag som forsvinner helt, som `--fs-spacing-` eller
- * `--fs-line-height-`.
+ * feller et slag som forsvinner helt, som `--lt-spacing-` eller
+ * `--lt-line-height-`.
  */
-const SLAG = ["--fs-color-", "--fs-spacing-", "--fs-line-height-", "--fs-font-"]
+const SLAG = ["--lt-color-", "--lt-spacing-", "--lt-line-height-", "--lt-font-"]
 const lesteSlag = new Map<string, Set<string>>()
 let sjekkedeBlokker = 0
 const blokkerPerFil = new Map<string, number>()
@@ -90,7 +90,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
  * Feilsituasjonen er konkret: døp om en oppskrift, og generatoren skriver den
  * nye fila uten å slette den gamle. Den gamle blir liggende, foreldet, og den
  * følger med i tarballen fordi `files` tar hele mappa, og serveres på
- * `/agent/<navn>.md` fordi ruten leser mappa. `fristil agent` kan ikke skrive
+ * `/agent/<navn>.md` fordi ruten leser mappa. `lotek agent` kan ikke skrive
  * den ut, og ingenting sier fra.
  */
 const påDisk = readdirSync(join(PAKKE, "agent"))
@@ -136,7 +136,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   // 2. Hver klasse og hvert element pakken har, er nevnt. En komponent som
   // mangler er en komponent agenten finner opp et alternativ til.
   for (const klasse of Object.keys(classes)) {
-    // Med `includes(klasse)` ble `fs-avatar` oppfylt av `fs-avatar-stack`, og
+    // Med `includes(klasse)` ble `lt-avatar` oppfylt av `lt-avatar-stack`, og
     // 19 av basisklassene hadde en lengre søsterklasse i samme tabell. Backtick
     // på begge sider er formen tabellene faktisk skriver dem i.
     krev(
@@ -154,11 +154,11 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   }
 
   /*
-   * 3. Markupen tåler Fristils egen sjekk.
+   * 3. Markupen tåler LO-TEKs egen sjekk.
    *
    * `astro` er med fordi en `.astro`-fil er HTML med frontmatter over, og
    * blokkene der bærer ekte markup: hele `## 7` i astro-regelboka er et
-   * `<fs-field>`. `tsx` er ikke med, og det er et bevisst hull: markupen der er
+   * `<lt-field>`. `tsx` er ikke med, og det er et bevisst hull: markupen der er
    * JSX, med `invalid={ugyldig || undefined}` og andre former diagnostikken
    * ikke leser, og `## 7` i react-regelboka viser med vilje ugyldig markup som
    * eksempler på kompileringsfeil.
@@ -177,10 +177,10 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   // 4. Hver import peker på noe pakken lover. En sti som ikke finnes er kode
   // som ser riktig ut og feiler hos konsumenten.
   for (const treff of innhold.matchAll(
-    /(node_modules\/)?@fristil\/designsystem\/([a-z0-9-]+(?:\.css)?)/g,
+    /(node_modules\/)?@lotek\/designsystem\/([a-z0-9-]+(?:\.css)?)/g,
   )) {
     // En sti under node_modules er en filsti inn i pakken, ikke et pakkenavn
-    // `exports` svarer for. `dist/fristil.css` finnes, men `./dist` gjør ikke.
+    // `exports` svarer for. `dist/lotek.css` finnes, men `./dist` gjør ikke.
     if (treff[1]) continue
 
     const inngang = `./${treff[2]}`
@@ -191,23 +191,23 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   }
 
   // 5. Hver registreringsfunksjon svarer til et element som finnes.
-  for (const treff of innhold.matchAll(/\bdefineFs([A-Z][A-Za-z]*)\b/g)) {
-    const tagg = `fs-${treff[1]
+  for (const treff of innhold.matchAll(/\bdefineLt([A-Z][A-Za-z]*)\b/g)) {
+    const tagg = `lt-${treff[1]
       .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
       .toLowerCase()}`
     krev(tagg in elements, `${sti} kaller ${treff[0]}, men ${tagg} finnes ikke`)
   }
 
-  // 6. Hver byggefunksjon finnes i `fs`.
+  // 6. Hver byggefunksjon finnes i `lt`.
   for (const treff of innhold.matchAll(/\bfs\.([a-zA-Z]+)\(/g)) {
-    krev(treff[1] in fs, `${sti} bruker fs.${treff[1]}(), som ikke finnes i fs`)
+    krev(treff[1] in lt, `${sti} bruker lt.${treff[1]}(), som ikke finnes i lt`)
   }
 
   /*
    * 8. Begge aksene i fargematrisen står i kodegjerdet.
    *
    * Tokensjekken over teller navn, og aksene er ikke navn: en familie heter
-   * `accent`, ikke `--fs-color-accent`. Da fargene ble en matrise, sluttet
+   * `accent`, ikke `--lt-color-accent`. Da fargene ble en matrise, sluttet
    * generatoren å skrive et eneste fargenavn, kodegjerdet sto tomt, og
    * navnetellingen var likevel stor nok til å melde grønt.
    *
@@ -242,7 +242,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   // hopper derfor over.
   const tokens = readFileSync(join(PAKKE, "src/tokens/tokens.css"), "utf8")
   /*
-   * En komponentvariabel, som `--fs-label-required-text`, er ikke et token,
+   * En komponentvariabel, som `--lt-label-required-text`, er ikke et token,
    * men den finnes i stilarket til komponenten. Navnet må stå i det ene eller
    * det andre, så en regelbok kan ikke nevne en variabel pakken ikke har.
    */
@@ -250,18 +250,18 @@ for (const [sti, innhold] of Object.entries(forventet)) {
 
   /*
    * Mønsteret må slutte på et bokstav- eller talltegn, og ikke ha et til etter
-   * seg. Uten det første traff `var(--fs-color-…)` i prosaen som
-   * `--fs-color-`, siden slaget nå står i navnet og bindestreken er med i
+   * seg. Uten det første traff `var(--lt-color-…)` i prosaen som
+   * `--lt-color-`, siden slaget nå står i navnet og bindestreken er med i
    * tegnklassen. Det gikk fri før bare fordi `--semantic-` ikke hadde noe slag
    * å klippe i.
    */
   for (const treff of innhold.matchAll(
-    /--fs-[a-zA-Z0-9-]*[a-zA-Z0-9](?![a-zA-Z0-9\-…])/g,
+    /--lt-[a-zA-Z0-9-]*[a-zA-Z0-9](?![a-zA-Z0-9\-…])/g,
   )) {
     /*
      * Navnet må stå helt ut i `tokens.css`, ikke bare som en begynnelse:
-     * `--fs-color-danger` finnes ikke, men ville passert på
-     * `--fs-color-danger-fill`.
+     * `--lt-color-danger` finnes ikke, men ville passert på
+     * `--lt-color-danger-fill`.
      */
     const heleNavnet = new RegExp(`${treff[0]}(?![a-zA-Z0-9-])`)
 
@@ -280,7 +280,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   // å bruke React-inngangen eller en effekt.
   if (navn !== "react") {
     for (const reactisme of [
-      '"@fristil/designsystem/react"',
+      '"@lo-tek/interfaces/react"',
       "useEffect",
       "createRoot",
     ]) {
@@ -294,7 +294,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   /*
    * 9. Ingen markup for nettleseren importerer et pakkenavn.
    *
-   * `import … from "@fristil/designsystem/field"` i en `<script type="module">`
+   * `import … from "@lo-tek/interfaces/field"` i en `<script type="module">`
    * slår ikke opp uten bundles eller importmap: pakkenavnet finnes ikke i
    * nettleseren, og importen feiler stille. Sporene uten byggesteg må derfor
    * ha hele URL-en. Sjekken står her framfor per miljø, siden en `html`-blokk
@@ -313,7 +313,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
     // Bivirkningsimport uten `from`, dynamisk import og enkeltfnutter feiler
     // like stille i en nettleser som den ene formen som sto her før.
     const naken =
-      /(?:from|import)\s*\(?\s*\n?\s*["']@fristil\/designsystem/.test(blokk[1])
+      /(?:from|import)\s*\(?\s*\n?\s*["']@lotek\/designsystem/.test(blokk[1])
     krev(
       !naken,
       `${sti}, markupblokk ${nummer + 1} importerer et pakkenavn i nettleseren. Bruk hele URL-en.`,

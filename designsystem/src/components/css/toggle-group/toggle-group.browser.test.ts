@@ -8,7 +8,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { rgb } from "../../../testing/farge"
+import { rgb } from "../../../testing/color"
 import { contrastRatio } from "../../../tokens/color"
 import { toggleGroup } from "./toggle-group"
 
@@ -16,15 +16,15 @@ import "../../../tokens/tokens.css"
 import "./toggle-group.css"
 import "../sr-only/sr-only.css"
 
-describe("fs-toggle-group", () => {
+describe("lt-toggle-group", () => {
   beforeEach(() => {
     monter(`
-      <fieldset class="fs-toggle-group">
-        <legend class="fs-sr-only">Visning</legend>
-        <label class="fs-toggle-group__option" id="liste">
+      <fieldset class="lt-toggle-group">
+        <legend class="lt-sr-only">Visning</legend>
+        <label class="lt-toggle-group__option" id="liste">
           <input type="radio" name="visning" value="liste" checked /> Liste
         </label>
-        <label class="fs-toggle-group__option" id="kart">
+        <label class="lt-toggle-group__option" id="kart">
           <input type="radio" name="visning" value="kart" /> Kart
         </label>
       </fieldset>
@@ -59,8 +59,8 @@ describe("fs-toggle-group", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(toggleGroup()).toEqual({ class: "fs-toggle-group" })
-    expect(toggleGroup.option).toBe("fs-toggle-group__option")
+    expect(toggleGroup()).toEqual({ class: "lt-toggle-group" })
+    expect(toggleGroup.option).toBe("lt-toggle-group__option")
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
@@ -74,12 +74,12 @@ describe("fokusringen på det valgte alternativet", () => {
     it(`synes mot den valgte flaten (${tema})`, async () => {
       monter(`
         <div data-theme="${tema}">
-          <fieldset class="fs-toggle-group">
-            <legend class="fs-sr-only">Visning</legend>
-            <label class="fs-toggle-group__option">
+          <fieldset class="lt-toggle-group">
+            <legend class="lt-sr-only">Visning</legend>
+            <label class="lt-toggle-group__option">
               <input type="radio" name="visning" value="liste" id="liste" checked /> Liste
             </label>
-            <label class="fs-toggle-group__option">
+            <label class="lt-toggle-group__option">
               <input type="radio" name="visning" value="kart" /> Kart
             </label>
           </fieldset>

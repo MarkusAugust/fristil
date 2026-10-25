@@ -3,48 +3,48 @@ title: Textarea
 description: Flerlinjet tekstfelt. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Samme utseende og tilstander som [Input](../input/), for svar som blir lengre enn én linje.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "textarea.css", "label.css"]}
+<Example importer={["tokens.css", "textarea.css", "label.css"]}
   stiler={["textarea", "label"]} layout="stabel" maxWidth="26rem" kode={`
-<label class="fs-label" for="begrunnelse">Begrunnelse</label>
-<textarea class="fs-textarea" id="begrunnelse" rows="3"
+<label class="lt-label" for="begrunnelse">Begrunnelse</label>
+<textarea class="lt-textarea" id="begrunnelse" rows="3"
   placeholder="Skriv en kort begrunnelse"></textarea>
 
-<label class="fs-label" for="melding">Melding til saksbehandler</label>
-<textarea class="fs-textarea" id="melding"
+<label class="lt-label" for="melding">Melding til saksbehandler</label>
+<textarea class="lt-textarea" id="melding"
   data-state="success">Jeg flytter til ny adresse 1. juni.</textarea>
 
-<label class="fs-label" for="svar">Utfyllende svar</label>
-<textarea class="fs-textarea" id="svar"
+<label class="lt-label" for="svar">Utfyllende svar</label>
+<textarea class="lt-textarea" id="svar"
   data-state="invalid" aria-invalid="true">For kort</textarea>
 
-<label class="fs-label" for="merknad">Merknad</label>
-<textarea class="fs-textarea" id="merknad"
+<label class="lt-label" for="merknad">Merknad</label>
+<textarea class="lt-textarea" id="merknad"
   disabled>Saken er avsluttet og kan ikke endres.</textarea>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<textarea {...fs.textarea({ state: "invalid" })} id="begrunnelse" rows={3} />
+<textarea {...lt.textarea({ state: "invalid" })} id="begrunnelse" rows={3} />
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs, type FieldState } from "@fristil/designsystem"
+import { lt, type FieldState } from "@lo-tek/interfaces"
 
 const felt = document.querySelector<HTMLTextAreaElement>("#begrunnelse")
 if (!felt) throw new Error("fant ikke elementet")
@@ -52,14 +52,14 @@ if (!felt) throw new Error("fant ikke elementet")
 felt.addEventListener("blur", () => {
   const tilstand: FieldState = felt.value.trim().length >= 20 ? "success" : "invalid"
 
-  fs.setAttributes(felt, fs.textarea({ state: tilstand }))
+  lt.setAttributes(felt, lt.textarea({ state: tilstand }))
 })
 ```
 
-`state` er samme type som i [Input](../input/) og [Select](../select/), så verdien kan sendes mellom dem. `fs.setAttributes` rydder bort tilstanden fra forrige kall, så feltet ikke blir stående rødt etter at feilen er rettet.
+`state` er samme type som i [Input](../input/) og [Select](../select/), så verdien kan sendes mellom dem. `lt.setAttributes` rydder bort tilstanden fra forrige kall, så feltet ikke blir stående rødt etter at feilen er rettet.
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | `data-state` | Brukes til |
 | --- | --- |
@@ -73,17 +73,17 @@ felt.addEventListener("blur", () => {
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-textarea` | Feltet. Tilstanden kommer fra `data-state`. |
+| `.lt-textarea` | Feltet. Tilstanden kommer fra `data-state`. |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-textarea-min-height` | `calc(var(--fs-spacing-4) * 5)` |
-| `--fs-textarea-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
-| `--fs-textarea-radius` | `var(--fs-spacing-1)` |
+| `--lt-textarea-min-height` | `calc(var(--lt-spacing-4) * 5)` |
+| `--lt-textarea-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
+| `--lt-textarea-radius` | `var(--lt-spacing-1)` |
 
-`--fs-textarea-min-height` er en minstehøyde, ikke en fast høyde. `rows` virker over den, og brukeren kan fortsatt dra feltet høyere. Med standard skrift og luft er minstehøyden litt under tre rader, så `rows="1"` og `rows="2"` gir det samme feltet, og først `rows="3"` blir høyere. Skal `rows` bestemme høyden alene, sett `--fs-textarea-min-height: 0`. Bredden er låst, siden klassen setter `resize: vertical`.
+`--lt-textarea-min-height` er en minstehøyde, ikke en fast høyde. `rows` virker over den, og brukeren kan fortsatt dra feltet høyere. Med standard skrift og luft er minstehøyden litt under tre rader, så `rows="1"` og `rows="2"` gir det samme feltet, og først `rows="3"` blir høyere. Skal `rows` bestemme høyden alene, sett `--lt-textarea-min-height: 0`. Bredden er låst, siden klassen setter `resize: vertical`.
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

@@ -12,24 +12,24 @@ import Preview from "./Preview.astro"
 		/* Bare for visningen: linja legger seg øverst i boksen, slik den legger
 		   seg øverst i vinduet i en app. Plassen her gjør at den ikke dekker
 		   knappene. En konsument trenger ingenting av dette. */
-		.flate { padding-block-start: var(--fs-spacing-12); }
+		.flate { padding-block-start: var(--lt-spacing-12); }
 	`}
 >
 	<div class="demo-samband-knapper">
-		<button class="fs-button" id="demo-samband-av" type="button">Simuler at kallet feiler</button>
-		<button class="fs-button" data-variant="secondary" id="demo-samband-pa" type="button">Simuler at det virker igjen</button>
+		<button class="lt-button" id="demo-samband-av" type="button">Simuler at kallet feiler</button>
+		<button class="lt-button" data-variant="secondary" id="demo-samband-pa" type="button">Simuler at det virker igjen</button>
 	</div>
-	<fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
+	<lt-connection-status class="lt-connection-status" data-ignore-morph></lt-connection-status>
 </Preview>
 
 <script>
-	import { defineFsConnectionStatus } from "@fristil/designsystem/connection-status"
+	import { defineLtConnectionStatus } from "@lo-tek/interfaces/connection-status"
 
-	defineFsConnectionStatus()
+	defineLtConnectionStatus()
 
 	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
 	const flate = document.getElementById("demo-samband")?.shadowRoot
-	const status = flate?.querySelector("fs-connection-status")
+	const status = flate?.querySelector("lt-connection-status")
 
 	flate?.getElementById("demo-samband-av")?.addEventListener("click", () => {
 		status?.reportFailure()

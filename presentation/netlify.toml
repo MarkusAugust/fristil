@@ -7,6 +7,6 @@
 # er rota, som den var da fila ble lastet opp for hånd. Kopien lages under
 # bygget og er ikke sporet i git.
 [build]
-  base = "presentasjon"
+  base = "presentation"
   publish = "."
-  command = "cp designsystemarkitektur.html index.html"
+  command = "cp design-system-architecture.html index.html"

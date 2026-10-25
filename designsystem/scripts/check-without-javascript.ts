@@ -5,28 +5,28 @@
  * lastes markupen i en Playwright-kontekst med `javaScriptEnabled: false`,
  * med stilarkene som eneste kode, slik en leser uten JavaScript får den.
  *
- * Markupen kommer fra to kilder: en mal skrevet for hånd, og `fs.tabs()`.
- * Kotlin-utgaven, `Fs.tabs`, er dekket gjennom `ContractTest`, som krever
- * at den gir det samme som `fs.tabs()` for hvert tilfelle i
- * `manifest/byggetilfeller.json`.
+ * Markupen kommer fra to kilder: en mal skrevet for hånd, og `lt.tabs()`.
+ * Kotlin-utgaven, `Lt.tabs`, er dekket gjennom `ContractTest`, som krever
+ * at den gir det samme som `lt.tabs()` for hvert tilfelle i
+ * `manifest/build-cases.json`.
  *
  * Kravene er de i `krav-faner.md` (utredningen): A1 alle panelene vises, A2
  * raden er en vanlig liste med lenker som alle kan nås med Tab, A3 axe finner
  * ingen brudd, A8 ingen av panelene blir et landemerke.
  *
- * Kjør med: bun run sjekk:uten-javascript
+ * Kjør med: bun run check:without-javascript
  */
 
 import { createRequire } from "node:module"
 import { fileURLToPath } from "node:url"
 import { type Browser, chromium, firefox, type Page, webkit } from "playwright"
-import { tabs } from "../src/components/ramme/tabs/tabs.js"
+import { tabs } from "../src/components/frame/tabs/tabs.js"
 import { attr } from "../src/testing/markup.js"
 
 const SRC = fileURLToPath(new URL("../src/", import.meta.url))
 const css = (
   await Promise.all(
-    ["tokens/tokens.css", "components/ramme/tabs/tabs.css"].map((fil) =>
+    ["tokens/tokens.css", "components/frame/tabs/tabs.css"].map((fil) =>
       Bun.file(`${SRC}${fil}`).text(),
     ),
   )
@@ -39,12 +39,12 @@ const NAVN = ["Søknaden", "Vedlegg", "Meldinger"]
 const NOKLER = ["soknaden", "vedlegg", "meldinger"]
 
 const HANDSKREVET = `
-  <fs-tabs>
-    <ul class="fs-tabs__list" aria-label="Deler av saken">
+  <lt-tabs>
+    <ul class="lt-tabs__list" aria-label="Deler av saken">
       ${NAVN.map((n, i) => `<li><a href="#${NOKLER[i]}">${n}</a></li>`).join("")}
     </ul>
-    ${NAVN.map((n, i) => `<section class="fs-tabs__panel" id="${NOKLER[i]}"><h2>${n}</h2><p>Innholdet i ${n.toLowerCase()}.</p></section>`).join("")}
-  </fs-tabs>`
+    ${NAVN.map((n, i) => `<section class="lt-tabs__panel" id="${NOKLER[i]}"><h2>${n}</h2><p>Innholdet i ${n.toLowerCase()}.</p></section>`).join("")}
+  </lt-tabs>`
 
 const faner = tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
 const fraByggefunksjonen = faner as unknown as {
@@ -55,14 +55,14 @@ const fraByggefunksjonen = faner as unknown as {
   headings: Record<string, unknown>[]
 }
 const BYGGEFUNKSJONEN = `
-  <fs-tabs>
+  <lt-tabs>
     <ul ${attr(fraByggefunksjonen.list)}>
       ${fraByggefunksjonen.tabs.map((t, i) => `<li ${attr(fraByggefunksjonen.item ?? {})}><a ${attr(t)}>${NAVN[i]}</a></li>`).join("")}
     </ul>
     ${fraByggefunksjonen.panels.map((p, i) => `<section ${attr(p)}><h2 ${attr(fraByggefunksjonen.headings[i])}>${NAVN[i]}</h2><p>Innholdet i ${NAVN[i].toLowerCase()}.</p></section>`).join("")}
-  </fs-tabs>`
+  </lt-tabs>`
 
-const KILDER = { "skrevet for hånd": HANDSKREVET, "fs.tabs()": BYGGEFUNKSJONEN }
+const KILDER = { "skrevet for hånd": HANDSKREVET, "lt.tabs()": BYGGEFUNKSJONEN }
 
 function side(markup: string, stil = css): string {
   return `<!doctype html><html lang="nb"><head><meta charset="utf-8"><title>Uten JavaScript</title>
@@ -82,7 +82,7 @@ async function sjekk(motor: string, page: Page, kilde: string) {
   // Uten dette kunne alt under gått grønt på en side der skriptene kjørte.
   const forutsetning = await page.evaluate(() => ({
     utenSkript: matchMedia("(scripting: none)").matches,
-    definert: customElements.get("fs-tabs") !== undefined,
+    definert: customElements.get("lt-tabs") !== undefined,
   }))
   if (!forutsetning.utenSkript || forutsetning.definert) {
     si("forutsetning", "siden kjørte med JavaScript, så ingenting er prøvd.")
@@ -91,7 +91,7 @@ async function sjekk(motor: string, page: Page, kilde: string) {
 
   // A1: hvert panel vises, med overskrift og innhold.
   const paneler = await page.evaluate(() =>
-    [...document.querySelectorAll<HTMLElement>(".fs-tabs__panel")].map((p) => ({
+    [...document.querySelectorAll<HTMLElement>(".lt-tabs__panel")].map((p) => ({
       id: p.id,
       vises: p.checkVisibility(),
       topp: p.getBoundingClientRect().top,
@@ -123,7 +123,7 @@ async function sjekk(motor: string, page: Page, kilde: string) {
   const raden = await page.evaluate(() =>
     [
       ...document.querySelectorAll(
-        "fs-tabs [role], fs-tabs [aria-selected], fs-tabs [tabindex], fs-tabs [aria-controls]",
+        "lt-tabs [role], lt-tabs [aria-selected], lt-tabs [tabindex], lt-tabs [aria-controls]",
       ),
     ].map((e) => e.outerHTML.slice(0, 80)),
   )
@@ -142,14 +142,14 @@ async function sjekk(motor: string, page: Page, kilde: string) {
   for (let i = 0; i < NAVN.length; i++) {
     await page.keyboard.press(tast)
     const href = await page.evaluate(() =>
-      document.activeElement?.closest(".fs-tabs__list")
+      document.activeElement?.closest(".lt-tabs__list")
         ? document.activeElement.getAttribute("href")
         : null,
     )
     if (href) besokt.push(href)
   }
   const ventet = NOKLER.map((n) =>
-    kilde === "fs.tabs()" ? `#sak-${n}` : `#${n}`,
+    kilde === "lt.tabs()" ? `#sak-${n}` : `#${n}`,
   )
   if (besokt.join(" ") !== ventet.join(" "))
     si(
@@ -159,7 +159,7 @@ async function sjekk(motor: string, page: Page, kilde: string) {
 
   // A8: ingen av panelene blir et landemerke.
   const landemerker = await page.evaluate(() =>
-    [...document.querySelectorAll(".fs-tabs__panel")]
+    [...document.querySelectorAll(".lt-tabs__panel")]
       .filter(
         (p) =>
           p.hasAttribute("role") ||

@@ -98,17 +98,17 @@ function lesSkjema() {
   return side.evaluate(() => {
     const rot = document.getElementById("demo-skjema")?.shadowRoot
     return {
-      lenker: rot?.querySelectorAll("fs-error-summary li a").length ?? 0,
+      lenker: rot?.querySelectorAll("lt-error-summary li a").length ?? 0,
       markerte: rot?.querySelectorAll("[aria-invalid='true']").length ?? 0,
       overskrift:
-        rot?.querySelector(".fs-error-summary__title")?.textContent ?? "",
+        rot?.querySelector(".lt-error-summary__title")?.textContent ?? "",
     }
   })
 }
 
 // Skjemaet: et tomt skjema skal gi feil i alle feltene og i oppsummeringen
 {
-  await apne("/monster/skjema/")
+  await apne("/patterns/form/")
 
   await side.evaluate(() => {
     const rot = document.getElementById("demo-skjema")?.shadowRoot
@@ -120,10 +120,10 @@ function lesSkjema() {
   const resultat = await side.evaluate(() => {
     const rot = document.getElementById("demo-skjema")?.shadowRoot
     return {
-      lenker: rot?.querySelectorAll("fs-error-summary li a").length ?? 0,
+      lenker: rot?.querySelectorAll("lt-error-summary li a").length ?? 0,
       markerte: rot?.querySelectorAll("[aria-invalid='true']").length ?? 0,
       overskrift:
-        rot?.querySelector(".fs-error-summary__title")?.textContent ?? "",
+        rot?.querySelector(".lt-error-summary__title")?.textContent ?? "",
       pekerPaFeil:
         rot
           ?.getElementById("demo-epost")
@@ -176,7 +176,7 @@ function lesSkjema() {
 
 // Skjemaet: en feil skal komme når feltet forlates, uten innsending først
 {
-  await apne("/monster/skjema/")
+  await apne("/patterns/form/")
 
   await skrivIFelt("demo-epost", "ola")
   await side.waitForTimeout(200)
@@ -195,7 +195,7 @@ function lesSkjema() {
 
 // Lista: fire tilstander, og her kontrolleres treff og tomt
 {
-  await apne("/monster/liste/")
+  await apne("/patterns/list/")
   await side.waitForTimeout(700)
 
   const forst = await side.evaluate(() => {
@@ -215,7 +215,7 @@ function lesSkjema() {
   // Sorteringen: et klikk på «Saksnummer» snur rekkefølgen, flytter
   // `aria-sort` og lar fokus bli på knappen, selv om tabellen tegnes på nytt.
   await side
-    .locator("#demo-liste .fs-table__sort", { hasText: "Saksnummer" })
+    .locator("#demo-liste .lt-table__sort", { hasText: "Saksnummer" })
     .click()
   const sortert = await side.evaluate(() => {
     const rot = document.getElementById("demo-liste")?.shadowRoot
@@ -271,7 +271,7 @@ function lesSkjema() {
 
 // Bekreftelsen: dialogen tar fokus, og meldingen kommer etterpå
 {
-  await apne("/monster/bekreftelse/")
+  await apne("/patterns/confirmation/")
 
   await side.evaluate(() => {
     const rot = document.getElementById("demo-bekreft")?.shadowRoot
@@ -300,7 +300,7 @@ function lesSkjema() {
 
   const melding = await side.evaluate(() => {
     const rot = document.getElementById("demo-bekreft")?.shadowRoot
-    return rot?.querySelector(".fs-toast__message")?.textContent ?? ""
+    return rot?.querySelector(".lt-toast__message")?.textContent ?? ""
   })
 
   krev(
@@ -311,7 +311,7 @@ function lesSkjema() {
 
 // Temavelgeren: bytter tema uten JavaScript, og setter color-scheme
 {
-  await apne("/demo/tema/")
+  await apne("/demo/theme/")
 
   /*
    * Klikket må gå på ledeteksten og ikke på inputen.
@@ -326,7 +326,7 @@ function lesSkjema() {
       const rot = document.documentElement
       return {
         tekst: getComputedStyle(rot)
-          .getPropertyValue("--fs-color-neutral-text-strong")
+          .getPropertyValue("--lt-color-neutral-text-strong")
           .trim(),
         skjema: getComputedStyle(rot).colorScheme,
       }
@@ -334,7 +334,7 @@ function lesSkjema() {
   }
 
   const antallKontroller = await side.evaluate(
-    () => document.querySelectorAll("input.fs-theme-control").length,
+    () => document.querySelectorAll("input.lt-theme-control").length,
   )
   krev(
     antallKontroller === 3,
@@ -371,7 +371,7 @@ function lesSkjema() {
 
 // Sideskjelettet: landemerkene og hopplenken
 {
-  await apne("/demo/sideskjelett/")
+  await apne("/demo/page-skeleton/")
 
   const struktur = await side.evaluate(() => ({
     hopplenke: document.body.firstElementChild?.className ?? "",
@@ -384,7 +384,7 @@ function lesSkjema() {
   }))
 
   krev(
-    struktur.hopplenke.includes("fs-skip-link"),
+    struktur.hopplenke.includes("lt-skip-link"),
     "hopplenken er ikke det første i body",
   )
   krev(struktur.hoved, "hovedinnholdet mangler id eller tabindex")

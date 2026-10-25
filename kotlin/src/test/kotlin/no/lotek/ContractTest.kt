@@ -1,4 +1,4 @@
-package no.fristil
+package no.lotek
 
 import java.io.File
 import kotlin.test.assertEquals
@@ -9,9 +9,9 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
 /**
- * At hver byggefunksjon i Kotlin svarer det `fs` i TypeScript svarer.
+ * At hver byggefunksjon i Kotlin svarer det `lt` i TypeScript svarer.
  *
- * Byggetilfellene i `designsystem/manifest/byggetilfeller.json` er skrevet av
+ * Byggetilfellene i `designsystem/manifest/build-cases.json` er skrevet av
  * `generate-manifest.ts`: hvert valg alene, og kombinasjonene av dem, med
  * svaret fra TypeScript. Både de genererte og de håndskrevne
  * byggefunksjonene prøves mot alle.
@@ -29,7 +29,7 @@ class ContractTest {
                 val feil = assertFailsWith<IllegalArgumentException>("$builder($options) skulle kastet: ${case["throws"]}") {
                     Dispatch.call(builder, options)
                 }
-                // Meldingen er den samme etter navnet, som er `fs.tabs()` i TypeScript og `Fs.tabs` her.
+                // Meldingen er den samme etter navnet, som er `lt.tabs()` i TypeScript og `Lt.tabs` her.
                 assertEquals(
                     (case["throws"] as String).substringAfter(": "),
                     feil.message?.substringAfter(": "),
@@ -48,12 +48,12 @@ class ContractTest {
 
     @Test
     fun `attributtene skrives som HTML`() {
-        val felt = Fs.field(id = "epost", invalid = true, error = true)
+        val felt = Lt.field(id = "epost", invalid = true, error = true)
         assertEquals("""id="epost-error"""", felt.error.toHtml())
-        assertEquals("""class="fs-label" for="epost"""", felt.label.toHtml())
+        assertEquals("""class="lt-label" for="epost"""", felt.label.toHtml())
         assertEquals(
-            """class="fs-button" data-variant="secondary" title="a &amp; &quot;b&quot;"""",
-            (Fs.button(variant = ButtonVariant.SECONDARY) + mapOf("title" to "a & \"b\"")).toHtml(),
+            """class="lt-button" data-variant="secondary" title="a &amp; &quot;b&quot;"""",
+            (Lt.button(variant = ButtonVariant.SECONDARY) + mapOf("title" to "a & \"b\"")).toHtml(),
         )
         assertEquals("hidden", Attributes(mapOf("hidden" to "")).toHtml())
     }

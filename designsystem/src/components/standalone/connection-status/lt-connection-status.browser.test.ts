@@ -10,36 +10,36 @@ import {
 import { attr } from "../../../testing/markup"
 import { connectionStatus } from "./connection-status"
 import {
-  defineFsConnectionStatus,
-  type FsConnectionStatus,
+  defineLtConnectionStatus,
+  type LtConnectionStatus,
   reportFailure,
   reportSuccess,
-} from "./fs-connection-status"
+} from "./lt-connection-status"
 
 import "../../../tokens/tokens.css"
 import "./connection-status.css"
 
 function linje(): HTMLElement | null {
-  return document.querySelector(".fs-connection-status__bar")
+  return document.querySelector(".lt-connection-status__bar")
 }
 
-describe("fs-connection-status", () => {
+describe("lt-connection-status", () => {
   beforeAll(() => {
-    defineFsConnectionStatus()
+    defineLtConnectionStatus()
   })
 
   beforeEach(async () => {
     monter(
-      `<fs-connection-status ${attr(connectionStatus())}></fs-connection-status>`,
+      `<lt-connection-status ${attr(connectionStatus())}></lt-connection-status>`,
     )
-    await customElements.whenDefined("fs-connection-status")
+    await customElements.whenDefined("lt-connection-status")
     await ventPaTegning()
   })
 
   it("ber serveren la innholdet være i fred", () => {
     // Serveren kan ikke fortelle deg at den er utilgjengelig, så komponenten
     // eier alt inni. Uten dette river neste patch linja bort.
-    const vert = document.querySelector("fs-connection-status") as HTMLElement
+    const vert = document.querySelector("lt-connection-status") as HTMLElement
     expect(vert.hasAttribute("data-ignore-morph")).toBe(true)
   })
 
@@ -49,8 +49,8 @@ describe("fs-connection-status", () => {
 
   it("sier fra når appen melder at et kall feilet", async () => {
     const status = document.querySelector(
-      "fs-connection-status",
-    ) as FsConnectionStatus
+      "lt-connection-status",
+    ) as LtConnectionStatus
 
     // navigator.onLine sier bare at maskinen har et nettverk, ikke at
     // serveren svarer. Derfor melder appen selv fra.
@@ -65,8 +65,8 @@ describe("fs-connection-status", () => {
 
   it("kvitterer når forbindelsen er tilbake", async () => {
     const status = document.querySelector(
-      "fs-connection-status",
-    ) as FsConnectionStatus
+      "lt-connection-status",
+    ) as LtConnectionStatus
 
     status.reportFailure()
     await ventPaTegning()
@@ -80,8 +80,8 @@ describe("fs-connection-status", () => {
 
   it("melder fra til appen begge veier", async () => {
     const status = document.querySelector(
-      "fs-connection-status",
-    ) as FsConnectionStatus
+      "lt-connection-status",
+    ) as LtConnectionStatus
     const meldinger: string[] = []
     for (const navn of ["connection-lost", "connection-restored"]) {
       status.addEventListener(navn, () => meldinger.push(navn))
@@ -107,11 +107,11 @@ describe("fs-connection-status", () => {
 
   it("lar egen tekst overstyre", async () => {
     monter(
-      `<fs-connection-status ${attr(connectionStatus({ offlineText: "Sambandet er nede." }))}></fs-connection-status>`,
+      `<lt-connection-status ${attr(connectionStatus({ offlineText: "Sambandet er nede." }))}></lt-connection-status>`,
     )
     await ventPaTegning()
     ;(
-      document.querySelector("fs-connection-status") as FsConnectionStatus
+      document.querySelector("lt-connection-status") as LtConnectionStatus
     ).reportFailure()
     await ventPaTegning()
 
@@ -120,7 +120,7 @@ describe("fs-connection-status", () => {
 
   it("har ingen tilgjengelighetsbrudd når linja vises", async () => {
     ;(
-      document.querySelector("fs-connection-status") as FsConnectionStatus
+      document.querySelector("lt-connection-status") as LtConnectionStatus
     ).reportFailure()
     await ventPaTegning()
 
@@ -128,16 +128,16 @@ describe("fs-connection-status", () => {
   })
 })
 
-describe("fs-connection-status sier fra én gang og kommer tilbake", () => {
+describe("lt-connection-status sier fra én gang og kommer tilbake", () => {
   beforeAll(() => {
-    defineFsConnectionStatus()
+    defineLtConnectionStatus()
   })
 
   async function monterLinje(attributter = attr(connectionStatus())) {
-    monter(`<fs-connection-status ${attributter}></fs-connection-status>`)
-    await customElements.whenDefined("fs-connection-status")
+    monter(`<lt-connection-status ${attributter}></lt-connection-status>`)
+    await customElements.whenDefined("lt-connection-status")
     await ventPaTegning()
-    return document.querySelector("fs-connection-status") as FsConnectionStatus
+    return document.querySelector("lt-connection-status") as LtConnectionStatus
   }
 
   it("melder connection-lost én gang selv om offline kommer flere ganger", async () => {
@@ -217,17 +217,17 @@ describe("fs-connection-status sier fra én gang og kommer tilbake", () => {
 })
 
 /*
- * Et sent registrert tagnavn. `fs-connection-status` har alt tatt
- * konstruktøren, så `defineFsConnectionStatus("fs-connection-status-sen")`
+ * Et sent registrert tagnavn. `lt-connection-status` har alt tatt
+ * konstruktøren, så `defineLtConnectionStatus("lt-connection-status-sen")`
  * registrerer en underklasse av den.
  */
 describe("reportFailure() og reportSuccess() venter på registreringen", () => {
   it("gjør kallene i rekkefølge når elementet er oppgradert", async () => {
     monter(
-      `<fs-connection-status-sen class="fs-connection-status"></fs-connection-status-sen>`,
+      `<lt-connection-status-sen class="lt-connection-status"></lt-connection-status-sen>`,
     )
     const element = document.querySelector(
-      "fs-connection-status-sen",
+      "lt-connection-status-sen",
     ) as Element
 
     let ferdig = false
@@ -238,7 +238,7 @@ describe("reportFailure() og reportSuccess() venter på registreringen", () => {
     expect(ferdig).toBe(false)
     expect(linje()).toBeNull()
 
-    defineFsConnectionStatus("fs-connection-status-sen")
+    defineLtConnectionStatus("lt-connection-status-sen")
 
     await løfte
     expect(linje()?.dataset.state).toBe("offline")
@@ -248,20 +248,20 @@ describe("reportFailure() og reportSuccess() venter på registreringen", () => {
   })
 })
 
-describe("fs-connection-status ute av dokumentet og inn igjen", () => {
+describe("lt-connection-status ute av dokumentet og inn igjen", () => {
   beforeAll(() => {
-    defineFsConnectionStatus()
+    defineLtConnectionStatus()
   })
 
   async function monterNy() {
-    const flate = monter("<fs-connection-status></fs-connection-status>")
-    await customElements.whenDefined("fs-connection-status")
+    const flate = monter("<lt-connection-status></lt-connection-status>")
+    await customElements.whenDefined("lt-connection-status")
     await ventPaTegning()
     return {
       flate,
       status: document.querySelector(
-        "fs-connection-status",
-      ) as FsConnectionStatus,
+        "lt-connection-status",
+      ) as LtConnectionStatus,
     }
   }
 
@@ -308,17 +308,17 @@ describe("fs-connection-status ute av dokumentet og inn igjen", () => {
   })
 })
 
-describe("fs-connection-status når teksten byttes mens linja står", () => {
+describe("lt-connection-status når teksten byttes mens linja står", () => {
   beforeAll(() => {
-    defineFsConnectionStatus()
+    defineLtConnectionStatus()
   })
 
   it("viser den nye teksten", async () => {
-    monter("<fs-connection-status></fs-connection-status>")
-    await customElements.whenDefined("fs-connection-status")
+    monter("<lt-connection-status></lt-connection-status>")
+    await customElements.whenDefined("lt-connection-status")
     const status = document.querySelector(
-      "fs-connection-status",
-    ) as FsConnectionStatus
+      "lt-connection-status",
+    ) as LtConnectionStatus
     status.reportFailure()
     await ventPaTegning()
 

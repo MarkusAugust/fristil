@@ -9,16 +9,16 @@ import ErrorSummaryDemo from "../../../components/ErrorSummaryDemo.astro"
 Når en innsending stopper, skal brukeren få vite hvorfor, og komme til feltet med ett klikk. Serveren skriver overskriften og lista. Komponenten gjør de to tingene nettleseren ikke gjør selv: flytter fokus hit når boksen kommer til syne, og gir fokus til selve kontrollen når en lenke følges.
 
 :::note[To veier til den samme markupen]
-Lages markupen med JavaScript, gir `fs.errorSummary()` boksen klassen, `role="alert"` og `tabindex="-1"`, ferdig i HTML-en. Blir den til uten JavaScript, holder det med `<fs-error-summary>` rundt en overskrift og en liste: komponenten setter de tre, og klassen på overskriften. Fokus hit, og videre til feltet, kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+Lages markupen med JavaScript, gir `lt.errorSummary()` boksen klassen, `role="alert"` og `tabindex="-1"`, ferdig i HTML-en. Blir den til uten JavaScript, holder det med `<lt-error-summary>` rundt en overskrift og en liste: komponenten setter de tre, og klassen på overskriften. Fokus hit, og videre til feltet, kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-and-behaviour/#byggefunksjon-eller-web-component).
 :::
 
 ```ts
 // main.ts, kjøres én gang når appen starter
-import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/error-summary.css"
+import { defineLtErrorSummary } from "@lo-tek/interfaces/error-summary"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/error-summary.css"
 
-defineFsErrorSummary()
+defineLtErrorSummary()
 ```
 
 ## Slik tar du den i bruk
@@ -30,33 +30,33 @@ defineFsErrorSummary()
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/error-summary/error-summary.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/label/label.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/input/input.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/error-summary/error-summary.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/label/label.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/input/input.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
     <form novalidate>
       <!-- Klassen, role="alert" og tabindex="-1" setter komponenten. -->
-      <fs-error-summary id="feil" hidden>
+      <lt-error-summary id="feil" hidden>
         <h2></h2>
-        <ul class="fs-list"></ul>
-      </fs-error-summary>
+        <ul class="lt-list"></ul>
+      </lt-error-summary>
 
-      <label class="fs-label" for="epost">E-postadresse</label>
-      <input class="fs-input" id="epost" type="email" />
-      <button class="fs-button">Send søknad</button>
+      <label class="lt-label" for="epost">E-postadresse</label>
+      <input class="lt-input" id="epost" type="email" />
+      <button class="lt-button">Send søknad</button>
     </form>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsErrorSummary } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/error-summary/fs-error-summary.js"
+      import { defineLtErrorSummary } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/error-summary/lt-error-summary.js"
 
-      defineFsErrorSummary()
+      defineLtErrorSummary()
     </script>
 
     <script type="module">
@@ -96,35 +96,35 @@ defineFsErrorSummary()
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/fristil.d.ts, gir <fs-error-summary> typer i JSX
-    import "@fristil/designsystem/react-jsx"
+    // src/lotek.d.ts, gir <lt-error-summary> typer i JSX
+    import "@lo-tek/interfaces/react-jsx"
     ```
 
     ```tsx
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/error-summary.css"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/error-summary.css"
 
-    import { fs } from "@fristil/designsystem/react"
-    import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
+    import { lt } from "@lo-tek/interfaces/react"
+    import { defineLtErrorSummary } from "@lo-tek/interfaces/error-summary"
 
-    defineFsErrorSummary()
+    defineLtErrorSummary()
 
     type Feil = { id: string; melding: string }
 
     export function Feiloppsummering({ feilene }: { feilene: Feil[] }) {
-      const boks = fs.errorSummary({ count: feilene.length, id: "feil" })
+      const boks = lt.errorSummary({ count: feilene.length, id: "feil" })
 
       return (
-        <fs-error-summary {...boks.host}>
+        <lt-error-summary {...boks.host}>
           <h2 {...boks.title}>
             {feilene.length === 1 ? "Skjemaet har én feil" : `Skjemaet har ${feilene.length} feil`}
           </h2>
-          <ul {...fs.list()}>
+          <ul {...lt.list()}>
             {feilene.map((f) => (
               <li key={f.id}><a href={`#${f.id}`}>{f.melding}</a></li>
             ))}
           </ul>
-        </fs-error-summary>
+        </lt-error-summary>
       )
     }
     ```
@@ -132,25 +132,25 @@ defineFsErrorSummary()
   <TabItem label="Astro">
     ```astro
     ---
-    import { fs } from "@fristil/designsystem"
+    import { lt } from "@lo-tek/interfaces"
 
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/error-summary.css"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/error-summary.css"
 
     const { feilene } = Astro.props
-    const boks = fs.errorSummary({ count: feilene.length, id: "feil" })
+    const boks = lt.errorSummary({ count: feilene.length, id: "feil" })
     ---
 
-    <fs-error-summary {...boks.host}>
+    <lt-error-summary {...boks.host}>
       <h2 {...boks.title}>Skjemaet har {feilene.length} feil</h2>
-      <ul {...fs.list()}>
+      <ul {...lt.list()}>
         {feilene.map((f) => <li><a href={`#${f.id}`}>{f.melding}</a></li>)}
       </ul>
-    </fs-error-summary>
+    </lt-error-summary>
 
     <script>
-      import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
-      defineFsErrorSummary()
+      import { defineLtErrorSummary } from "@lo-tek/interfaces/error-summary"
+      defineLtErrorSummary()
     </script>
     ```
   </TabItem>
@@ -158,22 +158,22 @@ defineFsErrorSummary()
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/error-summary/error-summary.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/error-summary/error-summary.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsErrorSummary } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/error-summary/fs-error-summary.js"
+      import { defineLtErrorSummary } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/error-summary/lt-error-summary.js"
 
-      defineFsErrorSummary()
+      defineLtErrorSummary()
     </script>
 
-    <fs-error-summary id="feil" hidden>
+    <lt-error-summary id="feil" hidden>
       <h2></h2>
-      <ul class="fs-list"></ul>
-    </fs-error-summary>
+      <ul class="lt-list"></ul>
+    </lt-error-summary>
     ```
 
     Serveren sender hele boksen på nytt når skjemaet valideres, med overskriften og lista ferdig utfylt, og uten `hidden` når det finnes feil. Komponenten oppdager at boksen ble synlig og flytter fokus dit.
@@ -185,20 +185,20 @@ defineFsErrorSummary()
 ## Markupen
 
 ```ts
-const feil = fs.errorSummary({ count: feilene.length, id: "feil" })
+const feil = lt.errorSummary({ count: feilene.length, id: "feil" })
 ```
 
 ```html
-<fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" id="feil">
-  <h2 class="fs-error-summary__title">Skjemaet har to feil</h2>
-  <ul class="fs-list">
+<lt-error-summary class="lt-error-summary" role="alert" tabindex="-1" id="feil">
+  <h2 class="lt-error-summary__title">Skjemaet har to feil</h2>
+  <ul class="lt-list">
     <li><a href="#epost">Skriv en e-postadresse med krøllalfa</a></li>
     <li><a href="#fodselsdato">Skriv datoen som dag, måned og år</a></li>
   </ul>
-</fs-error-summary>
+</lt-error-summary>
 ```
 
-Overskriften og lista skriver serveren. Komponenten lagde overskriften tidligere selv, og da forsvant den ved første oppdatering fra serveren, uten å komme tilbake. Klassen, `role="alert"` og `tabindex="-1"` skriver `fs.errorSummary()` når markupen lages med JavaScript; ellers setter komponenten dem, og klassen på overskriften, og setter dem tilbake om en patch tar dem. Har serveren skrevet en annen rolle, står den. Se [Markup og oppførsel](/markup-og-oppforsel/).
+Overskriften og lista skriver serveren. Komponenten lagde overskriften tidligere selv, og da forsvant den ved første oppdatering fra serveren, uten å komme tilbake. Klassen, `role="alert"` og `tabindex="-1"` skriver `lt.errorSummary()` når markupen lages med JavaScript; ellers setter komponenten dem, og klassen på overskriften, og setter dem tilbake om en patch tar dem. Har serveren skrevet en annen rolle, står den. Se [Markup og oppførsel](/markup-and-behaviour/).
 
 Er det ingen feil, setter byggefunksjonen `hidden` på boksen. En tom oppsummering med overskriften «Skjemaet har 0 feil» er verre enn ingen.
 
@@ -209,25 +209,25 @@ Hver lenke i lista skal peke på `id`-en til kontrollen som feilet. Peker den p�
 ```html
 <li><a href="#fodselsdato">Skriv datoen som dag, måned og år</a></li>
 ...
-<label class="fs-label" for="fodselsdato">Fødselsdato</label>
-<input class="fs-input" id="fodselsdato" type="date">
+<label class="lt-label" for="fodselsdato">Fødselsdato</label>
+<input class="lt-input" id="fodselsdato" type="date">
 ```
 
 ## Klasser du kan style
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-error-summary` | Selve boksen. Ligger på `<fs-error-summary>` |
-| `.fs-error-summary__title` | Overskriften over lista |
+| `.lt-error-summary` | Selve boksen. Ligger på `<lt-error-summary>` |
+| `.lt-error-summary__title` | Overskriften over lista |
 
 | Variabel | Reserve |
 | --- | --- |
-| `--fs-error-summary-padding` | `var(--fs-spacing-4)` |
-| `--fs-error-summary-radius` | `var(--fs-spacing-1)` |
+| `--lt-error-summary-padding` | `var(--lt-spacing-4)` |
+| `--lt-error-summary-radius` | `var(--lt-spacing-1)` |
 
 ```css
-.fs-error-summary {
-  --fs-error-summary-padding: var(--fs-spacing-6);
+.lt-error-summary {
+  --lt-error-summary-padding: var(--lt-spacing-6);
 }
 ```
 ## Tilgjengelighet

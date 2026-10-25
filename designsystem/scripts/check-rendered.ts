@@ -5,7 +5,7 @@
  * Sidene serveres fra én port og stilarket fra en annen, som et CDN, så både
  * et stilark CSSOM kan lese og et som må hentes på nytt blir prøvd.
  *
- * Skriptet som leser siden finnes også i Fristil for Kotlin, som tekst, siden
+ * Skriptet som leser siden finnes også i LO-TEK for Kotlin, som tekst, siden
  * pakken ikke avhenger av Playwright. Det kjøres her også, og skal gi det
  * samme svaret.
  *
@@ -17,10 +17,10 @@
  * sitt `data-code` som markup, mens `pageSource` i kjernen blanker dem.
  * Men `pageSource` blanker også `<template shadowrootmode>`, der
  * forhåndsvisningene ligger, så de leses for seg, som den markupen de er.
- * Den ene klassen dokumentasjonen har selv, `fs-preview`, er unntatt ved
+ * Den ene klassen dokumentasjonen har selv, `lt-preview`, er unntatt ved
  * navn.
  *
- * Kjør med: bun scripts/sjekk-rendret.ts (etter bun run build)
+ * Kjør med: bun scripts/check-rendered.ts (etter bun run build)
  */
 
 import { readFileSync } from "node:fs"
@@ -35,12 +35,12 @@ import {
 } from "../src/diagnostics/index.js"
 
 const pakke = fileURLToPath(new URL("..", import.meta.url))
-const fristilCss = readFileSync(join(pakke, "dist/fristil.css"), "utf8")
+const lotekCss = readFileSync(join(pakke, "dist/lotek.css"), "utf8")
 
 const cdn = Bun.serve({
   port: 0,
   fetch: () =>
-    new Response(fristilCss, {
+    new Response(lotekCss, {
       headers: {
         "content-type": "text/css",
         "access-control-allow-origin": "*",
@@ -52,20 +52,20 @@ const side = (head: string, body: string) =>
   `<!doctype html><html lang="nb"><head><meta charset="utf-8"><title>Prøve</title>${head}</head><body>${body}</body></html>`
 
 const knapper =
-  '<button class="fs-button" type="button" data-variant="ghost">Lagre</button><div class="fs-card">Kort</div>'
+  '<button class="lt-button" type="button" data-variant="ghost">Lagre</button><div class="lt-card">Kort</div>'
 
 const sider: Record<string, string> = {
-  "/med-stilark": side('<link rel="stylesheet" href="/fristil.css">', knapper),
+  "/med-stilark": side('<link rel="stylesheet" href="/lotek.css">', knapper),
   "/uten-stilark": side("", knapper),
   // Fra en annen opprinnelse, uten crossorigin: CSSOM kan ikke lese det.
   "/fra-cdn": side(
-    `<link rel="stylesheet" href="${cdn.url}fristil.css">`,
+    `<link rel="stylesheet" href="${cdn.url}lotek.css">`,
     knapper,
   ),
   // En klasse satt av skript, etter at serveren sendte siden.
   "/skript": side(
-    '<link rel="stylesheet" href="/fristil.css">',
-    '<div id="x">Kort</div><script>document.getElementById("x").className = "fs-kort"</script>',
+    '<link rel="stylesheet" href="/lotek.css">',
+    '<div id="x">Kort</div><script>document.getElementById("x").className = "lt-kort"</script>',
   ),
 }
 
@@ -73,8 +73,8 @@ const server = Bun.serve({
   port: 0,
   fetch(request) {
     const sti = new URL(request.url).pathname
-    if (sti === "/fristil.css")
-      return new Response(fristilCss, {
+    if (sti === "/lotek.css")
+      return new Response(lotekCss, {
         headers: { "content-type": "text/css" },
       })
     const html = sider[sti]
@@ -117,26 +117,26 @@ try {
   const skript = await funn("/skript")
   krev(
     skript.some(
-      (f) => f.rule === "ukjent-klasse" && f.message.includes("fs-kort"),
+      (f) => f.rule === "ukjent-klasse" && f.message.includes("lt-kort"),
     ),
     `klassen skriptet satte, ble ikke sjekket: ${JSON.stringify(skript.map((f) => f.message))}`,
   )
 
   // Kotlin-utgaven av skriptet gir det samme som TypeScript-utgaven.
   const kotlin = readFileSync(
-    join(pakke, "../kotlin/src/main/kotlin/no/fristil/Fristil.kt"),
+    join(pakke, "../kotlin/src/main/kotlin/no/lotek/Lotek.kt"),
     "utf8",
   )
   const kotlinSkript = /READ_RENDERED_PAGE: String = """([\s\S]*?)"""/
     .exec(kotlin)?.[1]
     // `${'$'}` er et dollartegn i en Kotlin-streng.
     ?.replaceAll("$" + "{'$'}", "$")
-  krev(kotlinSkript !== undefined, "fant ikke READ_RENDERED_PAGE i Fristil.kt")
+  krev(kotlinSkript !== undefined, "fant ikke READ_RENDERED_PAGE i Lotek.kt")
   krev(
     kotlinSkript?.startsWith("async () => {") === true &&
       kotlinSkript.endsWith("}") &&
       !/^\s*\/\//m.test(kotlinSkript),
-    "READ_RENDERED_PAGE i Fristil.kt skal være bare funksjonen, uten blanke tegn eller kommentarer rundt",
+    "READ_RENDERED_PAGE i Lotek.kt skal være bare funksjonen, uten blanke tegn eller kommentarer rundt",
   )
   for (const sti of ["/med-stilark", "/fra-cdn"]) {
     await page.goto(`${server.url}${sti.slice(1)}`)
@@ -147,7 +147,7 @@ try {
     const fraKotlin = await page.evaluate(`(${kotlinSkript})()`)
     krev(
       JSON.stringify(fraTs) === JSON.stringify(fraKotlin),
-      `skriptet i Fristil.kt leser ${sti} annerledes enn det i TypeScript`,
+      `skriptet i Lotek.kt leser ${sti} annerledes enn det i TypeScript`,
     )
   }
 } finally {
@@ -166,7 +166,7 @@ try {
 const dist = join(pakke, "../documentation/dist")
 const filer = [...new Bun.Glob("**/*.html").scanSync({ cwd: dist })].sort()
 const egenKlasse = (f: { rule: string; message: string }) =>
-  f.rule === "ukjent-klasse" && f.message.includes("«fs-preview»")
+  f.rule === "ukjent-klasse" && f.message.includes("«lt-preview»")
 let antallSider = 0
 let antallForhandsvisninger = 0
 for (const fil of filer) {

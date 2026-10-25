@@ -8,7 +8,7 @@ import {
   ventPaTegning,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
-import { defineFsSuggestion, type FsSuggestion } from "./fs-suggestion"
+import { defineLtSuggestion, type LtSuggestion } from "./lt-suggestion"
 import { suggestion } from "./suggestion"
 
 import "../../../tokens/tokens.css"
@@ -26,25 +26,25 @@ const FORSLAG = suggestion({
 })
 
 async function tegn() {
-  await customElements.whenDefined("fs-suggestion")
+  await customElements.whenDefined("lt-suggestion")
   await ventPaTegning()
-  return document.querySelector("fs-suggestion") as FsSuggestion
+  return document.querySelector("lt-suggestion") as LtSuggestion
 }
 
-function skriv(felt: FsSuggestion, tekst: string) {
+function skriv(felt: LtSuggestion, tekst: string) {
   const input = felt.querySelector("input") as HTMLInputElement
   input.value = tekst
   input.dispatchEvent(new Event("input", { bubbles: true }))
 }
 
-describe("fs-suggestion", () => {
+describe("lt-suggestion", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   beforeEach(async () => {
     monter(`
-      <fs-suggestion>
+      <lt-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
         <div>
           <input ${attr(FORSLAG.control)} name="kommune">
@@ -54,8 +54,8 @@ describe("fs-suggestion", () => {
           <p ${attr(FORSLAG.empty)} hidden>Ingen treff</p>
           <span ${attr(FORSLAG.status)}></span>
         </div>
-        <p class="fs-help-text" ${attr(FORSLAG.help)}>Begynn å skrive</p>
-      </fs-suggestion>
+        <p class="lt-help-text" ${attr(FORSLAG.help)}>Begynn å skrive</p>
+      </lt-suggestion>
     `)
     await tegn()
   })
@@ -153,7 +153,7 @@ describe("fs-suggestion", () => {
     skriv(felt, "xyz")
     await tegn()
 
-    const tom = felt.querySelector(".fs-suggestion__empty") as HTMLElement
+    const tom = felt.querySelector(".lt-suggestion__empty") as HTMLElement
     expect(tom.hidden).toBe(false)
     expect(
       (felt.querySelector("[role='status']") as HTMLElement).textContent,
@@ -241,7 +241,7 @@ describe("fs-suggestion", () => {
      */
     const felt = await tegn()
     felt.prefiltered = true
-    const tom = felt.querySelector(".fs-suggestion__empty") as HTMLElement
+    const tom = felt.querySelector(".lt-suggestion__empty") as HTMLElement
 
     // Appen venter på svar: ingen alternativer, og meldingen holdes skjult.
     for (const alternativ of felt.querySelectorAll("[role='option']"))
@@ -274,16 +274,16 @@ describe("fs-suggestion", () => {
  * treff» før brukeren hadde skrevet et tegn, altså til nettopp den som ikke
  * ser skjermen, og tommeldingen sto synlig på et felt ingen hadde søkt i.
  */
-describe("fs-suggestion som venter på det første svaret", () => {
+describe("lt-suggestion som venter på det første svaret", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   beforeEach(async () => {
     const tomt = suggestion({ id: "kommune", keys: [] })
 
     monter(`
-      <fs-suggestion prefiltered>
+      <lt-suggestion prefiltered>
         <label ${attr(tomt.label)}>Kommune</label>
         <div>
           <input ${attr(tomt.control)} name="kommune">
@@ -291,7 +291,7 @@ describe("fs-suggestion som venter på det første svaret", () => {
           <p ${attr(tomt.empty)}>Ingen treff</p>
           <span ${attr(tomt.status)}></span>
         </div>
-      </fs-suggestion>
+      </lt-suggestion>
     `)
     await tegn()
   })
@@ -309,7 +309,7 @@ describe("fs-suggestion som venter på det første svaret", () => {
     // som holder meldingen borte er at en tom liste under et tomt felt
     // ikke åpnes, og at stilarket skjuler meldingen etter en lukket liste.
     const liste = felt.querySelector("ul") as HTMLElement
-    const tom = felt.querySelector(".fs-suggestion__empty") as HTMLElement
+    const tom = felt.querySelector(".lt-suggestion__empty") as HTMLElement
     expect(liste.hidden, "en tom liste åpnet seg ved fokus").toBe(true)
     expect(
       getComputedStyle(tom).display,
@@ -323,8 +323,8 @@ describe("fs-suggestion som venter på det første svaret", () => {
 
     // Slik en patch ville gjort det.
     liste.innerHTML = `
-      <li class="fs-suggestion__option" id="kommune-option-bergen" role="option">Bergen</li>
-      <li class="fs-suggestion__option" id="kommune-option-bodo" role="option">Bodø</li>
+      <li class="lt-suggestion__option" id="kommune-option-bergen" role="option">Bergen</li>
+      <li class="lt-suggestion__option" id="kommune-option-bodo" role="option">Bodø</li>
     `
     await tegn()
 
@@ -336,14 +336,14 @@ describe("fs-suggestion som venter på det første svaret", () => {
 /**
  * Serveren kan også bestemme hvilket alternativ som er aktivt.
  *
- * `fs.suggestion({ activeIndex })` skriver `aria-selected="true"` på ett av
+ * `lt.suggestion({ activeIndex })` skriver `aria-selected="true"` på ett av
  * dem. Holdt komponenten en egen teller ved siden av, ville første piltast
  * hoppe til toppen av lista i stedet for til neste alternativ, og
  * markeringen serveren nettopp sendte var borte.
  */
-describe("fs-suggestion med markeringen fra serveren", () => {
+describe("lt-suggestion med markeringen fra serveren", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   beforeEach(async () => {
@@ -355,7 +355,7 @@ describe("fs-suggestion med markeringen fra serveren", () => {
     })
 
     monter(`
-      <fs-suggestion>
+      <lt-suggestion>
         <label ${attr(fra.label)}>Kommune</label>
         <div>
           <input ${attr(fra.control)} name="kommune">
@@ -365,13 +365,13 @@ describe("fs-suggestion med markeringen fra serveren", () => {
           <p ${attr(fra.empty)}>Ingen treff</p>
           <span ${attr(fra.status)}></span>
         </div>
-      </fs-suggestion>
+      </lt-suggestion>
     `)
     await tegn()
   })
 
   it("går videre fra det serveren markerte", async () => {
-    const felt = document.querySelector("fs-suggestion") as FsSuggestion
+    const felt = document.querySelector("lt-suggestion") as LtSuggestion
     const input = felt.querySelector("input") as HTMLInputElement
     const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
 
@@ -390,14 +390,14 @@ describe("fs-suggestion med markeringen fra serveren", () => {
   })
 })
 
-describe("fs-suggestion med pil opp", () => {
+describe("lt-suggestion med pil opp", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   beforeEach(async () => {
     monter(`
-      <fs-suggestion>
+      <lt-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
         <div>
           <input ${attr(FORSLAG.control)} name="kommune">
@@ -407,13 +407,13 @@ describe("fs-suggestion med pil opp", () => {
           <p ${attr(FORSLAG.empty)}>Ingen treff</p>
           <span ${attr(FORSLAG.status)}></span>
         </div>
-      </fs-suggestion>
+      </lt-suggestion>
     `)
     await tegn()
   })
 
   it("åpner lista og går til det siste alternativet", async () => {
-    const felt = document.querySelector("fs-suggestion") as FsSuggestion
+    const felt = document.querySelector("lt-suggestion") as LtSuggestion
     const input = felt.querySelector("input") as HTMLInputElement
     const liste = felt.querySelector("[role='listbox']") as HTMLElement
     const valg = [...felt.querySelectorAll("[role='option']")] as HTMLElement[]
@@ -437,14 +437,14 @@ describe("fs-suggestion med pil opp", () => {
   })
 })
 
-describe("fs-suggestion lukker og rydder", () => {
+describe("lt-suggestion lukker og rydder", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   function markup(ekstraVert = "") {
     return `
-      <fs-suggestion ${ekstraVert}>
+      <lt-suggestion ${ekstraVert}>
         <label ${attr(FORSLAG.label)}>Kommune</label>
         <div>
           <input ${attr(FORSLAG.control)} name="kommune">
@@ -454,7 +454,7 @@ describe("fs-suggestion lukker og rydder", () => {
           <p ${attr(FORSLAG.empty)}>Ingen treff</p>
           <span ${attr(FORSLAG.status)}></span>
         </div>
-      </fs-suggestion>
+      </lt-suggestion>
       <input id="neste-felt" />
     `
   }
@@ -484,7 +484,7 @@ describe("fs-suggestion lukker og rydder", () => {
     // En knapp ved siden av feltet er inne i komponenten, så lista står når
     // fokus går dit. Går fokus videre ut derfra, skal lista lukkes da også.
     monter(`
-      <fs-suggestion>
+      <lt-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
         <div>
           <input ${attr(FORSLAG.control)} name="kommune">
@@ -494,7 +494,7 @@ describe("fs-suggestion lukker og rydder", () => {
           </ul>
           <span ${attr(FORSLAG.status)}></span>
         </div>
-      </fs-suggestion>
+      </lt-suggestion>
       <input id="neste-felt" />
     `)
     const felt = await tegn()
@@ -519,7 +519,7 @@ describe("fs-suggestion lukker og rydder", () => {
     document.body.append(vert)
     const rot = vert.attachShadow({ mode: "open" })
     rot.innerHTML = markup()
-    await customElements.whenDefined("fs-suggestion")
+    await customElements.whenDefined("lt-suggestion")
     await ventPaTegning()
 
     const input = rot.querySelector("input") as HTMLInputElement
@@ -540,7 +540,7 @@ describe("fs-suggestion lukker og rydder", () => {
     monter(markup())
     const felt = await tegn()
     const input = felt.querySelector("input") as HTMLInputElement
-    const tom = felt.querySelector(".fs-suggestion__empty") as HTMLElement
+    const tom = felt.querySelector(".lt-suggestion__empty") as HTMLElement
 
     skriv(felt, "xyz")
     await tegn()
@@ -595,7 +595,7 @@ describe("fs-suggestion lukker og rydder", () => {
 
   it("finner alternativene på rollen, ikke på klassen", async () => {
     monter(`
-      <fs-suggestion>
+      <lt-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
         <div>
           <input ${attr(FORSLAG.control)} name="kommune">
@@ -605,7 +605,7 @@ describe("fs-suggestion lukker og rydder", () => {
           </ul>
           <span ${attr(FORSLAG.status)}></span>
         </div>
-      </fs-suggestion>
+      </lt-suggestion>
     `)
     const felt = await tegn()
     const input = felt.querySelector("input") as HTMLInputElement
@@ -630,7 +630,7 @@ describe("fs-suggestion lukker og rydder", () => {
      */
     const smalt = suggestion({ id: "sted", keys: ["a", "b"] })
     monter(`
-      <fs-suggestion>
+      <lt-suggestion>
         <label ${attr(smalt.label)}>Sted</label>
         <div>
           <input ${attr(smalt.control)} value="o">
@@ -640,7 +640,7 @@ describe("fs-suggestion lukker og rydder", () => {
           </ul>
           <span ${attr(smalt.status)}></span>
         </div>
-      </fs-suggestion>
+      </lt-suggestion>
     `)
     const felt = await tegn()
     const input = felt.querySelector("input") as HTMLInputElement
@@ -658,7 +658,7 @@ describe("fs-suggestion lukker og rydder", () => {
   })
 })
 
-describe("fs.suggestion() skriver det komponenten ellers ville skrevet", () => {
+describe("lt.suggestion() skriver det komponenten ellers ville skrevet", () => {
   it("skriver hidden på tommeldingen når det finnes treff eller svaret er underveis", () => {
     // At lista er lukket, står ikke her lenger: stilarket skjuler meldingen
     // etter en lukket liste, og «tommeldingen når appen filtrerer selv»
@@ -700,26 +700,26 @@ describe("fs.suggestion() skriver det komponenten ellers ville skrevet", () => {
  * Statuselementet må skrives: det er innhold serveren sender.
  */
 const BAR = `
-  <fs-suggestion>
+  <lt-suggestion>
     <label for="kommune">Kommune</label>
     <div>
-      <input class="fs-input" id="kommune" name="kommune">
-      <ul class="fs-suggestion__list">
+      <input class="lt-input" id="kommune" name="kommune">
+      <ul class="lt-suggestion__list">
         ${KOMMUNER.map((k) => `<li>${k}</li>`).join("")}
       </ul>
-      <p class="fs-suggestion__empty" hidden>Ingen treff</p>
-      <span class="fs-sr-only" role="status"></span>
+      <p class="lt-suggestion__empty" hidden>Ingen treff</p>
+      <span class="lt-sr-only" role="status"></span>
     </div>
-  </fs-suggestion>`
+  </lt-suggestion>`
 
-describe("fs-suggestion kobler fra bar struktur", () => {
+describe("lt-suggestion kobler fra bar struktur", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   function deler() {
     return {
-      felt: document.querySelector("fs-suggestion") as FsSuggestion,
+      felt: document.querySelector("lt-suggestion") as LtSuggestion,
       label: document.querySelector("label") as HTMLLabelElement,
       input: document.querySelector("input") as HTMLInputElement,
       liste: document.querySelector("ul") as HTMLElement,
@@ -737,7 +737,7 @@ describe("fs-suggestion kobler fra bar struktur", () => {
     expect(input.getAttribute("aria-autocomplete")).toBe("list")
     expect(input.id).toBe("kommune")
     expect(label.htmlFor).toBe("kommune")
-    expect(label.classList.contains("fs-label")).toBe(true)
+    expect(label.classList.contains("lt-label")).toBe(true)
     expect(liste.getAttribute("role")).toBe("listbox")
     expect(liste.id).not.toBe("")
     expect(input.getAttribute("aria-controls")).toBe(liste.id)
@@ -746,7 +746,7 @@ describe("fs-suggestion kobler fra bar struktur", () => {
     for (const v of valg) {
       expect(v.getAttribute("role")).toBe("option")
       expect(v.id).not.toBe("")
-      expect(v.classList.contains("fs-suggestion__option")).toBe(true)
+      expect(v.classList.contains("lt-suggestion__option")).toBe(true)
     }
 
     skriv(felt, "b")
@@ -767,12 +767,12 @@ describe("fs-suggestion kobler fra bar struktur", () => {
     monter(
       BAR.replace('<label for="kommune">', '<label for="egen">')
         .replace(
-          '<input class="fs-input" id="kommune" name="kommune">',
-          '<input class="fs-input" name="kommune" id="egen" aria-expanded="true">',
+          '<input class="lt-input" id="kommune" name="kommune">',
+          '<input class="lt-input" name="kommune" id="egen" aria-expanded="true">',
         )
         .replace(
-          '<ul class="fs-suggestion__list">',
-          '<ul class="fs-suggestion__list" id="egen-liste">',
+          '<ul class="lt-suggestion__list">',
+          '<ul class="lt-suggestion__list" id="egen-liste">',
         ),
     )
     await tegn()
@@ -815,12 +815,12 @@ describe("fs-suggestion kobler fra bar struktur", () => {
     expect(liste.hidden).toBe(true)
   })
 
-  it("skriver ingenting på markup fra fs.suggestion()", async () => {
+  it("skriver ingenting på markup fra lt.suggestion()", async () => {
     // Den direkte påstanden bak «det serveren skrev står»: null
     // mutasjonsposter fra komponentens første runde.
     const omslag = document.createElement("div")
     omslag.innerHTML = `
-      <fs-suggestion>
+      <lt-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
         <div>
           <input ${attr(FORSLAG.control)} name="kommune">
@@ -830,9 +830,9 @@ describe("fs-suggestion kobler fra bar struktur", () => {
           <p ${attr(FORSLAG.empty)} hidden>Ingen treff</p>
           <span ${attr(FORSLAG.status)}></span>
         </div>
-        <p class="fs-help-text" ${attr(FORSLAG.help)}>Begynn å skrive</p>
-      </fs-suggestion>`
-    const vert = omslag.querySelector("fs-suggestion") as HTMLElement
+        <p class="lt-help-text" ${attr(FORSLAG.help)}>Begynn å skrive</p>
+      </lt-suggestion>`
+    const vert = omslag.querySelector("lt-suggestion") as HTMLElement
     const poster: MutationRecord[] = []
     const observatør = new MutationObserver((r) => poster.push(...r))
     observatør.observe(vert, {
@@ -852,14 +852,14 @@ describe("fs-suggestion kobler fra bar struktur", () => {
 
 describe("tommeldingen når appen filtrerer selv", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   /** Slik en React-app rendrer feltet: bare treffene, og `prefiltered`. */
   async function felt(valg: { keys: string[]; pending?: boolean }) {
     const forslag = suggestion({ id: "kommune", ...valg })
     monter(`
-      <fs-suggestion prefiltered>
+      <lt-suggestion prefiltered>
         <label ${attr(forslag.label)}>Kommune</label>
         <div>
           <input ${attr(forslag.control)} name="kommune">
@@ -869,13 +869,13 @@ describe("tommeldingen når appen filtrerer selv", () => {
           <p ${attr(forslag.empty)}>Ingen treff</p>
           <span ${attr(forslag.status)}></span>
         </div>
-      </fs-suggestion>
+      </lt-suggestion>
     `)
     const vert = await tegn()
     return {
       input: vert.querySelector("input") as HTMLInputElement,
       liste: vert.querySelector("ul") as HTMLElement,
-      tom: vert.querySelector(".fs-suggestion__empty") as HTMLElement,
+      tom: vert.querySelector(".lt-suggestion__empty") as HTMLElement,
     }
   }
 
@@ -922,9 +922,9 @@ describe("tommeldingen når appen filtrerer selv", () => {
   })
 })
 
-describe("fs-suggestion når en patch bytter ut feltet eller lista", () => {
+describe("lt-suggestion når en patch bytter ut feltet eller lista", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   it("skriver aldri id på et nytt felt, og gir lista den id-en feltet peker på", async () => {
@@ -935,16 +935,16 @@ describe("fs-suggestion når en patch bytter ut feltet eller lista", () => {
      * brukeren mister, og får fortsatt id-en feltet alt peker på.
      */
     monter(`
-      <fs-suggestion>
+      <lt-suggestion>
         <label>Kommune
-          <input class="fs-input">
+          <input class="lt-input">
         </label>
         <div>
-          <ul class="fs-suggestion__list"><li>Oslo</li></ul>
-          <p class="fs-suggestion__empty">Ingen treff</p>
-          <span class="fs-suggestion__status" role="status"></span>
+          <ul class="lt-suggestion__list"><li>Oslo</li></ul>
+          <p class="lt-suggestion__empty">Ingen treff</p>
+          <span class="lt-suggestion__status" role="status"></span>
         </div>
-      </fs-suggestion>
+      </lt-suggestion>
     `)
     const vert = await tegn()
     const listepeker = (
@@ -952,11 +952,11 @@ describe("fs-suggestion når en patch bytter ut feltet eller lista", () => {
     ).getAttribute("aria-controls")
 
     const nyttFelt = document.createElement("input")
-    nyttFelt.className = "fs-input"
+    nyttFelt.className = "lt-input"
     nyttFelt.setAttribute("aria-controls", listepeker ?? "")
     vert.querySelector("input")?.replaceWith(nyttFelt)
     const nyListe = document.createElement("ul")
-    nyListe.className = "fs-suggestion__list"
+    nyListe.className = "lt-suggestion__list"
     nyListe.innerHTML = "<li>Bergen</li>"
     vert.querySelector("ul")?.replaceWith(nyListe)
     await tegn()
@@ -966,16 +966,16 @@ describe("fs-suggestion når en patch bytter ut feltet eller lista", () => {
   })
 })
 
-describe("fs-suggestion leser opp antallet på sidens språk", () => {
+describe("lt-suggestion leser opp antallet på sidens språk", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   /** Forslagsfeltet på en side med `lang`, og tekstene som attributter. */
   async function felt(lang: string, attributter: string) {
     monter(`
       <div lang="${lang}">
-        <fs-suggestion ${attributter}>
+        <lt-suggestion ${attributter}>
           <label ${attr(FORSLAG.label)}>Municipality</label>
           <div>
             <input ${attr(FORSLAG.control)} name="kommune">
@@ -984,13 +984,13 @@ describe("fs-suggestion leser opp antallet på sidens språk", () => {
             </ul>
             <span ${attr(FORSLAG.status)}></span>
           </div>
-        </fs-suggestion>
+        </lt-suggestion>
       </div>
     `)
     return tegn()
   }
 
-  async function opplest(element: FsSuggestion, tekst: string) {
+  async function opplest(element: LtSuggestion, tekst: string) {
     skriv(element, tekst)
     await tegn()
     return (element.querySelector("[role='status']") as HTMLElement).textContent
@@ -1067,9 +1067,9 @@ function kontrollertAvReact(felt: HTMLInputElement | HTMLTextAreaElement) {
   return endringer
 }
 
-describe("fs-suggestion med et felt React styrer", () => {
+describe("lt-suggestion med et felt React styrer", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   for (const kontroll of [
@@ -1080,21 +1080,21 @@ describe("fs-suggestion med et felt React styrer", () => {
       // Satt rett på noden så React ingen endring, og skrev den gamle teksten
       // tilbake ved neste rendring.
       monter(`
-        <fs-suggestion>
+        <lt-suggestion>
           <label for="kommune">Kommune</label>
           <div>
             ${kontroll}
-            <ul class="fs-suggestion__list" role="listbox" id="kommune-liste" hidden>
+            <ul class="lt-suggestion__list" role="listbox" id="kommune-liste" hidden>
               <li role="option" id="kommune-0">Bergen</li>
               <li role="option" id="kommune-1">Oslo</li>
             </ul>
           </div>
-        </fs-suggestion>`)
+        </lt-suggestion>`)
       const felt = document.getElementById("kommune") as
         | HTMLInputElement
         | HTMLTextAreaElement
       const endringer = kontrollertAvReact(felt)
-      await customElements.whenDefined("fs-suggestion")
+      await customElements.whenDefined("lt-suggestion")
       await ventPaTegning()
 
       felt.dispatchEvent(
@@ -1114,22 +1114,22 @@ describe("fs-suggestion med et felt React styrer", () => {
 
 /*
  * Markup slik en mal skriver den når skjemaet skal sende koden: alternativene
- * har `data-value`, og et skjult `.fs-suggestion__value` får koden.
+ * har `data-value`, og et skjult `.lt-suggestion__value` får koden.
  */
 const MED_KODE = `
-  <fs-suggestion>
+  <lt-suggestion>
     <label for="kommune">Kommune</label>
     <div>
-      <input class="fs-input" id="kommune" name="kommune-tekst">
-      <input type="hidden" class="fs-suggestion__value" name="kommune">
-      <ul class="fs-suggestion__list">
+      <input class="lt-input" id="kommune" name="kommune-tekst">
+      <input type="hidden" class="lt-suggestion__value" name="kommune">
+      <ul class="lt-suggestion__list">
         <li data-value="4601">Bergen</li>
         <li data-value="1804">Bodø</li>
         <li data-value="0301">Oslo</li>
       </ul>
-      <span class="fs-sr-only" role="status"></span>
+      <span class="lt-sr-only" role="status"></span>
     </div>
-  </fs-suggestion>`
+  </lt-suggestion>`
 
 function tast(input: HTMLElement, key: string, init: KeyboardEventInit = {}) {
   const hendelse = new KeyboardEvent("keydown", {
@@ -1142,15 +1142,15 @@ function tast(input: HTMLElement, key: string, init: KeyboardEventInit = {}) {
   return hendelse
 }
 
-describe("fs-suggestion velger riktig", () => {
+describe("lt-suggestion velger riktig", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   function deler() {
     return {
       input: document.getElementById("kommune") as HTMLInputElement,
-      kode: document.querySelector(".fs-suggestion__value") as HTMLInputElement,
+      kode: document.querySelector(".lt-suggestion__value") as HTMLInputElement,
       liste: document.querySelector("ul") as HTMLElement,
       valg: [...document.querySelectorAll<HTMLElement>("li")],
     }
@@ -1365,7 +1365,7 @@ describe("fs-suggestion velger riktig", () => {
     expect(deler().valg[1].getAttribute("aria-selected")).toBe("true")
 
     const ny = document.createElement("ul")
-    ny.className = "fs-suggestion__list"
+    ny.className = "lt-suggestion__list"
     ny.innerHTML = `<li data-value="4601">Bergen</li><li data-value="1804">Bodø</li><li data-value="0301">Oslo</li>`
     liste.replaceWith(ny)
     await ventPaTegning()
@@ -1405,13 +1405,13 @@ describe("fs-suggestion velger riktig", () => {
     // statiske plass, rett etter feltet i flyten, og ikke under hjelpeteksten.
     monter(
       MED_KODE.replace(
-        "</fs-suggestion>",
-        '<p class="fs-help-text">Vi fyller ut resten av adressen for deg.</p></fs-suggestion>',
+        "</lt-suggestion>",
+        '<p class="lt-help-text">Vi fyller ut resten av adressen for deg.</p></lt-suggestion>',
       ),
     )
     await tegn()
     const { input, liste } = deler()
-    const hjelp = document.querySelector(".fs-help-text") as HTMLElement
+    const hjelp = document.querySelector(".lt-help-text") as HTMLElement
     input.focus()
     tast(input, "ArrowDown")
     await ventPaTegning()
@@ -1456,7 +1456,7 @@ describe("fs-suggestion velger riktig", () => {
     // skrives som attributt. Uten dette sendte skjemaet koden for Bodø med
     // tom tekst etter en tilbakestilling.
     monter(
-      `<form>${MED_KODE.replace('name="kommune-tekst"', 'name="kommune-tekst" value="Bergen"').replace('class="fs-suggestion__value" name="kommune"', 'class="fs-suggestion__value" name="kommune" value="4601"')}</form>`,
+      `<form>${MED_KODE.replace('name="kommune-tekst"', 'name="kommune-tekst" value="Bergen"').replace('class="lt-suggestion__value" name="kommune"', 'class="lt-suggestion__value" name="kommune" value="4601"')}</form>`,
     )
     await tegn()
     const { input, kode, valg } = deler()
@@ -1488,7 +1488,7 @@ describe("fs-suggestion velger riktig", () => {
   })
 
   it("skriver for fra feltets id, og sier fra, når ledeteksten pekte et annet sted", async () => {
-    // Samme regel som i <fs-field>: `for` og `id` er den samme opplysningen.
+    // Samme regel som i <lt-field>: `for` og `id` er den samme opplysningen.
     // Men uten JavaScript sto feltet uten ledetekst, så det skal sies fra.
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     monter(MED_KODE.replace('for="kommune"', 'for="feil"'))
@@ -1503,7 +1503,7 @@ describe("fs-suggestion velger riktig", () => {
   })
 
   it("lar ikke hendelsene på verdifeltet boble til verten", async () => {
-    // Oppskriften henter forslag med `data-on:input` på <fs-suggestion>.
+    // Oppskriften henter forslag med `data-on:input` på <lt-suggestion>.
     // Fyrte koden den, ble det et søk på «4601» ved hvert valg.
     monter(MED_KODE)
     const vert = await tegn()
@@ -1574,7 +1574,7 @@ describe("fs-suggestion velger riktig", () => {
   it("skriver ikke antallet tilbake når noen andre filtrerer", async () => {
     // En patch er da svaret på et tastetrykk, og det nye antallet leses
     // opp av `announceFiltered` rett etter. To tall på rad er støy.
-    monter(MED_KODE.replace("<fs-suggestion>", "<fs-suggestion prefiltered>"))
+    monter(MED_KODE.replace("<lt-suggestion>", "<lt-suggestion prefiltered>"))
     await tegn()
     const { input, liste } = deler()
     const status = document.querySelector("[role='status']") as HTMLElement
@@ -1594,7 +1594,7 @@ describe("fs-suggestion velger riktig", () => {
   it("sier ingenting når ledeteksten står rundt hele elementet", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     monter(
-      `<label>Kommune <fs-suggestion><input class="fs-input" name="kommune"><ul class="fs-suggestion__list"><li>Bergen</li></ul><span class="fs-sr-only" role="status"></span></fs-suggestion></label>`,
+      `<label>Kommune <lt-suggestion><input class="lt-input" name="kommune"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion></label>`,
     )
     await tegn()
     await new Promise((r) => setTimeout(r, 300))
@@ -1681,7 +1681,7 @@ describe("fs-suggestion velger riktig", () => {
   it("sier ingenting om et felt uten id som har navn fra aria-labelledby", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     monter(
-      `<fs-suggestion><label id="l">Kommune</label><input class="fs-input" name="kommune" aria-labelledby="l"><ul class="fs-suggestion__list"><li>Bergen</li></ul><span class="fs-sr-only" role="status"></span></fs-suggestion>`,
+      `<lt-suggestion><label id="l">Kommune</label><input class="lt-input" name="kommune" aria-labelledby="l"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     )
     await tegn()
     await new Promise((r) => setTimeout(r, 300))
@@ -1698,8 +1698,8 @@ describe("fs-suggestion velger riktig", () => {
         'name="kommune-tekst" value="Våler"',
       )
         .replace(
-          'class="fs-suggestion__value" name="kommune"',
-          'class="fs-suggestion__value" name="kommune" value="3419"',
+          'class="lt-suggestion__value" name="kommune"',
+          'class="lt-suggestion__value" name="kommune" value="3419"',
         )
         .replace(
           '<li data-value="0301">Oslo</li>',
@@ -1721,13 +1721,13 @@ describe("fs-suggestion velger riktig", () => {
     expect(kode.value).toBe("3419")
   })
 
-  it("gir en ledetekst utenfor elementet klassen, som fs-field gjør", async () => {
+  it("gir en ledetekst utenfor elementet klassen, som lt-field gjør", async () => {
     monter(
-      `<label for="kommune">Kommune</label><fs-suggestion><input class="fs-input" id="kommune"><ul class="fs-suggestion__list"><li>Bergen</li></ul><span class="fs-sr-only" role="status"></span></fs-suggestion>`,
+      `<label for="kommune">Kommune</label><lt-suggestion><input class="lt-input" id="kommune"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     )
     await tegn()
     expect(
-      document.querySelector("label")?.classList.contains("fs-label"),
+      document.querySelector("label")?.classList.contains("lt-label"),
     ).toBe(true)
   })
 })

@@ -14,7 +14,7 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { norskDato } from "./norsk-dato.js"
+import { norskDato } from "./norwegian-date.js"
 
 const pakke = fileURLToPath(new URL("../", import.meta.url))
 const monorepoRot = fileURLToPath(new URL("../../", import.meta.url))
@@ -86,7 +86,7 @@ const dato = [
 ].join("-")
 
 // `web-types.json` har også versjonen i seg. Fila genereres av
-// generate-ordforrad.ts, og bygget krever at den på disk er byte-lik
+// generate-vocabulary.ts, og bygget krever at den på disk er byte-lik
 // det generatoren ville skrevet, så versjonen skrives inn her framfor at
 // hver utgivelse måtte huske å kjøre generatoren. Sjekken står før første
 // skriving: stoppet den etterpå, sto loggen, manifestet og bun.lock alt
@@ -97,23 +97,23 @@ try {
   webTypes = readFileSync(webTypesSti, "utf8")
 } catch {
   stopp(
-    "Fant ikke web-types.json. Kjør bun --filter @fristil/designsystem ordforrad først.",
+    "Fant ikke web-types.json. Kjør bun --filter @lo-tek/interfaces vocabulary først.",
   )
 }
 const webTypesFør = `"version": "${naavaerende}"`
 if (!webTypes.includes(webTypesFør)) {
   stopp(
-    `Fant ikke versjonen ${naavaerende} i web-types.json. Kjør bun --filter @fristil/designsystem ordforrad først.`,
+    `Fant ikke versjonen ${naavaerende} i web-types.json. Kjør bun --filter @lo-tek/interfaces vocabulary først.`,
   )
 }
 
 /*
  * Merket øverst i presentasjonen bærer versjonen og dagen den kom.
  *
- * Det sto «Fristil 0.15.0 · 26. september 2026» mens pakken var på 0.19.0,
+ * Det sto «LO-TEK 0.15.0 · 26. september 2026» mens pakken var på 0.19.0,
  * altså fire versjoner bak, og ingenting oppdaterte det. Presentasjonen har
  * ingen byggesteg, så den kan ikke hente verdien selv slik dokumentasjonen nå
- * gjør; den må skrives, og `sjekk-versjon.ts` feller hvis den glir fra igjen.
+ * gjør; den må skrives, og `check-version.ts` feller hvis den glir fra igjen.
  *
  * Lesingen og kontrollen står her, sammen med de andre forhåndssjekkene, av
  * samme grunn som web-types over: stoppet den etter skrivingene, sto loggen,
@@ -124,7 +124,7 @@ if (!webTypes.includes(webTypesFør)) {
  * dato, og et tall som er målt skal ikke settes av et skript som ikke har målt
  * noe.
  */
-const dekkSti = join(monorepoRot, "presentasjon/designsystemarkitektur.html")
+const dekkSti = join(monorepoRot, "presentation/design-system-architecture.html")
 let dekk = ""
 try {
   dekk = readFileSync(dekkSti, "utf8")
@@ -132,7 +132,7 @@ try {
   stopp(`Fant ikke ${dekkSti}. Er presentasjonen flyttet?`)
 }
 
-const merke = /(Designsystemarkitektur · Fristil )[^<·]+ · [^<·]+/
+const merke = /(Designsystemarkitektur · LO-TEK )[^<·]+ · [^<·]+/
 if (!merke.test(dekk)) {
   stopp(
     `Fant ikke merket med versjonen i ${dekkSti}. Står det fortsatt der, og heter det det samme?`,
@@ -142,7 +142,7 @@ if (!merke.test(dekk)) {
 /*
  * Kotlin-pakken har samme versjon, og bygges av npm-pakken med det nummeret.
  * Står den bak, henter utgivelsen til Maven Central forrige versjon fra npm,
- * og `sjekk-versjon.ts` feller. Kontrollen står før første skriving, som
+ * og `check-version.ts` feller. Kontrollen står før første skriving, som
  * for web-types over.
  */
 const kotlinSti = join(monorepoRot, "kotlin/gradle.properties")
@@ -225,7 +225,7 @@ for (const generator of ["generate-agent.ts", "generate-manifest.ts"]) {
   })
   if (resultat.exitCode !== 0) {
     stopp(
-      `${generator} feilet. Versjonen er alt satt til ${nyVersjon}. Kjør bun --filter @fristil/designsystem generate og se hva som stopper.`,
+      `${generator} feilet. Versjonen er alt satt til ${nyVersjon}. Kjør bun --filter @lo-tek/interfaces generate og se hva som stopper.`,
     )
   }
 }
@@ -238,7 +238,7 @@ og ville ellers stoppet på filene som nettopp ble skrevet.
 
   git checkout -b slipp-${nyVersjon}
   git commit -am "Slipp ${nyVersjon}"
-  bun run sjekk
+  bun run check
   git push -u origin slipp-${nyVersjon} && gh pr create --fill
 
 Når grenen er slått sammen, og først da:

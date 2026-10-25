@@ -5,7 +5,7 @@
 //! noe: den bestemmer hvilket forslag som vinner ved lik avstand, og hvordan
 //! listene i meldingene står.
 
-/// Et attributt et `<fs-…>`-element leser.
+/// Et attributt et `<lt-…>`-element leser.
 #[derive(Clone, Debug)]
 pub enum Attribute {
     Flag,
@@ -14,7 +14,7 @@ pub enum Attribute {
     Values(Vec<String>),
 }
 
-/// En del av et element eller en klasse, som kontrollen i `<fs-field>`, med
+/// En del av et element eller en klasse, som kontrollen i `<lt-field>`, med
 /// selektoren komponenten finner den med. Uten `multiple` gjelder den første,
 /// og med `unique` er en del til av samme slag en feil. Med `stable_id` må
 /// delen ha en id fra serveren: komponenten skriver aldri en, siden en
@@ -39,8 +39,8 @@ pub struct Element {
     pub removed: Vec<(String, String)>,
 }
 
-/// Et attributt en klasse tar, som `data-variant` på `fs-button`, eller et
-/// flagg, som `data-optional` på `fs-label`, som er på når det står der.
+/// Et attributt en klasse tar, som `data-variant` på `lt-button`, eller et
+/// flagg, som `data-optional` på `lt-label`, som er på når det står der.
 #[derive(Clone, Debug)]
 pub struct ClassAttribute {
     pub values: Vec<String>,
@@ -60,7 +60,7 @@ pub struct Class {
 /// Alt stavekontrollen sjekker mot, lest fra ett manifest.
 #[derive(Clone, Debug)]
 pub struct Vocabulary {
-    /// Versjonen av `@fristil/designsystem` manifestet er skrevet fra.
+    /// Versjonen av `@lo-tek/interfaces` manifestet er skrevet fra.
     pub version: String,
     pub schema_version: u32,
     pub elements: Vec<Element>,
@@ -113,7 +113,7 @@ pub struct Finding {
     pub message: String,
     pub fix: Option<Fix>,
     /// Navnet på regelen, som `ukjent-klasse`. Det er dette en kommentar som
-    /// `<!-- fristil-ignore-next ukjent-klasse -->` viser til.
+    /// `<!-- lotek-ignore-next ukjent-klasse -->` viser til.
     pub rule: &'static str,
 }
 

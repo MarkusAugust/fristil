@@ -1,18 +1,18 @@
-//! `fristil manifest`: manifestet sjekken bruker, med fragmentene fra
-//! `fristil overta` lagt til.
+//! `lotek manifest`: manifestet sjekken bruker, med fragmentene fra
+//! `lotek overta` lagt til.
 //!
 //! ```bash
-//! fristil manifest --manifest=src/ui/button/fristil-manifest.json --ut=build/fristil/manifest.json
+//! lotek manifest --manifest=src/ui/button/lotek-manifest.json --ut=build/lotek/manifest.json
 //! ```
 //!
-//! Det er det Gradle-pluginen skriver til `build/fristil/`, så en editor kan
+//! Det er det Gradle-pluginen skriver til `build/lotek/`, så en editor kan
 //! lese ordforrådet prosjektet faktisk har, med de overtatte komponentene.
 
 use crate::check::read_fragments;
 use crate::output::{count, error, fail, log, shown};
 use crate::{refuse_without_value, Arguments};
-use fristil_kjerne::json::Json;
-use fristil_kjerne::manifest::merged;
+use lotek_core::json::Json;
+use lotek_core::manifest::merged;
 
 pub fn run(arguments: &[String]) {
     let parsed = Arguments::read(arguments);
@@ -31,7 +31,7 @@ pub fn run(arguments: &[String]) {
         .collect();
     if !unknown.is_empty() {
         fail(&format!(
-            "Ukjent argument: {}\n\nKjente flagg: --manifest, --ut\n\nHele oversikten: fristil --hjelp\n",
+            "Ukjent argument: {}\n\nKjente flagg: --manifest, --ut\n\nHele oversikten: lotek --hjelp\n",
             unknown.join(", ")
         ));
     }

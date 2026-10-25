@@ -2,12 +2,12 @@
  * Kontrollerer at dokumentasjonen følger koden.
  *
  * Tabellene over komponentvariabler og klasser er skrevet for hånd, og de
- * glir fra hverandre uten at noe sier fra: `--fs-calendar-trigger-padding`
- * og `--fs-date-field-icon-radius` fantes i CSS-en i flere runder uten å stå
+ * glir fra hverandre uten at noe sier fra: `--lt-calendar-trigger-padding`
+ * og `--lt-date-field-icon-radius` fantes i CSS-en i flere runder uten å stå
  * noe sted en konsument kunne lese.
  *
  * Et navn regnes som nevnt bare når det står som et helt ord, se `nevnt()`.
- * Med `includes` var `.fs-button` dokumentert så lenge `.fs-button-group`
+ * Med `includes` var `.lt-button` dokumentert så lenge `.lt-button-group`
  * sto på siden.
  *
  * Kjør med: bun run test:docs
@@ -21,12 +21,12 @@ import {
   FAMILIES,
   ROLES,
   roleToCss,
-} from "../../designsystem/scripts/fargekontrakt.ts"
+} from "../../designsystem/scripts/color-contract.ts"
 
 const ROT = fileURLToPath(new URL("../../", import.meta.url))
 const KOMPONENTER = `${ROT}designsystem/src/components/`
 const SIDER = `${ROT}documentation/src/content/docs/components/`
-const TILPASNING = `${ROT}documentation/src/content/docs/tilpasning.mdx`
+const TILPASNING = `${ROT}documentation/src/content/docs/customising.mdx`
 const DOKUMENTASJON = `${ROT}documentation/src/`
 
 type Avvik = { hvor: string; hva: string }
@@ -45,8 +45,8 @@ function filer(mønster: string): string[] {
 
 /**
  * At `navn` står i `tekst` som et helt ord: uten bokstav, tall, `_` eller `-`
- * rett før eller rett etter. `fs-button` er da ikke nevnt i `fs-button-group`,
- * og `--fs-card-padding` ikke i `--fs-card-padding-inline`.
+ * rett før eller rett etter. `lt-button` er da ikke nevnt i `lt-button-group`,
+ * og `--lt-card-padding` ikke i `--lt-card-padding-inline`.
  */
 function nevnt(tekst: string, navn: string): boolean {
   const kant = /[\w-]/
@@ -83,14 +83,14 @@ function klasser(css: string): string[] {
     .replace(/\/\*[\s\S]*?\*\//g, " ")
     .replace(/url\([^)]*\)/g, " ")
     .replace(/"[^"]*"/g, " ")
-  return [...new Set((rent.match(/\.fs-[\w-]+/g) ?? []).map((n) => n.slice(1)))]
+  return [...new Set((rent.match(/\.lt-[\w-]+/g) ?? []).map((n) => n.slice(1)))]
 }
 
 /**
  * Komponentvariablene, altså det konsumenten kan sette på én komponent.
  *
  * Lista leses fra manifestet, som `generate-manifest.ts` skriver fra
- * stilarkene: hver `var(--fs-<komponent>-…, <reserve>)`, ført til komponenten
+ * stilarkene: hver `var(--lt-<komponent>-…, <reserve>)`, ført til komponenten
  * navnet begynner med. Før leste denne sjekken stilarkene selv, med sin egen
  * regel for hva som er et token og hva som er en komponentvariabel, og da
  * fantes lista to steder. Nå er manifestet det ene, og en variabel som ikke
@@ -108,29 +108,29 @@ const KOMPONENTVARIABLER = MANIFEST.tokens.components
  * `style=` i et eksempel er nesten alltid en jukselapp for å få
  * forhåndsvisningen til å se riktig ut, og leseren kan ikke se forskjell på
  * den og systemet. Trenger visningen en tilpasning, hører den i `visningsCss`
- * på `<Eksempel>`, som ikke vises i kodefanen.
+ * på `<Example>`, som ikke vises i kodefanen.
  */
 /*
  * Klassenavnene fra vårt eget navnerom, samlet fra all MDX.
  *
- * Kandidaten er alt som ser ut som en utility-klasse med `-fs-` i, uten
+ * Kandidaten er alt som ser ut som en utility-klasse med `-lt-` i, uten
  * prefiksliste. En liste over lovlige prefikser sto her først, og den var
- * feil i begge retninger: `shadow-fs-accent-fill` finnes i Tailwind 4, siden
+ * feil i begge retninger: `shadow-lt-accent-fill` finnes i Tailwind 4, siden
  * `--color-*` også mater `shadow-<farge>`, og ville blitt meldt som ukjent,
- * mens et utdatert `w-fs-aside` eller `p-fs-4` aldri ville blitt sett.
- * Et `data-fs-…` er et attributt, ikke en klasse, og telles ikke.
+ * mens et utdatert `w-lt-aside` eller `p-lt-4` aldri ville blitt sett.
+ * Et `data-lt-…` er et attributt, ikke en klasse, og telles ikke.
  */
-const KANDIDAT = /(?<![\w-])(?!data-fs-)[a-z][a-z-]*-fs-[a-z0-9][a-z0-9-]*/g
+const KANDIDAT = /(?<![\w-])(?!data-lt-)[a-z][a-z-]*-lt-[a-z0-9][a-z0-9-]*/g
 
 const kandidater = new Map<string, Set<string>>()
 
 /*
- * Forekomster av `-fs-` som ikke ble en kandidat.
+ * Forekomster av `-lt-` som ikke ble en kandidat.
  *
  * Dette er den uavhengige tellingen. `kandidater.size` er utledet av selve
  * regexen, så en regex som snevrer seg fra nitten treff til tre gir et tall
  * som er større enn null og en sjekk som melder grønt. Her spørres det
- * motsatte: står det en `-fs-` igjen i teksten etter at hvert kandidattreff er
+ * motsatte: står det en `-lt-` igjen i teksten etter at hvert kandidattreff er
  * fjernet? Da er det noe regexen ikke klassifiserte, og det skal sies.
  */
 const uklassifisert = new Map<string, number>()
@@ -156,23 +156,23 @@ for (const fil of new Bun.Glob("**/*.mdx").scanSync(
   }
 
   /*
-   * `--fs-…` er et tokennavn og ikke en klasse, og `fs-button` og
-   * `fs-tabs__list` er våre egne klasser. Begge fjernes før det som er igjen
+   * `--lt-…` er et tokennavn og ikke en klasse, og `lt-button` og
+   * `lt-tabs__list` er våre egne klasser. Begge fjernes før det som er igjen
    * telles.
    */
   const rest = tekst
     .replace(KANDIDAT, " ")
-    .replace(/--fs-[a-z0-9-]*/g, " ")
-    .replace(/(?<![\w-])data-fs-[a-z0-9-]*/g, " ")
-    .replace(/(?<![\w-])fs-[a-z0-9_-]+/g, " ")
+    .replace(/--lt-[a-z0-9-]*/g, " ")
+    .replace(/(?<![\w-])data-lt-[a-z0-9-]*/g, " ")
+    .replace(/(?<![\w-])lt-[a-z0-9_-]+/g, " ")
     /*
      * Et kodeord med en plassholder i er et navnemønster og ikke et navn:
-     * `<verktøy>-fs-<familie>-<rolle>` sier hvordan klassene heter. Hele
-     * kodeordet strykes, ellers står `-fs-` igjen mellom plassholderne.
+     * `<verktøy>-lt-<familie>-<rolle>` sier hvordan klassene heter. Hele
+     * kodeordet strykes, ellers står `-lt-` igjen mellom plassholderne.
      */
     .replace(/`[^`\n]*<[^`\n]+`/g, " ")
 
-  const igjen = rest.match(/-fs-/g)?.length ?? 0
+  const igjen = rest.match(/-lt-/g)?.length ?? 0
   if (igjen > 0) uklassifisert.set(fil, igjen)
 }
 
@@ -192,7 +192,7 @@ const kompilator = await compile(
   [
     '@import "tailwindcss/theme.css" layer(theme);',
     '@import "tailwindcss/utilities.css" layer(utilities);',
-    '@import "@fristil/designsystem/tailwind.css";',
+    '@import "@lo-tek/interfaces/tailwind.css";',
   ].join("\n"),
   {
     base: `${ROT}documentation`,
@@ -226,7 +226,7 @@ for (const [klasse, filer] of kandidater) {
 /*
  * Tre ledd som skal felle en sjekk som ikke har sett på noe.
  *
- * Det første er den uavhengige tellingen over: en `-fs-` som ikke ble en
+ * Det første er den uavhengige tellingen over: en `-lt-` som ikke ble en
  * kandidat. Det andre er at det i det hele tatt fantes kandidater. Det tredje
  * er en negativ kontroll: uten den ville sjekken vært permanent grønn den
  * dagen `build()` sluttet å være selektiv, siden hver ekte kandidat er gyldig
@@ -235,21 +235,21 @@ for (const [klasse, filer] of kandidater) {
 for (const [fil, antall] of uklassifisert) {
   avvik.push({
     hvor: fil,
-    hva: `har ${antall} forekomster av «-fs-» som ikke ble lest som en klasse. Regexen treffer ikke alt den skal.`,
+    hva: `har ${antall} forekomster av «-lt-» som ikke ble lest som en klasse. Regexen treffer ikke alt den skal.`,
   })
 }
 
 if (provdeKlasser === 0) {
   avvik.push({
-    hvor: "sjekk-dokumentasjon.ts",
+    hvor: "check-documentation.ts",
     hva: "fant ingen Tailwind-klasser å prøve. Regexen treffer ikke lenger.",
   })
 }
 
 const foerKontroll = lengde
-if (kompilator.build(["bg-fs-finnes-ikke-i-temaet"]).length > foerKontroll) {
+if (kompilator.build(["bg-lt-finnes-ikke-i-temaet"]).length > foerKontroll) {
   avvik.push({
-    hvor: "sjekk-dokumentasjon.ts",
+    hvor: "check-documentation.ts",
     hva: "Tailwind lagde en regel for en klasse som ikke finnes. Sjekken over kan ikke avvise noe.",
   })
 }
@@ -264,7 +264,7 @@ const tokenside = les(`${ROT}documentation/src/content/docs/design-tokens.mdx`)
 /*
  * Fargene dokumenteres som matrise, ikke som 86 navn.
  *
- * `--fs-color-<familie>-<rolle>` er systematisk, så siden er dekkende når hver
+ * `--lt-color-<familie>-<rolle>` er systematisk, så siden er dekkende når hver
  * familie og hver rolle står der. Å kreve hver celle ville gitt en side som er
  * en liste framfor en forklaring, og den ville måttet skrives om hver gang en
  * familie kom til.
@@ -272,7 +272,7 @@ const tokenside = les(`${ROT}documentation/src/content/docs/design-tokens.mdx`)
  * Alt som ikke er en celle kreves fortsatt navngitt.
  */
 const tokenCss = les(`${ROT}designsystem/src/tokens/tokens.css`)
-const alleTokens = [...tokenCss.matchAll(/^\s*(--fs-[\w-]+):/gm)].map(
+const alleTokens = [...tokenCss.matchAll(/^\s*(--lt-[\w-]+):/gm)].map(
   (treff) => treff[1],
 )
 
@@ -280,7 +280,7 @@ const alleTokens = [...tokenCss.matchAll(/^\s*(--fs-[\w-]+):/gm)].map(
  * Aksene leses fra `FAMILIES` og `ROLES`, ikke ut av navnene i `tokens.css`.
  *
  * Å utlede dem fra navnene ga `disabled` som en tiende familie, fordi
- * `--fs-color-disabled-text` ser ut som en celle. Den har bare to av de ni
+ * `--lt-color-disabled-text` ser ut som en celle. Den har bare to av de ni
  * rollene og er nettopp ikke en familie. Alt som ikke er en ekte celle må ha
  * sitt fulle tokennavn på siden, som før.
  */
@@ -291,7 +291,7 @@ const roller = new Set<string>(
 const andre = new Set<string>()
 
 for (const token of alleTokens) {
-  const celle = token.match(/^--fs-color-([a-z0-9]+)-(.+)$/)
+  const celle = token.match(/^--lt-color-([a-z0-9]+)-(.+)$/)
   if (celle && familier.has(celle[1]) && roller.has(celle[2])) continue
   andre.add(token)
 }
@@ -362,7 +362,7 @@ for (const { navn, sti } of komponentmapper()) {
     avvik.push({ hvor, hva: "mangler seksjonen «Tilgjengelighet»" })
   }
 
-  // <Eksempel> for de enkle, eller en egen demokomponent der eksempelet
+  // <Example> for de enkle, eller en egen demokomponent der eksempelet
   // trenger skript, som <CalendarDemo>.
   if (!/<(Eksempel|[A-Z][A-Za-z]*Demo)\b/.test(tekst)) {
     avvik.push({ hvor, hva: "mangler en levende forhåndsvisning" })
@@ -373,9 +373,9 @@ for (const { navn, sti } of komponentmapper()) {
    *
    * Regelen så før etter en `js`-blokk med pakkenavnet i, hvor som helst i
    * teksten. Den gikk grønn på de fleste sidene av feil grunn: «TypeScript»
-   * nederst nevner `@fristil/designsystem/react`, og det telte. Nå kreves
+   * nederst nevner `@lo-tek/interfaces/react`, og det telte. Nå kreves
    * det at «Slik tar du den i bruk» selv sier hva som skal importeres,
-   * enten i en kodefane eller gjennom `importer` på <Eksempel>.
+   * enten i en kodefane eller gjennom `importer` på <Example>.
    */
   const oppskriftStart = tekst.indexOf("## Slik tar du den i bruk")
   const oppskriftSlutt = tekst.indexOf("\n## ", oppskriftStart + 5)
@@ -393,15 +393,15 @@ for (const { navn, sti } of komponentmapper()) {
     /*
      * Et stilark, ikke bare pakkenavnet.
      *
-     * Regelen krevde før at oppskriften nevnte `@fristil/designsystem`, og
-     * `tabs.mdx` gikk grønn på `@fristil/designsystem/tabs`, altså
+     * Regelen krevde før at oppskriften nevnte `@lo-tek/interfaces`, og
+     * `tabs.mdx` gikk grønn på `@lo-tek/interfaces/tabs`, altså
      * JavaScript-modulen, uten å nevne `tabs.css` med et ord. Leseren som
      * fulgte oppskriften fikk ustylede faner.
      */
     avvik.push({ hvor, hva: "sier ikke hvilke stilark oppskriften trenger" })
   }
 
-  // Komponenter som ikke rendrer noe selv, som <fs-field>, har ingenting å
+  // Komponenter som ikke rendrer noe selv, som <lt-field>, har ingenting å
   // eksponere og trenger derfor ingen slik seksjon.
   const eksponerer = klasser(css).length > 0 || variabler.length > 0
   const stylbare = /## (Klasser|Deler) du kan style/.test(tekst)
@@ -443,31 +443,31 @@ if (alleVariabler.size === 0) {
   })
 }
 /*
- * Som første celle i en tabellrad, ikke bare nevnt: `--fs-card-padding` står
+ * Som første celle i en tabellrad, ikke bare nevnt: `--lt-card-padding` står
  * i prosaen om rekkevidde lenger opp, og raden kunne tas ut av oversikten
  * uten at noe sa fra.
  */
 const oppfortITilpasning = new Set(
   tilpasning
     .split("\n")
-    .filter((linje) => linje.startsWith("| `--fs-"))
+    .filter((linje) => linje.startsWith("| `--lt-"))
     .map((linje) => linje.split("|")[1]?.trim().replace(/`/g, "") ?? ""),
 )
 for (const variabel of [...alleVariabler].sort()) {
   if (!oppfortITilpasning.has(variabel)) {
     avvik.push({
-      hvor: "tilpasning.mdx",
+      hvor: "customising.mdx",
       hva: `variabelen \`${variabel}\` mangler i oversikten`,
     })
   }
 }
 
 /*
- * Eksempler som kaller `fs.field()` uten `id`.
+ * Eksempler som kaller `lt.field()` uten `id`.
  *
  * `id` er påkrevd, og en konsument som kopierer et eksempel uten den får en
  * advarsel i konsollen og en id som ikke overlever hydrering. Ingenting annet
- * i rekka leser kodeblokkene: `sjekk-dokumentasjon` ser etter navn i teksten,
+ * i rekka leser kodeblokkene: `check-documentation` ser etter navn i teksten,
  * og ingen av dem kompileres. Da denne endringen ble gjort, sto alle
  * eksemplene allerede riktig, men det var tilfeldig og ikke voktet.
  */
@@ -489,7 +489,7 @@ const KODEKALL_MED_ARGUMENT =
 /**
  * Bare koden.
  *
- * I brødtekst nevnes `fs.field()` uten at det er et kall, og på forsiden står
+ * I brødtekst nevnes `lt.field()` uten at det er et kall, og på forsiden står
  * det til og med inni en `<code>`-tagg i en setning. I mdx er koden det som
  * står i kodegjerdene, i Astro er det frontmatteret og skriptene.
  */
@@ -510,7 +510,7 @@ function kodebiter(fil: string, innhold: string): string[] {
 /**
  * Det som står i enkle bakoverfnutter i brødteksten.
  *
- * `fs.suggestion({ count: treff.length })` uten `id` sto i en setning under
+ * `lt.suggestion({ count: treff.length })` uten `id` sto i en setning under
  * et eksempel og slapp gjennom, siden bare kodegjerdene ble lest. Et kall med
  * en argumentliste er et eksempel uansett hvor det står.
  */
@@ -533,7 +533,7 @@ function lesKall(fil: string, treff: RegExpMatchArray): void {
 
   avvik.push({
     hvor: fil,
-    hva: `\`fs.${bygger}()\` uten \`${nokkel}\`. Den er påkrevd, og et eksempel uten den lærer bort en felle`,
+    hva: `\`lt.${bygger}()\` uten \`${nokkel}\`. Den er påkrevd, og et eksempel uten den lærer bort en felle`,
   })
 }
 
@@ -548,7 +548,7 @@ for (const fil of [
 
   /*
    * I brødteksten teller bare kallet som faktisk har en argumentliste.
-   * `fs.field()` uten argumenter er navnet på en funksjon, og står slik i
+   * `lt.field()` uten argumenter er navnet på en funksjon, og står slik i
    * dusinvis av setninger.
    */
   for (const kode of inlineKode(fil, innhold)) {
@@ -558,7 +558,7 @@ for (const fil of [
 }
 
 /*
- * Versjonen i en CDN-adresse skal komme fra `remark-versjon.mjs`, ikke fra
+ * Versjonen i en CDN-adresse skal komme fra `remark-version.mjs`, ikke fra
  * tastaturet.
  *
  * Adressene sto hardkodet 74 steder i 12 filer, og `prepare-version` skrev dem
@@ -576,12 +576,12 @@ for (const fil of [
   const innhold = les(`${DOKUMENTASJON}${fil}`)
 
   for (const treff of innhold.matchAll(
-    /@fristil\/designsystem@([^/\s"'`)]+)/g,
+    /@lotek\/designsystem@([^/\s"'`)]+)/g,
   )) {
     // `VERSJON` er formen i markdown. I en `.astro`-fil kjører ingen remark, og
     // der er den riktige formen å lese versjonen av `package.json` i koden.
     // Unntaket må være bundet til filtypen: uten det slapp
-    // `@fristil/designsystem@${versjon}` gjennom i en mdx-kodeblokk også, der
+    // `@lo-tek/interfaces@${versjon}` gjennom i en mdx-kodeblokk også, der
     // ingen bytter den ut og ingen annen vakt ser etter den.
     if (treff[1] === "VERSJON") continue
     if (fil.endsWith(".astro") && treff[1].startsWith("${")) continue
@@ -589,7 +589,7 @@ for (const fil of [
     const linje = innhold.slice(0, treff.index).split("\n").length
     avvik.push({
       hvor: `${fil}:${linje}`,
-      hva: `${treff[0]} står med versjonen skrevet for hånd. Bruk @fristil/designsystem@VERSJON, som remark-versjon.mjs bytter ut.`,
+      hva: `${treff[0]} står med versjonen skrevet for hånd. Bruk @lo-tek/interfaces@VERSJON, som remark-version.mjs bytter ut.`,
     })
   }
 }

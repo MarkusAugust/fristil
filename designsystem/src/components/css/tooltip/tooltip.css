@@ -1,26 +1,26 @@
-@layer fristil {
-  .fs-tooltip {
+@layer lotek {
+  .lt-tooltip {
     position: relative;
     display: inline-flex;
   }
 
-  .fs-tooltip__bubble {
-    /* Bredden i `--fs-tooltip-width` er hele boblen, også i en side uten
+  .lt-tooltip__bubble {
+    /* Bredden i `--lt-tooltip-width` er hele boblen, også i en side uten
        en CSS-reset som setter border-box. */
     box-sizing: border-box;
     position: absolute;
-    inset-block-end: calc(100% + var(--fs-spacing-2));
+    inset-block-end: calc(100% + var(--lt-spacing-2));
     inset-inline-start: 50%;
     transform: translateX(-50%);
     z-index: 40;
     inline-size: max-content;
-    max-inline-size: var(--fs-tooltip-width, 16rem);
-    padding: var(--fs-tooltip-padding, var(--fs-spacing-1) var(--fs-spacing-2));
-    font-size: var(--fs-font-size-s);
-    line-height: var(--fs-line-height-compact);
-    color: var(--fs-color-neutral-canvas);
-    background: var(--fs-color-neutral-text-strong);
-    border-radius: var(--fs-tooltip-radius, var(--fs-spacing-1));
+    max-inline-size: var(--lt-tooltip-width, 16rem);
+    padding: var(--lt-tooltip-padding, var(--lt-spacing-1) var(--lt-spacing-2));
+    font-size: var(--lt-font-size-s);
+    line-height: var(--lt-line-height-compact);
+    color: var(--lt-color-neutral-canvas);
+    background: var(--lt-color-neutral-text-strong);
+    border-radius: var(--lt-tooltip-radius, var(--lt-spacing-1));
     /* Boblen er skjult til utløseren får fokus eller musa. `display: none`
        og ikke bare `visibility`: en skjult boble tok fortsatt plass, og ved
        høyre kant ga den sidelengs rulling på en smal skjerm.
@@ -35,12 +35,12 @@
 
   /* `inset-inline-start` snur med retningen, `translateX` gjør det ikke. Uten
      denne sto boblen en hel boblebredde til venstre for knappen. */
-  .fs-tooltip__bubble:dir(rtl) {
+  .lt-tooltip__bubble:dir(rtl) {
     transform: translateX(50%);
   }
 
-  .fs-tooltip:hover .fs-tooltip__bubble,
-  .fs-tooltip:focus-within .fs-tooltip__bubble {
+  .lt-tooltip:hover .lt-tooltip__bubble,
+  .lt-tooltip:focus-within .lt-tooltip__bubble {
     display: block;
     opacity: 1;
     pointer-events: auto;
@@ -50,25 +50,25 @@
      knappen. Uten den slapp `:hover` på vei opp, og boblen forsvant før
      musa nådde den. Den står bare mens boblen vises, og ikke bredere enn
      knappen, så den tar ikke klikk fra innholdet ved siden av. */
-  .fs-tooltip:is(:hover, :focus-within)::before {
+  .lt-tooltip:is(:hover, :focus-within)::before {
     content: "";
     position: absolute;
     inset-inline: 0;
     inset-block-end: 100%;
-    block-size: var(--fs-spacing-2);
+    block-size: var(--lt-spacing-2);
   }
 
   /* Inntoningen begynner fra usynlig også når boblen går fra `display:
      none`. Uten støtte for dette vises den bare uten toning. */
   @starting-style {
-    .fs-tooltip:hover .fs-tooltip__bubble,
-    .fs-tooltip:focus-within .fs-tooltip__bubble {
+    .lt-tooltip:hover .lt-tooltip__bubble,
+    .lt-tooltip:focus-within .lt-tooltip__bubble {
       opacity: 0;
     }
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .fs-tooltip__bubble {
+    .lt-tooltip__bubble {
       transition:
         opacity 120ms ease,
         display 120ms allow-discrete;
@@ -78,7 +78,7 @@
   /* Høykontrast: boblen har ingen ramme, og flatene tvinges til samme farge
      som siden. Uten en kant flyter teksten rett oppå innholdet under. */
   @media (forced-colors: active) {
-    .fs-tooltip__bubble {
+    .lt-tooltip__bubble {
       border: 1px solid CanvasText;
     }
   }

@@ -2,21 +2,21 @@
 
 import { afterEach, beforeAll, describe, expect, it } from "vitest"
 import { buttonVariants } from "./components/css/button/button"
-import { defineFsField } from "./components/ramme/field/fs-field"
+import { defineLtField } from "./components/frame/field/lt-field"
 
 import "./tokens/tokens.css"
 import "./tokens/boundary.css"
 import "./components/css/button/button.css"
-import "./components/ramme/field/field.css"
+import "./components/frame/field/field.css"
 
 /**
- * At `data-fs-boundary` gir en innebygd komponent stilen tilbake i en
+ * At `data-lt-boundary` gir en innebygd komponent stilen tilbake i en
  * vertsside med CSS uten lag.
  *
  * Vertens regler under er de vanlige: en nullstilling av knapper, et utdrag
  * av normalize, og nullstillinger med (0,1,1), som er grunnen til at
  * attributtet står to ganger i `boundary.css`. Alle står uten lag, og slår
- * dermed `@layer fristil` uten grensen.
+ * dermed `@layer lotek` uten grensen.
  */
 const ARV = "body { font-family: Georgia, serif; }"
 
@@ -48,22 +48,22 @@ const EGENSKAPER = [
 ] as const
 
 const MARKUP = `
-  <div id="utenfor"><button type="button" class="fs-button">Utenfor</button></div>
-  <div data-fs-boundary data-theme="light">
+  <div id="utenfor"><button type="button" class="lt-button">Utenfor</button></div>
+  <div data-lt-boundary data-theme="light">
     ${buttonVariants
       .map(
         (variant) =>
-          `<button type="button" class="fs-button" data-variant="${variant}" data-maal="knapp-${variant}">Lagre</button>`,
+          `<button type="button" class="lt-button" data-variant="${variant}" data-maal="knapp-${variant}">Lagre</button>`,
       )
       .join("")}
-    <select class="fs-select" data-maal="select"><option>Ti</option></select>
-    <input type="text" class="fs-input" data-maal="input" />
-    <label class="fs-label" data-required data-maal="ledetekst">Navn</label>
-    <fs-field data-maal="felt">
-      <label class="fs-label" data-maal="feltets-ledetekst">Fødselsdato</label>
-      <input type="text" class="fs-input" required data-maal="feltets-input" />
-      <p class="fs-help-text" data-maal="hjelpetekst">Skriv dag, måned og år.</p>
-    </fs-field>
+    <select class="lt-select" data-maal="select"><option>Ti</option></select>
+    <input type="text" class="lt-input" data-maal="input" />
+    <label class="lt-label" data-required data-maal="ledetekst">Navn</label>
+    <lt-field data-maal="felt">
+      <label class="lt-label" data-maal="feltets-ledetekst">Fødselsdato</label>
+      <input type="text" class="lt-input" required data-maal="feltets-input" />
+      <p class="lt-help-text" data-maal="hjelpetekst">Skriv dag, måned og år.</p>
+    </lt-field>
   </div>
 `
 
@@ -87,7 +87,7 @@ function les(): Record<string, Record<string, string>> {
 }
 
 describe("grensen mot en vertsside", () => {
-  beforeAll(() => defineFsField())
+  beforeAll(() => defineLtField())
 
   afterEach(() => {
     for (const stil of document.querySelectorAll("style[data-vert]"))
@@ -138,11 +138,11 @@ describe("grensen mot en vertsside", () => {
     expect(utenfor.color).toBe("rgb(200, 0, 0)")
   })
 
-  it("lar --fs-variablene på rotelementet virke", () => {
+  it("lar --lt-variablene på rotelementet virke", () => {
     document.body.innerHTML = MARKUP
     verten(ARV + NULLSTILLING)
-    const rot = document.querySelector("[data-fs-boundary]") as HTMLElement
-    rot.style.setProperty("--fs-button-radius", "9999px")
+    const rot = document.querySelector("[data-lt-boundary]") as HTMLElement
+    rot.style.setProperty("--lt-button-radius", "9999px")
 
     const knapp = document.querySelector(
       '[data-maal="knapp-primary"]',
@@ -156,8 +156,8 @@ describe("grensen mot en vertsside", () => {
     document.body.innerHTML = MARKUP
     const uten = les()
     document
-      .querySelector("[data-fs-boundary]")
-      ?.removeAttribute("data-fs-boundary")
+      .querySelector("[data-lt-boundary]")
+      ?.removeAttribute("data-lt-boundary")
     verten(NULLSTILLING)
 
     expect(les()["knapp-primary"]).not.toEqual(uten["knapp-primary"])

@@ -1,6 +1,6 @@
-//! `fristil lsp`: språkserveren, over standard inn og ut.
+//! `lotek lsp`: språkserveren, over standard inn og ut.
 //!
-//! Den samme sjekken som `fristil sjekk`, mens du skriver, i hver editor som
+//! Den samme sjekken som `lotek sjekk`, mens du skriver, i hver editor som
 //! snakker LSP: VS Code, Neovim og Helix. Funnene blir diagnostikk, med
 //! regelnavnet som kode og komponentsiden som lenke, og en rettelse blir en
 //! hurtigrettelse. IntelliJ-pluginen bruker ikke serveren: den kjører kjernen
@@ -10,12 +10,12 @@
 //! Ordforrådet er det prosjektet faktisk har. Serveren leter i
 //! arbeidsområdet etter
 //!
-//! 1. `build/fristil/manifest.json`, som Gradle-pluginen skriver, med
-//!    fragmentene fra `fristil overta`;
-//! 2. `node_modules/@fristil/designsystem/manifest/manifest.json`, den
+//! 1. `build/lotek/manifest.json`, som Gradle-pluginen skriver, med
+//!    fragmentene fra `lotek overta`;
+//! 2. `node_modules/@lo-tek/interfaces/manifest/manifest.json`, den
 //!    installerte versjonen av pakken;
 //!
-//! og så manifestet i pakken verten har gitt med `FRISTIL_PACKAGE`, som
+//! og så manifestet i pakken verten har gitt med `LOTEK_PACKAGE`, som
 //! VS Code-utvidelsen gjør. Finnes ingen av dem, sjekkes
 //! ingenting, og serveren sier fra én gang. Fila leses på nytt når den
 //! endres, så et nytt bygg eller en oppgradering når editoren uten omstart.
@@ -31,17 +31,17 @@ use std::io::{Read, Write};
 use std::rc::Rc;
 use std::time::SystemTime;
 
-use fristil_kjerne::json::{parse, Json};
-use fristil_kjerne::text::utf16;
-use fristil_kjerne::types::{Finding, Severity, Vocabulary};
-use fristil_kjerne::{diagnose_markup, diagnose_page, manifest, Lines};
+use lotek_core::json::{parse, Json};
+use lotek_core::text::utf16;
+use lotek_core::types::{Finding, Severity, Vocabulary};
+use lotek_core::{diagnose_markup, diagnose_page, manifest, Lines};
 
 /// Stedene manifestet letes etter: i mappa til fila og hver mappe over den
 /// til og med rota av arbeidsområdet fila ligger i, og så ved rota av hvert
 /// arbeidsområde.
 const CANDIDATES: [&str; 2] = [
-    "build/fristil/manifest.json",
-    "node_modules/@fristil/designsystem/manifest/manifest.json",
+    "build/lotek/manifest.json",
+    "node_modules/@lo-tek/interfaces/manifest/manifest.json",
 ];
 
 struct Document {
@@ -63,7 +63,7 @@ pub struct Server {
     preferred: Option<String>,
     rendered: bool,
     /// Manifestene som er lest, ett per sti. I et monorepo kan to dokumenter
-    /// høre til hver sin pakke, med hver sin versjon av Fristil.
+    /// høre til hver sin pakke, med hver sin versjon av LO-TEK.
     sources: Vec<Source>,
     shut_down: bool,
     /// Meldinger til editoren som venter på å bli sendt.
@@ -72,7 +72,7 @@ pub struct Server {
     reloaded: bool,
     /// Om serveren har sagt fra om at et dokument ikke har noe manifest.
     warned: bool,
-    /// Manifestet i pakken verten har gitt i `FRISTIL_PACKAGE`, lest én gang.
+    /// Manifestet i pakken verten har gitt i `LOTEK_PACKAGE`, lest én gang.
     /// Ikke `node_modules` over arbeidsmappa: en pakke over rota av
     /// arbeidsområdet er ikke prosjektets, og den ved rota er alt med.
     package_manifest: Option<String>,
@@ -210,9 +210,9 @@ fn diagnostic(lines: &Lines, finding: &Finding) -> Json {
                 Severity::Warning => 2,
             }),
         ),
-        // Regelnavnet er det `<!-- fristil-ignore-next … -->` tar.
+        // Regelnavnet er det `<!-- lotek-ignore-next … -->` tar.
         ("code", text(finding.rule)),
-        ("source", text("Fristil")),
+        ("source", text("LO-TEK")),
         ("message", text(&finding.message)),
     ];
     if !finding.link.is_empty() {
@@ -343,7 +343,7 @@ impl Server {
                 Err(reason) => {
                     self.message(
                         2,
-                        &format!("Fristil kunne ikke lese {file}, og sjekker ingenting før det kan leses: {reason}"),
+                        &format!("LO-TEK kunne ikke lese {file}, og sjekker ingenting før det kan leses: {reason}"),
                     );
                     None
                 }
@@ -370,7 +370,7 @@ impl Server {
             self.warned = true;
             self.message(
                 2,
-                "Fristil fant ikke noe manifest, og sjekker ingenting. Installer @fristil/designsystem i prosjektet, og åpne fila i et arbeidsområde som har den.",
+                "LO-TEK fant ikke noe manifest, og sjekker ingenting. Installer @lo-tek/interfaces i prosjektet, og åpne fila i et arbeidsområde som har den.",
             );
         }
         let document = &mut self.documents[index];
@@ -478,7 +478,7 @@ impl Server {
                 .map(|p| manifest_path(p, self.roots.first().map(String::as_str)));
             self.rendered = matches!(options.get("rendered"), Some(Json::Bool(true)));
         }
-        // Versjonen av Fristil serveren sjekker mot. Uten manifest er den ukjent,
+        // Versjonen av LO-TEK serveren sjekker mot. Uten manifest er den ukjent,
         // og feltet utelates, som LSP tillater.
         let version = self.vocabulary(None).map(|v| v.version.clone());
         object(vec![
@@ -507,7 +507,7 @@ impl Server {
             (
                 "serverInfo",
                 object(
-                    [("name", text("fristil"))]
+                    [("name", text("lotek"))]
                         .into_iter()
                         .chain(version.as_deref().map(|v| ("version", text(v))))
                         .collect(),
@@ -607,14 +607,14 @@ impl Server {
                 if self.can_watch {
                     self.outgoing.push(object(vec![
                         ("jsonrpc", text("2.0")),
-                        ("id", text("fristil-manifest")),
+                        ("id", text("lotek-manifest")),
                         ("method", text("client/registerCapability")),
                         (
                             "params",
                             object(vec![(
                                 "registrations",
                                 Json::Array(vec![object(vec![
-                                    ("id", text("fristil-manifest")),
+                                    ("id", text("lotek-manifest")),
                                     ("method", text("workspace/didChangeWatchedFiles")),
                                     (
                                         "registerOptions",
@@ -705,7 +705,7 @@ impl Server {
                         "error",
                         object(vec![
                             ("code", Json::Number(-32601.0)),
-                            ("message", text(&format!("fristil lsp kan ikke {method}."))),
+                            ("message", text(&format!("lotek lsp kan ikke {method}."))),
                         ]),
                     ),
                 ]),
@@ -885,7 +885,7 @@ mod tests {
         let mut server = started();
         server.handle(&notification(
             "textDocument/didOpen",
-            r#"{"textDocument":{"uri":"file:///a.html","languageId":"html","version":1,"text":"<p>🧾æ</p>\n<b class=\"fs-buton\"></b>"}}"#,
+            r#"{"textDocument":{"uri":"file:///a.html","languageId":"html","version":1,"text":"<p>🧾æ</p>\n<b class=\"lt-buton\"></b>"}}"#,
         ));
         let sent = server.take();
         let params = sent[0].get("params").unwrap();
@@ -901,7 +901,7 @@ mod tests {
         // Endringen erstatter hele dokumentet, og funnet er borte.
         server.handle(&notification(
             "textDocument/didChange",
-            r#"{"textDocument":{"uri":"file:///a.html","version":2},"contentChanges":[{"text":"<b class=\"fs-button\"></b>"}]}"#,
+            r#"{"textDocument":{"uri":"file:///a.html","version":2},"contentChanges":[{"text":"<b class=\"lt-button\"></b>"}]}"#,
         ));
         let sent = server.take();
         assert!(sent[0]
@@ -920,16 +920,16 @@ mod tests {
         // bufferen slik den er, som Neovim med fileformat=mac, sender `\r`.
         for (text, line, character) in [
             (
-                r#"<div>\r<div>\r<span class=\"fs-buton\">x</span>"#,
+                r#"<div>\r<div>\r<span class=\"lt-buton\">x</span>"#,
                 2.0,
                 13.0,
             ),
             (
-                r#"<div>\r\n<div>\r\n<span class=\"fs-buton\">x</span>"#,
+                r#"<div>\r\n<div>\r\n<span class=\"lt-buton\">x</span>"#,
                 2.0,
                 13.0,
             ),
-            (r#"<div>\n\r<span class=\"fs-buton\">x</span>"#, 2.0, 13.0),
+            (r#"<div>\n\r<span class=\"lt-buton\">x</span>"#, 2.0, 13.0),
         ] {
             let mut server = started();
             server.handle(&notification(
@@ -956,7 +956,7 @@ mod tests {
         let mut server = started();
         server.handle(&notification(
             "textDocument/didOpen",
-            r#"{"textDocument":{"uri":"file:///a.html","languageId":"html","version":1,"text":"<b class=\"fs-buton\"></b>"}}"#,
+            r#"{"textDocument":{"uri":"file:///a.html","languageId":"html","version":1,"text":"<b class=\"lt-buton\"></b>"}}"#,
         ));
         server.take();
         server.handle(&request(
@@ -968,7 +968,7 @@ mod tests {
         let action = &reply.get("result").unwrap().as_array().unwrap()[0];
         assert_eq!(
             action.get("title").unwrap().as_str(),
-            Some("Bytt til fs-button")
+            Some("Bytt til lt-button")
         );
         let edit = &action
             .get("edit")
@@ -979,7 +979,7 @@ mod tests {
             .unwrap()
             .as_array()
             .unwrap()[0];
-        assert_eq!(edit.get("newText").unwrap().as_str(), Some("fs-button"));
+        assert_eq!(edit.get("newText").unwrap().as_str(), Some("lt-button"));
     }
 
     #[test]
@@ -1025,11 +1025,11 @@ mod tests {
         }
         assert_eq!(path_of("untitled:Untitled-1"), None);
         // Manifestet i initializationOptions.
-        let windows = manifest_path(r"C:\proj\build\fristil\manifest.json", Some("/c/proj"));
+        let windows = manifest_path(r"C:\proj\build\lotek\manifest.json", Some("/c/proj"));
         if cfg!(target_os = "wasi") {
-            assert_eq!(windows, "/c/proj/build/fristil/manifest.json");
+            assert_eq!(windows, "/c/proj/build/lotek/manifest.json");
         } else {
-            assert_eq!(windows, r"C:\proj\build\fristil\manifest.json");
+            assert_eq!(windows, r"C:\proj\build\lotek\manifest.json");
         }
         assert_eq!(
             manifest_path("build/m.json", Some("/r/")),
@@ -1060,8 +1060,8 @@ mod tests {
 
     #[test]
     fn uses_the_manifest_in_the_workspace() {
-        let root = std::env::temp_dir().join(format!("fristil-lsp-{}", std::process::id()));
-        let folder = root.join("build/fristil");
+        let root = std::env::temp_dir().join(format!("lotek-lsp-{}", std::process::id()));
+        let folder = root.join("build/lotek");
         std::fs::create_dir_all(&folder).unwrap();
         let fragment = r#"{"schemaVersion":1,"version":"0","classes":{"app-button":{"title":"Button","link":"","attributes":{}}}}"#;
         std::fs::write(
@@ -1108,9 +1108,9 @@ mod tests {
     #[test]
     fn finds_the_manifest_in_the_folder_above_the_document() {
         // Et monorepo: pakken står i `apps/web/node_modules`, ikke ved rota.
-        let root = std::env::temp_dir().join(format!("fristil-lsp-opp-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("lotek-lsp-opp-{}", std::process::id()));
         let web = root.join("apps/web");
-        let folder = web.join("node_modules/@fristil/designsystem/manifest");
+        let folder = web.join("node_modules/@lo-tek/interfaces/manifest");
         std::fs::create_dir_all(&folder).unwrap();
         let fragment = r#"{"schemaVersion":1,"version":"0","classes":{"app-button":{"title":"Button","link":"","attributes":{}}}}"#;
         std::fs::write(
@@ -1189,8 +1189,8 @@ mod tests {
         // arbeidsområdet selv har ingen. Før stoppet letingen bare ved en rot
         // fila lå under, så en fil utenfor roten, og hver fil når editoren
         // ikke ga noen rot, gikk helt til rota av filsystemet og fant den.
-        let root = std::env::temp_dir().join(format!("fristil-lsp-utenfor-{}", std::process::id()));
-        let folder = root.join("node_modules/@fristil/designsystem/manifest");
+        let root = std::env::temp_dir().join(format!("lotek-lsp-utenfor-{}", std::process::id()));
+        let folder = root.join("node_modules/@lo-tek/interfaces/manifest");
         std::fs::create_dir_all(&folder).unwrap();
         std::fs::create_dir_all(root.join("proj")).unwrap();
         std::fs::create_dir_all(root.join("notes")).unwrap();
@@ -1261,7 +1261,7 @@ mod tests {
     fn deferred_changes_are_checked_once_with_the_newest_text() {
         let mut server = started();
         server.deferred = true;
-        for (version, text) in [(1, "fs-buton"), (2, "fs-butto"), (3, "fs-button")] {
+        for (version, text) in [(1, "lt-buton"), (2, "lt-butto"), (3, "lt-button")] {
             server.handle(&notification(
                 if version == 1 { "textDocument/didOpen" } else { "textDocument/didChange" },
                 &format!(
@@ -1288,8 +1288,8 @@ mod tests {
 
     #[test]
     fn registers_watchers_and_rechecks_every_document_when_the_manifest_changes() {
-        let root = std::env::temp_dir().join(format!("fristil-lsp-alle-{}", std::process::id()));
-        std::fs::create_dir_all(root.join("build/fristil")).unwrap();
+        let root = std::env::temp_dir().join(format!("lotek-lsp-alle-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("build/lotek")).unwrap();
         let mut server = Server::new();
         server.handle(&request(
             1,
@@ -1316,7 +1316,7 @@ mod tests {
         server.take();
         let fragment = r#"{"schemaVersion":1,"version":"0","classes":{"app-button":{"title":"Button","link":"","attributes":{}}}}"#;
         std::fs::write(
-            root.join("build/fristil/manifest.json"),
+            root.join("build/lotek/manifest.json"),
             manifest::merged(&crate::package::manifest(), &[fragment])
                 .unwrap()
                 .to_pretty(),

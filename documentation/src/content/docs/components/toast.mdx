@@ -12,11 +12,11 @@ Beholderen er en `role="status"`-region, ikke `role="alert"`. En melding som duk
 
 ```ts
 // main.ts, kjøres én gang når appen starter
-import { defineFsToast } from "@fristil/designsystem/toast"
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/toast.css"
+import { defineLtToast } from "@lo-tek/interfaces/toast"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/toast.css"
 
-defineFsToast()
+defineLtToast()
 ```
 
 ## Slik tar du den i bruk
@@ -31,25 +31,25 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/frittstaende/toast/toast.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/standalone/toast/toast.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
-    <fs-toast id="meldinger" class="fs-toast" role="status" aria-live="polite"
+    <lt-toast id="meldinger" class="lt-toast" role="status" aria-live="polite"
               aria-atomic="false"
-              aria-label="Meldinger" data-ignore-morph></fs-toast>
+              aria-label="Meldinger" data-ignore-morph></lt-toast>
 
-    <button class="fs-button" id="lagre" type="button">Lagre søknaden</button>
+    <button class="lt-button" id="lagre" type="button">Lagre søknaden</button>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsToast } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/frittstaende/toast/fs-toast.js"
+      import { defineLtToast } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/toast/lt-toast.js"
 
-      defineFsToast()
+      defineLtToast()
     </script>
 
     <script type="module">
@@ -70,35 +70,35 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/fristil.d.ts, gir <fs-toast> typer i JSX
-    import "@fristil/designsystem/react-jsx"
+    // src/lotek.d.ts, gir <lt-toast> typer i JSX
+    import "@lo-tek/interfaces/react-jsx"
     ```
 
     ```tsx
     // main.tsx, kjøres én gang når appen starter
-    import { defineFsToast } from "@fristil/designsystem/toast"
-    import "@fristil/designsystem/toast.css"
-    import "@fristil/designsystem/button.css"
+    import { defineLtToast } from "@lo-tek/interfaces/toast"
+    import "@lo-tek/interfaces/toast.css"
+    import "@lo-tek/interfaces/button.css"
 
-    defineFsToast()
+    defineLtToast()
     ```
 
     Legg beholderen i rotkomponenten, og del referansen med en context:
 
     ```tsx
     import { createContext, useContext, useRef } from "react"
-    import { fs } from "@fristil/designsystem/react"
-    import { type FsToast, showToast } from "@fristil/designsystem/toast"
-    import "@fristil/designsystem/tokens.css"
+    import { lt } from "@lo-tek/interfaces/react"
+    import { type LtToast, showToast } from "@lo-tek/interfaces/toast"
+    import "@lo-tek/interfaces/tokens.css"
 
-    const varsler = fs.toast({ label: "Meldinger" })
+    const varsler = lt.toast({ label: "Meldinger" })
 
     const Meldinger = createContext<(tekst: string, farge?: "success" | "danger") => void>(
       () => {},
     )
 
     export function MeldingerProvider({ children }: { children: React.ReactNode }) {
-      const kø = useRef<FsToast>(null)
+      const kø = useRef<LtToast>(null)
 
       const meld = (tekst: string, farge?: "success" | "danger") => {
         if (!kø.current) return
@@ -108,7 +108,7 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
       return (
         <Meldinger.Provider value={meld}>
           {children}
-          <fs-toast ref={kø} {...varsler.host} />
+          <lt-toast ref={kø} {...varsler.host} />
         </Meldinger.Provider>
       )
     }
@@ -119,33 +119,33 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     ```tsx
     const meld = useMeldinger()
 
-    <button {...fs.button()} onClick={() => meld("Søknaden er lagret", "success")}>
+    <button {...lt.button()} onClick={() => meld("Søknaden er lagret", "success")}>
       Lagre søknaden
     </button>
     ```
 
-    Meldingene lever i DOM-en, ikke i Reacts tilstand. Det er med vilje: de skal ikke forsvinne fordi en komponent ble rendret på nytt. `showToast()` venter på at `defineFsToast()` har kjørt, så et kall før registreringen blir gjort i det den er der, i stedet for å feile.
+    Meldingene lever i DOM-en, ikke i Reacts tilstand. Det er med vilje: de skal ikke forsvinne fordi en komponent ble rendret på nytt. `showToast()` venter på at `defineLtToast()` har kjørt, så et kall før registreringen blir gjort i det den er der, i stedet for å feile.
   </TabItem>
   <TabItem label="Astro">
     ```astro
     ---
-    import { fs } from "@fristil/designsystem"
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/toast.css"
+    import { lt } from "@lo-tek/interfaces"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/toast.css"
 
     // Legg beholderen i sideoppsettet, så finnes den på hver side
 
-    const varsler = fs.toast({ label: "Meldinger" })
+    const varsler = lt.toast({ label: "Meldinger" })
 
     ---
 
     <slot />
 
-    <fs-toast id="meldinger" {...varsler.host}></fs-toast>
+    <lt-toast id="meldinger" {...varsler.host}></lt-toast>
 
     <script>
-      import { defineFsToast } from "@fristil/designsystem/toast"
-      defineFsToast()
+      import { defineLtToast } from "@lo-tek/interfaces/toast"
+      defineLtToast()
 
       // Gjør køen tilgjengelig for øyene på siden
       window.meld = (tekst, valg) =>
@@ -163,17 +163,17 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
 
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/frittstaende/toast/toast.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/standalone/toast/toast.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
 
-    <fs-toast id="meldinger" class="fs-toast" role="status" aria-live="polite"
+    <lt-toast id="meldinger" class="lt-toast" role="status" aria-live="polite"
               aria-atomic="false"
-              aria-label="Meldinger" data-ignore-morph></fs-toast>
+              aria-label="Meldinger" data-ignore-morph></lt-toast>
 
     <button
-      class="fs-button"
+      class="lt-button"
       type="button"
       data-on:click="document.getElementById('meldinger').show('Søknaden er lagret', { color: 'success' })"
     >
@@ -182,10 +182,10 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsToast } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/frittstaende/toast/fs-toast.js"
+      import { defineLtToast } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/toast/lt-toast.js"
 
-      defineFsToast()
+      defineLtToast()
     </script>
     ```
 
@@ -195,39 +195,39 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
 
 ## Markupen
 
-En toast har tre deler, og `fs.toast()` gir ett attributtsett til hver. Det er den samme `varsler` som står i React- og Astro-oppskriftene over:
+En toast har tre deler, og `lt.toast()` gir ett attributtsett til hver. Det er den samme `varsler` som står i React- og Astro-oppskriftene over:
 
 ```ts
-const varsler = fs.toast({ label: "Meldinger" })
+const varsler = lt.toast({ label: "Meldinger" })
 ```
 
 | Sett | Hvilken del | Hvem skriver den |
 | --- | --- | --- |
-| `varsler.host` | Beholderen, altså `<fs-toast>` | **Du**, én gang i appen |
+| `varsler.host` | Beholderen, altså `<lt-toast>` | **Du**, én gang i appen |
 | `varsler.message` | Selve meldingen | Komponenten, når du kaller `show()` |
 | `varsler.close` | Lukkeknappen i meldingen | Komponenten |
 
 Derfor sprer du `host` og ikke hele objektet. Beholderen er det eneste elementet du skriver:
 
 ```tsx
-<fs-toast {...varsler.host} />
+<lt-toast {...varsler.host} />
 ```
 
-Sprer du hele `varsler`, setter du tre attributter som heter `host`, `message` og `close`, og ingen av dem er noe nettleseren kjenner. Beholderen står da uten `role="status"` til `defineFsToast()` har kjørt, for komponenten fyller inn rollen når den mangler. Fram til da leser ingen skjermleser opp det som kommer i den, og `data-ignore-morph` kommer aldri, siden det er det ene komponenten ikke setter selv.
+Sprer du hele `varsler`, setter du tre attributter som heter `host`, `message` og `close`, og ingen av dem er noe nettleseren kjenner. Beholderen står da uten `role="status"` til `defineLtToast()` har kjørt, for komponenten fyller inn rollen når den mangler. Fram til da leser ingen skjermleser opp det som kommer i den, og `data-ignore-morph` kommer aldri, siden det er det ene komponenten ikke setter selv.
 
-De to andre settene er **navn, ikke markup**. Komponenten kjenner dem og bruker dem på det den lager selv. Du trenger dem bare når noen andre skriver meldingen: en Datastar-app der serveren patcher en melding rett inn i regionen, må skrive `fs-toast__message` og `fs-toast__close` selv, og da skal de hete det samme som komponentens egne.
+De to andre settene er **navn, ikke markup**. Komponenten kjenner dem og bruker dem på det den lager selv. Du trenger dem bare når noen andre skriver meldingen: en Datastar-app der serveren patcher en melding rett inn i regionen, må skrive `lt-toast__message` og `lt-toast__close` selv, og da skal de hete det samme som komponentens egne.
 
 Har du ikke noe byggesteg, skriver du det samme settet ut som vanlige attributter, slik oppskriftene «Ren HTML» og «Datastar» gjør:
 
 ```html
-<fs-toast id="meldinger" class="fs-toast" role="status" aria-live="polite"
+<lt-toast id="meldinger" class="lt-toast" role="status" aria-live="polite"
           aria-atomic="false"
-          aria-label="Meldinger" data-ignore-morph></fs-toast>
+          aria-label="Meldinger" data-ignore-morph></lt-toast>
 ```
 
 `data-ignore-morph` er den viktigste av dem, og den eneste komponenten ikke setter selv.
 
-`data-ignore-morph` er ikke valgfri. Komponenten lager og fjerner sine egne meldinger inne i regionen, og uten attributtet river en oppdatering fra serveren dem bort, fordi serverens utgave av regionen er tom. Se [Markup og oppførsel](/markup-og-oppforsel/#de-frittstående-komponentene).
+`data-ignore-morph` er ikke valgfri. Komponenten lager og fjerner sine egne meldinger inne i regionen, og uten attributtet river en oppdatering fra serveren dem bort, fordi serverens utgave av regionen er tom. Se [Markup og oppførsel](/markup-and-behaviour/#de-frittstående-komponentene).
 
 ## Attributter og metoder
 
@@ -235,12 +235,12 @@ Har du ikke noe byggesteg, skriver du det samme settet ut som vanlige attributte
 | --- | --- |
 | `duration` | Standard levetid i millisekunder. Uten attributtet er den 6000. `0` lar meldingene bli stående. |
 | `label` | Tekst som sier hva regionen er. Blir `aria-label`. Standard: «Varsler» |
-| `close-label` | Hva lukkeknappen i hver melding heter for skjermleseren. Standard: «Lukk melding». `fs.toast({ closeLabel })` skriver det |
+| `close-label` | Hva lukkeknappen i hver melding heter for skjermleseren. Standard: «Lukk melding». `lt.toast({ closeLabel })` skriver det |
 | `show(tekst, valg)` | Viser en melding og returnerer elementet |
 | `dismiss(melding)` | Fjerner én melding, og sender `toast-dismiss`. Hadde meldingen fokus, går fokus til meldingen ved siden av |
 | `clear()` | Fjerner alle, uten å sende noe |
 
-`showToast(element, tekst, valg)` fra `@fristil/designsystem/toast` gjør det samme som `show()`, men venter først på at elementet er registrert. Bruk den der kallet kan komme før `defineFsToast()`, som i en modul som lastes ved siden av registreringen.
+`showToast(element, tekst, valg)` fra `@lo-tek/interfaces/toast` gjør det samme som `show()`, men venter først på at elementet er registrert. Bruk den der kallet kan komme før `defineLtToast()`, som i en modul som lastes ved siden av registreringen.
 
 Valgene til `show()`:
 
@@ -250,7 +250,7 @@ Valgene til `show()`:
 | `duration` | fra elementet | Millisekunder før meldingen forsvinner |
 | `closeLabel` | fra `close-label` | Hva lukkeknappen heter for skjermleseren, for denne ene meldingen |
 
-Begge tekstene kan oversettes. Se [Oversettelse](/oversettelse/).
+Begge tekstene kan oversettes. Se [Oversettelse](/translation/).
 
 ## Meldinger som forsvinner
 
@@ -265,21 +265,21 @@ Skal beskjeden kunne leses igjen senere, hører den ikke hjemme her. En kvitteri
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-toast` | Regionen meldingene ligger i, altså verten. Den bærer plasseringen i hjørnet |
-| `.fs-toast__message` | Én melding. Fargen kommer fra `data-color`. |
-| `.fs-toast__close` | Lukkeknappen |
+| `.lt-toast` | Regionen meldingene ligger i, altså verten. Den bærer plasseringen i hjørnet |
+| `.lt-toast__message` | Én melding. Fargen kommer fra `data-color`. |
+| `.lt-toast__close` | Lukkeknappen |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-toast-space` | `var(--fs-spacing-4)` |
-| `--fs-toast-width` | `min(24rem, calc(100vw - var(--fs-spacing-8)))` |
-| `--fs-toast-padding` | `var(--fs-spacing-3) var(--fs-spacing-4)` |
-| `--fs-toast-radius` | `var(--fs-spacing-1)` |
-| `--fs-toast-layer` | `60` |
+| `--lt-toast-space` | `var(--lt-spacing-4)` |
+| `--lt-toast-width` | `min(24rem, calc(100vw - var(--lt-spacing-8)))` |
+| `--lt-toast-padding` | `var(--lt-spacing-3) var(--lt-spacing-4)` |
+| `--lt-toast-radius` | `var(--lt-spacing-1)` |
+| `--lt-toast-layer` | `60` |
 
 Beholderen slipper klikk gjennom når den er tom, så den ikke stenger for knapper under seg.
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

@@ -1,14 +1,14 @@
 /// <reference path="./types/css.d.ts" />
 
 import { afterEach, describe, expect, it } from "vitest"
-import { farge, rgb } from "./testing/farge"
+import { farge, rgb } from "./testing/color"
 import { contrastRatio } from "./tokens/color"
 
 import "./tokens/tokens.css"
 import "./components/css/button/button.css"
 import "./components/css/card/card.css"
 import "./components/css/paragraph/paragraph.css"
-import "./components/frittstaende/toast/toast.css"
+import "./components/standalone/toast/toast.css"
 
 /**
  * At en temagrense gir alt under seg temaet, ikke bare fargetokenene.
@@ -42,7 +42,7 @@ function flaten(element: Element | null): string {
  */
 function ringen(inni: Element): string {
   const prove = document.createElement("span")
-  prove.style.outline = "var(--fs-focus-ring)"
+  prove.style.outline = "var(--lt-focus-ring)"
   inni.append(prove)
   const farge = getComputedStyle(prove).outlineColor
   prove.remove()
@@ -50,8 +50,8 @@ function ringen(inni: Element): string {
 }
 
 function side(html: string) {
-  document.body.style.background = "var(--fs-color-neutral-canvas)"
-  document.body.style.color = "var(--fs-color-neutral-text)"
+  document.body.style.background = "var(--lt-color-neutral-canvas)"
+  document.body.style.color = "var(--lt-color-neutral-text)"
   document.body.innerHTML = html
 }
 
@@ -65,7 +65,7 @@ describe("en temagrense", () => {
   it("gir en mørk seksjon på en lys side mørk flate og lesbar tekst", () => {
     side(`
       <div data-theme="dark" id="seksjon">
-        <p class="fs-paragraph" id="avsnitt">Tekst</p>
+        <p class="lt-paragraph" id="avsnitt">Tekst</p>
         Tekst uten klasse
       </div>`)
     const seksjon = document.getElementById("seksjon") as HTMLElement
@@ -73,7 +73,7 @@ describe("en temagrense", () => {
 
     // Før var seksjonen gjennomsiktig, og avsnittet 1,23:1 mot sidens hvite.
     expect(getComputedStyle(seksjon).backgroundColor).toBe(
-      farge("--fs-color-neutral-canvas", "dark"),
+      farge("--lt-color-neutral-canvas", "dark"),
     )
     expect(
       kontrast(getComputedStyle(avsnitt).color, flaten(avsnitt)),
@@ -85,12 +85,12 @@ describe("en temagrense", () => {
 
   it("lar en komponent med data-theme beholde sin egen flate", () => {
     side(
-      `<div data-theme="dark" class="fs-card" data-variant="filled" id="kort">Kort</div>`,
+      `<div data-theme="dark" class="lt-card" data-variant="filled" id="kort">Kort</div>`,
     )
     const kort = document.getElementById("kort") as HTMLElement
 
     expect(getComputedStyle(kort).backgroundColor).toBe(
-      farge("--fs-color-neutral-surface", "dark"),
+      farge("--lt-color-neutral-surface", "dark"),
     )
   })
 
@@ -106,7 +106,7 @@ describe("en temagrense", () => {
   })
 
   it("gir ikke meldingskolonnen en flate", () => {
-    side(`<fs-toast data-theme="dark" id="meldinger"></fs-toast>`)
+    side(`<lt-toast data-theme="dark" id="meldinger"></lt-toast>`)
 
     expect(
       getComputedStyle(document.getElementById("meldinger") as Element)
@@ -124,43 +124,43 @@ describe("en temagrense", () => {
   it("gir fokusringen og avslått tilstand temaet til seksjonen", async () => {
     side(`
       <div data-theme="dark">
-        <button class="fs-button" id="knapp" type="button">Knapp</button>
-        <button class="fs-button" id="av" type="button" disabled>Av</button>
+        <button class="lt-button" id="knapp" type="button">Knapp</button>
+        <button class="lt-button" id="av" type="button" disabled>Av</button>
       </div>`)
     const knapp = document.getElementById("knapp") as HTMLElement
 
     // Før arvet seksjonen ringen og den avslåtte flaten ferdig utregnet fra
     // `:root`, altså lyst tema: 2,4:1 mot den mørke flaten.
-    expect(ringen(knapp)).toBe(farge("--fs-color-accent-border-strong", "dark"))
+    expect(ringen(knapp)).toBe(farge("--lt-color-accent-border-strong", "dark"))
     expect(
       getComputedStyle(document.getElementById("av") as HTMLElement)
         .backgroundColor,
-    ).toBe(farge("--fs-color-neutral-raised", "dark"))
+    ).toBe(farge("--lt-color-neutral-raised", "dark"))
   })
 
   it("gir en lys seksjon på en mørk side den lyse fokusringen", async () => {
     document.documentElement.setAttribute("data-theme", "dark")
     side(`
       <div data-theme="light">
-        <button class="fs-button" id="knapp" type="button">Knapp</button>
+        <button class="lt-button" id="knapp" type="button">Knapp</button>
       </div>`)
     expect(ringen(document.getElementById("knapp") as HTMLElement)).toBe(
-      farge("--fs-color-accent-border-strong", "light"),
+      farge("--lt-color-accent-border-strong", "light"),
     )
   })
 
   it("lar fokusringen følge et generert tema i en seksjon", async () => {
     const stil = document.createElement("style")
     stil.textContent = `
-      @layer fristil, fristil-tema;
-      @layer fristil-tema {
-        [data-theme="dark"] { --fs-color-accent-border-strong: #ff0000; }
+      @layer lotek, lotek-theme;
+      @layer lotek-theme {
+        [data-theme="dark"] { --lt-color-accent-border-strong: #ff0000; }
       }`
     document.head.append(stil)
     try {
       side(`
         <div data-theme="dark">
-          <button class="fs-button" id="knapp" type="button">Knapp</button>
+          <button class="lt-button" id="knapp" type="button">Knapp</button>
         </div>`)
       expect(ringen(document.getElementById("knapp") as HTMLElement)).toBe(
         "rgb(255, 0, 0)",

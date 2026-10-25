@@ -1,32 +1,32 @@
-@layer fristil {
-  .fs-heading {
+@layer lotek {
+  .lt-heading {
     margin: 0;
     font-family: inherit;
-    font-weight: var(--fs-heading-font-weight, var(--fs-font-weight-bold));
-    line-height: var(--fs-heading-line-height, var(--fs-line-height-heading));
-    color: var(--fs-color-neutral-text-strong);
+    font-weight: var(--lt-heading-font-weight, var(--lt-font-weight-bold));
+    line-height: var(--lt-heading-line-height, var(--lt-line-height-heading));
+    color: var(--lt-color-neutral-text-strong);
     text-wrap: balance;
-    font-size: var(--fs-font-size-xl);
+    font-size: var(--lt-font-size-xl);
   }
 
-  .fs-heading[data-size="mega"] {
-    font-size: var(--fs-font-size-mega);
+  .lt-heading[data-size="mega"] {
+    font-size: var(--lt-font-size-mega);
   }
 
-  .fs-heading[data-size="xl"] {
-    font-size: var(--fs-font-size-xxl);
+  .lt-heading[data-size="xl"] {
+    font-size: var(--lt-font-size-xxl);
   }
 
-  .fs-heading[data-size="m"] {
-    font-size: var(--fs-font-size-l);
+  .lt-heading[data-size="m"] {
+    font-size: var(--lt-font-size-l);
   }
 
-  .fs-heading[data-size="s"] {
-    font-size: var(--fs-font-size-m);
+  .lt-heading[data-size="s"] {
+    font-size: var(--lt-font-size-m);
   }
 
-  .fs-heading[data-size="xs"] {
-    font-size: var(--fs-font-size-s);
+  .lt-heading[data-size="xs"] {
+    font-size: var(--lt-font-size-s);
     text-transform: uppercase;
     letter-spacing: 0.06em;
   }

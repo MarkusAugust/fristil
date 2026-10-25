@@ -1,14 +1,14 @@
 /**
  * At typene følger med hver inngang til web-komponentene, alene.
  *
- * Typesikker bruk-siden lover at `querySelector("fs-dialog")` og
+ * Typesikker bruk-siden lover at `querySelector("lt-dialog")` og
  * `addEventListener("dialog-toggle", …)` er typet med det du alt importerer,
  * også fra `/register` og `/react-jsx`. `typecheck:tests` kan ikke se om det
  * holder: der kompileres hele `src` i ett program, så utvidelsene av
  * `HTMLElementTagNameMap` og `HTMLElementEventMap` er alltid med, uansett
- * hvilken fil de står i. Fra `/register` alene var `querySelector("fs-dialog")`
+ * hvilken fil de står i. Fra `/register` alene var `querySelector("lt-dialog")`
  * et `Element`, og lytteren på det fikk `Event` uten `detail`, fordi tagkartet
- * sto i `fs-*.ts`-filene, og `register.d.ts` importerer dem ikke.
+ * sto i `lt-*.ts`-filene, og `register.d.ts` importerer dem ikke.
  *
  * Her kompileres én fil per inngang, med bare den importen, mot `dist` slik
  * en konsument ser pakken: hovedinngangen, `/register`, `/react`, `/react-jsx`
@@ -33,7 +33,7 @@ const manifest = (await Bun.file(join(pakke, "package.json")).json()) as {
   exports: Record<string, string | { types?: string }>
 }
 
-/** Inngangene som skal kjenne web-komponentene: de fire felles og hver `fs-*`. */
+/** Inngangene som skal kjenne web-komponentene: de fire felles og hver `lt-*`. */
 const FELLES = [".", "./register", "./react", "./react-jsx"]
 
 const innganger = Object.entries(manifest.exports)
@@ -41,7 +41,7 @@ const innganger = Object.entries(manifest.exports)
     ([navn, verdi]) =>
       typeof verdi === "object" &&
       typeof verdi.types === "string" &&
-      (FELLES.includes(navn) || verdi.types.includes("/fs-")),
+      (FELLES.includes(navn) || verdi.types.includes("/lt-")),
   )
   .map(([navn]) => navn)
 
@@ -62,7 +62,7 @@ function prøve(inngang: string, feil = false): string {
   const type = feil ? "string" : "boolean"
   return `import "${manifest.name}${inngang.slice(1)}"
 
-const dialog = document.querySelector("fs-dialog")
+const dialog = document.querySelector("lt-dialog")
 dialog?.addEventListener("dialog-toggle", (event) => {
   const open: ${type} = event.detail.open
   const returnValue: string = event.detail.returnValue
@@ -70,7 +70,7 @@ dialog?.addEventListener("dialog-toggle", (event) => {
   void returnValue
 })
 
-const faner = document.querySelector("fs-tabs")
+const faner = document.querySelector("lt-tabs")
 faner?.addEventListener("tab-select", (event) => {
   const index: number = event.detail.index
   void index
@@ -81,7 +81,7 @@ document.addEventListener("suggestion-select", (event) => {
   void value
 })
 
-const felt: HTMLElement | null = document.querySelector("fs-field")
+const felt: HTMLElement | null = document.querySelector("lt-field")
 void felt
 
 export {}
@@ -122,7 +122,7 @@ vert.readFile = (fil) => virtuelle.get(fil) ?? ts.sys.readFile(fil)
 function feilene(inngang: string, innhold: string): string[] {
   const fil = join(
     pakke,
-    "sjekk-typer",
+    "check-types",
     `${inngang.replace(/^\.\/?/, "") || "index"}.ts`,
   )
   virtuelle.set(fil, innhold)

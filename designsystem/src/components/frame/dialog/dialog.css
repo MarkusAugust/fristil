@@ -1,12 +1,12 @@
-@layer fristil {
+@layer lotek {
   /* Verten er ikke en boks. Uten dette er den `inline` som alle andre
-     web components, og en tom `<fs-dialog>` i et oppsett med
+     web components, og en tom `<lt-dialog>` i et oppsett med
      `gap` flytter naboen sin. */
-  fs-dialog {
+  lt-dialog {
     display: contents;
   }
 
-  .fs-dialog {
+  .lt-dialog {
     box-sizing: border-box;
     /*
      * `100%` og ikke bare `100vw`: en ekte dialog i topplaget måler seg mot
@@ -14,25 +14,25 @@
      * stakk den utenfor. `min()` tar den minste av de tre.
      */
     inline-size: var(
-      --fs-dialog-width,
-      min(32rem, 100%, calc(100vw - var(--fs-spacing-8)))
+      --lt-dialog-width,
+      min(32rem, 100%, calc(100vw - var(--lt-spacing-8)))
     );
-    max-block-size: calc(100vh - var(--fs-spacing-16));
-    padding: var(--fs-dialog-padding, var(--fs-spacing-5));
+    max-block-size: calc(100vh - var(--lt-spacing-16));
+    padding: var(--lt-dialog-padding, var(--lt-spacing-5));
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-strong);
-    background: var(--fs-color-neutral-canvas);
-    border: 1px solid var(--fs-color-neutral-border-subtle);
-    border-radius: var(--fs-dialog-radius, var(--fs-spacing-2));
-    box-shadow: var(--fs-shadow-overlay);
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-neutral-canvas);
+    border: 1px solid var(--lt-color-neutral-border-subtle);
+    border-radius: var(--lt-dialog-radius, var(--lt-spacing-2));
+    box-shadow: var(--lt-shadow-overlay);
   }
 
   /*
    * Kolonne, men bare når kroppen står der den skal.
    *
-   * `.fs-dialog__body` har hatt `overflow-y: auto` siden komponenten kom, uten
+   * `.lt-dialog__body` har hatt `overflow-y: auto` siden komponenten kom, uten
    * å kunne rulle: dialogen er en blokk, så kroppens høyde er innholdsbestemt
    * og blir aldri klippet. Det som rullet var dialogen selv, og bare når den
    * var modal, så overskriften og knapperaden forsvant ut av syne sammen med
@@ -44,7 +44,7 @@
    * dialogen blir egne rader i full bredde. Er kroppen pakket inn i noe, eller
    * finnes den ikke, er blokkoppsettet fortsatt det riktige, og da står det.
    */
-  .fs-dialog:has(> .fs-dialog__body) {
+  .lt-dialog:has(> .lt-dialog__body) {
     display: flex;
     flex-direction: column;
   }
@@ -64,7 +64,7 @@
    *
    * Unntaket for popover står der spesifikasjonens eget stilark har det. En
    * popover setter aldri `open`, så uten det ble et
-   * `<dialog class="fs-dialog" popover>` vist med `showPopover()` usynlig, i
+   * `<dialog class="lt-dialog" popover>` vist med `showPopover()` usynlig, i
    * alle tre motorene og uten et ord.
    *
    * `:is()` rundt det er ikke pynt. `:not()` tar en ikke-tilgivende liste, så
@@ -76,14 +76,14 @@
    * usant. Etterprøvd i alle tre motorene med en pseudoklasse ingen av dem
    * kjenner.
    */
-  dialog.fs-dialog:not([open]):not(:is(:popover-open)) {
+  dialog.lt-dialog:not([open]):not(:is(:popover-open)) {
     display: none;
   }
 
   /* Flaten bak dialogen. Den finnes bare når dialogen er åpnet med
      showModal(); et vanlig show() gir ingen ::backdrop. */
-  .fs-dialog::backdrop {
-    background: var(--fs-color-overlay);
+  .lt-dialog::backdrop {
+    background: var(--lt-color-overlay);
   }
 
   /*
@@ -100,12 +100,12 @@
    * noe å hoppe fra. Flaten bak males med en skygge, siden `::backdrop` bare
    * finnes i topplaget.
    *
-   * Regelen gjelder bare inne i `<fs-dialog>`. En `.fs-dialog` som brukes
+   * Regelen gjelder bare inne i `<lt-dialog>`. En `.lt-dialog` som brukes
    * uten komponenten, og med vilje ikke er modal, skal stå der den står.
    */
-  fs-dialog .fs-dialog[open]:not(:modal) {
+  lt-dialog .lt-dialog[open]:not(:modal) {
     position: fixed;
-    z-index: var(--fs-dialog-layer, 40);
+    z-index: var(--lt-dialog-layer, 40);
 
     /*
      * Samme geometri som en modal, ikke bare samme sted.
@@ -123,7 +123,7 @@
      * `6px` og `2em` er nettleserens egne tall, ikke vår avstandsskala. De
      * skal derfor ikke bli tokens: likheten er hele poenget med dem.
      *
-     * Maksmålet på høyden står med vilje ikke her. `.fs-dialog` har det
+     * Maksmålet på høyden står med vilje ikke her. `.lt-dialog` har det
      * allerede, og en forfatterregel slår nettleserens `dialog:modal`, så den
      * ene verdien gjelder i begge tilstandene. Sto den her også, ville denne
      * vunnet på spesifisitet før dialogen ble modal og falt bort etterpå, og
@@ -136,59 +136,59 @@
     overflow: auto;
 
     box-shadow:
-      var(--fs-shadow-overlay),
-      0 0 0 100vmax var(--fs-color-overlay);
+      var(--lt-shadow-overlay),
+      0 0 0 100vmax var(--lt-color-overlay);
   }
 
-  .fs-dialog__title {
-    margin: 0 0 var(--fs-spacing-2);
-    font-size: var(--fs-font-size-l);
-    font-weight: var(--fs-font-weight-semibold);
-    line-height: var(--fs-line-height-compact);
+  .lt-dialog__title {
+    margin: 0 0 var(--lt-spacing-2);
+    font-size: var(--lt-font-size-l);
+    font-weight: var(--lt-font-weight-semibold);
+    line-height: var(--lt-line-height-compact);
   }
 
   /* Den som ruller når dialogen er full. Et flekselement som ikke har
      `overflow: visible` har automatisk minstestørrelse null, så den krymper
      av seg selv; noen `min-block-size: 0` trengs ikke, og er etterprøvd i
      alle tre motorene. */
-  .fs-dialog__body {
+  .lt-dialog__body {
     margin: 0;
     overflow-y: auto;
   }
 
-  .fs-dialog__footer {
+  .lt-dialog__footer {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
-    gap: var(--fs-spacing-2);
-    margin-block-start: var(--fs-spacing-5);
+    gap: var(--lt-spacing-2);
+    margin-block-start: var(--lt-spacing-5);
   }
 
   /*
    * En topp, som kan farges.
    *
-   * Med `.fs-dialog__header` som direkte barn flyttes luften fra dialogen til
+   * Med `.lt-dialog__header` som direkte barn flyttes luften fra dialogen til
    * delene: toppen, kroppen og knapperaden får hver sin `padding`, så et
    * farget bånd går helt ut i kantene. Uten toppen står alt som før. Vilkåret
    * står i selektoren, som for kolonnen over: to dialoger i demoen skrev om
    * padding på tre klasser for å få til dette, og det er en kobling til
    * hvordan dialogen fordeler luften sin, som brakk ved en oppgradering.
    */
-  .fs-dialog:has(> .fs-dialog__header) {
+  .lt-dialog:has(> .lt-dialog__header) {
     padding: 0;
   }
 
-  .fs-dialog__header {
+  .lt-dialog__header {
     flex: none;
-    padding: var(--fs-dialog-padding, var(--fs-spacing-5));
+    padding: var(--lt-dialog-padding, var(--lt-spacing-5));
     /* Én piksel mindre enn dialogen: toppen står innenfor rammen, og
        innsiden av et hjørne er radiusen minus rammens bredde. */
     border-start-start-radius: calc(
-      var(--fs-dialog-radius, var(--fs-spacing-2)) -
+      var(--lt-dialog-radius, var(--lt-spacing-2)) -
       1px
     );
     border-start-end-radius: calc(
-      var(--fs-dialog-radius, var(--fs-spacing-2)) -
+      var(--lt-dialog-radius, var(--lt-spacing-2)) -
       1px
     );
   }
@@ -206,97 +206,97 @@
    * editoren foreslår, fikk 20 piksler under overskriften i stedet for 8.
    * Det samme fikk en tom verdi fra en mal.
    */
-  .fs-dialog:not(
+  .lt-dialog:not(
     [data-color="brand"],
     [data-color="info"],
     [data-color="success"],
     [data-color="warning"],
     [data-color="danger"]
   )
-  > .fs-dialog__header {
-    padding-block-end: var(--fs-spacing-2);
+  > .lt-dialog__header {
+    padding-block-end: var(--lt-spacing-2);
   }
 
-  .fs-dialog:not(
+  .lt-dialog:not(
       [data-color="brand"],
       [data-color="info"],
       [data-color="success"],
       [data-color="warning"],
       [data-color="danger"]
     )
-    > .fs-dialog__header
-    + .fs-dialog__body {
+    > .lt-dialog__header
+    + .lt-dialog__body {
     padding-block-start: 0;
   }
 
-  .fs-dialog:not(
+  .lt-dialog:not(
       [data-color="brand"],
       [data-color="info"],
       [data-color="success"],
       [data-color="warning"],
       [data-color="danger"]
     )
-    > .fs-dialog__header
-    + .fs-dialog__footer {
+    > .lt-dialog__header
+    + .lt-dialog__footer {
     padding-block-start: calc(
-      var(--fs-dialog-padding, var(--fs-spacing-5)) -
-      var(--fs-spacing-2)
+      var(--lt-dialog-padding, var(--lt-spacing-5)) -
+      var(--lt-spacing-2)
     );
   }
 
-  .fs-dialog__header .fs-dialog__title {
+  .lt-dialog__header .lt-dialog__title {
     margin: 0;
   }
 
   /* Samme farge som overskriften, uten opasitet: med 0,85 falt teksten
      under 4,5:1 på suksess- og advarselsbåndet. */
-  .fs-dialog__subtitle {
-    margin: var(--fs-spacing-1) 0 0;
-    font-size: var(--fs-font-size-s);
-    line-height: var(--fs-line-height-default);
+  .lt-dialog__subtitle {
+    margin: var(--lt-spacing-1) 0 0;
+    font-size: var(--lt-font-size-s);
+    line-height: var(--lt-line-height-default);
   }
 
-  .fs-dialog:has(> .fs-dialog__header) > .fs-dialog__body {
-    padding: var(--fs-dialog-padding, var(--fs-spacing-5));
+  .lt-dialog:has(> .lt-dialog__header) > .lt-dialog__body {
+    padding: var(--lt-dialog-padding, var(--lt-spacing-5));
   }
 
-  .fs-dialog:has(> .fs-dialog__header) > .fs-dialog__footer {
+  .lt-dialog:has(> .lt-dialog__header) > .lt-dialog__footer {
     margin-block-start: 0;
-    padding: 0 var(--fs-dialog-padding, var(--fs-spacing-5))
-      var(--fs-dialog-padding, var(--fs-spacing-5));
+    padding: 0 var(--lt-dialog-padding, var(--lt-spacing-5))
+      var(--lt-dialog-padding, var(--lt-spacing-5));
   }
 
   /* Fargene er varslerens, med merkefargen i tillegg. Teksten følger med,
      så kontrasten holder på hvert bånd. */
-  .fs-dialog[data-color="brand"] > .fs-dialog__header {
-    color: var(--fs-color-accent-content);
-    background: var(--fs-color-accent-fill);
+  .lt-dialog[data-color="brand"] > .lt-dialog__header {
+    color: var(--lt-color-accent-content);
+    background: var(--lt-color-accent-fill);
   }
 
-  .fs-dialog[data-color="info"] > .fs-dialog__header {
-    color: var(--fs-color-accent-text);
-    background: var(--fs-color-accent-surface);
+  .lt-dialog[data-color="info"] > .lt-dialog__header {
+    color: var(--lt-color-accent-text);
+    background: var(--lt-color-accent-surface);
   }
 
-  .fs-dialog[data-color="success"] > .fs-dialog__header {
-    color: var(--fs-color-success-text);
-    background: var(--fs-color-success-surface);
+  .lt-dialog[data-color="success"] > .lt-dialog__header {
+    color: var(--lt-color-success-text);
+    background: var(--lt-color-success-surface);
   }
 
-  .fs-dialog[data-color="warning"] > .fs-dialog__header {
-    color: var(--fs-color-warning-text);
-    background: var(--fs-color-warning-surface);
+  .lt-dialog[data-color="warning"] > .lt-dialog__header {
+    color: var(--lt-color-warning-text);
+    background: var(--lt-color-warning-surface);
   }
 
-  .fs-dialog[data-color="danger"] > .fs-dialog__header {
-    color: var(--fs-color-danger-text);
-    background: var(--fs-color-danger-surface);
+  .lt-dialog[data-color="danger"] > .lt-dialog__header {
+    color: var(--lt-color-danger-text);
+    background: var(--lt-color-danger-surface);
   }
 
   /* Høykontrast fjerner bakgrunnsfargene. En strek under toppen holder
      skillet mellom toppen og kroppen. */
   @media (forced-colors: active) {
-    .fs-dialog__header {
+    .lt-dialog__header {
       border-block-end: 1px solid CanvasText;
     }
   }

@@ -3,9 +3,9 @@
   "schemaVersion": 1,
   "version": "0.36.0",
   "elements": {
-    "fs-field": {
-      "link": "https://fristil.sobernetics.no/components/field/",
-      "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
+    "lt-field": {
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `lt.field()` i stedet.",
       "attributes": {
         "disabled": {
           "type": "flag",
@@ -34,14 +34,14 @@
           "stableId": true
         },
         "help": {
-          "selector": ".fs-help-text",
+          "selector": ".lt-help-text",
           "description": "Hjelpeteksten, som leses opp sammen med kontrollen.",
           "content": "text",
           "unique": true,
           "optional": true
         },
         "error": {
-          "selector": ".fs-error-text",
+          "selector": ".lt-error-text",
           "description": "Feilmeldingen, som vises og leses opp når feltet er ugyldig.",
           "content": "text",
           "unique": true,
@@ -49,14 +49,14 @@
         }
       },
       "removed": {
-        "invalid": "Feltet er ugyldig når feilmeldingen, `.fs-error-text`, står synlig, eller når serveren har skrevet `aria-invalid` på kontrollen. I Datastar: `data-attr:hidden=\"!$ugyldig\"` på feilmeldingen.",
+        "invalid": "Feltet er ugyldig når feilmeldingen, `.lt-error-text`, står synlig, eller når serveren har skrevet `aria-invalid` på kontrollen. I Datastar: `data-attr:hidden=\"!$ugyldig\"` på feilmeldingen.",
         "required-marker": "Påkrevd-merket står som `data-required` på `<label>`, og vises da også uten JavaScript.",
         "control-id": "Skriv `id` på kontrollen og `for` på ledeteksten i malen. Komponenten skriver aldri id på kontrollen."
       }
     },
-    "fs-tabs": {
-      "link": "https://fristil.sobernetics.no/components/tabs/",
-      "description": "Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.",
+    "lt-tabs": {
+      "link": "https://lo-tek.sobernetics.no/components/tabs/",
+      "description": "Fanerad. Fanene er lenker til panelene i en `.lt-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.",
       "attributes": {
         "server-controlled": {
           "type": "flag",
@@ -73,19 +73,19 @@
       },
       "parts": {
         "list": {
-          "selector": "[role='tablist'], .fs-tabs__list",
+          "selector": "[role='tablist'], .lt-tabs__list",
           "description": "Raden med fanene, en `<ul>` der hvert `<li>` får `role=\"presentation\"`. Den må ha et navn, som `aria-label`. Har serveren skrevet `role=\"tab\"` på lenkene, kan raden også ha andre lenker.",
           "content": "free",
           "unique": true
         },
         "tab": {
-          "selector": "a[role='tab'][href^='#'], .fs-tabs__list a[href^='#']:not([role])",
+          "selector": "a[role='tab'][href^='#'], .lt-tabs__list a[href^='#']:not([role])",
           "description": "En fane: en lenke til panelet sitt, `<a href=\"#vedlegg\">`. Komponenten skriver `aria-controls` fra `href`. `role=\"tab\"` på noe som ikke er en lenke, er ikke en fane.",
           "content": "text",
           "multiple": true
         },
         "panel": {
-          "selector": "[role='tabpanel'], .fs-tabs__panel:not([role])",
+          "selector": "[role='tabpanel'], .lt-tabs__panel:not([role])",
           "description": "Innholdet til én fane, med id-en lenken peker på. Panelet heter det fanen heter: overskriften øverst i panelet er navnet når den sier det samme som fanen.",
           "content": "free",
           "multiple": true
@@ -99,8 +99,8 @@
         }
       }
     },
-    "fs-error-summary": {
-      "link": "https://fristil.sobernetics.no/components/error-summary/",
+    "lt-error-summary": {
+      "link": "https://lo-tek.sobernetics.no/components/error-summary/",
       "description": "Feiloppsummering. Flytter fokus til boksen når den kommer til syne, og til kontrollen når en lenke i lista følges.",
       "attributes": {
         "data-autofocus": {
@@ -130,9 +130,9 @@
         }
       }
     },
-    "fs-popover": {
-      "link": "https://fristil.sobernetics.no/components/popover/",
-      "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en.",
+    "lt-popover": {
+      "link": "https://lo-tek.sobernetics.no/components/popover/",
+      "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `lt-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en.",
       "attributes": {
         "open": {
           "type": "flag",
@@ -160,7 +160,7 @@
           "content": "text"
         },
         "panel": {
-          "selector": "[popover], .fs-popover",
+          "selector": "[popover], .lt-popover",
           "description": "Panelet som åpnes: elementet med `popover`, eller klassen. Det må ha en id fra serveren, som `aria-controls` på knappen peker på. Komponenten lager aldri en, og uten den kan knappen ikke kobles til panelet.",
           "content": "free",
           "stableId": true
@@ -174,9 +174,9 @@
         }
       }
     },
-    "fs-suggestion": {
-      "link": "https://fristil.sobernetics.no/components/suggestion/",
-      "description": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
+    "lt-suggestion": {
+      "link": "https://lo-tek.sobernetics.no/components/suggestion/",
+      "description": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.lt-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
       "attributes": {
         "prefiltered": {
           "type": "flag",
@@ -224,19 +224,19 @@
           "stableId": true
         },
         "list": {
-          "selector": "[role='listbox'], .fs-suggestion__list",
+          "selector": "[role='listbox'], .lt-suggestion__list",
           "description": "Lista med forslag. Den står i det øverste laget når den er åpen, `popover=\"manual\"`, og har ledeteksten som navn.",
           "content": "parts",
           "unique": true
         },
         "option": {
-          "selector": "[role='option'], .fs-suggestion__list > li:not([role])",
+          "selector": "[role='option'], .lt-suggestion__list > li:not([role])",
           "description": "Ett forslag i lista: `role=\"option\"`, eller et `<li>` uten rolle.",
           "content": "text",
           "multiple": true
         },
         "empty": {
-          "selector": ".fs-suggestion__empty",
+          "selector": ".lt-suggestion__empty",
           "description": "Meldingen som vises når ingenting passer.",
           "content": "text",
           "unique": true,
@@ -248,7 +248,7 @@
           "content": "none"
         },
         "value": {
-          "selector": "input.fs-suggestion__value",
+          "selector": "input.lt-suggestion__value",
           "description": "Et skjult `<input>` som får `data-value` til alternativet brukeren valgte. Uten det sendes bare teksten i feltet.",
           "content": "none",
           "unique": true,
@@ -264,9 +264,9 @@
         }
       }
     },
-    "fs-dialog": {
-      "link": "https://fristil.sobernetics.no/components/dialog/",
-      "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `fs-dialog__body` når verken `aria-labelledby` eller `aria-label` står der.",
+    "lt-dialog": {
+      "link": "https://lo-tek.sobernetics.no/components/dialog/",
+      "description": "Gjør en `<dialog class=\"lt-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `lt-dialog__body` når verken `aria-labelledby` eller `aria-label` står der.",
       "attributes": {
         "open": {
           "type": "flag",
@@ -291,7 +291,7 @@
           "optional": true
         },
         "body": {
-          "selector": ".fs-dialog__body",
+          "selector": ".lt-dialog__body",
           "description": "Kroppen, som ruller når dialogen blir for høy. En overskrift her blir ikke tittel.",
           "content": "free",
           "unique": true,
@@ -307,8 +307,8 @@
         }
       }
     },
-    "fs-toast": {
-      "link": "https://fristil.sobernetics.no/components/toast/",
+    "lt-toast": {
+      "link": "https://lo-tek.sobernetics.no/components/toast/",
       "description": "Kø av korte meldinger i hjørnet av skjermen. Meldingene lages fra skript med `show(tekst, { color, duration })`.",
       "attributes": {
         "duration": {
@@ -329,9 +329,9 @@
         "toast-dismiss": {}
       }
     },
-    "fs-session-timeout": {
-      "link": "https://fristil.sobernetics.no/components/session-timeout/",
-      "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live.",
+    "lt-session-timeout": {
+      "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
+      "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.lt-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live.",
       "attributes": {
         "warn-at": {
           "type": "number",
@@ -360,13 +360,13 @@
           "optional": true
         },
         "text": {
-          "selector": ".fs-session-timeout__text",
+          "selector": ".lt-session-timeout__text",
           "description": "Avsnittet med tiden som er igjen. Opplesningen er dette avsnittet med tallet byttet ut.",
           "content": "text",
           "unique": true
         },
         "count": {
-          "selector": ".fs-session-timeout__count",
+          "selector": ".lt-session-timeout__count",
           "description": "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
           "content": "none",
           "unique": true
@@ -391,8 +391,8 @@
         "session-activity": {}
       }
     },
-    "fs-connection-status": {
-      "link": "https://fristil.sobernetics.no/components/connection-status/",
+    "lt-connection-status": {
+      "link": "https://lo-tek.sobernetics.no/components/connection-status/",
       "description": "Sier fra når forbindelsen til serveren er borte. Appen melder fra med `reportFailure()` og `reportSuccess()`.",
       "attributes": {
         "offline-text": {
@@ -412,11 +412,11 @@
     }
   },
   "classes": {
-    "fs-accordion": {
+    "lt-accordion": {
       "component": "accordion",
       "title": "Accordion",
       "description": "Panel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/accordion/",
+      "link": "https://lo-tek.sobernetics.no/components/accordion/",
       "content": "parts",
       "parts": {
         "summary": {
@@ -425,7 +425,7 @@
           "content": "free"
         },
         "content": {
-          "selector": ".fs-accordion__content",
+          "selector": ".lt-accordion__content",
           "description": "Innholdet som vises når panelet er åpent.",
           "content": "free"
         }
@@ -440,24 +440,24 @@
         }
       }
     },
-    "fs-accordion__content": {
+    "lt-accordion__content": {
       "component": "accordion",
       "title": "Accordion",
       "description": "Panel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/accordion/",
+      "link": "https://lo-tek.sobernetics.no/components/accordion/",
       "content": "free",
-      "partOf": "fs-accordion",
+      "partOf": "lt-accordion",
       "attributes": {}
     },
-    "fs-alert": {
+    "lt-alert": {
       "component": "alert",
       "title": "Alert",
       "description": "Melding som gjelder hele siden eller hele skjemaet. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/alert/",
+      "link": "https://lo-tek.sobernetics.no/components/alert/",
       "content": "free",
       "parts": {
         "title": {
-          "selector": ".fs-alert__title",
+          "selector": ".lt-alert__title",
           "description": "Overskriften i meldingen.",
           "content": "text",
           "optional": true
@@ -475,20 +475,20 @@
         }
       }
     },
-    "fs-alert__title": {
+    "lt-alert__title": {
       "component": "alert",
       "title": "Alert",
       "description": "Melding som gjelder hele siden eller hele skjemaet. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/alert/",
+      "link": "https://lo-tek.sobernetics.no/components/alert/",
       "content": "text",
-      "partOf": "fs-alert",
+      "partOf": "lt-alert",
       "attributes": {}
     },
-    "fs-avatar": {
+    "lt-avatar": {
       "component": "avatar",
       "title": "Avatar",
       "description": "Profilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/avatar/",
+      "link": "https://lo-tek.sobernetics.no/components/avatar/",
       "content": "free",
       "parts": {
         "image": {
@@ -516,11 +516,11 @@
         }
       }
     },
-    "fs-avatar-stack": {
+    "lt-avatar-stack": {
       "component": "avatar",
       "title": "Avatar",
       "description": "Profilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/avatar/",
+      "link": "https://lo-tek.sobernetics.no/components/avatar/",
       "content": "parts",
       "parts": {
         "item": {
@@ -530,7 +530,7 @@
           "multiple": true
         },
         "avatar": {
-          "selector": "li > .fs-avatar",
+          "selector": "li > .lt-avatar",
           "description": "Avataren i hvert listepunkt.",
           "content": "free",
           "multiple": true
@@ -538,11 +538,11 @@
       },
       "attributes": {}
     },
-    "fs-badge": {
+    "lt-badge": {
       "component": "badge",
       "title": "Badge",
       "description": "Kompakt statusmerke. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/badge/",
+      "link": "https://lo-tek.sobernetics.no/components/badge/",
       "content": "text",
       "attributes": {
         "data-color": {
@@ -557,11 +557,11 @@
         }
       }
     },
-    "fs-breadcrumbs": {
+    "lt-breadcrumbs": {
       "component": "breadcrumbs",
       "title": "Breadcrumbs",
       "description": "Brødsmulesti som viser hvor på siden brukeren er. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/breadcrumbs/",
+      "link": "https://lo-tek.sobernetics.no/components/breadcrumbs/",
       "content": "parts",
       "parts": {
         "item": {
@@ -579,11 +579,11 @@
       },
       "attributes": {}
     },
-    "fs-button": {
+    "lt-button": {
       "component": "button",
       "title": "Button",
       "description": "Knapp for handlinger. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/button/",
+      "link": "https://lo-tek.sobernetics.no/components/button/",
       "content": "text",
       "attributes": {
         "data-variant": {
@@ -597,15 +597,15 @@
         }
       }
     },
-    "fs-card": {
+    "lt-card": {
       "component": "card",
       "title": "Card",
       "description": "Boks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/card/",
+      "link": "https://lo-tek.sobernetics.no/components/card/",
       "content": "free",
       "parts": {
         "title": {
-          "selector": ".fs-card__title",
+          "selector": ".lt-card__title",
           "description": "Overskriften i kortet.",
           "content": "text",
           "optional": true
@@ -625,20 +625,20 @@
         }
       }
     },
-    "fs-card__title": {
+    "lt-card__title": {
       "component": "card",
       "title": "Card",
       "description": "Boks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/card/",
+      "link": "https://lo-tek.sobernetics.no/components/card/",
       "content": "text",
-      "partOf": "fs-card",
+      "partOf": "lt-card",
       "attributes": {}
     },
-    "fs-checkbox": {
+    "lt-checkbox": {
       "component": "checkbox",
       "title": "Checkbox",
       "description": "Avkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/checkbox/",
+      "link": "https://lo-tek.sobernetics.no/components/checkbox/",
       "content": "none",
       "attributes": {
         "data-state": {
@@ -651,11 +651,11 @@
         }
       }
     },
-    "fs-checkbox-row": {
+    "lt-checkbox-row": {
       "component": "checkbox",
       "title": "Checkbox",
       "description": "Avkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/checkbox/",
+      "link": "https://lo-tek.sobernetics.no/components/checkbox/",
       "content": "parts",
       "parts": {
         "control": {
@@ -672,11 +672,11 @@
       },
       "attributes": {}
     },
-    "fs-divider": {
+    "lt-divider": {
       "component": "divider",
       "title": "Divider",
       "description": "Skillelinje mellom deler av innholdet. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/divider/",
+      "link": "https://lo-tek.sobernetics.no/components/divider/",
       "content": "none",
       "attributes": {
         "data-variant": {
@@ -689,11 +689,11 @@
         }
       }
     },
-    "fs-error-text": {
+    "lt-error-text": {
       "component": "error-text",
       "title": "Error Text",
       "description": "Feilmelding under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/error-text/",
+      "link": "https://lo-tek.sobernetics.no/components/error-text/",
       "content": "text",
       "attributes": {
         "data-variant": {
@@ -705,27 +705,27 @@
         }
       }
     },
-    "fs-fieldset": {
+    "lt-fieldset": {
       "component": "fieldset",
       "title": "Fieldset",
       "description": "Gruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/fieldset/",
+      "link": "https://lo-tek.sobernetics.no/components/fieldset/",
       "content": "free",
       "parts": {
         "legend": {
-          "selector": "> .fs-legend",
+          "selector": "> .lt-legend",
           "description": "Ledeteksten til gruppen, en `<legend>` med klassen.",
           "content": "text",
           "unique": true
         },
         "help": {
-          "selector": ".fs-help-text",
+          "selector": ".lt-help-text",
           "description": "Hjelpeteksten til gruppen, koblet med `aria-describedby` på feltsettet.",
           "content": "text",
           "optional": true
         },
         "error": {
-          "selector": ".fs-error-text",
+          "selector": ".lt-error-text",
           "description": "Feilmeldingen til gruppen, koblet med `aria-describedby` på feltsettet.",
           "content": "text",
           "optional": true
@@ -742,13 +742,13 @@
         }
       }
     },
-    "fs-legend": {
+    "lt-legend": {
       "component": "fieldset",
       "title": "Fieldset",
       "description": "Gruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/fieldset/",
+      "link": "https://lo-tek.sobernetics.no/components/fieldset/",
       "content": "text",
-      "partOf": "fs-fieldset",
+      "partOf": "lt-fieldset",
       "attributes": {
         "data-required": {
           "values": [
@@ -763,11 +763,11 @@
         }
       }
     },
-    "fs-file-upload": {
+    "lt-file-upload": {
       "component": "file-upload",
       "title": "File Upload",
       "description": "Felt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/file-upload/",
+      "link": "https://lo-tek.sobernetics.no/components/file-upload/",
       "content": "none",
       "attributes": {
         "data-state": {
@@ -780,11 +780,11 @@
         }
       }
     },
-    "fs-file-upload-list": {
+    "lt-file-upload-list": {
       "component": "file-upload",
       "title": "File Upload",
       "description": "Felt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/file-upload/",
+      "link": "https://lo-tek.sobernetics.no/components/file-upload/",
       "content": "parts",
       "parts": {
         "item": {
@@ -803,11 +803,11 @@
       },
       "attributes": {}
     },
-    "fs-heading": {
+    "lt-heading": {
       "component": "heading",
       "title": "Heading",
       "description": "Overskrifter i seks størrelser, uavhengig av nivå. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/heading/",
+      "link": "https://lo-tek.sobernetics.no/components/heading/",
       "content": "text",
       "attributes": {
         "data-size": {
@@ -823,11 +823,11 @@
         }
       }
     },
-    "fs-help-text": {
+    "lt-help-text": {
       "component": "help-text",
       "title": "Help Text",
       "description": "Forklarende tekst under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/help-text/",
+      "link": "https://lo-tek.sobernetics.no/components/help-text/",
       "content": "text",
       "attributes": {
         "data-variant": {
@@ -841,19 +841,19 @@
         }
       }
     },
-    "fs-icon": {
+    "lt-icon": {
       "component": "icon",
       "title": "Icon",
       "description": "Ikon fra appens eget sett, like stort som teksten rundt. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/icon/",
+      "link": "https://lo-tek.sobernetics.no/components/icon/",
       "content": "none",
       "attributes": {}
     },
-    "fs-input": {
+    "lt-input": {
       "component": "input",
       "title": "Input",
       "description": "Tekstfelt for skjema, med tilstander for gyldig og ugyldig. CSS-komponent.",
-      "link": "https://fristil.sobernetics.no/components/input/",
+      "link": "https://lo-tek.sobernetics.no/components/input/",
       "content": "none",
       "attributes": {
         "data-state": {
@@ -873,11 +873,11 @@
         }
       }
     },
-    "fs-label": {
+    "lt-label": {
       "component": "label",
       "title": "Label",
       "description": "Ledetekst for skjemafelt, med markering av påkrevd og valgfritt. CSS-komponent.",
-      "link": "https://fristil.sobernetics.no/components/label/",
+      "link": "https://lo-tek.sobernetics.no/components/label/",
       "content": "text",
       "attributes": {
         "data-required": {
@@ -893,19 +893,19 @@
         }
       }
     },
-    "fs-link": {
+    "lt-link": {
       "component": "link",
       "title": "Link",
       "description": "Lenkestil for navigasjon i løpende tekst. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/link/",
+      "link": "https://lo-tek.sobernetics.no/components/link/",
       "content": "text",
       "attributes": {}
     },
-    "fs-list": {
+    "lt-list": {
       "component": "list",
       "title": "List",
       "description": "Punktliste, nummerert liste og lister uten punkter. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/list/",
+      "link": "https://lo-tek.sobernetics.no/components/list/",
       "content": "parts",
       "parts": {
         "item": {
@@ -926,11 +926,11 @@
         }
       }
     },
-    "fs-pagination": {
+    "lt-pagination": {
       "component": "pagination",
       "title": "Pagination",
       "description": "Sidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/pagination/",
+      "link": "https://lo-tek.sobernetics.no/components/pagination/",
       "content": "parts",
       "parts": {
         "item": {
@@ -946,7 +946,7 @@
           "multiple": true
         },
         "gap": {
-          "selector": ".fs-pagination__gap",
+          "selector": ".lt-pagination__gap",
           "description": "Hullet der sider er utelatt.",
           "content": "text",
           "multiple": true,
@@ -955,20 +955,20 @@
       },
       "attributes": {}
     },
-    "fs-pagination__gap": {
+    "lt-pagination__gap": {
       "component": "pagination",
       "title": "Pagination",
       "description": "Sidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/pagination/",
+      "link": "https://lo-tek.sobernetics.no/components/pagination/",
       "content": "text",
-      "partOf": "fs-pagination",
+      "partOf": "lt-pagination",
       "attributes": {}
     },
-    "fs-paragraph": {
+    "lt-paragraph": {
       "component": "paragraph",
       "title": "Paragraph",
       "description": "Brødtekst og ingress med begrenset linjelengde. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/paragraph/",
+      "link": "https://lo-tek.sobernetics.no/components/paragraph/",
       "content": "text",
       "attributes": {
         "data-variant": {
@@ -988,11 +988,11 @@
         }
       }
     },
-    "fs-progress": {
+    "lt-progress": {
       "component": "progress",
       "title": "Progress",
       "description": "Framdriftsstolpe for noe som har en ende. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/progress/",
+      "link": "https://lo-tek.sobernetics.no/components/progress/",
       "content": "none",
       "attributes": {
         "data-color": {
@@ -1005,11 +1005,11 @@
         }
       }
     },
-    "fs-radio": {
+    "lt-radio": {
       "component": "radio",
       "title": "Radio",
       "description": "Radioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/radio/",
+      "link": "https://lo-tek.sobernetics.no/components/radio/",
       "content": "none",
       "attributes": {
         "data-state": {
@@ -1022,11 +1022,11 @@
         }
       }
     },
-    "fs-radio-row": {
+    "lt-radio-row": {
       "component": "radio",
       "title": "Radio",
       "description": "Radioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/radio/",
+      "link": "https://lo-tek.sobernetics.no/components/radio/",
       "content": "parts",
       "parts": {
         "control": {
@@ -1043,11 +1043,11 @@
       },
       "attributes": {}
     },
-    "fs-search": {
+    "lt-search": {
       "component": "search",
       "title": "Search",
       "description": "Søkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/search/",
+      "link": "https://lo-tek.sobernetics.no/components/search/",
       "content": "none",
       "attributes": {
         "data-state": {
@@ -1060,21 +1060,21 @@
         }
       }
     },
-    "fs-search-row": {
+    "lt-search-row": {
       "component": "search",
       "title": "Search",
       "description": "Søkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/search/",
+      "link": "https://lo-tek.sobernetics.no/components/search/",
       "content": "parts",
       "parts": {
         "label": {
           "selector": "label",
-          "description": "Ledeteksten, koblet med `for`. Gjerne skjult med `fs-sr-only`.",
+          "description": "Ledeteksten, koblet med `for`. Gjerne skjult med `lt-sr-only`.",
           "content": "text"
         },
         "control": {
           "selector": "input[type='search']",
-          "description": "Søkefeltet, med klassene `fs-input fs-search`.",
+          "description": "Søkefeltet, med klassene `lt-input lt-search`.",
           "content": "none",
           "unique": true
         },
@@ -1087,11 +1087,11 @@
       },
       "attributes": {}
     },
-    "fs-select": {
+    "lt-select": {
       "component": "select",
       "title": "Select",
       "description": "Nedtrekksliste. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/select/",
+      "link": "https://lo-tek.sobernetics.no/components/select/",
       "content": "none",
       "attributes": {
         "data-state": {
@@ -1111,11 +1111,11 @@
         }
       }
     },
-    "fs-skeleton": {
+    "lt-skeleton": {
       "component": "skeleton",
       "title": "Skeleton",
       "description": "Plassholder som viser formen på innhold som lastes. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/skeleton/",
+      "link": "https://lo-tek.sobernetics.no/components/skeleton/",
       "content": "none",
       "attributes": {
         "data-variant": {
@@ -1128,19 +1128,19 @@
         }
       }
     },
-    "fs-skip-link": {
+    "lt-skip-link": {
       "component": "skip-link",
       "title": "Skip Link",
       "description": "Lenke som hopper forbi menyen til hovedinnholdet. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/skip-link/",
+      "link": "https://lo-tek.sobernetics.no/components/skip-link/",
       "content": "text",
       "attributes": {}
     },
-    "fs-spinner": {
+    "lt-spinner": {
       "component": "spinner",
       "title": "Spinner",
       "description": "Venteindikator for noe som pågår. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/spinner/",
+      "link": "https://lo-tek.sobernetics.no/components/spinner/",
       "content": "none",
       "attributes": {
         "data-size": {
@@ -1153,27 +1153,27 @@
         }
       }
     },
-    "fs-sr-only": {
+    "lt-sr-only": {
       "component": "sr-only",
       "title": "Sr Only",
       "description": "Tekst som bare skjermlesere får. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/sr-only/",
+      "link": "https://lo-tek.sobernetics.no/components/sr-only/",
       "content": "text",
       "attributes": {}
     },
-    "fs-switch": {
+    "lt-switch": {
       "component": "switch",
       "title": "Switch",
       "description": "Bryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/switch/",
+      "link": "https://lo-tek.sobernetics.no/components/switch/",
       "content": "none",
       "attributes": {}
     },
-    "fs-switch-row": {
+    "lt-switch-row": {
       "component": "switch",
       "title": "Switch",
       "description": "Bryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/switch/",
+      "link": "https://lo-tek.sobernetics.no/components/switch/",
       "content": "parts",
       "parts": {
         "control": {
@@ -1190,11 +1190,11 @@
       },
       "attributes": {}
     },
-    "fs-table": {
+    "lt-table": {
       "component": "table",
       "title": "Table",
       "description": "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/table/",
+      "link": "https://lo-tek.sobernetics.no/components/table/",
       "content": "parts",
       "parts": {
         "caption": {
@@ -1217,7 +1217,7 @@
           "multiple": true
         },
         "sort": {
-          "selector": "th > .fs-table__sort",
+          "selector": "th > .lt-table__sort",
           "description": "Knappen i en overskrift som kan sorteres. `aria-sort` på cellen sier hvilken vei.",
           "content": "text",
           "multiple": true,
@@ -1238,35 +1238,35 @@
         }
       }
     },
-    "fs-table__sort": {
+    "lt-table__sort": {
       "component": "table",
       "title": "Table",
       "description": "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/table/",
+      "link": "https://lo-tek.sobernetics.no/components/table/",
       "content": "text",
-      "partOf": "fs-table",
+      "partOf": "lt-table",
       "attributes": {}
     },
-    "fs-table-scroll": {
+    "lt-table-scroll": {
       "component": "table",
       "title": "Table",
       "description": "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/table/",
+      "link": "https://lo-tek.sobernetics.no/components/table/",
       "content": "parts",
       "parts": {
         "table": {
-          "selector": ".fs-table",
+          "selector": ".lt-table",
           "description": "Tabellen som kan rulles sidelengs.",
           "content": "free"
         }
       },
       "attributes": {}
     },
-    "fs-tag": {
+    "lt-tag": {
       "component": "tag",
       "title": "Tag",
       "description": "Merkelapp for emneord og filtre. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/tag/",
+      "link": "https://lo-tek.sobernetics.no/components/tag/",
       "content": "text",
       "attributes": {
         "data-variant": {
@@ -1282,11 +1282,11 @@
         }
       }
     },
-    "fs-textarea": {
+    "lt-textarea": {
       "component": "textarea",
       "title": "Textarea",
       "description": "Flerlinjet tekstfelt. CSS-komponent med én klasse og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/textarea/",
+      "link": "https://lo-tek.sobernetics.no/components/textarea/",
       "content": "none",
       "attributes": {
         "data-state": {
@@ -1299,27 +1299,27 @@
         }
       }
     },
-    "fs-toggle-group": {
+    "lt-toggle-group": {
       "component": "toggle-group",
       "title": "Toggle Group",
       "description": "Gruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/toggle-group/",
+      "link": "https://lo-tek.sobernetics.no/components/toggle-group/",
       "content": "parts",
       "parts": {
         "legend": {
           "selector": "> legend",
-          "description": "Hva alternativene velger mellom. Kan skjules med `fs-sr-only`, men må stå der.",
+          "description": "Hva alternativene velger mellom. Kan skjules med `lt-sr-only`, men må stå der.",
           "content": "text",
           "unique": true
         },
         "option": {
-          "selector": ".fs-toggle-group__option",
+          "selector": ".lt-toggle-group__option",
           "description": "Ett alternativ: en `<label>` med radioknappen og teksten.",
           "content": "free",
           "multiple": true
         },
         "radio": {
-          "selector": ".fs-toggle-group__option > input[type='radio']",
+          "selector": ".lt-toggle-group__option > input[type='radio']",
           "description": "Radioknappen i hvert alternativ, med samme `name`.",
           "content": "none",
           "multiple": true
@@ -1327,20 +1327,20 @@
       },
       "attributes": {}
     },
-    "fs-toggle-group__option": {
+    "lt-toggle-group__option": {
       "component": "toggle-group",
       "title": "Toggle Group",
       "description": "Gruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/toggle-group/",
+      "link": "https://lo-tek.sobernetics.no/components/toggle-group/",
       "content": "free",
-      "partOf": "fs-toggle-group",
+      "partOf": "lt-toggle-group",
       "attributes": {}
     },
-    "fs-tooltip": {
+    "lt-tooltip": {
       "component": "tooltip",
       "title": "Tooltip",
       "description": "Liten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/tooltip/",
+      "link": "https://lo-tek.sobernetics.no/components/tooltip/",
       "content": "parts",
       "parts": {
         "trigger": {
@@ -1349,55 +1349,55 @@
           "content": "text"
         },
         "bubble": {
-          "selector": ".fs-tooltip__bubble",
+          "selector": ".lt-tooltip__bubble",
           "description": "Boblen, med `role=\"tooltip\"` og id-en.",
           "content": "text"
         }
       },
       "attributes": {}
     },
-    "fs-tooltip__bubble": {
+    "lt-tooltip__bubble": {
       "component": "tooltip",
       "title": "Tooltip",
       "description": "Liten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.",
-      "link": "https://fristil.sobernetics.no/components/tooltip/",
+      "link": "https://lo-tek.sobernetics.no/components/tooltip/",
       "content": "text",
-      "partOf": "fs-tooltip",
+      "partOf": "lt-tooltip",
       "attributes": {}
     },
-    "fs-dialog": {
+    "lt-dialog": {
       "component": "dialog",
       "title": "Dialog",
       "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-      "link": "https://fristil.sobernetics.no/components/dialog/",
+      "link": "https://lo-tek.sobernetics.no/components/dialog/",
       "content": "free",
       "parts": {
         "header": {
-          "selector": ".fs-dialog__header",
+          "selector": ".lt-dialog__header",
           "description": "Toppen, med overskriften og underteksten. `data-color` på dialogen farger den.",
           "content": "parts",
           "optional": true
         },
         "title": {
-          "selector": ".fs-dialog__title",
+          "selector": ".lt-dialog__title",
           "description": "Overskriften, som `aria-labelledby` peker på.",
           "content": "text",
           "optional": true
         },
         "subtitle": {
-          "selector": ".fs-dialog__subtitle",
+          "selector": ".lt-dialog__subtitle",
           "description": "Linja under overskriften, inne i toppen.",
           "content": "text",
           "optional": true
         },
         "body": {
-          "selector": ".fs-dialog__body",
+          "selector": ".lt-dialog__body",
           "description": "Innholdet, som ruller når dialogen blir for høy. Må være et direkte barn.",
           "content": "free",
           "optional": true
         },
         "footer": {
-          "selector": ".fs-dialog__footer",
+          "selector": ".lt-dialog__footer",
           "description": "Raden med knapper nederst, gjerne et `<form method=\"dialog\">`.",
           "content": "free",
           "optional": true
@@ -1417,48 +1417,48 @@
         }
       }
     },
-    "fs-dialog__body": {
+    "lt-dialog__body": {
       "component": "dialog",
       "title": "Dialog",
       "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-      "link": "https://fristil.sobernetics.no/components/dialog/",
+      "link": "https://lo-tek.sobernetics.no/components/dialog/",
       "content": "free",
-      "partOf": "fs-dialog",
+      "partOf": "lt-dialog",
       "attributes": {}
     },
-    "fs-dialog__title": {
+    "lt-dialog__title": {
       "component": "dialog",
       "title": "Dialog",
       "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-      "link": "https://fristil.sobernetics.no/components/dialog/",
+      "link": "https://lo-tek.sobernetics.no/components/dialog/",
       "content": "text",
-      "partOf": "fs-dialog",
+      "partOf": "lt-dialog",
       "attributes": {}
     },
-    "fs-dialog__footer": {
+    "lt-dialog__footer": {
       "component": "dialog",
       "title": "Dialog",
       "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-      "link": "https://fristil.sobernetics.no/components/dialog/",
+      "link": "https://lo-tek.sobernetics.no/components/dialog/",
       "content": "free",
-      "partOf": "fs-dialog",
+      "partOf": "lt-dialog",
       "attributes": {}
     },
-    "fs-dialog__header": {
+    "lt-dialog__header": {
       "component": "dialog",
       "title": "Dialog",
       "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-      "link": "https://fristil.sobernetics.no/components/dialog/",
+      "link": "https://lo-tek.sobernetics.no/components/dialog/",
       "content": "parts",
-      "partOf": "fs-dialog",
+      "partOf": "lt-dialog",
       "parts": {
         "title": {
-          "selector": ".fs-dialog__title",
+          "selector": ".lt-dialog__title",
           "description": "Overskriften.",
           "content": "text"
         },
         "subtitle": {
-          "selector": ".fs-dialog__subtitle",
+          "selector": ".lt-dialog__subtitle",
           "description": "Linja under overskriften.",
           "content": "text",
           "optional": true
@@ -1466,24 +1466,24 @@
       },
       "attributes": {}
     },
-    "fs-dialog__subtitle": {
+    "lt-dialog__subtitle": {
       "component": "dialog",
       "title": "Dialog",
       "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-      "link": "https://fristil.sobernetics.no/components/dialog/",
+      "link": "https://lo-tek.sobernetics.no/components/dialog/",
       "content": "text",
-      "partOf": "fs-dialog",
+      "partOf": "lt-dialog",
       "attributes": {}
     },
-    "fs-error-summary": {
+    "lt-error-summary": {
       "component": "error-summary",
       "title": "Error Summary",
       "description": "Samler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.",
-      "link": "https://fristil.sobernetics.no/components/error-summary/",
+      "link": "https://lo-tek.sobernetics.no/components/error-summary/",
       "content": "parts",
       "parts": {
         "title": {
-          "selector": ".fs-error-summary__title",
+          "selector": ".lt-error-summary__title",
           "description": "Overskriften, som sier hvor mange feil skjemaet har.",
           "content": "text"
         },
@@ -1501,48 +1501,48 @@
       },
       "attributes": {}
     },
-    "fs-error-summary__title": {
+    "lt-error-summary__title": {
       "component": "error-summary",
       "title": "Error Summary",
       "description": "Samler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.",
-      "link": "https://fristil.sobernetics.no/components/error-summary/",
+      "link": "https://lo-tek.sobernetics.no/components/error-summary/",
       "content": "text",
-      "partOf": "fs-error-summary",
+      "partOf": "lt-error-summary",
       "attributes": {}
     },
-    "fs-popover": {
+    "lt-popover": {
       "component": "popover",
       "title": "Popover",
       "description": "Panel som henger under en knapp og lukker seg selv. Rammekomponent.",
-      "link": "https://fristil.sobernetics.no/components/popover/",
+      "link": "https://lo-tek.sobernetics.no/components/popover/",
       "content": "free",
       "attributes": {}
     },
-    "fs-session-timeout": {
+    "lt-session-timeout": {
       "component": "session-timeout",
       "title": "Session Timeout",
       "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-      "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
       "content": "parts",
       "parts": {
         "dialog": {
-          "selector": ".fs-session-timeout__dialog",
+          "selector": ".lt-session-timeout__dialog",
           "description": "Dialogen med varselet, med `role=\"alertdialog\"`.",
           "content": "parts"
         },
         "title": {
-          "selector": ".fs-session-timeout__title",
+          "selector": ".lt-session-timeout__title",
           "description": "Overskriften i dialogen.",
           "content": "text",
           "optional": true
         },
         "text": {
-          "selector": ".fs-session-timeout__text",
+          "selector": ".lt-session-timeout__text",
           "description": "Avsnittet med tiden som er igjen.",
           "content": "text"
         },
         "count": {
-          "selector": ".fs-session-timeout__count",
+          "selector": ".lt-session-timeout__count",
           "description": "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
           "content": "none"
         },
@@ -1552,12 +1552,12 @@
           "content": "none"
         },
         "actions": {
-          "selector": ".fs-session-timeout__actions",
+          "selector": ".lt-session-timeout__actions",
           "description": "Knapperaden, et `<form method=\"dialog\">`.",
           "content": "parts"
         },
         "button": {
-          "selector": ".fs-session-timeout__actions button",
+          "selector": ".lt-session-timeout__actions button",
           "description": "Knappene som forlenger økten eller logger ut.",
           "content": "text",
           "multiple": true
@@ -1565,27 +1565,27 @@
       },
       "attributes": {}
     },
-    "fs-session-timeout__dialog": {
+    "lt-session-timeout__dialog": {
       "component": "session-timeout",
       "title": "Session Timeout",
       "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-      "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
       "content": "parts",
-      "partOf": "fs-session-timeout",
+      "partOf": "lt-session-timeout",
       "parts": {
         "title": {
-          "selector": ".fs-session-timeout__title",
+          "selector": ".lt-session-timeout__title",
           "description": "Overskriften.",
           "content": "text",
           "optional": true
         },
         "text": {
-          "selector": ".fs-session-timeout__text",
+          "selector": ".lt-session-timeout__text",
           "description": "Avsnittet med tiden som er igjen.",
           "content": "text"
         },
         "count": {
-          "selector": ".fs-session-timeout__count",
+          "selector": ".lt-session-timeout__count",
           "description": "Tallet som telles ned, inne i avsnittet.",
           "content": "none"
         },
@@ -1595,47 +1595,47 @@
           "content": "none"
         },
         "actions": {
-          "selector": ".fs-session-timeout__actions",
+          "selector": ".lt-session-timeout__actions",
           "description": "Knapperaden, et `<form method=\"dialog\">`.",
           "content": "parts"
         }
       },
       "attributes": {}
     },
-    "fs-session-timeout__title": {
+    "lt-session-timeout__title": {
       "component": "session-timeout",
       "title": "Session Timeout",
       "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-      "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
       "content": "text",
-      "partOf": "fs-session-timeout",
+      "partOf": "lt-session-timeout",
       "attributes": {}
     },
-    "fs-session-timeout__text": {
+    "lt-session-timeout__text": {
       "component": "session-timeout",
       "title": "Session Timeout",
       "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-      "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
       "content": "text",
-      "partOf": "fs-session-timeout",
+      "partOf": "lt-session-timeout",
       "attributes": {}
     },
-    "fs-session-timeout__count": {
+    "lt-session-timeout__count": {
       "component": "session-timeout",
       "title": "Session Timeout",
       "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-      "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
       "content": "none",
-      "partOf": "fs-session-timeout",
+      "partOf": "lt-session-timeout",
       "attributes": {}
     },
-    "fs-session-timeout__actions": {
+    "lt-session-timeout__actions": {
       "component": "session-timeout",
       "title": "Session Timeout",
       "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-      "link": "https://fristil.sobernetics.no/components/session-timeout/",
+      "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
       "content": "parts",
-      "partOf": "fs-session-timeout",
+      "partOf": "lt-session-timeout",
       "parts": {
         "button": {
           "selector": "button",
@@ -1646,15 +1646,15 @@
       },
       "attributes": {}
     },
-    "fs-suggestion__list": {
+    "lt-suggestion__list": {
       "component": "suggestion",
       "title": "Suggestion",
       "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-      "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "link": "https://lo-tek.sobernetics.no/components/suggestion/",
       "content": "parts",
       "parts": {
         "option": {
-          "selector": "[role='option'], .fs-suggestion__option, > li:not([role])",
+          "selector": "[role='option'], .lt-suggestion__option, > li:not([role])",
           "description": "Ett forslag: rollen eller klassen når de står der, ellers en `<li>` uten rolle, som komponenten gir klassen og rollen. Lista kan stå tom til serveren fyller den.",
           "content": "text",
           "multiple": true,
@@ -1663,36 +1663,36 @@
       },
       "attributes": {}
     },
-    "fs-suggestion__option": {
+    "lt-suggestion__option": {
       "component": "suggestion",
       "title": "Suggestion",
       "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-      "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "link": "https://lo-tek.sobernetics.no/components/suggestion/",
       "content": "text",
-      "partOf": "fs-suggestion__list",
+      "partOf": "lt-suggestion__list",
       "attributes": {}
     },
-    "fs-suggestion__value": {
+    "lt-suggestion__value": {
       "component": "suggestion",
       "title": "Suggestion",
       "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-      "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "link": "https://lo-tek.sobernetics.no/components/suggestion/",
       "content": "none",
       "attributes": {}
     },
-    "fs-suggestion__empty": {
+    "lt-suggestion__empty": {
       "component": "suggestion",
       "title": "Suggestion",
       "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-      "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "link": "https://lo-tek.sobernetics.no/components/suggestion/",
       "content": "text",
       "attributes": {}
     },
-    "fs-tabs__list": {
+    "lt-tabs__list": {
       "component": "tabs",
       "title": "Tabs",
       "description": "Fanerad av lenker til panelene sine. Rammekomponent.",
-      "link": "https://fristil.sobernetics.no/components/tabs/",
+      "link": "https://lo-tek.sobernetics.no/components/tabs/",
       "content": "free",
       "parts": {
         "tab": {
@@ -1704,59 +1704,59 @@
       },
       "attributes": {}
     },
-    "fs-tabs__panel": {
+    "lt-tabs__panel": {
       "component": "tabs",
       "title": "Tabs",
       "description": "Fanerad av lenker til panelene sine. Rammekomponent.",
-      "link": "https://fristil.sobernetics.no/components/tabs/",
+      "link": "https://lo-tek.sobernetics.no/components/tabs/",
       "content": "free",
       "attributes": {}
     },
-    "fs-connection-status": {
+    "lt-connection-status": {
       "component": "connection-status",
       "title": "Connection Status",
       "description": "Sier fra når forbindelsen til serveren er borte. Frittstående komponent.",
-      "link": "https://fristil.sobernetics.no/components/connection-status/",
+      "link": "https://lo-tek.sobernetics.no/components/connection-status/",
       "content": "none",
       "attributes": {}
     },
-    "fs-connection-status__bar": {
+    "lt-connection-status__bar": {
       "component": "connection-status",
       "title": "Connection Status",
       "description": "Sier fra når forbindelsen til serveren er borte. Frittstående komponent.",
-      "link": "https://fristil.sobernetics.no/components/connection-status/",
+      "link": "https://lo-tek.sobernetics.no/components/connection-status/",
       "content": "text",
       "attributes": {}
     },
-    "fs-toast": {
+    "lt-toast": {
       "component": "toast",
       "title": "Toast",
       "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
-      "link": "https://fristil.sobernetics.no/components/toast/",
+      "link": "https://lo-tek.sobernetics.no/components/toast/",
       "content": "none",
       "attributes": {}
     },
-    "fs-toast__message": {
+    "lt-toast__message": {
       "component": "toast",
       "title": "Toast",
       "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
-      "link": "https://fristil.sobernetics.no/components/toast/",
+      "link": "https://lo-tek.sobernetics.no/components/toast/",
       "content": "free",
       "attributes": {}
     },
-    "fs-toast__close": {
+    "lt-toast__close": {
       "component": "toast",
       "title": "Toast",
       "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
-      "link": "https://fristil.sobernetics.no/components/toast/",
+      "link": "https://lo-tek.sobernetics.no/components/toast/",
       "content": "text",
       "attributes": {}
     },
-    "fs-theme-control": {
+    "lt-theme-control": {
       "component": "tilpasning",
       "title": "Tilpasning",
-      "description": "Endre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.",
-      "link": "https://fristil.sobernetics.no/tilpasning/",
+      "description": "Endre farger, form og størrelse i LO-TEK uten at endringene forsvinner ved neste oppgradering.",
+      "link": "https://lo-tek.sobernetics.no/customising/",
       "content": "none",
       "attributes": {}
     }
@@ -1785,7 +1785,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-accordion"
+            "class": "lt-accordion"
           },
           "options": {
             "variant": {
@@ -1825,7 +1825,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-alert"
+            "class": "lt-alert"
           },
           "options": {
             "color": {
@@ -1884,7 +1884,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-avatar"
+            "class": "lt-avatar"
           },
           "options": {
             "size": {
@@ -1936,7 +1936,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-badge"
+            "class": "lt-badge"
           },
           "options": {
             "color": {
@@ -1970,7 +1970,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-breadcrumbs"
+            "class": "lt-breadcrumbs"
           },
           "options": {}
         }
@@ -2001,7 +2001,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-button"
+            "class": "lt-button"
           },
           "options": {
             "variant": {
@@ -2053,7 +2053,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-card"
+            "class": "lt-card"
           },
           "options": {
             "variant": {
@@ -2100,7 +2100,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-checkbox",
+            "class": "lt-checkbox",
             "type": "checkbox"
           },
           "options": {
@@ -2147,7 +2147,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-connection-status",
+            "class": "lt-connection-status",
             "data-ignore-morph": ""
           },
           "options": {
@@ -2263,7 +2263,7 @@
           },
           "dialog": {
             "base": {
-              "class": "fs-dialog",
+              "class": "lt-dialog",
               "aria-labelledby": "{titleId}"
             },
             "options": {
@@ -2299,7 +2299,7 @@
           },
           "header": {
             "base": {
-              "class": "fs-dialog__header"
+              "class": "lt-dialog__header"
             },
             "options": {
               "open": {
@@ -2322,7 +2322,7 @@
           },
           "title": {
             "base": {
-              "class": "fs-dialog__title",
+              "class": "lt-dialog__title",
               "id": "{titleId}"
             },
             "options": {
@@ -2346,7 +2346,7 @@
           },
           "subtitle": {
             "base": {
-              "class": "fs-dialog__subtitle"
+              "class": "lt-dialog__subtitle"
             },
             "options": {
               "open": {
@@ -2369,7 +2369,7 @@
           },
           "body": {
             "base": {
-              "class": "fs-dialog__body"
+              "class": "lt-dialog__body"
             },
             "options": {
               "open": {
@@ -2392,7 +2392,7 @@
           },
           "footer": {
             "base": {
-              "class": "fs-dialog__footer"
+              "class": "lt-dialog__footer"
             },
             "options": {
               "open": {
@@ -2440,7 +2440,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-divider"
+            "class": "lt-divider"
           },
           "options": {
             "variant": {
@@ -2513,7 +2513,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-error-text"
+            "class": "lt-error-text"
           },
           "options": {
             "variant": {
@@ -2674,7 +2674,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-fieldset"
+            "class": "lt-fieldset"
           },
           "options": {
             "state": {
@@ -2740,7 +2740,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-file-upload",
+            "class": "lt-file-upload",
             "type": "file"
           },
           "options": {
@@ -2804,7 +2804,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-heading"
+            "class": "lt-heading"
           },
           "options": {
             "size": {
@@ -2856,7 +2856,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-help-text"
+            "class": "lt-help-text"
           },
           "options": {
             "variant": {
@@ -2896,7 +2896,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-icon",
+            "class": "lt-icon",
             "aria-hidden": "true"
           },
           "options": {
@@ -2959,7 +2959,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-input",
+            "class": "lt-input",
             "type": "text"
           },
           "options": {
@@ -3111,7 +3111,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-link"
+            "class": "lt-link"
           },
           "options": {
             "disabled": {
@@ -3152,7 +3152,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-list"
+            "class": "lt-list"
           },
           "options": {
             "variant": {
@@ -3180,7 +3180,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-pagination"
+            "class": "lt-pagination"
           },
           "options": {}
         }
@@ -3222,7 +3222,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-paragraph"
+            "class": "lt-paragraph"
           },
           "options": {
             "size": {
@@ -3353,7 +3353,7 @@
           },
           "panel": {
             "base": {
-              "class": "fs-popover",
+              "class": "lt-popover",
               "id": "{id}",
               "popover": "manual"
             },
@@ -3433,7 +3433,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-progress",
+            "class": "lt-progress",
             "max": "100"
           },
           "options": {
@@ -3508,7 +3508,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-radio",
+            "class": "lt-radio",
             "type": "radio"
           },
           "options": {
@@ -3552,7 +3552,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-input fs-search",
+            "class": "lt-input lt-search",
             "type": "search"
           },
           "options": {
@@ -3608,7 +3608,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-select"
+            "class": "lt-select"
           },
           "options": {
             "state": {
@@ -3708,7 +3708,7 @@
         "fields": {
           "host": {
             "base": {
-              "class": "fs-session-timeout",
+              "class": "lt-session-timeout",
               "data-ignore-morph": ""
             },
             "options": {
@@ -3734,7 +3734,7 @@
           },
           "dialog": {
             "base": {
-              "class": "fs-session-timeout__dialog",
+              "class": "lt-session-timeout__dialog",
               "role": "alertdialog",
               "aria-labelledby": "{titleId}"
             },
@@ -3755,7 +3755,7 @@
           },
           "title": {
             "base": {
-              "class": "fs-session-timeout__title",
+              "class": "lt-session-timeout__title",
               "id": "{titleId}"
             },
             "options": {
@@ -3775,7 +3775,7 @@
           },
           "text": {
             "base": {
-              "class": "fs-session-timeout__text"
+              "class": "lt-session-timeout__text"
             },
             "options": {
               "warnAt": {
@@ -3794,7 +3794,7 @@
           },
           "count": {
             "base": {
-              "class": "fs-session-timeout__count",
+              "class": "lt-session-timeout__count",
               "aria-hidden": "true"
             },
             "options": {
@@ -3814,7 +3814,7 @@
           },
           "live": {
             "base": {
-              "class": "fs-sr-only",
+              "class": "lt-sr-only",
               "role": "status"
             },
             "options": {
@@ -3834,7 +3834,7 @@
           },
           "actions": {
             "base": {
-              "class": "fs-session-timeout__actions",
+              "class": "lt-session-timeout__actions",
               "method": "dialog"
             },
             "options": {
@@ -3854,7 +3854,7 @@
           },
           "extend": {
             "base": {
-              "class": "fs-button",
+              "class": "lt-button",
               "value": "extend"
             },
             "options": {
@@ -3874,7 +3874,7 @@
           },
           "logout": {
             "base": {
-              "class": "fs-button",
+              "class": "lt-button",
               "data-variant": "secondary",
               "value": "logout"
             },
@@ -3920,7 +3920,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-skeleton",
+            "class": "lt-skeleton",
             "aria-hidden": "true"
           },
           "options": {
@@ -3949,7 +3949,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-skip-link"
+            "class": "lt-skip-link"
           },
           "options": {}
         }
@@ -3987,7 +3987,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-spinner"
+            "class": "lt-spinner"
           },
           "options": {
             "size": {
@@ -4025,7 +4025,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-sr-only"
+            "class": "lt-sr-only"
           },
           "options": {}
         }
@@ -4214,7 +4214,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-switch",
+            "class": "lt-switch",
             "type": "checkbox",
             "role": "switch"
           },
@@ -4262,7 +4262,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-table"
+            "class": "lt-table"
           },
           "options": {
             "variant": {
@@ -4332,7 +4332,7 @@
           },
           "button": {
             "base": {
-              "class": "fs-table__sort",
+              "class": "lt-table__sort",
               "type": "button"
             },
             "options": {
@@ -4433,7 +4433,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-tag"
+            "class": "lt-tag"
           },
           "options": {
             "variant": {
@@ -4480,7 +4480,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-textarea"
+            "class": "lt-textarea"
           },
           "options": {
             "state": {
@@ -4538,7 +4538,7 @@
         "fields": {
           "host": {
             "base": {
-              "class": "fs-toast",
+              "class": "lt-toast",
               "role": "status",
               "aria-live": "polite",
               "aria-atomic": "false",
@@ -4568,7 +4568,7 @@
           },
           "message": {
             "base": {
-              "class": "fs-toast__message"
+              "class": "lt-toast__message"
             },
             "options": {
               "label": {
@@ -4585,7 +4585,7 @@
           },
           "close": {
             "base": {
-              "class": "fs-toast__close"
+              "class": "lt-toast__close"
             },
             "options": {
               "label": {
@@ -4613,7 +4613,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-toggle-group"
+            "class": "lt-toggle-group"
           },
           "options": {}
         }
@@ -4629,7 +4629,7 @@
         "kind": "attributes",
         "table": {
           "base": {
-            "class": "fs-tooltip"
+            "class": "lt-tooltip"
           },
           "options": {}
         }
@@ -4638,19 +4638,19 @@
   ],
   "tokens": {
     "spacing": {
-      "--fs-spacing-px": "1px",
-      "--fs-spacing-0-5": "0.125rem",
-      "--fs-spacing-1": "0.25rem",
-      "--fs-spacing-2": "0.5rem",
-      "--fs-spacing-3": "0.75rem",
-      "--fs-spacing-4": "1rem",
-      "--fs-spacing-5": "1.25rem",
-      "--fs-spacing-6": "1.5rem",
-      "--fs-spacing-7": "1.75rem",
-      "--fs-spacing-8": "2rem",
-      "--fs-spacing-10": "2.5rem",
-      "--fs-spacing-12": "3rem",
-      "--fs-spacing-16": "4rem"
+      "--lt-spacing-px": "1px",
+      "--lt-spacing-0-5": "0.125rem",
+      "--lt-spacing-1": "0.25rem",
+      "--lt-spacing-2": "0.5rem",
+      "--lt-spacing-3": "0.75rem",
+      "--lt-spacing-4": "1rem",
+      "--lt-spacing-5": "1.25rem",
+      "--lt-spacing-6": "1.5rem",
+      "--lt-spacing-7": "1.75rem",
+      "--lt-spacing-8": "2rem",
+      "--lt-spacing-10": "2.5rem",
+      "--lt-spacing-12": "3rem",
+      "--lt-spacing-16": "4rem"
     },
     "breakpoints": {
       "sm": "640px",
@@ -4697,268 +4697,268 @@
         "raised": "En flate som ligger over et kort"
       },
       "tokens": [
-        "--fs-color-accent-surface",
-        "--fs-color-accent-border-subtle",
-        "--fs-color-accent-border",
-        "--fs-color-accent-border-strong",
-        "--fs-color-accent-fill",
-        "--fs-color-accent-text",
-        "--fs-color-accent-text-strong",
-        "--fs-color-accent-text-subtle",
-        "--fs-color-accent-content",
-        "--fs-color-visited-surface",
-        "--fs-color-visited-border-subtle",
-        "--fs-color-visited-border",
-        "--fs-color-visited-border-strong",
-        "--fs-color-visited-fill",
-        "--fs-color-visited-text",
-        "--fs-color-visited-text-strong",
-        "--fs-color-visited-text-subtle",
-        "--fs-color-visited-content",
-        "--fs-color-brand1-surface",
-        "--fs-color-brand1-border-subtle",
-        "--fs-color-brand1-border",
-        "--fs-color-brand1-border-strong",
-        "--fs-color-brand1-fill",
-        "--fs-color-brand1-text",
-        "--fs-color-brand1-text-strong",
-        "--fs-color-brand1-text-subtle",
-        "--fs-color-brand1-content",
-        "--fs-color-brand2-surface",
-        "--fs-color-brand2-border-subtle",
-        "--fs-color-brand2-border",
-        "--fs-color-brand2-border-strong",
-        "--fs-color-brand2-fill",
-        "--fs-color-brand2-text",
-        "--fs-color-brand2-text-strong",
-        "--fs-color-brand2-text-subtle",
-        "--fs-color-brand2-content",
-        "--fs-color-brand3-surface",
-        "--fs-color-brand3-border-subtle",
-        "--fs-color-brand3-border",
-        "--fs-color-brand3-border-strong",
-        "--fs-color-brand3-fill",
-        "--fs-color-brand3-text",
-        "--fs-color-brand3-text-strong",
-        "--fs-color-brand3-text-subtle",
-        "--fs-color-brand3-content",
-        "--fs-color-neutral-surface",
-        "--fs-color-neutral-border-subtle",
-        "--fs-color-neutral-border",
-        "--fs-color-neutral-border-strong",
-        "--fs-color-neutral-fill",
-        "--fs-color-neutral-text",
-        "--fs-color-neutral-text-strong",
-        "--fs-color-neutral-text-subtle",
-        "--fs-color-neutral-content",
-        "--fs-color-danger-surface",
-        "--fs-color-danger-border-subtle",
-        "--fs-color-danger-border",
-        "--fs-color-danger-border-strong",
-        "--fs-color-danger-fill",
-        "--fs-color-danger-text",
-        "--fs-color-danger-text-strong",
-        "--fs-color-danger-text-subtle",
-        "--fs-color-danger-content",
-        "--fs-color-warning-surface",
-        "--fs-color-warning-border-subtle",
-        "--fs-color-warning-border",
-        "--fs-color-warning-border-strong",
-        "--fs-color-warning-fill",
-        "--fs-color-warning-text",
-        "--fs-color-warning-text-strong",
-        "--fs-color-warning-text-subtle",
-        "--fs-color-warning-content",
-        "--fs-color-success-surface",
-        "--fs-color-success-border-subtle",
-        "--fs-color-success-border",
-        "--fs-color-success-border-strong",
-        "--fs-color-success-fill",
-        "--fs-color-success-text",
-        "--fs-color-success-text-strong",
-        "--fs-color-success-text-subtle",
-        "--fs-color-success-content",
-        "--fs-color-neutral-canvas",
-        "--fs-color-neutral-raised",
-        "--fs-color-disabled-surface",
-        "--fs-color-disabled-text",
-        "--fs-color-overlay"
+        "--lt-color-accent-surface",
+        "--lt-color-accent-border-subtle",
+        "--lt-color-accent-border",
+        "--lt-color-accent-border-strong",
+        "--lt-color-accent-fill",
+        "--lt-color-accent-text",
+        "--lt-color-accent-text-strong",
+        "--lt-color-accent-text-subtle",
+        "--lt-color-accent-content",
+        "--lt-color-visited-surface",
+        "--lt-color-visited-border-subtle",
+        "--lt-color-visited-border",
+        "--lt-color-visited-border-strong",
+        "--lt-color-visited-fill",
+        "--lt-color-visited-text",
+        "--lt-color-visited-text-strong",
+        "--lt-color-visited-text-subtle",
+        "--lt-color-visited-content",
+        "--lt-color-brand1-surface",
+        "--lt-color-brand1-border-subtle",
+        "--lt-color-brand1-border",
+        "--lt-color-brand1-border-strong",
+        "--lt-color-brand1-fill",
+        "--lt-color-brand1-text",
+        "--lt-color-brand1-text-strong",
+        "--lt-color-brand1-text-subtle",
+        "--lt-color-brand1-content",
+        "--lt-color-brand2-surface",
+        "--lt-color-brand2-border-subtle",
+        "--lt-color-brand2-border",
+        "--lt-color-brand2-border-strong",
+        "--lt-color-brand2-fill",
+        "--lt-color-brand2-text",
+        "--lt-color-brand2-text-strong",
+        "--lt-color-brand2-text-subtle",
+        "--lt-color-brand2-content",
+        "--lt-color-brand3-surface",
+        "--lt-color-brand3-border-subtle",
+        "--lt-color-brand3-border",
+        "--lt-color-brand3-border-strong",
+        "--lt-color-brand3-fill",
+        "--lt-color-brand3-text",
+        "--lt-color-brand3-text-strong",
+        "--lt-color-brand3-text-subtle",
+        "--lt-color-brand3-content",
+        "--lt-color-neutral-surface",
+        "--lt-color-neutral-border-subtle",
+        "--lt-color-neutral-border",
+        "--lt-color-neutral-border-strong",
+        "--lt-color-neutral-fill",
+        "--lt-color-neutral-text",
+        "--lt-color-neutral-text-strong",
+        "--lt-color-neutral-text-subtle",
+        "--lt-color-neutral-content",
+        "--lt-color-danger-surface",
+        "--lt-color-danger-border-subtle",
+        "--lt-color-danger-border",
+        "--lt-color-danger-border-strong",
+        "--lt-color-danger-fill",
+        "--lt-color-danger-text",
+        "--lt-color-danger-text-strong",
+        "--lt-color-danger-text-subtle",
+        "--lt-color-danger-content",
+        "--lt-color-warning-surface",
+        "--lt-color-warning-border-subtle",
+        "--lt-color-warning-border",
+        "--lt-color-warning-border-strong",
+        "--lt-color-warning-fill",
+        "--lt-color-warning-text",
+        "--lt-color-warning-text-strong",
+        "--lt-color-warning-text-subtle",
+        "--lt-color-warning-content",
+        "--lt-color-success-surface",
+        "--lt-color-success-border-subtle",
+        "--lt-color-success-border",
+        "--lt-color-success-border-strong",
+        "--lt-color-success-fill",
+        "--lt-color-success-text",
+        "--lt-color-success-text-strong",
+        "--lt-color-success-text-subtle",
+        "--lt-color-success-content",
+        "--lt-color-neutral-canvas",
+        "--lt-color-neutral-raised",
+        "--lt-color-disabled-surface",
+        "--lt-color-disabled-text",
+        "--lt-color-overlay"
       ]
     },
     "components": {
       "accordion": {
-        "--fs-accordion-radius": "var(--fs-spacing-1)",
-        "--fs-accordion-padding": "var(--fs-spacing-3) var(--fs-accordion-padding-inline, var(--fs-spacing-4))",
-        "--fs-accordion-padding-inline": "var(--fs-spacing-4)"
+        "--lt-accordion-radius": "var(--lt-spacing-1)",
+        "--lt-accordion-padding": "var(--lt-spacing-3) var(--lt-accordion-padding-inline, var(--lt-spacing-4))",
+        "--lt-accordion-padding-inline": "var(--lt-spacing-4)"
       },
       "alert": {
-        "--fs-alert-padding": "var(--fs-spacing-3) var(--fs-spacing-4)",
-        "--fs-alert-radius": "var(--fs-spacing-1)",
-        "--fs-alert-accent": "var(--fs-spacing-1)"
+        "--lt-alert-padding": "var(--lt-spacing-3) var(--lt-spacing-4)",
+        "--lt-alert-radius": "var(--lt-spacing-1)",
+        "--lt-alert-accent": "var(--lt-spacing-1)"
       },
       "avatar": {
-        "--fs-avatar-size": "var(--fs-spacing-10)",
-        "--fs-avatar-radius": "var(--fs-spacing-1)",
-        "--fs-avatar-stack-overlap": "calc(var(--fs-spacing-2) * -1)"
+        "--lt-avatar-size": "var(--lt-spacing-10)",
+        "--lt-avatar-radius": "var(--lt-spacing-1)",
+        "--lt-avatar-stack-overlap": "calc(var(--lt-spacing-2) * -1)"
       },
       "badge": {
-        "--fs-badge-padding": "var(--fs-spacing-0-5) var(--fs-spacing-2)",
-        "--fs-badge-radius": "var(--fs-spacing-4)"
+        "--lt-badge-padding": "var(--lt-spacing-0-5) var(--lt-spacing-2)",
+        "--lt-badge-radius": "var(--lt-spacing-4)"
       },
       "breadcrumbs": {
-        "--fs-breadcrumbs-gap": "var(--fs-spacing-2)"
+        "--lt-breadcrumbs-gap": "var(--lt-spacing-2)"
       },
       "button": {
-        "--fs-button-padding": "var(--fs-spacing-2) var(--fs-spacing-4)",
-        "--fs-button-font-weight": "var(--fs-font-weight-medium)",
-        "--fs-button-line-height": "var(--fs-line-height-default)",
-        "--fs-button-border-width": "1px",
-        "--fs-button-radius": "var(--fs-spacing-1)"
+        "--lt-button-padding": "var(--lt-spacing-2) var(--lt-spacing-4)",
+        "--lt-button-font-weight": "var(--lt-font-weight-medium)",
+        "--lt-button-line-height": "var(--lt-line-height-default)",
+        "--lt-button-border-width": "1px",
+        "--lt-button-radius": "var(--lt-spacing-1)"
       },
       "card": {
-        "--fs-card-padding": "var(--fs-spacing-4)",
-        "--fs-card-radius": "var(--fs-spacing-2)"
+        "--lt-card-padding": "var(--lt-spacing-4)",
+        "--lt-card-radius": "var(--lt-spacing-2)"
       },
       "checkbox": {
-        "--fs-checkbox-size": "var(--fs-spacing-5)",
-        "--fs-checkbox-radius": "var(--fs-spacing-1)"
+        "--lt-checkbox-size": "var(--lt-spacing-5)",
+        "--lt-checkbox-radius": "var(--lt-spacing-1)"
       },
       "connection-status": {
-        "--fs-connection-status-layer": "1000",
-        "--fs-connection-status-padding": "var(--fs-spacing-2) var(--fs-spacing-4)"
+        "--lt-connection-status-layer": "1000",
+        "--lt-connection-status-padding": "var(--lt-spacing-2) var(--lt-spacing-4)"
       },
       "dialog": {
-        "--fs-dialog-width": "min(32rem, 100%, calc(100vw - var(--fs-spacing-8)))",
-        "--fs-dialog-padding": "var(--fs-spacing-5)",
-        "--fs-dialog-radius": "var(--fs-spacing-2)",
-        "--fs-dialog-layer": "40"
+        "--lt-dialog-width": "min(32rem, 100%, calc(100vw - var(--lt-spacing-8)))",
+        "--lt-dialog-padding": "var(--lt-spacing-5)",
+        "--lt-dialog-radius": "var(--lt-spacing-2)",
+        "--lt-dialog-layer": "40"
       },
       "divider": {
-        "--fs-divider-space": "var(--fs-spacing-4)"
+        "--lt-divider-space": "var(--lt-spacing-4)"
       },
       "error-summary": {
-        "--fs-error-summary-padding": "var(--fs-spacing-4)",
-        "--fs-error-summary-radius": "var(--fs-spacing-1)"
+        "--lt-error-summary-padding": "var(--lt-spacing-4)",
+        "--lt-error-summary-radius": "var(--lt-spacing-1)"
       },
       "fieldset": {
-        "--fs-fieldset-gap": "var(--fs-spacing-2)"
+        "--lt-fieldset-gap": "var(--lt-spacing-2)"
       },
       "file-upload": {
-        "--fs-file-upload-padding": "var(--fs-spacing-2)",
-        "--fs-file-upload-radius": "var(--fs-spacing-1)"
+        "--lt-file-upload-padding": "var(--lt-spacing-2)",
+        "--lt-file-upload-radius": "var(--lt-spacing-1)"
       },
       "heading": {
-        "--fs-heading-font-weight": "var(--fs-font-weight-bold)",
-        "--fs-heading-line-height": "var(--fs-line-height-heading)"
+        "--lt-heading-font-weight": "var(--lt-font-weight-bold)",
+        "--lt-heading-line-height": "var(--lt-line-height-heading)"
       },
       "input": {
-        "--fs-input-width": "100%",
-        "--fs-input-padding": "var(--fs-spacing-2) var(--fs-spacing-3)",
-        "--fs-input-radius": "var(--fs-spacing-1)"
+        "--lt-input-width": "100%",
+        "--lt-input-padding": "var(--lt-spacing-2) var(--lt-spacing-3)",
+        "--lt-input-radius": "var(--lt-spacing-1)"
       },
       "label": {
-        "--fs-label-required-symbol": "\" *\"",
-        "--fs-label-required-text": "\" (p\\e5 krevd)\"",
-        "--fs-label-optional-text": "\" (valgfri)\""
+        "--lt-label-required-symbol": "\" *\"",
+        "--lt-label-required-text": "\" (p\\e5 krevd)\"",
+        "--lt-label-optional-text": "\" (valgfri)\""
       },
       "list": {
-        "--fs-list-gap": "var(--fs-spacing-1)"
+        "--lt-list-gap": "var(--lt-spacing-1)"
       },
       "pagination": {
-        "--fs-pagination-gap": "var(--fs-spacing-1)",
-        "--fs-pagination-size": "var(--fs-spacing-10)",
-        "--fs-pagination-radius": "var(--fs-spacing-1)"
+        "--lt-pagination-gap": "var(--lt-spacing-1)",
+        "--lt-pagination-size": "var(--lt-spacing-10)",
+        "--lt-pagination-radius": "var(--lt-spacing-1)"
       },
       "paragraph": {
-        "--fs-paragraph-line-height": "var(--fs-line-height-article)",
-        "--fs-paragraph-width": "70ch",
-        "--fs-paragraph-gap": "var(--fs-spacing-3)"
+        "--lt-paragraph-line-height": "var(--lt-line-height-article)",
+        "--lt-paragraph-width": "70ch",
+        "--lt-paragraph-gap": "var(--lt-spacing-3)"
       },
       "popover": {
-        "--fs-popover-width": "min(20rem, calc(100vw - var(--fs-spacing-8)))",
-        "--fs-popover-padding": "var(--fs-spacing-3)",
-        "--fs-popover-radius": "var(--fs-spacing-1)"
+        "--lt-popover-width": "min(20rem, calc(100vw - var(--lt-spacing-8)))",
+        "--lt-popover-padding": "var(--lt-spacing-3)",
+        "--lt-popover-radius": "var(--lt-spacing-1)"
       },
       "progress": {
-        "--fs-progress-height": "var(--fs-spacing-2)",
-        "--fs-progress-border": "var(--fs-color-neutral-border)",
-        "--fs-progress-radius": "var(--fs-spacing-1)",
-        "--fs-progress-track": "var(--fs-color-neutral-surface)",
-        "--fs-progress-fill": "var(--fs-color-accent-fill)"
+        "--lt-progress-height": "var(--lt-spacing-2)",
+        "--lt-progress-border": "var(--lt-color-neutral-border)",
+        "--lt-progress-radius": "var(--lt-spacing-1)",
+        "--lt-progress-track": "var(--lt-color-neutral-surface)",
+        "--lt-progress-fill": "var(--lt-color-accent-fill)"
       },
       "radio": {
-        "--fs-radio-size": "var(--fs-spacing-5)"
+        "--lt-radio-size": "var(--lt-spacing-5)"
       },
       "search": {
-        "--fs-search-icon-space": "var(--fs-spacing-10)",
-        "--fs-search-icon-size": "var(--fs-spacing-5)"
+        "--lt-search-icon-space": "var(--lt-spacing-10)",
+        "--lt-search-icon-size": "var(--lt-spacing-5)"
       },
       "select": {
-        "--fs-select-width": "100%",
-        "--fs-select-padding": "var(--fs-spacing-2) var(--fs-spacing-3)",
-        "--fs-select-radius": "var(--fs-spacing-1)",
-        "--fs-select-viewport-margin": "var(--fs-spacing-2)",
-        "--fs-select-option-padding": "var(--fs-spacing-2) var(--fs-spacing-3)"
+        "--lt-select-width": "100%",
+        "--lt-select-padding": "var(--lt-spacing-2) var(--lt-spacing-3)",
+        "--lt-select-radius": "var(--lt-spacing-1)",
+        "--lt-select-viewport-margin": "var(--lt-spacing-2)",
+        "--lt-select-option-padding": "var(--lt-spacing-2) var(--lt-spacing-3)"
       },
       "session-timeout": {
-        "--fs-session-timeout-width": "26rem",
-        "--fs-session-timeout-padding": "var(--fs-spacing-5)",
-        "--fs-session-timeout-radius": "var(--fs-spacing-1)"
+        "--lt-session-timeout-width": "26rem",
+        "--lt-session-timeout-padding": "var(--lt-spacing-5)",
+        "--lt-session-timeout-radius": "var(--lt-spacing-1)"
       },
       "skeleton": {
-        "--fs-skeleton-height": "var(--fs-spacing-4)",
-        "--fs-skeleton-radius": "var(--fs-spacing-1)"
+        "--lt-skeleton-height": "var(--lt-spacing-4)",
+        "--lt-skeleton-radius": "var(--lt-spacing-1)"
       },
       "skip-link": {
-        "--fs-skip-link-padding": "var(--fs-spacing-2) var(--fs-spacing-4)",
-        "--fs-skip-link-radius": "var(--fs-spacing-1)"
+        "--lt-skip-link-padding": "var(--lt-spacing-2) var(--lt-spacing-4)",
+        "--lt-skip-link-radius": "var(--lt-spacing-1)"
       },
       "spinner": {
-        "--fs-spinner-size": "var(--fs-spacing-6)",
-        "--fs-spinner-thickness": "2px"
+        "--lt-spinner-size": "var(--lt-spacing-6)",
+        "--lt-spinner-thickness": "2px"
       },
       "suggestion": {
-        "--fs-suggestion-max-height": "calc(var(--fs-spacing-10) * 4)",
-        "--fs-suggestion-radius": "var(--fs-spacing-1)",
-        "--fs-suggestion-option-padding": "var(--fs-spacing-2) var(--fs-spacing-3)"
+        "--lt-suggestion-max-height": "calc(var(--lt-spacing-10) * 4)",
+        "--lt-suggestion-radius": "var(--lt-spacing-1)",
+        "--lt-suggestion-option-padding": "var(--lt-spacing-2) var(--lt-spacing-3)"
       },
       "switch": {
-        "--fs-switch-width": "var(--fs-spacing-10)",
-        "--fs-switch-height": "var(--fs-spacing-6)"
+        "--lt-switch-width": "var(--lt-spacing-10)",
+        "--lt-switch-height": "var(--lt-spacing-6)"
       },
       "table": {
-        "--fs-table-cell-padding": "var(--fs-spacing-2) var(--fs-spacing-3)"
+        "--lt-table-cell-padding": "var(--lt-spacing-2) var(--lt-spacing-3)"
       },
       "tabs": {
-        "--fs-tabs-gap": "var(--fs-spacing-1)",
-        "--fs-tabs-padding": "var(--fs-spacing-2) var(--fs-spacing-4)",
-        "--fs-tabs-panel-space": "var(--fs-spacing-4)"
+        "--lt-tabs-gap": "var(--lt-spacing-1)",
+        "--lt-tabs-padding": "var(--lt-spacing-2) var(--lt-spacing-4)",
+        "--lt-tabs-panel-space": "var(--lt-spacing-4)"
       },
       "tag": {
-        "--fs-tag-padding": "var(--fs-spacing-0-5) var(--fs-spacing-2)",
-        "--fs-tag-radius": "var(--fs-spacing-1)"
+        "--lt-tag-padding": "var(--lt-spacing-0-5) var(--lt-spacing-2)",
+        "--lt-tag-radius": "var(--lt-spacing-1)"
       },
       "textarea": {
-        "--fs-textarea-min-height": "calc(var(--fs-spacing-4) * 5)",
-        "--fs-textarea-padding": "var(--fs-spacing-2) var(--fs-spacing-3)",
-        "--fs-textarea-radius": "var(--fs-spacing-1)"
+        "--lt-textarea-min-height": "calc(var(--lt-spacing-4) * 5)",
+        "--lt-textarea-padding": "var(--lt-spacing-2) var(--lt-spacing-3)",
+        "--lt-textarea-radius": "var(--lt-spacing-1)"
       },
       "toast": {
-        "--fs-toast-space": "var(--fs-spacing-4)",
-        "--fs-toast-layer": "60",
-        "--fs-toast-width": "min(24rem, calc(100vw - var(--fs-spacing-8)))",
-        "--fs-toast-padding": "var(--fs-spacing-3) var(--fs-spacing-4)",
-        "--fs-toast-radius": "var(--fs-spacing-1)"
+        "--lt-toast-space": "var(--lt-spacing-4)",
+        "--lt-toast-layer": "60",
+        "--lt-toast-width": "min(24rem, calc(100vw - var(--lt-spacing-8)))",
+        "--lt-toast-padding": "var(--lt-spacing-3) var(--lt-spacing-4)",
+        "--lt-toast-radius": "var(--lt-spacing-1)"
       },
       "toggle-group": {
-        "--fs-toggle-group-radius": "var(--fs-spacing-1)",
-        "--fs-toggle-group-height": "var(--fs-spacing-10)",
-        "--fs-toggle-group-padding": "0 var(--fs-spacing-4)"
+        "--lt-toggle-group-radius": "var(--lt-spacing-1)",
+        "--lt-toggle-group-height": "var(--lt-spacing-10)",
+        "--lt-toggle-group-padding": "0 var(--lt-spacing-4)"
       },
       "tooltip": {
-        "--fs-tooltip-width": "16rem",
-        "--fs-tooltip-padding": "var(--fs-spacing-1) var(--fs-spacing-2)",
-        "--fs-tooltip-radius": "var(--fs-spacing-1)"
+        "--lt-tooltip-width": "16rem",
+        "--lt-tooltip-padding": "var(--lt-spacing-1) var(--lt-spacing-2)",
+        "--lt-tooltip-radius": "var(--lt-spacing-1)"
       }
     }
   }

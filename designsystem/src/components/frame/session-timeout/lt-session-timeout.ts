@@ -17,14 +17,14 @@ import {
   SESSION_TIMEOUT_TEXT_CLASS,
 } from "./session-timeout.js"
 
-export const FS_SESSION_TIMEOUT_TAG = "fs-session-timeout" as const
+export const LT_SESSION_TIMEOUT_TAG = "lt-session-timeout" as const
 
 /**
  * Delene varselet finner, som selektorer relativt til elementet. Komponenten
  * finner delene med disse, og manifestet beskriver dem for den som setter
  * sammen markupen selv, så de to ikke kan si noe ulikt.
  */
-export const FS_SESSION_TIMEOUT_PARTS = {
+export const LT_SESSION_TIMEOUT_PARTS = {
   dialog: "dialog",
   title: "h1, h2, h3, h4, h5, h6",
   text: `.${SESSION_TIMEOUT_TEXT_CLASS}`,
@@ -63,8 +63,8 @@ const DEFAULT_ACTIVITY_INTERVAL = 60
  * `reset()` lukket før med «extend», og lukkingen ble da lest som at
  * brukeren trykket på knappen med den verdien.
  */
-const CLOSED_BY_RESET = "fs-session-reset"
-const CLOSED_BY_EXPIRY = "fs-session-expired"
+const CLOSED_BY_RESET = "lt-session-reset"
+const CLOSED_BY_EXPIRY = "lt-session-expired"
 
 function clock(seconds: number): string {
   const m = Math.floor(seconds / 60)
@@ -99,7 +99,7 @@ function spoken(seconds: number, lang: string | undefined): string {
  * Teksten i en node, med tallet byttet ut med varigheten slik den uttales.
  *
  * Teksten leses, den skrives ikke: en kopi av avsnittet med ny tekst i
- * ville vært en skriving, og ingen skriving i `ramme/` går utenom hjelperne.
+ * ville vært en skriving, og ingen skriving i `frame/` går utenom hjelperne.
  */
 function readAloud(
   node: Node,
@@ -147,37 +147,37 @@ function deepActiveElement(): HTMLElement | null {
  * Komponenten tar tiden: den teller aktivitet, åpner dialogen med
  * `showModal()`, fyller inn tallet og leser opp nedtellingen. Det er alt den
  * skriver, sammen med det en mal kan ha glemt: klassen
- * `fs-session-timeout__dialog` på dialogen, `role="alertdialog"`, og navnet
+ * `lt-session-timeout__dialog` på dialogen, `role="alertdialog"`, og navnet
  * fra den første overskriften, med en id på overskriften når den mangler.
  *
  * Delene kjennes igjen på det som uansett må stå der: `<dialog>` inne i
- * verten, `.fs-session-timeout__count` for tallet, `[role=status]` for
+ * verten, `.lt-session-timeout__count` for tallet, `[role=status]` for
  * opplesningen og knappene i et `<form method="dialog">`. En knapp med
  * `value="logout"` logger ut. Alle andre måter å lukke dialogen på, Escape
  * og knappen med `value="extend"` medregnet, betyr «jeg er her», og forlenger.
  *
  * ```html
- * <fs-session-timeout warn-at="1500" expires-at="1800" data-ignore-morph>
- *   <dialog class="fs-session-timeout__dialog" role="alertdialog" aria-labelledby="okt">
- *     <h2 class="fs-session-timeout__title" id="okt">Du blir snart logget ut</h2>
- *     <p class="fs-session-timeout__text">
- *       Vi logger deg ut om <span class="fs-session-timeout__count" aria-hidden="true"></span>.
+ * <lt-session-timeout warn-at="1500" expires-at="1800" data-ignore-morph>
+ *   <dialog class="lt-session-timeout__dialog" role="alertdialog" aria-labelledby="okt">
+ *     <h2 class="lt-session-timeout__title" id="okt">Du blir snart logget ut</h2>
+ *     <p class="lt-session-timeout__text">
+ *       Vi logger deg ut om <span class="lt-session-timeout__count" aria-hidden="true"></span>.
  *     </p>
- *     <span class="fs-sr-only" role="status"></span>
- *     <form method="dialog" class="fs-session-timeout__actions">
- *       <button class="fs-button" value="extend">Fortsett å være innlogget</button>
- *       <button class="fs-button" data-variant="secondary" value="logout">Logg ut nå</button>
+ *     <span class="lt-sr-only" role="status"></span>
+ *     <form method="dialog" class="lt-session-timeout__actions">
+ *       <button class="lt-button" value="extend">Fortsett å være innlogget</button>
+ *       <button class="lt-button" data-variant="secondary" value="logout">Logg ut nå</button>
  *     </form>
  *   </dialog>
- * </fs-session-timeout>
+ * </lt-session-timeout>
  * ```
  *
  * ```ts
- * document.querySelector("fs-session-timeout")
+ * document.querySelector("lt-session-timeout")
  *   .addEventListener("session-extend", () => fetch("/forleng", { method: "POST" }))
  * ```
  */
-export class FsSessionTimeout extends HostElement {
+export class LtSessionTimeout extends HostElement {
   static observedAttributes = [
     "warn-at",
     "expires-at",
@@ -308,7 +308,7 @@ export class FsSessionTimeout extends HostElement {
 
   /** Dialogen komponenten styrer: den første `<dialog>` inne i verten. */
   private get dialog(): HTMLDialogElement | null {
-    return this.querySelector(FS_SESSION_TIMEOUT_PARTS.dialog)
+    return this.querySelector(LT_SESSION_TIMEOUT_PARTS.dialog)
   }
 
   private readSeconds(name: string, fallback: number): number {
@@ -367,19 +367,19 @@ export class FsSessionTimeout extends HostElement {
       this,
       `fant ingen .${SESSION_TIMEOUT_COUNT_CLASS} i dialogen. Brukeren ser ` +
         "ikke hvor lenge det er igjen.",
-      () => !this.dialog?.querySelector(FS_SESSION_TIMEOUT_PARTS.count),
+      () => !this.dialog?.querySelector(LT_SESSION_TIMEOUT_PARTS.count),
     )
     warnAboutMarkup(
       this,
       "fant ingen [role=status] i dialogen. Nedtellingen leses ikke opp for " +
         "den som bruker skjermleser.",
-      () => !this.dialog?.querySelector(FS_SESSION_TIMEOUT_PARTS.status),
+      () => !this.dialog?.querySelector(LT_SESSION_TIMEOUT_PARTS.status),
     )
     warnAboutMarkup(
       this,
       'fant ingen knapp i et <form method="dialog">. Brukeren kan bare ' +
         "forlenge økten med Escape, og kan ikke logge ut fra varselet.",
-      () => !this.dialog?.querySelector(FS_SESSION_TIMEOUT_PARTS.button),
+      () => !this.dialog?.querySelector(LT_SESSION_TIMEOUT_PARTS.button),
     )
   }
 
@@ -398,10 +398,10 @@ export class FsSessionTimeout extends HostElement {
     ) {
       return
     }
-    const title = dialog.querySelector(FS_SESSION_TIMEOUT_PARTS.title)
+    const title = dialog.querySelector(LT_SESSION_TIMEOUT_PARTS.title)
     if (!title) return
     if (!title.id) {
-      this.titleId ??= uniqueId("fs-session-timeout-title")
+      this.titleId ??= uniqueId("lt-session-timeout-title")
       setAttr(title, "id", this.titleId)
     }
     setAttr(dialog, "aria-labelledby", title.id)
@@ -417,7 +417,7 @@ export class FsSessionTimeout extends HostElement {
    *
    * `:modal` og ikke `open` er vilkåret: lukker brukeren dialogen, forlater
    * den topplaget, og da er det manglende attributtet ekte. Samme regel som
-   * i `<fs-dialog>`.
+   * i `<lt-dialog>`.
    */
   private repairOpen(): void {
     const dialog = this.dialog
@@ -471,7 +471,7 @@ export class FsSessionTimeout extends HostElement {
     if (!(dialog instanceof HTMLDialogElement) || dialog !== this.dialog) return
     this.shownDialog = undefined
 
-    const live = dialog.querySelector(FS_SESSION_TIMEOUT_PARTS.status)
+    const live = dialog.querySelector(LT_SESSION_TIMEOUT_PARTS.status)
     if (live) setText(live, "")
     this.previousFocus?.focus()
     this.previousFocus = null
@@ -542,11 +542,11 @@ export class FsSessionTimeout extends HostElement {
     left: number,
     announce: boolean,
   ): void {
-    const count = dialog.querySelector(FS_SESSION_TIMEOUT_PARTS.count)
+    const count = dialog.querySelector(LT_SESSION_TIMEOUT_PARTS.count)
     if (count) setText(count, clock(left))
     if (!announce) return
 
-    const live = dialog.querySelector(FS_SESSION_TIMEOUT_PARTS.status)
+    const live = dialog.querySelector(LT_SESSION_TIMEOUT_PARTS.status)
     if (!live) return
     const duration = spoken(left, languageOf(this))
     /*
@@ -554,7 +554,7 @@ export class FsSessionTimeout extends HostElement {
      * språket den som rendrer skrev, uten en egen tekst for skjermleseren.
      * Uten et avsnitt med tallet i leses varigheten alene.
      */
-    const text = dialog.querySelector(FS_SESSION_TIMEOUT_PARTS.text)
+    const text = dialog.querySelector(LT_SESSION_TIMEOUT_PARTS.text)
     // Står tallet utenfor avsnittet, ville avsnittet blitt lest uten tall.
     if (!text || !count || !text.contains(count)) {
       setText(live, duration)
@@ -590,7 +590,7 @@ export class FsSessionTimeout extends HostElement {
     // og nedover gjennom skyggerøttene, ikke fra én rot: `document` peker på
     // skyggeverten når feltet står i et skyggetre, og komponentens egen rot
     // er null når komponenten står i en skyggerot og feltet i siden, slik
-    // `<fs-error-summary>` også advarer om. Feltet kan stå på begge sider av
+    // `<lt-error-summary>` også advarer om. Feltet kan stå på begge sider av
     // skyggegrensen fra komponenten, så bare nedstigningen treffer det.
     this.previousFocus = deepActiveElement()
     /*
@@ -646,20 +646,20 @@ export class FsSessionTimeout extends HostElement {
   }
 }
 
-export function defineFsSessionTimeout(
-  tagName: string = FS_SESSION_TIMEOUT_TAG,
+export function defineLtSessionTimeout(
+  tagName: string = LT_SESSION_TIMEOUT_TAG,
 ): void {
-  defineElement(tagName, FsSessionTimeout)
+  defineElement(tagName, LtSessionTimeout)
 }
 
 /** `element.extend()`, men venter først på registreringen. Se `whenUpgraded`. */
 export async function extendSession(element: Element): Promise<void> {
-  const session = await whenUpgraded<FsSessionTimeout>(element)
+  const session = await whenUpgraded<LtSessionTimeout>(element)
   session.extend()
 }
 
 /** `element.reset()`, men venter først på registreringen. Se `whenUpgraded`. */
 export async function resetSession(element: Element): Promise<void> {
-  const session = await whenUpgraded<FsSessionTimeout>(element)
+  const session = await whenUpgraded<LtSessionTimeout>(element)
   session.reset()
 }

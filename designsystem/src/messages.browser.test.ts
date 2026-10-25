@@ -1,11 +1,11 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
-import { defineFsDialog } from "./components/ramme/dialog/fs-dialog"
-import { defineFsErrorSummary } from "./components/ramme/error-summary/fs-error-summary"
-import { defineFsField } from "./components/ramme/field/fs-field"
-import { defineFsPopover } from "./components/ramme/popover/fs-popover"
-import { defineFsSessionTimeout } from "./components/ramme/session-timeout/fs-session-timeout"
-import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion"
-import { defineFsTabs } from "./components/ramme/tabs/fs-tabs"
+import { defineLtDialog } from "./components/frame/dialog/lt-dialog"
+import { defineLtErrorSummary } from "./components/frame/error-summary/lt-error-summary"
+import { defineLtField } from "./components/frame/field/lt-field"
+import { defineLtPopover } from "./components/frame/popover/lt-popover"
+import { defineLtSessionTimeout } from "./components/frame/session-timeout/lt-session-timeout"
+import { defineLtSuggestion } from "./components/frame/suggestion/lt-suggestion"
+import { defineLtTabs } from "./components/frame/tabs/lt-tabs"
 import { monter, ventPaTegning } from "./testing/a11y"
 
 /**
@@ -39,13 +39,13 @@ function meldinger(advarsel: { mock: { calls: unknown[][] } }): string[] {
 
 describe("komponenten sier fra om markup som ikke henger sammen", () => {
   beforeAll(() => {
-    defineFsField()
-    defineFsSuggestion()
-    defineFsPopover()
-    defineFsTabs()
-    defineFsErrorSummary()
-    defineFsDialog()
-    defineFsSessionTimeout()
+    defineLtField()
+    defineLtSuggestion()
+    defineLtPopover()
+    defineLtTabs()
+    defineLtErrorSummary()
+    defineLtDialog()
+    defineLtSessionTimeout()
   })
 
   afterEach(() => {
@@ -60,10 +60,10 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-field>
-        <label class="fs-label">E-post</label>
-        <p class="fs-help-text">Vi sender aldri spam.</p>
-      </fs-field>
+      <lt-field>
+        <label class="lt-label">E-post</label>
+        <p class="lt-help-text">Vi sender aldri spam.</p>
+      </lt-field>
     `)
     await ventTilRo()
 
@@ -76,9 +76,9 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-field>
-        <input class="fs-input" />
-      </fs-field>
+      <lt-field>
+        <input class="lt-input" />
+      </lt-field>
     `)
     await ventTilRo()
 
@@ -91,9 +91,9 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-field>
-        <input class="fs-input fs-search" type="search" aria-label="Søk i saker" />
-      </fs-field>
+      <lt-field>
+        <input class="lt-input lt-search" type="search" aria-label="Søk i saker" />
+      </lt-field>
     `)
     await ventTilRo()
 
@@ -101,16 +101,16 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
   })
 
   it("men ikke når ledeteksten står utenfor elementet", async () => {
-    // En `<label for>` utenfor `<fs-field>` navngir feltet like godt, og
+    // En `<label for>` utenfor `<lt-field>` navngir feltet like godt, og
     // komponenten kobler den på samme måte som en inni.
     const advarsel = lytt()
 
     const flate = monter(`
       <div>
-        <label class="fs-label" for="epost" data-required="symbol">E-post</label>
-        <fs-field>
-          <input class="fs-input" id="epost" type="email" />
-        </fs-field>
+        <label class="lt-label" for="epost" data-required="symbol">E-post</label>
+        <lt-field>
+          <input class="lt-input" id="epost" type="email" />
+        </lt-field>
       </div>
     `)
     await ventTilRo()
@@ -126,11 +126,11 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-field>
-        <label class="fs-label">Søk</label>
-        <input class="fs-input" type="search" />
-        <select class="fs-select"><option>Alle</option></select>
-      </fs-field>
+      <lt-field>
+        <label class="lt-label">Søk</label>
+        <input class="lt-input" type="search" />
+        <select class="lt-select"><option>Alle</option></select>
+      </lt-field>
     `)
     await ventTilRo()
 
@@ -148,10 +148,10 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     const flate = monter(`
-      <fs-field>
-        <label class="fs-label">E-post</label>
-        <input class="fs-input" type="email" />
-      </fs-field>
+      <lt-field>
+        <label class="lt-label">E-post</label>
+        <input class="lt-input" type="email" />
+      </lt-field>
     `)
     await ventTilRo()
 
@@ -167,9 +167,9 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-field>
-        <label class="fs-label">E-post <input class="fs-input" type="email" /></label>
-      </fs-field>
+      <lt-field>
+        <label class="lt-label">E-post <input class="lt-input" type="email" /></label>
+      </lt-field>
     `)
     await ventTilRo()
 
@@ -185,17 +185,17 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     const flate = monter(`
-      <fs-field>
-        <label class="fs-label" for="navn-1">Navn</label>
-        <input class="fs-input" id="navn-1" name="navn" />
-      </fs-field>
+      <lt-field>
+        <label class="lt-label" for="navn-1">Navn</label>
+        <input class="lt-input" id="navn-1" name="navn" />
+      </lt-field>
     `)
     await ventTilRo()
 
     const gammel = flate.querySelector("input") as HTMLInputElement
     gammel.value = "Kari"
     const ny = document.createElement("input")
-    ny.className = "fs-input"
+    ny.className = "lt-input"
     ny.id = "navn-2"
     ny.name = "navn"
     const label = flate.querySelector("label") as HTMLLabelElement
@@ -214,17 +214,17 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     const flate = monter(`
-      <fs-field>
-        <label class="fs-label" for="navn">Navn</label>
-        <input class="fs-input" id="navn" name="navn" />
-      </fs-field>
+      <lt-field>
+        <label class="lt-label" for="navn">Navn</label>
+        <input class="lt-input" id="navn" name="navn" />
+      </lt-field>
     `)
     await ventTilRo()
 
     const gammel = flate.querySelector("input") as HTMLInputElement
     gammel.value = "Kari"
     const ny = document.createElement("input")
-    ny.className = "fs-input"
+    ny.className = "lt-input"
     ny.id = "epost"
     ny.name = "epost"
     const label = flate.querySelector("label") as HTMLLabelElement
@@ -241,15 +241,15 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-field>
-        <label class="fs-label" for="kommune">Kommune</label>
-        <input class="fs-input" id="kommune" type="text" />
+      <lt-field>
+        <label class="lt-label" for="kommune">Kommune</label>
+        <input class="lt-input" id="kommune" type="text" />
         <div popover>
-          <fs-field>
-            <label class="fs-label">Søk i lista <input class="fs-input" type="search" /></label>
-          </fs-field>
+          <lt-field>
+            <label class="lt-label">Søk i lista <input class="lt-input" type="search" /></label>
+          </lt-field>
         </div>
-      </fs-field>
+      </lt-field>
     `)
     await ventTilRo()
 
@@ -262,11 +262,11 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-dialog>
+      <lt-dialog>
         <dialog>
-          <div class="fs-dialog__body"><h3>Vedlegg</h3><p>To vedlegg.</p></div>
+          <div class="lt-dialog__body"><h3>Vedlegg</h3><p>To vedlegg.</p></div>
         </dialog>
-      </fs-dialog>
+      </lt-dialog>
     `)
     await ventTilRo()
 
@@ -279,9 +279,9 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-dialog>
+      <lt-dialog>
         <dialog></dialog>
-      </fs-dialog>
+      </lt-dialog>
     `)
     await ventTilRo()
 
@@ -294,12 +294,12 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-tabs>
-        <ul class="fs-tabs__list">
+      <lt-tabs>
+        <ul class="lt-tabs__list">
           <li><button>Søknaden</button></li>
           <li><button>Vedlegg</button></li>
         </ul>
-      </fs-tabs>
+      </lt-tabs>
     `)
     await ventTilRo()
 
@@ -312,13 +312,13 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-tabs>
-        <ul class="fs-tabs__list">
+      <lt-tabs>
+        <ul class="lt-tabs__list">
           <li><a href="#soknad">Søknaden</a></li>
           <li><a href="#vedlegg">Vedlegg</a></li>
         </ul>
-        <section class="fs-tabs__panel" id="soknad"><h2>Søknaden</h2>Søknaden kom 3. mars.</section>
-      </fs-tabs>
+        <section class="lt-tabs__panel" id="soknad"><h2>Søknaden</h2>Søknaden kom 3. mars.</section>
+      </lt-tabs>
     `)
     await ventTilRo()
 
@@ -331,11 +331,11 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-dialog>
-        <div class="fs-dialog">
-          <h2 class="fs-dialog__title">Slette søknaden?</h2>
+      <lt-dialog>
+        <div class="lt-dialog">
+          <h2 class="lt-dialog__title">Slette søknaden?</h2>
         </div>
-      </fs-dialog>
+      </lt-dialog>
     `)
     await ventTilRo()
 
@@ -346,11 +346,11 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-session-timeout>
-        <div class="fs-session-timeout__dialog">
+      <lt-session-timeout>
+        <div class="lt-session-timeout__dialog">
           <h2>Du blir snart logget ut</h2>
         </div>
-      </fs-session-timeout>
+      </lt-session-timeout>
     `)
     await ventTilRo()
 
@@ -361,17 +361,17 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-session-timeout>
+      <lt-session-timeout>
         <dialog>
           <h2>Du blir snart logget ut</h2>
           <p>Vi logger deg ut snart.</p>
         </dialog>
-      </fs-session-timeout>
+      </lt-session-timeout>
     `)
     await ventTilRo()
 
     const sagt = meldinger(advarsel)
-    expect(sagt.some((m) => m.includes(".fs-session-timeout__count"))).toBe(
+    expect(sagt.some((m) => m.includes(".lt-session-timeout__count"))).toBe(
       true,
     )
     expect(sagt.some((m) => m.includes("[role=status]"))).toBe(true)
@@ -384,10 +384,10 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-suggestion>
-        <label class="fs-label">Kommune</label>
-        <ul class="fs-suggestion__list"><li>Bergen</li></ul>
-      </fs-suggestion>
+      <lt-suggestion>
+        <label class="lt-label">Kommune</label>
+        <ul class="lt-suggestion__list"><li>Bergen</li></ul>
+      </lt-suggestion>
     `)
     await ventTilRo()
 
@@ -398,11 +398,11 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-suggestion>
-        <label class="fs-label" for="kommune">Kommune</label>
-        <input class="fs-input" id="kommune" role="combobox"
+      <lt-suggestion>
+        <label class="lt-label" for="kommune">Kommune</label>
+        <input class="lt-input" id="kommune" role="combobox"
                aria-expanded="false" aria-autocomplete="list" />
-      </fs-suggestion>
+      </lt-suggestion>
     `)
     await ventTilRo()
 
@@ -416,14 +416,14 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-suggestion>
-        <label class="fs-label" for="kommune">Kommune</label>
-        <input class="fs-input" id="kommune" role="combobox"
+      <lt-suggestion>
+        <label class="lt-label" for="kommune">Kommune</label>
+        <input class="lt-input" id="kommune" role="combobox"
                aria-expanded="false" aria-controls="kommuner" aria-autocomplete="list" />
-        <ul class="fs-suggestion__list" id="kommuner" role="listbox" hidden>
-          <li class="fs-suggestion__option" id="kommune-0" role="option">Bergen</li>
+        <ul class="lt-suggestion__list" id="kommuner" role="listbox" hidden>
+          <li class="lt-suggestion__option" id="kommune-0" role="option">Bergen</li>
         </ul>
-      </fs-suggestion>
+      </lt-suggestion>
     `)
     await ventTilRo()
 
@@ -436,9 +436,9 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-popover>
-        <button class="fs-button">Handlinger</button>
-      </fs-popover>
+      <lt-popover>
+        <button class="lt-button">Handlinger</button>
+      </lt-popover>
     `)
     await ventTilRo()
 
@@ -452,10 +452,10 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-popover>
-        <button class="fs-button">Handlinger</button>
-        <div class="fs-popover">Flytt saken</div>
-      </fs-popover>
+      <lt-popover>
+        <button class="lt-button">Handlinger</button>
+        <div class="lt-popover">Flytt saken</div>
+      </lt-popover>
     `)
     await ventTilRo()
 
@@ -471,10 +471,10 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-popover>
-        <a href="/handlinger" class="fs-link">Handlinger</a>
-        <div popover id="handlinger" class="fs-popover">Flytt saken</div>
-      </fs-popover>
+      <lt-popover>
+        <a href="/handlinger" class="lt-link">Handlinger</a>
+        <div popover id="handlinger" class="lt-popover">Flytt saken</div>
+      </lt-popover>
     `)
     await ventTilRo()
 
@@ -487,10 +487,10 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1">
-        <h2 class="fs-error-summary__title">Skjemaet har én feil</h2>
-        <ul class="fs-list"><li>Skriv en gyldig e-postadresse</li></ul>
-      </fs-error-summary>
+      <lt-error-summary class="lt-error-summary" role="alert" tabindex="-1">
+        <h2 class="lt-error-summary__title">Skjemaet har én feil</h2>
+        <ul class="lt-list"><li>Skriv en gyldig e-postadresse</li></ul>
+      </lt-error-summary>
     `)
     await ventTilRo()
 
@@ -506,13 +506,13 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     monter(`
-      <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1">
-        <h2 class="fs-error-summary__title">Skjemaet har to feil</h2>
-        <ul class="fs-list">
+      <lt-error-summary class="lt-error-summary" role="alert" tabindex="-1">
+        <h2 class="lt-error-summary__title">Skjemaet har to feil</h2>
+        <ul class="lt-list">
           <li><a href="#finnes-ikke">Skriv en gyldig adresse</a></li>
           <li><a href="#heller-ikke">Velg en kommune</a></li>
         </ul>
-      </fs-error-summary>
+      </lt-error-summary>
     `)
     await ventTilRo()
 
@@ -525,11 +525,11 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     const flate = monter(`
-      <fs-field>
-        <label class="fs-label">E-post</label>
-      </fs-field>
+      <lt-field>
+        <label class="lt-label">E-post</label>
+      </lt-field>
     `)
-    const felt = flate.querySelector("fs-field") as HTMLElement
+    const felt = flate.querySelector("lt-field") as HTMLElement
     await ventTilRo()
 
     // Hver endring i barna utløser en ny synkronisering, slik en patch gjør.
@@ -554,21 +554,21 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     const flate = monter(`
-      <fs-tabs>
-        <ul class="fs-tabs__list" aria-label="Deler av saken">
+      <lt-tabs>
+        <ul class="lt-tabs__list" aria-label="Deler av saken">
           <li><a href="#en">En</a></li>
           <li><a href="#to">To</a></li>
           <li><a href="#tre">Tre</a></li>
         </ul>
-      </fs-tabs>
+      </lt-tabs>
     `)
-    const faner = flate.querySelector("fs-tabs") as HTMLElement
+    const faner = flate.querySelector("lt-tabs") as HTMLElement
     await ventTilRo()
 
     // To av tre paneler, ett om gangen. Den tredje fanen står uten panel hele tiden.
     for (const id of ["en", "to"]) {
       const panel = document.createElement("section")
-      panel.className = "fs-tabs__panel"
+      panel.className = "lt-tabs__panel"
       panel.id = id
       faner.append(panel)
       await ventTilRo()
@@ -589,14 +589,14 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     const advarsel = lytt()
 
     const flate = monter(`
-      <fs-field>
-        <label class="fs-label" for="epost">E-post</label>
-      </fs-field>
+      <lt-field>
+        <label class="lt-label" for="epost">E-post</label>
+      </lt-field>
     `)
     const kontroll = document.createElement("input")
-    kontroll.className = "fs-input"
+    kontroll.className = "lt-input"
     kontroll.id = "epost"
-    flate.querySelector("fs-field")?.append(kontroll)
+    flate.querySelector("lt-field")?.append(kontroll)
 
     await ventTilRo()
 
@@ -608,13 +608,13 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
 
     monter(`
       <div>
-        <fs-field></fs-field>
-        <fs-tabs></fs-tabs>
-        <fs-dialog></fs-dialog>
-        <fs-popover></fs-popover>
-        <fs-suggestion></fs-suggestion>
-        <fs-error-summary hidden></fs-error-summary>
-        <fs-session-timeout></fs-session-timeout>
+        <lt-field></lt-field>
+        <lt-tabs></lt-tabs>
+        <lt-dialog></lt-dialog>
+        <lt-popover></lt-popover>
+        <lt-suggestion></lt-suggestion>
+        <lt-error-summary hidden></lt-error-summary>
+        <lt-session-timeout></lt-session-timeout>
       </div>
     `)
     await ventTilRo()
@@ -627,72 +627,72 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
 
     monter(`
       <div>
-        <fs-field>
-          <label class="fs-label" for="epost">E-post</label>
-          <input class="fs-input" id="epost" />
-          <p class="fs-help-text">Vi sender aldri spam.</p>
-        </fs-field>
+        <lt-field>
+          <label class="lt-label" for="epost">E-post</label>
+          <input class="lt-input" id="epost" />
+          <p class="lt-help-text">Vi sender aldri spam.</p>
+        </lt-field>
 
-        <fs-field>
-          <label class="fs-label">Telefon <input class="fs-input" type="tel" /></label>
-        </fs-field>
+        <lt-field>
+          <label class="lt-label">Telefon <input class="lt-input" type="tel" /></label>
+        </lt-field>
 
-        <fs-tabs>
-          <ul class="fs-tabs__list" aria-label="Deler av saken">
+        <lt-tabs>
+          <ul class="lt-tabs__list" aria-label="Deler av saken">
             <li><a href="#sak-soknaden">Søknaden</a></li>
             <li><a href="#sak-vedlegg">Vedlegg</a></li>
           </ul>
-          <section class="fs-tabs__panel" id="sak-soknaden"><h2>Søknaden</h2>Søknaden kom 3. mars.</section>
-          <section class="fs-tabs__panel" id="sak-vedlegg"><h2>Vedlegg</h2>To vedlegg.</section>
-        </fs-tabs>
+          <section class="lt-tabs__panel" id="sak-soknaden"><h2>Søknaden</h2>Søknaden kom 3. mars.</section>
+          <section class="lt-tabs__panel" id="sak-vedlegg"><h2>Vedlegg</h2>To vedlegg.</section>
+        </lt-tabs>
 
-        <fs-dialog>
-          <dialog class="fs-dialog" aria-labelledby="boks-tittel">
-            <h2 class="fs-dialog__title" id="boks-tittel">Vedtaket er registrert</h2>
-            <div class="fs-dialog__body"><p>Saken er ferdigbehandlet.</p></div>
-            <form method="dialog" class="fs-dialog__footer">
-              <button class="fs-button" value="lukk">Lukk</button>
+        <lt-dialog>
+          <dialog class="lt-dialog" aria-labelledby="boks-tittel">
+            <h2 class="lt-dialog__title" id="boks-tittel">Vedtaket er registrert</h2>
+            <div class="lt-dialog__body"><p>Saken er ferdigbehandlet.</p></div>
+            <form method="dialog" class="lt-dialog__footer">
+              <button class="lt-button" value="lukk">Lukk</button>
             </form>
           </dialog>
-        </fs-dialog>
+        </lt-dialog>
 
-        <fs-popover>
-          <button class="fs-button" aria-expanded="false"
+        <lt-popover>
+          <button class="lt-button" aria-expanded="false"
                   aria-controls="handlinger">Handlinger</button>
-          <div popover id="handlinger" class="fs-popover__panel">Flytt saken</div>
-        </fs-popover>
+          <div popover id="handlinger" class="lt-popover__panel">Flytt saken</div>
+        </lt-popover>
 
-        <fs-suggestion>
-          <label class="fs-label" for="kommune">Kommune</label>
-          <input class="fs-input" id="kommune" role="combobox"
+        <lt-suggestion>
+          <label class="lt-label" for="kommune">Kommune</label>
+          <input class="lt-input" id="kommune" role="combobox"
                  aria-expanded="false" aria-controls="kommuner"
                  aria-autocomplete="list" />
-          <ul class="fs-suggestion__list" id="kommuner" role="listbox" hidden>
-            <li class="fs-suggestion__option" id="kommune-0" role="option"
+          <ul class="lt-suggestion__list" id="kommuner" role="listbox" hidden>
+            <li class="lt-suggestion__option" id="kommune-0" role="option"
                 aria-selected="false">Bergen</li>
           </ul>
-          <span class="fs-sr-only" role="status"></span>
-        </fs-suggestion>
+          <span class="lt-sr-only" role="status"></span>
+        </lt-suggestion>
 
-        <fs-error-summary class="fs-error-summary" role="alert" tabindex="-1"
+        <lt-error-summary class="lt-error-summary" role="alert" tabindex="-1"
                           data-autofocus="false">
-          <h2 class="fs-error-summary__title">Skjemaet har én feil</h2>
-          <ul class="fs-list"><li><a href="#kommune">Velg en kommune</a></li></ul>
-        </fs-error-summary>
+          <h2 class="lt-error-summary__title">Skjemaet har én feil</h2>
+          <ul class="lt-list"><li><a href="#kommune">Velg en kommune</a></li></ul>
+        </lt-error-summary>
 
-        <fs-session-timeout data-ignore-morph>
-          <dialog class="fs-session-timeout__dialog" role="alertdialog"
+        <lt-session-timeout data-ignore-morph>
+          <dialog class="lt-session-timeout__dialog" role="alertdialog"
                   aria-labelledby="okt-tittel">
-            <h2 class="fs-session-timeout__title" id="okt-tittel">Du blir snart logget ut</h2>
-            <p class="fs-session-timeout__text">Vi logger deg ut om
-              <span class="fs-session-timeout__count" aria-hidden="true"></span>.</p>
-            <span class="fs-sr-only" role="status"></span>
-            <form method="dialog" class="fs-session-timeout__actions">
-              <button class="fs-button" value="extend">Fortsett å være innlogget</button>
-              <button class="fs-button" data-variant="secondary" value="logout">Logg ut nå</button>
+            <h2 class="lt-session-timeout__title" id="okt-tittel">Du blir snart logget ut</h2>
+            <p class="lt-session-timeout__text">Vi logger deg ut om
+              <span class="lt-session-timeout__count" aria-hidden="true"></span>.</p>
+            <span class="lt-sr-only" role="status"></span>
+            <form method="dialog" class="lt-session-timeout__actions">
+              <button class="lt-button" value="extend">Fortsett å være innlogget</button>
+              <button class="lt-button" data-variant="secondary" value="logout">Logg ut nå</button>
             </form>
           </dialog>
-        </fs-session-timeout>
+        </lt-session-timeout>
       </div>
     `)
     await ventTilRo()

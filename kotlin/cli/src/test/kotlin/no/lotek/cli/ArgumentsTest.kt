@@ -1,4 +1,4 @@
-package no.fristil.cli
+package no.lotek.cli
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -12,7 +12,7 @@ class ArgumentsTest {
 
     @Test
     fun `reads the arguments as written when the JVM read them as ASCII`() {
-        val raw = cmdline("java", "-jar", "fristil.jar", "tema", "--knapp-hjørner=2rem")
+        val raw = cmdline("java", "-jar", "lotek.jar", "tema", "--knapp-hjørner=2rem")
         // Slik JVM-en leser «ø» med ASCII: to ukjente tegn.
         val jvm = listOf("tema", String("--knapp-hjørner=2rem".toByteArray(Charsets.UTF_8), ascii))
         assertEquals(listOf("tema", "--knapp-hjørner=2rem"), fromCommandLine(raw, jvm, ascii))
@@ -27,7 +27,7 @@ class ArgumentsTest {
 
     @Test
     fun `keeps empty arguments in place`() {
-        val raw = cmdline("java", "-jar", "fristil.jar", "sjekk", "")
+        val raw = cmdline("java", "-jar", "lotek.jar", "sjekk", "")
         assertEquals(listOf("sjekk", ""), fromCommandLine(raw, listOf("sjekk", ""), ascii))
     }
 }

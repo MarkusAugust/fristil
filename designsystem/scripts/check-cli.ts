@@ -6,7 +6,7 @@
  * null ville derfor gått rett gjennom. Her kjøres den bygde fila i en egen
  * prosess, som er det en konsument faktisk får.
  *
- * Kjør med: bun scripts/sjekk-cli.ts, eller som en del av `bun run build`.
+ * Kjør med: bun scripts/check-cli.ts, eller som en del av `bun run build`.
  */
 
 import {
@@ -22,7 +22,7 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { lightCells } from "../src/tokens/matrise.js"
+import { lightCells } from "../src/tokens/matrix-cells.js"
 
 const pakke = fileURLToPath(new URL("../", import.meta.url))
 
@@ -30,25 +30,25 @@ const pakke = fileURLToPath(new URL("../", import.meta.url))
 // Eksplisitt, siden `Bun.spawn` ikke arver endringer i `process.env`.
 const ENVIRONMENT = {
   ...process.env,
-  FRISTIL_PACKAGE: process.env.FRISTIL_PACKAGE ?? pakke,
+  LOTEK_PACKAGE: process.env.LOTEK_PACKAGE ?? pakke,
 }
 const cli = join(pakke, "dist/cli.js")
 
 /*
  * Kommandoen som prøves. Standard er den bygde fila, som en konsument får.
- * `FRISTIL_CLI` peker på en annen, som den kjørbare fila fra `kjerne/cli`, så
- * de samme påstandene prøves mot den. `FRISTIL_SAMMENLIGN` kjører hver
+ * `LOTEK_CLI` peker på en annen, som den kjørbare fila fra `core/cli`, så
+ * de samme påstandene prøves mot den. `LOTEK_SAMMENLIGN` kjører hver
  * kjøring med begge og krever det samme svaret byte for byte: utdata,
  * feilkanalen og feilkoden. Begge kan være en JSON-liste, en kommando med
- * argumenter, som `["java", "-jar", "fristil.jar"]`.
+ * argumenter, som `["java", "-jar", "lotek.jar"]`.
  */
 const kommando = (verdi: string): string[] =>
   verdi.startsWith("[") ? JSON.parse(verdi) : [verdi]
-const KOMMANDO = process.env.FRISTIL_CLI
-  ? kommando(process.env.FRISTIL_CLI)
+const KOMMANDO = process.env.LOTEK_CLI
+  ? kommando(process.env.LOTEK_CLI)
   : ["node", cli]
-const SAMMENLIGN = process.env.FRISTIL_SAMMENLIGN
-  ? kommando(process.env.FRISTIL_SAMMENLIGN)
+const SAMMENLIGN = process.env.LOTEK_SAMMENLIGN
+  ? kommando(process.env.LOTEK_SAMMENLIGN)
   : undefined
 const avvik: string[] = []
 
@@ -94,7 +94,7 @@ async function kjør(argumenter: string[], mappe?: string): Promise<Kjøring> {
       ? argumenter.find((del) => del.startsWith("--ut="))?.slice("--ut=".length)
       : undefined
   const annenUt = ut
-    ? join(await mkdtemp(join(tmpdir(), "fristil-sammenlign-")), "ut")
+    ? join(await mkdtemp(join(tmpdir(), "lotek-sammenlign-")), "ut")
     : undefined
   if (ut && annenUt) await cp(ut, annenUt, { recursive: true }).catch(() => {})
 
@@ -143,7 +143,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
   krev(kode === 0, `tema med alle farger avsluttet med kode ${kode}`)
   krev(
-    ut.includes("--fs-color-accent-fill"),
+    ut.includes("--lt-color-accent-fill"),
     "utdata mangler fargene fra matrisen",
   )
   krev(ut.includes('[data-theme="dark"]'), "utdata mangler mørkt tema")
@@ -151,23 +151,23 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
 // Skriver til fil når --ut er med, og lar utdata være tom
 {
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))
-  const sti = join(mappe, "tema.css")
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-cli-"))
+  const sti = join(mappe, "theme.css")
 
   const { kode, ut } = await kjør(["tema", ...FARGER, `--ut=${sti}`])
   const innhold = await readFile(sti, "utf8")
 
   krev(kode === 0, `skriving til fil avsluttet med kode ${kode}`)
   krev(ut.trim() === "", "utdata skulle vært tom når temaet skrives til fil")
-  krev(innhold.includes("@layer fristil"), "fila mangler laget")
+  krev(innhold.includes("@layer lotek"), "fila mangler laget")
 
   await rm(mappe, { recursive: true, force: true })
 }
 
 // Leser fargene fra en JSON-fil
 {
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))
-  const sti = join(mappe, "fristil.tema.json")
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-cli-"))
+  const sti = join(mappe, "lotek.theme.json")
   await writeFile(
     sti,
     JSON.stringify({
@@ -181,14 +181,14 @@ function krev(påstand: boolean, beskrivelse: string): void {
   const { kode, ut } = await kjør(["tema", sti])
 
   krev(kode === 0, `lesing fra fil avsluttet med kode ${kode}`)
-  krev(ut.includes("--fs-color-accent-fill"), "utdata mangler fargene fra fila")
+  krev(ut.includes("--lt-color-accent-fill"), "utdata mangler fargene fra fila")
 
   await rm(mappe, { recursive: true, force: true })
 }
 
 // `sjekk-tema` kontrollerer et tema, og teller konsumentens egne verdier
 {
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-tema-"))
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-theme-"))
   const godt = join(mappe, "godt.css")
 
   // Matrisen skrevet ut som et tema, kontrollert mot seg selv
@@ -212,7 +212,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
   const svakt = join(mappe, "svakt.css")
   await writeFile(
     svakt,
-    ":root { color-scheme: light; --fs-color-danger-text: #ff9999; }",
+    ":root { color-scheme: light; --lt-color-danger-text: #ff9999; }",
   )
   const felt = await kjør(["sjekk-tema", svakt])
   krev(felt.kode !== 0, "en for lys faretekst skulle gitt feilkode")
@@ -252,13 +252,13 @@ function krev(påstand: boolean, beskrivelse: string): void {
   await rm(mappe, { recursive: true, force: true })
 }
 
-// En familie som utelates arver Fristils egen, framfor å felle kjøringen
+// En familie som utelates arver LO-TEKs egen, framfor å felle kjøringen
 {
   const { kode, ut } = await kjør(["tema", "--aksent=#7c3aed"])
 
   krev(kode === 0, `ett merke alene avsluttet med kode ${kode}`)
   krev(
-    ut.includes("--fs-color-danger-fill"),
+    ut.includes("--lt-color-danger-fill"),
     "et tema med bare aksent mangler de arvede familiene",
   )
 }
@@ -284,27 +284,27 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
   krev(kode === 0, `tema uten farger avsluttet med kode ${kode}`)
   krev(
-    ut.includes("--fs-font-family-base: Helvetica, Arial, sans-serif;"),
+    ut.includes("--lt-font-family-base: Helvetica, Arial, sans-serif;"),
     "skriften kom ikke med",
   )
   krev(
-    ut.includes("font-family: var(--fs-font-family-base);"),
+    ut.includes("font-family: var(--lt-font-family-base);"),
     "skriften ble ikke satt som en regel, bare som et token",
   )
   krev(
-    ut.includes("--fs-button-radius: 2.75rem;"),
+    ut.includes("--lt-button-radius: 2.75rem;"),
     "knappehjørnet kom ikke med",
   )
   krev(
-    ut.includes("--fs-textarea-radius: 0.25rem;"),
+    ut.includes("--lt-textarea-radius: 0.25rem;"),
     "tekstområdet kom ikke med",
   )
   krev(
-    ut.includes("--fs-button-border-width: 3px;"),
+    ut.includes("--lt-button-border-width: 3px;"),
     "knapperammen kom ikke med",
   )
   krev(
-    ut.includes("--fs-button-font-weight: 700;"),
+    ut.includes("--lt-button-font-weight: 700;"),
     "knappevekten kom ikke med",
   )
   krev(
@@ -315,8 +315,8 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
 // Skrift og form fra en temafil, sammen med fargene
 {
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-tema-"))
-  const sti = join(mappe, "fristil.tema.json")
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-theme-"))
+  const sti = join(mappe, "lotek.theme.json")
   await writeFile(
     sti,
     JSON.stringify({
@@ -333,14 +333,14 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
   krev(kode === 0, `tema fra fil med skrift og form avsluttet med kode ${kode}`)
   krev(
-    ut.includes("--fs-font-family-base: Georgia, serif;"),
+    ut.includes("--lt-font-family-base: Georgia, serif;"),
     "skriften fra fila kom ikke med",
   )
   krev(
-    ut.includes("--fs-button-radius: 1rem;"),
+    ut.includes("--lt-button-radius: 1rem;"),
     "hjørnet fra fila kom ikke med",
   )
-  krev(ut.includes("--fs-color-accent-fill"), "fargene fra fila kom ikke med")
+  krev(ut.includes("--lt-color-accent-fill"), "fargene fra fila kom ikke med")
 
   await rm(mappe, { recursive: true, force: true })
 }
@@ -448,7 +448,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
     `fant bare ${navnene?.length ?? 0} komponenter å overta`,
   )
 
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-overta-"))
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-overta-"))
 
   for (const navn of navnene ?? []) {
     const { kode } = await kjør(["overta", navn, `--ut=${join(mappe, navn)}`])
@@ -457,7 +457,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
     const kopimappe = join(mappe, navn, navn)
     const lest = await kjør([
       "sjekk",
-      `--manifest=${join(kopimappe, "fristil-manifest.json")}`,
+      `--manifest=${join(kopimappe, "lotek-manifest.json")}`,
       join(kopimappe, `${(await readdir(kopimappe))[0]}`),
     ])
     krev(
@@ -478,9 +478,9 @@ function krev(påstand: boolean, beskrivelse: string): void {
           `${navn}/${fil} peker ut av mappa med «${sti}», som ikke finnes hos konsumenten`,
         )
 
-        if (!sti.startsWith("@fristil/designsystem")) continue
+        if (!sti.startsWith("@lo-tek/interfaces")) continue
 
-        const under = `.${sti.slice("@fristil/designsystem".length)}`
+        const under = `.${sti.slice("@lo-tek/interfaces".length)}`
         krev(
           eksport.has(under),
           `${navn}/${fil} peker på «${sti}», som ikke står i exports`,
@@ -494,7 +494,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
 // Overtar en komponent, og skriver om henvisningene ut av mappa
 {
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-cli-"))
 
   const { kode, feil: melding } = await kjør([
     "overta",
@@ -512,7 +512,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
   )
   krev(!filer.some((fil) => fil.includes(".test.")), "testene ble med i kopien")
   krev(
-    kilde.includes('from "@fristil/designsystem/shared"'),
+    kilde.includes('from "@lo-tek/interfaces/shared"'),
     "henvisningen ut av mappa ble ikke skrevet om",
   )
   krev(
@@ -522,19 +522,19 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
   // Kopien har fått nytt navn, og et fragment av manifestet med det navnet.
   krev(
-    kilde.includes('"app-button"') && !kilde.includes('"fs-button"'),
-    "kopien heter fortsatt fs-button",
+    kilde.includes('"app-button"') && !kilde.includes('"lt-button"'),
+    "kopien heter fortsatt lt-button",
   )
   const css = await readFile(join(mappe, "ui/button/button.css"), "utf8")
   krev(
-    css.includes(".app-button") && css.includes("var(--fs-"),
+    css.includes(".app-button") && css.includes("var(--lt-"),
     "stilarket fikk ikke nytt navn, eller mistet variablene fra temaet",
   )
   krev(
-    filer.includes("fristil-manifest.json"),
+    filer.includes("lotek-manifest.json"),
     "fragmentet av manifestet ble ikke skrevet",
   )
-  const fragment = `--manifest=${join(mappe, "ui/button/fristil-manifest.json")}`
+  const fragment = `--manifest=${join(mappe, "ui/button/lotek-manifest.json")}`
   const side = join(mappe, "side.html")
   await writeFile(
     side,
@@ -554,19 +554,19 @@ function krev(påstand: boolean, beskrivelse: string): void {
   krev(
     samlet.kode === 0 &&
       samlet.ut.includes('"app-button"') &&
-      samlet.ut.includes('"fs-button"'),
-    "manifest med fragmentet har ikke både kopien og Fristils egne klasser",
+      samlet.ut.includes('"lt-button"'),
+    "manifest med fragmentet har ikke både kopien og LO-TEKs egne klasser",
   )
-  const manifestFil = join(mappe, "build/fristil/manifest.json")
+  const manifestFil = join(mappe, "build/lotek/manifest.json")
   const skrevet = await kjør(["manifest", fragment, `--ut=${manifestFil}`])
   krev(
     skrevet.kode === 0 &&
       (await readFile(manifestFil, "utf8")) === `${samlet.ut}`,
     "manifest --ut skrev noe annet enn det som står i utdata",
   )
-  const feilArgument = await kjør(["manifest", "skjema.html"])
+  const feilArgument = await kjør(["manifest", "form.html"])
   krev(
-    feilArgument.kode !== 0 && feilArgument.feil.includes("skjema.html"),
+    feilArgument.kode !== 0 && feilArgument.feil.includes("form.html"),
     "manifest med en fil i stedet for et flagg ble ikke meldt",
   )
   const ukjent = await kjør([
@@ -609,30 +609,30 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
 // Med stilarkene sier sjekken også fra om det de ikke styler
 {
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-css-"))
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-css-"))
   const side = join(mappe, "side.html")
   await writeFile(
     side,
-    '<button class="fs-button" data-variant="ghost">x</button>\n<div class="fs-card">y</div>\n',
+    '<button class="lt-button" data-variant="ghost">x</button>\n<div class="lt-card">y</div>\n',
   )
   await writeFile(join(mappe, "app.css"), '@import "knapp.css";\n')
-  await writeFile(join(mappe, "knapp.css"), ".fs-button { }\n")
+  await writeFile(join(mappe, "knapp.css"), ".lt-button { }\n")
 
   const hele = await kjør([
     "sjekk",
-    `--css=${join(pakke, "dist/fristil.css")}`,
+    `--css=${join(pakke, "dist/lotek.css")}`,
     side,
   ])
   krev(
     hele.kode === 0,
-    `med hele fristil.css skulle siden vært ren: ${hele.ut}${hele.feil}`,
+    `med hele lotek.css skulle siden vært ren: ${hele.ut}${hele.feil}`,
   )
 
   const delvis = await kjør(["sjekk", `--css=${join(mappe, "app.css")}`, side])
   krev(
     delvis.kode !== 0 &&
       delvis.ut.includes('data-variant="ghost"') &&
-      delvis.ut.includes("«fs-card»"),
+      delvis.ut.includes("«lt-card»"),
     `et stilark som bare styler knappen, skulle gitt to funn: ${delvis.ut}`,
   )
 
@@ -647,50 +647,50 @@ function krev(påstand: boolean, beskrivelse: string): void {
 // `@import` fra en pakke følger `exports`, slik en bundler gjør
 {
   /*
-   * Stien i `@import "@fristil/designsystem/fristil.css"` er et navn i
+   * Stien i `@import "@lo-tek/interfaces/lotek.css"` er et navn i
    * `exports`, ikke en fil i pakken: fila ligger i `dist/`. Sjekken slo den
    * opp som en fil, fant ingenting og meldte hver klasse som ustylet. Pakkene
    * står i en `node_modules` over stilarket, og kommandoen kjøres fra en
    * annen mappe, så oppslaget går fra stilarket og ikke fra arbeidsmappa.
    */
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-css-"))
-  const fristil = join(mappe, "node_modules/@fristil/designsystem")
-  await cp(join(pakke, "dist/fristil.css"), join(fristil, "dist/fristil.css"))
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-css-"))
+  const lotek = join(mappe, "node_modules/@lo-tek/interfaces")
+  await cp(join(pakke, "dist/lotek.css"), join(lotek, "dist/lotek.css"))
   await writeFile(
-    join(fristil, "package.json"),
+    join(lotek, "package.json"),
     JSON.stringify({
-      name: "@fristil/designsystem",
-      exports: { "./fristil.css": "./dist/fristil.css" },
+      name: "@lo-tek/interfaces",
+      exports: { "./lotek.css": "./dist/lotek.css" },
     }),
   )
   // Et betingelsesobjekt, som pakker med både `style` og `default` bruker.
-  // Fila er fristil.css igjen, så siden er bare ren hvis den blir funnet.
-  const tema = join(mappe, "node_modules/tema")
-  await cp(join(pakke, "dist/fristil.css"), join(tema, "lib/tema.css"))
+  // Fila er lotek.css igjen, så siden er bare ren hvis den blir funnet.
+  const tema = join(mappe, "node_modules/theme")
+  await cp(join(pakke, "dist/lotek.css"), join(tema, "lib/theme.css"))
   await writeFile(
     join(tema, "package.json"),
     JSON.stringify({
       name: "tema",
-      exports: { "./tema.css": { style: "./lib/tema.css" } },
+      exports: { "./theme.css": { style: "./lib/theme.css" } },
     }),
   )
   const stiler = join(mappe, "src/stiler")
   await mkdir(stiler, { recursive: true })
   await writeFile(
     join(stiler, "app.css"),
-    '@import "@fristil/designsystem/fristil.css";\n',
+    '@import "@lo-tek/interfaces/lotek.css";\n',
   )
-  await writeFile(join(stiler, "tema.css"), '@import "tema/tema.css";\n')
+  await writeFile(join(stiler, "theme.css"), '@import "theme/theme.css";\n')
   // Et mønster i `exports`, og en pakke importert ved navn alene.
   const stjerne = join(mappe, "node_modules/stjerne")
-  await cp(join(pakke, "dist/fristil.css"), join(stjerne, "dist/alt.css"))
+  await cp(join(pakke, "dist/lotek.css"), join(stjerne, "dist/alt.css"))
   await writeFile(
     join(stjerne, "package.json"),
     JSON.stringify({ name: "stjerne", exports: { "./*": "./dist/*" } }),
   )
   await writeFile(join(stiler, "stjerne.css"), '@import "stjerne/alt.css";\n')
   const naken = join(mappe, "node_modules/naken")
-  await cp(join(pakke, "dist/fristil.css"), join(naken, "alt.css"))
+  await cp(join(pakke, "dist/lotek.css"), join(naken, "alt.css"))
   await writeFile(
     join(naken, "package.json"),
     JSON.stringify({ name: "naken", exports: { ".": "./alt.css" } }),
@@ -699,10 +699,10 @@ function krev(påstand: boolean, beskrivelse: string): void {
   const side = join(mappe, "side.html")
   await writeFile(
     side,
-    '<button class="fs-button" data-variant="ghost">x</button>\n<div class="fs-card">y</div>\n',
+    '<button class="lt-button" data-variant="ghost">x</button>\n<div class="lt-card">y</div>\n',
   )
 
-  for (const stilark of ["app.css", "tema.css", "stjerne.css", "naken.css"]) {
+  for (const stilark of ["app.css", "theme.css", "stjerne.css", "naken.css"]) {
     for (const fra of [mappe, stiler, tmpdir()]) {
       const svar = await kjør(
         ["sjekk", `--css=${join(stiler, stilark)}`, side],
@@ -718,7 +718,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
   // En relativ sti er en fil, ikke en pakke. `../alt.css` finnes ikke ved
   // siden av stilarket, og skal ikke finnes et annet sted i prosjektet.
   await mkdir(join(mappe, "src"), { recursive: true })
-  await cp(join(pakke, "dist/fristil.css"), join(mappe, "alt.css"))
+  await cp(join(pakke, "dist/lotek.css"), join(mappe, "alt.css"))
   await writeFile(join(mappe, "package.json"), "{}")
   await writeFile(join(stiler, "relativ.css"), '@import "../alt.css";\n')
   const relativ = await kjør([
@@ -740,14 +740,14 @@ function krev(påstand: boolean, beskrivelse: string): void {
 
   krev(med.kode === 0, `--merke1 avsluttet med kode ${med.kode}`)
   krev(
-    med.ut.includes("--fs-color-brand1-fill") && med.ut !== uten.ut,
+    med.ut.includes("--lt-color-brand1-fill") && med.ut !== uten.ut,
     "--merke1 endret ikke temaet",
   )
 }
 
 // Et flagg uten likhetstegn stopper, framfor å skrive til standardmappa
 {
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-overta-"))
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-overta-"))
   const { kode, feil: melding } = await kjør([
     "overta",
     "button",
@@ -763,14 +763,14 @@ function krev(påstand: boolean, beskrivelse: string): void {
   await rm(mappe, { recursive: true, force: true })
 }
 
-// Det samme gjelder tema etter en oppskriftsfil. `--ut tema.css` ble lest
+// Det samme gjelder tema etter en oppskriftsfil. `--ut theme.css` ble lest
 // som to filnavn til, temaet gikk til utdata og ingen fil ble skrevet, og
 // `--aksent #f00` ble stille borte bak fargen i fila.
 {
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-tema-"))
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-theme-"))
   const oppskrift = join(mappe, "oppskrift.json")
   await writeFile(oppskrift, JSON.stringify({ aksent: "#7c3aed" }))
-  const tema = join(mappe, "tema.css")
+  const tema = join(mappe, "theme.css")
 
   for (const [flagg, verdi] of [
     ["--ut", tema],
@@ -811,7 +811,7 @@ function krev(påstand: boolean, beskrivelse: string): void {
 // Et ukjent flagg med likhetstegn stopper også overta og agent. `--utt=`
 // la kopien stille i standardmappa, og `--rammverk=` ga regelboka for maler.
 {
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-overta-"))
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-overta-"))
   const overta = await kjør(["overta", "button", "--utt=src/ui"], mappe)
   krev(overta.kode === 1, `overta med --utt skulle gitt feilkode`)
   krev(
@@ -878,7 +878,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     `feilmeldingen er et stakkspor: ${borte.feil.slice(0, 80)}`,
   )
 
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-cli-"))
   const sti = join(mappe, "ugyldig.json")
   await writeFile(sti, "{ikke json")
 
@@ -920,16 +920,16 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 
 // `sjekk`: filer som stemmer gir 0, ett funn gir 1 med fil, linje og kolonne
 {
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-cli-"))
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-cli-"))
   const riktig = join(mappe, "riktig.html")
   const galt = join(mappe, "galt.html")
   await writeFile(
     riktig,
-    `<fs-field id="f"><label for="navn">Navn</label><input class="fs-input" name="navn" id="navn"></fs-field>\n`,
+    `<lt-field id="f"><label for="navn">Navn</label><input class="lt-input" name="navn" id="navn"></lt-field>\n`,
   )
   await writeFile(
     galt,
-    `<p>Hei</p>\n<button class="fs-buton">Lagre</button>\n<fs-dialog-header>Tittel</fs-dialog-header>\n`,
+    `<p>Hei</p>\n<button class="lt-buton">Lagre</button>\n<lt-dialog-header>Tittel</lt-dialog-header>\n`,
   )
 
   const rent = await kjør(["sjekk", riktig])
@@ -942,11 +942,11 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   const funn = await kjør(["sjekk", galt, riktig])
   krev(funn.kode === 1, `sjekk med funn avsluttet med kode ${funn.kode}`)
   krev(
-    funn.ut.includes(`${galt}:2:`) && funn.ut.includes("fs-buton"),
+    funn.ut.includes(`${galt}:2:`) && funn.ut.includes("lt-buton"),
     `funnet står ikke med fil og linje: ${funn.ut.slice(0, 160)}`,
   )
   krev(
-    funn.ut.includes(`${galt}:3:`) && funn.ut.includes("fs-dialog-header"),
+    funn.ut.includes(`${galt}:3:`) && funn.ut.includes("lt-dialog-header"),
     "elementet som ikke finnes ble ikke meldt på linje 3",
   )
   krev(!funn.ut.includes("riktig.html:"), "den riktige fila fikk et funn")
@@ -954,7 +954,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   // Fra standard inn, slik en test i en app sender HTML-en serveren lager
   const prosess = Bun.spawn([...KOMMANDO, "sjekk"], {
     env: ENVIRONMENT,
-    stdin: new Blob([`<fs-popover placemnet="top-start"></fs-popover>`]),
+    stdin: new Blob([`<lt-popover placemnet="top-start"></lt-popover>`]),
     stdout: "pipe",
     stderr: "pipe",
   })
@@ -1005,13 +1005,13 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 
   // Det samme gjelder filer: er hver fil tom, er det ingenting å sjekke.
   // Én tom fil blant flere, som en tom partial i et glob, er ikke en feil.
-  const tomme = await mkdtemp(join(tmpdir(), "fristil-tom-"))
+  const tomme = await mkdtemp(join(tmpdir(), "lotek-tom-"))
   const tomFil = join(tomme, "tom.html")
   const blankFil = join(tomme, "blank.html")
   const fullFil = join(tomme, "full.html")
   await writeFile(tomFil, "")
   await writeFile(blankFil, " \n\t\n")
-  await writeFile(fullFil, '<button class="fs-button">Lagre</button>')
+  await writeFile(fullFil, '<button class="lt-button">Lagre</button>')
   for (const filer of [[tomFil], [blankFil], [tomFil, blankFil]]) {
     const { kode, feil: melding } = await kjør(["sjekk", ...filer])
     krev(
@@ -1032,7 +1032,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   // En BOM først teller ikke som en kolonne, slik editoren viser linja. Det
   // gjelder en fil, standard inn og en side verten har hentet.
   const bomFil = join(tomme, "bom.html")
-  const bomSide = '\uFEFF<span class="fs-buton">x</span>\n'
+  const bomSide = '\uFEFF<span class="lt-buton">x</span>\n'
   await writeFile(bomFil, bomSide)
   const bom = await kjør(["sjekk", bomFil])
   krev(
@@ -1072,14 +1072,14 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   )
   await rm(tomme, { recursive: true, force: true })
 
-  // Et rør der skriveren bruker tid, som `curl … | fristil sjekk`. En
+  // Et rør der skriveren bruker tid, som `curl … | lotek sjekk`. En
   // synkron lesing av fd 0 kastet EAGAIN her etter at `process.stdin` var
   // rørt, siden strømmen da setter røret i ikke-blokkerende modus. Bitene
   // deles midt i `ø`: lest som `Buffer` ble hver halvdel et erstatningstegn,
-  // og funnet siterte «fs-kn��pp». Første bit skrives før pausen, så barnet
+  // og funnet siterte «lt-kn��pp». Første bit skrives før pausen, så barnet
   // må lese to ganger uansett hvor travel maskinen er.
   const bytes = new TextEncoder().encode(
-    `<button class="fs-knøpp">Lagre</button>`,
+    `<button class="lt-knøpp">Lagre</button>`,
   )
   const kutt = bytes.indexOf(0xc3) + 1
   // Uten en ø å dele blir første bit tom, og tilfellet passerer stille.
@@ -1103,7 +1103,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   krev(
     tregKode === 1 &&
       tregUt.includes("stdin:1:") &&
-      tregUt.includes("«fs-knøpp»"),
+      tregUt.includes("«lt-knøpp»"),
     `et tregt rør ga ikke funnet med hel tekst: kode ${tregKode}, ${(tregUt + tregFeil).slice(0, 120)}`,
   )
   krev(!tregFeil.includes("EAGAIN"), "lesingen av standard inn kastet EAGAIN")
@@ -1113,18 +1113,18 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 
 // `agent`: regelboka til utdata, meldinga til feilkanalen, og ingen fil skrevet
 {
-  const mappe = await mkdtemp(join(tmpdir(), "fristil-agent-"))
+  const mappe = await mkdtemp(join(tmpdir(), "lotek-agent-"))
 
   // Uten package.json er markupen serverens, og malregelboka er den riktige.
   const mal = await kjør(["agent"], mappe)
 
   krev(mal.kode === 0, `agent uten package.json avsluttet med kode ${mal.kode}`)
   krev(
-    mal.ut.startsWith("# Fristil i maler"),
+    mal.ut.startsWith("# LO-TEK i maler"),
     `agent uten package.json ga ikke malregelboka: ${mal.ut.slice(0, 60)}`,
   )
   krev(
-    mal.feil.includes("maler") && mal.feil.includes("ingen package.json"),
+    mal.feil.includes("templates") && mal.feil.includes("ingen package.json"),
     `grunnen til valget står ikke i feilkanalen: ${mal.feil.slice(0, 80)}`,
   )
   // Hele poenget med at meldinga går til feilkanalen: utdata kan pipes rent.
@@ -1142,11 +1142,11 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 
   // Avhengighetene avgjør, og de tre utfallene er ulike regelbøker.
   const oppdaget: [Record<string, string>, string, string][] = [
-    [{ react: "19.0.0" }, "react", "# Fristil i React"],
-    [{ vue: "3.5.0" }, "bundles", "# Fristil med bundles"],
-    [{ astro: "6.0.0" }, "astro", "# Fristil i Astro"],
+    [{ react: "19.0.0" }, "react", "# LO-TEK i React"],
+    [{ vue: "3.5.0" }, "bundles", "# LO-TEK med bundles"],
+    [{ astro: "6.0.0" }, "astro", "# LO-TEK i Astro"],
     // En package.json betyr et byggesteg, og da importeres stilarkene.
-    [{ typescript: "6.0.0" }, "bundles", "# Fristil med bundles"],
+    [{ typescript: "6.0.0" }, "bundles", "# LO-TEK med bundles"],
   ]
 
   for (const [avhengigheter, navn, overskrift] of oppdaget) {
@@ -1171,7 +1171,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   const begge = await kjør(["agent"], mappe)
 
   krev(
-    begge.ut.startsWith("# Fristil i Astro"),
+    begge.ut.startsWith("# LO-TEK i Astro"),
     "astro tapte mot react, men den bestemmer hvordan stilarkene kommer inn",
   )
 
@@ -1181,7 +1181,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 
   krev(svelte.kode === 0, `--rammeverk=svelte ga kode ${svelte.kode}`)
   krev(
-    svelte.ut.startsWith("# Fristil med bundles"),
+    svelte.ut.startsWith("# LO-TEK med bundles"),
     "svelte pekte ikke på bundles-regelboka",
   )
   krev(
@@ -1202,19 +1202,19 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 
   krev(html.kode === 0, `--rammeverk=html avsluttet med kode ${html.kode}`)
   krev(
-    html.ut.startsWith("# Fristil i ren HTML"),
+    html.ut.startsWith("# LO-TEK i ren HTML"),
     "--rammeverk=html overstyrte ikke deteksjonen",
   )
   // Regelboka skal være regelboka, ikke en tom fil som ser riktig ut.
-  for (const del of ["fristil.css", "data-variant", "defineFsField", "sjekk"]) {
+  for (const del of ["lotek.css", "data-variant", "defineLtField", "sjekk"]) {
     krev(html.ut.includes(del), `regelboka nevner ikke ${del}`)
   }
 
-  // Markupen i regelbøkene må tåle Fristils egen sjekk. En agent-instruksjon
+  // Markupen i regelbøkene må tåle LO-TEKs egen sjekk. En agent-instruksjon
   // med et eksempel sjekken ville avvist er verre enn ingen instruksjon.
   for (const rammeverk of [
     "html",
-    "maler",
+    "templates",
     "bundles",
     "react",
     "astro",
@@ -1238,7 +1238,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 
       krev(
         kode === 0,
-        `eksempel ${nummer + 1} i ${rammeverk}-regelboka stemmer ikke med Fristil: ${ut.slice(0, 120)}`,
+        `eksempel ${nummer + 1} i ${rammeverk}-regelboka stemmer ikke med LO-TEK: ${ut.slice(0, 120)}`,
       )
     }
   }
@@ -1249,7 +1249,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
 // En adresse hentes og sjekkes som en hel side
 {
   const side =
-    '<!doctype html><html lang="nb"><body><label for="borte">Navn</label><button class="fs-buton">Lagre</button></body></html>'
+    '<!doctype html><html lang="nb"><body><label for="borte">Navn</label><button class="lt-buton">Lagre</button></body></html>'
   const tjener = Bun.serve({
     port: 0,
     fetch(forespørsel) {
@@ -1289,7 +1289,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     const { kode, ut } = await kjør(["sjekk", `${rot}${sti}`])
     krev(kode === 1, `${sti} skulle gitt feilkode for funnene, ga ${kode}`)
     krev(
-      ut.includes(`${rot}${sti}:1:`) && ut.includes("fs-buton"),
+      ut.includes(`${rot}${sti}:1:`) && ut.includes("lt-buton"),
       `${sti}: klassen som ikke finnes, ble ikke meldt med adressen: ${ut.slice(0, 160)}`,
     )
     krev(

@@ -3,13 +3,13 @@ title: Liste med filtre
 description: "Søk, filtre og de fire tilstandene en liste har: laster, treff, tomt og feilet."
 ---
 
-import ListeDemo from "../../../components/ListeDemo.astro"
+import ListDemo from "../../../components/ListDemo.astro"
 
 En liste er ikke én ting. Den er fire tilstander, og de tre andre enn «her er resultatet» er de som blir glemt.
 
 Prøv å søke etter noe som ikke finnes, og trykk «Last listen på nytt» noen ganger. Hver tredje lasting feiler med vilje:
 
-<ListeDemo />
+<ListDemo />
 
 ## De fire tilstandene
 
@@ -25,7 +25,7 @@ Den tomme tilstanden er den viktigste å skrive godt. «Ingen treff» alene ette
 ## Meld antall treff
 
 ```html
-<p class="fs-sr-only" role="status" id="treff"></p>
+<p class="lt-sr-only" role="status" id="treff"></p>
 ```
 
 Den som ser skjermen ser at lista endret seg. Den som hører siden gjør det ikke, med mindre du sier fra. Skriv antallet inn i et felt med `role="status"`, så leses det opp uten å avbryte.
@@ -38,10 +38,10 @@ Filtrene er knapper med `aria-pressed`, samlet i en gruppe med en ledetekst:
 
 ```html
 <div role="group" aria-labelledby="filtre">
-  <h3 class="fs-heading" data-size="xs" id="filtre">Status</h3>
+  <h3 class="lt-heading" data-size="xs" id="filtre">Status</h3>
 
-  <button class="fs-tag" data-selectable aria-pressed="true" type="button">Innvilget</button>
-  <button class="fs-tag" data-selectable aria-pressed="false" type="button">Avslått</button>
+  <button class="lt-tag" data-selectable aria-pressed="true" type="button">Innvilget</button>
+  <button class="lt-tag" data-selectable aria-pressed="false" type="button">Avslått</button>
 </div>
 ```
 
@@ -52,8 +52,8 @@ Filtrene er knapper med `aria-pressed`, samlet i en gruppe med en ledetekst:
 En tabell med flere enn to kolonner blir bredere enn en telefon. Legg den i rullefeltet sitt, og gi området en tekst:
 
 ```html
-<div class="fs-table-scroll" tabindex="0" role="region" aria-label="Saker">
-  <table class="fs-table" data-variant="striped">…</table>
+<div class="lt-table-scroll" tabindex="0" role="region" aria-label="Saker">
+  <table class="lt-table" data-variant="striped">…</table>
 </div>
 ```
 
@@ -61,7 +61,7 @@ En tabell med flere enn to kolonner blir bredere enn en telefon. Legg den i rull
 
 ### Sortering
 
-Kolonnene «Saksnummer» og «Sendt» i demoen kan sorteres. Knappen i overskriften og pila er [Fristils](../../components/table/#kolonner-som-kan-sorteres), mens rekkefølgen er demoens: den holder kolonnen og retningen, og skriver `aria-sort` på én overskrift. Et klikk henter ingenting på nytt, men tabellen tegnes på nytt, så demoen setter fokus tilbake på knappen.
+Kolonnene «Saksnummer» og «Sendt» i demoen kan sorteres. Knappen i overskriften og pila er [LO-TEKs](../../components/table/#kolonner-som-kan-sorteres), mens rekkefølgen er demoens: den holder kolonnen og retningen, og skriver `aria-sort` på én overskrift. Et klikk henter ingenting på nytt, men tabellen tegnes på nytt, så demoen setter fokus tilbake på knappen.
 
 ### Raden under tabellen
 
@@ -69,12 +69,12 @@ Antall treff, hvor mange som vises per side og sidene står gjerne på én rad u
 
 ```html
 <div class="tabellfot">
-  <p class="fs-paragraph">Viser 1 til 10 av 137</p>
+  <p class="lt-paragraph">Viser 1 til 10 av 137</p>
   <div class="tabellfot__antall">
-    <label class="fs-label" for="per-side">Antall per side</label>
-    <select class="fs-select" id="per-side"><option>10</option><option>50</option></select>
+    <label class="lt-label" for="per-side">Antall per side</label>
+    <select class="lt-select" id="per-side"><option>10</option><option>50</option></select>
   </div>
-  <nav aria-label="Sider"><ul class="fs-pagination">…</ul></nav>
+  <nav aria-label="Sider"><ul class="lt-pagination">…</ul></nav>
 </div>
 ```
 
@@ -84,16 +84,16 @@ Antall treff, hvor mange som vises per side og sidene står gjerne på én rad u
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--fs-spacing-2) var(--fs-spacing-6);
+  gap: var(--lt-spacing-2) var(--lt-spacing-6);
 }
 
 .tabellfot__antall {
-  --fs-select-width: auto;
-  gap: var(--fs-spacing-2);
+  --lt-select-width: auto;
+  gap: var(--lt-spacing-2);
 }
 ```
 
-`--fs-select-width: auto` gjør nedtrekkslista så bred som innholdet. `.fs-label` er en blokk, og raden rundt legger den ved siden av feltet.
+`--lt-select-width: auto` gjør nedtrekkslista så bred som innholdet. `.lt-label` er en blokk, og raden rundt legger den ved siden av feltet.
 
 Er innholdet per rad mer enn noen få felt, er [kort](../../components/card/) i en [liste](../../components/list/) ofte bedre enn en tabell på liten skjerm.
 
@@ -102,8 +102,8 @@ Er innholdet per rad mer enn noen få felt, er [kort](../../components/card/) i 
 De to er forskjellige, og skal se forskjellige ut. En tom liste er et svar. En feilet liste er ingen svar, og trenger `role="alert"`. Veien videre, altså knappen som prøver på nytt, hører utenfor resultatområdet, slik at den står der uansett tilstand:
 
 ```html
-<div class="fs-alert" data-color="danger" role="alert">
-  <p class="fs-alert__title">Klarte ikke å hente sakene</p>
+<div class="lt-alert" data-color="danger" role="alert">
+  <p class="lt-alert__title">Klarte ikke å hente sakene</p>
   <p>Nettverket svarte ikke. Prøv igjen.</p>
 </div>
 ```
@@ -114,5 +114,5 @@ La aldri plassholderne bli stående når noe feiler. Da venter brukeren på noe 
 
 - **Henting av data, og hvor lenge du venter før du viser plassholdere.** Under rundt 300 millisekunder er det bedre å vise ingenting enn et glimt av grått.
 - **Sidenavigering eller «vis flere».** [Pagination](../../components/pagination/) gir utseendet; hvilken side du er på hører til adressen.
-- **Selve sorteringen.** Fristil tegner knappen og pila ut fra `aria-sort`. Hvilken kolonne som er sortert, og rekkefølgen radene står i, er appens.
+- **Selve sorteringen.** LO-TEK tegner knappen og pila ut fra `aria-sort`. Hvilken kolonne som er sortert, og rekkefølgen radene står i, er appens.
 - **Hva som er en rimelig standardsortering.** Det avhenger av hva lista er.

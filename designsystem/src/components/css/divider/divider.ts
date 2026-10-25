@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const DIVIDER_CLASS = "fs-divider" as const
+export const DIVIDER_CLASS = "lt-divider" as const
 
 export const dividerVariants = ["default", "subtle", "strong"] as const
 

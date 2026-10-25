@@ -7,7 +7,7 @@
  * autoritativ ut, og agenten skriver den inn i konsumentens app.
  *
  * Kildene er de samme som editorfilene bruker: `classes.ts` og `elements.ts`
- * genereres fra komponentene, og `fs` leses ved å kalle byggefunksjonene, ikke ved å
+ * genereres fra komponentene, og `lt` leses ved å kalle byggefunksjonene, ikke ved å
  * lese kildekoden. Tokennavnene leses ut av `tokens.css`, som selv er generert
  * fra `tokens.ts`.
  */
@@ -15,11 +15,11 @@
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { fs } from "../src/index.js"
+import { lt } from "../src/index.js"
 import { classes } from "../src/vocabulary/classes.js"
 import { elements } from "../src/vocabulary/elements.js"
-import { byggSamletCss, samletStørrelse } from "./css-samlet.js"
-import { FAMILIES, ROLES, roleToCss } from "./fargekontrakt.js"
+import { byggSamletCss, samletStørrelse } from "./css-bundle.js"
+import { FAMILIES, ROLES, roleToCss } from "./color-contract.js"
 
 export const PAKKE = fileURLToPath(new URL("../", import.meta.url))
 
@@ -36,16 +36,16 @@ export const pakke = JSON.parse(
 ) as Pakke
 
 export const VERSJON = pakke.version
-export const CDN = `https://cdn.jsdelivr.net/npm/@fristil/designsystem@${VERSJON}`
+export const CDN = `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@${VERSJON}`
 
 /**
- * Størrelsen på `fristil.css`, slik regelbøkene oppgir den.
+ * Størrelsen på `lotek.css`, slik regelbøkene oppgir den.
  *
  * Tallet sto hardkodet som «rundt 75 kB, under 10 kB komprimert» på tre
  * linjer i `generate-agent.ts` mens fila var 90 kB og 11 kB komprimert. Fila
- * bygges derfor i minnet her, av `css-samlet.ts`, som leser de samme
+ * bygges derfor i minnet her, av `css-bundle.ts`, som leser de samme
  * `exports`-oppføringene `bygg:css` skriver den av. Den kan ikke leses fra
- * `dist/fristil.css`, siden `generate` kjører før `bygg:css` i pakkens bygg.
+ * `dist/lotek.css`, siden `generate` kjører før `bygg:css` i pakkens bygg.
  */
 const SAMLET = samletStørrelse(byggSamletCss().css)
 
@@ -56,7 +56,7 @@ export const SAMLET_STØRRELSE = `${SAMLET.kb} kB, ${SAMLET.gzipKb} kB komprimer
 function kategorier(): Map<string, string> {
   const kart = new Map<string, string>()
 
-  for (const kategori of ["css", "ramme", "frittstaende"]) {
+  for (const kategori of ["css", "frame", "standalone"]) {
     const mappe = join(PAKKE, "src/components", kategori)
     for (const navn of readdirSync(mappe)) {
       if (statSync(join(mappe, navn)).isDirectory()) kart.set(navn, kategori)
@@ -73,7 +73,7 @@ export function stilark(komponent: string): string | null {
   return `./${komponent}.css` in pakke.exports ? `${komponent}.css` : null
 }
 
-/** Modulen `defineFs*` ligger i, slik `exports` peker på den. */
+/** Modulen `defineLt*` ligger i, slik `exports` peker på den. */
 export function modul(komponent: string): string {
   const oppføring = pakke.exports[`./${komponent}`]
   if (!oppføring || typeof oppføring === "string") {
@@ -87,7 +87,7 @@ export function modul(komponent: string): string {
 /**
  * Hele CDN-adressen til noe `exports` peker på.
  *
- * Eksemplene skrev stien for hånd. Flyttes `fs-field.ts`, oppdateres tabellen
+ * Eksemplene skrev stien for hånd. Flyttes `lt-field.ts`, oppdateres tabellen
  * av seg selv mens de kopierbare eksemplene blir stående og peke på 404, og det
  * er nettopp den delen konsumenten limer inn.
  */
@@ -103,9 +103,9 @@ export function cdnTil(inngang: string): string {
 
 const stor = (del: string) => del[0].toUpperCase() + del.slice(1)
 
-/** `defineFsSessionTimeout` av `session-timeout`, som navnekonvensjonen sier. */
+/** `defineLtSessionTimeout` av `session-timeout`, som navnekonvensjonen sier. */
 export function registrering(komponent: string): string {
-  return `defineFs${komponent.split("-").map(stor).join("")}`
+  return `defineLt${komponent.split("-").map(stor).join("")}`
 }
 
 type Klasse = {
@@ -140,7 +140,7 @@ function cssKomponenter(): Map<string, Klasse> {
  * uten byggesteg er det en hel URL, med byggesteg er det pakkenavnet. Kolonna
  * sto lenge med bare filnavnet, og da måtte leseren gjette stien. En agent som
  * generaliserte fra knappe-eksempelet skrev `src/components/css/field/field.css`
- * for `<fs-field>`, som ligger under `ramme/`, og fikk 404.
+ * for `<lt-field>`, som ligger under `frame/`, og fikk 404.
  */
 export function cssTabell(stilark: (komponent: string) => string): string {
   const rader = [...cssKomponenter()].sort(([a], [b]) => a.localeCompare(b))
@@ -172,8 +172,8 @@ function attributt(
 }
 
 /**
- * Klassene som hører til et element, som `fs-tabs__list` under `<fs-tabs>`,
- * med attributtene sine. `data-color` på `.fs-dialog` sto før ingen steder i
+ * Klassene som hører til et element, som `lt-tabs__list` under `<lt-tabs>`,
+ * med attributtene sine. `data-color` på `.lt-dialog` sto før ingen steder i
  * regelbøkene, siden dialogen ikke er en CSS-komponent.
  */
 function klasserUnder(komponent: string): string {
@@ -203,7 +203,7 @@ export function webTabell(
   stilark: (komponent: string) => string,
 ): string {
   const rader = Object.keys(elements).map((tagg) => {
-    const komponent = tagg.replace(/^fs-/, "")
+    const komponent = tagg.replace(/^lt-/, "")
 
     const attributter =
       Object.entries(elements[tagg].attributes ?? {})
@@ -247,25 +247,25 @@ function tokennavn(mønster: RegExp): string[] {
 /**
  * Fargematrisen, som to akser framfor 93 navn.
  *
- * Aksene skrives ut fullt ut, og navnet er `--fs-color-<familie>-<rolle>`, så
+ * Aksene skrives ut fullt ut, og navnet er `--lt-color-<familie>-<rolle>`, så
  * hver celle kan utledes uten å gjettes. En liste som slutter med «og så
  * videre» er en invitasjon til å finne opp det siste, og oppfunne navn er
  * nettopp det denne regelboka finnes for å hindre. To akser er ikke en slik
  * liste: de er komplette, og cellene følger av dem.
  *
  * Aksene leses fra `FAMILIES` og `ROLES`, ikke ut av navnene i `tokens.css`.
- * Å utlede dem fra navnene gikk galt: `--fs-color-disabled-text` ga
+ * Å utlede dem fra navnene gikk galt: `--lt-color-disabled-text` ga
  * `disabled` som en tiende familie, og den har bare to av de ni rollene.
  * Alt i det genererte stilarket som ikke er en celle, listes for seg.
  */
 export function tokenListe(): string {
   const celler = new Set(
     FAMILIES.flatMap((familie) =>
-      ROLE_NAMES.map((rolle) => `--fs-color-${familie}-${rolle}`),
+      ROLE_NAMES.map((rolle) => `--lt-color-${familie}-${rolle}`),
     ),
   )
 
-  const utenfor = tokennavn(/--fs-(?:color|shadow|focus|icon)-[a-z0-9-]+/g)
+  const utenfor = tokennavn(/--lt-(?:color|shadow|focus|icon)-[a-z0-9-]+/g)
     .filter((navn) => !celler.has(navn))
     .sort()
 
@@ -287,16 +287,16 @@ export function malOgSkrift(): string {
     navn.map((token) => `\`${token}\``).join(", ")
 
   return [
-    `Mål: ${liste(tokennavn(/--fs-spacing-[a-z0-9-]+/g))}.`,
+    `Mål: ${liste(tokennavn(/--lt-spacing-[a-z0-9-]+/g))}.`,
     "",
-    `Skrift: ${liste(tokennavn(/--fs-font-[a-z0-9-]+/g))}.`,
+    `Skrift: ${liste(tokennavn(/--lt-font-[a-z0-9-]+/g))}.`,
     "",
-    `Linjehøyde: ${liste(tokennavn(/--fs-line-height-[a-z0-9-]+/g))}.`,
+    `Linjehøyde: ${liste(tokennavn(/--lt-line-height-[a-z0-9-]+/g))}.`,
   ].join("\n")
 }
 
 /*
- * Nøklene i `fs` som ikke bygger attributter. De hører til typesikkerheten, og
+ * Nøklene i `lt` som ikke bygger attributter. De hører til typesikkerheten, og
  * ville ellers stått i lista som byggefunksjoner som ikke finnes.
  */
 const HJELPERE = new Set([
@@ -307,17 +307,17 @@ const HJELPERE = new Set([
   "states",
 ])
 
-/** Byggefunksjonene i `fs`, som er dem et prosjekt med typer kan bruke. */
+/** Byggefunksjonene i `lt`, som er dem et prosjekt med typer kan bruke. */
 export function byggefunksjoner(): string {
-  const navn = Object.keys(fs)
+  const navn = Object.keys(lt)
     .filter((nøkkel) => !HJELPERE.has(nøkkel))
     .sort()
 
-  return navn.map((byggefunksjon) => `\`fs.${byggefunksjon}()\``).join(", ")
+  return navn.map((byggefunksjon) => `\`lt.${byggefunksjon}()\``).join(", ")
 }
 
 export function antallByggefunksjoner(): number {
-  return Object.keys(fs).filter((nøkkel) => !HJELPERE.has(nøkkel)).length
+  return Object.keys(lt).filter((nøkkel) => !HJELPERE.has(nøkkel)).length
 }
 
 export function antallKomponenter(): number {
@@ -368,7 +368,7 @@ export function ombrekk(markdown: string): string {
     const heng = innrykk + (merke ? " ".repeat(merke[1].length) : "")
     /*
      * Et ord er tegn og kodespenn i ett, mellomrommene inne i spennet
-     * medregnet. Uten dette ble `npx @fristil/designsystem sjekk side.html`
+     * medregnet. Uten dette ble `npx @lo-tek/interfaces sjekk side.html`
      * delt etter «sjekk», og en agent som kopierte kommandoen fikk et
      * linjeskift midt i den. Tegnene rundt må være med i samme ord, ellers
      * havner kommaet etter et kodespenn alene på neste linje.
@@ -395,7 +395,7 @@ export function ombrekk(markdown: string): string {
     /*
      * Innrykk teller ikke. Et gjerde under et nummerert punkt står med tre
      * mellomrom foran, og uten dette så ombrekkeren det ikke: hele kodeblokka
-     * ble flytt om som prosa, og `sjekk-agent` fant den ikke igjen, siden
+     * ble flytt om som prosa, og `check-agent` fant den ikke igjen, siden
      * mønsteret krever at gjerdet står på egen linje. Samme for en innrykket
      * tabellrad.
      */

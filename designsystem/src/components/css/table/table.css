@@ -1,54 +1,54 @@
-@layer fristil {
-  .fs-table {
+@layer lotek {
+  .lt-table {
     box-sizing: border-box;
     inline-size: 100%;
     border-collapse: collapse;
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-strong);
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
     /* Tall som står under hverandre skal ha samme bredde per siffer, ellers
        kan ikke kolonnen leses nedover. */
     font-variant-numeric: tabular-nums;
   }
 
-  .fs-table caption {
+  .lt-table caption {
     text-align: start;
-    font-weight: var(--fs-font-weight-semibold);
-    padding-block-end: var(--fs-spacing-2);
+    font-weight: var(--lt-font-weight-semibold);
+    padding-block-end: var(--lt-spacing-2);
   }
 
-  .fs-table th,
-  .fs-table td {
+  .lt-table th,
+  .lt-table td {
     padding: var(
-      --fs-table-cell-padding,
-      var(--fs-spacing-2) var(--fs-spacing-3)
+      --lt-table-cell-padding,
+      var(--lt-spacing-2) var(--lt-spacing-3)
     );
     text-align: start;
     vertical-align: top;
-    border-block-end: 1px solid var(--fs-color-neutral-border-subtle);
+    border-block-end: 1px solid var(--lt-color-neutral-border-subtle);
   }
 
-  .fs-table thead th {
-    font-weight: var(--fs-font-weight-semibold);
-    border-block-end: 2px solid var(--fs-color-neutral-border-strong);
+  .lt-table thead th {
+    font-weight: var(--lt-font-weight-semibold);
+    border-block-end: 2px solid var(--lt-color-neutral-border-strong);
   }
 
-  .fs-table tbody tr:last-child th,
-  .fs-table tbody tr:last-child td {
+  .lt-table tbody tr:last-child th,
+  .lt-table tbody tr:last-child td {
     border-block-end: 0;
   }
 
-  .fs-table[data-variant="striped"] tbody tr:nth-child(even) {
-    background: var(--fs-color-neutral-surface);
+  .lt-table[data-variant="striped"] tbody tr:nth-child(even) {
+    background: var(--lt-color-neutral-surface);
   }
 
-  .fs-table[data-hoverable] tbody tr:hover {
-    background: var(--fs-color-accent-surface);
+  .lt-table[data-hoverable] tbody tr:hover {
+    background: var(--lt-color-accent-surface);
   }
 
-  .fs-table td[data-align="end"],
-  .fs-table th[data-align="end"] {
+  .lt-table td[data-align="end"],
+  .lt-table th[data-align="end"] {
     text-align: end;
   }
 
@@ -59,20 +59,20 @@
    * fikk overskriften luft både fra cellen og fra knappen, og ble høyere og
    * forskjøvet mot cellene under.
    */
-  .fs-table th:has(> .fs-table__sort) {
+  .lt-table th:has(> .lt-table__sort) {
     padding: 0;
   }
 
-  .fs-table__sort {
+  .lt-table__sort {
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    gap: var(--fs-spacing-2);
+    gap: var(--lt-spacing-2);
     inline-size: 100%;
     margin: 0;
     padding: var(
-      --fs-table-cell-padding,
-      var(--fs-spacing-2) var(--fs-spacing-3)
+      --lt-table-cell-padding,
+      var(--lt-spacing-2) var(--lt-spacing-3)
     );
     font: inherit;
     color: inherit;
@@ -85,16 +85,16 @@
     cursor: pointer;
   }
 
-  .fs-table th[data-align="end"] > .fs-table__sort {
+  .lt-table th[data-align="end"] > .lt-table__sort {
     justify-content: flex-end;
   }
 
-  .fs-table__sort:hover {
-    background: var(--fs-color-neutral-surface);
+  .lt-table__sort:hover {
+    background: var(--lt-color-neutral-surface);
   }
 
-  .fs-table__sort:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-table__sort:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: -2px;
   }
 
@@ -107,23 +107,23 @@
    * Pila er en maske og ikke et bilde, så den tar tekstfargen og snur med
    * temaet. Tomt `content` gjør at den aldri blir en del av knappens navn.
    */
-  .fs-table__sort::after {
+  .lt-table__sort::after {
     content: "";
     flex: none;
-    inline-size: var(--fs-spacing-3);
-    block-size: var(--fs-spacing-3);
-    background-color: var(--fs-color-neutral-text-subtle);
+    inline-size: var(--lt-spacing-3);
+    block-size: var(--lt-spacing-3);
+    background-color: var(--lt-color-neutral-text-subtle);
     mask:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1 13 6.5H3zM8 15 3 9.5H13z'/%3E%3C/svg%3E")
       center / contain no-repeat;
   }
 
-  .fs-table th[aria-sort="ascending"] > .fs-table__sort::after {
+  .lt-table th[aria-sort="ascending"] > .lt-table__sort::after {
     background-color: currentColor;
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3 14 11H2z'/%3E%3C/svg%3E");
   }
 
-  .fs-table th[aria-sort="descending"] > .fs-table__sort::after {
+  .lt-table th[aria-sort="descending"] > .lt-table__sort::after {
     background-color: currentColor;
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 13 2 5H14z'/%3E%3C/svg%3E");
   }
@@ -132,27 +132,27 @@
      ville pila blitt usynlig. En systemfarge får stå, så den tegnes i
      systemets tekstfarge. */
   @media (forced-colors: active) {
-    .fs-table__sort::after,
-    .fs-table th[aria-sort] > .fs-table__sort::after {
+    .lt-table__sort::after,
+    .lt-table th[aria-sort] > .lt-table__sort::after {
       background-color: CanvasText;
     }
   }
 
   /* Pila står foran teksten i en høyrestilt kolonne, så teksten slutter der
      tallene under slutter. */
-  .fs-table th[data-align="end"] > .fs-table__sort::after {
+  .lt-table th[data-align="end"] > .lt-table__sort::after {
     order: -1;
   }
 
   /* En tabell som er bredere enn skjermen må kunne rulles, og det området må
      kunne nås med tastatur. Derfor tabindex="0" på beholderen. */
-  .fs-table-scroll {
+  .lt-table-scroll {
     overflow-x: auto;
     max-inline-size: 100%;
   }
 
-  .fs-table-scroll:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-table-scroll:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
   }
 }

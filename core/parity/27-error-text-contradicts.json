@@ -4,7 +4,7 @@
       "start": 139,
       "end": 140,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
       "message": "Feilmeldingen har hidden, men <input> har aria-invalid=\"true\". Komponenten regner feltet som ugyldig når feilmeldingen synes eller aria-invalid står der, så de to sier imot hverandre: skjermleseren hører «ugyldig» uten at brukeren ser hvorfor. Ta bort det ene."
     }
   ],
@@ -13,7 +13,7 @@
       "start": 139,
       "end": 140,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
       "message": "Feilmeldingen har hidden, men <input> har aria-invalid=\"true\". Komponenten regner feltet som ugyldig når feilmeldingen synes eller aria-invalid står der, så de to sier imot hverandre: skjermleseren hører «ugyldig» uten at brukeren ser hvorfor. Ta bort det ene."
     }
   ]

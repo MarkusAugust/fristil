@@ -13,7 +13,7 @@
  * domene: en presentasjon skal ikke kunne feile på grunn av nettet i et
  * møterom.
  *
- * Fargene er Fristils egne tokens, skrevet av med samme verdier. Det er ikke
+ * Fargene er LO-TEKs egne tokens, skrevet av med samme verdier. Det er ikke
  * pynt. Presentasjonen handler om designsystemet, og da skal den se ut som
  * det.
  */
@@ -249,7 +249,7 @@ a { color: var(--azure-30); }
 }
 
 /* Tittelen på førstesiden. Den har ingen logo: presentasjonen handler om
-   arkitekturen, og Fristil er eksempelet, ikke avsenderen. */
+   arkitekturen, og LO-TEK er eksempelet, ikke avsenderen. */
 .tittel-topp h1 {
   margin: 0 0 1.2rem;
   font-size: clamp(1.6rem, 2.6vw, 2.2rem);
@@ -273,7 +273,7 @@ a { color: var(--azure-30); }
 /*
  * Merket på forsiden er for langt til én linje på en telefon, og brukket over
  * to linjer ble pillen en stor blå boks. På smal skjerm er det en vanlig
- * tekstlinje, som kapittelmerket. Teksten står urørt, fordi sjekk-versjon.ts
+ * tekstlinje, som kapittelmerket. Teksten står urørt, fordi check-version.ts
  * leser versjonen og datoen derfra.
  */
 @media (max-width: 860px) {
@@ -401,15 +401,15 @@ tr:last-child td { border-block-end: none; }
 .rolle-forvalter { color: var(--ochre-30); }
 
 /*
- * Det som er Fristils løsning, skilt fra kravet.
+ * Det som er LO-TEKs løsning, skilt fra kravet.
  *
- * Presentasjonen handler om arkitekturen, og Fristil er eksempelet. En tredje
- * rad i linja nederst sier hvordan Fristil har løst kravet, og et grønt merke
- * står foran tittelen på kode som er Fristils eget API. Da ser publikum hele
+ * Presentasjonen handler om arkitekturen, og LO-TEK er eksempelet. En tredje
+ * rad i linja nederst sier hvordan LO-TEK har løst kravet, og et grønt merke
+ * står foran tittelen på kode som er LO-TEKs eget API. Da ser publikum hele
  * veien hva som gjelder alle, og hva som er én måte å gjøre det på.
  */
-.rolle-fristil { color: var(--forest-30); }
-.fristil-merke {
+.rolle-lotek { color: var(--forest-30); }
+.lotek-merke {
   display: inline-block;
   margin-inline-end: 0.5rem;
   padding: 0 0.5rem;
@@ -533,7 +533,7 @@ tr:last-child td { border-block-end: none; }
 
 <!-- 1 -->
 <section class="lysbilde">
-  <span class="merke merke-blaa forside-merke">Designsystemarkitektur · Fristil 0.36.0 · 25. oktober 2026</span>
+  <span class="merke merke-blaa forside-merke">Designsystemarkitektur · LO-TEK 0.36.0 · 25. oktober 2026</span>
   <div class="tittel-topp">
     <h1>Arkitektur for et designsystem uten rammeverk</h1>
   </div>
@@ -543,7 +543,7 @@ tr:last-child td { border-block-end: none; }
   <div class="boks">
     <p style="font-size: clamp(1.05rem, 1.5vw, 1.25rem); margin: 0;"><strong>Markupen kommer fra den som rendrer den. Web-komponenten legger til oppførselen.</strong></p>
   </div>
-  <p class="dempet" style="margin-block-start: 1rem;">Det gjennomgående eksempelet er Fristil, et designsystem bygget etter disse kravene og publisert på <a href="https://fristil.sobernetics.no/" target="_blank" rel="noreferrer">fristil.sobernetics.no</a> og på npm som <code>@fristil/designsystem</code>.</p>
+  <p class="dempet" style="margin-block-start: 1rem;">Det gjennomgående eksempelet er LO-TEK, et designsystem bygget etter disse kravene og publisert på <a href="https://lo-tek.sobernetics.no/" target="_blank" rel="noreferrer">lo-tek.sobernetics.no</a> og på npm som <code>@lo-tek/interfaces</code>.</p>
 </section>
 
 <!-- 2 -->
@@ -559,13 +559,13 @@ tr:last-child td { border-block-end: none; }
     <li><strong>Konsumentens CSS må vinne.</strong> En vanlig regel skrevet av teamet må slå systemets, uten <code>!important</code>.</li>
     <li><strong>Teamet bør kunne ta over koden.</strong> Én komponent kan kopieres inn i prosjektet den dagen systemet ikke strekker til.</li>
   </ol>
-  <p class="dempet">Nederst på lysbildene står inntil tre linjer: hva kravet betyr for teamene som bruker systemet, hva det koster dem som forvalter det, og hvordan Fristil har løst det.</p>
+  <p class="dempet">Nederst på lysbildene står inntil tre linjer: hva kravet betyr for teamene som bruker systemet, hva det koster dem som forvalter det, og hvordan LO-TEK har løst det.</p>
 </section>
 
 <!-- 3 -->
 <section class="lysbilde">
   <h2>Fem krav og to anbefalinger</h2>
-  <p>Resten av presentasjonen tar ett punkt om gangen. Det første gjør de andre mulige, og det siste gjør at du kan forlate systemet når du vil. Til slutt kommer fellene, og så Fristil i bruk: et skjemafelt og et spill som viser at arkitekturen virker.</p>
+  <p>Resten av presentasjonen tar ett punkt om gangen. Det første gjør de andre mulige, og det siste gjør at du kan forlate systemet når du vil. Til slutt kommer fellene, og så LO-TEK i bruk: et skjemafelt og et spill som viser at arkitekturen virker.</p>
   <ol class="beslutninger" role="list">
     <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="foplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="goplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#foplattform)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#goplattform)"/>
       <rect x="14" y="17" width="44" height="38" rx="5" fill="none" stroke="#9ccff2" stroke-width="2.4"/>
@@ -649,7 +649,7 @@ tr:last-child td { border-block-end: none; }
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span><span>React-utviklerne får ikke ferdige React-komponenter, men klasser og attributter med typer.</span></p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må gjøre uavhengigheten usynlig i hverdagen, ellers oppleves den som et tilbakeskritt sammenlignet med et React-bibliotek.</span></p>
-    <p><span class="rolle rolle-fristil">I Fristil</span><span>Inngangen <code>@fristil/designsystem/react</code> gir de samme byggefunksjonene med <code>className</code> og <code>htmlFor</code>.</span></p>
+    <p><span class="rolle rolle-lotek">I LO-TEK</span><span>Inngangen <code>@lo-tek/interfaces/react</code> gir de samme byggefunksjonene med <code>className</code> og <code>htmlFor</code>.</span></p>
   </div>
 </section>
 
@@ -706,7 +706,7 @@ tr:last-child td { border-block-end: none; }
   </div>
   <div class="perspektiv">
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må ha en vaktpost for hver regel, ellers er den glemt om en måned.</span></p>
-    <p><span class="rolle rolle-fristil">I Fristil</span><span>Rundt 1 500 tester kjører i hver av de tre motorene. Den stylede nedtrekkslista slås på med <code>data-picker="styled"</code>.</span></p>
+    <p><span class="rolle rolle-lotek">I LO-TEK</span><span>Rundt 1 500 tester kjører i hver av de tre motorene. Den stylede nedtrekkslista slås på med <code>data-picker="styled"</code>.</span></p>
   </div>
 </section>
 
@@ -714,13 +714,13 @@ tr:last-child td { border-block-end: none; }
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 1 av 7 · Nettleseren må være plattformen</p>
   <h2>Hva det koster appen din</h2>
-  <p>Et designsystem stiller krav til appen som tar det i bruk. Dette er kravene Fristil stiller, og til sammenligning kravene et React-basert designsystem stiller, hentet fra <code>peerDependencies</code> i <code>@skatteetaten/ds-forms 3.0.0</code>:</p>
-  <p>For å bruke skjemakomponentene i det systemet må appen din ha tolv pakker: React 19, i18next, react-i18next, date-fns og åtte pakker fra systemet selv. Fristil krever ingen, og hvilket rammeverk appen bruker, spiller ingen rolle.</p>
+  <p>Et designsystem stiller krav til appen som tar det i bruk. Dette er kravene LO-TEK stiller, og til sammenligning kravene et React-basert designsystem stiller, hentet fra <code>peerDependencies</code> i <code>@skatteetaten/ds-forms 3.0.0</code>:</p>
+  <p>For å bruke skjemakomponentene i det systemet må appen din ha tolv pakker: React 19, i18next, react-i18next, date-fns og åtte pakker fra systemet selv. LO-TEK krever ingen, og hvilket rammeverk appen bruker, spiller ingen rolle.</p>
   <p>Dette er ingen kritikk. Et React-basert system er et rimelig valg når alt er React. Spørsmålet er hva det koster dem som ikke bruker React.</p>
   <p class="kodetittel" style="margin-block-start: 1.1rem;">Én knapp på skjermen, i en tom app. Bygget med esbuild, gzippet.</p>
   <div class="tabellrull">
   <table>
-    <thead><tr><th>Det som må lastes</th><th>Fristil</th><th>Et React-basert system</th></tr></thead>
+    <thead><tr><th>Det som må lastes</th><th>LO-TEK</th><th>Et React-basert system</th></tr></thead>
     <tbody>
       <tr><td>JavaScript</td><td><strong>0 kB</strong>, knappen er en klasse</td><td>119,0 kB</td></tr>
       <tr><td>CSS</td><td>2,8 kB</td><td>4,3 kB</td></tr>
@@ -728,8 +728,8 @@ tr:last-child td { border-block-end: none; }
     </tbody>
   </table>
   </div>
-  <p style="margin-block-start: 1rem;">Av de 119 kilobytene er 67 React selv. Har du React fra før, legger det systemet til rundt 51 kB for den ene knappen. Byggefunksjonene i <code>fs</code> koster 4,8 kB i tillegg i Fristil.</p>
-  <p class="dempet" style="margin-block-start: 0.9rem;">Pakken har <strong>ingen avhengigheter</strong>, og ingen JavaScript-modul i den gjør noe bare ved å bli importert. Hver modul kan lastes på en server uten DOM, så <code>import { fs }</code> virker med serverrendring.</p>
+  <p style="margin-block-start: 1rem;">Av de 119 kilobytene er 67 React selv. Har du React fra før, legger det systemet til rundt 51 kB for den ene knappen. Byggefunksjonene i <code>lt</code> koster 4,8 kB i tillegg i LO-TEK.</p>
+  <p class="dempet" style="margin-block-start: 0.9rem;">Pakken har <strong>ingen avhengigheter</strong>, og ingen JavaScript-modul i den gjør noe bare ved å bli importert. Hver modul kan lastes på en server uten DOM, så <code>import { lt }</code> virker med serverrendring.</p>
 </section>
 
 <!-- 9 · Avhengighetsgrafen -->
@@ -919,13 +919,13 @@ tr:last-child td { border-block-end: none; }
   <div class="avh-scene"><div class="avh-graf"></div></div>
   <div class="avh-tabeller"></div>
 
-  <p class="dempet" style="margin-block-start: 0.7rem; font-size: 0.86rem;"><span class="avh-maalt">Målt 12. oktober 2026</span>, med versjonene som da var de nyeste. Aksel og Digdir har ingen egen knappepakke, så knappen koster hele React-pakken. Fristil er den samme pakken enten du bruker klassene eller byggefunksjonen: importen avgjør hva som lastes, ikke installasjonen. «CSS til knappen» er det som må lastes for én knapp når du bare bruker CSS (tokens og knapp), minifisert og gzippet som på forrige lysbilde. Stiplede linjer er peer-avhengigheter, som npm 7 og nyere henter selv.</p>
+  <p class="dempet" style="margin-block-start: 0.7rem; font-size: 0.86rem;"><span class="avh-maalt">Målt 12. oktober 2026</span>, med versjonene som da var de nyeste. Aksel og Digdir har ingen egen knappepakke, så knappen koster hele React-pakken. LO-TEK er den samme pakken enten du bruker klassene eller byggefunksjonen: importen avgjør hva som lastes, ikke installasjonen. «CSS til knappen» er det som må lastes for én knapp når du bare bruker CSS (tokens og knapp), minifisert og gzippet som på forrige lysbilde. Stiplede linjer er peer-avhengigheter, som npm 7 og nyere henter selv.</p>
 
 <script>
 (() => {
   // Noder: [navn, versjon, type, utpakkede byte]. Kanter: [fra, til, 0 = vanlig, 1 = peer].
   // Typen «grunn» er det appen har fra før, og telles ikke.
-  const DATA = {"skatt":{"navn":"Skatteetaten","scope":"@skatteetaten/","kommando":"npm install @skatteetaten/ds-{core-designtokens,buttons}","n":[["appen din","","app",0],["@babel/runtime","7.29.10","annen",247215],["@skatteetaten/ds-buttons","3.0.0","system",93796],["@skatteetaten/ds-core-designtokens","3.0.0","system",32338],["@skatteetaten/ds-core-utils","3.0.0","system",164875],["@skatteetaten/ds-icons","3.0.0","system",205462],["@skatteetaten/ds-progress","3.0.0","system",10752],["html-parse-stringify","4.0.1","annen",57003],["i18next","26.4.4","annen",524379],["react-i18next","17.0.16","annen",957407],["use-sync-external-store","1.7.0","annen",28183],["react","19.3.0","grunn",0]],"e":[[0,2,0],[0,3,0],[2,4,1],[2,5,1],[2,6,1],[2,8,1],[2,11,1],[2,9,1],[4,8,1],[4,11,1],[4,9,1],[5,4,1],[5,8,1],[5,11,1],[5,9,1],[6,4,1],[6,8,1],[6,11,1],[6,9,1],[9,1,0],[9,7,0],[9,10,0],[9,8,1],[9,11,1],[10,11,1]]},"aksel":{"navn":"Aksel","scope":"@navikt/","kommando":"npm install @navikt/ds-{react,css}","n":[["appen din","","app",0],["@date-fns/tz","1.5.0","annen",100524],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.27.20","annen",934317],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.19.1","system",11147411],["@navikt/ds-css","8.19.1","system",1747680],["@navikt/ds-react","8.19.1","system",7369081],["@navikt/ds-tokens","8.19.1","system",439537],["date-fns","4.4.0","annen",10902084],["react-day-picker","10.0.1","annen",987344],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,8,0],[0,9,0],[2,6,0],[3,2,0],[3,6,0],[4,5,0],[4,6,0],[4,13,0],[4,14,1],[4,15,1],[5,3,0],[5,14,1],[5,15,1],[9,4,0],[9,5,0],[9,7,0],[9,10,0],[9,11,0],[9,12,0],[9,14,1],[9,15,1],[12,1,0],[12,11,0],[12,14,1]]},"digdir":{"navn":"Designsystemet (Digdir)","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-{react,css}","n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-react","1.23.0","system",812522],["@digdir/designsystemet-types","1.23.0","system",3454],["@digdir/designsystemet-web","1.23.0","system",971002],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.26.23","annen",733859],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.19.1","annen",11147411],["@radix-ui/react-compose-refs","1.1.5","annen",12899],["@radix-ui/react-slot","1.5.0","annen",49653],["@tanstack/react-virtual","3.14.16","annen",63728],["@tanstack/virtual-core","3.19.1","annen",478978],["@u-elements/u-combobox","2.1.5","annen",72957],["@u-elements/u-datalist","2.0.3","annen",54586],["@u-elements/u-details","1.0.0","annen",32981],["@u-elements/u-tabs","1.0.4","annen",53518],["clsx","2.1.1","annen",8555],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,1,0],[0,2,0],[1,3,0],[2,3,0],[2,4,0],[2,6,0],[2,7,0],[2,10,0],[2,12,0],[2,13,0],[2,19,0],[2,21,1],[2,22,1],[4,6,0],[4,15,0],[4,16,0],[4,17,0],[4,18,0],[5,9,0],[6,5,0],[6,9,0],[7,8,0],[7,9,0],[7,20,0],[7,21,1],[7,22,1],[8,6,0],[8,21,1],[8,22,1],[11,21,1],[12,11,0],[12,21,1],[13,14,0],[13,21,1],[13,22,1]]},"digdircss":{"navn":"Digdir, bare CSS","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-css","knapp":5418,"n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-types","1.23.0","system",3454]],"e":[[0,1,0],[1,2,0]]},"fristil":{"navn":"Fristil","scope":"@fristil/","kommando":"npm install @fristil/designsystem","knapp":2838,"n":[["appen din","","app",0],["@fristil/designsystem","0.32.1","system",3278919]],"e":[[0,1,0]]}}
+  const DATA = {"skatt":{"navn":"Skatteetaten","scope":"@skatteetaten/","kommando":"npm install @skatteetaten/ds-{core-designtokens,buttons}","n":[["appen din","","app",0],["@babel/runtime","7.29.10","annen",247215],["@skatteetaten/ds-buttons","3.0.0","system",93796],["@skatteetaten/ds-core-designtokens","3.0.0","system",32338],["@skatteetaten/ds-core-utils","3.0.0","system",164875],["@skatteetaten/ds-icons","3.0.0","system",205462],["@skatteetaten/ds-progress","3.0.0","system",10752],["html-parse-stringify","4.0.1","annen",57003],["i18next","26.4.4","annen",524379],["react-i18next","17.0.16","annen",957407],["use-sync-external-store","1.7.0","annen",28183],["react","19.3.0","grunn",0]],"e":[[0,2,0],[0,3,0],[2,4,1],[2,5,1],[2,6,1],[2,8,1],[2,11,1],[2,9,1],[4,8,1],[4,11,1],[4,9,1],[5,4,1],[5,8,1],[5,11,1],[5,9,1],[6,4,1],[6,8,1],[6,11,1],[6,9,1],[9,1,0],[9,7,0],[9,10,0],[9,8,1],[9,11,1],[10,11,1]]},"aksel":{"navn":"Aksel","scope":"@navikt/","kommando":"npm install @navikt/ds-{react,css}","n":[["appen din","","app",0],["@date-fns/tz","1.5.0","annen",100524],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.27.20","annen",934317],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.19.1","system",11147411],["@navikt/ds-css","8.19.1","system",1747680],["@navikt/ds-react","8.19.1","system",7369081],["@navikt/ds-tokens","8.19.1","system",439537],["date-fns","4.4.0","annen",10902084],["react-day-picker","10.0.1","annen",987344],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,8,0],[0,9,0],[2,6,0],[3,2,0],[3,6,0],[4,5,0],[4,6,0],[4,13,0],[4,14,1],[4,15,1],[5,3,0],[5,14,1],[5,15,1],[9,4,0],[9,5,0],[9,7,0],[9,10,0],[9,11,0],[9,12,0],[9,14,1],[9,15,1],[12,1,0],[12,11,0],[12,14,1]]},"digdir":{"navn":"Designsystemet (Digdir)","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-{react,css}","n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-react","1.23.0","system",812522],["@digdir/designsystemet-types","1.23.0","system",3454],["@digdir/designsystemet-web","1.23.0","system",971002],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.26.23","annen",733859],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.19.1","annen",11147411],["@radix-ui/react-compose-refs","1.1.5","annen",12899],["@radix-ui/react-slot","1.5.0","annen",49653],["@tanstack/react-virtual","3.14.16","annen",63728],["@tanstack/virtual-core","3.19.1","annen",478978],["@u-elements/u-combobox","2.1.5","annen",72957],["@u-elements/u-datalist","2.0.3","annen",54586],["@u-elements/u-details","1.0.0","annen",32981],["@u-elements/u-tabs","1.0.4","annen",53518],["clsx","2.1.1","annen",8555],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,1,0],[0,2,0],[1,3,0],[2,3,0],[2,4,0],[2,6,0],[2,7,0],[2,10,0],[2,12,0],[2,13,0],[2,19,0],[2,21,1],[2,22,1],[4,6,0],[4,15,0],[4,16,0],[4,17,0],[4,18,0],[5,9,0],[6,5,0],[6,9,0],[7,8,0],[7,9,0],[7,20,0],[7,21,1],[7,22,1],[8,6,0],[8,21,1],[8,22,1],[11,21,1],[12,11,0],[12,21,1],[13,14,0],[13,21,1],[13,22,1]]},"digdircss":{"navn":"Digdir, bare CSS","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-css","knapp":5418,"n":[["appen din","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-types","1.23.0","system",3454]],"e":[[0,1,0],[1,2,0]]},"lotek":{"navn":"LO-TEK","scope":"@lotek/","kommando":"npm install @lo-tek/interfaces","knapp":2838,"n":[["appen din","","app",0],["@lo-tek/interfaces","0.32.1","system",3278919]],"e":[[0,1,0]]}}
 
   const TYPENAVN = { system: "Designsystemets egen", annen: "Dratt inn", grunn: "Har appen fra før", app: "Appen" }
   const BREDDE = 1136 // fast, så alle grafene har samme målestokk
@@ -935,7 +935,7 @@ tr:last-child td { border-block-end: none; }
   const R = 6
   const NS = "http://www.w3.org/2000/svg"
 
-  // Alt deles på 1024, som forrige lysbilde: da er Fristils knapp 2,8 kB begge steder.
+  // Alt deles på 1024, som forrige lysbilde: da er LO-TEKs knapp 2,8 kB begge steder.
   const mb = (b) => {
     if (b >= 1024 * 1024) return (b / 1024 / 1024).toFixed(1).replace(".", ",") + " MB"
     return Math.round(b / 1024) + " kB"
@@ -1271,7 +1271,7 @@ setTreff(await svar.json())</pre>
     <p style="margin: 0;"><strong>I alle tre gjør noen andre enn web-komponenten en re-render av DOM-en.</strong> Lager React nodene på nytt, er det web-komponenten satte på de gamle, borte. DOM morphing fjerner hvert attributt som ikke sto i serverens HTML. Og har web-komponenten skrevet noe før hydration, melder React en mismatch. Web-komponenten må derfor kunne regne ut på nytt alt den skriver.</p>
   </div>
   <div class="perspektiv">
-    <p><span class="rolle rolle-fristil">I Fristil</span><span><code>&lt;fs-suggestion&gt;</code> leser markeringen fra <code>aria-selected</code> og antall treff fra lista, så den virker også når React rendrer treffene på nytt etter et asynkront søk.</span></p>
+    <p><span class="rolle rolle-lotek">I LO-TEK</span><span><code>&lt;lt-suggestion&gt;</code> leser markeringen fra <code>aria-selected</code> og antall treff fra lista, så den virker også når React rendrer treffene på nytt etter et asynkront søk.</span></p>
   </div>
 </section>
 
@@ -1509,7 +1509,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
     lopende++
     r = document.createElement("input")
     r.setAttribute("id", "epost")
-    r.setAttribute("class", "fs-input")
+    r.setAttribute("class", "lt-input")
     r.setAttribute("required", "")
     s = null
     steg = 0
@@ -1551,7 +1551,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
     } else if (steg === 4) {
       s = document.createElement("input")
       s.setAttribute("id", "epost")
-      s.setAttribute("class", "fs-input")
+      s.setAttribute("class", "lt-input")
       s.setAttribute("required", "")
       s.setAttribute("aria-invalid", "true")
       if (utgang === "fredet") s.setAttribute("data-preserve-attr", "aria-describedby")
@@ -1654,7 +1654,7 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   </div>
   <p style="margin-block-start: 1rem;"><strong>Ingen shadow DOM.</strong> Shadow DOM er grunnen til at mange har prøvd web components og gitt opp: et felt i en shadow root står utenfor skjemaet rundt, og du må melde verdien inn fra host-elementet med <code>ElementInternals</code> for å få den med i innsendingen. Her skriver du <code>&lt;input&gt;</code> selv, i vanlig DOM, og web-komponenten legger seg rundt.</p>
   <div class="perspektiv">
-    <p><span class="rolle rolle-fristil">I Fristil</span><span>Byggefunksjonene ligger i <code>fs</code>, for eksempel <code>fs.button()</code> og <code>fs.field()</code>, og alle web components heter <code>&lt;fs-…&gt;</code>.</span></p>
+    <p><span class="rolle rolle-lotek">I LO-TEK</span><span>Byggefunksjonene ligger i <code>lt</code>, for eksempel <code>lt.button()</code> og <code>lt.field()</code>, og alle web components heter <code>&lt;lt-…&gt;</code>.</span></p>
   </div>
 </section>
 
@@ -1667,16 +1667,16 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
     <div class="boks">
       <span class="merke merke-blaa">Bare CSS</span>
       <p>Den som rendrer, lager alt, og ingen JavaScript kjører. Markupen er statisk: en klasse og noen <code>data-*</code>.</p>
-      <pre>&lt;button class="fs-button"
+      <pre>&lt;button class="lt-button"
   data-variant="secondary"&gt;</pre>
     </div>
     <div class="boks">
       <span class="merke merke-gronn">Ramme</span>
       <p>Den som rendrer, bestemmer hvilke noder som finnes. Web-komponenten lytter, og setter bare attributter den regner ut fra dem.</p>
-      <pre>&lt;fs-field&gt;
+      <pre>&lt;lt-field&gt;
   &lt;label&gt;…&lt;/label&gt;
-  &lt;input class="fs-input"&gt;
-&lt;/fs-field&gt;</pre>
+  &lt;input class="lt-input"&gt;
+&lt;/lt-field&gt;</pre>
     </div>
     <div class="boks">
       <span class="merke merke-gul">Frittstående</span>
@@ -1697,25 +1697,25 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p>Det avgjørende er om koden som lager markupen, <strong>kan kalle en funksjon</strong>. Hvor den kjører, spiller ingen rolle.</p>
   <div class="rader to">
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Koden kan kalle en funksjon: React, Astro, Node, Kotlin</p>
-      <pre>const felt = fs.field({ id: useId(), help: true })
+      <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Koden kan kalle en funksjon: React, Astro, Node, Kotlin</p>
+      <pre>const felt = lt.field({ id: useId(), help: true })
 
 &lt;div&gt;
   &lt;label {...felt.label}&gt;E-post&lt;/label&gt;
-  &lt;input {...fs.input({ type: "email" })} {...felt.control} /&gt;
-  &lt;p {...fs.helpText()} {...felt.help}&gt;Vi sender aldri spam&lt;/p&gt;
+  &lt;input {...lt.input({ type: "email" })} {...felt.control} /&gt;
+  &lt;p {...lt.helpText()} {...felt.help}&gt;Vi sender aldri spam&lt;/p&gt;
 &lt;/div&gt;
 
 <i>// Koblingen står i markupen fra første render.</i>
 <i>// Web-komponenten trengs ikke.</i></pre>
     </div>
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Markupen blir til uten JavaScript: Go, PHP, Python, håndskrevet</p>
-      <pre>&lt;fs-field&gt;
-  &lt;label class="fs-label"&gt;E-post&lt;/label&gt;
-  &lt;input class="fs-input" type="email"&gt;
-  &lt;p class="fs-help-text"&gt;Vi sender aldri spam&lt;/p&gt;
-&lt;/fs-field&gt;
+      <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Markupen blir til uten JavaScript: Go, PHP, Python, håndskrevet</p>
+      <pre>&lt;lt-field&gt;
+  &lt;label class="lt-label"&gt;E-post&lt;/label&gt;
+  &lt;input class="lt-input" type="email"&gt;
+  &lt;p class="lt-help-text"&gt;Vi sender aldri spam&lt;/p&gt;
+&lt;/lt-field&gt;
 
 <i>// Ingen id-er, ingen for, ingen aria-describedby.</i>
 <i>// Web-komponenten setter koblingen i nettleseren.</i></pre>
@@ -1731,20 +1731,20 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
 <section class="lysbilde">
   <p class="kapittelmerke">Krav 2 av 7 · Markupen må komme fra den som rendrer</p>
   <h2>Det web-komponenten får skrive</h2>
-  <p>Regelen sier at alt web-komponenten skriver i markup andre har rendret, regnes ut fra markupen og fra det brukeren gjør. Slik setter <code>&lt;fs-field&gt;</code> fra forrige lysbilde <code>id</code>, <code>for</code> og <code>aria-describedby</code> på elementer den ikke har rendret selv.</p>
+  <p>Regelen sier at alt web-komponenten skriver i markup andre har rendret, regnes ut fra markupen og fra det brukeren gjør. Slik setter <code>&lt;lt-field&gt;</code> fra forrige lysbilde <code>id</code>, <code>for</code> og <code>aria-describedby</code> på elementer den ikke har rendret selv.</p>
   <ul>
     <li><strong>Den leser før den skriver.</strong> Id-en hentes fra feltet eller fra ledetekstens <code>for</code>, og id-er som ble rendret i <code>aria-describedby</code>, blir med i svaret.</li>
     <li><strong>Den sammenligner før den skriver.</strong> Står den samme verdien der fra før, skriver web-komponenten ingenting.</li>
     <li><strong>Den husker hva den selv skrev, og på hvilken node.</strong> Bare det kan den sette tilbake når en oppdatering river det bort. En id den har laget, kommer tilbake som den samme id-en.</li>
   </ul>
-  <p class="kodetittel"><span class="fristil-merke">Fristil</span>Hjelperen all skriving går gjennom, forenklet</p>
+  <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Hjelperen all skriving går gjennom, forenklet</p>
   <pre>function setAttr(el, navn, verdi) {
   if (el.getAttribute(navn) !== verdi) el.setAttribute(navn, verdi)
 }</pre>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span><span>Kan skrive så mye eller så lite av koblingen som de vil.</span></p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må bygge web-komponenten slik at den holder rede på hva den selv har skrevet, node for node. Ellers kan den ikke skille sitt eget fra det som ble rendret.</span></p>
-    <p><span class="rolle rolle-fristil">I Fristil</span><span>Minnet er et <code>WeakMap</code> med noden som nøkkel. Fanene, dialogen og de andre setter roller, id-er og koblinger bare når de mangler. Feltet skriver hele koblingen hver gang, og tar med det som ble rendret.</span></p>
+    <p><span class="rolle rolle-lotek">I LO-TEK</span><span>Minnet er et <code>WeakMap</code> med noden som nøkkel. Fanene, dialogen og de andre setter roller, id-er og koblinger bare når de mangler. Feltet skriver hele koblingen hver gang, og tar med det som ble rendret.</span></p>
   </div>
 </section>
 
@@ -1771,15 +1771,15 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p class="kapittelmerke">Krav 3 av 7 · Tilgjengeligheten må skrives ett sted</p>
   <h2>Én funksjon, to innganger</h2>
   <p>Koblingen mellom ledetekst, felt, hjelpetekst og feilmelding er den samme uansett hvem som skriver markupen. Derfor finnes den ett sted, og de to veiene er to kall til den samme funksjonen.</p>
-  <p class="kodetittel"><span class="fristil-merke">Fristil</span>ramme/field/field-core.ts</p>
+  <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>frame/field/field-core.ts</p>
   <pre>computeFieldAttributes(...)
-   ├── fs.field()      <i>← kalles der markupen rendres</i>
-   └── &lt;fs-field&gt;      <i>← web-komponenten kaller den på elementer som står i DOM-en</i></pre>
+   ├── lt.field()      <i>← kalles der markupen rendres</i>
+   └── &lt;lt-field&gt;      <i>← web-komponenten kaller den på elementer som står i DOM-en</i></pre>
   <p style="margin-block-start: 1rem;">Endres kontrakten, endres den der, ikke i web-komponenten. Måtte hver server skrive koblingen selv, ville systemet bare vært for JavaScript, og alle andre ville fått en håndskrevet reserve. Det er den som ryker først.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span><span>Får den samme koblingen enten markupen lages i React, i en Go-mal eller for hånd.</span></p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må skrive kontrakten som en ren funksjon uten DOM, slik at både koden som rendrer, og en web component kan kalle den.</span></p>
-    <p><span class="rolle rolle-fristil">I Fristil</span><span>Kotlin har sin egen <code>Fs.field()</code>, skrevet for hånd. En test kjører den mot 237 kombinasjoner av valg med svaret fra TypeScript, og ett avvik stopper bygget.</span></p>
+    <p><span class="rolle rolle-lotek">I LO-TEK</span><span>Kotlin har sin egen <code>Lt.field()</code>, skrevet for hånd. En test kjører den mot 237 kombinasjoner av valg med svaret fra TypeScript, og ett avvik stopper bygget.</span></p>
   </div>
 </section>
 
@@ -1809,17 +1809,17 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p>En re-render kan fjerne det web-komponenten satte: DOM morphing stryker attributtet, og React kan bytte ut noden. Web-komponenten vet hva den selv har regnet ut og skriver det inn igjen med én gang. Den som rendrer, trenger derfor ikke vite noe om hva web-komponenten gjør:</p>
   <div class="rader to">
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Markupen, rendret med CSR eller SSR</p>
-      <pre>&lt;fs-field&gt;
-  &lt;label class="fs-label"&gt;E-post&lt;/label&gt;
-  &lt;input class="fs-input" type="email"&gt;
-  &lt;p class="fs-help-text"&gt;Vi sender aldri spam&lt;/p&gt;
-&lt;/fs-field&gt;</pre>
+      <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Markupen, rendret med CSR eller SSR</p>
+      <pre>&lt;lt-field&gt;
+  &lt;label class="lt-label"&gt;E-post&lt;/label&gt;
+  &lt;input class="lt-input" type="email"&gt;
+  &lt;p class="lt-help-text"&gt;Vi sender aldri spam&lt;/p&gt;
+&lt;/lt-field&gt;</pre>
       <p class="dempet" style="margin-block-start: 0.6rem;">Ingen id-er, ingen <code>for</code>, ingen <code>aria-describedby</code> og ingen liste over hva som må bevares. Web-komponenten setter koblingen og setter den tilbake hver gang den forsvinner.</p>
     </div>
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Skal markupen alene bestemme tilstanden</p>
-      <pre>&lt;fs-field server-controlled&gt;</pre>
+      <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Skal markupen alene bestemme tilstanden</p>
+      <pre>&lt;lt-field server-controlled&gt;</pre>
       <p class="dempet" style="margin-block-start: 0.6rem;">Ett attributt på host-elementet, og web-komponenten reparerer ingenting. Da gjelder det som ble rendret, hver gang. Navnet sier server, men attributtet gjelder like mye for CSR.</p>
     </div>
   </div>
@@ -1854,14 +1854,14 @@ for (let {name: l} of Array.from(<b>r</b>.attributes))
   <p>Den som merker feilen, er den som ikke ser skjermen: feltet blir lest opp uten navn. En web-komponent som gir opp uten et ord, sender feilen videre til brukeren. Den bør i stedet skrive én linje i konsollen, mens utvikleren fortsatt sitter med koden.</p>
   <div class="rader to">
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Markupen som ble skrevet</p>
-      <pre>&lt;fs-field&gt;
-  &lt;input class="fs-input" id="fodselsdato"&gt;
-&lt;/fs-field&gt;</pre>
+      <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Markupen som ble skrevet</p>
+      <pre>&lt;lt-field&gt;
+  &lt;input class="lt-input" id="fodselsdato"&gt;
+&lt;/lt-field&gt;</pre>
     </div>
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Det utvikleren får se</p>
-      <pre>fs-field: fant ingen &lt;label&gt;.
+      <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Det utvikleren får se</p>
+      <pre>lt-field: fant ingen &lt;label&gt;.
 Feltet får da ingen ledetekst, og
 en skjermleser leser det opp uten navn.</pre>
     </div>
@@ -1873,7 +1873,7 @@ en skjermleser leser det opp uten navn.</pre>
     <li><strong>Den peker på den egentlige feilen.</strong> Sprettoppvinduet finner knappen sin ved å slå opp panelets id. Mangler id-en, skal meldingen si det, og ikke at knappen mangler. Ellers leter utvikleren på feil sted.</li>
   </ul>
   <div class="perspektiv">
-    <p><span class="rolle rolle-fristil">I Fristil</span><span>En sjekk i CI leser konsollen på hver side i den bygde dokumentasjonen og feiler hvis det står en advarsel der.</span></p>
+    <p><span class="rolle rolle-lotek">I LO-TEK</span><span>En sjekk i CI leser konsollen på hver side i den bygde dokumentasjonen og feiler hvis det står en advarsel der.</span></p>
   </div>
 </section>
 
@@ -1904,12 +1904,12 @@ en skjermleser leser det opp uten navn.</pre>
   <p>Innvendingen mot å forlate React er som regel utvikleropplevelsen: du mister komponenter som kjenner sine egne valg. Svaret er at en byggefunksjon gir det samme, fordi den er en vanlig TypeScript-funksjon. Den returnerer attributter, og editoren kjenner dem.</p>
   <div class="rader to like-hoyde" style="margin-block-start: 1.1rem;">
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Kallet, og det som kommer ut</p>
-      <pre>fs.button({ variant: "secondary" })
-<i>// { class: "fs-button", "data-variant": "secondary" }</i>
+      <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Kallet, og det som kommer ut</p>
+      <pre>lt.button({ variant: "secondary" })
+<i>// { class: "lt-button", "data-variant": "secondary" }</i>
 
-fs.input({ type: "email", state: "invalid" })
-<i>// { class: "fs-input", type: "email",</i>
+lt.input({ type: "email", state: "invalid" })
+<i>// { class: "lt-input", type: "email",</i>
 <i>//   "data-state": "invalid", "aria-invalid": "true" }</i></pre>
     </div>
     <div>
@@ -1924,7 +1924,7 @@ fs.input({ type: "email", state: "invalid" })
       </div>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;">Skriver du feil, for eksempel <code>variant: "secondry"</code>, får du rød strek i editoren før du lagrer, overalt der TypeScript ser koden: i JSX, i Astro og i JavaScript med typesjekking slått på. Uten typesjekking kan du sjekke verdien ved runtime med <code>fs.button.isVariant()</code>.</p>
+  <p style="margin-block-start: 1rem;">Skriver du feil, for eksempel <code>variant: "secondry"</code>, får du rød strek i editoren før du lagrer, overalt der TypeScript ser koden: i JSX, i Astro og i JavaScript med typesjekking slått på. Uten typesjekking kan du sjekke verdien ved runtime med <code>lt.button.isVariant()</code>.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span><span>Får typene uten å installere et rammeverk, og uten at noen har skrevet en komponent for akkurat deres rammeverk.</span></p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må holde de lovlige verdiene, typene og CSS-en i takt. En verdi som ikke gjør noe, er verre enn ingen verdi.</span></p>
@@ -1935,12 +1935,12 @@ fs.input({ type: "email", state: "invalid" })
 <section class="lysbilde">
   <p class="kapittelmerke">Anbefaling 5 av 7 · Typene bør virke uten rammeverk</p>
   <h2>Kodeagenter bør få en sjekk i hvert miljø</h2>
-  <p>En kodeagent fyller hullene med det den har sett i andre designsystemer: <code>fs-modal</code>, <code>data-variant="outline"</code>. Den stopper bare hvis noe sier fra mens den jobber.</p>
+  <p>En kodeagent fyller hullene med det den har sett i andre designsystemer: <code>lt-modal</code>, <code>data-variant="outline"</code>. Den stopper bare hvis noe sier fra mens den jobber.</p>
   <div class="rader to">
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Med JavaScript sier TypeScript fra</p>
+      <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Med JavaScript sier TypeScript fra</p>
       <pre><i>// knapp.ts</i>
-fs.button({ variant: "outline" })
+lt.button({ variant: "outline" })
 
 <i>$ tsc</i>
 knapp.ts(2,34): error TS2322: Type '"outline"'
@@ -1949,10 +1949,10 @@ knapp.ts(2,34): error TS2322: Type '"outline"'
       <p class="dempet" style="margin-block-start: 0.6rem;">Regelboka, en Markdown-fil per miljø som agenten leser, ber den bruke byggefunksjonene. En klasse skrevet for hånd i en streng ser TypeScript ikke.</p>
     </div>
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Uten JavaScript leverer designsystemet sjekken selv</p>
-      <pre><i>$ npx @fristil/designsystem sjekk side.html</i>
-side.html:1:14: advarsel: Klassen «fs-modal»
-  finnes ikke i Fristil.
+      <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Uten JavaScript leverer designsystemet sjekken selv</p>
+      <pre><i>$ npx @lo-tek/interfaces sjekk side.html</i>
+side.html:1:14: advarsel: Klassen «lt-modal»
+  finnes ikke i LO-TEK.
 side.html:2:29: advarsel: data-variant kan ikke
   være «outline» på button. Lovlige verdier:
   secondary, ghost, danger, og primary uten attributt.
@@ -1960,12 +1960,12 @@ side.html:2:29: advarsel: data-variant kan ikke
 2 funn i 1 fil.
 <i>$ echo $?</i>
 1</pre>
-      <p class="dempet" style="margin-block-start: 0.6rem;">Sjekken leser HTML-en eller malen, hopper over det som er malsyntaks, og avslutter med feilkode, slik <code>tsc</code> gjør. Uten funn svarer den «Markupen stemmer med Fristil i 1 fil.» og avslutter med 0.</p>
+      <p class="dempet" style="margin-block-start: 0.6rem;">Sjekken leser HTML-en eller malen, hopper over det som er malsyntaks, og avslutter med feilkode, slik <code>tsc</code> gjør. Uten funn svarer den «Markupen stemmer med LO-TEK i 1 fil.» og avslutter med 0.</p>
     </div>
   </div>
   <div class="perspektiv">
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må generere regelbøkene fra koden og teste dem i hvert bygg. Nevner en bok en klasse, et element eller et token som ikke finnes, stopper bygget.</span></p>
-    <p><span class="rolle rolle-fristil">I Fristil</span><span>Sjekken står også i VS Code og IntelliJ, og i Kotlin sjekker <code>Fristil.diagnosePage()</code> siden serveren sender. Regelbøkene står på <code>fristil.sobernetics.no/llms.txt</code>.</span></p>
+    <p><span class="rolle rolle-lotek">I LO-TEK</span><span>Sjekken står også i VS Code og IntelliJ, og i Kotlin sjekker <code>Lotek.diagnosePage()</code> siden serveren sender. Regelbøkene står på <code>lo-tek.sobernetics.no/llms.txt</code>.</span></p>
   </div>
 </section>
 
@@ -1992,20 +1992,20 @@ side.html:2:29: advarsel: data-variant kan ikke
   <p>Et team som må skrive <code>!important</code> for å flytte en knapp fire piksler, slutter å bruke systemet. Derfor ligger all komponent-CSS i et eget lag, og en regel uten lag slår alt som står i ett.</p>
   <div class="rader to">
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Uten laget taper regelen din på spesifisitet</p>
-      <pre>.fs-button           <i>(0,1,0)</i>
-.fs-button:disabled  <i>(0,2,0)  ← systemets vinner</i></pre>
+      <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Uten laget taper regelen din på spesifisitet</p>
+      <pre>.lt-button           <i>(0,1,0)</i>
+.lt-button:disabled  <i>(0,2,0)  ← systemets vinner</i></pre>
       <p class="kodetittel" style="margin-block-start: 0.9rem;">Med laget vinner regelen din uansett</p>
-      <pre>@layer fristil {
-  .fs-button:disabled { … }
+      <pre>@layer lotek {
+  .lt-button:disabled { … }
 }
-.fs-button { … }  <i>← usortert, vinner</i></pre>
+.lt-button { … }  <i>← usortert, vinner</i></pre>
     </div>
     <div>
       <p class="kodetittel">Form og størrelse leses fra en variabel</p>
-      <pre>padding: var(--fs-button-padding,
-             var(--fs-spacing-2) var(--fs-spacing-4));</pre>
-      <p style="margin-block-start: 0.6rem;">Standardverdien følger avstandsskalaen, også når konsumenten endrer <code>--fs-spacing-*</code>. Variablene er med vilje ikke registrert med <code>@property</code>: en registrert startverdi blir verdien når variabelen ikke er satt, og da kommer <code>var()</code> aldri fram til reserven.</p>
+      <pre>padding: var(--lt-button-padding,
+             var(--lt-spacing-2) var(--lt-spacing-4));</pre>
+      <p style="margin-block-start: 0.6rem;">Standardverdien følger avstandsskalaen, også når konsumenten endrer <code>--lt-spacing-*</code>. Variablene er med vilje ikke registrert med <code>@property</code>: en registrert startverdi blir verdien når variabelen ikke er satt, og da kommer <code>var()</code> aldri fram til reserven.</p>
     </div>
   </div>
   <div class="perspektiv">
@@ -2040,9 +2040,9 @@ side.html:2:29: advarsel: data-variant kan ikke
     <p style="margin: 0;">Rekkefølgen teamet bør prøve: <strong>først tokens, så komponentvariabler, så egen CSS i et eget lag.</strong> Først når ingen av dem strekker til, tar teamet over komponenten. De tre første koster ingenting å oppgradere fra.</p>
   </div>
   <p style="margin-block-start: 1rem;">Det som gjør kopien brukbar, er at henvisningene ut av komponenten peker på pakken etterpå, og ikke på filer som ikke finnes hos teamet.</p>
-  <p class="kodetittel"><span class="fristil-merke">Fristil</span>Kildekoden til én komponent, inn i prosjektet ditt</p>
-  <pre>npx @fristil/designsystem overta button --ut=src/ui</pre>
-  <p style="margin-block-start: 1rem;">Kommandoen skriver om henvisningene, slik at <code>../shared.js</code> blir <code>@fristil/designsystem/shared</code>. Oppslaget bygges av <code>exports</code> i pakken, slik at det som kopieres, faktisk virker der det lander. Ved siden av kopien skriver den et manifest, så <code>sjekk --manifest</code> kjenner klassene i kopien.</p>
+  <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Kildekoden til én komponent, inn i prosjektet ditt</p>
+  <pre>npx @lo-tek/interfaces overta button --ut=src/ui</pre>
+  <p style="margin-block-start: 1rem;">Kommandoen skriver om henvisningene, slik at <code>../shared.js</code> blir <code>@lo-tek/interfaces/shared</code>. Oppslaget bygges av <code>exports</code> i pakken, slik at det som kopieres, faktisk virker der det lander. Ved siden av kopien skriver den et manifest, så <code>sjekk --manifest</code> kjenner klassene i kopien.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span><span>Kommer videre uten å vente på systemet.</span></p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må sørge for at alt en komponent importerer, finnes i <code>exports</code>, ellers peker kopien på noe teamet ikke har.</span></p>
@@ -2080,7 +2080,7 @@ side.html:2:29: advarsel: data-variant kan ikke
   <p>Stavemåten er også ulik. React vil ha <code>className</code>, <code>htmlFor</code> og <code>tabIndex</code>, og <code>tabIndex</code> som tall. En byggefunksjon som returnerer HTML-navn, trenger derfor en egen utgave for React.</p>
   <div class="perspektiv">
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må teste i en ekte React-app. Feilene viste seg der, og ikke i enhetstestene.</span></p>
-    <p><span class="rolle rolle-fristil">I Fristil</span><span>Flaggene sendes som <code>true</code>, og feiloppsummeringens valg heter <code>data-autofocus</code>.</span></p>
+    <p><span class="rolle rolle-lotek">I LO-TEK</span><span>Flaggene sendes som <code>true</code>, og feiloppsummeringens valg heter <code>data-autofocus</code>.</span></p>
   </div>
 </section>
 
@@ -2100,7 +2100,7 @@ side.html:2:29: advarsel: data-variant kan ikke
   </div>
   <p style="margin-block-start: 1rem;">Ingen nettlesertest fanger den andre, for der finnes <code>HTMLElement</code>. Den må testes i et miljø uten DOM.</p>
   <div class="perspektiv">
-    <p><span class="rolle rolle-fristil">I Fristil</span><span><code>HostElement</code> er <code>HTMLElement</code> i nettleseren og en tom klasse uten DOM, og et skript importerer hver oppføring i <code>exports</code> i Bun uten DOM.</span></p>
+    <p><span class="rolle rolle-lotek">I LO-TEK</span><span><code>HostElement</code> er <code>HTMLElement</code> i nettleseren og en tom klasse uten DOM, og et skript importerer hver oppføring i <code>exports</code> i Bun uten DOM.</span></p>
   </div>
 </section>
 
@@ -2115,37 +2115,37 @@ side.html:2:29: advarsel: data-variant kan ikke
     <li><strong>Flimmeret før registreringen løses i CSS.</strong> <code>:not(:defined)</code> gjelder til web-komponenten er registrert. Med den kan stilarket vise bare det første panelet, så den som rendrer, slipper å skrive <code>hidden</code> på resten.</li>
   </ul>
   <div class="perspektiv">
-    <p><span class="rolle rolle-fristil">I Fristil</span><span><code>defineFs()</code> registrerer alle ni, og <code>showToast</code>, <code>reportFailure</code> og de andre imperative kallene venter selv.</span></p>
+    <p><span class="rolle rolle-lotek">I LO-TEK</span><span><code>defineLt()</code> registrerer alle ni, og <code>showToast</code>, <code>reportFailure</code> og de andre imperative kallene venter selv.</span></p>
   </div>
 </section>
 
 <!-- 34 -->
 <section class="lysbilde">
   <h2>Et skjemafelt, med og uten JavaScript</h2>
-  <p>Slik ser det ut for den som bruker et designsystem bygget etter disse fem kravene og to anbefalingene. Eksempelet er Fristil. Du installerer én pakke, importerer stilarket for det du trenger og skriver vanlig HTML.</p>
+  <p>Slik ser det ut for den som bruker et designsystem bygget etter disse fem kravene og to anbefalingene. Eksempelet er LO-TEK. Du installerer én pakke, importerer stilarket for det du trenger og skriver vanlig HTML.</p>
   <div class="rader to">
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Bare klasser: ingen JavaScript i nettleseren</p>
-      <pre>import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/field.css"
+      <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Bare klasser: ingen JavaScript i nettleseren</p>
+      <pre>import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/field.css"
 
-&lt;label class="fs-label"&gt;E-post&lt;/label&gt;
-&lt;input class="fs-input" type="email"&gt;
-&lt;p class="fs-error-text"&gt;Skriv en gyldig adresse&lt;/p&gt;</pre>
+&lt;label class="lt-label"&gt;E-post&lt;/label&gt;
+&lt;input class="lt-input" type="email"&gt;
+&lt;p class="lt-error-text"&gt;Skriv en gyldig adresse&lt;/p&gt;</pre>
     </div>
     <div>
-      <p class="kodetittel"><span class="fristil-merke">Fristil</span>Samme markup, med ett element rundt</p>
-      <pre>import { defineFsField } from "@fristil/designsystem/field"
-defineFsField()
+      <p class="kodetittel"><span class="lotek-merke">LO-TEK</span>Samme markup, med ett element rundt</p>
+      <pre>import { defineLtField } from "@lo-tek/interfaces/field"
+defineLtField()
 
-<b>&lt;fs-field invalid&gt;</b>
-  &lt;label class="fs-label"&gt;E-post&lt;/label&gt;
-  &lt;input class="fs-input" type="email"&gt;
-  &lt;p class="fs-error-text"&gt;Skriv en gyldig adresse&lt;/p&gt;
-<b>&lt;/fs-field&gt;</b></pre>
+<b>&lt;lt-field invalid&gt;</b>
+  &lt;label class="lt-label"&gt;E-post&lt;/label&gt;
+  &lt;input class="lt-input" type="email"&gt;
+  &lt;p class="lt-error-text"&gt;Skriv en gyldig adresse&lt;/p&gt;
+<b>&lt;/lt-field&gt;</b></pre>
     </div>
   </div>
-  <p style="margin-block-start: 1rem;">Til venstre kjører det ingen kode. Ledeteksten, feltet og feilmeldingen er vanlige HTML-elementer med klasser fra systemet. De ser riktige ut, men ingenting kobler dem: en skjermleser leser feltet opp uten navn og leser ikke feilmeldingen. Til høyre står nøyaktig de samme elementene, med ett element rundt. Det er <code>&lt;fs-field&gt;</code> som setter <code>id</code>, <code>for</code> og <code>aria-describedby</code>, slik at en skjermleser leser opp både ledeteksten og feilmeldingen.</p>
+  <p style="margin-block-start: 1rem;">Til venstre kjører det ingen kode. Ledeteksten, feltet og feilmeldingen er vanlige HTML-elementer med klasser fra systemet. De ser riktige ut, men ingenting kobler dem: en skjermleser leser feltet opp uten navn og leser ikke feilmeldingen. Til høyre står nøyaktig de samme elementene, med ett element rundt. Det er <code>&lt;lt-field&gt;</code> som setter <code>id</code>, <code>for</code> og <code>aria-describedby</code>, slik at en skjermleser leser opp både ledeteksten og feilmeldingen.</p>
   <div class="perspektiv">
     <p><span class="rolle">Produktteamene</span><span>Kan begynne med tokens og noen knapper og ta i bruk resten når de trenger det.</span></p>
     <p><span class="rolle rolle-forvalter">Designsystemteamet</span><span>Må bevare denne enkelheten, også når en komponent blir komplisert på innsiden.</span></p>
@@ -2155,7 +2155,7 @@ defineFsField()
 <!-- 35 -->
 <section class="lysbilde">
   <h2>Demoen som viser at det virker</h2>
-  <p><strong>Førstelinja</strong> er et spill bygget med Fristil, i tre utgaver: Kotlin med Datastar, React med TanStack Start og Astro med hele sider fra serveren. Samme spilltjener, samme skjerm, samme komponenter, og du kan spille mot noen som spiller i en annen utgave.</p>
+  <p><strong>Førstelinja</strong> er et spill bygget med LO-TEK, i tre utgaver: Kotlin med Datastar, React med TanStack Start og Astro med hele sider fra serveren. Samme spilltjener, samme skjerm, samme komponenter, og du kan spille mot noen som spiller i en annen utgave.</p>
   <p>Den er også en stresstest. En komponent kan se riktig ut i en enhetstest og likevel ryke i det en ekte server eller React rendrer siden på nytt. TanStack Start-utgaven rendrer i nettleseren fra JSON, slik en vanlig CSR-app gjør, og de to andre rendrer på serveren.</p>
   <p class="kodetittel">Panelet i spillet: hva som faktisk gikk over nettverket, lest ut av trafikken</p>
   <div class="tabellrull">
@@ -2201,7 +2201,7 @@ defineFsField()
       </ul>
     </div>
   </div>
-  <p style="margin-block-start: 1.2rem;"><strong>Fristil:</strong> <a href="https://fristil.sobernetics.no/" target="_blank" rel="noreferrer">fristil.sobernetics.no</a> · <strong>Pakke:</strong> <code>@fristil/designsystem</code> · <strong>Spillet:</strong> <a href="https://forstelinja-react.up.railway.app" target="_blank" rel="noreferrer">forstelinja-react.up.railway.app</a></p>
+  <p style="margin-block-start: 1.2rem;"><strong>LO-TEK:</strong> <a href="https://lo-tek.sobernetics.no/" target="_blank" rel="noreferrer">lo-tek.sobernetics.no</a> · <strong>Pakke:</strong> <code>@lo-tek/interfaces</code> · <strong>Spillet:</strong> <a href="https://forstelinja-react.up.railway.app" target="_blank" rel="noreferrer">forstelinja-react.up.railway.app</a></p>
 </section>
 
 

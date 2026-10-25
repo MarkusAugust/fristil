@@ -5,7 +5,7 @@
  * `HTMLElement` og `customElements` finnes bare i nettleseren, og en
  * `class X extends HTMLElement` blir evaluert i det modulen lastes. Ni av
  * inngangspunktene stoppet derfor med «HTMLElement is not defined» på en
- * server som bare ville hente `fs.button()`. Hovedinngangen var ett av dem,
+ * server som bare ville hente `lt.button()`. Hovedinngangen var ett av dem,
  * altså nøyaktig den linja «Kom i gang» ber leseren skrive.
  *
  * Ingen nettlesertest kunne se det: der finnes `HTMLElement`. Denne kjører i
@@ -54,7 +54,7 @@ for (const [navn, fil] of inngangspunkter) {
     const modul = await import(new URL(fil, pakke).href)
 
     for (const [eksportnavn, verdi] of Object.entries(modul)) {
-      if (eksportnavn.startsWith("defineFs") && typeof verdi === "function") {
+      if (eksportnavn.startsWith("defineLt") && typeof verdi === "function") {
         registreringer.push([`${navn} → ${eksportnavn}`, verdi as () => void])
       }
     }
@@ -71,7 +71,7 @@ if (feil.length > 0) {
 }
 
 /*
- * Å importere holder ikke. `defineFs*` kalles fra filer som i TanStack Start
+ * Å importere holder ikke. `defineLt*` kalles fra filer som i TanStack Start
  * kjøres både på serveren og i nettleseren, og der finnes det ingen
  * `customElements` å registrere i. Uten dette kunne `customElements`-vakten i
  * `defineElement` forsvinne uten at noe sa fra.

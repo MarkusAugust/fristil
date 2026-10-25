@@ -1,20 +1,20 @@
-@layer fristil {
-  .fs-checkbox {
+@layer lotek {
+  .lt-checkbox {
     /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset. */
     box-sizing: border-box;
 
     appearance: none;
     flex: none;
     display: inline-block;
-    inline-size: var(--fs-checkbox-size, var(--fs-spacing-5));
-    block-size: var(--fs-checkbox-size, var(--fs-spacing-5));
+    inline-size: var(--lt-checkbox-size, var(--lt-spacing-5));
+    block-size: var(--lt-checkbox-size, var(--lt-spacing-5));
     margin: 0;
-    background-color: var(--fs-color-neutral-canvas);
+    background-color: var(--lt-color-neutral-canvas);
     background-position: center;
     background-repeat: no-repeat;
     background-size: 80%;
-    border: 1px solid var(--fs-color-neutral-border);
-    border-radius: var(--fs-checkbox-radius, var(--fs-spacing-1));
+    border: 1px solid var(--lt-color-neutral-border);
+    border-radius: var(--lt-checkbox-radius, var(--lt-spacing-1));
     cursor: pointer;
   }
 
@@ -22,75 +22,75 @@
      under, så musa tok bort både feilrammen og rammen på en valgt. Reglene
      for valgt, deaktivert og ugyldig står etter denne og vinner på
      rekkefølgen. */
-  .fs-checkbox:hover {
-    border-color: var(--fs-color-neutral-border-strong);
+  .lt-checkbox:hover {
+    border-color: var(--lt-color-neutral-border-strong);
   }
 
-  .fs-checkbox:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-checkbox:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
   }
 
-  .fs-checkbox:checked,
-  .fs-checkbox:indeterminate {
-    background-color: var(--fs-color-accent-fill);
-    border-color: var(--fs-color-accent-fill);
+  .lt-checkbox:checked,
+  .lt-checkbox:indeterminate {
+    background-color: var(--lt-color-accent-fill);
+    border-color: var(--lt-color-accent-fill);
   }
 
   /* Haken er et token og ikke et bilde i denne fila, fordi en data-URL ikke
      kan lese en CSS-variabel. Streken er malt inn i bildet, og må derfor snu
      med temaet der de andre fargene snur. */
-  .fs-checkbox:checked {
-    background-image: var(--fs-icon-check);
+  .lt-checkbox:checked {
+    background-image: var(--lt-icon-check);
   }
 
-  .fs-checkbox:indeterminate {
-    background-image: var(--fs-icon-dash);
+  .lt-checkbox:indeterminate {
+    background-image: var(--lt-icon-dash);
   }
 
-  .fs-checkbox:disabled {
-    background-color: var(--fs-color-disabled-surface);
-    border-color: var(--fs-color-disabled-surface);
+  .lt-checkbox:disabled {
+    background-color: var(--lt-color-disabled-surface);
+    border-color: var(--lt-color-disabled-surface);
     cursor: not-allowed;
   }
 
-  .fs-checkbox:disabled:checked,
-  .fs-checkbox:disabled:indeterminate {
-    background-color: var(--fs-color-disabled-text);
-    border-color: var(--fs-color-disabled-text);
+  .lt-checkbox:disabled:checked,
+  .lt-checkbox:disabled:indeterminate {
+    background-color: var(--lt-color-disabled-text);
+    border-color: var(--lt-color-disabled-text);
   }
 
-  .fs-checkbox[data-state="invalid"] {
-    border-color: var(--fs-color-danger-text);
+  .lt-checkbox[data-state="invalid"] {
+    border-color: var(--lt-color-danger-text);
   }
 
-  .fs-checkbox[data-state="invalid"]:focus-visible {
-    outline-color: var(--fs-color-danger-text);
+  .lt-checkbox[data-state="invalid"]:focus-visible {
+    outline-color: var(--lt-color-danger-text);
   }
 
-  .fs-checkbox[data-state="success"] {
-    border-color: var(--fs-color-success-text);
+  .lt-checkbox[data-state="success"] {
+    border-color: var(--lt-color-success-text);
   }
 
   /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
      `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
      var slått av under innsending så rødt ut, ikke avslått. */
-  .fs-checkbox:disabled[data-state] {
-    background-color: var(--fs-color-disabled-surface);
-    border-color: var(--fs-color-disabled-surface);
+  .lt-checkbox:disabled[data-state] {
+    background-color: var(--lt-color-disabled-surface);
+    border-color: var(--lt-color-disabled-surface);
   }
 
-  .fs-checkbox:disabled:is(:checked, :indeterminate)[data-state] {
-    background-color: var(--fs-color-disabled-text);
-    border-color: var(--fs-color-disabled-text);
+  .lt-checkbox:disabled:is(:checked, :indeterminate)[data-state] {
+    background-color: var(--lt-color-disabled-text);
+    border-color: var(--lt-color-disabled-text);
   }
 
   /* Boksen og teksten på én linje, med teksten på plass ved flere linjer. */
-  .fs-checkbox-row {
+  .lt-checkbox-row {
     display: flex;
     align-items: flex-start;
-    gap: var(--fs-spacing-2);
-    line-height: var(--fs-line-height-default);
+    gap: var(--lt-spacing-2);
+    line-height: var(--lt-line-height-default);
   }
 
   /*
@@ -103,9 +103,9 @@
    * temaer brukeren kan velge, og koster oss ingenting å falle tilbake på.
    */
   @media (forced-colors: active) {
-    .fs-checkbox,
-    .fs-checkbox:checked,
-    .fs-checkbox:indeterminate {
+    .lt-checkbox,
+    .lt-checkbox:checked,
+    .lt-checkbox:indeterminate {
       appearance: auto;
       background-image: none;
     }

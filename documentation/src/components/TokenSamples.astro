@@ -25,23 +25,23 @@ const { semantiske = [], matrise = [] } = Astro.props
 ---
 
 <Preview layout="stabel" maxWidth="34rem">
-	<div style="display: grid; gap: var(--fs-spacing-2);">
+	<div style="display: grid; gap: var(--lt-spacing-2);">
 		{semantiske.map((navn) => (
-			<div style="display: flex; align-items: center; gap: var(--fs-spacing-3);">
+			<div style="display: flex; align-items: center; gap: var(--lt-spacing-3);">
 				<span
-					style={`width: var(--fs-spacing-10); height: var(--fs-spacing-6); border-radius: var(--fs-spacing-1); border: 1px solid var(--fs-color-neutral-border-subtle); background: var(--${navn})`}
+					style={`width: var(--lt-spacing-10); height: var(--lt-spacing-6); border-radius: var(--lt-spacing-1); border: 1px solid var(--lt-color-neutral-border-subtle); background: var(--${navn})`}
 				/>
-				<code style="font-size: var(--fs-font-size-s);">--{navn}</code>
+				<code style="font-size: var(--lt-font-size-s);">--{navn}</code>
 			</div>
 		))}
 
 		{matrise.map((familie) => (
-			<div style="display: flex; gap: var(--fs-spacing-1); align-items: center;">
-				<code style="font-size: var(--fs-font-size-xs); width: 5.5rem;">{familie}</code>
+			<div style="display: flex; gap: var(--lt-spacing-1); align-items: center;">
+				<code style="font-size: var(--lt-font-size-xs); width: 5.5rem;">{familie}</code>
 				{ROLLER.map((rolle) => (
 					<span
-						title={`--fs-color-${familie}-${rolle}`}
-						style={`flex: 1; height: var(--fs-spacing-6); border: 1px solid var(--fs-color-neutral-border-subtle); background: var(--fs-color-${familie}-${rolle})`}
+						title={`--lt-color-${familie}-${rolle}`}
+						style={`flex: 1; height: var(--lt-spacing-6); border: 1px solid var(--lt-color-neutral-border-subtle); background: var(--lt-color-${familie}-${rolle})`}
 					/>
 				))}
 			</div>

@@ -15,12 +15,12 @@ const sizeMap = {
 }
 
 const s = sizeMap[size]
-const cyanId = `fristilCyan-${size}`
-const lillaId = `fristilLilla-${size}`
+const cyanId = `lotekCyan-${size}`
+const lillaId = `lotekLilla-${size}`
 ---
 
 <div
-  class:list={["fristil-logo-wrapper", className]}
+  class:list={["lotek-logo-wrapper", className]}
   style={`display: flex; align-items: center; gap: ${s.gap}; font-family: 'Inter', sans-serif;`}
 >
   <svg
@@ -50,7 +50,7 @@ const lillaId = `fristilLilla-${size}`
     <span
       style={`font-size: ${s.textSize}; font-weight: 800; letter-spacing: -0.03em; color: currentColor;`}
     >
-      Fristil
+      LO-TEK
     </span>
     {subtitle && (
       <span

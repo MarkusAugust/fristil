@@ -1,16 +1,16 @@
 ---
 title: Kom i gang
-description: Installer Fristil, importer det du trenger, og få den første komponenten på skjermen.
+description: Installer LO-TEK, importer det du trenger, og få den første komponenten på skjermen.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
-import CssStorrelse from "../../components/CssStorrelse.astro"
+import CssSize from "../../components/CssSize.astro"
 import Preview from "../../components/Preview.astro"
 
 ## Installer
 
 ```bash
-npm install @fristil/designsystem
+npm install @lo-tek/interfaces
 ```
 
 Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasser, og ingenting registreres ved import alene, så en side som bare bruker CSS-komponentene tar ikke med noe JavaScript fra pakken. Tailwind-temaet er ren CSS, så pakken krever ingenting av Tailwind.
@@ -25,24 +25,24 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
 
     ```js
     // main.js eller main.ts, øverst
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/button.css"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/button.css"
     ```
 
     Eller alt i én import, uten å velge:
 
     ```js
-    import "@fristil/designsystem/fristil.css"
+    import "@lo-tek/interfaces/lotek.css"
     ```
 
-    `fristil.css` har `tokens.css` og alle komponentstilarkene i seg, så den erstatter hele lista. Tailwind-temaet står utenfor, og hører ikke i en JavaScript-import i det hele tatt: `tailwind.css` er en `@theme`-blokk Tailwinds egen kompilator må lese, og settes opp som en `@import` i din egen CSS. Se [Tailwind](../tailwind/).
+    `lotek.css` har `tokens.css` og alle komponentstilarkene i seg, så den erstatter hele lista. Tailwind-temaet står utenfor, og hører ikke i en JavaScript-import i det hele tatt: `tailwind.css` er en `@theme`-blokk Tailwinds egen kompilator må lese, og settes opp som en `@import` i din egen CSS. Se [Tailwind](../tailwind/).
   </TabItem>
   <TabItem label="Uten byggverktøy">
     Én fil med alt, én rundtur:
 
     ```html
     <head>
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css" />
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css" />
     </head>
     ```
 
@@ -50,16 +50,16 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
 
     ```html
     <head>
-      <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/tokens/tokens.css" />
-      <link rel="stylesheet" href="/node_modules/@fristil/designsystem/src/components/css/button/button.css" />
+      <link rel="stylesheet" href="/node_modules/@lo-tek/interfaces/src/tokens/tokens.css" />
+      <link rel="stylesheet" href="/node_modules/@lo-tek/interfaces/src/components/css/button/button.css" />
     </head>
     ```
 
-    Uten et byggesteg henter noen av stilarkene delene sine med `@import`, som nettleseren først ser når fila er lastet. `dist/fristil.css` har alt flatet ut, uten `@import`, og er derfor det raskeste valget når du lenker. Fra en CDN skriver du den virkelige stien i pakken, altså `@fristil/designsystem@VERSJON/src/tokens/tokens.css`. Korte navn som `@fristil/designsystem/tokens.css` er oppføringer i `exports`, og dem er det bare et byggesteg som leser.
+    Uten et byggesteg henter noen av stilarkene delene sine med `@import`, som nettleseren først ser når fila er lastet. `dist/lotek.css` har alt flatet ut, uten `@import`, og er derfor det raskeste valget når du lenker. Fra en CDN skriver du den virkelige stien i pakken, altså `@lo-tek/interfaces@VERSJON/src/tokens/tokens.css`. Korte navn som `@lo-tek/interfaces/tokens.css` er oppføringer i `exports`, og dem er det bare et byggesteg som leser.
   </TabItem>
 </Tabs>
 
-**Lenker du uten byggesteg, bruk `fristil.css`.** Én rundtur på <CssStorrelse />, og ingen `@import` nettleseren må laste fila for å oppdage. Lista med ett stilark per komponent er for den som har et byggesteg: der laster en side med bare knapper ikke CSS for en dialog. «Ren HTML»-fanen på hver komponentside oppgir lenkene til de enkelte stilarkene, siden lista samtidig sier hva komponenten krever, og `fristil.css` dekker hver av dem.
+**Lenker du uten byggesteg, bruk `lotek.css`.** Én rundtur på <CssSize />, og ingen `@import` nettleseren må laste fila for å oppdage. Lista med ett stilark per komponent er for den som har et byggesteg: der laster en side med bare knapper ikke CSS for en dialog. «Ren HTML»-fanen på hver komponentside oppgir lenkene til de enkelte stilarkene, siden lista samtidig sier hva komponenten krever, og `lotek.css` dekker hver av dem.
 
 ## Første komponent
 
@@ -68,14 +68,14 @@ Med `tokens.css` og `button.css` importert:
 <Tabs>
   <TabItem label="Eksempel">
     <Preview stiler={["button"]}>
-      <button class="fs-button">Send søknad</button>
-      <button class="fs-button" data-variant="secondary">Lagre utkast</button>
+      <button class="lt-button">Send søknad</button>
+      <button class="lt-button" data-variant="secondary">Lagre utkast</button>
     </Preview>
   </TabItem>
   <TabItem label="Kode">
     ```html
-    <button class="fs-button">Send søknad</button>
-    <button class="fs-button" data-variant="secondary">Lagre utkast</button>
+    <button class="lt-button">Send søknad</button>
+    <button class="lt-button" data-variant="secondary">Lagre utkast</button>
     ```
   </TabItem>
 </Tabs>
@@ -84,53 +84,53 @@ Ingen registrering, ingen oppstartskode. CSS-komponentene er bare klasser.
 
 ## Registrer web components
 
-Ramme- og frittstående komponenter er web components, og må registreres én gang når appen starter. `defineFs()` registrerer alle ni:
+Ramme- og frittstående komponenter er web components, og må registreres én gang når appen starter. `defineLt()` registrerer alle ni:
 
 ```ts
 // main.ts, kjøres én gang, ved import og ikke i en effekt
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/field.css"
-import { defineFs } from "@fristil/designsystem/register"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/field.css"
+import { defineLt } from "@lo-tek/interfaces/register"
 
-defineFs()
+defineLt()
 ```
 
 Uten byggverktøy peker du på den bygde fila:
 
 ```html
 <script type="module">
-  import { defineFs } from "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/register.js"
-  defineFs()
+  import { defineLt } from "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/register.js"
+  defineLt()
 </script>
 ```
 
-Kallet skal skje så tidlig som mulig, før noe rendres og aldri i en `useEffect`. Et element som står i siden før registreringen er et vanlig `HTMLElement` uten oppførsel, og et metodekall på det i det gapet feiler. Hjelperne `showToast`, `reportFailure`, `reportSuccess`, `extendSession` og `resetSession` venter i stedet på registreringen og utfører kallet når den kommer. Registreringen drar koden til alle ni med seg. Bruker du én av dem, kall dens egen funksjon i stedet, som `defineFsField()` fra `@fristil/designsystem/field`.
+Kallet skal skje så tidlig som mulig, før noe rendres og aldri i en `useEffect`. Et element som står i siden før registreringen er et vanlig `HTMLElement` uten oppførsel, og et metodekall på det i det gapet feiler. Hjelperne `showToast`, `reportFailure`, `reportSuccess`, `extendSession` og `resetSession` venter i stedet på registreringen og utfører kallet når den kommer. Registreringen drar koden til alle ni med seg. Bruker du én av dem, kall dens egen funksjon i stedet, som `defineLtField()` fra `@lo-tek/interfaces/field`.
 
 Flere kall er ufarlige, for funksjonene sjekker selv om elementet er registrert. De gjør heller ingenting på en server, der det ikke finnes noen `customElements` å registrere i, så de kan stå i en fil som kjøres begge steder.
 
 ```html
-<fs-field>
-  <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
-  <input class="fs-input" id="navn" type="text" name="navn" required />
-  <p class="fs-help-text">Slik det står i passet.</p>
-</fs-field>
+<lt-field>
+  <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
+  <input class="lt-input" id="navn" type="text" name="navn" required />
+  <p class="lt-help-text">Slik det står i passet.</p>
+</lt-field>
 ```
 
-Står ledeteksten, feltet og hjelpeteksten der, men hjelpeteksten er ikke koblet til feltet med `aria-describedby`, har `define`-funksjonen ikke kjørt. Markupen i en `ramme`-komponent er din og vises uansett, med to unntak: [Tabs](../components/tabs/) viser bare det første panelet, og [Suggestion](../components/suggestion/) skjuler lista, til de er registrert, siden de ellers hopper når skriptet kommer. Feiler skriptet, når brukeren ikke de andre fanene. Det er bare de to frittstående, `<fs-toast>` og `<fs-connection-status>`, som er tomme til de er registrert. Et `<fs-session-timeout>` viser ingenting før varselet skal komme, og uten registrering kommer det aldri.
+Står ledeteksten, feltet og hjelpeteksten der, men hjelpeteksten er ikke koblet til feltet med `aria-describedby`, har `define`-funksjonen ikke kjørt. Markupen i en `ramme`-komponent er din og vises uansett, med to unntak: [Tabs](../components/tabs/) viser bare det første panelet, og [Suggestion](../components/suggestion/) skjuler lista, til de er registrert, siden de ellers hopper når skriptet kommer. Feiler skriptet, når brukeren ikke de andre fanene. Det er bare de to frittstående, `<lt-toast>` og `<lt-connection-status>`, som er tomme til de er registrert. Et `<lt-session-timeout>` viser ingenting før varselet skal komme, og uten registrering kommer det aldri.
 
 ## Inngangspunkter
 
 **Stilark**
 
-Hver komponent har sitt eget stilark, oppkalt etter siden sin: `@fristil/designsystem/button.css`, `/checkbox.css`, `/table.css` og så videre. Importer dem du bruker.
+Hver komponent har sitt eget stilark, oppkalt etter siden sin: `@lo-tek/interfaces/button.css`, `/checkbox.css`, `/table.css` og så videre. Importer dem du bruker.
 
 | Import | Innhold |
 | --- | --- |
-| `@fristil/designsystem/fristil.css` | Alt i én fil: tokens og hver komponent, uten `@import`. Ikke Tailwind-temaet |
-| `@fristil/designsystem/tokens.css` | Alle CSS-variabler. Kreves av alt annet. |
-| `@fristil/designsystem/<komponent>.css` | Én komponent, med samme navn som siden dens |
-| `@fristil/designsystem/sr-only.css` | `.fs-sr-only`, tekst bare skjermlesere får |
-| `@fristil/designsystem/tailwind.css` | Fristils verdier som Tailwind-tema. Valgfri, se [Tailwind](../tailwind/). |
+| `@lo-tek/interfaces/lotek.css` | Alt i én fil: tokens og hver komponent, uten `@import`. Ikke Tailwind-temaet |
+| `@lo-tek/interfaces/tokens.css` | Alle CSS-variabler. Kreves av alt annet. |
+| `@lo-tek/interfaces/<komponent>.css` | Én komponent, med samme navn som siden dens |
+| `@lo-tek/interfaces/sr-only.css` | `.lt-sr-only`, tekst bare skjermlesere får |
+| `@lo-tek/interfaces/tailwind.css` | LO-TEKs verdier som Tailwind-tema. Valgfri, se [Tailwind](../tailwind/). |
 
 Noen stilark samler det de trenger, så du slipper å importere delene hver for seg: `field.css`, `error-summary.css`, `fieldset.css`, `search.css`, `session-timeout.css` og `suggestion.css`.
 
@@ -141,43 +141,43 @@ Alle web-komponentene trenger et stilark. Ingen av dem bruker shadow DOM, så el
 Hele komponent-API-et ligger i ett navnerom:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-fs.button({ variant: "secondary" })
-fs.input({ type: "email", state: "invalid" })
-fs.badge({ color: "success" })
+lt.button({ variant: "secondary" })
+lt.input({ type: "email", state: "invalid" })
+lt.badge({ color: "success" })
 ```
 
-Skriv `fs.` i editoren, så ser du hva som finnes. Bruker du React, importer fra `@fristil/designsystem/react`. Kallene er de samme, men returverdien bruker `className` og `htmlFor`. Se [Typesikker bruk](../typesikker-bruk/).
+Skriv `lt.` i editoren, så ser du hva som finnes. Bruker du React, importer fra `@lo-tek/interfaces/react`. Kallene er de samme, men returverdien bruker `className` og `htmlFor`. Se [Typesikker bruk](../type-safe-use/).
 
 | Import | Innhold |
 | --- | --- |
-| `@fristil/designsystem` | `fs` med alle komponentene, alle typene, og web component-registreringene |
-| `@fristil/designsystem/react` | Samme `fs`, men med `className` og `htmlFor` |
-| `@fristil/designsystem/react-jsx` | Typer for web components i JSX |
-| `@fristil/designsystem/dom` | `setAttributes`: bruker et attributtsett på et element uten JSX |
-| `@fristil/designsystem/register` | `defineFs`: registrerer alle web-komponentene i ett kall |
-| `@fristil/designsystem/diagnostics` | `diagnoseMarkup`: sjekker HTML mot elementene og klassene, som editoren gjør. Se [Editoren](../editoren/) |
-| `@fristil/designsystem/field` | `defineFsField`, klassen `FsField` |
-| `@fristil/designsystem/session-timeout` | `defineFsSessionTimeout`, klassen `FsSessionTimeout`, `extendSession` og `resetSession` |
-| `@fristil/designsystem/connection-status` | `defineFsConnectionStatus`, klassen `FsConnectionStatus`, `reportFailure` og `reportSuccess` |
-| `@fristil/designsystem/tabs` | `defineFsTabs`, klassen `FsTabs` |
-| `@fristil/designsystem/error-summary` | `defineFsErrorSummary`, klassen `FsErrorSummary` |
-| `@fristil/designsystem/popover` | `defineFsPopover`, klassen `FsPopover` |
-| `@fristil/designsystem/toast` | `defineFsToast`, klassen `FsToast`, `showToast` |
-| `@fristil/designsystem/suggestion` | `defineFsSuggestion`, klassen `FsSuggestion` |
-| `@fristil/designsystem/dialog` | `defineFsDialog`, klassen `FsDialog` |
-| `@fristil/designsystem/field-core` | `computeFieldAttributes`: det `fs.field` og `<fs-field>` deler |
-| `@fristil/designsystem/host-element` | `HostElement` og `defineElement`: grunnlaget web-komponentene arver fra |
-| `@fristil/designsystem/tokens` | `cssTokens`, `colorTokens`, `darkColorTokens`, `darkTokens`, typene `CssToken`, `ColorToken`, `Breakpoint` og `Container`, `Breakpoints`, `Containers`, og hva fargefamiliene, rollene og lagene er til |
+| `@lo-tek/interfaces` | `lt` med alle komponentene, alle typene, og web component-registreringene |
+| `@lo-tek/interfaces/react` | Samme `lt`, men med `className` og `htmlFor` |
+| `@lo-tek/interfaces/react-jsx` | Typer for web components i JSX |
+| `@lo-tek/interfaces/dom` | `setAttributes`: bruker et attributtsett på et element uten JSX |
+| `@lo-tek/interfaces/register` | `defineLt`: registrerer alle web-komponentene i ett kall |
+| `@lo-tek/interfaces/diagnostics` | `diagnoseMarkup`: sjekker HTML mot elementene og klassene, som editoren gjør. Se [Editoren](../the-editor/) |
+| `@lo-tek/interfaces/field` | `defineLtField`, klassen `LtField` |
+| `@lo-tek/interfaces/session-timeout` | `defineLtSessionTimeout`, klassen `LtSessionTimeout`, `extendSession` og `resetSession` |
+| `@lo-tek/interfaces/connection-status` | `defineLtConnectionStatus`, klassen `LtConnectionStatus`, `reportFailure` og `reportSuccess` |
+| `@lo-tek/interfaces/tabs` | `defineLtTabs`, klassen `LtTabs` |
+| `@lo-tek/interfaces/error-summary` | `defineLtErrorSummary`, klassen `LtErrorSummary` |
+| `@lo-tek/interfaces/popover` | `defineLtPopover`, klassen `LtPopover` |
+| `@lo-tek/interfaces/toast` | `defineLtToast`, klassen `LtToast`, `showToast` |
+| `@lo-tek/interfaces/suggestion` | `defineLtSuggestion`, klassen `LtSuggestion` |
+| `@lo-tek/interfaces/dialog` | `defineLtDialog`, klassen `LtDialog` |
+| `@lo-tek/interfaces/field-core` | `computeFieldAttributes`: det `lt.field` og `<lt-field>` deler |
+| `@lo-tek/interfaces/host-element` | `HostElement` og `defineElement`: grunnlaget web-komponentene arver fra |
+| `@lo-tek/interfaces/tokens` | `cssTokens`, `colorTokens`, `darkColorTokens`, `darkTokens`, typene `CssToken`, `ColorToken`, `Breakpoint` og `Container`, `Breakpoints`, `Containers`, og hva fargefamiliene, rollene og lagene er til |
 
-Hver CSS-komponent finnes også som eget inngangspunkt (`@fristil/designsystem/button`, `/badge`, `/link` og så videre) med en funksjon som heter det samme som komponenten. Unntaket er `/switch`, der funksjonen heter `switchControl`, siden `switch` er et reservert ord. Byggefunksjonene for web-komponentene, som `fs.tabs()` og `fs.dialog()`, har ikke eget inngangspunkt: de ligger i `fs` og i hovedinngangen. `/tabs`, `/dialog` og de andre har klassen og `define`-funksjonen.
+Hver CSS-komponent finnes også som eget inngangspunkt (`@lo-tek/interfaces/button`, `/badge`, `/link` og så videre) med en funksjon som heter det samme som komponenten. Unntaket er `/switch`, der funksjonen heter `switchControl`, siden `switch` er et reservert ord. Byggefunksjonene for web-komponentene, som `lt.tabs()` og `lt.dialog()`, har ikke eget inngangspunkt: de ligger i `lt` og i hovedinngangen. `/tabs`, `/dialog` og de andre har klassen og `define`-funksjonen.
 
-`fs` er valgfritt. `class="fs-button" data-variant="secondary"` for hånd gir samme resultat; funksjonene finnes for å fange skrivefeil.
+`lt` er valgfritt. `class="lt-button" data-variant="secondary"` for hånd gir samme resultat; funksjonene finnes for å fange skrivefeil.
 
 ## Versjoner
 
-Pakken følger [semantisk versjonering](https://semver.org/lang/no/). Det offentlige API-et er større enn funksjonene: klassenavnene, attributtene byggefunksjonene skriver (`data-*` og `aria-*` medregnet), tokennavnene, `--fs-*`-variablene og oppføringene i `exports` er alle noe du kan bygge på.
+Pakken følger [semantisk versjonering](https://semver.org/lang/no/). Det offentlige API-et er større enn funksjonene: klassenavnene, attributtene byggefunksjonene skriver (`data-*` og `aria-*` medregnet), tokennavnene, `--lt-*`-variablene og oppføringene i `exports` er alle noe du kan bygge på.
 
 Før 1.0 kan et nytt undertall, som et skifte fra 0.x til 0.(x+1), ha brytende endringer. De står da under overskriften «Brytende» i versjonsloggen, med hva du må endre. Fra 1.0 endres ingen av disse uten en ny hovedversjon.
 
@@ -185,13 +185,13 @@ Før 1.0 kan et nytt undertall, som et skifte fra 0.x til 0.(x+1), ha brytende e
 
 Pakken er ren ESM, uten CommonJS-utgave. Bruk `import`.
 
-Hva som er endret i hver versjon står i [CHANGELOG.md](https://github.com/MarkusAugust/fristil/blob/master/designsystem/CHANGELOG.md), som også følger med i pakken.
+Hva som er endret i hver versjon står i [CHANGELOG.md](https://github.com/MarkusAugust/lo-tek/blob/master/designsystem/CHANGELOG.md), som også følger med i pakken.
 
 ## Videre
 
-- [Rammeverk](../rammeverk/): konkret oppsett for ren HTML, React, Astro og Datastar
-- [Editoren](../editoren/): fullføring og feilmeldinger i VS Code og JetBrains, også uten TypeScript
+- [Rammeverk](../frameworks/): konkret oppsett for ren HTML, React, Astro og Datastar
+- [Editoren](../the-editor/): fullføring og feilmeldinger i VS Code og JetBrains, også uten TypeScript
 - [Design tokens](../design-tokens/): hvilke variabler som finnes, og hva de heter
-- [Tailwind](../tailwind/): oppsett og Fristils verdier som utility-klasser
+- [Tailwind](../tailwind/): oppsett og LO-TEKs verdier som utility-klasser
 - [Button](../components/button/): den enkleste komponenten å begynne med
-- [Mønstre](../monster/skjema/): hele skjemaer, lister og sider satt sammen
+- [Mønstre](../patterns/form/): hele skjemaer, lister og sider satt sammen

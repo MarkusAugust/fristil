@@ -1,18 +1,18 @@
 //! Pakken kommandolinja leser manifestet, fargekontrakten, regelbøkene og
-//! komponentene fra: `FRISTIL_PACKAGE`, som verten setter, ellers
-//! `node_modules/@fristil/designsystem` i arbeidsmappa eller over den. Se
+//! komponentene fra: `LOTEK_PACKAGE`, som verten setter, ellers
+//! `node_modules/@lo-tek/interfaces` i arbeidsmappa eller over den. Se
 //! `README.md`.
 
 use std::path::{Path, PathBuf};
 
 use crate::output::{fail, shown};
 
-const INSTALLED: &str = "node_modules/@fristil/designsystem";
+const INSTALLED: &str = "node_modules/@lo-tek/interfaces";
 
-/// Mappa verten har gitt i `FRISTIL_PACKAGE`, om den har gitt en. Testene
+/// Mappa verten har gitt i `LOTEK_PACKAGE`, om den har gitt en. Testene
 /// leser pakken i repoet, som bygget aldri gjør.
 pub fn given() -> Option<PathBuf> {
-    let given = std::env::var_os("FRISTIL_PACKAGE").map(PathBuf::from);
+    let given = std::env::var_os("LOTEK_PACKAGE").map(PathBuf::from);
     #[cfg(test)]
     let given = given.or_else(|| {
         Some(PathBuf::from(concat!(
@@ -23,7 +23,7 @@ pub fn given() -> Option<PathBuf> {
     given
 }
 
-/// Den nærmeste `node_modules/@fristil/designsystem` fra `start` og oppover.
+/// Den nærmeste `node_modules/@lo-tek/interfaces` fra `start` og oppover.
 fn installed_from(start: &Path) -> Option<PathBuf> {
     start
         .ancestors()
@@ -42,7 +42,7 @@ pub fn dir() -> Option<PathBuf> {
 /// Mappa med pakken, eller en forklaring og feilkode.
 pub fn require() -> PathBuf {
     dir().unwrap_or_else(|| {
-        fail("Fant ikke @fristil/designsystem. Kommandolinja leser manifestet, fargekontrakten, regelbøkene og komponentene fra pakken.\n\nInstaller pakken i prosjektet, eller sett FRISTIL_PACKAGE til mappa den ligger i.\n")
+        fail("Fant ikke @lo-tek/interfaces. Kommandolinja leser manifestet, fargekontrakten, regelbøkene og komponentene fra pakken.\n\nInstaller pakken i prosjektet, eller sett LOTEK_PACKAGE til mappa den ligger i.\n")
     })
 }
 
@@ -52,7 +52,7 @@ pub fn read(path: &str) -> String {
     match std::fs::read(&file) {
         Ok(bytes) => String::from_utf8_lossy(&bytes).into_owned(),
         Err(_) => fail(&format!(
-            "Fant ikke {}. Pakken mangler fila, eller er ikke @fristil/designsystem.\n",
+            "Fant ikke {}. Pakken mangler fila, eller er ikke @lo-tek/interfaces.\n",
             shown(&file.to_string_lossy())
         )),
     }
@@ -63,21 +63,21 @@ pub fn manifest() -> String {
     read("manifest/manifest.json")
 }
 
-/// Lista over regelbøkene og komponentfilene i pakken, `manifest/filer.json`.
+/// Lista over regelbøkene og komponentfilene i pakken, `manifest/files.json`.
 /// Kommandolinja leser den framfor mappene, som ikke lot seg lese gjennom
 /// Nodes WASI på Windows.
-pub fn files() -> fristil_kjerne::json::Json {
-    fristil_kjerne::json::parse(&read("manifest/filer.json")).unwrap_or_else(|e| {
+pub fn files() -> lotek_core::json::Json {
+    lotek_core::json::parse(&read("manifest/files.json")).unwrap_or_else(|e| {
         fail(&format!(
-            "manifest/filer.json i pakken kan ikke leses: {e}\n"
+            "manifest/files.json i pakken kan ikke leses: {e}\n"
         ))
     })
 }
 
 /// Gir kjernen fargekontrakten i pakken, før et tema bygges eller sjekkes.
 pub fn load_contract() {
-    let text = read("src/tokens/fargekontrakt.json");
-    if let Err(reason) = fristil_kjerne::theme::contract::load(&text) {
+    let text = read("src/tokens/color-contract.json");
+    if let Err(reason) = lotek_core::theme::contract::load(&text) {
         fail(&format!(
             "Fargekontrakten i pakken kan ikke leses: {reason}\n"
         ));
@@ -90,7 +90,7 @@ mod tests {
 
     #[test]
     fn finds_the_nearest_installed_package_and_nothing_without_one() {
-        let root = std::env::temp_dir().join(format!("fristil-pakke-test-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("lotek-pakke-test-{}", std::process::id()));
         let deep = root.join("apps/web/src");
         std::fs::create_dir_all(&deep).unwrap();
         assert_eq!(installed_from(&deep), None, "ingen pakke skal gi ingenting");

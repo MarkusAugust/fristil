@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import { cdp, server, userEvent } from "vitest/browser"
 
 import { monter, ventPaTegning } from "./testing/a11y"
-import { piksel } from "./testing/piksel"
+import { piksel } from "./testing/pixel"
 
 import "./tokens/tokens.css"
 import "./components/css/checkbox/checkbox.css"
@@ -22,7 +22,7 @@ import "./components/css/pagination/pagination.css"
 import "./components/css/progress/progress.css"
 import "./components/css/tooltip/tooltip.css"
 import "./components/css/table/table.css"
-import "./components/ramme/suggestion/suggestion.css"
+import "./components/frame/suggestion/suggestion.css"
 
 /**
  * At komponentene fortsatt viser tilstanden sin i høykontrastmodus.
@@ -63,9 +63,9 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
   it("holder skillelinja og skjelettet synlige", async () => {
     // Begge var bare bakgrunn, og bakgrunner tvinges til sideflatens farge.
     monter(`
-      <hr class="fs-divider" id="linje" />
-      <hr class="fs-divider" data-variant="subtle" id="svak" />
-      <div class="fs-skeleton" id="skjelett"></div>
+      <hr class="lt-divider" id="linje" />
+      <hr class="lt-divider" data-variant="subtle" id="svak" />
+      <div class="lt-skeleton" id="skjelett"></div>
     `)
     await settHoeykontrast(true)
     const flate = getComputedStyle(document.body).backgroundColor
@@ -78,11 +78,11 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
 
   it("lar nettleseren tegne avkryssingsboksen, radioknappen og bryteren", async () => {
     monter(`
-      <input class="fs-checkbox" type="checkbox" id="boks" checked />
-      <input class="fs-radio" type="radio" id="radio" checked />
-      <input class="fs-switch" type="checkbox" role="switch" id="bryter" checked />
-      <select class="fs-select" id="liste"><option>Valg</option></select>
-      <select class="fs-select" data-picker="styled" id="liste-stylet"><option>Valg</option></select>
+      <input class="lt-checkbox" type="checkbox" id="boks" checked />
+      <input class="lt-radio" type="radio" id="radio" checked />
+      <input class="lt-switch" type="checkbox" role="switch" id="bryter" checked />
+      <select class="lt-select" id="liste"><option>Valg</option></select>
+      <select class="lt-select" data-picker="styled" id="liste-stylet"><option>Valg</option></select>
     `)
 
     await settHoeykontrast(true)
@@ -97,7 +97,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
 
   it("beholder rollen på bryteren selv om formen forsvinner", async () => {
     monter(
-      `<input class="fs-switch" type="checkbox" role="switch" id="bryter" checked />`,
+      `<input class="lt-switch" type="checkbox" role="switch" id="bryter" checked />`,
     )
 
     await settHoeykontrast(true)
@@ -109,27 +109,27 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
 
   it("skiller det valgte alternativet med systemfargene", async () => {
     monter(`
-      <fieldset class="fs-toggle-group">
+      <fieldset class="lt-toggle-group">
         <legend>Visning</legend>
-        <label class="fs-toggle-group__option" id="valgt">
+        <label class="lt-toggle-group__option" id="valgt">
           <input type="radio" name="visning" checked /> Liste
         </label>
-        <label class="fs-toggle-group__option" id="uvalgt">
+        <label class="lt-toggle-group__option" id="uvalgt">
           <input type="radio" name="visning" /> Kart
         </label>
       </fieldset>
 
-      <button class="fs-tag" data-selectable aria-pressed="true" id="lapp-på" type="button">Innvilget</button>
-      <button class="fs-tag" data-selectable aria-pressed="false" id="lapp-av" type="button">Avslått</button>
+      <button class="lt-tag" data-selectable aria-pressed="true" id="lapp-på" type="button">Innvilget</button>
+      <button class="lt-tag" data-selectable aria-pressed="false" id="lapp-av" type="button">Avslått</button>
 
-      <ul class="fs-pagination">
+      <ul class="lt-pagination">
         <li><a href="#" aria-current="page" id="side-na">2</a></li>
         <li><a href="#" id="side-annen">3</a></li>
       </ul>
 
-      <ul class="fs-suggestion__list" role="listbox">
-        <li class="fs-suggestion__option" role="option" aria-selected="true" id="forslag-på">Bergen</li>
-        <li class="fs-suggestion__option" role="option" aria-selected="false" id="forslag-av">Bodø</li>
+      <ul class="lt-suggestion__list" role="listbox">
+        <li class="lt-suggestion__option" role="option" aria-selected="true" id="forslag-på">Bergen</li>
+        <li class="lt-suggestion__option" role="option" aria-selected="false" id="forslag-av">Bodø</li>
       </ul>
     `)
 
@@ -150,7 +150,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
     // Hover-regelen slo høykontrastregelen på spesifisitet, og bakgrunnen
     // ble tvunget til `Canvas` under `HighlightText`: samme farge på begge.
     monter(`
-      <ul class="fs-pagination">
+      <ul class="lt-pagination">
         <li><a href="#" aria-current="page" id="side-na">2</a></li>
       </ul>
     `)
@@ -165,9 +165,9 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
 
   it("gir hjelpeboblen en kant, så den ikke flyter oppå innholdet", async () => {
     monter(`
-      <span class="fs-tooltip">
+      <span class="lt-tooltip">
         <button type="button" aria-describedby="hint">Arkiver</button>
-        <span class="fs-tooltip__bubble" role="tooltip" id="hint">Flyttes til arkivet</span>
+        <span class="lt-tooltip__bubble" role="tooltip" id="hint">Flyttes til arkivet</span>
       </span>
     `)
 
@@ -181,10 +181,10 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
     // Pila er en maske med bakgrunnsfarge, og bakgrunner tvinges til
     // sideflatens farge. Uten regelen ble den usynlig.
     monter(`
-      <table class="fs-table">
+      <table class="lt-table">
         <thead><tr>
-          <th scope="col" aria-sort="ascending"><button type="button" class="fs-table__sort" id="sortert">Dato</button></th>
-          <th scope="col"><button type="button" class="fs-table__sort" id="usortert">Beløp</button></th>
+          <th scope="col" aria-sort="ascending"><button type="button" class="lt-table__sort" id="sortert">Dato</button></th>
+          <th scope="col"><button type="button" class="lt-table__sort" id="usortert">Beløp</button></th>
         </tr></thead>
       </table>
     `)
@@ -205,7 +205,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
     // Stripen som sveiper over, er en gradient, og gradienter fjernes i
     // modusen. Uten unntaket sto en tom ramme igjen.
     monter(`
-      <progress class="fs-progress" id="ubestemt" aria-label="Laster opp"></progress>
+      <progress class="lt-progress" id="ubestemt" aria-label="Laster opp"></progress>
       <span id="markering" style="color: Highlight">x</span>
       <span id="tekst" style="color: CanvasText">x</span>
     `)
@@ -224,10 +224,10 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
     // modusen tvang bakgrunnen til `Canvas`. Stilen på verten så riktig ut,
     // men stolpen var tom, så det er pikslene som må leses.
     monter(`
-      <progress class="fs-progress" id="bestemt" value="50" max="100"
-        aria-label="Lastet opp" style="--fs-progress-height: 16px"></progress>
-      <progress class="fs-progress" id="farget" value="50" max="100"
-        data-color="danger" aria-label="Lastet opp" style="--fs-progress-height: 16px"></progress>
+      <progress class="lt-progress" id="bestemt" value="50" max="100"
+        aria-label="Lastet opp" style="--lt-progress-height: 16px"></progress>
+      <progress class="lt-progress" id="farget" value="50" max="100"
+        data-color="danger" aria-label="Lastet opp" style="--lt-progress-height: 16px"></progress>
     `)
     await settHoeykontrast(true)
 
@@ -240,7 +240,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
   })
 
   it("lar tilstanden være uendret utenfor modusen", async () => {
-    monter(`<input class="fs-checkbox" type="checkbox" id="boks" checked />`)
+    monter(`<input class="lt-checkbox" type="checkbox" id="boks" checked />`)
     await ventPaTegning()
 
     expect(stil("boks").appearance).toBe("none")

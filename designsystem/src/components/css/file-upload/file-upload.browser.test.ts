@@ -15,16 +15,16 @@ import "../label/label.css"
 import "../help-text/help-text.css"
 import "../button/button.css"
 
-describe("fs-file-upload", () => {
+describe("lt-file-upload", () => {
   beforeEach(() => {
     monter(`
-      <label class="fs-label" for="vedlegg">Last opp vedlegg</label>
-      <input class="fs-file-upload" type="file" id="vedlegg" multiple
+      <label class="lt-label" for="vedlegg">Last opp vedlegg</label>
+      <input class="lt-file-upload" type="file" id="vedlegg" multiple
         accept=".pdf,.jpg" aria-describedby="vedlegg-hjelp" />
-      <p class="fs-help-text" id="vedlegg-hjelp">PDF eller bilde, opptil 10 MB per fil.</p>
+      <p class="lt-help-text" id="vedlegg-hjelp">PDF eller bilde, opptil 10 MB per fil.</p>
 
-      <ul class="fs-file-upload-list">
-        <li>fodselsattest.pdf <button class="fs-button" data-variant="ghost" type="button">Fjern fodselsattest.pdf</button></li>
+      <ul class="lt-file-upload-list">
+        <li>fodselsattest.pdf <button class="lt-button" data-variant="ghost" type="button">Fjern fodselsattest.pdf</button></li>
       </ul>
     `)
   })
@@ -47,18 +47,18 @@ describe("fs-file-upload", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(fileUpload()).toEqual({ class: "fs-file-upload", type: "file" })
+    expect(fileUpload()).toEqual({ class: "lt-file-upload", type: "file" })
     expect(
       fileUpload({ multiple: true, accept: ".pdf", state: "invalid" }),
     ).toEqual({
-      class: "fs-file-upload",
+      class: "lt-file-upload",
       type: "file",
       multiple: true,
       accept: ".pdf",
       "data-state": "invalid",
       "aria-invalid": "true",
     })
-    expect(fileUpload.list).toBe("fs-file-upload-list")
+    expect(fileUpload.list).toBe("lt-file-upload-list")
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {

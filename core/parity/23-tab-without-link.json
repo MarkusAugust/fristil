@@ -4,8 +4,8 @@
       "start": 122,
       "end": 128,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/tabs/",
-      "message": "<fs-tabs> har en fane uten href: role=\"tab\" står på <button>, som ikke er en lenke til et panel. Fanene er lenker, som <a href=\"#vedlegg\">, så de virker uten JavaScript. Komponenten rører ikke det som ikke er en lenke."
+      "link": "https://lo-tek.sobernetics.no/components/tabs/",
+      "message": "<lt-tabs> har en fane uten href: role=\"tab\" står på <button>, som ikke er en lenke til et panel. Fanene er lenker, som <a href=\"#vedlegg\">, så de virker uten JavaScript. Komponenten rører ikke det som ikke er en lenke."
     }
   ],
   "side": [
@@ -13,8 +13,8 @@
       "start": 122,
       "end": 128,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/tabs/",
-      "message": "<fs-tabs> har en fane uten href: role=\"tab\" står på <button>, som ikke er en lenke til et panel. Fanene er lenker, som <a href=\"#vedlegg\">, så de virker uten JavaScript. Komponenten rører ikke det som ikke er en lenke."
+      "link": "https://lo-tek.sobernetics.no/components/tabs/",
+      "message": "<lt-tabs> har en fane uten href: role=\"tab\" står på <button>, som ikke er en lenke til et panel. Fanene er lenker, som <a href=\"#vedlegg\">, så de virker uten JavaScript. Komponenten rører ikke det som ikke er en lenke."
     }
   ]
 }

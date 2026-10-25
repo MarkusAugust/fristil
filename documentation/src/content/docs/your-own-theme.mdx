@@ -3,23 +3,23 @@ title: Eget tema
 description: Lag et fargetema av merkefargene dine, med kontrasten kontrollert i begge temaer.
 ---
 
-Fristil har sine egne kulører. Har organisasjonen din andre, kan du skrive cellene for hånd, men da eier du kontrastløftene selv: hver farge inngår i flere par, og hvert par må holde kravet i både lyst og mørkt tema. `fristil sjekk-tema` sier fra hvis ett ryker.
+LO-TEK har sine egne kulører. Har organisasjonen din andre, kan du skrive cellene for hånd, men da eier du kontrastløftene selv: hver farge inngår i flere par, og hvert par må holde kravet i både lyst og mørkt tema. `lotek sjekk-tema` sier fra hvis ett ryker.
 
 Generatoren tar merkefargene dine og bygger resten.
 
 ## Lag temaet
 
 ```bash
-npx @fristil/designsystem tema \
+npx @lo-tek/interfaces tema \
   --aksent=#7c3aed \
   --fare=#b3261e \
   --suksess=#2b6940 \
   --advarsel=#8a5a00 \
   --noytral=#1a1a1a \
-  --ut=tema.css
+  --ut=theme.css
 ```
 
-Eller med en fil, som kan ligge i repoet. Kall den `fristil.tema.json`:
+Eller med en fil, som kan ligge i repoet. Kall den `lotek.theme.json`:
 
 ```json
 {
@@ -32,10 +32,10 @@ Eller med en fil, som kan ligge i repoet. Kall den `fristil.tema.json`:
 ```
 
 ```bash
-npx @fristil/designsystem tema fristil.tema.json --ut=tema.css
+npx @lo-tek/interfaces tema lotek.theme.json --ut=theme.css
 ```
 
-Alle er valgfrie. En familie du utelater arver Fristils egen kulør.
+Alle er valgfrie. En familie du utelater arver LO-TEKs egen kulør.
 
 | Familie | Brukes til |
 | --- | --- |
@@ -52,15 +52,15 @@ Alle er valgfrie. En familie du utelater arver Fristils egen kulør.
 Legg fila etter `tokens.css`. Den overstyrer det oppskriften nevner, og resten kommer fortsatt derfra:
 
 ```css
-@import "@fristil/designsystem/tokens.css";
-@import "./tema.css";
+@import "@lo-tek/interfaces/tokens.css";
+@import "./theme.css";
 ```
 
 Temaet dekker både lyst og mørkt tema, og både systemvalget og et eksplisitt `data-theme`.
 
 `color-scheme` avgjør hvordan nettleseren tegner sine egne flater: nedtrekkslista til en `<select>`, rullefelt og kalenderpanelet i et datofelt. Uten den blir de lyse i en mørk side.
 
-Fristil setter den der noen har valgt et tema: på `[data-theme="light"]`, på `[data-theme="dark"]` og på de tre valgene til [temavelgeren](../monster/tema/). Den står ikke på bar `:root`, for egenskapen arves nedover, så en verdi der gjelder hele dokumentet. Et barn kan melde seg ut med `color-scheme: normal`, men det er en motregel verten aldri ba om å måtte skrive. Vil du at nettleserens flater skal følge systemet på hele siden, skriver du én linje selv:
+LO-TEK setter den der noen har valgt et tema: på `[data-theme="light"]`, på `[data-theme="dark"]` og på de tre valgene til [temavelgeren](../patterns/theme/). Den står ikke på bar `:root`, for egenskapen arves nedover, så en verdi der gjelder hele dokumentet. Et barn kan melde seg ut med `color-scheme: normal`, men det er en motregel verten aldri ba om å måtte skrive. Vil du at nettleserens flater skal følge systemet på hele siden, skriver du én linje selv:
 
 ```css
 :root {
@@ -68,11 +68,11 @@ Fristil setter den der noen har valgt et tema: på `[data-theme="light"]`, på `
 }
 ```
 
-**Bruker du temavelgeren, skal du ikke skrive den linja.** Hvert av de tre valgene setter `color-scheme` selv. Skriver du den likevel, utenfor et lag, slår regelen `@layer fristil`, og nettleserens flater blir låst til systemet mens brukeren har valgt noe annet.
+**Bruker du temavelgeren, skal du ikke skrive den linja.** Hvert av de tre valgene setter `color-scheme` selv. Skriver du den likevel, utenfor et lag, slår regelen `@layer lotek`, og nettleserens flater blir låst til systemet mens brukeren har valgt noe annet.
 
 ## Hva generatoren gjør
 
-**Den fyller matrisen.** Hver familie du oppgir får de ni rollene, og hver rolle får sin faste lyshet. Gir du bare noen av familiene, arver resten Fristils egne kulører.
+**Den fyller matrisen.** Hver familie du oppgir får de ni rollene, og hver rolle får sin faste lyshet. Gir du bare noen av familiene, arver resten LO-TEKs egne kulører.
 
 **Kuløren og metningen er dine, lysheten er rollens.** Gir du en lys lilla eller en mørk lilla, får du den samme lilla familien: rollen bestemmer hvor lys hver celle er, og det er det som gjør at kontrasten kan garanteres. Metningen følger med, så en dus merkefarge gir en dus familie.
 
@@ -137,13 +137,13 @@ Alt her er valgfritt. Utelater du begge blokkene, er temaet nøyaktig det det va
 
 ### Uten farger
 
-Bruker organisasjonen din allerede Fristils kulører, er det skriften og hjørnene som skiller. Da utelater du merkefargene helt, og får et tema som lar fargene stå:
+Bruker organisasjonen din allerede LO-TEKs kulører, er det skriften og hjørnene som skiller. Da utelater du merkefargene helt, og får et tema som lar fargene stå:
 
 ```bash
-npx @fristil/designsystem tema \
+npx @lo-tek/interfaces tema \
   --skrift="Helvetica, Arial, sans-serif" \
   --knapp-hjorner=2.75rem \
-  --ut=tema.css
+  --ut=theme.css
 ```
 
 Et tema helt uten innhold kaster. Oppgi enten en farge, en skrift eller en form.
@@ -159,39 +159,39 @@ Avkryssingsboksen, merket, etiketten, valggruppa, avataren, skjelettet og framdr
 Den genererte fila legger seg i sitt eget lag, erklært etter pakkens eget:
 
 ```css
-@layer fristil, fristil-tema;
+@layer lotek, lotek-theme;
 ```
 
 Erklæringen avgjør rekkefølgen uavhengig av når stilarkene lastes, og det er ikke en detalj: både Astro og TanStack Start legger sin bundlede CSS inn rett før `</head>`, altså etter en `<link>` du selv har skrevet. Lå temaet i det samme laget som pakken, ville det tapt mot standardverdiene i de to. Begge lagene ligger fortsatt foran usortert CSS, så dine egne regler vinner som før.
 
-Bruker du Tailwind, må `fristil-tema` stå i lagrekkefølgen på første linje i CSS-en din, mellom `fristil` og `components`:
+Bruker du Tailwind, må `lotek-theme` stå i lagrekkefølgen på første linje i CSS-en din, mellom `lotek` og `components`:
 
 ```css
-@layer theme, base, fristil, fristil-tema, components, utilities;
+@layer theme, base, lotek, lotek-theme, components, utilities;
 ```
 
-En `@layer`-setning oppretter bare lag som ikke finnes fra før. Står `utilities` alt i rekkefølgen når temaet erklærer sitt lag, havner `fristil-tema` sist, etter `utilities`, og temaet slår Tailwind-klassene dine. Se [Lagrekkefølgen](../tailwind/#lagrekkefølgen).
+En `@layer`-setning oppretter bare lag som ikke finnes fra før. Står `utilities` alt i rekkefølgen når temaet erklærer sitt lag, havner `lotek-theme` sist, etter `utilities`, og temaet slår Tailwind-klassene dine. Se [Lagrekkefølgen](../tailwind/#lagrekkefølgen).
 
-Det gjelder begge veier. Lastes temaet som en `<link>` før den bundlede CSS-en, kommer linja i CSS-en din for sent: temaet har alt erklært `fristil` og `fristil-tema`, så `base` havner etter dem, og Preflight nullstiller komponentene. Da må linja stå i et `<style>` først i `<head>`, før temaet, se [Når Fristil og Tailwind er to stilark](../tailwind/#når-fristil-og-tailwind-er-to-stilark).
+Det gjelder begge veier. Lastes temaet som en `<link>` før den bundlede CSS-en, kommer linja i CSS-en din for sent: temaet har alt erklært `lotek` og `lotek-theme`, så `base` havner etter dem, og Preflight nullstiller komponentene. Da må linja stå i et `<style>` først i `<head>`, før temaet, se [Når LO-TEK og Tailwind er to stilark](../tailwind/#når-lotek-og-tailwind-er-to-stilark).
 
 ### Skriften settes som en regel
 
-Fristil arver skrift med vilje, så et token alene ville ikke endret én eneste bokstav. Oppgir du `fontFamily`, skriver generatoren derfor både tokenet og regelen som tar det i bruk:
+LO-TEK arver skrift med vilje, så et token alene ville ikke endret én eneste bokstav. Oppgir du `fontFamily`, skriver generatoren derfor både tokenet og regelen som tar det i bruk:
 
 ```css
 :root {
-  font-family: var(--fs-font-family-base);
+  font-family: var(--lt-font-family-base);
 }
 ```
 
-Regelen står i `@layer fristil-tema`, som resten av temaet, så din egen CSS uten lag vinner fortsatt over den, og det gjør også et lag erklært etter, som `utilities` i rekkefølgen over.
+Regelen står i `@layer lotek-theme`, som resten av temaet, så din egen CSS uten lag vinner fortsatt over den, og det gjør også et lag erklært etter, som `utilities` i rekkefølgen over.
 
 ## Programmatisk
 
 Trenger du temaet et annet sted enn på kommandolinjen, for eksempel i et byggesteg:
 
 ```ts
-import { buildTheme } from "@fristil/designsystem/tema"
+import { buildTheme } from "@lo-tek/interfaces/theme"
 
 const tema = buildTheme({
   accent: "#7c3aed",
@@ -200,7 +200,7 @@ const tema = buildTheme({
   warning: "#8a5a00",
 })
 
-tema.css        // ferdig CSS
+theme.css        // ferdig CSS
 tema.light      // cellene i lyst tema, som objekt
 tema.dark       // cellene i mørkt tema
 tema.violations // løfter som ikke holder. Tom når temaet er i orden
@@ -208,24 +208,24 @@ tema.violations // løfter som ikke holder. Tom når temaet er i orden
 
 Nøklene er familienavnene på engelsk: `accent`, `visited`, `brand1` til `brand3`, `neutral`, `danger`, `warning` og `success`. På kommandolinjen heter de det samme på norsk.
 
-Temaet regnes av kjernen, skrevet i Rust og bygget til WebAssembly, den samme som `fristil tema` og Fristil for Kotlin bruker. `buildTheme` laster den fra pakken i Node, Bun og Deno. I nettleseren, for eksempel i en temavelger, laster du den selv:
+Temaet regnes av kjernen, skrevet i Rust og bygget til WebAssembly, den samme som `lotek tema` og LO-TEK for Kotlin bruker. `buildTheme` laster den fra pakken i Node, Bun og Deno. I nettleseren, for eksempel i en temavelger, laster du den selv:
 
 ```ts
-import { loadCore } from "@fristil/designsystem/diagnostics"
-import modul from "@fristil/designsystem/kjerne.wasm?url"
-import kontrakt from "@fristil/designsystem/fargekontrakt.json?raw"
+import { loadCore } from "@lo-tek/interfaces/diagnostics"
+import modul from "@lo-tek/interfaces/core.wasm?url"
+import kontrakt from "@lo-tek/interfaces/color-contract.json?raw"
 
 const kjerne = loadCore(await WebAssembly.compileStreaming(fetch(modul)))
 kjerne.loadContract(kontrakt)
 const tema = kjerne.buildTheme({ accent: "#7c3aed" })
 ```
 
-Kjernen har ingen farger i seg. Fargekontrakten, altså lysheten per rolle og løftene, gir du den med `loadContract`, fra fila i pakken. `?url` og `?raw` er Vite sin måte å få adressen til en fil og teksten i den. Uten et byggesteg legger du `fristil-kjerne.wasm` og `fargekontrakt.json` fra pakken ved siden av siden, og henter dem derfra.
+Kjernen har ingen farger i seg. Fargekontrakten, altså lysheten per rolle og løftene, gir du den med `loadContract`, fra fila i pakken. `?url` og `?raw` er Vite sin måte å få adressen til en fil og teksten i den. Uten et byggesteg legger du `lotek-core.wasm` og `color-contract.json` fra pakken ved siden av siden, og henter dem derfra.
 
-Vil du regne selv, har `@fristil/designsystem/farge` regnestykkene: `parseHex`, `toHex`, `rgbToOklch`, `oklchToRgb` og `contrastRatio`. Hvilken lyshet hver rolle har og kravene til kontrast står i `@fristil/designsystem/kontrakt`, og Fristils egne farger i `@fristil/designsystem/matrise`.
+Vil du regne selv, har `@lo-tek/interfaces/color` regnestykkene: `parseHex`, `toHex`, `rgbToOklch`, `oklchToRgb` og `contrastRatio`. Hvilken lyshet hver rolle har og kravene til kontrast står i `@lo-tek/interfaces/kontrakt`, og LO-TEKs egne farger i `@lo-tek/interfaces/matrix-cells`.
 
 ## Kontrollen
 
 Løftene kjøres mot tolv aksentfarger spredt rundt hele fargesirkelen, fra knallrød til nesten svart, hver av dem sammen med ti nøytrale farger fra svart og hvitt til farget grått, i begge temaer. Er én celle for lys, feiler testen med hvilket par som røk og hvor langt unna det var.
 
-Skriver du cellene for hånd framfor å generere dem, er `fristil sjekk-tema tema.css` den samme kontrollen på din egen fil.
+Skriver du cellene for hånd framfor å generere dem, er `lotek sjekk-tema theme.css` den samme kontrollen på din egen fil.

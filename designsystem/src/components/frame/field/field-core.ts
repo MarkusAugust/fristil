@@ -9,8 +9,8 @@ export { createFieldId }
  * Regner ut koblingen mellom ledetekst, felt, hjelpetekst og feilmelding.
  *
  * Dette er den ene implementasjonen av tilgjengelighetskontrakten i systemet.
- * `<fs-field>` bruker den på elementer som allerede står i DOM-en, og
- * `fs.field()` gir den samme utregningen som data, til den som skriver
+ * `<lt-field>` bruker den på elementer som allerede står i DOM-en, og
+ * `lt.field()` gir den samme utregningen som data, til den som skriver
  * markupen med JavaScript. Uten delingen ville kontrakten finnes to steder og kunne gå
  * fra hverandre.
  */
@@ -59,7 +59,7 @@ export type FieldOptions = {
 
 export type FieldAttributes = {
   label: {
-    class: "fs-label"
+    class: "lt-label"
     for: string
     "data-required"?: RequiredMarker
     "data-optional"?: ""
@@ -112,13 +112,13 @@ export function computeFieldAttributes(options: FieldOptions): FieldAttributes {
   } = options
 
   // Reserven gjelder bare den som ikke har en typesjekk. Se `idOrFallback`.
-  const id = idOrFallback("fs.field()", givenId)
+  const id = idOrFallback("lt.field()", givenId)
   const helpId = options.helpId ?? `${id}-help`
   const errorId = options.errorId ?? `${id}-error`
 
   return {
     label: attributes({
-      class: "fs-label" as const,
+      class: "lt-label" as const,
       for: id,
       "data-required": required,
       "data-optional": optional && !required ? ("" as const) : undefined,

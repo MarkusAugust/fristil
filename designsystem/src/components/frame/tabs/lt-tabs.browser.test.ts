@@ -7,9 +7,9 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { gåTil, settAdresse } from "../../../testing/adresse"
+import { gåTil, settAdresse } from "../../../testing/address"
 import { attr } from "../../../testing/markup"
-import { defineFsTabs, type FsTabs } from "./fs-tabs"
+import { defineLtTabs, type LtTabs } from "./lt-tabs"
 import { tabs } from "./tabs"
 
 import "../../../tokens/tokens.css"
@@ -23,7 +23,7 @@ const INNHOLD = [
   "Ingen meldinger.",
 ]
 
-/** Markupen `fs.tabs()` gir: lenker, id-er og klasser. Resten skriver komponenten. */
+/** Markupen `lt.tabs()` gir: lenker, id-er og klasser. Resten skriver komponenten. */
 const FANER = tabs({
   id: "sak",
   keys: NOKLER,
@@ -51,17 +51,17 @@ function deler(
 function fraByggefunksjonen(faner = FANER, vert = ""): string {
   const { lenker, paneler } = deler(faner)
   return `
-    <fs-tabs${vert}>
+    <lt-tabs${vert}>
       <ul ${attr(faner.list)}>${lenker}</ul>
       ${paneler.join("")}
-    </fs-tabs>`
+    </lt-tabs>`
 }
 
 const faner = () => [
-  ...document.querySelectorAll<HTMLElement>("fs-tabs [role='tab']"),
+  ...document.querySelectorAll<HTMLElement>("lt-tabs [role='tab']"),
 ]
 const paneler = () => [
-  ...document.querySelectorAll<HTMLElement>(".fs-tabs__panel"),
+  ...document.querySelectorAll<HTMLElement>(".lt-tabs__panel"),
 ]
 const valgt = () =>
   faner().map((f) => f.getAttribute("aria-selected") === "true")
@@ -73,7 +73,7 @@ function tast(element: Element, key: string) {
 }
 
 async function tegn() {
-  await customElements.whenDefined("fs-tabs")
+  await customElements.whenDefined("lt-tabs")
   await ventPaTegning()
 }
 
@@ -83,9 +83,9 @@ beforeEach(async () => {
   await settAdresse("")
 })
 
-describe("fs-tabs", () => {
+describe("lt-tabs", () => {
   beforeAll(() => {
-    defineFsTabs()
+    defineLtTabs()
   })
 
   beforeEach(async () => {
@@ -93,8 +93,8 @@ describe("fs-tabs", () => {
     await tegn()
   })
 
-  it("setter rollene og koblingen på markup fra fs.tabs()", () => {
-    const liste = document.querySelector(".fs-tabs__list") as HTMLElement
+  it("setter rollene og koblingen på markup fra lt.tabs()", () => {
+    const liste = document.querySelector(".lt-tabs__list") as HTMLElement
     const [fane] = faner()
     const panel = document.getElementById("sak-soknaden") as HTMLElement
 
@@ -113,7 +113,7 @@ describe("fs-tabs", () => {
   })
 
   it("skjuler panelene som ikke er valgt med until-found", () => {
-    // `fs.tabs()` skriver ikke `hidden`, så panelene vises uten JavaScript.
+    // `lt.tabs()` skriver ikke `hidden`, så panelene vises uten JavaScript.
     // Komponenten skjuler dem, og med `until-found` finner søk i siden dem.
     expect(paneler().map((p) => p.getAttribute("hidden"))).toEqual([
       null,
@@ -157,7 +157,7 @@ describe("fs-tabs", () => {
   it("melder fra når en fane velges", async () => {
     const meldinger: number[] = []
     document
-      .querySelector("fs-tabs")
+      .querySelector("lt-tabs")
       ?.addEventListener("tab-select", (hendelse) => {
         meldinger.push(hendelse.detail.index)
       })
@@ -173,9 +173,9 @@ describe("fs-tabs", () => {
   })
 })
 
-describe("fs.tabs() og nøklene", () => {
+describe("lt.tabs() og nøklene", () => {
   it("lager lenker, panel-id-er og overskrifts-id-er av nøklene", () => {
-    // Hele formen står i krav I5, i `fs-tabs-krav.browser.test.ts`.
+    // Hele formen står i krav I5, i `lt-tabs-krav.browser.test.ts`.
     const f = tabs({ id: "sak", keys: ["a", "b"], label: "Saken" })
 
     expect(f.tabs.map((t) => t.href)).toEqual(["#sak-a", "#sak-b"])
@@ -217,20 +217,20 @@ describe("fs.tabs() og nøklene", () => {
   })
 })
 
-describe("fs-tabs finner panelet gjennom href og hopper over det som ikke kan velges", () => {
+describe("lt-tabs finner panelet gjennom href og hopper over det som ikke kan velges", () => {
   beforeAll(() => {
-    defineFsTabs()
+    defineLtTabs()
   })
 
   const liste = (lenker: string) =>
-    `<ul class="fs-tabs__list" role="tablist">${lenker}</ul>`
+    `<ul class="lt-tabs__list" role="tablist">${lenker}</ul>`
 
   it("hopper over en deaktivert fane med piltastene, Home og End", async () => {
     // Uten dette valgte piltasten den deaktiverte fanen, og raden sto uten
     // en eneste fane som kunne få fokus. Tastaturbrukeren var låst ute.
     const første = deler(FANER, [1])
     monter(
-      `<fs-tabs>${liste(første.lenker)}${første.paneler.join("")}</fs-tabs>`,
+      `<lt-tabs>${liste(første.lenker)}${første.paneler.join("")}</lt-tabs>`,
     )
     await tegn()
     faner()[0].focus()
@@ -245,21 +245,21 @@ describe("fs-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     expect(document.activeElement).toBe(faner()[0])
 
     const andre = deler(FANER, [2])
-    monter(`<fs-tabs>${liste(andre.lenker)}${andre.paneler.join("")}</fs-tabs>`)
+    monter(`<lt-tabs>${liste(andre.lenker)}${andre.paneler.join("")}</lt-tabs>`)
     await tegn()
     faner()[0].focus()
     tast(faner()[0], "End")
     await tegn()
     expect(document.activeElement).toBe(faner()[1])
 
-    ;(document.querySelector("fs-tabs") as FsTabs).select(2)
+    ;(document.querySelector("lt-tabs") as LtTabs).select(2)
     await tegn()
     expect(valgt()).toEqual([false, true, false])
   })
 
   it("går til første og siste fane med Home og End", async () => {
     const { lenker, paneler: p } = deler()
-    monter(`<fs-tabs>${liste(lenker)}${p.join("")}</fs-tabs>`)
+    monter(`<lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>`)
     await tegn()
     faner()[1].click()
     await tegn()
@@ -284,23 +284,23 @@ describe("fs-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     const rad = (f: typeof ytre, navn: string) =>
       f.tabs.map((t, i) => `<li><a ${attr(t)}>${navn} ${i}</a></li>`).join("")
     monter(`
-      <fs-tabs>
+      <lt-tabs>
         <ul ${attr(ytre.list)}>${rad(ytre, "Ytre")}</ul>
         <section ${attr(ytre.panels[0])}>
           <h2 ${attr(ytre.headings[0])}>Ytre 0</h2>
-          <fs-tabs>
+          <lt-tabs>
             <ul ${attr(indre.list)}>${rad(indre, "Indre")}</ul>
             <section ${attr(indre.panels[0])}><h3 ${attr(indre.headings[0])}>A</h3></section>
             <section ${attr(indre.panels[1])}><h3 ${attr(indre.headings[1])}>B</h3></section>
-          </fs-tabs>
+          </lt-tabs>
         </section>
         <section ${attr(ytre.panels[1])}><h2 ${attr(ytre.headings[1])}>Ytre 1</h2></section>
-      </fs-tabs>
+      </lt-tabs>
     `)
     await tegn()
     ;(
       document.querySelectorAll(
-        "fs-tabs fs-tabs [role='tab']",
+        "lt-tabs lt-tabs [role='tab']",
       )[1] as HTMLElement
     ).click()
     await tegn()
@@ -323,7 +323,7 @@ describe("fs-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     // annen rekkefølge viste et klikk på fane 1 panelet til en annen fane.
     const { lenker, paneler: p } = deler()
     const [forste, ...resten] = p
-    monter(`<fs-tabs>${liste(lenker)}${[...resten, forste].join("")}</fs-tabs>`)
+    monter(`<lt-tabs>${liste(lenker)}${[...resten, forste].join("")}</lt-tabs>`)
     await tegn()
     faner()[1].click()
     await tegn()
@@ -338,7 +338,7 @@ describe("fs-tabs finner panelet gjennom href og hopper over det som ikke kan ve
   it("finner et panel som står utenfor verten", async () => {
     const { lenker, paneler: p } = deler()
     monter(`
-      <fs-tabs>${liste(lenker)}${p[0]}</fs-tabs>
+      <lt-tabs>${liste(lenker)}${p[0]}</lt-tabs>
       ${p[1]}
       ${p[2]}
     `)
@@ -359,14 +359,14 @@ describe("fs-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     try {
       const { lenker, paneler: p } = deler()
       monter(`
-        <fs-tabs>${liste(
+        <lt-tabs>${liste(
           lenker
             .replace('href="#sak-vedlegg"', 'href="#sak-vedleggx"')
             .replace(
               'aria-controls="sak-vedlegg"',
               'aria-controls="sak-vedleggx"',
             ),
-        )}${p.join("")}</fs-tabs>
+        )}${p.join("")}</lt-tabs>
       `)
       await tegn()
       faner()[2].click()
@@ -395,14 +395,14 @@ describe("fs-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     // andre var valgt.
     const { lenker, paneler: p } = deler()
     monter(`
-      <fs-tabs>${liste(
+      <lt-tabs>${liste(
         lenker
           .replace('href="#sak-meldinger"', 'href="#sak-soknaden"')
           .replace(
             'aria-controls="sak-meldinger"',
             'aria-controls="sak-soknaden"',
           ),
-      )}${p.join("")}</fs-tabs>
+      )}${p.join("")}</lt-tabs>
     `)
     await tegn()
     faner()[2].click()
@@ -417,7 +417,7 @@ describe("fs-tabs finner panelet gjennom href og hopper over det som ikke kan ve
 
   it("flytter tabbestoppet når den valgte fanen deaktiveres av en patch", async () => {
     const { lenker, paneler: p } = deler()
-    monter(`<fs-tabs>${liste(lenker)}${p.join("")}</fs-tabs>`)
+    monter(`<lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>`)
     await tegn()
     faner()[1].click()
     await tegn()
@@ -433,11 +433,11 @@ describe("fs-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     // React 19 skriver egenskapen når den finnes, og dokumentasjonen viser
     // `faner.selected` som API. En getter alene kastet ved tilordning.
     const { lenker, paneler: p } = deler()
-    monter(`<fs-tabs>${liste(lenker)}${p.join("")}</fs-tabs>`)
+    monter(`<lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>`)
     await tegn()
 
     const meldinger: number[] = []
-    const vert = document.querySelector("fs-tabs") as FsTabs
+    const vert = document.querySelector("lt-tabs") as LtTabs
     vert.addEventListener("tab-select", (h) => {
       meldinger.push(h.detail.index)
     })
@@ -455,7 +455,7 @@ describe("fs-tabs finner panelet gjennom href og hopper over det som ikke kan ve
     const { lenker, paneler: p } = deler()
     monter(`
       <div dir="rtl">
-        <fs-tabs>${liste(lenker)}${p.join("")}</fs-tabs>
+        <lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>
       </div>
     `)
     await tegn()
@@ -478,30 +478,30 @@ describe("fs-tabs finner panelet gjennom href og hopper over det som ikke kan ve
  * og den krever lenkene uansett. Komponenten fyller inn resten.
  */
 const BAR = `
-  <fs-tabs>
-    <ul class="fs-tabs__list" aria-label="Deler av saken">
+  <lt-tabs>
+    <ul class="lt-tabs__list" aria-label="Deler av saken">
       <li><a href="#soknaden">Søknaden</a></li>
       <li><a href="#vedlegg">Vedlegg</a></li>
       <li><a href="#meldinger">Meldinger</a></li>
     </ul>
-    <section class="fs-tabs__panel" id="soknaden"><h2>Søknaden</h2><p>Søknaden ble sendt 4. mars.</p></section>
-    <section class="fs-tabs__panel" id="vedlegg"><h2>Vedlegg</h2><p>Tre vedlegg.</p></section>
-    <section class="fs-tabs__panel" id="meldinger"><h2>Meldinger</h2><p>Ingen meldinger.</p></section>
-  </fs-tabs>`
+    <section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2><p>Søknaden ble sendt 4. mars.</p></section>
+    <section class="lt-tabs__panel" id="vedlegg"><h2>Vedlegg</h2><p>Tre vedlegg.</p></section>
+    <section class="lt-tabs__panel" id="meldinger"><h2>Meldinger</h2><p>Ingen meldinger.</p></section>
+  </lt-tabs>`
 
-describe("fs-tabs kobler fra bar struktur", () => {
+describe("lt-tabs kobler fra bar struktur", () => {
   beforeAll(() => {
-    defineFsTabs()
+    defineLtTabs()
   })
 
   function barDeler() {
     return {
-      liste: document.querySelector(".fs-tabs__list") as HTMLElement,
-      punkter: [...document.querySelectorAll<HTMLElement>(".fs-tabs__list li")],
+      liste: document.querySelector(".lt-tabs__list") as HTMLElement,
+      punkter: [...document.querySelectorAll<HTMLElement>(".lt-tabs__list li")],
       lenker: [
-        ...document.querySelectorAll<HTMLAnchorElement>(".fs-tabs__list a"),
+        ...document.querySelectorAll<HTMLAnchorElement>(".lt-tabs__list a"),
       ],
-      paneler: [...document.querySelectorAll<HTMLElement>(".fs-tabs__panel")],
+      paneler: [...document.querySelectorAll<HTMLElement>(".lt-tabs__panel")],
     }
   }
 
@@ -717,7 +717,7 @@ describe("fs-tabs kobler fra bar struktur", () => {
      * `aria-selected="true"` på den første, og leste den tilbake som
      * serverens ord, så panelet serveren nettopp viste ble skjult igjen.
      */
-    monter(BAR.replace("<fs-tabs>", "<fs-tabs server-controlled>"))
+    monter(BAR.replace("<lt-tabs>", "<lt-tabs server-controlled>"))
     await tegn()
     const { lenker, paneler: p } = barDeler()
     expect(lenker[0].getAttribute("aria-selected")).toBe("true")
@@ -739,15 +739,15 @@ describe("fs-tabs kobler fra bar struktur", () => {
     // Har serveren skrevet rollene selv, er en lenke uten rolle i raden noe
     // annet enn en fane.
     monter(`
-      <fs-tabs>
-        <ul class="fs-tabs__list" role="tablist" aria-label="Deler av saken">
+      <lt-tabs>
+        <ul class="lt-tabs__list" role="tablist" aria-label="Deler av saken">
           <li role="presentation"><a href="#soknaden" role="tab">Søknaden</a></li>
           <li role="presentation"><a href="#vedlegg" role="tab">Vedlegg</a></li>
           <li><a href="#annet" class="til-toppen">Til toppen</a></li>
         </ul>
-        <section class="fs-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>
-        <section class="fs-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>
-      </fs-tabs>
+        <section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>
+        <section class="lt-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>
+      </lt-tabs>
     `)
     await tegn()
     const annen = document.querySelector(".til-toppen") as HTMLElement
@@ -766,7 +766,7 @@ describe("fs-tabs kobler fra bar struktur", () => {
     punkt.innerHTML = '<a href="#historikk">Historikk</a>'
     liste.append(punkt)
     const panel = document.createElement("section")
-    panel.className = "fs-tabs__panel"
+    panel.className = "lt-tabs__panel"
     panel.id = "historikk"
     panel.innerHTML = "<h2>Historikk</h2>"
     p[2].after(panel)
@@ -805,25 +805,25 @@ describe("fs-tabs kobler fra bar struktur", () => {
   })
 })
 
-describe("fs-tabs under server-controlled", () => {
+describe("lt-tabs under server-controlled", () => {
   beforeAll(() => {
-    defineFsTabs()
+    defineLtTabs()
   })
 
   /** Oppskriften fra Datastar-fanen på komponentsiden, bar struktur. */
   const FIRE = `
-    <fs-tabs server-controlled>
-      <ul class="fs-tabs__list" aria-label="Deler av saken">
+    <lt-tabs server-controlled>
+      <ul class="lt-tabs__list" aria-label="Deler av saken">
         <li><a href="#soknaden">Søknaden</a></li>
         <li><a href="#vedlegg">Vedlegg</a></li>
       </ul>
-      <section class="fs-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>
-      <section class="fs-tabs__panel" id="vedlegg" hidden><h2>Vedlegg</h2></section>
-    </fs-tabs>`
+      <section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>
+      <section class="lt-tabs__panel" id="vedlegg" hidden><h2>Vedlegg</h2></section>
+    </lt-tabs>`
 
   function tilstand() {
     return {
-      valgt: [...document.querySelectorAll("fs-tabs a")].map((l) =>
+      valgt: [...document.querySelectorAll("lt-tabs a")].map((l) =>
         l.getAttribute("aria-selected"),
       ),
       skjult: paneler().map((p) => p.hasAttribute("hidden")),
@@ -839,7 +839,7 @@ describe("fs-tabs under server-controlled", () => {
     monter(FIRE)
     await tegn()
 
-    document.querySelectorAll<HTMLElement>("fs-tabs a")[1].click()
+    document.querySelectorAll<HTMLElement>("lt-tabs a")[1].click()
     await ventPaTegning()
 
     expect(tilstand()).toEqual({
@@ -853,10 +853,10 @@ describe("fs-tabs under server-controlled", () => {
     // `aria-selected` på fanene skrev komponenten selv ved klikket. Ble det
     // regnet som serverens, gikk det foran `hidden`, og serveren kunne ikke
     // flytte fanen.
-    monter(FIRE.replace("<fs-tabs server-controlled>", "<fs-tabs>"))
+    monter(FIRE.replace("<lt-tabs server-controlled>", "<lt-tabs>"))
     await tegn()
-    const vert = document.querySelector("fs-tabs") as HTMLElement
-    document.querySelectorAll<HTMLElement>("fs-tabs a")[1].click()
+    const vert = document.querySelector("lt-tabs") as HTMLElement
+    document.querySelectorAll<HTMLElement>("lt-tabs a")[1].click()
     await ventPaTegning()
     vert.setAttribute("server-controlled", "")
     await ventPaTegning()
@@ -874,10 +874,10 @@ describe("fs-tabs under server-controlled", () => {
 
   it("tar det som står som utgangspunkt når server-controlled settes, og reparerer igjen når det fjernes", async () => {
     // Uten attributtet fra start, som når en patch setter det.
-    monter(FIRE.replace("<fs-tabs server-controlled>", "<fs-tabs>"))
+    monter(FIRE.replace("<lt-tabs server-controlled>", "<lt-tabs>"))
     await tegn()
-    const vert = document.querySelector("fs-tabs") as HTMLElement
-    const lenker = [...document.querySelectorAll<HTMLElement>("fs-tabs a")]
+    const vert = document.querySelector("lt-tabs") as HTMLElement
+    const lenker = [...document.querySelectorAll<HTMLElement>("lt-tabs a")]
     lenker[1].click()
     await ventPaTegning()
 
@@ -922,7 +922,7 @@ describe("fs-tabs under server-controlled", () => {
     await tegn()
     const p = paneler()
 
-    document.querySelectorAll<HTMLElement>("fs-tabs a")[1].click()
+    document.querySelectorAll<HTMLElement>("lt-tabs a")[1].click()
     await ventPaTegning()
 
     // Serveren sender den første fanen igjen, og rører bare panelene.
@@ -938,24 +938,24 @@ describe("fs-tabs under server-controlled", () => {
 
   /** Tre faner: med to er «tilbake til den første» også det gale svaret. */
   const TRE = `
-    <fs-tabs server-controlled>
-      <ul class="fs-tabs__list" aria-label="Deler av saken">
+    <lt-tabs server-controlled>
+      <ul class="lt-tabs__list" aria-label="Deler av saken">
         <li><a href="#soknaden">Søknaden</a></li>
         <li><a href="#vedlegg">Vedlegg</a></li>
         <li><a href="#meldinger">Meldinger</a></li>
       </ul>
-      <section class="fs-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>
-      <section class="fs-tabs__panel" id="vedlegg" hidden><h2>Vedlegg</h2></section>
-      <section class="fs-tabs__panel" id="meldinger" hidden><h2>Meldinger</h2></section>
-    </fs-tabs>`
+      <section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>
+      <section class="lt-tabs__panel" id="vedlegg" hidden><h2>Vedlegg</h2></section>
+      <section class="lt-tabs__panel" id="meldinger" hidden><h2>Meldinger</h2></section>
+    </lt-tabs>`
 
   async function klikkAndre() {
     monter(TRE)
     await tegn()
-    document.querySelectorAll<HTMLElement>("fs-tabs a")[1].click()
+    document.querySelectorAll<HTMLElement>("lt-tabs a")[1].click()
     await ventPaTegning()
     return {
-      lenker: [...document.querySelectorAll<HTMLElement>("fs-tabs a")],
+      lenker: [...document.querySelectorAll<HTMLElement>("lt-tabs a")],
       paneler: paneler(),
     }
   }
@@ -989,18 +989,18 @@ describe("fs-tabs under server-controlled", () => {
 
   it("følger serveren også etter at en fane kom til mens klikket ventet", async () => {
     const { paneler: p } = await klikkAndre()
-    const vert = document.querySelector("fs-tabs") as HTMLElement
+    const vert = document.querySelector("lt-tabs") as HTMLElement
 
     // En patch legger til en fjerde fane. Den har ikke sagt noe om valget.
     vert
-      .querySelector(".fs-tabs__list")
+      .querySelector(".lt-tabs__list")
       ?.insertAdjacentHTML(
         "beforeend",
         '<li><a href="#historikk">Historikk</a></li>',
       )
     vert.insertAdjacentHTML(
       "beforeend",
-      '<section class="fs-tabs__panel" id="historikk" hidden><h2>Historikk</h2></section>',
+      '<section class="lt-tabs__panel" id="historikk" hidden><h2>Historikk</h2></section>',
     )
     await ventPaTegning()
     expect(tilstand().valgt).toEqual(["false", "true", "false", "false"])
@@ -1056,12 +1056,12 @@ describe("fs-tabs under server-controlled", () => {
     await tegn()
     const meldt: number[] = []
     document
-      .querySelector("fs-tabs")
+      .querySelector("lt-tabs")
       ?.addEventListener("tab-select", (e) =>
         meldt.push((e as CustomEvent<{ index: number }>).detail.index),
       )
 
-    document.querySelectorAll<HTMLElement>("fs-tabs a")[2].click()
+    document.querySelectorAll<HTMLElement>("lt-tabs a")[2].click()
     await ventPaTegning()
 
     expect(meldt).toEqual([2])
@@ -1069,9 +1069,9 @@ describe("fs-tabs under server-controlled", () => {
   })
 })
 
-describe("fs-tabs når en patch rører panelene og lenkene", () => {
+describe("lt-tabs når en patch rører panelene og lenkene", () => {
   beforeAll(() => {
-    defineFsTabs()
+    defineLtTabs()
   })
 
   it("gir et nytt panel med den samme id-en rollen, navnet og hidden", async () => {
@@ -1080,7 +1080,7 @@ describe("fs-tabs når en patch rører panelene og lenkene", () => {
     const gammelt = document.getElementById("vedlegg") as HTMLElement
 
     const nytt = document.createElement("section")
-    nytt.className = "fs-tabs__panel"
+    nytt.className = "lt-tabs__panel"
     nytt.id = "vedlegg"
     nytt.innerHTML = "<h2>Nye vedlegg</h2>"
     gammelt.replaceWith(nytt)
@@ -1104,7 +1104,7 @@ describe("fs-tabs når en patch rører panelene og lenkene", () => {
     const bar = BAR.slice(BAR.indexOf(">") + 1, BAR.lastIndexOf("<"))
     monter(BAR)
     await tegn()
-    const vert = document.querySelector("fs-tabs") as FsTabs
+    const vert = document.querySelector("lt-tabs") as LtTabs
     faner()[1].click()
     await ventPaTegning()
     expect(vert.selected).toBe(1)
@@ -1177,9 +1177,9 @@ describe("fs-tabs når en patch rører panelene og lenkene", () => {
   })
 })
 
-describe("fs-tabs som lenker", () => {
+describe("lt-tabs som lenker", () => {
   beforeAll(() => {
-    defineFsTabs()
+    defineLtTabs()
   })
 
   it("skriver valget i adressen uten å hoppe, og uten ny historikkoppføring", async () => {
@@ -1340,9 +1340,9 @@ describe("fs-tabs som lenker", () => {
   })
 })
 
-describe("fs-tabs etter morfing og med piltaster", () => {
+describe("lt-tabs etter morfing og med piltaster", () => {
   beforeAll(() => {
-    defineFsTabs()
+    defineLtTabs()
   })
 
   const FEM = tabs({
@@ -1357,7 +1357,7 @@ describe("fs-tabs etter morfing og med piltaster", () => {
 
   async function monterFaner() {
     monter(`
-      <fs-tabs>
+      <lt-tabs>
         <ul ${attr(FEM.list)}>${lenker()}</ul>
         ${FEM.panels
           .map(
@@ -1365,16 +1365,16 @@ describe("fs-tabs etter morfing og med piltaster", () => {
               `<section ${attr(panel)}><h2 ${attr(FEM.headings[i])}>Panel ${i}</h2></section>`,
           )
           .join("")}
-      </fs-tabs>`)
+      </lt-tabs>`)
     await tegn()
-    return document.querySelector("fs-tabs") as HTMLElement
+    return document.querySelector("lt-tabs") as HTMLElement
   }
 
   it("virker på faner en morfing har byttet ut", async () => {
     // Én lytter på verten. Før fikk hver ny fane sine egne lyttere, og de
     // gamle ble holdt fast i minnet.
     const vert = await monterFaner()
-    const rad = vert.querySelector(".fs-tabs__list") as HTMLElement
+    const rad = vert.querySelector(".lt-tabs__list") as HTMLElement
     for (let gang = 0; gang < 3; gang++) {
       rad.innerHTML = lenker()
       await ventPaTegning()
@@ -1396,7 +1396,7 @@ describe("fs-tabs etter morfing og med piltaster", () => {
     // Lytteren sitter på verten. Uten fangstfasen nådde ikke klikk og
     // piltaster fram når raden hadde en lytter som stoppet dem.
     const vert = await monterFaner()
-    const rad = vert.querySelector(".fs-tabs__list") as HTMLElement
+    const rad = vert.querySelector(".lt-tabs__list") as HTMLElement
     rad.addEventListener("keydown", (event) => event.stopPropagation())
     rad.addEventListener("click", (event) => event.stopPropagation())
 

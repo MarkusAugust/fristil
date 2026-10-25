@@ -1,16 +1,16 @@
 import type { HTMLAttributes, RefAttributes } from "react"
 
-// Typene til hendelsene og tagnavnene, så `querySelector("fs-dialog")` og
+// Typene til hendelsene og tagnavnene, så `querySelector("lt-dialog")` og
 // `addEventListener` er typet også for den som bare importerer denne
 // inngangen. Fila har ingen annen import fra komponentene, så uten linja ble
 // verken `HTMLElementEventMap` eller `HTMLElementTagNameMap` utvidet.
-export type { FsEventMap } from "../components/events.js"
+export type { LtEventMap } from "../components/events.js"
 
 /**
- * Typer for Fristils web components i JSX.
+ * Typer for LO-TEKs web components i JSX.
  *
- * Uten disse kjenner ikke TypeScript `<fs-field>` i det hele tatt, men sier
- * «Property 'fs-field' does not exist on type JSX.IntrinsicElements». Og
+ * Uten disse kjenner ikke TypeScript `<lt-field>` i det hele tatt, men sier
+ * «Property 'lt-field' does not exist on type JSX.IntrinsicElements». Og
  * attributtene er bindestreksstrenger uten autofullføring, så `described-by`
  * og `server-controlled` er nettopp der en skrivefeil er lett å gjøre og vanskelig å
  * få øye på.
@@ -19,11 +19,11 @@ export type { FsEventMap } from "../components/events.js"
  * i bygget:
  *
  * ```ts
- * // src/fristil.d.ts
- * import "@fristil/designsystem/react-jsx"
+ * // src/lotek.d.ts
+ * import "@lo-tek/interfaces/react-jsx"
  * ```
  *
- * Astro trenger ikke dette: der er `<fs-field>` vanlig HTML, og ingen
+ * Astro trenger ikke dette: der er `<lt-field>` vanlig HTML, og ingen
  * typesjekk ser på elementnavnet.
  */
 
@@ -70,27 +70,27 @@ type ServerControlled = {
  * Grunnformen for en web component i JSX.
  *
  * `HTMLAttributes` alene har ikke `ref`. Den ligger i `RefAttributes`, og
- * uten den var `<fs-toast ref={kø} />` en typefeil, altså nøyaktig mønsteret
+ * uten den var `<lt-toast ref={kø} />` en typefeil, altså nøyaktig mønsteret
  * dokumentasjonen anbefaler for å kalle `.show()` og `.hide()`. `key` kommer
  * samme vei.
  */
 type Host = HTMLAttributes<HTMLElement> & RefAttributes<HTMLElement>
 
-type FsFieldAttributes = Host & {
+type LtFieldAttributes = Host & {
   disabled?: Flag
   optional?: Flag
   "described-by"?: string
 }
 
 /**
- * `<fs-tabs>` har `server-controlled` og `activation`, og ingen `selected`.
+ * `<lt-tabs>` har `server-controlled` og `activation`, og ingen `selected`.
  *
  * Hvilken fane som er valgt står i markupen serveren sendte, som
  * `aria-selected` på fanen og `hidden` på panelene. Komponenten leser det
  * derfra i stedet for å ha sin egen `selected`, slik at de to aldri kan si
  * hver sin ting.
  */
-type FsTabsAttributes = Host &
+type LtTabsAttributes = Host &
   ServerControlled & {
     /**
      * `manual`: piltastene flytter bare fokus, og Enter eller mellomrom
@@ -99,7 +99,7 @@ type FsTabsAttributes = Host &
     activation?: "manual" | "automatic"
   }
 
-type FsErrorSummaryAttributes = Host & {
+type LtErrorSummaryAttributes = Host & {
   /**
    * Boksen er skjult til det finnes feil å vise.
    *
@@ -107,7 +107,7 @@ type FsErrorSummaryAttributes = Host & {
    * gjelder regelen for `open`: React 18 skriver `hidden={false}` som
    * attributtet `hidden="false"`, og boksen er da alltid skjult. Typen er
    * derfor `Flag` også her, så `hidden={harFeil ? undefined : true}` er det
-   * som kompilerer. `fs.errorSummary().host` sender det slik.
+   * som kompilerer. `lt.errorSummary().host` sender det slik.
    */
   hidden?: Flag
   /**
@@ -117,7 +117,7 @@ type FsErrorSummaryAttributes = Host & {
   "data-autofocus"?: "false" | "true"
 }
 
-type FsSuggestionAttributes = Host & {
+type LtSuggestionAttributes = Host & {
   /**
    * Noen andre har alt filtrert, så komponenten skal la være.
    *
@@ -146,20 +146,20 @@ type FsSuggestionAttributes = Host & {
   "count-other"?: string
 } & ServerControlled
 
-type FsDialogAttributes = Host &
+type LtDialogAttributes = Host &
   ServerControlled & {
     /** Dialogen er åpen. Komponenten kaller `showModal()`. */
     open?: Flag
   }
 
-type FsPopoverAttributes = Host &
+type LtPopoverAttributes = Host &
   ServerControlled & {
     open?: Flag
     /** Hvilken kant panelet henger fra. */
     placement?: "bottom-start" | "bottom-end" | "top-start" | "top-end"
   }
 
-type FsSessionTimeoutAttributes = Host & {
+type LtSessionTimeoutAttributes = Host & {
   /** Sekunder uten aktivitet før varselet kommer. */
   "warn-at"?: number | string
   /** Sekunder uten aktivitet før økten er ute. */
@@ -168,14 +168,14 @@ type FsSessionTimeoutAttributes = Host & {
   "activity-interval"?: number | string
 }
 
-type FsConnectionStatusAttributes = Host & {
+type LtConnectionStatusAttributes = Host & {
   /** Teksten når forbindelsen er borte. */
   "offline-text"?: string
   /** Teksten når den kommer tilbake. */
   "online-text"?: string
 }
 
-type FsToastAttributes = Host & {
+type LtToastAttributes = Host & {
   /** Millisekunder før meldingene forsvinner. */
   duration?: number
   /** Tekst som sier hva regionen er. */
@@ -187,27 +187,27 @@ type FsToastAttributes = Host & {
 declare module "react" {
   namespace JSX {
     interface IntrinsicElements {
-      "fs-dialog": FsDialogAttributes
-      "fs-error-summary": FsErrorSummaryAttributes
-      "fs-field": FsFieldAttributes
-      "fs-popover": FsPopoverAttributes
-      "fs-suggestion": FsSuggestionAttributes
-      "fs-tabs": FsTabsAttributes
-      "fs-session-timeout": FsSessionTimeoutAttributes
-      "fs-connection-status": FsConnectionStatusAttributes
-      "fs-toast": FsToastAttributes
+      "lt-dialog": LtDialogAttributes
+      "lt-error-summary": LtErrorSummaryAttributes
+      "lt-field": LtFieldAttributes
+      "lt-popover": LtPopoverAttributes
+      "lt-suggestion": LtSuggestionAttributes
+      "lt-tabs": LtTabsAttributes
+      "lt-session-timeout": LtSessionTimeoutAttributes
+      "lt-connection-status": LtConnectionStatusAttributes
+      "lt-toast": LtToastAttributes
     }
   }
 }
 
 export type {
-  FsConnectionStatusAttributes,
-  FsDialogAttributes,
-  FsErrorSummaryAttributes,
-  FsFieldAttributes,
-  FsPopoverAttributes,
-  FsSessionTimeoutAttributes,
-  FsSuggestionAttributes,
-  FsTabsAttributes,
-  FsToastAttributes,
+  LtConnectionStatusAttributes,
+  LtDialogAttributes,
+  LtErrorSummaryAttributes,
+  LtFieldAttributes,
+  LtPopoverAttributes,
+  LtSessionTimeoutAttributes,
+  LtSuggestionAttributes,
+  LtTabsAttributes,
+  LtToastAttributes,
 }

@@ -3,30 +3,30 @@ import Preview from "./Preview.astro"
 ---
 
 <Preview id="demo-field" stiler={["field"]} layout="stabel" maxWidth="34rem">
-	<fs-field>
-		<label class="fs-label" for="demo-epost-input" data-required="text">E-postadresse</label>
+	<lt-field>
+		<label class="lt-label" for="demo-epost-input" data-required="text">E-postadresse</label>
 		<input
 			id="demo-epost-input"
-			class="fs-input"
+			class="lt-input"
 			type="email"
 			placeholder="ola@eksempel.no"
 			required
 		/>
-		<p class="fs-help-text">Vi sender kvittering til denne adressen.</p>
-		<p class="fs-error-text" id="demo-epost-feil" hidden>Skriv en e-postadresse med krøllalfa.</p>
-	</fs-field>
+		<p class="lt-help-text">Vi sender kvittering til denne adressen.</p>
+		<p class="lt-error-text" id="demo-epost-feil" hidden>Skriv en e-postadresse med krøllalfa.</p>
+	</lt-field>
 
-	<fs-field optional="">
+	<lt-field optional="">
 		<label for="demo-melding">Melding til saksbehandler</label>
-		<textarea id="demo-melding" class="fs-textarea" rows="3" placeholder="Skriv en kort melding"></textarea>
-		<p class="fs-help-text">Du kan skrive opptil 500 tegn.</p>
-	</fs-field>
+		<textarea id="demo-melding" class="lt-textarea" rows="3" placeholder="Skriv en kort melding"></textarea>
+		<p class="lt-help-text">Du kan skrive opptil 500 tegn.</p>
+	</lt-field>
 </Preview>
 
 <script>
-	import { defineFsField } from "@fristil/designsystem/field"
+	import { defineLtField } from "@lo-tek/interfaces/field"
 
-	defineFsField()
+	defineLtField()
 
 	// Forhåndsvisningen ligger i en shadow root, så document.getElementById
 	// når ikke inn. Vi går via vertselementet.

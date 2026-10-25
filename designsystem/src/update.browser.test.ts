@@ -38,10 +38,10 @@ import helpTextCss from "./components/css/help-text/help-text.css?inline"
 import inputCss from "./components/css/input/input.css?inline"
 import labelCss from "./components/css/label/label.css?inline"
 import srOnlyCss from "./components/css/sr-only/sr-only.css?inline"
-import { defineFsField } from "./components/ramme/field/fs-field"
-import { defineFsPopover } from "./components/ramme/popover/fs-popover"
-import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion"
-import suggestionCss from "./components/ramme/suggestion/suggestion.css?inline"
+import { defineLtField } from "./components/frame/field/lt-field"
+import { defineLtPopover } from "./components/frame/popover/lt-popover"
+import { defineLtSuggestion } from "./components/frame/suggestion/lt-suggestion"
+import suggestionCss from "./components/frame/suggestion/suggestion.css?inline"
 import { ventPaTegning } from "./testing/a11y"
 import { Idiomorph } from "./testing/idiomorph/idiomorph-v0.8.0.js"
 import tokensCss from "./tokens/tokens.css?inline"
@@ -63,29 +63,29 @@ function oppskrift(side: string, tag: string): string {
   return blokk.replace(/<script[\s\S]*?<\/script>/g, "")
 }
 
-const FELT = oppskrift(feltSide, "fs-field")
-const FORSLAG = oppskrift(forslagSide, "fs-suggestion")
+const FELT = oppskrift(feltSide, "lt-field")
+const FORSLAG = oppskrift(forslagSide, "lt-suggestion")
 /** Oppskriften «Tekst og kode», med det skjulte feltet for koden. */
-const KODE = oppskrift(forslagSide, 'input class="fs-suggestion__value"')
+const KODE = oppskrift(forslagSide, 'input class="lt-suggestion__value"')
 
 /** Oppskriften med ledeteksten rundt feltet, og ingen id. */
 const FELT_RUNDT = `
-  <fs-field>
-    <label class="fs-label">Fullt navn <input class="fs-input" name="navn" type="text"></label>
-    <p class="fs-help-text">Slik det står i passet.</p>
-  </fs-field>`
+  <lt-field>
+    <label class="lt-label">Fullt navn <input class="lt-input" name="navn" type="text"></label>
+    <p class="lt-help-text">Slik det står i passet.</p>
+  </lt-field>`
 
 const FORSLAG_RUNDT = `
-  <fs-suggestion>
-    <label class="fs-label">Kommune <input class="fs-input" name="kommune" type="text"></label>
-    <ul class="fs-suggestion__list"><li>Bergen</li><li>Bodø</li><li>Oslo</li></ul>
-    <span class="fs-sr-only" role="status"></span>
-  </fs-suggestion>`
+  <lt-suggestion>
+    <label class="lt-label">Kommune <input class="lt-input" name="kommune" type="text"></label>
+    <ul class="lt-suggestion__list"><li>Bergen</li><li>Bodø</li><li>Oslo</li></ul>
+    <span class="lt-sr-only" role="status"></span>
+  </lt-suggestion>`
 
 const AVKRYSSING = (checked: boolean) => `
   <div>
-    <input class="fs-checkbox" type="checkbox" id="vilkar" name="vilkar"${checked ? " checked" : ""}>
-    <label class="fs-label" for="vilkar">Jeg godtar vilkårene</label>
+    <input class="lt-checkbox" type="checkbox" id="vilkar" name="vilkar"${checked ? " checked" : ""}>
+    <label class="lt-label" for="vilkar">Jeg godtar vilkårene</label>
   </div>`
 
 /**
@@ -152,8 +152,8 @@ const felt = () =>
 
 describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
   beforeAll(() => {
-    defineFsField()
-    defineFsSuggestion()
+    defineLtField()
+    defineLtSuggestion()
   })
 
   afterEach(() => {
@@ -180,7 +180,7 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
       ;(document.querySelector("li") as HTMLElement).click()
       await roSeg()
       const kode = () =>
-        document.querySelector(".fs-suggestion__value") as HTMLInputElement
+        document.querySelector(".lt-suggestion__value") as HTMLInputElement
       expect(input.value).toBe("Bergen")
       expect(kode().value).toBe("4601")
 
@@ -252,9 +252,9 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
         expect(etter.id).toBe(t.id)
         expect(etter.labels?.length).toBe(1)
         expect(etter.labels?.[0]?.textContent).toContain(t.ledetekst)
-        const hjelp = document.querySelector(".fs-help-text")
+        const hjelp = document.querySelector(".lt-help-text")
         if (hjelp) expect(etter.getAttribute("aria-describedby")).toBe(hjelp.id)
-        if (etter.closest("fs-suggestion")) {
+        if (etter.closest("lt-suggestion")) {
           expect(etter.getAttribute("role")).toBe("combobox")
           expect(etter.getAttribute("aria-controls")).toBe(
             document.querySelector("ul")?.id,
@@ -334,7 +334,7 @@ describe("felt og forslagsfelt gjennom en oppdatering fra serveren", () => {
           .map((n) => {
             const k = n.toLowerCase()
             // Id på raden også, slik `hx-target` og `hx-swap-oob` trenger den.
-            return `<fs-field id="rad-${k}"><label class="fs-label" for="merknad-${k}">${n}</label><input class="fs-input" id="merknad-${k}" name="merknad-${k}"></fs-field>`
+            return `<lt-field id="rad-${k}"><label class="lt-label" for="merknad-${k}">${n}</label><input class="lt-input" id="merknad-${k}" name="merknad-${k}"></lt-field>`
           })
           .join("")
       await monter(liste(["Bergen", "Oslo"]))
@@ -410,7 +410,7 @@ describe("oppskriftene uten JavaScript", () => {
   it("kjører ingen skript", () => {
     // Skriptet i sandkassen ville satt et merke. Det står ikke der.
     expect(dokument.documentElement.dataset.skript).toBeUndefined()
-    expect(dokument.defaultView?.customElements.get("fs-field")).toBeUndefined()
+    expect(dokument.defaultView?.customElements.get("lt-field")).toBeUndefined()
   })
 
   it("hvert felt har et navn fra ledeteksten", () => {
@@ -429,17 +429,17 @@ describe("oppskriftene uten JavaScript", () => {
   it("feilmeldingen fra serveren synes, og den skjulte ikke", () => {
     const vindu = dokument.defaultView as Window
     const skjult = dokument.querySelector(
-      ".fs-error-text[hidden]",
+      ".lt-error-text[hidden]",
     ) as HTMLElement
     const synlig = dokument.querySelector(
-      "#ugyldig .fs-error-text",
+      "#ugyldig .lt-error-text",
     ) as HTMLElement
     expect(vindu.getComputedStyle(skjult).display).toBe("none")
     expect(vindu.getComputedStyle(synlig).display).toBe("block")
   })
 
   it("lista i forslagsfeltet står ikke åpen", () => {
-    const liste = dokument.querySelector(".fs-suggestion__list") as HTMLElement
+    const liste = dokument.querySelector(".lt-suggestion__list") as HTMLElement
     expect(dokument.defaultView?.getComputedStyle(liste).display).toBe("none")
   })
 })
@@ -450,12 +450,12 @@ describe("oppskriftene uten JavaScript", () => {
  * det står åpent med fokus der det var. Skrev komponenten en id selv, ble
  * panelet byttet ut. `innerHTML` bytter ut alt, også verten.
  */
-const SPRETT = oppskrift(sprettSide, "fs-popover")
+const SPRETT = oppskrift(sprettSide, "lt-popover")
 const SPRETT_BAR = SPRETT.replace(' id="handlinger"', "")
 
 describe("sprettoppvinduet gjennom en oppdatering fra serveren", () => {
   beforeAll(() => {
-    defineFsPopover()
+    defineLtPopover()
   })
 
   afterEach(() => {
@@ -464,7 +464,7 @@ describe("sprettoppvinduet gjennom en oppdatering fra serveren", () => {
   })
 
   it("leser oppskriften fra komponentsiden, med id på panelet", () => {
-    expect(SPRETT).toContain('class="fs-popover" id="handlinger"')
+    expect(SPRETT).toContain('class="lt-popover" id="handlinger"')
     expect(SPRETT_BAR).not.toContain("handlinger")
   })
 
@@ -476,9 +476,9 @@ describe("sprettoppvinduet gjennom en oppdatering fra serveren", () => {
       it(`${navn}: ${maate}`, async () => {
         await monter(markup)
         const knapp = document.querySelector(
-          "fs-popover > button",
+          "lt-popover > button",
         ) as HTMLElement
-        const panel = document.querySelector(".fs-popover") as HTMLElement
+        const panel = document.querySelector(".lt-popover") as HTMLElement
         knapp.click()
         await roSeg()
         const valg = panel.querySelector("button") as HTMLElement
@@ -487,7 +487,7 @@ describe("sprettoppvinduet gjennom en oppdatering fra serveren", () => {
 
         await oppdater(maate, markup)
 
-        const etter = document.querySelector(".fs-popover") as HTMLElement
+        const etter = document.querySelector(".lt-popover") as HTMLElement
         expect(etter.hasAttribute("id")).toBe(markup === SPRETT)
         if (maate === "innerHTML") {
           expect(etter).not.toBe(panel)
@@ -497,7 +497,7 @@ describe("sprettoppvinduet gjennom en oppdatering fra serveren", () => {
           expect(document.activeElement).toBe(valg)
         }
         ;(
-          document.querySelector("fs-popover") as HTMLElement & { hide(): void }
+          document.querySelector("lt-popover") as HTMLElement & { hide(): void }
         ).hide()
       })
     }

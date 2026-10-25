@@ -4,120 +4,120 @@
 @import "../../css/error-text/error-text.css";
 @import "../../css/sr-only/sr-only.css";
 
-@layer fristil {
-  fs-suggestion {
+@layer lotek {
+  lt-suggestion {
     display: block;
   }
 
-  .fs-suggestion__list {
+  .lt-suggestion__list {
     box-sizing: border-box;
-    margin: var(--fs-spacing-1) 0 0;
+    margin: var(--lt-spacing-1) 0 0;
     padding: 0;
     list-style: none;
     max-block-size: var(
-      --fs-suggestion-max-height,
-      calc(var(--fs-spacing-10) * 4)
+      --lt-suggestion-max-height,
+      calc(var(--lt-spacing-10) * 4)
     );
     overflow-y: auto;
-    background: var(--fs-color-neutral-canvas);
-    border: 1px solid var(--fs-color-neutral-border);
-    border-radius: var(--fs-suggestion-radius, var(--fs-spacing-1));
-    box-shadow: var(--fs-shadow-overlay);
+    background: var(--lt-color-neutral-canvas);
+    border: 1px solid var(--lt-color-neutral-border);
+    border-radius: var(--lt-suggestion-radius, var(--lt-spacing-1));
+    box-shadow: var(--lt-shadow-overlay);
   }
 
   /* Åpen står lista i det øverste laget, `popover="manual"`, så en forelder
      med `overflow`, som kroppen i en dialog, ikke klipper den. Posisjonen og
      bredden regner komponenten ut mot feltet. Uten vinduet, som i en liste
      ingen komponent har tatt seg av, står den i flyten under feltet.
-     `--fs-suggestion-left` er avstanden fra venstre vinduskant; i et dokument
-     som leses fra høyre snus den under, som i `<fs-popover>`. */
-  .fs-suggestion__list:popover-open {
+     `--lt-suggestion-left` er avstanden fra venstre vinduskant; i et dokument
+     som leses fra høyre snus den under, som i `<lt-popover>`. */
+  .lt-suggestion__list:popover-open {
     position: fixed;
     inset: auto;
-    inset-block-start: var(--fs-suggestion-top, 0);
-    inset-inline-start: var(--fs-suggestion-left, 0);
-    inline-size: var(--fs-suggestion-width, auto);
+    inset-block-start: var(--lt-suggestion-top, 0);
+    inset-inline-start: var(--lt-suggestion-left, 0);
+    inline-size: var(--lt-suggestion-width, auto);
     margin: 0;
   }
 
-  .fs-suggestion__list:popover-open:dir(rtl) {
+  .lt-suggestion__list:popover-open:dir(rtl) {
     inset-inline-start: auto;
-    inset-inline-end: var(--fs-suggestion-left, 0);
+    inset-inline-end: var(--lt-suggestion-left, 0);
   }
 
-  .fs-suggestion__list[hidden] {
+  .lt-suggestion__list[hidden] {
     display: none;
   }
 
   /* Markup skrevet uten JavaScript kommer uten `hidden` på lista, og
      komponenten lukker den først når den er registrert. Fram til da er den
      skjult, så den ikke står åpen under et felt ingen har rørt. */
-  fs-suggestion:not(:defined) .fs-suggestion__list {
+  lt-suggestion:not(:defined) .lt-suggestion__list {
     display: none;
   }
 
-  .fs-suggestion__option {
+  .lt-suggestion__option {
     padding: var(
-      --fs-suggestion-option-padding,
-      var(--fs-spacing-2) var(--fs-spacing-3)
+      --lt-suggestion-option-padding,
+      var(--lt-spacing-2) var(--lt-spacing-3)
     );
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-strong);
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
     cursor: pointer;
   }
 
-  .fs-suggestion__option:hover {
-    background: var(--fs-color-accent-surface);
+  .lt-suggestion__option:hover {
+    background: var(--lt-color-accent-surface);
   }
 
   /* Markeringen følger aria-selected, altså den samme opplysningen
      skjermleseren leser. Da kan ikke det synlige og det opplesne komme i
      utakt. */
-  .fs-suggestion__option[aria-selected="true"] {
-    background: var(--fs-color-accent-fill);
-    color: var(--fs-color-accent-content);
+  .lt-suggestion__option[aria-selected="true"] {
+    background: var(--lt-color-accent-fill);
+    color: var(--lt-color-accent-content);
   }
 
   /* Det skjulte feltet for koden. Et `type="hidden"` vises aldri; regelen
      står for at klassen skal finnes også når noen gir feltet en annen type. */
-  .fs-suggestion__value {
+  .lt-suggestion__value {
     display: none;
   }
 
-  .fs-suggestion__empty {
+  .lt-suggestion__empty {
     padding: var(
-      --fs-suggestion-option-padding,
-      var(--fs-spacing-2) var(--fs-spacing-3)
+      --lt-suggestion-option-padding,
+      var(--lt-spacing-2) var(--lt-spacing-3)
     );
-    font-size: var(--fs-font-size-m);
-    color: var(--fs-color-neutral-text-subtle);
+    font-size: var(--lt-font-size-m);
+    color: var(--lt-color-neutral-text-subtle);
   }
 
   /* Tommeldingen følger lista: er lista lukket, vises den ikke. Regelen står
      i stilarket og ikke i komponenten, fordi appen styrer tommeldingen når den
      filtrerer selv, og ikke vet om lista er åpen. Den vet bare om søket ga
      noe. Tommeldingen må stå etter lista, som søsken. */
-  .fs-suggestion__list[hidden] ~ .fs-suggestion__empty {
+  .lt-suggestion__list[hidden] ~ .lt-suggestion__empty {
     display: none;
   }
 
   /* Mens svaret på søket er underveis, sier lista `aria-busy`, og «Ingen
      treff» ville vært usant. */
-  .fs-suggestion__list[aria-busy="true"] ~ .fs-suggestion__empty {
+  .lt-suggestion__list[aria-busy="true"] ~ .lt-suggestion__empty {
     display: none;
   }
 
   /* Før registreringen er lista skjult med regelen over, uten `hidden`. */
-  fs-suggestion:not(:defined) .fs-suggestion__empty {
+  lt-suggestion:not(:defined) .lt-suggestion__empty {
     display: none;
   }
 
   /* Høykontrast: markeringen vises bare med bakgrunn og tekstfarge, som
      modusen bytter ut. Systemfargene gir forskjellen tilbake. */
   @media (forced-colors: active) {
-    .fs-suggestion__option[aria-selected="true"] {
+    .lt-suggestion__option[aria-selected="true"] {
       background-color: Highlight;
       color: HighlightText;
     }

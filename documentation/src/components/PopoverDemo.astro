@@ -1,10 +1,10 @@
 ---
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 import Preview from "./Preview.astro"
 
 // Serveren skriver koblingen: aria-controls på knappen, klassen og popover
 // på panelet. Komponenten regner ut posisjonen og lukker ved klikk utenfor.
-const boks = fs.popover({ id: "demo-popover-panel" })
+const boks = lt.popover({ id: "demo-popover-panel" })
 const handlinger = [
   "Arkiver saken",
   "Last ned som PDF",
@@ -13,8 +13,8 @@ const handlinger = [
 ---
 
 <Preview id="demo-popover" stiler={["popover", "button"]} maxWidth="30rem">
-	<fs-popover placement="bottom-start" {...boks.host}>
-		<button {...boks.trigger} {...fs.button({ variant: "secondary" })} type="button">
+	<lt-popover placement="bottom-start" {...boks.host}>
+		<button {...boks.trigger} {...lt.button({ variant: "secondary" })} type="button">
 			Handlinger
 		</button>
 
@@ -22,18 +22,18 @@ const handlinger = [
 			{
 				handlinger.map((tekst) => (
 					<li>
-						<button class="fs-button" data-variant="ghost" type="button">
+						<button class="lt-button" data-variant="ghost" type="button">
 							{tekst}
 						</button>
 					</li>
 				))
 			}
 		</ul>
-	</fs-popover>
+	</lt-popover>
 </Preview>
 
 <script>
-	import { defineFsPopover } from "@fristil/designsystem/popover"
+	import { defineLtPopover } from "@lo-tek/interfaces/popover"
 
-	defineFsPopover()
+	defineLtPopover()
 </script>

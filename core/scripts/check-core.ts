@@ -3,7 +3,7 @@
  *
  * Tre kilder til markup, fra den smaleste til den bredeste:
  *
- * 1. Fiksturene i `paritet/`. Svaret skal være nøyaktig fasiten ved siden av,
+ * 1. Fiksturene i `parity/`. Svaret skal være nøyaktig fasiten ved siden av,
  *    felt for felt, og til sammen skal fiksturene utløse hver regel kjernen
  *    har. Fasiten for de ti første ble skrevet av TypeScript-versjonen av
  *    sjekken før den ble slettet, de andre av kjernen da de kom til. Den er
@@ -17,10 +17,10 @@
  * 3. Ødelagt markup: hver fikstur, klipt, skjøtet og med tegn satt inn og tatt
  *    bort, med et fast frø, så et funn kan gjenskapes.
  *
- * Temaet har sin egen fasit i `tema/`: oppskrifter til `buildTheme`, og
+ * Temaet har sin egen fasit i `theme/`: oppskrifter til `buildTheme`, og
  * temaer skrevet som CSS til `inspectTheme`, med svaret ved siden av.
  *
- * I tillegg malene i `maler/`, én per malspråk: Thymeleaf, JTE, Go, Razor og
+ * I tillegg malene i `templates/`, én per malspråk: Thymeleaf, JTE, Go, Razor og
  * Blade. Hver har nøyaktig én skrivefeil med vilje, og skal gi nøyaktig det
  * funnet og ingen andre.
  *
@@ -29,7 +29,7 @@
  * regelen er en kjernen har, og en rettelse ligger innenfor teksten. Sjekken
  * gjøres med både `diagnoseMarkup` og `diagnosePage`.
  *
- * Kjør med: bun kjerne/scripts/sjekk-kjerne.ts (etter bygg.ts)
+ * Kjør med: bun core/scripts/check-core.ts (etter build.ts)
  */
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
@@ -39,7 +39,7 @@ import {
   type Finding,
   loadCore,
 } from "../../designsystem/src/diagnostics/core.js"
-import { MODUL } from "./bygg.js"
+import { MODUL } from "./build.js"
 
 const ROT = fileURLToPath(new URL("../..", import.meta.url))
 const kjerne = loadCore(readFileSync(MODUL))
@@ -49,23 +49,23 @@ kjerne.loadManifest(
   readFileSync(join(ROT, "designsystem/manifest/manifest.json"), "utf8"),
 )
 kjerne.loadContract(
-  readFileSync(join(ROT, "designsystem/src/tokens/fargekontrakt.json"), "utf8"),
+  readFileSync(join(ROT, "designsystem/src/tokens/color-contract.json"), "utf8"),
 )
 
 /**
- * Reglene kjernen har, lest fra `RULES` i `kjerne/src/types.rs`. Lista sto
+ * Reglene kjernen har, lest fra `RULES` i `core/src/types.rs`. Lista sto
  * her skrevet av for hånd, og manglet de to `ustylet-*`-reglene.
  */
 const REGLER = new Set(
   [
     ...(
       /pub const RULES: &\[&str\] = &\[([^\]]*)\]/.exec(
-        readFileSync(join(ROT, "kjerne/src/types.rs"), "utf8"),
+        readFileSync(join(ROT, "core/src/types.rs"), "utf8"),
       )?.[1] ?? ""
     ).matchAll(/"([a-z-]+)"/g),
   ].map((m) => m[1]),
 )
-if (REGLER.size === 0) throw new Error("fant ikke RULES i kjerne/src/types.rs")
+if (REGLER.size === 0) throw new Error("fant ikke RULES i core/src/types.rs")
 
 /** Feltene fasiten har, i fast rekkefølge, så to like funn blir like strenger. */
 const kanonisk = (funn: Omit<Finding, "rule" | "line" | "column">[]) =>
@@ -149,7 +149,7 @@ function holder(navn: string, html: string) {
 }
 
 // 1. Fiksturene.
-const PARITET = join(ROT, "kjerne/paritet")
+const PARITET = join(ROT, "core/parity")
 const fiksturer = readdirSync(PARITET)
   .filter((f) => f.endsWith(".html"))
   .map((f) => [f, readFileSync(join(PARITET, f), "utf8")] as const)
@@ -185,7 +185,7 @@ for (const [navn, html] of fiksturer) {
 const udekket = [...REGLER].filter((r) => !dekket.has(r))
 if (udekket.length > 0)
   feil.push(
-    `ingen fikstur i paritet/ utløser ${udekket.join(", ")}. Legg til en, så regelen også testes på JVM-en.`,
+    `ingen fikstur i parity/ utløser ${udekket.join(", ")}. Legg til en, så regelen også testes på JVM-en.`,
   )
 
 /** En fasit med `stylet` uten stilark, eller omvendt, sjekker ingenting. */
@@ -196,9 +196,9 @@ function krevSammeNokler(navn: string, fasit: object, harCss: boolean) {
     feil.push(`${navn}: fasiten har ${nokler}, ventet ${ventet}`)
 }
 
-// Temaet: oppskriftene og temaene i `tema/` mot fasiten ved siden av. Fasiten
+// Temaet: oppskriftene og temaene i `theme/` mot fasiten ved siden av. Fasiten
 // ble skrevet av TypeScript-utgaven av temaet før den ble slettet.
-const TEMA = join(ROT, "kjerne/tema")
+const TEMA = join(ROT, "core/theme")
 /** JSON med nøklene sortert: rekkefølgen i et objekt er ikke en del av svaret. */
 const sortert = (verdi: unknown): string =>
   JSON.stringify(verdi, (_, v) =>
@@ -211,7 +211,7 @@ const sortert = (verdi: unknown): string =>
 const oppskrifter: Record<
   string,
   { oppskrift: unknown; tema?: unknown; feil?: string }
-> = JSON.parse(readFileSync(join(TEMA, "oppskrifter.json"), "utf8"))
+> = JSON.parse(readFileSync(join(TEMA, "recipes.json"), "utf8"))
 for (const [navn, { oppskrift, tema, feil: ventetFeil }] of Object.entries(
   oppskrifter,
 )) {
@@ -225,11 +225,11 @@ for (const [navn, { oppskrift, tema, feil: ventetFeil }] of Object.entries(
   const ventet = ventetFeil === undefined ? { tema } : { feil: ventetFeil }
   if (sortert(svar) !== sortert(ventet))
     feil.push(
-      `tema/oppskrifter.json, ${navn}\n  Fasit:  ${sortert(ventet).slice(0, 400)}\n  Kjerne: ${sortert(svar).slice(0, 400)}`,
+      `theme/recipes.json, ${navn}\n  Fasit:  ${sortert(ventet).slice(0, 400)}\n  Kjerne: ${sortert(svar).slice(0, 400)}`,
     )
 }
 const rapporter: Record<string, unknown> = JSON.parse(
-  readFileSync(join(TEMA, "rapporter.json"), "utf8"),
+  readFileSync(join(TEMA, "reports.json"), "utf8"),
 )
 for (const [navn, ventet] of Object.entries(rapporter)) {
   antall += 1
@@ -238,7 +238,7 @@ for (const [navn, ventet] of Object.entries(rapporter)) {
   )
   if (sortert(svar) !== sortert(ventet))
     feil.push(
-      `tema/${navn}.css\n  Fasit:  ${sortert(ventet).slice(0, 400)}\n  Kjerne: ${sortert(svar).slice(0, 400)}`,
+      `theme/${navn}.css\n  Fasit:  ${sortert(ventet).slice(0, 400)}\n  Kjerne: ${sortert(svar).slice(0, 400)}`,
     )
 }
 
@@ -299,7 +299,7 @@ for (let n = 0; n < ØDELAGTE_TEMAER; n++) {
   try {
     kjerne.inspectStyles(css)
     kjerne.diagnoseStyled(
-      '<div class="fs-card fs-button" data-variant="ghost"></div>',
+      '<div class="lt-card lt-button" data-variant="ghost"></div>',
       [css],
       true,
     )
@@ -329,9 +329,9 @@ for (const [navn, { oppskrift }] of Object.entries(oppskrifter)) {
   }
 }
 
-// Malspråkene: hver fil i `maler/` har markup med malsyntaks, og nøyaktig én
+// Malspråkene: hver fil i `templates/` har markup med malsyntaks, og nøyaktig én
 // skrivefeil med vilje. Malsyntaksen skal ikke gi funn, og skrivefeilen skal.
-const MALER = join(ROT, "kjerne/maler")
+const MALER = join(ROT, "core/templates")
 const SKRIVEFEILEN: Record<string, string> = {
   "thymeleaf.html": "ukjent-klasse",
   "jte.kte": "ugyldig-klasseverdi",
@@ -344,10 +344,10 @@ for (const navn of readdirSync(MALER)) {
   const funn = kjerne.diagnoseMarkup(readFileSync(join(MALER, navn), "utf8"))
   const regler = funn.map((f) => f.rule).join(", ") || "ingen"
   if (!(navn in SKRIVEFEILEN))
-    feil.push(`maler/${navn}: står ikke i SKRIVEFEILEN i sjekk-kjerne.ts`)
+    feil.push(`templates/${navn}: står ikke i SKRIVEFEILEN i check-core.ts`)
   else if (regler !== SKRIVEFEILEN[navn])
     feil.push(
-      `maler/${navn}: ventet ett funn, ${SKRIVEFEILEN[navn]}, fikk ${regler}: ${funn.map((f) => f.message).join(" | ")}`,
+      `templates/${navn}: ventet ett funn, ${SKRIVEFEILEN[navn]}, fikk ${regler}: ${funn.map((f) => f.message).join(" | ")}`,
     )
 }
 
@@ -399,9 +399,9 @@ const BITER = [
   "/",
   " ",
   "\n",
-  "fs-",
-  "<fs-field>",
-  "</fs-field>",
+  "lt-",
+  "<lt-field>",
+  "</lt-field>",
   "<label>",
   "{{",
   "}}",
@@ -414,7 +414,7 @@ const BITER = [
   "#",
   "ø",
   "🧾",
-  'class="fs-',
+  'class="lt-',
   'aria-describedby="',
   'id="x"',
 ]

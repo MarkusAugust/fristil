@@ -1,13 +1,13 @@
 ---
-import FristilLogo from "./FristilLogo.astro"
-import Versjonsmerke from "./Versjonsmerke.astro"
+import Logo from "./Logo.astro"
+import VersionBadge from "./VersionBadge.astro"
 
 const { siteTitleHref } = Astro.locals.starlightRoute
 ---
 
 <div class="inline-flex items-center gap-6">
 	<a href={siteTitleHref} class="site-title inline-flex items-center no-underline text-inherit">
-		<FristilLogo size="sm" />
+		<Logo size="sm" />
 	</a>
-	<Versjonsmerke />
+	<VersionBadge />
 </div>

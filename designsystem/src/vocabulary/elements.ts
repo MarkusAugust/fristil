@@ -1,10 +1,10 @@
-// Generert av designsystem/scripts/generate-ordforrad.ts. Ikke rediger.
+// Generert av designsystem/scripts/generate-vocabulary.ts. Ikke rediger.
 import type { Elements } from "./types.js"
 
 export const elements: Elements = {
-  "fs-field": {
-    "link": "https://fristil.sobernetics.no/components/field/",
-    "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
+  "lt-field": {
+    "link": "https://lo-tek.sobernetics.no/components/field/",
+    "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `lt.field()` i stedet.",
     "attributes": {
       "disabled": {
         "type": "flag",
@@ -33,14 +33,14 @@ export const elements: Elements = {
         "stableId": true
       },
       "help": {
-        "selector": ".fs-help-text",
+        "selector": ".lt-help-text",
         "description": "Hjelpeteksten, som leses opp sammen med kontrollen.",
         "content": "text",
         "unique": true,
         "optional": true
       },
       "error": {
-        "selector": ".fs-error-text",
+        "selector": ".lt-error-text",
         "description": "Feilmeldingen, som vises og leses opp når feltet er ugyldig.",
         "content": "text",
         "unique": true,
@@ -48,14 +48,14 @@ export const elements: Elements = {
       }
     },
     "removed": {
-      "invalid": "Feltet er ugyldig når feilmeldingen, `.fs-error-text`, står synlig, eller når serveren har skrevet `aria-invalid` på kontrollen. I Datastar: `data-attr:hidden=\"!$ugyldig\"` på feilmeldingen.",
+      "invalid": "Feltet er ugyldig når feilmeldingen, `.lt-error-text`, står synlig, eller når serveren har skrevet `aria-invalid` på kontrollen. I Datastar: `data-attr:hidden=\"!$ugyldig\"` på feilmeldingen.",
       "required-marker": "Påkrevd-merket står som `data-required` på `<label>`, og vises da også uten JavaScript.",
       "control-id": "Skriv `id` på kontrollen og `for` på ledeteksten i malen. Komponenten skriver aldri id på kontrollen."
     }
   },
-  "fs-tabs": {
-    "link": "https://fristil.sobernetics.no/components/tabs/",
-    "description": "Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.",
+  "lt-tabs": {
+    "link": "https://lo-tek.sobernetics.no/components/tabs/",
+    "description": "Fanerad. Fanene er lenker til panelene i en `.lt-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.",
     "attributes": {
       "server-controlled": {
         "type": "flag",
@@ -72,19 +72,19 @@ export const elements: Elements = {
     },
     "parts": {
       "list": {
-        "selector": "[role='tablist'], .fs-tabs__list",
+        "selector": "[role='tablist'], .lt-tabs__list",
         "description": "Raden med fanene, en `<ul>` der hvert `<li>` får `role=\"presentation\"`. Den må ha et navn, som `aria-label`. Har serveren skrevet `role=\"tab\"` på lenkene, kan raden også ha andre lenker.",
         "content": "free",
         "unique": true
       },
       "tab": {
-        "selector": "a[role='tab'][href^='#'], .fs-tabs__list a[href^='#']:not([role])",
+        "selector": "a[role='tab'][href^='#'], .lt-tabs__list a[href^='#']:not([role])",
         "description": "En fane: en lenke til panelet sitt, `<a href=\"#vedlegg\">`. Komponenten skriver `aria-controls` fra `href`. `role=\"tab\"` på noe som ikke er en lenke, er ikke en fane.",
         "content": "text",
         "multiple": true
       },
       "panel": {
-        "selector": "[role='tabpanel'], .fs-tabs__panel:not([role])",
+        "selector": "[role='tabpanel'], .lt-tabs__panel:not([role])",
         "description": "Innholdet til én fane, med id-en lenken peker på. Panelet heter det fanen heter: overskriften øverst i panelet er navnet når den sier det samme som fanen.",
         "content": "free",
         "multiple": true
@@ -98,8 +98,8 @@ export const elements: Elements = {
       }
     }
   },
-  "fs-error-summary": {
-    "link": "https://fristil.sobernetics.no/components/error-summary/",
+  "lt-error-summary": {
+    "link": "https://lo-tek.sobernetics.no/components/error-summary/",
     "description": "Feiloppsummering. Flytter fokus til boksen når den kommer til syne, og til kontrollen når en lenke i lista følges.",
     "attributes": {
       "data-autofocus": {
@@ -129,9 +129,9 @@ export const elements: Elements = {
       }
     }
   },
-  "fs-popover": {
-    "link": "https://fristil.sobernetics.no/components/popover/",
-    "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en.",
+  "lt-popover": {
+    "link": "https://lo-tek.sobernetics.no/components/popover/",
+    "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `lt-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en.",
     "attributes": {
       "open": {
         "type": "flag",
@@ -159,7 +159,7 @@ export const elements: Elements = {
         "content": "text"
       },
       "panel": {
-        "selector": "[popover], .fs-popover",
+        "selector": "[popover], .lt-popover",
         "description": "Panelet som åpnes: elementet med `popover`, eller klassen. Det må ha en id fra serveren, som `aria-controls` på knappen peker på. Komponenten lager aldri en, og uten den kan knappen ikke kobles til panelet.",
         "content": "free",
         "stableId": true
@@ -173,9 +173,9 @@ export const elements: Elements = {
       }
     }
   },
-  "fs-suggestion": {
-    "link": "https://fristil.sobernetics.no/components/suggestion/",
-    "description": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
+  "lt-suggestion": {
+    "link": "https://lo-tek.sobernetics.no/components/suggestion/",
+    "description": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.lt-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
     "attributes": {
       "prefiltered": {
         "type": "flag",
@@ -223,19 +223,19 @@ export const elements: Elements = {
         "stableId": true
       },
       "list": {
-        "selector": "[role='listbox'], .fs-suggestion__list",
+        "selector": "[role='listbox'], .lt-suggestion__list",
         "description": "Lista med forslag. Den står i det øverste laget når den er åpen, `popover=\"manual\"`, og har ledeteksten som navn.",
         "content": "parts",
         "unique": true
       },
       "option": {
-        "selector": "[role='option'], .fs-suggestion__list > li:not([role])",
+        "selector": "[role='option'], .lt-suggestion__list > li:not([role])",
         "description": "Ett forslag i lista: `role=\"option\"`, eller et `<li>` uten rolle.",
         "content": "text",
         "multiple": true
       },
       "empty": {
-        "selector": ".fs-suggestion__empty",
+        "selector": ".lt-suggestion__empty",
         "description": "Meldingen som vises når ingenting passer.",
         "content": "text",
         "unique": true,
@@ -247,7 +247,7 @@ export const elements: Elements = {
         "content": "none"
       },
       "value": {
-        "selector": "input.fs-suggestion__value",
+        "selector": "input.lt-suggestion__value",
         "description": "Et skjult `<input>` som får `data-value` til alternativet brukeren valgte. Uten det sendes bare teksten i feltet.",
         "content": "none",
         "unique": true,
@@ -263,9 +263,9 @@ export const elements: Elements = {
       }
     }
   },
-  "fs-dialog": {
-    "link": "https://fristil.sobernetics.no/components/dialog/",
-    "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `fs-dialog__body` når verken `aria-labelledby` eller `aria-label` står der.",
+  "lt-dialog": {
+    "link": "https://lo-tek.sobernetics.no/components/dialog/",
+    "description": "Gjør en `<dialog class=\"lt-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `lt-dialog__body` når verken `aria-labelledby` eller `aria-label` står der.",
     "attributes": {
       "open": {
         "type": "flag",
@@ -290,7 +290,7 @@ export const elements: Elements = {
         "optional": true
       },
       "body": {
-        "selector": ".fs-dialog__body",
+        "selector": ".lt-dialog__body",
         "description": "Kroppen, som ruller når dialogen blir for høy. En overskrift her blir ikke tittel.",
         "content": "free",
         "unique": true,
@@ -306,8 +306,8 @@ export const elements: Elements = {
       }
     }
   },
-  "fs-toast": {
-    "link": "https://fristil.sobernetics.no/components/toast/",
+  "lt-toast": {
+    "link": "https://lo-tek.sobernetics.no/components/toast/",
     "description": "Kø av korte meldinger i hjørnet av skjermen. Meldingene lages fra skript med `show(tekst, { color, duration })`.",
     "attributes": {
       "duration": {
@@ -328,9 +328,9 @@ export const elements: Elements = {
       "toast-dismiss": {}
     }
   },
-  "fs-session-timeout": {
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
-    "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live.",
+  "lt-session-timeout": {
+    "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
+    "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.lt-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live.",
     "attributes": {
       "warn-at": {
         "type": "number",
@@ -359,13 +359,13 @@ export const elements: Elements = {
         "optional": true
       },
       "text": {
-        "selector": ".fs-session-timeout__text",
+        "selector": ".lt-session-timeout__text",
         "description": "Avsnittet med tiden som er igjen. Opplesningen er dette avsnittet med tallet byttet ut.",
         "content": "text",
         "unique": true
       },
       "count": {
-        "selector": ".fs-session-timeout__count",
+        "selector": ".lt-session-timeout__count",
         "description": "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
         "content": "none",
         "unique": true
@@ -390,8 +390,8 @@ export const elements: Elements = {
       "session-activity": {}
     }
   },
-  "fs-connection-status": {
-    "link": "https://fristil.sobernetics.no/components/connection-status/",
+  "lt-connection-status": {
+    "link": "https://lo-tek.sobernetics.no/components/connection-status/",
     "description": "Sier fra når forbindelsen til serveren er borte. Appen melder fra med `reportFailure()` og `reportSuccess()`.",
     "attributes": {
       "offline-text": {

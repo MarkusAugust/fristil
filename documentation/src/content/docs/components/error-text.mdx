@@ -3,51 +3,51 @@ title: Error Text
 description: Feilmelding under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Meldingen som vises når et felt ikke kan sendes inn slik det står. Den hører rett under feltet, ikke øverst på siden. Skal teksten forklare hva feltet forventer før brukeren har gjort noe, bruk [Help Text](../help-text/).
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "error-text.css"]}
+<Example importer={["tokens.css", "error-text.css"]}
   stiler={["error-text"]} layout="stabel" maxWidth="30rem" kode={`
-<p class="fs-error-text">Skriv en e-postadresse med krøllalfa, for eksempel ola&#64;eksempel.no.</p>
-<p class="fs-error-text" data-variant="warning">Adressen finnes ikke i folkeregisteret. Sjekk at den stemmer.</p>
+<p class="lt-error-text">Skriv en e-postadresse med krøllalfa, for eksempel ola&#64;eksempel.no.</p>
+<p class="lt-error-text" data-variant="warning">Adressen finnes ikke i folkeregisteret. Sjekk at den stemmer.</p>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<p {...fs.errorText()}>Fyll inn navnet ditt.</p>
+<p {...lt.errorText()}>Fyll inn navnet ditt.</p>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const input = document.querySelector<HTMLInputElement>("#epost")
 const feilmelding = document.querySelector<HTMLElement>("#epost-feil")
 
 function oppdater(erGyldig: boolean) {
-  const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
+  const felt = lt.field({ id: "epost", error: true, invalid: !erGyldig })
 
-  fs.setAttributes(input, fs.input({ type: "email" }), felt.control)
-  fs.setAttributes(feilmelding, fs.errorText(), felt.error)
+  lt.setAttributes(input, lt.input({ type: "email" }), felt.control)
+  lt.setAttributes(feilmelding, lt.errorText(), felt.error)
 }
 ```
 
-[`fs.field()`](../field/) setter alle tre tingene som må stemme: `data-state`, `aria-invalid` og `aria-describedby`. `felt.error` inneholder `hidden` når feltet er gyldig, og feilmeldingen tas da heller ikke med i `aria-describedby`, siden en skjult melding ikke skal pekes på.
+[`lt.field()`](../field/) setter alle tre tingene som må stemme: `data-state`, `aria-invalid` og `aria-describedby`. `felt.error` inneholder `hidden` når feltet er gyldig, og feilmeldingen tas da heller ikke med i `aria-describedby`, siden en skjult melding ikke skal pekes på.
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -58,10 +58,10 @@ function oppdater(erGyldig: boolean) {
 
 Tre ting må stemme samtidig: `data-state` for fargen, `aria-invalid` for skjermleseren, og `aria-describedby` for selve teksten.
 
-<Eksempel stiler={["error-text", "label", "input"]} layout="stabel" maxWidth="30rem" kode={`
-<label class="fs-label" for="epost">E-postadresse</label>
+<Example stiler={["error-text", "label", "input"]} layout="stabel" maxWidth="30rem" kode={`
+<label class="lt-label" for="epost">E-postadresse</label>
 <input
-  class="fs-input"
+  class="lt-input"
   id="epost"
   type="email"
   data-state="invalid"
@@ -69,7 +69,7 @@ Tre ting må stemme samtidig: `data-state` for fargen, `aria-invalid` for skjerm
   aria-describedby="epost-feil"
   value="ola.eksempel.no"
 />
-<p class="fs-error-text" id="epost-feil">Skriv en e-postadresse med krøllalfa.</p>
+<p class="lt-error-text" id="epost-feil">Skriv en e-postadresse med krøllalfa.</p>
 `} />
 
 [Field](../field/) setter alle tre når du gir den `invalid`. Det er grunnen til at den komponenten finnes.
@@ -84,9 +84,9 @@ Tre ting må stemme samtidig: `data-state` for fargen, `aria-invalid` for skjerm
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-error-text` | Meldingen. Fargen kommer fra `data-variant`. |
+| `.lt-error-text` | Meldingen. Fargen kommer fra `data-variant`. |
 
-Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
+Se [Tilpasning](../../customising/) for hvordan laget virker.
 
 ## Tilgjengelighet
 

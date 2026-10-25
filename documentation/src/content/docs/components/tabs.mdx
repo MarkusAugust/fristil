@@ -9,9 +9,9 @@ import TabsDemo from "../../../components/TabsDemo.astro"
 Fanene er lenker til panelene sine. Uten JavaScript er raden en innholdsfortegnelse, og panelene står etter hverandre under den. Med JavaScript gjør komponenten lenkene til faner: Tab hopper forbi hele raden og inn i det valgte panelet, piltastene flytter mellom fanene, og skjermleseren sier «fane, 2 av 3, valgt» der den ellers hadde sagt «lenke».
 
 :::note[To veier til den samme markupen]
-Lages markupen med JavaScript, skriver `fs.tabs()` lenkene, id-ene på panelene og overskriftene, og klassene. Blir den til uten JavaScript, i en Go-mal eller ren HTML, skriver du det samme for hånd: en `.fs-tabs__list` med lenker og ett `.fs-tabs__panel` per lenke, med den id-en lenken peker på. Komponenten skriver resten i begge tilfeller: rollene, `aria-selected`, `aria-controls` fra `href`, tabbestoppene, `hidden="until-found"` på panelene som ikke er valgt, og panelets navn. Bare panelene trenger id, og den kommer fra `href`. Lenkene har ingen, og komponenten skriver aldri en: en oppdatering fra serveren kjenner dem derfor igjen, og valget står. Se [Markup og oppførsel](/markup-og-oppforsel/#id-er-som-overlever-en-oppdatering).
+Lages markupen med JavaScript, skriver `lt.tabs()` lenkene, id-ene på panelene og overskriftene, og klassene. Blir den til uten JavaScript, i en Go-mal eller ren HTML, skriver du det samme for hånd: en `.lt-tabs__list` med lenker og ett `.lt-tabs__panel` per lenke, med den id-en lenken peker på. Komponenten skriver resten i begge tilfeller: rollene, `aria-selected`, `aria-controls` fra `href`, tabbestoppene, `hidden="until-found"` på panelene som ikke er valgt, og panelets navn. Bare panelene trenger id, og den kommer fra `href`. Lenkene har ingen, og komponenten skriver aldri en: en oppdatering fra serveren kjenner dem derfor igjen, og valget står. Se [Markup og oppførsel](/markup-and-behaviour/#id-er-som-overlever-en-oppdatering).
 
-Unntaket er React: der skriver `fs.tabs()` fra `@fristil/designsystem/react` hele tilstanden, se React-fanen under.
+Unntaket er React: der skriver `lt.tabs()` fra `@lo-tek/interfaces/react` hele tilstanden, se React-fanen under.
 :::
 
 ## Slik tar du den i bruk
@@ -24,35 +24,35 @@ Unntaket er React: der skriver `fs.tabs()` fra `@fristil/designsystem/react` hel
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/tabs/tabs.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/tabs/tabs.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
     <!-- Lenkene peker på panelene. Rollene, valget og `hidden` skriver
          komponenten. Uten JavaScript er dette en innholdsfortegnelse. -->
-    <fs-tabs id="saksfaner">
-      <ul class="fs-tabs__list" aria-label="Deler av saken">
+    <lt-tabs id="saksfaner">
+      <ul class="lt-tabs__list" aria-label="Deler av saken">
         <li><a href="#soknaden">Søknaden</a></li>
         <li><a href="#vedlegg">Vedlegg</a></li>
       </ul>
-      <section class="fs-tabs__panel" id="soknaden">
+      <section class="lt-tabs__panel" id="soknaden">
         <h2>Søknaden</h2>
         <p>Søknaden ble sendt 4. mars 2026.</p>
       </section>
-      <section class="fs-tabs__panel" id="vedlegg">
+      <section class="lt-tabs__panel" id="vedlegg">
         <h2>Vedlegg</h2>
         <p>Tre vedlegg er lastet opp.</p>
       </section>
-    </fs-tabs>
+    </lt-tabs>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsTabs } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/tabs/fs-tabs.js"
+      import { defineLtTabs } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/tabs/lt-tabs.js"
 
-      defineFsTabs()
+      defineLtTabs()
     </script>
 
     <script type="module">
@@ -66,17 +66,17 @@ Unntaket er React: der skriver `fs.tabs()` fra `@fristil/designsystem/react` hel
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/fristil.d.ts, gir <fs-tabs> typer i JSX
-    import "@fristil/designsystem/react-jsx"
+    // src/lotek.d.ts, gir <lt-tabs> typer i JSX
+    import "@lo-tek/interfaces/react-jsx"
     ```
 
     ```tsx
-    import { fs } from "@fristil/designsystem/react"
-    import { defineFsTabs } from "@fristil/designsystem/tabs"
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/tabs.css"
+    import { lt } from "@lo-tek/interfaces/react"
+    import { defineLtTabs } from "@lo-tek/interfaces/tabs"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/tabs.css"
 
-    defineFsTabs()
+    defineLtTabs()
 
     const DELER = [
       { key: "soknaden", tittel: "Søknaden" },
@@ -85,7 +85,7 @@ Unntaket er React: der skriver `fs.tabs()` fra `@fristil/designsystem/react` hel
     ]
 
     export function Saksfaner({ valgt = 0 }: { valgt?: number }) {
-      const faner = fs.tabs({
+      const faner = lt.tabs({
         id: "sak",
         keys: DELER.map((del) => del.key),
         label: "Deler av saken",
@@ -93,7 +93,7 @@ Unntaket er React: der skriver `fs.tabs()` fra `@fristil/designsystem/react` hel
       })
 
       return (
-        <fs-tabs>
+        <lt-tabs>
           <ul {...faner.list}>
             {faner.tabs.map((fane, i) => (
               <li key={fane.id} {...faner.item}>
@@ -107,39 +107,39 @@ Unntaket er React: der skriver `fs.tabs()` fra `@fristil/designsystem/react` hel
               <p>Innhold for {DELER[i].tittel.toLowerCase()}.</p>
             </section>
           ))}
-        </fs-tabs>
+        </lt-tabs>
       )
     }
     ```
 
-    `fs.tabs()` fra `@fristil/designsystem/react` skriver hele tilstanden: rollene, `aria-selected`, `aria-controls`, tabbestoppene og `hidden`, og gir lenkene id så panelet kan peke på fanen sin med `aria-labelledby`. Da har komponenten ingenting å skrive når den registreres, og React hydrerer uten avvik. Importen gir også `className` og `tabIndex` i stedet for HTML-navnene, så React ikke advarer.
+    `lt.tabs()` fra `@lo-tek/interfaces/react` skriver hele tilstanden: rollene, `aria-selected`, `aria-controls`, tabbestoppene og `hidden`, og gir lenkene id så panelet kan peke på fanen sin med `aria-labelledby`. Da har komponenten ingenting å skrive når den registreres, og React hydrerer uten avvik. Importen gir også `className` og `tabIndex` i stedet for HTML-navnene, så React ikke advarer.
 
-    `selected` gjelder når siden lastes, og er indeksen i `keys`. Serveren ser ikke fragmentet i adressen, så en delt lenke til `#sak-vedlegg` åpner den første fanen i en React-app. Vil du følge adressen, les den selv etter at siden er lastet, og send indeksen inn som `selected`. Skal appen flytte valget etter at brukeren har klikket, sett `server-controlled` på `<fs-tabs>`, se [Når serveren bestemmer fanen](#når-serveren-bestemmer-fanen).
+    `selected` gjelder når siden lastes, og er indeksen i `keys`. Serveren ser ikke fragmentet i adressen, så en delt lenke til `#sak-vedlegg` åpner den første fanen i en React-app. Vil du følge adressen, les den selv etter at siden er lastet, og send indeksen inn som `selected`. Skal appen flytte valget etter at brukeren har klikket, sett `server-controlled` på `<lt-tabs>`, se [Når serveren bestemmer fanen](#når-serveren-bestemmer-fanen).
 
     React 19 skriver `hidden="until-found"` som `hidden=""`. Søk i siden og lenker inn i et skjult panel åpner derfor ikke fanen i en React-app, før React støtter verdien.
 
-    Skriver du fanene for hånd i JSX, uten `fs.tabs()`, skriver komponenten rollene før React hydrerer, og React melder et avvik per element. Sett da `suppressHydrationWarning` på raden, listepunktene, lenkene og panelene. Bruk heller `fs.tabs()`.
+    Skriver du fanene for hånd i JSX, uten `lt.tabs()`, skriver komponenten rollene før React hydrerer, og React melder et avvik per element. Sett da `suppressHydrationWarning` på raden, listepunktene, lenkene og panelene. Bruk heller `lt.tabs()`.
   </TabItem>
   <TabItem label="Astro">
     ```astro
     ---
-    import { fs } from "@fristil/designsystem"
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/tabs.css"
+    import { lt } from "@lo-tek/interfaces"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/tabs.css"
 
     const deler = [
       { key: "soknaden", tittel: "Søknaden" },
       { key: "vedlegg", tittel: "Vedlegg" },
       { key: "meldinger", tittel: "Meldinger" },
     ]
-    const faner = fs.tabs({
+    const faner = lt.tabs({
       id: "sak",
       keys: deler.map((del) => del.key),
       label: "Deler av saken",
     })
     ---
 
-    <fs-tabs>
+    <lt-tabs>
       <ul {...faner.list}>
         {faner.tabs.map((fane, i) => <li><a {...fane}>{deler[i].tittel}</a></li>)}
       </ul>
@@ -149,15 +149,15 @@ Unntaket er React: der skriver `fs.tabs()` fra `@fristil/designsystem/react` hel
           <p>Innhold for {deler[i].tittel.toLowerCase()}.</p>
         </section>
       ))}
-    </fs-tabs>
+    </lt-tabs>
 
     <script>
-      import { defineFsTabs } from "@fristil/designsystem/tabs"
-      defineFsTabs()
+      import { defineLtTabs } from "@lo-tek/interfaces/tabs"
+      defineLtTabs()
     </script>
     ```
 
-    En Astro-side hydrerer ingenting, så her er det den vanlige `fs.tabs()` som gjelder, og komponenten skriver rollene når den registreres. `headings` gir overskriftene en fast id, så panelets navn peker på det samme etter en oppdatering.
+    En Astro-side hydrerer ingenting, så her er det den vanlige `lt.tabs()` som gjelder, og komponenten skriver rollene når den registreres. `headings` gir overskriftene en fast id, så panelets navn peker på det samme etter en oppdatering.
   </TabItem>
   <TabItem label="Datastar">
     ```html
@@ -167,32 +167,32 @@ Unntaket er React: der skriver `fs.tabs()` fra `@fristil/designsystem/react` hel
 
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/tabs/tabs.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/tabs/tabs.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsTabs } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/tabs/fs-tabs.js"
+      import { defineLtTabs } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/tabs/lt-tabs.js"
 
-      defineFsTabs()
+      defineLtTabs()
     </script>
 
-    <fs-tabs server-controlled data-signals__ifmissing="{valgtFane: 0}" data-on:tab-select="$valgtFane = evt.detail.index">
-      <ul class="fs-tabs__list" aria-label="Deler av saken">
+    <lt-tabs server-controlled data-signals__ifmissing="{valgtFane: 0}" data-on:tab-select="$valgtFane = evt.detail.index">
+      <ul class="lt-tabs__list" aria-label="Deler av saken">
         <li><a href="#soknaden">Søknaden</a></li>
         <li><a href="#vedlegg">Vedlegg</a></li>
       </ul>
-      <section class="fs-tabs__panel" id="soknaden">
+      <section class="lt-tabs__panel" id="soknaden">
         <h2>Søknaden</h2>
         <p>Søknaden ble sendt 4. mars 2026.</p>
       </section>
-      <section class="fs-tabs__panel" id="vedlegg" hidden="until-found">
+      <section class="lt-tabs__panel" id="vedlegg" hidden="until-found">
         <h2>Vedlegg</h2>
         <p>Tre vedlegg er lastet opp.</p>
       </section>
-    </fs-tabs>
+    </lt-tabs>
     ```
 
     Signalet `$valgtFane` sendes med neste handling Datastar gjør mot serveren, som `@get` eller `@post`, så serveren vet hvilken fane brukeren valgte og skriver `hidden` på panelene etter det. Da er det serveren som styrer fanen, og `server-controlled` hører med. Uten det kjemper de to om det samme: komponenten setter tilbake fanen brukeren valgte, mens serveren sender sin egen. Lar du signalet være, trengs ingenting, og komponenten holder valget selv.
@@ -209,17 +209,17 @@ Faner passer når den første delen er viktigst for de fleste, og ingen trenger 
 
 Den første fanen er valgt når siden lastes, med to unntak: adressen peker på et panel eller noe inni det, eller serveren har skrevet valget i markupen. Komponenten leser i denne rekkefølgen:
 
-1. `aria-selected="true"` på en fane, slik `fs.tabs()` fra React-inngangen skriver det. Da velger adressen ingen fane, og peker den på en annen fane i raden, rettes den til den valgte.
+1. `aria-selected="true"` på en fane, slik `lt.tabs()` fra React-inngangen skriver det. Da velger adressen ingen fane, og peker den på en annen fane i raden, rettes den til den valgte.
 2. Adressen, når den peker på et panel eller noe inni det.
 3. Det første panelet uten `hidden`. Serveren kan altså velge en fane i markup uten roller ved å skrive `hidden="until-found"` på de andre panelene.
 4. Ellers den første.
 
 Det komponenten selv har skrevet, teller ikke som markupens svar: bytter serveren fane ved bare å flytte `hidden`, følger markeringen med.
 
-Den vanlige `fs.tabs()` har ingen `selected`. Et annet utgangspunkt kommer fra adressen eller fra serverens `hidden`, og etterpå fra appen gjennom `selected` og `select()` på elementet:
+Den vanlige `lt.tabs()` har ingen `selected`. Et annet utgangspunkt kommer fra adressen eller fra serverens `hidden`, og etterpå fra appen gjennom `selected` og `select()` på elementet:
 
 ```ts
-const faner = document.querySelector("fs-tabs")
+const faner = document.querySelector("lt-tabs")
 if (!faner) throw new Error("fant ikke elementet")
 
 faner.selected // 0
@@ -229,7 +229,7 @@ faner.selected = 2 // det samme som select(2)
 
 Komponenten har ikke noe `selected`-attributt. Svaret står i markupen, som `aria-selected` på fanen, og leses derfra. To steder å holde i synk er ett for mye.
 
-Panelet finnes på id-en i `href`, og `aria-controls` skrives fra den. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<fs-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en oppdatering `hidden` av det, kommer det ikke tilbake av seg selv. Peker en lenke på en id som ikke finnes, kan fanen velges uten at noe vises, og komponenten sier fra i konsollen.
+Panelet finnes på id-en i `href`, og `aria-controls` skrives fra den. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<lt-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en oppdatering `hidden` av det, kommer det ikke tilbake av seg selv. Peker en lenke på en id som ikke finnes, kan fanen velges uten at noe vises, og komponenten sier fra i konsollen.
 
 `tab-select` sendes når brukeren eller komponenten endrer valget: klikk, piltaster, `select()`, adressen og søk i siden. Den sendes ikke når serveren flytter valget i en oppdatering, så appen ikke reagerer på sitt eget ekko, og ikke når fanen som velges alt er valgt.
 
@@ -248,25 +248,25 @@ To begrensninger følger av at adressen er én:
 
 ## Hvorfor panelene skjules med `hidden="until-found"`
 
-HTML-standarden sier at `hidden` ikke skal brukes til å skjule panelene i en fanerad, og at et synlig element ikke skal lenke til et skjult. Fristil avviker fra det, med vilje. `until-found` er laget nettopp for at lenker til fragmenter og søk i siden skal kunne avdekke innhold som er lagt bort, og det er det en fanerad gjør: innholdet finnes, leseren har bare ikke bedt om det ennå. Med en klasse og `display: none` i stedet ville søk i siden ikke funnet teksten, og serveren kunne ikke lenger velge fane med `hidden`.
+HTML-standarden sier at `hidden` ikke skal brukes til å skjule panelene i en fanerad, og at et synlig element ikke skal lenke til et skjult. LO-TEK avviker fra det, med vilje. `until-found` er laget nettopp for at lenker til fragmenter og søk i siden skal kunne avdekke innhold som er lagt bort, og det er det en fanerad gjør: innholdet finnes, leseren har bare ikke bedt om det ennå. Med en klasse og `display: none` i stedet ville søk i siden ikke funnet teksten, og serveren kunne ikke lenger velge fane med `hidden`.
 
 Et panel skjult med `until-found` beholder boksen sin, så stilarket nuller luften rundt det. Innholdet i et skjult panel kan ikke få fokus, og panelet selv har ikke tabbestopp.
 
 ## Før komponenten er registrert
 
-Panelene står i siden før `defineFsTabs()` har kjørt. Den vanlige `fs.tabs()` skriver ikke `hidden`, så uten JavaScript vises alle panelene under hverandre, som en innholdsfortegnelse skal. Med JavaScript viser `tabs.css` bare ett panel til komponenten er registrert, det komponenten kommer til å velge, så innholdet ikke hopper:
+Panelene står i siden før `defineLtTabs()` har kjørt. Den vanlige `lt.tabs()` skriver ikke `hidden`, så uten JavaScript vises alle panelene under hverandre, som en innholdsfortegnelse skal. Med JavaScript viser `tabs.css` bare ett panel til komponenten er registrert, det komponenten kommer til å velge, så innholdet ikke hopper:
 
 - Skrev serveren `hidden` selv, gjelder det.
 - Ellers panelet adressen peker på, eller panelet med det inni. Det er også det en lenke i raden fører til når komponenten aldri blir registrert.
 - Ellers det første.
 
-Under `server-controlled` velger adressen ikke, og det første synlige panelet vises. Regelen rekker bare panelene inne i `<fs-tabs>`: et panel utenfor må ha `hidden` fra serveren. Og den kan ikke koble `aria-selected` på en fane til panelet dens, så markup med `aria-selected`, som fra React-inngangen, må også ha `hidden` på panelene som ikke er valgt. React-inngangen skriver begge.
+Under `server-controlled` velger adressen ikke, og det første synlige panelet vises. Regelen rekker bare panelene inne i `<lt-tabs>`: et panel utenfor må ha `hidden` fra serveren. Og den kan ikke koble `aria-selected` på en fane til panelet dens, så markup med `aria-selected`, som fra React-inngangen, må også ha `hidden` på panelene som ikke er valgt. React-inngangen skriver begge.
 
-Se [Markup og oppførsel](/markup-og-oppforsel/#før-komponenten-er-registrert).
+Se [Markup og oppførsel](/markup-and-behaviour/#før-komponenten-er-registrert).
 
 ## Når serveren bestemmer fanen
 
-Med `server-controlled` på `<fs-tabs>` bestemmer serveren hvilken fane som er valgt. Komponenten setter ikke brukerens valg tilbake etter en oppdatering fra serveren, men den gjør fortsatt resten:
+Med `server-controlled` på `<lt-tabs>` bestemmer serveren hvilken fane som er valgt. Komponenten setter ikke brukerens valg tilbake etter en oppdatering fra serveren, men den gjør fortsatt resten:
 
 - Den skriver ut det markupen sier: `aria-selected`, tabbestoppet og `hidden` i takt. Serveren kan altså flytte fanen ved å flytte `hidden` alene.
 - Et klikk velger fanen med en gang, sender `tab-select` og skriver fanen i adressen. Valget står til serveren svarer, og da gjelder svaret.
@@ -287,30 +287,30 @@ Settes attributtet mens siden lever, er det som står i markupen utgangspunktet,
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-tabs__list` | Lista med lenker. Får `role="tablist"` av komponenten, eller av `fs.tabs()` i React-inngangen |
-| `.fs-tabs__panel` | Ett panel. De som ikke er valgt, har `hidden="until-found"` |
+| `.lt-tabs__list` | Lista med lenker. Får `role="tablist"` av komponenten, eller av `lt.tabs()` i React-inngangen |
+| `.lt-tabs__panel` | Ett panel. De som ikke er valgt, har `hidden="until-found"` |
 
-Lenkene har ingen egen klasse, de styles som `.fs-tabs__list a`. Den valgte har `aria-selected="true"`, og en deaktivert fane har `aria-disabled="true"`.
+Lenkene har ingen egen klasse, de styles som `.lt-tabs__list a`. Den valgte har `aria-selected="true"`, og en deaktivert fane har `aria-disabled="true"`.
 
 | Variabel | Reserve |
 | --- | --- |
-| `--fs-tabs-gap` | `var(--fs-spacing-1)` |
-| `--fs-tabs-padding` | `var(--fs-spacing-2) var(--fs-spacing-4)` |
-| `--fs-tabs-panel-space` | `var(--fs-spacing-4)` |
+| `--lt-tabs-gap` | `var(--lt-spacing-1)` |
+| `--lt-tabs-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
+| `--lt-tabs-panel-space` | `var(--lt-spacing-4)` |
 
 ```css
-.fs-tabs__list {
-  --fs-tabs-gap: 0;
+.lt-tabs__list {
+  --lt-tabs-gap: 0;
 }
 ```
 
 ## Tilgjengelighet
 
-Fanene er `role="tab"` i en `role="tablist"`, listepunktene rundt dem er `role="presentation"` så skjermleseren ikke teller dem som liste, og panelene er `role="tabpanel"`. Skriver du dem med `fs.tabs()` fra React-inngangen, står rollene i HTML-en før skriptet har kjørt. Ellers setter komponenten dem i det den registreres, og setter dem tilbake om en oppdatering tar dem.
+Fanene er `role="tab"` i en `role="tablist"`, listepunktene rundt dem er `role="presentation"` så skjermleseren ikke teller dem som liste, og panelene er `role="tabpanel"`. Skriver du dem med `lt.tabs()` fra React-inngangen, står rollene i HTML-en før skriptet har kjørt. Ellers setter komponenten dem i det den registreres, og setter dem tilbake om en oppdatering tar dem.
 
 Panelet får navnet sitt fra overskriften i det, når den sier det samme som fanen. Sier den noe annet, eller finnes den ikke, får panelet fanens navn som `aria-label`. En kobling serveren selv skrev, `aria-label` eller `aria-labelledby`, rører komponenten aldri.
 
-Raden må ha et navn: `aria-label` på `.fs-tabs__list`, eller `aria-labelledby` mot en overskrift. `label` er derfor påkrevd i `fs.tabs()`, og komponenten sier fra i konsollen når navnet mangler. Uten det sier skjermleseren bare «faneliste».
+Raden må ha et navn: `aria-label` på `.lt-tabs__list`, eller `aria-labelledby` mot en overskrift. `label` er derfor påkrevd i `lt.tabs()`, og komponenten sier fra i konsollen når navnet mangler. Uten det sier skjermleseren bare «faneliste».
 
 | Tast | Gjør |
 | --- | --- |

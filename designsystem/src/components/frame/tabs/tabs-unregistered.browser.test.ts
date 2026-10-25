@@ -4,42 +4,42 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
 
 import { monter, ventPaTegning } from "../../../testing/a11y"
-import { gåTil, settAdresse } from "../../../testing/adresse"
+import { gåTil, settAdresse } from "../../../testing/address"
 
 import "../../../tokens/tokens.css"
 import "./tabs.css"
 
 /*
- * Ingen `defineFsTabs()` her, med vilje. Fila kjører i sin egen ramme, så
- * `fs-tabs` er uregistrert gjennom hele testen, og det er den tilstanden
+ * Ingen `defineLtTabs()` her, med vilje. Fila kjører i sin egen ramme, så
+ * `lt-tabs` er uregistrert gjennom hele testen, og det er den tilstanden
  * regelen i `tabs.css` gjelder for: markup skrevet uten JavaScript, før
  * komponenten har rukket å skjule panelene selv.
  */
 const BAR = `
-  <fs-tabs>
-    <ul class="fs-tabs__list">
+  <lt-tabs>
+    <ul class="lt-tabs__list">
       <li><a href="#soknaden">Søknaden</a></li>
       <li><a href="#vedlegg">Vedlegg</a></li>
       <li><a href="#meldinger">Meldinger</a></li>
     </ul>
-    <section class="fs-tabs__panel" id="soknaden">Søknaden</section>
-    <section class="fs-tabs__panel" id="vedlegg">Vedlegg <p id="inne-vedlegg">Inni</p></section>
-    <section class="fs-tabs__panel" id="meldinger">Meldinger</section>
-  </fs-tabs>`
+    <section class="lt-tabs__panel" id="soknaden">Søknaden</section>
+    <section class="lt-tabs__panel" id="vedlegg">Vedlegg <p id="inne-vedlegg">Inni</p></section>
+    <section class="lt-tabs__panel" id="meldinger">Meldinger</section>
+  </lt-tabs>`
 
 /** Faner i faner: `#dypt` står i det indre panelet `ib`, i det ytre `yb`. */
 const FANER_I_FANER = (indre = "") => `
-  <fs-tabs>
-    <ul class="fs-tabs__list"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
-    <section class="fs-tabs__panel" id="ya">Ytre a</section>
-    <section class="fs-tabs__panel" id="yb">Ytre b
-      <fs-tabs${indre}>
-        <ul class="fs-tabs__list"><li><a href="#ia">IA</a></li><li><a href="#ib">IB</a></li></ul>
-        <section class="fs-tabs__panel" id="ia">Indre a</section>
-        <section class="fs-tabs__panel" id="ib">Indre b <p id="dypt">Dypt</p></section>
-      </fs-tabs>
+  <lt-tabs>
+    <ul class="lt-tabs__list"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
+    <section class="lt-tabs__panel" id="ya">Ytre a</section>
+    <section class="lt-tabs__panel" id="yb">Ytre b
+      <lt-tabs${indre}>
+        <ul class="lt-tabs__list"><li><a href="#ia">IA</a></li><li><a href="#ib">IB</a></li></ul>
+        <section class="lt-tabs__panel" id="ia">Indre a</section>
+        <section class="lt-tabs__panel" id="ib">Indre b <p id="dypt">Dypt</p></section>
+      </lt-tabs>
     </section>
-  </fs-tabs>`
+  </lt-tabs>`
 
 function vises(...ider: string[]): boolean[] {
   return ider.map(
@@ -50,7 +50,7 @@ function vises(...ider: string[]): boolean[] {
 }
 
 function visning(): string[] {
-  return [...document.querySelectorAll<HTMLElement>(".fs-tabs__panel")].map(
+  return [...document.querySelectorAll<HTMLElement>(".lt-tabs__panel")].map(
     (panel) => getComputedStyle(panel).display,
   )
 }
@@ -61,7 +61,7 @@ beforeEach(async () => {
 
 describe("tabs.css før komponenten er registrert", () => {
   it("viser bare det første panelet når serveren ikke sa noe", async () => {
-    expect(customElements.get("fs-tabs")).toBeUndefined()
+    expect(customElements.get("lt-tabs")).toBeUndefined()
     monter(BAR)
     await ventPaTegning()
 
@@ -129,7 +129,7 @@ describe("tabs.css før komponenten er registrert", () => {
   })
 
   it("lar adressen være under server-controlled, der komponenten ikke velger fra den", async () => {
-    monter(BAR.replace("<fs-tabs>", "<fs-tabs server-controlled>"))
+    monter(BAR.replace("<lt-tabs>", "<lt-tabs server-controlled>"))
     await gåTil("#meldinger")
     await ventPaTegning()
 

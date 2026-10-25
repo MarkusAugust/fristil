@@ -2,10 +2,10 @@
   "version": 1.1,
   "tags": [
     {
-      "name": "fs-field",
+      "name": "lt-field",
       "description": {
         "kind": "markdown",
-        "value": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet."
+        "value": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `lt.field()` i stedet."
       },
       "attributes": [
         {
@@ -35,15 +35,15 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/field/"
+          "url": "https://lo-tek.sobernetics.no/components/field/"
         }
       ]
     },
     {
-      "name": "fs-tabs",
+      "name": "lt-tabs",
       "description": {
         "kind": "markdown",
-        "value": "Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri."
+        "value": "Fanerad. Fanene er lenker til panelene i en `.lt-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri."
       },
       "attributes": [
         {
@@ -81,12 +81,12 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/tabs/"
+          "url": "https://lo-tek.sobernetics.no/components/tabs/"
         }
       ]
     },
     {
-      "name": "fs-error-summary",
+      "name": "lt-error-summary",
       "description": {
         "kind": "markdown",
         "value": "Feiloppsummering. Flytter fokus til boksen når den kommer til syne, og til kontrollen når en lenke i lista følges."
@@ -127,15 +127,15 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/error-summary/"
+          "url": "https://lo-tek.sobernetics.no/components/error-summary/"
         }
       ]
     },
     {
-      "name": "fs-popover",
+      "name": "lt-popover",
       "description": {
         "kind": "markdown",
-        "value": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en."
+        "value": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `lt-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en."
       },
       "attributes": [
         {
@@ -195,15 +195,15 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/popover/"
+          "url": "https://lo-tek.sobernetics.no/components/popover/"
         }
       ]
     },
     {
-      "name": "fs-suggestion",
+      "name": "lt-suggestion",
       "description": {
         "kind": "markdown",
-        "value": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff."
+        "value": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.lt-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff."
       },
       "attributes": [
         {
@@ -275,15 +275,15 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/suggestion/"
+          "url": "https://lo-tek.sobernetics.no/components/suggestion/"
         }
       ]
     },
     {
-      "name": "fs-dialog",
+      "name": "lt-dialog",
       "description": {
         "kind": "markdown",
-        "value": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `fs-dialog__body` når verken `aria-labelledby` eller `aria-label` står der."
+        "value": "Gjør en `<dialog class=\"lt-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `lt-dialog__body` når verken `aria-labelledby` eller `aria-label` står der."
       },
       "attributes": [
         {
@@ -306,12 +306,12 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/dialog/"
+          "url": "https://lo-tek.sobernetics.no/components/dialog/"
         }
       ]
     },
     {
-      "name": "fs-toast",
+      "name": "lt-toast",
       "description": {
         "kind": "markdown",
         "value": "Kø av korte meldinger i hjørnet av skjermen. Meldingene lages fra skript med `show(tekst, { color, duration })`."
@@ -342,15 +342,15 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/toast/"
+          "url": "https://lo-tek.sobernetics.no/components/toast/"
         }
       ]
     },
     {
-      "name": "fs-session-timeout",
+      "name": "lt-session-timeout",
       "description": {
         "kind": "markdown",
-        "value": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live."
+        "value": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.lt-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live."
       },
       "attributes": [
         {
@@ -378,12 +378,12 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/session-timeout/"
+          "url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         }
       ]
     },
     {
-      "name": "fs-connection-status",
+      "name": "lt-connection-status",
       "description": {
         "kind": "markdown",
         "value": "Sier fra når forbindelsen til serveren er borte. Appen melder fra med `reportFailure()` og `reportSuccess()`."
@@ -407,7 +407,7 @@
       "references": [
         {
           "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/connection-status/"
+          "url": "https://lo-tek.sobernetics.no/components/connection-status/"
         }
       ]
     }

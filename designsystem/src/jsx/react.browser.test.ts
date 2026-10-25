@@ -1,20 +1,20 @@
 import { describe, expect, it } from "vitest"
-import { FsConnectionStatus } from "../components/frittstaende/connection-status/fs-connection-status"
-import { FsToast } from "../components/frittstaende/toast/fs-toast"
-import { FsDialog } from "../components/ramme/dialog/fs-dialog"
-import { FsErrorSummary } from "../components/ramme/error-summary/fs-error-summary"
-import { FsField } from "../components/ramme/field/fs-field"
-import { FsPopover } from "../components/ramme/popover/fs-popover"
-import { FsSessionTimeout } from "../components/ramme/session-timeout/fs-session-timeout"
-import { FsSuggestion } from "../components/ramme/suggestion/fs-suggestion"
-import { FsTabs } from "../components/ramme/tabs/fs-tabs"
-import { fs } from "../fs"
+import { LtConnectionStatus } from "../components/standalone/connection-status/lt-connection-status"
+import { LtToast } from "../components/standalone/toast/lt-toast"
+import { LtDialog } from "../components/frame/dialog/lt-dialog"
+import { LtErrorSummary } from "../components/frame/error-summary/lt-error-summary"
+import { LtField } from "../components/frame/field/lt-field"
+import { LtPopover } from "../components/frame/popover/lt-popover"
+import { LtSessionTimeout } from "../components/frame/session-timeout/lt-session-timeout"
+import { LtSuggestion } from "../components/frame/suggestion/lt-suggestion"
+import { LtTabs } from "../components/frame/tabs/lt-tabs"
+import { lt } from "../lt"
 import { toReactAttributes } from "../react"
 import kilde from "./react?raw"
 
 /**
  * JSX-deklarasjonene er håndskrevet, og kan derfor komme i utakt med
- * komponentene de beskriver. Legger noen til en egenskap på `<fs-suggestion>`
+ * komponentene de beskriver. Legger noen til en egenskap på `<lt-suggestion>`
  * uten å legge den inn her, er den usynlig for TypeScript, og da er vi
  * tilbake til at skrivefeil går rett gjennom.
  *
@@ -25,7 +25,7 @@ import kilde from "./react?raw"
 /**
  * Attributter React allerede kjenner gjennom `HTMLAttributes`.
  *
- * `hidden` står ikke her, selv om `<fs-error-summary>` bare observerer det
+ * `hidden` står ikke her, selv om `<lt-error-summary>` bare observerer det
  * fordi serveren kan ta det bort for å vise boksen. `HTMLAttributes` typer det
  * som `boolean`, og `hidden={false}` kompilerte, mens React 18 skriver det
  * som `hidden="false"` på en web component, som er sant. Deklarasjonen
@@ -42,15 +42,15 @@ function attributtnavn(klasse: { observedAttributes?: unknown }): string[] {
 
 describe("JSX-deklarasjonene følger komponentene", () => {
   it.each([
-    ["fs-field", FsField],
-    ["fs-tabs", FsTabs],
-    ["fs-error-summary", FsErrorSummary],
-    ["fs-popover", FsPopover],
-    ["fs-toast", FsToast],
-    ["fs-session-timeout", FsSessionTimeout],
-    ["fs-connection-status", FsConnectionStatus],
-    ["fs-suggestion", FsSuggestion],
-    ["fs-dialog", FsDialog],
+    ["lt-field", LtField],
+    ["lt-tabs", LtTabs],
+    ["lt-error-summary", LtErrorSummary],
+    ["lt-popover", LtPopover],
+    ["lt-toast", LtToast],
+    ["lt-session-timeout", LtSessionTimeout],
+    ["lt-connection-status", LtConnectionStatus],
+    ["lt-suggestion", LtSuggestion],
+    ["lt-dialog", LtDialog],
   ])("%s har alle attributtene sine deklarert", (tagg, klasse) => {
     const attributter = attributtnavn(klasse)
 
@@ -69,15 +69,15 @@ describe("JSX-deklarasjonene følger komponentene", () => {
 
   it("deklarerer ikke attributter komponentene ikke har", () => {
     const kjente = new Set([
-      ...attributtnavn(FsField),
-      ...attributtnavn(FsTabs),
-      ...attributtnavn(FsErrorSummary),
-      ...attributtnavn(FsPopover),
-      ...attributtnavn(FsToast),
-      ...attributtnavn(FsSessionTimeout),
-      ...attributtnavn(FsConnectionStatus),
-      ...attributtnavn(FsSuggestion),
-      ...attributtnavn(FsDialog),
+      ...attributtnavn(LtField),
+      ...attributtnavn(LtTabs),
+      ...attributtnavn(LtErrorSummary),
+      ...attributtnavn(LtPopover),
+      ...attributtnavn(LtToast),
+      ...attributtnavn(LtSessionTimeout),
+      ...attributtnavn(LtConnectionStatus),
+      ...attributtnavn(LtSuggestion),
+      ...attributtnavn(LtDialog),
     ])
 
     // Bare attributtblokkene. Taggnavnene i IntrinsicElements står under
@@ -102,7 +102,7 @@ describe("React-inngangen dekker alle attributtene byggefunksjonene sender ut", 
    * `autocomplete`. Did you mean `autoComplete`?» i konsollen. `tabindex`
    * hadde sluppet gjennom på samme måte en runde tidligere.
    *
-   * Testen teller opp hvert attributtnavn `fs` faktisk sender ut, og krever at
+   * Testen teller opp hvert attributtnavn `lt` faktisk sender ut, og krever at
    * ingen av dem er et React staver med stor bokstav inni uten at `react.ts`
    * døper det om.
    */
@@ -145,7 +145,7 @@ describe("React-inngangen dekker alle attributtene byggefunksjonene sender ut", 
       field: { id: "x", help: true, error: true },
     }
 
-    for (const [navn, verdi] of Object.entries(fs)) {
+    for (const [navn, verdi] of Object.entries(lt)) {
       if (typeof verdi !== "function") continue
       try {
         const byggefunksjon = verdi as (valg?: unknown) => unknown

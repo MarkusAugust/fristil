@@ -35,60 +35,60 @@ describe("en konsument kan tilpasse systemet", () => {
     }
     document.documentElement.removeAttribute("data-theme")
     document.body.innerHTML = `
-      <button class="fs-button">Knapp</button>
-      <input class="fs-input" />
+      <button class="lt-button">Knapp</button>
+      <input class="lt-input" />
     `
   })
 
   it("kan sette en komponentvariabel uten noen selektor", () => {
-    apply(":root { --fs-button-radius: 9999px; }")
+    apply(":root { --lt-button-radius: 9999px; }")
 
-    const button = document.querySelector(".fs-button") as HTMLElement
+    const button = document.querySelector(".lt-button") as HTMLElement
     expect(getComputedStyle(button).borderRadius).toBe("9999px")
 
     // Variabelen er komponentens egen: input skal ikke påvirkes
-    const input = document.querySelector(".fs-input") as HTMLElement
+    const input = document.querySelector(".lt-input") as HTMLElement
     expect(getComputedStyle(input).borderRadius).not.toBe("9999px")
   })
 
   it("faller tilbake til tokenverdien når variabelen ikke er satt", () => {
-    // Standardverdien skal følge --fs-spacing-skalaen, ikke være bakt inn.
+    // Standardverdien skal følge --lt-spacing-skalaen, ikke være bakt inn.
     // Det er grunnen til at @property ikke brukes her: en registrert
     // initial-value gjør var()-fallbacken uoppnåelig.
-    apply(":root { --fs-spacing-1: 20px; }")
+    apply(":root { --lt-spacing-1: 20px; }")
 
-    const button = document.querySelector(".fs-button") as HTMLElement
+    const button = document.querySelector(".lt-button") as HTMLElement
     expect(getComputedStyle(button).borderRadius).toBe("20px")
   })
 
   it("kan overstyre en regel systemet ikke har eksponert, med lav spesifisitet", () => {
-    document.body.innerHTML = '<button class="fs-button" disabled>Av</button>'
+    document.body.innerHTML = '<button class="lt-button" disabled>Av</button>'
 
-    // Systemets regel er .fs-button:disabled, altså 0,2,0. Konsumentens er
+    // Systemets regel er .lt-button:disabled, altså 0,2,0. Konsumentens er
     // 0,1,0 og ville tapt uten @layer, uansett rekkefølge. Det er nettopp
     // dette layeret er til for.
-    apply(".fs-button { background: rgb(1, 2, 3); }")
+    apply(".lt-button { background: rgb(1, 2, 3); }")
 
-    const button = document.querySelector(".fs-button") as HTMLElement
+    const button = document.querySelector(".lt-button") as HTMLElement
     expect(getComputedStyle(button).backgroundColor).toBe("rgb(1, 2, 3)")
   })
 
   it("kan overstyre en token, også i mørkt tema via systemvalget", () => {
-    apply(":root { --fs-color-accent-fill: rgb(124, 58, 237); }")
+    apply(":root { --lt-color-accent-fill: rgb(124, 58, 237); }")
     document.documentElement.setAttribute("data-theme", "dark")
 
-    const button = document.querySelector(".fs-button") as HTMLElement
+    const button = document.querySelector(".lt-button") as HTMLElement
     expect(getComputedStyle(button).backgroundColor).toBe("rgb(124, 58, 237)")
   })
 })
 
 /**
- * At Fristil og Tailwind kan ligge i samme app uten å slåss.
+ * At LO-TEK og Tailwind kan ligge i samme app uten å slåss.
  *
  * Lagene teller i den rekkefølgen de først blir nevnt, og det siste laget
  * vinner uansett spesifisitet. Tailwinds Preflight ligger i `base`, og
  * nullstiller blant annet bakgrunnen på `button` og punktene på `ul` og
- * `ol`. Havner `base` etter `fristil`, forsvinner knappefargen vår, uten at
+ * `ol`. Havner `base` etter `lotek`, forsvinner knappefargen vår, uten at
  * noe sier fra.
  *
  * Rekkefølgen kan ikke endres etter at et lag er nevnt, så hver variant måles
@@ -96,7 +96,7 @@ describe("en konsument kan tilpasse systemet", () => {
  */
 async function medStilark(
   css: string,
-  markup = '<button class="fs-button" id="knapp">Send søknad</button>',
+  markup = '<button class="lt-button" id="knapp">Send søknad</button>',
 ): Promise<Document> {
   const ramme = document.createElement("iframe")
   ramme.style.width = "400px"
@@ -124,42 +124,42 @@ function stil(dok: Document, id: string): CSSStyleDeclaration {
  *
  * Testen hadde en håndskrevet utgave med bare knappereglene, og da så den
  * aldri at Preflight også setter `list-style: none` på hver liste, som tok
- * punktene fra `.fs-list`. Hele fila, så det som nullstilles er det
+ * punktene fra `.lt-list`. Hele fila, så det som nullstilles er det
  * konsumenten får.
  */
 const PREFLIGHT = `@layer base { ${preflightKilde} }`
 
 /** Rekkefølgen dokumentasjonen ber konsumenten sette på første linje. */
 const LAGLINJE =
-  "@layer theme, base, fristil, fristil-tema, components, utilities;"
+  "@layer theme, base, lotek, lotek-theme, components, utilities;"
 
 /**
- * Et utdrag av det `fristil tema` skriver: en farge, skriften og formen, i
+ * Et utdrag av det `lotek tema` skriver: en farge, skriften og formen, i
  * `:root` i temaets eget lag. Fargen er med fordi tokens.css setter den i
- * `:root` i `fristil`; bare et token som finnes der kan vise at temaet
- * slår det. Temaet erklærer bare sitt eget lag etter `fristil`, og kan ikke
+ * `:root` i `lotek`; bare et token som finnes der kan vise at temaet
+ * slår det. Temaet erklærer bare sitt eget lag etter `lotek`, og kan ikke
  * vite hvilke lag appen har erklært fra før.
  */
 const TEMA = `
-  @layer fristil, fristil-tema;
-  @layer fristil-tema {
+  @layer lotek, lotek-theme;
+  @layer lotek-theme {
     :root {
-      --fs-color-accent-fill: rgb(0, 100, 0);
-      --fs-font-family-base: Georgia, serif;
-      --fs-button-radius: 2.75rem;
+      --lt-color-accent-fill: rgb(0, 100, 0);
+      --lt-font-family-base: Georgia, serif;
+      --lt-button-radius: 2.75rem;
     }
     :root {
-      font-family: var(--fs-font-family-base);
+      font-family: var(--lt-font-family-base);
     }
   }`
 
 /**
  * Det Tailwind lager av `p-4` med temaet vårt: `--spacing` er
- * `--fs-spacing-1`, og `sjekk-tailwind.ts` kontrollerer med en ekte Tailwind
+ * `--lt-spacing-1`, og `check-tailwind.ts` kontrollerer med en ekte Tailwind
  * at klassen inneholder nettopp dette regnestykket.
  */
 const P4 =
-  "@layer utilities { .p-4 { padding: calc(var(--fs-spacing-1) * 4); } }"
+  "@layer utilities { .p-4 { padding: calc(var(--lt-spacing-1) * 4); } }"
 
 describe("sammen med Tailwind", () => {
   afterEach(() => {
@@ -168,7 +168,7 @@ describe("sammen med Tailwind", () => {
     for (const ramme of document.querySelectorAll("iframe")) ramme.remove()
   })
 
-  it("beholder knappefargen når fristil står etter base", async () => {
+  it("beholder knappefargen når lotek står etter base", async () => {
     const dok = await medStilark(`
       ${LAGLINJE}
       ${tokenKilde}
@@ -186,14 +186,14 @@ describe("sammen med Tailwind", () => {
       ${PREFLIGHT}
     `)
 
-    // `base` nevnes her etter `fristil`, og vinner derfor.
+    // `base` nevnes her etter `lotek`, og vinner derfor.
     expect(stil(dok, "knapp").backgroundColor).toBe("rgba(0, 0, 0, 0)")
   })
 
   it("beholder punktene og tallene i lista når Preflight står i base", async () => {
     // Preflight setter `list-style: none` på hver liste. Standardvarianten
     // sa ingenting om punktene og lente seg på nettleseren, så Preflight
-    // vant selv om `base` sto foran `fristil`, og lista mistet punktene og
+    // vant selv om `base` sto foran `lotek`, og lista mistet punktene og
     // nummereringen. Variantene uten punkter skal fortsatt være uten.
     const dok = await medStilark(
       `
@@ -202,9 +202,9 @@ describe("sammen med Tailwind", () => {
       ${listeKilde}
       ${PREFLIGHT}
     `,
-      `<ul class="fs-list" id="punkter"><li>Fødselsattest</li></ul>
-       <ol class="fs-list" id="tall"><li>Fyll ut skjemaet</li></ol>
-       <ul class="fs-list" data-variant="plain" id="ren"><li>Sendt</li></ul>`,
+      `<ul class="lt-list" id="punkter"><li>Fødselsattest</li></ul>
+       <ol class="lt-list" id="tall"><li>Fyll ut skjemaet</li></ol>
+       <ul class="lt-list" data-variant="plain" id="ren"><li>Sendt</li></ul>`,
     )
 
     expect(stil(dok, "punkter").listStyleType).toBe("disc")
@@ -226,7 +226,7 @@ describe("sammen med Tailwind", () => {
     expect(stil(dok, "knapp").padding).toBe("24px")
   })
 
-  it("lar komponenten slå utility-klassen når fristil står etter utilities, og det er derfor linja står i dokumentasjonen", async () => {
+  it("lar komponenten slå utility-klassen når lotek står etter utilities, og det er derfor linja står i dokumentasjonen", async () => {
     const dok = await medStilark(`
       @layer utilities { .p-6 { padding: 1.5rem; } }
       ${tokenKilde}
@@ -236,7 +236,7 @@ describe("sammen med Tailwind", () => {
     const knapp = dok.getElementById("knapp") as HTMLElement
     knapp.classList.add("p-6")
 
-    // `utilities` nevnes her før `fristil`, så komponentens egen padding
+    // `utilities` nevnes her før `lotek`, så komponentens egen padding
     // vinner, og klassen gjør ingenting.
     expect(stil(dok, "knapp").padding).toBe("8px 16px")
   })
@@ -251,11 +251,11 @@ describe("sammen med Tailwind", () => {
     `)
     dok.documentElement.classList.add("font-mono")
 
-    // Temaet står etter `fristil` og slår fargen tokens.css setter i
+    // Temaet står etter `lotek` og slår fargen tokens.css setter i
     // `:root`. Formen er ingen prøve på det: tokens.css setter ingen
-    // `--fs-button-radius`, så den hadde vunnet uansett rekkefølge.
+    // `--lt-button-radius`, så den hadde vunnet uansett rekkefølge.
     expect(stil(dok, "knapp").backgroundColor).toBe("rgb(0, 100, 0)")
-    // `fristil-tema` står foran `utilities`, så klassen slår temaets regel.
+    // `lotek-theme` står foran `utilities`, så klassen slår temaets regel.
     expect(
       dok.defaultView?.getComputedStyle(dok.documentElement).fontFamily,
     ).toBe("monospace")
@@ -263,7 +263,7 @@ describe("sammen med Tailwind", () => {
 
   it("lar temaet slå utility-klassene når tema-laget mangler i linja, og det er derfor det står der", async () => {
     const dok = await medStilark(`
-      @layer theme, base, fristil, components, utilities;
+      @layer theme, base, lotek, components, utilities;
       ${tokenKilde}
       ${knappeKilde}
       ${TEMA}
@@ -271,18 +271,18 @@ describe("sammen med Tailwind", () => {
     `)
     dok.documentElement.classList.add("font-mono")
 
-    // Temaets `@layer fristil, fristil-tema;` oppretter bare lag som ikke
-    // finnes, så `fristil-tema` havner sist, etter `utilities`.
+    // Temaets `@layer lotek, lotek-theme;` oppretter bare lag som ikke
+    // finnes, så `lotek-theme` havner sist, etter `utilities`.
     expect(
       dok.defaultView?.getComputedStyle(dok.documentElement).fontFamily,
     ).toBe("Georgia, serif")
   })
 
-  it("gir p-4 den samme avstanden som --fs-spacing-4 når hele skalaen skrives om", async () => {
+  it("gir p-4 den samme avstanden som --lt-spacing-4 når hele skalaen skrives om", async () => {
     const markup = `
       <div class="p-4" id="klasse"></div>
-      <div style="padding: var(--fs-spacing-4)" id="trinn"></div>
-      <button class="fs-button" id="knapp">Send søknad</button>`
+      <div style="padding: var(--lt-spacing-4)" id="trinn"></div>
+      <button class="lt-button" id="knapp">Send søknad</button>`
 
     // Hele skalaen, slik dokumentasjonen viser det: hvert trinn skrives om,
     // for trinnene er egne verdier og regnes ikke av enheten.
@@ -293,18 +293,18 @@ describe("sammen med Tailwind", () => {
       ${knappeKilde}
       ${P4}
       :root {
-        --fs-spacing-0-5: 0.15rem;
-        --fs-spacing-1: 0.3rem;
-        --fs-spacing-2: 0.6rem;
-        --fs-spacing-3: 0.9rem;
-        --fs-spacing-4: 1.2rem;
-        --fs-spacing-5: 1.5rem;
-        --fs-spacing-6: 1.8rem;
-        --fs-spacing-7: 2.1rem;
-        --fs-spacing-8: 2.4rem;
-        --fs-spacing-10: 3rem;
-        --fs-spacing-12: 3.6rem;
-        --fs-spacing-16: 4.8rem;
+        --lt-spacing-0-5: 0.15rem;
+        --lt-spacing-1: 0.3rem;
+        --lt-spacing-2: 0.6rem;
+        --lt-spacing-3: 0.9rem;
+        --lt-spacing-4: 1.2rem;
+        --lt-spacing-5: 1.5rem;
+        --lt-spacing-6: 1.8rem;
+        --lt-spacing-7: 2.1rem;
+        --lt-spacing-8: 2.4rem;
+        --lt-spacing-10: 3rem;
+        --lt-spacing-12: 3.6rem;
+        --lt-spacing-16: 4.8rem;
       }
     `,
       markup,
@@ -331,7 +331,7 @@ describe("sammen med Tailwind", () => {
       ${tokenKilde}
       ${knappeKilde}
       ${P4}
-      :root { --fs-spacing-1: 0.3rem; }
+      :root { --lt-spacing-1: 0.3rem; }
     `,
       markup,
     )

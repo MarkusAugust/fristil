@@ -69,7 +69,7 @@ fn entries<'a>(value: &'a Json, path: &str) -> Result<&'a [(String, Json)], Stri
 }
 
 /// Delene i `parts`, når de står der. Et manifest uten, som et eldre
-/// fragment fra `fristil overta`, har ingen.
+/// fragment fra `lotek overta`, har ingen.
 fn parts(value: &Json, path: &str) -> Result<Vec<Part>, String> {
     let Some(parts) = value.get("parts") else {
         return Ok(Vec::new());
@@ -116,7 +116,7 @@ pub fn from_json(source: &str) -> Result<Vocabulary, String> {
 /// Manifestet med fragmentene lagt til.
 ///
 /// Et fragment har samme form som manifestet, med elementene og klassene til
-/// én overtatt komponent, og skrives av `fristil overta` ved siden av kopien.
+/// én overtatt komponent, og skrives av `lotek overta` ved siden av kopien.
 /// Et navn som finnes fra før, byttes ut.
 pub fn with_fragments(base: &str, fragments: &[&str]) -> Result<Vocabulary, String> {
     from_value(&merged(base, fragments)?)
@@ -165,7 +165,7 @@ fn from_value(root: &Json) -> Result<Vocabulary, String> {
         .ok_or("schemaVersion skal være et tall.")? as u32;
     if schema_version != SCHEMA_VERSION {
         return Err(format!(
-            "Manifestet har schemaVersion {schema_version}, og denne kjernen forstår {SCHEMA_VERSION}. Oppdater kjernen og manifestet til samme versjon av Fristil."
+            "Manifestet har schemaVersion {schema_version}, og denne kjernen forstår {SCHEMA_VERSION}. Oppdater kjernen og manifestet til samme versjon av LO-TEK."
         ));
     }
     let version = text(field(root, "version", "manifestet")?, "version")?;
@@ -257,8 +257,8 @@ mod tests {
         let v = with_fragments(&base, &[r#"{"schemaVersion": 1, "version": "0", "elements": {"app-dialog": {"link": "", "attributes": {}}}, "classes": {"app-button": {"title": "Button", "link": "", "attributes": {}}}}"#]).unwrap();
         assert!(v.classes.iter().any(|c| c.name == "app-button"));
         assert!(
-            v.classes.iter().any(|c| c.name == "fs-button"),
-            "Fristils egne står"
+            v.classes.iter().any(|c| c.name == "lt-button"),
+            "LO-TEKs egne står"
         );
         assert!(v.elements.iter().any(|e| e.tag == "app-dialog"));
         assert!(with_fragments(&base, &[r#"{"schemaVersion": 2}"#]).is_err());
@@ -267,14 +267,14 @@ mod tests {
     #[test]
     fn reads_the_manifest_in_the_package() {
         let v = for_tests();
-        assert!(v.elements.iter().any(|e| e.tag == "fs-field"));
-        assert!(v.classes.iter().any(|c| c.name == "fs-button"));
+        assert!(v.elements.iter().any(|e| e.tag == "lt-field"));
+        assert!(v.classes.iter().any(|c| c.name == "lt-button"));
     }
 
     #[test]
     fn reads_stable_id_and_removed() {
         let v = from_json(
-            r#"{"schemaVersion": 1, "version": "0", "elements": {"fs-x": {"link": "", "attributes": {}, "parts": {"control": {"selector": "input", "stableId": true}, "help": {"selector": "p"}}, "removed": {"invalid": "Bruk en synlig feilmelding."}}}, "classes": {}}"#,
+            r#"{"schemaVersion": 1, "version": "0", "elements": {"lt-x": {"link": "", "attributes": {}, "parts": {"control": {"selector": "input", "stableId": true}, "help": {"selector": "p"}}, "removed": {"invalid": "Bruk en synlig feilmelding."}}}, "classes": {}}"#,
         )
         .unwrap();
         let element = &v.elements[0];
@@ -289,10 +289,10 @@ mod tests {
         );
 
         let error = from_json(
-            r#"{"schemaVersion": 1, "version": "0", "elements": {"fs-x": {"link": "", "attributes": {}, "removed": {"invalid": 1}}}, "classes": {}}"#,
+            r#"{"schemaVersion": 1, "version": "0", "elements": {"lt-x": {"link": "", "attributes": {}, "removed": {"invalid": 1}}}, "classes": {}}"#,
         )
         .unwrap_err();
-        assert!(error.contains("elements.fs-x.removed.invalid"), "{error}");
+        assert!(error.contains("elements.lt-x.removed.invalid"), "{error}");
     }
 
     #[test]
@@ -304,9 +304,9 @@ mod tests {
     #[test]
     fn says_where_a_manifest_is_wrong() {
         let error = from_json(
-            r#"{"schemaVersion": 1, "version": "0", "elements": {"fs-x": {"link": "", "attributes": {"a": {"type": "shade"}}}}, "classes": {}}"#,
+            r#"{"schemaVersion": 1, "version": "0", "elements": {"lt-x": {"link": "", "attributes": {"a": {"type": "shade"}}}}, "classes": {}}"#,
         )
         .unwrap_err();
-        assert!(error.contains("elements.fs-x.attributes.a"), "{error}");
+        assert!(error.contains("elements.lt-x.attributes.a"), "{error}");
     }
 }

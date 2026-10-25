@@ -1,25 +1,25 @@
 /**
- * Matrisen, som `@fristil/designsystem/matrise`: familie ganger rolle, som
+ * Matrisen, som `@lo-tek/interfaces/matrix-cells`: familie ganger rolle, som
  * ferdige tokens.
  *
  * Ingen palett, ingen trinn, ingen pinner: rollen *er* fargen. Navnene følger
  * navnerommene til Tailwind, daisyUI og Digdir, altså systemprefiks, slag og
  * sti.
  *
- * Fargene regnes av kjernen. Her er Fristils egne, og navnene. En matrise for
+ * Fargene regnes av kjernen. Her er LO-TEKs egne, og navnene. En matrise for
  * andre merkefarger er `light` og `dark` i temaet `buildTheme` gir.
  */
 
-import type { Role } from "./matrise.js"
+import type { Role } from "./matrix-cells.js"
 
 export {
   darkCells,
   FAMILIES,
   type Family,
-  FRISTIL_BRANDS,
+  LOTEK_BRANDS,
   lightCells,
   type MatrixToken,
-} from "./matrise.js"
+} from "./matrix-cells.js"
 
 /** Rollenavnet slik det skrives i CSS. `textSubtle` blir `text-subtle`. */
 export function roleToCss(role: Role): string {
@@ -28,5 +28,5 @@ export function roleToCss(role: Role): string {
 
 /** Tokennavnet for én celle i matrisen. */
 export function tokenName(family: string, role: string): string {
-  return `--fs-color-${family}-${role}`
+  return `--lt-color-${family}-${role}`
 }

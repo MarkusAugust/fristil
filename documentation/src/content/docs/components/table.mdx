@@ -3,15 +3,15 @@ title: Table
 description: Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Klassen settes på et ekte `<table>`. Det er `<th>` med `scope` som gjør at skjermlesere kan si «Beløp, 1 240 kroner» når brukeren står i en celle. Bygger du tabellen av `<div>`-er, finnes ikke den koblingen, og tallene står uten betydning.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "table.css"]}
+<Example importer={["tokens.css", "table.css"]}
   stiler={["table"]} layout="stabel" maxWidth="34rem" kode={`
-<table class="fs-table" data-variant="striped">
+<table class="lt-table" data-variant="striped">
   <caption>Fakturaer i 2026</caption>
   <thead>
     <tr>
@@ -36,15 +36,15 @@ Klassen settes på et ekte `<table>`. Det er `<th>` med `scope` som gjør at skj
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<div className={fs.table.scroll} tabIndex={0} role="region" aria-label="Fakturaer">
-  <table {...fs.table({ variant: "striped" })}>
+<div className={lt.table.scroll} tabIndex={0} role="region" aria-label="Fakturaer">
+  <table {...lt.table({ variant: "striped" })}>
     <caption>Fakturaer i 2026</caption>
     <thead><tr><th scope="col">Sak</th></tr></thead>
     <tbody><tr><th scope="row">2024/1187</th></tr></tbody>
@@ -52,22 +52,22 @@ import { fs } from "@fristil/designsystem/react"
 </div>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const tabell = document.querySelector<HTMLTableElement>("#fakturaer")
 
-fs.setAttributes(tabell, fs.table({ variant: "striped", hoverable: true }))
+lt.setAttributes(tabell, lt.table({ variant: "striped", hoverable: true }))
 ```
 
-`fs.table.scroll` gir klassen på beholderen rundt. Se [Typesikker bruk](../../typesikker-bruk/).
+`lt.table.scroll` gir klassen på beholderen rundt. Se [Typesikker bruk](../../type-safe-use/).
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | Attributt | Effekt |
 | --- | --- |
@@ -81,16 +81,16 @@ Tall står i `tabular-nums`, så sifrene får lik bredde og kolonnen kan leses n
 
 En kolonne som kan sorteres har en knapp i overskriften, og hvilken vei den er sortert står i `aria-sort` på `<th>`. Pila tegnes fra det samme attributtet, så det skjermleseren sier og det leseren ser er det samme. Knappen fyller cellen, så overskriften har samme høyde og innrykk som cellene under. Uten `aria-sort` viser knappen begge pilene, dempet.
 
-<Eksempel stiler={["table", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
-<table class="fs-table">
-  <caption>Fakturaer i 2026<span class="fs-sr-only">, kolonner med knapp kan sorteres</span></caption>
+<Example stiler={["table", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
+<table class="lt-table">
+  <caption>Fakturaer i 2026<span class="lt-sr-only">, kolonner med knapp kan sorteres</span></caption>
   <thead>
     <tr>
       <th scope="col">
-        <button type="button" class="fs-table__sort">Faktura</button>
+        <button type="button" class="lt-table__sort">Faktura</button>
       </th>
       <th scope="col" aria-sort="descending">
-        <button type="button" class="fs-table__sort">Forfall</button>
+        <button type="button" class="lt-table__sort">Forfall</button>
       </th>
       <th scope="col" data-align="end">Beløp</th>
     </tr>
@@ -111,34 +111,34 @@ En kolonne som kan sorteres har en knapp i overskriften, og hvilken vei den er s
 `}>
 <Fragment slot="ts">
 
-`fs.tableSort()` gir ett sett attributter til cellen og ett til knappen:
+`lt.tableSort()` gir ett sett attributter til cellen og ett til knappen:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-const forfall = fs.tableSort({ direction: "descending" })
+const forfall = lt.tableSort({ direction: "descending" })
 
 <th scope="col" {...forfall.header}>
   <button {...forfall.button} onClick={() => sorterEtter("forfall")}>Forfall</button>
 </th>
 ```
 
-Uten `direction` får cellen ikke `aria-sort`. `fs.tableSort.isDirection()` sjekker en verdi fra adressen eller skjemaet, og `tableSortDirections` fra hovedinngangen er de to lovlige verdiene.
+Uten `direction` får cellen ikke `aria-sort`. `lt.tableSort.isDirection()` sjekker en verdi fra adressen eller skjemaet, og `tableSortDirections` fra hovedinngangen er de to lovlige verdiene.
 
 </Fragment>
-</Eksempel>
+</Example>
 
-Selve sorteringen er din. I React holder appen kolonnen og retningen i tilstand og tegner raden på nytt. Sender serveren HTML, i Datastar eller en mal, sorterer den og skriver `aria-sort` på riktig overskrift. Uten JavaScript kan knappen være en lenke, `<a class="fs-table__sort" href="?sorter=forfall&retning=ascending">`, så sorterer serveren ved neste side. Lenken får klassen alene, siden `fs.tableSort().button` også gir `type="button"`.
+Selve sorteringen er din. I React holder appen kolonnen og retningen i tilstand og tegner raden på nytt. Sender serveren HTML, i Datastar eller en mal, sorterer den og skriver `aria-sort` på riktig overskrift. Uten JavaScript kan knappen være en lenke, `<a class="lt-table__sort" href="?sorter=forfall&retning=ascending">`, så sorterer serveren ved neste side. Lenken får klassen alene, siden `lt.tableSort().button` også gir `type="button"`.
 
-Tegner du tabellen på nytt etter et klikk, sett fokus tilbake på knappen brukeren trykket på. Ellers havner det på `<body>`. [Liste med filtre](../../monster/liste/) gjør det i demoen.
+Tegner du tabellen på nytt etter et klikk, sett fokus tilbake på knappen brukeren trykket på. Ellers havner det på `<body>`. [Liste med filtre](../../patterns/list/) gjør det i demoen.
 
 ## Brede tabeller
 
 En tabell som er bredere enn skjermen må kunne rulles sidelengs, og det området må kunne nås med tastatur:
 
 ```html
-<div class="fs-table-scroll" tabindex="0" role="region" aria-label="Fakturaer">
-  <table class="fs-table">…</table>
+<div class="lt-table-scroll" tabindex="0" role="region" aria-label="Fakturaer">
+  <table class="lt-table">…</table>
 </div>
 ```
 
@@ -148,26 +148,26 @@ En tabell som er bredere enn skjermen må kunne rulles sidelengs, og det område
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-table` | Selve tabellen. Varianten kommer fra `data-variant`. |
-| `.fs-table-scroll` | Beholderen som lar en bred tabell rulles |
-| `.fs-table__sort` | Knappen i en kolonneoverskrift som kan sorteres. Pila er `::after`. |
+| `.lt-table` | Selve tabellen. Varianten kommer fra `data-variant`. |
+| `.lt-table-scroll` | Beholderen som lar en bred tabell rulles |
+| `.lt-table__sort` | Knappen i en kolonneoverskrift som kan sorteres. Pila er `::after`. |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-table-cell-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
+| `--lt-table-cell-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ### En tettere tabell
 
 Trenger du flere rader på skjermen, er det cellenes luft som skal ned. Det er én variabel, og den finnes ingen `data-size` for:
 
-<Eksempel stiler={["table"]} layout="stabel" maxWidth="30rem" egenCss={`
+<Example stiler={["table"]} layout="stabel" maxWidth="30rem" egenCss={`
 .kompakt {
-	--fs-table-cell-padding: var(--fs-spacing-1) var(--fs-spacing-2);
+	--lt-table-cell-padding: var(--lt-spacing-1) var(--lt-spacing-2);
 }
 `} kode={`
-<table class="fs-table kompakt">
+<table class="lt-table kompakt">
   <caption>Fakturaer i 2026</caption>
   <thead>
     <tr>
@@ -188,7 +188,7 @@ Trenger du flere rader på skjermen, er det cellenes luft som skal ned. Det er �
 </table>
 `} />
 
-Skriften skal du la være. `--fs-font-size-m` i tabellen er den samme som brødteksten, og tall blir vanskeligere å lese nedover i en kolonne når de krymper. Vil du likevel ha mindre tekst, er det en vanlig regel i din egen CSS, ikke en variabel, siden den ikke er ment å endres.
+Skriften skal du la være. `--lt-font-size-m` i tabellen er den samme som brødteksten, og tall blir vanskeligere å lese nedover i en kolonne når de krymper. Vil du likevel ha mindre tekst, er det en vanlig regel i din egen CSS, ikke en variabel, siden den ikke er ment å endres.
 
 ## Tilgjengelighet
 
@@ -197,5 +197,5 @@ Skriften skal du la være. `--fs-font-size-m` i tabellen er den samme som brødt
 - Slå aldri sammen celler for å få et oppsett til å se riktig ut. Sammenslåtte celler gjør navigasjonen uforutsigbar.
 - Skal rader kunne trykkes på, legg lenken i en celle. En hel rad som er klikkbar kan ikke nås med tastatur.
 - `aria-sort` står på `<th>`, ikke på knappen, og bare på den kolonnen tabellen er sortert etter. Kolonner som ikke er sortert, har ikke attributtet.
-- Si i `<caption>` at kolonnene kan sorteres, gjerne med `.fs-sr-only`. Skjermleseren leser opp tittelen når brukeren kommer til tabellen, og ellers er knappene i overskriften det eneste hintet.
+- Si i `<caption>` at kolonnene kan sorteres, gjerne med `.lt-sr-only`. Skjermleseren leser opp tittelen når brukeren kommer til tabellen, og ellers er knappene i overskriften det eneste hintet.
 - Skjermlesere leser en endring i `aria-sort` ulikt, og noen ikke i det hele tatt. Skal endringen sies høyt, skriv den i et felt med `role="status"`.

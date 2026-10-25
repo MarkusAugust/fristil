@@ -2,7 +2,7 @@
  * Regelbøkene som filer på nettsiden, på en stabil adresse.
  *
  * Den viktigste agenten har ingen `node_modules`. Blir noen bedt om å «lage et
- * skjema med Fristil» i en tom mappe, skrives markupen før `npm install` har
+ * skjema med LO-TEK» i en tom mappe, skrives markupen før `npm install` har
  * kjørt, og regelboka i pakken er da usynlig. Derfor ligger de samme filene
  * her, på `/agent/<navn>.md`, hentbare med nettilgang alene.
  *

@@ -32,7 +32,7 @@
  * begrunnelsen at verten bare observeres gjennom `observedAttributes`. Det er
  * ikke sant: hver av komponentene kaller `observe(this, …)`, og en observatør
  * på en node ser nodens egne attributter og egne barn. `this.classList.add()`
- * i `<fs-field>`, som har `class` i filteret sitt, ville hengt en kjøring like
+ * i `<lt-field>`, som har `class` i filteret sitt, ville hengt en kjøring like
  * godt som en skriving på et barn.
  *
  * Det ene som er lov på verten er å tilordne en egenskap komponenten selv har
@@ -46,20 +46,20 @@
  * mye riktig kode med seg. Det den fanger er formene som faktisk står i disse
  * filene, og de som ligger nærmest å skrive neste gang.
  *
- * Bare `ramme/` leses. De frittstående komponentene lager sitt eget innhold og
+ * Bare `frame/` leses. De frittstående komponentene lager sitt eget innhold og
  * observerer det ikke, så en skriving der kan ikke kalle noen observatør.
  *
  */
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 
-const ROT = new URL("../src/components/ramme", import.meta.url).pathname
+const ROT = new URL("../src/components/frame", import.meta.url).pathname
 
 function komponentfiler(mappe: string): string[] {
   return readdirSync(mappe, { withFileTypes: true }).flatMap((oppføring) => {
     const sti = join(mappe, oppføring.name)
     if (oppføring.isDirectory()) return komponentfiler(sti)
-    if (!oppføring.name.startsWith("fs-")) return []
+    if (!oppføring.name.startsWith("lt-")) return []
     if (!oppføring.name.endsWith(".ts")) return []
     if (oppføring.name.includes(".test.")) return []
     return [sti]

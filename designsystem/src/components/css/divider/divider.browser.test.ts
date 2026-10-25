@@ -12,14 +12,14 @@ import { divider } from "./divider"
 import "../../../tokens/tokens.css"
 import "./divider.css"
 
-describe("fs-divider", () => {
+describe("lt-divider", () => {
   beforeEach(() => {
     monter(`
       <p>Saken er registrert.</p>
-      <hr class="fs-divider" id="vanlig" />
+      <hr class="lt-divider" id="vanlig" />
       <p>Du får svar innen tre uker.</p>
-      <hr class="fs-divider" data-variant="strong" id="sterk" />
-      <hr class="fs-divider" data-variant="subtle" id="svak" aria-hidden="true" />
+      <hr class="lt-divider" data-variant="strong" id="sterk" />
+      <hr class="lt-divider" data-variant="subtle" id="svak" aria-hidden="true" />
     `)
   })
 
@@ -41,7 +41,7 @@ describe("fs-divider", () => {
     monter(`
       <div id="forelder" style="${oppsett}; inline-size: 20rem">
         <p>Saken er registrert.</p>
-        <hr class="fs-divider" id="i-forelder" />
+        <hr class="lt-divider" id="i-forelder" />
         <p>Du får svar innen tre uker.</p>
       </div>
     `)
@@ -64,9 +64,9 @@ describe("fs-divider", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(divider()).toEqual({ class: "fs-divider" })
+    expect(divider()).toEqual({ class: "lt-divider" })
     expect(divider({ variant: "strong" })).toEqual({
-      class: "fs-divider",
+      class: "lt-divider",
       "data-variant": "strong",
     })
   })

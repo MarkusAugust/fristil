@@ -17,7 +17,7 @@
 import { getCollection } from "astro:content"
 import type { APIRoute } from "astro"
 import pakke from "../../../designsystem/package.json"
-import { markdownAdresse } from "../markdownadresse"
+import { markdownAdresse } from "../markdown-address"
 
 const BASE = pakke.homepage.replace(/\/$/, "")
 
@@ -54,26 +54,26 @@ const REGLENE = `Fire feil står for nesten alt som går galt. De gjelder i alle
 
 1. Stilarket må lastes. Mangler det, ser komponentene ustilte ut, og svaret er
    å laste det, aldri å skrive egen CSS for å få dem til å se riktige ut.
-2. Bare klassene og elementene som finnes, finnes. \`fs-modal\`,
-   \`fs-datepicker\` og \`data-variant="outline"\` hører til andre
+2. Bare klassene og elementene som finnes, finnes. \`lt-modal\`,
+   \`lt-datepicker\` og \`data-variant="outline"\` hører til andre
    designsystemer. Hele lista står i hver regelbok.
-3. Ingen hardkodede farger eller piksler. \`var(--fs-color-…)\` og
-   \`var(--fs-spacing-…)\`.
-4. Web components registreres én gang med \`defineFs*()\`, og et boolsk
+3. Ingen hardkodede farger eller piksler. \`var(--lt-color-…)\` og
+   \`var(--lt-spacing-…)\`.
+4. Web components registreres én gang med \`defineLt*()\`, og et boolsk
    attributt er sant så lenge det står der: \`invalid="false"\` gjør feltet
    ugyldig. Attributtet må fjernes, ikke settes til \`false\`.
 
 Sjekk markupen når du er ferdig, og rett det den melder:
 
-    npx @fristil/designsystem sjekk <fil>
-    npx @fristil/designsystem sjekk http://localhost:8080/side
+    npx @lo-tek/interfaces sjekk <fil>
+    npx @lo-tek/interfaces sjekk http://localhost:8080/side
 
 Den kjenner hver klasse, hvert element, hvert attributt og hver lovlige verdi,
 skriver \`fil:linje:kolonne: feil: melding\`, eller \`advarsel:\`, og avslutter med feilkode ved funn.
 Med en adresse sjekker den siden slik serveren sender den, og krever i tillegg
 at hver \`for\` og \`aria-describedby\` peker på en id som finnes, og at hvert
 felt har en ledetekst. Du er ferdig når begge svarer «Markupen stemmer med
-Fristil». Alt om kommandoene: ${BASE}/kommandolinjen/`
+LO-TEK». Alt om kommandoene: ${BASE}/command-line/`
 
 type Rad = { tittel: string; beskrivelse: string; adresse: string }
 
@@ -107,12 +107,12 @@ export const GET: APIRoute = async () => {
   for (const side of sider.sort((a, b) => a.id.localeCompare(b.id))) {
     const rad = somRad(side.id, side.data)
     if (side.id.startsWith("components/")) komponenter.push(rad)
-    else if (side.id.startsWith("monster/")) mønstre.push(rad)
+    else if (side.id.startsWith("patterns/")) mønstre.push(rad)
     else veiledning.push(rad)
   }
 
   const tekst = [
-    "# Fristil",
+    "# LO-TEK",
     `> ${pakke.description} Versjon ${pakke.version}. Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår, så de samme komponentene virker i ren HTML, i en Go-mal, med bundles, i React, i Astro og med Datastar.`,
     REGLENE,
     seksjon(
@@ -125,7 +125,7 @@ export const GET: APIRoute = async () => {
     ),
     `Hver regelbok er komplett for sitt miljø. Er pakken
 installert, ligger de samme filene i
-\`node_modules/@fristil/designsystem/agent/\`, og \`npx @fristil/designsystem agent\`
+\`node_modules/@lo-tek/interfaces/agent/\`, og \`npx @lo-tek/interfaces agent\`
 skriver den som passer dette prosjektet.`,
     seksjon("Veiledning", veiledning),
     seksjon("Mønstre", mønstre),

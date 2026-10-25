@@ -1,7 +1,7 @@
-package no.fristil
+package no.lotek
 
 /**
- * Ordforrådet i `manifest.json`: elementene og klassene Fristil har, slik
+ * Ordforrådet i `manifest.json`: elementene og klassene LO-TEK har, slik
  * `manifest.schema.json` beskriver dem. Det samme manifestet kjernen sjekker
  * mot, så et verktøy som viser fullføring eller dokumentasjon fra det, er
  * aldri ute av takt med diagnostikken.
@@ -9,20 +9,20 @@ package no.fristil
  * Klassene har innholdet og delene sine, så et verktøy kan sette sammen
  * markupen av dem, og [Manifest.tokens] har avstandene, brekkpunktene,
  * containerbreddene, fargeaksene og komponentvariablene det kan style med.
- * [Fristil.manifest] er manifestet i pakken. [parse] leser et annet, som det
- * `fristil manifest` og Gradle-oppgaven `fristilManifest` skriver for et
+ * [Lotek.manifest] er manifestet i pakken. [parse] leser et annet, som det
+ * `lotek manifest` og Gradle-oppgaven `lotekManifest` skriver for et
  * prosjekt som har overtatt komponenter. Byggefunksjonene står i [builders]
  * med valgene og formen på svaret, så et verktøy kan lage et panel av dem.
- * Tabellen generatoren bak `Fs` bruker, er utelatt: den er for generatoren.
+ * Tabellen generatoren bak `Lt` bruker, er utelatt: den er for generatoren.
  *
  * Kartene har nøklene i den rekkefølgen manifestet har dem.
  */
 data class Manifest(
-    /** Versjonen av `@fristil/designsystem` manifestet er skrevet fra. */
+    /** Versjonen av `@lo-tek/interfaces` manifestet er skrevet fra. */
     val version: String,
-    /** Hvert `<fs-…>`-element, etter taggen. */
+    /** Hvert `<lt-…>`-element, etter taggen. */
     val elements: Map<String, ManifestElement>,
-    /** Hver `fs-`-klasse, etter navnet. */
+    /** Hver `lt-`-klasse, etter navnet. */
     val classes: Map<String, ManifestClass>,
     /**
      * Tokenene: avstandsskalaen, brekkpunktene, containerbreddene, fargeaksene
@@ -30,7 +30,7 @@ data class Manifest(
      * dem; `schemaVersion` er den samme, så leseren tåler at de mangler.
      */
     val tokens: ManifestTokens?,
-    /** Hver byggefunksjon i `fs`, i manifestets rekkefølge, med valgene og formen på svaret. */
+    /** Hver byggefunksjon i `lt`, i manifestets rekkefølge, med valgene og formen på svaret. */
     val builders: List<Builder>,
 ) {
     companion object {
@@ -47,7 +47,7 @@ data class Manifest(
             val schema = root["schemaVersion"].num("schemaVersion")
             require(schema == SCHEMA_VERSION.toDouble()) {
                 val shown = if (schema % 1.0 == 0.0) schema.toLong().toString() else schema.toString()
-                "Manifestet har schemaVersion $shown, og denne utgaven av Fristil leser bare $SCHEMA_VERSION."
+                "Manifestet har schemaVersion $shown, og denne utgaven av LO-TEK leser bare $SCHEMA_VERSION."
             }
             return Manifest(
                 version = root["version"].str("version"),
@@ -206,7 +206,7 @@ data class Manifest(
     }
 }
 
-/** Et `<fs-…>`-element, med attributtene komponenten leser og delene den finner. */
+/** Et `<lt-…>`-element, med attributtene komponenten leser og delene den finner. */
 data class ManifestElement(
     val tag: String,
     /** Adressen til komponentsiden. */
@@ -232,7 +232,7 @@ data class ElementAttribute(
 enum class AttributeType { FLAG, TEXT, NUMBER, VALUES }
 
 /**
- * En del av et element, som kontrollen i `<fs-field>`. [selector] er den
+ * En del av et element, som kontrollen i `<lt-field>`. [selector] er den
  * komponenten finner delen med, relativt til elementet. Uten [multiple]
  * gjelder den første, og med [unique] er en del til av samme slag en feil,
  * ikke vanlig innhold. Uten [optional] trenger elementet delen. Med
@@ -260,7 +260,7 @@ data class ElementEvent(
     val detail: Map<String, String>,
 )
 
-/** En byggefunksjon i `fs`, som `button`, med valgene den tar og formen på det den gir. */
+/** En byggefunksjon i `lt`, som `button`, med valgene den tar og formen på det den gir. */
 data class Builder(
     val name: String,
     /** Valgene i manifestets rekkefølge. */
@@ -268,7 +268,7 @@ data class Builder(
     val returns: Returns,
 )
 
-/** Ett valg, som `variant` i `fs.button()`. [description] er første avsnitt av kommentaren på valget i typen. */
+/** Ett valg, som `variant` i `lt.button()`. [description] er første avsnitt av kommentaren på valget i typen. */
 data class BuilderOption(
     val name: String,
     val required: Boolean,
@@ -312,21 +312,21 @@ sealed interface Returns {
 /**
  * Tokenene: det et stilark utenfor pakken kan bygge på. Fargene står som akser
  * med hva de er til, ikke som verdier, siden et tema kan ha andre verdier enn
- * Fristils egne.
+ * LO-TEKs egne.
  */
 data class ManifestTokens(
-    /** Avstandsskalaen, navn til verdi, som `--fs-spacing-4` til `1rem`. */
+    /** Avstandsskalaen, navn til verdi, som `--lt-spacing-4` til `1rem`. */
     val spacing: Map<String, String>,
     /** Brekkpunktene, navn til bredde, som `md` til `768px`. */
     val breakpoints: Map<String, String>,
     /** Containerbreddene, navn til bredde, som `aside` til `384px`. */
     val containers: Map<String, String>,
     val colors: ManifestColors,
-    /** Komponentvariablene per komponent, som `--fs-button-padding` under `button`, med standardverdien. */
+    /** Komponentvariablene per komponent, som `--lt-button-padding` under `button`, med standardverdien. */
     val components: Map<String, Map<String, String>>,
 )
 
-/** Fargeaksene. Et fargetoken heter `--fs-color-<familie>-<rolle>`. */
+/** Fargeaksene. Et fargetoken heter `--lt-color-<familie>-<rolle>`. */
 data class ManifestColors(
     /** Familiene, med hva hver er til. */
     val families: Map<String, String>,
@@ -334,12 +334,12 @@ data class ManifestColors(
     val roles: Map<String, String>,
     /** Lagene bare den nøytrale familien har, som `canvas`. */
     val layers: Map<String, String>,
-    /** Hvert `--fs-color-*`-navn pakken sender ut. */
+    /** Hvert `--lt-color-*`-navn pakken sender ut. */
     val tokens: List<String>,
 )
 
 /**
- * En klasse i manifestet, som `fs-button`, med komponenten den hører til,
+ * En klasse i manifestet, som `lt-button`, med komponenten den hører til,
  * hva elementet med klassen tar som innhold, og delene markupen består av.
  */
 data class ManifestClass(
@@ -351,7 +351,7 @@ data class ManifestClass(
     val link: String,
     /** Hva elementet med klassen tar som innhold, med samme ord som delene. `null` i et manifest fra før 0.34. */
     val content: PartContent?,
-    /** Klassen denne er en del av, som `fs-card` for `fs-card__title`. Forelderen har en del som treffer den. */
+    /** Klassen denne er en del av, som `lt-card` for `lt-card__title`. Forelderen har en del som treffer den. */
     val partOf: String?,
     /** Delene markupen består av, med selektoren relativt til elementet med klassen. Tom for klassene uten en fast struktur. */
     val parts: Map<String, Part>,
@@ -359,7 +359,7 @@ data class ManifestClass(
 )
 
 /**
- * Et attributt en klasse tar, som `data-variant` på `fs-button`. Et [flag]
+ * Et attributt en klasse tar, som `data-variant` på `lt-button`. Et [flag]
  * virker ved å stå der, og har ingen [values]. [default] er verdien
  * fraværet betyr.
  */

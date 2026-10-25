@@ -9,14 +9,14 @@
  * Sjekken leser mdx-filene som tekst og etterprøver hver påstand mot det
  * pakken faktisk sender ut:
  *
- *   - hvert `@fristil/designsystem/…` finnes i `exports`;
- *   - hver `defineFsX` er noe den modulen faktisk eksporterer;
- *   - hver `fs.x()` er en byggefunksjon som finnes;
- *   - hver `fs-`-klasse står i et stilark pakken sender ut;
+ *   - hvert `@lo-tek/interfaces/…` finnes i `exports`;
+ *   - hver `defineLtX` er noe den modulen faktisk eksporterer;
+ *   - hver `lt.x()` er en byggefunksjon som finnes;
+ *   - hver `lt-`-klasse står i et stilark pakken sender ut;
  *   - et pakkenavn står bare i faner som har et byggesteg, og en URL i dem
  *     som ikke har det.
  *
- * Den siste er ikke pedanteri. `import … from "@fristil/designsystem/dialog"`
+ * Den siste er ikke pedanteri. `import … from "@lo-tek/interfaces/dialog"`
  * i et `<script type="module">` slår ikke opp i en nettleser: uten importmap
  * eller byggesteg finnes ikke pakkenavnet. Sporene «Ren HTML» og «Datastar» er
  * definert ved å ikke ha noe byggesteg, så der må adressen være en URL.
@@ -50,7 +50,7 @@ function lesStilark(mappe: string) {
     if (oppf.isDirectory()) lesStilark(sti)
     else if (oppf.name.endsWith(".css"))
       for (const m of readFileSync(sti, "utf8").matchAll(
-        /\.(fs-[a-z0-9-]+(?:__[a-z0-9-]+)?)/g,
+        /\.(lt-[a-z0-9-]+(?:__[a-z0-9-]+)?)/g,
       ))
         klasser.add(m[1])
   }
@@ -58,10 +58,10 @@ function lesStilark(mappe: string) {
 lesStilark(join(ROT, "designsystem/src"))
 
 /** Byggefunksjonene som finnes, lest fra pakken selv. */
-const { fs } = await import(join(ROT, "designsystem/dist/fs.js"))
-const byggefunksjoner = new Set(Object.keys(fs))
+const { lt } = await import(join(ROT, "designsystem/dist/lt.js"))
+const byggefunksjoner = new Set(Object.keys(lt))
 
-/** `defineFsX`-navnene hver modul eksporterer. */
+/** `defineLtX`-navnene hver modul eksporterer. */
 const definerere = new Map<string, Set<string>>()
 for (const inn of inngangspunkter) {
   const mål = PAKKE.exports[inn === "" ? "." : `./${inn}`]
@@ -71,12 +71,12 @@ for (const inn of inngangspunkter) {
     const modul = await import(join(ROT, "designsystem", js))
     definerere.set(inn, new Set(Object.keys(modul)))
   } catch {
-    // Et inngangspunkt som ikke lar seg laste er `sjekk-server-import` sin jobb.
+    // Et inngangspunkt som ikke lar seg laste er `check-server-import` sin jobb.
   }
 }
 
 /**
- * Hver `<Eksempel>` på siden, med alt som hører til.
+ * Hver `<Example>` på siden, med alt som hører til.
  *
  * Dette må parses, ikke matches. Et regex på `/>` stopper på den første
  * selvlukkende taggen *inne i* eksempelet, og på ni sider er det et
@@ -86,14 +86,14 @@ for (const inn of inngangspunkter) {
  *
  * Så: skann fram til `>` som faktisk avslutter åpningstaggen, altså det som
  * står utenfor `{…}` og utenfor en malstreng. Er tegnet foran en skråstrek,
- * lukker taggen seg selv. Ellers hører alt fram til `</Eksempel>` med.
+ * lukker taggen seg selv. Ellers hører alt fram til `</Example>` med.
  */
 function eksempler(tekst: string): string[] {
   const ut: string[] = []
-  for (let i = tekst.indexOf("<Eksempel"); i !== -1; ) {
+  for (let i = tekst.indexOf("<Example"); i !== -1; ) {
     let dybde = 0
     let iMal = false
-    let j = i + "<Eksempel".length
+    let j = i + "<Example".length
     for (; j < tekst.length; j++) {
       const c = tekst[j]
       if (c === "`") iMal = !iMal
@@ -105,34 +105,34 @@ function eksempler(tekst: string): string[] {
     if (tekst[j - 1] === "/") {
       ut.push(tekst.slice(i, j + 1))
     } else {
-      const slutt = tekst.indexOf("</Eksempel>", j)
+      const slutt = tekst.indexOf("</Example>", j)
       ut.push(
         slutt === -1
           ? tekst.slice(i, j + 1)
-          : tekst.slice(i, slutt + "</Eksempel>".length),
+          : tekst.slice(i, slutt + "</Example>".length),
       )
     }
-    i = tekst.indexOf("<Eksempel", j)
+    i = tekst.indexOf("<Example", j)
   }
   return ut
 }
 
 /**
- * Hvilke stilark en `fs-`-klasse krever, med `@import`-lukningen regnet inn.
+ * Hvilke stilark en `lt-`-klasse krever, med `@import`-lukningen regnet inn.
  *
  * `search.css` henter `input.css` selv, så en oppskrift som bruker
- * `.fs-input` sammen med `.fs-search` trenger ikke begge. Uten lukningen ville
+ * `.lt-input` sammen med `.lt-search` trenger ikke begge. Uten lukningen ville
  * regelen krevd stilark som allerede kommer med.
  */
 const FRA_STILARK = new Map<string, string>()
 
-/** Stilarket hvert `fs-`-element styres av. */
+/** Stilarket hvert `lt-`-element styres av. */
 const FRA_ELEMENT = new Map<string, string>()
 const HENTER = new Map<string, Set<string>>()
 {
   const lesArk = (mappe: string) => {
     // Sortert: usortert `readdirSync` på Linux ville latt `search.css` vinne
-    // over `input.css` for `.fs-input`, og sjekken feilet tilfeldig i CI.
+    // over `input.css` for `.lt-input`, og sjekken feilet tilfeldig i CI.
     for (const oppf of readdirSync(mappe, { withFileTypes: true }).sort(
       (a, b) => a.name.localeCompare(b.name),
     )) {
@@ -140,18 +140,18 @@ const HENTER = new Map<string, Set<string>>()
       if (oppf.isDirectory()) lesArk(p)
       else if (oppf.name.endsWith(".css")) {
         const tekst = readFileSync(p, "utf8")
-        for (const m of tekst.matchAll(/\.(fs-[a-z0-9-]+(?:__[a-z0-9-]+)?)/g))
+        for (const m of tekst.matchAll(/\.(lt-[a-z0-9-]+(?:__[a-z0-9-]+)?)/g))
           if (!FRA_STILARK.has(m[1])) FRA_STILARK.set(m[1], oppf.name)
         /*
          * Og elementvelgerne.
          *
-         * Ni stilark styrer et `fs-`-element og ingen klasse: toast, field,
+         * Ni stilark styrer et `lt-`-element og ingen klasse: toast, field,
          * dialog, popover, tabs, suggestion, error-summary,
          * connection-status og session-timeout. En regel som bare kjenner
          * klasser kan aldri kreve dem, og da forsvant `toast.css` fra
          * toast-oppskriften uten at noe sa fra.
          */
-        for (const m of tekst.matchAll(/^\s*(fs-[a-z0-9-]+)[\s,{[:.]/gm))
+        for (const m of tekst.matchAll(/^\s*(lt-[a-z0-9-]+)[\s,{[:.]/gm))
           if (!FRA_ELEMENT.has(m[1])) FRA_ELEMENT.set(m[1], oppf.name)
         HENTER.set(
           oppf.name,
@@ -186,9 +186,9 @@ function lukning(start: string[]): Set<string> {
 /**
  * Bare koden i en fane, uten prosaen rundt.
  *
- * To av reglene spør om noe som bare gir mening i kode: at et `<fs-…>` blir
- * registrert, og at `fs.` er importert. Leste de hele fanen, ville en setning
- * som *nevner* `<fs-dialog>` felt CI av en grunn som ikke er en feil, og den
+ * To av reglene spør om noe som bare gir mening i kode: at et `<lt-…>` blir
+ * registrert, og at `lt.` er importert. Leste de hele fanen, ville en setning
+ * som *nevner* `<lt-dialog>` felt CI av en grunn som ikke er en feil, og den
  * nærliggende fiksen ville vært å svekke regelen igjen.
  */
 /** Hvert kodegjerde for seg, uten kommentarer. */
@@ -199,9 +199,9 @@ function gjerder(tekst: string): string[] {
 }
 
 /**
- * Markupen i `<Eksempel kode={`…`}>`, som ikke står i et kodegjerde.
+ * Markupen i `<Example kode={`…`}>`, som ikke står i et kodegjerde.
  *
- * Tre regler leste bare gjerder, og på de 32 css-sidene er `<Eksempel>` den
+ * Tre regler leste bare gjerder, og på de 32 css-sidene er `<Example>` den
  * eneste markupen som finnes. Registreringen, vertsattributtene og
  * element-til-stilark kunne dermed strukturelt aldri fyre der. Samme form som
  * de seks foregående hullene: regelen var bundet til én måte å skrive koden.
@@ -216,7 +216,7 @@ function bareKode(tekst: string): string {
   const gjerder = [...tekst.matchAll(/```[^\n]*\n([\s\S]*?)```/g)].map(
     (m) => m[1],
   )
-  // Uten kommentarene: en kommentar som *nevner* `<fs-dialog>` er ikke
+  // Uten kommentarene: en kommentar som *nevner* `<lt-dialog>` er ikke
   // markup, og en regel som leser den krever en registrering som ikke
   // trengs.
   return [...gjerder, eksempelMarkup(tekst)]
@@ -249,7 +249,7 @@ const MED_BYGGESTEG = new Set(["React", "Astro", "TypeScript"])
  * Fanenavnene dokumentasjonen bruker, og bare disse.
  *
  * Hver regel velges på et navn som streng: `MED_BYGGESTEG`, kravet om URL
- * framfor pakkenavn, registreringen og `fs`-importen. Skrev noen
+ * framfor pakkenavn, registreringen og `lt`-importen. Skrev noen
  * `label="Ren html"`, ble to av dem slått av uten at noe sa fra. Et
  * ordforråd som håndheves gjør klassifiseringen etterprøvbar framfor å være
  * noe sjekken bare antar.
@@ -272,24 +272,24 @@ const FANENAVN = new Set([
  * ikke kan sette på seg selv.
  */
 const VERTER: Array<[string, string]> = [
-  ["fs-toast", "toast"],
-  ["fs-connection-status", "connectionStatus"],
-  ["fs-session-timeout", "sessionTimeout"],
+  ["lt-toast", "toast"],
+  ["lt-connection-status", "connectionStatus"],
+  ["lt-session-timeout", "sessionTimeout"],
 ]
 
 /**
  * Klasser en byggefunksjon faktisk sender ut, og hvilken funksjon det er.
  *
- * Uten denne ville regelen felt hver `fs-`-klasse i en React- eller
+ * Uten denne ville regelen felt hver `lt-`-klasse i en React- eller
  * Astro-fane, også de som ikke har noen funksjon å kalle. Én klasse er slik
- * i dag, og den lager komponenten selv: `fs-connection-status__bar`.
+ * i dag, og den lager komponenten selv: `lt-connection-status__bar`.
  */
 const FRA_BYGGER = new Map<string, string>()
-for (const [navn, f] of Object.entries(fs)) {
+for (const [navn, f] of Object.entries(lt)) {
   if (typeof f !== "function") continue
   let svar: unknown
   try {
-    // `keys` fordi `fs.tabs()` og `fs.suggestion()` kaster uten. Da svelget
+    // `keys` fordi `lt.tabs()` og `lt.suggestion()` kaster uten. Da svelget
     // `catch` feilen, fanenes klasser kom aldri inn i tabellen, og regelen
     // om klasser skrevet for hånd var taus for dem.
     svar = (f as (o?: unknown) => unknown)({
@@ -316,16 +316,16 @@ for (const [navn, f] of Object.entries(fs)) {
   /*
    * Og klassenavnene som henger på selve funksjonen.
    *
-   * `fs.switch.row`, `fs.alert.title` og et dusin andre er klasser uten
+   * `lt.switch.row`, `lt.alert.title` og et dusin andre er klasser uten
    * attributter, så de returneres ikke av et kall, men henges på funksjonen
    * med `Object.assign`. Ser man bare på returverdien, ser det ut som et hull
    * i API-et der det ikke er noe. Nitten klasser sto slik, og
-   * `.fs-switch-row` var en av dem.
+   * `.lt-switch-row` var en av dem.
    */
   for (const [nøkkel, verdi] of Object.entries(f))
     if (
       typeof verdi === "string" &&
-      verdi.startsWith("fs-") &&
+      verdi.startsWith("lt-") &&
       !FRA_BYGGER.has(verdi)
     )
       FRA_BYGGER.set(verdi, `${navn}.${nøkkel}`)
@@ -337,8 +337,8 @@ for (const [navn, f] of Object.entries(fs)) {
 
 /** Attributtnavnene en byggefunksjon faktisk sender ut for verten sin. */
 function kreves(bygger: string): string[] {
-  // De samme prøvevalgene som over: `fs.sessionTimeout()` krever `titleId`.
-  const svar = (fs as Record<string, (o?: unknown) => Record<string, unknown>>)[
+  // De samme prøvevalgene som over: `lt.sessionTimeout()` krever `titleId`.
+  const svar = (lt as Record<string, (o?: unknown) => Record<string, unknown>>)[
     bygger
   ]({ titleId: "t" })
   const sett = (svar.host ?? svar) as Record<string, unknown>
@@ -380,10 +380,10 @@ for (const fil of readdirSync(SIDER).filter(
     faner.push({ navn: m[1], kode: m[2], iOppskrift: seksjon.includes(m[2]) })
 
   /*
-   * Og hver `<Eksempel>`, uansett om siden også har faner.
+   * Og hver `<Example>`, uansett om siden også har faner.
    *
    * Dette sto som en reserve som bare slo inn når siden hadde null
-   * `<TabItem>`. Da forsvant hele `<Eksempel>`-delen ut av sjekken på de ti
+   * `<TabItem>`. Da forsvant hele `<Example>`-delen ut av sjekken på de ti
    * sidene som har et `<Tabs>`-blokk et sted, og med den de håndskrevne
    * TypeScript-blokkene. Verst var at det var stille og asymmetrisk: la noen
    * et `<Tabs>` på en av css-sidene, slo det av sjekkingen av den sidens
@@ -413,7 +413,7 @@ for (const fil of readdirSync(SIDER).filter(
   /*
    * Og resten av siden.
    *
-   * Sjekken leste bare `<TabItem>` og `<Eksempel>`, så en kodeblokk som sto
+   * Sjekken leste bare `<TabItem>` og `<Example>`, så en kodeblokk som sto
    * utenfor begge gikk fri. Toast-siden hadde en slik: den gjentok
    * «Ren HTML»-oppskriften i den gamle utgaven, med et pakkenavn i et miljø
    * uten byggesteg og uten `data-ignore-morph`, tre avsnitt etter at siden
@@ -437,17 +437,17 @@ for (const fil of readdirSync(SIDER).filter(
       )
 
     for (const m of fane.kode.matchAll(
-      /@fristil\/designsystem(?:\/([a-z0-9/.-]+))?/g,
+      /@lotek\/designsystem(?:\/([a-z0-9/.-]+))?/g,
     )) {
       const inn = m[1] ?? ""
       if (!inngangspunkter.has(inn))
         si(
           side,
-          `${hvor} importerer «@fristil/designsystem/${inn}», som ikke finnes i exports`,
+          `${hvor} importerer «@lo-tek/interfaces/${inn}», som ikke finnes i exports`,
         )
     }
 
-    for (const m of fane.kode.matchAll(/\b(defineFs[A-Za-z]+)\b/g)) {
+    for (const m of fane.kode.matchAll(/\b(defineLt[A-Za-z]+)\b/g)) {
       const navn = m[1]
       const finnes = [...definerere.values()].some((sett) => sett.has(navn))
       if (!finnes)
@@ -457,28 +457,28 @@ for (const fil of readdirSync(SIDER).filter(
     /*
      * Og navnene som ikke er kall.
      *
-     * Regelen krevde parentes, så `fs.card.title`, `fs.switch.row` og tjue
+     * Regelen krevde parentes, så `lt.card.title`, `lt.switch.row` og tjue
      * andre egenskapsreferanser var aldri kontrollert. En skrivefeil der gir
      * `className={undefined}`, altså et element uten klasse, og ingenting sa
-     * fra. Vaktene, som `fs.button.isVariant`, falt mellom begge regler.
+     * fra. Vaktene, som `lt.button.isVariant`, falt mellom begge regler.
      */
     for (const m of fane.kode.matchAll(/\bfs\.([a-zA-Z]+)\.([a-zA-Z]+)/g)) {
-      const bygger = (fs as Record<string, unknown>)[m[1]]
+      const bygger = (lt as Record<string, unknown>)[m[1]]
       if (typeof bygger !== "function") {
-        si(side, `${hvor} bruker fs.${m[1]}, som ikke finnes i fs`)
+        si(side, `${hvor} bruker lt.${m[1]}, som ikke finnes i lt`)
         continue
       }
       if (!(m[2] in (bygger as object)))
-        si(side, `${hvor} bruker fs.${m[1]}.${m[2]}, som ikke finnes`)
+        si(side, `${hvor} bruker lt.${m[1]}.${m[2]}, som ikke finnes`)
     }
 
     for (const m of fane.kode.matchAll(/\bfs\.([a-zA-Z]+)\s*\(/g)) {
       if (!byggefunksjoner.has(m[1]))
-        si(side, `${hvor} kaller fs.${m[1]}(), som ikke finnes i fs`)
+        si(side, `${hvor} kaller lt.${m[1]}(), som ikke finnes i lt`)
     }
 
     for (const m of fane.kode.matchAll(/class(?:Name)?="([^"]*)"/g)) {
-      for (const k of m[1].split(/\s+/).filter((k) => k.startsWith("fs-")))
+      for (const k of m[1].split(/\s+/).filter((k) => k.startsWith("lt-")))
         if (!klasser.has(k))
           si(side, `${hvor} bruker klassen .${k}, som ingen stilark definerer`)
     }
@@ -488,7 +488,7 @@ for (const fil of readdirSync(SIDER).filter(
      *
      * En oppskrift som skriver verten for hånd framfor å spre
      * byggefunksjonen, mister det byggefunksjonen ville gitt. Toast-siden
-     * skrev `<fs-toast label="Meldinger">` i alle fire fanene, og da manglet
+     * skrev `<lt-toast label="Meldinger">` i alle fire fanene, og da manglet
      * `data-ignore-morph` i alle fire, Datastar-fanen inkludert, der siden
      * selv skriver at attributtet ikke er valgfritt. Komponenten setter
      * `role` og `aria-label` selv, men ikke det, så en patch ville revet
@@ -499,12 +499,12 @@ for (const fil of readdirSync(SIDER).filter(
         ...bareKode(fane.kode).matchAll(new RegExp(`<${tagg}\\b[^>]*>`, "g")),
       ]
       // Alle vertene, ikke bare den første, og bare i kode: en bar
-      // `<fs-toast>` i en kommentar foran den ekte verten gjorde regelen død.
+      // `<lt-toast>` i en kommentar foran den ekte verten gjorde regelen død.
       // Alle vertene som faktisk er skrevet ut, ikke bare den første.
       /*
        * Alle vertene som faktisk er skrevet ut, ikke bare den første.
        *
-       * Et bart `<fs-toast>` i en setning er prosa, ikke markup, så kravet
+       * Et bart `<lt-toast>` i en setning er prosa, ikke markup, så kravet
        * gjelder dem som har attributter. Og en andre vert i samme fane er
        * like mye en oppskrift som den første.
        */
@@ -515,7 +515,7 @@ for (const fil of readdirSync(SIDER).filter(
           if (!vert[0].includes(attributt))
             si(
               side,
-              `${hvor} skriver <${tagg}> for hånd uten ${attributt}, som fs.${bygger}() gir`,
+              `${hvor} skriver <${tagg}> for hånd uten ${attributt}, som lt.${bygger}() gir`,
             )
         }
     }
@@ -524,8 +524,8 @@ for (const fil of readdirSync(SIDER).filter(
      * Lager du markupen med JavaScript, kaller du byggefunksjonen.
      *
      * Det er hele skillet dokumentasjonen skal lære bort, og en fane som
-     * skriver `class="fs-input"` for hånd i React eller Astro lærer leseren
-     * ingenting om `fs`. Fire faner hadde drevet dit uten at noe sa fra.
+     * skriver `class="lt-input"` for hånd i React eller Astro lærer leseren
+     * ingenting om `lt`. Fire faner hadde drevet dit uten at noe sa fra.
      *
      * Regelen gjelder bare der det finnes et byggesteg. I «Ren HTML» og
      * «Datastar» er det riktige nettopp å skrive klassen: der finnes det
@@ -535,7 +535,7 @@ for (const fil of readdirSync(SIDER).filter(
      * `className` og ikke `class`.
      *
      * TypeScript-fanen viser to scenarier, og det andre er markup en server
-     * eller en mal har sendt. Der er `class="fs-button"` nettopp det riktige,
+     * eller en mal har sendt. Der er `class="lt-button"` nettopp det riktige,
      * og en regel som feller den ville gjort fanens eget poeng ulovlig.
      * `className` finnes bare i JSX, altså der byggefunksjonen skal kalles.
      */
@@ -544,14 +544,14 @@ for (const fil of readdirSync(SIDER).filter(
       // med vilje serverskrevet markup, og der er `class` riktig.
       const attributt =
         fane.navn === "Astro"
-          ? /class="(fs-[^"]*)"/g
-          : /className="(fs-[^"]*)"/g
+          ? /class="(lt-[^"]*)"/g
+          : /className="(lt-[^"]*)"/g
       for (const m of fane.kode.matchAll(attributt))
         for (const k of m[1].split(/\s+/))
           if (FRA_BYGGER.has(k))
             si(
               side,
-              `${hvor} skriver class="${k}" for hånd, men fs.${FRA_BYGGER.get(k)} finnes. Der det er et byggesteg, bruk den.`,
+              `${hvor} skriver class="${k}" for hånd, men lt.${FRA_BYGGER.get(k)} finnes. Der det er et byggesteg, bruk den.`,
             )
     }
 
@@ -560,14 +560,14 @@ for (const fil of readdirSync(SIDER).filter(
      *
      * Dette er den samme feilen tre runder på rad, og hver gang fordi regelen
      * var bundet til én måte å oppgi stilarkene på. Først så den bare
-     * `importer` på `<Eksempel>`, og da gikk de ni oppførselssidene fri. Så
+     * `importer` på `<Example>`, og da gikk de ni oppførselssidene fri. Så
      * fikk de håndskrevne `<link>`-blokker, og regelen så ikke dem heller: to
-     * av dem manglet `button.css` mens markupen brukte `.fs-button`.
+     * av dem manglet `button.css` mens markupen brukte `.lt-button`.
      *
      * Derfor er regelen nå én, og den spør om det som betyr noe: hvilke ark
      * har leseren fått vite om, og hvilke krever klassene i denne fanen.
      * Arkene kan komme fra `importer`, fra en `<link>` eller fra en
-     * `import "@fristil/designsystem/x.css"`. Hvor de står er likegyldig.
+     * `import "@lo-tek/interfaces/x.css"`. Hvor de står er likegyldig.
      */
     const oppgitt = new Set<string>()
     const fraImporter = fane.kode.match(/importer=\{\[([^\]]*)\]\}/)
@@ -576,30 +576,30 @@ for (const fil of readdirSync(SIDER).filter(
     for (const m of fane.kode.matchAll(/href="[^"]*\/([a-z-]+\.css)"/g))
       oppgitt.add(m[1])
     for (const m of fane.kode.matchAll(
-      /@fristil\/designsystem\/([a-z-]+\.css)/g,
+      /@lotek\/designsystem\/([a-z-]+\.css)/g,
     ))
       oppgitt.add(m[1])
 
     const brukteKlasser = new Set<string>()
     for (const m of fane.kode.matchAll(/class(?:Name)?="([^"]*)"/g))
       for (const k of m[1].split(/\s+/))
-        if (k.startsWith("fs-")) brukteKlasser.add(k)
+        if (k.startsWith("lt-")) brukteKlasser.add(k)
     /*
      * Byggefunksjonen teller, også når den går gjennom en variabel.
      *
-     * Regelen leste `class="…"` og `{...fs.x(` bokstavelig. Den dominerende
-     * formen i React- og Astro-faner er `const boks = fs.dialog(...)` og så
+     * Regelen leste `class="…"` og `{...lt.x(` bokstavelig. Den dominerende
+     * formen i React- og Astro-faner er `const boks = lt.dialog(...)` og så
      * `{...boks.dialog}`, og den ga null klasser. Da kunne `dialog.css`
      * fjernes fra dialogens React-fane uten at noe sa fra, som er den samme
      * blindheten fire runder på rad.
      */
-    for (const m of fane.kode.matchAll(/\{\.\.\.fs\.([a-zA-Z]+)[.(]/g)) {
+    for (const m of fane.kode.matchAll(/\{\.\.\.lt\.([a-zA-Z]+)[.(]/g)) {
       const klasse = FRA_BYGGER_OMVENDT.get(m[1])
       if (klasse) brukteKlasser.add(klasse)
     }
     const variabler = new Map<string, string>()
     for (const m of fane.kode.matchAll(
-      /(?:const|let)\s+(?:\{[^}]*\}|(\w+))\s*=\s*fs\.([a-zA-Z]+)\(/g,
+      /(?:const|let)\s+(?:\{[^}]*\}|(\w+))\s*=\s*lt\.([a-zA-Z]+)\(/g,
     ))
       if (m[1]) variabler.set(m[1], m[2])
     for (const m of fane.kode.matchAll(/\{\.\.\.(\w+)[.}\s]/g)) {
@@ -620,7 +620,7 @@ for (const fil of readdirSync(SIDER).filter(
      *
      * Senere eksempler på siden er illustrasjoner, ikke hele oppskrifter, og
      * skal ikke gjenta importene seksjonen øverst alt har gitt. Der er det
-     * `stiler` på `<Eksempel>` som styrer hva forhåndsvisningen laster.
+     * `stiler` på `<Example>` som styrer hva forhåndsvisningen laster.
      */
     /*
      * Og at arkene oppskriften reklamerer med, finnes.
@@ -634,7 +634,7 @@ for (const fil of readdirSync(SIDER).filter(
         si(side, `${hvor} oppgir ${ark}, som ikke finnes i exports`)
 
     const brukteElementer = new Set(
-      [...bareKode(fane.kode).matchAll(/<(fs-[a-z0-9-]+)[\s/>]/g)].map(
+      [...bareKode(fane.kode).matchAll(/<(lt-[a-z0-9-]+)[\s/>]/g)].map(
         (m) => m[1],
       ),
     )
@@ -660,9 +660,9 @@ for (const fil of readdirSync(SIDER).filter(
       /*
        * Og `tokens.css`, som ingen klasse kan kreve.
        *
-       * Den definerer ingen `fs-`-klasser, bare variablene alt annet leser.
+       * Den definerer ingen `lt-`-klasser, bare variablene alt annet leser.
        * En klassedrevet regel kan derfor strukturelt aldri be om den, og uten
-       * den står hver `var(--fs-spacing-…)` uoppløst: padding, skriftstørrelse og
+       * den står hver `var(--lt-spacing-…)` uoppløst: padding, skriftstørrelse og
        * vekt faller bort.
        */
       if (!har.has("tokens.css"))
@@ -670,7 +670,7 @@ for (const fil of readdirSync(SIDER).filter(
     }
 
     /*
-     * En oppskrift som viser et `<fs-…>` må registrere det.
+     * En oppskrift som viser et `<lt-…>` må registrere det.
      *
      * Fem Datastar-faner viste markupen og ingenting mer. Elementet er da en
      * tom vert: ingen tastatur, ingen fokus, ingen hendelser. Registreringen
@@ -683,19 +683,19 @@ for (const fil of readdirSync(SIDER).filter(
     if (fane.navn !== "Prøv den" && fane.navn !== "resten") {
       const kode = bareKode(fane.kode)
       const verter = new Set(
-        [...kode.matchAll(/<(fs-[a-z-]+)[\s>]/g)].map((m) => m[1]),
+        [...kode.matchAll(/<(lt-[a-z-]+)[\s>]/g)].map((m) => m[1]),
       )
       /*
-       * `defineFs()` fra `/register` registrerer alle, og dekker da hvert
-       * element i fanen. Uttrykket krever parentesen: `defineFsField(`
+       * `defineLt()` fra `/register` registrerer alle, og dekker da hvert
+       * element i fanen. Uttrykket krever parentesen: `defineLtField(`
        * treffer ikke, og en import uten kall treffer heller ikke.
        */
-      const samlet = /\bdefineFs\s*\(/.test(kode)
+      const samlet = /\bdefineLt\s*\(/.test(kode)
       for (const tagg of samlet ? [] : verter) {
-        const funksjon = `defineFs${tagg
+        const funksjon = `defineLt${tagg
           .slice(3)
           .replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase())}`
-        // Kallet, ikke importen: `includes` traff `import { defineFsX }`,
+        // Kallet, ikke importen: `includes` traff `import { defineLtX }`,
         // så en oppskrift som importerte og glemte kallet gikk grønt.
         if (!new RegExp(`\\b${funksjon}\\s*\\(`).test(kode))
           si(side, `${hvor} viser <${tagg}> uten å kalle ${funksjon}()`)
@@ -703,24 +703,24 @@ for (const fil of readdirSync(SIDER).filter(
     }
 
     /*
-     * Bruker fanen `fs.`, må den importere det.
+     * Bruker fanen `lt.`, må den importere det.
      *
-     * Astro-fanen på feltsiden kalte `fs.input()` og `fs.errorText()` mens
-     * frontmatteren bare importerte stilark. Limt inn er `fs` udefinert, og
+     * Astro-fanen på feltsiden kalte `lt.input()` og `lt.errorText()` mens
+     * frontmatteren bare importerte stilark. Limt inn er `lt` udefinert, og
      * siden feiler ved bygging. Feilen kom av at håndskrevne klasser ble
      * byttet mot byggefunksjoner uten at importen fulgte med.
      */
-    if (fane.navn !== "resten" && !/<Eksempel\b/.test(fane.kode)) {
+    if (fane.navn !== "resten" && !/<Example\b/.test(fane.kode)) {
       let importert = false
       for (const gjerde of gjerder(fane.kode)) {
         if (
-          /import \{[^}]*\bfs\b[^}]*\} from "@fristil\/designsystem/.test(
+          /import \{[^}]*\bfs\b[^}]*\} from "@lotek\/designsystem/.test(
             gjerde,
           )
         )
           importert = true
         if (!importert && /\bfs\.[a-zA-Z]/.test(gjerde)) {
-          si(side, `${hvor} bruker fs. uten å importere fs`)
+          si(side, `${hvor} bruker lt. uten å importere lt`)
           break
         }
       }
@@ -728,11 +728,11 @@ for (const fil of readdirSync(SIDER).filter(
 
     // Hele CDN-adressen: versjonen og stien, ikke bare filnavnet.
     for (const m of fane.kode.matchAll(
-      /cdn\.jsdelivr\.net\/npm\/@fristil\/designsystem@([^/]+)\/([^"'\s]+)/g,
+      /cdn\.jsdelivr\.net\/npm\/@lotek\/designsystem@([^/]+)\/([^"'\s]+)/g,
     )) {
       /*
        * Versjonen skal stå som plassholderen `VERSJON`, som
-       * `remark-versjon.mjs` bytter med den fra `package.json` når siden
+       * `remark-version.mjs` bytter med den fra `package.json` når siden
        * bygges. Sto tallet her i kilden, måtte alle 74 adressene endres ved
        * hver utgivelse, og en som ble glemt pekte på en eldre pakke enn teksten
        * rundt den beskrev.
@@ -740,13 +740,13 @@ for (const fil of readdirSync(SIDER).filter(
       if (m[1] !== "VERSJON")
         si(
           side,
-          `${hvor} peker på @fristil/designsystem@${m[1]}. Skriv @fristil/designsystem@VERSJON, som remark-versjon.mjs bytter ut.`,
+          `${hvor} peker på @lo-tek/interfaces@${m[1]}. Skriv @lo-tek/interfaces@VERSJON, som remark-version.mjs bytter ut.`,
         )
       if (!FILER.has(m[2]))
         si(side, `${hvor} peker på ${m[2]}, som pakken ikke sender ut`)
     }
 
-    const pakkenavnIImport = /from\s+\n?\s*"@fristil\/designsystem/.test(
+    const pakkenavnIImport = /from\s+\n?\s*"@lotek\/designsystem/.test(
       fane.kode,
     )
     const urlIImport = /from\s+\n?\s*"https:\/\/cdn\./.test(fane.kode)

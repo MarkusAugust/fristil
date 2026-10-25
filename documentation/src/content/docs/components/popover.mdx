@@ -13,16 +13,16 @@ Resten gjør komponenten. Panelet åpnes i `manual`-modus, ikke `auto`, siden ne
 Plasseringen er også vår. `position-anchor` finnes ennå ikke i alle nettlesere, så komponenten regner ut posisjonen mot knappen og setter den som to variabler på panelet.
 
 :::note[To veier til den samme markupen]
-Lages markupen med JavaScript, gir `fs.popover()` koblingen mellom knapp og panel, id-en og `popover`-attributtet, ferdig i HTML-en. Blir den til uten JavaScript, holder det med en knapp og et panel med klassen `fs-popover` og en id: komponenten setter `popover="manual"` og skriver `aria-controls` på knappen. Id-en skriver malen, siden `aria-controls` peker på den. Komponenten lager aldri en: et panel med en id serveren ikke sendte, ble byttet ut ved neste oppdatering, med fokus. Mangler id-en, virker vinduet, men knappen er ikke koblet til panelet, og komponenten, `fristil sjekk` og editorene sier fra. Posisjonen, Escape og klikk utenfor kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+Lages markupen med JavaScript, gir `lt.popover()` koblingen mellom knapp og panel, id-en og `popover`-attributtet, ferdig i HTML-en. Blir den til uten JavaScript, holder det med en knapp og et panel med klassen `lt-popover` og en id: komponenten setter `popover="manual"` og skriver `aria-controls` på knappen. Id-en skriver malen, siden `aria-controls` peker på den. Komponenten lager aldri en: et panel med en id serveren ikke sendte, ble byttet ut ved neste oppdatering, med fokus. Mangler id-en, virker vinduet, men knappen er ikke koblet til panelet, og komponenten, `lotek sjekk` og editorene sier fra. Posisjonen, Escape og klikk utenfor kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-and-behaviour/#byggefunksjon-eller-web-component).
 :::
 
 ```ts
 // main.ts, kjøres én gang når appen starter
-import { defineFsPopover } from "@fristil/designsystem/popover"
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/popover.css"
+import { defineLtPopover } from "@lo-tek/interfaces/popover"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/popover.css"
 
-defineFsPopover()
+defineLtPopover()
 ```
 
 ## Slik tar du den i bruk
@@ -34,35 +34,35 @@ defineFsPopover()
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/popover/popover.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/popover/popover.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
     <!-- `popover` og `aria-controls` setter komponenten. Id-en på panelet
          skriver du: det er den knappen peker på. -->
-    <fs-popover id="meny" placement="bottom-end">
-      <button class="fs-button" data-variant="secondary" type="button">Handlinger</button>
+    <lt-popover id="meny" placement="bottom-end">
+      <button class="lt-button" data-variant="secondary" type="button">Handlinger</button>
 
-      <ul class="fs-popover" id="handlinger">
-        <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
-        <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
+      <ul class="lt-popover" id="handlinger">
+        <li><button class="lt-button" data-variant="ghost" type="button">Arkiver saken</button></li>
+        <li><button class="lt-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
       </ul>
-    </fs-popover>
+    </lt-popover>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsPopover } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/popover/fs-popover.js"
+      import { defineLtPopover } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/popover/lt-popover.js"
 
-      defineFsPopover()
+      defineLtPopover()
     </script>
 
     <script type="module">
       const meny = document.getElementById("meny")
-      const panel = meny.querySelector(".fs-popover")
+      const panel = meny.querySelector(".lt-popover")
 
       // Lukk menyen når en handling er valgt
       meny.addEventListener("click", (hendelse) => {
@@ -73,27 +73,27 @@ defineFsPopover()
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/fristil.d.ts, gir <fs-popover> typer i JSX
-    import "@fristil/designsystem/react-jsx"
+    // src/lotek.d.ts, gir <lt-popover> typer i JSX
+    import "@lo-tek/interfaces/react-jsx"
     ```
 
     ```tsx
     // main.tsx, kjøres én gang når appen starter
-    import { defineFsPopover } from "@fristil/designsystem/popover"
-    import "@fristil/designsystem/popover.css"
-    import "@fristil/designsystem/button.css"
+    import { defineLtPopover } from "@lo-tek/interfaces/popover"
+    import "@lo-tek/interfaces/popover.css"
+    import "@lo-tek/interfaces/button.css"
 
-    defineFsPopover()
+    defineLtPopover()
     ```
 
     ```tsx
     import { useRef } from "react"
-    import { fs } from "@fristil/designsystem/react"
-    import "@fristil/designsystem/tokens.css"
+    import { lt } from "@lo-tek/interfaces/react"
+    import "@lo-tek/interfaces/tokens.css"
 
     export function Handlingsmeny({ påArkiver }: { påArkiver: () => void }) {
       const meny = useRef<HTMLElement & { hide(): void }>(null)
-      const boks = fs.popover({ id: "handlinger", placement: "bottom-end" })
+      const boks = lt.popover({ id: "handlinger", placement: "bottom-end" })
 
       const velg = (handling: () => void) => () => {
         handling()
@@ -101,19 +101,19 @@ defineFsPopover()
       }
 
       return (
-        <fs-popover ref={meny} {...boks.host}>
-          <button {...boks.trigger} {...fs.button({ variant: "secondary" })}>
+        <lt-popover ref={meny} {...boks.host}>
+          <button {...boks.trigger} {...lt.button({ variant: "secondary" })}>
             Handlinger
           </button>
 
           <ul {...boks.panel}>
             <li>
-              <button {...fs.button({ variant: "ghost" })} onClick={velg(påArkiver)}>
+              <button {...lt.button({ variant: "ghost" })} onClick={velg(påArkiver)}>
                 Arkiver saken
               </button>
             </li>
           </ul>
-        </fs-popover>
+        </lt-popover>
       )
     }
     ```
@@ -123,28 +123,28 @@ defineFsPopover()
   <TabItem label="Astro">
     ```astro
     ---
-    import { fs } from "@fristil/designsystem"
-    import "@fristil/designsystem/button.css"
-    import "@fristil/designsystem/link.css"
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/popover.css"
+    import { lt } from "@lo-tek/interfaces"
+    import "@lo-tek/interfaces/button.css"
+    import "@lo-tek/interfaces/link.css"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/popover.css"
 
-    const boks = fs.popover({ id: "handlinger", placement: "bottom-end" })
+    const boks = lt.popover({ id: "handlinger", placement: "bottom-end" })
 
     ---
 
-    <fs-popover {...boks.host}>
-      <button {...boks.trigger} {...fs.button({ variant: "secondary" })}>Handlinger</button>
+    <lt-popover {...boks.host}>
+      <button {...boks.trigger} {...lt.button({ variant: "secondary" })}>Handlinger</button>
 
       <ul {...boks.panel}>
-        <li><a {...fs.link()} href="/sak/481/pdf">Last ned som PDF</a></li>
-        <li><a {...fs.link()} href="/sak/481/arkiv">Arkiver saken</a></li>
+        <li><a {...lt.link()} href="/sak/481/pdf">Last ned som PDF</a></li>
+        <li><a {...lt.link()} href="/sak/481/arkiv">Arkiver saken</a></li>
       </ul>
-    </fs-popover>
+    </lt-popover>
 
     <script>
-      import { defineFsPopover } from "@fristil/designsystem/popover"
-      defineFsPopover()
+      import { defineLtPopover } from "@lo-tek/interfaces/popover"
+      defineLtPopover()
     </script>
     ```
 
@@ -158,36 +158,36 @@ defineFsPopover()
 
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/popover/popover.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/popover/popover.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
 
     <div data-signals="{apen: false}">
-      <fs-popover
+      <lt-popover
         server-controlled
         placement="bottom-end"
         data-attr:open="$apen"
         data-on:popover-toggle="$apen = evt.detail.open"
       >
-        <button class="fs-button" data-variant="secondary" type="button">Handlinger</button>
+        <button class="lt-button" data-variant="secondary" type="button">Handlinger</button>
 
-        <ul class="fs-popover" id="handlinger">
+        <ul class="lt-popover" id="handlinger">
           <li>
-            <button class="fs-button" data-variant="ghost" type="button" data-on:click="$apen = false">
+            <button class="lt-button" data-variant="ghost" type="button" data-on:click="$apen = false">
               Arkiver saken
             </button>
           </li>
         </ul>
-      </fs-popover>
+      </lt-popover>
     </div>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsPopover } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/popover/fs-popover.js"
+      import { defineLtPopover } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/popover/lt-popover.js"
 
-      defineFsPopover()
+      defineLtPopover()
     </script>
     ```
 
@@ -198,35 +198,35 @@ defineFsPopover()
 </Tabs>
 
 ```ts
-const boks = fs.popover({ id: "handlinger", placement: "bottom-end" })
+const boks = lt.popover({ id: "handlinger", placement: "bottom-end" })
 ```
 
 ```html
-<fs-popover placement="bottom-end">
-  <button class="fs-button" data-variant="secondary" type="button"
+<lt-popover placement="bottom-end">
+  <button class="lt-button" data-variant="secondary" type="button"
           aria-expanded="false" aria-controls="handlinger">Handlinger</button>
 
-  <ul class="fs-popover" id="handlinger" popover="manual">
-    <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
-    <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
+  <ul class="lt-popover" id="handlinger" popover="manual">
+    <li><button class="lt-button" data-variant="ghost" type="button">Arkiver saken</button></li>
+    <li><button class="lt-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
   </ul>
-</fs-popover>
+</lt-popover>
 ```
 
-Komponenten kjenner igjen panelet på `popover` eller klassen `fs-popover`, og knappen på `aria-controls` som peker på panelet, ellers på at den er den første knappen utenfor panelet som ikke peker på noe annet med `aria-controls`.
+Komponenten kjenner igjen panelet på `popover` eller klassen `lt-popover`, og knappen på `aria-controls` som peker på panelet, ellers på at den er den første knappen utenfor panelet som ikke peker på noe annet med `aria-controls`.
 
-Lages markupen med JavaScript, skriver `fs.popover()` koblingen, id-en, klassen og `popover`. Kommer den fra en mal uten JavaScript, skriver malen id-en på panelet, og komponenten setter `popover="manual"` og `aria-controls`, og lar det serveren har skrevet stå. Komponenten setter dessuten `open` på verten, `aria-expanded` på knappen og posisjonen på panelet. Alt den har skrevet setter den tilbake når en oppdatering fra serveren river det bort.
+Lages markupen med JavaScript, skriver `lt.popover()` koblingen, id-en, klassen og `popover`. Kommer den fra en mal uten JavaScript, skriver malen id-en på panelet, og komponenten setter `popover="manual"` og `aria-controls`, og lar det serveren har skrevet stå. Komponenten setter dessuten `open` på verten, `aria-expanded` på knappen og posisjonen på panelet. Alt den har skrevet setter den tilbake når en oppdatering fra serveren river det bort.
 
 Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det stående. Sender serveren `open`, åpnes det, for det er noe serveren faktisk sa.
 
-Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det er en beskjed komponenten kan se. Forskjellen mellom dem er hendelsen: `hide()` og `toggle()` sender `popover-toggle`, egenskapen gjør det ikke. Fjerner du attributtet utenfra i stedet, som med Datastars `data-attr:open`, er det ikke til å skille fra en oppdatering som river det bort, og da setter komponenten det tilbake. Der er `server-controlled` svaret. Se [Markup og oppførsel](/markup-og-oppforsel/).
+Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det er en beskjed komponenten kan se. Forskjellen mellom dem er hendelsen: `hide()` og `toggle()` sender `popover-toggle`, egenskapen gjør det ikke. Fjerner du attributtet utenfra i stedet, som med Datastars `data-attr:open`, er det ikke til å skille fra en oppdatering som river det bort, og da setter komponenten det tilbake. Der er `server-controlled` svaret. Se [Markup og oppførsel](/markup-and-behaviour/).
 
 ## Attributter
 
 | Attributt | Type | Effekt |
 | --- | --- | --- |
 | `open` | boolsk | Om panelet er åpent. Speiles når brukeren åpner og lukker. |
-| `placement` | streng | `bottom-start`, `bottom-end`, `top-start` eller `top-end`. `start` og `end` følger leseretningen, så i en side med `dir="rtl"` er `start` høyre kant. Er det ikke plass langs kanten, skyves panelet inn i vinduet framfor å bytte andre. `fs.popover({ id, placement })` skriver det på verten, `fs.popover.isPlacement` sjekker en verdi, og `popoverPlacements` fra hovedinngangen lister dem |
+| `placement` | streng | `bottom-start`, `bottom-end`, `top-start` eller `top-end`. `start` og `end` følger leseretningen, så i en side med `dir="rtl"` er `start` høyre kant. Er det ikke plass langs kanten, skyves panelet inn i vinduet framfor å bytte andre. `lt.popover({ id, placement })` skriver det på verten, `lt.popover.isPlacement` sjekker en verdi, og `popoverPlacements` fra hovedinngangen lister dem |
 | `server-controlled` | boolsk | Serveren bestemmer om panelet er åpent. Komponenten setter ikke `open` tilbake når en oppdatering fra serveren fjerner det, slik den gjør uten attributtet. |
 
 ## Hendelser og metoder
@@ -237,7 +237,7 @@ Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det 
 | `show()`, `hide()`, `toggle()` | Metoder på elementet |
 
 ```js
-const meny = document.querySelector("fs-popover")
+const meny = document.querySelector("lt-popover")
 
 meny.addEventListener("popover-toggle", (hendelse) => {
   console.log(hendelse.detail.open ? "åpnet" : "lukket")
@@ -252,19 +252,19 @@ Komponenten rendrer i vanlig DOM, så markupen din treffes av vanlige selektorer
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-popover` | Panelet. Komponenten kjenner det igjen på klassen eller på `popover`, og fyller inn den andre |
+| `.lt-popover` | Panelet. Komponenten kjenner det igjen på klassen eller på `popover`, og fyller inn den andre |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-popover-width` | `min(20rem, calc(100vw - var(--fs-spacing-8)))`, den største bredden. Panelet er så bredt som innholdet, opp til denne |
-| `--fs-popover-padding` | `var(--fs-spacing-3)` |
-| `--fs-popover-radius` | `var(--fs-spacing-1)` |
-| `--fs-popover-top` | settes av komponenten |
-| `--fs-popover-left` | settes av komponenten |
+| `--lt-popover-width` | `min(20rem, calc(100vw - var(--lt-spacing-8)))`, den største bredden. Panelet er så bredt som innholdet, opp til denne |
+| `--lt-popover-padding` | `var(--lt-spacing-3)` |
+| `--lt-popover-radius` | `var(--lt-spacing-1)` |
+| `--lt-popover-top` | settes av komponenten |
+| `--lt-popover-left` | settes av komponenten |
 
-Posisjonen settes som `--fs-popover-top` og `--fs-popover-left` på elementet. De to er regnet ut fra knappens plass på skjermen, og er de eneste verdiene komponenten skriver inn direkte. Alt annet står i stilarket, så du kan overstyre det uten `!important`.
+Posisjonen settes som `--lt-popover-top` og `--lt-popover-left` på elementet. De to er regnet ut fra knappens plass på skjermen, og er de eneste verdiene komponenten skriver inn direkte. Alt annet står i stilarket, så du kan overstyre det uten `!important`.
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

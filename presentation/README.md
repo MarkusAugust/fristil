@@ -1,25 +1,25 @@
 # Presentasjon om designsystemarkitektur
 
 Presentasjonen handler om arkitekturen et designsystem uten rammeverk trenger: hvor
-markupen kommer fra, hva web componenten legger til, og hva det koster. Fristil er
+markupen kommer fra, hva web componenten legger til, og hva det koster. LO-TEK er
 eksempelet som viser at det virker, ikke temaet.
 
 Hele presentasjonen er ett dokument. Ingen avhengigheter, ikke noe byggesteg,
 ingen server. Åpne fila i en nettleser, eller se den på
-[designsystemarkitektur.sobernetics.no](https://designsystemarkitektur.sobernetics.no/),
+[designsystemarkitektur.sobernetics.no](https://design-system-architecture.sobernetics.no/),
 som bygger fra master ved hver push. Netlify-prosjektet bak heter
 `designsystemarkitetktur`, med skrivefeilen, og
 `designsystemarkitetktur.netlify.app` gir den samme siden. `netlify.toml` her sier hvordan: fila
 kopieres til `index.html`, og det er alt.
 
 ```bash
-open presentasjon/designsystemarkitektur.html
+open presentation/design-system-architecture.html
 ```
 
 ## Én fil, og git som historikk
 
 Mappa hadde lenge én fil per utgave, fra `v3` til `v8`. Nå finnes bare
-`designsystemarkitektur.html`, og de eldre utgavene ligger i git-historikken
+`design-system-architecture.html`, og de eldre utgavene ligger i git-historikken
 til mappa.
 
 ## Hva den sier
@@ -34,13 +34,13 @@ Forsiden har et ikon tegnet med presentasjonens egen fargepalett: en
 glassflate med lys kant og et glanslys på toppen. Motivet er plattformnært og
 ikke en skrivebordsmetafor, for eksempel et nettleservindu, et DOM-tre eller
 en pakke med vei ut. Et eget lysbilde før kapitlene viser alle åtte med hvert sitt ikon. Til
-slutt kommer Fristil i bruk, med et skjemafelt og demospillet, og en
+slutt kommer LO-TEK i bruk, med et skjemafelt og demospillet, og en
 sjekkliste publikum kan bruke på sitt eget system.
 
-Kravet og Fristils løsning står hver for seg. Nederst på et lysbilde står
+Kravet og LO-TEKs løsning står hver for seg. Nederst på et lysbilde står
 inntil tre linjer: hva kravet betyr for produktteamene, hva det koster
-designsystemteamet, og «I Fristil», som sier hvordan Fristil har løst det.
-Kode som er Fristils eget API, har et grønt Fristil-merke over seg. Kravet
+designsystemteamet, og «I LO-TEK», som sier hvordan LO-TEK har løst det.
+Kode som er LO-TEKs eget API, har et grønt LO-TEK-merke over seg. Kravet
 skal gi mening uten eksempelet, og eksempelet skal være lett å skille fra
 kravet.
 
@@ -53,7 +53,7 @@ Ingen webfont. Skriften er `Helvetica, Arial, sans-serif`, som er den stakken
 et annet norsk designsystem oppgir for skjerm. En presentasjon skal ikke kunne
 feile på grunn av nettilgangen i møterommet.
 
-Paletten er Fristils egne tokens, skrevet av med de samme verdiene. Fargene på
+Paletten er LO-TEKs egne tokens, skrevet av med de samme verdiene. Fargene på
 flaten, teksten og kantene er valgt for et mørkt lysbilde og hører bare til
 presentasjonen.
 

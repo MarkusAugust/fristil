@@ -19,12 +19,12 @@ import "./components/css/textarea/textarea.css"
  * avslått. Hvert felt sammenlignes med et avslått felt uten tilstand.
  */
 const FELT = {
-  input: '<input class="fs-input"',
-  select: '<select class="fs-select"',
-  textarea: '<textarea class="fs-textarea"',
-  "file-upload": '<input type="file" class="fs-file-upload"',
-  checkbox: '<input type="checkbox" class="fs-checkbox"',
-  radio: '<input type="radio" class="fs-radio"',
+  input: '<input class="lt-input"',
+  select: '<select class="lt-select"',
+  textarea: '<textarea class="lt-textarea"',
+  "file-upload": '<input type="file" class="lt-file-upload"',
+  checkbox: '<input type="checkbox" class="lt-checkbox"',
+  radio: '<input type="radio" class="lt-radio"',
 }
 
 const SLUTT: Record<string, string> = {

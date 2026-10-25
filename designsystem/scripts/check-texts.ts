@@ -1,7 +1,7 @@
 /**
  * At hver tekst pakken skriver inn i siden kan oversettes.
  *
- * Fristil har nesten ingen tekst: den som rendrer skriver den, på sitt eget
+ * LO-TEK har nesten ingen tekst: den som rendrer skriver den, på sitt eget
  * språk. Det som står igjen er standardverdier, og hver av dem må kunne
  * byttes ut. En ny tekst skrevet rett i en komponent kunne ikke det, og
  * ingen ville merket det før en engelsk side leste opp noe på norsk.
@@ -11,17 +11,17 @@
  *   - en tekst for brukeren i en komponent står i `default-texts.ts`, ikke
  *     som en streng i komponenten. Det gjelder `setText`, `textContent`,
  *     `append`, `aria-label` og konstanter som heter `DEFAULT_…`;
- *   - en tekst i `content:` i CSS leses fra en `--fs-`-variabel, med
+ *   - en tekst i `content:` i CSS leses fra en `--lt-`-variabel, med
  *     teksten som reserve, siden et stilark ikke kan importere noe;
  *   - hver av tekstene står i tabellen på dokumentasjonssiden om
  *     oversettelse, så siden ikke kan love at alt kan oversettes uten å si
  *     hvordan.
  *
- * Sjekken leser kilden, slik `sjekk-skriving.ts` gjør. Den fanger formene som
+ * Sjekken leser kilden, slik `check-writes.ts` gjør. Den fanger formene som
  * står i disse filene og dem som ligger nærmest å skrive neste gang, ikke
  * hver tenkelige måte å få tekst inn i en side på.
  *
- * Kjør med: bun scripts/sjekk-tekster.ts, eller som en del av `bun run build`.
+ * Kjør med: bun scripts/check-texts.ts, eller som en del av `bun run build`.
  */
 
 import { readdirSync, readFileSync } from "node:fs"
@@ -31,7 +31,7 @@ import { DEFAULT_TEXTS } from "../src/components/default-texts.js"
 const KOMPONENTER = new URL("../src/components", import.meta.url).pathname
 const TEKSTFIL = join(KOMPONENTER, "default-texts.ts")
 const SIDE = new URL(
-  "../../documentation/src/content/docs/oversettelse.mdx",
+  "../../documentation/src/content/docs/translation.mdx",
   import.meta.url,
 ).pathname
 
@@ -135,11 +135,11 @@ for (const fil of filer(KOMPONENTER, ".css")) {
     if (tekster.length === 0) continue
     // Hele verdien må være én variabel med teksten som reserve. Tekst ved
     // siden av variabelen kan ikke byttes ut.
-    if (!/^var\(--fs-[a-z0-9-]+\s*,\s*(["'])(?:(?!\1).)*\1\s*\)$/.test(verdi)) {
+    if (!/^var\(--lt-[a-z0-9-]+\s*,\s*(["'])(?:(?!\1).)*\1\s*\)$/.test(verdi)) {
       avvik.push(
         `${relative(process.cwd(), fil)}:${linje(kilde, treff.index ?? 0)}: ` +
           `content: ${verdi} har tekst som ikke kan byttes ut. ` +
-          "Les den fra en --fs-variabel, med teksten som reserve.",
+          "Les den fra en --lt-variabel, med teksten som reserve.",
       )
       continue
     }

@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const SPINNER_CLASS = "fs-spinner" as const
+export const SPINNER_CLASS = "lt-spinner" as const
 
 export const spinnerSizes = ["small", "medium", "large"] as const
 

@@ -14,23 +14,23 @@ import "./search.css"
 import "../button/button.css"
 import "../label/label.css"
 
-describe("fs-search", () => {
+describe("lt-search", () => {
   beforeEach(() => {
     monter(`
-      <form class="fs-search-row" role="search">
-        <label class="fs-label fs-sr-only" for="sok">Søk i saker</label>
-        <input class="fs-input fs-search" type="search" id="sok" name="q"
+      <form class="lt-search-row" role="search">
+        <label class="lt-label lt-sr-only" for="sok">Søk i saker</label>
+        <input class="lt-input lt-search" type="search" id="sok" name="q"
           placeholder="Søk i saker" />
-        <button class="fs-button" type="submit">Søk</button>
+        <button class="lt-button" type="submit">Søk</button>
       </form>
     `)
   })
 
-  it("er et fs-input med plass til ikonet", () => {
+  it("er et lt-input med plass til ikonet", () => {
     const felt = document.getElementById("sok") as HTMLElement
     const stil = getComputedStyle(felt)
 
-    expect(felt.classList.contains("fs-input")).toBe(true)
+    expect(felt.classList.contains("lt-input")).toBe(true)
     expect(stil.backgroundImage).toContain("svg")
     expect(Number.parseFloat(stil.paddingInlineStart)).toBeGreaterThan(24)
   })
@@ -43,14 +43,14 @@ describe("fs-search", () => {
 
   it("setter begge klassene fra byggefunksjonen", () => {
     expect(search()).toEqual({
-      class: "fs-input fs-search",
+      class: "lt-input lt-search",
       type: "search",
     })
     expect(search({ state: "invalid" })).toMatchObject({
       "data-state": "invalid",
       "aria-invalid": "true",
     })
-    expect(search.row).toBe("fs-search-row")
+    expect(search.row).toBe("lt-search-row")
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {

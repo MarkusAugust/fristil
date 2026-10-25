@@ -47,24 +47,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
 
 [[package]]
-name = "fristil"
-version = "0.1.0"
-dependencies = [
- "fristil-kjerne",
-]
-
-[[package]]
-name = "fristil-kjerne"
-version = "0.1.0"
-dependencies = [
- "cssparser",
-]
-
-[[package]]
 name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
+
+[[package]]
+name = "lotek"
+version = "0.1.0"
+dependencies = [
+ "lotek-core",
+]
+
+[[package]]
+name = "lotek-core"
+version = "0.1.0"
+dependencies = [
+ "cssparser",
+]
 
 [[package]]
 name = "phf"

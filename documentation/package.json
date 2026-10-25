@@ -1,19 +1,19 @@
 {
-  "name": "@fristil/documentation",
+  "name": "@lo-tek/documentation",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "bunx --bun astro dev",
     "start": "bunx --bun astro dev",
     "build": "bunx --bun astro build",
-    "test:docs": "bun scripts/sjekk-dokumentasjon.ts && bun scripts/sjekk-oppskrifter.ts && bun scripts/sjekk-nettleserimport.ts && bun scripts/sjekk-bygget-versjon.ts && bun scripts/sjekk-delingskort.ts && bun scripts/sjekk-stilark.ts && bun scripts/sjekk-agentkanal.ts && bun scripts/sjekk-markdownsider.ts && bun scripts/sjekk-monster.ts && bun scripts/sjekk-komponentdemoer.ts && bun scripts/sjekk-mobil.ts && bun scripts/sjekk-tilgjengelighet.ts",
+    "test:docs": "bun scripts/check-documentation.ts && bun scripts/check-recipes.ts && bun scripts/check-browser-import.ts && bun scripts/check-built-version.ts && bun scripts/check-share-card.ts && bun scripts/check-stylesheets.ts && bun scripts/check-agent-channel.ts && bun scripts/check-markdown-pages.ts && bun scripts/check-patterns.ts && bun scripts/check-component-demos.ts && bun scripts/check-mobile.ts && bun scripts/check-accessibility.ts",
     "preview": "bunx --bun astro preview",
     "astro": "bunx --bun astro"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "7.2.0",
     "@astrojs/starlight": "0.39.2",
-    "@fristil/designsystem": "workspace:*",
+    "@lo-tek/interfaces": "workspace:*",
     "astro": "6.4.2"
   },
   "devDependencies": {

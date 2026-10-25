@@ -1,7 +1,7 @@
-//! Kommandolinja til Fristil.
+//! Kommandolinja til LO-TEK.
 //!
 //! Skrevet én gang, og kjørt der du er: som en kjørbar fil fra
-//! `cargo install`, som en WASI-modul i Node (`npx @fristil/designsystem`), på
+//! `cargo install`, som en WASI-modul i Node (`npx @lo-tek/interfaces`), på
 //! JVM-en med Chicory (`java -jar`) og i wasmtime. Svarene, tekstene og
 //! feilkodene er de samme overalt, og de var de samme som i `cli.ts` da den
 //! var skrevet i TypeScript.
@@ -23,20 +23,20 @@ mod theme;
 use output::{fail, log};
 
 /// Det kommandoen kan, skrevet ut på én skjerm.
-pub const HELP: &str = r#"fristil <kommando>
+pub const HELP: &str = r#"lotek <kommando>
 
-  sjekk <fil|adresse…> Sjekker markupen mot Fristil, som editoren gjør.
+  sjekk <fil|adresse…> Sjekker markupen mot LO-TEK, som editoren gjør.
                        Uten filer leses standard inn. Ett funn gir feilkode.
                        En adresse hentes og sjekkes som en hel side: hver
                        id det pekes på må finnes, og hvert felt være koblet
     --rendret          Sjekk filer og standard inn som hele sider også
     --manifest=<fil>   Sjekk også en overtatt komponent, med fragmentet
-                       fristil overta skrev ved siden av kopien
+                       lotek overta skrev ved siden av kopien
     --css=<fil>        Sjekk også at stilarkene styler markupen: en klasse
                        uten stilark, og en verdi uten regel
 
   sjekk-tema <fil…>    Kontrollerer at et fargetema holder kontrastløftene.
-                       Leser --fs-color-*-verdiene i hver blokk og sier
+                       Leser --lt-color-*-verdiene i hver blokk og sier
                        hvilken celle som ryker. Ett brudd gir feilkode
 
   agent                Skriver regelboka for kodeagenter til utdata. Ingen
@@ -46,15 +46,15 @@ pub const HELP: &str = r#"fristil <kommando>
 
   overta <komponent>   Kopierer kildekoden til én komponent inn i prosjektet,
                        med nytt navn (app-…), så den er din å endre
-    --ut=<mappe>       Hvor kopien skal ligge. Standard: src/fristil
+    --ut=<mappe>       Hvor kopien skal ligge. Standard: src/lotek
     --overskriv=ja     Skriv over en kopi som finnes fra før
 
   lsp                  Språkserveren for editorer, over standard inn og ut.
-                       Leser manifestet i build/fristil/ eller i
+                       Leser manifestet i build/lotek/ eller i
                        node_modules, med pakkens eget som reserve
 
   manifest             Skriver manifestet sjekken bruker, med fragmentene
-    --manifest=<fil>   fra fristil overta lagt til
+    --manifest=<fil>   fra lotek overta lagt til
     --ut=<fil>         Skriv til fil i stedet for til utdata
 
   tema                 Lager et tema av merkefargene, skriften og formen din
@@ -78,19 +78,19 @@ pub const HELP: &str = r#"fristil <kommando>
     --ut=<fil>            Skriv til fil i stedet for til utdata
 
 Fargene skrives heksadesimalt, for eksempel #7c3aed. Temaet kan også leses
-fra en JSON-fil: fristil tema fristil.tema.json
+fra en JSON-fil: lotek tema lotek.theme.json
 
 Manifestet, fargekontrakten, regelbøkene og komponentene leses fra
-@fristil/designsystem i node_modules, eller fra mappa FRISTIL_PACKAGE peker på.
+@lo-tek/interfaces i node_modules, eller fra mappa LOTEK_PACKAGE peker på.
 
 Eksempler:
-  npx @fristil/designsystem sjekk maler/*.html
-  npx @fristil/designsystem sjekk http://localhost:8080/skjema
-  curl -s http://localhost:8080/skjema | npx @fristil/designsystem sjekk --rendret
-  npx @fristil/designsystem agent
-  npx @fristil/designsystem overta button --ut=src/ui
-  npx @fristil/designsystem tema --aksent=#7c3aed --fare=#b3261e \
-    --suksess=#2b6940 --advarsel=#8a5a00 --ut=tema.css
+  npx @lo-tek/interfaces sjekk templates/*.html
+  npx @lo-tek/interfaces sjekk http://localhost:8080/form
+  curl -s http://localhost:8080/form | npx @lo-tek/interfaces sjekk --rendret
+  npx @lo-tek/interfaces agent
+  npx @lo-tek/interfaces overta button --ut=src/ui
+  npx @lo-tek/interfaces tema --aksent=#7c3aed --fare=#b3261e \
+    --suksess=#2b6940 --advarsel=#8a5a00 --ut=theme.css
 "#;
 
 const HELP_FLAGS: [&str; 5] = ["--help", "-h", "help", "hjelp", "--hjelp"];
@@ -181,7 +181,7 @@ pub fn refuse_unknown_flags(arguments: &Arguments, known: &[&str]) {
     if !unknown.is_empty() {
         let all: Vec<String> = known.iter().map(|n| format!("--{n}")).collect();
         fail(&format!(
-            "Ukjent flagg: {}\n\nKjente flagg: {}\n\nHele oversikten: fristil --hjelp\n",
+            "Ukjent flagg: {}\n\nKjente flagg: {}\n\nHele oversikten: lotek --hjelp\n",
             unknown.join(", "),
             all.join(", ")
         ));
@@ -192,7 +192,7 @@ fn main() {
     // En WASI-modul begynner i mappa `/`, så en relativ sti som
     // `package.json` ville blitt lest fra rota. Verten sier hvor
     // arbeidsmappa er, og modulen går dit før den gjør noe annet.
-    if let Ok(directory) = std::env::var("FRISTIL_ARBEIDSMAPPE") {
+    if let Ok(directory) = std::env::var("LOTEK_ARBEIDSMAPPE") {
         // En nettverksmappe på Windows (`\\\\server\\…`) er ikke åpnet for
         // modulen. Den skal få vite det, ikke få «Fant ikke fila» etterpå.
         if let Err(reason) = std::env::set_current_dir(&directory) {
@@ -223,7 +223,7 @@ fn main() {
         "manifest" => manifest::run(rest),
         "lsp" => lsp::run(rest),
         // `tema` kan stå først, siden kommandoen kjøres som
-        // `npx @fristil/designsystem tema`.
+        // `npx @lo-tek/interfaces tema`.
         "tema" => theme::run(rest),
         _ => theme::run(&arguments),
     }
@@ -251,6 +251,6 @@ mod tests {
         assert_eq!(flag("--Aksent=#fff"), None);
         assert_eq!(flag("--ut="), None);
         assert_eq!(flag("--ut"), None);
-        assert_eq!(flag("tema.json"), None);
+        assert_eq!(flag("theme.json"), None);
     }
 }

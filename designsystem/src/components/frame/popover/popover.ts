@@ -1,6 +1,6 @@
 import { attributes, idOrFallback } from "../../css/shared.js"
 
-export const POPOVER_CLASS = "fs-popover" as const
+export const POPOVER_CLASS = "lt-popover" as const
 
 /** Hvilken kant av knappen panelet henger fra. `start` og `end` følger leseretningen. */
 export const popoverPlacements = [
@@ -45,16 +45,16 @@ export type PopoverAttributes = {
  * Attributtene for et sprettoppvindu.
  *
  * Serveren skriver både knappen og panelet med koblingen mellom dem.
- * `<fs-popover>` regner ut posisjonen og lukker ved klikk utenfor.
+ * `<lt-popover>` regner ut posisjonen og lukker ved klikk utenfor.
  *
  * ```ts
- * const boks = fs.popover({ id: "hjelp" })
+ * const boks = lt.popover({ id: "hjelp" })
  * ```
  * ```html
- * <fs-popover>
+ * <lt-popover>
  *   <button {...boks.trigger}>Hva betyr dette?</button>
  *   <div {...boks.panel}>Vi bruker fødselsdatoen til å finne riktig sats.</div>
- * </fs-popover>
+ * </lt-popover>
  * ```
  */
 export const popover = Object.assign(
@@ -64,7 +64,7 @@ export const popover = Object.assign(
     placement = "bottom-start",
   }: PopoverOptions): PopoverAttributes => {
     // Reserven gjelder bare den som ikke har en typesjekk.
-    const id = idOrFallback("fs.popover()", givenId)
+    const id = idOrFallback("lt.popover()", givenId)
 
     return {
       host: attributes({
@@ -92,7 +92,7 @@ export const popover = Object.assign(
     }
   },
   {
-    // Vakten henger på funksjonen, som ellers i `fs`. Lista ligger ved siden
+    // Vakten henger på funksjonen, som ellers i `lt`. Lista ligger ved siden
     // av, som `popoverPlacements`, og ikke på funksjonen: `placement` styrer
     // hvor JavaScript legger panelet og ikke CSS, og vaktposten for
     // klassene krever at hver liste på en byggefunksjon gjør noe i CSS-en.

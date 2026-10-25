@@ -46,12 +46,12 @@ describe("deaktivert knapp", () => {
 
   beforeEach(() => {
     monter(`
-      <button class="fs-button" id="primary" disabled>Send</button>
+      <button class="lt-button" id="primary" disabled>Send</button>
       ${VARIANTER.map(
         (v) => `
-        <button class="fs-button" data-variant="${v}" id="${v}-pa">Aktiv</button>
-        <button class="fs-button" data-variant="${v}" id="${v}-av" disabled>Av</button>
-        <button class="fs-button" data-variant="${v}" id="${v}-aria" aria-disabled="true">Av</button>`,
+        <button class="lt-button" data-variant="${v}" id="${v}-pa">Aktiv</button>
+        <button class="lt-button" data-variant="${v}" id="${v}-av" disabled>Av</button>
+        <button class="lt-button" data-variant="${v}" id="${v}-aria" aria-disabled="true">Av</button>`,
       ).join("")}
     `)
   })
@@ -80,10 +80,10 @@ describe("søkefeltet når input.css lastes sist", () => {
       <style>${tokenKilde}</style>
       <style>${sokKilde}</style>
       <style>${inputKilde}</style>
-      <input class="fs-input fs-search" id="vanlig" />
-      <input class="fs-input fs-search" id="ugyldig" data-state="invalid" />
-      <input class="fs-input fs-search" id="gyldig" data-state="success" />
-      <input class="fs-input fs-search" id="av" disabled />`)
+      <input class="lt-input lt-search" id="vanlig" />
+      <input class="lt-input lt-search" id="ugyldig" data-state="invalid" />
+      <input class="lt-input lt-search" id="gyldig" data-state="success" />
+      <input class="lt-input lt-search" id="av" disabled />`)
     dokument.close()
     await ventPaTegning()
 
@@ -106,23 +106,23 @@ describe("søkefeltet når input.css lastes sist", () => {
 describe("markeringene på ledetekst og legend", () => {
   beforeEach(() => {
     monter(`
-      <label class="fs-label" id="l-tekst" data-required="text">Navn</label>
-      <label class="fs-label" id="l-valgfri" data-optional>Navn</label>
-      <label class="fs-label" id="l-begge" data-required="symbol" data-optional>Navn</label>
-      <fieldset class="fs-fieldset">
-        <legend class="fs-legend" id="g-tekst" data-required="text">Kontakt</legend>
+      <label class="lt-label" id="l-tekst" data-required="text">Navn</label>
+      <label class="lt-label" id="l-valgfri" data-optional>Navn</label>
+      <label class="lt-label" id="l-begge" data-required="symbol" data-optional>Navn</label>
+      <fieldset class="lt-fieldset">
+        <legend class="lt-legend" id="g-tekst" data-required="text">Kontakt</legend>
       </fieldset>
-      <fieldset class="fs-fieldset">
-        <legend class="fs-legend" id="g-valgfri" data-optional>Kontakt</legend>
+      <fieldset class="lt-fieldset">
+        <legend class="lt-legend" id="g-valgfri" data-optional>Kontakt</legend>
       </fieldset>
-      <fieldset class="fs-fieldset">
-        <legend class="fs-legend" id="g-begge" data-required="text" data-optional>Kontakt</legend>
+      <fieldset class="lt-fieldset">
+        <legend class="lt-legend" id="g-begge" data-required="text" data-optional>Kontakt</legend>
       </fieldset>
     `)
   })
 
   it("skriver «påkrevd» riktig med escapen i stilarket", () => {
-    // At tegnet står som en escape, og ikke rått, vokter `pakke-css`.
+    // At tegnet står som en escape, og ikke rått, vokter `package-css`.
     expect(stil("l-tekst", "::after").content).toBe('" (påkrevd)"')
     expect(stil("g-tekst", "::after").content).toBe('" (påkrevd)"')
   })

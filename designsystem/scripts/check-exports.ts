@@ -15,11 +15,11 @@
  * Kartene har samme problem andre veien. `tsconfig.json` skriver kildekart og
  * deklarasjonskart, og hvert kart peker på en kildefil i `src`. `files` tok
  * med `src/components`, så kartene til komponentene traff, men ikke
- * `src/index.ts`, `react.ts` eller `register.ts`: «gå til definisjon» på `fs`
+ * `src/index.ts`, `react.ts` eller `register.ts`: «gå til definisjon» på `lt`
  * og et stakkspor fra `/diagnostics` landet i en fil som ikke var med. Hver
  * kilde et medsendt kart peker på, må derfor også være med.
  *
- * Kjør med: bun scripts/sjekk-eksport.ts, eller som en del av `bun run build`.
+ * Kjør med: bun scripts/check-exports.ts, eller som en del av `bun run build`.
  */
 
 import { existsSync, readFileSync } from "node:fs"

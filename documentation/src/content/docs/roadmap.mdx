@@ -1,15 +1,15 @@
 ---
 title: Veikart
-description: Det som står igjen å lage i Fristil, og hva som alt er levert av den opprinnelige planen.
+description: Det som står igjen å lage i LO-TEK, og hva som alt er levert av den opprinnelige planen.
 ---
 
-Fristil er før 1.0. Denne siden viser hva som står igjen, og hva som alt er
+LO-TEK er før 1.0. Denne siden viser hva som står igjen, og hva som alt er
 levert av den opprinnelige planen. Endringer en konsument merker, står som før i
-[versjonsloggen](/versjonslogg/), med brytende endringer under «Brytende».
+[versjonsloggen](/changelog/), med brytende endringer under «Brytende».
 
 ## Retningen
 
-> Én kontrakt, skrevet av Fristil. Lukkede typer der språket har dem. Én sjekk
+> Én kontrakt, skrevet av LO-TEK. Lukkede typer der språket har dem. Én sjekk
 > overalt ellers. Det du overtar, eier du.
 
 Stavekontrollen, det som leser markupen din og sier fra om klasser som ikke
@@ -20,14 +20,14 @@ svaret overalt.
 
 Alt leveres gjennom kanalene språket ditt allerede bruker: npm og Maven
 Central, og kildekoden for `cargo install`. Utvidelsene ligger på
-editorenes egne markedsplasser, og `fristil.jar` og `fristil.wasm` ved hver
+editorenes egne markedsplasser, og `lotek.jar` og `lotek.wasm` ved hver
 utgivelse på GitHub. Ingenting krever at du stoler på en
 tredjeparts pakkekilde, og ingenting du laster ned, krever et sertifikat for å
 kjøre.
 
 ## Det som står igjen
 
-- **Fullføring og forklaring i språkserveren.** `fristil lsp` gir i dag funn
+- **Fullføring og forklaring i språkserveren.** `lotek lsp` gir i dag funn
   og rettelser. Fullføringen og forklaringen kommer fortsatt fra utvidelsen
   for VS Code og fra `web-types.json` i JetBrains, og flyttes til serveren, så
   de andre editorene får det samme.
@@ -44,26 +44,26 @@ kjøre.
 Det meste ble gitt ut i 0.32.0, og resten i 0.34.0, på npm og på Maven
 Central, og i IntelliJ-pluginen 0.3.0:
 
-- **Kontrakten** er én fil, `manifest.json`, skrevet av Fristil fra koden:
+- **Kontrakten** er én fil, `manifest.json`, skrevet av LO-TEK fra koden:
   klassene og elementene, de lovlige verdiene og hva hver byggefunksjon
   svarer, og fra 0.34.0 hva hver klasse tar som innhold, hvilke deler den
   består av, og tokenene. Alle verktøyene leser den.
-- **Fristil for Kotlin** på Maven Central fra 0.33.0, med byggefunksjonene som
-  `enum`-er, `assertFristil(html)` i vanlige tester, manifestet med typer,
+- **LO-TEK for Kotlin** på Maven Central fra 0.33.0, med byggefunksjonene som
+  `enum`-er, `assertLotek(html)` i vanlige tester, manifestet med typer,
   utvidelser for kotlinx.html og CSS-en som WebJar, og fra 0.34.0 temaet som
   funksjoner og byggefunksjonene i manifestet. Se [Kotlin og Java](../kotlin/).
-- **Én stavekontroll** i Rust for `fristil sjekk`,
-  `@fristil/designsystem/diagnostics`, VS Code og IntelliJ-pluginen fra 0.3.0,
+- **Én stavekontroll** i Rust for `lotek sjekk`,
+  `@lo-tek/interfaces/diagnostics`, VS Code og IntelliJ-pluginen fra 0.3.0,
   med linje, kolonne, regelnavn og undertrykking med en kommentar. Regelen
   for en del som står to ganger kom i 0.34.0.
 - **Temaene** bygges og sjekkes av den samme kjernen, fra npm og fra en
   Gradle-oppgave, og fra 0.34.0 fra Maven-pakken.
-- **Kommandolinja** kjører med `npx`, `java -jar fristil.jar`, wasmtime og
-  `cargo install`. `fristil overta` gir kopien et eget navn, og
+- **Kommandolinja** kjører med `npx`, `java -jar lotek.jar`, wasmtime og
+  `cargo install`. `lotek overta` gir kopien et eget navn, og
   Gradle-pluginen sjekker maler som en del av bygget. Se
-  [Kommandolinjen](../kommandolinjen/).
-- **Språkserveren**, `fristil lsp`, for VS Code, Neovim og Helix. Se
-  [Editoren](../editoren/#språkserveren).
+  [Kommandolinjen](../command-line/).
+- **Språkserveren**, `lotek lsp`, for VS Code, Neovim og Helix. Se
+  [Editoren](../the-editor/#språkserveren).
 - **Sjekk av den ferdige siden:** `--css` sammenligner stilarkene med
-  kontrakten, og `diagnoseRendered(page)` og `assertFristilRendered` sjekker
+  kontrakten, og `diagnoseRendered(page)` og `assertLotekRendered` sjekker
   siden slik nettleseren har rendret den.

@@ -11,10 +11,10 @@ use crate::diagnose::{followed_by_end, read_attributes, tag_end, ReadAttribute};
 use crate::text::*;
 use crate::types::*;
 
-const LINK: &str = "https://fristil.sobernetics.no/components/field/";
-const SUMMARY_LINK: &str = "https://fristil.sobernetics.no/components/error-summary/";
+const LINK: &str = "https://lo-tek.sobernetics.no/components/field/";
+const SUMMARY_LINK: &str = "https://lo-tek.sobernetics.no/components/error-summary/";
 
-const HOW: &str = "Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det.";
+const HOW: &str = "Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør lt.field({ id }) det.";
 
 /// Attributtene som peker på id-er, og hva skjermleseren mister når de bommer.
 const REFERENCES: &[(&str, &str)] = &[
@@ -274,7 +274,7 @@ pub fn page_source(text: &[u16]) -> Utf16 {
 }
 
 /// Som [`page_source`], men med kommentarene urørt. Det er den
-/// `<!-- fristil-ignore-next -->` leses fra på en hel side: en kommentar i en
+/// `<!-- lotek-ignore-next -->` leses fra på en hel side: en kommentar i en
 /// `<textarea>`, en `<template>` eller en attributtverdi er tekst, og
 /// undertrykker ingenting.
 pub fn page_source_with_comments(text: &[u16]) -> Utf16 {
@@ -505,7 +505,7 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
 
         if node.name == "a"
             && within(&nodes, n, |m| {
-                m.name == "fs-error-summary" || has_class(m, |c| equals(c, "fs-error-summary"))
+                m.name == "lt-error-summary" || has_class(m, |c| equals(c, "lt-error-summary"))
             })
         {
             if let Some(href) = value(node, "href") {
@@ -531,7 +531,7 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
             }
         }
 
-        if within(&nodes, n, |m| m.name == "fs-field") {
+        if within(&nodes, n, |m| m.name == "lt-field") {
             continue;
         }
 
@@ -540,11 +540,11 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
             .map(lowercase)
             .unwrap_or_default();
         if matches!(node.name.as_str(), "input" | "textarea" | "select")
-            && has_class(node, |c| starts_at(c, 0, "fs-"))
+            && has_class(node, |c| starts_at(c, 0, "lt-"))
             && !UNLABELLED_TYPES.iter().any(|t| equals(&type_, t))
         {
             let named = within(&nodes, n, |m| {
-                m.name == "fs-suggestion" || m.name == "label"
+                m.name == "lt-suggestion" || m.name == "label"
             }) || non_empty(node, "id")
                 .is_some_and(|id| label_for.contains(&decode(id)))
                 || value(node, "aria-label").is_some()
@@ -564,9 +564,9 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
             }
         }
 
-        let kind = if has_class(node, |c| equals(c, "fs-error-text")) {
+        let kind = if has_class(node, |c| equals(c, "lt-error-text")) {
             Some("Feilmeldingen")
-        } else if has_class(node, |c| equals(c, "fs-help-text")) {
+        } else if has_class(node, |c| equals(c, "lt-help-text")) {
             Some("Hjelpeteksten")
         } else {
             None

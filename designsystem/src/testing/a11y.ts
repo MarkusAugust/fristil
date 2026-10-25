@@ -21,18 +21,18 @@ const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
  * seg likegyldig til nettopp det vi vil kontrollere.
  */
 export function monter(html: string): HTMLElement {
-  document.body.style.background = "var(--fs-color-neutral-canvas)"
-  document.body.style.color = "var(--fs-color-neutral-text-strong)"
-  document.body.innerHTML = `<div id="fs-testflate">${html}</div>`
+  document.body.style.background = "var(--lt-color-neutral-canvas)"
+  document.body.style.color = "var(--lt-color-neutral-text-strong)"
+  document.body.innerHTML = `<div id="lt-testflate">${html}</div>`
 
-  const flate = document.getElementById("fs-testflate")
+  const flate = document.getElementById("lt-testflate")
   if (!(flate instanceof HTMLElement)) {
     throw new Error("Klarte ikke å montere testflaten")
   }
 
-  flate.style.background = "var(--fs-color-neutral-canvas)"
-  flate.style.color = "var(--fs-color-neutral-text-strong)"
-  flate.style.padding = "var(--fs-spacing-4)"
+  flate.style.background = "var(--lt-color-neutral-canvas)"
+  flate.style.color = "var(--lt-color-neutral-text-strong)"
+  flate.style.padding = "var(--lt-spacing-4)"
 
   return flate
 }
@@ -98,7 +98,7 @@ export async function forventIngenTilgjengelighetsbrudd(
   // Overgangene slås av før temaet byttes. En overgang som alt er i gang,
   // stopper ikke av at `transition` settes til `none` etterpå, og axe leste
   // fargen på en lenke midt mellom den lyse og den mørke. Animasjonene av
-  // også, som i `sjekk-tilgjengelighet.ts`, så axe leser en fast tilstand.
+  // også, som i `check-accessibility.ts`, så axe leser en fast tilstand.
   const uten = document.createElement("style")
   uten.textContent =
     "*, *::before, *::after { transition: none !important; animation: none !important }"
@@ -142,7 +142,7 @@ export async function forventIngenTilgjengelighetsbrudd(
  * element som ennå ikke har fått stilene sine.
  *
  * Har elementet en `updateComplete`, ventes det også på den. Ingen av
- * Fristils komponenter har en etter at Lit ble fjernet i 0.5.0, men en test
+ * LO-TEKs komponenter har en etter at Lit ble fjernet i 0.5.0, men en test
  * kan gi den et element fra et annet bibliotek.
  */
 export async function ventPaTegning(element?: Element): Promise<void> {

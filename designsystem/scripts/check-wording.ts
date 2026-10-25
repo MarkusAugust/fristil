@@ -10,7 +10,7 @@
  * Lista er ment å vokse. Ett ord per rad, med det vi sier i stedet, og en
  * setning om hvorfor der det ikke er åpenbart.
  *
- * Kjør med: bun scripts/sjekk-ordbruk.ts, eller som en del av `bun run build`.
+ * Kjør med: bun scripts/check-wording.ts, eller som en del av `bun run build`.
  */
 
 import { readFileSync } from "node:fs"
@@ -93,7 +93,7 @@ const FORBUDT: { mønster: RegExp; i_stedet: string; unntatt?: RegExp }[] = [
  * Genererte filer leses ikke: retter du ordet i kilden, følger de etter, og en
  * feil på begge steder er samme feil to ganger. `.json` er ute av samme grunn,
  * siden de tre norske json-filene i repoet genereres av
- * `generate-ordforrad.ts` fra `metadata.ts`, som leses. `.yml` og `.toml` er ikke med, og
+ * `generate-vocabulary.ts` fra `metadata.ts`, som leses. `.yml` og `.toml` er ikke med, og
  * det er et bevisst hull: der står det fire linjer norsk i alt.
  */
 const MØNSTRE = [
@@ -107,8 +107,8 @@ const MØNSTRE = [
   "editor/**/*.ts",
   "editor-intellij/**/*.kt",
   "editor-intellij/*.md",
-  "presentasjon/**/*.html",
-  "presentasjon/**/*.md",
+  "presentation/**/*.html",
+  "presentation/**/*.md",
   "*.md",
   // npm-forsiden. Den står ikke i rota, og var derfor den ene utsendte teksten
   // ingen leste. Versjonsloggen ved siden av er med vilje ute: den beskriver
@@ -122,16 +122,16 @@ const HOPP_OVER = [
   "dist/",
   ".astro/",
   // Fila du leser nå, som må kunne skrive ordene for å lete etter dem.
-  "scripts/sjekk-ordbruk.ts",
+  "scripts/check-wording.ts",
   // Ordlista over norske ord, av samme grunn: den må stave dem for å kjenne dem.
-  "scripts/sjekk-identifikatorer.ts",
+  "scripts/check-identifiers.ts",
   // Gitignorert arbeidsnotat, ikke tekst vi sender ut.
   "PLAN.md",
   // Generert av generate-agent.ts; kilden er oppskriftene der.
   "designsystem/agent/",
   // Generert fra tokens.ts.
   "designsystem/src/tokens/tokens.css",
-  // Generert av generate-ordforrad.ts fra metadata.ts, som leses.
+  // Generert av generate-vocabulary.ts fra metadata.ts, som leses.
   "designsystem/src/vocabulary/classes.ts",
   "designsystem/src/vocabulary/elements.ts",
 ]

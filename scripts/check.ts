@@ -1,5 +1,5 @@
 /**
- * `bun run sjekk`: stegene i `.github/workflows/ci.yml`, kjørt her.
+ * `bun run check`: stegene i `.github/workflows/ci.yml`, kjørt her.
  *
  * Rekka sto før skrevet av for hånd i `package.json`, og gled fra CI uten at
  * noe sa fra. Den rendrede siden, språkserveren, VS Code, jar-en, Rust-lint
@@ -12,7 +12,7 @@
  * finnes i `ci.yml`, feller kjøringen, så lista kan ikke råtne: et steg som
  * får nytt navn, kjøres her fra da av.
  *
- * Kjør med: bun run sjekk
+ * Kjør med: bun run check
  */
 
 import { fileURLToPath } from "node:url"
@@ -31,9 +31,9 @@ type Job = { name?: string; steps: Step[] }
 const SKIPPED: Record<string, string> = {
   windows:
     "jobben kjører på Windows, og stiene og stasjonene den tester finnes ikke her",
-  "sjekk/Oppdater npm": "endrer den globale npm-en på maskinen",
-  "sjekk/Installer nettlesere":
-    "henter nettlesere fra nettet. Hent dem én gang med `bun --filter @fristil/designsystem nettlesere`",
+  "check/Oppdater npm": "endrer den globale npm-en på maskinen",
+  "check/Installer nettlesere":
+    "henter nettlesere fra nettet. Hent dem én gang med `bun --filter @lo-tek/interfaces browsers`",
 }
 
 /*
@@ -120,7 +120,7 @@ for (const [jobId, job] of Object.entries(workflow.jobs)) {
 
 if (unknown.length > 0) {
   console.error(
-    `✗ ci.yml har noe scripts/sjekk.ts ikke vet hvordan det skal kjøres: ${unknown.join(", ")}. Lær skriptet det, så stegene kjøres som i CI.`,
+    `✗ ci.yml har noe scripts/check.ts ikke vet hvordan det skal kjøres: ${unknown.join(", ")}. Lær skriptet det, så stegene kjøres som i CI.`,
   )
   process.exit(1)
 }
@@ -128,7 +128,7 @@ if (unknown.length > 0) {
 const stale = Object.keys(SKIPPED).filter((key) => !used.has(key))
 if (stale.length > 0) {
   console.error(
-    `✗ Unntakene i scripts/sjekk.ts finnes ikke i ci.yml: ${stale.join(", ")}. Rett navnet, eller ta unntaket bort.`,
+    `✗ Unntakene i scripts/check.ts finnes ikke i ci.yml: ${stale.join(", ")}. Rett navnet, eller ta unntaket bort.`,
   )
   process.exit(1)
 }

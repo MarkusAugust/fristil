@@ -17,10 +17,10 @@ import "./skip-link.css"
 /** `transform` når lenken står på plass: identitetsmatrisen, eller `none`. */
 const SYNLIG = /matrix\(1, 0, 0, 1, 0, 0\)|none/
 
-describe("fs-skip-link", () => {
+describe("lt-skip-link", () => {
   beforeEach(() => {
     monter(`
-      <a class="fs-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
+      <a class="lt-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
       <main id="hovedinnhold" tabindex="-1">
         <p>Innholdet på siden.</p>
       </main>
@@ -61,14 +61,14 @@ describe("fs-skip-link", () => {
     // hopper dit fra et skript etter et museklikk. Regelen leses fra
     // stilarket, og prøves med et attributt i stedet for pseudoklassen, så
     // svaret ikke avhenger av om vinduet har fokus i motoren testen kjører i.
-    expect(skipLinkCss).toContain(".fs-skip-link:focus {")
-    expect(skipLinkCss).not.toMatch(/\.fs-skip-link:focus-visible/)
+    expect(skipLinkCss).toContain(".lt-skip-link:focus {")
+    expect(skipLinkCss).not.toMatch(/\.lt-skip-link:focus-visible/)
     monter(`
       <style>
         ${skipLinkCss.replaceAll(":focus", "[data-fokus]")}
-        .fs-skip-link { transition: none; }
+        .lt-skip-link { transition: none; }
       </style>
-      <a class="fs-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
+      <a class="lt-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
       <main id="hovedinnhold" tabindex="-1"><p>Innholdet på siden.</p></main>
     `)
     const lenke = document.getElementById("hopp") as HTMLElement
@@ -83,7 +83,7 @@ describe("fs-skip-link", () => {
     // `:focus-visible` også fra kode, så det er museklikket som avgjør, og
     // klikket må være ekte, fra pekeren.
     monter(`
-      <a class="fs-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
+      <a class="lt-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
       <main id="hovedinnhold" tabindex="-1">
         <p>Innholdet på siden.</p>
         <button type="button" id="topp">Til toppen</button>
@@ -120,7 +120,7 @@ describe("fs-skip-link", () => {
     // framme. Siden sa at neste Tab da fortsatte i menyen, men nettleseren
     // fortsetter fra målet uansett: det er fokuset som mangler.
     monter(`
-      <a class="fs-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
+      <a class="lt-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
       <header><a href="#meny" id="meny">Meny</a></header>
       <main id="hovedinnhold" tabindex="-1">
         <input id="inne" aria-label="Søk i innholdet" />
@@ -154,7 +154,7 @@ describe("fs-skip-link", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(skipLink()).toEqual({ class: "fs-skip-link" })
+    expect(skipLink()).toEqual({ class: "lt-skip-link" })
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {

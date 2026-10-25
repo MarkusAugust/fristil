@@ -1,8 +1,8 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const ACCORDION_CLASS = "fs-accordion" as const
+export const ACCORDION_CLASS = "lt-accordion" as const
 /** Innholdet som vises når panelet er åpent. */
-export const ACCORDION_CONTENT_CLASS = "fs-accordion__content" as const
+export const ACCORDION_CONTENT_CLASS = "lt-accordion__content" as const
 
 export const accordionVariants = ["default", "plain"] as const
 

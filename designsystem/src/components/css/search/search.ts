@@ -6,9 +6,9 @@ import {
   isFieldState,
 } from "../shared.js"
 
-export const SEARCH_CLASS = "fs-search" as const
+export const SEARCH_CLASS = "lt-search" as const
 /** Raden med søkefeltet og knappen ved siden av. */
-export const SEARCH_ROW_CLASS = "fs-search-row" as const
+export const SEARCH_ROW_CLASS = "lt-search-row" as const
 
 export type SearchOptions = {
   /** Valideringstilstand. Standard: `default`. */
@@ -25,7 +25,7 @@ export type SearchAttributes = {
 /**
  * Attributtene for et søkefelt.
  *
- * Feltet er en `fs-input` med plass til forstørrelsesglasset, så begge
+ * Feltet er en `lt-input` med plass til forstørrelsesglasset, så begge
  * klassene settes. `type="search"` gir nettleserens eget kryss for å tømme
  * feltet, og på mobil et tastatur med «Søk» i stedet for «Enter».
  *

@@ -1,24 +1,24 @@
-@layer fristil {
-  .fs-switch {
+@layer lotek {
+  .lt-switch {
     box-sizing: border-box;
     appearance: none;
     flex: none;
     display: inline-block;
-    inline-size: var(--fs-switch-width, var(--fs-spacing-10));
-    block-size: var(--fs-switch-height, var(--fs-spacing-6));
+    inline-size: var(--lt-switch-width, var(--lt-spacing-10));
+    block-size: var(--lt-switch-height, var(--lt-spacing-6));
     margin: 0;
-    border: 1px solid var(--fs-color-neutral-border);
-    border-radius: var(--fs-spacing-4);
-    background-color: var(--fs-color-neutral-surface);
+    border: 1px solid var(--lt-color-neutral-border);
+    border-radius: var(--lt-spacing-4);
+    background-color: var(--lt-color-neutral-surface);
     /* Knappen er en gradient, ikke et pseudoelement: Firefox rendrer ikke
        ::before og ::after på et <input>. */
     background-image: radial-gradient(
       circle at center,
-      var(--fs-color-neutral-text-strong) 0 34%,
+      var(--lt-color-neutral-text-strong) 0 34%,
       transparent 36%
     );
     background-repeat: no-repeat;
-    background-size: var(--fs-switch-height, var(--fs-spacing-6)) 100%;
+    background-size: var(--lt-switch-height, var(--lt-spacing-6)) 100%;
     /* background-position har ingen logisk variant, så begge retningene
        skrives for hånd. Av er på starten, på er på slutten. */
     background-position: left center;
@@ -31,40 +31,40 @@
   /* Uten `:not(:disabled)`. Den løftet spesifisiteten over tilstandene
      under, så musa tok bort rammen på en bryter som var på. Reglene for
      valgt og deaktivert står etter denne og vinner på rekkefølgen. */
-  .fs-switch:hover {
-    border-color: var(--fs-color-neutral-border-strong);
+  .lt-switch:hover {
+    border-color: var(--lt-color-neutral-border-strong);
   }
 
-  .fs-switch:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-switch:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
   }
 
-  .fs-switch:dir(rtl) {
+  .lt-switch:dir(rtl) {
     background-position: right center;
   }
 
-  .fs-switch:checked {
-    background-color: var(--fs-color-accent-fill);
-    border-color: var(--fs-color-accent-fill);
+  .lt-switch:checked {
+    background-color: var(--lt-color-accent-fill);
+    border-color: var(--lt-color-accent-fill);
     background-position: right center;
     background-image: radial-gradient(
       circle at center,
-      var(--fs-color-accent-content) 0 34%,
+      var(--lt-color-accent-content) 0 34%,
       transparent 36%
     );
   }
 
-  .fs-switch:checked:dir(rtl) {
+  .lt-switch:checked:dir(rtl) {
     background-position: left center;
   }
 
-  .fs-switch:disabled {
-    background-color: var(--fs-color-disabled-surface);
-    border-color: var(--fs-color-disabled-surface);
+  .lt-switch:disabled {
+    background-color: var(--lt-color-disabled-surface);
+    border-color: var(--lt-color-disabled-surface);
     background-image: radial-gradient(
       circle at center,
-      var(--fs-color-disabled-text) 0 34%,
+      var(--lt-color-disabled-text) 0 34%,
       transparent 36%
     );
     cursor: not-allowed;
@@ -73,16 +73,16 @@
   /* Brukeren har bedt om mindre bevegelse. Bryteren skal fortsatt bytte
      tilstand, den skal bare ikke gli. */
   @media (prefers-reduced-motion: reduce) {
-    .fs-switch {
+    .lt-switch {
       transition: none;
     }
   }
 
-  .fs-switch-row {
+  .lt-switch-row {
     display: flex;
     align-items: center;
-    gap: var(--fs-spacing-2);
-    line-height: var(--fs-line-height-default);
+    gap: var(--lt-spacing-2);
+    line-height: var(--lt-line-height-default);
   }
 
   /*
@@ -92,8 +92,8 @@
    * leses opp som på og av, og tilstanden er synlig igjen.
    */
   @media (forced-colors: active) {
-    .fs-switch,
-    .fs-switch:checked {
+    .lt-switch,
+    .lt-switch:checked {
       appearance: auto;
       inline-size: auto;
       block-size: auto;

@@ -3,46 +3,46 @@ title: Tag
 description: Merkelapp for emneord og filtre. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 En merkelapp merker innhold: emneord på en artikkel, valgte filtre over en liste. Sier lappen hvilken tilstand noe er i, som «Innvilget» eller «Forfalt», er [Badge](../badge/) riktig i stedet.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "tag.css"]}
+<Example importer={["tokens.css", "tag.css"]}
   stiler={["tag"]} kode={`
-<span class="fs-tag">Bostøtte</span>
-<span class="fs-tag" data-variant="filled">Barnehage</span>
-<span class="fs-tag" aria-disabled="true">Arkivert</span>
+<span class="lt-tag">Bostøtte</span>
+<span class="lt-tag" data-variant="filled">Barnehage</span>
+<span class="lt-tag" aria-disabled="true">Arkivert</span>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<span {...fs.tag()}>Bostøtte</span>
+<span {...lt.tag()}>Bostøtte</span>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const lapp = document.createElement("button")
 lapp.type = "button"
 
-fs.setAttributes(lapp, fs.tag({ selectable: true }))
+lt.setAttributes(lapp, lt.tag({ selectable: true }))
 lapp.setAttribute("aria-pressed", "false")
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -53,13 +53,13 @@ lapp.setAttribute("aria-pressed", "false")
 
 Tre filtre over en liste med saker. «Innvilget» er valgt, de to andre ikke, og det er `aria-pressed` som sier hvilken som er hvilken:
 
-<Eksempel stiler={["tag", "heading"]} layout="stabel" maxWidth="30rem" kode={`
-<h3 class="fs-heading" data-size="xs" id="filtre">Vis saker med status</h3>
+<Example stiler={["tag", "heading"]} layout="stabel" maxWidth="30rem" kode={`
+<h3 class="lt-heading" data-size="xs" id="filtre">Vis saker med status</h3>
 
 <div role="group" aria-labelledby="filtre">
-  <button class="fs-tag" data-selectable aria-pressed="true" type="button">Innvilget</button>
-  <button class="fs-tag" data-selectable aria-pressed="false" type="button">Under behandling</button>
-  <button class="fs-tag" data-selectable aria-pressed="false" type="button">Avslått</button>
+  <button class="lt-tag" data-selectable aria-pressed="true" type="button">Innvilget</button>
+  <button class="lt-tag" data-selectable aria-pressed="false" type="button">Under behandling</button>
+  <button class="lt-tag" data-selectable aria-pressed="false" type="button">Avslått</button>
 </div>
 `} />
 
@@ -69,7 +69,7 @@ Tre filtre over en liste med saker. «Innvilget» er valgt, de to andre ikke, og
 
 ```html
 <script type="module">
-  for (const lapp of document.querySelectorAll(".fs-tag[data-selectable]")) {
+  for (const lapp of document.querySelectorAll(".lt-tag[data-selectable]")) {
     lapp.addEventListener("click", () => {
       const valgt = lapp.getAttribute("aria-pressed") === "true"
       lapp.setAttribute("aria-pressed", String(!valgt))
@@ -84,14 +84,14 @@ Tre filtre over en liste med saker. «Innvilget» er valgt, de to andre ikke, og
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-tag` | Merkelappen. Varianten kommer fra `data-variant`. |
+| `.lt-tag` | Merkelappen. Varianten kommer fra `data-variant`. |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-tag-padding` | `var(--fs-spacing-0-5) var(--fs-spacing-2)` |
-| `--fs-tag-radius` | `var(--fs-spacing-1)` |
+| `--lt-tag-padding` | `var(--lt-spacing-0-5) var(--lt-spacing-2)` |
+| `--lt-tag-radius` | `var(--lt-spacing-1)` |
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

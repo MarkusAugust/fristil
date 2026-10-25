@@ -15,14 +15,14 @@ import {
   DIALOG_TITLE_CLASS,
 } from "./dialog.js"
 
-export const FS_DIALOG_TAG = "fs-dialog" as const
+export const LT_DIALOG_TAG = "lt-dialog" as const
 
 /**
  * Delene dialogen finner, som selektorer relativt til elementet. Komponenten
  * finner delene med disse, og manifestet beskriver dem for den som setter
  * sammen markupen selv, så de to ikke kan si noe ulikt.
  */
-export const FS_DIALOG_PARTS = {
+export const LT_DIALOG_PARTS = {
   dialog: ":scope > dialog",
   title: "h1, h2, h3, h4, h5, h6",
   body: `.${DIALOG_BODY_CLASS}`,
@@ -55,22 +55,22 @@ export const FS_DIALOG_PARTS = {
  *
  * Skriv `open` på selve `<dialog>` også når dialogen skal vises. Uten
  * JavaScript er en `<dialog>` uten `open` skjult, og da finnes ikke
- * innholdet i det hele tatt. `fs.dialog({ open: true })` gir begge.
+ * innholdet i det hele tatt. `lt.dialog({ open: true })` gir begge.
  *
  * `server-controlled` på verten slår av reparasjonen av `open` på
  * `<dialog>`. Da bestemmer hver patch om dialogen vises, også når den står i
  * topplaget.
  *
  * ```html
- * <fs-dialog open>
- *   <dialog class="fs-dialog" aria-labelledby="tittel" open>
- *     <h2 class="fs-dialog__title" id="tittel">Vedtaket er registrert</h2>
- *     <div class="fs-dialog__body">Saken er ferdigbehandlet.</div>
- *     <form method="dialog" class="fs-dialog__footer">
- *       <button class="fs-button" value="lukk">Lukk</button>
+ * <lt-dialog open>
+ *   <dialog class="lt-dialog" aria-labelledby="tittel" open>
+ *     <h2 class="lt-dialog__title" id="tittel">Vedtaket er registrert</h2>
+ *     <div class="lt-dialog__body">Saken er ferdigbehandlet.</div>
+ *     <form method="dialog" class="lt-dialog__footer">
+ *       <button class="lt-button" value="lukk">Lukk</button>
  *     </form>
  *   </dialog>
- * </fs-dialog>
+ * </lt-dialog>
  * ```
  */
 /**
@@ -85,7 +85,7 @@ export const FS_DIALOG_PARTS = {
  */
 const upgradeChecked = new WeakSet<HTMLDialogElement>()
 
-export class FsDialog extends HostElement {
+export class LtDialog extends HostElement {
   static observedAttributes = ["open", SERVER_CONTROLLED] as const
 
   private observer?: MutationObserver
@@ -181,7 +181,7 @@ export class FsDialog extends HostElement {
    * annet, og skal ikke åpnes av denne komponenten.
    */
   private get dialog(): HTMLDialogElement | null {
-    return this.querySelector(FS_DIALOG_PARTS.dialog)
+    return this.querySelector(LT_DIALOG_PARTS.dialog)
   }
 
   /** Id-en komponenten ga overskriften, så en patch får den samme tilbake. */
@@ -197,7 +197,7 @@ export class FsDialog extends HostElement {
    * Overskriften som er dialogens tittel når serveren ikke pekte på en.
    *
    * Den første overskriften i denne dialogen som ikke står i kroppen. En
-   * overskrift i `.fs-dialog__body` er en overskrift i innholdet, ikke
+   * overskrift i `.lt-dialog__body` er en overskrift i innholdet, ikke
    * dialogens navn: en dialog med innstillinger i tre avsnitt fikk det første
    * avsnittets overskrift som tittel, med klassen og stilen som følger med.
    * En overskrift i en nøstet dialog er den nøstede sin, og kroppen som
@@ -206,10 +206,10 @@ export class FsDialog extends HostElement {
    */
   private headingOf(dialog: HTMLDialogElement): HTMLElement | null {
     return (
-      [...dialog.querySelectorAll<HTMLElement>(FS_DIALOG_PARTS.title)].find(
+      [...dialog.querySelectorAll<HTMLElement>(LT_DIALOG_PARTS.title)].find(
         (heading) => {
           if (heading.closest("dialog") !== dialog) return false
-          const body = heading.closest(FS_DIALOG_PARTS.body)
+          const body = heading.closest(LT_DIALOG_PARTS.body)
           return body === null || !dialog.contains(body)
         },
       ) ?? null
@@ -271,7 +271,7 @@ export class FsDialog extends HostElement {
     }
     addClass(title, DIALOG_TITLE_CLASS)
     if (!title.id) {
-      this.titleId ??= uniqueId("fs-dialog-title")
+      this.titleId ??= uniqueId("lt-dialog-title")
       setAttr(title, "id", this.titleId)
     }
     setAttr(dialog, "aria-labelledby", title.id)
@@ -477,7 +477,7 @@ export class FsDialog extends HostElement {
        * React er grunnen. Serveren skriver `open` på `<dialog>`, så React
        * eier attributtet, og React oppdaterer barn før forelder. Lukker
        * appen dialogen, fjerner React først `open` fra `<dialog>` og så fra
-       * `<fs-dialog>`. Så vi kommer hit med `dialog.open` alt usann.
+       * `<lt-dialog>`. Så vi kommer hit med `dialog.open` alt usann.
        *
        * `close()` gjør ingenting uten attributtet, så uten dette ble
        * dialogen stående i topplaget, usynlig, med resten av siden inert.
@@ -491,6 +491,6 @@ export class FsDialog extends HostElement {
   }
 }
 
-export function defineFsDialog(tagName: string = FS_DIALOG_TAG): void {
-  defineElement(tagName, FsDialog)
+export function defineLtDialog(tagName: string = LT_DIALOG_TAG): void {
+  defineElement(tagName, LtDialog)
 }

@@ -3,16 +3,16 @@ title: Breadcrumbs
 description: Brødsmulesti som viser hvor på siden brukeren er. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Stien fra forsiden til der brukeren står nå. Klassen settes på en `<ol>` inne i en `<nav>`: rekkefølgen betyr noe, så listen må være nummerert selv om tallene ikke vises.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "breadcrumbs.css"]}
+<Example importer={["tokens.css", "breadcrumbs.css"]}
   stiler={["breadcrumbs"]} layout="stabel" maxWidth="32rem" kode={`
 <nav aria-label="Du er her">
-  <ol class="fs-breadcrumbs">
+  <ol class="lt-breadcrumbs">
     <li><a href="#">Forsiden</a></li>
     <li><a href="#">Mine saker</a></li>
     <li><a href="#" aria-current="page">Søknad 2026-0481</a></li>
@@ -21,35 +21,35 @@ Stien fra forsiden til der brukeren står nå. Klassen settes på en `<ol>` inne
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
 <nav aria-label="Du er her">
-  <ol {...fs.breadcrumbs()}>
+  <ol {...lt.breadcrumbs()}>
     <li><a href="/">Forsiden</a></li>
     <li aria-current="page">Bostøtte</li>
   </ol>
 </nav>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const sti = document.querySelector<HTMLOListElement>("#brodsmuler")
 
-fs.setAttributes(sti, fs.breadcrumbs())
+lt.setAttributes(sti, lt.breadcrumbs())
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
 Tre ting må stå i markupen:
 
@@ -65,27 +65,27 @@ Skilletegnet legges inn med CSS. Sto skråstreken i markupen, ville skjermlesere
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-breadcrumbs` | Listen med stegene |
+| `.lt-breadcrumbs` | Listen med stegene |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-breadcrumbs-gap` | `var(--fs-spacing-2)` |
+| `--lt-breadcrumbs-gap` | `var(--lt-spacing-2)` |
 
 Skilletegnet kommer fra `::before` på hvert steg etter det første, og kan byttes. Ta med den tomme alternativteksten etter tegnet: generert innhold leses opp, og uten den sier skjermleseren det nye tegnet mellom hvert steg, slik den sa «skråstrek» før. Den første regelen er reserven for nettlesere som ikke kjenner formen og ellers forkaster hele deklarasjonen, som i stilarket selv:
 
 ```css
-.fs-breadcrumbs li + li::before {
+.lt-breadcrumbs li + li::before {
 	content: "›";
 }
 
 @supports (content: "/" / "") {
-	.fs-breadcrumbs li + li::before {
+	.lt-breadcrumbs li + li::before {
 		content: "›" / "";
 	}
 }
 ```
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

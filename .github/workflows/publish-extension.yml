@@ -46,21 +46,21 @@ jobs:
         run: bun run typecheck
 
       # Utvidelsen har kjernen med seg i dist/, bygget fra Rust. rustup henter
-      # versjonen i `kjerne/rust-toolchain.toml`.
+      # versjonen i `core/rust-toolchain.toml`.
       - name: Bygg kjernen
-        run: bun --filter @fristil/designsystem kjerne
+        run: bun --filter @lo-tek/interfaces core
 
       # Kontrollerer at ordforrådet og editorfilene i pakken er de generatoren
       # ville skrevet nå, og at diagnostikken feller det den skal, før
       # utvidelsen pakkes med dem.
       - name: Sjekk ordforrådet og diagnostikken
         run: |
-          (cd designsystem && bun run bygg:nettleser)
-          bun --filter @fristil/designsystem sjekk:ordforrad
-          bun kjerne/scripts/sjekk-diagnostikk.ts
+          (cd designsystem && bun run build:browser)
+          bun --filter @lo-tek/interfaces check:vocabulary
+          bun core/scripts/check-diagnostics.ts
 
       - name: Pakk
-        run: bun --filter fristil-vscode sjekk
+        run: bun --filter interfaces check
 
       # Marketplace har ingen OIDC. Tokenet lages under utgiveren på
       # marketplace.visualstudio.com og legges inn som hemmeligheten VSCE_PAT.
@@ -68,4 +68,4 @@ jobs:
         working-directory: editor
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: ./node_modules/.bin/vsce publish --packagePath fristil.vsix
+        run: ./node_modules/.bin/vsce publish --packagePath lotek.vsix

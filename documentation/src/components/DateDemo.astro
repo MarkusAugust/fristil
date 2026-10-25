@@ -3,10 +3,10 @@ import Preview from "./Preview.astro"
 ---
 
 <Preview id="demo-dato" stiler={["field", "button", "paragraph"]} maxWidth="26rem" layout="kolonne">
-	<fs-field>
-		<label class="fs-label" for="demo-dato-fodt">Fødselsdato</label>
+	<lt-field>
+		<label class="lt-label" for="demo-dato-fodt">Fødselsdato</label>
 		<input
-			class="fs-input"
+			class="lt-input"
 			data-variant="date"
 			id="demo-dato-fodt"
 			name="fodselsdato"
@@ -14,16 +14,16 @@ import Preview from "./Preview.astro"
 			min="1900-01-01"
 			max="2026-12-31"
 		/>
-		<p class="fs-help-text">Skriv datoen som 31.05.2026, eller velg den i kalenderen.</p>
-	</fs-field>
+		<p class="lt-help-text">Skriv datoen som 31.05.2026, eller velg den i kalenderen.</p>
+	</lt-field>
 
-	<p class="fs-paragraph" id="demo-dato-svar">Ingen dato valgt ennå.</p>
+	<p class="lt-paragraph" id="demo-dato-svar">Ingen dato valgt ennå.</p>
 </Preview>
 
 <script>
-	import { defineFsField } from "@fristil/designsystem/field"
+	import { defineLtField } from "@lo-tek/interfaces/field"
 
-	defineFsField()
+	defineLtField()
 
 	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
 	const flate = document.getElementById("demo-dato")?.shadowRoot

@@ -1,4 +1,4 @@
-//! `fristil agent`: regelboka for dette prosjektet, til utdata.
+//! `lotek agent`: regelboka for dette prosjektet, til utdata.
 //!
 //! Til utdata, ikke til en fil. `AGENTS.md`, `CLAUDE.md` og
 //! `.github/copilot-instructions.md` er konsumentens egne filer. Vil noen ha
@@ -10,7 +10,7 @@
 
 use crate::output::{error, fail, write};
 use crate::{refuse_unknown_flags, refuse_without_value, Arguments};
-use fristil_kjerne::json::{parse, Json};
+use lotek_core::json::{parse, Json};
 
 /// Navnene på regelbøkene i pakken, sortert. Teksten leses bare for den valgte.
 fn rulebooks() -> Vec<String> {
@@ -69,14 +69,14 @@ fn detect_framework() -> (String, String) {
         // Go, Kotlin, PHP og Razor har ingen package.json. Da er markupen
         // serverens, og malregelboka er den som forteller hvordan sjekken
         // leser malsyntaks.
-        return ("maler".into(), "ingen package.json i denne mappa".into());
+        return ("templates".into(), "ingen package.json i denne mappa".into());
     };
     let manifest = match parse(&text) {
         Ok(Json::Null | Json::Bool(_) | Json::Number(_) | Json::String(_)) => {
-            return ("maler".into(), "package.json er ikke et objekt".into())
+            return ("templates".into(), "package.json er ikke et objekt".into())
         }
         Ok(value) => value,
-        Err(_) => return ("maler".into(), "package.json kunne ikke leses".into()),
+        Err(_) => return ("templates".into(), "package.json kunne ikke leses".into()),
     };
     let mut dependencies = keys(manifest.get("dependencies"));
     dependencies.extend(keys(manifest.get("devDependencies")));

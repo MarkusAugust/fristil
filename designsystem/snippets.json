@@ -1,148 +1,148 @@
 {
-  "fs-field": {
-    "prefix": "fs-field",
+  "lt-field": {
+    "prefix": "lt-field",
     "body": [
       "<!-- novalidate: ellers stopper nettleseren et tomt påkrevd felt før",
       "     submit-hendelsen, og feilmeldingen under blir aldri vist. -->",
       "<form id=\"${1:kontaktskjema}\" novalidate>",
-      "  <fs-field>",
-      "    <label class=\"fs-label\" for=\"$2\" data-required=\"symbol\">Fullt navn</label>",
-      "    <input class=\"fs-input\" id=\"${2:navn}\" type=\"text\" name=\"navn\" required />",
-      "    <p class=\"fs-error-text\" hidden>Fyll inn navnet ditt.</p>",
-      "  </fs-field>",
+      "  <lt-field>",
+      "    <label class=\"lt-label\" for=\"$2\" data-required=\"symbol\">Fullt navn</label>",
+      "    <input class=\"lt-input\" id=\"${2:navn}\" type=\"text\" name=\"navn\" required />",
+      "    <p class=\"lt-error-text\" hidden>Fyll inn navnet ditt.</p>",
+      "  </lt-field>",
       "",
-      "  <button class=\"fs-button\" type=\"submit\">Send</button>",
+      "  <button class=\"lt-button\" type=\"submit\">Send</button>",
       "</form>"
     ],
-    "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet."
+    "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `lt.field()` i stedet."
   },
-  "fs-tabs": {
-    "prefix": "fs-tabs",
+  "lt-tabs": {
+    "prefix": "lt-tabs",
     "body": [
       "<!-- Lenkene peker på panelene. Rollene, valget og `hidden` skriver",
       "     komponenten. Uten JavaScript er dette en innholdsfortegnelse. -->",
-      "<fs-tabs id=\"${1:saksfaner}\">",
-      "  <ul class=\"fs-tabs__list\" aria-label=\"Deler av saken\">",
+      "<lt-tabs id=\"${1:saksfaner}\">",
+      "  <ul class=\"lt-tabs__list\" aria-label=\"Deler av saken\">",
       "    <li><a href=\"#$2\">Søknaden</a></li>",
       "    <li><a href=\"#$3\">Vedlegg</a></li>",
       "  </ul>",
-      "  <section class=\"fs-tabs__panel\" id=\"${2:soknaden}\">",
+      "  <section class=\"lt-tabs__panel\" id=\"${2:soknaden}\">",
       "    <h2>Søknaden</h2>",
       "    <p>Søknaden ble sendt 4. mars 2026.</p>",
       "  </section>",
-      "  <section class=\"fs-tabs__panel\" id=\"${3:vedlegg}\">",
+      "  <section class=\"lt-tabs__panel\" id=\"${3:vedlegg}\">",
       "    <h2>Vedlegg</h2>",
       "    <p>Tre vedlegg er lastet opp.</p>",
       "  </section>",
-      "</fs-tabs>"
+      "</lt-tabs>"
     ],
-    "description": "Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri."
+    "description": "Fanerad. Fanene er lenker til panelene i en `.lt-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri."
   },
-  "fs-error-summary": {
-    "prefix": "fs-error-summary",
+  "lt-error-summary": {
+    "prefix": "lt-error-summary",
     "body": [
       "<form novalidate>",
       "  <!-- Klassen, role=\"alert\" og tabindex=\"-1\" setter komponenten. -->",
-      "  <fs-error-summary id=\"${1:feil}\" hidden>",
+      "  <lt-error-summary id=\"${1:feil}\" hidden>",
       "    <h2></h2>",
-      "    <ul class=\"fs-list\"></ul>",
-      "  </fs-error-summary>",
+      "    <ul class=\"lt-list\"></ul>",
+      "  </lt-error-summary>",
       "",
-      "  <label class=\"fs-label\" for=\"$2\">E-postadresse</label>",
-      "  <input class=\"fs-input\" id=\"${2:epost}\" type=\"email\" />",
-      "  <button class=\"fs-button\">Send søknad</button>",
+      "  <label class=\"lt-label\" for=\"$2\">E-postadresse</label>",
+      "  <input class=\"lt-input\" id=\"${2:epost}\" type=\"email\" />",
+      "  <button class=\"lt-button\">Send søknad</button>",
       "</form>"
     ],
     "description": "Feiloppsummering. Flytter fokus til boksen når den kommer til syne, og til kontrollen når en lenke i lista følges."
   },
-  "fs-popover": {
-    "prefix": "fs-popover",
+  "lt-popover": {
+    "prefix": "lt-popover",
     "body": [
       "<!-- `popover` og `aria-controls` setter komponenten. Id-en på panelet",
       "     skriver du: det er den knappen peker på. -->",
-      "<fs-popover id=\"${1:meny}\" placement=\"bottom-end\">",
-      "  <button class=\"fs-button\" data-variant=\"secondary\" type=\"button\">Handlinger</button>",
+      "<lt-popover id=\"${1:meny}\" placement=\"bottom-end\">",
+      "  <button class=\"lt-button\" data-variant=\"secondary\" type=\"button\">Handlinger</button>",
       "",
-      "  <ul class=\"fs-popover\" id=\"${2:handlinger}\">",
-      "    <li><button class=\"fs-button\" data-variant=\"ghost\" type=\"button\">Arkiver saken</button></li>",
-      "    <li><button class=\"fs-button\" data-variant=\"ghost\" type=\"button\">Last ned som PDF</button></li>",
+      "  <ul class=\"lt-popover\" id=\"${2:handlinger}\">",
+      "    <li><button class=\"lt-button\" data-variant=\"ghost\" type=\"button\">Arkiver saken</button></li>",
+      "    <li><button class=\"lt-button\" data-variant=\"ghost\" type=\"button\">Last ned som PDF</button></li>",
       "  </ul>",
-      "</fs-popover>"
+      "</lt-popover>"
     ],
-    "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en."
+    "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `lt-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en."
   },
-  "fs-suggestion": {
-    "prefix": "fs-suggestion",
+  "lt-suggestion": {
+    "prefix": "lt-suggestion",
     "body": [
       "<!-- for og id skriver du, så feltet har et navn uten JavaScript. Rollene",
       "     og koblingen til lista setter komponenten. Statuselementet skriver",
       "     du: det er der antall treff leses opp. -->",
-      "<fs-suggestion id=\"${1:kommunesok}\">",
-      "  <label class=\"fs-label\" for=\"$2\">Kommune</label>",
-      "  <input class=\"fs-input\" id=\"${2:kommune}\" name=\"kommune\" type=\"text\">",
-      "  <ul class=\"fs-suggestion__list\">",
+      "<lt-suggestion id=\"${1:kommunesok}\">",
+      "  <label class=\"lt-label\" for=\"$2\">Kommune</label>",
+      "  <input class=\"lt-input\" id=\"${2:kommune}\" name=\"kommune\" type=\"text\">",
+      "  <ul class=\"lt-suggestion__list\">",
       "    <li>Bergen</li>",
       "    <li>Bodø</li>",
       "  </ul>",
-      "  <p class=\"fs-suggestion__empty\">Ingen treff</p>",
-      "  <span class=\"fs-sr-only\" role=\"status\"></span>",
-      "</fs-suggestion>"
+      "  <p class=\"lt-suggestion__empty\">Ingen treff</p>",
+      "  <span class=\"lt-sr-only\" role=\"status\"></span>",
+      "</lt-suggestion>"
     ],
-    "description": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff."
+    "description": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.lt-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff."
   },
-  "fs-dialog": {
-    "prefix": "fs-dialog",
+  "lt-dialog": {
+    "prefix": "lt-dialog",
     "body": [
-      "<fs-dialog open>",
-      "  <dialog class=\"fs-dialog\" open>",
+      "<lt-dialog open>",
+      "  <dialog class=\"lt-dialog\" open>",
       "    <h2>Vedtaket er registrert</h2>",
-      "    <div class=\"fs-dialog__body\">",
+      "    <div class=\"lt-dialog__body\">",
       "      <p>Saken er ferdigbehandlet og sendt til arkiv.</p>",
       "    </div>",
-      "    <form method=\"dialog\" class=\"fs-dialog__footer\">",
-      "      <button class=\"fs-button\" value=\"lukk\">Lukk</button>",
+      "    <form method=\"dialog\" class=\"lt-dialog__footer\">",
+      "      <button class=\"lt-button\" value=\"lukk\">Lukk</button>",
       "    </form>",
       "  </dialog>",
-      "</fs-dialog>"
+      "</lt-dialog>"
     ],
-    "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `fs-dialog__body` når verken `aria-labelledby` eller `aria-label` står der."
+    "description": "Gjør en `<dialog class=\"lt-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `lt-dialog__body` når verken `aria-labelledby` eller `aria-label` står der."
   },
-  "fs-toast": {
-    "prefix": "fs-toast",
+  "lt-toast": {
+    "prefix": "lt-toast",
     "body": [
-      "<fs-toast id=\"${1:meldinger}\" class=\"fs-toast\" role=\"status\" aria-live=\"polite\"",
+      "<lt-toast id=\"${1:meldinger}\" class=\"lt-toast\" role=\"status\" aria-live=\"polite\"",
       "          aria-atomic=\"false\"",
-      "          aria-label=\"Meldinger\" data-ignore-morph></fs-toast>",
+      "          aria-label=\"Meldinger\" data-ignore-morph></lt-toast>",
       "",
-      "<button class=\"fs-button\" id=\"${2:lagre}\" type=\"button\">Lagre søknaden</button>"
+      "<button class=\"lt-button\" id=\"${2:lagre}\" type=\"button\">Lagre søknaden</button>"
     ],
     "description": "Kø av korte meldinger i hjørnet av skjermen. Meldingene lages fra skript med `show(tekst, { color, duration })`."
   },
-  "fs-session-timeout": {
-    "prefix": "fs-session-timeout",
+  "lt-session-timeout": {
+    "prefix": "lt-session-timeout",
     "body": [
-      "<fs-session-timeout class=\"fs-session-timeout\" warn-at=\"1500\" expires-at=\"1800\"",
+      "<lt-session-timeout class=\"lt-session-timeout\" warn-at=\"1500\" expires-at=\"1800\"",
       "                    data-ignore-morph>",
-      "  <dialog class=\"fs-session-timeout__dialog\" role=\"alertdialog\" aria-labelledby=\"$1\">",
-      "    <h2 class=\"fs-session-timeout__title\" id=\"${1:okt-tittel}\">Du blir snart logget ut</h2>",
-      "    <p class=\"fs-session-timeout__text\">",
-      "      Vi logger deg ut om <span class=\"fs-session-timeout__count\" aria-hidden=\"true\"></span>",
+      "  <dialog class=\"lt-session-timeout__dialog\" role=\"alertdialog\" aria-labelledby=\"$1\">",
+      "    <h2 class=\"lt-session-timeout__title\" id=\"${1:okt-tittel}\">Du blir snart logget ut</h2>",
+      "    <p class=\"lt-session-timeout__text\">",
+      "      Vi logger deg ut om <span class=\"lt-session-timeout__count\" aria-hidden=\"true\"></span>",
       "      for å beskytte opplysningene dine.",
       "    </p>",
-      "    <span class=\"fs-sr-only\" role=\"status\"></span>",
-      "    <form method=\"dialog\" class=\"fs-session-timeout__actions\">",
-      "      <button class=\"fs-button\" value=\"extend\">Fortsett å være innlogget</button>",
-      "      <button class=\"fs-button\" data-variant=\"secondary\" value=\"logout\">Logg ut nå</button>",
+      "    <span class=\"lt-sr-only\" role=\"status\"></span>",
+      "    <form method=\"dialog\" class=\"lt-session-timeout__actions\">",
+      "      <button class=\"lt-button\" value=\"extend\">Fortsett å være innlogget</button>",
+      "      <button class=\"lt-button\" data-variant=\"secondary\" value=\"logout\">Logg ut nå</button>",
       "    </form>",
       "  </dialog>",
-      "</fs-session-timeout>"
+      "</lt-session-timeout>"
     ],
-    "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live."
+    "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.lt-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live."
   },
-  "fs-connection-status": {
-    "prefix": "fs-connection-status",
+  "lt-connection-status": {
+    "prefix": "lt-connection-status",
     "body": [
-      "<fs-connection-status class=\"fs-connection-status\" data-ignore-morph></fs-connection-status>"
+      "<lt-connection-status class=\"lt-connection-status\" data-ignore-morph></lt-connection-status>"
     ],
     "description": "Sier fra når forbindelsen til serveren er borte. Appen melder fra med `reportFailure()` og `reportSuccess()`."
   }

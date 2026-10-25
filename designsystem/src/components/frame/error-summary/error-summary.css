@@ -1,47 +1,47 @@
 @import "../../css/list/list.css";
 
-@layer fristil {
-  fs-error-summary[hidden] {
+@layer lotek {
+  lt-error-summary[hidden] {
     display: none;
   }
 
   /* Klassen settes på selve elementet av komponenten. Konsumentens markup
      blir stående der den er. */
-  .fs-error-summary {
+  .lt-error-summary {
     display: block;
     box-sizing: border-box;
-    padding: var(--fs-error-summary-padding, var(--fs-spacing-4));
+    padding: var(--lt-error-summary-padding, var(--lt-spacing-4));
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-strong);
-    background: var(--fs-color-danger-surface);
-    border-inline-start: var(--fs-spacing-1) solid var(--fs-color-danger-text);
-    border-radius: var(--fs-error-summary-radius, var(--fs-spacing-1));
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-danger-surface);
+    border-inline-start: var(--lt-spacing-1) solid var(--lt-color-danger-text);
+    border-radius: var(--lt-error-summary-radius, var(--lt-spacing-1));
   }
 
-  .fs-error-summary:focus-visible {
-    outline: var(--fs-focus-ring);
-    outline-color: var(--fs-color-danger-text);
+  .lt-error-summary:focus-visible {
+    outline: var(--lt-focus-ring);
+    outline-color: var(--lt-color-danger-text);
     outline-offset: 2px;
   }
 
-  .fs-error-summary__title {
-    margin: 0 0 var(--fs-spacing-2);
-    font-size: var(--fs-font-size-l);
-    font-weight: var(--fs-font-weight-semibold);
-    line-height: var(--fs-line-height-compact);
+  .lt-error-summary__title {
+    margin: 0 0 var(--lt-spacing-2);
+    font-size: var(--lt-font-size-l);
+    font-weight: var(--lt-font-weight-semibold);
+    line-height: var(--lt-line-height-compact);
   }
 
-  .fs-error-summary a {
-    color: var(--fs-color-danger-text);
+  .lt-error-summary a {
+    color: var(--lt-color-danger-text);
     text-decoration: underline;
     text-underline-offset: 0.14em;
   }
 
-  .fs-error-summary a:focus-visible {
-    outline: var(--fs-focus-ring);
-    outline-color: var(--fs-color-danger-text);
+  .lt-error-summary a:focus-visible {
+    outline: var(--lt-focus-ring);
+    outline-color: var(--lt-color-danger-text);
     outline-offset: 2px;
   }
 }

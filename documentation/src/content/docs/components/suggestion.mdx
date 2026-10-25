@@ -11,16 +11,16 @@ Serveren skriver feltet og lista. Komponenten filtrerer mens brukeren skriver, t
 Nettleserens egen `<datalist>` gjør noe av det samme, men kan ikke styles, oppfører seg ulikt i hver nettleser, og sier ingenting om hvor mange treff det ble.
 
 :::note[To veier til den samme markupen]
-Lages markupen med JavaScript, gir `fs.suggestion()` rollene, id-ene og koblingen mellom ledetekst, felt og liste, ferdig i HTML-en. Blir den til uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, som HTML krever for at feltet skal ha et navn før skriptet har kjørt. Resten holder det med: en `.fs-suggestion__list` med `<li>` og et statuselement. Komponenten setter rollene, gir lista og alternativene id, kobler lista til feltet og holder den lukket til brukeren rører feltet. Filtreringen, piltastene og antall treff kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+Lages markupen med JavaScript, gir `lt.suggestion()` rollene, id-ene og koblingen mellom ledetekst, felt og liste, ferdig i HTML-en. Blir den til uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, som HTML krever for at feltet skal ha et navn før skriptet har kjørt. Resten holder det med: en `.lt-suggestion__list` med `<li>` og et statuselement. Komponenten setter rollene, gir lista og alternativene id, kobler lista til feltet og holder den lukket til brukeren rører feltet. Filtreringen, piltastene og antall treff kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-and-behaviour/#byggefunksjon-eller-web-component).
 :::
 
 ```ts
 // main.ts, kjøres én gang når appen starter
-import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/suggestion.css"
+import { defineLtSuggestion } from "@lo-tek/interfaces/suggestion"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/suggestion.css"
 
-defineFsSuggestion()
+defineLtSuggestion()
 ```
 
 ## Slik tar du den i bruk
@@ -32,33 +32,33 @@ defineFsSuggestion()
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/suggestion/suggestion.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/label/label.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/suggestion/suggestion.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/label/label.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
     <!-- for og id skriver du, så feltet har et navn uten JavaScript. Rollene
          og koblingen til lista setter komponenten. Statuselementet skriver
          du: det er der antall treff leses opp. -->
-    <fs-suggestion id="kommunesok">
-      <label class="fs-label" for="kommune">Kommune</label>
-      <input class="fs-input" id="kommune" name="kommune" type="text">
-      <ul class="fs-suggestion__list">
+    <lt-suggestion id="kommunesok">
+      <label class="lt-label" for="kommune">Kommune</label>
+      <input class="lt-input" id="kommune" name="kommune" type="text">
+      <ul class="lt-suggestion__list">
         <li>Bergen</li>
         <li>Bodø</li>
       </ul>
-      <p class="fs-suggestion__empty">Ingen treff</p>
-      <span class="fs-sr-only" role="status"></span>
-    </fs-suggestion>
+      <p class="lt-suggestion__empty">Ingen treff</p>
+      <span class="lt-sr-only" role="status"></span>
+    </lt-suggestion>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsSuggestion } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/suggestion/fs-suggestion.js"
+      import { defineLtSuggestion } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/suggestion/lt-suggestion.js"
 
-      defineFsSuggestion()
+      defineLtSuggestion()
     </script>
 
     <script type="module">
@@ -70,17 +70,17 @@ defineFsSuggestion()
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/fristil.d.ts, gir <fs-suggestion> typer i JSX
-    import "@fristil/designsystem/react-jsx"
+    // src/lotek.d.ts, gir <lt-suggestion> typer i JSX
+    import "@lo-tek/interfaces/react-jsx"
     ```
 
     ```tsx
-    import { fs } from "@fristil/designsystem/react"
-    import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/suggestion.css"
+    import { lt } from "@lo-tek/interfaces/react"
+    import { defineLtSuggestion } from "@lo-tek/interfaces/suggestion"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/suggestion.css"
 
-    defineFsSuggestion()
+    defineLtSuggestion()
 
     // Nøkkelen er kommunenummeret: den gir alternativet en fast id.
     const KOMMUNER = [
@@ -91,10 +91,10 @@ defineFsSuggestion()
     ]
 
     export function Kommunesok() {
-      const forslag = fs.suggestion({ id: "kommune", keys: KOMMUNER.map((k) => k.nr) })
+      const forslag = lt.suggestion({ id: "kommune", keys: KOMMUNER.map((k) => k.nr) })
 
       return (
-        <fs-suggestion>
+        <lt-suggestion>
           <label {...forslag.label}>Kommune</label>
           <input {...forslag.control} name="kommune" />
           <ul {...forslag.list}>
@@ -104,7 +104,7 @@ defineFsSuggestion()
           </ul>
           <p {...forslag.empty}>Ingen treff</p>
           <span {...forslag.status} />
-        </fs-suggestion>
+        </lt-suggestion>
       )
     }
     ```
@@ -114,9 +114,9 @@ defineFsSuggestion()
   <TabItem label="Astro">
     ```astro
     ---
-    import { fs } from "@fristil/designsystem"
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/suggestion.css"
+    import { lt } from "@lo-tek/interfaces"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/suggestion.css"
 
     const kommuner = [
       { nr: "4601", navn: "Bergen" },
@@ -124,11 +124,11 @@ defineFsSuggestion()
       { nr: "0301", navn: "Oslo" },
       { nr: "5501", navn: "Tromsø" },
     ]
-    const forslag = fs.suggestion({ id: "kommune", keys: kommuner.map((k) => k.nr) })
+    const forslag = lt.suggestion({ id: "kommune", keys: kommuner.map((k) => k.nr) })
 
     ---
 
-    <fs-suggestion>
+    <lt-suggestion>
       <label {...forslag.label}>Kommune</label>
       <input {...forslag.control} name="kommune" />
       <ul {...forslag.list}>
@@ -136,11 +136,11 @@ defineFsSuggestion()
       </ul>
       <p {...forslag.empty}>Ingen treff</p>
       <span {...forslag.status}></span>
-    </fs-suggestion>
+    </lt-suggestion>
 
     <script>
-      import { defineFsSuggestion } from "@fristil/designsystem/suggestion"
-      defineFsSuggestion()
+      import { defineLtSuggestion } from "@lo-tek/interfaces/suggestion"
+      defineLtSuggestion()
     </script>
     ```
   </TabItem>
@@ -152,95 +152,95 @@ defineFsSuggestion()
 
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/suggestion/suggestion.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/label/label.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/input/input.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/sr-only/sr-only.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/suggestion/suggestion.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/label/label.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/input/input.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/sr-only/sr-only.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsSuggestion } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/suggestion/fs-suggestion.js"
+      import { defineLtSuggestion } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/suggestion/lt-suggestion.js"
 
-      defineFsSuggestion()
+      defineLtSuggestion()
     </script>
 
-    <fs-suggestion prefiltered
+    <lt-suggestion prefiltered
                    data-on:input__debounce.300ms="@get('/kommuner?q=' + evt.target.value)"
                    data-on:suggestion-select="$kommune = evt.detail.value">
-      <label class="fs-label" for="kommune">Kommune</label>
-      <input class="fs-input" id="kommune" name="kommune" type="text">
-      <ul class="fs-suggestion__list" id="kommuner"></ul>
-      <span class="fs-sr-only" role="status"></span>
-    </fs-suggestion>
+      <label class="lt-label" for="kommune">Kommune</label>
+      <input class="lt-input" id="kommune" name="kommune" type="text">
+      <ul class="lt-suggestion__list" id="kommuner"></ul>
+      <span class="lt-sr-only" role="status"></span>
+    </lt-suggestion>
     ```
 
-    Serveren svarer med lista, `<ul class="fs-suggestion__list" id="kommuner">` med de nye `<li>`-ene, og Datastar morfer den på id-en. Id-en er serverens, og komponenten lar den stå. Her er det serveren som bestemmer hvilke alternativer som vises, derfor `prefiltered`. Komponenten kobler seg på alternativene serveren sender inn, så valg med mus virker også etter en oppdatering.
+    Serveren svarer med lista, `<ul class="lt-suggestion__list" id="kommuner">` med de nye `<li>`-ene, og Datastar morfer den på id-en. Id-en er serverens, og komponenten lar den stå. Her er det serveren som bestemmer hvilke alternativer som vises, derfor `prefiltered`. Komponenten kobler seg på alternativene serveren sender inn, så valg med mus virker også etter en oppdatering.
   </TabItem>
 </Tabs>
 
 ## Markupen
 
 ```ts
-const forslag = fs.suggestion({ id: "kommune", keys: ["4601", "1804"], help: true })
+const forslag = lt.suggestion({ id: "kommune", keys: ["4601", "1804"], help: true })
 ```
 
 ```html
-<fs-suggestion>
-  <label class="fs-label" for="kommune" id="kommune-label">Kommune</label>
-  <input class="fs-input" id="kommune" name="kommune" type="text" role="combobox"
+<lt-suggestion>
+  <label class="lt-label" for="kommune" id="kommune-label">Kommune</label>
+  <input class="lt-input" id="kommune" name="kommune" type="text" role="combobox"
          autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
          aria-autocomplete="list" aria-describedby="kommune-help kommune-status">
 
-  <ul class="fs-suggestion__list" id="kommune-list" role="listbox"
+  <ul class="lt-suggestion__list" id="kommune-list" role="listbox"
       aria-labelledby="kommune-label" popover="manual" hidden>
-    <li class="fs-suggestion__option" id="kommune-option-4601" role="option"
+    <li class="lt-suggestion__option" id="kommune-option-4601" role="option"
         aria-selected="false">Bergen</li>
-    <li class="fs-suggestion__option" id="kommune-option-1804" role="option"
+    <li class="lt-suggestion__option" id="kommune-option-1804" role="option"
         aria-selected="false">Bodø</li>
   </ul>
 
-  <p class="fs-suggestion__empty" hidden>Ingen treff</p>
-  <span class="fs-sr-only" id="kommune-status" role="status"></span>
-  <p class="fs-help-text" id="kommune-help">Vi fyller ut resten av adressen for deg.</p>
-</fs-suggestion>
+  <p class="lt-suggestion__empty" hidden>Ingen treff</p>
+  <span class="lt-sr-only" id="kommune-status" role="status"></span>
+  <p class="lt-help-text" id="kommune-help">Vi fyller ut resten av adressen for deg.</p>
+</lt-suggestion>
 ```
 
-Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skriptet har kjørt. Komponenten lagde tidligere hele feltet selv, og da fantes det verken ledetekst eller inndatafelt for en bruker som ventet på JavaScript. Se [Markup og oppførsel](/markup-og-oppforsel/).
+Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skriptet har kjørt. Komponenten lagde tidligere hele feltet selv, og da fantes det verken ledetekst eller inndatafelt for en bruker som ventet på JavaScript. Se [Markup og oppførsel](/markup-and-behaviour/).
 
 Kommer markupen fra en mal uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, slik «Ren HTML»-oppskriften viser, eller legger ledeteksten rundt feltet. Komponenten setter rollene, gir lista og alternativene id, skriver `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Hver `<li>` i lista blir et alternativ; en overskrift i lista trenger `role="presentation"` for å bli latt i fred. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
 
-Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. `for` på ledeteksten skriver komponenten fra feltets id når ledeteksten ikke står rundt feltet, som `<fs-field>` gjør; skriv den i malen også, siden det er den som gir feltet et navn uten JavaScript. Alternativene får id fra nøkkelen i `keys`, som kommunenummeret, så en oppdatering kjenner dem igjen. En nøkkel som er tom, har mellomrom eller står to ganger, kaster, i TypeScript som i Kotlin. Mangler id-ene, som i en mal uten byggefunksjon, gir komponenten lista og alternativene id. Sender serveren hele lista på nytt, byttes de ut, og det koster ingenting: komponenten kobler dem på nytt og finner det markerte alternativet igjen på teksten.
+Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. `for` på ledeteksten skriver komponenten fra feltets id når ledeteksten ikke står rundt feltet, som `<lt-field>` gjør; skriv den i malen også, siden det er den som gir feltet et navn uten JavaScript. Alternativene får id fra nøkkelen i `keys`, som kommunenummeret, så en oppdatering kjenner dem igjen. En nøkkel som er tom, har mellomrom eller står to ganger, kaster, i TypeScript som i Kotlin. Mangler id-ene, som i en mal uten byggefunksjon, gir komponenten lista og alternativene id. Sender serveren hele lista på nytt, byttes de ut, og det koster ingenting: komponenten kobler dem på nytt og finner det markerte alternativet igjen på teksten.
 
 ### Tekst og kode
 
 Feltet viser alltid teksten til alternativet brukeren valgte. Skal skjemaet sende en kode, som kommunenummeret, gir du alternativene `data-value` og skriver et skjult felt for koden:
 
 ```html
-<fs-suggestion>
-  <label class="fs-label" for="kommune">Kommune</label>
-  <input class="fs-input" id="kommune" name="kommune-tekst" type="text">
-  <input class="fs-suggestion__value" type="hidden" name="kommune">
-  <ul class="fs-suggestion__list">
+<lt-suggestion>
+  <label class="lt-label" for="kommune">Kommune</label>
+  <input class="lt-input" id="kommune" name="kommune-tekst" type="text">
+  <input class="lt-suggestion__value" type="hidden" name="kommune">
+  <ul class="lt-suggestion__list">
     <li data-value="4601">Bergen</li>
     <li data-value="1804">Bodø</li>
   </ul>
-  <span class="fs-sr-only" role="status"></span>
-</fs-suggestion>
+  <span class="lt-sr-only" role="status"></span>
+</lt-suggestion>
 ```
 
-Komponenten skriver koden i det skjulte feltet når brukeren velger, og tømmer det igjen når brukeren endrer teksten, så skjemaet aldri sender koden for Bergen med «Bodø» i feltet. Tilbakestilles skjemaet, går teksten tilbake til det serveren sendte, og koden følger teksten: koden serveren sendte når teksten er serverens, ellers det valgte, ellers alternativet med den teksten, ellers ingen. Feltet får `input` og `change` når koden skrives, så `data-bind` ser den; hendelsene bobler ikke, så en `data-on:input` på `<fs-suggestion>` som henter forslag, utløses ikke av dem. En oppdatering fra serveren som tømmer det skjulte feltet, får koden tilbake så lenge teksten er den valgte. `suggestion-select` har begge: `evt.detail.label` er teksten og `evt.detail.value` koden.
+Komponenten skriver koden i det skjulte feltet når brukeren velger, og tømmer det igjen når brukeren endrer teksten, så skjemaet aldri sender koden for Bergen med «Bodø» i feltet. Tilbakestilles skjemaet, går teksten tilbake til det serveren sendte, og koden følger teksten: koden serveren sendte når teksten er serverens, ellers det valgte, ellers alternativet med den teksten, ellers ingen. Feltet får `input` og `change` når koden skrives, så `data-bind` ser den; hendelsene bobler ikke, så en `data-on:input` på `<lt-suggestion>` som henter forslag, utløses ikke av dem. En oppdatering fra serveren som tømmer det skjulte feltet, får koden tilbake så lenge teksten er den valgte. `suggestion-select` har begge: `evt.detail.label` er teksten og `evt.detail.value` koden.
 
-Uten JavaScript sendes teksten med et tomt felt for koden, og serveren slår opp koden selv. Er teksten tvetydig, som Våler og Herøy, som finnes i to fylker, svarer serveren med en side der brukeren velger. Koden står da to steder, i `data-value` og i det skjulte feltet, og det er et bevisst valg: HTML har ikke noe element som viser én tekst og sender en annen verdi når brukeren også kan skrive fritt. `fs.suggestion()` gir det skjulte feltet som `forslag.value`; `name` skriver du selv.
+Uten JavaScript sendes teksten med et tomt felt for koden, og serveren slår opp koden selv. Er teksten tvetydig, som Våler og Herøy, som finnes i to fylker, svarer serveren med en side der brukeren velger. Koden står da to steder, i `data-value` og i det skjulte feltet, og det er et bevisst valg: HTML har ikke noe element som viser én tekst og sender en annen verdi når brukeren også kan skrive fritt. `lt.suggestion()` gir det skjulte feltet som `forslag.value`; `name` skriver du selv.
 
 ## Når noen andre filtrerer
 
 Komponenten skjuler et alternativ når teksten ikke inneholder det som står i feltet. Filtrerer du selv, og filteret ditt er et annet, blir de to uenige, og da er det ditt som skal gjelde. Det sier du med `prefiltered`.
 
 ```html
-<fs-suggestion prefiltered>…</fs-suggestion>
+<lt-suggestion prefiltered>…</lt-suggestion>
 ```
 
 Filtrerer du på nøyaktig det samme, altså at teksten inneholder søkeordet, trenger du ingenting: de to er enige, og komponenten skjuler ikke noe du ville vist. Attributtet er for de gangene dere ikke er det:
@@ -259,21 +259,21 @@ Det gjelder like mye i React som i Datastar. I React er det lett å overse, for 
 ```tsx
 // Søk uten diakritikk. Komponentens eget filter ville skjult Bodø igjen.
 const treff = kommuner.filter((k) => utenTegn(k.navn).includes(utenTegn(sok)))
-const forslag = fs.suggestion({ id: "kommune", keys: treff.map((k) => k.nr) })
+const forslag = lt.suggestion({ id: "kommune", keys: treff.map((k) => k.nr) })
 
-<fs-suggestion prefiltered>
+<lt-suggestion prefiltered>
   …
   <ul {...forslag.list}>
     {treff.map((k, i) => <li {...forslag.options[i]} key={k.nr}>{k.navn}</li>)}
   </ul>
-</fs-suggestion>
+</lt-suggestion>
 ```
 
 Bygg da med nøklene til treffene, ikke til hele lista. Antall nøkler avgjør om «Ingen treff» har `hidden`: den har det så lenge du har treff.
 
 ### Hvem viser «Ingen treff»
 
-Du gjør det. Tommeldingen er en del av det lista viser, og med `prefiltered` er det du som bestemmer hva den viser. `fs.suggestion({ id, keys, pending })` skriver `hidden` på den så lenge du har treff eller venter på svar, så rendrer du feltet på nytt for hvert søk, er det gjort. At lista er lukket trenger du ikke vite: stilarket skjuler tommeldingen når lista foran den har `hidden`, så den må stå etter lista. En tom liste under et tomt felt åpnes ikke, så meldingen kommer ikke før brukeren har skrevet noe. Venter du på et svar, sender du `pending: true`, og meldingen holdes skjult til svaret er kommet. I en mal uten byggefunksjon skriver du `hidden` på den selv. Komponenten rører den ikke, og det er med vilje: den kan ikke se forskjell på «søket ga ingenting» og «svaret er ikke kommet ennå», og et asynkront søk sa derfor «Ingen treff» i hvert opphold mellom tastetrykket og svaret.
+Du gjør det. Tommeldingen er en del av det lista viser, og med `prefiltered` er det du som bestemmer hva den viser. `lt.suggestion({ id, keys, pending })` skriver `hidden` på den så lenge du har treff eller venter på svar, så rendrer du feltet på nytt for hvert søk, er det gjort. At lista er lukket trenger du ikke vite: stilarket skjuler tommeldingen når lista foran den har `hidden`, så den må stå etter lista. En tom liste under et tomt felt åpnes ikke, så meldingen kommer ikke før brukeren har skrevet noe. Venter du på et svar, sender du `pending: true`, og meldingen holdes skjult til svaret er kommet. I en mal uten byggefunksjon skriver du `hidden` på den selv. Komponenten rører den ikke, og det er med vilje: den kan ikke se forskjell på «søket ga ingenting» og «svaret er ikke kommet ennå», og et asynkront søk sa derfor «Ingen treff» i hvert opphold mellom tastetrykket og svaret.
 
 **Antall treff leses opp uansett hvem som filtrerte.** Det er ikke markup, men en beskjed i `[role="status"]` til den som ikke ser skjermen, og den kommer bare når antallet er et annet enn sist. Med `prefiltered` kommer den når du har rendret lista på nytt, ikke ved tastetrykket, og det første antallet leses ikke opp, siden det er utgangspunktet. Uten `prefiltered` filtrerer komponenten selv ved hvert tastetrykk, når feltet får fokus, og når en oppdatering endrer en åpen liste, og antallet leses opp da.
 
@@ -283,10 +283,10 @@ Komponenten tar fortsatt piltastene, markeringen og `aria-activedescendant`, alt
 
 ## Antall treff på andre språk
 
-Komponenten leser opp «Ingen treff», «Ett treff» og `{n} treff` når ingenting annet er sagt. Teksten byttes med attributter på `<fs-suggestion>`, der `{n}` står for antallet:
+Komponenten leser opp «Ingen treff», «Ett treff» og `{n} treff` når ingenting annet er sagt. Teksten byttes med attributter på `<lt-suggestion>`, der `{n}` står for antallet:
 
 ```html
-<fs-suggestion count-none="No results" count-one="{n} result" count-other="{n} results">
+<lt-suggestion count-none="No results" count-one="{n} result" count-other="{n} results">
 ```
 
 | Attributt | Gjelder |
@@ -296,13 +296,13 @@ Komponenten leser opp «Ingen treff», «Ett treff» og `{n} treff` når ingenti
 | `count-other` | Alle andre antall, og reserven når en form mangler. Setter du noen av attributtene, må denne stå, ellers leses antall som mangler en form, opp på norsk |
 | `count-zero`, `count-two`, `count-few`, `count-many` | Formene noen språk har i tillegg, som polsk `few` og `many` |
 
-Hvilken form et antall har, avgjøres av `Intl.PluralRules` etter `lang` på siden. Se [Oversettelse](/oversettelse/).
+Hvilken form et antall har, avgjøres av `Intl.PluralRules` etter `lang` på siden. Se [Oversettelse](/translation/).
 
 ## Før komponenten er registrert
 
-`fs.suggestion()` skriver `hidden` på lista når den er lukket, så markupen er riktig fra første tegning. Er lista skrevet bar, holder `fs-suggestion:not(:defined) .fs-suggestion__list` i `suggestion.css` den skjult til `defineFsSuggestion()` har kjørt.
+`lt.suggestion()` skriver `hidden` på lista når den er lukket, så markupen er riktig fra første tegning. Er lista skrevet bar, holder `lt-suggestion:not(:defined) .lt-suggestion__list` i `suggestion.css` den skjult til `defineLtSuggestion()` har kjørt.
 
-Se [Markup og oppførsel](../../markup-og-oppforsel/#før-komponenten-er-registrert).
+Se [Markup og oppførsel](../../markup-and-behaviour/#før-komponenten-er-registrert).
 
 ## Attributter
 
@@ -316,31 +316,31 @@ Se [Markup og oppførsel](../../markup-og-oppforsel/#før-komponenten-er-registr
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-suggestion__list` | Selve lista. `hidden` når den er lukket |
-| `.fs-suggestion__option` | Ett alternativ. Det markerte har `aria-selected="true"` |
-| `.fs-suggestion__empty` | Teksten som vises når ingenting passer |
-| `.fs-suggestion__value` | Det skjulte feltet som får koden til alternativet brukeren valgte |
+| `.lt-suggestion__list` | Selve lista. `hidden` når den er lukket |
+| `.lt-suggestion__option` | Ett alternativ. Det markerte har `aria-selected="true"` |
+| `.lt-suggestion__empty` | Teksten som vises når ingenting passer |
+| `.lt-suggestion__value` | Det skjulte feltet som får koden til alternativet brukeren valgte |
 
 | Variabel | Reserve |
 | --- | --- |
-| `--fs-suggestion-max-height` | `calc(var(--fs-spacing-10) * 4)`, altså 10rem |
-| `--fs-suggestion-option-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
-| `--fs-suggestion-radius` | `var(--fs-spacing-1)` |
+| `--lt-suggestion-max-height` | `calc(var(--lt-spacing-10) * 4)`, altså 10rem |
+| `--lt-suggestion-option-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
+| `--lt-suggestion-radius` | `var(--lt-spacing-1)` |
 
 Lista står i det øverste laget når den er åpen, så den legger seg over alt annet uten `z-index`, og en forelder med `overflow`, som kroppen i en dialog, klipper den ikke. Komponenten legger den rett under feltet, like bred som det, og over feltet når det ikke er plass under.
 
 ```css
-.fs-suggestion__list {
-  --fs-suggestion-max-height: 24rem;
+.lt-suggestion__list {
+  --lt-suggestion-max-height: 24rem;
 }
 ```
 ## Tilgjengelighet
 
-Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role="listbox"` med `role="option"` i seg. Skriver serveren dem med `fs.suggestion()`, står de i HTML-en før skriptet kjører. Kommer markupen uten, setter komponenten dem i det den registreres.
+Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role="listbox"` med `role="option"` i seg. Skriver serveren dem med `lt.suggestion()`, står de i HTML-en før skriptet kjører. Kommer markupen uten, setter komponenten dem i det den registreres.
 
-- **Lista har et navn**, ledeteksten. `fs.suggestion()` gir ledeteksten id og lista `aria-labelledby` mot den. Kommer markupen uten, gjør komponenten det samme, men står ledeteksten rundt feltet, får den ingen id, siden en oppdatering da ville byttet ut ledeteksten og feltet i den. Lista får da teksten i ledeteksten som `aria-label`. Et navn serveren har skrevet, står.
+- **Lista har et navn**, ledeteksten. `lt.suggestion()` gir ledeteksten id og lista `aria-labelledby` mot den. Kommer markupen uten, gjør komponenten det samme, men står ledeteksten rundt feltet, får den ingen id, siden en oppdatering da ville byttet ut ledeteksten og feltet i den. Lista får da teksten i ledeteksten som `aria-label`. Et navn serveren har skrevet, står.
 - **Hvert alternativ sier om det er valgt**, med `aria-selected`, fra starten.
-- **Mens svaret er underveis** sier lista `aria-busy="true"`, som `fs.suggestion({ id, pending: true })` skriver, og «Ingen treff» holdes skjult.
+- **Mens svaret er underveis** sier lista `aria-busy="true"`, som `lt.suggestion({ id, pending: true })` skriver, og «Ingen treff» holdes skjult.
 - **Fokus blir i feltet.** Markeringen flyttes med `aria-activedescendant`, ikke ved å flytte fokus, slik at brukeren kan fortsette å skrive.
 - **Antall treff leses opp.** Uten det får den som ikke ser skjermen ingen beskjed om at lista snevret seg inn. Teksten skrives av komponenten, og tømmer en oppdatering fra serveren elementet, skriver komponenten den på nytt.
 - **Escape lukker lista** uten å tømme feltet, og et klikk utenfor gjør det samme.

@@ -1,16 +1,16 @@
 /**
- * Leser byggefunksjonene i `fs` slik TypeScript ser dem: navnet, hvert valg
+ * Leser byggefunksjonene i `lt` slik TypeScript ser dem: navnet, hvert valg
  * med typen sin, og formen på svaret.
  *
  * Valgene og typene deres leses av TypeScript-kompilatoren fra signaturene i
- * `src/fs.ts`, ikke fra kildekoden som tekst, så et valg som er lagt til i
+ * `src/lt.ts`, ikke fra kildekoden som tekst, så et valg som er lagt til i
  * en komponent er med uten at noe må skrives et annet sted.
  *
- * Både `generate-ordforrad.ts` og `generate-manifest.ts` leser herfra. Før
+ * Både `generate-vocabulary.ts` og `generate-manifest.ts` leser herfra. Før
  * leste ordforrådet flaggene fra `manifest.json` på disk, mens manifestet
  * utledet dem på nytt fra byggetilfellene og leste resten fra `classes.ts`.
  * De to pekte på hverandre: et nytt flagg kom inn i manifestet ved første
- * bygg, men i `classes.ts` først ved det neste, og `sjekk:ordforrad` felte
+ * bygg, men i `classes.ts` først ved det neste, og `check:vocabulary` felte
  * bygget i mellomtiden. Nå utledes flaggene ett sted, av byggefunksjonen
  * selv, og manifestet tar dem fra `classes.ts` som alt annet der.
  *
@@ -20,7 +20,7 @@
 
 import { fileURLToPath } from "node:url"
 import ts from "typescript"
-import { fs } from "../src/fs.js"
+import { lt } from "../src/lt.js"
 
 const PAKKE = fileURLToPath(new URL("..", import.meta.url))
 
@@ -55,11 +55,11 @@ export type Byggefunksjon = {
 /*
  * Rekkefølgen på lovlige verdier. TypeScript gir en union i den rekkefølgen
  * typene ble laget, ikke den de står i, så rekkefølgen hentes fra listene
- * byggefunksjonene selv reklamerer med (`fs.button.variants` og slike) når
+ * byggefunksjonene selv reklamerer med (`lt.button.variants` og slike) når
  * en av dem har nøyaktig de samme verdiene.
  */
 const lister: string[][] = []
-for (const verdi of Object.values(fs)) {
+for (const verdi of Object.values(lt)) {
   if (Array.isArray(verdi)) lister.push([...verdi])
   if (typeof verdi !== "function") continue
   for (const egen of Object.values(verdi))
@@ -73,7 +73,7 @@ function ordnet(verdier: string[]): string[] {
 
 let lest: Byggefunksjon[] | undefined
 
-/** Byggefunksjonene i `fs`, sortert på navn. Leses én gang per prosess. */
+/** Byggefunksjonene i `lt`, sortert på navn. Leses én gang per prosess. */
 export function lesByggefunksjoner(): Byggefunksjon[] {
   if (lest) return lest
 
@@ -85,16 +85,16 @@ export function lesByggefunksjoner(): Byggefunksjon[] {
   if (!konfig) throw new Error("Fant ikke tsconfig.json")
   const program = ts.createProgram(konfig.fileNames, konfig.options)
   const typer = program.getTypeChecker()
-  const kilde = program.getSourceFile(`${PAKKE}src/fs.ts`)
-  if (!kilde) throw new Error("Fant ikke src/fs.ts i programmet")
+  const kilde = program.getSourceFile(`${PAKKE}src/lt.ts`)
+  if (!kilde) throw new Error("Fant ikke src/lt.ts i programmet")
 
-  let fsNavn: ts.Identifier | undefined
+  let ltNavn: ts.Identifier | undefined
   kilde.forEachChild((node) => {
     if (!ts.isVariableStatement(node)) return
     for (const d of node.declarationList.declarations)
-      if (ts.isIdentifier(d.name) && d.name.text === "fs") fsNavn = d.name
+      if (ts.isIdentifier(d.name) && d.name.text === "lt") ltNavn = d.name
   })
-  if (!fsNavn) throw new Error("Fant ikke `export const fs` i src/fs.ts")
+  if (!ltNavn) throw new Error("Fant ikke `export const lt` i src/lt.ts")
 
   const vis = (t: ts.Type) => typer.typeToString(t)
   const deler = (t: ts.Type) =>
@@ -174,9 +174,9 @@ export function lesByggefunksjoner(): Byggefunksjon[] {
   }
 
   const byggefunksjoner: Byggefunksjon[] = []
-  for (const p of typer.getTypeAtLocation(fsNavn).getProperties()) {
+  for (const p of typer.getTypeAtLocation(ltNavn).getProperties()) {
     const signatur = typer.getTypeOfSymbol(p).getCallSignatures()[0]
-    // Lister som `fs.states` og vakter som `fs.isState` er ikke byggefunksjoner.
+    // Lister som `lt.states` og vakter som `lt.isState` er ikke byggefunksjoner.
     // `setAttributes` legger et sett på et DOM-element og har ingen motpart
     // utenfor nettleseren.
     if (!signatur || p.name.startsWith("is") || p.name === "setAttributes")
@@ -200,7 +200,7 @@ export function lesByggefunksjoner(): Byggefunksjon[] {
           required: (v.flags & ts.SymbolFlags.Optional) === 0,
           type: valgtype(
             typer.getTypeOfSymbol(v),
-            `fs.${p.name}({ ${v.name} })`,
+            `lt.${p.name}({ ${v.name} })`,
           ),
           ...(description ? { description } : {}),
         })
@@ -209,7 +209,7 @@ export function lesByggefunksjoner(): Byggefunksjon[] {
     byggefunksjoner.push({
       name: p.name,
       options,
-      returns: svar(signatur.getReturnType(), `fs.${p.name}()`),
+      returns: svar(signatur.getReturnType(), `lt.${p.name}()`),
     })
   }
   byggefunksjoner.sort((a, b) => a.name.localeCompare(b.name))
@@ -229,8 +229,8 @@ export function settene(svar: unknown): [string, Record<string, unknown>][] {
 }
 
 /**
- * Flaggene en byggefunksjon gir: `data-interactive` på `fs-card` når
- * `interactive` er på, `data-optional` på `fs-label` når `optional` er på.
+ * Flaggene en byggefunksjon gir: `data-interactive` på `lt-card` når
+ * `interactive` er på, `data-optional` på `lt-label` når `optional` er på.
  * Et flagg er på når det står der, og stilarket spør bare om det finnes, så
  * det har ingen liste over verdier.
  *

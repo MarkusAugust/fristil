@@ -4,8 +4,8 @@
     "bundles",
     "datastar",
     "html",
-    "maler",
-    "react"
+    "react",
+    "templates"
   ],
   "components": [
     {
@@ -289,82 +289,82 @@
       ]
     },
     {
-      "category": "ramme",
+      "category": "frame",
       "name": "dialog",
       "files": [
         "dialog.css",
         "dialog.ts",
-        "fs-dialog.ts"
+        "lt-dialog.ts"
       ]
     },
     {
-      "category": "ramme",
+      "category": "frame",
       "name": "error-summary",
       "files": [
         "error-summary.css",
         "error-summary.ts",
-        "fs-error-summary.ts"
+        "lt-error-summary.ts"
       ]
     },
     {
-      "category": "ramme",
+      "category": "frame",
       "name": "field",
       "files": [
         "field-core.ts",
         "field.css",
-        "fs-field.ts"
+        "lt-field.ts"
       ]
     },
     {
-      "category": "ramme",
+      "category": "frame",
       "name": "popover",
       "files": [
-        "fs-popover.ts",
+        "lt-popover.ts",
         "popover.css",
         "popover.ts"
       ]
     },
     {
-      "category": "ramme",
+      "category": "frame",
       "name": "session-timeout",
       "files": [
-        "fs-session-timeout.ts",
+        "lt-session-timeout.ts",
         "session-timeout.css",
         "session-timeout.ts"
       ]
     },
     {
-      "category": "ramme",
+      "category": "frame",
       "name": "suggestion",
       "files": [
-        "fs-suggestion.ts",
+        "lt-suggestion.ts",
         "suggestion.css",
         "suggestion.ts"
       ]
     },
     {
-      "category": "ramme",
+      "category": "frame",
       "name": "tabs",
       "files": [
-        "fs-tabs.ts",
+        "lt-tabs.ts",
         "tabs.css",
         "tabs.ts"
       ]
     },
     {
-      "category": "frittstaende",
+      "category": "standalone",
       "name": "connection-status",
       "files": [
         "connection-status.css",
         "connection-status.ts",
-        "fs-connection-status.ts"
+        "lt-connection-status.ts"
       ]
     },
     {
-      "category": "frittstaende",
+      "category": "standalone",
       "name": "toast",
       "files": [
-        "fs-toast.ts",
+        "lt-toast.ts",
         "toast.css",
         "toast.ts"
       ]

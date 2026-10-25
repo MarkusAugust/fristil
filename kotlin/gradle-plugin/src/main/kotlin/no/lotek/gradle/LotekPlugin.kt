@@ -1,24 +1,24 @@
 /**
- * Fristil i Gradle.
+ * LO-TEK i Gradle.
  *
  * ```kotlin
  * plugins {
- *     id("io.github.markusaugust.fristil")
+ *     id("io.github.markusaugust.lo-tek")
  * }
  *
- * fristil {
+ * lotek {
  *     templates.from(fileTree("src/main/jte"))
- *     themeRecipe = file("fristil.tema.json")
+ *     themeRecipe = file("lotek.theme.json")
  * }
  * ```
  *
- * `fristilSjekk` kjøres av `check`, og `fristilManifest` av `assemble`.
- * `fristilTema` kjøres når den blir bedt om, eller når en annen oppgave
+ * `lotekSjekk` kjøres av `check`, og `lotekManifest` av `assemble`.
+ * `lotekTema` kjøres når den blir bedt om, eller når en annen oppgave
  * trenger temaet.
  */
-package no.fristil.gradle
+package no.lotek.gradle
 
-import no.fristil.cli.CommandLine
+import no.lotek.cli.CommandLine
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -41,57 +41,57 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-/** Innstillingene, under `fristil { }`. */
-abstract class FristilExtension {
-    /** Malene og sidene `fristilSjekk` sjekker. */
+/** Innstillingene, under `lotek { }`. */
+abstract class LotekExtension {
+    /** Malene og sidene `lotekSjekk` sjekker. */
     abstract val templates: ConfigurableFileCollection
 
     /**
      * Sjekk filene som hele sider, med koblingen mellom ledetekster, felt og
-     * id-er. Som `fristil sjekk --rendret`. Av som standard, siden en id i en
+     * id-er. Som `lotek sjekk --rendret`. Av som standard, siden en id i en
      * mal kan stå i en annen fil.
      */
     abstract val rendered: Property<Boolean>
 
-    /** Fragmentene `fristil overta` skrev ved siden av kopiene. */
+    /** Fragmentene `lotek overta` skrev ved siden av kopiene. */
     abstract val manifests: ConfigurableFileCollection
 
-    /** Oppskriften `fristilTema` bygger temaet av, som `fristil tema <fil>`. */
+    /** Oppskriften `lotekTema` bygger temaet av, som `lotek tema <fil>`. */
     abstract val themeRecipe: RegularFileProperty
 
-    /** Hvor temaet skrives. Standard: `build/fristil/tema.css`. */
+    /** Hvor temaet skrives. Standard: `build/lotek/theme.css`. */
     abstract val themeOutput: RegularFileProperty
 }
 
-class FristilPlugin : Plugin<Project> {
+class LotekPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        val extension = project.extensions.create("fristil", FristilExtension::class.java)
+        val extension = project.extensions.create("lotek", LotekExtension::class.java)
         extension.rendered.convention(false)
-        extension.themeOutput.convention(project.layout.buildDirectory.file("fristil/tema.css"))
+        extension.themeOutput.convention(project.layout.buildDirectory.file("lotek/theme.css"))
 
-        val check = project.tasks.register("fristilSjekk", FristilCheck::class.java) { task ->
+        val check = project.tasks.register("lotekSjekk", LotekCheck::class.java) { task ->
             task.group = "verification"
-            task.description = "Sjekker malene mot Fristil, som fristil sjekk."
+            task.description = "Sjekker malene mot LO-TEK, som lotek sjekk."
             task.templates.from(extension.templates)
             task.rendered.set(extension.rendered)
             task.manifests.from(extension.manifests)
             task.workingDirectory.set(project.layout.projectDirectory)
-            task.report.set(project.layout.buildDirectory.file("fristil/sjekk.txt"))
+            task.report.set(project.layout.buildDirectory.file("lotek/check.txt"))
         }
-        project.tasks.register("fristilTema", FristilTheme::class.java) { task ->
+        project.tasks.register("lotekTema", LotekTheme::class.java) { task ->
             task.group = "build"
-            task.description = "Bygger temaet av oppskriften, som fristil tema."
+            task.description = "Bygger temaet av oppskriften, som lotek tema."
             task.recipe.set(extension.themeRecipe)
             task.output.set(extension.themeOutput)
             task.workingDirectory.set(project.layout.projectDirectory)
-            task.onlyIf("fristil.themeRecipe er satt") { task.recipe.isPresent }
+            task.onlyIf("lotek.themeRecipe er satt") { task.recipe.isPresent }
         }
-        val manifest = project.tasks.register("fristilManifest", FristilManifest::class.java) { task ->
+        val manifest = project.tasks.register("lotekManifest", LotekManifest::class.java) { task ->
             task.group = "build"
-            task.description = "Skriver manifestet prosjektet sjekkes mot, med fragmentene fra fristil overta."
+            task.description = "Skriver manifestet prosjektet sjekkes mot, med fragmentene fra lotek overta."
             task.manifests.from(extension.manifests)
             task.workingDirectory.set(project.layout.projectDirectory)
-            task.output.set(project.layout.buildDirectory.file("fristil/manifest.json"))
+            task.output.set(project.layout.buildDirectory.file("lotek/manifest.json"))
         }
 
         project.pluginManager.withPlugin("base") {
@@ -122,8 +122,8 @@ internal fun shown(file: File, workingDirectory: File): String {
     return if (relative.startsWith("..")) file.absolutePath else relative
 }
 
-/** `fristilSjekk`: malene mot Fristil, og mot fragmentene fra `fristil overta`. */
-abstract class FristilCheck : DefaultTask() {
+/** `lotekSjekk`: malene mot LO-TEK, og mot fragmentene fra `lotek overta`. */
+abstract class LotekCheck : DefaultTask() {
     @get:InputFiles
     @get:SkipWhenEmpty
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -154,13 +154,13 @@ abstract class FristilCheck : DefaultTask() {
         }
         val (code, output) = run(args, directory)
         report.get().asFile.writeText("$output\n")
-        if (code != 0) throw GradleException("Markupen stemmer ikke med Fristil:\n\n$output")
+        if (code != 0) throw GradleException("Markupen stemmer ikke med LO-TEK:\n\n$output")
         logger.info(output)
     }
 }
 
-/** `fristilTema`: temaet av oppskriften. */
-abstract class FristilTheme : DefaultTask() {
+/** `lotekTema`: temaet av oppskriften. */
+abstract class LotekTheme : DefaultTask() {
     @get:InputFile
     @get:Optional
     @get:PathSensitive(PathSensitivity.NONE)
@@ -185,16 +185,16 @@ abstract class FristilTheme : DefaultTask() {
 }
 
 /**
- * `fristilManifest`: manifestet med fragmentene, for editoren og språkserveren.
+ * `lotekManifest`: manifestet med fragmentene, for editoren og språkserveren.
  *
  * Fila skrives bare når prosjektet har fragmenter. Språkserveren og
- * IntelliJ-pluginen foretrekker `build/fristil/manifest.json` framfor
+ * IntelliJ-pluginen foretrekker `build/lotek/manifest.json` framfor
  * manifestet i npm-pakken, så en fil uten fragmenter ville bare vært en kopi
  * av pakkens, og den ble stående når pakken ble oppdatert. Fjernes det
  * siste fragmentet, slettes fila, ellers ville editoren fortsatt godtatt
  * klassene fra en komponent som ikke finnes lenger.
  */
-abstract class FristilManifest : DefaultTask() {
+abstract class LotekManifest : DefaultTask() {
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val manifests: ConfigurableFileCollection

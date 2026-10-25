@@ -2,16 +2,16 @@
  * VS Code-utvidelsen: språkserveren for funnene og rettelsene, og
  * fullføring og forklaring oppå.
  *
- * Funnene og hurtigrettelsene kommer fra språkserveren, `fristil lsp`, den
+ * Funnene og hurtigrettelsene kommer fra språkserveren, `lotek lsp`, den
  * samme som Neovim og Helix bruker, skrevet i Rust og kjørt som
  * WASI-modul (se `server.ts`). Den leser manifestet prosjektet faktisk har,
- * også med komponenter tatt over med `fristil overta`. Her er resten:
+ * også med komponenter tatt over med `lotek overta`. Her er resten:
  *
- *   - inne i `class="…"` fullføres `fs-`-klassene, og inne i et attributt en
- *     klasse tar, som `data-variant` på `fs-button`, fullføres verdiene.
+ *   - inne i `class="…"` fullføres `lt-`-klassene, og inne i et attributt en
+ *     klasse tar, som `data-variant` på `lt-button`, fullføres verdiene.
  *     I andre språk enn HTML, der VS Codes egen HTML-tjeneste ikke er med,
- *     fullføres også `<fs-…>`-elementene, attributtene og verdiene deres;
- *   - musa over en `fs-`-klasse i et `class`-attributt gir komponenten,
+ *     fullføres også `<lt-…>`-elementene, attributtene og verdiene deres;
+ *   - musa over en `lt-`-klasse i et `class`-attributt gir komponenten,
  *     beskrivelsen og lenken.
  *
  * Taggen markøren står i leses fra et vindu bakover, ikke fra hele
@@ -21,7 +21,7 @@
 
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import type { Manifest } from "@fristil/designsystem/diagnostics"
+import type { Manifest } from "@lo-tek/interfaces/diagnostics"
 import * as vscode from "vscode"
 import {
   LanguageClient,
@@ -61,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
   // derimot mot prosjektets manifest når det har et, og mot dette bare som
   // reserve. Har prosjektet en eldre pakke installert, kan fullføringen
   // derfor foreslå en klasse serveren streker under, og en komponent tatt
-  // over med `fristil overta` foreslås ikke. Fullføring fra serveren står
+  // over med `lotek overta` foreslås ikke. Fullføring fra serveren står
   // på veikartet.
   const { classes, elements }: Manifest = JSON.parse(
     readFileSync(
@@ -73,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
   const elementNames = Object.keys(elements)
 
   const languages = () =>
-    vscode.workspace.getConfiguration("fristil").get<string[]>("languages") ?? [
+    vscode.workspace.getConfiguration("lotek").get<string[]>("languages") ?? [
       "html",
     ]
   const selector = (): vscode.DocumentSelector =>
@@ -90,7 +90,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Et nytt bygg eller en oppgradering av pakken endrer manifestet. Én
   // overvåker for hele levetiden, ikke én per omstart.
   const manifests = vscode.workspace.createFileSystemWatcher(
-    "**/{build/fristil/manifest.json,node_modules/@fristil/designsystem/manifest/manifest.json}",
+    "**/{build/lotek/manifest.json,node_modules/@lo-tek/interfaces/manifest/manifest.json}",
   )
   context.subscriptions.push(manifests)
 
@@ -118,7 +118,7 @@ export function activate(context: vscode.ExtensionContext) {
     restarts = restarts
       .then(async () => {
         await stopClient()
-        client = new LanguageClient("fristil", "Fristil", serverOptions, {
+        client = new LanguageClient("lotek", "LO-TEK", serverOptions, {
           documentSelector: languages().flatMap((language) => [
             { scheme: "file", language },
             { scheme: "untitled", language },
@@ -129,7 +129,7 @@ export function activate(context: vscode.ExtensionContext) {
       })
       .catch((error: unknown) => {
         void vscode.window.showErrorMessage(
-          `Fristil kunne ikke starte språkserveren: ${error instanceof Error ? error.message : String(error)}`,
+          `LO-TEK kunne ikke starte språkserveren: ${error instanceof Error ? error.message : String(error)}`,
         )
       })
     return restarts
@@ -256,12 +256,12 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       const isHtml = document.languageId === "html"
-      const element = /^<(fs-[a-z0-9-]+)(?=[\s/])/i
+      const element = /^<(lt-[a-z0-9-]+)(?=[\s/])/i
         .exec(tag.before)?.[1]
         .toLowerCase()
 
       // Verdiene til et attributt: det en klasse på taggen tar, eller det et
-      // <fs-…>-element tar utenfor HTML.
+      // <lt-…>-element tar utenfor HTML.
       const inValue = /([A-Za-z][\w:-]*)\s*=\s*["']?[^"'>]*$/.exec(tag.before)
       if (inValue) {
         const attribute = inValue[1].toLowerCase()
@@ -297,7 +297,7 @@ export function activate(context: vscode.ExtensionContext) {
       // Utenfor HTML finnes ingen HTML-tjeneste, så elementene og attributtene
       // deres fullføres her.
       if (isHtml) return undefined
-      if (/^<fs-[a-z0-9-]*$/i.test(tag.before)) {
+      if (/^<lt-[a-z0-9-]*$/i.test(tag.before)) {
         for (const name of elementNames)
           item(
             name,
@@ -331,12 +331,12 @@ export function activate(context: vscode.ExtensionContext) {
     provideHover(document, position) {
       const range = document.getWordRangeAtPosition(
         position,
-        /fs-[A-Za-z0-9_-]+/,
+        /lt-[A-Za-z0-9_-]+/,
       )
       if (!range) return undefined
       const word = document.getText(range)
       if (!classes[word]) return undefined
-      // Bare i et class-attributt: «bruk fs-button her» i løpende tekst er tekst.
+      // Bare i et class-attributt: «bruk lt-button her» i løpende tekst er tekst.
       const tag = tagAt(document, range.start)
       if (!tag || !inClassValue(tag)) return undefined
       return new vscode.Hover(classDocumentation(word), range)
@@ -367,7 +367,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration("fristil.languages")) register()
+      if (event.affectsConfiguration("lotek.languages")) register()
     }),
     {
       dispose() {

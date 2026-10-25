@@ -9,29 +9,29 @@ import {
   uniqueId,
   warnAboutMarkup,
 } from "../../host-element.js"
-export const FS_TABS_TAG = "fs-tabs" as const
+export const LT_TABS_TAG = "lt-tabs" as const
 
 /**
  * Delene fanene finner, som selektorer relativt til elementet. Komponenten
  * finner delene med disse, og manifestet beskriver dem for den som setter
  * sammen markupen selv, så de to ikke kan si noe ulikt.
  */
-export const FS_TABS_PARTS = {
+export const LT_TABS_PARTS = {
   /** Raden: den serveren har gitt rollen, eller klassen fra `tabs.css`. */
-  list: "[role='tablist'], .fs-tabs__list",
+  list: "[role='tablist'], .lt-tabs__list",
   /**
    * En fane er en lenke til et panel i raden. En lenke er det eneste
    * fanemønsteret som virker uten JavaScript: uten skriptet er raden en
    * innholdsfortegnelse, og lenkene fører til panelene. Har serveren skrevet
    * rollene, er bare lenkene med `role="tab"` faner.
    */
-  tab: "a[role='tab'][href^='#'], .fs-tabs__list a[href^='#']:not([role])",
+  tab: "a[role='tab'][href^='#'], .lt-tabs__list a[href^='#']:not([role])",
   /** Et panel: rollen når den står der, ellers klassen uten rolle. */
-  panel: "[role='tabpanel'], .fs-tabs__panel:not([role])",
+  panel: "[role='tabpanel'], .lt-tabs__panel:not([role])",
 } as const
 
-const LIST_SELECTOR = FS_TABS_PARTS.list
-const TAB_SELECTOR = FS_TABS_PARTS.tab
+const LIST_SELECTOR = LT_TABS_PARTS.list
+const TAB_SELECTOR = LT_TABS_PARTS.tab
 /** Det serveren har kalt en fane, også det som ikke er en lenke. */
 const ANY_TAB_SELECTOR = "[role='tab']"
 /** Overskriften i et panel, som gir panelet navnet sitt. */
@@ -88,7 +88,7 @@ function hiddenFromAT(element: Element): boolean {
  * - `inReference`: noden står i en `aria-labelledby` som alt følges, og da
  *   følges ikke en til (2B).
  *
- * Tekst fra CSS, `::before` og `::after` (2F.ii), tas ikke med. Fristils
+ * Tekst fra CSS, `::before` og `::after` (2F.ii), tas ikke med. LO-TEKs
  * faner bruker det ikke, og å lese `content` riktig er mye kode for noe ingen
  * trenger (avgjort av eieren 23. oktober).
  */
@@ -172,14 +172,14 @@ type Word = { written: string | null; server: string | null }
  * Fanene er lenker til panelene sine, slik GOV.UK gjør det:
  *
  * ```html
- * <fs-tabs>
- *   <ul class="fs-tabs__list" aria-label="Deler av saken">
+ * <lt-tabs>
+ *   <ul class="lt-tabs__list" aria-label="Deler av saken">
  *     <li><a href="#soknaden">Søknaden</a></li>
  *     <li><a href="#vedlegg">Vedlegg</a></li>
  *   </ul>
- *   <section class="fs-tabs__panel" id="soknaden"><h2>Søknaden</h2>…</section>
- *   <section class="fs-tabs__panel" id="vedlegg"><h2>Vedlegg</h2>…</section>
- * </fs-tabs>
+ *   <section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2>…</section>
+ *   <section class="lt-tabs__panel" id="vedlegg"><h2>Vedlegg</h2>…</section>
+ * </lt-tabs>
  * ```
  *
  * Uten JavaScript er det en innholdsfortegnelse med alle panelene etter
@@ -199,7 +199,7 @@ type Word = { written: string | null; server: string | null }
  * siden og en lenke til noe i et panel finner dem, og nettleseren sender
  * `beforematch`, som komponenten velger fanen fra. Har serveren skrevet
  * `hidden` selv, skrives det tilbake i serverens form, i hele raden:
- * `fs.tabs()` fra `@fristil/designsystem/react` gir `hidden=""`, fordi React
+ * `lt.tabs()` fra `@lo-tek/interfaces/react` gir `hidden=""`, fordi React
  * ikke kan skrive `until-found`. Adressen velger fanen når siden lastes og når
  * den endres, og hvert valg skrives i adressen, med mindre den alt peker på
  * det valgte panelet eller noe i det. Ved lasting gjelder serverens
@@ -222,7 +222,7 @@ type Word = { written: string | null; server: string | null }
  * river det bort. Skal serveren kunne flytte fanen, som i «gå videre til
  * steg 2», settes `server-controlled` på verten, og da bestemmer hver patch.
  */
-export class FsTabs extends HostElement {
+export class LtTabs extends HostElement {
   /**
    * `server-controlled` og `activation`. Hvilken fane som er valgt står i
    * markupen serveren sendte, som `aria-selected` på fanen og `hidden` på
@@ -258,7 +258,7 @@ export class FsTabs extends HostElement {
   private hiddenMemory = new WeakMap<Element, Word>()
   /**
    * Formen serveren skjuler panelene i, sist den skjulte noe: `""` fra
-   * `fs.tabs()`, `"until-found"` eller noe annet. Komponenten skriver
+   * `lt.tabs()`, `"until-found"` eller noe annet. Komponenten skriver
    * `hidden` i den formen på alle panelene i raden, også på et panel
    * serveren aldri har skjult. Ellers fikk ett panel `until-found` og de
    * andre `""` i samme rad. Har serveren aldri skjult noe, er det
@@ -302,7 +302,7 @@ export class FsTabs extends HostElement {
   /**
    * Om raden er lastet: om adressen eller serverens valg er lest. Det skjer
    * første gang raden har faner og adressen kan besvares, se `sync()`, ikke
-   * når elementet kobles til. En `<fs-tabs>` som serveren fyller etterpå,
+   * når elementet kobles til. En `<lt-tabs>` som serveren fyller etterpå,
    * fikk ellers alltid første fane.
    */
   private started = false
@@ -325,7 +325,7 @@ export class FsTabs extends HostElement {
     this.addEventListener("keydown", this.handleKeydown, true)
     // Søk i siden, eller en lenke til noe i et panel skjult med
     // `until-found`. På dokumentet, ikke på verten: et panel kan stå utenfor
-    // `<fs-tabs>`, og da når hendelsen aldri verten.
+    // `<lt-tabs>`, og da når hendelsen aldri verten.
     document.addEventListener("beforematch", this.handleBeforematch, true)
     const root = this.getRootNode() as Document | ShadowRoot
     if (root !== document) {
@@ -656,7 +656,7 @@ export class FsTabs extends HostElement {
     /*
      * Første gang raden har faner, er den lastet. Har serveren sagt hvilken
      * fane som er valgt, gjelder det: serveren ser ikke adressen, og
-     * React-inngangens `fs.tabs()` skriver `aria-selected`. Valgte
+     * React-inngangens `lt.tabs()` skriver `aria-selected`. Valgte
      * komponenten fra adressen før React hydrerte, meldte React et avvik for
      * hvert attributt den endret. Ellers velger adressen. Serverens ord leses
      * før komponenten skriver noe.
@@ -774,7 +774,7 @@ export class FsTabs extends HostElement {
       // morfing, får den den samme tilbake.
       let id = heading.id
       if (!id) {
-        id = remembered ?? uniqueId("fs-tabs-heading")
+        id = remembered ?? uniqueId("lt-tabs-heading")
         setAttr(heading, "id", id)
       }
       this.headingIds.set(panel, id)
@@ -929,11 +929,11 @@ export class FsTabs extends HostElement {
     if (tabs.length === 0) {
       warnAboutMarkup(
         this,
-        "fant ingen faner. Raden trenger en .fs-tabs__list med lenker til " +
+        "fant ingen faner. Raden trenger en .lt-tabs__list med lenker til " +
           'panelene, som <a href="#vedlegg">. Uten dem sier skjermleseren ' +
           "«lenke» der den skulle sagt «fane, 2 av 3, valgt», og piltastene " +
           "gjør ingenting.",
-        // En tom `<fs-tabs>` er et område serveren ikke har fylt ennå, og
+        // En tom `<lt-tabs>` er et område serveren ikke har fylt ennå, og
         // det er ikke en feil i markupen.
         () => this.childElementCount > 0 && this.tabs.length === 0,
       )
@@ -946,7 +946,7 @@ export class FsTabs extends HostElement {
     warnAboutMarkup(
       this,
       "har faner uten et panel: lenken peker på en id som ikke finnes. " +
-        "Skriv id på hvert .fs-tabs__panel, den samme som lenken peker på. " +
+        "Skriv id på hvert .lt-tabs__panel, den samme som lenken peker på. " +
         "Fanene uten et panel kan velges uten at noe vises.",
       () => this.tabs.some((tab) => this.panelFor(tab) === null),
     )
@@ -961,7 +961,7 @@ export class FsTabs extends HostElement {
 
     warnAboutMarkup(
       this,
-      "har en fanerad uten navn. Skriv aria-label på .fs-tabs__list, som " +
+      "har en fanerad uten navn. Skriv aria-label på .lt-tabs__list, som " +
         'aria-label="Deler av saken", eller aria-labelledby mot en overskrift. ' +
         "Uten navn sier skjermleseren bare «faneliste».",
       () => {
@@ -1279,6 +1279,6 @@ export class FsTabs extends HostElement {
   }
 }
 
-export function defineFsTabs(tagName: string = FS_TABS_TAG): void {
-  defineElement(tagName, FsTabs)
+export function defineLtTabs(tagName: string = LT_TABS_TAG): void {
+  defineElement(tagName, LtTabs)
 }

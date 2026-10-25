@@ -2,12 +2,12 @@
  * At regelbøkene også finnes på nettsiden, og at de er de samme.
  *
  * Kanalen finnes for agenten som ikke har `node_modules`: blir noen bedt om å
- * «lage et skjema med Fristil» i en tom mappe, skrives markupen før
+ * «lage et skjema med LO-TEK» i en tom mappe, skrives markupen før
  * `npm install` har kjørt. To kanaler med samme innhold er bare en fordel så
  * lenge de faktisk er like, og en rute som stille slutter å bygges ville ingen
  * lagt merke til før en agent hentet en 404.
  *
- * Kjør med: bun documentation/scripts/sjekk-agentkanal.ts
+ * Kjør med: bun documentation/scripts/check-agent-channel.ts
  * Krever at `documentation/dist` er bygd.
  */
 
@@ -89,7 +89,7 @@ if (llms.trim() === "") {
       avvik.push(`llms.txt lenker ikke til /agent/${fil}`)
   }
 
-  for (const del of ["fs-modal", "var(--fs-color-", "defineFs", "sjekk"]) {
+  for (const del of ["lt-modal", "var(--lt-color-", "defineLt", "sjekk"]) {
     if (!llms.includes(del)) avvik.push(`llms.txt nevner ikke ${del}`)
   }
 }

@@ -1,14 +1,14 @@
 /**
- * Bygger WebAssembly-modulene til `kjerne/dist/`.
+ * Bygger WebAssembly-modulene til `core/dist/`.
  *
- * Kjernen bærer ingen data, så bygget leser ingenting utenfor `kjerne/`.
+ * Kjernen bærer ingen data, så bygget leser ingenting utenfor `core/`.
  * Manifestet og fargekontrakten gis den av verten når den kjører.
  *
- * To moduler: `fristil-kjerne.wasm`, sjekken og temaet, og `fristil.wasm`,
+ * To moduler: `lotek-core.wasm`, sjekken og temaet, og `lotek.wasm`,
  * kommandolinja (`cli/`) som WASI-modul. Pakken henter dem derfra med
- * `bun run kjerne` i `designsystem/`. Ingen av dem sjekkes inn.
+ * `bun run core` i `designsystem/`. Ingen av dem sjekkes inn.
  *
- * Kjør med: bun kjerne/scripts/bygg.ts. Krever Rust. `rust-toolchain.toml`
+ * Kjør med: bun core/scripts/build.ts. Krever Rust. `rust-toolchain.toml`
  * henter versjonen og målene.
  */
 
@@ -19,11 +19,11 @@ import { fileURLToPath } from "node:url"
 const KJERNE = fileURLToPath(new URL("..", import.meta.url))
 const WASM = join(
   KJERNE,
-  "target/wasm32-unknown-unknown/release/fristil_kjerne.wasm",
+  "target/wasm32-unknown-unknown/release/lotek_core.wasm",
 )
-export const MODUL = join(KJERNE, "dist/fristil-kjerne.wasm")
-const CLI = join(KJERNE, "target/wasm32-wasip1/release/fristil.wasm")
-export const KOMMANDOLINJE = join(KJERNE, "dist/fristil.wasm")
+export const MODUL = join(KJERNE, "dist/lotek-core.wasm")
+const CLI = join(KJERNE, "target/wasm32-wasip1/release/lotek.wasm")
+export const KOMMANDOLINJE = join(KJERNE, "dist/lotek.wasm")
 
 if (import.meta.main) {
   const cargo = Bun.spawnSync(
@@ -37,7 +37,7 @@ if (import.meta.main) {
       "build",
       "--release",
       "-p",
-      "fristil",
+      "lotek",
       "--target",
       "wasm32-wasip1",
     ],

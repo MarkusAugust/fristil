@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const PROGRESS_CLASS = "fs-progress" as const
+export const PROGRESS_CLASS = "lt-progress" as const
 
 export const progressColors = ["success", "warning", "danger"] as const
 
@@ -40,7 +40,7 @@ export type ProgressAttributes = {
  * verken rolle, `aria-valuenow` eller `aria-valuemax`.
  *
  * Utelater du `value`, blir stolpen ubestemt: «noe pågår, vi vet ikke hvor
- * lenge». Det er det samme som `fs.spinner()` sier, så velg én av dem.
+ * lenge». Det er det samme som `lt.spinner()` sier, så velg én av dem.
  *
  * ```ts
  * <progress {...progress({ value: 3, max: 7, label: "Steg 3 av 7" })} />

@@ -13,7 +13,7 @@ export type { Violation }
  *
  * ```ts
  * const tema = buildTheme({ accent: "#7c3aed", danger: "#b3261e" })
- * console.log(tema.css)
+ * console.log(theme.css)
  * ```
  */
 
@@ -69,15 +69,15 @@ export type ThemeShape = {
 /**
  * Merkefargene.
  *
- * Hver familie er valgfri for seg, og en du utelater arver Fristils egen
+ * Hver familie er valgfri for seg, og en du utelater arver LO-TEKs egen
  * kulør. Utelater du alle, blir temaet et som bare setter skrift og form.
  */
 export type ThemeColors = Partial<Record<Family, string>>
 
 export type ThemeInput = ThemeColors & {
-  /** Skrift og linjeavstand. Utelates den, står Fristils egen typografi. */
+  /** Skrift og linjeavstand. Utelates den, står LO-TEKs egen typografi. */
   typography?: ThemeTypography
-  /** Hjørner og rammer. Utelates den, står Fristils egen form. */
+  /** Hjørner og rammer. Utelates den, står LO-TEKs egen form. */
   shape?: ThemeShape
 }
 
@@ -92,7 +92,7 @@ export type Theme = {
 /**
  * Bygger temaet, og kontrollerer hvert løfte mens det bygges.
  *
- * Regningen skjer i kjernen, skrevet i Rust, som `fristil tema` og Fristil for
+ * Regningen skjer i kjernen, skrevet i Rust, som `lotek tema` og LO-TEK for
  * Kotlin bruker. Verdiene i typografi og form skrives rett inn i en
  * CSS-regel, så en verdi som kan bryte ut av den, som `4px; } html {`, en
  * ulukket parentes eller `</style>`, avvises med en forklaring som navngir

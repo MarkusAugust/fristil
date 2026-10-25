@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const PARAGRAPH_CLASS = "fs-paragraph" as const
+export const PARAGRAPH_CLASS = "lt-paragraph" as const
 
 export const paragraphSizes = ["small", "medium", "large"] as const
 export const paragraphVariants = ["default", "lead"] as const

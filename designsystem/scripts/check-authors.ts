@@ -14,7 +14,7 @@
  *     Claude eller Anthropic, `Claude-Session` og «Generated with Claude
  *     Code».
  *
- * Kjør med: bun designsystem/scripts/sjekk-forfattere.ts. CI trenger hele
+ * Kjør med: bun designsystem/scripts/check-authors.ts. CI trenger hele
  * historikken (`fetch-depth: 0`).
  */
 
@@ -72,7 +72,7 @@ const selvtest = [
 ]
 if (selvtest.length > 0) {
   console.error(
-    `✗ Mønsteret i sjekk-forfattere.ts ${selvtest.join(", og ")}. Rett mønsteret før historikken sjekkes.`,
+    `✗ Mønsteret i check-authors.ts ${selvtest.join(", og ")}. Rett mønsteret før historikken sjekkes.`,
   )
   process.exit(1)
 }

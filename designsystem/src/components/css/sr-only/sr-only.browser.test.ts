@@ -13,11 +13,11 @@ import "../../../tokens/tokens.css"
 import "./sr-only.css"
 import "../button/button.css"
 
-describe("fs-sr-only", () => {
+describe("lt-sr-only", () => {
   beforeEach(() => {
     monter(`
-      <button class="fs-button" type="button">
-        Slett<span id="skjult" class="fs-sr-only"> søknaden fra 4. mars</span>
+      <button class="lt-button" type="button">
+        Slett<span id="skjult" class="lt-sr-only"> søknaden fra 4. mars</span>
       </button>
     `)
   })
@@ -41,7 +41,7 @@ describe("fs-sr-only", () => {
   })
 
   it("gir klassen fra byggefunksjonen", () => {
-    expect(srOnly()).toEqual({ class: "fs-sr-only" })
+    expect(srOnly()).toEqual({ class: "lt-sr-only" })
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {

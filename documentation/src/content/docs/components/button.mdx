@@ -3,64 +3,64 @@ title: Button
 description: Knapp for handlinger. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Klassen settes på et vanlig `<button>`. Ingen JavaScript lastes, og den virker likt i alle rammeverk.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "button.css"]}
+<Example importer={["tokens.css", "button.css"]}
   stiler={["button"]} kode={`
-<button class="fs-button">Send søknad</button>
-<button class="fs-button" data-variant="secondary">Lagre utkast</button>
-<button class="fs-button" data-variant="ghost">Legg til vedlegg</button>
-<button class="fs-button" data-variant="danger">Slett søknad</button>
+<button class="lt-button">Send søknad</button>
+<button class="lt-button" data-variant="secondary">Lagre utkast</button>
+<button class="lt-button" data-variant="ghost">Legg til vedlegg</button>
+<button class="lt-button" data-variant="danger">Slett søknad</button>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<button {...fs.button()}>Send søknad</button>
+<button {...lt.button()}>Send søknad</button>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const knapp = document.querySelector<HTMLButtonElement>("#send")
 
-fs.setAttributes(knapp, fs.button({ variant: "secondary" }))
+lt.setAttributes(knapp, lt.button({ variant: "secondary" }))
 ```
 
-`fs.button()` uten argument gir primærknappen, som ikke trenger noe `data-variant`.
+`lt.button()` uten argument gir primærknappen, som ikke trenger noe `data-variant`.
 
 Kommer varianten fra et API eller en URL, valider den:
 
 ```ts
-import { fs, type ButtonVariant } from "@fristil/designsystem"
+import { lt, type ButtonVariant } from "@lo-tek/interfaces"
 
-const variant: ButtonVariant = fs.button.isVariant(svar.variant)
+const variant: ButtonVariant = lt.button.isVariant(svar.variant)
   ? svar.variant
   : "primary"
 
-fs.setAttributes(knapp, fs.button({ variant }))
+lt.setAttributes(knapp, lt.button({ variant }))
 ```
 
-Se [Typesikker bruk](../../typesikker-bruk/).
+Se [Typesikker bruk](../../type-safe-use/).
 
 **Gjenbrukbar knapp i React.**
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
-import type { ButtonVariant } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces/react"
+import type { ButtonVariant } from "@lo-tek/interfaces"
 import type { ComponentProps } from "react"
 
 type Props = ComponentProps<"button"> & {
@@ -68,7 +68,7 @@ type Props = ComponentProps<"button"> & {
 }
 
 export function Knapp({ variant, className, ...rest }: Props) {
-  const knapp = fs.button({ variant })
+  const knapp = lt.button({ variant })
   return (
     <button
       {...knapp}
@@ -79,14 +79,14 @@ export function Knapp({ variant, className, ...rest }: Props) {
 }
 ```
 
-`className` slås sammen med systemets klasse. Spres den bare inn etter `fs.button()`, erstatter den `fs-button`, og knappen mister stilen uten at noe sier fra.
+`className` slås sammen med systemets klasse. Spres den bare inn etter `lt.button()`, erstatter den `lt-button`, og knappen mister stilen uten at noe sier fra.
 
 Bytter teamet rammeverk, er det denne ene komponenten som skrives om, ikke designsystemet.
 
 `ComponentProps<"button">` tar med `ref`, som siden React 19 er en vanlig prop og følger med gjennom `{...rest}` uten `forwardRef`. `ComponentPropsWithRef` og `ComponentPropsWithoutRef` trengs ikke lenger.
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -97,19 +97,19 @@ Bytter teamet rammeverk, er det denne ene komponenten som skrives om, ikke desig
 
 ## Deaktivert
 
-<Eksempel stiler={["button"]} kode={`
-<button class="fs-button" disabled>Send søknad</button>
-<button class="fs-button" data-variant="secondary" disabled>Lagre utkast</button>
-<a class="fs-button" role="link" tabindex="0" aria-disabled="true">Gå til oversikten</a>
+<Example stiler={["button"]} kode={`
+<button class="lt-button" disabled>Send søknad</button>
+<button class="lt-button" data-variant="secondary" disabled>Lagre utkast</button>
+<a class="lt-button" role="link" tabindex="0" aria-disabled="true">Gå til oversikten</a>
 `} />
 
 `disabled` finnes bare på `<button>`. Er knappen en `<a>`, bruk `aria-disabled="true"` og ta bort `href`, ellers følger Enter den. Skriv `role="link"` og `tabindex="0"` ved siden av, så skjermlesere fortsatt finner lenken og kan si at den er utilgjengelig. Se [Link](../link/#deaktivert-lenke).
 
 ## Lenke som ser ut som knapp
 
-<Eksempel stiler={["button"]} kode={`
-<a class="fs-button" href="#">Gå til oversikten</a>
-<a class="fs-button" data-variant="secondary" href="#">Les vilkårene</a>
+<Example stiler={["button"]} kode={`
+<a class="lt-button" href="#">Gå til oversikten</a>
+<a class="lt-button" data-variant="secondary" href="#">Les vilkårene</a>
 `} />
 
 Navigerer du brukeren, skal elementet være en `<a>` selv om det ser ut som en knapp. Da virker høyreklikk, midtklikk og «åpne i ny fane».
@@ -130,37 +130,37 @@ Trenger du en knapp i full bredde, er det appens oppsett:
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-button` | Knappen. Varianten kommer fra `data-variant`. |
+| `.lt-button` | Knappen. Varianten kommer fra `data-variant`. |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-button-padding` | `var(--fs-spacing-2) var(--fs-spacing-4)` |
-| `--fs-button-radius` | `var(--fs-spacing-1)` |
-| `--fs-button-border-width` | `1px` |
-| `--fs-button-font-weight` | `var(--fs-font-weight-medium)` |
-| `--fs-button-line-height` | `var(--fs-line-height-default)` |
+| `--lt-button-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
+| `--lt-button-radius` | `var(--lt-spacing-1)` |
+| `--lt-button-border-width` | `1px` |
+| `--lt-button-font-weight` | `var(--lt-font-weight-medium)` |
+| `--lt-button-line-height` | `var(--lt-line-height-default)` |
 
 ```css
 :root {
-	--fs-button-radius: 9999px;
+	--lt-button-radius: 9999px;
 }
 ```
 
 Et eksempel. En knapp som skal stå i en tabellrad trenger mindre luft enn en som står alene:
 
-<Eksempel stiler={["button"]} layout="rad" egenCss={`
+<Example stiler={["button"]} layout="rad" egenCss={`
 .rad-knapp {
-	--fs-button-padding: var(--fs-spacing-1) var(--fs-spacing-3);
-	--fs-button-radius: var(--fs-spacing-4);
+	--lt-button-padding: var(--lt-spacing-1) var(--lt-spacing-3);
+	--lt-button-radius: var(--lt-spacing-4);
 }
 `} kode={`
-<button class="fs-button">Åpne saken</button>
-<button class="fs-button rad-knapp" data-variant="secondary">Åpne</button>
+<button class="lt-button">Åpne saken</button>
+<button class="lt-button rad-knapp" data-variant="secondary">Åpne</button>
 `} />
 
 Klassen `rad-knapp` er din. Systemet kjenner den ikke, og den virker fordi variabelen arves ned i knappen.
 
-Standardverdien følger `--fs-spacing-*`-skalaen, så knappen holder seg i takt med resten når du skriver om skalaen, trinn for trinn. Se [Tilpasning](../../tilpasning/).
+Standardverdien følger `--lt-spacing-*`-skalaen, så knappen holder seg i takt med resten når du skriver om skalaen, trinn for trinn. Se [Tilpasning](../../customising/).
 
 ## Tilgjengelighet
 

@@ -6,7 +6,7 @@ import {
   type NonDefaultFieldState,
 } from "../shared.js"
 
-export const TEXTAREA_CLASS = "fs-textarea" as const
+export const TEXTAREA_CLASS = "lt-textarea" as const
 
 export type TextareaOptions = {
   /** Valideringstilstand. Standard: `default`. */

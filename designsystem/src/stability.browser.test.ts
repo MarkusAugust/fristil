@@ -1,13 +1,13 @@
 import { beforeAll, describe, expect, it } from "vitest"
-import { dialog } from "./components/ramme/dialog/dialog"
-import { defineFsDialog } from "./components/ramme/dialog/fs-dialog"
-import { defineFsField } from "./components/ramme/field/fs-field"
-import { defineFsPopover } from "./components/ramme/popover/fs-popover"
-import { popover } from "./components/ramme/popover/popover"
-import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion"
-import { suggestion } from "./components/ramme/suggestion/suggestion"
-import { defineFsTabs } from "./components/ramme/tabs/fs-tabs"
-import { tabs } from "./components/ramme/tabs/tabs"
+import { dialog } from "./components/frame/dialog/dialog"
+import { defineLtDialog } from "./components/frame/dialog/lt-dialog"
+import { defineLtField } from "./components/frame/field/lt-field"
+import { defineLtPopover } from "./components/frame/popover/lt-popover"
+import { popover } from "./components/frame/popover/popover"
+import { defineLtSuggestion } from "./components/frame/suggestion/lt-suggestion"
+import { suggestion } from "./components/frame/suggestion/suggestion"
+import { defineLtTabs } from "./components/frame/tabs/lt-tabs"
+import { tabs } from "./components/frame/tabs/tabs"
 import { monter, ventPaTegning } from "./testing/a11y"
 
 /**
@@ -25,7 +25,7 @@ import { monter, ventPaTegning } from "./testing/a11y"
  *
  * Den fanger en komponent som skriver litt for mye, men ikke en som skriver
  * i ring: da henger kjøringen her også. Selve regelen håndheves derfor av
- * `scripts/sjekk-skriving.ts`, som leser kilden og feiler på sekunder.
+ * `scripts/check-writes.ts`, som leser kilden og feiler på sekunder.
  */
 
 const attr = (verdier: Record<string, unknown>) =>
@@ -56,21 +56,21 @@ async function mutasjonerEtterRo(rot: Element): Promise<number> {
 
 describe("komponentene faller til ro", () => {
   beforeAll(() => {
-    defineFsField()
-    defineFsTabs()
-    defineFsPopover()
-    defineFsSuggestion()
-    defineFsDialog()
+    defineLtField()
+    defineLtTabs()
+    defineLtPopover()
+    defineLtSuggestion()
+    defineLtDialog()
   })
 
   it("feltet, etter at koblingen er satt", async () => {
     const flate = monter(`
-      <fs-field>
-        <label class="fs-label" for="ro-epost" data-required="symbol">E-post</label>
-        <input class="fs-input" id="ro-epost" type="email" />
-        <p class="fs-help-text">Vi sender aldri spam.</p>
-        <p class="fs-error-text">Skriv en gyldig adresse.</p>
-      </fs-field>
+      <lt-field>
+        <label class="lt-label" for="ro-epost" data-required="symbol">E-post</label>
+        <input class="lt-input" id="ro-epost" type="email" />
+        <p class="lt-help-text">Vi sender aldri spam.</p>
+        <p class="lt-error-text">Skriv en gyldig adresse.</p>
+      </lt-field>
     `)
 
     expect(await mutasjonerEtterRo(flate)).toBe(0)
@@ -83,14 +83,14 @@ describe("komponentene faller til ro", () => {
       label: "Saken",
     })
     const flate = monter(`
-      <fs-tabs>
+      <lt-tabs>
         <ul ${attr(FANER.list)}>
           <li><a ${attr(FANER.tabs[0])}>Oversikt</a></li>
           <li><a ${attr(FANER.tabs[1])}>Vedlegg</a></li>
         </ul>
         <section ${attr(FANER.panels[0])}><h2 ${attr(FANER.headings[0])}>Oversikt</h2>Sammendrag</section>
         <section ${attr(FANER.panels[1])}><h2 ${attr(FANER.headings[1])}>Vedlegg</h2>Filer</section>
-      </fs-tabs>
+      </lt-tabs>
     `)
     await ventPaTegning()
 
@@ -103,14 +103,14 @@ describe("komponentene faller til ro", () => {
   it("sprettoppvinduet, etter at det er åpnet", async () => {
     const SPRETT = popover({ id: "meny" })
     const flate = monter(`
-      <fs-popover ${attr(SPRETT.host)}>
-        <button ${attr(SPRETT.trigger)} class="fs-button">Handlinger</button>
+      <lt-popover ${attr(SPRETT.host)}>
+        <button ${attr(SPRETT.trigger)} class="lt-button">Handlinger</button>
         <ul ${attr(SPRETT.panel)}><li>Arkiver</li></ul>
-      </fs-popover>
+      </lt-popover>
     `)
     await ventPaTegning()
 
-    const vindu = flate.querySelector("fs-popover") as HTMLElement & {
+    const vindu = flate.querySelector("lt-popover") as HTMLElement & {
       show(): void
     }
     vindu.show()
@@ -121,7 +121,7 @@ describe("komponentene faller til ro", () => {
   it("forslagsfeltet, etter at lista er åpnet og et alternativ markert", async () => {
     const FORSLAG = suggestion({ id: "kommune", keys: ["a", "b"] })
     const flate = monter(`
-      <fs-suggestion>
+      <lt-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
         <div>
           <input ${attr(FORSLAG.control)} name="kommune" />
@@ -132,7 +132,7 @@ describe("komponentene faller til ro", () => {
           <p ${attr(FORSLAG.empty)}>Ingen treff</p>
           <span ${attr(FORSLAG.status)}></span>
         </div>
-      </fs-suggestion>
+      </lt-suggestion>
     `)
     await ventPaTegning()
 
@@ -149,15 +149,15 @@ describe("komponentene faller til ro", () => {
   it("dialogen, etter at den er åpnet", async () => {
     const BOKS = dialog({ titleId: "tittel", open: true })
     const flate = monter(`
-      <fs-dialog ${attr(BOKS.host)}>
+      <lt-dialog ${attr(BOKS.host)}>
         <dialog ${attr(BOKS.dialog)}>
           <h2 ${attr(BOKS.title)}>Vedtaket er registrert</h2>
           <div ${attr(BOKS.body)}><p>Saken er ferdigbehandlet.</p></div>
           <form method="dialog" ${attr(BOKS.footer)}>
-            <button class="fs-button" value="lukk">Lukk</button>
+            <button class="lt-button" value="lukk">Lukk</button>
           </form>
         </dialog>
-      </fs-dialog>
+      </lt-dialog>
     `)
 
     expect(await mutasjonerEtterRo(flate)).toBe(0)

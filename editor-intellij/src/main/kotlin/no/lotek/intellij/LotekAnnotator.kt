@@ -1,4 +1,4 @@
-package no.fristil.intellij
+package no.lotek.intellij
 
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PriorityAction
@@ -17,13 +17,13 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiLanguageInjectionHost
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlDocument
-import no.fristil.Finding
-import no.fristil.Fix
-import no.fristil.Fristil
+import no.lotek.Finding
+import no.lotek.Fix
+import no.lotek.Lotek
 
 /**
- * Fristils feilmeldinger i editoren, fra den samme Rust-kjernen som
- * `fristil sjekk` og VS Code bruker.
+ * LO-TEKs feilmeldinger i editoren, fra den samme Rust-kjernen som
+ * `lotek sjekk` og VS Code bruker.
  *
  * Kjernen kjøres av Chicory i IDE-ens egen JVM, via Maven-pakken i
  * `../kotlin`. Ingen Node, ingen prosess å starte.
@@ -37,14 +37,14 @@ import no.fristil.Fristil
  * er en mal, og en id det pekes på kan godt stå i en annen mal. Den går mot
  * prosjektets manifest når det har et, se [ProjectManifest].
  */
-class FristilAnnotator : Annotator {
+class LotekAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (element !is XmlDocument) return
         val file = element.containingFile ?: return
-        // Ingen snarvei på «fs-» i teksten: regelen ikon-uten-navn gjelder
-        // markup uten en eneste Fristil-klasse, og kjernen bruker
+        // Ingen snarvei på «lt-» i teksten: regelen ikon-uten-navn gjelder
+        // markup uten en eneste LO-TEK-klasse, og kjernen bruker
         // millisekunder på en fil. Med snarveien tidde IntelliJ om en
-        // ikonknapp uten navn som `fristil sjekk` og VS Code meldte.
+        // ikonknapp uten navn som `lotek sjekk` og VS Code meldte.
         val text = file.text
 
         val bounds = element.textRange
@@ -68,12 +68,12 @@ class FristilAnnotator : Annotator {
      * loggen og sjekk mot pakkens.
      */
     private fun diagnose(file: PsiFile, text: String): List<Finding> {
-        val manifest = ProjectManifest.forFile(file) ?: return Fristil.diagnoseMarkup(text)
+        val manifest = ProjectManifest.forFile(file) ?: return Lotek.diagnoseMarkup(text)
         return try {
-            Fristil.diagnoseMarkup(text, manifest = manifest)
+            Lotek.diagnoseMarkup(text, manifest = manifest)
         } catch (unreadable: IllegalArgumentException) {
             ProjectManifest.rejectedBy(manifest, unreadable.message.orEmpty())
-            Fristil.diagnoseMarkup(text)
+            Lotek.diagnoseMarkup(text)
         }
     }
 
@@ -82,7 +82,7 @@ class FristilAnnotator : Annotator {
 
     private fun tooltip(finding: Finding): String =
         "<html>${StringUtil.escapeXmlEntities(finding.message)}<br>" +
-            "<a href=\"${StringUtil.escapeXmlEntities(finding.link)}\">Fristil: ${finding.rule}</a></html>"
+            "<a href=\"${StringUtil.escapeXmlEntities(finding.link)}\">LO-TEK: ${finding.rule}</a></html>"
 }
 
 /**
@@ -97,7 +97,7 @@ class FristilAnnotator : Annotator {
 private class ReplaceFix(private val fix: Fix) : IntentionAction, PriorityAction {
     override fun getText(): String = fix.title
 
-    override fun getFamilyName(): String = "Fristil"
+    override fun getFamilyName(): String = "LO-TEK"
 
     override fun getPriority(): PriorityAction.Priority =
         if (fix.preferred == true) PriorityAction.Priority.TOP else PriorityAction.Priority.NORMAL

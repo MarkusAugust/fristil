@@ -5,9 +5,9 @@
  * Kravene til fanene, ett krav per test, med kravets nummer i navnet.
  *
  * Kravene står i `krav-faner.md` i utredningen, med kilde for hvert. Krav som
- * alt har en test som kan feile, står i `fs-tabs.browser.test.ts` og
- * `fs-tabs-morph.browser.test.ts`. Siden uten JavaScript prøves i
- * `scripts/sjekk-uten-javascript.ts`, siden Vitest selv er et skript.
+ * alt har en test som kan feile, står i `lt-tabs.browser.test.ts` og
+ * `lt-tabs-morph.browser.test.ts`. Siden uten JavaScript prøves i
+ * `scripts/check-without-javascript.ts`, siden Vitest selv er et skript.
  */
 
 import axe from "axe-core"
@@ -25,14 +25,14 @@ import {
 } from "vitest"
 import { cdp, server, userEvent } from "vitest/browser"
 
-import { fs as fsReact } from "../../../react"
+import { lt as ltReact } from "../../../react"
 import { monter, ventPaTegning } from "../../../testing/a11y"
-import { settAdresse } from "../../../testing/adresse"
-import { rgb } from "../../../testing/farge"
+import { settAdresse } from "../../../testing/address"
+import { rgb } from "../../../testing/color"
 import { Idiomorph } from "../../../testing/idiomorph/idiomorph-v0.8.0.js"
 import { attr } from "../../../testing/markup"
 import { contrastRatio } from "../../../tokens/color"
-import { defineFsTabs, FsTabs } from "./fs-tabs"
+import { defineLtTabs, LtTabs } from "./lt-tabs"
 import { tabs } from "./tabs"
 
 import "../../../tokens/tokens.css"
@@ -54,35 +54,35 @@ type Bar = {
 function bar(valg: Bar = {}): string {
   const overskrift = valg.overskrift ?? ((i) => NAVN[i])
   return `
-    <fs-tabs${valg.vert ?? ""}>
-      <ul class="fs-tabs__list"${valg.liste ?? ' aria-label="Deler av saken"'}>
+    <lt-tabs${valg.vert ?? ""}>
+      <ul class="lt-tabs__list"${valg.liste ?? ' aria-label="Deler av saken"'}>
         ${NAVN.map((n, i) => `<li><a href="#${NOKLER[i]}"${valg.lenke?.(i) ?? ""}>${n}</a></li>`).join("")}
       </ul>
       ${NAVN.map((_, i) => {
         const tittel = overskrift(i)
-        return `<section class="fs-tabs__panel" id="${NOKLER[i]}"${valg.panel?.(i) ?? ""}>${tittel === null ? "" : `<h2>${tittel}</h2>`}<p id="inne-${NOKLER[i]}">Innholdet i ${NAVN[i].toLowerCase()}.</p>${valg.inni?.(i) ?? ""}</section>`
+        return `<section class="lt-tabs__panel" id="${NOKLER[i]}"${valg.panel?.(i) ?? ""}>${tittel === null ? "" : `<h2>${tittel}</h2>`}<p id="inne-${NOKLER[i]}">Innholdet i ${NAVN[i].toLowerCase()}.</p>${valg.inni?.(i) ?? ""}</section>`
       }).join("")}
-    </fs-tabs>`
+    </lt-tabs>`
 }
 
-/** Det `fs.tabs()` skriver, satt sammen slik en mal gjør det. */
+/** Det `lt.tabs()` skriver, satt sammen slik en mal gjør det. */
 function fraByggefunksjonen(): string {
   const f = tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
   return `
-    <fs-tabs>
+    <lt-tabs>
       <ul ${attr(f.list)}>
         ${f.tabs.map((t, i) => `<li><a ${attr(t)}>${NAVN[i]}</a></li>`).join("")}
       </ul>
       ${f.panels.map((p, i) => `<section ${attr(p)}><h2 ${attr(f.headings[i])}>${NAVN[i]}</h2><p>Innholdet i ${NAVN[i].toLowerCase()}.</p></section>`).join("")}
-    </fs-tabs>`
+    </lt-tabs>`
 }
 
-const vert = () => document.querySelector("fs-tabs") as FsTabs
+const vert = () => document.querySelector("lt-tabs") as LtTabs
 const faner = () => [
-  ...document.querySelectorAll<HTMLElement>("fs-tabs .fs-tabs__list a"),
+  ...document.querySelectorAll<HTMLElement>("lt-tabs .lt-tabs__list a"),
 ]
 const paneler = () => [
-  ...document.querySelectorAll<HTMLElement>(".fs-tabs__panel"),
+  ...document.querySelectorAll<HTMLElement>(".lt-tabs__panel"),
 ]
 const valgt = () =>
   faner().map((f) => f.getAttribute("aria-selected") === "true")
@@ -121,7 +121,7 @@ async function tab() {
 }
 
 async function tegn() {
-  await customElements.whenDefined("fs-tabs")
+  await customElements.whenDefined("lt-tabs")
   await ventPaTegning()
 }
 
@@ -152,7 +152,7 @@ async function advarsler(spion: ReturnType<typeof lyttEtterAdvarsler>) {
 }
 
 beforeAll(() => {
-  defineFsTabs()
+  defineLtTabs()
 })
 
 beforeEach(async () => {
@@ -164,10 +164,10 @@ afterEach(() => {
 })
 
 describe("A. Tre tilstander av siden", () => {
-  it("A6: registreringen gir markup fra fs.tabs() den samme tilstanden som håndskrevet markup, og endrer ingenting byggefunksjonen skrev", async () => {
+  it("A6: registreringen gir markup fra lt.tabs() den samme tilstanden som håndskrevet markup, og endrer ingenting byggefunksjonen skrev", async () => {
     /** Attributtene som bærer fanene, uten id-er, som er ulike i de to kildene. */
     const tilstand = () =>
-      [...document.querySelectorAll("fs-tabs, fs-tabs *")].map((e) =>
+      [...document.querySelectorAll("lt-tabs, lt-tabs *")].map((e) =>
         [...e.attributes]
           .filter(
             (a) =>
@@ -213,14 +213,14 @@ describe("A. Tre tilstander av siden", () => {
     expect(tilstand()).toEqual(forventet)
   })
 
-  /** En React-app som rendrer fanene med `fs.tabs()` fra React-inngangen. */
+  /** En React-app som rendrer fanene med `lt.tabs()` fra React-inngangen. */
   const App = ({ teller }: { teller: number }) => {
-    const f = fsReact.tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
+    const f = ltReact.tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
     return h(
       "div",
       { "data-teller": teller },
       h(
-        "fs-tabs",
+        "lt-tabs",
         null,
         h(
           "ul",
@@ -241,7 +241,7 @@ describe("A. Tre tilstander av siden", () => {
     )
   }
 
-  it("A7: React hydrerer markup fra fs.tabs() i React-inngangen uten avvik, også når brukeren har byttet fane og React rendrer på nytt", async () => {
+  it("A7: React hydrerer markup fra lt.tabs() i React-inngangen uten avvik, også når brukeren har byttet fane og React rendrer på nytt", async () => {
     const avvik: string[] = []
     const feil = vi.spyOn(console, "error").mockImplementation((...a) => {
       avvik.push(a.map(String).join(" "))
@@ -289,7 +289,7 @@ describe("A. Tre tilstander av siden", () => {
     rot.unmount()
   })
 
-  it("A9: komponenten skriver ingenting på markup fra fs.tabs() i React-inngangen", async () => {
+  it("A9: komponenten skriver ingenting på markup fra lt.tabs() i React-inngangen", async () => {
     const omslag = document.createElement("div")
     omslag.innerHTML = renderToString(h(App, { teller: 0 }))
     const poster: string[] = []
@@ -730,15 +730,15 @@ describe("B. Semantikk og navn", () => {
     await tegn()
 
     expect(
-      (await advarsler(spion)).filter((m) => m.startsWith("fs-tabs")),
+      (await advarsler(spion)).filter((m) => m.startsWith("lt-tabs")),
     ).toEqual([])
   })
 
-  it("B9 og D8: fs.tabs() kaster når label mangler eller er tom", () => {
+  it("B9 og D8: lt.tabs() kaster når label mangler eller er tom", () => {
     // Hardt mellomrom og BOM er mellomrom for JavaScript, og for Kotlin bare
     // når den sjekker på samme måte.
     for (const label of [undefined, "", "   ", "\u00a0\ufeff"]) {
-      for (const bygg of [tabs, fsReact.tabs]) {
+      for (const bygg of [tabs, ltReact.tabs]) {
         expect(() =>
           bygg({ id: "uten-navn", keys: ["a"], label } as never),
         ).toThrow(/label/)
@@ -996,12 +996,12 @@ describe("E. Adressen og søk i siden", () => {
     await settAdresse("#meldinger")
     const markup = bar()
     const slutt = markup.indexOf("</ul>") + "</ul>".length
-    monter(`${markup.slice(0, slutt)}</fs-tabs>`)
+    monter(`${markup.slice(0, slutt)}</lt-tabs>`)
     await tegn()
 
     vert().insertAdjacentHTML(
       "beforeend",
-      markup.slice(slutt, markup.lastIndexOf("</fs-tabs>")),
+      markup.slice(slutt, markup.lastIndexOf("</lt-tabs>")),
     )
     await tegn()
     await tegn()
@@ -1048,13 +1048,13 @@ describe("E. Adressen og søk i siden", () => {
     expect(skjult()).toEqual([true, false, true])
   })
 
-  it("E4: det samme når panelet står utenfor <fs-tabs>", async () => {
+  it("E4: det samme når panelet står utenfor <lt-tabs>", async () => {
     const markup = bar()
     const [foran, bak] = markup.split(
-      '<section class="fs-tabs__panel" id="vedlegg"',
+      '<section class="lt-tabs__panel" id="vedlegg"',
     )
     const slutt = bak.indexOf("</section>") + "</section>".length
-    const vedlegg = `<section class="fs-tabs__panel" id="vedlegg"${bak.slice(0, slutt)}`
+    const vedlegg = `<section class="lt-tabs__panel" id="vedlegg"${bak.slice(0, slutt)}`
     const slipp = somSokISiden()
     try {
       monter(`${foran}${bak.slice(slutt)}${vedlegg}`)
@@ -1077,17 +1077,17 @@ describe("E. Adressen og søk i siden", () => {
   /** Faner i faner: treffet `#dypt` står i det indre panelet `ib`, i det ytre `yb`. */
   const FANER_I_FANER = (indre = "") => `
     <a href="#dypt" id="til-dypt">Til treffet</a>
-    <fs-tabs id="ytre">
-      <ul class="fs-tabs__list" aria-label="Ytre"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
-      <section class="fs-tabs__panel" id="ya"><h2>YA</h2>Ytre a</section>
-      <section class="fs-tabs__panel" id="yb"><h2>YB</h2>
-        <fs-tabs id="indre"${indre}>
-          <ul class="fs-tabs__list" aria-label="Indre"><li><a href="#ia">IA</a></li><li><a href="#ib">IB</a></li></ul>
-          <section class="fs-tabs__panel" id="ia"><h3>IA</h3>Indre a</section>
-          <section class="fs-tabs__panel" id="ib"><h3>IB</h3><p id="dypt">Dypt inne</p></section>
-        </fs-tabs>
+    <lt-tabs id="ytre">
+      <ul class="lt-tabs__list" aria-label="Ytre"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
+      <section class="lt-tabs__panel" id="ya"><h2>YA</h2>Ytre a</section>
+      <section class="lt-tabs__panel" id="yb"><h2>YB</h2>
+        <lt-tabs id="indre"${indre}>
+          <ul class="lt-tabs__list" aria-label="Indre"><li><a href="#ia">IA</a></li><li><a href="#ib">IB</a></li></ul>
+          <section class="lt-tabs__panel" id="ia"><h3>IA</h3>Indre a</section>
+          <section class="lt-tabs__panel" id="ib"><h3>IB</h3><p id="dypt">Dypt inne</p></section>
+        </lt-tabs>
       </section>
-    </fs-tabs>`
+    </lt-tabs>`
 
   const skjultI = (...ider: string[]) =>
     ider.map((id) =>
@@ -1253,9 +1253,9 @@ describe("E. Adressen og søk i siden", () => {
     expect(skjult()).toEqual([true, true, false])
   })
 
-  it("E1: en tom <fs-tabs> som fylles etterpå, velger fanen adressen peker på", async () => {
+  it("E1: en tom <lt-tabs> som fylles etterpå, velger fanen adressen peker på", async () => {
     await settAdresse("#meldinger")
-    monter("<fs-tabs></fs-tabs>")
+    monter("<lt-tabs></lt-tabs>")
     await tegn()
 
     vert().innerHTML = bar().slice(
@@ -1325,14 +1325,14 @@ describe("E. Adressen og søk i siden", () => {
     ).attachShadow({ mode: "open" })
     rot.innerHTML = bar()
     await tegn()
-    const p = [...rot.querySelectorAll<HTMLElement>(".fs-tabs__panel")]
+    const p = [...rot.querySelectorAll<HTMLElement>(".lt-tabs__panel")]
 
     // Som nettleseren sender den: bobler, men er ikke `composed`.
     p[2].dispatchEvent(new Event("beforematch", { bubbles: true }))
     await tegn()
 
     expect(
-      [...rot.querySelectorAll(".fs-tabs__list a")].map(
+      [...rot.querySelectorAll(".lt-tabs__list a")].map(
         (a) => a.getAttribute("aria-selected") === "true",
       ),
     ).toEqual([false, false, true])
@@ -1542,7 +1542,7 @@ describe("F. Oppdatering fra serveren", () => {
     )
     await tegn()
     const runder = vi.spyOn(
-      FsTabs.prototype as unknown as { sync: () => void },
+      LtTabs.prototype as unknown as { sync: () => void },
       "sync",
     )
 
@@ -1567,7 +1567,7 @@ describe("F. Oppdatering fra serveren", () => {
     )
     await tegn()
     const runder = vi.spyOn(
-      FsTabs.prototype as unknown as { sync: () => void },
+      LtTabs.prototype as unknown as { sync: () => void },
       "sync",
     )
 
@@ -1586,7 +1586,7 @@ describe("F. Oppdatering fra serveren", () => {
     monter(bar())
     await tegn()
     const runder = vi.spyOn(
-      FsTabs.prototype as unknown as { sync: () => void },
+      LtTabs.prototype as unknown as { sync: () => void },
       "sync",
     )
 
@@ -1600,16 +1600,16 @@ describe("F. Oppdatering fra serveren", () => {
   it("F1: en indre fanerad før den ytre raden tar ikke rollene fra den ytre", async () => {
     // Panelene står før raden, og det første panelet har en egen fanerad.
     monter(`
-      <fs-tabs id="ytre">
-        <section class="fs-tabs__panel" id="ya"><h2>YA</h2>
-          <fs-tabs>
-            <ul class="fs-tabs__list" aria-label="Indre"><li><a href="#ia">IA</a></li></ul>
-            <section class="fs-tabs__panel" id="ia"><h3>IA</h3></section>
-          </fs-tabs>
+      <lt-tabs id="ytre">
+        <section class="lt-tabs__panel" id="ya"><h2>YA</h2>
+          <lt-tabs>
+            <ul class="lt-tabs__list" aria-label="Indre"><li><a href="#ia">IA</a></li></ul>
+            <section class="lt-tabs__panel" id="ia"><h3>IA</h3></section>
+          </lt-tabs>
         </section>
-        <section class="fs-tabs__panel" id="yb"><h2>YB</h2></section>
-        <ul class="fs-tabs__list" aria-label="Ytre" id="ytre-rad"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
-      </fs-tabs>`)
+        <section class="lt-tabs__panel" id="yb"><h2>YB</h2></section>
+        <ul class="lt-tabs__list" aria-label="Ytre" id="ytre-rad"><li><a href="#ya">YA</a></li><li><a href="#yb">YB</a></li></ul>
+      </lt-tabs>`)
     await tegn()
     const rad = document.getElementById("ytre-rad") as HTMLElement
 
@@ -1631,7 +1631,7 @@ describe("F. Oppdatering fra serveren", () => {
    */
   for (const [kilde, markup] of [
     ["bar markup", bar],
-    ["markup fra fs.tabs()", fraByggefunksjonen],
+    ["markup fra lt.tabs()", fraByggefunksjonen],
   ] as const) {
     it(`F3: idiomorph beholder lenkene og panelene, og valget står (${kilde})`, async () => {
       const spion = lyttEtterAdvarsler()
@@ -1643,7 +1643,7 @@ describe("F. Oppdatering fra serveren", () => {
       await tegn()
       expect(valgt()).toEqual([false, true, false])
 
-      Idiomorph.morph(flate, `<div id="fs-testflate">${markup()}</div>`, {
+      Idiomorph.morph(flate, `<div id="lt-testflate">${markup()}</div>`, {
         morphStyle: "outerHTML",
       })
       await tegn()
@@ -1690,11 +1690,11 @@ describe("F. Oppdatering fra serveren", () => {
 
   it("I2: et kodet fragment finner panelet sitt", async () => {
     monter(`
-      <fs-tabs>
-        <ul class="fs-tabs__list" aria-label="Deler"><li><a href="#s%C3%B8knaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>
-        <section class="fs-tabs__panel" id="søknaden"><h2>Søknaden</h2></section>
-        <section class="fs-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>
-      </fs-tabs>`)
+      <lt-tabs>
+        <ul class="lt-tabs__list" aria-label="Deler"><li><a href="#s%C3%B8knaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>
+        <section class="lt-tabs__panel" id="søknaden"><h2>Søknaden</h2></section>
+        <section class="lt-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>
+      </lt-tabs>`)
     await tegn()
 
     expect(faner()[0].getAttribute("aria-controls")).toBe("søknaden")
@@ -1715,7 +1715,7 @@ describe("F. Oppdatering fra serveren", () => {
     vert().querySelector("ul")?.remove()
     vert().insertAdjacentHTML(
       "afterbegin",
-      `<ul class="fs-tabs__list" aria-label="Deler av saken" role="tablist">${NAVN.map(
+      `<ul class="lt-tabs__list" aria-label="Deler av saken" role="tablist">${NAVN.map(
         (n, i) =>
           `<li role="presentation"><a role="tab" aria-controls="${NOKLER[i]}" href="#${NOKLER[i]}"${i === 2 ? ' aria-selected="true"' : ""}>${n}</a></li>`,
       ).join("")}</ul>`,
@@ -1823,7 +1823,7 @@ describe("H. Utseende", () => {
         await tegn()
         const flate = rgb(
           getComputedStyle(
-            document.getElementById("fs-testflate") as HTMLElement,
+            document.getElementById("lt-testflate") as HTMLElement,
           ).backgroundColor,
         )
         const [valgte, annen] = faner().map((f) => getComputedStyle(f))
@@ -1874,13 +1874,13 @@ describe("I. Byggefunksjonen", () => {
       /mellomrom/,
     )
     expect(() =>
-      fsReact.tabs({ id: "a b", keys: ["x"], label: "Faner" }),
+      ltReact.tabs({ id: "a b", keys: ["x"], label: "Faner" }),
     ).toThrow(/mellomrom/)
   })
 
   it("I6: selected som ikke er et heltall, gir den første fanen", () => {
     for (const selected of [Number.NaN, 1.5]) {
-      const f = fsReact.tabs({
+      const f = ltReact.tabs({
         id: "sak",
         keys: ["a", "b"],
         label: "Faner",
@@ -1891,9 +1891,9 @@ describe("I. Byggefunksjonen", () => {
     }
   })
 
-  it("I6: fs.tabs() i React-inngangen gir hele tilstanden", () => {
+  it("I6: lt.tabs() i React-inngangen gir hele tilstanden", () => {
     expect(
-      fsReact.tabs({
+      ltReact.tabs({
         id: "sak",
         keys: ["a", "b"],
         label: "Deler av saken",
@@ -1901,7 +1901,7 @@ describe("I. Byggefunksjonen", () => {
       }),
     ).toEqual({
       list: {
-        className: "fs-tabs__list",
+        className: "lt-tabs__list",
         role: "tablist",
         "aria-label": "Deler av saken",
       },
@@ -1927,14 +1927,14 @@ describe("I. Byggefunksjonen", () => {
       panels: [
         {
           id: "sak-a",
-          className: "fs-tabs__panel",
+          className: "lt-tabs__panel",
           role: "tabpanel",
           "aria-labelledby": "sak-a-tab",
           hidden: true,
         },
         {
           id: "sak-b",
-          className: "fs-tabs__panel",
+          className: "lt-tabs__panel",
           role: "tabpanel",
           "aria-labelledby": "sak-b-tab",
           tabIndex: 0,
@@ -1943,15 +1943,15 @@ describe("I. Byggefunksjonen", () => {
     })
   })
 
-  it("I5: fs.tabs() skriver bare lenker, id-er og klasser", () => {
+  it("I5: lt.tabs() skriver bare lenker, id-er og klasser", () => {
     expect(
       tabs({ id: "sak", keys: ["a", "b"], label: "Deler av saken" }),
     ).toEqual({
-      list: { class: "fs-tabs__list", "aria-label": "Deler av saken" },
+      list: { class: "lt-tabs__list", "aria-label": "Deler av saken" },
       tabs: [{ href: "#sak-a" }, { href: "#sak-b" }],
       panels: [
-        { id: "sak-a", class: "fs-tabs__panel" },
-        { id: "sak-b", class: "fs-tabs__panel" },
+        { id: "sak-a", class: "lt-tabs__panel" },
+        { id: "sak-b", class: "lt-tabs__panel" },
       ],
       headings: [{ id: "sak-a-heading" }, { id: "sak-b-heading" }],
     })

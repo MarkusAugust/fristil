@@ -1,4 +1,4 @@
-//! Siden bak en adresse, til `fristil sjekk`.
+//! Siden bak en adresse, til `lotek sjekk`.
 //!
 //! Den kjørbare fila henter `http://` selv, som dekker `localhost`, der en app
 //! under utvikling svarer. `https://` krever TLS, og WASI-utgaven har ikke
@@ -20,7 +20,7 @@ pub fn is_address(path: &str) -> bool {
     lower.starts_with("http://") || lower.starts_with("https://")
 }
 
-/// Svaret slik `fristil sjekk` vurderer det: statuskoden leses, for en
+/// Svaret slik `lotek sjekk` vurderer det: statuskoden leses, for en
 /// 404-side er HTML, og innholdstypen, for en sti som svarer JSON er ikke en side.
 fn judge(
     address: &str,
@@ -116,7 +116,7 @@ fn split(address: &str) -> Result<(String, u16, String), String> {
         return Err(if cfg!(target_os = "wasi") {
             unavailable(address)
         } else {
-            format!("denne utgaven av fristil henter bare http://. Hent siden selv og send den inn: curl -s {address} | fristil sjekk --rendret")
+            format!("denne utgaven av lotek henter bare http://. Hent siden selv og send den inn: curl -s {address} | lotek sjekk --rendret")
         });
     }
     let rest = &address["http://".len()..];
@@ -160,7 +160,7 @@ fn port_of(text: &str, address: &str) -> Result<u16, String> {
 }
 
 fn unavailable(address: &str) -> String {
-    format!("denne utgaven av fristil kan ikke hente adresser. Hent siden selv og send den inn: curl -s {address} | fristil sjekk --rendret")
+    format!("denne utgaven av lotek kan ikke hente adresser. Hent siden selv og send den inn: curl -s {address} | lotek sjekk --rendret")
 }
 
 fn get(address: &str) -> Result<Response, String> {
@@ -180,7 +180,7 @@ fn get(address: &str) -> Result<Response, String> {
         format!("{host}:{port}")
     };
     let request = format!(
-        "GET {path} HTTP/1.1\r\nHost: {host_header}\r\nAccept: text/html,application/xhtml+xml,*/*\r\nUser-Agent: fristil\r\nConnection: close\r\n\r\n"
+        "GET {path} HTTP/1.1\r\nHost: {host_header}\r\nAccept: text/html,application/xhtml+xml,*/*\r\nUser-Agent: lotek\r\nConnection: close\r\n\r\n"
     );
     stream
         .write_all(request.as_bytes())
@@ -288,8 +288,8 @@ mod tests {
     #[test]
     fn splits_an_address() {
         assert_eq!(
-            split("http://localhost:8080/skjema?x=1").unwrap(),
-            ("localhost".into(), 8080, "/skjema?x=1".into())
+            split("http://localhost:8080/form?x=1").unwrap(),
+            ("localhost".into(), 8080, "/form?x=1".into())
         );
         assert_eq!(
             split("http://eksempel.no").unwrap(),
@@ -343,8 +343,8 @@ mod tests {
     #[test]
     fn reads_ipv6_hosts_with_and_without_port() {
         assert_eq!(
-            split("http://[::1]/skjema").unwrap(),
-            ("[::1]".into(), 80, "/skjema".into())
+            split("http://[::1]/form").unwrap(),
+            ("[::1]".into(), 80, "/form".into())
         );
         assert_eq!(
             split("http://[::1]:8080/").unwrap(),
@@ -358,8 +358,8 @@ mod tests {
     #[test]
     fn resolves_redirects_like_a_browser() {
         assert_eq!(
-            resolve("http://a.no/x", "//cdn.local/skjema"),
-            "http://cdn.local/skjema"
+            resolve("http://a.no/x", "//cdn.local/form"),
+            "http://cdn.local/form"
         );
         assert_eq!(resolve("http://a.no/x?r=/y", "z"), "http://a.no/z");
         assert_eq!(resolve("http://a.no/m/x?r=/y", "z"), "http://a.no/m/z");

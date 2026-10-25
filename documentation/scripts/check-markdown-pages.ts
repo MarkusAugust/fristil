@@ -2,7 +2,7 @@
  * At hver side i dokumentasjonen også finnes som Markdown, og at Markdown-
  * utgaven har med det siden har.
  *
- * Filene skrives av `src/plugins/markdownsider.mjs` etter bygget, av den
+ * Filene skrives av `src/plugins/markdown-pages.mjs` etter bygget, av den
  * ferdige HTML-en. Det som kan gå galt, går galt i stillhet: en Starlight-
  * oppgradering som gir kodeblokkene en ny klasse, gir Markdown uten kode, og en
  * ny komponent i en side kan legge igjen rå HTML. Ingen ser på filene, så det
@@ -12,7 +12,7 @@
  * uttrykk på HTML-en og en enkel linjeleser på Markdown-en, ikke hast og mdast.
  * En feil i den ene tolkningen gjentas da ikke i den andre.
  *
- * Kjør med: bun documentation/scripts/sjekk-markdownsider.ts
+ * Kjør med: bun documentation/scripts/check-markdown-pages.ts
  * Krever at `documentation/dist` er bygd.
  */
 

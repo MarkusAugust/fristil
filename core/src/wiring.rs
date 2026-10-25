@@ -30,17 +30,17 @@ use crate::types::*;
 const CONTROLS: &[&str] = &["input", "textarea", "select"];
 
 /// Id-ene komponentene lager selv, `uniqueId` i `host-element.ts`, pluss
-/// `createFieldId`: `fs-field-<tall>-<seks tegn>`.
+/// `createFieldId`: `lt-field-<tall>-<seks tegn>`.
 const GENERATED_PREFIXES: &[&str] = &[
-    "fs-field-help-",
-    "fs-field-error-",
-    "fs-popover-",
-    "fs-dialog-title-",
-    "fs-session-timeout-title-",
-    "fs-tabs-heading-",
-    "fs-suggestion-list-",
-    "fs-suggestion-option-",
-    "fs-suggestion-label-",
+    "lt-field-help-",
+    "lt-field-error-",
+    "lt-popover-",
+    "lt-dialog-title-",
+    "lt-session-timeout-title-",
+    "lt-tabs-heading-",
+    "lt-suggestion-list-",
+    "lt-suggestion-option-",
+    "lt-suggestion-label-",
 ];
 
 /// Hva noden sier om id-en sin.
@@ -192,9 +192,9 @@ pub(crate) fn check_wiring(
             };
             out.extend(host.stable_ids());
             match tag {
-                "fs-tabs" => out.extend(host.tabs()),
-                "fs-suggestion" => out.extend(host.suggestion()),
-                "fs-field" => out.extend(host.field()),
+                "lt-tabs" => out.extend(host.tabs()),
+                "lt-suggestion" => out.extend(host.suggestion()),
+                "lt-field" => out.extend(host.field()),
                 _ => {}
             }
         }
@@ -319,9 +319,9 @@ impl Host<'_> {
             return None;
         }
         // Uten en ledetekst i det hele tatt sier `felt-uten-ledetekst` fra
-        // om <fs-field>. Forslagsfeltet har ingen slik regel, så der meldes
+        // om <lt-field>. Forslagsfeltet har ingen slik regel, så der meldes
         // det her.
-        if labels.is_empty() && self.tag() == "fs-field" {
+        if labels.is_empty() && self.tag() == "lt-field" {
             return None;
         }
         let id = match id_of(control) {
@@ -425,7 +425,7 @@ impl Host<'_> {
                 tab,
                 self.link(),
                 format!(
-                    "<{}> har en fane uten et panel: lenken peker på #{}, og ingen element har den id-en. Skriv id på hvert .fs-tabs__panel, den samme som lenken peker på. Fanen kan velges uten at noe vises.",
+                    "<{}> har en fane uten et panel: lenken peker på #{}, og ingen element har den id-en. Skriv id på hvert .lt-tabs__panel, den samme som lenken peker på. Fanen kan velges uten at noe vises.",
                     self.tag(),
                     lossy(target)
                 ),
@@ -444,7 +444,7 @@ impl Host<'_> {
                     list,
                     self.link(),
                     format!(
-                        "<{}> har en fanerad uten navn. Skriv aria-label på .fs-tabs__list, som aria-label=\"Deler av saken\", eller aria-labelledby mot en overskrift. Uten navn sier skjermleseren bare «faneliste».",
+                        "<{}> har en fanerad uten navn. Skriv aria-label på .lt-tabs__list, som aria-label=\"Deler av saken\", eller aria-labelledby mot en overskrift. Uten navn sier skjermleseren bare «faneliste».",
                         self.tag()
                     ),
                     Some(Fix::one(
@@ -491,7 +491,7 @@ impl Host<'_> {
         out
     }
 
-    /// Forslagslista: `data-value` på alternativene og `.fs-suggestion__value` hører sammen.
+    /// Forslagslista: `data-value` på alternativene og `.lt-suggestion__value` hører sammen.
     fn suggestion(&self) -> Vec<Finding> {
         let nodes = self.nodes();
         let options = self.part("option");
@@ -510,7 +510,7 @@ impl Host<'_> {
                 &nodes[n],
                 self.link(),
                 format!(
-                    "<{}> har alternativer med data-value, men ikke noe .fs-suggestion__value. Koden brukeren velger, sendes da ikke med skjemaet, bare teksten i feltet. Skriv <input type=\"hidden\" class=\"fs-suggestion__value\" name=\"…\"> i feltet, så komponenten fyller det.",
+                    "<{}> har alternativer med data-value, men ikke noe .lt-suggestion__value. Koden brukeren velger, sendes da ikke med skjemaet, bare teksten i feltet. Skriv <input type=\"hidden\" class=\"lt-suggestion__value\" name=\"…\"> i feltet, så komponenten fyller det.",
                     self.tag()
                 ),
                 None,
@@ -520,7 +520,7 @@ impl Host<'_> {
                 &nodes[f],
                 self.link(),
                 format!(
-                    "<{}> har et .fs-suggestion__value, men ingen alternativer med data-value. Feltet blir stående tomt. Gi hvert alternativ data-value med koden det står for.",
+                    "<{}> har et .lt-suggestion__value, men ingen alternativer med data-value. Feltet blir stående tomt. Gi hvert alternativ data-value med koden det står for.",
                     self.tag()
                 ),
                 None,
@@ -562,12 +562,12 @@ fn text_in_label(page: &Page, vocabulary: &Vocabulary) -> Vec<Finding> {
     let link = vocabulary
         .elements
         .iter()
-        .find(|e| e.tag == "fs-field")
+        .find(|e| e.tag == "lt-field")
         .map_or("", |e| e.link.as_str());
     let mut out = Vec::new();
     for (n, node) in page.nodes.iter().enumerate() {
-        let help = has_class(node, |c| equals(c, "fs-help-text"));
-        let error = !help && has_class(node, |c| equals(c, "fs-error-text"));
+        let help = has_class(node, |c| equals(c, "lt-help-text"));
+        let error = !help && has_class(node, |c| equals(c, "lt-error-text"));
         if !help && !error {
             continue;
         }
@@ -599,7 +599,7 @@ fn generated_ids(page: &Page, vocabulary: &Vocabulary) -> Vec<Finding> {
     let link = vocabulary
         .elements
         .iter()
-        .find(|e| e.tag == "fs-field")
+        .find(|e| e.tag == "lt-field")
         .map_or("", |e| e.link.as_str());
     let mut out = Vec::new();
     for node in page.nodes {
@@ -632,8 +632,8 @@ fn looks_generated(id: &str) -> bool {
             && s.chars()
                 .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit())
     };
-    if let Some(rest) = id.strip_prefix("fs-field-") {
-        // `createFieldId`: `fs-field-<teller>-<seks tegn>`.
+    if let Some(rest) = id.strip_prefix("lt-field-") {
+        // `createFieldId`: `lt-field-<teller>-<seks tegn>`.
         if let Some((count, tail)) = rest.split_once('-') {
             if !count.is_empty() && count.chars().all(|c| c.is_ascii_digit()) && base36(tail, 6) {
                 return true;

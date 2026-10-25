@@ -1,7 +1,7 @@
-//! `fristil overta <komponent>`: kopierer kildekoden til én komponent inn i
+//! `lotek overta <komponent>`: kopierer kildekoden til én komponent inn i
 //! prosjektet, når tilpasning gjennom CSS ikke strekker til.
 //!
-//! Laget og `--fs-*`-variablene dekker utseendet, og siden ingen komponent har
+//! Laget og `--lt-*`-variablene dekker utseendet, og siden ingen komponent har
 //! shadow DOM, når CSS-en din fram overalt. Det de ikke dekker er «jeg vil at
 //! denne komponenten skal oppføre seg annerledes». Da er alternativet enten å
 //! leve med det eller å skrive komponenten på nytt fra bunnen, og denne
@@ -11,21 +11,21 @@
 //! Tre ting gjøres med kopien:
 //!
 //! - Henvisningene ut av mappa skrives om. `../shared.js` finnes ikke der
-//!   kopien havner, og blir til `@fristil/designsystem/shared`, som fortsatt
+//!   kopien havner, og blir til `@lo-tek/interfaces/shared`, som fortsatt
 //!   virker og viser hva kopien henter fra pakken.
-//! - Kopien får nytt navn: `fs-button` blir `app-button` i klasser, tagger,
+//! - Kopien får nytt navn: `lt-button` blir `app-button` i klasser, tagger,
 //!   `define` og selektorer. Det du overtar, eier du, og den kan stå ved siden
 //!   av originalen uten at rekkefølgen avgjør hvilken som vinner.
-//!   `--fs-*`-variablene beholdes, så temaet virker som før.
+//!   `--lt-*`-variablene beholdes, så temaet virker som før.
 //! - Et fragment av manifestet skrives ved siden av, med de nye navnene, så
-//!   `fristil sjekk --manifest=…` sjekker markupen for kopien også.
+//!   `lotek sjekk --manifest=…` sjekker markupen for kopien også.
 //!
 //! Kildekoden leses fra pakken prosjektet har installert (se `package.rs`),
 //! så kopien er av den versjonen prosjektet bruker.
 
 use crate::output::{error, fail, shown};
 use crate::{refuse_unknown_flags, refuse_without_value, Arguments};
-use fristil_kjerne::json::{parse, Json};
+use lotek_core::json::{parse, Json};
 
 pub struct Component {
     pub category: String,
@@ -85,11 +85,11 @@ pub fn components() -> Vec<Component> {
     out
 }
 
-/// Forstavelsen kopien får i stedet for `fs-`.
+/// Forstavelsen kopien får i stedet for `lt-`.
 const PREFIX: &str = "app-";
 
 /// Fila med fragmentet av manifestet, i mappa til kopien.
-pub const FRAGMENT: &str = "fristil-manifest.json";
+pub const FRAGMENT: &str = "lotek-manifest.json";
 
 /// En fil i pakken.
 pub struct SourceFile {
@@ -312,7 +312,7 @@ pub fn plan_takeover(files: &[SourceFile], entries: &[(String, String)]) -> Plan
             if specifier.starts_with('.') {
                 continue;
             }
-            if specifier.starts_with("@fristil/") {
+            if specifier.starts_with("@lotek/") {
                 kept.push(specifier);
                 continue;
             }
@@ -340,7 +340,7 @@ pub fn plan_takeover(files: &[SourceFile], entries: &[(String, String)]) -> Plan
     }
 }
 
-/// Blokken en klasse hører til: `fs-button` for `fs-button--primary`.
+/// Blokken en klasse hører til: `lt-button` for `lt-button--primary`.
 fn block(name: &str) -> &str {
     let end = [name.find("__"), name.find("--")]
         .into_iter()
@@ -350,8 +350,8 @@ fn block(name: &str) -> &str {
     &name[..end]
 }
 
-/// Blokkene og elementene komponenten eier, som `fs-avatar` og
-/// `fs-avatar-stack`, lest av manifestet.
+/// Blokkene og elementene komponenten eier, som `lt-avatar` og
+/// `lt-avatar-stack`, lest av manifestet.
 pub fn own_names(manifest: &Json, component: &str) -> Vec<String> {
     let mut names: Vec<String> = Vec::new();
     for (name, class) in manifest
@@ -378,7 +378,7 @@ pub fn own_names(manifest: &Json, component: &str) -> Vec<String> {
         }
     }
     if names.is_empty() {
-        names.push(format!("fs-{component}"));
+        names.push(format!("lt-{component}"));
     }
     names.sort();
     names.dedup();
@@ -389,9 +389,9 @@ fn is_name_byte(b: u8) -> bool {
     b.is_ascii_alphanumeric() || b == b'-' || b == b'_'
 }
 
-/// Det nye navnet for et `fs-`-navn.
+/// Det nye navnet for et `lt-`-navn.
 pub fn renamed(name: &str) -> String {
-    match name.strip_prefix("fs-") {
+    match name.strip_prefix("lt-") {
         Some(rest) => format!("{PREFIX}{rest}"),
         None => name.to_string(),
     }
@@ -400,8 +400,8 @@ pub fn renamed(name: &str) -> String {
 /// Gir komponentens egne navn det nye navnet.
 ///
 /// Et navn byttes der det står alene, eller med en variant eller et element
-/// etter (`fs-button--primary`, `fs-button__icon`). `fs-button-group` er en
-/// annen komponent, og `--fs-button-bg` en variabel fra temaet, og begge står.
+/// etter (`lt-button--primary`, `lt-button__icon`). `lt-button-group` er en
+/// annen komponent, og `--lt-button-bg` en variabel fra temaet, og begge står.
 pub fn rename(content: &str, names: &[String]) -> String {
     let bytes = content.as_bytes();
     let mut out = String::with_capacity(content.len());
@@ -490,13 +490,13 @@ pub fn run(arguments: &[String]) {
     let Some(component) = name.and_then(|n| all_components.iter().find(|c| c.name == n)) else {
         let all: Vec<&str> = all_components.iter().map(|c| c.name.as_str()).collect();
         fail(&format!(
-            "{}Bruk: fristil overta <komponent> [--ut=<mappe>]\nHele oversikten: fristil --hjelp\n\nKomponenter:\n  {}\n",
+            "{}Bruk: lotek overta <komponent> [--ut=<mappe>]\nHele oversikten: lotek --hjelp\n\nKomponenter:\n  {}\n",
             name.map_or(String::new(), |n| format!("Fant ingen komponent som heter «{n}».\n\n")),
             all.join(", ")
         ));
     };
 
-    let base = parsed.flag("ut").unwrap_or("src/fristil");
+    let base = parsed.flag("ut").unwrap_or("src/lotek");
     let target = std::path::Path::new(base).join(&component.name);
     let shown = shown(&target.display().to_string());
     if target.exists() && parsed.flag("overskriv") != Some("ja") {
@@ -510,7 +510,7 @@ pub fn run(arguments: &[String]) {
     let package_name = package
         .get("name")
         .and_then(Json::as_str)
-        .unwrap_or("@fristil/designsystem");
+        .unwrap_or("@lo-tek/interfaces");
     let entries = entry_points(package_name, package.get("exports").unwrap_or(&Json::Null));
     let manifest = parse(&crate::package::manifest())
         .unwrap_or_else(|e| fail(&format!("Manifestet i pakken kan ikke leses: {e}\n")));
@@ -564,7 +564,7 @@ pub fn run(arguments: &[String]) {
         new_names.join(" og ")
     ));
     lines.push("Bytt til det nye navnet i markupen der kopien skal brukes. Variablene".into());
-    lines.push("fra temaet (--fs-*) er de samme.".into());
+    lines.push("fra temaet (--lt-*) er de samme.".into());
 
     let rewrites: Vec<&Rewrite> = plan.files.iter().flat_map(|f| &f.rewrites).collect();
     if !rewrites.is_empty() {
@@ -591,7 +591,7 @@ pub fn run(arguments: &[String]) {
     lines.push(String::new());
     lines.push("Sjekk markupen for kopien med:".into());
     lines.push(format!(
-        "  fristil sjekk --manifest={} <filer…>",
+        "  lotek sjekk --manifest={} <filer…>",
         crate::output::shown(&target.join(FRAGMENT).display().to_string())
     ));
 
@@ -608,8 +608,8 @@ mod tests {
                 ".": {"import": "./dist/index.js"},
                 "./shared": {"import": "./dist/components/css/shared.js"},
                 "./input": {"import": "./dist/components/css/input/input.js"},
-                "./suggestion": {"import": "./dist/components/ramme/suggestion/fs-suggestion.js"},
-                "./field-core": {"import": "./dist/components/ramme/field/field-core.js"},
+                "./suggestion": {"import": "./dist/components/frame/suggestion/lt-suggestion.js"},
+                "./field-core": {"import": "./dist/components/frame/field/field-core.js"},
                 "./button.css": "./src/components/css/button/button.css",
                 "./input.css": "./src/components/css/input/input.css"
             }"#,
@@ -618,7 +618,7 @@ mod tests {
     }
 
     fn entries() -> Vec<(String, String)> {
-        entry_points("@fristil/designsystem", &exports())
+        entry_points("@lo-tek/interfaces", &exports())
     }
 
     fn file(path: &str, content: &str) -> SourceFile {
@@ -637,11 +637,11 @@ mod tests {
         let e = entries();
         assert_eq!(
             lookup(&e, "src/components/css/shared.ts"),
-            Some("@fristil/designsystem/shared")
+            Some("@lo-tek/interfaces/shared")
         );
         assert_eq!(
             lookup(&e, "src/components/css/button/button.css"),
-            Some("@fristil/designsystem/button.css")
+            Some("@lo-tek/interfaces/button.css")
         );
     }
 
@@ -653,7 +653,7 @@ mod tests {
         );
         assert_eq!(
             resolve_path(
-                "src/components/ramme/suggestion",
+                "src/components/frame/suggestion",
                 "../../css/input/input.css"
             ),
             "src/components/css/input/input.css"
@@ -670,12 +670,12 @@ mod tests {
         );
         assert!(planned
             .content
-            .contains("from \"@fristil/designsystem/shared\""));
+            .contains("from \"@lo-tek/interfaces/shared\""));
         assert_eq!(
             planned.rewrites,
             [Rewrite {
                 from: "../shared.js".into(),
-                to: "@fristil/designsystem/shared".into()
+                to: "@lo-tek/interfaces/shared".into()
             }]
         );
     }
@@ -686,13 +686,13 @@ mod tests {
         // sammenligningen ble naboen skrevet om til pakken.
         let planned = rewrite_references(
             &file(
-                "src/components/ramme/field/fs-field.ts",
+                "src/components/frame/field/lt-field.ts",
                 "import { computeFieldAttributes } from \"./field-core.js\"\n",
             ),
             &entries(),
             &own(&[
-                "src/components/ramme/field/fs-field.ts",
-                "src/components/ramme/field/field-core.ts",
+                "src/components/frame/field/lt-field.ts",
+                "src/components/frame/field/field-core.ts",
             ]),
         );
         assert!(planned.content.contains("from \"./field-core.js\""));
@@ -714,7 +714,7 @@ mod tests {
         );
         assert!(planned
             .content
-            .contains("from \"@fristil/designsystem/shared\""));
+            .contains("from \"@lo-tek/interfaces/shared\""));
     }
 
     #[test]
@@ -723,47 +723,47 @@ mod tests {
         let planned = rewrite_references(
             &file(
                 path,
-                "@import \"../input/input.css\";\n\n@layer fristil {}\n",
+                "@import \"../input/input.css\";\n\n@layer lotek {}\n",
             ),
             &entries(),
             &own(&[path]),
         );
         assert!(planned
             .content
-            .contains("@import \"@fristil/designsystem/input.css\";"));
+            .contains("@import \"@lo-tek/interfaces/input.css\";"));
     }
 
     #[test]
     fn names_dependencies_and_what_it_replaces() {
-        // Fristil har ingen avhengigheter, så dette er en oppdiktet komponent.
+        // LO-TEK har ingen avhengigheter, så dette er en oppdiktet komponent.
         let plan = plan_takeover(
             &[file(
-                "src/components/ramme/suggestion/fs-suggestion.ts",
+                "src/components/frame/suggestion/lt-suggestion.ts",
                 "import { noe } from \"et-bibliotek\"\nimport { attributes } from \"../../css/shared.js\"\n",
             )],
             &entries(),
         );
         assert_eq!(plan.dependencies, ["et-bibliotek"]);
-        assert_eq!(plan.kept_imports, ["@fristil/designsystem/shared"]);
-        assert_eq!(plan.replaced_entries, ["@fristil/designsystem/suggestion"]);
+        assert_eq!(plan.kept_imports, ["@lo-tek/interfaces/shared"]);
+        assert_eq!(plan.replaced_entries, ["@lo-tek/interfaces/suggestion"]);
     }
 
     #[test]
     fn renames_its_own_names_and_nothing_else() {
-        let names = own(&["fs-avatar", "fs-avatar-stack"]);
+        let names = own(&["lt-avatar", "lt-avatar-stack"]);
         assert_eq!(
             rename(
-                ".fs-avatar, .fs-avatar--small, .fs-avatar__image, .fs-avatar-stack { color: var(--fs-avatar-bg); } .fs-avatar-group, .xfs-avatar",
+                ".lt-avatar, .lt-avatar--small, .lt-avatar__image, .lt-avatar-stack { color: var(--lt-avatar-bg); } .lt-avatar-group, .xfs-avatar",
                 &names
             ),
-            ".app-avatar, .app-avatar--small, .app-avatar__image, .app-avatar-stack { color: var(--fs-avatar-bg); } .fs-avatar-group, .xfs-avatar"
+            ".app-avatar, .app-avatar--small, .app-avatar__image, .app-avatar-stack { color: var(--lt-avatar-bg); } .lt-avatar-group, .xfs-avatar"
         );
         assert_eq!(
             rename(
-                "customElements.define(\"fs-dialog\", FsDialog); `fs-dialog--${color}`",
-                &own(&["fs-dialog"])
+                "customElements.define(\"lt-dialog\", LtDialog); `lt-dialog--${color}`",
+                &own(&["lt-dialog"])
             ),
-            "customElements.define(\"app-dialog\", FsDialog); `app-dialog--${color}`"
+            "customElements.define(\"app-dialog\", LtDialog); `app-dialog--${color}`"
         );
     }
 
@@ -800,9 +800,9 @@ mod tests {
         let manifest = parse(&text).unwrap();
         let names = own_names(&manifest, "dialog");
         let fragment = fragment(&manifest, "dialog", &names).to_pretty();
-        let vocabulary = fristil_kjerne::manifest::with_fragments(&text, &[&fragment]).unwrap();
+        let vocabulary = lotek_core::manifest::with_fragments(&text, &[&fragment]).unwrap();
         assert!(vocabulary.elements.iter().any(|e| e.tag == "app-dialog"));
         assert!(vocabulary.classes.iter().any(|c| c.name == "app-dialog"));
-        assert!(!fragment.contains("fs-dialog"));
+        assert!(!fragment.contains("lt-dialog"));
     }
 }

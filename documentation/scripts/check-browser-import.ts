@@ -1,22 +1,22 @@
 /**
  * At ingen markup for nettleseren importerer et pakkenavn.
  *
- * `import … from "@fristil/designsystem/field"` i en `<script type="module">`
+ * `import … from "@lo-tek/interfaces/field"` i en `<script type="module">`
  * slår ikke opp i en nettleser: uten byggesteg eller importmap finnes ikke
  * pakkenavnet, og importen feiler stille. Koden ser riktig ut, og virker ikke
  * limt inn.
  *
- * Regelen fantes allerede i `sjekk-oppskrifter.ts`, men den leser bare
+ * Regelen fantes allerede i `check-recipes.ts`, men den leser bare
  * komponentsidene og velger regel ut fra navnet på fanen. To sider utenfor det
- * søket sto derfor med feilen i flere runder: Datastar-sporet i `rammeverk.mdx`
- * og dialogen i `monster/bekreftelse.mdx`. Denne sjekken er enklere og dekker
+ * søket sto derfor med feilen i flere runder: Datastar-sporet i `frameworks.mdx`
+ * og dialogen i `patterns/confirmation.mdx`. Denne sjekken er enklere og dekker
  * alt: en `html`-blokk er markup for nettleseren uansett hvilken side den står
  * på, og uansett hva fanen rundt heter.
  *
  * `ts`, `tsx`, `js` og `astro` sjekkes ikke. Der finnes det et byggesteg, og da
  * er pakkenavnet riktig.
  *
- * Kjør med: bun documentation/scripts/sjekk-nettleserimport.ts
+ * Kjør med: bun documentation/scripts/check-browser-import.ts
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs"
@@ -54,23 +54,23 @@ let blokker = 0
  * nettleser.
  */
 const GJERDE = /^[ \t]*```html[^\n]*\n([\s\S]*?)^[ \t]*```/gim
-const IMPORT = /(?:from|import)\s*\(?\s*\n?\s*["'](@fristil\/[^"']*)["']/g
+const IMPORT = /(?:from|import)\s*\(?\s*\n?\s*["'](@lotek\/[^"']*)["']/g
 
 /*
  * En hardkodet CDN-adresse skal peke på en fil pakken faktisk sender ut, på den
  * versjonen som er utgitt.
  *
- * `sjekk-oppskrifter.ts` har den samme regelen, men leser bare komponentsidene.
- * Fire av adressene står utenfor den mappa, og en skrivefeil som `fs-fields.js`
+ * `check-recipes.ts` har den samme regelen, men leser bare komponentsidene.
+ * Fire av adressene står utenfor den mappa, og en skrivefeil som `lt-fields.js`
  * ville passert hver eneste vaktpost i repoet og gitt 404 i nettleseren. Vakten
  * har adressen i hånda uansett, så den kontrollerer den.
  *
- * Versjonsleddet skal være plassholderen, ikke et tall: `remark-versjon.mjs`
- * bytter den når siden bygges, og `sjekk-bygget-versjon.ts` kontrollerer at det
+ * Versjonsleddet skal være plassholderen, ikke et tall: `remark-version.mjs`
+ * bytter den når siden bygges, og `check-built-version.ts` kontrollerer at det
  * faktisk skjedde.
  */
 const CDN =
-  /cdn\.jsdelivr\.net\/npm\/@fristil\/designsystem@([^/]+)\/([^"'\s]+)/g
+  /cdn\.jsdelivr\.net\/npm\/@lotek\/designsystem@([^/]+)\/([^"'\s]+)/g
 
 const linjen = (tekst: string, indeks: number) =>
   tekst.slice(0, indeks).split("\n").length
@@ -97,7 +97,7 @@ for (const rel of new Glob(SIDER).scanSync(ROT)) {
 
     if (versjon !== "VERSJON") {
       funn.push(
-        `${hvor} peker på @fristil/designsystem@${versjon}. Skriv @fristil/designsystem@VERSJON, som remark-versjon.mjs bytter ut når siden bygges.`,
+        `${hvor} peker på @lo-tek/interfaces@${versjon}. Skriv @lo-tek/interfaces@VERSJON, som remark-version.mjs bytter ut når siden bygges.`,
       )
     }
 

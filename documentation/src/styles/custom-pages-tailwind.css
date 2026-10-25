@@ -12,7 +12,7 @@
   --font-sitat: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
 
   /*
-   * Lillaenden av logoens egen gradient, slik den står i `FristilLogo.astro`.
+   * Lillaenden av logoens egen gradient, slik den står i `Logo.astro`.
    * Den er navngitt her framfor å stå som en hex-verdi i markupen, slik at
    * sitatet og logoen ikke kan gli fra hverandre uten at noen ser det.
    *

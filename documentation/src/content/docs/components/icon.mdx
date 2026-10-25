@@ -3,24 +3,24 @@ title: Icon
 description: Ikon fra appens eget sett, like stort som teksten rundt. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
-Klassen går på en `<svg>`. Fristil sender ingen ikoner, så svg-en kommer fra settet appen alt bruker. Klassen gjør ikonet like stort som teksten rundt og midt på linja med den, og `fs.icon()` skjuler det for skjermlesere når det bare er pynt.
+Klassen går på en `<svg>`. LO-TEK sender ingen ikoner, så svg-en kommer fra settet appen alt bruker. Klassen gjør ikonet like stort som teksten rundt og midt på linja med den, og `lt.icon()` skjuler det for skjermlesere når det bare er pynt.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "button.css", "icon.css"]}
+<Example importer={["tokens.css", "button.css", "icon.css"]}
   stiler={["button", "icon"]} kode={`
-<button class="fs-button" type="button">
-  <svg class="fs-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"
+<button class="lt-button" type="button">
+  <svg class="lt-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"
        stroke="currentColor" stroke-width="2">
     <path d="M12 5v14M5 12h14" />
   </svg>
   Ny søknad
 </button>
 
-<button class="fs-button" data-variant="ghost" type="button" aria-label="Slett søknaden">
-  <svg class="fs-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"
+<button class="lt-button" data-variant="ghost" type="button" aria-label="Slett søknaden">
+  <svg class="lt-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"
        stroke="currentColor" stroke-width="2">
     <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
   </svg>
@@ -31,27 +31,27 @@ Klassen går på en `<svg>`. Fristil sender ingen ikoner, så svg-en kommer fra 
 **Lager du markupen,** sprer du attributtene inn:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<button {...fs.button({ variant: "ghost" })} type="button" aria-label="Slett søknaden">
-  <svg {...fs.icon()} viewBox="0 0 24 24">…</svg>
+<button {...lt.button({ variant: "ghost" })} type="button" aria-label="Slett søknaden">
+  <svg {...lt.icon()} viewBox="0 0 24 24">…</svg>
 </button>
 ```
 
 **Står elementet der fra før,** setter du dem på det:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const ikon = document.querySelector<SVGSVGElement>("#varsel-ikon")
 
-fs.setAttributes(ikon, fs.icon({ label: "Advarsel" }))
+lt.setAttributes(ikon, lt.icon({ label: "Advarsel" }))
 ```
 
-Uten `label` gir `fs.icon()` `aria-hidden="true"`. Med `label` gir den `role="img"` og `aria-label` i stedet. Se [Typesikker bruk](../../typesikker-bruk/).
+Uten `label` gir `lt.icon()` `aria-hidden="true"`. Med `label` gir den `role="img"` og `aria-label` i stedet. Se [Typesikker bruk](../../type-safe-use/).
 
 </Fragment>
-</Eksempel>
+</Example>
 
 Den første knappen har tekst, og ikonet er pynt ved siden av den. Den andre har bare ikonet, og får navnet sitt fra `aria-label` på knappen.
 
@@ -66,7 +66,7 @@ Fargen kommer fra svg-en. Skriv `currentColor` i `fill` eller `stroke`, slik iko
 Står ikonet alene og sier noe leseren trenger, som et varseltegn uten tekst ved siden av, får det et navn:
 
 ```html
-<svg class="fs-icon" role="img" aria-label="Advarsel" viewBox="0 0 24 24"
+<svg class="lt-icon" role="img" aria-label="Advarsel" viewBox="0 0 24 24"
      fill="none" stroke="currentColor" stroke-width="2">
   <path d="M12 3l9 16H3zM12 10v4M12 17v.01" />
 </svg>
@@ -78,12 +78,12 @@ Er det tekst ved siden av som sier det samme, er ikonet pynt, og skal ha `aria-h
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-icon` | Ikonet, på en `<svg>`. |
+| `.lt-icon` | Ikonet, på en `<svg>`. |
 
-Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
+Se [Tilpasning](../../customising/) for hvordan laget virker.
 
 ## Tilgjengelighet
 
-- En knapp eller lenke med bare et ikon i seg må få et navn: `aria-label` på knappen, eller en tekst i et element med klassen `fs-sr-only`. `fristil sjekk` og editorene melder `ikon-uten-navn` når det mangler.
+- En knapp eller lenke med bare et ikon i seg må få et navn: `aria-label` på knappen, eller en tekst i et element med klassen `lt-sr-only`. `lotek sjekk` og editorene melder `ikon-uten-navn` når det mangler.
 - Skriv hva knappen gjør, ikke hva ikonet forestiller. «Slett søknaden» er bedre enn «Søppelkasse».
 - Et ikon alene er vanskelig å forstå for mange, også for dem som ser det. Har du plass, er tekst ved siden av bedre enn bare et navn for skjermleseren.

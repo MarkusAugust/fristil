@@ -5,7 +5,7 @@ import {
   requiredMarkers,
 } from "../shared.js"
 
-export const LABEL_CLASS = "fs-label" as const
+export const LABEL_CLASS = "lt-label" as const
 
 export type { RequiredMarker }
 export { requiredMarkers }

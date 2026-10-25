@@ -1,22 +1,22 @@
 ---
 title: Kotlin og Java
-description: Byggefunksjonene med enum-er, og Fristils sjekk i vanlige tester, på JVM-en uten Node og uten JavaScript.
+description: Byggefunksjonene med enum-er, og LO-TEKs sjekk i vanlige tester, på JVM-en uten Node og uten JavaScript.
 ---
 
-Fristil for Kotlin gir deg tre ting: byggefunksjonene fra `fs`, der de lovlige verdiene er `enum`-er, den samme sjekken som `fristil sjekk` og editoren bruker, som en vanlig funksjon i testene dine, og CSS-en og web-komponentene som en WebJar. Alt kjører i JVM-en eller serveres av appen. Ingen Node, ingen npm, ingen prosess å starte og ingenting å installere ved siden av.
+LO-TEK for Kotlin gir deg tre ting: byggefunksjonene fra `lt`, der de lovlige verdiene er `enum`-er, den samme sjekken som `lotek sjekk` og editoren bruker, som en vanlig funksjon i testene dine, og CSS-en og web-komponentene som en WebJar. Alt kjører i JVM-en eller serveres av appen. Ingen Node, ingen npm, ingen prosess å starte og ingenting å installere ved siden av.
 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("io.github.markusaugust:fristil:VERSJON")
+    implementation("io.github.markusaugust:lo-tek-interfaces:VERSJON")
 }
 ```
 
-Versjonen er den samme som npm-pakkens, så et versjonsnummer betyr det samme Fristil i Maven og på npm. Men ikke hver npm-versjon går til Maven Central. Finnes ikke versjonen over [på Central](https://central.sonatype.com/artifact/io.github.markusaugust/fristil), bruk den nyeste som gjør det. Pakken har én avhengighet, `com.dylibso.chicory:runtime`, og krever Java 17 eller nyere.
+Versjonen er den samme som npm-pakkens, så et versjonsnummer betyr det samme LO-TEK i Maven og på npm. Men ikke hver npm-versjon går til Maven Central. Finnes ikke versjonen over [på Central](https://central.sonatype.com/artifact/io.github.markusaugust/lotek), bruk den nyeste som gjør det. Pakken har én avhengighet, `com.dylibso.chicory:runtime`, og krever Java 17 eller nyere.
 
 ## CSS-en og web-komponentene
 
-Pakken er også en [WebJar](https://www.webjars.org): `fristil.css`, stilarket for hver komponent og JavaScript-modulene for nettleseren ligger under `META-INF/resources/webjars/fristil/VERSJON/`, med de samme stiene som i npm-pakken. Spring Boot og Servlet-containere serverer den mappa uten oppsett. I Ktor er det én linje:
+Pakken er også en [WebJar](https://www.webjars.org): `lotek.css`, stilarket for hver komponent og JavaScript-modulene for nettleseren ligger under `META-INF/resources/webjars/lo-tek/VERSJON/`, med de samme stiene som i npm-pakken. Spring Boot og Servlet-containere serverer den mappa uten oppsett. I Ktor er det én linje:
 
 ```kotlin
 routing {
@@ -24,14 +24,14 @@ routing {
 }
 ```
 
-`FristilWebJar` har stiene, med versjonen i, så malen aldri peker på en annen versjon enn den pakken har:
+`LotekWebJar` har stiene, med versjonen i, så malen aldri peker på en annen versjon enn den pakken har:
 
 ```kotlin
 """
-<link rel="stylesheet" href="${FristilWebJar.CSS}">
+<link rel="stylesheet" href="${LotekWebJar.CSS}">
 <script type="module">
-  import { defineFs } from "${FristilWebJar.REGISTER}"
-  defineFs()
+  import { defineLt } from "${LotekWebJar.REGISTER}"
+  defineLt()
 </script>
 """
 ```
@@ -39,38 +39,38 @@ routing {
 En adresse fra komponentsidene beholder stien og bytter bare begynnelsen. Denne:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
 ```
 
-blir `${FristilWebJar.ROOT}/src/components/css/button/button.css`. Det som bare er for Node eller React, er ikke med.
+blir `${LotekWebJar.ROOT}/src/components/css/button/button.css`. Det som bare er for Node eller React, er ikke med.
 
 ## Byggefunksjonene
 
-`Fs` har de samme byggefunksjonene og valgene som `fs` i TypeScript. Hver gir attributtene du legger på elementet:
+`Lt` har de samme byggefunksjonene og valgene som `lt` i TypeScript. Hver gir attributtene du legger på elementet:
 
 ```kotlin
-import no.fristil.*
+import no.lotek.*
 
-val lagre = Fs.button(variant = ButtonVariant.SECONDARY)
+val lagre = Lt.button(variant = ButtonVariant.SECONDARY)
 
 """<button ${lagre.toHtml()}>Lagre utkast</button>"""
-// <button class="fs-button" data-variant="secondary">Lagre utkast</button>
+// <button class="lt-button" data-variant="secondary">Lagre utkast</button>
 ```
 
 De lovlige verdiene er `enum`-er, så `ButtonVariant.SECUNDARY` er en kompileringsfeil, og IDE-en viser hva som finnes. Verdier som går igjen, har ett felles navn: `Size`, `FieldState` og `RequiredMarker` brukes av alle byggefunksjonene som har dem. Hver `enum` har `value`, teksten som havner i HTML-en, og `of(tekst)`, som gir verdien eller `null` for en tekst utenfra.
 
 Svaret er et `Attributes`, som er et vanlig `Map<String, String>`. Det kan gis til hvilken som helst malmotor. Uten malmotor skriver `toHtml()` det ut med verdiene escapet, og `+` legger to sett sammen.
 
-Byggefunksjonene som gir flere sett, gir en dataklasse med ett felt per sett. `Fs.field` kobler ledetekst, kontroll, hjelpetekst og feilmelding:
+Byggefunksjonene som gir flere sett, gir en dataklasse med ett felt per sett. `Lt.field` kobler ledetekst, kontroll, hjelpetekst og feilmelding:
 
 ```kotlin
-val felt = Fs.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
+val felt = Lt.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
 
 """
 <label ${felt.label.toHtml()}>E-postadresse</label>
-<input ${(Fs.input(type = InputType.EMAIL, state = felt.state) + felt.control).toHtml()}>
-<p ${(Fs.helpText() + felt.help).toHtml()}>Vi sender kvittering hit.</p>
-<p ${(Fs.errorText() + felt.error).toHtml()}>Skriv en gyldig adresse.</p>
+<input ${(Lt.input(type = InputType.EMAIL, state = felt.state) + felt.control).toHtml()}>
+<p ${(Lt.helpText() + felt.help).toHtml()}>Vi sender kvittering hit.</p>
+<p ${(Lt.errorText() + felt.error).toHtml()}>Skriv en gyldig adresse.</p>
 """
 ```
 
@@ -78,28 +78,28 @@ Et flagg som `hidden` har den tomme teksten som verdi, og skrives som navnet ale
 
 ### At de svarer det samme som i TypeScript
 
-Byggefunksjonene genereres fra manifestet Fristil skriver fra TypeScript-koden, og de få der valgene virker sammen, som `field` og `tabs`, er skrevet for hånd. Alle testes mot over tusen byggetilfeller med svaret fra TypeScript. Svarer én byggefunksjon ett attributt annerledes, slippes ikke pakken.
+Byggefunksjonene genereres fra manifestet LO-TEK skriver fra TypeScript-koden, og de få der valgene virker sammen, som `field` og `tabs`, er skrevet for hånd. Alle testes mot over tusen byggetilfeller med svaret fra TypeScript. Svarer én byggefunksjon ett attributt annerledes, slippes ikke pakken.
 
 ## kotlinx.html
 
-`io.github.markusaugust:fristil-kotlinx-html` har én utvidelse, `fs(…)`, som legger attributtene fra byggefunksjonene på en tagg. Den er en egen pakke, så hovedpakken ikke tar med kotlinx.html til den som ikke bruker det.
+`io.github.markusaugust:lo-tek-kotlinx-html` har én utvidelse, `lt(…)`, som legger attributtene fra byggefunksjonene på en tagg. Den er en egen pakke, så hovedpakken ikke tar med kotlinx.html til den som ikke bruker det.
 
 ```kotlin
 import kotlinx.html.*
-import no.fristil.*
-import no.fristil.InputType
-import no.fristil.html.fs
+import no.lotek.*
+import no.lotek.InputType
+import no.lotek.html.lt
 
 fun FlowContent.epost(ugyldig: Boolean) {
-    val felt = Fs.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
-    label { fs(felt.label); +"E-postadresse" }
-    input { fs(Fs.input(type = InputType.EMAIL, state = felt.state), felt.control); name = "epost" }
-    p { fs(Fs.helpText(), felt.help); +"Vi sender kvittering hit." }
-    p { fs(Fs.errorText(), felt.error); +"Skriv en gyldig adresse." }
+    val felt = Lt.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
+    label { lt(felt.label); +"E-postadresse" }
+    input { lt(Lt.input(type = InputType.EMAIL, state = felt.state), felt.control); name = "epost" }
+    p { lt(Lt.helpText(), felt.help); +"Vi sender kvittering hit." }
+    p { lt(Lt.errorText(), felt.error); +"Skriv en gyldig adresse." }
 }
 ```
 
-Flere sett legges på i rekkefølge, og et senere vinner, som `{...a} {...b}` i JSX. Klassene legges til dem taggen har, så `div(classes = "min-egen") { fs(Fs.card()) }` gir begge. `InputType` importeres for seg, siden kotlinx.html har en med samme navn.
+Flere sett legges på i rekkefølge, og et senere vinner, som `{...a} {...b}` i JSX. Klassene legges til dem taggen har, så `div(classes = "min-egen") { lt(Lt.card()) }` gir begge. `InputType` importeres for seg, siden kotlinx.html har en med samme navn.
 
 ### Med Ktor
 
@@ -108,13 +108,13 @@ routing {
     staticResources("/webjars", "META-INF/resources/webjars")
     get("/soknad") {
         call.respondHtml {
-            head { link(rel = "stylesheet", href = FristilWebJar.CSS) }
+            head { link(rel = "stylesheet", href = LotekWebJar.CSS) }
             body {
                 form(action = "/soknad", method = FormMethod.post) {
                     epost(ugyldig = false)
-                    button { fs(Fs.button()); +"Send" }
+                    button { lt(Lt.button()); +"Send" }
                 }
-                script(type = "module") { unsafe { +"import { defineFs } from \"${FristilWebJar.REGISTER}\"; defineFs()" } }
+                script(type = "module") { unsafe { +"import { defineLt } from \"${LotekWebJar.REGISTER}\"; defineLt()" } }
             }
         }
     }
@@ -123,47 +123,47 @@ routing {
 
 ## Maler: JTE, Thymeleaf og de andre
 
-En mal kan ikke kalle `Fs` for hver verdi, og da er det sjekken som passer på. Skriv markupen som på komponentsidene, og sjekk det malen gir i en test. Med [JTE](https://jte.gg):
+En mal kan ikke kalle `Lt` for hver verdi, og da er det sjekken som passer på. Skriv markupen som på komponentsidene, og sjekk det malen gir i en test. Med [JTE](https://jte.gg):
 
 ```kotlin
 @Test
 fun `søknaden er riktig markup`() {
     val ut = StringOutput()
     templateEngine.render("soknad.kte", mapOf("ugyldig" to true), ut)
-    assertFristil(ut.toString())
+    assertLotek(ut.toString())
 }
 ```
 
-Det samme gjelder Thymeleaf, Freemarker og Pebble: render malen til en tekst, og gi den til `assertFristil`. Malsyntaksen i selve malfila, som `${…}`, `th:…` og `@if`, forstår sjekken også, så [editoren](../editoren/) kan si fra mens du skriver.
+Det samme gjelder Thymeleaf, Freemarker og Pebble: render malen til en tekst, og gi den til `assertLotek`. Malsyntaksen i selve malfila, som `${…}`, `th:…` og `@if`, forstår sjekken også, så [editoren](../the-editor/) kan si fra mens du skriver.
 
 ## Sjekken i testene
 
-`assertFristil` sjekker HTML-en serveren sender, og feiler med funnene som melding:
+`assertLotek` sjekker HTML-en serveren sender, og feiler med funnene som melding:
 
 ```kotlin
 @Test
 fun `skjemaet er koblet riktig`() {
-    assertFristil(app.render("/skjema"))
+    assertLotek(app.render("/form"))
 }
 ```
 
 ```text
-Fristil fant 2 funn:
+LO-TEK fant 2 funn:
 12:30: feil: for="epost" peker på id-en «epost», som ikke finnes på siden. … [id-finnes-ikke]
-18:9: advarsel: Klassen «fs-buton» finnes ikke i Fristil. Mente du fs-button? [ukjent-klasse]
+18:9: advarsel: Klassen «lt-buton» finnes ikke i LO-TEK. Mente du lt-button? [ukjent-klasse]
 ```
 
-Den kaster en `AssertionError`, som JUnit, Kotest og TestNG alle forstår. Som standard sjekkes en hel side: at hver id det pekes på finnes, og at hvert felt er koblet. Er HTML-en en bit av en side, som en komponent, sjekker `assertFristil(html, fragment = true)` bare ordforrådet.
+Den kaster en `AssertionError`, som JUnit, Kotest og TestNG alle forstår. Som standard sjekkes en hel side: at hver id det pekes på finnes, og at hvert felt er koblet. Er HTML-en en bit av en side, som en komponent, sjekker `assertLotek(html, fragment = true)` bare ordforrådet.
 
 Det virker likt for alt som lager HTML på JVM-en: strenger, kotlinx.html, Thymeleaf, JTE, Ktor og Spring. Sjekken leser HTML-en som kommer ut, ikke koden som lager den.
 
-Trenger du funnene selv, gir `Fristil.diagnosePage(html)` og `Fristil.diagnoseMarkup(html)` dem som en liste. Hvert funn har `start` og `end`, `line` og `column`, `severity`, `rule`, `message`, `link` og noen ganger en `fix`. Posisjonene er indekser i en Kotlin-`String`, så `html.substring(funn.start, funn.end)` gir nøyaktig teksten funnet gjelder, også med «æøå» og emoji foran.
+Trenger du funnene selv, gir `Lotek.diagnosePage(html)` og `Lotek.diagnoseMarkup(html)` dem som en liste. Hvert funn har `start` og `end`, `line` og `column`, `severity`, `rule`, `message`, `link` og noen ganger en `fix`. Posisjonene er indekser i en Kotlin-`String`, så `html.substring(funn.start, funn.end)` gir nøyaktig teksten funnet gjelder, også med «æøå» og emoji foran.
 
 Et funn du vil beholde, undertrykkes med en kommentar over taggen:
 
 ```html
-<!-- fristil-ignore-next ukjent-klasse -->
-<div class="fs-eksperiment">…</div>
+<!-- lotek-ignore-next ukjent-klasse -->
+<div class="lt-eksperiment">…</div>
 ```
 
 Uten regelnavn gjelder kommentaren alle reglene for den neste taggen.
@@ -172,82 +172,82 @@ Uten regelnavn gjelder kommentaren alle reglene for den neste taggen.
 
 Med Playwright for Java sjekkes siden slik nettleseren har rendret den, med
 markupen web-komponentene la til og stilarkene den lastet. Pakken avhenger
-ikke av Playwright: `assertFristilRendered` tar en funksjon som kjører et
+ikke av Playwright: `assertLotekRendered` tar en funksjon som kjører et
 skript på siden.
 
 ```kotlin
 @Test
 fun `skjemaet er riktig slik det vises`() {
-    page.navigate("http://localhost:8080/skjema")
-    assertFristilRendered { script -> page.evaluate(script) }
+    page.navigate("http://localhost:8080/form")
+    assertLotekRendered { script -> page.evaluate(script) }
 }
 ```
 
-Den feiler på det `assertFristil` feiler på, og i tillegg på en klasse ingen
+Den feiler på det `assertLotek` feiler på, og i tillegg på en klasse ingen
 stilark styler og en verdi uten regel. Har du stilarkene som tekst, gir
-`assertFristil(html, css = listOf(stilark))` og
-`Fristil.diagnosePage(html, css)` den samme sjekken uten nettleser.
+`assertLotek(html, css = listOf(stilark))` og
+`Lotek.diagnosePage(html, css)` den samme sjekken uten nettleser.
 
 Har prosjektet overtatt komponenter, tar `diagnoseMarkup` og `diagnosePage`
 manifestet som tekst i `manifest`, og sjekker da mot det samme som
 Gradle-pluginen og editoren. Uten valget gjelder manifestet i pakken.
-`assertFristil` og `assertFristilRendered` tar det ikke ennå.
+`assertLotek` og `assertLotekRendered` tar det ikke ennå.
 
 ```kotlin
-val manifest = File("build/fristil/manifest.json").readText()
-assertEquals(emptyList(), Fristil.diagnosePage(html, manifest = manifest))
+val manifest = File("build/lotek/manifest.json").readText()
+assertEquals(emptyList(), Lotek.diagnosePage(html, manifest = manifest))
 ```
 
-Fila skrives av `fristilManifest`, som kjøres av `assemble` og ikke av `test`.
+Fila skrives av `lotekManifest`, som kjøres av `assemble` og ikke av `test`.
 Skal testene lese den, må de vente på oppgaven:
-`tasks.test { dependsOn("fristilManifest") }`.
+`tasks.test { dependsOn("lotekManifest") }`.
 
 ## Temaet
 
-`Fristil.buildTheme(oppskrift)` bygger det samme fargetemaet som [`fristil tema`](../kommandolinjen/#tema), fra JSON-teksten i en oppskriftsfil, og `Fristil.inspectTheme(css)` kontrollerer et tema du har skrevet selv, som `fristil sjekk-tema`. Oppskriften har de ni fargene med norske eller engelske nøkler, `typografi` og `form`:
+`Lotek.buildTheme(oppskrift)` bygger det samme fargetemaet som [`lotek tema`](../command-line/#tema), fra JSON-teksten i en oppskriftsfil, og `Lotek.inspectTheme(css)` kontrollerer et tema du har skrevet selv, som `lotek sjekk-tema`. Oppskriften har de ni fargene med norske eller engelske nøkler, `typografi` og `form`:
 
 ```kotlin
-val tema = Fristil.buildTheme("""{"aksent": "#7c3aed", "fare": "#b3261e"}""")
-File("build/fristil/tema.css").writeText(tema.css)
+val tema = Lotek.buildTheme("""{"aksent": "#7c3aed", "fare": "#b3261e"}""")
+File("build/lotek/theme.css").writeText(theme.css)
 ```
 
-Svaret har `light` og `dark`, hvert `--fs-color-*`-token med verdien sin, `violations` og `css`. Løftene holder av konstruksjon, så `violations` er tom for gyldige farger, men sjekk den før du skriver fila: `fristil tema` nekter å skrive når den ikke er tom, mens `buildTheme` gir temaet tilbake med lista, som i TypeScript. En nøkkel som ikke finnes, og en oppskrift kjernen avviser, kaster `IllegalArgumentException` med forklaringen. `inspectTheme` gir `problems` med selektor og melding, og tallene `blocks`, `declarations` og `promises`, som sier hvor mye som faktisk ble lest. Oppskriften leses som `fristil tema` leser den, og begge svarer det kjernen svarer i TypeScript, testet mot den samme fasiten.
+Svaret har `light` og `dark`, hvert `--lt-color-*`-token med verdien sin, `violations` og `css`. Løftene holder av konstruksjon, så `violations` er tom for gyldige farger, men sjekk den før du skriver fila: `lotek tema` nekter å skrive når den ikke er tom, mens `buildTheme` gir temaet tilbake med lista, som i TypeScript. En nøkkel som ikke finnes, og en oppskrift kjernen avviser, kaster `IllegalArgumentException` med forklaringen. `inspectTheme` gir `problems` med selektor og melding, og tallene `blocks`, `declarations` og `promises`, som sier hvor mye som faktisk ble lest. Oppskriften leses som `lotek tema` leser den, og begge svarer det kjernen svarer i TypeScript, testet mot den samme fasiten.
 
 ## Gradle-pluginen
 
-Malfilene selv kan sjekkes som en del av bygget, uten en test som rendrer dem. Pluginen kjører den samme kommandolinja som `fristil sjekk` og `fristil tema`, i Gradle-prosessen:
+Malfilene selv kan sjekkes som en del av bygget, uten en test som rendrer dem. Pluginen kjører den samme kommandolinja som `lotek sjekk` og `lotek tema`, i Gradle-prosessen:
 
 ```kotlin
 // build.gradle.kts
 plugins {
-    id("io.github.markusaugust.fristil") version "VERSJON"
+    id("io.github.markusaugust.lo-tek") version "VERSJON"
 }
 
-fristil {
+lotek {
     templates.from(fileTree("src/main/jte"))
-    themeRecipe = file("fristil.tema.json")
+    themeRecipe = file("lotek.theme.json")
 }
 ```
 
 | Oppgave | Gjør |
 | --- | --- |
-| `fristilSjekk` | sjekker `templates` som `fristil sjekk`, og feiler med funnene. Kjøres av `check`. |
-| `fristilTema` | bygger temaet av `themeRecipe` til `themeOutput`, standard `build/fristil/tema.css` |
-| `fristilManifest` | skriver manifestet prosjektet sjekkes mot til `build/fristil/manifest.json` når `manifests` har fragmenter, og sletter fila når det ikke har det. Kjøres av `assemble`. |
+| `lotekSjekk` | sjekker `templates` som `lotek sjekk`, og feiler med funnene. Kjøres av `check`. |
+| `lotekTema` | bygger temaet av `themeRecipe` til `themeOutput`, standard `build/lotek/theme.css` |
+| `lotekManifest` | skriver manifestet prosjektet sjekkes mot til `build/lotek/manifest.json` når `manifests` har fragmenter, og sletter fila når det ikke har det. Kjøres av `assemble`. |
 
 ```text
-> Task :fristilSjekk FAILED
-Markupen stemmer ikke med Fristil:
+> Task :lotekSjekk FAILED
+Markupen stemmer ikke med LO-TEK:
 
-src/main/jte/soknad.jte:14:18: advarsel: Klassen «fs-buton» finnes ikke i Fristil. Mente du fs-button?
+src/main/jte/soknad.jte:14:18: advarsel: Klassen «lt-buton» finnes ikke i LO-TEK. Mente du lt-button?
 ```
 
-`rendered = true` sjekker filene som hele sider, med koblingen, som `--rendret`. Har du overtatt en komponent med [`fristil overta`](../kommandolinjen/#overta), legger du fragmentet i `manifests`, så markupen for kopien sjekkes også, og kopien kommer med i `build/fristil/manifest.json`:
+`rendered = true` sjekker filene som hele sider, med koblingen, som `--rendret`. Har du overtatt en komponent med [`lotek overta`](../command-line/#overta), legger du fragmentet i `manifests`, så markupen for kopien sjekkes også, og kopien kommer med i `build/lotek/manifest.json`:
 
 ```kotlin
-fristil {
+lotek {
     templates.from(fileTree("src/main/jte"))
-    manifests.from("src/main/fristil/button/fristil-manifest.json")
+    manifests.from("src/main/lotek/button/lotek-manifest.json")
 }
 ```
 
@@ -259,4 +259,4 @@ Sjekken er skrevet i Rust og bygget til én WebAssembly-modul. Den samme modulen
 
 ## I IntelliJ
 
-Pluginen [Fristil](https://plugins.jetbrains.com/plugin/34764-fristil) kjører den samme sjekken mens du skriver, også i HTML i en Kotlin-streng merket med `@Language("HTML")` eller `// language=HTML`. Se [Editoren](../editoren/#jetbrains).
+Pluginen [LO-TEK](https://plugins.jetbrains.com/plugin/34764-lotek) kjører den samme sjekken mens du skriver, også i HTML i en Kotlin-streng merket med `@Language("HTML")` eller `// language=HTML`. Se [Editoren](../the-editor/#jetbrains).

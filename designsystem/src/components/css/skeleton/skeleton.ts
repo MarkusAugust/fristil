@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const SKELETON_CLASS = "fs-skeleton" as const
+export const SKELETON_CLASS = "lt-skeleton" as const
 
 export const skeletonVariants = ["block", "text", "circle"] as const
 

@@ -1,4 +1,4 @@
-package no.fristil.intellij
+package no.lotek.intellij
 
 import com.intellij.codeInsight.template.TemplateManager
 import com.intellij.codeInsight.template.impl.TemplateManagerImpl
@@ -11,14 +11,14 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
  */
 class LiveTemplateTest : BasePlatformTestCase() {
     fun `test har en mal per web-komponent`() {
-        val maler = TemplateSettings.getInstance().templates.filter { it.groupName == "Fristil" }
+        val maler = TemplateSettings.getInstance().templates.filter { it.groupName == "LO-TEK" }
         val navn = maler.map { it.key }.sorted()
-        assertTrue("fant $navn", navn.containsAll(listOf("fs-dialog", "fs-field", "fs-popover", "fs-suggestion", "fs-tabs")))
+        assertTrue("fant $navn", navn.containsAll(listOf("lt-dialog", "lt-field", "lt-popover", "lt-suggestion", "lt-tabs")))
     }
 
     fun `test feltet har id-en som variabel, speilet i for`() {
-        val mal = TemplateSettings.getInstance().getTemplate("fs-field", "Fristil")
-        assertNotNull("fs-field mangler", mal)
+        val mal = TemplateSettings.getInstance().getTemplate("lt-field", "LO-TEK")
+        assertNotNull("lt-field mangler", mal)
         val tekst = mal!!.string
         assertTrue("id-en skal være en variabel: $tekst", tekst.contains("id=\"\$navn\$\""))
         assertTrue("for skal speile den: $tekst", tekst.contains("for=\"\$navn\$\""))
@@ -29,10 +29,10 @@ class LiveTemplateTest : BasePlatformTestCase() {
     fun `test malen utvides i en HTML-fil`() {
         TemplateManagerImpl.setTemplateTesting(testRootDisposable)
         myFixture.configureByText("test.html", "<caret>")
-        val mal = TemplateSettings.getInstance().getTemplate("fs-field", "Fristil")!!
+        val mal = TemplateSettings.getInstance().getTemplate("lt-field", "LO-TEK")!!
         TemplateManager.getInstance(project).startTemplate(myFixture.editor, mal)
         val tekst = myFixture.editor.document.text
-        assertTrue("markupen skal stå der: $tekst", tekst.contains("<fs-field>") && tekst.contains("id=\"navn\""))
+        assertTrue("markupen skal stå der: $tekst", tekst.contains("<lt-field>") && tekst.contains("id=\"navn\""))
         assertFalse("variabelen skal være byttet ut: $tekst", tekst.contains("\$navn\$"))
     }
 }

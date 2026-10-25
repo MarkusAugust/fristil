@@ -2,7 +2,7 @@ import { DEFAULT_TEXTS } from "../../default-texts.js"
 import { defineElement, HostElement, whenUpgraded } from "../../host-element.js"
 import { TOAST_CLASS, TOAST_CLOSE_CLASS, TOAST_MESSAGE_CLASS } from "./toast.js"
 
-export const FS_TOAST_TAG = "fs-toast" as const
+export const LT_TOAST_TAG = "lt-toast" as const
 
 export const toastColors = ["neutral", "success", "warning", "danger"] as const
 export type ToastColor = (typeof toastColors)[number]
@@ -36,7 +36,7 @@ export type ShowOptions = {
  * Meldingene finnes ikke før en hendelse på klienten skaper dem, så det er
  * ingenting for serveren å rendre.
  *
- * Serveren skriver beholderen med `fs.toast()`, og den setter
+ * Serveren skriver beholderen med `lt.toast()`, og den setter
  * `data-ignore-morph`. Uten det river Datastars morfing meldingene bort ved
  * neste patch, fordi serverens utgave av regionen er tom.
  *
@@ -53,12 +53,12 @@ export type ShowOptions = {
  * meldingen.
  *
  * ```ts
- * document.querySelector("fs-toast").show("Søknaden er sendt", {
+ * document.querySelector("lt-toast").show("Søknaden er sendt", {
  *   color: "success",
  * })
  * ```
  */
-export class FsToast extends HostElement {
+export class LtToast extends HostElement {
   static observedAttributes = ["duration", "label", "close-label"] as const
 
   /**
@@ -78,7 +78,7 @@ export class FsToast extends HostElement {
     // `0` er en gyldig verdi og betyr at meldingene blir stående. Uten
     // sjekken mot null her forsvant de likevel etter seks sekunder, og bare
     // `show(..., { duration: 0 })` virket. Et tomt attributt er ikke null:
-    // `Number("")` er 0, og `<fs-toast duration>` lot meldingene stå.
+    // `Number("")` er 0, og `<lt-toast duration>` lot meldingene stå.
     const raw = this.getAttribute("duration")
     if (raw === null || raw.trim() === "") return DEFAULT_DURATION
     const value = Number(raw)
@@ -149,7 +149,7 @@ export class FsToast extends HostElement {
   connectedCallback(): void {
     this.addEventListener("focusin", this.rememberOrigin)
     this.addEventListener("focusout", this.forgetOrigin)
-    // Skrev serveren regionen med fs.toast(), står alt dette allerede. Her
+    // Skrev serveren regionen med lt.toast(), står alt dette allerede. Her
     // settes det bare når det mangler, så en ren HTML-side uten byggefunksjon også
     // får en region skjermleseren forstår.
     // Klassen bærer plasseringen. Den settes her også, så en region uten
@@ -275,12 +275,12 @@ export class FsToast extends HostElement {
   }
 }
 
-export function defineFsToast(tagName: string = FS_TOAST_TAG): void {
-  defineElement(tagName, FsToast)
+export function defineLtToast(tagName: string = LT_TOAST_TAG): void {
+  defineElement(tagName, LtToast)
 }
 
 /**
- * `element.show()`, men venter først på at `defineFsToast()` har kjørt.
+ * `element.show()`, men venter først på at `defineLtToast()` har kjørt.
  *
  * Se `whenUpgraded` for hvorfor: et kall før registreringen traff et vanlig
  * `HTMLElement` uten `show`.
@@ -290,6 +290,6 @@ export async function showToast(
   message: string,
   options: ShowOptions = {},
 ): Promise<HTMLElement> {
-  const toast = await whenUpgraded<FsToast>(element)
+  const toast = await whenUpgraded<LtToast>(element)
   return toast.show(message, options)
 }

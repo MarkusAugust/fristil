@@ -1,6 +1,6 @@
 import { attributes } from "../shared.js"
 
-export const SKIP_LINK_CLASS = "fs-skip-link" as const
+export const SKIP_LINK_CLASS = "lt-skip-link" as const
 
 export type SkipLinkAttributes = {
   class: typeof SKIP_LINK_CLASS

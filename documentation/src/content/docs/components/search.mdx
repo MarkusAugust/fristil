@@ -3,51 +3,51 @@ title: Search
 description: Søkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
-Et `fs-input` med plass til et forstørrelsesglass. Begge klassene settes, så alle tilstandene og variablene fra [Input](../input/) gjelder her også.
+Et `lt-input` med plass til et forstørrelsesglass. Begge klassene settes, så alle tilstandene og variablene fra [Input](../input/) gjelder her også.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "search.css", "button.css", "label.css", "sr-only.css"]}
+<Example importer={["tokens.css", "search.css", "button.css", "label.css", "sr-only.css"]}
   stiler={["search", "button", "label", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
-<form class="fs-search-row" role="search">
-  <label class="fs-label fs-sr-only" for="sok">Søk i saker</label>
-  <input class="fs-input fs-search" type="search" id="sok" name="q" placeholder="Søk i saker" />
-  <button class="fs-button" type="submit">Søk</button>
+<form class="lt-search-row" role="search">
+  <label class="lt-label lt-sr-only" for="sok">Søk i saker</label>
+  <input class="lt-input lt-search" type="search" id="sok" name="q" placeholder="Søk i saker" />
+  <button class="lt-button" type="submit">Søk</button>
 </form>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<form className={fs.search.row} role="search">
-  <label {...fs.label()} htmlFor="sok">Søk i saker</label>
-  <input {...fs.search()} id="sok" />
+<form className={lt.search.row} role="search">
+  <label {...lt.label()} htmlFor="sok">Søk i saker</label>
+  <input {...lt.search()} id="sok" />
 </form>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const felt = document.querySelector<HTMLInputElement>("#sok")
 
-fs.setAttributes(felt, fs.search())
+lt.setAttributes(felt, lt.search())
 ```
 
-`fs.search()` setter både `fs-input` og `fs-search`, og `type="search"`. `fs.search.row` gir klassen på raden med feltet og knappen.
+`lt.search()` setter både `lt-input` og `lt-search`, og `type="search"`. `lt.search.row` gir klassen på raden med feltet og knappen.
 
 </Fragment>
-</Eksempel>
+</Example>
 
 `type="search"` gir nettleserens eget kryss for å tømme feltet, og «Søk» i stedet for «Enter» på mobiltastaturet. Safari og Chrome tegner krysset ulikt, Firefox tegner det ikke i det hele tatt, og om Escape tømmer feltet varierer.
 
@@ -55,14 +55,14 @@ fs.setAttributes(felt, fs.search())
 
 ## Ledeteksten kan ikke droppes
 
-Plassholderen forsvinner idet brukeren skriver, og flere skjermlesere leser den ikke opp. Ser feltet så åpenbart ut som et søk at en synlig ledetekst blir støy, skjul den med [`.fs-sr-only`](../sr-only/) framfor å la den være.
+Plassholderen forsvinner idet brukeren skriver, og flere skjermlesere leser den ikke opp. Ser feltet så åpenbart ut som et søk at en synlig ledetekst blir støy, skjul den med [`.lt-sr-only`](../sr-only/) framfor å la den være.
 
 ## Søk mens brukeren skriver
 
 ```html
-<label class="fs-label fs-sr-only" for="sok">Søk i sakene</label>
-<input class="fs-input fs-search" type="search" id="sok" name="q" />
-<p class="fs-sr-only" role="status" id="treff"></p>
+<label class="lt-label lt-sr-only" for="sok">Søk i sakene</label>
+<input class="lt-input lt-search" type="search" id="sok" name="q" />
+<p class="lt-sr-only" role="status" id="treff"></p>
 
 <script type="module">
   const felt = document.getElementById("sok")
@@ -88,15 +88,15 @@ Ventetiden på 300 millisekunder er ikke bare for serveren. Uten den leses antal
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-search` | Søkefeltet. Brukes sammen med `.fs-input`. |
-| `.fs-search-row` | Raden med feltet og knappen |
+| `.lt-search` | Søkefeltet. Brukes sammen med `.lt-input`. |
+| `.lt-search-row` | Raden med feltet og knappen |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-search-icon-space` | `var(--fs-spacing-10)` |
-| `--fs-search-icon-size` | `var(--fs-spacing-5)` |
+| `--lt-search-icon-space` | `var(--lt-spacing-10)` |
+| `--lt-search-icon-size` | `var(--lt-spacing-5)` |
 
-Ikonet kommer fra `--fs-icon-search` og snur med temaet. Se [Tilpasning](../../tilpasning/).
+Ikonet kommer fra `--lt-icon-search` og snur med temaet. Se [Tilpasning](../../customising/).
 
 ## Tilgjengelighet
 

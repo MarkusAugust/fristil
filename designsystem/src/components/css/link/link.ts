@@ -1,6 +1,6 @@
 import { attributes } from "../shared.js"
 
-export const LINK_CLASS = "fs-link" as const
+export const LINK_CLASS = "lt-link" as const
 
 export type LinkOptions = {
   /**

@@ -6,8 +6,8 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/farge"
-import { finnOverflyt, monterIsolert } from "../../../testing/isolert"
+import { farge } from "../../../testing/color"
+import { finnOverflyt, monterIsolert } from "../../../testing/isolated"
 import textareaCss from "./textarea.css?inline"
 
 import "../../../tokens/tokens.css"
@@ -23,57 +23,57 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("fs-textarea", () => {
+describe("lt-textarea", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <textarea id="default" class="fs-textarea"></textarea>
-      <textarea id="invalid" class="fs-textarea" data-state="invalid"></textarea>
-      <textarea id="success" class="fs-textarea" data-state="success"></textarea>
-      <textarea id="disabled" class="fs-textarea" disabled></textarea>
+      <textarea id="default" class="lt-textarea"></textarea>
+      <textarea id="invalid" class="lt-textarea" data-state="invalid"></textarea>
+      <textarea id="success" class="lt-textarea" data-state="success"></textarea>
+      <textarea id="disabled" class="lt-textarea" disabled></textarea>
     `
   })
 
   it("applies default styles", () => {
     const textarea = css("default")
 
-    expect(textarea.backgroundColor).toBe(farge("--fs-color-neutral-canvas"))
-    expect(textarea.borderTopColor).toBe(farge("--fs-color-neutral-border"))
-    expect(textarea.color).toBe(farge("--fs-color-neutral-text-strong"))
+    expect(textarea.backgroundColor).toBe(farge("--lt-color-neutral-canvas"))
+    expect(textarea.borderTopColor).toBe(farge("--lt-color-neutral-border"))
+    expect(textarea.color).toBe(farge("--lt-color-neutral-text-strong"))
   })
 
   it("applies invalid styles", () => {
     const textarea = css("invalid")
 
-    expect(textarea.backgroundColor).toBe(farge("--fs-color-danger-surface"))
-    expect(textarea.borderTopColor).toBe(farge("--fs-color-danger-text"))
+    expect(textarea.backgroundColor).toBe(farge("--lt-color-danger-surface"))
+    expect(textarea.borderTopColor).toBe(farge("--lt-color-danger-text"))
   })
 
   it("applies success styles", () => {
     const textarea = css("success")
 
-    expect(textarea.backgroundColor).toBe(farge("--fs-color-success-surface"))
-    expect(textarea.borderTopColor).toBe(farge("--fs-color-success-text"))
+    expect(textarea.backgroundColor).toBe(farge("--lt-color-success-surface"))
+    expect(textarea.borderTopColor).toBe(farge("--lt-color-success-text"))
   })
 
   it("applies disabled styles", () => {
     const textarea = css("disabled")
 
-    expect(textarea.backgroundColor).toBe(farge("--fs-color-disabled-surface"))
-    expect(textarea.borderTopColor).toBe(farge("--fs-color-disabled-surface"))
-    expect(textarea.color).toBe(farge("--fs-color-neutral-border"))
+    expect(textarea.backgroundColor).toBe(farge("--lt-color-disabled-surface"))
+    expect(textarea.borderTopColor).toBe(farge("--lt-color-disabled-surface"))
+    expect(textarea.color).toBe(farge("--lt-color-neutral-border"))
     // Markøren vises bare hvis elementet treffes av pekeren
     expect(textarea.pointerEvents).toBe("auto")
   })
 })
 
-describe("fs-textarea tilgjengelighet", () => {
+describe("lt-textarea tilgjengelighet", () => {
   it("har nok kontrast og ledetekst i alle tilstander", async () => {
     monter(`
-      <label class="fs-label" for="a11y-melding">Melding til saksbehandler</label>
-      <textarea class="fs-textarea" id="a11y-melding" rows="3"></textarea>
+      <label class="lt-label" for="a11y-melding">Melding til saksbehandler</label>
+      <textarea class="lt-textarea" id="a11y-melding" rows="3"></textarea>
 
-      <label class="fs-label" for="a11y-begrunnelse">Begrunnelse</label>
-      <textarea class="fs-textarea" id="a11y-begrunnelse" rows="3" data-state="invalid" aria-invalid="true">For kort</textarea>
+      <label class="lt-label" for="a11y-begrunnelse">Begrunnelse</label>
+      <textarea class="lt-textarea" id="a11y-begrunnelse" rows="3" data-state="invalid" aria-invalid="true">For kort</textarea>
     `)
 
     await ventPaTegning()
@@ -81,20 +81,20 @@ describe("fs-textarea tilgjengelighet", () => {
   })
 })
 
-describe("fs-textarea uten CSS-reset", () => {
+describe("lt-textarea uten CSS-reset", () => {
   it("holder seg innenfor boksen sin", () => {
     const { boks } = monterIsolert(
       textareaCss,
-      `<textarea class="fs-textarea" rows="3">Jeg flytter 1. juni.</textarea>`,
+      `<textarea class="lt-textarea" rows="3">Jeg flytter 1. juni.</textarea>`,
     )
 
     expect(finnOverflyt(boks)).toEqual([])
   })
 })
 
-describe("fs-textarea deaktivert", () => {
+describe("lt-textarea deaktivert", () => {
   it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
-    monter(`<textarea class="fs-textarea" disabled>Av</textarea>`)
+    monter(`<textarea class="lt-textarea" disabled>Av</textarea>`)
 
     const element = document.querySelector("textarea") as HTMLElement
     const ramme = element.getBoundingClientRect()

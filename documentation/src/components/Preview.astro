@@ -1,48 +1,48 @@
 ---
-import accordion from "@fristil/designsystem/accordion.css?inline"
-import alert from "@fristil/designsystem/alert.css?inline"
-import avatar from "@fristil/designsystem/avatar.css?inline"
-import badge from "@fristil/designsystem/badge.css?inline"
-import breadcrumbs from "@fristil/designsystem/breadcrumbs.css?inline"
-import button from "@fristil/designsystem/button.css?inline"
-import card from "@fristil/designsystem/card.css?inline"
-import checkbox from "@fristil/designsystem/checkbox.css?inline"
-import connectionStatus from "@fristil/designsystem/connection-status.css?inline"
-import dialog from "@fristil/designsystem/dialog.css?inline"
-import divider from "@fristil/designsystem/divider.css?inline"
-import errorSummary from "@fristil/designsystem/error-summary.css?inline"
-import errorText from "@fristil/designsystem/error-text.css?inline"
-import field from "@fristil/designsystem/field.css?inline"
-import fieldset from "@fristil/designsystem/fieldset.css?inline"
-import fileUpload from "@fristil/designsystem/file-upload.css?inline"
-import heading from "@fristil/designsystem/heading.css?inline"
-import helpText from "@fristil/designsystem/help-text.css?inline"
-import icon from "@fristil/designsystem/icon.css?inline"
-import input from "@fristil/designsystem/input.css?inline"
-import label from "@fristil/designsystem/label.css?inline"
-import link from "@fristil/designsystem/link.css?inline"
-import list from "@fristil/designsystem/list.css?inline"
-import pagination from "@fristil/designsystem/pagination.css?inline"
-import paragraph from "@fristil/designsystem/paragraph.css?inline"
-import popover from "@fristil/designsystem/popover.css?inline"
-import progress from "@fristil/designsystem/progress.css?inline"
-import radio from "@fristil/designsystem/radio.css?inline"
-import search from "@fristil/designsystem/search.css?inline"
-import select from "@fristil/designsystem/select.css?inline"
-import sessionTimeout from "@fristil/designsystem/session-timeout.css?inline"
-import skeleton from "@fristil/designsystem/skeleton.css?inline"
-import skipLink from "@fristil/designsystem/skip-link.css?inline"
-import spinner from "@fristil/designsystem/spinner.css?inline"
-import srOnly from "@fristil/designsystem/sr-only.css?inline"
-import suggestion from "@fristil/designsystem/suggestion.css?inline"
-import switchCss from "@fristil/designsystem/switch.css?inline"
-import table from "@fristil/designsystem/table.css?inline"
-import tabs from "@fristil/designsystem/tabs.css?inline"
-import tag from "@fristil/designsystem/tag.css?inline"
-import textarea from "@fristil/designsystem/textarea.css?inline"
-import toast from "@fristil/designsystem/toast.css?inline"
-import toggleGroup from "@fristil/designsystem/toggle-group.css?inline"
-import tooltip from "@fristil/designsystem/tooltip.css?inline"
+import accordion from "@lo-tek/interfaces/accordion.css?inline"
+import alert from "@lo-tek/interfaces/alert.css?inline"
+import avatar from "@lo-tek/interfaces/avatar.css?inline"
+import badge from "@lo-tek/interfaces/badge.css?inline"
+import breadcrumbs from "@lo-tek/interfaces/breadcrumbs.css?inline"
+import button from "@lo-tek/interfaces/button.css?inline"
+import card from "@lo-tek/interfaces/card.css?inline"
+import checkbox from "@lo-tek/interfaces/checkbox.css?inline"
+import connectionStatus from "@lo-tek/interfaces/connection-status.css?inline"
+import dialog from "@lo-tek/interfaces/dialog.css?inline"
+import divider from "@lo-tek/interfaces/divider.css?inline"
+import errorSummary from "@lo-tek/interfaces/error-summary.css?inline"
+import errorText from "@lo-tek/interfaces/error-text.css?inline"
+import field from "@lo-tek/interfaces/field.css?inline"
+import fieldset from "@lo-tek/interfaces/fieldset.css?inline"
+import fileUpload from "@lo-tek/interfaces/file-upload.css?inline"
+import heading from "@lo-tek/interfaces/heading.css?inline"
+import helpText from "@lo-tek/interfaces/help-text.css?inline"
+import icon from "@lo-tek/interfaces/icon.css?inline"
+import input from "@lo-tek/interfaces/input.css?inline"
+import label from "@lo-tek/interfaces/label.css?inline"
+import link from "@lo-tek/interfaces/link.css?inline"
+import list from "@lo-tek/interfaces/list.css?inline"
+import pagination from "@lo-tek/interfaces/pagination.css?inline"
+import paragraph from "@lo-tek/interfaces/paragraph.css?inline"
+import popover from "@lo-tek/interfaces/popover.css?inline"
+import progress from "@lo-tek/interfaces/progress.css?inline"
+import radio from "@lo-tek/interfaces/radio.css?inline"
+import search from "@lo-tek/interfaces/search.css?inline"
+import select from "@lo-tek/interfaces/select.css?inline"
+import sessionTimeout from "@lo-tek/interfaces/session-timeout.css?inline"
+import skeleton from "@lo-tek/interfaces/skeleton.css?inline"
+import skipLink from "@lo-tek/interfaces/skip-link.css?inline"
+import spinner from "@lo-tek/interfaces/spinner.css?inline"
+import srOnly from "@lo-tek/interfaces/sr-only.css?inline"
+import suggestion from "@lo-tek/interfaces/suggestion.css?inline"
+import switchCss from "@lo-tek/interfaces/switch.css?inline"
+import table from "@lo-tek/interfaces/table.css?inline"
+import tabs from "@lo-tek/interfaces/tabs.css?inline"
+import tag from "@lo-tek/interfaces/tag.css?inline"
+import textarea from "@lo-tek/interfaces/textarea.css?inline"
+import toast from "@lo-tek/interfaces/toast.css?inline"
+import toggleGroup from "@lo-tek/interfaces/toggle-group.css?inline"
+import tooltip from "@lo-tek/interfaces/tooltip.css?inline"
 
 const STILARK = {
   alert,
@@ -120,7 +120,7 @@ interface Props {
    * Hold `position: fixed` inne i boksen.
    *
    * Noen komponenter fester innholdet sitt til vinduet, som linja fra
-   * `<fs-connection-status>` øverst og meldingene fra `<fs-toast>` i hjørnet.
+   * `<lt-connection-status>` øverst og meldingene fra `<lt-toast>` i hjørnet.
    * I en app er det riktig. I dokumentasjonen var det ikke det: leseren
    * trykket på knappen midt i siden, og linja dukket opp i toppen av vinduet,
    * bak den faste toppen på dokumentasjonssiden. Det så ut som at ingenting
@@ -168,15 +168,15 @@ const stilark = [
 
 	.flate {
 		display: flex;
-		gap: var(--fs-spacing-3);
-		padding: var(--fs-spacing-6);
-		max-width: var(--fs-preview-max-width, none);
-		background: var(--fs-color-neutral-canvas);
-		color: var(--fs-color-neutral-text-strong);
-		border: 1px solid var(--fs-color-neutral-border-subtle);
-		border-radius: var(--fs-spacing-1);
+		gap: var(--lt-spacing-3);
+		padding: var(--lt-spacing-6);
+		max-width: var(--lt-preview-max-width, none);
+		background: var(--lt-color-neutral-canvas);
+		color: var(--lt-color-neutral-text-strong);
+		border: 1px solid var(--lt-color-neutral-border-subtle);
+		border-radius: var(--lt-spacing-1);
 		font-family: inherit;
-		font-size: var(--fs-font-size-m);
+		font-size: var(--lt-font-size-m);
 		line-height: 1.6;
 	}
 
@@ -211,14 +211,14 @@ const stilark = [
 ].join("\n")
 ---
 
-<div class="fs-preview not-content" id={id}>
+<div class="lt-preview not-content" id={id}>
 	<template shadowrootmode="open">
 		<style set:html={stilark}></style>
 		<div
 			class="flate"
 			data-layout={layout}
 			data-fast-inni={fastInni ? "" : undefined}
-			style={maxWidth ? `--fs-preview-max-width: ${maxWidth}` : undefined}
+			style={maxWidth ? `--lt-preview-max-width: ${maxWidth}` : undefined}
 		>
 			<slot />
 		</div>

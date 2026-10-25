@@ -1,7 +1,7 @@
 /**
  * Hva som overlever en patch gjennom Datastars egen morfing.
  *
- * `morfing.browser.test.ts` kjører Datastars attributtløkke på de samme
+ * `morph.browser.test.ts` kjører Datastars attributtløkke på de samme
  * nodene, og forutsetter dermed at morfingen beholder dem. Det gjør den ikke
  * alltid. Datastar v1.0.4 matcher gamle og nye elementer slik
  * (`isSoftMatch` i `library/src/plugins/watchers/patchElements.ts`):
@@ -49,12 +49,12 @@ import {
 } from "vitest"
 
 import { ventPaTegning } from "../../../testing/a11y"
-import { settAdresse } from "../../../testing/adresse"
+import { settAdresse } from "../../../testing/address"
 import { attr } from "../../../testing/markup"
-import { defineFsField } from "../field/fs-field"
-import { defineFsPopover } from "../popover/fs-popover"
-import { defineFsSuggestion } from "../suggestion/fs-suggestion"
-import { defineFsTabs } from "./fs-tabs"
+import { defineLtField } from "../field/lt-field"
+import { defineLtPopover } from "../popover/lt-popover"
+import { defineLtSuggestion } from "../suggestion/lt-suggestion"
+import { defineLtTabs } from "./lt-tabs"
 import { tabs } from "./tabs"
 
 import "../../../testing/datastar/datastar-v1.0.4.js"
@@ -81,33 +81,33 @@ const NAVN = ["Søknaden", "Vedlegg", "Meldinger"]
 const NOKLER = ["soknaden", "vedlegg", "meldinger"]
 
 /**
- * Fanerad slik en Go- eller Kotlin-mal skriver den uten `fs.tabs()`: lenker
+ * Fanerad slik en Go- eller Kotlin-mal skriver den uten `lt.tabs()`: lenker
  * uten id, og id bare på panelene, som lenkene krever.
  */
-const BAR = `<fs-tabs id="saken">
-  <ul class="fs-tabs__list" aria-label="Deler av saken">
+const BAR = `<lt-tabs id="saken">
+  <ul class="lt-tabs__list" aria-label="Deler av saken">
     ${NAVN.map((n, i) => `<li><a href="#${NOKLER[i]}">${n}</a></li>`).join("\n    ")}
   </ul>
-  ${NAVN.map((n, i) => `<section class="fs-tabs__panel" id="${NOKLER[i]}"><h2>${n}</h2><p>Innhold</p></section>`).join("\n  ")}
-</fs-tabs>`
+  ${NAVN.map((n, i) => `<section class="lt-tabs__panel" id="${NOKLER[i]}"><h2>${n}</h2><p>Innhold</p></section>`).join("\n  ")}
+</lt-tabs>`
 
-/** Det `fs.tabs()` skriver: lenker, panelenes id, overskriftenes id og klassene. */
+/** Det `lt.tabs()` skriver: lenker, panelenes id, overskriftenes id og klassene. */
 const FANER = tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
-const FRA_BYGGEFUNKSJONEN = `<fs-tabs id="saken">
+const FRA_BYGGEFUNKSJONEN = `<lt-tabs id="saken">
   <ul ${attr(FANER.list)}>
     ${FANER.tabs.map((t, i) => `<li><a ${attr(t)}>${NAVN[i]}</a></li>`).join("\n    ")}
   </ul>
   ${FANER.panels.map((p, i) => `<section ${attr(p)}><h2 ${attr(FANER.headings[i])}>${NAVN[i]}</h2><p>Innhold</p></section>`).join("\n  ")}
-</fs-tabs>`
+</lt-tabs>`
 
 function faner(): HTMLAnchorElement[] {
   return [
-    ...document.querySelectorAll<HTMLAnchorElement>("#saken .fs-tabs__list a"),
+    ...document.querySelectorAll<HTMLAnchorElement>("#saken .lt-tabs__list a"),
   ]
 }
 
 function paneler(): HTMLElement[] {
-  return [...document.querySelectorAll<HTMLElement>("#saken .fs-tabs__panel")]
+  return [...document.querySelectorAll<HTMLElement>("#saken .lt-tabs__panel")]
 }
 
 function valgt(): (string | null)[] {
@@ -117,7 +117,7 @@ function valgt(): (string | null)[] {
 /** Klikker fane 2, patcher med `markup`, og sier hva som overlevde. */
 async function klikkOgPatch(markup: string) {
   document.body.innerHTML = markup
-  await customElements.whenDefined("fs-tabs")
+  await customElements.whenDefined("lt-tabs")
   await ventPaTegning()
 
   const faneFør = faner()
@@ -152,9 +152,9 @@ async function klikkOgPatch(markup: string) {
   }
 }
 
-describe("fs-tabs gjennom Datastars morfing", () => {
+describe("lt-tabs gjennom Datastars morfing", () => {
   beforeAll(() => {
-    defineFsTabs()
+    defineLtTabs()
   })
 
   beforeEach(async () => {
@@ -187,7 +187,7 @@ describe("fs-tabs gjennom Datastars morfing", () => {
     expect(r.navn).toEqual(NAVN)
   })
 
-  it("markup fra fs.tabs(): det samme, og panelene skjules med until-found", async () => {
+  it("markup fra lt.tabs(): det samme, og panelene skjules med until-found", async () => {
     const r = await klikkOgPatch(FRA_BYGGEFUNKSJONEN)
     expect(r.faner).toEqual([true, true, true])
     expect(r.paneler).toEqual([true, true, true])
@@ -199,7 +199,7 @@ describe("fs-tabs gjennom Datastars morfing", () => {
 
   it("bar markup i en patch som omslutter raden: det samme", async () => {
     /*
-     * Serveren patcher ofte et område, ikke selve raden. Da har `<fs-tabs>`
+     * Serveren patcher ofte et område, ikke selve raden. Da har `<lt-tabs>`
      * ingen id, og morfes inn i den gamle, og lenkene inni beholdes på samme
      * måte.
      */
@@ -208,7 +208,7 @@ describe("fs-tabs gjennom Datastars morfing", () => {
     document.body.innerHTML = side(uten)
     await ventPaTegning()
     const lenker = () => [
-      ...document.querySelectorAll("#side .fs-tabs__list a"),
+      ...document.querySelectorAll("#side .lt-tabs__list a"),
     ]
     const før = lenker()
     ;(før[1] as HTMLElement).click()
@@ -278,9 +278,9 @@ describe("fs-tabs gjennom Datastars morfing", () => {
   })
 })
 
-describe("fs-suggestion gjennom Datastars morfing", () => {
+describe("lt-suggestion gjennom Datastars morfing", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   beforeEach(() => {
@@ -288,26 +288,26 @@ describe("fs-suggestion gjennom Datastars morfing", () => {
   })
 
   /** Bar markup fra en mal: ledeteksten rundt feltet, ingen id-er, ingen roller. */
-  const FORSLAG_BAR = `<fs-suggestion id="kommune-vert">
+  const FORSLAG_BAR = `<lt-suggestion id="kommune-vert">
   <div>
-    <label>Kommune <input class="fs-input"></label>
-    <ul class="fs-suggestion__list"><li>Bergen</li><li>Bodø</li><li>Oslo</li></ul>
-    <span class="fs-sr-only" role="status"></span>
+    <label>Kommune <input class="lt-input"></label>
+    <ul class="lt-suggestion__list"><li>Bergen</li><li>Bodø</li><li>Oslo</li></ul>
+    <span class="lt-sr-only" role="status"></span>
   </div>
-</fs-suggestion>`
+</lt-suggestion>`
 
-  const FORSLAG_MED_ID = `<fs-suggestion id="kommune-vert">
+  const FORSLAG_MED_ID = `<lt-suggestion id="kommune-vert">
   <label for="kommune">Kommune</label>
   <div>
-    <input class="fs-input" id="kommune">
-    <ul class="fs-suggestion__list" id="kommune-list"><li id="kommune-option-0">Bergen</li><li id="kommune-option-1">Bodø</li><li id="kommune-option-2">Oslo</li></ul>
-    <span class="fs-sr-only" role="status"></span>
+    <input class="lt-input" id="kommune">
+    <ul class="lt-suggestion__list" id="kommune-list"><li id="kommune-option-0">Bergen</li><li id="kommune-option-1">Bodø</li><li id="kommune-option-2">Oslo</li></ul>
+    <span class="lt-sr-only" role="status"></span>
   </div>
-</fs-suggestion>`
+</lt-suggestion>`
 
   async function skrivOgPatch(markup: string) {
     document.body.innerHTML = markup
-    await customElements.whenDefined("fs-suggestion")
+    await customElements.whenDefined("lt-suggestion")
     await ventPaTegning()
 
     const felt = document.querySelector("input") as HTMLInputElement
@@ -362,39 +362,39 @@ describe("fs-suggestion gjennom Datastars morfing", () => {
   })
 })
 
-describe("fs-popover gjennom Datastars morfing", () => {
+describe("lt-popover gjennom Datastars morfing", () => {
   beforeAll(() => {
-    defineFsPopover()
+    defineLtPopover()
   })
 
   beforeEach(() => {
     document.body.innerHTML = ""
   })
 
-  const MENY_BAR = `<fs-popover id="meny-vert">
-  <button class="fs-button">Handlinger</button>
-  <div class="fs-popover"><button>Slett</button></div>
-</fs-popover>`
+  const MENY_BAR = `<lt-popover id="meny-vert">
+  <button class="lt-button">Handlinger</button>
+  <div class="lt-popover"><button>Slett</button></div>
+</lt-popover>`
 
   /** Id fra serveren, men `popover` overlatt til komponenten. */
-  const MENY_MED_ID = `<fs-popover id="meny-vert">
-  <button class="fs-button" aria-controls="meny">Handlinger</button>
-  <div class="fs-popover" id="meny"><button>Slett</button></div>
-</fs-popover>`
+  const MENY_MED_ID = `<lt-popover id="meny-vert">
+  <button class="lt-button" aria-controls="meny">Handlinger</button>
+  <div class="lt-popover" id="meny"><button>Slett</button></div>
+</lt-popover>`
 
-  /** Det `fs.popover()` og Kotlin-bindingen skriver. */
-  const MENY_MANUAL = `<fs-popover id="meny-vert">
-  <button class="fs-button" aria-controls="meny">Handlinger</button>
-  <div class="fs-popover" id="meny" popover="manual"><button>Slett</button></div>
-</fs-popover>`
+  /** Det `lt.popover()` og Kotlin-bindingen skriver. */
+  const MENY_MANUAL = `<lt-popover id="meny-vert">
+  <button class="lt-button" aria-controls="meny">Handlinger</button>
+  <div class="lt-popover" id="meny" popover="manual"><button>Slett</button></div>
+</lt-popover>`
 
   async function åpneOgPatch(markup: string) {
     document.body.innerHTML = markup
-    await customElements.whenDefined("fs-popover")
+    await customElements.whenDefined("lt-popover")
     await ventPaTegning()
 
-    const knapp = document.querySelector("fs-popover > button") as HTMLElement
-    const panel = document.querySelector(".fs-popover") as HTMLElement
+    const knapp = document.querySelector("lt-popover > button") as HTMLElement
+    const panel = document.querySelector(".lt-popover") as HTMLElement
     knapp.click()
     await ventPaTegning()
     const slett = panel.querySelector("button") as HTMLButtonElement
@@ -404,9 +404,9 @@ describe("fs-popover gjennom Datastars morfing", () => {
     patch(markup)
     await ventPaTegning()
 
-    const nyttPanel = document.querySelector(".fs-popover") as HTMLElement
+    const nyttPanel = document.querySelector(".lt-popover") as HTMLElement
     return {
-      sammeKnapp: document.querySelector("fs-popover > button") === knapp,
+      sammeKnapp: document.querySelector("lt-popover > button") === knapp,
       sammePanel: nyttPanel === panel,
       åpent: nyttPanel.matches(":popover-open"),
       fokusIPanelet: nyttPanel.contains(document.activeElement),
@@ -457,10 +457,10 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
   let advarsel: MockInstance<typeof console.warn>
 
   beforeAll(() => {
-    defineFsTabs()
-    defineFsSuggestion()
-    defineFsField()
-    defineFsPopover()
+    defineLtTabs()
+    defineLtSuggestion()
+    defineLtField()
+    defineLtPopover()
   })
 
   beforeEach(() => {
@@ -503,7 +503,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     )
   }
 
-  it("fs-tabs: sier ikke fra, for komponenten skriver ingen id som kan byttes ut", async () => {
+  it("lt-tabs: sier ikke fra, for komponenten skriver ingen id som kan byttes ut", async () => {
     await klikkOgPatch(BAR)
     await roSeg()
     expect(meldinger()).toEqual([])
@@ -516,7 +516,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("fs-tabs: ikke ved en smal patch, der valget står", async () => {
+  it("lt-tabs: ikke ved en smal patch, der valget står", async () => {
     document.body.innerHTML = BAR
     await ventPaTegning()
     faner()[1].click()
@@ -531,14 +531,14 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  const FORSLAG = (id: string) => `<fs-suggestion id="kommune-vert">
+  const FORSLAG = (id: string) => `<lt-suggestion id="kommune-vert">
   <label for="${id}">Kommune</label>
   <div>
-    <input class="fs-input" name="kommune" id="${id}">
-    <ul class="fs-suggestion__list"><li>Bergen</li><li>Bodø</li></ul>
-    <span class="fs-sr-only" role="status"></span>
+    <input class="lt-input" name="kommune" id="${id}">
+    <ul class="lt-suggestion__list"><li>Bergen</li><li>Bodø</li></ul>
+    <span class="lt-sr-only" role="status"></span>
   </div>
-</fs-suggestion>`
+</lt-suggestion>`
 
   async function skrivOgPatchForslag(markup: string, tekst: string) {
     document.body.innerHTML = markup
@@ -552,7 +552,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     await roSeg()
   }
 
-  it("fs-suggestion: når id-en fra serveren endret seg mellom to rendringer", async () => {
+  it("lt-suggestion: når id-en fra serveren endret seg mellom to rendringer", async () => {
     document.body.innerHTML = FORSLAG("kommune-1")
     await ventPaTegning()
     const felt = document.querySelector("input") as HTMLInputElement
@@ -564,19 +564,19 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     await roSeg()
     expect(meldinger()).toHaveLength(1)
     expect(meldinger()[0]).toContain(
-      "fs-suggestion: en oppdatering fra serveren byttet ut feltet",
+      "lt-suggestion: en oppdatering fra serveren byttet ut feltet",
     )
   })
 
-  it("fs-suggestion: ikke når serveren skrev den samme id-en", async () => {
+  it("lt-suggestion: ikke når serveren skrev den samme id-en", async () => {
     await skrivOgPatchForslag(FORSLAG("kommune"), "B")
     expect(meldinger()).toEqual([])
   })
 
   /** Et felt med ledeteksten rundt seg, og eventuelt en id fra serveren. */
-  const FELT = (id: string, verdi = "") => `<fs-field id="navn-vert">
-  <label>Navn <input class="fs-input" name="navn"${id}${verdi}></label>
-</fs-field>`
+  const FELT = (id: string, verdi = "") => `<lt-field id="navn-vert">
+  <label>Navn <input class="lt-input" name="navn"${id}${verdi}></label>
+</lt-field>`
 
   async function skrivOgPatchFelt(foer: string, etter: string, tekst: string) {
     document.body.innerHTML = foer
@@ -588,7 +588,7 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     return felt
   }
 
-  it("fs-field: bar markup beholder feltet og teksten, uten advarsel", async () => {
+  it("lt-field: bar markup beholder feltet og teksten, uten advarsel", async () => {
     /*
      * Komponenten skriver ingen id på kontrollen, så Datastar har ingenting å
      * kjenne den igjen på og morfer den. Noden, og teksten brukeren skrev,
@@ -602,15 +602,15 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("fs-field: når id-en fra serveren endret seg mellom to rendringer", async () => {
+  it("lt-field: når id-en fra serveren endret seg mellom to rendringer", async () => {
     await skrivOgPatchFelt(FELT(' id="navn-1"'), FELT(' id="navn-2"'), "Kari")
     expect(meldinger()).toHaveLength(1)
     expect(meldinger()[0]).toContain(
-      "fs-field: en oppdatering fra serveren byttet ut kontrollen",
+      "lt-field: en oppdatering fra serveren byttet ut kontrollen",
     )
   })
 
-  it("fs-field: ikke når serveren skrev den samme id-en", async () => {
+  it("lt-field: ikke når serveren skrev den samme id-en", async () => {
     const gammel = await skrivOgPatchFelt(
       FELT(' id="navn"'),
       FELT(' id="navn"'),
@@ -620,12 +620,12 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("fs-field: ikke når brukeren ikke hadde skrevet noe", async () => {
+  it("lt-field: ikke når brukeren ikke hadde skrevet noe", async () => {
     await skrivOgPatchFelt(FELT(' id="navn-1"'), FELT(' id="navn-2"'), "")
     expect(meldinger()).toEqual([])
   })
 
-  it("fs-field: ikke når serveren sender teksten tilbake", async () => {
+  it("lt-field: ikke når serveren sender teksten tilbake", async () => {
     // Serveren gjorde det meldingen ber om. Da er ingenting mistet, selv om
     // noden er ny.
     await skrivOgPatchFelt(
@@ -639,13 +639,13 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("fs-field: ikke for en bar <select> brukeren lot stå", async () => {
+  it("lt-field: ikke for en bar <select> brukeren lot stå", async () => {
     // Nettleseren velger det første alternativet uten at noe er
     // `defaultSelected`, så en sammenligning med det så et valg brukeren
     // aldri gjorde.
-    const valg = `<fs-field id="land-vert">
-  <label>Land <select class="fs-select"><option>Norge</option><option>Sverige</option></select></label>
-</fs-field>`
+    const valg = `<lt-field id="land-vert">
+  <label>Land <select class="lt-select"><option>Norge</option><option>Sverige</option></select></label>
+</lt-field>`
     document.body.innerHTML = valg
     await ventPaTegning()
     patch(valg)
@@ -653,10 +653,10 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("fs-field: en avkrysset boks uten id står etter patchen", async () => {
-    const boks = `<fs-field id="samtykke-vert">
-  <label><input class="fs-checkbox" type="checkbox" name="samtykke"> Samtykke</label>
-</fs-field>`
+  it("lt-field: en avkrysset boks uten id står etter patchen", async () => {
+    const boks = `<lt-field id="samtykke-vert">
+  <label><input class="lt-checkbox" type="checkbox" name="samtykke"> Samtykke</label>
+</lt-field>`
     document.body.innerHTML = boks
     await ventPaTegning()
     const gammel = document.querySelector("input") as HTMLInputElement
@@ -669,12 +669,12 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     expect(meldinger()).toEqual([])
   })
 
-  it("fs-field: når en avkrysset boks byttes ut fordi id-en endret seg", async () => {
+  it("lt-field: når en avkrysset boks byttes ut fordi id-en endret seg", async () => {
     // `value` og `defaultValue` er alltid like på en avkrysningsboks, så
     // en sammenligning av dem så aldri at krysset var borte.
-    const boks = (id: string) => `<fs-field id="samtykke-vert">
-  <label><input class="fs-checkbox" type="checkbox" name="samtykke" id="${id}"> Samtykke</label>
-</fs-field>`
+    const boks = (id: string) => `<lt-field id="samtykke-vert">
+  <label><input class="lt-checkbox" type="checkbox" name="samtykke" id="${id}"> Samtykke</label>
+</lt-field>`
     document.body.innerHTML = boks("samtykke-1")
     await ventPaTegning()
     ;(document.querySelector("input") as HTMLInputElement).checked = true
@@ -685,55 +685,55 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     )
     expect(meldinger()).toHaveLength(1)
     expect(meldinger()[0]).toContain(
-      "fs-field: en oppdatering fra serveren byttet ut kontrollen",
+      "lt-field: en oppdatering fra serveren byttet ut kontrollen",
     )
   })
 
-  const MENY = (id: string) => `<fs-popover id="meny-vert">
-  <button class="fs-button"${id && ' aria-controls="meny"'}>Handlinger</button>
-  <div class="fs-popover"${id} popover="manual"><button>Slett</button></div>
-</fs-popover>`
+  const MENY = (id: string) => `<lt-popover id="meny-vert">
+  <button class="lt-button"${id && ' aria-controls="meny"'}>Handlinger</button>
+  <div class="lt-popover"${id} popover="manual"><button>Slett</button></div>
+</lt-popover>`
 
   async function apneOgPatchMeny(markup: string, apne: boolean) {
     document.body.innerHTML = markup
     await ventPaTegning()
     if (apne) {
-      ;(document.querySelector("fs-popover > button") as HTMLElement).click()
+      ;(document.querySelector("lt-popover > button") as HTMLElement).click()
       await ventPaTegning()
     }
     patch(markup)
     await roSeg()
   }
 
-  it("fs-popover: når id-en fra serveren endret seg mens vinduet sto åpent", async () => {
+  it("lt-popover: når id-en fra serveren endret seg mens vinduet sto åpent", async () => {
     // Slik en mal skriver det når id-en lages av en teller.
-    const meny = (id: string) => `<fs-popover id="meny-vert">
-  <button class="fs-button" aria-controls="${id}">Handlinger</button>
-  <div class="fs-popover" id="${id}" popover="manual"><button>Slett</button></div>
-</fs-popover>`
+    const meny = (id: string) => `<lt-popover id="meny-vert">
+  <button class="lt-button" aria-controls="${id}">Handlinger</button>
+  <div class="lt-popover" id="${id}" popover="manual"><button>Slett</button></div>
+</lt-popover>`
     document.body.innerHTML = meny("meny-1")
     await ventPaTegning()
-    ;(document.querySelector("fs-popover > button") as HTMLElement).click()
+    ;(document.querySelector("lt-popover > button") as HTMLElement).click()
     await ventPaTegning()
     patch(meny("meny-2"))
     await roSeg()
     expect(meldinger()).toHaveLength(1)
     expect(meldinger()[0]).toContain(
-      "fs-popover: en oppdatering fra serveren byttet ut panelet",
+      "lt-popover: en oppdatering fra serveren byttet ut panelet",
     )
   })
 
-  it("fs-popover: ikke når panelet er bart, for da beholdes det", async () => {
+  it("lt-popover: ikke når panelet er bart, for da beholdes det", async () => {
     await apneOgPatchMeny(MENY(""), true)
     expect(meldinger()).toEqual([])
   })
 
-  it("fs-popover: ikke når serveren skrev id", async () => {
+  it("lt-popover: ikke når serveren skrev id", async () => {
     await apneOgPatchMeny(MENY(' id="meny"'), true)
     expect(meldinger()).toEqual([])
   })
 
-  it("fs-popover: ikke når vinduet var lukket", async () => {
+  it("lt-popover: ikke når vinduet var lukket", async () => {
     await apneOgPatchMeny(MENY(""), false)
     expect(meldinger()).toEqual([])
   })

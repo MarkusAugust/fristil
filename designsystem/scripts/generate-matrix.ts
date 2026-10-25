@@ -1,16 +1,16 @@
 /**
- * Skriver `src/tokens/matrise.ts`: Fristils egne farger, regnet av kjernen.
+ * Skriver `src/tokens/matrix-cells.ts`: LO-TEKs egne farger, regnet av kjernen.
  *
- * Fargene er kontrakten (`fargekontrakt.json`) anvendt på Fristils egne
+ * Fargene er kontrakten (`color-contract.json`) anvendt på LO-TEKs egne
  * merkefarger, og regningen finnes bare i Rust. Resultatet skrives som data,
- * så `@fristil/designsystem/tokens` og `tokens.css` har fargene uten å laste
+ * så `@lo-tek/interfaces/tokens` og `tokens.css` har fargene uten å laste
  * WebAssembly, også i nettleseren.
  *
  * Typene skrives med: `Family` og `MatrixToken` er navnene matrisen sender ut,
  * så en ny familie eller rolle i kontrakten blir med av seg selv.
  *
- * Kjør med: bun scripts/generate-matrise.ts, eller som en del av `generate`.
- * Krever kjernen, bygget med `bun run kjerne`. Kjernen bærer ingen data, så
+ * Kjør med: bun scripts/generate-matrix.ts, eller som en del av `generate`.
+ * Krever kjernen, bygget med `bun run core`. Kjernen bærer ingen data, så
  * den får fargekontrakten her, og trenger ikke manifestet som skrives etter.
  */
 
@@ -18,7 +18,7 @@ import { readFileSync, writeFileSync } from "node:fs"
 import { loadCore } from "../src/diagnostics/core.js"
 
 const kontraktTekst = readFileSync(
-  new URL("../src/tokens/fargekontrakt.json", import.meta.url),
+  new URL("../src/tokens/color-contract.json", import.meta.url),
   "utf8",
 )
 const kontrakt: {
@@ -29,13 +29,13 @@ const kontrakt: {
   requirements: Record<string, number>
 } = JSON.parse(kontraktTekst)
 const kjerne = loadCore(
-  readFileSync(new URL("../kjerne/fristil-kjerne.wasm", import.meta.url)),
+  readFileSync(new URL("../core/lotek-core.wasm", import.meta.url)),
 )
 kjerne.loadContract(kontraktTekst)
 const { light, dark, violations } = kjerne.buildTheme(kontrakt.brands)
 
 if (violations.length > 0) {
-  console.error("Fristils egne farger holder ikke løftene i fargekontrakten:")
+  console.error("LO-TEKs egne farger holder ikke løftene i fargekontrakten:")
   for (const v of violations)
     console.error(
       `  ${v.family}: ${v.promise} er ${v.ratio.toFixed(2)}:1, kravet er ${v.required}:1`,
@@ -44,15 +44,15 @@ if (violations.length > 0) {
 }
 
 const navn = Object.keys(light)
-const fil = `// Generert av scripts/generate-matrise.ts fra kjernen og fargekontrakt.json. Ikke rediger.
+const fil = `// Generert av scripts/generate-matrix.ts fra kjernen og color-contract.json. Ikke rediger.
 
-/** Familiene Fristil leverer selv. En konsument kan ha andre. */
+/** Familiene LO-TEK leverer selv. En konsument kan ha andre. */
 export const FAMILIES = ${JSON.stringify(kontrakt.families)} as const
 
 export type Family = (typeof FAMILIES)[number]
 
-/** Fristils egne merkefarger. */
-export const FRISTIL_BRANDS: Record<Family, string> = ${JSON.stringify(kontrakt.brands, null, 2)}
+/** LO-TEKs egne merkefarger. */
+export const LOTEK_BRANDS: Record<Family, string> = ${JSON.stringify(kontrakt.brands, null, 2)}
 
 /** En rolle er en jobb en farge gjør, og den er lik i hver familie. */
 export type Role = ${Object.keys(kontrakt.roles)
@@ -77,13 +77,13 @@ export const REQUIREMENT = ${JSON.stringify(kontrakt.requirements)} as const
 export type MatrixToken =
 ${navn.map((n) => `  | ${JSON.stringify(n)}`).join("\n")}
 
-/** Fristils egne farger i lyst tema. */
+/** LO-TEKs egne farger i lyst tema. */
 export const lightCells: Record<MatrixToken, string> = ${JSON.stringify(light, null, 2)}
 
-/** Fristils egne farger i mørkt tema. */
+/** LO-TEKs egne farger i mørkt tema. */
 export const darkCells: Record<MatrixToken, string> = ${JSON.stringify(dark, null, 2)}
 `
-writeFileSync(new URL("../src/tokens/matrise.ts", import.meta.url), fil)
+writeFileSync(new URL("../src/tokens/matrix-cells.ts", import.meta.url), fil)
 console.log(
   `✓ Matrisen: ${navn.length} farger i hvert tema, regnet av kjernen.`,
 )

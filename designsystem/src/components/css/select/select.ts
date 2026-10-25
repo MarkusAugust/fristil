@@ -7,7 +7,7 @@ import {
   type NonDefaultFieldState,
 } from "../shared.js"
 
-export const SELECT_CLASS = "fs-select" as const
+export const SELECT_CLASS = "lt-select" as const
 
 /**
  * Hvem som tegner nedtrekkslista.

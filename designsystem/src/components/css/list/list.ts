@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const LIST_CLASS = "fs-list" as const
+export const LIST_CLASS = "lt-list" as const
 
 export const listVariants = ["default", "plain", "divided"] as const
 

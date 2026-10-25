@@ -1,12 +1,12 @@
-// Generert av designsystem/scripts/generate-ordforrad.ts. Ikke rediger.
+// Generert av designsystem/scripts/generate-vocabulary.ts. Ikke rediger.
 import type { Classes } from "./types.js"
 
 export const classes: Classes = {
-  "fs-accordion": {
+  "lt-accordion": {
     "component": "accordion",
     "title": "Accordion",
     "description": "Panel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/accordion/",
+    "link": "https://lo-tek.sobernetics.no/components/accordion/",
     "content": "parts",
     "parts": {
       "summary": {
@@ -15,7 +15,7 @@ export const classes: Classes = {
         "content": "free"
       },
       "content": {
-        "selector": ".fs-accordion__content",
+        "selector": ".lt-accordion__content",
         "description": "Innholdet som vises når panelet er åpent.",
         "content": "free"
       }
@@ -29,24 +29,24 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-accordion__content": {
+  "lt-accordion__content": {
     "component": "accordion",
     "title": "Accordion",
     "description": "Panel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/accordion/",
+    "link": "https://lo-tek.sobernetics.no/components/accordion/",
     "content": "free",
-    "partOf": "fs-accordion",
+    "partOf": "lt-accordion",
     "attributes": {}
   },
-  "fs-alert": {
+  "lt-alert": {
     "component": "alert",
     "title": "Alert",
     "description": "Melding som gjelder hele siden eller hele skjemaet. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/alert/",
+    "link": "https://lo-tek.sobernetics.no/components/alert/",
     "content": "free",
     "parts": {
       "title": {
-        "selector": ".fs-alert__title",
+        "selector": ".lt-alert__title",
         "description": "Overskriften i meldingen.",
         "content": "text",
         "optional": true
@@ -63,20 +63,20 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-alert__title": {
+  "lt-alert__title": {
     "component": "alert",
     "title": "Alert",
     "description": "Melding som gjelder hele siden eller hele skjemaet. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/alert/",
+    "link": "https://lo-tek.sobernetics.no/components/alert/",
     "content": "text",
-    "partOf": "fs-alert",
+    "partOf": "lt-alert",
     "attributes": {}
   },
-  "fs-avatar": {
+  "lt-avatar": {
     "component": "avatar",
     "title": "Avatar",
     "description": "Profilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/avatar/",
+    "link": "https://lo-tek.sobernetics.no/components/avatar/",
     "content": "free",
     "parts": {
       "image": {
@@ -102,11 +102,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-avatar-stack": {
+  "lt-avatar-stack": {
     "component": "avatar",
     "title": "Avatar",
     "description": "Profilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/avatar/",
+    "link": "https://lo-tek.sobernetics.no/components/avatar/",
     "content": "parts",
     "parts": {
       "item": {
@@ -116,7 +116,7 @@ export const classes: Classes = {
         "multiple": true
       },
       "avatar": {
-        "selector": "li > .fs-avatar",
+        "selector": "li > .lt-avatar",
         "description": "Avataren i hvert listepunkt.",
         "content": "free",
         "multiple": true
@@ -124,11 +124,11 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-badge": {
+  "lt-badge": {
     "component": "badge",
     "title": "Badge",
     "description": "Kompakt statusmerke. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/badge/",
+    "link": "https://lo-tek.sobernetics.no/components/badge/",
     "content": "text",
     "attributes": {
       "data-color": {
@@ -142,11 +142,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-breadcrumbs": {
+  "lt-breadcrumbs": {
     "component": "breadcrumbs",
     "title": "Breadcrumbs",
     "description": "Brødsmulesti som viser hvor på siden brukeren er. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/breadcrumbs/",
+    "link": "https://lo-tek.sobernetics.no/components/breadcrumbs/",
     "content": "parts",
     "parts": {
       "item": {
@@ -164,11 +164,11 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-button": {
+  "lt-button": {
     "component": "button",
     "title": "Button",
     "description": "Knapp for handlinger. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/button/",
+    "link": "https://lo-tek.sobernetics.no/components/button/",
     "content": "text",
     "attributes": {
       "data-variant": {
@@ -181,15 +181,15 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-card": {
+  "lt-card": {
     "component": "card",
     "title": "Card",
     "description": "Boks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/card/",
+    "link": "https://lo-tek.sobernetics.no/components/card/",
     "content": "free",
     "parts": {
       "title": {
-        "selector": ".fs-card__title",
+        "selector": ".lt-card__title",
         "description": "Overskriften i kortet.",
         "content": "text",
         "optional": true
@@ -208,20 +208,20 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-card__title": {
+  "lt-card__title": {
     "component": "card",
     "title": "Card",
     "description": "Boks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/card/",
+    "link": "https://lo-tek.sobernetics.no/components/card/",
     "content": "text",
-    "partOf": "fs-card",
+    "partOf": "lt-card",
     "attributes": {}
   },
-  "fs-checkbox": {
+  "lt-checkbox": {
     "component": "checkbox",
     "title": "Checkbox",
     "description": "Avkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/checkbox/",
+    "link": "https://lo-tek.sobernetics.no/components/checkbox/",
     "content": "none",
     "attributes": {
       "data-state": {
@@ -233,11 +233,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-checkbox-row": {
+  "lt-checkbox-row": {
     "component": "checkbox",
     "title": "Checkbox",
     "description": "Avkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/checkbox/",
+    "link": "https://lo-tek.sobernetics.no/components/checkbox/",
     "content": "parts",
     "parts": {
       "control": {
@@ -254,11 +254,11 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-divider": {
+  "lt-divider": {
     "component": "divider",
     "title": "Divider",
     "description": "Skillelinje mellom deler av innholdet. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/divider/",
+    "link": "https://lo-tek.sobernetics.no/components/divider/",
     "content": "none",
     "attributes": {
       "data-variant": {
@@ -270,11 +270,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-error-text": {
+  "lt-error-text": {
     "component": "error-text",
     "title": "Error Text",
     "description": "Feilmelding under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/error-text/",
+    "link": "https://lo-tek.sobernetics.no/components/error-text/",
     "content": "text",
     "attributes": {
       "data-variant": {
@@ -285,27 +285,27 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-fieldset": {
+  "lt-fieldset": {
     "component": "fieldset",
     "title": "Fieldset",
     "description": "Gruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/fieldset/",
+    "link": "https://lo-tek.sobernetics.no/components/fieldset/",
     "content": "free",
     "parts": {
       "legend": {
-        "selector": "> .fs-legend",
+        "selector": "> .lt-legend",
         "description": "Ledeteksten til gruppen, en `<legend>` med klassen.",
         "content": "text",
         "unique": true
       },
       "help": {
-        "selector": ".fs-help-text",
+        "selector": ".lt-help-text",
         "description": "Hjelpeteksten til gruppen, koblet med `aria-describedby` på feltsettet.",
         "content": "text",
         "optional": true
       },
       "error": {
-        "selector": ".fs-error-text",
+        "selector": ".lt-error-text",
         "description": "Feilmeldingen til gruppen, koblet med `aria-describedby` på feltsettet.",
         "content": "text",
         "optional": true
@@ -321,13 +321,13 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-legend": {
+  "lt-legend": {
     "component": "fieldset",
     "title": "Fieldset",
     "description": "Gruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/fieldset/",
+    "link": "https://lo-tek.sobernetics.no/components/fieldset/",
     "content": "text",
-    "partOf": "fs-fieldset",
+    "partOf": "lt-fieldset",
     "attributes": {
       "data-required": {
         "values": [
@@ -341,11 +341,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-file-upload": {
+  "lt-file-upload": {
     "component": "file-upload",
     "title": "File Upload",
     "description": "Felt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/file-upload/",
+    "link": "https://lo-tek.sobernetics.no/components/file-upload/",
     "content": "none",
     "attributes": {
       "data-state": {
@@ -357,11 +357,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-file-upload-list": {
+  "lt-file-upload-list": {
     "component": "file-upload",
     "title": "File Upload",
     "description": "Felt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/file-upload/",
+    "link": "https://lo-tek.sobernetics.no/components/file-upload/",
     "content": "parts",
     "parts": {
       "item": {
@@ -380,11 +380,11 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-heading": {
+  "lt-heading": {
     "component": "heading",
     "title": "Heading",
     "description": "Overskrifter i seks størrelser, uavhengig av nivå. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/heading/",
+    "link": "https://lo-tek.sobernetics.no/components/heading/",
     "content": "text",
     "attributes": {
       "data-size": {
@@ -399,11 +399,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-help-text": {
+  "lt-help-text": {
     "component": "help-text",
     "title": "Help Text",
     "description": "Forklarende tekst under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/help-text/",
+    "link": "https://lo-tek.sobernetics.no/components/help-text/",
     "content": "text",
     "attributes": {
       "data-variant": {
@@ -416,19 +416,19 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-icon": {
+  "lt-icon": {
     "component": "icon",
     "title": "Icon",
     "description": "Ikon fra appens eget sett, like stort som teksten rundt. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/icon/",
+    "link": "https://lo-tek.sobernetics.no/components/icon/",
     "content": "none",
     "attributes": {}
   },
-  "fs-input": {
+  "lt-input": {
     "component": "input",
     "title": "Input",
     "description": "Tekstfelt for skjema, med tilstander for gyldig og ugyldig. CSS-komponent.",
-    "link": "https://fristil.sobernetics.no/components/input/",
+    "link": "https://lo-tek.sobernetics.no/components/input/",
     "content": "none",
     "attributes": {
       "data-state": {
@@ -447,11 +447,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-label": {
+  "lt-label": {
     "component": "label",
     "title": "Label",
     "description": "Ledetekst for skjemafelt, med markering av påkrevd og valgfritt. CSS-komponent.",
-    "link": "https://fristil.sobernetics.no/components/label/",
+    "link": "https://lo-tek.sobernetics.no/components/label/",
     "content": "text",
     "attributes": {
       "data-required": {
@@ -466,19 +466,19 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-link": {
+  "lt-link": {
     "component": "link",
     "title": "Link",
     "description": "Lenkestil for navigasjon i løpende tekst. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/link/",
+    "link": "https://lo-tek.sobernetics.no/components/link/",
     "content": "text",
     "attributes": {}
   },
-  "fs-list": {
+  "lt-list": {
     "component": "list",
     "title": "List",
     "description": "Punktliste, nummerert liste og lister uten punkter. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/list/",
+    "link": "https://lo-tek.sobernetics.no/components/list/",
     "content": "parts",
     "parts": {
       "item": {
@@ -498,11 +498,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-pagination": {
+  "lt-pagination": {
     "component": "pagination",
     "title": "Pagination",
     "description": "Sidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/pagination/",
+    "link": "https://lo-tek.sobernetics.no/components/pagination/",
     "content": "parts",
     "parts": {
       "item": {
@@ -518,7 +518,7 @@ export const classes: Classes = {
         "multiple": true
       },
       "gap": {
-        "selector": ".fs-pagination__gap",
+        "selector": ".lt-pagination__gap",
         "description": "Hullet der sider er utelatt.",
         "content": "text",
         "multiple": true,
@@ -527,20 +527,20 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-pagination__gap": {
+  "lt-pagination__gap": {
     "component": "pagination",
     "title": "Pagination",
     "description": "Sidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/pagination/",
+    "link": "https://lo-tek.sobernetics.no/components/pagination/",
     "content": "text",
-    "partOf": "fs-pagination",
+    "partOf": "lt-pagination",
     "attributes": {}
   },
-  "fs-paragraph": {
+  "lt-paragraph": {
     "component": "paragraph",
     "title": "Paragraph",
     "description": "Brødtekst og ingress med begrenset linjelengde. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/paragraph/",
+    "link": "https://lo-tek.sobernetics.no/components/paragraph/",
     "content": "text",
     "attributes": {
       "data-variant": {
@@ -558,11 +558,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-progress": {
+  "lt-progress": {
     "component": "progress",
     "title": "Progress",
     "description": "Framdriftsstolpe for noe som har en ende. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/progress/",
+    "link": "https://lo-tek.sobernetics.no/components/progress/",
     "content": "none",
     "attributes": {
       "data-color": {
@@ -574,11 +574,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-radio": {
+  "lt-radio": {
     "component": "radio",
     "title": "Radio",
     "description": "Radioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/radio/",
+    "link": "https://lo-tek.sobernetics.no/components/radio/",
     "content": "none",
     "attributes": {
       "data-state": {
@@ -590,11 +590,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-radio-row": {
+  "lt-radio-row": {
     "component": "radio",
     "title": "Radio",
     "description": "Radioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/radio/",
+    "link": "https://lo-tek.sobernetics.no/components/radio/",
     "content": "parts",
     "parts": {
       "control": {
@@ -611,11 +611,11 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-search": {
+  "lt-search": {
     "component": "search",
     "title": "Search",
     "description": "Søkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/search/",
+    "link": "https://lo-tek.sobernetics.no/components/search/",
     "content": "none",
     "attributes": {
       "data-state": {
@@ -627,21 +627,21 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-search-row": {
+  "lt-search-row": {
     "component": "search",
     "title": "Search",
     "description": "Søkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/search/",
+    "link": "https://lo-tek.sobernetics.no/components/search/",
     "content": "parts",
     "parts": {
       "label": {
         "selector": "label",
-        "description": "Ledeteksten, koblet med `for`. Gjerne skjult med `fs-sr-only`.",
+        "description": "Ledeteksten, koblet med `for`. Gjerne skjult med `lt-sr-only`.",
         "content": "text"
       },
       "control": {
         "selector": "input[type='search']",
-        "description": "Søkefeltet, med klassene `fs-input fs-search`.",
+        "description": "Søkefeltet, med klassene `lt-input lt-search`.",
         "content": "none",
         "unique": true
       },
@@ -654,11 +654,11 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-select": {
+  "lt-select": {
     "component": "select",
     "title": "Select",
     "description": "Nedtrekksliste. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/select/",
+    "link": "https://lo-tek.sobernetics.no/components/select/",
     "content": "none",
     "attributes": {
       "data-state": {
@@ -676,11 +676,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-skeleton": {
+  "lt-skeleton": {
     "component": "skeleton",
     "title": "Skeleton",
     "description": "Plassholder som viser formen på innhold som lastes. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/skeleton/",
+    "link": "https://lo-tek.sobernetics.no/components/skeleton/",
     "content": "none",
     "attributes": {
       "data-variant": {
@@ -692,19 +692,19 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-skip-link": {
+  "lt-skip-link": {
     "component": "skip-link",
     "title": "Skip Link",
     "description": "Lenke som hopper forbi menyen til hovedinnholdet. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/skip-link/",
+    "link": "https://lo-tek.sobernetics.no/components/skip-link/",
     "content": "text",
     "attributes": {}
   },
-  "fs-spinner": {
+  "lt-spinner": {
     "component": "spinner",
     "title": "Spinner",
     "description": "Venteindikator for noe som pågår. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/spinner/",
+    "link": "https://lo-tek.sobernetics.no/components/spinner/",
     "content": "none",
     "attributes": {
       "data-size": {
@@ -716,27 +716,27 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-sr-only": {
+  "lt-sr-only": {
     "component": "sr-only",
     "title": "Sr Only",
     "description": "Tekst som bare skjermlesere får. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/sr-only/",
+    "link": "https://lo-tek.sobernetics.no/components/sr-only/",
     "content": "text",
     "attributes": {}
   },
-  "fs-switch": {
+  "lt-switch": {
     "component": "switch",
     "title": "Switch",
     "description": "Bryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/switch/",
+    "link": "https://lo-tek.sobernetics.no/components/switch/",
     "content": "none",
     "attributes": {}
   },
-  "fs-switch-row": {
+  "lt-switch-row": {
     "component": "switch",
     "title": "Switch",
     "description": "Bryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/switch/",
+    "link": "https://lo-tek.sobernetics.no/components/switch/",
     "content": "parts",
     "parts": {
       "control": {
@@ -753,11 +753,11 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-table": {
+  "lt-table": {
     "component": "table",
     "title": "Table",
     "description": "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/table/",
+    "link": "https://lo-tek.sobernetics.no/components/table/",
     "content": "parts",
     "parts": {
       "caption": {
@@ -780,7 +780,7 @@ export const classes: Classes = {
         "multiple": true
       },
       "sort": {
-        "selector": "th > .fs-table__sort",
+        "selector": "th > .lt-table__sort",
         "description": "Knappen i en overskrift som kan sorteres. `aria-sort` på cellen sier hvilken vei.",
         "content": "text",
         "multiple": true,
@@ -800,35 +800,35 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-table__sort": {
+  "lt-table__sort": {
     "component": "table",
     "title": "Table",
     "description": "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/table/",
+    "link": "https://lo-tek.sobernetics.no/components/table/",
     "content": "text",
-    "partOf": "fs-table",
+    "partOf": "lt-table",
     "attributes": {}
   },
-  "fs-table-scroll": {
+  "lt-table-scroll": {
     "component": "table",
     "title": "Table",
     "description": "Tabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/table/",
+    "link": "https://lo-tek.sobernetics.no/components/table/",
     "content": "parts",
     "parts": {
       "table": {
-        "selector": ".fs-table",
+        "selector": ".lt-table",
         "description": "Tabellen som kan rulles sidelengs.",
         "content": "free"
       }
     },
     "attributes": {}
   },
-  "fs-tag": {
+  "lt-tag": {
     "component": "tag",
     "title": "Tag",
     "description": "Merkelapp for emneord og filtre. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/tag/",
+    "link": "https://lo-tek.sobernetics.no/components/tag/",
     "content": "text",
     "attributes": {
       "data-variant": {
@@ -843,11 +843,11 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-textarea": {
+  "lt-textarea": {
     "component": "textarea",
     "title": "Textarea",
     "description": "Flerlinjet tekstfelt. CSS-komponent med én klasse og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/textarea/",
+    "link": "https://lo-tek.sobernetics.no/components/textarea/",
     "content": "none",
     "attributes": {
       "data-state": {
@@ -859,27 +859,27 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-toggle-group": {
+  "lt-toggle-group": {
     "component": "toggle-group",
     "title": "Toggle Group",
     "description": "Gruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/toggle-group/",
+    "link": "https://lo-tek.sobernetics.no/components/toggle-group/",
     "content": "parts",
     "parts": {
       "legend": {
         "selector": "> legend",
-        "description": "Hva alternativene velger mellom. Kan skjules med `fs-sr-only`, men må stå der.",
+        "description": "Hva alternativene velger mellom. Kan skjules med `lt-sr-only`, men må stå der.",
         "content": "text",
         "unique": true
       },
       "option": {
-        "selector": ".fs-toggle-group__option",
+        "selector": ".lt-toggle-group__option",
         "description": "Ett alternativ: en `<label>` med radioknappen og teksten.",
         "content": "free",
         "multiple": true
       },
       "radio": {
-        "selector": ".fs-toggle-group__option > input[type='radio']",
+        "selector": ".lt-toggle-group__option > input[type='radio']",
         "description": "Radioknappen i hvert alternativ, med samme `name`.",
         "content": "none",
         "multiple": true
@@ -887,20 +887,20 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-toggle-group__option": {
+  "lt-toggle-group__option": {
     "component": "toggle-group",
     "title": "Toggle Group",
     "description": "Gruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/toggle-group/",
+    "link": "https://lo-tek.sobernetics.no/components/toggle-group/",
     "content": "free",
-    "partOf": "fs-toggle-group",
+    "partOf": "lt-toggle-group",
     "attributes": {}
   },
-  "fs-tooltip": {
+  "lt-tooltip": {
     "component": "tooltip",
     "title": "Tooltip",
     "description": "Liten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/tooltip/",
+    "link": "https://lo-tek.sobernetics.no/components/tooltip/",
     "content": "parts",
     "parts": {
       "trigger": {
@@ -909,55 +909,55 @@ export const classes: Classes = {
         "content": "text"
       },
       "bubble": {
-        "selector": ".fs-tooltip__bubble",
+        "selector": ".lt-tooltip__bubble",
         "description": "Boblen, med `role=\"tooltip\"` og id-en.",
         "content": "text"
       }
     },
     "attributes": {}
   },
-  "fs-tooltip__bubble": {
+  "lt-tooltip__bubble": {
     "component": "tooltip",
     "title": "Tooltip",
     "description": "Liten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.",
-    "link": "https://fristil.sobernetics.no/components/tooltip/",
+    "link": "https://lo-tek.sobernetics.no/components/tooltip/",
     "content": "text",
-    "partOf": "fs-tooltip",
+    "partOf": "lt-tooltip",
     "attributes": {}
   },
-  "fs-dialog": {
+  "lt-dialog": {
     "component": "dialog",
     "title": "Dialog",
     "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-    "link": "https://fristil.sobernetics.no/components/dialog/",
+    "link": "https://lo-tek.sobernetics.no/components/dialog/",
     "content": "free",
     "parts": {
       "header": {
-        "selector": ".fs-dialog__header",
+        "selector": ".lt-dialog__header",
         "description": "Toppen, med overskriften og underteksten. `data-color` på dialogen farger den.",
         "content": "parts",
         "optional": true
       },
       "title": {
-        "selector": ".fs-dialog__title",
+        "selector": ".lt-dialog__title",
         "description": "Overskriften, som `aria-labelledby` peker på.",
         "content": "text",
         "optional": true
       },
       "subtitle": {
-        "selector": ".fs-dialog__subtitle",
+        "selector": ".lt-dialog__subtitle",
         "description": "Linja under overskriften, inne i toppen.",
         "content": "text",
         "optional": true
       },
       "body": {
-        "selector": ".fs-dialog__body",
+        "selector": ".lt-dialog__body",
         "description": "Innholdet, som ruller når dialogen blir for høy. Må være et direkte barn.",
         "content": "free",
         "optional": true
       },
       "footer": {
-        "selector": ".fs-dialog__footer",
+        "selector": ".lt-dialog__footer",
         "description": "Raden med knapper nederst, gjerne et `<form method=\"dialog\">`.",
         "content": "free",
         "optional": true
@@ -976,48 +976,48 @@ export const classes: Classes = {
       }
     }
   },
-  "fs-dialog__body": {
+  "lt-dialog__body": {
     "component": "dialog",
     "title": "Dialog",
     "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-    "link": "https://fristil.sobernetics.no/components/dialog/",
+    "link": "https://lo-tek.sobernetics.no/components/dialog/",
     "content": "free",
-    "partOf": "fs-dialog",
+    "partOf": "lt-dialog",
     "attributes": {}
   },
-  "fs-dialog__title": {
+  "lt-dialog__title": {
     "component": "dialog",
     "title": "Dialog",
     "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-    "link": "https://fristil.sobernetics.no/components/dialog/",
+    "link": "https://lo-tek.sobernetics.no/components/dialog/",
     "content": "text",
-    "partOf": "fs-dialog",
+    "partOf": "lt-dialog",
     "attributes": {}
   },
-  "fs-dialog__footer": {
+  "lt-dialog__footer": {
     "component": "dialog",
     "title": "Dialog",
     "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-    "link": "https://fristil.sobernetics.no/components/dialog/",
+    "link": "https://lo-tek.sobernetics.no/components/dialog/",
     "content": "free",
-    "partOf": "fs-dialog",
+    "partOf": "lt-dialog",
     "attributes": {}
   },
-  "fs-dialog__header": {
+  "lt-dialog__header": {
     "component": "dialog",
     "title": "Dialog",
     "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-    "link": "https://fristil.sobernetics.no/components/dialog/",
+    "link": "https://lo-tek.sobernetics.no/components/dialog/",
     "content": "parts",
-    "partOf": "fs-dialog",
+    "partOf": "lt-dialog",
     "parts": {
       "title": {
-        "selector": ".fs-dialog__title",
+        "selector": ".lt-dialog__title",
         "description": "Overskriften.",
         "content": "text"
       },
       "subtitle": {
-        "selector": ".fs-dialog__subtitle",
+        "selector": ".lt-dialog__subtitle",
         "description": "Linja under overskriften.",
         "content": "text",
         "optional": true
@@ -1025,24 +1025,24 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-dialog__subtitle": {
+  "lt-dialog__subtitle": {
     "component": "dialog",
     "title": "Dialog",
     "description": "Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-    "link": "https://fristil.sobernetics.no/components/dialog/",
+    "link": "https://lo-tek.sobernetics.no/components/dialog/",
     "content": "text",
-    "partOf": "fs-dialog",
+    "partOf": "lt-dialog",
     "attributes": {}
   },
-  "fs-error-summary": {
+  "lt-error-summary": {
     "component": "error-summary",
     "title": "Error Summary",
     "description": "Samler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.",
-    "link": "https://fristil.sobernetics.no/components/error-summary/",
+    "link": "https://lo-tek.sobernetics.no/components/error-summary/",
     "content": "parts",
     "parts": {
       "title": {
-        "selector": ".fs-error-summary__title",
+        "selector": ".lt-error-summary__title",
         "description": "Overskriften, som sier hvor mange feil skjemaet har.",
         "content": "text"
       },
@@ -1060,48 +1060,48 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-error-summary__title": {
+  "lt-error-summary__title": {
     "component": "error-summary",
     "title": "Error Summary",
     "description": "Samler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.",
-    "link": "https://fristil.sobernetics.no/components/error-summary/",
+    "link": "https://lo-tek.sobernetics.no/components/error-summary/",
     "content": "text",
-    "partOf": "fs-error-summary",
+    "partOf": "lt-error-summary",
     "attributes": {}
   },
-  "fs-popover": {
+  "lt-popover": {
     "component": "popover",
     "title": "Popover",
     "description": "Panel som henger under en knapp og lukker seg selv. Rammekomponent.",
-    "link": "https://fristil.sobernetics.no/components/popover/",
+    "link": "https://lo-tek.sobernetics.no/components/popover/",
     "content": "free",
     "attributes": {}
   },
-  "fs-session-timeout": {
+  "lt-session-timeout": {
     "component": "session-timeout",
     "title": "Session Timeout",
     "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
+    "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
     "content": "parts",
     "parts": {
       "dialog": {
-        "selector": ".fs-session-timeout__dialog",
+        "selector": ".lt-session-timeout__dialog",
         "description": "Dialogen med varselet, med `role=\"alertdialog\"`.",
         "content": "parts"
       },
       "title": {
-        "selector": ".fs-session-timeout__title",
+        "selector": ".lt-session-timeout__title",
         "description": "Overskriften i dialogen.",
         "content": "text",
         "optional": true
       },
       "text": {
-        "selector": ".fs-session-timeout__text",
+        "selector": ".lt-session-timeout__text",
         "description": "Avsnittet med tiden som er igjen.",
         "content": "text"
       },
       "count": {
-        "selector": ".fs-session-timeout__count",
+        "selector": ".lt-session-timeout__count",
         "description": "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
         "content": "none"
       },
@@ -1111,12 +1111,12 @@ export const classes: Classes = {
         "content": "none"
       },
       "actions": {
-        "selector": ".fs-session-timeout__actions",
+        "selector": ".lt-session-timeout__actions",
         "description": "Knapperaden, et `<form method=\"dialog\">`.",
         "content": "parts"
       },
       "button": {
-        "selector": ".fs-session-timeout__actions button",
+        "selector": ".lt-session-timeout__actions button",
         "description": "Knappene som forlenger økten eller logger ut.",
         "content": "text",
         "multiple": true
@@ -1124,27 +1124,27 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-session-timeout__dialog": {
+  "lt-session-timeout__dialog": {
     "component": "session-timeout",
     "title": "Session Timeout",
     "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
+    "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
     "content": "parts",
-    "partOf": "fs-session-timeout",
+    "partOf": "lt-session-timeout",
     "parts": {
       "title": {
-        "selector": ".fs-session-timeout__title",
+        "selector": ".lt-session-timeout__title",
         "description": "Overskriften.",
         "content": "text",
         "optional": true
       },
       "text": {
-        "selector": ".fs-session-timeout__text",
+        "selector": ".lt-session-timeout__text",
         "description": "Avsnittet med tiden som er igjen.",
         "content": "text"
       },
       "count": {
-        "selector": ".fs-session-timeout__count",
+        "selector": ".lt-session-timeout__count",
         "description": "Tallet som telles ned, inne i avsnittet.",
         "content": "none"
       },
@@ -1154,47 +1154,47 @@ export const classes: Classes = {
         "content": "none"
       },
       "actions": {
-        "selector": ".fs-session-timeout__actions",
+        "selector": ".lt-session-timeout__actions",
         "description": "Knapperaden, et `<form method=\"dialog\">`.",
         "content": "parts"
       }
     },
     "attributes": {}
   },
-  "fs-session-timeout__title": {
+  "lt-session-timeout__title": {
     "component": "session-timeout",
     "title": "Session Timeout",
     "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
+    "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
     "content": "text",
-    "partOf": "fs-session-timeout",
+    "partOf": "lt-session-timeout",
     "attributes": {}
   },
-  "fs-session-timeout__text": {
+  "lt-session-timeout__text": {
     "component": "session-timeout",
     "title": "Session Timeout",
     "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
+    "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
     "content": "text",
-    "partOf": "fs-session-timeout",
+    "partOf": "lt-session-timeout",
     "attributes": {}
   },
-  "fs-session-timeout__count": {
+  "lt-session-timeout__count": {
     "component": "session-timeout",
     "title": "Session Timeout",
     "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
+    "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
     "content": "none",
-    "partOf": "fs-session-timeout",
+    "partOf": "lt-session-timeout",
     "attributes": {}
   },
-  "fs-session-timeout__actions": {
+  "lt-session-timeout__actions": {
     "component": "session-timeout",
     "title": "Session Timeout",
     "description": "Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-    "link": "https://fristil.sobernetics.no/components/session-timeout/",
+    "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
     "content": "parts",
-    "partOf": "fs-session-timeout",
+    "partOf": "lt-session-timeout",
     "parts": {
       "button": {
         "selector": "button",
@@ -1205,15 +1205,15 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-suggestion__list": {
+  "lt-suggestion__list": {
     "component": "suggestion",
     "title": "Suggestion",
     "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-    "link": "https://fristil.sobernetics.no/components/suggestion/",
+    "link": "https://lo-tek.sobernetics.no/components/suggestion/",
     "content": "parts",
     "parts": {
       "option": {
-        "selector": "[role='option'], .fs-suggestion__option, > li:not([role])",
+        "selector": "[role='option'], .lt-suggestion__option, > li:not([role])",
         "description": "Ett forslag: rollen eller klassen når de står der, ellers en `<li>` uten rolle, som komponenten gir klassen og rollen. Lista kan stå tom til serveren fyller den.",
         "content": "text",
         "multiple": true,
@@ -1222,36 +1222,36 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-suggestion__option": {
+  "lt-suggestion__option": {
     "component": "suggestion",
     "title": "Suggestion",
     "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-    "link": "https://fristil.sobernetics.no/components/suggestion/",
+    "link": "https://lo-tek.sobernetics.no/components/suggestion/",
     "content": "text",
-    "partOf": "fs-suggestion__list",
+    "partOf": "lt-suggestion__list",
     "attributes": {}
   },
-  "fs-suggestion__value": {
+  "lt-suggestion__value": {
     "component": "suggestion",
     "title": "Suggestion",
     "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-    "link": "https://fristil.sobernetics.no/components/suggestion/",
+    "link": "https://lo-tek.sobernetics.no/components/suggestion/",
     "content": "none",
     "attributes": {}
   },
-  "fs-suggestion__empty": {
+  "lt-suggestion__empty": {
     "component": "suggestion",
     "title": "Suggestion",
     "description": "Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-    "link": "https://fristil.sobernetics.no/components/suggestion/",
+    "link": "https://lo-tek.sobernetics.no/components/suggestion/",
     "content": "text",
     "attributes": {}
   },
-  "fs-tabs__list": {
+  "lt-tabs__list": {
     "component": "tabs",
     "title": "Tabs",
     "description": "Fanerad av lenker til panelene sine. Rammekomponent.",
-    "link": "https://fristil.sobernetics.no/components/tabs/",
+    "link": "https://lo-tek.sobernetics.no/components/tabs/",
     "content": "free",
     "parts": {
       "tab": {
@@ -1263,59 +1263,59 @@ export const classes: Classes = {
     },
     "attributes": {}
   },
-  "fs-tabs__panel": {
+  "lt-tabs__panel": {
     "component": "tabs",
     "title": "Tabs",
     "description": "Fanerad av lenker til panelene sine. Rammekomponent.",
-    "link": "https://fristil.sobernetics.no/components/tabs/",
+    "link": "https://lo-tek.sobernetics.no/components/tabs/",
     "content": "free",
     "attributes": {}
   },
-  "fs-connection-status": {
+  "lt-connection-status": {
     "component": "connection-status",
     "title": "Connection Status",
     "description": "Sier fra når forbindelsen til serveren er borte. Frittstående komponent.",
-    "link": "https://fristil.sobernetics.no/components/connection-status/",
+    "link": "https://lo-tek.sobernetics.no/components/connection-status/",
     "content": "none",
     "attributes": {}
   },
-  "fs-connection-status__bar": {
+  "lt-connection-status__bar": {
     "component": "connection-status",
     "title": "Connection Status",
     "description": "Sier fra når forbindelsen til serveren er borte. Frittstående komponent.",
-    "link": "https://fristil.sobernetics.no/components/connection-status/",
+    "link": "https://lo-tek.sobernetics.no/components/connection-status/",
     "content": "text",
     "attributes": {}
   },
-  "fs-toast": {
+  "lt-toast": {
     "component": "toast",
     "title": "Toast",
     "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
-    "link": "https://fristil.sobernetics.no/components/toast/",
+    "link": "https://lo-tek.sobernetics.no/components/toast/",
     "content": "none",
     "attributes": {}
   },
-  "fs-toast__message": {
+  "lt-toast__message": {
     "component": "toast",
     "title": "Toast",
     "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
-    "link": "https://fristil.sobernetics.no/components/toast/",
+    "link": "https://lo-tek.sobernetics.no/components/toast/",
     "content": "free",
     "attributes": {}
   },
-  "fs-toast__close": {
+  "lt-toast__close": {
     "component": "toast",
     "title": "Toast",
     "description": "Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
-    "link": "https://fristil.sobernetics.no/components/toast/",
+    "link": "https://lo-tek.sobernetics.no/components/toast/",
     "content": "text",
     "attributes": {}
   },
-  "fs-theme-control": {
+  "lt-theme-control": {
     "component": "tilpasning",
     "title": "Tilpasning",
-    "description": "Endre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.",
-    "link": "https://fristil.sobernetics.no/tilpasning/",
+    "description": "Endre farger, form og størrelse i LO-TEK uten at endringene forsvinner ved neste oppgradering.",
+    "link": "https://lo-tek.sobernetics.no/customising/",
     "content": "none",
     "attributes": {}
   }

@@ -1,7 +1,7 @@
 import { attributes, checkedKeys, idOrFallback } from "../../css/shared.js"
 
-export const TABS_LIST_CLASS = "fs-tabs__list" as const
-export const TABS_PANEL_CLASS = "fs-tabs__panel" as const
+export const TABS_LIST_CLASS = "lt-tabs__list" as const
+export const TABS_PANEL_CLASS = "lt-tabs__panel" as const
 
 export type TabsOptions = {
   /**
@@ -65,21 +65,21 @@ function prepare(
  * Bare lenker, id-er og klasser. Uten JavaScript er raden da en vanlig liste
  * med lenker, og panelene står etter hverandre: en innholdsfortegnelse som
  * virker for alle. Rollene, hvilken fane som er valgt og hvilke paneler som
- * er skjult skriver `<fs-tabs>`. Sto de her, ville markupen uten JavaScript
+ * er skjult skriver `<lt-tabs>`. Sto de her, ville markupen uten JavaScript
  * sagt «fane» om en lenke som ikke virker som en, og skjult panelene.
  *
  * Den første fanen er valgt når siden lastes. En annen kommer fra adressen,
- * som `#sak-vedlegg`, eller fra `selected` og `select()` på `<fs-tabs>`.
+ * som `#sak-vedlegg`, eller fra `selected` og `select()` på `<lt-tabs>`.
  *
- * React-appen bruker `fs.tabs()` fra `@fristil/designsystem/react`, som gir
+ * React-appen bruker `lt.tabs()` fra `@lo-tek/interfaces/react`, som gir
  * hele tilstanden, så React hydrerer uten avvik.
  *
  * ```ts
- * const faner = fs.tabs({ id: "sak", keys: ["soknaden", "vedlegg"], label: "Deler av saken" })
+ * const faner = lt.tabs({ id: "sak", keys: ["soknaden", "vedlegg"], label: "Deler av saken" })
  * ```
  */
 export const tabs = (options: TabsOptions): TabsAttributes => {
-  const { id, keys, panelId } = prepare("fs.tabs()", options)
+  const { id, keys, panelId } = prepare("lt.tabs()", options)
   return {
     list: attributes({ class: TABS_LIST_CLASS, "aria-label": options.label }),
     tabs: keys.map((key) => attributes({ href: `#${panelId(key)}` })),
@@ -121,7 +121,7 @@ export type TabsWithStateAttributes = {
 }
 
 /**
- * Hele tilstanden, slik `<fs-tabs>` ville skrevet den. For React.
+ * Hele tilstanden, slik `<lt-tabs>` ville skrevet den. For React.
  *
  * React sammenligner attributtene på elementene den rendrer med det som står
  * i siden, og melder et avvik for hvert attributt den ikke rendret selv.
@@ -138,7 +138,7 @@ export type TabsWithStateAttributes = {
 export const tabsWithState = (
   options: TabsWithStateOptions,
 ): TabsWithStateAttributes => {
-  const { id, keys, panelId } = prepare("fs.tabs()", options)
+  const { id, keys, panelId } = prepare("lt.tabs()", options)
   // Er `selected` utenfor rekkevidde, rettes den her. Ellers ville markupen
   // sagt noe annet enn det brukeren ser.
   // Et tall som ikke er et heltall, som `NaN` eller 1,5, ga ingen valgt fane,

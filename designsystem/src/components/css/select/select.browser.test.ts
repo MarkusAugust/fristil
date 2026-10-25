@@ -7,8 +7,8 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/farge"
-import { finnOverflyt, monterIsolert } from "../../../testing/isolert"
+import { farge } from "../../../testing/color"
+import { finnOverflyt, monterIsolert } from "../../../testing/isolated"
 import { contrastRatio, parseHex } from "../../../tokens/color"
 import selectCss from "./select.css?inline"
 
@@ -25,60 +25,60 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("fs-select", () => {
+describe("lt-select", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <select id="default" class="fs-select"><option>Velg</option></select>
-      <select id="invalid" class="fs-select" data-state="invalid"><option>Velg</option></select>
-      <select id="success" class="fs-select" data-state="success"><option>Velg</option></select>
-      <select id="disabled" class="fs-select" disabled><option>Velg</option></select>
+      <select id="default" class="lt-select"><option>Velg</option></select>
+      <select id="invalid" class="lt-select" data-state="invalid"><option>Velg</option></select>
+      <select id="success" class="lt-select" data-state="success"><option>Velg</option></select>
+      <select id="disabled" class="lt-select" disabled><option>Velg</option></select>
     `
   })
 
   it("applies default styles", () => {
     const select = css("default")
 
-    expect(select.backgroundColor).toBe(farge("--fs-color-neutral-canvas"))
-    expect(select.borderTopColor).toBe(farge("--fs-color-disabled-text"))
-    expect(select.color).toBe(farge("--fs-color-neutral-text-strong"))
+    expect(select.backgroundColor).toBe(farge("--lt-color-neutral-canvas"))
+    expect(select.borderTopColor).toBe(farge("--lt-color-disabled-text"))
+    expect(select.color).toBe(farge("--lt-color-neutral-text-strong"))
   })
 
   it("applies invalid styles", () => {
     const select = css("invalid")
 
-    expect(select.backgroundColor).toBe(farge("--fs-color-danger-surface"))
-    expect(select.borderTopColor).toBe(farge("--fs-color-danger-text"))
+    expect(select.backgroundColor).toBe(farge("--lt-color-danger-surface"))
+    expect(select.borderTopColor).toBe(farge("--lt-color-danger-text"))
   })
 
   it("applies success styles", () => {
     const select = css("success")
 
-    expect(select.backgroundColor).toBe(farge("--fs-color-success-surface"))
-    expect(select.borderTopColor).toBe(farge("--fs-color-success-text"))
+    expect(select.backgroundColor).toBe(farge("--lt-color-success-surface"))
+    expect(select.borderTopColor).toBe(farge("--lt-color-success-text"))
   })
 
   it("applies disabled styles", () => {
     const select = css("disabled")
 
-    expect(select.backgroundColor).toBe(farge("--fs-color-disabled-surface"))
-    expect(select.borderTopColor).toBe(farge("--fs-color-disabled-surface"))
-    expect(select.color).toBe(farge("--fs-color-disabled-text"))
+    expect(select.backgroundColor).toBe(farge("--lt-color-disabled-surface"))
+    expect(select.borderTopColor).toBe(farge("--lt-color-disabled-surface"))
+    expect(select.color).toBe(farge("--lt-color-disabled-text"))
     // Markøren vises bare hvis elementet treffes av pekeren
     expect(select.pointerEvents).toBe("auto")
   })
 })
 
-describe("fs-select tilgjengelighet", () => {
+describe("lt-select tilgjengelighet", () => {
   it("har nok kontrast og ledetekst i alle tilstander", async () => {
     monter(`
-      <label class="fs-label" for="a11y-fylke">Fylke</label>
-      <select class="fs-select" id="a11y-fylke">
+      <label class="lt-label" for="a11y-fylke">Fylke</label>
+      <select class="lt-select" id="a11y-fylke">
         <option value="">Velg fylke</option>
         <option value="vestland">Vestland</option>
       </select>
 
-      <label class="fs-label" for="a11y-kommune">Kommune</label>
-      <select class="fs-select" id="a11y-kommune" data-state="invalid" aria-invalid="true">
+      <label class="lt-label" for="a11y-kommune">Kommune</label>
+      <select class="lt-select" id="a11y-kommune" data-state="invalid" aria-invalid="true">
         <option value="">Velg kommune</option>
       </select>
     `)
@@ -88,20 +88,20 @@ describe("fs-select tilgjengelighet", () => {
   })
 })
 
-describe("fs-select uten CSS-reset", () => {
+describe("lt-select uten CSS-reset", () => {
   it("holder seg innenfor boksen sin", () => {
     const { boks } = monterIsolert(
       selectCss,
-      `<select class="fs-select"><option>Vestland</option></select>`,
+      `<select class="lt-select"><option>Vestland</option></select>`,
     )
 
     expect(finnOverflyt(boks)).toEqual([])
   })
 })
 
-describe("fs-select deaktivert", () => {
+describe("lt-select deaktivert", () => {
   it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
-    monter(`<select class="fs-select" disabled><option>Av</option></select>`)
+    monter(`<select class="lt-select" disabled><option>Av</option></select>`)
 
     const element = document.querySelector("select") as HTMLElement
     const ramme = element.getBoundingClientRect()
@@ -155,14 +155,14 @@ async function lukk(element: HTMLElement): Promise<void> {
   await ventPaTegning(element)
 }
 
-describe('fs-select med data-picker="styled"', () => {
+describe('lt-select med data-picker="styled"', () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <select id="vanlig" class="fs-select">
+      <select id="vanlig" class="lt-select">
         <option value="vestland">Vestland</option>
         <option value="rogaland">Rogaland</option>
       </select>
-      <select id="stylet" class="fs-select" data-picker="styled">
+      <select id="stylet" class="lt-select" data-picker="styled">
         <option value="vestland">Vestland</option>
         <option value="rogaland" selected>Rogaland</option>
       </select>
@@ -193,9 +193,9 @@ describe('fs-select med data-picker="styled"', () => {
   it("beholder farger og tilstand fra resten av komponenten", () => {
     const stylet = css("stylet")
 
-    expect(stylet.backgroundColor).toBe(farge("--fs-color-neutral-canvas"))
-    expect(stylet.borderTopColor).toBe(farge("--fs-color-disabled-text"))
-    expect(stylet.color).toBe(farge("--fs-color-neutral-text-strong"))
+    expect(stylet.backgroundColor).toBe(farge("--lt-color-neutral-canvas"))
+    expect(stylet.borderTopColor).toBe(farge("--lt-color-disabled-text"))
+    expect(stylet.color).toBe(farge("--lt-color-neutral-text-strong"))
   })
 
   it("åpner lista inne i siden, med vår egen flate", async () => {
@@ -210,8 +210,8 @@ describe('fs-select med data-picker="styled"', () => {
     const liste = getComputedStyle(element, "::picker(select)")
 
     expect(element.matches(":open")).toBe(true)
-    expect(liste.backgroundColor).toBe(farge("--fs-color-neutral-canvas"))
-    expect(liste.borderTopColor).toBe(farge("--fs-color-disabled-text"))
+    expect(liste.backgroundColor).toBe(farge("--lt-color-neutral-canvas"))
+    expect(liste.borderTopColor).toBe(farge("--lt-color-disabled-text"))
     expect(liste.overflowY).toBe("auto")
 
     // Høyden animeres fra null i Chromium. Går noe galt med overgangen, står
@@ -237,13 +237,13 @@ describe('fs-select med data-picker="styled"', () => {
     }
 
     expect(getComputedStyle(valgt).backgroundColor).toBe(
-      farge("--fs-color-accent-fill"),
+      farge("--lt-color-accent-fill"),
     )
     expect(getComputedStyle(valgt).color).toBe(
-      farge("--fs-color-accent-content"),
+      farge("--lt-color-accent-content"),
     )
     expect(getComputedStyle(annet).backgroundColor).toBe(
-      farge("--fs-color-neutral-canvas"),
+      farge("--lt-color-neutral-canvas"),
     )
     expect(getComputedStyle(annet).padding).toBe("8px 12px")
 
@@ -253,7 +253,7 @@ describe('fs-select med data-picker="styled"', () => {
     if (!harBaseSelect) return
 
     document.body.innerHTML = `
-      <select id="gruppert" class="fs-select" data-picker="styled">
+      <select id="gruppert" class="lt-select" data-picker="styled">
         <optgroup label="Vestlandet">
           <option value="bergen">Bergen</option>
         </optgroup>
@@ -282,7 +282,7 @@ describe('fs-select med data-picker="styled"', () => {
     // Den arver fra gruppa, så det er gruppa som må ha verdiene.
     expect(getComputedStyle(gruppe).fontSize).toBe("14px")
     expect(getComputedStyle(gruppe).color).toBe(
-      farge("--fs-color-neutral-text-subtle"),
+      farge("--lt-color-neutral-text-subtle"),
     )
     expect(getComputedStyle(gruppe).textIndent).toBe("12px")
 
@@ -290,7 +290,7 @@ describe('fs-select med data-picker="styled"', () => {
     // så `bergen` viser den vanlige teksten.
     expect(getComputedStyle(iGruppe).fontSize).toBe("16px")
     expect(getComputedStyle(iGruppe).color).toBe(
-      farge("--fs-color-neutral-text-strong"),
+      farge("--lt-color-neutral-text-strong"),
     )
     expect(getComputedStyle(iGruppe).textIndent).toBe("0px")
     expect(iGruppe.getBoundingClientRect().width).toBe(
@@ -309,11 +309,11 @@ describe('fs-select med data-picker="styled"', () => {
     const langt = "Søknad om dispensasjon fra reguleringsplanen for området"
     document.body.innerHTML = `
       <div style="inline-size: 260px">
-        <select id="langt" class="fs-select" data-picker="styled">
+        <select id="langt" class="lt-select" data-picker="styled">
           <button><selectedcontent></selectedcontent></button>
           <option>${langt}</option>
         </select>
-        <select id="kort" class="fs-select" data-picker="styled">
+        <select id="kort" class="lt-select" data-picker="styled">
           <button><selectedcontent></selectedcontent></button>
           <option>Byggesak</option>
         </select>
@@ -332,11 +332,11 @@ describe('fs-select med data-picker="styled"', () => {
   })
 })
 
-describe("fs-select med lista i siden, tilgjengelighet", () => {
+describe("lt-select med lista i siden, tilgjengelighet", () => {
   it("har nok kontrast og ledetekst", async () => {
     monter(`
-      <label class="fs-label" for="a11y-stylet">Fylke</label>
-      <select class="fs-select" id="a11y-stylet" data-picker="styled">
+      <label class="lt-label" for="a11y-stylet">Fylke</label>
+      <select class="lt-select" id="a11y-stylet" data-picker="styled">
         <optgroup label="Vestlandet">
           <option value="">Velg fylke</option>
           <option value="vestland">Vestland</option>
@@ -358,8 +358,8 @@ describe("fs-select med lista i siden, tilgjengelighet", () => {
     if (!harBaseSelect) return
 
     monter(`
-      <label class="fs-label" for="kontrast-stylet">Fylke</label>
-      <select class="fs-select" id="kontrast-stylet" data-picker="styled">
+      <label class="lt-label" for="kontrast-stylet">Fylke</label>
+      <select class="lt-select" id="kontrast-stylet" data-picker="styled">
         <optgroup label="Vestlandet">
           <option value="bergen">Bergen</option>
           <option value="stavanger" selected>Stavanger</option>

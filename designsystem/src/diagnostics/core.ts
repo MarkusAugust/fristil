@@ -1,5 +1,5 @@
 /**
- * Kjernen: Fristils sjekk og temagenerator, skrevet i Rust og bygget til én
+ * Kjernen: LO-TEKs sjekk og temagenerator, skrevet i Rust og bygget til én
  * WebAssembly-modul.
  *
  * Den samme modulen kjøres her, i VS Code, på JVM-en (Chicory) og i IntelliJ,
@@ -57,7 +57,7 @@ export type Finding = {
   column: number
   message: string
   severity: Severity
-  /** Navnet på regelen, som `ukjent-klasse`. Det er det `fristil-ignore-next` tar. */
+  /** Navnet på regelen, som `ukjent-klasse`. Det er det `lotek-ignore-next` tar. */
   rule: string
   /** Komponentsiden, som lenke i meldingen. */
   link: string
@@ -67,7 +67,7 @@ export type Finding = {
 export type CoreVersion = {
   /** Versjonen av kjernen. */
   core: string
-  /** Versjonen av `@fristil/designsystem` manifestet er skrevet fra, eller `null` uten manifest. */
+  /** Versjonen av `@lo-tek/interfaces` manifestet er skrevet fra, eller `null` uten manifest. */
   manifest: string | null
   /** Formen på manifestet kjernen forstår. */
   schemaVersion: number

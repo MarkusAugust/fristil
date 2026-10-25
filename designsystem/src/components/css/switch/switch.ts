@@ -1,8 +1,8 @@
 import { attributes } from "../shared.js"
 
-export const SWITCH_CLASS = "fs-switch" as const
+export const SWITCH_CLASS = "lt-switch" as const
 /** Raden som holder bryteren og teksten ved siden av hverandre. */
-export const SWITCH_ROW_CLASS = "fs-switch-row" as const
+export const SWITCH_ROW_CLASS = "lt-switch-row" as const
 
 export type SwitchOptions = {
   /**

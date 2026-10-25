@@ -2,7 +2,7 @@
 
 import { beforeAll, describe, expect, it } from "vitest"
 
-import { fs } from "./fs"
+import { lt } from "./lt"
 
 /**
  * At stilarkene pakken sender ut holder seg innenfor sitt eget navnerom.
@@ -38,7 +38,7 @@ function onlyRules(source: string): string {
 
 /**
  * Det som står etter klammen som lukker den første blokken. For et stilark
- * som starter med `@layer fristil {`, er det alt utenfor laget. Strenger og
+ * som starter med `@layer lotek {`, er det alt utenfor laget. Strenger og
  * kommentarer må være tatt bort først, som `onlyRules` gjør. Blir blokken
  * aldri lukket, svarer den med en melding om det, så sjekken feiler.
  */
@@ -61,7 +61,7 @@ function isBundle(source: string): boolean {
 /**
  * Teller verdiene i en kortform, uten å telle inni `var()` og `calc()`.
  *
- * `padding: var(--fs-spacing-2) calc(var(--fs-spacing-4) + var(--fs-spacing-2))` er to verdier,
+ * `padding: var(--lt-spacing-2) calc(var(--lt-spacing-4) + var(--lt-spacing-2))` er to verdier,
  * ikke fem.
  */
 function antallVerdier(verdi: string): number {
@@ -90,7 +90,7 @@ function classNames(source: string): string[] {
 /**
  * Tailwind-temaet er ikke et komponentstilark.
  *
- * Det er en `@theme`-blokk som gir Tailwind Fristils verdier, så det ligger
+ * Det er en `@theme`-blokk som gir Tailwind LO-TEKs verdier, så det ligger
  * med vilje utenfor laget og definerer variabler i Tailwinds navnerom.
  * Reglene under gjelder derfor ikke der, men fila har sine egne lenger nede.
  */
@@ -111,14 +111,14 @@ describe("stilarkene pakken sender ut", () => {
    */
   const lagdelte = filer.filter(([navn]) => !navn.endsWith("/boundary.css"))
 
-  it.each(lagdelte)("%s ligger i @layer fristil", (_navn, source) => {
+  it.each(lagdelte)("%s ligger i @layer lotek", (_navn, source) => {
     // `@import` må stå først i en CSS-fil, så den delen hoppes over.
     const utenImport = onlyRules(source)
       .split("\n")
       .filter((line) => !line.trim().startsWith("@import"))
       .join("\n")
 
-    expect(utenImport.trimStart().startsWith("@layer fristil")).toBe(true)
+    expect(utenImport.trimStart().startsWith("@layer lotek")).toBe(true)
     // Og ingenting etter at laget er lukket: en regel der står utenfor
     // laget og slår konsumentens CSS uansett spesifisitet.
     expect(afterFirstBlock(utenImport).trim()).toBe("")
@@ -126,13 +126,13 @@ describe("stilarkene pakken sender ut", () => {
 
   it("finner en regel etter at laget er lukket", () => {
     const regler = onlyRules(
-      '@layer fristil { .fs-a { color: red } }\n/* } */ .fs-b { content: "}" }',
+      '@layer lotek { .lt-a { color: red } }\n/* } */ .lt-b { content: "}" }',
     )
-    expect(afterFirstBlock(regler).trim()).toMatch(/^\.fs-b/)
+    expect(afterFirstBlock(regler).trim()).toMatch(/^\.lt-b/)
     expect(
-      afterFirstBlock("@layer fristil { .fs-a { color: red } }\n").trim(),
+      afterFirstBlock("@layer lotek { .lt-a { color: red } }\n").trim(),
     ).toBe("")
-    expect(afterFirstBlock("@layer fristil { .fs-a { color: red }")).not.toBe(
+    expect(afterFirstBlock("@layer lotek { .lt-a { color: red }")).not.toBe(
       "",
     )
   })
@@ -144,7 +144,7 @@ describe("stilarkene pakken sender ut", () => {
      * uten `@charset` arver tegnsettet fra siden som lenker det. Tegnet
      * skrives som en escape, `\e5`. En test i nettleseren ser ikke
      * forskjellen, siden den får fila som UTF-8, så regelen leses av kilden.
-     * Kommentarene strykes av `bygg-css.ts` og er uten betydning.
+     * Kommentarene strykes av `build-css.ts` og er uten betydning.
      */
     const funn: string[] = []
     let lest = 0
@@ -161,9 +161,9 @@ describe("stilarkene pakken sender ut", () => {
     expect(funn).toEqual([])
   })
 
-  it.each(filer)("%s bruker bare fs-prefikserte klasser", (_navn, source) => {
+  it.each(filer)("%s bruker bare lt-prefikserte klasser", (_navn, source) => {
     const uprefiksert = classNames(source).filter(
-      (name) => !name.startsWith("fs-"),
+      (name) => !name.startsWith("lt-"),
     )
     expect(uprefiksert).toEqual([])
   })
@@ -195,7 +195,7 @@ describe("stilarkene pakken sender ut", () => {
   /*
    * Fire verdier i `padding`, `margin` eller `inset` er over, høyre, under,
    * venstre. To av dem er fysiske sider, og de snur ikke med språket.
-   * `.fs-select` hadde `padding: … calc(…) … var(--fs-spacing-3)` for å holde av
+   * `.lt-select` hadde `padding: … calc(…) … var(--lt-spacing-3)` for å holde av
    * plass til pila si, og i RTL ble plassen liggende på feil side mens
    * teksten la seg oppå pila. Tre verdier er trygt: da er den midterste
    * begge de fysiske sidene, og lik på begge.
@@ -213,7 +213,7 @@ describe("stilarkene pakken sender ut", () => {
   })
 
   /*
-   * Fokusringen skal komme fra `--fs-focus-ring`, ikke skrives ut.
+   * Fokusringen skal komme fra `--lt-focus-ring`, ikke skrives ut.
    *
    * Den sto med bredde og farge i tjue regler fordelt på atten stilark.
    * Selektorene er forskjellige i hver komponent, så det lot seg ikke samle
@@ -234,7 +234,7 @@ describe("stilarkene pakken sender ut", () => {
   it.each(filer)("%s navngir klassene i kebab-case", (_navn, source) => {
     const feilform = classNames(source).filter(
       (name) =>
-        !/^fs-[a-z0-9]+(-[a-z0-9]+)*(__[a-z0-9]+(-[a-z0-9]+)*)?$/.test(name),
+        !/^lt-[a-z0-9]+(-[a-z0-9]+)*(__[a-z0-9]+(-[a-z0-9]+)*)?$/.test(name),
     )
     expect(feilform).toEqual([])
   })
@@ -244,7 +244,7 @@ describe("stilarkene pakken sender ut", () => {
  * `tokens.css` som tekst, kilden både tokennavnene og slagene leses av.
  *
  * Finner globben den ikke, kastes det her. Et `?? ""` sto her, og da ble
- * `TOKENSLAG` tom, `erToken()` alltid usann, og hvert `--fs-*`-navn regnet som
+ * `TOKENSLAG` tom, `erToken()` alltid usann, og hvert `--lt-*`-navn regnet som
  * en komponentvariabel. Sjekken var da tilbake i nøyaktig tilstanden den ble
  * skrevet for å komme ut av, uten et ord.
  */
@@ -264,11 +264,11 @@ describe("variablene komponentene leser", () => {
 
   it.each(
     komponentfiler,
-  )("%s definerer ingen egne variabler utenfor fs-navnerommet", (_navn, source) => {
+  )("%s definerer ingen egne variabler utenfor lt-navnerommet", (_navn, source) => {
     const definert = [
       ...onlyRules(source).matchAll(/^\s*(--[\w-]+)\s*:/gm),
     ].map((treff) => treff[1])
-    expect(definert.filter((name) => !name.startsWith("--fs-"))).toEqual([])
+    expect(definert.filter((name) => !name.startsWith("--lt-"))).toEqual([])
   })
 
   it.each(
@@ -291,14 +291,14 @@ describe("variablene komponentene leser", () => {
      *
      * Unntaket er komponentvariabler, som er konsumentens å sette og med
      * vilje står utenfor `tokens.css`. Unntaket sto en gang på hele
-     * `--fs-`-prefikset, og den dagen tokenene byttet navn fra `--semantic-*`
-     * til `--fs-color-*` sluttet testen i stillhet å se på tokens i det hele
-     * tatt. `--fs-color-accent-fill-hover`, som ikke finnes, sto da i
+     * `--lt-`-prefikset, og den dagen tokenene byttet navn fra `--semantic-*`
+     * til `--lt-color-*` sluttet testen i stillhet å se på tokens i det hele
+     * tatt. `--lt-color-accent-fill-hover`, som ikke finnes, sto da i
      * `button.css` og gjorde primærknappen usynlig ved hover uten at noen av
      * vaktpostene sa fra. Unntaket er derfor `erToken`, ikke prefikset.
      */
     const ukjente = lest.filter((navn) => {
-      if (navn.startsWith("--fs-") && !erToken(navn)) return false
+      if (navn.startsWith("--lt-") && !erToken(navn)) return false
       return !definerteTokens.has(navn)
     })
     expect([...new Set(ukjente)]).toEqual([])
@@ -312,7 +312,7 @@ describe("reservene komponentene har", () => {
     komponentfiler,
   )("%s gir hver komponentvariabel en reserve", (_navn, source) => {
     /*
-     * `var(--fs-x)` uten reserve gir ingenting når konsumenten ikke har satt
+     * `var(--lt-x)` uten reserve gir ingenting når konsumenten ikke har satt
      * den, og da faller hele erklæringen bort. Regelen i prosjektet er at
      * form og størrelse leses fra en komponentvariabel *med tokenverdien som
      * reserve*, og det er reserven denne testen ser etter.
@@ -323,12 +323,12 @@ describe("reservene komponentene har", () => {
     /*
      * Tokens trenger ingen reserve, komponentvariabler gjør.
      *
-     * Et token er alltid satt av `tokens.css`, mens `--fs-button-padding` er
+     * Et token er alltid satt av `tokens.css`, mens `--lt-button-padding` er
      * konsumentens å sette og står tom til de gjør det. Slaget i navnet
-     * skiller dem: `--fs-color-*` er et token, `--fs-<komponent>-*` er ikke.
+     * skiller dem: `--lt-color-*` er et token, `--lt-<komponent>-*` er ikke.
      */
     const uten = [
-      ...onlyRules(source).matchAll(/var\(\s*(--fs-[\w-]+)\s*([,)])/g),
+      ...onlyRules(source).matchAll(/var\(\s*(--lt-[\w-]+)\s*([,)])/g),
     ]
       .filter((treff) => treff[2] === ")")
       .map((treff) => treff[1])
@@ -344,16 +344,16 @@ describe("reservene komponentene har", () => {
  * Lista leses ut av `tokens.css` framfor å stå skrevet her. Sto den skrevet,
  * ville et nytt slag sluppet gjennom som komponentvariabler, og et navn som
  * ikke finnes ville aldri blitt fanget: det er nøyaktig slik
- * `--fs-color-accent-fill-hover` kom inn.
+ * `--lt-color-accent-fill-hover` kom inn.
  *
- * Slaget er første ledd etter `--fs-`, så `--fs-line-height-default` gir
+ * Slaget er første ledd etter `--lt-`, så `--lt-line-height-default` gir
  * `line`. Grovere enn navnet, og med vilje: en komponentvariabel som het
- * `--fs-line-noe` ville da bli krevd i `tokens.css`, og det er riktig, for
+ * `--lt-line-noe` ville da bli krevd i `tokens.css`, og det er riktig, for
  * navnet ville lest som et token.
  */
 const TOKENSLAG = [
   ...new Set(
-    [...tokenkilde.matchAll(/^\s*--fs-([a-z]+)(?:-[a-z0-9-]+)?\s*:/gm)].map(
+    [...tokenkilde.matchAll(/^\s*--lt-([a-z]+)(?:-[a-z0-9-]+)?\s*:/gm)].map(
       (treff) => treff[1],
     ),
   ),
@@ -361,7 +361,7 @@ const TOKENSLAG = [
 
 function erToken(navn: string): boolean {
   return TOKENSLAG.some(
-    (slag) => navn === `--fs-${slag}` || navn.startsWith(`--fs-${slag}-`),
+    (slag) => navn === `--lt-${slag}` || navn.startsWith(`--lt-${slag}-`),
   )
 }
 
@@ -374,17 +374,17 @@ describe("Tailwind-temaet", () => {
     expect(tema).toBeTypeOf("string")
   })
 
-  it("legger bare til navn i fs-navnerommet", () => {
+  it("legger bare til navn i lt-navnerommet", () => {
     const definert = [
       ...onlyRules(tema ?? "").matchAll(/^\s*(--[\w-]+)\s*:/gm),
     ].map((treff) => treff[1])
 
     // `--spacing` er unntaket, og med vilje: det er Tailwinds avstandsenhet,
-    // og hele poenget er at `p-4` skal bli `--fs-spacing-4`.
+    // og hele poenget er at `p-4` skal bli `--lt-spacing-4`.
     const utenfor = definert.filter(
       (navn) =>
         navn !== "--spacing" &&
-        !/^--(color|text|container|shadow|font|radius|leading|tracking|breakpoint)-fs-/.test(
+        !/^--(color|text|container|shadow|font|radius|leading|tracking|breakpoint)-lt-/.test(
           navn,
         ),
     )
@@ -392,7 +392,7 @@ describe("Tailwind-temaet", () => {
     expect(utenfor).toEqual([])
   })
 
-  it("henter alle verdiene fra Fristils tokens", () => {
+  it("henter alle verdiene fra LO-TEKs tokens", () => {
     const lest = [...onlyRules(tema ?? "").matchAll(/var\((--[\w-]+)/g)].map(
       (treff) => treff[1],
     )
@@ -406,7 +406,7 @@ describe("Tailwind-temaet", () => {
 /**
  * At hver lovlige verdi en byggefunksjon reklamerer med, finnes i CSS-en.
  *
- * `fs.fieldset.states` oppga `success` fra dagen komponenten kom, mens
+ * `lt.fieldset.states` oppga `success` fra dagen komponenten kom, mens
  * `fieldset.css` bare hadde en regel for `invalid`. Attributtet ble skrevet,
  * og ingenting skjedde. Byggefunksjonen lovet altså noe pakken ikke leverte,
  * og ingen test så det: `dom.browser.test.ts` sjekker at verdien kan settes
@@ -476,7 +476,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
        * `@import` må bort. Hver fil legges inn for seg, så naboen er alt
        * med, og en relativ sti ville uansett gitt 404 herfra. I WebKit er
        * det ikke ufarlig: et stilark med en uløst `@import` blir ikke tatt i
-       * bruk i det hele tatt, og `.fs-legend[data-required]::after` fra
+       * bruk i det hele tatt, og `.lt-legend[data-required]::after` fra
        * `fieldset.css` regnet seg til `content: none` mens den identiske
        * regelen i `label.css` virket. Chromium og Firefox hoppet bare over
        * den døde importen.
@@ -547,7 +547,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
   const tilfeller: Tilfelle[] = []
   const hoppet: string[] = []
 
-  for (const [navn, verdi] of Object.entries(fs)) {
+  for (const [navn, verdi] of Object.entries(lt)) {
     if (typeof verdi !== "function") continue
     const byggefunksjon = verdi as unknown as Byggefunksjon
 
@@ -557,7 +557,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
 
       for (const v of verdier) {
         // De sammensatte byggefunksjonene gir ett attributtsett per del, som
-        // `fs.dialog()` med `host`, `dialog` og `header`. Attributtet ligger
+        // `lt.dialog()` med `host`, `dialog` og `header`. Attributtet ligger
         // da på den delen som bærer det, og det er den som rendres.
         const ut = delMed(
           byggefunksjon({ ...STABIL_ID, [opsjon]: v }),
@@ -601,7 +601,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
      * Bare én verdi i en liste kan gi det samme som standardkallet, nemlig
      * standardverdien selv. Gjør to det, er navnet feil.
      */
-    for (const [navn, verdi] of Object.entries(fs)) {
+    for (const [navn, verdi] of Object.entries(lt)) {
       if (typeof verdi !== "function") continue
       const byggefunksjon = verdi as unknown as Byggefunksjon
 
@@ -633,7 +633,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
     const kjente = new Set(LISTER.map(([liste]) => liste))
     const ukjente: string[] = []
 
-    for (const [navn, verdi] of Object.entries(fs)) {
+    for (const [navn, verdi] of Object.entries(lt)) {
       if (typeof verdi !== "function") continue
       const byggefunksjon = verdi as unknown as Byggefunksjon
       for (const [liste, verdier] of Object.entries(byggefunksjon)) {
@@ -649,7 +649,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
 
   it("dekker hver liste med minst ett tilfelle", () => {
     const lister = new Set<string>()
-    for (const [navn, verdi] of Object.entries(fs)) {
+    for (const [navn, verdi] of Object.entries(lt)) {
       if (typeof verdi !== "function") continue
       const byggefunksjon = verdi as unknown as Byggefunksjon
       for (const [liste] of LISTER) {
@@ -671,7 +671,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
    * vises bare gjennom `::after`.
    *
    * Noen tilstander farger et barn framfor elementet selv: feltsettet farger
-   * `.fs-legend`, og den stripete tabellen farger radene. Da finnes det
+   * `.lt-legend`, og den stripete tabellen farger radene. Da finnes det
    * ingen regel på elementet å sammenligne, og testen faller tilbake på at
    * selektoren står i et stilark. Fallet er begrenset til nettopp de
    * tilfellene: finnes det en regel på elementet selv, kreves forskjellen.
@@ -680,7 +680,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
     tilfeller.map((t) => [t.liste, t.verdi, t] as const),
   )("%s=%s endrer noe", (_liste, _verdi, tilfelle) => {
     // Den nakne selektoren er med fordi noen regler dekker alle verdiene
-    // på én gang: `.fs-label[data-required]` gir stjernen uansett om
+    // på én gang: `.lt-label[data-required]` gir stjernen uansett om
     // verdien er `symbol` eller `text`.
     const selektorer = tilfelle.klasser.flatMap((klasse) => [
       `.${klasse}[${tilfelle.attributt}="${tilfelle.verdi}"]`,
@@ -705,7 +705,7 @@ describe("hver lovlig verdi finnes i CSS-en", () => {
 
     if (treffSelv.length === 0) {
       /*
-       * Ellers farger regelen et barn: feltsettet farger `.fs-legend`, og
+       * Ellers farger regelen et barn: feltsettet farger `.lt-legend`, og
        * den stripete tabellen farger annenhver rad. Da finnes det ingenting
        * på elementet selv å sammenligne, og kravet er i stedet at en regel
        * som gjelder her faktisk erklærer noe. Et tekstsøk alene passerte på

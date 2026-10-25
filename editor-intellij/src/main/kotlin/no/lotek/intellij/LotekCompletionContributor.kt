@@ -1,4 +1,4 @@
-package no.fristil.intellij
+package no.lotek.intellij
 
 import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.codeInsight.completion.CompletionParameters
@@ -8,7 +8,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.icons.AllIcons
 
 /**
- * Foreslår Fristils klasser inne i `class="…"`.
+ * Foreslår LO-TEKs klasser inne i `class="…"`.
  *
  * Registrert på HTML-språket, ikke på Kotlin. Injiserer IntelliJ HTML i en
  * streng, blir fragmentet et ekte `PsiFile` med HTML-språk, og denne kalles
@@ -20,7 +20,7 @@ import com.intellij.icons.AllIcons
  *
  * Klassene er de i manifestet fila sjekkes mot, se [Katalog.klasserFor].
  */
-class FristilCompletionContributor : CompletionContributor() {
+class LotekCompletionContributor : CompletionContributor() {
     override fun fillCompletionVariants(
         parameters: CompletionParameters,
         result: CompletionResultSet,
@@ -37,8 +37,8 @@ class FristilCompletionContributor : CompletionContributor() {
          * Her sto først en egen matcher som leste bakover til nærmeste
          * mellomrom, skrevet på antakelsen om at IntelliJ deler ord på
          * bindestrek. Den antakelsen var feil: testet i en attributtverdi gir
-         * `class="fs-` hele lista, og `class="min-egen fs-but` fullfører til
-         * `fs-button`, med og uten matcheren. Koden gjorde altså ingenting,
+         * `class="lt-` hele lista, og `class="min-egen lt-but` fullfører til
+         * `lt-button`, med og uten matcheren. Koden gjorde altså ingenting,
          * og er borte.
          */
         for (klasse in Katalog.klasserFor(parameters.originalFile)) {
@@ -57,7 +57,7 @@ class FristilCompletionContributor : CompletionContributor() {
          *
          * Leser bakover i teksten framfor å gå i PSI-treet. Et injisert
          * fragment kan være ufullstendig mens du skriver, og da er treet
-         * ustabilt: `<table class="fs-` har ingen lukket tagg og ingen
+         * ustabilt: `<table class="lt-` har ingen lukket tagg og ingen
          * attributtnode å spørre. Teksten bakover er den samme uansett.
          */
         fun iKlasseverdi(
@@ -81,7 +81,7 @@ class FristilCompletionContributor : CompletionContributor() {
              * Åpnende eller lukkende anførselstegn?
              *
              * Å gå bakover til nærmeste anførselstegn er ikke nok:
-             * `<div title="class=" fs-` bryter på det *lukkende*, og da står
+             * `<div title="class=" lt-` bryter på det *lukkende*, og da står
              * `=` fra verdiens innhold igjen og ser ut som et attributt.
              * Antallet anførselstegn fra taggens start avgjør: oddetall betyr
              * at det siste åpnet en verdi vi fortsatt står i.
@@ -105,7 +105,7 @@ class FristilCompletionContributor : CompletionContributor() {
                 } else {
                     /*
                      * Utenfor en verdi, eller i en bar en. Bar verdi er
-                     * gyldig HTML, og `<div class=fs-` ga ingenting da bare
+                     * gyldig HTML, og `<div class=lt-` ga ingenting da bare
                      * anførselstegn talte. Her avslutter et mellomrom
                      * verdien, i motsetning til i den siterte.
                      */
@@ -121,7 +121,7 @@ class FristilCompletionContributor : CompletionContributor() {
              *
              * `takeLastWhile` alene gjorde `:class` og `x-bind:class` til
              * `class`, fordi kolon ikke er med i settet. Der tar Vue og
-             * Alpine et JavaScript-uttrykk, så et bart `fs-button` blir en
+             * Alpine et JavaScript-uttrykk, så et bart `lt-button` blir en
              * variabelreferanse og ikke en klasse. `data-class` gikk fri alt,
              * siden bindestrek er med.
              *

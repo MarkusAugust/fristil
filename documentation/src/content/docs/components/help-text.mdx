@@ -3,59 +3,59 @@ title: Help Text
 description: Forklarende tekst under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Den lille teksten under et felt som forklarer hva systemet forventer. Er teksten en feilmelding, bruk [Error Text](../error-text/).
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "help-text.css"]}
+<Example importer={["tokens.css", "help-text.css"]}
   stiler={["help-text"]} layout="stabel" maxWidth="30rem" kode={`
-<p class="fs-help-text">Du finner nummeret øverst til høyre på fakturaen.</p>
-<p class="fs-help-text" data-variant="strong">Endringen gjelder fra neste månedsskifte.</p>
-<p class="fs-help-text" data-variant="success">Vedlegget er lastet opp.</p>
-<p class="fs-help-text" data-variant="warning">Søknadsfristen går ut om tre dager.</p>
+<p class="lt-help-text">Du finner nummeret øverst til høyre på fakturaen.</p>
+<p class="lt-help-text" data-variant="strong">Endringen gjelder fra neste månedsskifte.</p>
+<p class="lt-help-text" data-variant="success">Vedlegget er lastet opp.</p>
+<p class="lt-help-text" data-variant="warning">Søknadsfristen går ut om tre dager.</p>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<p {...fs.helpText()}>Du finner nummeret øverst til høyre på fakturaen.</p>
+<p {...lt.helpText()}>Du finner nummeret øverst til høyre på fakturaen.</p>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const ledetekst = document.querySelector<HTMLLabelElement>("#kid-label")
 const input = document.querySelector<HTMLInputElement>("#kid")
 const hjelpetekst = document.querySelector<HTMLElement>("#kid-help")
 
-const felt = fs.field({ id: "kid", help: true })
+const felt = lt.field({ id: "kid", help: true })
 
-fs.setAttributes(ledetekst, felt.label)
-fs.setAttributes(input, fs.input(), felt.control)
-fs.setAttributes(hjelpetekst, fs.helpText(), felt.help)
+lt.setAttributes(ledetekst, felt.label)
+lt.setAttributes(input, lt.input(), felt.control)
+lt.setAttributes(hjelpetekst, lt.helpText(), felt.help)
 ```
 
-[`fs.field`](../field/) genererer `id`-en og setter `aria-describedby`, så koblingen ikke kan glemmes.
+[`lt.field`](../field/) genererer `id`-en og setter `aria-describedby`, så koblingen ikke kan glemmes.
 
 Trenger du bare klassen:
 
 ```ts
-fs.setAttributes(hjelpetekst, fs.helpText({ variant: "warning" }))
+lt.setAttributes(hjelpetekst, lt.helpText({ variant: "warning" }))
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -68,10 +68,10 @@ fs.setAttributes(hjelpetekst, fs.helpText({ variant: "warning" }))
 
 Uten `aria-describedby` leses ikke hjelpeteksten opp når feltet får fokus.
 
-<Eksempel stiler={["help-text", "label", "input"]} layout="stabel" maxWidth="30rem" kode={`
-<label class="fs-label" for="kid">KID-nummer</label>
-<input class="fs-input" id="kid" inputmode="numeric" aria-describedby="kid-hjelp" />
-<p class="fs-help-text" id="kid-hjelp">Du finner nummeret øverst på fakturaen.</p>
+<Example stiler={["help-text", "label", "input"]} layout="stabel" maxWidth="30rem" kode={`
+<label class="lt-label" for="kid">KID-nummer</label>
+<input class="lt-input" id="kid" inputmode="numeric" aria-describedby="kid-hjelp" />
+<p class="lt-help-text" id="kid-hjelp">Du finner nummeret øverst på fakturaen.</p>
 `} />
 
 [Field](../field/) genererer `id`-en og setter `aria-describedby` for deg.
@@ -80,9 +80,9 @@ Uten `aria-describedby` leses ikke hjelpeteksten opp når feltet får fokus.
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-help-text` | Teksten. Fargen kommer fra `data-variant`. |
+| `.lt-help-text` | Teksten. Fargen kommer fra `data-variant`. |
 
-Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
+Se [Tilpasning](../../customising/) for hvordan laget virker.
 
 ## Tilgjengelighet
 

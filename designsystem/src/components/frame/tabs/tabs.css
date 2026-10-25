@@ -1,5 +1,5 @@
-@layer fristil {
-  fs-tabs {
+@layer lotek {
+  lt-tabs {
     display: block;
   }
 
@@ -7,53 +7,53 @@
      innholdsfortegnelse: en vanlig liste med lenker til panelene, som står
      etter hverandre under den. */
   @media (scripting: enabled) {
-    .fs-tabs__list {
+    .lt-tabs__list {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--fs-tabs-gap, var(--fs-spacing-1));
+      gap: var(--lt-tabs-gap, var(--lt-spacing-1));
       margin: 0;
       padding: 0;
       list-style: none;
-      border-block-end: 1px solid var(--fs-color-neutral-border-subtle);
+      border-block-end: 1px solid var(--lt-color-neutral-border-subtle);
     }
 
-    .fs-tabs__list a {
+    .lt-tabs__list a {
       box-sizing: border-box;
       display: inline-flex;
       align-items: center;
-      padding: var(--fs-tabs-padding, var(--fs-spacing-2) var(--fs-spacing-4));
-      min-block-size: var(--fs-spacing-10);
+      padding: var(--lt-tabs-padding, var(--lt-spacing-2) var(--lt-spacing-4));
+      min-block-size: var(--lt-spacing-10);
       font-family: inherit;
-      font-size: var(--fs-font-size-m);
-      line-height: var(--fs-line-height-default);
-      color: var(--fs-color-accent-text);
+      font-size: var(--lt-font-size-m);
+      line-height: var(--lt-line-height-default);
+      color: var(--lt-color-accent-text);
       text-decoration: none;
       background: transparent;
       border: 0;
       /* Streken under den valgte fanen tegnes på alle, gjennomsiktig på dem som
          ikke er valgt. Da hopper ikke teksten når brukeren bytter fane. */
-      border-block-end: var(--fs-spacing-0-5) solid transparent;
+      border-block-end: var(--lt-spacing-0-5) solid transparent;
       margin-block-end: -1px;
       cursor: pointer;
     }
 
-    .fs-tabs__list a:hover {
-      background: var(--fs-color-accent-surface);
+    .lt-tabs__list a:hover {
+      background: var(--lt-color-accent-surface);
     }
 
-    .fs-tabs__list a:focus-visible {
-      outline: var(--fs-focus-ring);
+    .lt-tabs__list a:focus-visible {
+      outline: var(--lt-focus-ring);
       outline-offset: -2px;
     }
 
-    .fs-tabs__list a[aria-selected="true"] {
-      color: var(--fs-color-neutral-text-strong);
-      font-weight: var(--fs-font-weight-semibold);
-      border-block-end-color: var(--fs-color-accent-border);
+    .lt-tabs__list a[aria-selected="true"] {
+      color: var(--lt-color-neutral-text-strong);
+      font-weight: var(--lt-font-weight-semibold);
+      border-block-end-color: var(--lt-color-accent-border);
     }
 
-    .fs-tabs__list a[aria-disabled="true"] {
-      color: var(--fs-color-disabled-text);
+    .lt-tabs__list a[aria-disabled="true"] {
+      color: var(--lt-color-disabled-text);
       cursor: not-allowed;
     }
 
@@ -73,15 +73,15 @@
        det første når treffet står lenger ned. `:has()` kan ikke stå inni
        `:has()`, derfor to former for treffet i den siste. Bare når skript
        kjører: uten JavaScript vises alle. */
-    fs-tabs:not(:defined) .fs-tabs__panel:not([hidden])
-      ~ .fs-tabs__panel:not([hidden]):not(:target, :has(:target)),
-    fs-tabs:not(:defined)[server-controlled]
-      .fs-tabs__panel:not([hidden])
-      ~ .fs-tabs__panel:not([hidden]),
-    fs-tabs:not(:defined)
-      .fs-tabs__panel:not([hidden]):not(fs-tabs[server-controlled] *):has(
-        ~ .fs-tabs__panel:not([hidden]):target,
-        ~ .fs-tabs__panel:not([hidden]) :target
+    lt-tabs:not(:defined) .lt-tabs__panel:not([hidden])
+      ~ .lt-tabs__panel:not([hidden]):not(:target, :has(:target)),
+    lt-tabs:not(:defined)[server-controlled]
+      .lt-tabs__panel:not([hidden])
+      ~ .lt-tabs__panel:not([hidden]),
+    lt-tabs:not(:defined)
+      .lt-tabs__panel:not([hidden]):not(lt-tabs[server-controlled] *):has(
+        ~ .lt-tabs__panel:not([hidden]):target,
+        ~ .lt-tabs__panel:not([hidden]) :target
       ) {
       display: none;
     }
@@ -91,26 +91,26 @@
      linjehøyden alene sto de så tett at trykkflaten var under 24 piksler
      (WCAG 2.5.8). */
   @media (scripting: none) {
-    .fs-tabs__list a {
+    .lt-tabs__list a {
       display: inline-block;
-      min-block-size: var(--fs-spacing-6);
-      line-height: var(--fs-spacing-6);
+      min-block-size: var(--lt-spacing-6);
+      line-height: var(--lt-spacing-6);
     }
   }
 
-  .fs-tabs__panel {
-    padding-block-start: var(--fs-tabs-panel-space, var(--fs-spacing-4));
+  .lt-tabs__panel {
+    padding-block-start: var(--lt-tabs-panel-space, var(--lt-spacing-4));
   }
 
   /* Et panel skjult med `until-found` har boksen sin, men ikke innholdet,
      så søk i siden kan finne det. Luften må bort, ellers står det et tomt
      felt under det valgte panelet for hver fane. */
-  .fs-tabs__panel[hidden="until-found" i] {
+  .lt-tabs__panel[hidden="until-found" i] {
     padding: 0;
   }
 
-  .fs-tabs__panel:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-tabs__panel:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
   }
 
@@ -118,7 +118,7 @@
      de gjennomsiktige strekene under de andre. `Highlight` slipper gjennom,
      og gir tilbake forskjellen. */
   @media (forced-colors: active) {
-    .fs-tabs__list a[aria-selected="true"] {
+    .lt-tabs__list a[aria-selected="true"] {
       border-block-end-color: Highlight;
       color: Highlight;
     }

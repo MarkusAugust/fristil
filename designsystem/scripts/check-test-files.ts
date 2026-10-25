@@ -6,7 +6,7 @@
  * dem: en sjekk som fant mappene gjennom `*.ts`, ville talt testfila selv, og
  * en mappe med bare CSS ville aldri blitt sett.
  *
- * Kjør med: bun designsystem/scripts/sjekk-testfiler.ts
+ * Kjør med: bun designsystem/scripts/check-test-files.ts
  */
 
 import { readdirSync, statSync } from "node:fs"

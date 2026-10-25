@@ -1,8 +1,8 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const AVATAR_CLASS = "fs-avatar" as const
+export const AVATAR_CLASS = "lt-avatar" as const
 /** Flere profilbilder som overlapper. */
-export const AVATAR_STACK_CLASS = "fs-avatar-stack" as const
+export const AVATAR_STACK_CLASS = "lt-avatar-stack" as const
 
 export const avatarSizes = ["small", "medium", "large"] as const
 export const avatarVariants = ["circle", "square"] as const

@@ -11,8 +11,8 @@
  *
  * `attributes()` stryker nøklene uten verdi, og da er det borte hvilke
  * attributter byggefunksjonen har et ord om. `setAttributes` trenger nettopp
- * det: `fs.switch()` forvalter `disabled` og skal kunne fjerne det, mens
- * `fs.button()` aldri har skrevet det og skal la det stå. Lista ligger i et
+ * det: `lt.switch()` forvalter `disabled` og skal kunne fjerne det, mens
+ * `lt.button()` aldri har skrevet det og skal la det stå. Lista ligger i et
  * kart ved siden av objektet, ikke på det, så spredning, JSON og React ser
  * det samme som før.
  */
@@ -27,12 +27,12 @@ export function managedNames(set: object): readonly string[] | undefined {
  * Gir et sett som er skrevet om fra et annet, de samme forvaltede navnene.
  *
  * `/react` døper `class` om til `className` i et nytt objekt, og det nye
- * objektet sto ikke i kartet. `fs.setAttributes` derfra ryddet da bare
+ * objektet sto ikke i kartet. `lt.setAttributes` derfra ryddet da bare
  * `data-*`, og `aria-invalid` ble stående etter at feltet var rettet.
  * Navnene gis slik de heter i det nye settet.
  *
  * For `/react` og andre innganger som skriver settene om, ikke for apper:
- * et sett fra `fs.*` er allerede forvaltet.
+ * et sett fra `lt.*` er allerede forvaltet.
  */
 export function rememberManaged(set: object, names: readonly string[]): void {
   managed.set(set, names)
@@ -41,7 +41,7 @@ export function rememberManaged(set: object, names: readonly string[]): void {
 /**
  * Fjerner attributter uten verdi, så `{...spredning}` ikke setter tomme felt.
  *
- * Bygger settet på et annet, som `fs.search()` på `fs.input()`, sendes det
+ * Bygger settet på et annet, som `lt.search()` på `lt.input()`, sendes det
  * andre inn som `based`. Spredningen har alt mistet nøklene som var av, og
  * uten dette forvaltet søkefeltet `data-state` bare når den tilfeldigvis var
  * satt: den kunne settes, men ikke fjernes.
@@ -113,7 +113,7 @@ let idCounter = 0
  */
 export function createFieldId(): string {
   idCounter += 1
-  return `fs-field-${idCounter}-${Math.random().toString(36).slice(2, 8)}`
+  return `lt-field-${idCounter}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 /**
@@ -168,14 +168,14 @@ export function checkedKeys(builder: string, keys: unknown): string[] {
  *
  * Hver byggefunksjon som tar en id krever den i typen. Det holder ikke alene: en
  * konsument uten TypeScript ser ingen type, og ren HTML med
- * `<script type="module">` er en førsteklasses måte å bruke Fristil på. Uten
+ * `<script type="module">` er en førsteklasses måte å bruke LO-TEK på. Uten
  * reserven ble id-ene til strenger som `undefined-list`, `aria-controls` pekte
  * dit, og koblingen var brutt på en måte som så gyldig ut.
  *
- * Den tomme strengen teller som ingen id. `fs.field({ id: "" })` ga `for=""`
+ * Den tomme strengen teller som ingen id. `lt.field({ id: "" })` ga `for=""`
  * og `help.id="-help"`, altså det samme problemet uten at noe sa fra.
  *
- * Navnet på byggefunksjonen står i meldingen. Uten det sa forslagsfeltet «fs.field()»
+ * Navnet på byggefunksjonen står i meldingen. Uten det sa forslagsfeltet «lt.field()»
  * og sendte utvikleren til feil sted.
  */
 export function idOrFallback(

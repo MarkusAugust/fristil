@@ -18,7 +18,7 @@ import {
   ventPaTegning,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
-import { defineFsSuggestion, type FsSuggestion } from "./fs-suggestion"
+import { defineLtSuggestion, type LtSuggestion } from "./lt-suggestion"
 import { suggestion } from "./suggestion"
 
 import "../../../tokens/tokens.css"
@@ -30,29 +30,29 @@ const NOKLER = ["bergen", "bodo", "oslo", "tromso"]
 
 /** Slik en mal skriver det uten byggefunksjonen: ingen roller, ingen navn på lista. */
 const BAR = `
-  <fs-suggestion>
-    <label class="fs-label" for="kommune">Kommune</label>
-    <input class="fs-input" id="kommune" name="kommune">
-    <ul class="fs-suggestion__list">
+  <lt-suggestion>
+    <label class="lt-label" for="kommune">Kommune</label>
+    <input class="lt-input" id="kommune" name="kommune">
+    <ul class="lt-suggestion__list">
       ${KOMMUNER.map((k) => `<li>${k}</li>`).join("")}
     </ul>
-    <span class="fs-sr-only" role="status"></span>
-  </fs-suggestion>`
+    <span class="lt-sr-only" role="status"></span>
+  </lt-suggestion>`
 
 /** Ledeteksten rundt feltet, uten id på noe. */
 const RUNDT = `
-  <fs-suggestion>
-    <label class="fs-label">Kommune <input class="fs-input" name="kommune"></label>
-    <ul class="fs-suggestion__list">
+  <lt-suggestion>
+    <label class="lt-label">Kommune <input class="lt-input" name="kommune"></label>
+    <ul class="lt-suggestion__list">
       ${KOMMUNER.map((k) => `<li>${k}</li>`).join("")}
     </ul>
-    <span class="fs-sr-only" role="status"></span>
-  </fs-suggestion>`
+    <span class="lt-sr-only" role="status"></span>
+  </lt-suggestion>`
 
 function fraByggefunksjonen(valg: { pending?: boolean } = {}) {
   const f = suggestion({ id: "kommune", keys: NOKLER, ...valg })
   return `
-  <fs-suggestion>
+  <lt-suggestion>
     <label ${attr(f.label)}>Kommune</label>
     <input ${attr(f.control)} name="kommune">
     <ul ${attr(f.list)}>
@@ -60,14 +60,14 @@ function fraByggefunksjonen(valg: { pending?: boolean } = {}) {
     </ul>
     <p ${attr(f.empty)}>Ingen treff</p>
     <span ${attr(f.status)}></span>
-  </fs-suggestion>`
+  </lt-suggestion>`
 }
 
 async function tegn() {
-  await customElements.whenDefined("fs-suggestion")
+  await customElements.whenDefined("lt-suggestion")
   await ventPaTegning()
   await ventPaTegning()
-  return document.querySelector("fs-suggestion") as FsSuggestion
+  return document.querySelector("lt-suggestion") as LtSuggestion
 }
 
 const liste = () => document.querySelector("[role='listbox']") as HTMLElement
@@ -98,7 +98,7 @@ function navn(element: HTMLElement): string {
 
 describe("lista har et navn", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   it("fra ledeteksten, når markupen kom uten", async () => {
@@ -129,8 +129,8 @@ describe("lista har et navn", () => {
   it("lar et navn serveren skrev stå", async () => {
     monter(
       BAR.replace(
-        '<ul class="fs-suggestion__list">',
-        '<ul class="fs-suggestion__list" aria-label="Kommuner i Norge">',
+        '<ul class="lt-suggestion__list">',
+        '<ul class="lt-suggestion__list" aria-label="Kommuner i Norge">',
       ),
     )
     await tegn()
@@ -149,7 +149,7 @@ describe("lista har et navn", () => {
 
 describe("hvert alternativ sier om det er valgt", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   it("fra starten, før lista har vært åpen", async () => {
@@ -167,10 +167,10 @@ describe("hvert alternativ sier om det er valgt", () => {
 
 describe("lista sier fra mens svaret er underveis", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
-  it("fs.suggestion({ pending }) skriver aria-busy på lista", () => {
+  it("lt.suggestion({ pending }) skriver aria-busy på lista", () => {
     expect(suggestion({ id: "k", pending: true }).list["aria-busy"]).toBe(
       "true",
     )
@@ -180,11 +180,11 @@ describe("lista sier fra mens svaret er underveis", () => {
   it("holder tommeldingen skjult mens lista sier aria-busy", async () => {
     monter(
       BAR.replace(
-        '<ul class="fs-suggestion__list">',
-        '<ul class="fs-suggestion__list" aria-busy="true">',
+        '<ul class="lt-suggestion__list">',
+        '<ul class="lt-suggestion__list" aria-busy="true">',
       ).replace(
-        '<span class="fs-sr-only"',
-        '<p class="fs-suggestion__empty">Ingen treff</p><span class="fs-sr-only"',
+        '<span class="lt-sr-only"',
+        '<p class="lt-suggestion__empty">Ingen treff</p><span class="lt-sr-only"',
       ),
     )
     await tegn()
@@ -192,7 +192,7 @@ describe("lista sier fra mens svaret er underveis", () => {
     felt().value = "xyz"
     felt().dispatchEvent(new Event("input", { bubbles: true }))
     await tegn()
-    const tom = document.querySelector(".fs-suggestion__empty") as HTMLElement
+    const tom = document.querySelector(".lt-suggestion__empty") as HTMLElement
     expect(getComputedStyle(tom).display).toBe("none")
 
     liste().removeAttribute("aria-busy")
@@ -203,7 +203,7 @@ describe("lista sier fra mens svaret er underveis", () => {
 
 describe("lista står i det øverste laget", () => {
   beforeAll(() => {
-    defineFsSuggestion()
+    defineLtSuggestion()
   })
 
   it("er et popover, åpent når lista er åpen og lukket ellers", async () => {
@@ -262,7 +262,7 @@ describe("lista står i det øverste laget", () => {
   })
 
   it("følger serveren som lukker lista med hidden", async () => {
-    monter(BAR.replace("<fs-suggestion>", "<fs-suggestion server-controlled>"))
+    monter(BAR.replace("<lt-suggestion>", "<lt-suggestion server-controlled>"))
     await tegn()
     await apne()
     liste().hidden = true

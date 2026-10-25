@@ -46,7 +46,7 @@ const lesJson = (sti: string) =>
 const DELER: Del[] = [
   {
     navn: "pakke",
-    gir: "@fristil/designsystem på npm, og kommandolinja på GitHub Releases",
+    gir: "@lo-tek/interfaces på npm, og kommandolinja på GitHub Releases",
     prefiks: "v",
     versjon: () => lesJson("designsystem/package.json").version,
     logg: {

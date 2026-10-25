@@ -3,72 +3,72 @@ title: Link
 description: Lenkestil for navigasjon i løpende tekst. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Lenkestil med tydelig understrek, hover og fokusmarkering. Skal lenken se ut som en knapp, bruk [Button](../button/) på `<a>`-elementet i stedet.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "link.css"]}
+<Example importer={["tokens.css", "link.css"]}
   stiler={["link"]} layout="stabel" maxWidth="32rem" kode={`
 <p>
   Søknaden er sendt. Du finner den igjen under
-  <a class="fs-link" href="#">Mine søknader</a>, og vi sender deg en
+  <a class="lt-link" href="#">Mine søknader</a>, og vi sender deg en
   e-post når den er behandlet.
 </p>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<a {...fs.link()} href="/kvittering">Se kvittering</a>
+<a {...lt.link()} href="/kvittering">Se kvittering</a>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const lenke = document.querySelector<HTMLAnchorElement>("#arsoppgave")
 const klar = await harArsoppgave() // appens egen sjekk
 
-fs.setAttributes(lenke, fs.link({ disabled: !klar }))
+lt.setAttributes(lenke, lt.link({ disabled: !klar }))
 if (klar) lenke?.setAttribute("href", "/arsoppgave")
 else lenke?.removeAttribute("href")
 ```
 
-`href` er appens, ikke byggefunksjonens, så den setter og fjerner du selv. Blir årsoppgaven klar senere, kjører du linjene på nytt. Da fjernes `aria-disabled`, `role` og `tabindex`, og lenken virker igjen. `fs.link()` forvalter alle tre, så en `role` eller `tabindex` du har satt selv på samme lenke, fjernes også. Trenger lenken dem, sett dem etter `setAttributes`.
+`href` er appens, ikke byggefunksjonens, så den setter og fjerner du selv. Blir årsoppgaven klar senere, kjører du linjene på nytt. Da fjernes `aria-disabled`, `role` og `tabindex`, og lenken virker igjen. `lt.link()` forvalter alle tre, så en `role` eller `tabindex` du har satt selv på samme lenke, fjernes også. Trenger lenken dem, sett dem etter `setAttributes`.
 
 </Fragment>
-</Eksempel>
+</Example>
 
 ## Deaktivert lenke
 
-<Eksempel stiler={["link"]} kode={`
-<a class="fs-link" href="#">Se kvittering</a>
-<a class="fs-link" role="link" tabindex="0" aria-disabled="true">Se årsoppgave</a>
+<Example stiler={["link"]} kode={`
+<a class="lt-link" href="#">Se kvittering</a>
+<a class="lt-link" role="link" tabindex="0" aria-disabled="true">Se årsoppgave</a>
 `} />
 
 En deaktivert lenke har ingen `href`. `aria-disabled="true"` demper fargen og slår av musa med `pointer-events: none`, men tastaturet følger `href` med Enter uansett. Derfor må den bort.
 
-Uten `href` er en `<a>` ingen lenke for skjermleseren, og den står ikke i tabrekkefølgen. `role="link"` og `tabindex="0"` gir den begge tilbake, så skjermlesere finner den og kan si at den er utilgjengelig. `fs.link({ disabled: true })` gir alle tre.
+Uten `href` er en `<a>` ingen lenke for skjermleseren, og den står ikke i tabrekkefølgen. `role="link"` og `tabindex="0"` gir den begge tilbake, så skjermlesere finner den og kan si at den er utilgjengelig. `lt.link({ disabled: true })` gir alle tre.
 
-`fristil sjekk` melder en `fs-link` eller `fs-button` med både `aria-disabled="true"` og `href` (regelen `deaktivert-med-href`).
+`lotek sjekk` melder en `lt-link` eller `lt-button` med både `aria-disabled="true"` og `href` (regelen `deaktivert-med-href`).
 
 ## Klasser du kan style
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-link` | Lenken. Besøkt og deaktivert skiller seg med `:visited` og `aria-disabled`. |
+| `.lt-link` | Lenken. Besøkt og deaktivert skiller seg med `:visited` og `aria-disabled`. |
 
-Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
+Se [Tilpasning](../../customising/) for hvordan laget virker.
 
 ## Tilgjengelighet
 

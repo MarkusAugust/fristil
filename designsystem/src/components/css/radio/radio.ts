@@ -6,9 +6,9 @@ import {
   type NonDefaultFieldState,
 } from "../shared.js"
 
-export const RADIO_CLASS = "fs-radio" as const
+export const RADIO_CLASS = "lt-radio" as const
 /** Raden som holder knappen og teksten ved siden av hverandre. */
-export const RADIO_ROW_CLASS = "fs-radio-row" as const
+export const RADIO_ROW_CLASS = "lt-radio-row" as const
 
 export type RadioOptions = {
   /** Valideringstilstand. Standard: `default`. */

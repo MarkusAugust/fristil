@@ -1,7 +1,7 @@
 /// <reference path="../../../types/css.d.ts" />
 
 import { beforeEach, describe, expect, it } from "vitest"
-import { fs } from "../../../fs"
+import { lt } from "../../../lt"
 import {
   forventIngenTilgjengelighetsbrudd,
   monter,
@@ -15,23 +15,23 @@ import "./icon.css"
 
 const STREK = `<path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>`
 
-describe("fs-icon", () => {
+describe("lt-icon", () => {
   beforeEach(() => {
     monter(`
       <p style="font-size: 32px">
-        Stor tekst <svg class="fs-icon" id="stor" aria-hidden="true" viewBox="0 0 24 24" fill="none">${STREK}</svg>
+        Stor tekst <svg class="lt-icon" id="stor" aria-hidden="true" viewBox="0 0 24 24" fill="none">${STREK}</svg>
       </p>
       <p style="font-size: 16px">
-        Liten tekst <svg class="fs-icon" id="liten" aria-hidden="true" viewBox="0 0 24 24">${STREK}</svg>
+        Liten tekst <svg class="lt-icon" id="liten" aria-hidden="true" viewBox="0 0 24 24">${STREK}</svg>
       </p>
-      <button class="fs-button" aria-label="Neste side">
-        <svg class="fs-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none">${STREK}</svg>
+      <button class="lt-button" aria-label="Neste side">
+        <svg class="lt-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none">${STREK}</svg>
       </button>
-      <button class="fs-button">
-        <svg class="fs-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none">${STREK}</svg>
+      <button class="lt-button">
+        <svg class="lt-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none">${STREK}</svg>
         Neste side
       </button>
-      <svg class="fs-icon" role="img" aria-label="Advarsel" viewBox="0 0 24 24">${STREK}</svg>
+      <svg class="lt-icon" role="img" aria-label="Advarsel" viewBox="0 0 24 24">${STREK}</svg>
     `)
   })
 
@@ -51,13 +51,13 @@ describe("fs-icon", () => {
   })
 
   it("er pynt uten label, og et bilde med", () => {
-    expect(icon()).toEqual({ class: "fs-icon", "aria-hidden": "true" })
+    expect(icon()).toEqual({ class: "lt-icon", "aria-hidden": "true" })
     expect(icon({ label: "" })).toEqual({
-      class: "fs-icon",
+      class: "lt-icon",
       "aria-hidden": "true",
     })
     expect(icon({ label: "Advarsel" })).toEqual({
-      class: "fs-icon",
+      class: "lt-icon",
       role: "img",
       "aria-label": "Advarsel",
     })
@@ -68,12 +68,12 @@ describe("fs-icon", () => {
     svg.setAttribute("class", "app-ikon")
     document.body.append(svg)
 
-    fs.setAttributes(svg, fs.icon({ label: "Advarsel" }))
-    expect(svg.getAttribute("class")).toBe("fs-icon app-ikon")
+    lt.setAttributes(svg, lt.icon({ label: "Advarsel" }))
+    expect(svg.getAttribute("class")).toBe("lt-icon app-ikon")
     expect(svg.getAttribute("role")).toBe("img")
     expect(svg.getAttribute("aria-label")).toBe("Advarsel")
 
-    fs.setAttributes(svg, fs.icon())
+    lt.setAttributes(svg, lt.icon())
     expect(svg.getAttribute("aria-hidden")).toBe("true")
     expect(svg.hasAttribute("role")).toBe(false)
     expect(svg.hasAttribute("aria-label")).toBe(false)

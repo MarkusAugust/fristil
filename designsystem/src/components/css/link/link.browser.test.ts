@@ -7,7 +7,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/farge"
+import { farge } from "../../../testing/color"
 import { link } from "./link"
 import linkCss from "./link.css?inline"
 
@@ -23,38 +23,38 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("fs-link variants", () => {
+describe("lt-link variants", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <a id="default" class="fs-link" href="#">Default</a>
-      <a id="disabled" class="fs-link" role="link" tabindex="0" aria-disabled="true">Disabled</a>
+      <a id="default" class="lt-link" href="#">Default</a>
+      <a id="disabled" class="lt-link" role="link" tabindex="0" aria-disabled="true">Disabled</a>
     `
   })
 
   it("applies default link styles", () => {
     const defaultLink = css("default")
 
-    expect(defaultLink.color).toBe(farge("--fs-color-accent-text"))
+    expect(defaultLink.color).toBe(farge("--lt-color-accent-text"))
     expect(defaultLink.textDecorationLine).toBe("underline")
   })
 
   it("applies aria-disabled styles", () => {
     const disabled = css("disabled")
 
-    expect(disabled.color).toBe(farge("--fs-color-neutral-text-subtle"))
+    expect(disabled.color).toBe(farge("--lt-color-neutral-text-subtle"))
     expect(disabled.textDecorationLine).toBe("none")
     expect(disabled.pointerEvents).toBe("none")
   })
 })
 
-describe("fs-link tilgjengelighet", () => {
+describe("lt-link tilgjengelighet", () => {
   it("har nok kontrast i tekst og i deaktivert tilstand", async () => {
     monter(`
       <p>
         Søknaden er sendt. Du finner den under
-        <a class="fs-link" href="/mine-soknader">Mine søknader</a>.
+        <a class="lt-link" href="/mine-soknader">Mine søknader</a>.
       </p>
-      <a class="fs-link" role="link" tabindex="0" aria-disabled="true">Se årsoppgave</a>
+      <a class="lt-link" role="link" tabindex="0" aria-disabled="true">Se årsoppgave</a>
     `)
 
     await ventPaTegning()
@@ -62,7 +62,7 @@ describe("fs-link tilgjengelighet", () => {
   })
 })
 
-describe("fs.link({ disabled })", () => {
+describe("lt.link({ disabled })", () => {
   /*
    * Den avslåtte lenken hadde `href`, og Enter fulgte den: `pointer-events`
    * stopper bare musa. Uten `href` er en `<a>` ingen lenke for skjermleseren
@@ -87,7 +87,7 @@ describe("fs.link({ disabled })", () => {
   })
 })
 
-describe("fs-link besøkt", () => {
+describe("lt-link besøkt", () => {
   /*
    * Nettleseren skjuler `:visited` for skript, så en lenke kan ikke gjøres
    * besøkt herfra. Testen bytter derfor `:visited` med et attributt i en kopi
@@ -100,16 +100,16 @@ describe("fs-link besøkt", () => {
     monter(`
       <style>
         ${linkCss.replaceAll(":visited", "[data-besokt]").replaceAll(":hover", "[data-mus]")}
-        .fs-link { transition: none; }
+        .lt-link { transition: none; }
       </style>
-      <a id="besokt" class="fs-link" href="#" data-besokt>Søknaden din</a>
+      <a id="besokt" class="lt-link" href="#" data-besokt>Søknaden din</a>
     `)
     const lenke = document.getElementById("besokt") as HTMLElement
-    expect(getComputedStyle(lenke).color).toBe(farge("--fs-color-visited-text"))
+    expect(getComputedStyle(lenke).color).toBe(farge("--lt-color-visited-text"))
 
     lenke.setAttribute("data-mus", "")
     expect(getComputedStyle(lenke).color).toBe(
-      farge("--fs-color-accent-text-strong"),
+      farge("--lt-color-accent-text-strong"),
     )
   })
 })

@@ -1,78 +1,78 @@
-@layer fristil {
+@layer lotek {
   /* Elementnavnet og klassen. Navnet holder plasseringen når en morfing
      eller et `className` fra React river klassen bort, og klassen bærer den
      når komponenten er registrert under et annet navn. */
-  fs-toast,
-  .fs-toast {
+  lt-toast,
+  .lt-toast {
     /* Beholderen ligger fast i hjørnet og slipper klikk gjennom, så den ikke
        stenger for knapper under seg når den er tom. */
     position: fixed;
-    inset-block-end: var(--fs-toast-space, var(--fs-spacing-4));
-    inset-inline-end: var(--fs-toast-space, var(--fs-spacing-4));
-    z-index: var(--fs-toast-layer, 60);
+    inset-block-end: var(--lt-toast-space, var(--lt-spacing-4));
+    inset-inline-end: var(--lt-toast-space, var(--lt-spacing-4));
+    z-index: var(--lt-toast-layer, 60);
     display: flex;
     flex-direction: column;
-    gap: var(--fs-spacing-2);
+    gap: var(--lt-spacing-2);
     inline-size: var(
-      --fs-toast-width,
-      min(24rem, calc(100vw - var(--fs-spacing-8)))
+      --lt-toast-width,
+      min(24rem, calc(100vw - var(--lt-spacing-8)))
     );
     pointer-events: none;
   }
 
-  .fs-toast__message {
+  .lt-toast__message {
     box-sizing: border-box;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: var(--fs-spacing-3);
-    padding: var(--fs-toast-padding, var(--fs-spacing-3) var(--fs-spacing-4));
+    gap: var(--lt-spacing-3);
+    padding: var(--lt-toast-padding, var(--lt-spacing-3) var(--lt-spacing-4));
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-strong);
-    background: var(--fs-color-neutral-canvas);
-    border: 1px solid var(--fs-color-neutral-border-subtle);
-    border-inline-start: var(--fs-spacing-1) solid var(--fs-color-neutral-text);
-    border-radius: var(--fs-toast-radius, var(--fs-spacing-1));
-    box-shadow: var(--fs-shadow-overlay);
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-neutral-canvas);
+    border: 1px solid var(--lt-color-neutral-border-subtle);
+    border-inline-start: var(--lt-spacing-1) solid var(--lt-color-neutral-text);
+    border-radius: var(--lt-toast-radius, var(--lt-spacing-1));
+    box-shadow: var(--lt-shadow-overlay);
     pointer-events: auto;
   }
 
-  .fs-toast__message[data-color="success"] {
-    border-inline-start-color: var(--fs-color-success-text);
+  .lt-toast__message[data-color="success"] {
+    border-inline-start-color: var(--lt-color-success-text);
   }
 
-  .fs-toast__message[data-color="warning"] {
-    border-inline-start-color: var(--fs-color-warning-text);
+  .lt-toast__message[data-color="warning"] {
+    border-inline-start-color: var(--lt-color-warning-text);
   }
 
-  .fs-toast__message[data-color="danger"] {
-    border-inline-start-color: var(--fs-color-danger-text);
+  .lt-toast__message[data-color="danger"] {
+    border-inline-start-color: var(--lt-color-danger-text);
   }
 
-  .fs-toast__close {
+  .lt-toast__close {
     flex: none;
-    min-inline-size: var(--fs-spacing-6);
-    min-block-size: var(--fs-spacing-6);
+    min-inline-size: var(--lt-spacing-6);
+    min-block-size: var(--lt-spacing-6);
     padding: 0;
     font-family: inherit;
-    font-size: var(--fs-font-size-l);
+    font-size: var(--lt-font-size-l);
     line-height: 1;
-    color: var(--fs-color-neutral-text-subtle);
+    color: var(--lt-color-neutral-text-subtle);
     background: transparent;
     border: 0;
-    border-radius: var(--fs-spacing-1);
+    border-radius: var(--lt-spacing-1);
     cursor: pointer;
   }
 
-  .fs-toast__close:hover {
-    color: var(--fs-color-neutral-text-strong);
-    background: var(--fs-color-neutral-surface);
+  .lt-toast__close:hover {
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-neutral-surface);
   }
 
-  .fs-toast__close:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-toast__close:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
   }
 }

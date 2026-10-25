@@ -3,7 +3,7 @@ title: Accordion
 description: Panel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Klassen settes på et `<details>` med et `<summary>` først. Nettleseren tar seg av åpning, lukking, tastatur og at skjermlesere melder «utvidet» eller «sammenfoldet».
 
@@ -11,58 +11,58 @@ Bygger du det samme av knapper og `aria-expanded`, må alt det skrives på nytt.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "accordion.css"]}
+<Example importer={["tokens.css", "accordion.css"]}
   stiler={["accordion"]} layout="stabel" maxWidth="34rem" kode={`
-<details class="fs-accordion">
+<details class="lt-accordion">
   <summary>Hvem kan søke om bostøtte?</summary>
-  <div class="fs-accordion__content">
+  <div class="lt-accordion__content">
     <p>Alle som bor og er folkeregistrert i boligen kan søke. Du må være over 18 år, eller ha egne barn boende hos deg.</p>
   </div>
 </details>
 
-<details class="fs-accordion" open>
+<details class="lt-accordion" open>
   <summary>Hvor lang er behandlingstiden?</summary>
-  <div class="fs-accordion__content">
+  <div class="lt-accordion__content">
     <p>Vi behandler søknaden innen tre uker. Mangler vi vedlegg, får du beskjed i digital postkasse.</p>
   </div>
 </details>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<details {...fs.accordion()}>
+<details {...lt.accordion()}>
   <summary>Hva regnes som inntekt?</summary>
-  <div className={fs.accordion.content}>Lønn, pensjon og næringsinntekt.</div>
+  <div className={lt.accordion.content}>Lønn, pensjon og næringsinntekt.</div>
 </details>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const panel = document.querySelector<HTMLDetailsElement>("#bostotte")
 if (!panel) throw new Error("fant ikke elementet")
 
-fs.setAttributes(panel, fs.accordion({ variant: "plain" }))
+lt.setAttributes(panel, lt.accordion({ variant: "plain" }))
 
 panel.addEventListener("toggle", () => {
   console.log(panel.open ? "åpnet" : "lukket")
 })
 ```
 
-`fs.accordion.content` gir klassen på innholdet. `toggle` er nettleserens egen hendelse, og kommer både når brukeren åpner og når du setter `open` fra kode.
+`lt.accordion.content` gir klassen på innholdet. `toggle` er nettleserens egen hendelse, og kommer både når brukeren åpner og når du setter `open` fra kode.
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | Attributt | Effekt |
 | --- | --- |
@@ -73,8 +73,8 @@ panel.addEventListener("toggle", () => {
 `name` er nettleserens egen måte å lage et trekkspill der ett panel lukker det forrige:
 
 ```html
-<details class="fs-accordion" name="sporsmal">…</details>
-<details class="fs-accordion" name="sporsmal">…</details>
+<details class="lt-accordion" name="sporsmal">…</details>
+<details class="lt-accordion" name="sporsmal">…</details>
 ```
 
 Sender serveren panelet på nytt i en oppdatering, lukkes et åpent panel: `open` er nettleserens eget attributt, og serverens utgave har det ikke. Skal det stå åpent, sender serveren `open` tilbake, i Datastar med `data-preserve-attr="open"` på panelet. Og TalkBack i Firefox på Android åpner ikke `<details>` ved aktivering; der må brukeren trykke på selve `<summary>`.
@@ -84,9 +84,9 @@ Sender serveren panelet på nytt i en oppdatering, lukkes et åpent panel: `open
 Skal panelene være en del av sidens struktur, legg en overskrift inne i `<summary>`:
 
 ```html
-<details class="fs-accordion">
+<details class="lt-accordion">
   <summary><h3>Hvem kan søke om bostøtte?</h3></summary>
-  <div class="fs-accordion__content">…</div>
+  <div class="lt-accordion__content">…</div>
 </details>
 ```
 
@@ -96,19 +96,19 @@ Da kan skjermlesere hoppe mellom spørsmålene med overskriftsnavigasjon. Nivåe
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-accordion` | Panelet. Varianten kommer fra `data-variant`. |
-| `.fs-accordion__content` | Innholdet under overskriften |
+| `.lt-accordion` | Panelet. Varianten kommer fra `data-variant`. |
+| `.lt-accordion__content` | Innholdet under overskriften |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-accordion-radius` | `var(--fs-spacing-1)` |
-| `--fs-accordion-padding` | `var(--fs-spacing-3) var(--fs-accordion-padding-inline)`, luften i overskriften |
-| `--fs-accordion-padding-inline` | `var(--fs-spacing-4)`, luften til sidene, i overskriften og innholdet |
+| `--lt-accordion-radius` | `var(--lt-spacing-1)` |
+| `--lt-accordion-padding` | `var(--lt-spacing-3) var(--lt-accordion-padding-inline)`, luften i overskriften |
+| `--lt-accordion-padding-inline` | `var(--lt-spacing-4)`, luften til sidene, i overskriften og innholdet |
 
 Pilen er tegnet med `::after` på `<summary>`, fordi nettleserens egen trekant ser ulik ut i hver nettleser. Skal du bytte den ut, holder det ikke å overstyre `content` og `border`: pseudoelementet har fast bredde og høyde og er snudd med `transform`, og vinkelen byttes når panelet er åpent og i høyre-til-venstre. Nullstill dem i samme regel. Gi et synlig tegn en tom alternativ tekst, ellers blir det en del av navnet på knappen: skjermleseren sier «Hvem kan søke? +» når `<summary>` får fokus. Overskriften beholder navnet sitt, så den som navigerer på overskrifter hører ikke tegnet. Regelen står utenfor laget og vinner derfor over alle variantene i stilarket:
 
 ```css
-.fs-accordion summary::after {
+.lt-accordion summary::after {
 	content: "+";
 	inline-size: auto;
 	block-size: auto;
@@ -117,15 +117,15 @@ Pilen er tegnet med `::after` på `<summary>`, fordi nettleserens egen trekant s
 }
 
 @supports (content: "/" / "") {
-	.fs-accordion summary::after {
+	.lt-accordion summary::after {
 		content: "+" / "";
 	}
 }
 ```
 
-Skal tegnet bytte når panelet er åpent, sett det på `.fs-accordion[open] summary::after` på samme måte.
+Skal tegnet bytte når panelet er åpent, sett det på `.lt-accordion[open] summary::after` på samme måte.
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

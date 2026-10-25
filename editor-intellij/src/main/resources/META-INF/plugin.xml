@@ -1,8 +1,8 @@
 <idea-plugin>
     <!-- ID-en kan aldri endres etter første opplasting til Marketplace. -->
-    <id>no.fristil</id>
-    <name>Fristil</name>
-    <vendor email="m.a.sobergklyver@gmail.com" url="https://github.com/MarkusAugust/fristil">MarkusAugust</vendor>
+    <id>no.lotek</id>
+    <name>LO-TEK</name>
+    <vendor email="m.a.sobergklyver@gmail.com" url="https://github.com/MarkusAugust/lo-tek">MarkusAugust</vendor>
 
     <!--
         Marketplace krever engelsk som hovedspråk i beskrivelsen. Den norske
@@ -10,11 +10,11 @@
     -->
     <description><![CDATA[
         Completion and diagnostics for the
-        <a href="https://fristil.sobernetics.no">Fristil</a> design system in HTML,
+        <a href="https://lo-tek.sobernetics.no">LO-TEK</a> design system in HTML,
         including HTML injected into a string.
         <br><br>
         The <code>web-types.json</code> file shipped with
-        <code>@fristil/designsystem</code> already gives completion in plain HTML
+        <code>@lo-tek/interfaces</code> already gives completion in plain HTML
         files without this plugin. It is not read for injected fragments, though:
         markup that lives in a Kotlin or TypeScript string marked with
         <code>@Language("HTML")</code> or <code>// language=HTML</code>. This
@@ -22,16 +22,16 @@
         diagnostics check against, the project's own when it has one, so the
         completion and the diagnostics never disagree.
         <br><br>
-        Diagnostics come from Fristil's own checker, compiled from Rust to
+        Diagnostics come from LO-TEK's own checker, compiled from Rust to
         WebAssembly and run inside the IDE with Chicory, a pure Java runtime:
         unknown elements, classes, attributes and values, and the wiring a
         template has to write itself, with quick fixes where the checker has
         one. No Node.js is needed. Live templates insert each component's
         markup from the documentation, with the id as a variable.
         <br><br>
-        <a href="https://github.com/MarkusAugust/fristil">Source code</a> (MIT)
+        <a href="https://github.com/MarkusAugust/lo-tek">Source code</a> (MIT)
         <br><br>
-        <b>Norsk:</b> Fullføring og feilmeldinger for Fristil i HTML, også i HTML
+        <b>Norsk:</b> Fullføring og feilmeldinger for LO-TEK i HTML, også i HTML
         som er injisert i en streng merket med <code>@Language("HTML")</code>.
     ]]></description>
 
@@ -51,7 +51,7 @@
         <completion.contributor
             language="HTML"
             order="first"
-            implementationClass="no.fristil.intellij.FristilCompletionContributor" />
+            implementationClass="no.lotek.intellij.LotekCompletionContributor" />
 
         <!--
             Feilmeldingene fra Rust-kjernen, kjørt av Chicory i IDE-ens JVM.
@@ -60,20 +60,20 @@
         -->
         <annotator
             language="HTML"
-            implementationClass="no.fristil.intellij.FristilAnnotator" />
+            implementationClass="no.lotek.intellij.LotekAnnotator" />
 
         <!--
-            Live templates: skriv `fs-field` og Tab, og markupen fra
+            Live templates: skriv `lt-field` og Tab, og markupen fra
             komponentsiden står der, med id-en som variabel. Fila genereres i
             designsystemet og kopieres inn av Gradle.
         -->
-        <defaultLiveTemplates file="/liveTemplates/Fristil" />
+        <defaultLiveTemplates file="/liveTemplates/LO-TEK" />
     </extensions>
 
     <applicationListeners>
         <!-- Sjekker de åpne filene på nytt når prosjektets manifest endres. -->
         <listener
-            class="no.fristil.intellij.ManifestListener"
+            class="no.lotek.intellij.ManifestListener"
             topic="com.intellij.openapi.vfs.newvfs.BulkFileListener" />
     </applicationListeners>
 </idea-plugin>

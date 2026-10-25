@@ -2,7 +2,7 @@
  * Datoen på norsk, i den formen merket i presentasjonen bruker.
  *
  * Ligger i sin egen fil fordi to skript trenger den: `prepare-version.ts`
- * skriver merket, og `sjekk-versjon.ts` kontrollerer det. Sto månedsnavnene i
+ * skriver merket, og `check-version.ts` kontrollerer det. Sto månedsnavnene i
  * begge, ville de kunne gli fra hverandre, og da ville vakten felt på en
  * forskjell den selv hadde laget.
  */

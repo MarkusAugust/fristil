@@ -4,12 +4,12 @@ import {
   type FieldOptions,
 } from "../field/field-core.js"
 
-export const SUGGESTION_CLASS = "fs-suggestion" as const
-export const SUGGESTION_LIST_CLASS = "fs-suggestion__list" as const
-export const SUGGESTION_OPTION_CLASS = "fs-suggestion__option" as const
-export const SUGGESTION_EMPTY_CLASS = "fs-suggestion__empty" as const
-export const SUGGESTION_VALUE_CLASS = "fs-suggestion__value" as const
-export const SUGGESTION_STATUS_CLASS = "fs-sr-only" as const
+export const SUGGESTION_CLASS = "lt-suggestion" as const
+export const SUGGESTION_LIST_CLASS = "lt-suggestion__list" as const
+export const SUGGESTION_OPTION_CLASS = "lt-suggestion__option" as const
+export const SUGGESTION_EMPTY_CLASS = "lt-suggestion__empty" as const
+export const SUGGESTION_VALUE_CLASS = "lt-suggestion__value" as const
+export const SUGGESTION_STATUS_CLASS = "lt-sr-only" as const
 
 export type SuggestionOptions = Omit<FieldOptions, "id"> & {
   /**
@@ -46,7 +46,7 @@ export type SuggestionOptions = Omit<FieldOptions, "id"> & {
  *
  * Ingen bevaringsliste. Attributtene som endrer seg mens brukeren skriver er
  * komponentens egne, og den setter dem tilbake når en patch river dem bort.
- * Har noen andre alt filtrert, settes `prefiltered` på `<fs-suggestion>`, og
+ * Har noen andre alt filtrert, settes `prefiltered` på `<lt-suggestion>`, og
  * komponenten lar både alternativene og tommeldingen være i fred. Skal
  * serveren i tillegg bestemme om lista er utvidet og hvilket alternativ som er
  * markert, settes `server-controlled` ved siden av.
@@ -60,8 +60,8 @@ export const suggestion = ({
   ...field
 }: SuggestionOptions) => {
   // Reserven gjelder bare den som ikke har en typesjekk.
-  const id = idOrFallback("fs.suggestion()", givenId)
-  const keys = checkedKeys("fs.suggestion()", givenKeys)
+  const id = idOrFallback("lt.suggestion()", givenId)
+  const keys = checkedKeys("lt.suggestion()", givenKeys)
   const count = keys.length
   const computed = computeFieldAttributes({ ...field, id })
   const listId = `${id}-list`
@@ -83,7 +83,7 @@ export const suggestion = ({
     control: attributes(
       {
         ...computed.control,
-        class: "fs-input" as const,
+        class: "lt-input" as const,
         type: "text" as const,
         role: "combobox" as const,
         autocomplete: "off" as const,

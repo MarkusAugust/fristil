@@ -146,7 +146,7 @@ for (const fil of new Bun.Glob("**/*.html").scanSync(DIST)) {
  * advarsel som også kommer når alt er riktig blir slått av, og da er den
  * verdiløs, så begge deler må felle sjekken.
  *
- * Her og ikke bare i `sjekk-komponentdemoer.ts`: dette skriptet besøker hver
+ * Her og ikke bare i `check-component-demos.ts`: dette skriptet besøker hver
  * bygde side, mønstersidene og forsiden medregnet.
  */
 const advarsler = new Set<string>()
@@ -191,7 +191,7 @@ function lesAntall(navn: string, standard: number): number {
  * To faner per tema gir fire til sammen, altså det CI-maskinen har av
  * kjerner. Denne sjekken er prosessorbundet så snart den går parallelt, siden
  * axe analyserer hele DOM-en, så flere faner enn kjerner gir ingenting. Det
- * skiller den fra `sjekk-mobil.ts`, som bare venter og derfor får åtte.
+ * skiller den fra `check-mobile.ts`, som bare venter og derfor får åtte.
  */
 const FANER_PER_TEMA = lesAntall("FANER_PER_TEMA", 2)
 

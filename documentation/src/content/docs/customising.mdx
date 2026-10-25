@@ -1,11 +1,11 @@
 ---
 title: Tilpasning
-description: Endre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.
+description: Endre farger, form og størrelse i LO-TEK uten at endringene forsvinner ved neste oppgradering.
 ---
 
-import Eksempel from "../../components/Eksempel.astro"
+import Example from "../../components/Example.astro"
 
-Du tilpasser Fristil ved å sette CSS-variabler i din egen CSS. Verdiene som følger med pakken er standardverdier, og dine egne vinner over dem.
+Du tilpasser LO-TEK ved å sette CSS-variabler i din egen CSS. Verdiene som følger med pakken er standardverdier, og dine egne vinner over dem.
 
 Tre veier, i den rekkefølgen du bør prøve dem:
 
@@ -17,43 +17,43 @@ Tre veier, i den rekkefølgen du bør prøve dem:
 
 ## Egne farger
 
-Det er én vei inn: **din egen CSS, lastet etter `tokens.css`.** Alt Fristil sender ut ligger i et cascade layer (`@layer fristil`), og CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du trenger verken `!important` eller lange selektorer.
+Det er én vei inn: **din egen CSS, lastet etter `tokens.css`.** Alt LO-TEK sender ut ligger i et cascade layer (`@layer lotek`), og CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du trenger verken `!important` eller lange selektorer.
 
-Standarden er å la være: Fristils egne farger er kontrollert mot WCAG AA i begge temaer, og du trenger ikke skrive noe. Skal du endre dem, velger du hvor grovt du tar i.
+Standarden er å la være: LO-TEKs egne farger er kontrollert mot WCAG AA i begge temaer, og du trenger ikke skrive noe. Skal du endre dem, velger du hvor grovt du tar i.
 
 | Du vil | Skriv |
 | --- | --- |
-| Endre én farge | Cella, `--fs-color-accent-fill` |
-| Endre en hel familie | De ni rollene, `--fs-color-accent-surface` til `--fs-color-accent-content` |
-| Gi hele systemet organisasjonens farger | Ingenting. [Lag et tema](../eget-tema/), så skrives fila for deg |
+| Endre én farge | Cella, `--lt-color-accent-fill` |
+| Endre en hel familie | De ni rollene, `--lt-color-accent-surface` til `--lt-color-accent-content` |
+| Gi hele systemet organisasjonens farger | Ingenting. [Lag et tema](../your-own-theme/), så skrives fila for deg |
 
-Generatoren er ikke en egen mekanisme. Den setter de samme variablene, for begge temaer. Fila den skriver legger seg i sitt eget lag, `fristil-tema`, erklært etter `fristil`, så din egen CSS uten lag vinner fortsatt over temaet. Bruker du Tailwind, må laget stå i [lagrekkefølgen](#tailwind-og-lagrekkefølgen), ellers havner det etter `utilities` og slår klassene dine.
+Generatoren er ikke en egen mekanisme. Den setter de samme variablene, for begge temaer. Fila den skriver legger seg i sitt eget lag, `lotek-theme`, erklært etter `lotek`, så din egen CSS uten lag vinner fortsatt over temaet. Bruker du Tailwind, må laget stå i [lagrekkefølgen](#tailwind-og-lagrekkefølgen), ellers havner det etter `utilities` og slår klassene dine.
 
-Skriver du celler selv, er kontrastløftene dine å holde. `fristil sjekk-tema tema.css` sier hvilken celle som ryker og hvorfor.
+Skriver du celler selv, er kontrastløftene dine å holde. `lotek sjekk-tema theme.css` sier hvilken celle som ryker og hvorfor.
 
 ### Variablene
 
 ```css
 :root {
-	--fs-color-accent-fill: #7c3aed;
-	--fs-color-accent-content: #ffffff;
+	--lt-color-accent-fill: #7c3aed;
+	--lt-color-accent-content: #ffffff;
 }
 ```
 
 :::caution[Overstyrer du, eier du kontrasten]
-Fargene i Fristil er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger, og paret fargen inngår i må kontrolleres på nytt. `--fs-color-accent-fill` er for eksempel både knappebakgrunn under `--fs-color-accent-content` og rammefarge på en avkryssingsboks som er huket av.
+Fargene i LO-TEK er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger, og paret fargen inngår i må kontrolleres på nytt. `--lt-color-accent-fill` er for eksempel både knappebakgrunn under `--lt-color-accent-content` og rammefarge på en avkryssingsboks som er huket av.
 
-Haken i en avkryssingsboks er et bilde, ikke en farge, og følger ikke `--fs-color-accent-content` av seg selv. Gjør du `--fs-color-accent-fill` lys og `--fs-color-accent-content` mørk, må du også sette `--fs-icon-check` og `--fs-icon-dash` med samme farge, ellers forsvinner haken. Et tema fra temageneratoren trenger det ikke: rollene har faste lysheter, så haken holder kontrasten der.
+Haken i en avkryssingsboks er et bilde, ikke en farge, og følger ikke `--lt-color-accent-content` av seg selv. Gjør du `--lt-color-accent-fill` lys og `--lt-color-accent-content` mørk, må du også sette `--lt-icon-check` og `--lt-icon-dash` med samme farge, ellers forsvinner haken. Et tema fra temageneratoren trenger det ikke: rollene har faste lysheter, så haken holder kontrasten der.
 :::
 
 ## Lyst og mørkt
 
-Uten at du gjør noe, følger fargene maskinens innstilling. Selve siden er din å male: Fristil setter ingen bakgrunn på `<html>` eller `<body>`, siden pakken kan være gjest på en side den ikke eier. Gi `<body>` flaten og teksten, ellers får du lys tekst på en hvit side når maskinen står i mørkt:
+Uten at du gjør noe, følger fargene maskinens innstilling. Selve siden er din å male: LO-TEK setter ingen bakgrunn på `<html>` eller `<body>`, siden pakken kan være gjest på en side den ikke eier. Gi `<body>` flaten og teksten, ellers får du lys tekst på en hvit side når maskinen står i mørkt:
 
 ```css
 body {
-	background: var(--fs-color-neutral-canvas);
-	color: var(--fs-color-neutral-text);
+	background: var(--lt-color-neutral-canvas);
+	color: var(--lt-color-neutral-text);
 }
 ```
 
@@ -69,24 +69,24 @@ En side som vil bestemme temaet selv, setter `data-theme` på `<html>`:
 
 ```html
 <div data-theme="dark">
-	<button class="fs-button">Denne er mørk</button>
+	<button class="lt-button">Denne er mørk</button>
 </div>
 ```
 
 Et tema kan ligge inne i et annet, begge veier. En lys boks i en mørk seksjon er like gyldig som det motsatte.
 
-Elementet med `data-theme="light"` eller `data-theme="dark"` får også temaets flate og tekstfarge, så en mørk seksjon på en lys side ikke står gjennomsiktig med lys tekst på hvitt. Det gjelder ikke `<html>`, som er din, og ikke `fs-toast`. Regelen har spesifisitet null i `@layer fristil`, så en komponent som har `data-theme` på seg selv, som et kort, beholder sin egen bakgrunn, og det samme gjør din egen stil uten lag eller i et lag etter `fristil`. Står stilen din i et lag *foran* `fristil`, som `base` i Tailwind-oppsettet, vinner Fristils flate.
+Elementet med `data-theme="light"` eller `data-theme="dark"` får også temaets flate og tekstfarge, så en mørk seksjon på en lys side ikke står gjennomsiktig med lys tekst på hvitt. Det gjelder ikke `<html>`, som er din, og ikke `lt-toast`. Regelen har spesifisitet null i `@layer lotek`, så en komponent som har `data-theme` på seg selv, som et kort, beholder sin egen bakgrunn, og det samme gjør din egen stil uten lag eller i et lag etter `lotek`. Står stilen din i et lag *foran* `lotek`, som `base` i Tailwind-oppsettet, vinner LO-TEKs flate.
 
-Fokusringen og fargene for avslått tilstand følger også grensen, fordi de deklareres på nytt i hver temablokk. Overstyrer du `--fs-focus-ring`, `--fs-color-disabled-surface` eller `--fs-color-disabled-text`, skriv overstyringen på `[data-theme="light"]` og `[data-theme="dark"]` også, ellers gjelder den bare utenfor temagrensene.
+Fokusringen og fargene for avslått tilstand følger også grensen, fordi de deklareres på nytt i hver temablokk. Overstyrer du `--lt-focus-ring`, `--lt-color-disabled-surface` eller `--lt-color-disabled-text`, skriv overstyringen på `[data-theme="light"]` og `[data-theme="dark"]` også, ellers gjelder den bare utenfor temagrensene.
 
 ### En innebygd komponent låser sitt eget tema
 
-Legger du Fristil inn i en side du ikke eier, er dette måten å gjøre det på. Sett attributtet på komponentens eget rotelement, så er den lys uansett hva maskinen står på, og verten røres ikke:
+Legger du LO-TEK inn i en side du ikke eier, er dette måten å gjøre det på. Sett attributtet på komponentens eget rotelement, så er den lys uansett hva maskinen står på, og verten røres ikke:
 
 ```html
 <div data-theme="light">
-	<table class="fs-table">
-		<caption class="fs-sr-only">Fakturaer</caption>
+	<table class="lt-table">
+		<caption class="lt-sr-only">Fakturaer</caption>
 	</table>
 </div>
 ```
@@ -95,45 +95,45 @@ Du skal ikke sette `data-theme` på vertens `<html>`. Det er et globalt attribut
 
 ### Vertens CSS stopper ved grensen
 
-Verten har ofte regler uten lag, som `button { background: none; border: none }` eller en normalize. Regler uten lag slår `@layer fristil`, så inne i komponenten din mister `.fs-button` bakgrunnen og kanten. Sett `data-fs-boundary` på rotelementet, ved siden av `data-theme`:
+Verten har ofte regler uten lag, som `button { background: none; border: none }` eller en normalize. Regler uten lag slår `@layer lotek`, så inne i komponenten din mister `.lt-button` bakgrunnen og kanten. Sett `data-lt-boundary` på rotelementet, ved siden av `data-theme`:
 
 ```html
-<div data-fs-boundary data-theme="light">
-	<button type="button" class="fs-button">Prøv igjen</button>
+<div data-lt-boundary data-theme="light">
+	<button type="button" class="lt-button">Prøv igjen</button>
 </div>
 ```
 
-Grensen ligger i `fristil.css`, og som egen fil i `@fristil/designsystem/boundary.css` for deg som importerer stilarkene ett og ett. Det er den eneste regelen i pakken som står utenfor laget, og den gjør én ting: under rotelementet ser nettleseren bort fra CSS uten lag, innenfor spesifisiteten under, og Fristils lag gjelder igjen. Der ingen lag sier noe, gjelder nettleserens egne regler.
+Grensen ligger i `lotek.css`, og som egen fil i `@lo-tek/interfaces/boundary.css` for deg som importerer stilarkene ett og ett. Det er den eneste regelen i pakken som står utenfor laget, og den gjør én ting: under rotelementet ser nettleseren bort fra CSS uten lag, innenfor spesifisiteten under, og LO-TEKs lag gjelder igjen. Der ingen lag sier noe, gjelder nettleserens egne regler.
 
 Dette står igjen:
 
-- **Skriften og alt annet som arves.** Arven kommer inn gjennom rotelementet, og grensen rører ikke det. Fristil arver skrift med vilje, så komponenten får vertens skrift.
-- **`--fs-*`-variablene,** både på rotelementet og på `:root`.
+- **Skriften og alt annet som arves.** Arven kommer inn gjennom rotelementet, og grensen rører ikke det. LO-TEK arver skrift med vilje, så komponenten får vertens skrift.
+- **`--lt-*`-variablene,** både på rotelementet og på `:root`.
 - **Regler på selve rotelementet,** også dine egne uten lag.
 
 Dette må du vite:
 
-- **Din egen CSS inne i grensen må ligge i et lag** etter `fristil`, for eksempel `components` eller `utilities` i [lagrekkefølgen](../tailwind/#lagrekkefølgen). CSS uten lag forsvinner der på samme måte som vertens. Tailwind-klassene ligger alt i et lag.
-- **Elementer uten Fristil-klasse mister vertens CSS uten lag.** En vanlig `<p>` mister vertens marger, og et `<button>` uten `fs-button` får nettleserens knapp, med mindre et lag sier noe annet.
+- **Din egen CSS inne i grensen må ligge i et lag** etter `lotek`, for eksempel `components` eller `utilities` i [lagrekkefølgen](../tailwind/#lagrekkefølgen). CSS uten lag forsvinner der på samme måte som vertens. Tailwind-klassene ligger alt i et lag.
+- **Elementer uten LO-TEK-klasse mister vertens CSS uten lag.** En vanlig `<p>` mister vertens marger, og et `<button>` uten `lt-button` får nettleserens knapp, med mindre et lag sier noe annet.
 - **Grensen har spesifisiteten (0,2,0).** Den slår vertens nullstillinger, som `button:not(:disabled)`, `a:hover` og `input[type="text"]`. En regel fra verten med samme spesifisitet vinner hvis den lastes etter grensen, og en med mer, som `.app .innhold a`, vinner alltid. Det samme gjør `!important`.
-- **Vertens lag stoppes ikke.** Grensen tar bare CSS uten lag. Et lag verten har erklært etter `fristil` vinner over Fristil. Et lag erklært før, som Tailwinds Preflight i `base`, gjelder der Fristil ikke setter noe.
+- **Vertens lag stoppes ikke.** Grensen tar bare CSS uten lag. Et lag verten har erklært etter `lotek` vinner over LO-TEK. Et lag erklært før, som Tailwinds Preflight i `base`, gjelder der LO-TEK ikke setter noe.
 
 ### Brukeren kan få velge
 
-`fs-theme-control` på en radioknapp gjør `value` til et temavalg, i ren CSS:
+`lt-theme-control` på en radioknapp gjør `value` til et temavalg, i ren CSS:
 
 ```html
-<label class="fs-toggle-group__option">
-  <input class="fs-theme-control" type="radio" name="tema"
+<label class="lt-toggle-group__option">
+  <input class="lt-theme-control" type="radio" name="tema"
          value="dark" /> Mørkt
 </label>
 ```
 
-Tre verdier betyr noe: `auto`, `light` og `dark`. `light` og `dark` vinner over `data-theme` på `<html>`, så serveren kan sende det lagrede valget mens et klikk slår igjennom med én gang. `auto` har ingen temablokk, så der står serverens `data-theme` igjen. Kontrollen lagrer ingenting selv. Se [La brukeren velge tema](../monster/tema/) for hele mønsteret.
+Tre verdier betyr noe: `auto`, `light` og `dark`. `light` og `dark` vinner over `data-theme` på `<html>`, så serveren kan sende det lagrede valget mens et klikk slår igjennom med én gang. `auto` har ingen temablokk, så der står serverens `data-theme` igjen. Kontrollen lagrer ingenting selv. Se [La brukeren velge tema](../patterns/theme/) for hele mønsteret.
 
 ### Fargeskjemaet er ditt å velge
 
-`color-scheme` avgjør hvordan nettleseren tegner sine egne flater: rullefelt, nedtrekkslista til en `<select>` og kalenderpanelet i et datofelt. Fristil setter den der noen har valgt et tema: på `[data-theme="light"]`, på `[data-theme="dark"]` og på de tre valgene til [temavelgeren](#brukeren-kan-få-velge). **Bar `:root` får den aldri.**
+`color-scheme` avgjør hvordan nettleseren tegner sine egne flater: rullefelt, nedtrekkslista til en `<select>` og kalenderpanelet i et datofelt. LO-TEK setter den der noen har valgt et tema: på `[data-theme="light"]`, på `[data-theme="dark"]` og på de tre valgene til [temavelgeren](#brukeren-kan-få-velge). **Bar `:root` får den aldri.**
 
 Grunnen er at egenskapen arves nedover, så en verdi på roten gjelder hele dokumentet, også en vertsside som aldri ba om det. Et barn kan melde seg ut med `color-scheme: normal`, men det er en motregel verten ikke skal måtte skrive. Vil du at nettleserens flater skal følge systemet på hele siden, skriver du én linje selv:
 
@@ -145,7 +145,7 @@ Grunnen er at egenskapen arves nedover, så en verdi på roten gjelder hele doku
 
 Det er den samme avtalen som for [lagrekkefølgen](#tailwind-og-lagrekkefølgen): én linje hver, og begge er dine.
 
-**Bruker du [temavelgeren](#brukeren-kan-få-velge), skal du ikke skrive den linja.** Hvert av de tre valgene setter `color-scheme` selv: `light` gir `light`, `dark` gir `dark`, og «Følg systemet» gir `light dark`, altså beskjeden om at siden fungerer i begge og at nettleseren kan velge etter systemet. Skriver du den likevel, utenfor et lag, slår regelen `@layer fristil`, og nettleserens flater blir låst til systemet mens brukeren har valgt noe annet. Å legge den i et lag foran `fristil` hjelper ikke: rekkefølgen er alt etablert av `tokens.css`, som lastes først, så en senere `@layer`-setning legger laget bak.
+**Bruker du [temavelgeren](#brukeren-kan-få-velge), skal du ikke skrive den linja.** Hvert av de tre valgene setter `color-scheme` selv: `light` gir `light`, `dark` gir `dark`, og «Følg systemet» gir `light dark`, altså beskjeden om at siden fungerer i begge og at nettleseren kan velge etter systemet. Skriver du den likevel, utenfor et lag, slår regelen `@layer lotek`, og nettleserens flater blir låst til systemet mens brukeren har valgt noe annet. Å legge den i et lag foran `lotek` hjelper ikke: rekkefølgen er alt etablert av `tokens.css`, som lastes først, så en senere `@layer`-setning legger laget bak.
 
 ### Per tema
 
@@ -153,41 +153,41 @@ Overstyringen under «Egne farger» gjelder begge temaer. Vil du ha ulike verdie
 
 ```css
 :root {
-	--fs-color-accent-fill: #7c3aed;
+	--lt-color-accent-fill: #7c3aed;
 }
 
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
-		--fs-color-accent-fill: #c4b5fd;
+		--lt-color-accent-fill: #c4b5fd;
 	}
 }
 
 [data-theme="light"] {
-	--fs-color-accent-fill: #7c3aed;
+	--lt-color-accent-fill: #7c3aed;
 }
 
 [data-theme="dark"] {
-	--fs-color-accent-fill: #c4b5fd;
+	--lt-color-accent-fill: #c4b5fd;
 }
 ```
 
-Bruker du [temavelgeren](#brukeren-kan-få-velge), må de to siste blokkene ha dens selektor ved siden av, slik Fristils egne har:
+Bruker du [temavelgeren](#brukeren-kan-få-velge), må de to siste blokkene ha dens selektor ved siden av, slik LO-TEKs egne har:
 
 ```css
 [data-theme="light"],
-:root:has(.fs-theme-control[value="light"]:checked) {
-	--fs-color-accent-fill: #7c3aed;
+:root:has(.lt-theme-control[value="light"]:checked) {
+	--lt-color-accent-fill: #7c3aed;
 }
 
 [data-theme="dark"],
-:root:has(.fs-theme-control[value="dark"]:checked) {
-	--fs-color-accent-fill: #c4b5fd;
+:root:has(.lt-theme-control[value="dark"]:checked) {
+	--lt-color-accent-fill: #c4b5fd;
 }
 ```
 
-Velgeren setter ikke `data-theme`, for CSS kan ikke skrive et attributt. Uten selektoren traff ingen av blokkene dine når brukeren valgte et tema, og Fristils egen farge sto igjen.
+Velgeren setter ikke `data-theme`, for CSS kan ikke skrive et attributt. Uten selektoren traff ingen av blokkene dine når brukeren valgte et tema, og LO-TEKs egen farge sto igjen.
 
-Alle fire blokkene må være med. De to `data-theme`-blokkene deklarerer hver sin verdi rett på elementet som bærer attributtet, og en deklarasjon på elementet selv vinner over en verdi det arver, uansett hvilket lag arven kom fra. Utelater du `[data-theme="light"]`, står Fristils egen farge inne i en lys temagrense mens din gjelder ellers på siden.
+Alle fire blokkene må være med. De to `data-theme`-blokkene deklarerer hver sin verdi rett på elementet som bærer attributtet, og en deklarasjon på elementet selv vinner over en verdi det arver, uansett hvilket lag arven kom fra. Utelater du `[data-theme="light"]`, står LO-TEKs egen farge inne i en lys temagrense mens din gjelder ellers på siden.
 
 ## Form og størrelse
 
@@ -195,8 +195,8 @@ Farger er ikke det eneste du kan endre. Hver komponent har egne variabler for fo
 
 ```css
 :root {
-	--fs-button-radius: 9999px;
-	--fs-input-radius: 0;
+	--lt-button-radius: 9999px;
+	--lt-input-radius: 0;
 }
 ```
 
@@ -206,23 +206,23 @@ Variablene arves, som alle CSS-variabler. Stedet du skriver deklarasjonen er der
 
 På `:root` gjelder den hele appen, som i eksempelet over. Skriver du den på din egen klasse i stedet, gjelder den det elementet og alt som ligger inni:
 
-<Eksempel stiler={["card", "button", "heading", "paragraph"]} layout="rad" egenCss={`
+<Example stiler={["card", "button", "heading", "paragraph"]} layout="rad" egenCss={`
 .tett-panel {
-	--fs-card-padding: var(--fs-spacing-2);
-	--fs-card-radius: 0;
-	--fs-button-padding: var(--fs-spacing-1) var(--fs-spacing-3);
+	--lt-card-padding: var(--lt-spacing-2);
+	--lt-card-radius: 0;
+	--lt-button-padding: var(--lt-spacing-1) var(--lt-spacing-3);
 }
 `} kode={`
-<div class="fs-card">
-  <h3 class="fs-heading" data-size="s">Standard</h3>
-  <p class="fs-paragraph">Verdiene som følger med pakken.</p>
-  <button class="fs-button">Åpne saken</button>
+<div class="lt-card">
+  <h3 class="lt-heading" data-size="s">Standard</h3>
+  <p class="lt-paragraph">Verdiene som følger med pakken.</p>
+  <button class="lt-button">Åpne saken</button>
 </div>
 
-<div class="fs-card tett-panel">
-  <h3 class="fs-heading" data-size="s">Tett panel</h3>
-  <p class="fs-paragraph">Samme markup, én klasse mer.</p>
-  <button class="fs-button">Åpne saken</button>
+<div class="lt-card tett-panel">
+  <h3 class="lt-heading" data-size="s">Tett panel</h3>
+  <p class="lt-paragraph">Samme markup, én klasse mer.</p>
+  <button class="lt-button">Åpne saken</button>
 </div>
 `} />
 
@@ -240,125 +240,125 @@ Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-button-padding` | `var(--fs-spacing-2) var(--fs-spacing-4)` |
-| `--fs-button-radius` | `var(--fs-spacing-1)` |
-| `--fs-button-border-width` | `1px` |
-| `--fs-button-font-weight` | `var(--fs-font-weight-medium)` |
-| `--fs-button-line-height` | `var(--fs-line-height-default)` |
-| `--fs-heading-font-weight` | `var(--fs-font-weight-bold)` |
-| `--fs-heading-line-height` | `var(--fs-line-height-heading)` |
-| `--fs-paragraph-line-height` | `var(--fs-line-height-article)` |
-| `--fs-badge-padding` | `var(--fs-spacing-0-5) var(--fs-spacing-2)` |
-| `--fs-badge-radius` | `var(--fs-spacing-4)` |
-| `--fs-alert-padding` | `var(--fs-spacing-3) var(--fs-spacing-4)` |
-| `--fs-alert-radius` | `var(--fs-spacing-1)` |
-| `--fs-alert-accent` | `var(--fs-spacing-1)` |
-| `--fs-card-padding` | `var(--fs-spacing-4)` |
-| `--fs-card-radius` | `var(--fs-spacing-2)` |
-| `--fs-divider-space` | `var(--fs-spacing-4)` |
-| `--fs-spinner-size` | `var(--fs-spacing-6)` |
-| `--fs-spinner-thickness` | `2px` |
-| `--fs-table-cell-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
-| `--fs-list-gap` | `var(--fs-spacing-1)`, men `var(--fs-spacing-2)` i `divided` |
-| `--fs-tag-padding` | `var(--fs-spacing-0-5) var(--fs-spacing-2)` |
-| `--fs-tag-radius` | `var(--fs-spacing-1)` |
-| `--fs-avatar-size` | `var(--fs-spacing-10)` |
-| `--fs-avatar-radius` | `var(--fs-spacing-1)` |
-| `--fs-skeleton-height` | `var(--fs-spacing-4)`, men `var(--fs-spacing-10)` i `circle` |
-| `--fs-skeleton-radius` | `var(--fs-spacing-1)`, men `var(--fs-spacing-0-5)` i `text` |
-| `--fs-breadcrumbs-gap` | `var(--fs-spacing-2)` |
-| `--fs-pagination-gap` | `var(--fs-spacing-1)` |
-| `--fs-pagination-size` | `var(--fs-spacing-10)` |
-| `--fs-pagination-radius` | `var(--fs-spacing-1)` |
-| `--fs-progress-fill` | `var(--fs-color-accent-fill)`, og `data-color` endrer den |
-| `--fs-progress-track` | `var(--fs-color-neutral-surface)` |
-| `--fs-progress-border` | `var(--fs-color-neutral-border)`, kanten rundt sporet. Sett den til `transparent` for å fjerne den |
-| `--fs-progress-height` | `var(--fs-spacing-2)` |
-| `--fs-progress-radius` | `var(--fs-spacing-1)` |
-| `--fs-skip-link-padding` | `var(--fs-spacing-2) var(--fs-spacing-4)` |
-| `--fs-skip-link-radius` | `var(--fs-spacing-1)` |
-| `--fs-accordion-radius` | `var(--fs-spacing-1)` |
-| `--fs-accordion-padding` | `var(--fs-spacing-3) var(--fs-accordion-padding-inline)`, luften i overskriften |
-| `--fs-accordion-padding-inline` | `var(--fs-spacing-4)`, luften til sidene, i overskriften og innholdet |
-| `--fs-dialog-width` | `min(32rem, 100%, calc(100vw - var(--fs-spacing-8)))` |
-| `--fs-dialog-padding` | `var(--fs-spacing-5)` |
-| `--fs-dialog-layer` | `40` |
-| `--fs-dialog-radius` | `var(--fs-spacing-2)` |
-| `--fs-tooltip-width` | `16rem` |
-| `--fs-tooltip-padding` | `var(--fs-spacing-1) var(--fs-spacing-2)` |
-| `--fs-tooltip-radius` | `var(--fs-spacing-1)` |
-| `--fs-paragraph-width` | `70ch` |
-| `--fs-paragraph-gap` | `var(--fs-spacing-3)` |
-| `--fs-tabs-gap` | `var(--fs-spacing-1)` |
-| `--fs-tabs-padding` | `var(--fs-spacing-2) var(--fs-spacing-4)` |
-| `--fs-tabs-panel-space` | `var(--fs-spacing-4)` |
-| `--fs-error-summary-padding` | `var(--fs-spacing-4)` |
-| `--fs-error-summary-radius` | `var(--fs-spacing-1)` |
-| `--fs-file-upload-padding` | `var(--fs-spacing-2)` |
-| `--fs-file-upload-radius` | `var(--fs-spacing-1)` |
-| `--fs-avatar-stack-overlap` | `calc(var(--fs-spacing-2) * -1)` |
-| `--fs-popover-width` | `min(20rem, calc(100vw - var(--fs-spacing-8)))` |
-| `--fs-popover-padding` | `var(--fs-spacing-3)` |
-| `--fs-popover-radius` | `var(--fs-spacing-1)` |
-| `--fs-popover-top` | settes av komponenten |
-| `--fs-popover-left` | settes av komponenten |
-| `--fs-toast-space` | `var(--fs-spacing-4)` |
-| `--fs-toast-width` | `min(24rem, calc(100vw - var(--fs-spacing-8)))` |
-| `--fs-toast-padding` | `var(--fs-spacing-3) var(--fs-spacing-4)` |
-| `--fs-toast-radius` | `var(--fs-spacing-1)` |
-| `--fs-toast-layer` | `60` |
-| `--fs-suggestion-max-height` | `calc(var(--fs-spacing-10) * 4)` |
-| `--fs-suggestion-radius` | `var(--fs-spacing-1)` |
-| `--fs-suggestion-top` | settes av komponenten |
-| `--fs-suggestion-left` | settes av komponenten |
-| `--fs-suggestion-width` | settes av komponenten |
-| `--fs-suggestion-option-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
-| `--fs-input-width` | `100%` |
-| `--fs-input-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
-| `--fs-input-radius` | `var(--fs-spacing-1)` |
-| `--fs-textarea-min-height` | `calc(var(--fs-spacing-4) * 5)` |
-| `--fs-textarea-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
-| `--fs-textarea-radius` | `var(--fs-spacing-1)` |
-| `--fs-select-width` | `100%` |
-| `--fs-select-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
-| `--fs-select-radius` | `var(--fs-spacing-1)` |
-| `--fs-select-option-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` |
-| `--fs-select-viewport-margin` | `var(--fs-spacing-2)` |
-| `--fs-checkbox-size` | `var(--fs-spacing-5)` |
-| `--fs-checkbox-radius` | `var(--fs-spacing-1)` |
-| `--fs-radio-size` | `var(--fs-spacing-5)` |
-| `--fs-switch-width` | `var(--fs-spacing-10)` |
-| `--fs-switch-height` | `var(--fs-spacing-6)` |
-| `--fs-fieldset-gap` | `var(--fs-spacing-2)` |
-| `--fs-label-required-symbol` | `" *"` |
-| `--fs-label-required-text` | `" (påkrevd)"` |
-| `--fs-label-optional-text` | `" (valgfri)"` |
-| `--fs-search-icon-space` | `var(--fs-spacing-10)` |
-| `--fs-search-icon-size` | `var(--fs-spacing-5)` |
-| `--fs-toggle-group-radius` | `var(--fs-spacing-1)` |
-| `--fs-toggle-group-height` | `var(--fs-spacing-10)` |
-| `--fs-toggle-group-padding` | `0 var(--fs-spacing-4)` |
-| `--fs-session-timeout-width` | `26rem` |
-| `--fs-session-timeout-padding` | `var(--fs-spacing-5)` |
-| `--fs-session-timeout-radius` | `var(--fs-spacing-1)` |
-| `--fs-connection-status-layer` | `1000` |
-| `--fs-connection-status-padding` | `var(--fs-spacing-2) var(--fs-spacing-4)` |
+| `--lt-button-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
+| `--lt-button-radius` | `var(--lt-spacing-1)` |
+| `--lt-button-border-width` | `1px` |
+| `--lt-button-font-weight` | `var(--lt-font-weight-medium)` |
+| `--lt-button-line-height` | `var(--lt-line-height-default)` |
+| `--lt-heading-font-weight` | `var(--lt-font-weight-bold)` |
+| `--lt-heading-line-height` | `var(--lt-line-height-heading)` |
+| `--lt-paragraph-line-height` | `var(--lt-line-height-article)` |
+| `--lt-badge-padding` | `var(--lt-spacing-0-5) var(--lt-spacing-2)` |
+| `--lt-badge-radius` | `var(--lt-spacing-4)` |
+| `--lt-alert-padding` | `var(--lt-spacing-3) var(--lt-spacing-4)` |
+| `--lt-alert-radius` | `var(--lt-spacing-1)` |
+| `--lt-alert-accent` | `var(--lt-spacing-1)` |
+| `--lt-card-padding` | `var(--lt-spacing-4)` |
+| `--lt-card-radius` | `var(--lt-spacing-2)` |
+| `--lt-divider-space` | `var(--lt-spacing-4)` |
+| `--lt-spinner-size` | `var(--lt-spacing-6)` |
+| `--lt-spinner-thickness` | `2px` |
+| `--lt-table-cell-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
+| `--lt-list-gap` | `var(--lt-spacing-1)`, men `var(--lt-spacing-2)` i `divided` |
+| `--lt-tag-padding` | `var(--lt-spacing-0-5) var(--lt-spacing-2)` |
+| `--lt-tag-radius` | `var(--lt-spacing-1)` |
+| `--lt-avatar-size` | `var(--lt-spacing-10)` |
+| `--lt-avatar-radius` | `var(--lt-spacing-1)` |
+| `--lt-skeleton-height` | `var(--lt-spacing-4)`, men `var(--lt-spacing-10)` i `circle` |
+| `--lt-skeleton-radius` | `var(--lt-spacing-1)`, men `var(--lt-spacing-0-5)` i `text` |
+| `--lt-breadcrumbs-gap` | `var(--lt-spacing-2)` |
+| `--lt-pagination-gap` | `var(--lt-spacing-1)` |
+| `--lt-pagination-size` | `var(--lt-spacing-10)` |
+| `--lt-pagination-radius` | `var(--lt-spacing-1)` |
+| `--lt-progress-fill` | `var(--lt-color-accent-fill)`, og `data-color` endrer den |
+| `--lt-progress-track` | `var(--lt-color-neutral-surface)` |
+| `--lt-progress-border` | `var(--lt-color-neutral-border)`, kanten rundt sporet. Sett den til `transparent` for å fjerne den |
+| `--lt-progress-height` | `var(--lt-spacing-2)` |
+| `--lt-progress-radius` | `var(--lt-spacing-1)` |
+| `--lt-skip-link-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
+| `--lt-skip-link-radius` | `var(--lt-spacing-1)` |
+| `--lt-accordion-radius` | `var(--lt-spacing-1)` |
+| `--lt-accordion-padding` | `var(--lt-spacing-3) var(--lt-accordion-padding-inline)`, luften i overskriften |
+| `--lt-accordion-padding-inline` | `var(--lt-spacing-4)`, luften til sidene, i overskriften og innholdet |
+| `--lt-dialog-width` | `min(32rem, 100%, calc(100vw - var(--lt-spacing-8)))` |
+| `--lt-dialog-padding` | `var(--lt-spacing-5)` |
+| `--lt-dialog-layer` | `40` |
+| `--lt-dialog-radius` | `var(--lt-spacing-2)` |
+| `--lt-tooltip-width` | `16rem` |
+| `--lt-tooltip-padding` | `var(--lt-spacing-1) var(--lt-spacing-2)` |
+| `--lt-tooltip-radius` | `var(--lt-spacing-1)` |
+| `--lt-paragraph-width` | `70ch` |
+| `--lt-paragraph-gap` | `var(--lt-spacing-3)` |
+| `--lt-tabs-gap` | `var(--lt-spacing-1)` |
+| `--lt-tabs-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
+| `--lt-tabs-panel-space` | `var(--lt-spacing-4)` |
+| `--lt-error-summary-padding` | `var(--lt-spacing-4)` |
+| `--lt-error-summary-radius` | `var(--lt-spacing-1)` |
+| `--lt-file-upload-padding` | `var(--lt-spacing-2)` |
+| `--lt-file-upload-radius` | `var(--lt-spacing-1)` |
+| `--lt-avatar-stack-overlap` | `calc(var(--lt-spacing-2) * -1)` |
+| `--lt-popover-width` | `min(20rem, calc(100vw - var(--lt-spacing-8)))` |
+| `--lt-popover-padding` | `var(--lt-spacing-3)` |
+| `--lt-popover-radius` | `var(--lt-spacing-1)` |
+| `--lt-popover-top` | settes av komponenten |
+| `--lt-popover-left` | settes av komponenten |
+| `--lt-toast-space` | `var(--lt-spacing-4)` |
+| `--lt-toast-width` | `min(24rem, calc(100vw - var(--lt-spacing-8)))` |
+| `--lt-toast-padding` | `var(--lt-spacing-3) var(--lt-spacing-4)` |
+| `--lt-toast-radius` | `var(--lt-spacing-1)` |
+| `--lt-toast-layer` | `60` |
+| `--lt-suggestion-max-height` | `calc(var(--lt-spacing-10) * 4)` |
+| `--lt-suggestion-radius` | `var(--lt-spacing-1)` |
+| `--lt-suggestion-top` | settes av komponenten |
+| `--lt-suggestion-left` | settes av komponenten |
+| `--lt-suggestion-width` | settes av komponenten |
+| `--lt-suggestion-option-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
+| `--lt-input-width` | `100%` |
+| `--lt-input-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
+| `--lt-input-radius` | `var(--lt-spacing-1)` |
+| `--lt-textarea-min-height` | `calc(var(--lt-spacing-4) * 5)` |
+| `--lt-textarea-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
+| `--lt-textarea-radius` | `var(--lt-spacing-1)` |
+| `--lt-select-width` | `100%` |
+| `--lt-select-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
+| `--lt-select-radius` | `var(--lt-spacing-1)` |
+| `--lt-select-option-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
+| `--lt-select-viewport-margin` | `var(--lt-spacing-2)` |
+| `--lt-checkbox-size` | `var(--lt-spacing-5)` |
+| `--lt-checkbox-radius` | `var(--lt-spacing-1)` |
+| `--lt-radio-size` | `var(--lt-spacing-5)` |
+| `--lt-switch-width` | `var(--lt-spacing-10)` |
+| `--lt-switch-height` | `var(--lt-spacing-6)` |
+| `--lt-fieldset-gap` | `var(--lt-spacing-2)` |
+| `--lt-label-required-symbol` | `" *"` |
+| `--lt-label-required-text` | `" (påkrevd)"` |
+| `--lt-label-optional-text` | `" (valgfri)"` |
+| `--lt-search-icon-space` | `var(--lt-spacing-10)` |
+| `--lt-search-icon-size` | `var(--lt-spacing-5)` |
+| `--lt-toggle-group-radius` | `var(--lt-spacing-1)` |
+| `--lt-toggle-group-height` | `var(--lt-spacing-10)` |
+| `--lt-toggle-group-padding` | `0 var(--lt-spacing-4)` |
+| `--lt-session-timeout-width` | `26rem` |
+| `--lt-session-timeout-padding` | `var(--lt-spacing-5)` |
+| `--lt-session-timeout-radius` | `var(--lt-spacing-1)` |
+| `--lt-connection-status-layer` | `1000` |
+| `--lt-connection-status-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
 
-Standardverdiene peker på `--fs-spacing-*`-skalaen. Skriver du om skalaen, trinn for trinn, følger komponentene med. Setter du variabelen, gjelder din verdi bare for den komponenten.
+Standardverdiene peker på `--lt-spacing-*`-skalaen. Skriver du om skalaen, trinn for trinn, følger komponentene med. Setter du variabelen, gjelder din verdi bare for den komponenten.
 
 ## Når variabelen ikke rekker
 
-Tokens og komponent-CSS ligger i `@layer fristil`. CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du kan derfor overstyre hva som helst med en enkel selektor:
+Tokens og komponent-CSS ligger i `@layer lotek`. CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du kan derfor overstyre hva som helst med en enkel selektor:
 
 ```css
-.fs-button {
+.lt-button {
 	letter-spacing: 0.02em;
 }
 ```
 
-Uten layeret ville du måttet slå selektorer som `.fs-button[data-variant="danger"]:hover`, eller ty til `!important`.
+Uten layeret ville du måttet slå selektorer som `.lt-button[data-variant="danger"]:hover`, eller ty til `!important`.
 
-Under `data-fs-boundary` må regelen ligge i et lag, se [Vertens CSS stopper ved grensen](#vertens-css-stopper-ved-grensen).
+Under `data-lt-boundary` må regelen ligge i et lag, se [Vertens CSS stopper ved grensen](#vertens-css-stopper-ved-grensen).
 
 :::caution[`!important` snur rekkefølgen]
 For erklæringer med `!important` går kaskaden motsatt vei: da vinner CSS *inne i* et layer over CSS utenfor. Skriver du `!important` for å være sikker, oppnår du det motsatte. Du trenger det ikke, så la det være.
@@ -366,44 +366,44 @@ For erklæringer med `!important` går kaskaden motsatt vei: da vinner CSS *inne
 
 ### `display` på dialogen
 
-Ett unntak finnes, og det kommer av nettleseren og ikke av oss. En `<dialog>` uten `open` skjules av nettleserens eget stilark, og lagene sorterer bare innenfor ett opphav, så en hvilken som helst forfatterregel med `display` slår den skjulingen. Setter du `display` på `.fs-dialog`, blir en lukket dialog stående som et kort på siden. Ta da med regelen selv, minst like spesifikk som din egen:
+Ett unntak finnes, og det kommer av nettleseren og ikke av oss. En `<dialog>` uten `open` skjules av nettleserens eget stilark, og lagene sorterer bare innenfor ett opphav, så en hvilken som helst forfatterregel med `display` slår den skjulingen. Setter du `display` på `.lt-dialog`, blir en lukket dialog stående som et kort på siden. Ta da med regelen selv, minst like spesifikk som din egen:
 
 ```css
-dialog.fs-dialog:not([open]):not(:is(:popover-open)) {
+dialog.lt-dialog:not([open]):not(:is(:popover-open)) {
   display: none;
 }
 ```
 
-Fristil setter selv `display: flex` når `.fs-dialog__body` er et direkte barn, slik at kroppen kan rulle, og har den regelen ved siden av.
+LO-TEK setter selv `display: flex` når `.lt-dialog__body` er et direkte barn, slik at kroppen kan rulle, og har den regelen ved siden av.
 
 ### Tailwind og lagrekkefølgen
 
 Bruker du Tailwind, må laget vårt plasseres. Lagene teller i den rekkefølgen de først blir nevnt, og det siste vinner uansett spesifisitet. Sett rekkefølgen på første linje i CSS-en din:
 
 ```css
-@layer theme, base, fristil, fristil-tema, components, utilities;
+@layer theme, base, lotek, lotek-theme, components, utilities;
 
 @import "tailwindcss";
-@import "@fristil/designsystem/tokens.css";
-@import "@fristil/designsystem/tailwind.css";
+@import "@lo-tek/interfaces/tokens.css";
+@import "@lo-tek/interfaces/tailwind.css";
 ```
 
 Uten den linja får du ett av problemene i tabellen. De to første avhenger av hvilken import som kommer først, det tredje kommer den dagen du legger til et generert tema:
 
 | Rekkefølge | Hva som skjer |
 | --- | --- |
-| `fristil` før `base` | Tailwinds Preflight nullstiller komponentene. Bakgrunnen forsvinner fra knappen. |
-| `fristil` etter `utilities` | Komponentene slår Tailwind-klassene dine. `p-6` på en `.fs-button` gjør ingenting. |
-| `fristil-tema` etter `utilities` | Et [generert tema](../eget-tema/) slår Tailwind-klassene dine. Laget må stå i linja selv om du ikke har noe tema ennå. |
-| `base`, `fristil`, `fristil-tema`, `utilities` | Alt virker |
+| `lotek` før `base` | Tailwinds Preflight nullstiller komponentene. Bakgrunnen forsvinner fra knappen. |
+| `lotek` etter `utilities` | Komponentene slår Tailwind-klassene dine. `p-6` på en `.lt-button` gjør ingenting. |
+| `lotek-theme` etter `utilities` | Et [generert tema](../your-own-theme/) slår Tailwind-klassene dine. Laget må stå i linja selv om du ikke har noe tema ennå. |
+| `base`, `lotek`, `lotek-theme`, `utilities` | Alt virker |
 
-Feiltilfellene er testet, ikke antatt: `tilpasning.browser.test.ts` bygger hvert av dem i sitt eget dokument og kontrollerer hva knappen og rotelementet faktisk får.
+Feiltilfellene er testet, ikke antatt: `customising.browser.test.ts` bygger hvert av dem i sitt eget dokument og kontrollerer hva knappen og rotelementet faktisk får.
 
-Fristils eget tema for Tailwind ligger i `@fristil/designsystem/tailwind.css`. Det er en vanlig CSS-fil, så pakken har ingen avhengighet til Tailwind, og din versjon er den eneste som er i bruk. Se [Design tokens](../design-tokens/#tailwind).
+LO-TEKs eget tema for Tailwind ligger i `@lo-tek/interfaces/tailwind.css`. Det er en vanlig CSS-fil, så pakken har ingen avhengighet til Tailwind, og din versjon er den eneste som er i bruk. Se [Design tokens](../design-tokens/#tailwind).
 
 ### Ingen shadow DOM
 
-Ingen komponent i Fristil bruker shadow DOM lenger. `<fs-calendar>` var den eneste, og den er fjernet til fordel for nettleserens eget datopanel. Se [Dato i et skjema](../monster/dato/).
+Ingen komponent i LO-TEK bruker shadow DOM lenger. `<lt-calendar>` var den eneste, og den er fjernet til fordel for nettleserens eget datopanel. Se [Dato i et skjema](../patterns/date/).
 
 Det betyr at CSS-en din når fram overalt. Du trenger verken `::part()` eller å lete etter en vei inn i en skyggerot.
 
@@ -412,7 +412,7 @@ Det betyr at CSS-en din når fram overalt. Du trenger verken `::part()` eller å
 Variabler og laget dekker utseendet. De dekker ikke at komponenten skal gjøre noe annet enn den gjør. Da kan du overta kildekoden til den ene komponenten:
 
 ```bash
-npx @fristil/designsystem overta button --ut=src/ui
+npx @lo-tek/interfaces overta button --ut=src/ui
 ```
 
 Kommandoen kopierer komponentens filer inn i prosjektet ditt, gir kopien et eget navn, og skriver om henvisningene ut av mappa, slik at kopien virker der den havner:
@@ -421,31 +421,31 @@ Kommandoen kopierer komponentens filer inn i prosjektet ditt, gir kopien et eget
 Kopierte button til src/ui/button/
   button.css
   button.ts
-  fristil-manifest.json
+  lotek-manifest.json
 
-Komponenten er nå din. Oppdateringer av @fristil/designsystem rører den ikke.
+Komponenten er nå din. Oppdateringer av @lo-tek/interfaces rører den ikke.
 
 Kopien heter app-button, og kan stå ved siden av originalen.
 Bytt til det nye navnet i markupen der kopien skal brukes. Variablene
-fra temaet (--fs-*) er de samme.
+fra temaet (--lt-*) er de samme.
 
 Henvisninger ut av mappa peker nå på pakken:
-  ../shared.js → @fristil/designsystem/shared
+  ../shared.js → @lo-tek/interfaces/shared
 
 Disse importene laster originalen, og kan fjernes når ingen bruker den:
-  @fristil/designsystem/button
-  @fristil/designsystem/button.css
+  @lo-tek/interfaces/button
+  @lo-tek/interfaces/button.css
 
 Sjekk markupen for kopien med:
-  fristil sjekk --manifest=src/ui/button/fristil-manifest.json <filer…>
+  lotek sjekk --manifest=src/ui/button/lotek-manifest.json <filer…>
 ```
 
 Kopien heter `app-button` i klassene, taggene og selektorene, så den og originalen kan brukes side om side uten at rekkefølgen på stilarkene avgjør hvilken som vinner. Variablene fra temaet beholder navnet, så kopien følger temaet ditt.
 
-`fristil-manifest.json` er klassene, elementene og de lovlige verdiene til kopien, under det nye navnet. Gir du det til `sjekk` med `--manifest`, sjekkes markupen for kopien like strengt som for resten av Fristil. Legger du til en variant i kopien, skriver du den inn i fragmentet også. Se [overta](../kommandolinjen/#overta).
+`lotek-manifest.json` er klassene, elementene og de lovlige verdiene til kopien, under det nye navnet. Gir du det til `sjekk` med `--manifest`, sjekkes markupen for kopien like strengt som for resten av LO-TEK. Legger du til en variant i kopien, skriver du den inn i fragmentet også. Se [overta](../command-line/#overta).
 
 Det du gir fra deg er oppdateringene. Rettelser og forbedringer i pakken treffer ikke kopien, og det er du som eier den derfra. Bruk kommandoen på den ene komponenten som trenger det, ikke på alle.
 
 Tilgjengeligheten blir din. Testene våre kjører mot pakken, ikke mot kopien din, så en tilgjengelighetserklæring som viser til designsystemet dekker ikke en komponent du har overtatt og endret.
 
-`npx @fristil/designsystem overta` uten navn lister komponentene. Kopien skrives ikke over hvis mappa finnes fra før, med mindre du legger til `--overskriv=ja`.
+`npx @lo-tek/interfaces overta` uten navn lister komponentene. Kopien skrives ikke over hvis mappa finnes fra før, med mindre du legger til `--overskriv=ja`.

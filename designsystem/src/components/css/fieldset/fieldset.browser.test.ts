@@ -13,13 +13,13 @@ import "../../../tokens/tokens.css"
 import "./fieldset.css"
 import "../radio/radio.css"
 
-describe("fs-fieldset", () => {
+describe("lt-fieldset", () => {
   beforeEach(() => {
     monter(`
-      <fieldset class="fs-fieldset" id="gruppe">
-        <legend class="fs-legend" id="tittel" data-required="symbol">Leveringsmåte</legend>
-        <div class="fs-radio-row">
-          <input class="fs-radio" type="radio" id="post" name="levering" />
+      <fieldset class="lt-fieldset" id="gruppe">
+        <legend class="lt-legend" id="tittel" data-required="symbol">Leveringsmåte</legend>
+        <div class="lt-radio-row">
+          <input class="lt-radio" type="radio" id="post" name="levering" />
           <label for="post">Vanlig post</label>
         </div>
       </fieldset>
@@ -55,13 +55,13 @@ describe("fs-fieldset", () => {
   })
 
   it("setter attributtene fra byggefunksjonene", () => {
-    expect(fieldset()).toEqual({ class: "fs-fieldset" })
+    expect(fieldset()).toEqual({ class: "lt-fieldset" })
     expect(fieldset({ state: "invalid" })).toEqual({
-      class: "fs-fieldset",
+      class: "lt-fieldset",
       "data-state": "invalid",
     })
     expect(legend({ required: "text" })).toEqual({
-      class: "fs-legend",
+      class: "lt-legend",
       "data-required": "text",
     })
   })

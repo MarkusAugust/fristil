@@ -14,7 +14,7 @@ name: Publiser
 # organisasjon, og hver kjøring dit teller, uansett hvor lite som er
 # endret. npm har ikke noe slikt tak, og er hovedkanalen. Maven-versjonen
 # kan derfor hoppe over npm-versjoner: hver Maven-versjon bygges av
-# npm-pakken med samme nummer, så 0.34.3 på Central er den samme Fristil
+# npm-pakken med samme nummer, så 0.34.3 på Central er den samme LO-TEK
 # som 0.34.3 på npm, også når 0.34.1 og 0.34.2 aldri gikk dit.
 #
 # Startet for hånd uten valget publiserer den versjonen i package.json til
@@ -104,13 +104,13 @@ jobs:
       # gjøre, og bygget kontrollerer selv at pakken inneholder det `exports`
       # lover, at kommandolinja virker, og at versjonen står i loggen.
       # Pakken har kjernen med seg, bygget fra Rust i samme jobb som den
-      # publiseres fra. rustup henter versjonen i `kjerne/rust-toolchain.toml`.
+      # publiseres fra. rustup henter versjonen i `core/rust-toolchain.toml`.
       - name: Rust-versjon
-        working-directory: kjerne
+        working-directory: core
         run: rustc --version
 
       - name: Bygg pakken
-        run: bun --filter @fristil/designsystem build
+        run: bun --filter @lo-tek/interfaces build
 
       # Den første utgivelsen gjøres fra maskinen, siden npm bare lar deg
       # koble en utgiver til en pakke som allerede finnes. Taggen for den
@@ -119,7 +119,7 @@ jobs:
       - name: Se om versjonen alt er ute
         id: registeret
         run: |
-          if npm view "@fristil/designsystem@${{ steps.versjon.outputs.nummer }}" version > /dev/null 2>&1; then
+          if npm view "@lo-tek/interfaces@${{ steps.versjon.outputs.nummer }}" version > /dev/null 2>&1; then
             echo "publisert=ja" >> "$GITHUB_OUTPUT"
           else
             echo "publisert=nei" >> "$GITHUB_OUTPUT"
@@ -134,19 +134,19 @@ jobs:
 
       - name: Versjonen var alt publisert
         if: steps.registeret.outputs.publisert == 'ja'
-        run: echo "@fristil/designsystem@${{ steps.versjon.outputs.nummer }} ligger alt på npm. Ingenting ble publisert."
+        run: echo "@lo-tek/interfaces@${{ steps.versjon.outputs.nummer }} ligger alt på npm. Ingenting ble publisert."
 
-  # Kommandolinja uten Node: `fristil.wasm` for wasmtime og andre WASI-verter,
-  # og `fristil.jar` for `java -jar`. Begge kommer fra npm-pakken for
-  # versjonen, så de er de samme filene som `npx @fristil/designsystem` kjører.
+  # Kommandolinja uten Node: `lotek.wasm` for wasmtime og andre WASI-verter,
+  # og `lotek.jar` for `java -jar`. Begge kommer fra npm-pakken for
+  # versjonen, så de er de samme filene som `npx @lo-tek/interfaces` kjører.
   #
   # Ingen av filene er signert med et sertifikat, og ingen må stole på en
   # tredje part. GitHub attesterer i stedet hvilken commit og hvilken
   # arbeidsflyt hver fil ble bygd av, og den som laster ned, kan kontrollere
   # det selv:
   #
-  #   gh attestation verify fristil.jar --repo MarkusAugust/fristil
-  kommandolinje:
+  #   gh attestation verify lotek.jar --repo MarkusAugust/lo-tek
+  cli:
     name: Kommandolinja på GitHub Releases
     needs: publiser
     runs-on: ubuntu-latest
@@ -170,37 +170,37 @@ jobs:
         run: |
           versjon="$(grep '^version=' kotlin/gradle.properties | cut -d= -f2)"
           for _ in $(seq 1 30); do
-            npm view "@fristil/designsystem@$versjon" version > /dev/null 2>&1 && exit 0
+            npm view "@lo-tek/interfaces@$versjon" version > /dev/null 2>&1 && exit 0
             sleep 10
           done
-          echo "@fristil/designsystem@$versjon svarte ikke på npm innen fem minutter." >&2
+          echo "@lo-tek/interfaces@$versjon svarte ikke på npm innen fem minutter." >&2
           exit 1
 
-      # Uten `fristil.pakke` henter Gradle tarballen fra npm og sammenligner
+      # Uten `lotek.pakke` henter Gradle tarballen fra npm og sammenligner
       # den med integriteten registeret oppgir.
       - name: Kommandolinja som jar
         working-directory: kotlin
-        run: ./gradlew :kommandolinje:samletJar
+        run: ./gradlew :cli:samletJar
 
       - name: Samle filene
         run: |
           mkdir utgivelse
-          cp kotlin/build/fristil-pakke/kjerne/fristil.wasm utgivelse/
-          cp kotlin/kommandolinje/build/libs/fristil.jar utgivelse/
-          (cd utgivelse && sha256sum fristil.wasm fristil.jar > SHA256SUMS)
+          cp kotlin/build/lotek-pakke/core/lotek.wasm utgivelse/
+          cp kotlin/cli/build/libs/lotek.jar utgivelse/
+          (cd utgivelse && sha256sum lotek.wasm lotek.jar > SHA256SUMS)
           cat utgivelse/SHA256SUMS
 
       # Filene skal svare før de gis ut.
       - name: Filene virker
         run: |
-          java -jar utgivelse/fristil.jar --hjelp > /dev/null
-          echo '<button class="fs-button">Lagre</button>' | java -jar utgivelse/fristil.jar sjekk
+          java -jar utgivelse/lotek.jar --hjelp > /dev/null
+          echo '<button class="lt-button">Lagre</button>' | java -jar utgivelse/lotek.jar sjekk
 
       - uses: actions/attest-build-provenance@v3
         with:
           subject-path: |
-            utgivelse/fristil.wasm
-            utgivelse/fristil.jar
+            utgivelse/lotek.wasm
+            utgivelse/lotek.jar
 
       - uses: actions/upload-artifact@v4
         with:
@@ -217,7 +217,7 @@ jobs:
           if ! gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
             gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes "Se CHANGELOG.md i designsystem/."
           fi
-          gh release upload "$GITHUB_REF_NAME" utgivelse/fristil.wasm utgivelse/fristil.jar utgivelse/SHA256SUMS --clobber
+          gh release upload "$GITHUB_REF_NAME" utgivelse/lotek.wasm utgivelse/lotek.jar utgivelse/SHA256SUMS --clobber
 
   # Kotlin-pakken, kotlinx.html-utvidelsen, kommandolinja og Gradle-pluginen,
   # alle som `io.github.markusaugust:…` med samme versjon som npm-pakken.
@@ -258,10 +258,10 @@ jobs:
       - name: Vent til versjonen svarer på npm
         run: |
           for _ in $(seq 1 30); do
-            npm view "@fristil/designsystem@${{ steps.versjon.outputs.nummer }}" version > /dev/null 2>&1 && exit 0
+            npm view "@lo-tek/interfaces@${{ steps.versjon.outputs.nummer }}" version > /dev/null 2>&1 && exit 0
             sleep 10
           done
-          echo "@fristil/designsystem@${{ steps.versjon.outputs.nummer }} svarte ikke på npm innen fem minutter." >&2
+          echo "@lo-tek/interfaces@${{ steps.versjon.outputs.nummer }} svarte ikke på npm innen fem minutter." >&2
           exit 1
 
       # En versjon på Central kan aldri byttes ut, så en ny kjøring for samme
@@ -276,8 +276,8 @@ jobs:
           NOKKELPASSORD: ${{ secrets.MAVEN_SIGNING_PASSWORD }}
         run: |
           v="${{ steps.versjon.outputs.nummer }}"
-          if curl -sfI "https://repo1.maven.org/maven2/io/github/markusaugust/fristil/$v/fristil-$v.pom" > /dev/null; then
-            echo "io.github.markusaugust:fristil:$v ligger alt på Maven Central. Ingenting ble publisert."
+          if curl -sfI "https://repo1.maven.org/maven2/io/github/markusaugust/lotek/$v/lotek-$v.pom" > /dev/null; then
+            echo "io.github.markusaugust:lo-tek-interfaces:$v ligger alt på Maven Central. Ingenting ble publisert."
             echo "publiser=nei" >> "$GITHUB_OUTPUT"
           elif [ -z "$BRUKER" ] || [ -z "$PASSORD" ] || [ -z "$NOKKEL" ] || [ -z "$NOKKELPASSORD" ]; then
             echo "::warning::En eller flere av hemmelighetene for Maven Central mangler, så Kotlin-pakken ble ikke publisert. Se kommentaren over jobben i publish.yml."

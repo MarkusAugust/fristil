@@ -3,7 +3,7 @@ title: Skip Link
 description: Lenke som hopper forbi menyen til hovedinnholdet. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Den som navigerer med tastatur må ellers gjennom hele menyen på hver eneste side. Lenken ligger utenfor skjermen til den får fokus, og er som regel det første elementet i `<body>`.
 
@@ -11,7 +11,7 @@ Den som navigerer med tastatur må ellers gjennom hele menyen på hver eneste si
 
 Lenken ligger utenfor skjermen til den får fokus. Forhåndsvisningen under tvinger den fram, slik at du ser hvordan den ser ut når den er synlig. Markupen er den samme som i en ekte side:
 
-<Eksempel
+<Example
   importer={["tokens.css", "skip-link.css"]}
   stiler={["skip-link"]}
   layout="stabel"
@@ -19,46 +19,46 @@ Lenken ligger utenfor skjermen til den får fokus. Forhåndsvisningen under tvin
   visningsCss={`
     /* Bare for å vise lenken. I en ekte side kommer den fram av seg selv
        når den får fokus, og trenger ingenting her. */
-    .fs-skip-link { position: static; transform: none; }
+    .lt-skip-link { position: static; transform: none; }
   `}
   kode={`
-<a class="fs-skip-link" href="#hovedinnhold">Hopp til hovedinnhold</a>
+<a class="lt-skip-link" href="#hovedinnhold">Hopp til hovedinnhold</a>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<a {...fs.skipLink()} href="#hovedinnhold">Hopp til hovedinnhold</a>
+<a {...lt.skipLink()} href="#hovedinnhold">Hopp til hovedinnhold</a>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const lenke = document.createElement("a")
 lenke.href = "#hovedinnhold"
 lenke.textContent = "Hopp til hovedinnhold"
 
-fs.setAttributes(lenke, fs.skipLink())
+lt.setAttributes(lenke, lt.skipLink())
 document.body.prepend(lenke)
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
 Plasseringen er det eneste som kommer i tillegg. Lenken skal være det første i `<body>`, og målet må kunne få fokus:
 
 ```html
 <body>
-  <a class="fs-skip-link" href="#hovedinnhold">Hopp til hovedinnhold</a>
+  <a class="lt-skip-link" href="#hovedinnhold">Hopp til hovedinnhold</a>
 
   <header>…</header>
 
@@ -78,14 +78,14 @@ Den kommer til syne på `:focus`, ikke `:focus-visible`. Fokus satt fra kode ett
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-skip-link` | Lenken |
+| `.lt-skip-link` | Lenken |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-skip-link-padding` | `var(--fs-spacing-2) var(--fs-spacing-4)` |
-| `--fs-skip-link-radius` | `var(--fs-spacing-1)` |
+| `--lt-skip-link-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
+| `--lt-skip-link-radius` | `var(--lt-spacing-1)` |
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

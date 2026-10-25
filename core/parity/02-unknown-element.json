@@ -4,15 +4,15 @@
       "start": 1,
       "end": 17,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/",
-      "message": "<fs-dialog-header> finnes ikke i Fristil. Elementene er fs-field, fs-tabs, fs-error-summary, fs-popover, fs-suggestion, fs-dialog, fs-toast, fs-session-timeout, fs-connection-status."
+      "link": "https://lo-tek.sobernetics.no/components/",
+      "message": "<lt-dialog-header> finnes ikke i LO-TEK. Elementene er lt-field, lt-tabs, lt-error-summary, lt-popover, lt-suggestion, lt-dialog, lt-toast, lt-session-timeout, lt-connection-status."
     },
     {
       "start": 45,
       "end": 53,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/",
-      "message": "<fs-modal> finnes ikke i Fristil. Elementene er fs-field, fs-tabs, fs-error-summary, fs-popover, fs-suggestion, fs-dialog, fs-toast, fs-session-timeout, fs-connection-status."
+      "link": "https://lo-tek.sobernetics.no/components/",
+      "message": "<lt-modal> finnes ikke i LO-TEK. Elementene er lt-field, lt-tabs, lt-error-summary, lt-popover, lt-suggestion, lt-dialog, lt-toast, lt-session-timeout, lt-connection-status."
     }
   ],
   "side": [
@@ -20,15 +20,15 @@
       "start": 1,
       "end": 17,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/",
-      "message": "<fs-dialog-header> finnes ikke i Fristil. Elementene er fs-field, fs-tabs, fs-error-summary, fs-popover, fs-suggestion, fs-dialog, fs-toast, fs-session-timeout, fs-connection-status."
+      "link": "https://lo-tek.sobernetics.no/components/",
+      "message": "<lt-dialog-header> finnes ikke i LO-TEK. Elementene er lt-field, lt-tabs, lt-error-summary, lt-popover, lt-suggestion, lt-dialog, lt-toast, lt-session-timeout, lt-connection-status."
     },
     {
       "start": 45,
       "end": 53,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/",
-      "message": "<fs-modal> finnes ikke i Fristil. Elementene er fs-field, fs-tabs, fs-error-summary, fs-popover, fs-suggestion, fs-dialog, fs-toast, fs-session-timeout, fs-connection-status."
+      "link": "https://lo-tek.sobernetics.no/components/",
+      "message": "<lt-modal> finnes ikke i LO-TEK. Elementene er lt-field, lt-tabs, lt-error-summary, lt-popover, lt-suggestion, lt-dialog, lt-toast, lt-session-timeout, lt-connection-status."
     }
   ]
 }

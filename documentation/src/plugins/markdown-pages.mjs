@@ -7,7 +7,7 @@
  * innholdet uten alt det.
  *
  * Kilden er den bygde siden, ikke `.mdx`-fila. Det er hele poenget. I MDX står
- * markupen i en `kode`-streng til `<Eksempel>`, og «Ren HTML»-fanen med
+ * markupen i en `kode`-streng til `<Example>`, og «Ren HTML»-fanen med
  * `<link>`-ene til CDN-en, importlinjene og versjonsnummeret finnes ikke der i
  * det hele tatt: den regnes ut av komponenten. En omskriver som leste MDX måtte
  * ha gjort den utregningen en gang til, og da finnes regelen to steder. Her
@@ -15,7 +15,7 @@
  * annet enn siden.
  *
  * Hvilke sider som får en fil, avgjøres av `<link rel="alternate"
- * type="text/markdown">` i sidehodet, som `src/rutedata.ts` setter. Fila
+ * type="text/markdown">` i sidehodet, som `src/route-data.ts` setter. Fila
  * skrives dit lenken peker, og ingen andre steder.
  *
  * Det som tas bort: de levende eksemplene (markupen står i «Ren HTML»-fanen
@@ -43,7 +43,7 @@ const STØY = [
   "template",
   "svg",
   ".sl-anchor-link",
-  ".fs-preview",
+  ".lt-preview",
   ".copy",
   ".tablist-wrapper",
   ".expressive-code .sr-only",
@@ -183,7 +183,7 @@ function merknad(aside) {
  * Lenker til en annen side som har en Markdown-utgave, går dit i stedet. En
  * agent som leser Markdown, skal kunne følge lenkene uten å havne i HTML igjen.
  *
- * Sidene lenker relativt, som `../../typesikker-bruk/`. Det løses opp mot
+ * Sidene lenker relativt, som `../../type-safe-use/`. Det løses opp mot
  * sidens egen adresse, siden Markdown-fila ligger et annet sted enn siden og
  * den samme relative stien ville bommet derfra.
  */
@@ -192,8 +192,8 @@ function lenker(tre, sti, adresser) {
     const href = String(a.properties.href)
     if (href.startsWith("#")) continue
 
-    const mål = new URL(href, `https://fristil${sti}`)
-    if (mål.origin !== "https://fristil") continue
+    const mål = new URL(href, `https://lotek${sti}`)
+    if (mål.origin !== "https://lotek") continue
 
     const md = adresser.get(mål.pathname)
     if (md) a.properties.href = `${md}${mål.hash}`
@@ -233,7 +233,7 @@ function tilMarkdown(html, sti, adresser) {
 /** @returns {import("astro").AstroIntegration} */
 export function markdownsider() {
   return {
-    name: "fristil:markdownsider",
+    name: "lotek:markdownsider",
     hooks: {
       "astro:build:done": ({ dir, pages, logger }) => {
         const rot = fileURLToPath(dir)
@@ -278,7 +278,7 @@ export function markdownsider() {
         const headerfil = `${rot}_headers`
         writeFileSync(
           headerfil,
-          `${readFileSync(headerfil, "utf8").trimEnd()}\n\n# Markdown-utgavene av sidene, skrevet av src/plugins/markdownsider.mjs.\n${headers.join("\n")}\n`,
+          `${readFileSync(headerfil, "utf8").trimEnd()}\n\n# Markdown-utgavene av sidene, skrevet av src/plugins/markdown-pages.mjs.\n${headers.join("\n")}\n`,
         )
 
         logger.info(`${sider.length} sider skrevet som Markdown.`)

@@ -1,28 +1,28 @@
-@layer fristil {
-  .fs-spinner {
+@layer lotek {
+  .lt-spinner {
     box-sizing: border-box;
     display: inline-block;
-    inline-size: var(--fs-spinner-size, var(--fs-spacing-6));
-    block-size: var(--fs-spinner-size, var(--fs-spacing-6));
-    border: var(--fs-spinner-thickness, 2px) solid
-      var(--fs-color-neutral-surface);
-    border-block-start-color: var(--fs-color-accent-border);
+    inline-size: var(--lt-spinner-size, var(--lt-spacing-6));
+    block-size: var(--lt-spinner-size, var(--lt-spacing-6));
+    border: var(--lt-spinner-thickness, 2px) solid
+      var(--lt-color-neutral-surface);
+    border-block-start-color: var(--lt-color-accent-border);
     border-radius: 50%;
-    animation: fs-spinner-rotate 800ms linear infinite;
+    animation: lt-spinner-rotate 800ms linear infinite;
   }
 
-  .fs-spinner[data-size="small"] {
-    inline-size: var(--fs-spacing-4);
-    block-size: var(--fs-spacing-4);
+  .lt-spinner[data-size="small"] {
+    inline-size: var(--lt-spacing-4);
+    block-size: var(--lt-spacing-4);
   }
 
-  .fs-spinner[data-size="large"] {
-    inline-size: var(--fs-spacing-10);
-    block-size: var(--fs-spacing-10);
+  .lt-spinner[data-size="large"] {
+    inline-size: var(--lt-spacing-10);
+    block-size: var(--lt-spacing-10);
     border-width: 3px;
   }
 
-  @keyframes fs-spinner-rotate {
+  @keyframes lt-spinner-rotate {
     to {
       transform: rotate(360deg);
     }
@@ -32,7 +32,7 @@
      stå stille: en indikator som ikke beveger seg sier ikke lenger at noe
      pågår. */
   @media (prefers-reduced-motion: reduce) {
-    .fs-spinner {
+    .lt-spinner {
       animation-duration: 2400ms;
     }
   }
@@ -41,7 +41,7 @@
      jevn sirkel. Den snurrer fortsatt, men `Highlight` gir tilbake punktet
      som viser at det skjer noe. */
   @media (forced-colors: active) {
-    .fs-spinner {
+    .lt-spinner {
       border-block-start-color: Highlight;
     }
   }

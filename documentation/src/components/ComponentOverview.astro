@@ -24,7 +24,7 @@ import { getCollection } from "astro:content"
  */
 const KILDER = import.meta.glob("../../../designsystem/src/components/*/*/*.ts")
 
-type Kategori = "css" | "ramme" | "frittstaende"
+type Kategori = "css" | "frame" | "standalone"
 
 const kategoriFor = new Map<string, Kategori>()
 for (const sti of Object.keys(KILDER)) {
@@ -42,13 +42,13 @@ const GRUPPER: { kategori: Kategori; tittel: string; forklaring: string }[] = [
       "En klasse og noen dataattributter på et vanlig HTML-element. Ingen JavaScript lastes.",
   },
   {
-    kategori: "ramme",
+    kategori: "frame",
     tittel: "Rammekomponenter",
     forklaring:
       "Du skriver markupen, og web-komponenten fester tastatur, fokus og koblingen oppå. Elementene blir liggende i vanlig DOM.",
   },
   {
-    kategori: "frittstaende",
+    kategori: "standalone",
     tittel: "Frittstående komponenter",
     forklaring:
       "Komponenten lager innholdet sitt selv, fordi det ikke finnes noe for serveren å sende. Du kaller en metode.",
@@ -81,7 +81,7 @@ const plassert = grupper.reduce((sum, g) => sum + g.sider.length, 0)
 if (plassert !== sider.length) {
   const borte = sider.filter((s) => !kategoriFor.has(s.navn)).map((s) => s.navn)
   throw new Error(
-    `Komponentoversikt: ${plassert} av ${sider.length} sider havnet i en gruppe. Uten mappe under designsystem/src/components: ${borte.join(", ")}`,
+    `ComponentOverview: ${plassert} av ${sider.length} sider havnet i en gruppe. Uten mappe under designsystem/src/components: ${borte.join(", ")}`,
   )
 }
 ---
@@ -107,8 +107,8 @@ if (plassert !== sider.length) {
   .oversikt__liste {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-    gap: var(--fs-spacing-3);
-    margin-block: var(--fs-spacing-4);
+    gap: var(--lt-spacing-3);
+    margin-block: var(--lt-spacing-4);
     padding: 0;
     list-style: none;
   }
@@ -116,11 +116,11 @@ if (plassert !== sider.length) {
   .oversikt__kort {
     display: flex;
     flex-direction: column;
-    gap: var(--fs-spacing-1);
-    padding: var(--fs-spacing-3);
-    border: 1px solid var(--fs-color-neutral-border-subtle);
-    border-radius: var(--fs-spacing-2);
-    background: var(--fs-color-neutral-surface);
+    gap: var(--lt-spacing-1);
+    padding: var(--lt-spacing-3);
+    border: 1px solid var(--lt-color-neutral-border-subtle);
+    border-radius: var(--lt-spacing-2);
+    background: var(--lt-color-neutral-surface);
   }
 
   .oversikt__kort a {
@@ -128,9 +128,9 @@ if (plassert !== sider.length) {
   }
 
   .oversikt__kort span {
-    font-size: var(--fs-font-size-s);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-subtle);
+    font-size: var(--lt-font-size-s);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-subtle);
     /* Beskrivelsene er hele setninger, og et langt ord skal ikke sprenge
        kortet på en smal skjerm. */
     overflow-wrap: anywhere;

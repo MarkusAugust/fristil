@@ -1,5 +1,5 @@
-@layer fristil {
-  .fs-textarea {
+@layer lotek {
+  .lt-textarea {
     /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
        Uten border-box legges padding og ramme utenpå width, og feltet
        blir bredere enn boksen det ligger i. */
@@ -7,40 +7,40 @@
 
     display: block;
     width: 100%;
-    min-height: var(--fs-textarea-min-height, calc(var(--fs-spacing-4) * 5));
+    min-height: var(--lt-textarea-min-height, calc(var(--lt-spacing-4) * 5));
     padding: var(
-      --fs-textarea-padding,
-      var(--fs-spacing-2) var(--fs-spacing-3)
+      --lt-textarea-padding,
+      var(--lt-spacing-2) var(--lt-spacing-3)
     );
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-strong);
-    background: var(--fs-color-neutral-canvas);
-    border: 1px solid var(--fs-color-neutral-border);
-    border-radius: var(--fs-textarea-radius, var(--fs-spacing-1));
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-neutral-canvas);
+    border: 1px solid var(--lt-color-neutral-border);
+    border-radius: var(--lt-textarea-radius, var(--lt-spacing-1));
     resize: vertical;
   }
 
-  .fs-textarea::placeholder {
-    color: var(--fs-color-neutral-text-subtle);
+  .lt-textarea::placeholder {
+    color: var(--lt-color-neutral-text-subtle);
   }
 
-  .fs-textarea:hover {
-    border-color: var(--fs-color-neutral-border-strong);
+  .lt-textarea:hover {
+    border-color: var(--lt-color-neutral-border-strong);
   }
 
-  .fs-textarea:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-textarea:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
-    border-color: var(--fs-color-accent-border);
+    border-color: var(--lt-color-accent-border);
   }
 
-  .fs-textarea:disabled,
-  .fs-textarea[aria-disabled="true"] {
-    background: var(--fs-color-disabled-surface);
-    color: var(--fs-color-disabled-text);
-    border-color: var(--fs-color-disabled-surface);
+  .lt-textarea:disabled,
+  .lt-textarea[aria-disabled="true"] {
+    background: var(--lt-color-disabled-surface);
+    color: var(--lt-color-disabled-text);
+    border-color: var(--lt-color-disabled-surface);
     /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
        deaktivert felt, og pointer-events ville bare hindret markøren i å
        vises. Elementet blir da ikke truffet av musa i det hele tatt. */
@@ -50,34 +50,34 @@
   /* aria-disabled er bare en opplysning til skjermlesere; elementet virker
      fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
      Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
-  .fs-textarea[aria-disabled="true"] {
+  .lt-textarea[aria-disabled="true"] {
     pointer-events: none;
   }
 
-  .fs-textarea[data-state="invalid"] {
-    border-color: var(--fs-color-danger-text);
-    background: var(--fs-color-danger-surface);
+  .lt-textarea[data-state="invalid"] {
+    border-color: var(--lt-color-danger-text);
+    background: var(--lt-color-danger-surface);
   }
 
-  .fs-textarea[data-state="invalid"]:focus-visible {
-    outline-color: var(--fs-color-danger-text);
+  .lt-textarea[data-state="invalid"]:focus-visible {
+    outline-color: var(--lt-color-danger-text);
   }
 
-  .fs-textarea[data-state="success"] {
-    border-color: var(--fs-color-success-text);
-    background: var(--fs-color-success-surface);
+  .lt-textarea[data-state="success"] {
+    border-color: var(--lt-color-success-text);
+    background: var(--lt-color-success-surface);
   }
 
-  .fs-textarea[data-state="success"]:focus-visible {
-    outline-color: var(--fs-color-success-text);
+  .lt-textarea[data-state="success"]:focus-visible {
+    outline-color: var(--lt-color-success-text);
   }
 
   /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
      `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
      var slått av under innsending så rødt ut, ikke avslått. */
-  .fs-textarea:is(:disabled, [aria-disabled="true"])[data-state] {
-    background: var(--fs-color-disabled-surface);
-    color: var(--fs-color-disabled-text);
-    border-color: var(--fs-color-disabled-surface);
+  .lt-textarea:is(:disabled, [aria-disabled="true"])[data-state] {
+    background: var(--lt-color-disabled-surface);
+    color: var(--lt-color-disabled-text);
+    border-color: var(--lt-color-disabled-surface);
   }
 }

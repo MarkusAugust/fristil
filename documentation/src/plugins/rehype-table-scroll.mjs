@@ -3,11 +3,11 @@
  *
  * En tabell med tre kolonner og kodeord i cellene blir bredere enn en
  * telefon. Det første forsøket var å la lange ord brekke, men da brekker
- * `<fs-error-summary>` midt i taggen, og raden blir fire linjer høy med
+ * `<lt-error-summary>` midt i taggen, og raden blir fire linjer høy med
  * kodebakgrunn på hver bit. Det ser ødelagt ut, og er vanskeligere å lese
  * enn å dra tabellen sidelengs.
  *
- * Dette er det samme vi ber konsumenter om å gjøre med `.fs-table-scroll`,
+ * Dette er det samme vi ber konsumenter om å gjøre med `.lt-table-scroll`,
  * og vi følger den samme oppskriften: `tabindex` for at tastaturet skal nå
  * kolonnene utenfor kanten, og `role="region"` med en tekst, slik at
  * skjermleseren sier hvilken tabell fokus har havnet i. Teksten hentes fra

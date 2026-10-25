@@ -4,15 +4,15 @@
       "start": 10,
       "end": 18,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/link/",
-      "message": "Klassen «fs-lenke» finnes ikke i Fristil. Mente du fs-link?",
+      "link": "https://lo-tek.sobernetics.no/components/link/",
+      "message": "Klassen «lt-lenke» finnes ikke i LO-TEK. Mente du lt-link?",
       "fix": {
-        "title": "Bytt til fs-link",
+        "title": "Bytt til lt-link",
         "edits": [
           {
             "start": 10,
             "end": 18,
-            "text": "fs-link"
+            "text": "lt-link"
           }
         ],
         "preferred": false
@@ -22,15 +22,15 @@
       "start": 53,
       "end": 61,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/button/",
-      "message": "Klassen «fs-buton» finnes ikke i Fristil. Mente du fs-button?",
+      "link": "https://lo-tek.sobernetics.no/components/button/",
+      "message": "Klassen «lt-buton» finnes ikke i LO-TEK. Mente du lt-button?",
       "fix": {
-        "title": "Bytt til fs-button",
+        "title": "Bytt til lt-button",
         "edits": [
           {
             "start": 53,
             "end": 61,
-            "text": "fs-button"
+            "text": "lt-button"
           }
         ],
         "preferred": false
@@ -42,15 +42,15 @@
       "start": 10,
       "end": 18,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/link/",
-      "message": "Klassen «fs-lenke» finnes ikke i Fristil. Mente du fs-link?",
+      "link": "https://lo-tek.sobernetics.no/components/link/",
+      "message": "Klassen «lt-lenke» finnes ikke i LO-TEK. Mente du lt-link?",
       "fix": {
-        "title": "Bytt til fs-link",
+        "title": "Bytt til lt-link",
         "edits": [
           {
             "start": 10,
             "end": 18,
-            "text": "fs-link"
+            "text": "lt-link"
           }
         ],
         "preferred": false
@@ -60,15 +60,15 @@
       "start": 53,
       "end": 61,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/button/",
-      "message": "Klassen «fs-buton» finnes ikke i Fristil. Mente du fs-button?",
+      "link": "https://lo-tek.sobernetics.no/components/button/",
+      "message": "Klassen «lt-buton» finnes ikke i LO-TEK. Mente du lt-button?",
       "fix": {
-        "title": "Bytt til fs-button",
+        "title": "Bytt til lt-button",
         "edits": [
           {
             "start": 53,
             "end": 61,
-            "text": "fs-button"
+            "text": "lt-button"
           }
         ],
         "preferred": false

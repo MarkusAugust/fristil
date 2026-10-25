@@ -3,53 +3,53 @@ title: Select
 description: Nedtrekksliste. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Samme utseende og tilstander som [Input](../input/), på et ekte `<select>`. Da brukes nettleserens egen liste, den som allerede virker med tastatur, skjermleser og mobilens innebygde velger.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "select.css", "label.css"]}
+<Example importer={["tokens.css", "select.css", "label.css"]}
   stiler={["select", "label"]} layout="stabel" maxWidth="26rem" kode={`
-<label class="fs-label" for="fylke">Fylke</label>
-<select class="fs-select" id="fylke" name="fylke">
+<label class="lt-label" for="fylke">Fylke</label>
+<select class="lt-select" id="fylke" name="fylke">
   <option value="">Velg fylke</option>
   <option>Innlandet</option>
   <option selected>Vestland</option>
   <option>Troms</option>
 </select>
 
-<label class="fs-label" for="kommune">Kommune</label>
-<select class="fs-select" id="kommune" data-state="invalid" aria-invalid="true">
+<label class="lt-label" for="kommune">Kommune</label>
+<select class="lt-select" id="kommune" data-state="invalid" aria-invalid="true">
   <option value="" selected>Velg kommune</option>
 </select>
 
-<label class="fs-label" for="registrert">Registrert fylke</label>
-<select class="fs-select" id="registrert" disabled>
+<label class="lt-label" for="registrert">Registrert fylke</label>
+<select class="lt-select" id="registrert" disabled>
   <option selected>Vestland</option>
 </select>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<select {...fs.select({ picker: "styled" })} id="fylke" name="fylke">
+<select {...lt.select({ picker: "styled" })} id="fylke" name="fylke">
   <option value="">Velg fylke</option>
   <option value="vestland">Vestland</option>
 </select>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs, type FieldState } from "@fristil/designsystem"
+import { lt, type FieldState } from "@lo-tek/interfaces"
 
 const felt = document.querySelector<HTMLSelectElement>("#fylke")
 if (!felt) throw new Error("fant ikke elementet")
@@ -57,16 +57,16 @@ if (!felt) throw new Error("fant ikke elementet")
 felt.addEventListener("change", () => {
   const tilstand: FieldState = felt.value === "" ? "invalid" : "default"
 
-  fs.setAttributes(felt, fs.select({ state: tilstand, picker: "styled" }))
+  lt.setAttributes(felt, lt.select({ state: tilstand, picker: "styled" }))
 })
 ```
 
-`state` er samme type som i [Input](../input/) og [Textarea](../textarea/). Går feltet tilbake til `"default"`, fjerner `fs.setAttributes` både `data-state` og `aria-invalid`.
+`state` er samme type som i [Input](../input/) og [Textarea](../textarea/). Går feltet tilbake til `"default"`, fjerner `lt.setAttributes` både `data-state` og `aria-invalid`.
 
 Hvert kall setter hele tilstanden. Utelater du `picker`, fjernes `data-picker` på samme måte som `data-state`, så send med de valgene feltet skal beholde.
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | `data-state` | Brukes til |
 | --- | --- |
@@ -80,9 +80,9 @@ Den første `<option>` bør ha tom `value` når feltet er påkrevd. Da stopper `
 
 Selve listen som spretter opp er normalt et vindu fra operativsystemet, og ingen CSS når inn i den. Med `data-picker="styled"` ber feltet nettleseren tegne listen inne i siden i stedet, slik at den får systemets farger, avstander og skygge.
 
-<Eksempel stiler={["select", "label"]} layout="stabel" maxWidth="26rem" kode={`
-<label class="fs-label" for="sak">Sakstype</label>
-<select class="fs-select" data-picker="styled" id="sak" name="sak">
+<Example stiler={["select", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<label class="lt-label" for="sak">Sakstype</label>
+<select class="lt-select" data-picker="styled" id="sak" name="sak">
   <option value="">Velg sakstype</option>
   <option value="byggesak" selected>Byggesak</option>
   <option value="deling">Deling av eiendom</option>
@@ -92,7 +92,7 @@ Selve listen som spretter opp er normalt et vindu fra operativsystemet, og ingen
 
 Dette er den samme `<select>`-en som før. Den sendes inn med skjemaet, leses av skjermlesere og virker med tastatur på nøyaktig samme måte, og markupen er uendret bortsett fra attributtet.
 
-Et valg som er lengre enn feltet, brytes da over flere linjer, og feltet blir høyere. Skal det heller klippes med «…», legg `<button><selectedcontent></selectedcontent></button>` først i `<select>`-en. Nettleseren lager ikke `<selectedcontent>` selv, men fyller det med det valgte alternativet når det står der, og Fristil klipper det. Nettlesere uten støtte hopper over knappen.
+Et valg som er lengre enn feltet, brytes da over flere linjer, og feltet blir høyere. Skal det heller klippes med «…», legg `<button><selectedcontent></selectedcontent></button>` først i `<select>`-en. Nettleseren lager ikke `<selectedcontent>` selv, men fyller det med det valgte alternativet når det står der, og LO-TEK klipper det. Nettlesere uten støtte hopper over knappen.
 
 Grupper laget med `<optgroup label="…">` får overskriften i mindre og dempet tekst, så den skiller seg fra valgene.
 
@@ -100,41 +100,41 @@ Støtten er ulik mellom nettleserne, og det er grunnen til at dette må slås p�
 
 | Nettleser | Hva brukeren ser |
 | --- | --- |
-| Chromium og Safari som støtter `appearance: base-select` | Listen tegnes i siden, med Fristils farger |
+| Chromium og Safari som støtter `appearance: base-select` | Listen tegnes i siden, med LO-TEKs farger |
 | Firefox | Nettleserens egen liste, som uten attributtet |
 
-Det er den ene betingelsen stilarket spør om, så hver versjon som har `appearance: base-select` tegner listen i siden. Fristil er testet i Chromium 148 og WebKit 26.4. Firefox får altså ingen ny funksjonalitet, men heller ingenting som ser ødelagt ut. Skal alle brukere se det samme, la attributtet være.
+Det er den ene betingelsen stilarket spør om, så hver versjon som har `appearance: base-select` tegner listen i siden. LO-TEK er testet i Chromium 148 og WebKit 26.4. Firefox får altså ingen ny funksjonalitet, men heller ingenting som ser ødelagt ut. Skal alle brukere se det samme, la attributtet være.
 
 I høykontrastmodus faller feltet tilbake til nettleserens egen liste i alle nettlesere. Systemfargene er de eneste som er garantert lesbare der.
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-fs.select({ picker: "styled" })
-// { class: "fs-select", "data-picker": "styled" }
+lt.select({ picker: "styled" })
+// { class: "lt-select", "data-picker": "styled" }
 ```
 
 ## Klasser du kan style
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-select` | Nedtrekkslisten. Tilstanden kommer fra `data-state`, listen fra `data-picker`. |
+| `.lt-select` | Nedtrekkslisten. Tilstanden kommer fra `data-state`, listen fra `data-picker`. |
 
 | Variabel | Standard | Gjelder |
 | --- | --- | --- |
-| `--fs-select-width` | `100%` | Bredden på feltet |
-| `--fs-select-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` | Luften i feltet |
-| `--fs-select-radius` | `var(--fs-spacing-1)` | Feltet, og listen som tegnes i siden |
-| `--fs-select-option-padding` | `var(--fs-spacing-2) var(--fs-spacing-3)` | Ett valg i listen som tegnes i siden |
-| `--fs-select-viewport-margin` | `var(--fs-spacing-2)` | Luft mellom listen og kanten av vinduet |
+| `--lt-select-width` | `100%` | Bredden på feltet |
+| `--lt-select-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` | Luften i feltet |
+| `--lt-select-radius` | `var(--lt-spacing-1)` | Feltet, og listen som tegnes i siden |
+| `--lt-select-option-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` | Ett valg i listen som tegnes i siden |
+| `--lt-select-viewport-margin` | `var(--lt-spacing-2)` | Luft mellom listen og kanten av vinduet |
 
-Pilen er to gradienter i bakgrunnen, tegnet i `--fs-color-neutral-text-subtle`, så den snur med temaet. Skal den bort, sett `background-image: none`. Med `data-picker="styled"` tegner nettleseren pilen selv, og den styles med `::picker-icon`.
+Pilen er to gradienter i bakgrunnen, tegnet i `--lt-color-neutral-text-subtle`, så den snur med temaet. Skal den bort, sett `background-image: none`. Med `data-picker="styled"` tegner nettleseren pilen selv, og den styles med `::picker-icon`.
 
-I standardutseendet står plassen til pilen ved enden av feltet fast, siden pilen er tegnet et fast stykke fra kanten, og `--fs-select-padding` gjelder de tre andre sidene. Med `data-picker="styled"` tar pilen sin egen plass, og variabelen gjelder alle fire.
+I standardutseendet står plassen til pilen ved enden av feltet fast, siden pilen er tegnet et fast stykke fra kanten, og `--lt-select-padding` gjelder de tre andre sidene. Med `data-picker="styled"` tar pilen sin egen plass, og variabelen gjelder alle fire.
 
-Et kompakt felt, som «Antall per side», blir så bredt som innholdet med `--fs-select-width: auto`. Skal ledeteksten stå ved siden av feltet, er det oppsettet rundt dem som avgjør det, ikke Fristil. `.fs-label` er en blokk, og en rad med `display: flex` rundt de to legger dem på linje.
+Et kompakt felt, som «Antall per side», blir så bredt som innholdet med `--lt-select-width: auto`. Skal ledeteksten stå ved siden av feltet, er det oppsettet rundt dem som avgjør det, ikke LO-TEK. `.lt-label` er en blokk, og en rad med `display: flex` rundt de to legger dem på linje.
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

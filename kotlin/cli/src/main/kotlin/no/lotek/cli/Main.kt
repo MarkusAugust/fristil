@@ -1,8 +1,8 @@
 /**
- * `java -jar fristil.jar`: kommandolinja fra terminalen. Selve kjøringen står
+ * `java -jar lotek.jar`: kommandolinja fra terminalen. Selve kjøringen står
  * i [CommandLine].
  */
-package no.fristil.cli
+package no.lotek.cli
 
 import java.io.File
 import java.nio.file.Files

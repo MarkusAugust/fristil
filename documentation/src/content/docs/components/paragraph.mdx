@@ -3,56 +3,56 @@ title: Paragraph
 description: Brødtekst og ingress med begrenset linjelengde. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Brødtekst med lesbar linjelengde. Bredden er begrenset til 70 tegn, fordi lengre linjer gjør det vanskelig å finne tilbake til starten av neste. Det er den vanligste grunnen til at en tekst er tung å lese selv når skriften er stor nok.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "paragraph.css", "heading.css"]}
+<Example importer={["tokens.css", "paragraph.css", "heading.css"]}
   stiler={["paragraph", "heading"]} layout="stabel" maxWidth="34rem" kode={`
-<h2 class="fs-heading">Bostøtte</h2>
+<h2 class="lt-heading">Bostøtte</h2>
 
-<p class="fs-paragraph" data-variant="lead">
+<p class="lt-paragraph" data-variant="lead">
   En støtteordning for deg som har lave inntekter og høye boutgifter.
 </p>
 
-<p class="fs-paragraph">
+<p class="lt-paragraph">
   Du kan søke hver måned. Fristen er den 25., og svaret kommer rundt den 20. måneden etter. Har du fått bostøtte før, blir søknaden fornyet automatisk.
 </p>
 
-<p class="fs-paragraph" data-size="small">
+<p class="lt-paragraph" data-size="small">
   Sist oppdatert 4. mars 2026.
 </p>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<p {...fs.paragraph({ variant: "lead" })}>
+<p {...lt.paragraph({ variant: "lead" })}>
   Bostøtte er en behovsprøvd støtte til deg som har lave inntekter.
 </p>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const ingress = document.querySelector<HTMLParagraphElement>("#ingress")
 
-fs.setAttributes(ingress, fs.paragraph({ variant: "lead" }))
+lt.setAttributes(ingress, lt.paragraph({ variant: "lead" }))
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | Attributt | Brukes til |
 | --- | --- |
@@ -67,25 +67,25 @@ Avsnitt som følger hverandre får luft mellom seg av seg selv.
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-paragraph` | Avsnittet. Størrelsen kommer fra `data-size`, ingressen fra `data-variant`. |
+| `.lt-paragraph` | Avsnittet. Størrelsen kommer fra `data-size`, ingressen fra `data-variant`. |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-paragraph-width` | `70ch` |
-| `--fs-paragraph-gap` | `var(--fs-spacing-3)` |
-| `--fs-paragraph-line-height` | `var(--fs-line-height-article)` |
+| `--lt-paragraph-width` | `70ch` |
+| `--lt-paragraph-gap` | `var(--lt-spacing-3)` |
+| `--lt-paragraph-line-height` | `var(--lt-line-height-article)` |
 
-`--fs-paragraph-line-height` gjelder standardstørrelsen. `data-size="large"` og `data-variant="lead"` setter sin egen linjehøyde.
+`--lt-paragraph-line-height` gjelder standardstørrelsen. `data-size="large"` og `data-variant="lead"` setter sin egen linjehøyde.
 
 Står avsnittet i en spalte som allerede er smal nok, kan grensen fjernes:
 
 ```css
-.fs-card .fs-paragraph {
-	--fs-paragraph-width: none;
+.lt-card .lt-paragraph {
+	--lt-paragraph-width: none;
 }
 ```
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

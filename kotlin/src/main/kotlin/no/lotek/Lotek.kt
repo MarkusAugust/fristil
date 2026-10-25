@@ -1,26 +1,26 @@
-package no.fristil
+package no.lotek
 
 import com.dylibso.chicory.runtime.ExportFunction
 import com.dylibso.chicory.runtime.Instance
 
 /**
- * Fristils diagnostikk på JVM-en, uten Node og uten JavaScript.
+ * LO-TEKs diagnostikk på JVM-en, uten Node og uten JavaScript.
  *
- * Diagnostikken er skrevet i Rust (`kjerne/`) og kompilert til én
+ * Diagnostikken er skrevet i Rust (`core/`) og kompilert til én
  * WebAssembly-modul. Den samme modulen kjøres av Node og nettleseren. Her
  * kjøres den av Chicory, en WebAssembly-runtime skrevet i ren Java: en
  * vanlig Maven-avhengighet, uten JNI og uten noe å installere.
  *
  * ```kotlin
  * val html = client.get("/soknad").bodyAsText()
- * assertEquals(emptyList(), Fristil.diagnosePage(html))
+ * assertEquals(emptyList(), Lotek.diagnosePage(html))
  * ```
  *
  * Posisjonene er tegnindekser i UTF-16, de samme indeksene en Kotlin-`String`
  * bruker. `html.substring(funn.start, funn.end)` gir derfor nøyaktig teksten
  * funnet gjelder.
  */
-object Fristil {
+object Lotek {
     /**
      * Det `diagnoseMarkup` finner: ordforrådet, for en mal eller et fragment.
      *
@@ -30,8 +30,8 @@ object Fristil {
      * glob som ikke traff noe, skal felle testen, ikke slå sjekken av.
      *
      * Med [manifest], teksten i et `manifest.json`, sjekkes markupen mot det
-     * i stedet for manifestet i pakken. Det er manifestet `fristil manifest`
-     * og Gradle-oppgaven `fristilManifest` skriver, med komponentene
+     * i stedet for manifestet i pakken. Det er manifestet `lotek manifest`
+     * og Gradle-oppgaven `lotekManifest` skriver, med komponentene
      * prosjektet har overtatt. Et manifest kjernen ikke kan lese, kaster
      * [IllegalArgumentException] med grunnen.
      */
@@ -50,10 +50,10 @@ object Fristil {
     /**
      * Skriptet som leser den rendrede siden i nettleseren: DOM-en slik den
      * står nå, og teksten i hvert stilark. Gi det til `page.evaluate` i
-     * Playwright, eller bruk [assertFristilRendered].
+     * Playwright, eller bruk [assertLotekRendered].
      *
      * Svaret er et objekt med `html` og `css`. Det samme skriptet står i
-     * `@fristil/designsystem/diagnostics`. Teksten er bare funksjonen, uten
+     * `@lo-tek/interfaces/diagnostics`. Teksten er bare funksjonen, uten
      * kommentarer rundt: Playwright pakker den inn i parenteser og kaller den.
      */
     const val READ_RENDERED_PAGE: String = """async () => {
@@ -94,7 +94,7 @@ object Fristil {
         )
 
     /**
-     * Bygger et fargetema av oppskriften, slik `fristil tema` gjør.
+     * Bygger et fargetema av oppskriften, slik `lotek tema` gjør.
      *
      * [recipe] er JSON-teksten i en oppskriftsfil: de ni fargene med norske
      * eller engelske nøkler (`aksent` eller `accent`, `fare` eller `danger`,
@@ -103,7 +103,7 @@ object Fristil {
      * [IllegalArgumentException] med forklaringen. Løftene holder av
      * konstruksjon, så [Theme.violations] er tom for en oppskrift med gyldige
      * farger. Sjekk den likevel før du skriver [Theme.css] til en fil:
-     * `fristil tema` nekter å skrive når den ikke er tom, mens denne gir
+     * `lotek tema` nekter å skrive når den ikke er tom, mens denne gir
      * temaet tilbake med lista, som `buildTheme` i TypeScript.
      * Mangler fargekontrakten i jar-en, kastes [IllegalStateException].
      */
@@ -131,7 +131,7 @@ object Fristil {
 
     /**
      * Kontrollerer hvert løfte i et tema skrevet som CSS, slik
-     * `fristil sjekk-tema` gjør. [ThemeReport.problems] er tom når temaet
+     * `lotek sjekk-tema` gjør. [ThemeReport.problems] er tom når temaet
      * holder; tallene sier hvor mye som faktisk ble lest, så et tomt svar
      * ikke kan forveksles med et tema uten tokens.
      */
@@ -201,16 +201,16 @@ object Fristil {
      * det er dette sjekken går mot når `manifest` ikke er gitt.
      */
     internal val PACKAGE_MANIFEST: String by lazy {
-        Fristil::class.java.getResourceAsStream("/no/fristil/manifest.json")?.use {
+        Lotek::class.java.getResourceAsStream("/no/lotek/manifest.json")?.use {
             it.readBytes().toString(Charsets.UTF_8)
         } ?: error("manifest.json mangler i jar-en")
     }
 
     /** Fargekontrakten i pakken, som ligger i jar-en. Temaet regnes av den. */
     internal val PACKAGE_CONTRACT: String by lazy {
-        Fristil::class.java.getResourceAsStream("/no/fristil/fargekontrakt.json")?.use {
+        Lotek::class.java.getResourceAsStream("/no/lotek/color-contract.json")?.use {
             it.readBytes().toString(Charsets.UTF_8)
-        } ?: error("fargekontrakt.json mangler i jar-en")
+        } ?: error("color-contract.json mangler i jar-en")
     }
 
     /**
@@ -258,13 +258,13 @@ object Fristil {
 /** Én instans av modulen, med funksjonene den eksporterer. */
 internal class Core {
     /*
-     * `FristilCore` er modulen kompilert til JVM-bytekode da pakken ble bygget
+     * `LotekCore` er modulen kompilert til JVM-bytekode da pakken ble bygget
      * (se `buildSrc/`). Den kjører med JIT-en, ikke i Chicorys tolk, som
      * brukte sekunder på en side dette bruker millisekunder på, og en ny
      * instans koster nesten ingenting.
      */
     private val instance: Instance =
-        Instance.builder(FristilCore.load()).withMachineFactory(FristilCore::create).build()
+        Instance.builder(LotekCore.load()).withMachineFactory(LotekCore::create).build()
     private val alloc: ExportFunction = instance.export("alloc")
     private val resultPtr: ExportFunction = instance.export("result_ptr")
     private val resultLen: ExportFunction = instance.export("result_len")
@@ -278,7 +278,7 @@ internal class Core {
 
     /** Gir instansen [manifest], eller manifestet i pakken med `null`. */
     fun use(manifest: String?) {
-        val wanted = manifest ?: Fristil.PACKAGE_MANIFEST
+        val wanted = manifest ?: Lotek.PACKAGE_MANIFEST
         if (wanted === this.manifest || wanted == this.manifest) return
         val (status, answer) = callWithStatus("load_manifest_raw", wanted)
         if (status != 0L) {
@@ -296,7 +296,7 @@ internal class Core {
     /** Gir instansen fargekontrakten i pakken, første gang den trengs. */
     fun useContract() {
         if (contractLoaded) return
-        val (status, answer) = callWithStatus("load_contract_raw", Fristil.PACKAGE_CONTRACT)
+        val (status, answer) = callWithStatus("load_contract_raw", Lotek.PACKAGE_CONTRACT)
         if (status != 0L) throw IllegalStateException((Json.parse(answer) as Map<*, *>)["error"] as String)
         contractLoaded = true
     }
@@ -325,11 +325,11 @@ data class Finding(
 )
 
 /**
- * Et tema bygd av [Fristil.buildTheme]: tokenene per utseende, løftene som
+ * Et tema bygd av [Lotek.buildTheme]: tokenene per utseende, løftene som
  * ryker, og CSS-en, de samme feltene som `CoreTheme` i TypeScript.
  */
 data class Theme(
-    /** Hvert `--fs-color-*`-token med verdien i lyst utseende. */
+    /** Hvert `--lt-color-*`-token med verdien i lyst utseende. */
     val light: Map<String, String>,
     val dark: Map<String, String>,
     /** Løfter som ikke holder. Tom når temaet er i orden. */
@@ -346,7 +346,7 @@ data class ThemeViolation(
     val required: Double,
 )
 
-/** Det [Fristil.inspectTheme] fant, de samme feltene som `CoreThemeReport` i TypeScript. */
+/** Det [Lotek.inspectTheme] fant, de samme feltene som `CoreThemeReport` i TypeScript. */
 data class ThemeReport(
     val problems: List<ThemeProblem>,
     /** Blokker som faktisk ble lest. */
@@ -364,10 +364,10 @@ data class ThemeProblem(
 )
 
 /**
- * Oppskriften slik `fristil tema` leser den, oversatt til det kjernen tar.
+ * Oppskriften slik `lotek tema` leser den, oversatt til det kjernen tar.
  *
  * Fila kan skrive fargene, skriften og formen på norsk eller engelsk, og
- * kjernen tar bare engelsk. Nøklene er de samme som i `kjerne/cli/src/theme.rs`,
+ * kjernen tar bare engelsk. Nøklene er de samme som i `core/cli/src/theme.rs`,
  * og en nøkkel som ikke står der kaster, siden en skrivefeil ellers ville
  * sett ut som en oppskrift som virket.
  */

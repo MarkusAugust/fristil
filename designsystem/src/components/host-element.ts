@@ -3,7 +3,7 @@
  *
  * `HTMLElement` og `customElements` finnes bare i nettleseren. En
  * `class X extends HTMLElement` blir evaluert i det modulen lastes, så en
- * server som bare ville hente `fs.button()` fra pakken stoppet med
+ * server som bare ville hente `lt.button()` fra pakken stoppet med
  * «HTMLElement is not defined» før den kom så langt. Det rammet ni av
  * inngangspunktene, hovedinngangen inkludert, og gjorde pakken ubrukelig i
  * nettopp den situasjonen den er bygd for: at serveren skriver markupen.
@@ -24,18 +24,18 @@ export const HostElement =
  * web-komponent arver herfra, så typene følger med alle inngangene til dem,
  * og `addEventListener` på et element blir typet uten en egen import.
  */
-export type { FsEventMap } from "./events.js"
+export type { LtEventMap } from "./events.js"
 
 /**
  * Registrerer en web component, én gang, og bare i nettleseren.
  *
- * Kalles `defineFs*` fra en modul som også kjøres på serveren, som i
+ * Kalles `defineLt*` fra en modul som også kjøres på serveren, som i
  * TanStack Start eller en React-app med server-rendring, skal det ikke skje
  * noe. Der finnes det ingen `customElements` å registrere i.
  *
  * En konstruktør kan bare stå i registeret én gang. Står klassen der alt,
- * under et annet navn, registreres en underklasse: `defineFsToast("app-toast")`
- * fulgt av `defineFs()` kastet ellers NotSupportedError på `fs-toast`, og
+ * under et annet navn, registreres en underklasse: `defineLtToast("app-toast")`
+ * fulgt av `defineLt()` kastet ellers NotSupportedError på `lt-toast`, og
  * komponentene etter den i lista ble aldri registrert. Med underklassen
  * virker begge navnene, og `instanceof` holder for begge.
  */
@@ -234,7 +234,7 @@ export function isServerControlled(element: Element): boolean {
  *
  * En komponent som ikke finner delene sine kan ikke gjøre jobben, og det
  * eneste alternativet til en beskjed er stillhet. Det var stillhet lenge:
- * en mal uten en kontroll i `<fs-field>` ga et felt uten kobling, og
+ * en mal uten en kontroll i `<lt-field>` ga et felt uten kobling, og
  * ingenting sa fra før noen leste siden med skjermleser.
  *
  * Beskjeden kommer én gang per element og melding. En komponent
@@ -347,7 +347,7 @@ function whenSettled(run: () => void): void {
  * med riktig type.
  *
  * De frittstående komponentene har et imperativt API: `show()`,
- * `reportFailure()`, `extend()`. Kalles en av dem før `defineFs*` har kjørt,
+ * `reportFailure()`, `extend()`. Kalles en av dem før `defineLt*` har kjørt,
  * er elementet fortsatt et vanlig `HTMLElement`, og kallet feiler med
  * «reportSuccess is not a function». I drift skjedde det i gapet mellom at
  * serverens HTML sto der og at registreringen var lastet: den første
@@ -376,7 +376,7 @@ export async function whenUpgraded<T extends HTMLElement>(
       warnedTags.add(tag)
       console.warn(
         `<${tag}> er ikke registrert etter ${UPGRADE_WARNING_MS / 1000} sekunder. ` +
-          `Kall defineFs() fra @fristil/designsystem/register ved oppstart, ikke i en effekt.`,
+          `Kall defineLt() fra @lo-tek/interfaces/register ved oppstart, ikke i en effekt.`,
         element,
       )
     }, UPGRADE_WARNING_MS)

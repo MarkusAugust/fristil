@@ -4,7 +4,7 @@
       "start": 25,
       "end": 48,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/card/",
+      "link": "https://lo-tek.sobernetics.no/components/card/",
       "message": "data-interactive er et flagg på card: det står der eller ikke. data-interactive=\"true\" betyr det samme som data-interactive. Ta det bort for å slå det av.",
       "fix": {
         "title": "Ta bort data-interactive",
@@ -22,7 +22,7 @@
       "start": 103,
       "end": 121,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/label/",
+      "link": "https://lo-tek.sobernetics.no/components/label/",
       "message": "data-optional er et flagg på label: det står der eller ikke. data-optional=\"ja\" betyr det samme som data-optional. Ta det bort for å slå det av.",
       "fix": {
         "title": "Ta bort data-optional",
@@ -42,7 +42,7 @@
       "start": 25,
       "end": 48,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/card/",
+      "link": "https://lo-tek.sobernetics.no/components/card/",
       "message": "data-interactive er et flagg på card: det står der eller ikke. data-interactive=\"true\" betyr det samme som data-interactive. Ta det bort for å slå det av.",
       "fix": {
         "title": "Ta bort data-interactive",
@@ -60,7 +60,7 @@
       "start": 103,
       "end": 121,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/label/",
+      "link": "https://lo-tek.sobernetics.no/components/label/",
       "message": "data-optional er et flagg på label: det står der eller ikke. data-optional=\"ja\" betyr det samme som data-optional. Ta det bort for å slå det av.",
       "fix": {
         "title": "Ta bort data-optional",

@@ -1,5 +1,5 @@
 /**
- * Kjøres inne i VS Code av `scripts/sjekk-vscode.ts`: utvidelsen er lastet,
+ * Kjøres inne i VS Code av `scripts/check-vscode.ts`: utvidelsen er lastet,
  * og språkserveren skal gi funn og hurtigrettelser i et ekte dokument.
  */
 
@@ -21,13 +21,13 @@ async function diagnosticsFor(uri, wanted) {
 exports.run = async () => {
   const document = await vscode.workspace.openTextDocument({
     language: "html",
-    content: '<p>🧾</p>\n<button class="fs-buton">Send</button>\n',
+    content: '<p>🧾</p>\n<button class="lt-buton">Send</button>\n',
   })
   await vscode.window.showTextDocument(document)
 
   const found = await diagnosticsFor(document.uri, (d) => d.length > 0)
   assert.strictEqual(found.length, 1, "ett funn")
-  assert.strictEqual(found[0].source, "Fristil")
+  assert.strictEqual(found[0].source, "LO-TEK")
   assert.strictEqual(found[0].range.start.line, 1)
   assert.strictEqual(found[0].range.start.character, 15)
   assert.strictEqual(
@@ -40,21 +40,21 @@ exports.run = async () => {
     document.uri,
     found[0].range,
   )
-  const fix = actions.find((a) => a.title === "Bytt til fs-button")
+  const fix = actions.find((a) => a.title === "Bytt til lt-button")
   assert.ok(
     fix,
     `ingen rettelse blant ${actions.map((a) => a.title).join(", ")}`,
   )
   await vscode.workspace.applyEdit(fix.edit)
   assert.ok(
-    document.getText().includes('class="fs-button"'),
+    document.getText().includes('class="lt-button"'),
     "rettelsen ble ikke brukt",
   )
   await diagnosticsFor(document.uri, (d) => d.length === 0)
 
   // To endringer av språklista rett etter hverandre gir én server, ikke to:
   // funnet skal komme én gang.
-  const config = vscode.workspace.getConfiguration("fristil")
+  const config = vscode.workspace.getConfiguration("lotek")
   const languages = config.get("languages")
   await Promise.all([
     config.update("languages", [...languages, "plaintext"], true),
@@ -62,19 +62,19 @@ exports.run = async () => {
   ])
   const second = await vscode.workspace.openTextDocument({
     language: "html",
-    content: '<button class="fs-buton">Send</button>\n',
+    content: '<button class="lt-buton">Send</button>\n',
   })
   await new Promise((resolve) => setTimeout(resolve, 3000))
   const once = await diagnosticsFor(second.uri, (d) => d.length > 0)
   assert.strictEqual(
-    once.filter((d) => d.source === "Fristil").length,
+    once.filter((d) => d.source === "LO-TEK").length,
     1,
     `funnet kom ${once.length} ganger etter to omstarter`,
   )
 
   // Fullføringen er fortsatt utvidelsens egen.
   const edit = new vscode.WorkspaceEdit()
-  edit.insert(document.uri, new vscode.Position(2, 0), '<b class="fs-')
+  edit.insert(document.uri, new vscode.Position(2, 0), '<b class="lt-')
   await vscode.workspace.applyEdit(edit)
   const list = await vscode.commands.executeCommand(
     "vscode.executeCompletionItemProvider",
@@ -82,13 +82,13 @@ exports.run = async () => {
     new vscode.Position(2, 13),
   )
   assert.ok(
-    list.items.some((item) => (item.label.label ?? item.label) === "fs-button"),
-    "fs-button er ikke blant forslagene",
+    list.items.some((item) => (item.label.label ?? item.label) === "lt-button"),
+    "lt-button er ikke blant forslagene",
   )
 
   // Snippeten for feltet: id-en skrives én gang, og `for` følger med.
   const extension = vscode.extensions.all.find(
-    (e) => e.packageJSON.name === "fristil-vscode",
+    (e) => e.packageJSON.name === "interfaces",
   )
   assert.ok(extension, "fant ikke utvidelsen")
   const snippets = JSON.parse(
@@ -103,7 +103,7 @@ exports.run = async () => {
   })
   const editor = await vscode.window.showTextDocument(third)
   await editor.insertSnippet(
-    new vscode.SnippetString(snippets["fs-field"].body.join("\n")),
+    new vscode.SnippetString(snippets["lt-field"].body.join("\n")),
   )
   // Første tabbestopp er skjemaets id, det andre feltets, speilet i `for`.
   await vscode.commands.executeCommand("jumpToNextSnippetPlaceholder")

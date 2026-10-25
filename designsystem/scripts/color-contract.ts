@@ -1,6 +1,6 @@
 /**
  * Fargekontrakten for skriptene: familiene og rollene, lest fra
- * `src/tokens/fargekontrakt.json`, som kjernen også leser.
+ * `src/tokens/color-contract.json`, som kjernen også leser.
  */
 
 import { readFileSync } from "node:fs"
@@ -10,12 +10,12 @@ const kontrakt: {
   roles: Record<string, unknown>
 } = JSON.parse(
   readFileSync(
-    new URL("../src/tokens/fargekontrakt.json", import.meta.url),
+    new URL("../src/tokens/color-contract.json", import.meta.url),
     "utf8",
   ),
 )
 
-/** Familiene Fristil leverer selv. */
+/** Familiene LO-TEK leverer selv. */
 export const FAMILIES: readonly string[] = kontrakt.families
 
 /** Rollene, med navnet slik kontrakten skriver det, som `textSubtle`. */

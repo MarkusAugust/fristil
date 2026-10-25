@@ -1,7 +1,7 @@
 #
 # IntelliJ-pluginen bygges for seg, ikke i hovedrekka.
 #
-# `bun run sjekk` kjøres før hver push, og leser stegene i ci.yml. Et Gradle-bygg
+# `bun run check` kjøres før hver push, og leser stegene i ci.yml. Et Gradle-bygg
 # laster ned en hel IDE å kompilere mot, rundt en gigabyte, og ville gjort
 # det løftet umulig å holde. Derfor en egen arbeidsflyt med `paths`, som bare
 # kjører når pluginen eller dataene den leser faktisk er endret.
@@ -9,7 +9,7 @@
 # Klassene leses fra prosjektets manifest, med manifestet i `../kotlin` som
 # reserve, og feilmeldingene kommer fra Rust-kjernen gjennom den samme
 # pakken, som bygges med pluginen. Derfor står
-# `kjerne/**`, `kotlin/**` og manifestet også i `paths`: endrer noen
+# `core/**`, `kotlin/**` og manifestet også i `paths`: endrer noen
 # klasselista, skal pluginen bygges på nytt selv om ingen rørte Kotlin-koden.
 #
 name: IntelliJ-plugin
@@ -20,7 +20,7 @@ on:
     paths:
       - "editor-intellij/**"
       - "kotlin/**"
-      - "kjerne/**"
+      - "core/**"
       - "designsystem/manifest/**"
       - "designsystem/src/**"
       - "designsystem/agent/**"
@@ -31,7 +31,7 @@ on:
     paths:
       - "editor-intellij/**"
       - "kotlin/**"
-      - "kjerne/**"
+      - "core/**"
       - "designsystem/manifest/**"
       - "designsystem/src/**"
       - "designsystem/agent/**"
@@ -68,14 +68,14 @@ jobs:
       - name: Installer avhengigheter
         run: bun install --frozen-lockfile
 
-      # `rust-toolchain.toml` i `kjerne/` bestemmer versjonen. rustup finnes
+      # `rust-toolchain.toml` i `core/` bestemmer versjonen. rustup finnes
       # på maskinen og henter den ved første kall.
       - name: Rust-versjon
-        working-directory: kjerne
+        working-directory: core
         run: rustc --version
 
       - name: Pakk npm-pakken
-        run: bun --filter @fristil/designsystem pakk
+        run: bun --filter @lo-tek/interfaces pack
 
       # Plattformen er en hel IDE på rundt en gigabyte, og den endrer seg bare
       # når `platformVersion` gjør det. Nøkkelen leser derfor den ene linja,
@@ -101,10 +101,10 @@ jobs:
 
       - name: Bygg og test
         working-directory: editor-intellij
-        run: ./gradlew build -Pfristil.pakke=../designsystem
+        run: ./gradlew build -Plotek.pakke=../designsystem
 
       - name: Last opp pluginen
         uses: actions/upload-artifact@v4
         with:
-          name: fristil-intellij
+          name: lo-tek-intellij
           path: editor-intellij/build/distributions/*.zip

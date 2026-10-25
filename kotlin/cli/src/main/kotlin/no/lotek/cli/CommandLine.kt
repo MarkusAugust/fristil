@@ -1,19 +1,19 @@
 /**
- * Kommandolinja til Fristil på JVM-en: `java -jar fristil.jar` og
+ * Kommandolinja til LO-TEK på JVM-en: `java -jar lotek.jar` og
  * Gradle-pluginen.
  *
- * Kommandoene er skrevet én gang, i Rust (`kjerne/cli/`), og kjøres her som
+ * Kommandoene er skrevet én gang, i Rust (`core/cli/`), og kjøres her som
  * en WASI-modul med Chicory, kompilert til bytekode når jar-en bygges. Fila
  * gjør det samme som skallet i npm-pakken (`designsystem/src/cli.ts`), og bare
  * det WASI ikke kan:
  *
  * - åpner filsystemet for modulen, så både relative og absolutte stier virker;
- * - henter adressene `fristil sjekk` får, siden WASI ikke har nettverk, og
- *   gir siden til modulen som en fil (se `kjerne/cli/src/fetch.rs`);
+ * - henter adressene `lotek sjekk` får, siden WASI ikke har nettverk, og
+ *   gir siden til modulen som en fil (se `core/cli/src/fetch.rs`);
  * - sier fra når standard inn er en terminal, som WASI ikke kan se;
  * - gir modulen pakkens filer, som ligger i jar-en (se `packageDir`).
  */
-package no.fristil.cli
+package no.lotek.cli
 
 import com.dylibso.chicory.runtime.ImportValues
 import com.dylibso.chicory.runtime.Instance
@@ -99,7 +99,7 @@ object CommandLine {
     /*
      * Pakken kommandolinja leser fra: manifestet, fargekontrakten,
      * regelbøkene og komponentene. Modulen bærer ingen av dem, og jar-en har
-     * dem med under `fristil-pakke/`. WASI leser filer og ikke ressurser, så
+     * dem med under `lotek-pakke/`. WASI leser filer og ikke ressurser, så
      * i en jar pakkes de ut én gang, til en mappe i temp som er navngitt etter
      * jar-ens størrelse og endringstid, og som neste kjøring av den samme
      * jar-en bruker igjen. Mappa flyttes på plass først når den er ferdig, så
@@ -107,18 +107,18 @@ object CommandLine {
      * som i testene, brukes mappa som den er.
      */
     private val packageDir: Path by lazy {
-        val uri = CommandLine::class.java.getResource("/fristil-pakke/manifest/manifest.json")?.toURI()
-            ?: error("fristil-pakke mangler i jar-en")
+        val uri = CommandLine::class.java.getResource("/lotek-pakke/manifest/manifest.json")?.toURI()
+            ?: error("lotek-pakke mangler i jar-en")
         if (uri.scheme != "jar") return@lazy Path.of(uri).parent.parent
         // Jar-en åpnes som en fil, ikke gjennom adressen: et filsystem for
         // adressen kan alt være åpnet av noe annet i samme JVM.
         val jarFile = Path.of(CommandLine::class.java.protectionDomain.codeSource.location.toURI())
         val tmp = Path.of(System.getProperty("java.io.tmpdir"))
-        val target = tmp.resolve("fristil-pakke-${Files.size(jarFile)}-${Files.getLastModifiedTime(jarFile).toMillis()}")
+        val target = tmp.resolve("lotek-pakke-${Files.size(jarFile)}-${Files.getLastModifiedTime(jarFile).toMillis()}")
         if (Files.isDirectory(target)) return@lazy target
-        val partial = Files.createTempDirectory(tmp, "fristil-pakke-")
+        val partial = Files.createTempDirectory(tmp, "lotek-pakke-")
         FileSystems.newFileSystem(jarFile).use { jar ->
-            val root = jar.getPath("/fristil-pakke")
+            val root = jar.getPath("/lotek-pakke")
             Files.walk(root).use { paths ->
                 for (source in paths) {
                     val copy = partial.resolve(root.relativize(source).toString())
@@ -136,7 +136,7 @@ object CommandLine {
     }
 
     /**
-     * Kjører én kommando, som `listOf("sjekk", "skjema.html")`, og gir
+     * Kjører én kommando, som `listOf("sjekk", "form.html")`, og gir
      * feilkoden. Relative stier leses fra [workingDirectory]. [terminal] sier
      * om standard inn er en terminal, så `sjekk` uten filer kan si fra.
      */
@@ -158,7 +158,7 @@ object CommandLine {
                     moduleArgs += toModule(part)
                     continue
                 }
-                val dir = fetchedDir ?: Files.createTempDirectory("fristil-").also { fetchedDir = it }
+                val dir = fetchedDir ?: Files.createTempDirectory("lotek-").also { fetchedDir = it }
                 val file = dir.resolve("$index.txt")
                 Files.writeString(file, fetch(client, part))
                 moduleArgs += "--hentet=${forWasi(file.toString())}"
@@ -171,13 +171,13 @@ object CommandLine {
                     .withStdin(stdin)
                     .withStdout(out)
                     .withStderr(err)
-                    .withArguments(listOf("fristil") + moduleArgs)
-                    .withEnvironment("FRISTIL_ARBEIDSMAPPE", forWasi(workingDirectory.absolutePath))
-                    .withEnvironment("FRISTIL_PACKAGE", forWasi(packageDir.toString()))
+                    .withArguments(listOf("lotek") + moduleArgs)
+                    .withEnvironment("LOTEK_ARBEIDSMAPPE", forWasi(workingDirectory.absolutePath))
+                    .withEnvironment("LOTEK_PACKAGE", forWasi(packageDir.toString()))
                     .apply {
-                        if (terminal) withEnvironment("FRISTIL_TERMINAL", "1")
+                        if (terminal) withEnvironment("LOTEK_TERMINAL", "1")
                         // Så meldingene viser stiene som `C:\\…`, ikke som `/c/…`.
-                        if (windows) withEnvironment("FRISTIL_WINDOWS", "1")
+                        if (windows) withEnvironment("LOTEK_WINDOWS", "1")
                         // Hele filsystemet åpnes, og modulen går selv til arbeidsmappa.
                         if (windows) {
                             for (root in File.listRoots()) {
@@ -193,8 +193,8 @@ object CommandLine {
             val code =
                 WasiPreview1.builder().withOptions(options).build().use { wasi ->
                     try {
-                        Instance.builder(FristilCli.load())
-                            .withMachineFactory(FristilCli::create)
+                        Instance.builder(LotekCli.load())
+                            .withMachineFactory(LotekCli::create)
                             .withImportValues(ImportValues.builder().addFunction(*wasi.toHostFunctions()).build())
                             .build()
                         0

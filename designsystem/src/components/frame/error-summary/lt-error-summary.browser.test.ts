@@ -9,7 +9,7 @@ import {
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
 import { errorSummary } from "./error-summary"
-import { defineFsErrorSummary } from "./fs-error-summary"
+import { defineLtErrorSummary } from "./lt-error-summary"
 
 import "../../../tokens/tokens.css"
 import "./error-summary.css"
@@ -20,43 +20,43 @@ import "../../css/label/label.css"
 const FEIL = errorSummary({ count: 2 })
 
 async function tegn() {
-  await customElements.whenDefined("fs-error-summary")
+  await customElements.whenDefined("lt-error-summary")
   await ventPaTegning()
 }
 
-describe("fs-error-summary", () => {
+describe("lt-error-summary", () => {
   beforeAll(() => {
-    defineFsErrorSummary()
+    defineLtErrorSummary()
   })
 
   beforeEach(async () => {
     monter(`
-      <fs-error-summary ${attr(FEIL.host)}>
+      <lt-error-summary ${attr(FEIL.host)}>
         <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
         <ul>
           <li><a href="#epost" id="lenke-epost">Skriv en gyldig e-postadresse</a></li>
           <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
         </ul>
-      </fs-error-summary>
+      </lt-error-summary>
 
-      <label class="fs-label" for="epost">E-postadresse</label>
-      <input class="fs-input" id="epost" type="email" aria-invalid="true" data-state="invalid" />
+      <label class="lt-label" for="epost">E-postadresse</label>
+      <input class="lt-input" id="epost" type="email" aria-invalid="true" data-state="invalid" />
 
-      <label class="fs-label" for="fodselsdato">Fødselsdato</label>
-      <input class="fs-input" id="fodselsdato" aria-invalid="true" data-state="invalid" />
+      <label class="lt-label" for="fodselsdato">Fødselsdato</label>
+      <input class="lt-input" id="fodselsdato" aria-invalid="true" data-state="invalid" />
     `)
     await tegn()
   })
 
   it("får varslingsrollen og overskriften fra serveren", () => {
-    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    const boks = document.querySelector("lt-error-summary") as HTMLElement
     const tittel = document.querySelector(
-      ".fs-error-summary__title",
+      ".lt-error-summary__title",
     ) as HTMLElement
 
     // Lagde komponenten dette selv, forsvant både klassen og overskriften ved
     // første morfing i Datastar, og kom ikke tilbake.
-    expect(boks.classList.contains("fs-error-summary")).toBe(true)
+    expect(boks.classList.contains("lt-error-summary")).toBe(true)
     expect(boks.getAttribute("role")).toBe("alert")
     expect(boks.tabIndex).toBe(-1)
     expect(tittel.textContent).toBe("Skjemaet har to feil")
@@ -70,7 +70,7 @@ describe("fs-error-summary", () => {
   })
 
   it("flytter fokus til boksen når den kommer til syne", () => {
-    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    const boks = document.querySelector("lt-error-summary") as HTMLElement
 
     // Uten dette vet ikke den som hører siden at innsendingen stoppet.
     expect(document.activeElement).toBe(boks)
@@ -79,7 +79,7 @@ describe("fs-error-summary", () => {
   it("virker på lenker en patch har byttet ut", async () => {
     // Én lytter på verten. Før fikk hver ny lenke sin egen, og de gamle ble
     // holdt fast i minnet.
-    const liste = document.querySelector("fs-error-summary ul") as HTMLElement
+    const liste = document.querySelector("lt-error-summary ul") as HTMLElement
     liste.innerHTML =
       '<li><a href="#fodselsdato" id="ny-lenke">Skriv en dato som finnes</a></li>'
     await tegn()
@@ -100,7 +100,7 @@ describe("fs-error-summary", () => {
   })
 
   it("kobler seg på lenker serveren patcher inn senere", async () => {
-    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    const boks = document.querySelector("lt-error-summary") as HTMLElement
     const liste = boks.querySelector("ul") as HTMLElement
 
     liste.innerHTML = `<li><a href="#fodselsdato" id="ny-lenke">Skriv en dato som finnes</a></li>`
@@ -116,7 +116,7 @@ describe("fs-error-summary", () => {
   })
 })
 
-describe("fs-error-summary i en skyggerot", () => {
+describe("lt-error-summary i en skyggerot", () => {
   /**
    * Forhåndsvisningene i dokumentasjonen ligger i en skyggerot, og det gjør
    * skjemaer inne i andre komponenter også. `document.getElementById` ser
@@ -129,10 +129,10 @@ describe("fs-error-summary i en skyggerot", () => {
     const feil = errorSummary({ count: 1 })
 
     rot.innerHTML = `
-      <fs-error-summary ${attr(feil.host)} data-autofocus="false">
+      <lt-error-summary ${attr(feil.host)} data-autofocus="false">
         <h2 ${attr(feil.title)}>Skjemaet har én feil</h2>
         <ul><li><a href="#skygge-epost" id="skygge-lenke">Skriv en gyldig adresse</a></li></ul>
-      </fs-error-summary>
+      </lt-error-summary>
       <input id="skygge-epost" type="email" />
     `
 
@@ -153,27 +153,27 @@ describe("fs-error-summary i en skyggerot", () => {
  * veien, og komponenten kan ikke bruke «har jeg flyttet fokus hit før» som
  * svar på om dette er en ny innsending.
  */
-describe("fs-error-summary når skjemaet feiler igjen", () => {
+describe("lt-error-summary når skjemaet feiler igjen", () => {
   beforeAll(() => {
-    defineFsErrorSummary()
+    defineLtErrorSummary()
   })
 
   beforeEach(async () => {
     monter(`
-      <fs-error-summary ${attr(FEIL.host)} hidden>
+      <lt-error-summary ${attr(FEIL.host)} hidden>
         <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
         <ul>
           <li><a href="#epost">Skriv en gyldig e-postadresse</a></li>
           <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
         </ul>
-      </fs-error-summary>
+      </lt-error-summary>
       <input id="epost" />
     `)
     await tegn()
   })
 
   it("tar fokus hver gang boksen vises på nytt", async () => {
-    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    const boks = document.querySelector("lt-error-summary") as HTMLElement
     const felt = document.getElementById("epost") as HTMLInputElement
 
     boks.hidden = false
@@ -196,9 +196,9 @@ describe("fs-error-summary når skjemaet feiler igjen", () => {
   })
 })
 
-describe("fs-error-summary flytter fokus dit det faktisk kan lande", () => {
+describe("lt-error-summary flytter fokus dit det faktisk kan lande", () => {
   beforeAll(() => {
-    defineFsErrorSummary()
+    defineLtErrorSummary()
   })
 
   it("tar fokus når forelderen vises og lista byttes ut", async () => {
@@ -210,16 +210,16 @@ describe("fs-error-summary flytter fokus dit det faktisk kan lande", () => {
      */
     monter(`
       <div id="panel" hidden>
-        <fs-error-summary ${attr(FEIL.host)}>
+        <lt-error-summary ${attr(FEIL.host)}>
           <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
           <ul><li><a href="#epost">Skriv en gyldig e-postadresse</a></li></ul>
-        </fs-error-summary>
+        </lt-error-summary>
       </div>
       <input id="epost" />
     `)
     await tegn()
 
-    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    const boks = document.querySelector("lt-error-summary") as HTMLElement
     expect(document.activeElement).not.toBe(boks)
 
     const panel = document.getElementById("panel") as HTMLElement
@@ -237,16 +237,16 @@ describe("fs-error-summary flytter fokus dit det faktisk kan lande", () => {
     // lista, og fokus skal bli der det er.
     monter(`
       <div id="panel" hidden>
-        <fs-error-summary ${attr(FEIL.host)}>
+        <lt-error-summary ${attr(FEIL.host)}>
           <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
           <ul><li><a href="#epost">Skriv en gyldig e-postadresse</a></li></ul>
-        </fs-error-summary>
+        </lt-error-summary>
       </div>
       <input id="epost" />
     `)
     await tegn()
 
-    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    const boks = document.querySelector("lt-error-summary") as HTMLElement
     const felt = document.getElementById("epost") as HTMLInputElement
     ;(document.getElementById("panel") as HTMLElement).hidden = false
     felt.focus()
@@ -259,10 +259,10 @@ describe("fs-error-summary flytter fokus dit det faktisk kan lande", () => {
 
   it("følger for til en gruppe når ledeteksten ikke har en kontroll", async () => {
     monter(`
-      <fs-error-summary ${attr(FEIL.host)} data-autofocus="false">
+      <lt-error-summary ${attr(FEIL.host)} data-autofocus="false">
         <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
         <ul><li><a href="#valg-label" id="valg-lenke">Velg minst ett alternativ</a></li></ul>
-      </fs-error-summary>
+      </lt-error-summary>
       <label id="valg-label" for="valg">Alternativer</label>
       <div id="valg" role="group"><input type="checkbox" /></div>
     `)
@@ -281,10 +281,10 @@ describe("fs-error-summary flytter fokus dit det faktisk kan lande", () => {
     document.body.append(vert)
     const rot = vert.attachShadow({ mode: "open" })
     rot.innerHTML = `
-      <fs-error-summary ${attr(FEIL.host)}>
+      <lt-error-summary ${attr(FEIL.host)}>
         <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
         <ul><li><a href="#ute">Skriv noe</a></li></ul>
-      </fs-error-summary>
+      </lt-error-summary>
     `
     await tegn()
 
@@ -304,10 +304,10 @@ describe("fs-error-summary flytter fokus dit det faktisk kan lande", () => {
     // kontrollen inni ledeteksten fikk ledeteksten fokus og en `tabindex`
     // den ikke skulle hatt.
     monter(`
-      <fs-error-summary ${attr(FEIL.host)} data-autofocus="false">
+      <lt-error-summary ${attr(FEIL.host)} data-autofocus="false">
         <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
         <ul><li><a href="#navn-label" id="navn-lenke">Skriv navnet ditt</a></li></ul>
-      </fs-error-summary>
+      </lt-error-summary>
       <label id="navn-label">Navn <input id="navn" /></label>
     `)
     await tegn()
@@ -320,22 +320,22 @@ describe("fs-error-summary flytter fokus dit det faktisk kan lande", () => {
   })
 })
 
-describe("fs-error-summary kobler fra bar struktur", () => {
+describe("lt-error-summary kobler fra bar struktur", () => {
   beforeAll(() => {
-    defineFsErrorSummary()
+    defineLtErrorSummary()
   })
 
   beforeEach(async () => {
     monter(`
-      <fs-error-summary id="bar-feil">
+      <lt-error-summary id="bar-feil">
         <h2>Skjemaet har én feil</h2>
         <ul>
           <li><a href="#bar-epost">Skriv en gyldig e-postadresse</a></li>
         </ul>
-      </fs-error-summary>
+      </lt-error-summary>
 
-      <label class="fs-label" for="bar-epost">E-postadresse</label>
-      <input class="fs-input" id="bar-epost" type="email" />
+      <label class="lt-label" for="bar-epost">E-postadresse</label>
+      <input class="lt-input" id="bar-epost" type="email" />
     `)
     await tegn()
   })
@@ -347,10 +347,10 @@ describe("fs-error-summary kobler fra bar struktur", () => {
   it("gir boksen klassen, rollen og tabbestoppen, og overskriften klassen", async () => {
     const tittel = boks().querySelector("h2") as HTMLElement
 
-    expect(boks().classList.contains("fs-error-summary")).toBe(true)
+    expect(boks().classList.contains("lt-error-summary")).toBe(true)
     expect(boks().getAttribute("role")).toBe("alert")
     expect(boks().tabIndex).toBe(-1)
-    expect(tittel.classList.contains("fs-error-summary__title")).toBe(true)
+    expect(tittel.classList.contains("lt-error-summary__title")).toBe(true)
     // Og da kan den få fokus, som er hele grunnen til komponenten.
     expect(document.activeElement).toBe(boks())
 
@@ -359,16 +359,16 @@ describe("fs-error-summary kobler fra bar struktur", () => {
 
   it("lar en rolle serveren skrev stå", async () => {
     monter(`
-      <fs-error-summary id="bar-feil" role="status">
+      <lt-error-summary id="bar-feil" role="status">
         <h2>Skjemaet har én feil</h2>
         <ul><li><a href="#bar-epost">Skriv en gyldig e-postadresse</a></li></ul>
-      </fs-error-summary>
-      <input class="fs-input" id="bar-epost" type="email" />
+      </lt-error-summary>
+      <input class="lt-input" id="bar-epost" type="email" />
     `)
     await tegn()
 
     expect(boks().getAttribute("role")).toBe("status")
-    expect(boks().classList.contains("fs-error-summary")).toBe(true)
+    expect(boks().classList.contains("lt-error-summary")).toBe(true)
   })
 
   it("setter klassene og tabbestoppen tilbake etter en patch", async () => {
@@ -381,29 +381,29 @@ describe("fs-error-summary kobler fra bar struktur", () => {
     tittel.removeAttribute("class")
     await ventPaTegning()
 
-    expect(boks().classList.contains("fs-error-summary")).toBe(true)
+    expect(boks().classList.contains("lt-error-summary")).toBe(true)
     expect(boks().getAttribute("role")).toBe("alert")
     expect(boks().tabIndex).toBe(-1)
-    expect(tittel.classList.contains("fs-error-summary__title")).toBe(true)
+    expect(tittel.classList.contains("lt-error-summary__title")).toBe(true)
   })
 })
 
-describe("fs-error-summary mens brukeren retter", () => {
+describe("lt-error-summary mens brukeren retter", () => {
   beforeAll(() => {
-    defineFsErrorSummary()
+    defineLtErrorSummary()
   })
 
   it("tar ikke fokus når en synlig liste tømmes og fylles igjen", async () => {
     monter(
-      `<fs-error-summary ${attr(FEIL.host)}>
+      `<lt-error-summary ${attr(FEIL.host)}>
         <h2 ${attr(FEIL.title)}>Skjemaet har feil</h2>
         <ul><li><a href="#navn">Navn mangler</a></li></ul>
-      </fs-error-summary>
+      </lt-error-summary>
       <label for="navn">Navn</label><input id="navn" />
       <label for="epost">E-post</label><input id="epost" />`,
     )
     await tegn()
-    const liste = document.querySelector("fs-error-summary ul") as HTMLElement
+    const liste = document.querySelector("lt-error-summary ul") as HTMLElement
     const navn = document.getElementById("navn") as HTMLInputElement
 
     navn.focus()
@@ -422,14 +422,14 @@ describe("fs-error-summary mens brukeren retter", () => {
      * boksen tok fokus ved første feilede innsending og aldri igjen.
      */
     monter(
-      `<fs-error-summary ${attr(FEIL.host)}>
+      `<lt-error-summary ${attr(FEIL.host)}>
         <h2 ${attr(FEIL.title)}>Skjemaet har feil</h2>
         <ul><li><a href="#navn">Navn mangler</a></li></ul>
-      </fs-error-summary>
+      </lt-error-summary>
       <label for="navn">Navn</label><input id="navn" />`,
     )
     await tegn()
-    const boks = document.querySelector("fs-error-summary") as HTMLElement
+    const boks = document.querySelector("lt-error-summary") as HTMLElement
     const liste = boks.querySelector("ul") as HTMLElement
     const navn = document.getElementById("navn") as HTMLInputElement
     expect(document.activeElement, "første innsending").toBe(boks)
@@ -447,9 +447,9 @@ describe("fs-error-summary mens brukeren retter", () => {
   })
 })
 
-describe("fs-error-summary og en prosentkodet lenke", () => {
+describe("lt-error-summary og en prosentkodet lenke", () => {
   beforeAll(() => {
-    defineFsErrorSummary()
+    defineLtErrorSummary()
   })
 
   it("finner feltet og sier ikke at lenken er brutt", async () => {
@@ -460,10 +460,10 @@ describe("fs-error-summary og en prosentkodet lenke", () => {
     }
     try {
       monter(
-        `<fs-error-summary ${attr(FEIL.host)} data-autofocus="false">
+        `<lt-error-summary ${attr(FEIL.host)} data-autofocus="false">
           <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
           <ul><li><a href="#f%C3%B8dselsdato">Skriv en dato som finnes</a></li></ul>
-        </fs-error-summary>
+        </lt-error-summary>
         <label for="fødselsdato">Fødselsdato</label><input id="fødselsdato" />`,
       )
       await tegn()
@@ -472,7 +472,7 @@ describe("fs-error-summary og en prosentkodet lenke", () => {
 
       expect(advarsler.filter((a) => a.includes("lenken peker"))).toEqual([])
 
-      ;(document.querySelector("fs-error-summary a") as HTMLElement).click()
+      ;(document.querySelector("lt-error-summary a") as HTMLElement).click()
       expect(document.activeElement?.id).toBe("fødselsdato")
     } finally {
       console.warn = ekte
@@ -480,16 +480,16 @@ describe("fs-error-summary og en prosentkodet lenke", () => {
   })
 })
 
-describe("fs-error-summary under et annet tagnavn", () => {
+describe("lt-error-summary under et annet tagnavn", () => {
   it("skjules fortsatt av hidden", async () => {
     /*
-     * README fører `<fs-error-summary>` blant dem som ser like ut under et
-     * annet navn. `fs-error-summary[hidden]` i error-summary.css følger
+     * README fører `<lt-error-summary>` blant dem som ser like ut under et
+     * annet navn. `lt-error-summary[hidden]` i error-summary.css følger
      * ikke med, men `display: block` står på klassen komponenten setter
      * selv, og `[hidden]`-regelen i tokens.css er skrevet på den samme
      * klassen, så boksen skjules likevel.
      */
-    defineFsErrorSummary("annen-oppsummering")
+    defineLtErrorSummary("annen-oppsummering")
     monter(`
       <annen-oppsummering ${attr(FEIL.host)} hidden>
         <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
@@ -504,7 +504,7 @@ describe("fs-error-summary under et annet tagnavn", () => {
     await ventPaTegning()
     const boks = document.querySelector("annen-oppsummering") as HTMLElement
 
-    expect(boks.classList.contains("fs-error-summary")).toBe(true)
+    expect(boks.classList.contains("lt-error-summary")).toBe(true)
     expect(getComputedStyle(boks).display).toBe("none")
 
     boks.hidden = false
@@ -521,16 +521,16 @@ describe("fs-error-summary under et annet tagnavn", () => {
  * det tilbake til innsendingsknappen. Testene gjør det samme som React, uten
  * React: endrer DOM-en og gir knappen fokus igjen i samme omgang.
  */
-describe("fs-error-summary når et rammeverk gir fokus tilbake", () => {
+describe("lt-error-summary når et rammeverk gir fokus tilbake", () => {
   beforeAll(() => {
-    defineFsErrorSummary()
+    defineLtErrorSummary()
   })
 
   const boks = () => `
-    <fs-error-summary ${attr(FEIL.host)} id="feil-r" hidden>
+    <lt-error-summary ${attr(FEIL.host)} id="feil-r" hidden>
       <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
       <ul><li><a href="#epost-r">Skriv e-postadressen</a></li></ul>
-    </fs-error-summary>`
+    </lt-error-summary>`
 
   it("tar fokus tilbake når boksen vises", async () => {
     monter(

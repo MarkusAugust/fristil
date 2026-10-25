@@ -3,39 +3,39 @@ title: Sideskjelett
 description: Hopplenke, landemerker og overskriftsnivåer, altså det komponentene ikke kan ta ansvar for.
 ---
 
-import Rammeside from "../../../components/Rammeside.astro"
+import FramedPage from "../../../components/FramedPage.astro"
 
 En komponent kan ikke vite hvor den står på siden. Den vet ikke om overskriften er den første på siden eller den tolvte, og den kan ikke legge inn en hopplenke på dine vegne. Derfor er dette mønsteret det eneste som ikke handler om en enkelt komponent, men om rekkefølgen de står i.
 
-<Rammeside src="/demo/sideskjelett/" tittel="Sideskjelettet" hoyde="36rem" />
+<FramedPage src="/demo/page-skeleton/" tittel="Sideskjelettet" hoyde="36rem" />
 
 ## Rekkefølgen
 
 ```html
 <body>
-  <a class="fs-skip-link" href="#hovedinnhold">Hopp til hovedinnhold</a>
+  <a class="lt-skip-link" href="#hovedinnhold">Hopp til hovedinnhold</a>
 
   <header>
-    <a class="fs-link" href="/" aria-label="Eksempelkommune, til forsiden">
+    <a class="lt-link" href="/" aria-label="Eksempelkommune, til forsiden">
       <strong>Eksempelkommune</strong>
     </a>
 
     <nav aria-label="Hovedmeny">
-      <ul class="fs-list" data-variant="plain">
-        <li><a class="fs-link" href="/saker">Mine saker</a></li>
+      <ul class="lt-list" data-variant="plain">
+        <li><a class="lt-link" href="/saker">Mine saker</a></li>
       </ul>
     </nav>
   </header>
 
   <nav aria-label="Du er her">
-    <ol class="fs-breadcrumbs">
-      <li><a class="fs-link" href="/">Forsiden</a></li>
-      <li><a class="fs-link" href="/saker" aria-current="page">Mine saker</a></li>
+    <ol class="lt-breadcrumbs">
+      <li><a class="lt-link" href="/">Forsiden</a></li>
+      <li><a class="lt-link" href="/saker" aria-current="page">Mine saker</a></li>
     </ol>
   </nav>
 
   <main id="hovedinnhold" tabindex="-1">
-    <h1 class="fs-heading" data-size="xl">Mine saker</h1>
+    <h1 class="lt-heading" data-size="xl">Mine saker</h1>
     …
   </main>
 
@@ -53,16 +53,16 @@ En komponent kan ikke vite hvor den står på siden. Den vet ikke om overskrifte
 
 ## Overskriftsnivåene
 
-`fs.heading({ size })` setter bare størrelsen. Nivået er sidens struktur, og det er ditt ansvar:
+`lt.heading({ size })` setter bare størrelsen. Nivået er sidens struktur, og det er ditt ansvar:
 
 ```html
-<h1 class="fs-heading" data-size="xl">Mine saker</h1>
+<h1 class="lt-heading" data-size="xl">Mine saker</h1>
 
 <section aria-labelledby="til-behandling">
-  <h2 class="fs-heading" data-size="m" id="til-behandling">Til behandling</h2>
+  <h2 class="lt-heading" data-size="m" id="til-behandling">Til behandling</h2>
 
-  <article class="fs-card">
-    <h3 class="fs-card__title">Søknad om bostøtte</h3>
+  <article class="lt-card">
+    <h3 class="lt-card__title">Søknad om bostøtte</h3>
   </article>
 </section>
 ```
@@ -73,24 +73,24 @@ Nivåene skal følge hverandre uten hopp. Skal en `<h2>` se liten ut, gir du den
 
 ## Det du må skrive selv
 
-Oppsettet er appens. Fristil gir komponentene og tokenene, mens spaltebredde, luft mellom delene og farge på topp og bunn hører til siden:
+Oppsettet er appens. LO-TEK gir komponentene og tokenene, mens spaltebredde, luft mellom delene og farge på topp og bunn hører til siden:
 
 ```css
 .sidebredde {
 	max-inline-size: 60rem;
 	margin-inline: auto;
-	padding-inline: var(--fs-spacing-4);
+	padding-inline: var(--lt-spacing-4);
 }
 
 .topp {
-	background: var(--fs-color-neutral-surface);
-	border-block-end: 1px solid var(--fs-color-neutral-border-subtle);
+	background: var(--lt-color-neutral-surface);
+	border-block-end: 1px solid var(--lt-color-neutral-border-subtle);
 }
 ```
 
 Bruk tokens til verdiene, så følger siden temaet uten at du skriver `dark:` noe sted.
 
-Én linje mer er din: `color-scheme: light dark` på `<html>`. Fristil setter den ikke på bar `:root`, siden pakken kan være en gjest på en side den ikke eier, og uten den tegner nettleseren rullefelt og nedtrekkslister lyse på en mørk side. Demoen over skriver den selv. Bruker du [temavelgeren](../tema/), setter hvert valg den i stedet.
+Én linje mer er din: `color-scheme: light dark` på `<html>`. LO-TEK setter den ikke på bar `:root`, siden pakken kan være en gjest på en side den ikke eier, og uten den tegner nettleseren rullefelt og nedtrekkslister lyse på en mørk side. Demoen over skriver den selv. Bruker du [temavelgeren](../theme/), setter hvert valg den i stedet.
 
 ## Når siden bytter innhold
 

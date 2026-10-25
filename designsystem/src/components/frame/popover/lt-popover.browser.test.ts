@@ -9,7 +9,7 @@ import {
   ventPaTegning,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
-import { defineFsPopover, type FsPopover } from "./fs-popover"
+import { defineLtPopover, type LtPopover } from "./lt-popover"
 import { popover, popoverPlacements } from "./popover"
 
 import "../../../tokens/tokens.css"
@@ -21,24 +21,24 @@ import "../../css/list/list.css"
 const BOKS = popover({ id: "panel" })
 
 async function tegn() {
-  await customElements.whenDefined("fs-popover")
+  await customElements.whenDefined("lt-popover")
   await ventPaTegning()
 }
 
-describe("fs-popover", () => {
+describe("lt-popover", () => {
   beforeAll(() => {
-    defineFsPopover()
+    defineLtPopover()
   })
 
   beforeEach(async () => {
     monter(`
-      <fs-popover placement="bottom-end" ${attr(BOKS.host)}>
-        <button ${attr(BOKS.trigger)} class="fs-button" id="utloser">Handlinger</button>
+      <lt-popover placement="bottom-end" ${attr(BOKS.host)}>
+        <button ${attr(BOKS.trigger)} class="lt-button" id="utloser">Handlinger</button>
         <ul ${attr(BOKS.panel)} data-variant="plain">
-          <li><button class="fs-button" data-variant="ghost" type="button">Arkiver</button></li>
-          <li><button class="fs-button" data-variant="ghost" type="button">Slett</button></li>
+          <li><button class="lt-button" data-variant="ghost" type="button">Arkiver</button></li>
+          <li><button class="lt-button" data-variant="ghost" type="button">Slett</button></li>
         </ul>
-      </fs-popover>
+      </lt-popover>
     `)
     await tegn()
   })
@@ -50,14 +50,14 @@ describe("fs-popover", () => {
     expect(utloser.getAttribute("aria-expanded")).toBe("false")
     expect(utloser.getAttribute("aria-controls")).toBe("panel")
     expect(panel.getAttribute("popover")).toBe("manual")
-    expect(panel.classList.contains("fs-popover")).toBe(true)
+    expect(panel.classList.contains("lt-popover")).toBe(true)
   })
 
   it("ber ikke malen frede noe", () => {
     // Tilstanden er brukerens, og komponenten setter den tilbake selv etter
     // en patch. Kommer `data-preserve-attr` tilbake her, har noen gjenopptatt
     // kontrakten malen måtte skrive av fra dokumentasjonen.
-    const vert = document.querySelector("fs-popover") as HTMLElement
+    const vert = document.querySelector("lt-popover") as HTMLElement
     const knapp = document.querySelector("button") as HTMLElement
     const panel = document.getElementById("panel") as HTMLElement
 
@@ -108,7 +108,7 @@ describe("fs-popover", () => {
   })
 
   it("melder fra når panelet åpnes og lukkes", async () => {
-    const boks = document.querySelector("fs-popover") as HTMLElement
+    const boks = document.querySelector("lt-popover") as HTMLElement
     const meldinger: boolean[] = []
     boks.addEventListener("popover-toggle", (event) => {
       meldinger.push(event.detail.open)
@@ -141,9 +141,9 @@ describe("fs-popover", () => {
  * som uansett må være der: panelet har `popover`, og knappen peker på det
  * med `aria-controls`.
  */
-describe("fs-popover finner delene sine", () => {
+describe("lt-popover finner delene sine", () => {
   beforeAll(() => {
-    defineFsPopover()
+    defineLtPopover()
   })
 
   it("sender ikke ut slot i det hele tatt", () => {
@@ -152,10 +152,10 @@ describe("fs-popover finner delene sine", () => {
 
   it("virker på markup helt uten slot", async () => {
     monter(`
-      <fs-popover ${attr(BOKS.host)}>
-        <button ${attr(BOKS.trigger)} class="fs-button" id="bare-aria">Handlinger</button>
+      <lt-popover ${attr(BOKS.host)}>
+        <button ${attr(BOKS.trigger)} class="lt-button" id="bare-aria">Handlinger</button>
         <ul ${attr(BOKS.panel)}><li>Arkiver</li></ul>
-      </fs-popover>
+      </lt-popover>
     `)
     await tegn()
 
@@ -175,10 +175,10 @@ describe("fs-popover finner delene sine", () => {
     // En server som ennå ikke er oppdatert sender fortsatt `slot="trigger"`.
     // Det skal ikke hindre noe: attributtet er inert uten en skyggerot.
     monter(`
-      <fs-popover ${attr(BOKS.host)}>
-        <button ${attr(BOKS.trigger)} slot="trigger" class="fs-button" id="med-slot">Handlinger</button>
+      <lt-popover ${attr(BOKS.host)}>
+        <button ${attr(BOKS.trigger)} slot="trigger" class="lt-button" id="med-slot">Handlinger</button>
         <ul ${attr(BOKS.panel)}><li>Arkiver</li></ul>
-      </fs-popover>
+      </lt-popover>
     `)
     await tegn()
 
@@ -192,17 +192,17 @@ describe("fs-popover finner delene sine", () => {
   })
 })
 
-describe("fs-popover plasserer panelet", () => {
+describe("lt-popover plasserer panelet", () => {
   beforeAll(() => {
-    defineFsPopover()
+    defineLtPopover()
   })
 
   function markup(id: string, vert = "", panel = 'popover="manual"') {
     return `
-      <fs-popover ${vert}>
-        <button aria-controls="${id}" aria-expanded="false" class="fs-button" id="${id}-knapp">Handlinger</button>
-        <ul class="fs-popover" id="${id}" ${panel}><li>Arkiver saken</li><li>Slett saken</li></ul>
-      </fs-popover>
+      <lt-popover ${vert}>
+        <button aria-controls="${id}" aria-expanded="false" class="lt-button" id="${id}-knapp">Handlinger</button>
+        <ul class="lt-popover" id="${id}" ${panel}><li>Arkiver saken</li><li>Slett saken</li></ul>
+      </lt-popover>
     `
   }
 
@@ -265,7 +265,7 @@ describe("fs-popover plasserer panelet", () => {
     // på knappen gjorde ingenting synlig.
     monter(markup("p5", "", "popover"))
     await tegn()
-    const vert = document.querySelector("fs-popover") as HTMLElement
+    const vert = document.querySelector("lt-popover") as HTMLElement
     const knapp = document.getElementById("p5-knapp") as HTMLElement
     const panel = document.getElementById("p5") as HTMLElement
     const meldinger: boolean[] = []
@@ -298,12 +298,12 @@ describe("fs-popover plasserer panelet", () => {
     // Attributtet leses direkte: WebKit gir tom streng fra
     // `style.getPropertyValue` for en egendefinert egenskap.
     const posisjon = () => panel.getAttribute("style") ?? ""
-    expect(posisjon()).toContain("--fs-popover-top")
+    expect(posisjon()).toContain("--lt-popover-top")
 
     panel.removeAttribute("style")
     await tegn()
 
-    expect(posisjon()).toContain("--fs-popover-top")
+    expect(posisjon()).toContain("--lt-popover-top")
   })
 
   it("lar byggefunksjonen sette placement på verten", () => {
@@ -329,27 +329,27 @@ describe("fs-popover plasserer panelet", () => {
  * oppdatering. `MED_ID` er det oppskriften viser, med id fra malen.
  */
 const BAR = `
-  <fs-popover>
-    <button class="fs-button" id="bar-knapp">Handlinger</button>
-    <ul class="fs-popover" data-variant="plain">
-      <li><button class="fs-button" data-variant="ghost" type="button">Arkiver</button></li>
+  <lt-popover>
+    <button class="lt-button" id="bar-knapp">Handlinger</button>
+    <ul class="lt-popover" data-variant="plain">
+      <li><button class="lt-button" data-variant="ghost" type="button">Arkiver</button></li>
     </ul>
-  </fs-popover>`
+  </lt-popover>`
 
 const MED_ID = BAR.replace(
-  '<ul class="fs-popover"',
-  '<ul class="fs-popover" id="meny"',
+  '<ul class="lt-popover"',
+  '<ul class="lt-popover" id="meny"',
 )
 
-describe("fs-popover kobler fra bar struktur", () => {
+describe("lt-popover kobler fra bar struktur", () => {
   beforeAll(() => {
-    defineFsPopover()
+    defineLtPopover()
   })
 
   function deler() {
     return {
       knapp: document.getElementById("bar-knapp") as HTMLButtonElement,
-      panel: document.querySelector("ul.fs-popover") as HTMLElement,
+      panel: document.querySelector("ul.lt-popover") as HTMLElement,
     }
   }
 
@@ -367,7 +367,7 @@ describe("fs-popover kobler fra bar struktur", () => {
     await ventPaTegning()
     expect(panel.matches(":popover-open")).toBe(true)
     expect(knapp.getAttribute("aria-expanded")).toBe("true")
-    ;(document.querySelector("fs-popover") as FsPopover).hide()
+    ;(document.querySelector("lt-popover") as LtPopover).hide()
   })
 
   it("skriver aria-controls fra id-en malen ga panelet, og åpner på klikk", async () => {
@@ -386,7 +386,7 @@ describe("fs-popover kobler fra bar struktur", () => {
     expect(knapp.getAttribute("aria-expanded")).toBe("true")
 
     await forventIngenTilgjengelighetsbrudd()
-    ;(document.querySelector("fs-popover") as FsPopover).hide()
+    ;(document.querySelector("lt-popover") as LtPopover).hide()
   })
 
   it("holder vinduet åpent når en patch tar både open og popover", async () => {
@@ -400,7 +400,7 @@ describe("fs-popover kobler fra bar struktur", () => {
     monter(BAR)
     await tegn()
     const { knapp, panel } = deler()
-    const vert = document.querySelector("fs-popover") as FsPopover
+    const vert = document.querySelector("lt-popover") as LtPopover
     knapp.click()
     await ventPaTegning()
     expect(panel.matches(":popover-open")).toBe(true)
@@ -421,7 +421,7 @@ describe("fs-popover kobler fra bar struktur", () => {
     monter(BAR)
     await tegn()
     const { knapp, panel } = deler()
-    const vert = document.querySelector("fs-popover") as FsPopover
+    const vert = document.querySelector("lt-popover") as LtPopover
     knapp.click()
     await ventPaTegning()
     expect(panel.matches(":popover-open")).toBe(true)
@@ -444,8 +444,8 @@ describe("fs-popover kobler fra bar struktur", () => {
     // komponentens `manual`. Id-en er også serverens.
     monter(
       BAR.replace(
-        '<ul class="fs-popover" data-variant="plain">',
-        '<ul class="fs-popover" id="eget-panel" popover data-variant="plain">',
+        '<ul class="lt-popover" data-variant="plain">',
+        '<ul class="lt-popover" id="eget-panel" popover data-variant="plain">',
       ),
     )
     await tegn()
@@ -459,9 +459,9 @@ describe("fs-popover kobler fra bar struktur", () => {
   it("velger ikke en knapp som peker på noe annet", async () => {
     monter(
       MED_ID.replace(
-        '<button class="fs-button" id="bar-knapp">',
-        '<button class="fs-button" aria-controls="noe-annet" id="feil-knapp">Filter</button>' +
-          '<button class="fs-button" id="bar-knapp">',
+        '<button class="lt-button" id="bar-knapp">',
+        '<button class="lt-button" aria-controls="noe-annet" id="feil-knapp">Filter</button>' +
+          '<button class="lt-button" id="bar-knapp">',
       ),
     )
     await tegn()
@@ -507,10 +507,10 @@ describe("fs-popover kobler fra bar struktur", () => {
   it("gjør knappen til en vanlig knapp, så den ikke sender skjemaet", async () => {
     monter(`
       <form id="skjema">
-        <fs-popover>
-          <button class="fs-button">Hva betyr dette?</button>
-          <div class="fs-popover">Forklaring</div>
-        </fs-popover>
+        <lt-popover>
+          <button class="lt-button">Hva betyr dette?</button>
+          <div class="lt-popover">Forklaring</div>
+        </lt-popover>
       </form>`)
     await tegn()
     let sendt = 0
@@ -523,7 +523,7 @@ describe("fs-popover kobler fra bar struktur", () => {
     knapp.click()
     await tegn()
     expect(sendt).toBe(0)
-    expect(document.querySelector("fs-popover")?.hasAttribute("open")).toBe(
+    expect(document.querySelector("lt-popover")?.hasAttribute("open")).toBe(
       true,
     )
 
@@ -535,14 +535,14 @@ describe("fs-popover kobler fra bar struktur", () => {
 
   it("retter en tom type, men lar en knapp som sier submit stå", async () => {
     monter(`
-      <fs-popover id="tom">
-        <button class="fs-button" type="">Hva betyr dette?</button>
-        <div class="fs-popover">Forklaring</div>
-      </fs-popover>
-      <fs-popover id="send">
-        <button class="fs-button" type="submit">Send</button>
-        <div class="fs-popover">Forklaring</div>
-      </fs-popover>`)
+      <lt-popover id="tom">
+        <button class="lt-button" type="">Hva betyr dette?</button>
+        <div class="lt-popover">Forklaring</div>
+      </lt-popover>
+      <lt-popover id="send">
+        <button class="lt-button" type="submit">Send</button>
+        <div class="lt-popover">Forklaring</div>
+      </lt-popover>`)
     await tegn()
 
     expect(document.querySelector("#tom button")?.getAttribute("type")).toBe(
@@ -553,16 +553,16 @@ describe("fs-popover kobler fra bar struktur", () => {
     )
   })
 
-  it("skriver ingenting på markup fra fs.popover()", async () => {
+  it("skriver ingenting på markup fra lt.popover()", async () => {
     // Den direkte påstanden bak «det serveren skrev står»: null
     // mutasjonsposter fra komponentens første runde.
     const omslag = document.createElement("div")
     omslag.innerHTML = `
-      <fs-popover ${attr(BOKS.host)}>
-        <button ${attr(BOKS.trigger)} class="fs-button">Handlinger</button>
+      <lt-popover ${attr(BOKS.host)}>
+        <button ${attr(BOKS.trigger)} class="lt-button">Handlinger</button>
         <ul ${attr(BOKS.panel)}><li>Arkiver</li></ul>
-      </fs-popover>`
-    const vert = omslag.querySelector("fs-popover") as HTMLElement
+      </lt-popover>`
+    const vert = omslag.querySelector("lt-popover") as HTMLElement
     const poster: MutationRecord[] = []
     const observatør = new MutationObserver((r) => poster.push(...r))
     observatør.observe(vert, {
@@ -580,21 +580,21 @@ describe("fs-popover kobler fra bar struktur", () => {
   })
 })
 
-describe("fs-popover når React skriver egenskapen", () => {
+describe("lt-popover når React skriver egenskapen", () => {
   beforeAll(() => {
-    defineFsPopover()
+    defineLtPopover()
   })
 
   it("åpner ikke vinduet av at egenskapen settes til undefined", async () => {
     monter(
-      `<fs-popover ${attr(BOKS.host)}>
+      `<lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}>Innhold</div>
-      </fs-popover>`,
+      </lt-popover>`,
     )
-    await customElements.whenDefined("fs-popover")
+    await customElements.whenDefined("lt-popover")
     await ventPaTegning()
-    const vert = document.querySelector("fs-popover") as FsPopover
+    const vert = document.querySelector("lt-popover") as LtPopover
 
     // Slik React 19 skriver en prop som er borte.
     ;(vert as unknown as { open: undefined }).open = undefined
@@ -613,14 +613,14 @@ describe("fs-popover når React skriver egenskapen", () => {
      * `data-on:popover-toggle` fått sitt eget signal i retur.
      */
     monter(
-      `<fs-popover ${attr(BOKS.host)}>
+      `<lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}>Innhold</div>
-      </fs-popover>`,
+      </lt-popover>`,
     )
-    await customElements.whenDefined("fs-popover")
+    await customElements.whenDefined("lt-popover")
     await ventPaTegning()
-    const vert = document.querySelector("fs-popover") as FsPopover
+    const vert = document.querySelector("lt-popover") as LtPopover
     const panel = document.getElementById("panel") as HTMLElement
     const logg: boolean[] = []
     vert.addEventListener("popover-toggle", (e) => logg.push(e.detail.open))
@@ -643,22 +643,22 @@ describe("fs-popover når React skriver egenskapen", () => {
   })
 })
 
-describe("fs-popover inne i en modal dialog", () => {
+describe("lt-popover inne i en modal dialog", () => {
   beforeAll(() => {
-    defineFsPopover()
+    defineLtPopover()
   })
 
   it("lukker bare vinduet ved Escape, ikke dialogen", async () => {
     monter(`
       <dialog id="dialog">
-        <fs-popover ${attr(BOKS.host)}>
+        <lt-popover ${attr(BOKS.host)}>
           <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
           <div ${attr(BOKS.panel)}><button type="button">Arkiver</button></div>
-        </fs-popover>
+        </lt-popover>
       </dialog>`)
-    await customElements.whenDefined("fs-popover")
+    await customElements.whenDefined("lt-popover")
     const dialog = document.getElementById("dialog") as HTMLDialogElement
-    const vert = document.querySelector("fs-popover") as FsPopover
+    const vert = document.querySelector("lt-popover") as LtPopover
     dialog.showModal()
     vert.show()
     await ventPaTegning()
@@ -678,13 +678,13 @@ describe("fs-popover inne i en modal dialog", () => {
   it("lukker ved Escape i et annet felt, men lar fokus stå der", async () => {
     // Før hoppet fokus fra feltet brukeren sto i, til knappen.
     monter(`
-      <fs-popover ${attr(BOKS.host)}>
+      <lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}>Innhold</div>
-      </fs-popover>
+      </lt-popover>
       <input id="annet">`)
-    await customElements.whenDefined("fs-popover")
-    const vert = document.querySelector("fs-popover") as FsPopover
+    await customElements.whenDefined("lt-popover")
+    const vert = document.querySelector("lt-popover") as LtPopover
     vert.show()
     await ventPaTegning()
 
@@ -699,13 +699,13 @@ describe("fs-popover inne i en modal dialog", () => {
 
   it("lar en modal dialog åpnet oppå vinduet lukkes av sitt eget trykk", async () => {
     monter(`
-      <fs-popover ${attr(BOKS.host)}>
+      <lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}>Innhold</div>
-      </fs-popover>
+      </lt-popover>
       <dialog id="over"><button type="button" id="ok">Ok</button></dialog>`)
-    await customElements.whenDefined("fs-popover")
-    const vert = document.querySelector("fs-popover") as FsPopover
+    await customElements.whenDefined("lt-popover")
+    const vert = document.querySelector("lt-popover") as LtPopover
     vert.show()
     await ventPaTegning()
 
@@ -724,14 +724,14 @@ describe("fs-popover inne i en modal dialog", () => {
     // lukket Escape da dialogen og lot vinduet stå åpent i den.
     monter(`
       <dialog id="dialog" tabindex="-1">
-        <fs-popover ${attr(BOKS.host)}>
+        <lt-popover ${attr(BOKS.host)}>
           <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
           <div ${attr(BOKS.panel)}>Innhold</div>
-        </fs-popover>
+        </lt-popover>
       </dialog>`)
-    await customElements.whenDefined("fs-popover")
+    await customElements.whenDefined("lt-popover")
     const dialog = document.getElementById("dialog") as HTMLDialogElement
-    const vert = document.querySelector("fs-popover") as FsPopover
+    const vert = document.querySelector("lt-popover") as LtPopover
     dialog.showModal()
     vert.show()
     await ventPaTegning()
@@ -748,18 +748,18 @@ describe("fs-popover inne i en modal dialog", () => {
   it("lukker det innerste av to nøstede vinduer først", async () => {
     const indre = popover({ id: "indre" })
     monter(`
-      <fs-popover ${attr(BOKS.host)} id="ytre">
+      <lt-popover ${attr(BOKS.host)} id="ytre">
         <button type="button" ${attr(BOKS.trigger)}>Meny</button>
         <div ${attr(BOKS.panel)}>
-          <fs-popover ${attr(indre.host)} id="nost">
+          <lt-popover ${attr(indre.host)} id="nost">
             <button type="button" ${attr(indre.trigger)}>Hjelp</button>
             <div ${attr(indre.panel)}><button type="button" id="inni">Ok</button></div>
-          </fs-popover>
+          </lt-popover>
         </div>
-      </fs-popover>`)
-    await customElements.whenDefined("fs-popover")
-    const ytre = document.getElementById("ytre") as FsPopover
-    const nost = document.getElementById("nost") as FsPopover
+      </lt-popover>`)
+    await customElements.whenDefined("lt-popover")
+    const ytre = document.getElementById("ytre") as LtPopover
+    const nost = document.getElementById("nost") as LtPopover
     ytre.show()
     nost.show()
     await ventPaTegning()
@@ -788,12 +788,12 @@ describe("fs-popover inne i en modal dialog", () => {
       )
     }
     monter(`
-      <fs-popover ${attr(BOKS.host)}>
+      <lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}><skygge-felt></skygge-felt></div>
-      </fs-popover>`)
-    await customElements.whenDefined("fs-popover")
-    const vert = document.querySelector("fs-popover") as FsPopover
+      </lt-popover>`)
+    await customElements.whenDefined("lt-popover")
+    const vert = document.querySelector("lt-popover") as LtPopover
     vert.show()
     await ventPaTegning()
 
@@ -811,12 +811,12 @@ describe("fs-popover inne i en modal dialog", () => {
     // En forslagsliste i vinduet lukker seg på Escape og kaller
     // `preventDefault`. Før tok samme trykk vinduet også.
     monter(`
-      <fs-popover ${attr(BOKS.host)}>
+      <lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}><input id="felt"></div>
-      </fs-popover>`)
-    await customElements.whenDefined("fs-popover")
-    const vert = document.querySelector("fs-popover") as FsPopover
+      </lt-popover>`)
+    await customElements.whenDefined("lt-popover")
+    const vert = document.querySelector("lt-popover") as LtPopover
     vert.show()
     await ventPaTegning()
 
@@ -832,12 +832,12 @@ describe("fs-popover inne i en modal dialog", () => {
 
   it("rører ikke Escape når vinduet er lukket", async () => {
     monter(`
-      <fs-popover ${attr(BOKS.host)}>
+      <lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}>Innhold</div>
-      </fs-popover>
+      </lt-popover>
       <button type="button" id="annet">Annet</button>`)
-    await customElements.whenDefined("fs-popover")
+    await customElements.whenDefined("lt-popover")
     await ventPaTegning()
     const annet = document.getElementById("annet") as HTMLElement
     annet.focus()

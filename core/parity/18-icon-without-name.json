@@ -4,8 +4,8 @@
       "start": 1,
       "end": 7,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/icon/",
-      "message": "<button> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «knapp» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen fs-sr-only.",
+      "link": "https://lo-tek.sobernetics.no/components/icon/",
+      "message": "<button> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «knapp» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen lt-sr-only.",
       "fix": {
         "title": "Gi den et navn med aria-label",
         "edits": [
@@ -22,8 +22,8 @@
       "start": 141,
       "end": 142,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/icon/",
-      "message": "<a> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «lenke» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen fs-sr-only.",
+      "link": "https://lo-tek.sobernetics.no/components/icon/",
+      "message": "<a> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «lenke» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen lt-sr-only.",
       "fix": {
         "title": "Gi den et navn med aria-label",
         "edits": [
@@ -42,8 +42,8 @@
       "start": 1,
       "end": 7,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/icon/",
-      "message": "<button> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «knapp» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen fs-sr-only.",
+      "link": "https://lo-tek.sobernetics.no/components/icon/",
+      "message": "<button> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «knapp» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen lt-sr-only.",
       "fix": {
         "title": "Gi den et navn med aria-label",
         "edits": [
@@ -60,8 +60,8 @@
       "start": 141,
       "end": 142,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/icon/",
-      "message": "<a> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «lenke» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen fs-sr-only.",
+      "link": "https://lo-tek.sobernetics.no/components/icon/",
+      "message": "<a> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «lenke» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen lt-sr-only.",
       "fix": {
         "title": "Gi den et navn med aria-label",
         "edits": [

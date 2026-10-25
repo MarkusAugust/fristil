@@ -1,7 +1,7 @@
 /**
- * Fargeregning: sRGB, OKLCH og kontrast, som `@fristil/designsystem/farge`.
+ * Fargeregning: sRGB, OKLCH og kontrast, som `@lo-tek/interfaces/color`.
  *
- * Temaet regnes i kjernen, skrevet i Rust (`kjerne/src/theme/color.rs`). Disse
+ * Temaet regnes i kjernen, skrevet i Rust (`core/src/theme/color.rs`). Disse
  * fem regnestykkene er de samme, for den som vil regne selv i JavaScript, også
  * i nettleseren. Testene som måler fargene en nettleser faktisk tegner, bruker
  * dem også, og måler da kjernen mot en uavhengig utgave av formelen.

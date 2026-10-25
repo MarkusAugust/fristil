@@ -8,7 +8,7 @@ import {
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
 import { computeFieldAttributes } from "./field-core"
-import { defineFsField, type FsField } from "./fs-field"
+import { defineLtField, type LtField } from "./lt-field"
 import "../../../tokens/tokens.css"
 import "./field.css"
 
@@ -17,9 +17,9 @@ function navnene(element: Element): string[] {
   return [...element.attributes].map((a) => a.name).sort()
 }
 
-describe("fs-field", () => {
+describe("lt-field", () => {
   beforeAll(() => {
-    defineFsField()
+    defineLtField()
   })
 
   beforeEach(() => {
@@ -28,10 +28,10 @@ describe("fs-field", () => {
 
   it("wires label[for] to the control id", async () => {
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label id="label">E-post</label>
-        <input id="email" class="fs-input" type="email" />
-      </fs-field>
+        <input id="email" class="lt-input" type="email" />
+      </lt-field>
     `
 
     await Promise.resolve()
@@ -42,20 +42,20 @@ describe("fs-field", () => {
 
   it("adds ids and aria-describedby for help and error text", async () => {
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="email">E-post</label>
-        <input id="email" class="fs-input" type="email" />
-        <p class="fs-help-text">Hjelp</p>
-        <p class="fs-error-text">Feil</p>
-      </fs-field>
+        <input id="email" class="lt-input" type="email" />
+        <p class="lt-help-text">Hjelp</p>
+        <p class="lt-error-text">Feil</p>
+      </lt-field>
     `
 
     await Promise.resolve()
 
-    const field = document.querySelector("fs-field") as HTMLElement
+    const field = document.querySelector("lt-field") as HTMLElement
     const input = field.querySelector("input") as HTMLInputElement
-    const help = field.querySelector(".fs-help-text") as HTMLElement
-    const error = field.querySelector(".fs-error-text") as HTMLElement
+    const help = field.querySelector(".lt-help-text") as HTMLElement
+    const error = field.querySelector(".lt-error-text") as HTMLElement
 
     expect(help.id.length).toBeGreaterThan(0)
     expect(error.id.length).toBeGreaterThan(0)
@@ -74,16 +74,16 @@ describe("fs-field", () => {
      * fordi verten manglet `invalid`.
      */
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" />
-        <p class="fs-error-text" hidden>Skriv en gyldig e-post.</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" />
+        <p class="lt-error-text" hidden>Skriv en gyldig e-post.</p>
+      </lt-field>
     `
     await Promise.resolve()
 
     const input = document.querySelector("input") as HTMLInputElement
-    const error = document.querySelector(".fs-error-text") as HTMLElement
+    const error = document.querySelector(".lt-error-text") as HTMLElement
     expect(input.hasAttribute("aria-invalid")).toBe(false)
     expect(input.getAttribute("aria-describedby")).toBeNull()
 
@@ -103,36 +103,36 @@ describe("fs-field", () => {
 
   it("rører ikke hidden på feilmeldingen", async () => {
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" />
-        <p class="fs-error-text">Skriv en gyldig e-post.</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" />
+        <p class="lt-error-text">Skriv en gyldig e-post.</p>
+      </lt-field>
     `
     await ventPaTegning()
 
-    const error = document.querySelector(".fs-error-text") as HTMLElement
+    const error = document.querySelector(".lt-error-text") as HTMLElement
     expect(error.hidden).toBe(false)
     expect(error.hasAttribute("aria-hidden")).toBe(false)
   })
 
   it("lar serverens eget aria-invalid stå", async () => {
-    // Skrev serveren feltet med `fs.field()`, står `aria-invalid` på
+    // Skrev serveren feltet med `lt.field()`, står `aria-invalid` på
     // kontrollen. Da er attributtet serverens, og komponenten skal lese det,
     // ikke fjerne det.
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" aria-invalid="true" />
-        <p class="fs-error-text">Skriv en gyldig e-post.</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" aria-invalid="true" />
+        <p class="lt-error-text">Skriv en gyldig e-post.</p>
+      </lt-field>
     `
 
     await Promise.resolve()
     await Promise.resolve()
 
     const input = document.querySelector("input") as HTMLInputElement
-    const error = document.querySelector(".fs-error-text") as HTMLElement
+    const error = document.querySelector(".lt-error-text") as HTMLElement
     expect(input.getAttribute("aria-invalid")).toBe("true")
     expect(error.hidden).toBe(false)
   })
@@ -145,16 +145,16 @@ describe("fs-field", () => {
      * uansett hva feilmeldingen har vært innom.
      */
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" aria-invalid="true" />
-        <p class="fs-error-text">Skriv en gyldig e-post.</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" aria-invalid="true" />
+        <p class="lt-error-text">Skriv en gyldig e-post.</p>
+      </lt-field>
     `
     await Promise.resolve()
 
     const input = document.querySelector("input") as HTMLInputElement
-    const error = document.querySelector(".fs-error-text") as HTMLElement
+    const error = document.querySelector(".lt-error-text") as HTMLElement
     error.hidden = true
     await ventPaTegning()
     error.hidden = false
@@ -175,11 +175,11 @@ describe("fs-field", () => {
      * kontrollen byttes ut.
      */
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" />
-        <p class="fs-error-text">Skriv en gyldig e-post.</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" />
+        <p class="lt-error-text">Skriv en gyldig e-post.</p>
+      </lt-field>
     `
 
     await Promise.resolve()
@@ -191,11 +191,11 @@ describe("fs-field", () => {
     const gammel = document.querySelector("input") as HTMLInputElement
     const ny = document.createElement("input")
     ny.id = "epost"
-    ny.className = "fs-input"
+    ny.className = "lt-input"
     ny.type = "email"
     ny.setAttribute("aria-invalid", "true")
     gammel.replaceWith(ny)
-    const error = document.querySelector(".fs-error-text") as HTMLElement
+    const error = document.querySelector(".lt-error-text") as HTMLElement
     error.hidden = true
 
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
@@ -218,17 +218,17 @@ describe("fs-field", () => {
      */
     document.body.innerHTML = `
       <div>
-        <label class="fs-label" for="epost">E-post</label>
-        <fs-field>
-          <input id="epost" class="fs-input" type="email" />
-        </fs-field>
+        <label class="lt-label" for="epost">E-post</label>
+        <lt-field>
+          <input id="epost" class="lt-input" type="email" />
+        </lt-field>
       </div>
     `
     await Promise.resolve()
 
     const gammel = document.querySelector("input") as HTMLInputElement
     const ny = document.createElement("input")
-    ny.className = "fs-input"
+    ny.className = "lt-input"
     ny.type = "email"
     gammel.replaceWith(ny)
 
@@ -240,16 +240,16 @@ describe("fs-field", () => {
 
   it("skriver verken id eller for når ledeteksten står rundt kontrollen", async () => {
     document.body.innerHTML = `
-      <fs-field>
-        <label>E-post <input class="fs-input" type="email" /></label>
-        <p class="fs-help-text">Vi sender kvittering hit.</p>
-      </fs-field>
+      <lt-field>
+        <label>E-post <input class="lt-input" type="email" /></label>
+        <p class="lt-help-text">Vi sender kvittering hit.</p>
+      </lt-field>
     `
     await ventPaTegning()
 
     const label = document.querySelector("label") as HTMLLabelElement
     const input = document.querySelector("input") as HTMLInputElement
-    const help = document.querySelector(".fs-help-text") as HTMLElement
+    const help = document.querySelector(".lt-help-text") as HTMLElement
 
     expect(input.hasAttribute("id")).toBe(false)
     expect(label.hasAttribute("for")).toBe(false)
@@ -259,10 +259,10 @@ describe("fs-field", () => {
 
   it("lar data-required serveren skrev stå, og markerer valgfrie felt", async () => {
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label id="label" for="navn" data-required="text">Navn</label>
-        <input id="navn" class="fs-input" required />
-      </fs-field>
+        <input id="navn" class="lt-input" required />
+      </lt-field>
     `
 
     await Promise.resolve()
@@ -271,10 +271,10 @@ describe("fs-field", () => {
     expect(label.getAttribute("data-required")).toBe("text")
 
     document.body.innerHTML = `
-      <fs-field optional>
+      <lt-field optional>
         <label id="label-2" for="telefon">Telefon</label>
-        <input id="telefon" class="fs-input" />
-      </fs-field>
+        <input id="telefon" class="lt-input" />
+      </lt-field>
     `
 
     await Promise.resolve()
@@ -284,21 +284,21 @@ describe("fs-field", () => {
   })
 })
 
-describe("fs-field tilgjengelighet", () => {
+describe("lt-field tilgjengelighet", () => {
   it("gir ingen brudd for et felt med hjelpetekst og feilmelding", async () => {
     monter(`
-      <fs-field>
+      <lt-field>
         <label for="epost" data-required="symbol">E-postadresse</label>
-        <input id="epost" class="fs-input" type="email" value="ola@" required />
-        <p class="fs-help-text">Vi sender kvittering til denne adressen.</p>
-        <p class="fs-error-text">Skriv en e-postadresse med krøllalfa.</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" value="ola@" required />
+        <p class="lt-help-text">Vi sender kvittering til denne adressen.</p>
+        <p class="lt-error-text">Skriv en e-postadresse med krøllalfa.</p>
+      </lt-field>
 
-      <fs-field optional>
+      <lt-field optional>
         <label for="melding">Melding til saksbehandler</label>
-        <textarea id="melding" class="fs-textarea" rows="3"></textarea>
-        <p class="fs-help-text">Du kan skrive opptil 500 tegn.</p>
-      </fs-field>
+        <textarea id="melding" class="lt-textarea" rows="3"></textarea>
+        <p class="lt-help-text">Du kan skrive opptil 500 tegn.</p>
+      </lt-field>
     `)
 
     await ventPaTegning()
@@ -307,9 +307,9 @@ describe("fs-field tilgjengelighet", () => {
 
   it("gir ingen brudd for et felt uten hjelpetekst", async () => {
     monter(`
-      <fs-field>
-        <label>Fullt navn <input class="fs-input" type="text" /></label>
-      </fs-field>
+      <lt-field>
+        <label>Fullt navn <input class="lt-input" type="text" /></label>
+      </lt-field>
     `)
 
     await ventPaTegning()
@@ -317,19 +317,19 @@ describe("fs-field tilgjengelighet", () => {
   })
 })
 
-describe("fs-field ledetekst", () => {
-  it("gir ledeteksten fs-label, slik at påkrevd-markeringen faktisk vises", async () => {
+describe("lt-field ledetekst", () => {
+  it("gir ledeteksten lt-label, slik at påkrevd-markeringen faktisk vises", async () => {
     monter(`
-      <fs-field>
+      <lt-field>
         <label for="epost" data-required="text">E-postadresse</label>
-        <input id="epost" class="fs-input" type="email" />
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" />
+      </lt-field>
     `)
 
     await ventPaTegning()
 
     const label = document.querySelector("label") as HTMLLabelElement
-    expect(label.classList.contains("fs-label")).toBe(true)
+    expect(label.classList.contains("lt-label")).toBe(true)
     expect(label.getAttribute("data-required")).toBe("text")
 
     // Attributtet alene er dødt uten klassen. Markeringen kommer fra ::after
@@ -339,25 +339,25 @@ describe("fs-field ledetekst", () => {
 
   it("markerer valgfrie felt på samme måte", async () => {
     monter(`
-      <fs-field optional>
+      <lt-field optional>
         <label for="adresse">Adresse</label>
-        <input id="adresse" class="fs-input" type="text" />
-      </fs-field>
+        <input id="adresse" class="lt-input" type="text" />
+      </lt-field>
     `)
 
     await ventPaTegning()
 
     const label = document.querySelector("label") as HTMLLabelElement
-    expect(label.classList.contains("fs-label")).toBe(true)
+    expect(label.classList.contains("lt-label")).toBe(true)
     expect(getComputedStyle(label, "::after").content).toContain("valgfri")
   })
 })
 
-describe("fs-field krangler ikke med serveren", () => {
+describe("lt-field krangler ikke med serveren", () => {
   /**
    * Demoappene fanget dette, ikke enhetstestene.
    *
-   * Skrev serveren feltet med `fs.field()`, regnet komponenten ut sitt eget
+   * Skrev serveren feltet med `lt.field()`, regnet komponenten ut sitt eget
    * svar fra attributtene på verten, fant ingen `invalid` og ingen
    * `required-marker`, og fjernet det serveren nettopp hadde skrevet. I React
    * ble det en hydreringsfeil, i Datastar en feilmelding som dukket opp på et
@@ -376,19 +376,19 @@ describe("fs-field krangler ikke med serveren", () => {
     })
 
     monter(`
-      <fs-field>
+      <lt-field>
         <label ${attr(felt.label)}>E-postadresse</label>
-        <input class="fs-input" type="email" ${attr(felt.control)} />
-        <p class="fs-help-text" ${attr(felt.help)}>Vi sender kvittering hit.</p>
-        <p class="fs-error-text" ${attr(felt.error)}>Skriv en gyldig adresse.</p>
-      </fs-field>
+        <input class="lt-input" type="email" ${attr(felt.control)} />
+        <p class="lt-help-text" ${attr(felt.help)}>Vi sender kvittering hit.</p>
+        <p class="lt-error-text" ${attr(felt.error)}>Skriv en gyldig adresse.</p>
+      </lt-field>
     `)
 
     await ventPaTegning()
 
     const input = document.getElementById("epost") as HTMLInputElement
     const label = document.querySelector("label") as HTMLLabelElement
-    const feilmelding = document.querySelector(".fs-error-text") as HTMLElement
+    const feilmelding = document.querySelector(".lt-error-text") as HTMLElement
 
     expect(input.getAttribute("aria-invalid")).toBe("true")
     expect(input.getAttribute("aria-describedby")).toBe(
@@ -402,16 +402,16 @@ describe("fs-field krangler ikke med serveren", () => {
     // `hidden` tar den allerede ut av tilgjengelighetstreet, og et attributt
     // serveren ikke skriver gir hydreringsfeil i React.
     monter(`
-      <fs-field>
+      <lt-field>
         <label for="epost">E-postadresse</label>
-        <input id="epost" class="fs-input" type="email" />
-        <p class="fs-error-text" hidden>Skriv en gyldig adresse.</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" />
+        <p class="lt-error-text" hidden>Skriv en gyldig adresse.</p>
+      </lt-field>
     `)
 
     await ventPaTegning()
 
-    const feilmelding = document.querySelector(".fs-error-text") as HTMLElement
+    const feilmelding = document.querySelector(".lt-error-text") as HTMLElement
     expect(feilmelding.hidden).toBe(true)
     expect(feilmelding.hasAttribute("aria-hidden")).toBe(false)
   })
@@ -422,34 +422,34 @@ describe("fs-field krangler ikke med serveren", () => {
  * Den lista var feil: `aria-describedby` manglet id-en til feilmeldingen,
  * og ingenting sa fra, for ingen test leste den. Nå står påstanden her.
  */
-describe("fs-field kobler markup som bare har struktur", () => {
+describe("lt-field kobler markup som bare har struktur", () => {
   beforeAll(() => {
-    defineFsField()
+    defineLtField()
   })
 
   it("gir hele koblingen av for, id og en synlig feilmelding", async () => {
     monter(`
-      <fs-field>
+      <lt-field>
         <label data-required="symbol">E-post</label>
-        <input id="epost" class="fs-input" type="email">
-        <p class="fs-help-text">Vi sender aldri spam.</p>
-        <p class="fs-error-text">Skriv en gyldig adresse.</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email">
+        <p class="lt-help-text">Vi sender aldri spam.</p>
+        <p class="lt-error-text">Skriv en gyldig adresse.</p>
+      </lt-field>
     `)
 
     await ventPaTegning()
 
     const label = document.querySelector("label") as HTMLLabelElement
     const input = document.querySelector("input") as HTMLInputElement
-    const hjelp = document.querySelector(".fs-help-text") as HTMLElement
-    const feilmelding = document.querySelector(".fs-error-text") as HTMLElement
+    const hjelp = document.querySelector(".lt-help-text") as HTMLElement
+    const feilmelding = document.querySelector(".lt-error-text") as HTMLElement
 
-    expect(label.getAttribute("class")).toBe("fs-label")
+    expect(label.getAttribute("class")).toBe("lt-label")
     expect(label.getAttribute("for")).toBe("epost")
     expect(label.getAttribute("data-required")).toBe("symbol")
     expect(input.id).toBe("epost")
-    expect(hjelp.id).toMatch(/^fs-field-help-/)
-    expect(feilmelding.id).toMatch(/^fs-field-error-/)
+    expect(hjelp.id).toMatch(/^lt-field-help-/)
+    expect(feilmelding.id).toMatch(/^lt-field-error-/)
     expect(input.getAttribute("aria-describedby")).toBe(
       `${hjelp.id} ${feilmelding.id}`,
     )
@@ -468,11 +468,11 @@ describe("fs-field kobler markup som bare har struktur", () => {
    */
   it("adopterer ikke et avsnitt som bare har en rolle på seg", async () => {
     monter(`
-      <fs-field>
+      <lt-field>
         <label for="postnummer">Postnummer</label>
-        <input id="postnummer" class="fs-input" aria-invalid="true">
+        <input id="postnummer" class="lt-input" aria-invalid="true">
         <p class="egen-feil" data-role="error">Postnummeret må ha fire siffer.</p>
-      </fs-field>
+      </lt-field>
     `)
 
     await ventPaTegning()
@@ -489,9 +489,9 @@ describe("fs-field kobler markup som bare har struktur", () => {
   })
 })
 
-describe("fs-field er et blokkelement", () => {
+describe("lt-field er et blokkelement", () => {
   beforeAll(() => {
-    defineFsField()
+    defineLtField()
   })
 
   it("sier selv at det er en blokk", async () => {
@@ -499,15 +499,15 @@ describe("fs-field er et blokkelement", () => {
     // det gjør ingenting. Barna er blokker, så feilen synes ikke før noen
     // legger feltet i et rutenett eller gir det en margin.
     monter(`
-      <fs-field>
-        <label class="fs-label">E-post</label>
-        <input class="fs-input" type="email" />
-      </fs-field>
+      <lt-field>
+        <label class="lt-label">E-post</label>
+        <input class="lt-input" type="email" />
+      </lt-field>
     `)
 
     await ventPaTegning()
 
-    const felt = document.querySelector("fs-field") as HTMLElement
+    const felt = document.querySelector("lt-field") as HTMLElement
     expect(getComputedStyle(felt).display).toBe("block")
   })
 })
@@ -521,9 +521,9 @@ describe("fs-field er et blokkelement", () => {
  * løst for `aria-invalid` alene, og de to andre hadde nøyaktig samme feil:
  * `aria-describedby` krympet aldri, og `disabled` lot seg ikke slå av igjen.
  */
-describe("fs-field rår bare over det den selv skrev", () => {
+describe("lt-field rår bare over det den selv skrev", () => {
   beforeAll(() => {
-    defineFsField()
+    defineLtField()
   })
 
   beforeEach(() => {
@@ -532,12 +532,12 @@ describe("fs-field rår bare over det den selv skrev", () => {
 
   it("tar feilmeldingen ut av aria-describedby når den skjules", async () => {
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" />
-        <p class="fs-help-text" id="h">Hjelp</p>
-        <p class="fs-error-text" id="x">Feil</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" />
+        <p class="lt-help-text" id="h">Hjelp</p>
+        <p class="lt-error-text" id="x">Feil</p>
+      </lt-field>
     `
     await Promise.resolve()
 
@@ -553,18 +553,18 @@ describe("fs-field rår bare over det den selv skrev", () => {
 
   it("tar hjelpeteksten ut av aria-describedby når en patch fjerner den", async () => {
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" />
-        <p class="fs-help-text" id="h">Hjelp</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" />
+        <p class="lt-help-text" id="h">Hjelp</p>
+      </lt-field>
     `
     await Promise.resolve()
 
     const input = document.querySelector("input") as HTMLInputElement
     expect(input.getAttribute("aria-describedby")).toBe("h")
 
-    document.querySelector(".fs-help-text")?.remove()
+    document.querySelector(".lt-help-text")?.remove()
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     expect(input.getAttribute("aria-describedby")).toBeNull()
@@ -573,17 +573,17 @@ describe("fs-field rår bare over det den selv skrev", () => {
   it("tar de ekstra id-ene ut igjen når described-by fjernes fra verten", async () => {
     document.body.innerHTML = `
       <p id="ekstra">Les vilkårene først.</p>
-      <fs-field described-by="ekstra">
+      <lt-field described-by="ekstra">
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" />
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" />
+      </lt-field>
     `
     await Promise.resolve()
 
     const input = document.querySelector("input") as HTMLInputElement
     expect(input.getAttribute("aria-describedby")).toBe("ekstra")
 
-    const felt = document.querySelector("fs-field") as FsField
+    const felt = document.querySelector("lt-field") as LtField
     felt.describedBy = undefined
     await Promise.resolve()
 
@@ -591,18 +591,18 @@ describe("fs-field rår bare over det den selv skrev", () => {
   })
 
   it("beholder id-er serveren selv la i aria-describedby", async () => {
-    // `fs.field({ describedBy: ["vilkar"] })` skriver id-en rett på
+    // `lt.field({ describedBy: ["vilkar"] })` skriver id-en rett på
     // kontrollen. Den er serverens, og skal stå, også etter at komponenten
     // har skrevet attributtet på nytt for å ta bort feilmeldingen.
     document.body.innerHTML = `
       <p id="vilkar">Vilkår</p>
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email"
+        <input id="epost" class="lt-input" type="email"
                aria-describedby="epost-help epost-error vilkar" />
-        <p class="fs-help-text" id="epost-help">Hjelp</p>
-        <p class="fs-error-text" id="epost-error">Feil</p>
-      </fs-field>
+        <p class="lt-help-text" id="epost-help">Hjelp</p>
+        <p class="lt-error-text" id="epost-error">Feil</p>
+      </lt-field>
     `
     await Promise.resolve()
 
@@ -620,10 +620,10 @@ describe("fs-field rår bare over det den selv skrev", () => {
 
   it("slår disabled av igjen når verten slår det av", async () => {
     document.body.innerHTML = `
-      <fs-field disabled>
+      <lt-field disabled>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" />
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" />
+      </lt-field>
     `
     await Promise.resolve()
 
@@ -631,10 +631,10 @@ describe("fs-field rår bare over det den selv skrev", () => {
     const label = document.querySelector("label") as HTMLLabelElement
     expect(input.disabled).toBe(true)
     expect(label.getAttribute("aria-disabled")).toBe("true")
-    // Et ekte `disabled` trenger ingen kopi, og `fs.field()` skriver ingen.
+    // Et ekte `disabled` trenger ingen kopi, og `lt.field()` skriver ingen.
     expect(input.hasAttribute("aria-disabled")).toBe(false)
 
-    const felt = document.querySelector("fs-field") as FsField
+    const felt = document.querySelector("lt-field") as LtField
     felt.disabled = false
     await Promise.resolve()
 
@@ -644,10 +644,10 @@ describe("fs-field rår bare over det den selv skrev", () => {
 
   it("lar et disabled serveren skrev på kontrollen stå", async () => {
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" disabled="disabled" />
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" disabled="disabled" />
+      </lt-field>
     `
     await Promise.resolve()
 
@@ -658,7 +658,7 @@ describe("fs-field rår bare over det den selv skrev", () => {
 
     // Verten har vært innom `disabled` og ut igjen. Serverens ord på
     // kontrollen står fortsatt.
-    const felt = document.querySelector("fs-field") as FsField
+    const felt = document.querySelector("lt-field") as LtField
     felt.disabled = true
     await Promise.resolve()
     felt.disabled = false
@@ -669,10 +669,10 @@ describe("fs-field rår bare over det den selv skrev", () => {
 
   it("rører ikke et aria-disabled konsumenten selv skrev", async () => {
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" aria-disabled="true" />
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" aria-disabled="true" />
+      </lt-field>
     `
     await Promise.resolve()
 
@@ -694,21 +694,21 @@ describe("fs-field rår bare over det den selv skrev", () => {
     const a = document.getElementById("a") as HTMLElement
     const b = document.getElementById("b") as HTMLElement
     a.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" />
-        <p class="fs-error-text">Feil</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" />
+        <p class="lt-error-text">Feil</p>
+      </lt-field>
     `
     await Promise.resolve()
 
-    const felt = a.querySelector("fs-field") as FsField
+    const felt = a.querySelector("lt-field") as LtField
     const input = felt.querySelector("input") as HTMLInputElement
     expect(input.getAttribute("aria-invalid")).toBe("true")
 
     b.append(felt)
     await Promise.resolve()
-    ;(felt.querySelector(".fs-error-text") as HTMLElement).hidden = true
+    ;(felt.querySelector(".lt-error-text") as HTMLElement).hidden = true
     await ventPaTegning()
 
     expect(input.getAttribute("aria-invalid")).toBeNull()
@@ -716,15 +716,15 @@ describe("fs-field rår bare over det den selv skrev", () => {
 
   it("husker hva den skrev på en kontroll som forsvinner og kommer tilbake", async () => {
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" />
-        <p class="fs-error-text">Feil</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" />
+        <p class="lt-error-text">Feil</p>
+      </lt-field>
     `
     await Promise.resolve()
 
-    const felt = document.querySelector("fs-field") as FsField
+    const felt = document.querySelector("lt-field") as LtField
     const input = felt.querySelector("input") as HTMLInputElement
     expect(input.getAttribute("aria-invalid")).toBe("true")
 
@@ -733,7 +733,7 @@ describe("fs-field rår bare over det den selv skrev", () => {
     felt.append(input)
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
-    ;(felt.querySelector(".fs-error-text") as HTMLElement).hidden = true
+    ;(felt.querySelector(".lt-error-text") as HTMLElement).hidden = true
     await ventPaTegning()
 
     expect(input.getAttribute("aria-invalid")).toBeNull()
@@ -744,16 +744,16 @@ describe("fs-field rår bare over det den selv skrev", () => {
     // finnes for. Den ble strøket, og hver patch som sendte den fikk den
     // strøket igjen.
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" type="email" aria-invalid="false" />
-        <p class="fs-error-text" hidden>Feil</p>
-      </fs-field>
+        <input id="epost" class="lt-input" type="email" aria-invalid="false" />
+        <p class="lt-error-text" hidden>Feil</p>
+      </lt-field>
     `
     await Promise.resolve()
 
     const input = document.querySelector("input") as HTMLInputElement
-    const error = document.querySelector(".fs-error-text") as HTMLElement
+    const error = document.querySelector(".lt-error-text") as HTMLElement
     expect(input.getAttribute("aria-invalid")).toBe("false")
 
     // Feilmeldingen vises og skjules igjen. Serverens «false» kommer tilbake.
@@ -769,16 +769,16 @@ describe("fs-field rår bare over det den selv skrev", () => {
     // `grammar` og `spelling` er lovlige verdier og betyr ugyldig. De ble
     // lest som «ikke true», og strøket.
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="tekst">Tekst</label>
-        <input id="tekst" class="fs-input" aria-invalid="spelling" />
-        <p class="fs-error-text">Ordet finnes ikke.</p>
-      </fs-field>
+        <input id="tekst" class="lt-input" aria-invalid="spelling" />
+        <p class="lt-error-text">Ordet finnes ikke.</p>
+      </lt-field>
     `
     await Promise.resolve()
 
     const input = document.querySelector("input") as HTMLInputElement
-    const error = document.querySelector(".fs-error-text") as HTMLElement
+    const error = document.querySelector(".lt-error-text") as HTMLElement
     expect(input.getAttribute("aria-invalid")).toBe("spelling")
     expect(input.getAttribute("data-state")).toBe("invalid")
     expect(error.hidden).toBe(false)
@@ -789,16 +789,16 @@ describe("fs-field rår bare over det den selv skrev", () => {
     // det. Komponenten regnet den som ugyldig, og viste rød ramme og
     // feilmelding på et felt skjermleseren kalte gyldig.
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" aria-invalid="" />
-        <p class="fs-error-text" hidden>Feil</p>
-      </fs-field>
+        <input id="epost" class="lt-input" aria-invalid="" />
+        <p class="lt-error-text" hidden>Feil</p>
+      </lt-field>
     `
     await Promise.resolve()
 
     const input = document.querySelector("input") as HTMLInputElement
-    const error = document.querySelector(".fs-error-text") as HTMLElement
+    const error = document.querySelector(".lt-error-text") as HTMLElement
     expect(input.getAttribute("data-state")).toBeNull()
 
     // Feilmeldingen vises og skjules igjen. Serverens tomme streng kommer
@@ -817,19 +817,19 @@ describe("fs-field rår bare over det den selv skrev", () => {
     // element, er den serverens: det avgjøres av DOM-en, ikke av
     // hva komponenten har vært borti før.
     document.body.innerHTML = `
-      <div id="ramme">
-        <fs-field>
+      <div id="frame">
+        <lt-field>
           <label for="epost">E-post</label>
-          <input id="epost" class="fs-input" aria-describedby="epost-help" />
-          <p class="fs-help-text" id="epost-help">Hjelp</p>
-        </fs-field>
+          <input id="epost" class="lt-input" aria-describedby="epost-help" />
+          <p class="lt-help-text" id="epost-help">Hjelp</p>
+        </lt-field>
       </div>
     `
     await Promise.resolve()
 
-    const felt = document.querySelector("fs-field") as FsField
-    const hjelp = document.querySelector(".fs-help-text") as HTMLElement
-    const ramme = document.getElementById("ramme") as HTMLElement
+    const felt = document.querySelector("lt-field") as LtField
+    const hjelp = document.querySelector(".lt-help-text") as HTMLElement
+    const ramme = document.getElementById("frame") as HTMLElement
     ramme.append(hjelp)
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
@@ -843,15 +843,15 @@ describe("fs-field rår bare over det den selv skrev", () => {
     // hjelpeteksten uten å røre kontrollen. Id-en var komponentens å
     // forvalte, og skal ikke bli stående som om serveren la den til.
     document.body.innerHTML = `
-      <fs-field>
+      <lt-field>
         <label for="epost">E-post</label>
-        <input id="epost" class="fs-input" aria-describedby="epost-help" />
-        <p class="fs-help-text" id="epost-help">Hjelp</p>
-      </fs-field>
+        <input id="epost" class="lt-input" aria-describedby="epost-help" />
+        <p class="lt-help-text" id="epost-help">Hjelp</p>
+      </lt-field>
     `
     await Promise.resolve()
 
-    document.querySelector(".fs-help-text")?.remove()
+    document.querySelector(".lt-help-text")?.remove()
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     const input = document.querySelector("input") as HTMLInputElement
@@ -859,22 +859,22 @@ describe("fs-field rår bare over det den selv skrev", () => {
   })
 })
 
-describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
+describe("lt-field leser ikke sitt eget ekko fra ledeteksten", () => {
   beforeAll(() => {
-    defineFsField()
+    defineLtField()
   })
 
   async function felt(
     vert: string,
-    kontroll = '<input id="navn" class="fs-input" />',
+    kontroll = '<input id="navn" class="lt-input" />',
   ) {
     monter(
-      `<fs-field ${vert}><label for="navn">Navn</label>${kontroll}</fs-field>`,
+      `<lt-field ${vert}><label for="navn">Navn</label>${kontroll}</lt-field>`,
     )
-    await customElements.whenDefined("fs-field")
+    await customElements.whenDefined("lt-field")
     await ventPaTegning()
     return {
-      vert: document.querySelector("fs-field") as FsField,
+      vert: document.querySelector("lt-field") as LtField,
       ledetekst: document.querySelector("label") as HTMLLabelElement,
       kontroll: document.querySelector("input") as HTMLInputElement,
     }
@@ -892,12 +892,12 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
 
   it("lar markeringene serveren skrev på ledeteksten stå", async () => {
     monter(
-      `<fs-field><label for="navn" data-required="text">Navn</label><input id="navn" class="fs-input" /></fs-field>`,
+      `<lt-field><label for="navn" data-required="text">Navn</label><input id="navn" class="lt-input" /></lt-field>`,
     )
-    await customElements.whenDefined("fs-field")
+    await customElements.whenDefined("lt-field")
     await ventPaTegning()
     const ledetekst = document.querySelector("label") as HTMLLabelElement
-    const vert = document.querySelector("fs-field") as FsField
+    const vert = document.querySelector("lt-field") as LtField
 
     // En runde til, slik en patch ville utløst.
     vert.setAttribute("described-by", "annet")
@@ -925,7 +925,7 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
   it("lar en data-state malen skrev for hånd stå", async () => {
     const { kontroll } = await felt(
       "",
-      '<input id="navn" class="fs-input" data-state="invalid" />',
+      '<input id="navn" class="lt-input" data-state="invalid" />',
     )
     expect(kontroll.getAttribute("data-state")).toBe("invalid")
   })
@@ -933,11 +933,11 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
   it("fjerner fortsatt sin egen data-state når feltet blir gyldig", async () => {
     const { kontroll } = await felt(
       "",
-      '<input id="navn" class="fs-input" /><p class="fs-error-text">Feil</p>',
+      '<input id="navn" class="lt-input" /><p class="lt-error-text">Feil</p>',
     )
     expect(kontroll.getAttribute("data-state")).toBe("invalid")
 
-    ;(document.querySelector(".fs-error-text") as HTMLElement).hidden = true
+    ;(document.querySelector(".lt-error-text") as HTMLElement).hidden = true
     await ventPaTegning()
 
     expect(kontroll.hasAttribute("data-state")).toBe(false)
@@ -951,19 +951,19 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
      * `aria-describedby` og `id` på den. Hvert felt skal se bare sine egne.
      */
     document.body.innerHTML = `
-      <fs-field id="ytre">
+      <lt-field id="ytre">
         <label id="ytre-label">Kommune</label>
         <div popover>
-          <fs-field id="indre">
+          <lt-field id="indre">
             <label id="indre-label">Søk i lista</label>
-            <input id="indre-input" class="fs-input" type="search" />
-            <p class="fs-help-text" id="indre-help">Skriv minst to bokstaver.</p>
-            <p class="fs-error-text" id="indre-error">Ingen treff.</p>
-          </fs-field>
+            <input id="indre-input" class="lt-input" type="search" />
+            <p class="lt-help-text" id="indre-help">Skriv minst to bokstaver.</p>
+            <p class="lt-error-text" id="indre-error">Ingen treff.</p>
+          </lt-field>
         </div>
-        <input id="ytre-input" class="fs-input" type="text" />
-        <p class="fs-help-text" id="ytre-help">Kommunen du bor i.</p>
-      </fs-field>
+        <input id="ytre-input" class="lt-input" type="text" />
+        <p class="lt-help-text" id="ytre-help">Kommunen du bor i.</p>
+      </lt-field>
     `
     await ventPaTegning()
 
@@ -992,16 +992,16 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
     // skjult som `hidden`. Bare inline-stilen ble lest før.
     document.body.innerHTML = `
       <style>.borte { display: none }</style>
-      <fs-field>
-        <label class="fs-label" for="e">E-post</label>
-        <input class="fs-input" id="e">
-        <p class="fs-error-text borte">Skriv en gyldig adresse.</p>
-      </fs-field>`
+      <lt-field>
+        <label class="lt-label" for="e">E-post</label>
+        <input class="lt-input" id="e">
+        <p class="lt-error-text borte">Skriv en gyldig adresse.</p>
+      </lt-field>`
     await ventPaTegning()
     const input = document.getElementById("e") as HTMLInputElement
     expect(input.hasAttribute("aria-invalid")).toBe(false)
 
-    ;(document.querySelector(".fs-error-text") as HTMLElement).classList.remove(
+    ;(document.querySelector(".lt-error-text") as HTMLElement).classList.remove(
       "borte",
     )
     await ventPaTegning()
@@ -1010,7 +1010,7 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
 
   it("sier ingenting når ledeteksten står rundt hele elementet", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    document.body.innerHTML = `<label>Navn <fs-field><input class="fs-input" name="navn"></fs-field></label>`
+    document.body.innerHTML = `<label>Navn <lt-field><input class="lt-input" name="navn"></lt-field></label>`
     await ventPaTegning()
     await new Promise((r) => setTimeout(r, 300))
     expect(
@@ -1022,7 +1022,7 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
 
   it("skriver for om, og sier fra, når ledeteksten pekte på en annen id", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    document.body.innerHTML = `<fs-field><label class="fs-label" for="feil">Navn</label><input class="fs-input" id="navn"></fs-field>`
+    document.body.innerHTML = `<lt-field><label class="lt-label" for="feil">Navn</label><input class="lt-input" id="navn"></lt-field>`
     await ventPaTegning()
     await new Promise((r) => setTimeout(r, 300))
     expect((document.querySelector("label") as HTMLLabelElement).htmlFor).toBe(
@@ -1035,7 +1035,7 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
 
   it("sier ingenting om en kontroll uten id som har navn fra aria-labelledby", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    document.body.innerHTML = `<fs-field><label id="l">Navn</label><input class="fs-input" name="navn" aria-labelledby="l"></fs-field>`
+    document.body.innerHTML = `<lt-field><label id="l">Navn</label><input class="lt-input" name="navn" aria-labelledby="l"></lt-field>`
     await ventPaTegning()
     await new Promise((r) => setTimeout(r, 300))
     expect(advarsel).not.toHaveBeenCalled()
@@ -1043,11 +1043,11 @@ describe("fs-field leser ikke sitt eget ekko fra ledeteksten", () => {
   })
 
   it("peker ikke aria-describedby på en skjult feilmelding selv om serveren sier ugyldig", async () => {
-    document.body.innerHTML = `<fs-field>
-      <label class="fs-label" for="e">E-post</label>
-      <input class="fs-input" id="e" aria-invalid="true">
-      <p class="fs-error-text" hidden>Skriv en gyldig adresse.</p>
-    </fs-field>`
+    document.body.innerHTML = `<lt-field>
+      <label class="lt-label" for="e">E-post</label>
+      <input class="lt-input" id="e" aria-invalid="true">
+      <p class="lt-error-text" hidden>Skriv en gyldig adresse.</p>
+    </lt-field>`
     await ventPaTegning()
     const input = document.getElementById("e") as HTMLInputElement
     expect(input.getAttribute("aria-invalid")).toBe("true")

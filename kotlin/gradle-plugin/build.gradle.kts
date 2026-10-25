@@ -6,24 +6,24 @@ plugins {
 }
 
 /*
- * Gradle-pluginen: `fristilSjekk` sjekker malene som en del av `check`,
- * `fristilTema` bygger temaet av en oppskrift, og `fristilManifest` skriver
- * manifestet prosjektet sjekkes mot til `build/fristil/manifest.json` når
+ * Gradle-pluginen: `lotekSjekk` sjekker malene som en del av `check`,
+ * `lotekTema` bygger temaet av en oppskrift, og `lotekManifest` skriver
+ * manifestet prosjektet sjekkes mot til `build/lotek/manifest.json` når
  * prosjektet har fragmenter.
  *
  * Den kjører kommandolinja i Gradle-prosessen, den samme WASI-modulen som
- * `java -jar fristil.jar`, så svarene er de samme som i terminalen.
+ * `java -jar lotek.jar`, så svarene er de samme som i terminalen.
  */
 group = rootProject.group
 version = rootProject.version
-base.archivesName = "fristil-gradle-plugin"
+base.archivesName = "lo-tek-gradle-plugin"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation(project(":kommandolinje"))
+    implementation(project(":cli"))
     testImplementation(kotlin("test"))
 }
 
@@ -38,11 +38,11 @@ java {
 
 gradlePlugin {
     plugins {
-        create("fristil") {
-            id = "io.github.markusaugust.fristil"
-            implementationClass = "no.fristil.gradle.FristilPlugin"
-            displayName = "Fristil"
-            description = "Sjekker malene mot Fristil og bygger temaet, med den samme kjernen som editoren."
+        create("lotek") {
+            id = "io.github.markusaugust.lo-tek"
+            implementationClass = "no.lotek.gradle.LotekPlugin"
+            displayName = "LO-TEK"
+            description = "Sjekker malene mot LO-TEK og bygger temaet, med den samme kjernen som editoren."
         }
     }
 }

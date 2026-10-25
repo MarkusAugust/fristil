@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const ERROR_TEXT_CLASS = "fs-error-text" as const
+export const ERROR_TEXT_CLASS = "lt-error-text" as const
 
 export const errorTextVariants = ["error", "warning"] as const
 

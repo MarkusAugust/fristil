@@ -10,7 +10,7 @@
 //!
 //! CSS-en leses med cssparser, tokenizeren fra fase 3. For hver selektor
 //! samles klassene og attributtene i hver sammensatte selektor, som
-//! `.fs-button[data-variant="ghost"]`. `:is()` og `:where()` leses som en del
+//! `.lt-button[data-variant="ghost"]`. `:is()` og `:where()` leses som en del
 //! av den sammensatte selektoren de står i, og `&` i en nøstet regel som
 //! selektoren rundt. `:not()` og `:has()` handler om andre elementer, eller om
 //! at noe ikke er der: klassene i dem regnes som kjent, men verdiene som ikke
@@ -28,7 +28,7 @@ pub struct Styles {
     /// Hver klasse som står i en selektor.
     pub classes: BTreeSet<String>,
     /// Hver klasse med et attributt, og verdien når selektoren krever en, som
-    /// `("fs-button", "data-variant", Some("ghost"))`.
+    /// `("lt-button", "data-variant", Some("ghost"))`.
     pub attributes: BTreeSet<(String, String, Option<String>)>,
     /// Adressene i `@import`, i rekkefølge.
     pub imports: Vec<String>,
@@ -210,8 +210,8 @@ fn selector_list_in(input: &mut Parser, parents: &[Compound], out: &mut Styles) 
                         }
                     } else if matches!(name.as_str(), "not" | "has") {
                         // `:not()` og `:has()` styler ikke det de nevner, men
-                        // stilarket kjenner klassene, som `fs-theme-control`
-                        // i `:root:has(.fs-theme-control:checked)`.
+                        // stilarket kjenner klassene, som `lt-theme-control`
+                        // i `:root:has(.lt-theme-control:checked)`.
                         let mut mentioned = Styles::default();
                         let _ = input.parse_nested_block(|i| {
                             selector_list_in(i, parents, &mut mentioned);
@@ -379,118 +379,118 @@ mod tests {
     #[test]
     fn reads_classes_and_attribute_values() {
         let s = read_styles(
-            r#"@layer fristil.components {
-                .fs-button { color: red; }
-                .fs-button[data-variant="ghost"], .fs-button[data-variant='danger'] { }
-                .fs-label[data-optional]::after { content: "(valgfritt)"; }
-                .fs-card > .fs-card__title:hover { }
+            r#"@layer lotek.components {
+                .lt-button { color: red; }
+                .lt-button[data-variant="ghost"], .lt-button[data-variant='danger'] { }
+                .lt-label[data-optional]::after { content: "(valgfritt)"; }
+                .lt-card > .lt-card__title:hover { }
             }"#,
         );
-        assert!(s.classes.contains("fs-card__title"));
+        assert!(s.classes.contains("lt-card__title"));
         assert!(s
             .attributes
-            .contains(&pair("fs-button", "data-variant", Some("ghost"))));
+            .contains(&pair("lt-button", "data-variant", Some("ghost"))));
         assert!(s
             .attributes
-            .contains(&pair("fs-button", "data-variant", Some("danger"))));
-        assert!(s.styles_value("fs-label", "data-optional", Some("ja")));
-        assert!(!s.styles_value("fs-button", "data-variant", Some("secondary")));
+            .contains(&pair("lt-button", "data-variant", Some("danger"))));
+        assert!(s.styles_value("lt-label", "data-optional", Some("ja")));
+        assert!(!s.styles_value("lt-button", "data-variant", Some("secondary")));
     }
 
     #[test]
     fn reads_nesting_is_and_where() {
         let s = read_styles(
-            r#".fs-alert {
+            r#".lt-alert {
                 &[data-color="danger"] { }
                 &:is([data-color="success"], [data-color="warning"]) { }
                 @media (min-width: 40rem) { &[data-size="large"] { } }
-                .fs-alert__title { }
+                .lt-alert__title { }
             }
-            :where(.fs-tag, .fs-badge)[data-size="small"] { }"#,
+            :where(.lt-tag, .lt-badge)[data-size="small"] { }"#,
         );
         for color in ["danger", "success", "warning"] {
             assert!(
                 s.attributes
-                    .contains(&pair("fs-alert", "data-color", Some(color))),
+                    .contains(&pair("lt-alert", "data-color", Some(color))),
                 "{color}"
             );
         }
         assert!(s
             .attributes
-            .contains(&pair("fs-alert", "data-size", Some("large"))));
-        assert!(s.classes.contains("fs-alert__title"));
+            .contains(&pair("lt-alert", "data-size", Some("large"))));
+        assert!(s.classes.contains("lt-alert__title"));
         assert!(s
             .attributes
-            .contains(&pair("fs-tag", "data-size", Some("small"))));
+            .contains(&pair("lt-tag", "data-size", Some("small"))));
         assert!(s
             .attributes
-            .contains(&pair("fs-badge", "data-size", Some("small"))));
+            .contains(&pair("lt-badge", "data-size", Some("small"))));
     }
 
     #[test]
     fn ignores_what_does_not_style_the_element() {
         let s = read_styles(
-            r#"/* .fs-kommentar { } */
-            .fs-input:not(.fs-select[data-size="small"]) { }
-            .fs-field:has(.fs-error-text[data-x="y"]) { }
-            .fs-x::before { content: ".fs-streng { }"; }
-            @keyframes fs-spinner { from { opacity: 0 } }
-            .fs-y { background: url(".fs-url{}"); }"#,
+            r#"/* .lt-kommentar { } */
+            .lt-input:not(.lt-select[data-size="small"]) { }
+            .lt-field:has(.lt-error-text[data-x="y"]) { }
+            .lt-x::before { content: ".lt-streng { }"; }
+            @keyframes lt-spinner { from { opacity: 0 } }
+            .lt-y { background: url(".lt-url{}"); }"#,
         );
-        assert!(!s.classes.contains("fs-kommentar"));
+        assert!(!s.classes.contains("lt-kommentar"));
         // Nevnt, men verdiene i `:not()` og `:has()` er ikke stylet.
-        assert!(s.classes.contains("fs-select") && s.classes.contains("fs-error-text"));
-        assert!(!s.styles_value("fs-select", "data-size", Some("small")));
-        assert!(!s.styles_value("fs-error-text", "data-x", Some("y")));
-        assert!(!s.classes.contains("fs-streng"));
-        assert!(!s.classes.contains("fs-url"));
-        assert!(s.classes.contains("fs-input") && s.classes.contains("fs-field"));
-        assert!(s.classes.contains("fs-x") && s.classes.contains("fs-y"));
+        assert!(s.classes.contains("lt-select") && s.classes.contains("lt-error-text"));
+        assert!(!s.styles_value("lt-select", "data-size", Some("small")));
+        assert!(!s.styles_value("lt-error-text", "data-x", Some("y")));
+        assert!(!s.classes.contains("lt-streng"));
+        assert!(!s.classes.contains("lt-url"));
+        assert!(s.classes.contains("lt-input") && s.classes.contains("lt-field"));
+        assert!(s.classes.contains("lt-x") && s.classes.contains("lt-y"));
     }
 
     #[test]
     fn a_space_before_a_comma_or_a_parenthesis_keeps_the_selector() {
         let s = read_styles(
-            r#":is(.fs-tag, .fs-badge )[data-size="small"] { }
-            .fs-alert , .fs-card { &[data-color="danger"] { } }
-            .fs-list > * { &[data-x="y"] { } }
-            .fs-table   { &[data-size="small"] { } }"#,
+            r#":is(.lt-tag, .lt-badge )[data-size="small"] { }
+            .lt-alert , .lt-card { &[data-color="danger"] { } }
+            .lt-list > * { &[data-x="y"] { } }
+            .lt-table   { &[data-size="small"] { } }"#,
         );
-        assert!(s.styles_value("fs-badge", "data-size", Some("small")));
-        assert!(s.styles_value("fs-tag", "data-size", Some("small")));
-        assert!(s.styles_value("fs-alert", "data-color", Some("danger")));
-        assert!(s.styles_value("fs-card", "data-color", Some("danger")));
-        assert!(s.styles_value("fs-table", "data-size", Some("small")));
-        // `*` er det som styles, ikke `.fs-list`.
-        assert!(!s.styles_value("fs-list", "data-x", Some("y")));
+        assert!(s.styles_value("lt-badge", "data-size", Some("small")));
+        assert!(s.styles_value("lt-tag", "data-size", Some("small")));
+        assert!(s.styles_value("lt-alert", "data-color", Some("danger")));
+        assert!(s.styles_value("lt-card", "data-color", Some("danger")));
+        assert!(s.styles_value("lt-table", "data-size", Some("small")));
+        // `*` er det som styles, ikke `.lt-list`.
+        assert!(!s.styles_value("lt-list", "data-x", Some("y")));
     }
 
     #[test]
     fn reads_imports() {
         let s = read_styles(
-            r#"@import "./tokens.css" layer(fristil.tokens);
+            r#"@import "./tokens.css" layer(lotek.tokens);
             @import url("button.css");
             @import url(input.css);
-            @layer fristil.tokens, fristil.components;
-            .fs-z { }"#,
+            @layer lotek.tokens, lotek.components;
+            .lt-z { }"#,
         );
         assert_eq!(s.imports, ["./tokens.css", "button.css", "input.css"]);
-        assert!(s.classes.contains("fs-z"));
+        assert!(s.classes.contains("lt-z"));
     }
 
     #[test]
     fn survives_broken_css() {
         for css in [
             "{",
-            ".fs-a[",
-            ".fs-b { & { & {",
+            ".lt-a[",
+            ".lt-b { & { & {",
             "@media {",
             ":is(",
             "}}}}",
-            ".fs-c:is(.fs-d",
+            ".lt-c:is(.lt-d",
         ] {
             let _ = read_styles(css);
         }
-        assert!(read_styles(".fs-e { color: red").classes.contains("fs-e"));
+        assert!(read_styles(".lt-e { color: red").classes.contains("lt-e"));
     }
 }

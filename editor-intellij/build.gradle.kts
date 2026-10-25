@@ -7,17 +7,17 @@ plugins {
     id("org.jetbrains.intellij.platform") version "2.19.0"
 }
 
-group = "no.fristil"
+group = "no.lotek"
 version = providers.gradleProperty("pluginVersion").get()
 
 /*
- * Versjonen av Fristil for Kotlin, fra `gradle.properties` i den pakken.
+ * Versjonen av LO-TEK for Kotlin, fra `gradle.properties` i den pakken.
  * `includeBuild` bytter inn bygget ved siden av uansett hvilken versjon som
  * står her, men et versjonskrav som ikke finnes, villedet den som leste fila.
  * Når pakken ligger på Maven Central, er det denne versjonen pluginen henter
  * uten `includeBuild`.
  */
-val fristilVersion =
+val lotekVersion =
     Properties()
         .apply { rootDir.resolve("../kotlin/gradle.properties").reader().use { load(it) } }
         .getProperty("version")
@@ -41,7 +41,7 @@ dependencies {
      * alltid har den samme kjernen som resten av repoet. IDE-en har sitt
      * eget Kotlin-standardbibliotek, så pakkens utgave holdes utenfor.
      */
-    implementation("io.github.markusaugust:fristil:$fristilVersion") {
+    implementation("io.github.markusaugust:lo-tek-interfaces:$lotekVersion") {
         exclude(group = "org.jetbrains.kotlin")
     }
 }
@@ -64,22 +64,22 @@ intellijPlatform {
             the wiring a template has to write itself: a label not linked to its
             field, a popover panel without an id, a tab without a panel, a tab row
             without a name, and the attributes removed from
-            <code>&lt;fs-field&gt;</code>, among others. A quick fix can now make
+            <code>&lt;lt-field&gt;</code>, among others. A quick fix can now make
             several edits at once, such as the field's id and the label's
             <code>for</code>.<br>
-            <b>0.3.0</b>: Diagnostics from Fristil's checker, in HTML files and in
+            <b>0.3.0</b>: Diagnostics from LO-TEK's checker, in HTML files and in
             HTML injected into strings, with quick fixes. The checker is written in
             Rust and runs inside the IDE as WebAssembly, without Node.js. It checks
             against the project's own manifest when it finds one, as the language
-            server does, so components taken over with <code>fristil overta</code>
+            server does, so components taken over with <code>lotek overta</code>
             are known. Completion reads the same manifest, so it suggests those
             components too and never a class the checker rejects. Files without a
-            Fristil class are checked as well, for the rules that apply to plain
+            LO-TEK class are checked as well, for the rules that apply to plain
             HTML, such as an icon button without a name.<br>
-            <b>0.2.0</b>: Completion for <code>fs-table__sort</code>, the sort button
+            <b>0.2.0</b>: Completion for <code>lt-table__sort</code>, the sort button
             in a table header. The session timeout is now described as a frame
-            component, and the plugin has the new Fristil icon.<br>
-            <b>0.1.0</b>: First release. Completion for Fristil's CSS classes in
+            component, and the plugin has the new LO-TEK icon.<br>
+            <b>0.1.0</b>: First release. Completion for LO-TEK's CSS classes in
             HTML files and in HTML injected into strings.
         """.trimIndent()
         ideaVersion {
@@ -88,7 +88,7 @@ intellijPlatform {
         }
     }
     // Tokenet kommer fra hemmeligheten JETBRAINS_MARKETPLACE_TOKEN i
-    // `publiser-intellij.yml`. Pluginen signeres ikke med eget sertifikat:
+    // `publish-intellij.yml`. Pluginen signeres ikke med eget sertifikat:
     // uten `signPlugin.certificateChain` og `privateKey` hopper Gradle over
     // signeringen, og Marketplace signerer den selv.
     publishing {
@@ -101,7 +101,7 @@ tasks.processResources {
     // som snippetene i VS Code. Fila kopieres inn der `plugin.xml` peker.
     from(rootDir.resolve("../designsystem/live-templates.xml")) {
         into("liveTemplates")
-        rename { "Fristil.xml" }
+        rename { "Lotek.xml" }
     }
 }
 

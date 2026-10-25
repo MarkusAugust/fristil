@@ -1,8 +1,8 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const ALERT_CLASS = "fs-alert" as const
+export const ALERT_CLASS = "lt-alert" as const
 /** Overskriften inne i meldingen. */
-export const ALERT_TITLE_CLASS = "fs-alert__title" as const
+export const ALERT_TITLE_CLASS = "lt-alert__title" as const
 
 export const alertColors = ["info", "success", "warning", "danger"] as const
 

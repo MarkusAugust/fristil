@@ -1,10 +1,10 @@
 ---
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 import Preview from "./Preview.astro"
 
 // Serveren skriver hele boksen: klassen, rollen, tabbestoppen og
 // overskriften. Komponenten flytter bare fokus og tar klikk på lenkene.
-const feil = fs.errorSummary({ count: 2, id: "demo-oppsummering" })
+const feil = lt.errorSummary({ count: 2, id: "demo-oppsummering" })
 ---
 
 <Preview
@@ -14,24 +14,24 @@ const feil = fs.errorSummary({ count: 2, id: "demo-oppsummering" })
 	maxWidth="34rem"
 >
 	<form id="demo-skjema" novalidate>
-		<fs-error-summary {...feil.host} data-autofocus="false">
+		<lt-error-summary {...feil.host} data-autofocus="false">
 			<h2 {...feil.title}>Skjemaet har to feil</h2>
-			<ul class="fs-list">
+			<ul class="lt-list">
 				<li><a href="#demo-epost">Skriv en e-postadresse med krøllalfa</a></li>
 				<li><a href="#demo-dato">Skriv datoen som dag, måned og år</a></li>
 			</ul>
-		</fs-error-summary>
+		</lt-error-summary>
 
-		<label class="fs-label" for="demo-epost">E-postadresse</label>
-		<input class="fs-input" id="demo-epost" type="email" value="ola.nordmann" data-state="invalid" aria-invalid="true" />
+		<label class="lt-label" for="demo-epost">E-postadresse</label>
+		<input class="lt-input" id="demo-epost" type="email" value="ola.nordmann" data-state="invalid" aria-invalid="true" />
 
-		<label class="fs-label" for="demo-dato">Fødselsdato</label>
-		<input class="fs-input" id="demo-dato" type="date" data-state="invalid" aria-invalid="true" />
+		<label class="lt-label" for="demo-dato">Fødselsdato</label>
+		<input class="lt-input" id="demo-dato" type="date" data-state="invalid" aria-invalid="true" />
 	</form>
 </Preview>
 
 <script>
-	import { defineFsErrorSummary } from "@fristil/designsystem/error-summary"
+	import { defineLtErrorSummary } from "@lo-tek/interfaces/error-summary"
 
-	defineFsErrorSummary()
+	defineLtErrorSummary()
 </script>

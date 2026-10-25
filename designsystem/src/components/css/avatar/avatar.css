@@ -1,63 +1,63 @@
-@layer fristil {
-  .fs-avatar {
+@layer lotek {
+  .lt-avatar {
     box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    inline-size: var(--fs-avatar-size, var(--fs-spacing-10));
-    block-size: var(--fs-avatar-size, var(--fs-spacing-10));
+    inline-size: var(--lt-avatar-size, var(--lt-spacing-10));
+    block-size: var(--lt-avatar-size, var(--lt-spacing-10));
     overflow: hidden;
     font-family: inherit;
-    font-size: var(--fs-font-size-s);
-    font-weight: var(--fs-font-weight-semibold);
+    font-size: var(--lt-font-size-s);
+    font-weight: var(--lt-font-weight-semibold);
     line-height: 1;
-    color: var(--fs-color-accent-text);
-    background: var(--fs-color-accent-surface);
+    color: var(--lt-color-accent-text);
+    background: var(--lt-color-accent-surface);
     border-radius: 50%;
     /* Bildet kan være hva som helst. Ringen holder formen tydelig også mot en
        lys flate i bildet. En `outline` innover og ikke en `box-shadow`: en
        skygge innover males under innholdet, og bildet dekket den helt.
        Langformene, siden kortformen med `solid` er forbeholdt
-       `--fs-focus-ring`. */
+       `--lt-focus-ring`. */
     outline-width: 1px;
     outline-style: solid;
-    outline-color: var(--fs-color-neutral-border-subtle);
+    outline-color: var(--lt-color-neutral-border-subtle);
     outline-offset: -1px;
   }
 
   /* Ringen over er en `outline` i laget, og den slår nettleserens egen
      fokusmarkering. En avatar som er en knapp, for eksempel til en
      profilmeny, får derfor fokusringen herfra. */
-  .fs-avatar:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-avatar:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
   }
 
-  .fs-avatar img {
+  .lt-avatar img {
     inline-size: 100%;
     block-size: 100%;
     object-fit: cover;
   }
 
-  .fs-avatar[data-size="small"] {
-    inline-size: var(--fs-spacing-6);
-    block-size: var(--fs-spacing-6);
-    font-size: var(--fs-font-size-xs);
+  .lt-avatar[data-size="small"] {
+    inline-size: var(--lt-spacing-6);
+    block-size: var(--lt-spacing-6);
+    font-size: var(--lt-font-size-xs);
   }
 
-  .fs-avatar[data-size="large"] {
-    inline-size: var(--fs-spacing-16);
-    block-size: var(--fs-spacing-16);
-    font-size: var(--fs-font-size-l);
+  .lt-avatar[data-size="large"] {
+    inline-size: var(--lt-spacing-16);
+    block-size: var(--lt-spacing-16);
+    font-size: var(--lt-font-size-l);
   }
 
-  .fs-avatar[data-variant="square"] {
-    border-radius: var(--fs-avatar-radius, var(--fs-spacing-1));
+  .lt-avatar[data-variant="square"] {
+    border-radius: var(--lt-avatar-radius, var(--lt-spacing-1));
   }
 
   /* Flere profilbilder som overlapper. Rekkefølgen snus i CSS: det første
      elementet i markupen står lengst til høyre. */
-  .fs-avatar-stack {
+  .lt-avatar-stack {
     display: inline-flex;
     flex-direction: row-reverse;
     justify-content: flex-end;
@@ -66,10 +66,10 @@
     list-style: none;
   }
 
-  .fs-avatar-stack > * + * {
+  .lt-avatar-stack > * + * {
     margin-inline-end: var(
-      --fs-avatar-stack-overlap,
-      calc(var(--fs-spacing-2) * -1)
+      --lt-avatar-stack-overlap,
+      calc(var(--lt-spacing-2) * -1)
     );
   }
 
@@ -79,15 +79,15 @@
      ringen til den bak oppå bildet til den foran, som en bue gjennom det.
      Med `isolation` males hver avatar for seg, i rekkefølge, og den foran
      dekker den bak, ring og alt. */
-  .fs-avatar-stack .fs-avatar {
-    box-shadow: 0 0 0 2px var(--fs-color-neutral-canvas);
+  .lt-avatar-stack .lt-avatar {
+    box-shadow: 0 0 0 2px var(--lt-color-neutral-canvas);
     isolation: isolate;
   }
 
   /* Den egne konteksten gjelder også fokusringen: en avatar som er en knapp
      og ligger bak en annen, fikk ringen dekket der naboen overlapper. Den
      som har fokus, løftes over naboene så ringen vises hel. */
-  .fs-avatar-stack .fs-avatar:focus-visible {
+  .lt-avatar-stack .lt-avatar:focus-visible {
     position: relative;
     z-index: 1;
   }

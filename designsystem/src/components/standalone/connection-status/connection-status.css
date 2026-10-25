@@ -1,39 +1,39 @@
-@layer fristil {
-  /* Både elementet og klassen. `fs.connectionStatus()` sender ut
-     `fs-connection-status`, og en klasse en byggefunksjon reklamerer med må gjøre
+@layer lotek {
+  /* Både elementet og klassen. `lt.connectionStatus()` sender ut
+     `lt-connection-status`, og en klasse en byggefunksjon reklamerer med må gjøre
      noe. Her sto bare elementvelgeren, så klassen var død. */
-  fs-connection-status,
-  .fs-connection-status {
+  lt-connection-status,
+  .lt-connection-status {
     display: contents;
   }
 
-  .fs-connection-status__bar {
+  .lt-connection-status__bar {
     position: fixed;
     inset-block-start: 0;
     inset-inline: 0;
-    z-index: var(--fs-connection-status-layer, 1000);
+    z-index: var(--lt-connection-status-layer, 1000);
     padding: var(
-      --fs-connection-status-padding,
-      var(--fs-spacing-2) var(--fs-spacing-4)
+      --lt-connection-status-padding,
+      var(--lt-spacing-2) var(--lt-spacing-4)
     );
-    font-size: var(--fs-font-size-s);
-    line-height: var(--fs-line-height-compact);
+    font-size: var(--lt-font-size-s);
+    line-height: var(--lt-line-height-compact);
     text-align: center;
-    color: var(--fs-color-danger-text);
-    background: var(--fs-color-danger-surface);
-    border-block-end: 1px solid var(--fs-color-danger-text);
+    color: var(--lt-color-danger-text);
+    background: var(--lt-color-danger-surface);
+    border-block-end: 1px solid var(--lt-color-danger-text);
   }
 
-  .fs-connection-status__bar[data-state="online"] {
-    color: var(--fs-color-success-text);
-    background: var(--fs-color-success-surface);
-    border-block-end-color: var(--fs-color-success-text);
+  .lt-connection-status__bar[data-state="online"] {
+    color: var(--lt-color-success-text);
+    background: var(--lt-color-success-surface);
+    border-block-end-color: var(--lt-color-success-text);
   }
 
   /* Høykontrastmodus fjerner egne farger og bakgrunner. Uten en ramme ville
      linja vært usynlig, og det er nettopp den som sier at noe er galt. */
   @media (forced-colors: active) {
-    .fs-connection-status__bar {
+    .lt-connection-status__bar {
       border: 2px solid CanvasText;
     }
   }

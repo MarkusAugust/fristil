@@ -17,24 +17,24 @@ import {
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
 import { dialog } from "./dialog"
-import { defineFsDialog } from "./fs-dialog"
+import { defineLtDialog } from "./lt-dialog"
 
 import "../../../tokens/tokens.css"
 import "./dialog.css"
 import "../../css/button/button.css"
 
-describe(".fs-dialog", () => {
+describe(".lt-dialog", () => {
   beforeEach(() => {
     monter(`
-      <button class="fs-button" id="apne" type="button">Slett søknaden</button>
-      <dialog class="fs-dialog" id="dialog" aria-labelledby="dialog-tittel">
-        <h2 class="fs-dialog__title" id="dialog-tittel">Slette søknaden?</h2>
-        <div class="fs-dialog__body">
+      <button class="lt-button" id="apne" type="button">Slett søknaden</button>
+      <dialog class="lt-dialog" id="dialog" aria-labelledby="dialog-tittel">
+        <h2 class="lt-dialog__title" id="dialog-tittel">Slette søknaden?</h2>
+        <div class="lt-dialog__body">
           <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
         </div>
-        <div class="fs-dialog__footer">
-          <button class="fs-button" data-variant="secondary" id="avbryt" type="button">Avbryt</button>
-          <button class="fs-button" data-variant="danger" id="slett" type="button">Slett søknaden</button>
+        <div class="lt-dialog__footer">
+          <button class="lt-button" data-variant="secondary" id="avbryt" type="button">Avbryt</button>
+          <button class="lt-button" data-variant="danger" id="slett" type="button">Slett søknaden</button>
         </div>
       </dialog>
     `)
@@ -79,23 +79,23 @@ describe(".fs-dialog", () => {
     const boks = dialog({ titleId: "dialog-tittel" })
 
     expect(boks.dialog).toEqual({
-      class: "fs-dialog",
+      class: "lt-dialog",
       "aria-labelledby": "dialog-tittel",
     })
     // Skal dialogen vises, står `open` begge steder. På `<dialog>` er det
     // reserven for den som ikke har JavaScript: uten den er innholdet skjult.
     expect(dialog({ titleId: "t", open: true }).dialog).toEqual({
-      class: "fs-dialog",
+      class: "lt-dialog",
       "aria-labelledby": "t",
       open: true,
     })
     expect(boks.title).toEqual({
-      class: "fs-dialog__title",
+      class: "lt-dialog__title",
       id: "dialog-tittel",
     })
-    expect(boks.body).toEqual({ class: "fs-dialog__body" })
-    expect(boks.footer).toEqual({ class: "fs-dialog__footer" })
-    expect(dialog.title).toBe("fs-dialog__title")
+    expect(boks.body).toEqual({ class: "lt-dialog__body" })
+    expect(boks.footer).toEqual({ class: "lt-dialog__footer" })
+    expect(dialog.title).toBe("lt-dialog__title")
   })
 
   it("har ingen tilgjengelighetsbrudd når den er åpen", async () => {
@@ -120,13 +120,13 @@ describe("bredden på dialogen", () => {
      */
     monter(`
       <div id="smal" style="width: 240px; position: relative">
-        <dialog class="fs-dialog" id="i-boks" open>
+        <dialog class="lt-dialog" id="i-boks" open>
           <p>Innhold</p>
         </dialog>
       </div>
 
       <div id="smal-flate" style="width: 240px">
-        <div class="fs-dialog" id="som-boks">
+        <div class="lt-dialog" id="som-boks">
           <p>Innhold</p>
         </div>
       </div>
@@ -173,28 +173,28 @@ async function lukkOgVent(d: HTMLDialogElement, verdi?: string) {
   await ventPaTegning()
 }
 
-describe("fs-dialog", () => {
+describe("lt-dialog", () => {
   beforeAll(() => {
-    defineFsDialog()
+    defineLtDialog()
   })
 
   async function monterDialog(open: boolean) {
     const boks = dialog({ titleId: "tittel", open })
     monter(`
-      <fs-dialog ${attr(boks.host)}>
+      <lt-dialog ${attr(boks.host)}>
         <dialog ${attr(boks.dialog)}>
           <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
           <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
           <form method="dialog" ${attr(boks.footer)}>
-            <button class="fs-button" id="lukk" value="lukk">Lukk</button>
+            <button class="lt-button" id="lukk" value="lukk">Lukk</button>
           </form>
         </dialog>
-      </fs-dialog>
+      </lt-dialog>
     `)
-    await customElements.whenDefined("fs-dialog")
+    await customElements.whenDefined("lt-dialog")
     await ventPaTegning()
     return {
-      vert: document.querySelector("fs-dialog") as HTMLElement,
+      vert: document.querySelector("lt-dialog") as HTMLElement,
       d: document.querySelector("dialog") as HTMLDialogElement,
     }
   }
@@ -258,11 +258,11 @@ describe("fs-dialog", () => {
     const boks = dialog({ titleId: "t", open: true })
     const holder = document.createElement("div")
     holder.innerHTML = `
-      <fs-dialog ${attr(boks.host)}>
+      <lt-dialog ${attr(boks.host)}>
         <dialog ${attr(boks.dialog)}>
           <h2 ${attr(boks.title)}>Tittel</h2>
         </dialog>
-      </fs-dialog>`
+      </lt-dialog>`
 
     await ventPaTegning()
     window.removeEventListener("error", lytter)
@@ -324,13 +324,13 @@ describe("fs-dialog", () => {
     // sier `open`, men `<dialog>` har det ikke. Byggefunksjonen gir begge nå,
     // så dette tilfellet finnes bare i maler noen har skrevet selv.
     monter(`
-      <fs-dialog open>
-        <dialog class="fs-dialog" aria-labelledby="tittel">
-          <h2 class="fs-dialog__title" id="tittel">Tittel</h2>
+      <lt-dialog open>
+        <dialog class="lt-dialog" aria-labelledby="tittel">
+          <h2 class="lt-dialog__title" id="tittel">Tittel</h2>
         </dialog>
-      </fs-dialog>
+      </lt-dialog>
     `)
-    await customElements.whenDefined("fs-dialog")
+    await customElements.whenDefined("lt-dialog")
     await ventPaTegning()
 
     expect(document.querySelector("dialog")?.matches(":modal")).toBe(true)
@@ -381,14 +381,14 @@ describe("fs-dialog", () => {
     const boks = dialog({ titleId: "tittel", open: true })
     const holder = document.createElement("div")
     holder.innerHTML = `
-      <fs-dialog ${attr(boks.host)}>
+      <lt-dialog ${attr(boks.host)}>
         <dialog ${attr(boks.dialog)}>
           <h2 ${attr(boks.title)}>Tittel</h2>
           <form method="dialog" ${attr(boks.footer)}>
-            <button class="fs-button" value="lukk">Lukk</button>
+            <button class="lt-button" value="lukk">Lukk</button>
           </form>
         </dialog>
-      </fs-dialog>`
+      </lt-dialog>`
 
     const d = holder.querySelector("dialog") as HTMLDialogElement
     expect(d.open, "serveren sendte den ikke åpen").toBe(true)
@@ -401,7 +401,7 @@ describe("fs-dialog", () => {
 
     expect(d.open, "dialogen spratt opp igjen").toBe(false)
     expect(
-      holder.querySelector("fs-dialog")?.hasAttribute("open"),
+      holder.querySelector("lt-dialog")?.hasAttribute("open"),
       "verten sier fortsatt at den er åpen",
     ).toBe(false)
 
@@ -460,16 +460,16 @@ describe("fs-dialog", () => {
     // første dialogen» ville åpnet feil boks.
     const boks = dialog({ titleId: "tittel", open: true })
     monter(`
-      <fs-dialog ${attr(boks.host)}>
+      <lt-dialog ${attr(boks.host)}>
         <div class="et-eller-annet-kort">
           <dialog id="fremmed"><p>Noe helt annet</p></dialog>
         </div>
         <dialog ${attr(boks.dialog)} id="min">
           <h2 ${attr(boks.title)}>Tittel</h2>
         </dialog>
-      </fs-dialog>
+      </lt-dialog>
     `)
-    await customElements.whenDefined("fs-dialog")
+    await customElements.whenDefined("lt-dialog")
     await ventPaTegning()
 
     expect((document.getElementById("min") as HTMLDialogElement).open).toBe(
@@ -557,7 +557,7 @@ describe("fs-dialog", () => {
     const { d } = await monterDialog(true)
     await lukkOgVent(d, "lukk")
 
-    const ny = document.createElement("fs-dialog")
+    const ny = document.createElement("lt-dialog")
     ny.setAttribute("open", "")
     ny.append(d)
     document.body.append(ny)
@@ -623,7 +623,7 @@ describe("dialogen før den er modal", () => {
    * Tilstanden testes i en ramme uten skript.
    *
    * Første utgave laget elementet i selve testsiden, og den var ikke til å
-   * stole på: i en full kjøring er `<fs-dialog>` alt registrert av en annen
+   * stole på: i en full kjøring er `<lt-dialog>` alt registrert av en annen
    * testfil, så dialogen rakk å bli modal før stilen ble lest. En ramme med
    * bare markup og stilark er nøyaktig det serveren sender, og ingenting
    * annet.
@@ -676,12 +676,12 @@ describe("dialogen før den er modal", () => {
       vindu,
       rydd,
     } = await iRammeUtenSkript(`
-      <fs-dialog>
-        <dialog class="fs-dialog" open>
-          <h2 class="fs-dialog__title">Velkommen</h2>
+      <lt-dialog>
+        <dialog class="lt-dialog" open>
+          <h2 class="lt-dialog__title">Velkommen</h2>
           <p>Innhold som finnes uten JavaScript.</p>
         </dialog>
-      </fs-dialog>`)
+      </lt-dialog>`)
 
     try {
       // Ingen skript i ramma, så dialogen er åpen uten å være modal. Det er
@@ -741,7 +741,7 @@ describe("dialogen før den er modal", () => {
     },
     {
       navn: "med innhold som er høyere enn skjermen",
-      innhold: `<div class="fs-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>`,
+      innhold: `<div class="lt-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>`,
     },
   ]) {
     it(`flytter seg ikke når den blir modal, ${navn}`, async () => {
@@ -751,12 +751,12 @@ describe("dialogen før den er modal", () => {
         rydd,
       } = await iRammeUtenSkript(
         `
-        <fs-dialog>
-          <dialog class="fs-dialog" open>
-            <h2 class="fs-dialog__title">Velkommen</h2>
+        <lt-dialog>
+          <dialog class="lt-dialog" open>
+            <h2 class="lt-dialog__title">Velkommen</h2>
             ${innhold}
           </dialog>
-        </fs-dialog>`,
+        </lt-dialog>`,
         390,
         700,
       )
@@ -799,28 +799,28 @@ describe("dialogen før den er modal", () => {
 
   it("lar kroppen rulle, ikke dialogen, i begge tilstander", async () => {
     /*
-     * `.fs-dialog__body` hadde `overflow-y: auto` uten å kunne rulle: dialogen
+     * `.lt-dialog__body` hadde `overflow-y: auto` uten å kunne rulle: dialogen
      * var en blokk, så kroppens høyde var innholdsbestemt og ble aldri
      * klippet. Det som rullet var dialogen selv, og bare når den var modal, så
      * overskriften og knapperaden forsvant ut av syne sammen med teksten.
      */
     const { dialog: boks, rydd } = await iRammeUtenSkript(
       `
-      <fs-dialog>
-        <dialog class="fs-dialog" open>
-          <h2 class="fs-dialog__title">Vilkår</h2>
-          <div class="fs-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>
-          <div class="fs-dialog__footer">
-            <button class="fs-button" type="button">Lukk</button>
+      <lt-dialog>
+        <dialog class="lt-dialog" open>
+          <h2 class="lt-dialog__title">Vilkår</h2>
+          <div class="lt-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>
+          <div class="lt-dialog__footer">
+            <button class="lt-button" type="button">Lukk</button>
           </div>
         </dialog>
-      </fs-dialog>`,
+      </lt-dialog>`,
       390,
       700,
     )
 
-    const kropp = boks.querySelector(".fs-dialog__body") as HTMLElement
-    const bunn = boks.querySelector(".fs-dialog__footer") as HTMLElement
+    const kropp = boks.querySelector(".lt-dialog__body") as HTMLElement
+    const bunn = boks.querySelector(".lt-dialog__footer") as HTMLElement
 
     const somDenSkal = () => {
       expect(kropp.scrollHeight).toBeGreaterThan(kropp.clientHeight + 1)
@@ -861,14 +861,14 @@ describe("dialogen før den er modal", () => {
       vindu,
       rydd,
     } = await iRammeUtenSkript(`
-      <fs-dialog>
-        <dialog class="fs-dialog">
-          <h2 class="fs-dialog__title">Slette søknaden?</h2>
-          <div class="fs-dialog__body">
+      <lt-dialog>
+        <dialog class="lt-dialog">
+          <h2 class="lt-dialog__title">Slette søknaden?</h2>
+          <div class="lt-dialog__body">
             <p>Søknaden og vedleggene blir borte.</p>
           </div>
         </dialog>
-      </fs-dialog>`)
+      </lt-dialog>`)
 
     try {
       expect(boks.open).toBe(false)
@@ -892,7 +892,7 @@ describe("dialogen før den er modal", () => {
     /*
      * `overflow: auto` i regelen før modalen speiler det nettleseren gir en
      * modal. Uten den er `overflow` `visible` fram til `showModal()`, og høyt
-     * innhold som ikke ligger i `.fs-dialog__body` renner ut av det avrundede
+     * innhold som ikke ligger i `.lt-dialog__body` renner ut av det avrundede
      * kortet framfor å kunne rulles. Boksen er like stor uansett, så
      * hopptestene ser det ikke.
      */
@@ -902,12 +902,12 @@ describe("dialogen før den er modal", () => {
       rydd,
     } = await iRammeUtenSkript(
       `
-      <fs-dialog>
-        <dialog class="fs-dialog" open>
-          <h2 class="fs-dialog__title">Vilkår</h2>
+      <lt-dialog>
+        <dialog class="lt-dialog" open>
+          <h2 class="lt-dialog__title">Vilkår</h2>
           ${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}
         </dialog>
-      </fs-dialog>`,
+      </lt-dialog>`,
       390,
       700,
     )
@@ -932,9 +932,9 @@ describe("dialogen før den er modal", () => {
       vindu,
       rydd,
     } = await iRammeUtenSkript(`
-      <dialog class="fs-dialog" popover id="hjelp">
-        <h2 class="fs-dialog__title">Hva betyr dette?</h2>
-        <div class="fs-dialog__body">
+      <dialog class="lt-dialog" popover id="hjelp">
+        <h2 class="lt-dialog__title">Hva betyr dette?</h2>
+        <div class="lt-dialog__body">
           <p>Søknaden er registrert, men ikke behandlet.</p>
         </div>
       </dialog>`)
@@ -956,7 +956,7 @@ describe("dialogen før den er modal", () => {
 
   it("lar dialogen være en blokk når den ikke har en kropp", async () => {
     /*
-     * Kolonnen slås på av `:has(> .fs-dialog__body)`, og det vilkåret er med
+     * Kolonnen slås på av `:has(> .lt-dialog__body)`, og det vilkåret er med
      * vilje. En dialog uten kropp skal ikke endre utseende av at kolonnen kom:
      * en knapp som står rett i dialogen skal beholde bredden sin framfor å bli
      * en egen rad i full bredde.
@@ -966,18 +966,18 @@ describe("dialogen før den er modal", () => {
       vindu,
       rydd,
     } = await iRammeUtenSkript(`
-      <fs-dialog>
-        <dialog class="fs-dialog" open>
-          <h2 class="fs-dialog__title">Vilkår</h2>
+      <lt-dialog>
+        <dialog class="lt-dialog" open>
+          <h2 class="lt-dialog__title">Vilkår</h2>
           <p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>
-          <button class="fs-button" type="button">Lukk</button>
+          <button class="lt-button" type="button">Lukk</button>
         </dialog>
-      </fs-dialog>`)
+      </lt-dialog>`)
 
     try {
       expect(vindu.getComputedStyle(boks).display).toBe("block")
 
-      const knapp = boks.querySelector(".fs-button") as HTMLElement
+      const knapp = boks.querySelector(".lt-button") as HTMLElement
       const bredde = knapp.getBoundingClientRect().width
       expect(bredde).toBeGreaterThan(0)
       // Ikke strukket til full bredde slik et flekselement ville blitt.
@@ -1000,14 +1000,14 @@ describe("dialogen før den er modal", () => {
       rydd,
     } = await iRammeUtenSkript(
       `
-      <fs-dialog>
-        <dialog class="fs-dialog" open>
+      <lt-dialog>
+        <dialog class="lt-dialog" open>
           <form method="dialog">
-            <h2 class="fs-dialog__title">Vilkår</h2>
-            <div class="fs-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>
+            <h2 class="lt-dialog__title">Vilkår</h2>
+            <div class="lt-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>
           </form>
         </dialog>
-      </fs-dialog>`,
+      </lt-dialog>`,
       390,
       700,
     )
@@ -1015,7 +1015,7 @@ describe("dialogen før den er modal", () => {
     try {
       expect(vindu.getComputedStyle(boks).display).toBe("block")
 
-      const kropp = boks.querySelector(".fs-dialog__body") as HTMLElement
+      const kropp = boks.querySelector(".lt-dialog__body") as HTMLElement
       expect(kropp.scrollHeight).toBeLessThanOrEqual(kropp.clientHeight + 1)
       expect(boks.scrollHeight).toBeGreaterThan(boks.clientHeight + 1)
     } finally {
@@ -1024,14 +1024,14 @@ describe("dialogen før den er modal", () => {
   })
 
   it("rører ikke en dialog som brukes uten komponenten", async () => {
-    // En `.fs-dialog` som står alene, og med vilje ikke er modal, skal stå
+    // En `.lt-dialog` som står alene, og med vilje ikke er modal, skal stå
     // der den står.
     const {
       dialog: boks,
       vindu,
       rydd,
     } = await iRammeUtenSkript(
-      `<dialog class="fs-dialog" open>Uten vert</dialog>`,
+      `<dialog class="lt-dialog" open>Uten vert</dialog>`,
     )
 
     try {
@@ -1042,9 +1042,9 @@ describe("dialogen før den er modal", () => {
   })
 })
 
-describe("fs-dialog med server-controlled", () => {
+describe("lt-dialog med server-controlled", () => {
   beforeAll(() => {
-    defineFsDialog()
+    defineLtDialog()
   })
 
   it("melder fra én gang også når React tar open fra barnet før verten", async () => {
@@ -1053,16 +1053,16 @@ describe("fs-dialog med server-controlled", () => {
     // aldri vite at den ble lukket.
     const boks = dialog({ titleId: "sc2-tittel", open: true })
     monter(`
-      <fs-dialog server-controlled ${attr(boks.host)}>
+      <lt-dialog server-controlled ${attr(boks.host)}>
         <dialog ${attr(boks.dialog)}>
           <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
         </dialog>
-      </fs-dialog>
+      </lt-dialog>
     `)
-    await customElements.whenDefined("fs-dialog")
+    await customElements.whenDefined("lt-dialog")
     await ventPaTegning()
 
-    const vert = document.querySelector("fs-dialog") as HTMLElement
+    const vert = document.querySelector("lt-dialog") as HTMLElement
     const d = document.querySelector("dialog") as HTMLDialogElement
     const meldinger: boolean[] = []
     vert.addEventListener("dialog-toggle", (e) => meldinger.push(e.detail.open))
@@ -1086,20 +1086,20 @@ describe("fs-dialog med server-controlled", () => {
      */
     const boks = dialog({ titleId: "sc-tittel", open: true })
     monter(`
-      <fs-dialog server-controlled ${attr(boks.host)}>
+      <lt-dialog server-controlled ${attr(boks.host)}>
         <dialog ${attr(boks.dialog)}>
           <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
           <form method="dialog" ${attr(boks.footer)}>
-            <button class="fs-button" value="lukk">Lukk</button>
+            <button class="lt-button" value="lukk">Lukk</button>
           </form>
         </dialog>
-      </fs-dialog>
+      </lt-dialog>
       <button id="utenfor">Utenfor</button>
     `)
-    await customElements.whenDefined("fs-dialog")
+    await customElements.whenDefined("lt-dialog")
     await ventPaTegning()
 
-    const vert = document.querySelector("fs-dialog") as HTMLElement
+    const vert = document.querySelector("lt-dialog") as HTMLElement
     const d = document.querySelector("dialog") as HTMLDialogElement
     const meldinger: boolean[] = []
     vert.addEventListener("dialog-toggle", (e) => meldinger.push(e.detail.open))
@@ -1136,18 +1136,18 @@ describe("dialogen med farget topp", () => {
           <p ${attr(boks.subtitle)}>25 av 25 poeng</p>
         </div>
         <div ${attr(boks.body)}><p>Alle fire traff.</p></div>
-        <form method="dialog" ${attr(boks.footer)}><button class="fs-button" value="lukk">Lukk</button></form>
+        <form method="dialog" ${attr(boks.footer)}><button class="lt-button" value="lukk">Lukk</button></form>
       </dialog>
     `)
     await ventPaTegning()
 
     const d = document.querySelector("dialog") as HTMLElement
-    const topp = d.querySelector(".fs-dialog__header") as HTMLElement
-    const kropp = d.querySelector(".fs-dialog__body") as HTMLElement
-    const fot = d.querySelector(".fs-dialog__footer") as HTMLElement
+    const topp = d.querySelector(".lt-dialog__header") as HTMLElement
+    const kropp = d.querySelector(".lt-dialog__body") as HTMLElement
+    const fot = d.querySelector(".lt-dialog__footer") as HTMLElement
     // En referanse med tokenet rett på, så fargen sammenlignes ferdig regnet.
     const referanse = document.createElement("div")
-    referanse.style.background = "var(--fs-color-success-surface)"
+    referanse.style.background = "var(--lt-color-success-surface)"
     document.body.append(referanse)
 
     expect(getComputedStyle(d).paddingTop).toBe("0px")
@@ -1173,10 +1173,10 @@ describe("dialogen med farget topp", () => {
     `)
     await ventPaTegning()
 
-    const topp = document.querySelector(".fs-dialog__header") as HTMLElement
-    const kropp = document.querySelector(".fs-dialog__body") as HTMLElement
+    const topp = document.querySelector(".lt-dialog__header") as HTMLElement
+    const kropp = document.querySelector(".lt-dialog__body") as HTMLElement
     const referanse = document.createElement("div")
-    referanse.style.paddingTop = "var(--fs-spacing-2)"
+    referanse.style.paddingTop = "var(--lt-spacing-2)"
     document.body.append(referanse)
 
     // Toppens bunnluft er overskriftens vanlige marg, og kroppen legger
@@ -1207,10 +1207,10 @@ describe("dialogen med farget topp", () => {
     // 20 piksler under overskriften i stedet for 8.
     const stil = (id: string, del: string) =>
       getComputedStyle(document.querySelector(`#${id} ${del}`) as Element)
-    expect(stil("noytral", ".fs-dialog__header").paddingBottom).toBe(
-      stil("uten", ".fs-dialog__header").paddingBottom,
+    expect(stil("noytral", ".lt-dialog__header").paddingBottom).toBe(
+      stil("uten", ".lt-dialog__header").paddingBottom,
     )
-    expect(stil("noytral", ".fs-dialog__body").paddingTop).toBe("0px")
+    expect(stil("noytral", ".lt-dialog__body").paddingTop).toBe("0px")
   })
 
   it("holder avstanden til knapperaden når toppen uten farge står rett over den", async () => {
@@ -1220,11 +1220,11 @@ describe("dialogen med farget topp", () => {
     monter(`
       <dialog ${attr(medTopp.dialog)} open id="med">
         <div ${attr(medTopp.header)}><h2 ${attr(medTopp.title)}>Slette?</h2></div>
-        <form method="dialog" ${attr(medTopp.footer)}><button class="fs-button" value="ja">Ja</button></form>
+        <form method="dialog" ${attr(medTopp.footer)}><button class="lt-button" value="ja">Ja</button></form>
       </dialog>
       <dialog ${attr(dialog({ titleId: "kort-tittel-2" }).dialog)} open id="uten">
-        <h2 class="fs-dialog__title" id="kort-tittel-2">Slette?</h2>
-        <form method="dialog" class="fs-dialog__footer"><button class="fs-button" value="ja">Ja</button></form>
+        <h2 class="lt-dialog__title" id="kort-tittel-2">Slette?</h2>
+        <form method="dialog" class="lt-dialog__footer"><button class="lt-button" value="ja">Ja</button></form>
       </dialog>
     `)
     await ventPaTegning()
@@ -1269,13 +1269,13 @@ describe("dialogen med farget topp", () => {
     ])
     expect(dialog.isColor("brand")).toBe(true)
     expect(dialog.isColor("lilla")).toBe(false)
-    expect(dialog.header).toBe("fs-dialog__header")
+    expect(dialog.header).toBe("lt-dialog__header")
   })
 })
 
-describe("fs-dialog kobler fra bar struktur", () => {
+describe("lt-dialog kobler fra bar struktur", () => {
   beforeAll(() => {
-    defineFsDialog()
+    defineLtDialog()
   })
 
   afterEach(() => {
@@ -1284,19 +1284,19 @@ describe("fs-dialog kobler fra bar struktur", () => {
   })
 
   const BAR = `
-    <fs-dialog>
+    <lt-dialog>
       <dialog>
         <h2>Slette søknaden?</h2>
-        <div class="fs-dialog__body"><p>Søknaden og vedleggene blir borte.</p></div>
-        <form method="dialog" class="fs-dialog__footer">
-          <button class="fs-button" value="avbryt">Avbryt</button>
+        <div class="lt-dialog__body"><p>Søknaden og vedleggene blir borte.</p></div>
+        <form method="dialog" class="lt-dialog__footer">
+          <button class="lt-button" value="avbryt">Avbryt</button>
         </form>
       </dialog>
-    </fs-dialog>`
+    </lt-dialog>`
 
   async function monterBar(markup = BAR) {
     monter(markup)
-    await customElements.whenDefined("fs-dialog")
+    await customElements.whenDefined("lt-dialog")
     await ventPaTegning()
     return {
       d: document.querySelector("dialog") as HTMLDialogElement,
@@ -1307,8 +1307,8 @@ describe("fs-dialog kobler fra bar struktur", () => {
   it("gir dialogen klassen og navnet sitt fra overskriften", async () => {
     const { d, tittel } = await monterBar()
 
-    expect(d.classList.contains("fs-dialog")).toBe(true)
-    expect(tittel.classList.contains("fs-dialog__title")).toBe(true)
+    expect(d.classList.contains("lt-dialog")).toBe(true)
+    expect(tittel.classList.contains("lt-dialog__title")).toBe(true)
     expect(tittel.id).not.toBe("")
     expect(d.getAttribute("aria-labelledby")).toBe(tittel.id)
   })
@@ -1323,7 +1323,7 @@ describe("fs-dialog kobler fra bar struktur", () => {
     expect(d.hasAttribute("aria-labelledby")).toBe(false)
     expect(d.getAttribute("aria-label")).toBe("Slett søknaden")
     expect(tittel.id).toBe("")
-    expect(tittel.classList.contains("fs-dialog__title")).toBe(false)
+    expect(tittel.classList.contains("lt-dialog__title")).toBe(false)
   })
 
   it("gir klassen til overskriften serveren pekte på", async () => {
@@ -1336,8 +1336,8 @@ describe("fs-dialog kobler fra bar struktur", () => {
     const egen = document.getElementById("egen-tittel") as HTMLElement
     const h2 = d.querySelector("h2") as HTMLElement
 
-    expect(egen.classList.contains("fs-dialog__title")).toBe(true)
-    expect(h2.classList.contains("fs-dialog__title")).toBe(false)
+    expect(egen.classList.contains("lt-dialog__title")).toBe(true)
+    expect(h2.classList.contains("lt-dialog__title")).toBe(false)
     expect(h2.id).toBe("")
   })
 
@@ -1358,9 +1358,9 @@ describe("fs-dialog kobler fra bar struktur", () => {
     const h3 = d.querySelector("h3") as HTMLElement
     const h2 = d.querySelector("h2") as HTMLElement
 
-    expect(h3.classList.contains("fs-dialog__title")).toBe(false)
+    expect(h3.classList.contains("lt-dialog__title")).toBe(false)
     expect(h3.id).toBe("")
-    expect(h2.classList.contains("fs-dialog__title")).toBe(true)
+    expect(h2.classList.contains("lt-dialog__title")).toBe(true)
     expect(d.getAttribute("aria-labelledby")).toBe(h2.id)
   })
 
@@ -1377,8 +1377,8 @@ describe("fs-dialog kobler fra bar struktur", () => {
     const indre = d.querySelector("#indre h2") as HTMLElement
     const ytre = d.querySelector("#ytre") as HTMLElement
 
-    expect(indre.classList.contains("fs-dialog__title")).toBe(false)
-    expect(ytre.classList.contains("fs-dialog__title")).toBe(true)
+    expect(indre.classList.contains("lt-dialog__title")).toBe(false)
+    expect(ytre.classList.contains("lt-dialog__title")).toBe(true)
     expect(d.getAttribute("aria-labelledby")).toBe("ytre")
   })
 
@@ -1388,24 +1388,24 @@ describe("fs-dialog kobler fra bar struktur", () => {
     // ikke den indres, så overskriften er fortsatt tittelen dens.
     monter(`
       <dialog id="ytre" aria-label="Innstillinger">
-        <div class="fs-dialog__body">
-          <fs-dialog>
+        <div class="lt-dialog__body">
+          <lt-dialog>
             <dialog id="indre">
               <h2 id="sikker">Er du sikker?</h2>
-              <form method="dialog" class="fs-dialog__footer">
-                <button class="fs-button" value="avbryt">Avbryt</button>
+              <form method="dialog" class="lt-dialog__footer">
+                <button class="lt-button" value="avbryt">Avbryt</button>
               </form>
             </dialog>
-          </fs-dialog>
+          </lt-dialog>
         </div>
       </dialog>
     `)
-    await customElements.whenDefined("fs-dialog")
+    await customElements.whenDefined("lt-dialog")
     await ventPaTegning()
     const indre = document.getElementById("indre") as HTMLDialogElement
     const tittel = document.getElementById("sikker") as HTMLElement
 
-    expect(tittel.classList.contains("fs-dialog__title")).toBe(true)
+    expect(tittel.classList.contains("lt-dialog__title")).toBe(true)
     expect(indre.getAttribute("aria-labelledby")).toBe("sikker")
   })
 
@@ -1417,12 +1417,12 @@ describe("fs-dialog kobler fra bar struktur", () => {
      * modal, og åpnet den igjen. Brukeren måtte lukke to ganger.
      */
     const { d } = await monterBar(
-      BAR.replace("<fs-dialog>", "<fs-dialog open>").replace(
+      BAR.replace("<lt-dialog>", "<lt-dialog open>").replace(
         "<dialog>",
         "<dialog open>",
       ),
     )
-    const vert = document.querySelector("fs-dialog") as HTMLElement
+    const vert = document.querySelector("lt-dialog") as HTMLElement
     const knapp = d.querySelector("button") as HTMLButtonElement
     expect(d.matches(":modal")).toBe(true)
 
@@ -1447,13 +1447,13 @@ describe("fs-dialog kobler fra bar struktur", () => {
     // hendelsesstrøm, er ikke et bytte av dialogen og skal ikke kjøre
     // åpne-og-lukke-logikken.
     const { d } = await monterBar(
-      BAR.replace("<fs-dialog>", "<fs-dialog open>").replace(
+      BAR.replace("<lt-dialog>", "<lt-dialog open>").replace(
         "<dialog>",
         "<dialog open>",
       ),
     )
-    const vert = document.querySelector("fs-dialog") as HTMLElement
-    const kropp = d.querySelector(".fs-dialog__body") as HTMLElement
+    const vert = document.querySelector("lt-dialog") as HTMLElement
+    const kropp = d.querySelector(".lt-dialog__body") as HTMLElement
     expect(d.matches(":modal")).toBe(true)
 
     const meldt: boolean[] = []
@@ -1484,23 +1484,23 @@ describe("fs-dialog kobler fra bar struktur", () => {
 
     expect(tittel.id).toBe(id)
     expect(d.getAttribute("aria-labelledby")).toBe(id)
-    expect(d.classList.contains("fs-dialog")).toBe(true)
-    expect(tittel.classList.contains("fs-dialog__title")).toBe(true)
+    expect(d.classList.contains("lt-dialog")).toBe(true)
+    expect(tittel.classList.contains("lt-dialog__title")).toBe(true)
   })
 
-  it("skriver ingenting på markup fra fs.dialog()", async () => {
+  it("skriver ingenting på markup fra lt.dialog()", async () => {
     // Den direkte påstanden bak «det serveren skrev står»: null
     // mutasjonsposter fra komponentens første runde.
     const boks = dialog({ titleId: "tittel" })
     const omslag = document.createElement("div")
     omslag.innerHTML = `
-      <fs-dialog ${attr(boks.host)}>
+      <lt-dialog ${attr(boks.host)}>
         <dialog ${attr(boks.dialog)}>
           <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
           <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
         </dialog>
-      </fs-dialog>`
-    const vert = omslag.querySelector("fs-dialog") as HTMLElement
+      </lt-dialog>`
+    const vert = omslag.querySelector("lt-dialog") as HTMLElement
     const poster: MutationRecord[] = []
     const observatør = new MutationObserver((r) => poster.push(...r))
     observatør.observe(vert, {
@@ -1510,7 +1510,7 @@ describe("fs-dialog kobler fra bar struktur", () => {
     })
 
     document.body.append(omslag)
-    await customElements.whenDefined("fs-dialog")
+    await customElements.whenDefined("lt-dialog")
     await ventPaTegning()
 
     expect(poster.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
@@ -1519,9 +1519,9 @@ describe("fs-dialog kobler fra bar struktur", () => {
   })
 })
 
-describe("fs-dialog når React skriver egenskapen", () => {
+describe("lt-dialog når React skriver egenskapen", () => {
   beforeAll(() => {
-    defineFsDialog()
+    defineLtDialog()
   })
 
   it("fjerner open når egenskapen settes til undefined", async () => {
@@ -1532,10 +1532,10 @@ describe("fs-dialog når React skriver egenskapen", () => {
      */
     const boks = dialog({ titleId: "tittel" })
     monter(
-      `<fs-dialog><dialog ${attr(boks.dialog)}><h2 ${attr(boks.title)}>Slette?</h2></dialog></fs-dialog>`,
+      `<lt-dialog><dialog ${attr(boks.dialog)}><h2 ${attr(boks.title)}>Slette?</h2></dialog></lt-dialog>`,
     )
-    await customElements.whenDefined("fs-dialog")
-    const vert = document.querySelector("fs-dialog") as HTMLElement & {
+    await customElements.whenDefined("lt-dialog")
+    const vert = document.querySelector("lt-dialog") as HTMLElement & {
       open: boolean | undefined
     }
 

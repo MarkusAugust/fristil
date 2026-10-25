@@ -7,7 +7,7 @@
 //! Kuløren er konsumentens, lysheten er rollens. Da er kontrasten garantert av
 //! konstruksjonen framfor av en sjekk i etterkant.
 //!
-//! Tallene står i `designsystem/src/tokens/fargekontrakt.json`, ikke her, så
+//! Tallene står i `designsystem/src/tokens/color-contract.json`, ikke her, så
 //! skriptene i TypeScript og kjernen leser de samme. Kjernen bærer ikke fila:
 //! verten gir den med `load_contract_raw`, som den gir manifestet. Tre valg
 //! i tallene som ikke er åpenbare:
@@ -81,7 +81,7 @@ pub struct Promise {
 #[derive(Clone, Debug)]
 pub struct Contract {
     pub families: Vec<String>,
-    /// Fristils egne merkefarger, i rekkefølgen familiene står.
+    /// LO-TEKs egne merkefarger, i rekkefølgen familiene står.
     pub brands: Vec<(String, String)>,
     /// Rollene, i den rekkefølgen tokenene skrives.
     pub roles: Vec<(String, Spec)>,
@@ -98,7 +98,7 @@ static CONTRACT: RwLock<Option<Arc<Contract>>> = RwLock::new(None);
 
 /// Svaret fra temaet når verten ikke har gitt noen kontrakt.
 pub const NOT_LOADED: &str =
-    "Kjernen har ikke fått noen fargekontrakt. Gi den fargekontrakt.json fra pakken med load_contract_raw først.";
+    "Kjernen har ikke fått noen fargekontrakt. Gi den color-contract.json fra pakken med load_contract_raw først.";
 
 /// Leser kontrakten verten har gitt, og bruker den fra nå av.
 pub fn load(source: &str) -> Result<(), String> {
@@ -112,7 +112,7 @@ pub fn load(source: &str) -> Result<(), String> {
 pub fn loaded() -> bool {
     #[cfg(test)]
     if CONTRACT.read().unwrap_or_else(|e| e.into_inner()).is_none() {
-        let _ = load(&crate::package_file("src/tokens/fargekontrakt.json"));
+        let _ = load(&crate::package_file("src/tokens/color-contract.json"));
     }
     CONTRACT.read().unwrap_or_else(|e| e.into_inner()).is_some()
 }
@@ -139,7 +139,7 @@ fn spec(value: &Json) -> Option<Spec> {
 
 fn read(source: &str) -> Result<Contract, String> {
     let root = parse(source)?;
-    let wrong = |what: &str| format!("fargekontrakt.json: {what}");
+    let wrong = |what: &str| format!("color-contract.json: {what}");
     let texts = |value: Option<&Json>| -> Option<Vec<String>> {
         value?
             .as_array()?
@@ -317,7 +317,7 @@ pub fn check_promises(
 
 /// Tokennavnet for én celle i matrisen.
 pub fn token_name(family: &str, role: &str) -> String {
-    format!("--fs-color-{family}-{role}")
+    format!("--lt-color-{family}-{role}")
 }
 
 pub struct Matrix {

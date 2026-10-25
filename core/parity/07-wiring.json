@@ -5,28 +5,28 @@
       "start": 12,
       "end": 23,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "for=\"finnes-ikke\" peker på id-en «finnes-ikke», som ikke finnes på siden. Skjermleseren mister ledeteksten. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det."
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "for=\"finnes-ikke\" peker på id-en «finnes-ikke», som ikke finnes på siden. Skjermleseren mister ledeteksten. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør lt.field({ id }) det."
     },
     {
       "start": 48,
       "end": 53,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "<input> har ingen ledetekst: ingen <label for> som peker på det, ingen <label> rundt, og verken aria-label eller aria-labelledby. En skjermleser leser feltet opp uten navn. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det."
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "<input> har ingen ledetekst: ingen <label for> som peker på det, ingen <label> rundt, og verken aria-label eller aria-labelledby. En skjermleser leser feltet opp uten navn. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør lt.field({ id }) det."
     },
     {
       "start": 104,
       "end": 111,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "aria-describedby=\"hjelp mangler\" peker på id-en «mangler», som ikke finnes på siden. Skjermleseren mister beskrivelsen. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det."
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "aria-describedby=\"hjelp mangler\" peker på id-en «mangler», som ikke finnes på siden. Skjermleseren mister beskrivelsen. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør lt.field({ id }) det."
     },
     {
       "start": 175,
       "end": 180,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/field/",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
       "message": "id=\"hjelp\" står mer enn én gang på siden. for og aria-describedby peker da på det første elementet, og koblingen til dette er brutt. Hver id må være unik."
     }
   ]

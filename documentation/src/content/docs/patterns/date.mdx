@@ -1,38 +1,38 @@
 ---
 title: Dato i et skjema
-description: Hvorfor Fristil ikke har en datovelger, og hvordan du ber om en dato som virker overalt.
+description: Hvorfor LO-TEK ikke har en datovelger, og hvordan du ber om en dato som virker overalt.
 ---
 
-import DatoDemo from "../../../components/DatoDemo.astro"
+import DateDemo from "../../../components/DateDemo.astro"
 
-Fristil har ingen datovelger. Nettleseren har en, og den er bedre enn vår var.
+LO-TEK har ingen datovelger. Nettleseren har en, og den er bedre enn vår var.
 
-<DatoDemo />
+<DateDemo />
 
 ## Markupen
 
 ```html
-<fs-field>
-  <label class="fs-label" for="fodselsdato">Fødselsdato</label>
-  <input class="fs-input" data-variant="date" id="fodselsdato"
+<lt-field>
+  <label class="lt-label" for="fodselsdato">Fødselsdato</label>
+  <input class="lt-input" data-variant="date" id="fodselsdato"
          name="fodselsdato" type="date"
          min="1900-01-01" max="2026-12-31">
-  <p class="fs-help-text">Skriv datoen som 31.05.2026, eller velg den i kalenderen.</p>
-</fs-field>
+  <p class="lt-help-text">Skriv datoen som 31.05.2026, eller velg den i kalenderen.</p>
+</lt-field>
 ```
 
-Kjører serveren din JavaScript, skriver den attributtene selv og trenger ikke `<fs-field>`:
+Kjører serveren din JavaScript, skriver den attributtene selv og trenger ikke `<lt-field>`:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-const felt = fs.field({ id: "fodselsdato", help: true, invalid })
-const kontroll = fs.input({ type: "date", state: felt.state })
+const felt = lt.field({ id: "fodselsdato", help: true, invalid })
+const kontroll = lt.input({ type: "date", state: felt.state })
 ```
 
 ## Hvorfor ingen komponent
 
-Vi hadde en, `<fs-calendar>`, og fjernet den. Regnestykket gikk ikke opp:
+Vi hadde en, `<lt-calendar>`, og fjernet den. Regnestykket gikk ikke opp:
 
 | Oppgave | Hvem gjør den |
 | --- | --- |
@@ -41,7 +41,7 @@ Vi hadde en, `<fs-calendar>`, og fjernet den. Regnestykket gikk ikke opp:
 | Oversettelse og ukestart | nettleseren, etter brukerens eget oppsett |
 | Gyldig intervall | `min` og `max` |
 | ISO-verdi til serveren | nettleseren |
-| Koble ledetekst, hjelpetekst og feilmelding | `fs.field()` |
+| Koble ledetekst, hjelpetekst og feilmelding | `lt.field()` |
 
 Det som var igjen til en egen komponent var ingenting, bortsett fra at panelet ville sett likt ut i alle nettlesere. Det er den samme avveiningen vi allerede har tatt for `<select>`: nedtrekkslista tegnes av operativsystemet, og ingen savner at den ikke gjør det.
 
@@ -70,6 +70,6 @@ Feltet sender alltid ISO når nettleseren godtok datoen. Men `badInput` betyr at
 ## Det systemet ikke gjør
 
 - **Vi validerer ikke datoen.** `min` og `max` er nettleserens sjekk, og den kan omgås. Serveren må gjøre den om igjen.
-- **Vi oversetter ikke feilmeldingene.** Nettleserens egne bobler («Please enter a valid value») kommer på nettleserens språk. Vil du ha norsk, må du slå dem av med `novalidate` og vise `<p class="fs-error-text">` selv.
+- **Vi oversetter ikke feilmeldingene.** Nettleserens egne bobler («Please enter a valid value») kommer på nettleserens språk. Vil du ha norsk, må du slå dem av med `novalidate` og vise `<p class="lt-error-text">` selv.
 - **Vi håndterer ikke datointervaller.** Fra og til er to felt, og at det ene må komme før det andre er appens regel.
 - **Vi har ingen datovelger du kan style.** Trenger du en kalender som ser lik ut i alle nettlesere, er det et eget prosjekt i appen din, ikke noe som ligger her.

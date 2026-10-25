@@ -3,29 +3,29 @@ title: La brukeren velge tema
 description: Temavelger i ren CSS, og de to måtene å få valget til å vare.
 ---
 
-import Rammeside from "../../../components/Rammeside.astro"
+import FramedPage from "../../../components/FramedPage.astro"
 
-Fargene følger maskinens innstilling uten at du gjør noe. Vil brukeren overstyre den, er selve byttet ren CSS: `fs-theme-control` på en radioknapp gjør `value` til et temavalg. Å få valget til å **vare** er noe annet, og det er appens oppgave.
+Fargene følger maskinens innstilling uten at du gjør noe. Vil brukeren overstyre den, er selve byttet ren CSS: `lt-theme-control` på en radioknapp gjør `value` til et temavalg. Å få valget til å **vare** er noe annet, og det er appens oppgave.
 
-<Rammeside src="/demo/tema/" tittel="Temavelgeren" hoyde="34rem" />
+<FramedPage src="/demo/theme/" tittel="Temavelgeren" hoyde="34rem" />
 
 ## Markupen
 
 Gruppa er et vanlig `<fieldset>` med radioknapper, altså [toggle-gruppa](../../components/toggle-group/). Klassen står på hver knapp, ikke på gruppa.
 
 ```html
-<fieldset class="fs-toggle-group">
-  <legend class="fs-sr-only">Tema</legend>
-  <label class="fs-toggle-group__option">
-    <input class="fs-theme-control" type="radio" name="tema"
+<fieldset class="lt-toggle-group">
+  <legend class="lt-sr-only">Tema</legend>
+  <label class="lt-toggle-group__option">
+    <input class="lt-theme-control" type="radio" name="tema"
            value="auto" checked /> Følg systemet
   </label>
-  <label class="fs-toggle-group__option">
-    <input class="fs-theme-control" type="radio" name="tema"
+  <label class="lt-toggle-group__option">
+    <input class="lt-theme-control" type="radio" name="tema"
            value="light" /> Lyst
   </label>
-  <label class="fs-toggle-group__option">
-    <input class="fs-theme-control" type="radio" name="tema"
+  <label class="lt-toggle-group__option">
+    <input class="lt-theme-control" type="radio" name="tema"
            value="dark" /> Mørkt
   </label>
 </fieldset>
@@ -39,9 +39,9 @@ Tre verdier betyr noe: `auto`, `light` og `dark`. «Følg systemet» har ingen t
 
 ## Hva hvert valg gjør
 
-Valget styrer to ting, og de er ikke det samme. Fristils farger kommer fra tokenene. Nettleserens **egne** flater, altså rullefelt, nedtrekkslista i en `<select>` og kalenderpanelet i et datofelt, styres av CSS-egenskapen `color-scheme`.
+Valget styrer to ting, og de er ikke det samme. LO-TEKs farger kommer fra tokenene. Nettleserens **egne** flater, altså rullefelt, nedtrekkslista i en `<select>` og kalenderpanelet i et datofelt, styres av CSS-egenskapen `color-scheme`.
 
-| `value` | Fristils farger | `color-scheme` |
+| `value` | LO-TEKs farger | `color-scheme` |
 | --- | --- | --- |
 | `auto` | ingen overstyring: mediespørringen, eller `data-theme` hvis det står der | `light dark`, eller `data-theme` sitt |
 | `light` | lyse tokens | `light` |
@@ -68,7 +68,7 @@ Ingen av dem krever et rammeverk.
 Dette er veien for en app som rendrer HTML på en server, uansett hvilket språk serveren er skrevet i. Gruppa står i et vanlig skjema, og hele rundturen er tre steg uten en linje JavaScript:
 
 ```http
-POST /tema          tema=dark
+POST /theme          tema=dark
 → Set-Cookie: tema=dark; Path=/; Max-Age=31536000; SameSite=Lax
 → 303 See Other
 
@@ -118,7 +118,7 @@ Noe må også lagre valget. Dette kan stå hvor som helst etter gruppa:
   const lagret = localStorage.getItem("tema")
   const valgt = lagret === "light" || lagret === "dark" ? lagret : "auto"
 
-  for (const knapp of document.querySelectorAll(".fs-theme-control")) {
+  for (const knapp of document.querySelectorAll(".lt-theme-control")) {
     knapp.checked = knapp.value === valgt
 
     knapp.addEventListener("change", () => {
@@ -136,5 +136,5 @@ Noe må også lagre valget. Dette kan stå hvor som helst etter gruppa:
 - **Å lagre valget.** Kontrollen bytter tema og husker ingenting. Varigheten er appens, gjennom en cookie eller `localStorage`.
 - **Å virke inne i en skyggerot.** `:has()` ser ikke ut av sitt eget tre, så en kontroll i en skyggerot setter ikke tema på siden. Den må stå i det samme treet som `<html>`.
 - **Å avgjøre mellom to velgere.** Står det to grupper på siden, altså to ulike `name` eller to skjemaer, er én knapp avkrysset i hver. Sier de ulike ting, kan ikke CSS vite hvilken som gjelder, og tokenene og `color-scheme` kan ende på hver sin. Bruk én gruppe per side.
-- **Å gi en del av siden sitt eget tema.** Kontrollen gjelder hele dokumentet. Skal bare et utsnitt ha sitt eget tema, er det `data-theme` på det utsnittet, og det er en [temagrense](../../tilpasning/#lyst-og-mørkt).
-- **Å trenge `color-scheme` fra deg.** Hvert valg setter den selv, «Følg systemet» medregnet. Skriver du den på `<html>` utenfor et lag, slår regelen `@layer fristil`, og nettleserens egne flater blir låst til systemet mens brukeren har valgt noe annet.
+- **Å gi en del av siden sitt eget tema.** Kontrollen gjelder hele dokumentet. Skal bare et utsnitt ha sitt eget tema, er det `data-theme` på det utsnittet, og det er en [temagrense](../../customising/#lyst-og-mørkt).
+- **Å trenge `color-scheme` fra deg.** Hvert valg setter den selv, «Følg systemet» medregnet. Skriver du den på `<html>` utenfor et lag, slår regelen `@layer lotek`, og nettleserens egne flater blir låst til systemet mens brukeren har valgt noe annet.

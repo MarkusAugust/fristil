@@ -4,7 +4,7 @@
 //! er løftene deres å holde, og da skylder vi dem et svar på hvilken celle som
 //! ryker. Uten dette er «du kan overstyre hva som helst» en felle.
 //!
-//! Fila leses som tekst. Det eneste som betyr noe er hvilke `--fs-color-*`
+//! Fila leses som tekst. Det eneste som betyr noe er hvilke `--lt-color-*`
 //! som står i hvilken blokk, og en verdi vi ikke kan regne på meldes som
 //! nettopp det framfor å hoppes over.
 
@@ -115,12 +115,12 @@ impl<'i> DeclarationParser<'i> for Reader {
         }
         input.reset(&state);
         let value = rest_as_text(input);
-        // Bare det sjekken bruker: Fristils tokens, og `color-scheme`, som sier
+        // Bare det sjekken bruker: LO-TEKs tokens, og `color-scheme`, som sier
         // om blokka er lys eller mørk. Skriften og formen kontrolleres ikke,
         // men skiller et tema uten farger fra en fil som ikke er et tema.
         // Navnet på en egendefinert variabel skiller mellom store og små
         // bokstaver, navnet på en egenskap gjør det ikke.
-        if name.starts_with("--fs-") || name.eq_ignore_ascii_case("color-scheme") {
+        if name.starts_with("--lt-") || name.eq_ignore_ascii_case("color-scheme") {
             let name = if name.starts_with("--") {
                 name.to_string()
             } else {
@@ -204,18 +204,18 @@ impl<'i> RuleBodyItemParser<'i, Item, ()> for Reader {
 /// kontroll som er av, er unntatt kravet i WCAG 1.4.3. De samme som
 /// `SystemColorToken` i `designsystem/src/tokens/tokens.ts`, uten skyggen.
 const SYSTEM_COLORS: [&str; 3] = [
-    "--fs-color-disabled-surface",
-    "--fs-color-disabled-text",
-    "--fs-color-overlay",
+    "--lt-color-disabled-surface",
+    "--lt-color-disabled-text",
+    "--lt-color-overlay",
 ];
 
 /// Blokkene i rekkefølgen de slutter, den innerste først, med selektorene
 /// over seg som sti. Systemfargene er ikke med, de telles i `others` sammen
 /// med de andre tokenene uten et kontrastløfte.
 ///
-/// `others` teller hvert `--fs-*`-navn som ikke er en farge med løfte, også
-/// et feilstavet. Komponentene har egne tokens, som `--fs-label-required-text`
-/// og `--fs-progress-height`, og en liste over kjente navn ville gitt feilkode
+/// `others` teller hvert `--lt-*`-navn som ikke er en farge med løfte, også
+/// et feilstavet. Komponentene har egne tokens, som `--lt-label-required-text`
+/// og `--lt-progress-height`, og en liste over kjente navn ville gitt feilkode
 /// for et tema som bare setter et av dem. Antallet står i svaret, så et
 /// feilstavet fargenavn synes der.
 fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>, others: &mut usize) {
@@ -226,13 +226,13 @@ fn flatten(node: Node, path: &mut Vec<String>, out: &mut Vec<ParsedBlock>, other
     let colors: Vec<(String, String)> = node
         .declarations
         .iter()
-        .filter(|(n, _)| n.starts_with("--fs-color-") && !SYSTEM_COLORS.contains(&n.as_str()))
+        .filter(|(n, _)| n.starts_with("--lt-color-") && !SYSTEM_COLORS.contains(&n.as_str()))
         .map(|(n, v)| (n.clone(), without_important(v).to_string()))
         .collect();
     *others += node
         .declarations
         .iter()
-        .filter(|(n, _)| n.starts_with("--fs-"))
+        .filter(|(n, _)| n.starts_with("--lt-"))
         .count()
         - colors.len();
     if !colors.is_empty() {
@@ -272,7 +272,7 @@ pub fn parse_blocks(css: &str) -> Vec<ParsedBlock> {
     read_blocks(css).0
 }
 
-/// Blokkene, og hvor mange andre `--fs-*`-tokens fila setter.
+/// Blokkene, og hvor mange andre `--lt-*`-tokens fila setter.
 fn read_blocks(css: &str) -> (Vec<ParsedBlock>, usize) {
     let mut parser = Parser::new(css);
     let mut reader = Reader;
@@ -504,14 +504,14 @@ fn role_names() -> Vec<(String, String)> {
     names
 }
 
-/// Deler `--fs-color-min-merkevare-text` i familie og rolle.
+/// Deler `--lt-color-min-merkevare-text` i familie og rolle.
 ///
 /// Rollen leses som **endelsen**. Med familien som begynnelsen falt et
 /// familienavn med bindestrek utenfor uten et ord. `None` som rolle betyr et
 /// kjent lag, og de hører bare til den nøytrale familien.
 fn split_token(token: &str) -> Option<(String, Option<String>)> {
     let rest = token
-        .strip_prefix("--fs-color-")
+        .strip_prefix("--lt-color-")
         .filter(|r| !r.is_empty())?;
     for layer in ["canvas", "raised"] {
         if let Some(family) = rest.strip_suffix(&format!("-{layer}")) {
@@ -549,7 +549,7 @@ pub struct Report {
     pub declarations: usize,
     /// Løfter som faktisk ble kontrollert.
     pub promises: usize,
-    /// Andre `--fs-*`-tokens fila setter, uten et kontrastløfte: skriften,
+    /// Andre `--lt-*`-tokens fila setter, uten et kontrastløfte: skriften,
     /// formen og systemfargene. Med dem og ingen farger er fila et tema uten
     /// farger, ikke en fil uten tema.
     pub others: usize,
@@ -557,7 +557,7 @@ pub struct Report {
 
 /// Leser et tema og kontrollerer hvert løfte i hver blokk.
 ///
-/// Verdier som mangler fylles fra Fristils eget tema, slik at en konsument som
+/// Verdier som mangler fylles fra LO-TEKs eget tema, slik at en konsument som
 /// bare har overstyrt én celle får den kontrollert mot resten av systemet sitt
 /// framfor mot ingenting.
 pub fn inspect_theme(css: &str) -> Report {
@@ -594,7 +594,7 @@ pub fn inspect_theme(css: &str) -> Report {
         if others == 0 {
             problems.push(Problem {
                 selector: "(hele fila)".into(),
-                message: "Fant ingen --fs-color-*-verdier. Er dette et Fristil-tema, og står verdiene i en blokk?".into(),
+                message: "Fant ingen --lt-color-*-verdier. Er dette et LO-TEK-tema, og står verdiene i en blokk?".into(),
             });
         }
         return Report {
@@ -645,7 +645,7 @@ pub fn inspect_theme(css: &str) -> Report {
 
     for (nth, block) in all.iter().enumerate() {
         let defaults = build_matrix(&contract().brands, block.appearance)
-            .expect("Fristils egne farger skal alltid gi en matrise")
+            .expect("LO-TEKs egne farger skal alltid gi en matrise")
             .tokens;
         let mut values: Vec<(String, String)> = defaults;
 
@@ -674,7 +674,7 @@ pub fn inspect_theme(css: &str) -> Report {
                 if block.declarations.iter().any(|(n, _)| n == name) {
                     problems.push(Problem {
                         selector: block.selector.clone(),
-                        message: format!("{name} er ikke et token i systemet. Navnet er --fs-color-<familie>-<rolle>, og rollene er {role_list}."),
+                        message: format!("{name} er ikke et token i systemet. Navnet er --lt-color-<familie>-<rolle>, og rollene er {role_list}."),
                     });
                 }
                 continue;

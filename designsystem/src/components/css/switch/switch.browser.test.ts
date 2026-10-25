@@ -91,16 +91,16 @@ describe("lagringseksempelet på siden", () => {
   })
 })
 
-describe("fs-switch", () => {
+describe("lt-switch", () => {
   beforeEach(() => {
     monter(`
-      <div class="fs-switch-row">
-        <input class="fs-switch" type="checkbox" role="switch" id="varsler" checked />
-        <label class="fs-label" for="varsler">Varsle meg på e-post</label>
+      <div class="lt-switch-row">
+        <input class="lt-switch" type="checkbox" role="switch" id="varsler" checked />
+        <label class="lt-label" for="varsler">Varsle meg på e-post</label>
       </div>
-      <div class="fs-switch-row">
-        <input class="fs-switch" type="checkbox" role="switch" id="sms" />
-        <label class="fs-label" for="sms">Varsle meg på SMS</label>
+      <div class="lt-switch-row">
+        <input class="lt-switch" type="checkbox" role="switch" id="sms" />
+        <label class="lt-label" for="sms">Varsle meg på SMS</label>
       </div>
     `)
   })
@@ -125,7 +125,7 @@ describe("fs-switch", () => {
   it("sendes med i skjemaet som en avkryssingsboks", () => {
     document.body.innerHTML = `
       <form id="skjema">
-        <input class="fs-switch" type="checkbox" role="switch"
+        <input class="lt-switch" type="checkbox" role="switch"
           name="varsler" value="ja" checked />
       </form>
     `
@@ -136,12 +136,12 @@ describe("fs-switch", () => {
 
   it("setter attributtene fra byggefunksjonen", () => {
     expect(switchControl()).toEqual({
-      class: "fs-switch",
+      class: "lt-switch",
       type: "checkbox",
       role: "switch",
     })
     expect(switchControl({ disabled: true }).disabled).toBe(true)
-    expect(switchControl.row).toBe("fs-switch-row")
+    expect(switchControl.row).toBe("lt-switch-row")
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {

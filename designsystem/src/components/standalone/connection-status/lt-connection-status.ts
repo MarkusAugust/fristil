@@ -4,7 +4,7 @@ import {
   CONNECTION_STATUS_CLASS,
 } from "./connection-status.js"
 
-export const FS_CONNECTION_STATUS_TAG = "fs-connection-status" as const
+export const LT_CONNECTION_STATUS_TAG = "lt-connection-status" as const
 
 import { DEFAULT_TEXTS } from "../../default-texts.js"
 
@@ -30,7 +30,7 @@ const RECEIPT_MS = 4000
  * kaller når et kall feiler eller lykkes.
  *
  * ```ts
- * const status = document.querySelector("fs-connection-status")
+ * const status = document.querySelector("lt-connection-status")
  * try {
  *   const svar = await fetch("/api/lagre", { method: "POST", body })
  *   if (!svar.ok) throw new Error(svar.statusText)
@@ -40,7 +40,7 @@ const RECEIPT_MS = 4000
  * }
  * ```
  */
-export class FsConnectionStatus extends HostElement {
+export class LtConnectionStatus extends HostElement {
   static observedAttributes = ["offline-text", "online-text"] as const
 
   private bar?: HTMLElement
@@ -213,26 +213,26 @@ export class FsConnectionStatus extends HostElement {
   }
 }
 
-export function defineFsConnectionStatus(
-  tagName: string = FS_CONNECTION_STATUS_TAG,
+export function defineLtConnectionStatus(
+  tagName: string = LT_CONNECTION_STATUS_TAG,
 ): void {
-  defineElement(tagName, FsConnectionStatus)
+  defineElement(tagName, LtConnectionStatus)
 }
 
 /**
  * `element.reportFailure()`, men venter først på registreringen.
  *
  * Det var her gapet viste seg i drift: den første meldingen fra
- * hendelsesstrømmen kom før `defineFsConnectionStatus()`, og appen fikk
+ * hendelsesstrømmen kom før `defineLtConnectionStatus()`, og appen fikk
  * «reportSuccess is not a function». Se `whenUpgraded`.
  */
 export async function reportFailure(element: Element): Promise<void> {
-  const status = await whenUpgraded<FsConnectionStatus>(element)
+  const status = await whenUpgraded<LtConnectionStatus>(element)
   status.reportFailure()
 }
 
 /** `element.reportSuccess()`, men venter først på registreringen. */
 export async function reportSuccess(element: Element): Promise<void> {
-  const status = await whenUpgraded<FsConnectionStatus>(element)
+  const status = await whenUpgraded<LtConnectionStatus>(element)
   status.reportSuccess()
 }

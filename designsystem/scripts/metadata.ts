@@ -1,5 +1,5 @@
 /**
- * Det en editor skal vite om hvert `<fs-*>`-element: én setning per element,
+ * Det en editor skal vite om hvert `<lt-*>`-element: én setning per element,
  * per attributt og per lovlig verdi.
  *
  * Teksten her er kilden til både `html-data.json` (VS Code) og
@@ -7,51 +7,51 @@
  * TypeScript holder den i takt med komponentene: hvert element skriver
  * attributtene sine som `Record` over `observedAttributes`, så et attributt
  * som legges til i en komponent uten en setning her, eller en setning om et
- * attributt som er borte, stopper typesjekken. `sjekk-ordforrad.ts` tar
+ * attributt som er borte, stopper typesjekken. `check-vocabulary.ts` tar
  * resten: at hvert element pakken registrerer står i lista.
  *
- * Fila sendes ikke ut i pakken. Den leses bare av `generate-ordforrad.ts`.
+ * Fila sendes ikke ut i pakken. Den leses bare av `generate-vocabulary.ts`.
  */
 
-import type { FsConnectionStatus } from "../src/components/frittstaende/connection-status/fs-connection-status.js"
-import { FS_CONNECTION_STATUS_TAG } from "../src/components/frittstaende/connection-status/fs-connection-status.js"
-import type { FsToast } from "../src/components/frittstaende/toast/fs-toast.js"
-import { FS_TOAST_TAG } from "../src/components/frittstaende/toast/fs-toast.js"
-import type { FsDialog } from "../src/components/ramme/dialog/fs-dialog.js"
+import type { LtConnectionStatus } from "../src/components/standalone/connection-status/lt-connection-status.js"
+import { LT_CONNECTION_STATUS_TAG } from "../src/components/standalone/connection-status/lt-connection-status.js"
+import type { LtToast } from "../src/components/standalone/toast/lt-toast.js"
+import { LT_TOAST_TAG } from "../src/components/standalone/toast/lt-toast.js"
+import type { LtDialog } from "../src/components/frame/dialog/lt-dialog.js"
 import {
-  FS_DIALOG_PARTS,
-  FS_DIALOG_TAG,
-} from "../src/components/ramme/dialog/fs-dialog.js"
-import type { FsErrorSummary } from "../src/components/ramme/error-summary/fs-error-summary.js"
+  LT_DIALOG_PARTS,
+  LT_DIALOG_TAG,
+} from "../src/components/frame/dialog/lt-dialog.js"
+import type { LtErrorSummary } from "../src/components/frame/error-summary/lt-error-summary.js"
 import {
-  FS_ERROR_SUMMARY_PARTS,
-  FS_ERROR_SUMMARY_TAG,
-} from "../src/components/ramme/error-summary/fs-error-summary.js"
-import type { FsField } from "../src/components/ramme/field/fs-field.js"
+  LT_ERROR_SUMMARY_PARTS,
+  LT_ERROR_SUMMARY_TAG,
+} from "../src/components/frame/error-summary/lt-error-summary.js"
+import type { LtField } from "../src/components/frame/field/lt-field.js"
 import {
-  FS_FIELD_PARTS,
-  FS_FIELD_TAG,
-} from "../src/components/ramme/field/fs-field.js"
-import type { FsPopover } from "../src/components/ramme/popover/fs-popover.js"
+  LT_FIELD_PARTS,
+  LT_FIELD_TAG,
+} from "../src/components/frame/field/lt-field.js"
+import type { LtPopover } from "../src/components/frame/popover/lt-popover.js"
 import {
-  FS_POPOVER_PARTS,
-  FS_POPOVER_TAG,
-} from "../src/components/ramme/popover/fs-popover.js"
-import type { FsSessionTimeout } from "../src/components/ramme/session-timeout/fs-session-timeout.js"
+  LT_POPOVER_PARTS,
+  LT_POPOVER_TAG,
+} from "../src/components/frame/popover/lt-popover.js"
+import type { LtSessionTimeout } from "../src/components/frame/session-timeout/lt-session-timeout.js"
 import {
-  FS_SESSION_TIMEOUT_PARTS,
-  FS_SESSION_TIMEOUT_TAG,
-} from "../src/components/ramme/session-timeout/fs-session-timeout.js"
-import type { FsSuggestion } from "../src/components/ramme/suggestion/fs-suggestion.js"
+  LT_SESSION_TIMEOUT_PARTS,
+  LT_SESSION_TIMEOUT_TAG,
+} from "../src/components/frame/session-timeout/lt-session-timeout.js"
+import type { LtSuggestion } from "../src/components/frame/suggestion/lt-suggestion.js"
 import {
-  FS_SUGGESTION_PARTS,
-  FS_SUGGESTION_TAG,
-} from "../src/components/ramme/suggestion/fs-suggestion.js"
-import type { FsTabs } from "../src/components/ramme/tabs/fs-tabs.js"
+  LT_SUGGESTION_PARTS,
+  LT_SUGGESTION_TAG,
+} from "../src/components/frame/suggestion/lt-suggestion.js"
+import type { LtTabs } from "../src/components/frame/tabs/lt-tabs.js"
 import {
-  FS_TABS_PARTS,
-  FS_TABS_TAG,
-} from "../src/components/ramme/tabs/fs-tabs.js"
+  LT_TABS_PARTS,
+  LT_TABS_TAG,
+} from "../src/components/frame/tabs/lt-tabs.js"
 
 /** En lovlig verdi, med hva den betyr. */
 export type ValueDoc = { name: string; description: string }
@@ -92,7 +92,7 @@ export type EventDoc = {
 export type PartContent = "text" | "free" | "parts" | "none"
 
 /**
- * En del av elementet, som kontrollen i `<fs-field>`. `selector` er den
+ * En del av elementet, som kontrollen i `<lt-field>`. `selector` er den
  * komponenten selv finner delen med, relativt til elementet.
  */
 export type PartDoc = {
@@ -104,7 +104,7 @@ export type PartDoc = {
   /**
    * En del til av samme slag er en feil, ikke vanlig innhold: et felt med
    * to kontroller kobler bare den første. Uten feltet kan resten være
-   * innhold, som knappene i panelet til `<fs-popover>`. `fristil sjekk`
+   * innhold, som knappene i panelet til `<lt-popover>`. `lotek sjekk`
    * melder en del med `unique` som står mer enn én gang.
    */
   unique?: true
@@ -113,7 +113,7 @@ export type PartDoc = {
   /**
    * Delen må ha en id serveren skriver, fordi en oppdatering fra serveren
    * ellers bytter den ut: komponenten skriver aldri id på det brukeren
-   * rører. `fristil sjekk` melder delen når id-en mangler, og for en
+   * rører. `lotek sjekk` melder delen når id-en mangler, og for en
    * kontroll når ledeteksten verken har `for` mot den eller står rundt den.
    */
   stableId?: true
@@ -146,7 +146,7 @@ export type ElementDoc = {
   parts: Record<string, PartDoc>
   /**
    * Attributter som er tatt ut av elementet, med hva som gjelder i stedet.
-   * `fristil sjekk` melder dem med beskjeden, så en mal fra en eldre versjon
+   * `lotek sjekk` melder dem med beskjeden, så en mal fra en eldre versjon
    * får vite hva den skal skrive.
    */
   removed?: Record<string, string>
@@ -182,7 +182,7 @@ function element<T extends Component>(
 
 /** Delene til rammekomponentene, etter tagg. */
 const PARTS: Record<string, Record<string, PartDoc>> = {
-  [FS_FIELD_TAG]: parts(FS_FIELD_PARTS, {
+  [LT_FIELD_TAG]: parts(LT_FIELD_PARTS, {
     label: {
       description:
         "Ledeteksten. Står den utenfor elementet, kobles den med `for` mot kontrollens id.",
@@ -209,7 +209,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       optional: true,
     },
   }),
-  [FS_TABS_TAG]: parts(FS_TABS_PARTS, {
+  [LT_TABS_TAG]: parts(LT_TABS_PARTS, {
     list: {
       description:
         'Raden med fanene, en `<ul>` der hvert `<li>` får `role="presentation"`. Den må ha et navn, som `aria-label`. Har serveren skrevet `role="tab"` på lenkene, kan raden også ha andre lenker.',
@@ -229,7 +229,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       multiple: true,
     },
   }),
-  [FS_ERROR_SUMMARY_TAG]: parts(FS_ERROR_SUMMARY_PARTS, {
+  [LT_ERROR_SUMMARY_TAG]: parts(LT_ERROR_SUMMARY_PARTS, {
     title: {
       description:
         "Overskriften i boksen. Komponenten gir den klassen for tittelen.",
@@ -242,7 +242,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       multiple: true,
     },
   }),
-  [FS_POPOVER_TAG]: parts(FS_POPOVER_PARTS, {
+  [LT_POPOVER_TAG]: parts(LT_POPOVER_PARTS, {
     trigger: {
       description:
         "Knappen som åpner og lukker panelet: den med `aria-controls` mot panelets id, ellers den første knappen utenfor panelet.",
@@ -255,7 +255,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       stableId: true,
     },
   }),
-  [FS_SUGGESTION_TAG]: parts(FS_SUGGESTION_PARTS, {
+  [LT_SUGGESTION_TAG]: parts(LT_SUGGESTION_PARTS, {
     control: {
       description:
         'Feltet brukeren skriver i: `role="combobox"`, ellers det første `<input>`. Malen skriver `for` på ledeteksten og `id` på feltet, eller legger ledeteksten rundt det.',
@@ -294,7 +294,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       optional: true,
     },
   }),
-  [FS_DIALOG_TAG]: parts(FS_DIALOG_PARTS, {
+  [LT_DIALOG_TAG]: parts(LT_DIALOG_PARTS, {
     dialog: {
       description: "`<dialog>`-elementet, som et direkte barn av verten.",
       content: "free",
@@ -314,7 +314,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       optional: true,
     },
   }),
-  [FS_SESSION_TIMEOUT_TAG]: parts(FS_SESSION_TIMEOUT_PARTS, {
+  [LT_SESSION_TIMEOUT_TAG]: parts(LT_SESSION_TIMEOUT_PARTS, {
     dialog: {
       description: "`<dialog>`-elementet med varselet.",
       content: "free",
@@ -374,10 +374,10 @@ const number = (description: string): AttributeDoc => ({
  */
 
 export const elements: readonly ElementDoc[] = [
-  element<typeof FsField>(
-    FS_FIELD_TAG,
+  element<typeof LtField>(
+    LT_FIELD_TAG,
     "field",
-    "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
+    "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `lt.field()` i stedet.",
     {
       disabled: flag("Kontrollen er slått av."),
       optional: flag("Feltet er valgfritt, og ledeteksten sier det."),
@@ -388,7 +388,7 @@ export const elements: readonly ElementDoc[] = [
     {},
     {
       invalid:
-        'Feltet er ugyldig når feilmeldingen, `.fs-error-text`, står synlig, eller når serveren har skrevet `aria-invalid` på kontrollen. I Datastar: `data-attr:hidden="!$ugyldig"` på feilmeldingen.',
+        'Feltet er ugyldig når feilmeldingen, `.lt-error-text`, står synlig, eller når serveren har skrevet `aria-invalid` på kontrollen. I Datastar: `data-attr:hidden="!$ugyldig"` på feilmeldingen.',
       "required-marker":
         "Påkrevd-merket står som `data-required` på `<label>`, og vises da også uten JavaScript.",
       "control-id":
@@ -396,10 +396,10 @@ export const elements: readonly ElementDoc[] = [
     },
   ),
 
-  element<typeof FsTabs>(
-    FS_TABS_TAG,
+  element<typeof LtTabs>(
+    LT_TABS_TAG,
     "tabs",
-    'Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role="tab"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden="until-found"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.',
+    'Fanerad. Fanene er lenker til panelene i en `.lt-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role="tab"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden="until-found"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.',
     {
       "server-controlled": flag(
         "Serveren bestemmer hvilken fane som er valgt. Komponenten setter ikke brukerens valg tilbake etter en oppdatering fra serveren, og adressen velger ingen fane. Et klikk og søk i siden velger fanen til serveren svarer.",
@@ -431,8 +431,8 @@ export const elements: readonly ElementDoc[] = [
     },
   ),
 
-  element<typeof FsErrorSummary>(
-    FS_ERROR_SUMMARY_TAG,
+  element<typeof LtErrorSummary>(
+    LT_ERROR_SUMMARY_TAG,
     "error-summary",
     "Feiloppsummering. Flytter fokus til boksen når den kommer til syne, og til kontrollen når en lenke i lista følges.",
     {
@@ -456,10 +456,10 @@ export const elements: readonly ElementDoc[] = [
     },
   ),
 
-  element<typeof FsPopover>(
-    FS_POPOVER_TAG,
+  element<typeof LtPopover>(
+    LT_POPOVER_TAG,
     "popover",
-    "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en.",
+    "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `lt-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en.",
     {
       open: flag(
         "Panelet er åpent. Serveren kan sende attributtet for å åpne panelet.",
@@ -500,10 +500,10 @@ export const elements: readonly ElementDoc[] = [
     },
   ),
 
-  element<typeof FsSuggestion>(
-    FS_SUGGESTION_TAG,
+  element<typeof LtSuggestion>(
+    LT_SUGGESTION_TAG,
     "suggestion",
-    "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
+    "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.lt-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
     {
       prefiltered: flag(
         "Appen har alt filtrert lista, så komponenten lar den stå. Trengs når appens filter er et annet enn «teksten inneholder søkeordet».",
@@ -540,10 +540,10 @@ export const elements: readonly ElementDoc[] = [
     },
   ),
 
-  element<typeof FsDialog>(
-    FS_DIALOG_TAG,
+  element<typeof LtDialog>(
+    LT_DIALOG_TAG,
     "dialog",
-    'Gjør en `<dialog class="fs-dialog">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `fs-dialog__body` når verken `aria-labelledby` eller `aria-label` står der.',
+    'Gjør en `<dialog class="lt-dialog">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `lt-dialog__body` når verken `aria-labelledby` eller `aria-label` står der.',
     {
       open: flag(
         "Dialogen er åpen. Skal serveren vise den, må `open` også stå på `<dialog>`.",
@@ -561,8 +561,8 @@ export const elements: readonly ElementDoc[] = [
     },
   ),
 
-  element<typeof FsToast>(
-    FS_TOAST_TAG,
+  element<typeof LtToast>(
+    LT_TOAST_TAG,
     "toast",
     "Kø av korte meldinger i hjørnet av skjermen. Meldingene lages fra skript med `show(tekst, { color, duration })`.",
     {
@@ -582,10 +582,10 @@ export const elements: readonly ElementDoc[] = [
     },
   ),
 
-  element<typeof FsSessionTimeout>(
-    FS_SESSION_TIMEOUT_TAG,
+  element<typeof LtSessionTimeout>(
+    LT_SESSION_TIMEOUT_TAG,
     "session-timeout",
-    'Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method="dialog">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live.',
+    'Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.lt-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method="dialog">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live.',
     {
       "warn-at": number("Sekunder uten aktivitet før varselet kommer."),
       "expires-at": number("Sekunder uten aktivitet før økten er ute."),
@@ -608,8 +608,8 @@ export const elements: readonly ElementDoc[] = [
     },
   ),
 
-  element<typeof FsConnectionStatus>(
-    FS_CONNECTION_STATUS_TAG,
+  element<typeof LtConnectionStatus>(
+    LT_CONNECTION_STATUS_TAG,
     "connection-status",
     "Sier fra når forbindelsen til serveren er borte. Appen melder fra med `reportFailure()` og `reportSuccess()`.",
     {
@@ -627,21 +627,21 @@ export const elements: readonly ElementDoc[] = [
  * Hva hver klasse tar som innhold, og delene den består av.
  *
  * Elementene over sier hva web-komponentene leter etter. Klassene sa
- * ingenting: manifestet visste ikke at `fs-button` tar tekst, at `fs-list`
- * består av `<li>`, eller at `fs-table` har `<thead>` og `<tbody>` med en
- * `fs-table__sort` i en `<th>`. Et verktøy som setter sammen markup av
+ * ingenting: manifestet visste ikke at `lt-button` tar tekst, at `lt-list`
+ * består av `<li>`, eller at `lt-table` har `<thead>` og `<tbody>` med en
+ * `lt-table__sort` i en `<th>`. Et verktøy som setter sammen markup av
  * klassene måtte holde det i en egen liste.
  *
  * `content` bruker det samme ordforrådet som delene. `parts` står på
  * klassene med en fast struktur, og selektorene er relative til elementet
  * med klassen, som for elementene. En klasse som bare er en del av en annen
- * komponents markup, som `fs-card__title` og `fs-table__sort`, peker på
+ * komponents markup, som `lt-card__title` og `lt-table__sort`, peker på
  * forelderen med `partOf` i stedet for å ha egne deler, og forelderen har en
  * del som treffer den.
  *
- * Tabellen holdes i takt med pakken av `generate-ordforrad.ts`, som stopper
+ * Tabellen holdes i takt med pakken av `generate-vocabulary.ts`, som stopper
  * på en klasse i CSS-en som mangler her og på en oppføring uten klasse, og
- * av `sjekk-ordforrad.ts`, som krever at hver selektor treffer markupen på
+ * av `check-vocabulary.ts`, som krever at hver selektor treffer markupen på
  * komponentsiden, og at `partOf` peker på en klasse med en del som treffer
  * denne.
  */
@@ -671,7 +671,7 @@ const row = (control: string, what: string): ClassDoc => ({
 })
 
 export const classDocs: Record<string, ClassDoc> = {
-  "fs-accordion": {
+  "lt-accordion": {
     content: "parts",
     parts: {
       summary: {
@@ -681,26 +681,26 @@ export const classDocs: Record<string, ClassDoc> = {
         content: "free",
       },
       content: {
-        selector: ".fs-accordion__content",
+        selector: ".lt-accordion__content",
         description: "Innholdet som vises når panelet er åpent.",
         content: "free",
       },
     },
   },
-  "fs-accordion__content": { content: "free", partOf: "fs-accordion" },
-  "fs-alert": {
+  "lt-accordion__content": { content: "free", partOf: "lt-accordion" },
+  "lt-alert": {
     content: "free",
     parts: {
       title: {
-        selector: ".fs-alert__title",
+        selector: ".lt-alert__title",
         description: "Overskriften i meldingen.",
         content: "text",
         optional: true,
       },
     },
   },
-  "fs-alert__title": { content: "text", partOf: "fs-alert" },
-  "fs-avatar": {
+  "lt-alert__title": { content: "text", partOf: "lt-alert" },
+  "lt-avatar": {
     content: "free",
     parts: {
       image: {
@@ -712,7 +712,7 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-avatar-stack": {
+  "lt-avatar-stack": {
     content: "parts",
     parts: {
       item: {
@@ -722,15 +722,15 @@ export const classDocs: Record<string, ClassDoc> = {
         multiple: true,
       },
       avatar: {
-        selector: "li > .fs-avatar",
+        selector: "li > .lt-avatar",
         description: "Avataren i hvert listepunkt.",
         content: "free",
         multiple: true,
       },
     },
   },
-  "fs-badge": { content: "text" },
-  "fs-breadcrumbs": {
+  "lt-badge": { content: "text" },
+  "lt-breadcrumbs": {
     content: "parts",
     parts: {
       item: {
@@ -748,41 +748,41 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-button": { content: "text" },
-  "fs-card": {
+  "lt-button": { content: "text" },
+  "lt-card": {
     content: "free",
     parts: {
       title: {
-        selector: ".fs-card__title",
+        selector: ".lt-card__title",
         description: "Overskriften i kortet.",
         content: "text",
         optional: true,
       },
     },
   },
-  "fs-card__title": { content: "text", partOf: "fs-card" },
-  "fs-checkbox": { content: "none" },
-  "fs-checkbox-row": row("input[type='checkbox']", "Avkryssingsboksen"),
-  "fs-divider": { content: "none" },
-  "fs-error-text": { content: "text" },
-  "fs-fieldset": {
+  "lt-card__title": { content: "text", partOf: "lt-card" },
+  "lt-checkbox": { content: "none" },
+  "lt-checkbox-row": row("input[type='checkbox']", "Avkryssingsboksen"),
+  "lt-divider": { content: "none" },
+  "lt-error-text": { content: "text" },
+  "lt-fieldset": {
     content: "free",
     parts: {
       legend: {
-        selector: "> .fs-legend",
+        selector: "> .lt-legend",
         description: "Ledeteksten til gruppen, en `<legend>` med klassen.",
         content: "text",
         unique: true,
       },
       help: {
-        selector: ".fs-help-text",
+        selector: ".lt-help-text",
         description:
           "Hjelpeteksten til gruppen, koblet med `aria-describedby` på feltsettet.",
         content: "text",
         optional: true,
       },
       error: {
-        selector: ".fs-error-text",
+        selector: ".lt-error-text",
         description:
           "Feilmeldingen til gruppen, koblet med `aria-describedby` på feltsettet.",
         content: "text",
@@ -790,9 +790,9 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-legend": { content: "text", partOf: "fs-fieldset" },
-  "fs-file-upload": { content: "none" },
-  "fs-file-upload-list": {
+  "lt-legend": { content: "text", partOf: "lt-fieldset" },
+  "lt-file-upload": { content: "none" },
+  "lt-file-upload-list": {
     content: "parts",
     parts: {
       item: {
@@ -810,13 +810,13 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-heading": { content: "text" },
-  "fs-help-text": { content: "text" },
-  "fs-icon": { content: "none" },
-  "fs-input": { content: "none" },
-  "fs-label": { content: "text" },
-  "fs-link": { content: "text" },
-  "fs-list": {
+  "lt-heading": { content: "text" },
+  "lt-help-text": { content: "text" },
+  "lt-icon": { content: "none" },
+  "lt-input": { content: "none" },
+  "lt-label": { content: "text" },
+  "lt-link": { content: "text" },
+  "lt-list": {
     content: "parts",
     parts: {
       item: {
@@ -827,7 +827,7 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-pagination": {
+  "lt-pagination": {
     content: "parts",
     parts: {
       item: {
@@ -844,7 +844,7 @@ export const classDocs: Record<string, ClassDoc> = {
         multiple: true,
       },
       gap: {
-        selector: ".fs-pagination__gap",
+        selector: ".lt-pagination__gap",
         description: "Hullet der sider er utelatt.",
         content: "text",
         multiple: true,
@@ -852,24 +852,24 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-pagination__gap": { content: "text", partOf: "fs-pagination" },
-  "fs-paragraph": { content: "text" },
-  "fs-progress": { content: "none" },
-  "fs-radio": { content: "none" },
-  "fs-radio-row": row("input[type='radio']", "Radioknappen"),
-  "fs-search": { content: "none" },
-  "fs-search-row": {
+  "lt-pagination__gap": { content: "text", partOf: "lt-pagination" },
+  "lt-paragraph": { content: "text" },
+  "lt-progress": { content: "none" },
+  "lt-radio": { content: "none" },
+  "lt-radio-row": row("input[type='radio']", "Radioknappen"),
+  "lt-search": { content: "none" },
+  "lt-search-row": {
     content: "parts",
     parts: {
       label: {
         selector: "label",
         description:
-          "Ledeteksten, koblet med `for`. Gjerne skjult med `fs-sr-only`.",
+          "Ledeteksten, koblet med `for`. Gjerne skjult med `lt-sr-only`.",
         content: "text",
       },
       control: {
         selector: "input[type='search']",
-        description: "Søkefeltet, med klassene `fs-input fs-search`.",
+        description: "Søkefeltet, med klassene `lt-input lt-search`.",
         content: "none",
         unique: true,
       },
@@ -881,14 +881,14 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-select": { content: "none" },
-  "fs-skeleton": { content: "none" },
-  "fs-skip-link": { content: "text" },
-  "fs-spinner": { content: "none" },
-  "fs-sr-only": { content: "text" },
-  "fs-switch": { content: "none" },
-  "fs-switch-row": row("input[role='switch']", "Bryteren"),
-  "fs-table": {
+  "lt-select": { content: "none" },
+  "lt-skeleton": { content: "none" },
+  "lt-skip-link": { content: "text" },
+  "lt-spinner": { content: "none" },
+  "lt-sr-only": { content: "text" },
+  "lt-switch": { content: "none" },
+  "lt-switch-row": row("input[role='switch']", "Bryteren"),
+  "lt-table": {
     content: "parts",
     parts: {
       caption: {
@@ -912,7 +912,7 @@ export const classDocs: Record<string, ClassDoc> = {
         multiple: true,
       },
       sort: {
-        selector: "th > .fs-table__sort",
+        selector: "th > .lt-table__sort",
         description:
           "Knappen i en overskrift som kan sorteres. `aria-sort` på cellen sier hvilken vei.",
         content: "text",
@@ -921,46 +921,46 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-table__sort": { content: "text", partOf: "fs-table" },
-  "fs-table-scroll": {
+  "lt-table__sort": { content: "text", partOf: "lt-table" },
+  "lt-table-scroll": {
     content: "parts",
     parts: {
       table: {
-        selector: ".fs-table",
+        selector: ".lt-table",
         description: "Tabellen som kan rulles sidelengs.",
         content: "free",
       },
     },
   },
-  "fs-tag": { content: "text" },
-  "fs-textarea": { content: "none" },
-  "fs-toggle-group": {
+  "lt-tag": { content: "text" },
+  "lt-textarea": { content: "none" },
+  "lt-toggle-group": {
     content: "parts",
     parts: {
       legend: {
         selector: "> legend",
         description:
-          "Hva alternativene velger mellom. Kan skjules med `fs-sr-only`, men må stå der.",
+          "Hva alternativene velger mellom. Kan skjules med `lt-sr-only`, men må stå der.",
         content: "text",
         unique: true,
       },
       option: {
-        selector: ".fs-toggle-group__option",
+        selector: ".lt-toggle-group__option",
         description:
           "Ett alternativ: en `<label>` med radioknappen og teksten.",
         content: "free",
         multiple: true,
       },
       radio: {
-        selector: ".fs-toggle-group__option > input[type='radio']",
+        selector: ".lt-toggle-group__option > input[type='radio']",
         description: "Radioknappen i hvert alternativ, med samme `name`.",
         content: "none",
         multiple: true,
       },
     },
   },
-  "fs-toggle-group__option": { content: "free", partOf: "fs-toggle-group" },
-  "fs-tooltip": {
+  "lt-toggle-group__option": { content: "free", partOf: "lt-toggle-group" },
+  "lt-tooltip": {
     content: "parts",
     parts: {
       trigger: {
@@ -970,45 +970,45 @@ export const classDocs: Record<string, ClassDoc> = {
         content: "text",
       },
       bubble: {
-        selector: ".fs-tooltip__bubble",
+        selector: ".lt-tooltip__bubble",
         description: 'Boblen, med `role="tooltip"` og id-en.',
         content: "text",
       },
     },
   },
-  "fs-tooltip__bubble": { content: "text", partOf: "fs-tooltip" },
+  "lt-tooltip__bubble": { content: "text", partOf: "lt-tooltip" },
 
-  "fs-dialog": {
+  "lt-dialog": {
     content: "free",
     parts: {
       header: {
-        selector: ".fs-dialog__header",
+        selector: ".lt-dialog__header",
         description:
           "Toppen, med overskriften og underteksten. `data-color` på dialogen farger den.",
         content: "parts",
         optional: true,
       },
       title: {
-        selector: ".fs-dialog__title",
+        selector: ".lt-dialog__title",
         description: "Overskriften, som `aria-labelledby` peker på.",
         content: "text",
         optional: true,
       },
       subtitle: {
-        selector: ".fs-dialog__subtitle",
+        selector: ".lt-dialog__subtitle",
         description: "Linja under overskriften, inne i toppen.",
         content: "text",
         optional: true,
       },
       body: {
-        selector: ".fs-dialog__body",
+        selector: ".lt-dialog__body",
         description:
           "Innholdet, som ruller når dialogen blir for høy. Må være et direkte barn.",
         content: "free",
         optional: true,
       },
       footer: {
-        selector: ".fs-dialog__footer",
+        selector: ".lt-dialog__footer",
         description:
           'Raden med knapper nederst, gjerne et `<form method="dialog">`.',
         content: "free",
@@ -1016,32 +1016,32 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-dialog__header": {
+  "lt-dialog__header": {
     content: "parts",
-    partOf: "fs-dialog",
+    partOf: "lt-dialog",
     parts: {
       title: {
-        selector: ".fs-dialog__title",
+        selector: ".lt-dialog__title",
         description: "Overskriften.",
         content: "text",
       },
       subtitle: {
-        selector: ".fs-dialog__subtitle",
+        selector: ".lt-dialog__subtitle",
         description: "Linja under overskriften.",
         content: "text",
         optional: true,
       },
     },
   },
-  "fs-dialog__title": { content: "text", partOf: "fs-dialog" },
-  "fs-dialog__subtitle": { content: "text", partOf: "fs-dialog" },
-  "fs-dialog__body": { content: "free", partOf: "fs-dialog" },
-  "fs-dialog__footer": { content: "free", partOf: "fs-dialog" },
-  "fs-error-summary": {
+  "lt-dialog__title": { content: "text", partOf: "lt-dialog" },
+  "lt-dialog__subtitle": { content: "text", partOf: "lt-dialog" },
+  "lt-dialog__body": { content: "free", partOf: "lt-dialog" },
+  "lt-dialog__footer": { content: "free", partOf: "lt-dialog" },
+  "lt-error-summary": {
     content: "parts",
     parts: {
       title: {
-        selector: ".fs-error-summary__title",
+        selector: ".lt-error-summary__title",
         description: "Overskriften, som sier hvor mange feil skjemaet har.",
         content: "text",
       },
@@ -1059,29 +1059,29 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-error-summary__title": { content: "text", partOf: "fs-error-summary" },
-  "fs-popover": { content: "free" },
-  "fs-session-timeout": {
+  "lt-error-summary__title": { content: "text", partOf: "lt-error-summary" },
+  "lt-popover": { content: "free" },
+  "lt-session-timeout": {
     content: "parts",
     parts: {
       dialog: {
-        selector: ".fs-session-timeout__dialog",
+        selector: ".lt-session-timeout__dialog",
         description: 'Dialogen med varselet, med `role="alertdialog"`.',
         content: "parts",
       },
       title: {
-        selector: ".fs-session-timeout__title",
+        selector: ".lt-session-timeout__title",
         description: "Overskriften i dialogen.",
         content: "text",
         optional: true,
       },
       text: {
-        selector: ".fs-session-timeout__text",
+        selector: ".lt-session-timeout__text",
         description: "Avsnittet med tiden som er igjen.",
         content: "text",
       },
       count: {
-        selector: ".fs-session-timeout__count",
+        selector: ".lt-session-timeout__count",
         description:
           "Tallet som telles ned, inne i avsnittet. Komponenten fyller det.",
         content: "none",
@@ -1092,35 +1092,35 @@ export const classDocs: Record<string, ClassDoc> = {
         content: "none",
       },
       actions: {
-        selector: ".fs-session-timeout__actions",
+        selector: ".lt-session-timeout__actions",
         description: 'Knapperaden, et `<form method="dialog">`.',
         content: "parts",
       },
       button: {
-        selector: ".fs-session-timeout__actions button",
+        selector: ".lt-session-timeout__actions button",
         description: "Knappene som forlenger økten eller logger ut.",
         content: "text",
         multiple: true,
       },
     },
   },
-  "fs-session-timeout__dialog": {
+  "lt-session-timeout__dialog": {
     content: "parts",
-    partOf: "fs-session-timeout",
+    partOf: "lt-session-timeout",
     parts: {
       title: {
-        selector: ".fs-session-timeout__title",
+        selector: ".lt-session-timeout__title",
         description: "Overskriften.",
         content: "text",
         optional: true,
       },
       text: {
-        selector: ".fs-session-timeout__text",
+        selector: ".lt-session-timeout__text",
         description: "Avsnittet med tiden som er igjen.",
         content: "text",
       },
       count: {
-        selector: ".fs-session-timeout__count",
+        selector: ".lt-session-timeout__count",
         description: "Tallet som telles ned, inne i avsnittet.",
         content: "none",
       },
@@ -1130,24 +1130,24 @@ export const classDocs: Record<string, ClassDoc> = {
         content: "none",
       },
       actions: {
-        selector: ".fs-session-timeout__actions",
+        selector: ".lt-session-timeout__actions",
         description: 'Knapperaden, et `<form method="dialog">`.',
         content: "parts",
       },
     },
   },
-  "fs-session-timeout__title": {
+  "lt-session-timeout__title": {
     content: "text",
-    partOf: "fs-session-timeout",
+    partOf: "lt-session-timeout",
   },
-  "fs-session-timeout__text": { content: "text", partOf: "fs-session-timeout" },
-  "fs-session-timeout__count": {
+  "lt-session-timeout__text": { content: "text", partOf: "lt-session-timeout" },
+  "lt-session-timeout__count": {
     content: "none",
-    partOf: "fs-session-timeout",
+    partOf: "lt-session-timeout",
   },
-  "fs-session-timeout__actions": {
+  "lt-session-timeout__actions": {
     content: "parts",
-    partOf: "fs-session-timeout",
+    partOf: "lt-session-timeout",
     parts: {
       button: {
         selector: "button",
@@ -1157,11 +1157,11 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-suggestion__list": {
+  "lt-suggestion__list": {
     content: "parts",
     parts: {
       option: {
-        selector: "[role='option'], .fs-suggestion__option, > li:not([role])",
+        selector: "[role='option'], .lt-suggestion__option, > li:not([role])",
         description:
           "Ett forslag: rollen eller klassen når de står der, ellers en `<li>` uten rolle, som komponenten gir klassen og rollen. Lista kan stå tom til serveren fyller den.",
         content: "text",
@@ -1170,10 +1170,10 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-suggestion__option": { content: "text", partOf: "fs-suggestion__list" },
-  "fs-suggestion__empty": { content: "text" },
-  "fs-suggestion__value": { content: "none" },
-  "fs-tabs__list": {
+  "lt-suggestion__option": { content: "text", partOf: "lt-suggestion__list" },
+  "lt-suggestion__empty": { content: "text" },
+  "lt-suggestion__value": { content: "none" },
+  "lt-tabs__list": {
     content: "free",
     parts: {
       tab: {
@@ -1185,14 +1185,14 @@ export const classDocs: Record<string, ClassDoc> = {
       },
     },
   },
-  "fs-tabs__panel": { content: "free" },
+  "lt-tabs__panel": { content: "free" },
 
   // Klassene komponentene setter på nodene de lager selv, har innhold men
   // ingen forelder: ingen skriver dem i markupen, så ingen del treffer dem.
-  "fs-connection-status": { content: "none" },
-  "fs-connection-status__bar": { content: "text" },
-  "fs-toast": { content: "none" },
-  "fs-toast__message": { content: "free" },
-  "fs-toast__close": { content: "text" },
-  "fs-theme-control": { content: "none" },
+  "lt-connection-status": { content: "none" },
+  "lt-connection-status__bar": { content: "text" },
+  "lt-toast": { content: "none" },
+  "lt-toast__message": { content: "free" },
+  "lt-toast__close": { content: "text" },
+  "lt-theme-control": { content: "none" },
 }

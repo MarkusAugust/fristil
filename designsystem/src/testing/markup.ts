@@ -1,5 +1,5 @@
 /**
- * Gjør et attributtsett fra en `fs`-byggefunksjon om til HTML.
+ * Gjør et attributtsett fra en `lt`-byggefunksjon om til HTML.
  *
  * Testene skal skrive markupen slik en server ville gjort det, altså med
  * byggefunksjonen, og ikke håndskrive attributtene. Gjør de det siste, kan markupen

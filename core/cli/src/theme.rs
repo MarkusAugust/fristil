@@ -1,8 +1,8 @@
-//! `fristil tema`: et fargetema av merkefargene, skriften og formen din.
+//! `lotek tema`: et fargetema av merkefargene, skriften og formen din.
 //!
 //! ```bash
-//! fristil tema --aksent=#7c3aed --fare=#b3261e --ut=tema.css
-//! fristil tema fristil.tema.json --ut=tema.css
+//! lotek tema --aksent=#7c3aed --fare=#b3261e --ut=theme.css
+//! lotek tema lotek.theme.json --ut=theme.css
 //! ```
 //!
 //! Temaet bygges av kjernen, og løftene holder av konstruksjon. Holder et par
@@ -12,8 +12,8 @@
 
 use crate::output::{error, fail, log, shown};
 use crate::{refuse_unknown_flags, refuse_without_value, Arguments};
-use fristil_kjerne::json::{parse, Json};
-use fristil_kjerne::theme::{build_theme, js_number, to_fixed2};
+use lotek_core::json::{parse, Json};
+use lotek_core::theme::{build_theme, js_number, to_fixed2};
 
 /// Fargene, med flaggets norske navn og familiens engelske.
 const COLORS: [(&str, &str); 9] = [
@@ -102,7 +102,7 @@ fn read_recipe(file: &str) -> Object {
     let path = shown(file);
     let Ok(bytes) = std::fs::read(file) else {
         fail(&format!(
-            "Fant ikke fila «{path}».\n\nOppgi en JSON-fil med fargene, eller sett dem som flagg. Se `fristil --hjelp`.\n"
+            "Fant ikke fila «{path}».\n\nOppgi en JSON-fil med fargene, eller sett dem som flagg. Se `lotek --hjelp`.\n"
         ));
     };
     match parse(&String::from_utf8_lossy(&bytes)) {
@@ -118,7 +118,7 @@ fn read_recipe(file: &str) -> Object {
 
 pub fn run(arguments: &[String]) {
     let arguments = Arguments::read(arguments);
-    // `--ut tema.css` uten likhetstegn ble lest som to filnavn etter
+    // `--ut theme.css` uten likhetstegn ble lest som to filnavn etter
     // oppskriften. Temaet gikk da til utdata, og ingen fil ble skrevet.
     refuse_without_value(&arguments);
     if arguments.files.len() > 1 {
@@ -128,7 +128,7 @@ pub fn run(arguments: &[String]) {
             .map(|f| format!("«{}»", shown(f)))
             .collect();
         fail(&format!(
-            "Temaet lages av én oppskrift, men fikk {} filer: {}.\n\nSlå dem sammen til én JSON-fil, eller sett resten som flagg. Se `fristil --hjelp`.\n",
+            "Temaet lages av én oppskrift, men fikk {} filer: {}.\n\nSlå dem sammen til én JSON-fil, eller sett resten som flagg. Se `lotek --hjelp`.\n",
             files.len(),
             files.join(", ")
         ));
@@ -217,7 +217,7 @@ pub fn run(arguments: &[String]) {
 
     if !unknown.is_empty() {
         fail(&format!(
-            "Ukjent nøkkel i oppskriften: {}\n\nHele oversikten: fristil --hjelp\n",
+            "Ukjent nøkkel i oppskriften: {}\n\nHele oversikten: lotek --hjelp\n",
             unknown.join(", ")
         ));
     }

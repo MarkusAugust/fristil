@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const BADGE_CLASS = "fs-badge" as const
+export const BADGE_CLASS = "lt-badge" as const
 
 export const badgeColors = [
   "info",

@@ -32,7 +32,7 @@ const KILDER = [
     unntatt: ["testing", "types"],
   },
   { rot: new URL("../../editor/src", import.meta.url).pathname, unntatt: [] },
-  { rot: new URL("../../kjerne/src", import.meta.url).pathname, unntatt: [] },
+  { rot: new URL("../../core/src", import.meta.url).pathname, unntatt: [] },
   {
     rot: new URL("../../kotlin/src/main", import.meta.url).pathname,
     unntatt: [],
@@ -335,7 +335,7 @@ function bareKode(innhold: string): string {
   return ut.join("")
 }
 
-/** `forrigeFokus` blir `forrige` og `fokus`; `FS_FIELD_TAG` blir tre ord. */
+/** `forrigeFokus` blir `forrige` og `fokus`; `LT_FIELD_TAG` blir tre ord. */
 function ord(identifikator: string): string[] {
   return identifikator
     .split(/_|(?<=[a-zæøå0-9])(?=[A-ZÆØÅ])|(?<=[A-ZÆØÅ])(?=[A-ZÆØÅ][a-zæøå])/)
@@ -389,7 +389,7 @@ for (const [fil, tillatt] of KJENT_GJELD) {
 // Tell hva som faktisk ble lest. Null filer er en feil i sjekken, ikke en
 // ren kodebase.
 if (lest === 0) {
-  console.error("✗ sjekk-identifikatorer leste ingen filer.")
+  console.error("✗ check-identifiers leste ingen filer.")
   process.exit(1)
 }
 

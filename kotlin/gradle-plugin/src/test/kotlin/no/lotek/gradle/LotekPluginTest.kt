@@ -1,6 +1,6 @@
-package no.fristil.gradle
+package no.lotek.gradle
 
-import no.fristil.cli.CommandLine
+import no.lotek.cli.CommandLine
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import java.io.ByteArrayInputStream
@@ -19,8 +19,8 @@ import kotlin.test.assertTrue
  * at temaet og manifestet skrives, og at en overtatt komponent sjekkes mot
  * fragmentet sitt.
  */
-class FristilPluginTest {
-    private val project: File = Files.createTempDirectory("fristil-gradle-").toFile()
+class LotekPluginTest {
+    private val project: File = Files.createTempDirectory("lotek-gradle-").toFile()
 
     private fun file(path: String, content: String) =
         File(project, path).apply {
@@ -38,11 +38,11 @@ class FristilPluginTest {
             """
             plugins {
                 base
-                id("io.github.markusaugust.fristil")
+                id("io.github.markusaugust.lo-tek")
             }
 
-            fristil {
-                templates.from(fileTree("maler"))
+            lotek {
+                templates.from(fileTree("templates"))
                 $extra
             }
             """.trimIndent(),
@@ -52,41 +52,41 @@ class FristilPluginTest {
     @Test
     fun `check fails on a template with a mistake, and says where`() {
         setUp()
-        file("maler/skjema.html", "<form>\n  <button class=\"fs-buton\">Send</button>\n</form>\n")
+        file("templates/form.html", "<form>\n  <button class=\"lt-buton\">Send</button>\n</form>\n")
 
         val failed = gradle("check").buildAndFail()
-        assertContains(failed.output, "maler/skjema.html:2:18: advarsel: Klassen «fs-buton» finnes ikke i Fristil. Mente du fs-button?")
-        assertEquals(TaskOutcome.FAILED, failed.task(":fristilSjekk")?.outcome)
+        assertContains(failed.output, "templates/form.html:2:18: advarsel: Klassen «lt-buton» finnes ikke i LO-TEK. Mente du lt-button?")
+        assertEquals(TaskOutcome.FAILED, failed.task(":lotekSjekk")?.outcome)
 
-        file("maler/skjema.html", "<form>\n  <button class=\"fs-button\">Send</button>\n</form>\n")
+        file("templates/form.html", "<form>\n  <button class=\"lt-button\">Send</button>\n</form>\n")
         val passed = gradle("check").build()
-        assertEquals(TaskOutcome.SUCCESS, passed.task(":fristilSjekk")?.outcome)
-        assertEquals(TaskOutcome.UP_TO_DATE, gradle("check").build().task(":fristilSjekk")?.outcome)
+        assertEquals(TaskOutcome.SUCCESS, passed.task(":lotekSjekk")?.outcome)
+        assertEquals(TaskOutcome.UP_TO_DATE, gradle("check").build().task(":lotekSjekk")?.outcome)
     }
 
     @Test
     fun `without templates there is nothing to check`() {
         setUp()
-        assertEquals(TaskOutcome.NO_SOURCE, gradle("fristilSjekk").build().task(":fristilSjekk")?.outcome)
+        assertEquals(TaskOutcome.NO_SOURCE, gradle("lotekSjekk").build().task(":lotekSjekk")?.outcome)
     }
 
     @Test
     fun `builds the theme from the recipe`() {
-        setUp("themeRecipe = file(\"fristil.tema.json\")")
-        file("fristil.tema.json", "{\"aksent\": \"#7c3aed\", \"fare\": \"#b3261e\"}\n")
+        setUp("themeRecipe = file(\"lotek.theme.json\")")
+        file("lotek.theme.json", "{\"aksent\": \"#7c3aed\", \"fare\": \"#b3261e\"}\n")
 
-        gradle("fristilTema").build()
-        val theme = File(project, "build/fristil/tema.css").readText()
-        assertContains(theme, "--fs-color-accent-fill")
+        gradle("lotekTema").build()
+        val theme = File(project, "build/lotek/theme.css").readText()
+        assertContains(theme, "--lt-color-accent-fill")
 
-        file("fristil.tema.json", "{\"aksent\": \"lilla\"}\n")
-        assertContains(gradle("fristilTema").buildAndFail().output, "heksadesimale")
+        file("lotek.theme.json", "{\"aksent\": \"lilla\"}\n")
+        assertContains(gradle("lotekTema").buildAndFail().output, "heksadesimale")
     }
 
     @Test
     fun `the theme is skipped without a recipe`() {
         setUp()
-        assertEquals(TaskOutcome.SKIPPED, gradle("fristilTema").build().task(":fristilTema")?.outcome)
+        assertEquals(TaskOutcome.SKIPPED, gradle("lotekTema").build().task(":lotekTema")?.outcome)
     }
 
     @Test
@@ -101,16 +101,16 @@ class FristilPluginTest {
                 output,
             )
         assertEquals(0, code, output.toString(Charsets.UTF_8))
-        setUp("manifests.from(\"src/ui/button/fristil-manifest.json\")")
-        file("maler/side.html", "<button class=\"app-button\" data-variant=\"feil\">Send</button>\n")
+        setUp("manifests.from(\"src/ui/button/lotek-manifest.json\")")
+        file("templates/side.html", "<button class=\"app-button\" data-variant=\"feil\">Send</button>\n")
 
         assertContains(gradle("check").buildAndFail().output, "data-variant kan ikke være «feil»")
 
-        file("maler/side.html", "<button class=\"app-button\">Send</button>\n")
+        file("templates/side.html", "<button class=\"app-button\">Send</button>\n")
         gradle("build", "--configuration-cache").build()
-        val manifest = File(project, "build/fristil/manifest.json").readText()
+        val manifest = File(project, "build/lotek/manifest.json").readText()
         assertContains(manifest, "\"app-button\"")
-        assertContains(manifest, "\"fs-button\"")
+        assertContains(manifest, "\"lt-button\"")
         assertFalse(manifest.contains("\$schema"))
         assertTrue(gradle("build", "--configuration-cache").build().output.contains("Reusing configuration cache"))
 
@@ -118,14 +118,14 @@ class FristilPluginTest {
         // fra forrige bygg må bort, ellers foretrekker editoren den.
         setUp()
         gradle("build").build()
-        assertFalse(File(project, "build/fristil/manifest.json").exists())
+        assertFalse(File(project, "build/lotek/manifest.json").exists())
     }
 
     @Test
     fun `without fragments no manifest is written`() {
         setUp()
-        file("maler/side.html", "<button class=\"fs-button\">Send</button>\n")
+        file("templates/side.html", "<button class=\"lt-button\">Send</button>\n")
         gradle("build").build()
-        assertFalse(File(project, "build/fristil/manifest.json").exists())
+        assertFalse(File(project, "build/lotek/manifest.json").exists())
     }
 }

@@ -3,39 +3,39 @@ title: Bekreft en handling
 description: Dialog, ordlyd og hva som skjer etterpå, når handlingen ikke kan angres.
 ---
 
-import BekreftelseDemo from "../../../components/BekreftelseDemo.astro"
+import ConfirmationDemo from "../../../components/ConfirmationDemo.astro"
 
 En bekreftelse er et avbrudd. Den er verdt det når handlingen ikke kan angres, og bare da.
 
-<BekreftelseDemo />
+<ConfirmationDemo />
 
 ## Markupen
 
 ```html
-<button class="fs-button" data-variant="danger" id="slett" type="button">
+<button class="lt-button" data-variant="danger" id="slett" type="button">
   Slett søknaden
 </button>
 
-<dialog class="fs-dialog" id="bekreft" aria-labelledby="bekreft-tittel">
-  <h2 class="fs-dialog__title" id="bekreft-tittel">Slette søknaden?</h2>
+<dialog class="lt-dialog" id="bekreft" aria-labelledby="bekreft-tittel">
+  <h2 class="lt-dialog__title" id="bekreft-tittel">Slette søknaden?</h2>
 
-  <div class="fs-dialog__body">
+  <div class="lt-dialog__body">
     <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
   </div>
 
-  <form method="dialog" class="fs-dialog__footer">
-    <button class="fs-button" data-variant="secondary" value="avbryt">Avbryt</button>
-    <button class="fs-button" data-variant="danger" value="slett">Slett søknaden</button>
+  <form method="dialog" class="lt-dialog__footer">
+    <button class="lt-button" data-variant="secondary" value="avbryt">Avbryt</button>
+    <button class="lt-button" data-variant="danger" value="slett">Slett søknaden</button>
   </form>
 </dialog>
 
-<fs-toast id="meldinger" label="Meldinger"></fs-toast>
+<lt-toast id="meldinger" label="Meldinger"></lt-toast>
 
 <script type="module">
-  import { defineFsToast } from
-    "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/frittstaende/toast/fs-toast.js"
+  import { defineLtToast } from
+    "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/toast/lt-toast.js"
 
-  defineFsToast()
+  defineLtToast()
 
   const dialog = document.getElementById("bekreft")
   const meldinger = document.getElementById("meldinger")

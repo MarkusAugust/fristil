@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const TAG_CLASS = "fs-tag" as const
+export const TAG_CLASS = "lt-tag" as const
 
 export const tagVariants = ["outline", "filled"] as const
 

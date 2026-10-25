@@ -1,15 +1,15 @@
 {
   "$schema": "https://raw.githubusercontent.com/JetBrains/web-types/master/schema/web-types.json",
-  "name": "@fristil/designsystem",
+  "name": "@lo-tek/interfaces",
   "version": "0.36.0",
   "description-markup": "markdown",
   "contributions": {
     "html": {
       "elements": [
         {
-          "name": "fs-field",
-          "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet.",
-          "doc-url": "https://fristil.sobernetics.no/components/field/",
+          "name": "lt-field",
+          "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `lt.field()` i stedet.",
+          "doc-url": "https://lo-tek.sobernetics.no/components/field/",
           "attributes": [
             {
               "name": "disabled",
@@ -36,9 +36,9 @@
           ]
         },
         {
-          "name": "fs-tabs",
-          "description": "Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.",
-          "doc-url": "https://fristil.sobernetics.no/components/tabs/",
+          "name": "lt-tabs",
+          "description": "Fanerad. Fanene er lenker til panelene i en `.lt-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.",
+          "doc-url": "https://lo-tek.sobernetics.no/components/tabs/",
           "attributes": [
             {
               "name": "server-controlled",
@@ -76,9 +76,9 @@
           }
         },
         {
-          "name": "fs-error-summary",
+          "name": "lt-error-summary",
           "description": "Feiloppsummering. Flytter fokus til boksen når den kommer til syne, og til kontrollen når en lenke i lista følges.",
-          "doc-url": "https://fristil.sobernetics.no/components/error-summary/",
+          "doc-url": "https://lo-tek.sobernetics.no/components/error-summary/",
           "attributes": [
             {
               "name": "data-autofocus",
@@ -108,9 +108,9 @@
           ]
         },
         {
-          "name": "fs-popover",
-          "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en.",
-          "doc-url": "https://fristil.sobernetics.no/components/popover/",
+          "name": "lt-popover",
+          "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `lt-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en.",
+          "doc-url": "https://lo-tek.sobernetics.no/components/popover/",
           "attributes": [
             {
               "name": "open",
@@ -163,9 +163,9 @@
           }
         },
         {
-          "name": "fs-suggestion",
-          "description": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
-          "doc-url": "https://fristil.sobernetics.no/components/suggestion/",
+          "name": "lt-suggestion",
+          "description": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.lt-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
+          "doc-url": "https://lo-tek.sobernetics.no/components/suggestion/",
           "attributes": [
             {
               "name": "prefiltered",
@@ -248,9 +248,9 @@
           }
         },
         {
-          "name": "fs-dialog",
-          "description": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `fs-dialog__body` når verken `aria-labelledby` eller `aria-label` står der.",
-          "doc-url": "https://fristil.sobernetics.no/components/dialog/",
+          "name": "lt-dialog",
+          "description": "Gjør en `<dialog class=\"lt-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `lt-dialog__body` når verken `aria-labelledby` eller `aria-label` står der.",
+          "doc-url": "https://lo-tek.sobernetics.no/components/dialog/",
           "attributes": [
             {
               "name": "open",
@@ -277,9 +277,9 @@
           }
         },
         {
-          "name": "fs-toast",
+          "name": "lt-toast",
           "description": "Kø av korte meldinger i hjørnet av skjermen. Meldingene lages fra skript med `show(tekst, { color, duration })`.",
-          "doc-url": "https://fristil.sobernetics.no/components/toast/",
+          "doc-url": "https://lo-tek.sobernetics.no/components/toast/",
           "attributes": [
             {
               "name": "duration",
@@ -316,9 +316,9 @@
           }
         },
         {
-          "name": "fs-session-timeout",
-          "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/",
+          "name": "lt-session-timeout",
+          "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.lt-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live.",
+          "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/",
           "attributes": [
             {
               "name": "warn-at",
@@ -371,9 +371,9 @@
           }
         },
         {
-          "name": "fs-connection-status",
+          "name": "lt-connection-status",
           "description": "Sier fra når forbindelsen til serveren er borte. Appen melder fra med `reportFailure()` og `reportSuccess()`.",
-          "doc-url": "https://fristil.sobernetics.no/components/connection-status/",
+          "doc-url": "https://lo-tek.sobernetics.no/components/connection-status/",
           "attributes": [
             {
               "name": "offline-text",
@@ -410,389 +410,389 @@
     "css": {
       "classes": [
         {
-          "name": "fs-accordion",
+          "name": "lt-accordion",
           "description": "**Accordion**\n\nPanel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/accordion/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/accordion/"
         },
         {
-          "name": "fs-accordion__content",
+          "name": "lt-accordion__content",
           "description": "**Accordion**\n\nPanel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/accordion/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/accordion/"
         },
         {
-          "name": "fs-alert",
+          "name": "lt-alert",
           "description": "**Alert**\n\nMelding som gjelder hele siden eller hele skjemaet. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/alert/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/alert/"
         },
         {
-          "name": "fs-alert__title",
+          "name": "lt-alert__title",
           "description": "**Alert**\n\nMelding som gjelder hele siden eller hele skjemaet. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/alert/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/alert/"
         },
         {
-          "name": "fs-avatar",
+          "name": "lt-avatar",
           "description": "**Avatar**\n\nProfilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/avatar/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/avatar/"
         },
         {
-          "name": "fs-avatar-stack",
+          "name": "lt-avatar-stack",
           "description": "**Avatar**\n\nProfilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/avatar/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/avatar/"
         },
         {
-          "name": "fs-badge",
+          "name": "lt-badge",
           "description": "**Badge**\n\nKompakt statusmerke. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/badge/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/badge/"
         },
         {
-          "name": "fs-breadcrumbs",
+          "name": "lt-breadcrumbs",
           "description": "**Breadcrumbs**\n\nBrødsmulesti som viser hvor på siden brukeren er. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/breadcrumbs/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/breadcrumbs/"
         },
         {
-          "name": "fs-button",
+          "name": "lt-button",
           "description": "**Button**\n\nKnapp for handlinger. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/button/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/button/"
         },
         {
-          "name": "fs-card",
+          "name": "lt-card",
           "description": "**Card**\n\nBoks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/card/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/card/"
         },
         {
-          "name": "fs-card__title",
+          "name": "lt-card__title",
           "description": "**Card**\n\nBoks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/card/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/card/"
         },
         {
-          "name": "fs-checkbox",
+          "name": "lt-checkbox",
           "description": "**Checkbox**\n\nAvkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/checkbox/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/checkbox/"
         },
         {
-          "name": "fs-checkbox-row",
+          "name": "lt-checkbox-row",
           "description": "**Checkbox**\n\nAvkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/checkbox/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/checkbox/"
         },
         {
-          "name": "fs-divider",
+          "name": "lt-divider",
           "description": "**Divider**\n\nSkillelinje mellom deler av innholdet. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/divider/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/divider/"
         },
         {
-          "name": "fs-error-text",
+          "name": "lt-error-text",
           "description": "**Error Text**\n\nFeilmelding under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/error-text/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/error-text/"
         },
         {
-          "name": "fs-fieldset",
+          "name": "lt-fieldset",
           "description": "**Fieldset**\n\nGruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/fieldset/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/fieldset/"
         },
         {
-          "name": "fs-legend",
+          "name": "lt-legend",
           "description": "**Fieldset**\n\nGruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/fieldset/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/fieldset/"
         },
         {
-          "name": "fs-file-upload",
+          "name": "lt-file-upload",
           "description": "**File Upload**\n\nFelt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/file-upload/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/file-upload/"
         },
         {
-          "name": "fs-file-upload-list",
+          "name": "lt-file-upload-list",
           "description": "**File Upload**\n\nFelt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/file-upload/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/file-upload/"
         },
         {
-          "name": "fs-heading",
+          "name": "lt-heading",
           "description": "**Heading**\n\nOverskrifter i seks størrelser, uavhengig av nivå. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/heading/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/heading/"
         },
         {
-          "name": "fs-help-text",
+          "name": "lt-help-text",
           "description": "**Help Text**\n\nForklarende tekst under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/help-text/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/help-text/"
         },
         {
-          "name": "fs-icon",
+          "name": "lt-icon",
           "description": "**Icon**\n\nIkon fra appens eget sett, like stort som teksten rundt. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/icon/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/icon/"
         },
         {
-          "name": "fs-input",
+          "name": "lt-input",
           "description": "**Input**\n\nTekstfelt for skjema, med tilstander for gyldig og ugyldig. CSS-komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/input/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/input/"
         },
         {
-          "name": "fs-label",
+          "name": "lt-label",
           "description": "**Label**\n\nLedetekst for skjemafelt, med markering av påkrevd og valgfritt. CSS-komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/label/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/label/"
         },
         {
-          "name": "fs-link",
+          "name": "lt-link",
           "description": "**Link**\n\nLenkestil for navigasjon i løpende tekst. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/link/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/link/"
         },
         {
-          "name": "fs-list",
+          "name": "lt-list",
           "description": "**List**\n\nPunktliste, nummerert liste og lister uten punkter. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/list/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/list/"
         },
         {
-          "name": "fs-pagination",
+          "name": "lt-pagination",
           "description": "**Pagination**\n\nSidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/pagination/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/pagination/"
         },
         {
-          "name": "fs-pagination__gap",
+          "name": "lt-pagination__gap",
           "description": "**Pagination**\n\nSidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/pagination/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/pagination/"
         },
         {
-          "name": "fs-paragraph",
+          "name": "lt-paragraph",
           "description": "**Paragraph**\n\nBrødtekst og ingress med begrenset linjelengde. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/paragraph/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/paragraph/"
         },
         {
-          "name": "fs-progress",
+          "name": "lt-progress",
           "description": "**Progress**\n\nFramdriftsstolpe for noe som har en ende. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/progress/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/progress/"
         },
         {
-          "name": "fs-radio",
+          "name": "lt-radio",
           "description": "**Radio**\n\nRadioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/radio/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/radio/"
         },
         {
-          "name": "fs-radio-row",
+          "name": "lt-radio-row",
           "description": "**Radio**\n\nRadioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/radio/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/radio/"
         },
         {
-          "name": "fs-search",
+          "name": "lt-search",
           "description": "**Search**\n\nSøkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/search/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/search/"
         },
         {
-          "name": "fs-search-row",
+          "name": "lt-search-row",
           "description": "**Search**\n\nSøkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/search/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/search/"
         },
         {
-          "name": "fs-select",
+          "name": "lt-select",
           "description": "**Select**\n\nNedtrekksliste. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/select/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/select/"
         },
         {
-          "name": "fs-skeleton",
+          "name": "lt-skeleton",
           "description": "**Skeleton**\n\nPlassholder som viser formen på innhold som lastes. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/skeleton/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/skeleton/"
         },
         {
-          "name": "fs-skip-link",
+          "name": "lt-skip-link",
           "description": "**Skip Link**\n\nLenke som hopper forbi menyen til hovedinnholdet. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/skip-link/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/skip-link/"
         },
         {
-          "name": "fs-spinner",
+          "name": "lt-spinner",
           "description": "**Spinner**\n\nVenteindikator for noe som pågår. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/spinner/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/spinner/"
         },
         {
-          "name": "fs-sr-only",
+          "name": "lt-sr-only",
           "description": "**Sr Only**\n\nTekst som bare skjermlesere får. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/sr-only/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/sr-only/"
         },
         {
-          "name": "fs-switch",
+          "name": "lt-switch",
           "description": "**Switch**\n\nBryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/switch/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/switch/"
         },
         {
-          "name": "fs-switch-row",
+          "name": "lt-switch-row",
           "description": "**Switch**\n\nBryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/switch/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/switch/"
         },
         {
-          "name": "fs-table",
+          "name": "lt-table",
           "description": "**Table**\n\nTabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/table/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/table/"
         },
         {
-          "name": "fs-table__sort",
+          "name": "lt-table__sort",
           "description": "**Table**\n\nTabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/table/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/table/"
         },
         {
-          "name": "fs-table-scroll",
+          "name": "lt-table-scroll",
           "description": "**Table**\n\nTabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/table/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/table/"
         },
         {
-          "name": "fs-tag",
+          "name": "lt-tag",
           "description": "**Tag**\n\nMerkelapp for emneord og filtre. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/tag/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/tag/"
         },
         {
-          "name": "fs-textarea",
+          "name": "lt-textarea",
           "description": "**Textarea**\n\nFlerlinjet tekstfelt. CSS-komponent med én klasse og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/textarea/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/textarea/"
         },
         {
-          "name": "fs-toggle-group",
+          "name": "lt-toggle-group",
           "description": "**Toggle Group**\n\nGruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/toggle-group/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/toggle-group/"
         },
         {
-          "name": "fs-toggle-group__option",
+          "name": "lt-toggle-group__option",
           "description": "**Toggle Group**\n\nGruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/toggle-group/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/toggle-group/"
         },
         {
-          "name": "fs-tooltip",
+          "name": "lt-tooltip",
           "description": "**Tooltip**\n\nLiten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/tooltip/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/tooltip/"
         },
         {
-          "name": "fs-tooltip__bubble",
+          "name": "lt-tooltip__bubble",
           "description": "**Tooltip**\n\nLiten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.",
-          "doc-url": "https://fristil.sobernetics.no/components/tooltip/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/tooltip/"
         },
         {
-          "name": "fs-dialog",
+          "name": "lt-dialog",
           "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-          "doc-url": "https://fristil.sobernetics.no/components/dialog/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/dialog/"
         },
         {
-          "name": "fs-dialog__body",
+          "name": "lt-dialog__body",
           "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-          "doc-url": "https://fristil.sobernetics.no/components/dialog/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/dialog/"
         },
         {
-          "name": "fs-dialog__title",
+          "name": "lt-dialog__title",
           "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-          "doc-url": "https://fristil.sobernetics.no/components/dialog/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/dialog/"
         },
         {
-          "name": "fs-dialog__footer",
+          "name": "lt-dialog__footer",
           "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-          "doc-url": "https://fristil.sobernetics.no/components/dialog/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/dialog/"
         },
         {
-          "name": "fs-dialog__header",
+          "name": "lt-dialog__header",
           "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-          "doc-url": "https://fristil.sobernetics.no/components/dialog/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/dialog/"
         },
         {
-          "name": "fs-dialog__subtitle",
+          "name": "lt-dialog__subtitle",
           "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
-          "doc-url": "https://fristil.sobernetics.no/components/dialog/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/dialog/"
         },
         {
-          "name": "fs-error-summary",
+          "name": "lt-error-summary",
           "description": "**Error Summary**\n\nSamler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/error-summary/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/error-summary/"
         },
         {
-          "name": "fs-error-summary__title",
+          "name": "lt-error-summary__title",
           "description": "**Error Summary**\n\nSamler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/error-summary/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/error-summary/"
         },
         {
-          "name": "fs-popover",
+          "name": "lt-popover",
           "description": "**Popover**\n\nPanel som henger under en knapp og lukker seg selv. Rammekomponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/popover/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/popover/"
         },
         {
-          "name": "fs-session-timeout",
+          "name": "lt-session-timeout",
           "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         },
         {
-          "name": "fs-session-timeout__dialog",
+          "name": "lt-session-timeout__dialog",
           "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         },
         {
-          "name": "fs-session-timeout__title",
+          "name": "lt-session-timeout__title",
           "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         },
         {
-          "name": "fs-session-timeout__text",
+          "name": "lt-session-timeout__text",
           "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         },
         {
-          "name": "fs-session-timeout__count",
+          "name": "lt-session-timeout__count",
           "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         },
         {
-          "name": "fs-session-timeout__actions",
+          "name": "lt-session-timeout__actions",
           "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
-          "doc-url": "https://fristil.sobernetics.no/components/session-timeout/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         },
         {
-          "name": "fs-suggestion__list",
+          "name": "lt-suggestion__list",
           "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/suggestion/"
         },
         {
-          "name": "fs-suggestion__option",
+          "name": "lt-suggestion__option",
           "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/suggestion/"
         },
         {
-          "name": "fs-suggestion__value",
+          "name": "lt-suggestion__value",
           "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/suggestion/"
         },
         {
-          "name": "fs-suggestion__empty",
+          "name": "lt-suggestion__empty",
           "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/suggestion/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/suggestion/"
         },
         {
-          "name": "fs-tabs__list",
+          "name": "lt-tabs__list",
           "description": "**Tabs**\n\nFanerad av lenker til panelene sine. Rammekomponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/tabs/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/tabs/"
         },
         {
-          "name": "fs-tabs__panel",
+          "name": "lt-tabs__panel",
           "description": "**Tabs**\n\nFanerad av lenker til panelene sine. Rammekomponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/tabs/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/tabs/"
         },
         {
-          "name": "fs-connection-status",
+          "name": "lt-connection-status",
           "description": "**Connection Status**\n\nSier fra når forbindelsen til serveren er borte. Frittstående komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/connection-status/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/connection-status/"
         },
         {
-          "name": "fs-connection-status__bar",
+          "name": "lt-connection-status__bar",
           "description": "**Connection Status**\n\nSier fra når forbindelsen til serveren er borte. Frittstående komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/connection-status/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/connection-status/"
         },
         {
-          "name": "fs-toast",
+          "name": "lt-toast",
           "description": "**Toast**\n\nKø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/toast/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/toast/"
         },
         {
-          "name": "fs-toast__message",
+          "name": "lt-toast__message",
           "description": "**Toast**\n\nKø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/toast/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/toast/"
         },
         {
-          "name": "fs-toast__close",
+          "name": "lt-toast__close",
           "description": "**Toast**\n\nKø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
-          "doc-url": "https://fristil.sobernetics.no/components/toast/"
+          "doc-url": "https://lo-tek.sobernetics.no/components/toast/"
         },
         {
-          "name": "fs-theme-control",
-          "description": "**Tilpasning**\n\nEndre farger, form og størrelse i Fristil uten at endringene forsvinner ved neste oppgradering.",
-          "doc-url": "https://fristil.sobernetics.no/tilpasning/"
+          "name": "lt-theme-control",
+          "description": "**Tilpasning**\n\nEndre farger, form og størrelse i LO-TEK uten at endringene forsvinner ved neste oppgradering.",
+          "doc-url": "https://lo-tek.sobernetics.no/customising/"
         }
       ]
     }

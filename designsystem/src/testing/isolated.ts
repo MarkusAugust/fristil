@@ -4,7 +4,7 @@
  * Et designsystem kan ikke regne med at konsumenten har en reset. Testsider
  * og rammeverk har som regel en. Tailwind setter for eksempel
  * `box-sizing: border-box` på alt, og det skjuler feil i komponentene våre.
- * `.fs-textarea` hadde `width: 100%` uten `box-sizing`, og ble derfor bredere
+ * `.lt-textarea` hadde `width: 100%` uten `box-sizing`, og ble derfor bredere
  * enn boksen sin hos alle uten reset. Ingen test fanget det, fordi alle
  * testene kjørte på sider som tilfeldigvis hadde en.
  *
@@ -29,9 +29,9 @@ export function monterIsolert(
   html: string,
   bredde = "300px",
 ): IsolertFlate {
-  document.body.innerHTML = '<div id="fs-isolert"></div>'
+  document.body.innerHTML = '<div id="lt-isolert"></div>'
 
-  const vert = document.getElementById("fs-isolert")
+  const vert = document.getElementById("lt-isolert")
   if (!(vert instanceof HTMLElement)) {
     throw new Error("Klarte ikke å montere den isolerte flaten")
   }

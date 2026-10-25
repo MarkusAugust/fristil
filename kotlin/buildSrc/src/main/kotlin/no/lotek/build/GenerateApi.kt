@@ -1,4 +1,4 @@
-package no.fristil.build
+package no.lotek.build
 
 import groovy.json.JsonSlurper
 import org.gradle.api.DefaultTask
@@ -17,7 +17,7 @@ import org.gradle.api.tasks.TaskAction
  * TypeScript-koden. Herfra kommer de lovlige verdiene som `enum`-er, hver
  * byggefunksjon som har en tabell, og typene for svarene som har flere sett.
  * De få byggefunksjonene der valgene virker sammen, har ingen tabell og står
- * skrevet for hånd i `src/main/kotlin/no/fristil/Handwritten.kt`. Alle testes
+ * skrevet for hånd i `src/main/kotlin/no/lotek/Handwritten.kt`. Alle testes
  * mot byggetilfellene i `ContractTest`.
  *
  * Filene skrives til `build/generated` ved hvert bygg og sjekkes ikke inn.
@@ -35,7 +35,7 @@ abstract class GenerateApi : DefaultTask() {
     fun generate() {
         @Suppress("UNCHECKED_CAST")
         val parsed = JsonSlurper().parse(manifest.get().asFile) as Map<String, Any?>
-        val dir = output.get().asFile.resolve("no/fristil")
+        val dir = output.get().asFile.resolve("no/lotek")
         dir.deleteRecursively()
         dir.mkdirs()
         for ((name, content) in Generator(parsed).files()) dir.resolve(name).writeText(content)
@@ -109,7 +109,7 @@ class Generator(manifest: Map<String, Any?>) {
 
     fun files(): Map<String, String> = mapOf(
         "Values.kt" to valuesFile(),
-        "Fs.kt" to fsFile(),
+        "Lt.kt" to ltFile(),
         "Parts.kt" to partsFile(),
         "Dispatch.kt" to dispatchFile(),
         "WebJar.kt" to webJarFile(),
@@ -118,50 +118,50 @@ class Generator(manifest: Map<String, Any?>) {
     private fun webJarFile(): String =
         header +
             """
-            |package no.fristil
+            |package no.lotek
             |
             |/**
             | * Stiene til CSS-en og JavaScript-en i WebJar-en som følger pakken.
             | *
-            | * Filene ligger under `META-INF/resources/webjars/fristil/$version/`, med de
+            | * Filene ligger under `META-INF/resources/webjars/lo-tek/$version/`, med de
             | * samme stiene som i npm-pakken. Spring Boot og Servlet-containere serverer
             | * dem som de er. I Ktor: `staticResources("/webjars", "META-INF/resources/webjars")`.
             | *
             | * ```kotlin
             | * ""${'"'}
-            | * <link rel="stylesheet" href="${'$'}{FristilWebJar.CSS}">
+            | * <link rel="stylesheet" href="${'$'}{LotekWebJar.CSS}">
             | * <script type="module">
-            | *   import { defineFs } from "${'$'}{FristilWebJar.REGISTER}"
-            | *   defineFs()
+            | *   import { defineLt } from "${'$'}{LotekWebJar.REGISTER}"
+            | *   defineLt()
             | * </script>
             | * ""${'"'}
             | * ```
             | */
-            |object FristilWebJar {
-            |    /** Versjonen av Fristil, den samme som npm-pakken. */
+            |object LotekWebJar {
+            |    /** Versjonen av LO-TEK, den samme som npm-pakken. */
             |    const val VERSION = "$version"
             |
-            |    /** Mappa filene serveres fra. En fil i npm-pakken, som `dist/fristil.css`, ligger under den med samme sti. */
-            |    const val ROOT = "/webjars/fristil/${'$'}VERSION"
+            |    /** Mappa filene serveres fra. En fil i npm-pakken, som `dist/lotek.css`, ligger under den med samme sti. */
+            |    const val ROOT = "/webjars/lo-tek/${'$'}VERSION"
             |
             |    /** Alle stilarkene i én fil. */
-            |    const val CSS = "${'$'}ROOT/dist/fristil.css"
+            |    const val CSS = "${'$'}ROOT/dist/lotek.css"
             |
-            |    /** Modulen som registrerer alle web-komponentene med `defineFs()`. */
+            |    /** Modulen som registrerer alle web-komponentene med `defineLt()`. */
             |    const val REGISTER = "${'$'}ROOT/dist/register.js"
             |}
             |""".trimMargin()
 
-    private val header = "// Generert fra manifestet til @fristil/designsystem $version. Ikke rediger.\n"
+    private val header = "// Generert fra manifestet til @lo-tek/interfaces $version. Ikke rediger.\n"
 
     private fun valuesFile(): String {
         val written = mutableMapOf<String, ValueSet>()
-        val out = StringBuilder(header).append("package no.fristil\n")
+        val out = StringBuilder(header).append("package no.lotek\n")
         for ((set, users) in uses.entries.sortedBy { enumName(it.key, it.value.first()) }) {
             val name = enumName(set, users.first())
             // To ulike sett med samme navn ville gitt én av dem feil type.
             written.put(name, set)?.let { error("$name brukes for både ${it.values} og ${set.values}. Gi dem hvert sitt navn i Generator.shared.") }
-            val where = users.sorted().joinToString(", ") { "`fs.$it`" }
+            val where = users.sorted().joinToString(", ") { "`lt.$it`" }
             out.append("\n/** De lovlige verdiene for `${set.option}` i $where. */\n")
             out.append("enum class $name(val value: String) {\n")
             for (v in set.values) out.append("    ${constant(v)}(\"$v\"),\n")
@@ -193,17 +193,17 @@ class Generator(manifest: Map<String, Any?>) {
     private fun returnType(b: Map<String, Any?>): String =
         if (returns(b)["kind"] == "group") pascal(b["name"] as String) + "Parts" else "Attributes"
 
-    private fun fsFile(): String {
-        val out = StringBuilder(header).append("package no.fristil\n\n")
-        out.append("/**\n * Byggefunksjonene, med de samme navnene og valgene som `fs` i TypeScript.\n *\n")
+    private fun ltFile(): String {
+        val out = StringBuilder(header).append("package no.lotek\n\n")
+        out.append("/**\n * Byggefunksjonene, med de samme navnene og valgene som `lt` i TypeScript.\n *\n")
         out.append(" * Hver returnerer attributtene du legger på elementet. Byggefunksjonene\n")
         out.append(" * der valgene virker sammen, står i `Handwritten.kt`.\n */\n")
-        out.append("object Fs {\n")
+        out.append("object Lt {\n")
         for (b in builders) {
             @Suppress("UNCHECKED_CAST")
             val table = b["table"] as Map<String, Any?>? ?: continue
             val name = b["name"] as String
-            out.append("    /** `fs.$name` */\n")
+            out.append("    /** `lt.$name` */\n")
             val parameters = if (options(b).isEmpty()) "" else "\n${signature(b)},\n    "
             out.append("    fun ${identifier(name)}($parameters): ${returnType(b)} {\n")
             @Suppress("UNCHECKED_CAST")
@@ -294,14 +294,14 @@ class Generator(manifest: Map<String, Any?>) {
     }
 
     private fun partsFile(): String {
-        val out = StringBuilder(header).append("package no.fristil\n")
+        val out = StringBuilder(header).append("package no.lotek\n")
         for (b in builders) {
             val r = returns(b)
             if (r["kind"] != "group") continue
             val name = returnType(b)
             @Suppress("UNCHECKED_CAST")
             val fields = r["fields"] as Map<String, Map<String, Any?>>
-            out.append("\n/** Settene `fs.${b["name"]}` svarer med. */\n")
+            out.append("\n/** Settene `lt.${b["name"]}` svarer med. */\n")
             out.append("data class $name(\n")
             for ((field, f) in fields) out.append("    val ${identifier(field)}: ${fieldType(b, field, f)},\n")
             out.append(") {\n")
@@ -334,7 +334,7 @@ class Generator(manifest: Map<String, Any?>) {
     }
 
     private fun dispatchFile(): String {
-        val out = StringBuilder(header).append("package no.fristil\n\n")
+        val out = StringBuilder(header).append("package no.lotek\n\n")
         out.append("/**\n * Kaller en byggefunksjon med valg lest fra JSON. Brukes av testene som\n")
         out.append(" * sammenligner hvert byggetilfelle med svaret fra TypeScript.\n */\n")
         out.append("internal object Dispatch {\n")
@@ -342,7 +342,7 @@ class Generator(manifest: Map<String, Any?>) {
         out.append("    fun call(name: String, o: Map<String, Any?>): Any = when (name) {\n")
         for (b in builders) {
             val name = b["name"] as String
-            out.append("        ${literal(name)} -> Fs.${identifier(name)}(\n")
+            out.append("        ${literal(name)} -> Lt.${identifier(name)}(\n")
             for (opt in options(b)) {
                 val key = literal(opt.name)
                 val read = when (opt.kind) {

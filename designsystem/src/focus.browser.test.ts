@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
 import { monter, ventPaTegning } from "./testing/a11y"
-import { lightCells } from "./tokens/matrise"
+import { lightCells } from "./tokens/matrix-cells"
 
 import "./tokens/tokens.css"
 import "./components/css/accordion/accordion.css"
@@ -29,11 +29,11 @@ import "./components/css/toggle-group/toggle-group.css"
  *
  * WCAG 2.4.7 krever en synlig markering av hvor fokuset står, og 1.4.11 at
  * markeringen holder 3:1 mot flaten rundt. Systemet løser det med én ring,
- * `--fs-focus-ring`, brukt i tjue regler fordelt på atten stilark.
+ * `--lt-focus-ring`, brukt i tjue regler fordelt på atten stilark.
  *
  * Fram til nå fantes det ikke én eneste påstand om `outline` i hele
  * testrekka. Ringen kunne altså forsvinne fra en komponent uten at noe sa
- * fra, og `pakke-css.browser.test.ts` leser bare teksten i stilarkene: den
+ * fra, og `package-css.browser.test.ts` leser bare teksten i stilarkene: den
  * ser at ingen skriver ringen ut for hånd, ikke at fokus er synlig.
  *
  * Testen tabber seg gjennom siden slik en tastaturbruker gjør. Et
@@ -44,52 +44,52 @@ import "./components/css/toggle-group/toggle-group.css"
 
 /** Ett av hvert som kan få fokus, med markupen serveren ville sendt. */
 const SIDEN = `
-  <a class="fs-skip-link" href="#hoved">Hopp til innhold</a>
+  <a class="lt-skip-link" href="#hoved">Hopp til innhold</a>
 
-  <nav class="fs-breadcrumbs" aria-label="Du er her">
+  <nav class="lt-breadcrumbs" aria-label="Du er her">
     <ol><li><a href="#start">Start</a></li><li><a href="#sak">Saken din</a></li></ol>
   </nav>
 
-  <a class="fs-link" href="#vilkar">Les vilkårene</a>
-  <button class="fs-button" type="button">Send søknad</button>
+  <a class="lt-link" href="#vilkar">Les vilkårene</a>
+  <button class="lt-button" type="button">Send søknad</button>
 
-  <label class="fs-label" for="epost">E-postadresse</label>
-  <input class="fs-input" id="epost" type="email" />
+  <label class="lt-label" for="epost">E-postadresse</label>
+  <input class="lt-input" id="epost" type="email" />
 
-  <label class="fs-label" for="melding">Melding</label>
-  <textarea class="fs-textarea" id="melding"></textarea>
+  <label class="lt-label" for="melding">Melding</label>
+  <textarea class="lt-textarea" id="melding"></textarea>
 
-  <label class="fs-label" for="fylke">Fylke</label>
-  <select class="fs-select" id="fylke"><option>Vestland</option></select>
+  <label class="lt-label" for="fylke">Fylke</label>
+  <select class="lt-select" id="fylke"><option>Vestland</option></select>
 
-  <label class="fs-label" for="samtykke">Jeg samtykker</label>
-  <input class="fs-checkbox" id="samtykke" type="checkbox" />
+  <label class="lt-label" for="samtykke">Jeg samtykker</label>
+  <input class="lt-checkbox" id="samtykke" type="checkbox" />
 
-  <label class="fs-label" for="post">Post</label>
-  <input class="fs-radio" id="post" type="radio" name="levering" />
+  <label class="lt-label" for="post">Post</label>
+  <input class="lt-radio" id="post" type="radio" name="levering" />
 
-  <label class="fs-label" for="varsler">Varsler</label>
-  <input class="fs-switch" id="varsler" type="checkbox" role="switch" />
+  <label class="lt-label" for="varsler">Varsler</label>
+  <input class="lt-switch" id="varsler" type="checkbox" role="switch" />
 
-  <label class="fs-label" for="vedlegg">Vedlegg</label>
-  <input class="fs-file-upload" id="vedlegg" type="file" />
+  <label class="lt-label" for="vedlegg">Vedlegg</label>
+  <input class="lt-file-upload" id="vedlegg" type="file" />
 
-  <button class="fs-tag" data-selectable aria-pressed="false" type="button">Innvilget</button>
+  <button class="lt-tag" data-selectable aria-pressed="false" type="button">Innvilget</button>
 
-  <a class="fs-card" data-interactive href="#saken">Saken din</a>
+  <a class="lt-card" data-interactive href="#saken">Saken din</a>
 
-  <details class="fs-accordion"><summary>Hva betyr dette?</summary><p>Svaret.</p></details>
+  <details class="lt-accordion"><summary>Hva betyr dette?</summary><p>Svaret.</p></details>
 
-  <nav class="fs-pagination" aria-label="Sider">
+  <nav class="lt-pagination" aria-label="Sider">
     <ul><li><button type="button">1</button></li><li><button type="button">2</button></li></ul>
   </nav>
 
-  <table class="fs-table">
-    <thead><tr><th scope="col" aria-sort="ascending"><button class="fs-table__sort" type="button">Dato</button></th></tr></thead>
+  <table class="lt-table">
+    <thead><tr><th scope="col" aria-sort="ascending"><button class="lt-table__sort" type="button">Dato</button></th></tr></thead>
   </table>
 
-  <fieldset class="fs-toggle-group">
-    <label class="fs-toggle-group__option">
+  <fieldset class="lt-toggle-group">
+    <label class="lt-toggle-group__option">
       <input type="radio" name="visning" /> Kart
     </label>
   </fieldset>
@@ -144,7 +144,7 @@ async function fokuserGjennom() {
     const aktiv = kandidat
 
     // Ringen ligger ikke alltid på elementet som har fokus. I
-    // `.fs-toggle-group` er radioknappen usynlig, og valget rundt den tegner
+    // `.lt-toggle-group` er radioknappen usynlig, og valget rundt den tegner
     // ringen med `:has(input:focus-visible)`. Det er ringen brukeren ser som
     // teller, så vi går oppover til vi finner den.
     const ring = ringenSomVises(aktiv)
@@ -179,11 +179,11 @@ describe("tastaturfokus er synlig", () => {
   })
 
   it("henter ringen fra tokenet, ikke fra hver komponent", async () => {
-    monter(`<button class="fs-button" type="button">Send</button>`)
+    monter(`<button class="lt-button" type="button">Send</button>`)
     await ventPaTegning()
 
     const ring = getComputedStyle(document.documentElement)
-      .getPropertyValue("--fs-focus-ring")
+      .getPropertyValue("--lt-focus-ring")
       .trim()
 
     /*
@@ -193,7 +193,7 @@ describe("tastaturfokus er synlig", () => {
      * `accent-border-strong`, og en test som gjentar heksverdien ville måttet
      * rettes hver gang kontrakten flytter en lyshet.
      */
-    const forventet = lightCells["--fs-color-accent-border-strong"]
+    const forventet = lightCells["--lt-color-accent-border-strong"]
 
     expect(ring).toMatch(/^2px solid /)
     expect(ring.toLowerCase()).toContain(forventet.toLowerCase())

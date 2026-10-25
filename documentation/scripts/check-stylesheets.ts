@@ -5,15 +5,15 @@
  * og da var spørsmålet uinteressant: hver side hadde alt. Nå står `global.css`,
  * `tokens.css` og `button.css` der, fordi de levende eksemplene ligger i en
  * shadow root og `Preview.astro` legger inn sine egne stilark med `?inline`.
- * Det gjør to feil mulige. Skriver noen Fristil-markup rett i brødteksten,
+ * Det gjør to feil mulige. Skriver noen LO-TEK-markup rett i brødteksten,
  * eller i en komponent utenfor en forhåndsvisning, står den uten stil. Og
  * Vite slutter å skrive et stilark i det hele tatt når det mister importørene
  * sine: `button.css` forsvant ut av bygget da det ble tatt ut av `customCss`,
- * og `src/pages/demo/sideskjelett.astro`, som importerer det selv, kom ut med
+ * og `src/pages/demo/page-skeleton.astro`, som importerer det selv, kom ut med
  * uformede knapper. Ingen av delene sier fra. Siden ser bare litt feil ut.
  *
- * Denne vaktposten leser hver bygde side, finner `fs-`-klassene og
- * `<fs-…>`-elementene som står i vanlig DOM, og krever at et av stilarkene
+ * Denne vaktposten leser hver bygde side, finner `lt-`-klassene og
+ * `<lt-…>`-elementene som står i vanlig DOM, og krever at et av stilarkene
  * siden lenker til definerer dem.
  *
  * Fire ting holdes utenfor, og alle fire er markup som ser ekte ut uten å være
@@ -22,7 +22,7 @@
  * `data-code`-attributtet (kildeteksten Expressive Code legger på kopiknappen)
  * og `<script>`-kropper.
  *
- * Kjør med: bun documentation/scripts/sjekk-stilark.ts
+ * Kjør med: bun documentation/scripts/check-stylesheets.ts
  * Krever at `documentation/dist` er bygd.
  */
 
@@ -36,7 +36,7 @@ const DIST = `${ROT}documentation/dist/`
 /**
  * Klassene som står på et vertselement for en shadow root.
  *
- * `.fs-preview` er den eneste i dag. Den har ingen regel i noe stilark, og
+ * `.lt-preview` er den eneste i dag. Den har ingen regel i noe stilark, og
  * skal ikke ha en: `Preview.astro` styler verten med `:host` inne i shadow
  * rooten sin. Regelen er formulert som det den er, framfor som et unntak på
  * navnet, slik at en ny forhåndsvisningskomponent dekkes av den samme
@@ -54,7 +54,7 @@ function skyggeverter(html: string): Set<string> {
     /<[a-z]+[^>]*\sclass="([^"]*)"[^>]*>\s*<template shadowrootmode=/g,
   )) {
     for (const ord of treff[1].split(/\s+/)) {
-      if (ord.startsWith("fs-")) navn.add(ord)
+      if (ord.startsWith("lt-")) navn.add(ord)
     }
   }
   return navn
@@ -87,12 +87,12 @@ function vanligDom(html: string): string {
     ute
       /*
        * Kildeteksten Expressive Code legger på kopiknappen sin. Den ser ut som
-       * markup og er det ikke: en `<fs-field>` der inne er tekst i et attributt
+       * markup og er det ikke: en `<lt-field>` der inne er tekst i et attributt
        * og blir aldri et element. Uten denne linja melder vaktposten hver eneste
        * komponentside for markup ingen nettleser bygger.
        */
       .replace(/data-code="[^"]*"/g, "")
-      // Kode som vises fram. En `<fs-field>` i en kodegjerde er en illustrasjon.
+      // Kode som vises fram. En `<lt-field>` i en kodegjerde er en illustrasjon.
       .replace(/<pre[\s>][\s\S]*?<\/pre>/g, "<pre></pre>")
       .replace(/<code[\s>][\s\S]*?<\/code>/g, "<code></code>")
       .replace(/<script[^>]*>[\s\S]*?<\/script>/g, "")
@@ -102,8 +102,8 @@ function vanligDom(html: string): string {
 /**
  * Om et stilark faktisk definerer dette navnet.
  *
- * Et rent delstrengsøk er for løst: `.fs-field` ville blitt sann av
- * `.fs-fieldset`, og en side med `<fs-field>` uten `field.css` sluppet
+ * Et rent delstrengsøk er for løst: `.lt-field` ville blitt sann av
+ * `.lt-fieldset`, og en side med `<lt-field>` uten `field.css` sluppet
  * gjennom. Navnet må derfor følges av noe som avslutter det i en velger.
  */
 function definerer(css: string, navn: string): boolean {
@@ -115,7 +115,7 @@ function definerer(css: string, navn: string): boolean {
  * All CSS siden faktisk har: både det den lenker til og det som står inline.
  *
  * Astro inliner et stilark som er lite nok, framfor å lenke det. Leste vi bare
- * `<link>`, meldte sjekken at `.fs-sr-only` manglet på en side der regelen sto
+ * `<link>`, meldte sjekken at `.lt-sr-only` manglet på en side der regelen sto
  * rett i en `<style>` noen linjer over. Det er en blindsone som gir falskt
  * utslag, og det flyttet seg med hvor store bundlene ble, altså uten at noen
  * hadde rørt siden.
@@ -123,7 +123,7 @@ function definerer(css: string, navn: string): boolean {
  * Den må lese `vanligDom(html)` og ikke rå HTML. `Preview.astro` legger hvert
  * eksempels stilark i en `<style>` inne i `<template shadowrootmode="open">`,
  * og de hører til skyggerota og ikke til siden. Leste vi dem med, ville en
- * `.fs-button` skrevet rett i brødteksten på knappesiden passert, fordi
+ * `.lt-button` skrevet rett i brødteksten på knappesiden passert, fordi
  * forhåndsvisningen på samme side har hele `button.css` i skyggestilen sin.
  * Det er den ene av de to feilene denne fila finnes for.
  */
@@ -196,12 +196,12 @@ for (const rel of new Glob("**/*.html").scanSync(DIST)) {
   const klasser = new Set<string>()
   for (const treff of dom.matchAll(/class="([^"]*)"/g)) {
     for (const ord of treff[1].split(/\s+/)) {
-      if (ord.startsWith("fs-") && !verter.has(ord)) klasser.add(ord)
+      if (ord.startsWith("lt-") && !verter.has(ord)) klasser.add(ord)
     }
   }
 
   const elementer = new Set<string>()
-  for (const treff of dom.matchAll(/<(fs-[a-z-]+)[\s>/]/g)) {
+  for (const treff of dom.matchAll(/<(lt-[a-z-]+)[\s>/]/g)) {
     elementer.add(treff[1].toLowerCase())
   }
 
@@ -249,7 +249,7 @@ if (sjekketSider === 0) {
 
 if (sjekketNavn === 0) {
   console.error(
-    "Vaktposten fant ingen Fristil-markup i vanlig DOM noe sted. Det har det " +
+    "Vaktposten fant ingen LO-TEK-markup i vanlig DOM noe sted. Det har det " +
       "alltid vært noe av, så det er sannsynligvis filteret i `vanligDom` som " +
       "har begynt å spise for mye, ikke sidene som har blitt rene.",
   )

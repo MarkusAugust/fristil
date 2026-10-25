@@ -4,14 +4,14 @@
       "start": 12,
       "end": 21,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/popover/",
+      "link": "https://lo-tek.sobernetics.no/components/popover/",
       "message": "placement kan ikke være «midt». Lovlige verdier: bottom-start, bottom-end, top-start, top-end."
     },
     {
       "start": 164,
       "end": 178,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/error-summary/",
+      "link": "https://lo-tek.sobernetics.no/components/error-summary/",
       "message": "data-autofocus kan ikke være «kanskje». Lovlige verdier: false, true."
     }
   ],
@@ -20,14 +20,14 @@
       "start": 12,
       "end": 21,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/popover/",
+      "link": "https://lo-tek.sobernetics.no/components/popover/",
       "message": "placement kan ikke være «midt». Lovlige verdier: bottom-start, bottom-end, top-start, top-end."
     },
     {
       "start": 164,
       "end": 178,
       "severity": "error",
-      "link": "https://fristil.sobernetics.no/components/error-summary/",
+      "link": "https://lo-tek.sobernetics.no/components/error-summary/",
       "message": "data-autofocus kan ikke være «kanskje». Lovlige verdier: false, true."
     }
   ]

@@ -1,21 +1,21 @@
 /**
- * Skriver manifestet: det Fristil lover, som data alle verktøy leser.
+ * Skriver manifestet: det LO-TEK lover, som data alle verktøy leser.
  *
  * Tre filer, alle generert og sjekket inn:
  *
  *   - `manifest/manifest.json`: ordforrådet (elementene og klassene, de samme
- *     som `classes.ts` og `elements.ts`) og hver byggefunksjon i `fs` med
+ *     som `classes.ts` og `elements.ts`) og hver byggefunksjon i `lt` med
  *     valgene og formen på svaret. Den er liten, og hver vert gir den til
  *     Rust-kjernen.
- *   - `manifest/byggetilfeller.json`: hver byggefunksjon kalt med mange
+ *   - `manifest/build-cases.json`: hver byggefunksjon kalt med mange
  *     kombinasjoner av valgene, med svaret TypeScript gir. En utgave i et annet
  *     språk skal svare nøyaktig det samme på hvert tilfelle.
- *   - `manifest/filer.json`: regelbøkene og komponentfilene kommandolinja
+ *   - `manifest/files.json`: regelbøkene og komponentfilene kommandolinja
  *     leser fra pakken.
  *
  * Ingenting her er skrevet for hånd. Valgene og typene deres leses av
- * TypeScript-kompilatoren fra signaturene i `src/fs.ts`, i
- * `byggefunksjoner.ts`, og svarene kommer fra å kalle funksjonene. En ny
+ * TypeScript-kompilatoren fra signaturene i `src/lt.ts`, i
+ * `builder-functions.ts`, og svarene kommer fra å kalle funksjonene. En ny
  * byggefunksjon, et nytt valg eller en ny variant havner i manifestet ved
  * neste bygg. `bun run build` skriver filene på nytt før det sjekker noe, så
  * en utdatert fil på disk stopper ikke bygget; det er steget «Ingenting er
@@ -33,8 +33,8 @@ import {
   writeFileSync,
 } from "node:fs"
 import { fileURLToPath } from "node:url"
-import { fs } from "../src/fs.js"
-import { FAMILIES, NEUTRAL_LAYERS, ROLES } from "../src/tokens/matrise.js"
+import { lt } from "../src/lt.js"
+import { FAMILIES, NEUTRAL_LAYERS, ROLES } from "../src/tokens/matrix-cells.js"
 import {
   Breakpoints,
   Containers,
@@ -52,7 +52,7 @@ import {
   settene,
   type Valg,
   type Valgtype,
-} from "./byggefunksjoner.js"
+} from "./builder-functions.js"
 
 const PAKKE = fileURLToPath(new URL("..", import.meta.url))
 const UT = `${PAKKE}manifest/`
@@ -164,7 +164,7 @@ const advar = console.warn
 console.warn = () => {}
 try {
   for (const b of byggefunksjoner) {
-    const bygg = (fs as unknown as Record<string, (o: unknown) => unknown>)[
+    const bygg = (lt as unknown as Record<string, (o: unknown) => unknown>)[
       b.name
     ]
     for (const options of kombinasjoner(b.options)) {
@@ -375,7 +375,7 @@ for (const b of byggefunksjoner) {
  * Beskrivelsen av et klasseattributt er beskrivelsen av valget med samme
  * navn, `variant` for `data-variant`, og klassen finnes som flaggene over:
  * et tilfelle med valget mot det samme uten. Et valg med et annet navn kan
- * også endre attributtet, som `type` gjør med `data-variant` i `fs.input()`,
+ * også endre attributtet, som `type` gjør med `data-variant` i `lt.input()`,
  * men da beskriver det noe annet. Skriver flere byggefunksjoner det samme
  * attributtet, vinner den første i alfabetet.
  */
@@ -422,10 +422,10 @@ const klasser = Object.fromEntries(
       ...klasse,
       attributes: withDescriptions(
         navn,
-        // Flaggene, som `data-interactive` på `fs-card`, står i `classes.ts`
+        // Flaggene, som `data-interactive` på `lt-card`, står i `classes.ts`
         // med en tom verdiliste, siden editorene leser den fila. Her har et
         // flagg ingen verdier, se `types.ts`. De utledes av byggefunksjonen
-        // hver gang ordforrådet skrives, se `flaggFor` i byggefunksjoner.ts,
+        // hver gang ordforrådet skrives, se `flaggFor` i builder-functions.ts,
         // så et flagg som er borte fra funksjonen er borte her også.
         Object.fromEntries(
           Object.entries(klasse.attributes).map(([attributt, verdi]) => [
@@ -443,19 +443,19 @@ const klasser = Object.fromEntries(
  * verdier. Avstandsskalaen, brekkpunktene og containerbreddene leses fra
  * `tokens.ts`, der brekkpunktene og breddene ellers bare finnes i TypeScript.
  * Fargene står som akser med hva de er til, ikke som hex: kuløren er
- * konsumentens, og et tema kan ha andre verdier enn Fristils egne.
+ * konsumentens, og et tema kan ha andre verdier enn LO-TEKs egne.
  *
  * Komponentvariablene leses fra stilarkene. En variabel er det første leddet
- * i `var(--fs-<komponent>-…, <reserve>)`, og reserven er standardverdien
+ * i `var(--lt-<komponent>-…, <reserve>)`, og reserven er standardverdien
  * konsumenten overstyrer. Står den samme variabelen med to reserver, som
- * `--fs-list-gap` i en delt liste, er det den første i stilarket som gjelder.
+ * `--lt-list-gap` i en delt liste, er det den første i stilarket som gjelder.
  * Hver hører til komponenten navnet begynner med, ikke til stilarket den
- * leses i: `fieldset.css` leser `--fs-label-required-symbol`, og den er
+ * leses i: `fieldset.css` leser `--lt-label-required-symbol`, og den er
  * ledetekstens.
  */
 const roleToCss = (role: string) =>
   role.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
-const COMPONENT_DIRS = ["css", "ramme", "frittstaende"].flatMap((kategori) =>
+const COMPONENT_DIRS = ["css", "frame", "standalone"].flatMap((kategori) =>
   readdirSync(`${PAKKE}src/components/${kategori}`)
     .filter((navn) =>
       statSync(`${PAKKE}src/components/${kategori}/${navn}`).isDirectory(),
@@ -470,7 +470,7 @@ const componentNames = COMPONENT_DIRS.map((d) => d.navn)
 /** Komponenten en variabel hører til: det lengste navnet den begynner med. */
 const ownerOf = (variable: string, fallback: string) =>
   componentNames
-    .filter((navn) => variable.startsWith(`--fs-${navn}-`))
+    .filter((navn) => variable.startsWith(`--lt-${navn}-`))
     .sort((a, b) => b.length - a.length)[0] ?? fallback
 const TOKEN_KINDS = new Set(
   Object.keys({ ...cssTokens, ...colorTokens }).map(
@@ -478,7 +478,7 @@ const TOKEN_KINDS = new Set(
   ),
 )
 /*
- * Variablene en web-komponent skriver selv, som `--fs-popover-top`, er ikke
+ * Variablene en web-komponent skriver selv, som `--lt-popover-top`, er ikke
  * noe konsumenten overstyrer: inline-stilen slår et stilark. De leses med
  * reserve i CSS-en som alle andre, og kjennes igjen på `setProperty` i
  * komponentens egen kilde.
@@ -489,7 +489,7 @@ for (const { sti } of COMPONENT_DIRS)
     (f) => f.endsWith(".ts") && !f.includes(".test."),
   ))
     for (const m of readFileSync(`${sti}/${fil}`, "utf8").matchAll(
-      /setProperty\(\s*["'](--fs-[a-z0-9-]+)["']/g,
+      /setProperty\(\s*["'](--lt-[a-z0-9-]+)["']/g,
     ))
       setByComponent.add(m[1])
 const componentVariables: Record<string, Record<string, string>> = {}
@@ -501,7 +501,7 @@ for (const { navn, sti } of COMPONENT_DIRS) {
       /\/\*[\s\S]*?\*\//g,
       "",
     )
-    const lesing = /var\(\s*(--fs-[a-z0-9-]+)\s*,/g
+    const lesing = /var\(\s*(--lt-[a-z0-9-]+)\s*,/g
     for (let m = lesing.exec(css); m; m = lesing.exec(css)) {
       // Reserven går til parentesen som lukker `var(`, også når den har
       // `calc()` eller en annen `var()` i seg.
@@ -530,7 +530,7 @@ for (const { navn, sti } of COMPONENT_DIRS) {
 const tokens = {
   spacing: Object.fromEntries(
     Object.entries(cssTokens).filter(([navn]) =>
-      navn.startsWith("--fs-spacing-"),
+      navn.startsWith("--lt-spacing-"),
     ),
   ),
   breakpoints: Breakpoints,
@@ -551,7 +551,7 @@ const tokens = {
       ),
     ),
     tokens: Object.keys(colorTokens).filter((navn) =>
-      navn.startsWith("--fs-color-"),
+      navn.startsWith("--lt-color-"),
     ),
   },
   components: Object.fromEntries(
@@ -572,13 +572,13 @@ const manifest = {
 mkdirSync(UT, { recursive: true })
 writeFileSync(`${UT}manifest.json`, `${JSON.stringify(manifest, null, 2)}\n`)
 writeFileSync(
-  `${UT}byggetilfeller.json`,
+  `${UT}build-cases.json`,
   `${JSON.stringify({ version: versjon, cases: tilfeller })}\n`,
 )
 
 /*
- * Filene kommandolinja leser fra pakken: regelbøkene for `fristil agent` og
- * kildekoden til hver komponent for `fristil overta`, uten testene. Den leser
+ * Filene kommandolinja leser fra pakken: regelbøkene for `lotek agent` og
+ * kildekoden til hver komponent for `lotek overta`, uten testene. Den leser
  * lista framfor mappene, fordi en mappe ikke lot seg lese gjennom Nodes WASI
  * på Windows: `overta` fant ingen komponenter der.
  */
@@ -587,7 +587,7 @@ const filer = {
   agent: ls("agent")
     .filter((fil) => fil.endsWith(".md"))
     .map((fil) => fil.slice(0, -3)),
-  components: ["css", "ramme", "frittstaende"].flatMap((kategori) =>
+  components: ["css", "frame", "standalone"].flatMap((kategori) =>
     ls(`src/components/${kategori}`)
       .filter((navn) =>
         statSync(`${PAKKE}src/components/${kategori}/${navn}`).isDirectory(),
@@ -601,7 +601,7 @@ const filer = {
       })),
   ),
 }
-writeFileSync(`${UT}filer.json`, `${JSON.stringify(filer, null, 2)}\n`)
+writeFileSync(`${UT}files.json`, `${JSON.stringify(filer, null, 2)}\n`)
 
 console.log(
   `✓ Manifestet: ${byggefunksjoner.length} byggefunksjoner, ${Object.keys(elements).length} elementer, ${Object.keys(classes).length} klasser, ${tilfeller.length} byggetilfeller, ${Object.values(componentVariables).reduce((n, v) => n + Object.keys(v).length, 0)} komponentvariabler.`,

@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const HEADING_CLASS = "fs-heading" as const
+export const HEADING_CLASS = "lt-heading" as const
 
 export const headingSizes = ["xs", "s", "m", "l", "xl", "mega"] as const
 

@@ -1,17 +1,17 @@
 /// <reference types="node" />
 /**
- * Verten for kommandolinja i Node: kjører WASI-modulen `fristil.wasm` med
+ * Verten for kommandolinja i Node: kjører WASI-modulen `lotek.wasm` med
  * Node sin egen `node:wasi`. Brukt av `cli.ts`, og av VS Code-utvidelsen, som
- * starter språkserveren, `fristil lsp`, slik.
+ * starter språkserveren, `lotek lsp`, slik.
  *
- * Kommandoene er skrevet én gang, i Rust (`kjerne/cli/`). Den samme koden er
+ * Kommandoene er skrevet én gang, i Rust (`core/cli/`). Den samme koden er
  * den kjørbare fila fra `cargo install` og det `java -jar` kjører, så svarene
  * er de samme overalt. Verten gjør bare det WASI ikke kan:
  *
  * - åpner mappene modulen skal lese og skrive i, arbeidsmappa og resten av
  *   filsystemet, så både relative og absolutte stier virker;
- * - henter adressene `fristil sjekk` får, siden WASI ikke har nettverk, og
- *   gir siden til modulen som en fil (se `kjerne/cli/src/fetch.rs`);
+ * - henter adressene `lotek sjekk` får, siden WASI ikke har nettverk, og
+ *   gir siden til modulen som en fil (se `core/cli/src/fetch.rs`);
  * - sier fra når standard inn er en terminal, som WASI ikke kan se.
  */
 
@@ -50,10 +50,10 @@ function toModule(part: string): string {
 }
 
 /**
- * Kjører én kommando, som `["sjekk", "skjema.html"]`, og gir feilkoden.
- * `module` er stien til `fristil.wasm`, og `packageDir` mappa med pakkens
+ * Kjører én kommando, som `["sjekk", "form.html"]`, og gir feilkoden.
+ * `module` er stien til `lotek.wasm`, og `packageDir` mappa med pakkens
  * filer: manifestet, fargekontrakten, regelbøkene og komponentene.
- * Kommandolinja bærer ingen av dem, og får mappa som `FRISTIL_PACKAGE`.
+ * Kommandolinja bærer ingen av dem, og får mappa som `LOTEK_PACKAGE`.
  */
 export async function runCommandLine(
   module: string | URL,
@@ -92,7 +92,7 @@ export async function runCommandLine(
         moduleArgs.push(toModule(part))
         continue
       }
-      fetchedDir ??= mkdtempSync(join(tmpdir(), "fristil-"))
+      fetchedDir ??= mkdtempSync(join(tmpdir(), "lotek-"))
       let answer: string
       try {
         // Som den kjørbare fila: en server som aldri svarer, skal ikke henge
@@ -121,18 +121,18 @@ export async function runCommandLine(
     const { WASI } = await import("node:wasi")
     const wasi = new WASI({
       version: "preview1",
-      args: ["fristil", ...moduleArgs],
+      args: ["lotek", ...moduleArgs],
       env: {
-        FRISTIL_ARBEIDSMAPPE: forWasi(process.cwd()),
-        FRISTIL_PACKAGE: forWasi(
+        LOTEK_ARBEIDSMAPPE: forWasi(process.cwd()),
+        LOTEK_PACKAGE: forWasi(
           packageDir instanceof URL ? fileURLToPath(packageDir) : packageDir,
         ),
         // Så meldingene viser stiene som `C:\\…`, ikke som `/c/…`.
-        ...(windows ? { FRISTIL_WINDOWS: "1" } : {}),
+        ...(windows ? { LOTEK_WINDOWS: "1" } : {}),
         // `isatty(0)`, ikke `process.stdin.isTTY`: å røre `process.stdin` setter
         // et rør i ikke-blokkerende modus, og modulen ga da opp å lese før
-        // skriveren var ferdig, som i `curl … | fristil sjekk`.
-        ...(isatty(0) ? { FRISTIL_TERMINAL: "1" } : {}),
+        // skriveren var ferdig, som i `curl … | lotek sjekk`.
+        ...(isatty(0) ? { LOTEK_TERMINAL: "1" } : {}),
       },
       preopens,
       returnOnExit: true,

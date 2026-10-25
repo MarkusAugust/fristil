@@ -14,14 +14,14 @@ import {
   type PopoverPlacement,
 } from "./popover.js"
 
-export const FS_POPOVER_TAG = "fs-popover" as const
+export const LT_POPOVER_TAG = "lt-popover" as const
 
 /**
  * Delene sprettoppvinduet finner, som selektorer relativt til elementet. Komponenten
  * finner delene med disse, og manifestet beskriver dem for den som setter
  * sammen markupen selv, så de to ikke kan si noe ulikt.
  */
-export const FS_POPOVER_PARTS = {
+export const LT_POPOVER_PARTS = {
   trigger: "button, [role='button']",
   panel: `[popover], .${POPOVER_CLASS}`,
 } as const
@@ -30,7 +30,7 @@ export const FS_POPOVER_PARTS = {
  * Et panel som henger under en knapp, og som lukker seg selv.
  *
  * Panelet bruker nettleserens egen `popover`, så det havner i topplaget og
- * legger seg over alt annet uten `z-index`. `fs.popover()` skriver
+ * legger seg over alt annet uten `z-index`. `lt.popover()` skriver
  * `popover="manual"`, så Escape og klikk utenfor er komponentens: med `auto`
  * rakk nettleseren å lukke panelet før knappen fikk klikket sitt, og knappen
  * kunne ikke brukes til å lukke igjen. Håndskrevet markup med bare `popover`
@@ -39,10 +39,10 @@ export const FS_POPOVER_PARTS = {
  * Det topplaget ikke gjør er å plassere panelet. `position-anchor` finnes
  * ennå ikke i alle nettlesere, så posisjonen regnes ut her.
  *
- * Lages markupen med JavaScript, skriver `fs.popover()` koblingen:
+ * Lages markupen med JavaScript, skriver `lt.popover()` koblingen:
  * `aria-controls` på knappen, klassen, id-en og `popover` på panelet.
  * Kommer markupen fra en mal uten JavaScript, skriver malen en knapp og et
- * panel med klassen `fs-popover` og en id: komponenten setter
+ * panel med klassen `lt-popover` og en id: komponenten setter
  * `popover="manual"` og skriver `aria-controls` på knappen fra id-en. Bare
  * det som mangler, så det serveren skrev står. Komponenten setter `open` på
  * verten, `aria-expanded` på knappen og posisjonen på panelet, og setter alt
@@ -65,13 +65,13 @@ export const FS_POPOVER_PARTS = {
  * morfing, mens `meny.open = false` er en beskjed komponenten kan se.
  *
  * ```html
- * <fs-popover placement="bottom-end">
- *   <button class="fs-button" aria-controls="meny" aria-expanded="false">Handlinger</button>
- *   <ul id="meny" class="fs-popover" popover="manual">…</ul>
- * </fs-popover>
+ * <lt-popover placement="bottom-end">
+ *   <button class="lt-button" aria-controls="meny" aria-expanded="false">Handlinger</button>
+ *   <ul id="meny" class="lt-popover" popover="manual">…</ul>
+ * </lt-popover>
  * ```
  */
-export class FsPopover extends HostElement {
+export class LtPopover extends HostElement {
   static observedAttributes = ["open", "placement", SERVER_CONTROLLED] as const
 
   private panel?: HTMLElement
@@ -264,7 +264,7 @@ export class FsPopover extends HostElement {
         warnAboutMarkup(
           this,
           "fant ingen panel: et element med popover eller klassen " +
-            "fs-popover. Uten det kan ingenting åpnes eller plasseres.",
+            "lt-popover. Uten det kan ingenting åpnes eller plasseres.",
           () => !isEmpty() && this.findPanel() === null,
         )
       } else {
@@ -366,7 +366,7 @@ export class FsPopover extends HostElement {
 
   /** Panelet: det som har `popover`, ellers det med klassen. */
   private findPanel(): HTMLElement | null {
-    return this.querySelector<HTMLElement>(FS_POPOVER_PARTS.panel)
+    return this.querySelector<HTMLElement>(LT_POPOVER_PARTS.panel)
   }
 
   /**
@@ -383,7 +383,7 @@ export class FsPopover extends HostElement {
       if (pointing) return pointing
     }
     return (
-      [...this.querySelectorAll<HTMLElement>(FS_POPOVER_PARTS.trigger)].find(
+      [...this.querySelectorAll<HTMLElement>(LT_POPOVER_PARTS.trigger)].find(
         (button) =>
           !panel.contains(button) && !button.hasAttribute("aria-controls"),
       ) ?? null
@@ -436,7 +436,7 @@ export class FsPopover extends HostElement {
       // Et åpent vindu inne i dette står nærmere. Det tar trykket, og dette
       // lukkes på neste. Lytterne sitter begge på `document`, og det ytre
       // kom først: før lukket det seg og lot det indre stå åpent.
-      if (node instanceof FsPopover && node.open) return
+      if (node instanceof LtPopover && node.open) return
       // En modal dialog åpnet oppå vinduet lukkes av sitt eget trykk.
       if (
         node instanceof HTMLDialogElement &&
@@ -508,8 +508,8 @@ export class FsPopover extends HostElement {
       Math.min(top, window.innerHeight - panel.height - space),
     )
 
-    this.panel.style.setProperty("--fs-popover-top", `${Math.round(top)}px`)
-    this.panel.style.setProperty("--fs-popover-left", `${Math.round(left)}px`)
+    this.panel.style.setProperty("--lt-popover-top", `${Math.round(top)}px`)
+    this.panel.style.setProperty("--lt-popover-left", `${Math.round(left)}px`)
   }
 
   private emit(open: boolean): void {
@@ -543,6 +543,6 @@ export class FsPopover extends HostElement {
   }
 }
 
-export function defineFsPopover(tagName: string = FS_POPOVER_TAG): void {
-  defineElement(tagName, FsPopover)
+export function defineLtPopover(tagName: string = LT_POPOVER_TAG): void {
+  defineElement(tagName, LtPopover)
 }

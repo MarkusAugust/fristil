@@ -3,13 +3,13 @@ title: Skeleton
 description: Plassholder som viser formen på innhold som lastes. CSS-komponent med én klasse og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Grå former som viser hvor innholdet kommer. De er alltid skjult for skjermlesere, så ventingen må meldes ett sted i tillegg. Er det ingen form å vise, eller tar ventingen kort tid, er [Spinner](../spinner/) enklere.
 
 ## Slik tar du den i bruk
 
-<Eksempel
+<Example
   importer={["tokens.css", "skeleton.css"]}
   stiler={["skeleton"]}
   layout="stabel"
@@ -21,41 +21,41 @@ Grå former som viser hvor innholdet kommer. De er alltid skjult for skjermleser
 }
 
 .sak-bilde {
-  --fs-skeleton-height: var(--fs-spacing-12);
+  --lt-skeleton-height: var(--lt-spacing-12);
 }
   `}
   kode={`
-<div class="fs-skeleton" data-variant="circle" aria-hidden="true"></div>
-<div class="fs-skeleton" data-variant="text" aria-hidden="true"></div>
-<div class="fs-skeleton sak-siste-linje" data-variant="text" aria-hidden="true"></div>
-<div class="fs-skeleton sak-bilde" aria-hidden="true"></div>
+<div class="lt-skeleton" data-variant="circle" aria-hidden="true"></div>
+<div class="lt-skeleton" data-variant="text" aria-hidden="true"></div>
+<div class="lt-skeleton sak-siste-linje" data-variant="text" aria-hidden="true"></div>
+<div class="lt-skeleton sak-bilde" aria-hidden="true"></div>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<div {...fs.skeleton({ variant: "circle" })} />
+<div {...lt.skeleton({ variant: "circle" })} />
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const linje = document.createElement("div")
 
-fs.setAttributes(linje, fs.skeleton({ variant: "text" }))
+lt.setAttributes(linje, lt.skeleton({ variant: "text" }))
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -63,7 +63,7 @@ fs.setAttributes(linje, fs.skeleton({ variant: "text" }))
 | `text` | Én tekstlinje |
 | `circle` | Profilbilde |
 
-Blokken og tekstlinjene fyller bredden de får, mens `circle` er like bred som den er høy. `sak-siste-linje` og `sak-bilde` er dine egne klasser, ikke Fristils, og de står i «Ren HTML»-fanen over sammen med markupen.
+Blokken og tekstlinjene fyller bredden de får, mens `circle` er like bred som den er høy. `sak-siste-linje` og `sak-bilde` er dine egne klasser, ikke LO-TEKs, og de står i «Ren HTML»-fanen over sammen med markupen.
 
 Sett bredden på den siste linjen til under 100 prosent. Et avsnitt der alle linjene er like lange ser ikke ut som tekst.
 
@@ -71,13 +71,13 @@ Sett bredden på den siste linjen til under 100 prosent. Et avsnitt der alle lin
 
 ```html
 <div id="innhold" aria-busy="true">
-  <p class="fs-sr-only" role="status">Henter søknadene dine</p>
-  <div class="fs-skeleton" data-variant="text" aria-hidden="true"></div>
-  <div class="fs-skeleton" data-variant="text" aria-hidden="true"></div>
+  <p class="lt-sr-only" role="status">Henter søknadene dine</p>
+  <div class="lt-skeleton" data-variant="text" aria-hidden="true"></div>
+  <div class="lt-skeleton" data-variant="text" aria-hidden="true"></div>
 </div>
 ```
 
-En rekke tomme bokser som leses opp er verre enn stillhet. Derfor setter `fs.skeleton()` alltid `aria-hidden="true"`, og beskjeden legges i et eget felt med `role="status"`.
+En rekke tomme bokser som leses opp er verre enn stillhet. Derfor setter `lt.skeleton()` alltid `aria-hidden="true"`, og beskjeden legges i et eget felt med `role="status"`.
 
 Når innholdet kommer, fjern `aria-busy` og tøm statusfeltet.
 
@@ -85,16 +85,16 @@ Når innholdet kommer, fjern `aria-busy` og tøm statusfeltet.
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-skeleton` | Plassholderen. Formen kommer fra `data-variant`. |
+| `.lt-skeleton` | Plassholderen. Formen kommer fra `data-variant`. |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-skeleton-height` | `var(--fs-spacing-4)`, og `var(--fs-spacing-10)` i `circle`, der den også gir bredden. `text` leser den ikke: der kommer høyden fra `--fs-font-size-m` |
-| `--fs-skeleton-radius` | `var(--fs-spacing-1)`, og `var(--fs-spacing-0-5)` i `text` |
+| `--lt-skeleton-height` | `var(--lt-spacing-4)`, og `var(--lt-spacing-10)` i `circle`, der den også gir bredden. `text` leser den ikke: der kommer høyden fra `--lt-font-size-m` |
+| `--lt-skeleton-radius` | `var(--lt-spacing-1)`, og `var(--lt-spacing-0-5)` i `text` |
 
 Skimmeret er en gradient som beveger seg over flaten, ikke en gjennomsiktighet som pulserer, så kontrasten mot sideflaten er den samme hele veien. Har brukeren bedt om mindre bevegelse, står flaten stille.
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

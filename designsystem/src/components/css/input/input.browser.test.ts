@@ -6,8 +6,8 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/farge"
-import { finnOverflyt, monterIsolert } from "../../../testing/isolert"
+import { farge } from "../../../testing/color"
+import { finnOverflyt, monterIsolert } from "../../../testing/isolated"
 import inputCss from "./input.css?inline"
 
 import "../../../tokens/tokens.css"
@@ -23,32 +23,32 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("fs-input", () => {
+describe("lt-input", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <input id="default" class="fs-input" />
-      <input id="date" class="fs-input" type="date" data-variant="date" value="2026-05-31" />
-      <input id="time" class="fs-input" type="time" data-variant="time" value="10:30" />
-      <input id="datetime" class="fs-input" type="datetime-local" data-variant="datetime-local" value="2026-05-31T10:30" />
-      <input id="invalid" class="fs-input" data-state="invalid" />
-      <input id="success" class="fs-input" data-state="success" />
-      <input id="disabled" class="fs-input" disabled />
+      <input id="default" class="lt-input" />
+      <input id="date" class="lt-input" type="date" data-variant="date" value="2026-05-31" />
+      <input id="time" class="lt-input" type="time" data-variant="time" value="10:30" />
+      <input id="datetime" class="lt-input" type="datetime-local" data-variant="datetime-local" value="2026-05-31T10:30" />
+      <input id="invalid" class="lt-input" data-state="invalid" />
+      <input id="success" class="lt-input" data-state="success" />
+      <input id="disabled" class="lt-input" disabled />
     `
   })
 
   it("applies default styles", () => {
     const input = css("default")
 
-    expect(input.backgroundColor).toBe(farge("--fs-color-neutral-canvas"))
-    expect(input.borderTopColor).toBe(farge("--fs-color-disabled-text"))
-    expect(input.color).toBe(farge("--fs-color-neutral-text-strong"))
+    expect(input.backgroundColor).toBe(farge("--lt-color-neutral-canvas"))
+    expect(input.borderTopColor).toBe(farge("--lt-color-disabled-text"))
+    expect(input.color).toBe(farge("--lt-color-neutral-text-strong"))
   })
 
   it("applies invalid styles", () => {
     const input = css("invalid")
 
-    expect(input.backgroundColor).toBe(farge("--fs-color-danger-surface"))
-    expect(input.borderTopColor).toBe(farge("--fs-color-danger-text"))
+    expect(input.backgroundColor).toBe(farge("--lt-color-danger-surface"))
+    expect(input.borderTopColor).toBe(farge("--lt-color-danger-text"))
   })
 
   it("applies date variant styles", () => {
@@ -73,35 +73,35 @@ describe("fs-input", () => {
   it("applies success styles", () => {
     const input = css("success")
 
-    expect(input.backgroundColor).toBe(farge("--fs-color-success-surface"))
-    expect(input.borderTopColor).toBe(farge("--fs-color-success-text"))
+    expect(input.backgroundColor).toBe(farge("--lt-color-success-surface"))
+    expect(input.borderTopColor).toBe(farge("--lt-color-success-text"))
   })
 
   it("applies disabled styles", () => {
     const input = css("disabled")
 
-    expect(input.backgroundColor).toBe(farge("--fs-color-disabled-surface"))
-    expect(input.borderTopColor).toBe(farge("--fs-color-disabled-surface"))
-    expect(input.color).toBe(farge("--fs-color-disabled-text"))
+    expect(input.backgroundColor).toBe(farge("--lt-color-disabled-surface"))
+    expect(input.borderTopColor).toBe(farge("--lt-color-disabled-surface"))
+    expect(input.color).toBe(farge("--lt-color-disabled-text"))
     // Markøren vises bare hvis elementet treffes av pekeren
     expect(input.pointerEvents).toBe("auto")
   })
 })
 
-describe("fs-input tilgjengelighet", () => {
+describe("lt-input tilgjengelighet", () => {
   it("har nok kontrast og ledetekst i alle tilstander", async () => {
     monter(`
-      <label class="fs-label" for="a11y-standard">E-postadresse</label>
-      <input class="fs-input" id="a11y-standard" type="email" />
+      <label class="lt-label" for="a11y-standard">E-postadresse</label>
+      <input class="lt-input" id="a11y-standard" type="email" />
 
-      <label class="fs-label" for="a11y-gyldig">Bekreft e-postadresse</label>
-      <input class="fs-input" id="a11y-gyldig" type="email" data-state="success" value="ola@eksempel.no" />
+      <label class="lt-label" for="a11y-gyldig">Bekreft e-postadresse</label>
+      <input class="lt-input" id="a11y-gyldig" type="email" data-state="success" value="ola@eksempel.no" />
 
-      <label class="fs-label" for="a11y-ugyldig">Reserve-e-post</label>
-      <input class="fs-input" id="a11y-ugyldig" type="email" data-state="invalid" aria-invalid="true" value="ola@" />
+      <label class="lt-label" for="a11y-ugyldig">Reserve-e-post</label>
+      <input class="lt-input" id="a11y-ugyldig" type="email" data-state="invalid" aria-invalid="true" value="ola@" />
 
-      <label class="fs-label" for="a11y-dato">Reisedato</label>
-      <input class="fs-input" id="a11y-dato" type="date" data-variant="date" value="2026-05-31" />
+      <label class="lt-label" for="a11y-dato">Reisedato</label>
+      <input class="lt-input" id="a11y-dato" type="date" data-variant="date" value="2026-05-31" />
     `)
 
     await ventPaTegning()
@@ -109,20 +109,20 @@ describe("fs-input tilgjengelighet", () => {
   })
 })
 
-describe("fs-input uten CSS-reset", () => {
+describe("lt-input uten CSS-reset", () => {
   it("holder seg innenfor boksen sin", () => {
     const { boks } = monterIsolert(
       inputCss,
-      `<input class="fs-input" type="email" value="ola@eksempel.no" />`,
+      `<input class="lt-input" type="email" value="ola@eksempel.no" />`,
     )
 
     expect(finnOverflyt(boks)).toEqual([])
   })
 })
 
-describe("fs-input deaktivert", () => {
+describe("lt-input deaktivert", () => {
   it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
-    monter(`<input class="fs-input" disabled value="Av" />`)
+    monter(`<input class="lt-input" disabled value="Av" />`)
 
     const element = document.querySelector("input") as HTMLElement
     const ramme = element.getBoundingClientRect()

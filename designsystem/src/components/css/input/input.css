@@ -1,44 +1,44 @@
-@layer fristil {
-  .fs-input {
+@layer lotek {
+  .lt-input {
     /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
        Uten border-box legges padding og ramme utenpå width, og feltet
        blir bredere enn boksen det ligger i. */
     box-sizing: border-box;
 
     display: block;
-    width: var(--fs-input-width, 100%);
-    padding: var(--fs-input-padding, var(--fs-spacing-2) var(--fs-spacing-3));
+    width: var(--lt-input-width, 100%);
+    padding: var(--lt-input-padding, var(--lt-spacing-2) var(--lt-spacing-3));
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-strong);
-    background: var(--fs-color-neutral-canvas);
-    border: 1px solid var(--fs-color-neutral-border);
-    border-radius: var(--fs-input-radius, var(--fs-spacing-1));
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-neutral-canvas);
+    border: 1px solid var(--lt-color-neutral-border);
+    border-radius: var(--lt-input-radius, var(--lt-spacing-1));
   }
 
-  .fs-input::placeholder {
-    color: var(--fs-color-neutral-text-subtle);
+  .lt-input::placeholder {
+    color: var(--lt-color-neutral-text-subtle);
   }
 
-  .fs-input:hover {
-    border-color: var(--fs-color-neutral-border-strong);
+  .lt-input:hover {
+    border-color: var(--lt-color-neutral-border-strong);
   }
 
-  .fs-input:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-input:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
-    border-color: var(--fs-color-accent-border);
+    border-color: var(--lt-color-accent-border);
   }
 
-  .fs-input:disabled,
-  .fs-input[aria-disabled="true"] {
+  .lt-input:disabled,
+  .lt-input[aria-disabled="true"] {
     /* `background-color` og ikke kortformen, her og i tilstandene under.
        Kortformen nullstiller `background-image`, og et søkefelt mistet
        forstørrelsesglasset når `input.css` ble lastet etter `search.css`. */
-    background-color: var(--fs-color-disabled-surface);
-    color: var(--fs-color-disabled-text);
-    border-color: var(--fs-color-disabled-surface);
+    background-color: var(--lt-color-disabled-surface);
+    color: var(--lt-color-disabled-text);
+    border-color: var(--lt-color-disabled-surface);
     /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
        deaktivert felt, og pointer-events ville bare hindret markøren i å
        vises. Elementet blir da ikke truffet av musa i det hele tatt. */
@@ -48,79 +48,79 @@
   /* aria-disabled er bare en opplysning til skjermlesere; elementet virker
      fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
      Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
-  .fs-input[aria-disabled="true"] {
+  .lt-input[aria-disabled="true"] {
     pointer-events: none;
   }
 
-  .fs-input[data-state="invalid"] {
-    border-color: var(--fs-color-danger-text);
-    background-color: var(--fs-color-danger-surface);
+  .lt-input[data-state="invalid"] {
+    border-color: var(--lt-color-danger-text);
+    background-color: var(--lt-color-danger-surface);
   }
 
-  .fs-input[data-state="invalid"]:focus-visible {
-    outline-color: var(--fs-color-danger-text);
+  .lt-input[data-state="invalid"]:focus-visible {
+    outline-color: var(--lt-color-danger-text);
   }
 
-  .fs-input[data-state="success"] {
-    border-color: var(--fs-color-success-text);
-    background-color: var(--fs-color-success-surface);
+  .lt-input[data-state="success"] {
+    border-color: var(--lt-color-success-text);
+    background-color: var(--lt-color-success-surface);
   }
 
-  .fs-input[data-state="success"]:focus-visible {
-    outline-color: var(--fs-color-success-text);
+  .lt-input[data-state="success"]:focus-visible {
+    outline-color: var(--lt-color-success-text);
   }
 
   /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
      `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
      var slått av under innsending så rødt ut, ikke avslått. */
-  .fs-input:is(:disabled, [aria-disabled="true"])[data-state] {
-    background-color: var(--fs-color-disabled-surface);
-    color: var(--fs-color-disabled-text);
-    border-color: var(--fs-color-disabled-surface);
+  .lt-input:is(:disabled, [aria-disabled="true"])[data-state] {
+    background-color: var(--lt-color-disabled-surface);
+    color: var(--lt-color-disabled-text);
+    border-color: var(--lt-color-disabled-surface);
   }
 
-  .fs-input[data-variant="date"],
-  .fs-input[data-variant="time"],
-  .fs-input[data-variant="datetime-local"] {
+  .lt-input[data-variant="date"],
+  .lt-input[data-variant="time"],
+  .lt-input[data-variant="datetime-local"] {
     position: relative;
-    min-height: calc(var(--fs-spacing-4) * 2.5);
+    min-height: calc(var(--lt-spacing-4) * 2.5);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.01em;
-    padding-inline-end: calc(var(--fs-spacing-6) + var(--fs-spacing-2));
+    padding-inline-end: calc(var(--lt-spacing-6) + var(--lt-spacing-2));
     background-repeat: no-repeat;
-    background-position: right var(--fs-spacing-2) center;
+    background-position: right var(--lt-spacing-2) center;
     background-size: 0.95rem 0.95rem;
   }
 
   /* background-position har ingen logisk variant, så retningen må snus for
      hånd. Alt annet her er logiske egenskaper, som snur av seg selv. */
-  .fs-input[data-variant="date"]:dir(rtl),
-  .fs-input[data-variant="time"]:dir(rtl),
-  .fs-input[data-variant="datetime-local"]:dir(rtl) {
-    background-position: left var(--fs-spacing-2) center;
+  .lt-input[data-variant="date"]:dir(rtl),
+  .lt-input[data-variant="time"]:dir(rtl),
+  .lt-input[data-variant="datetime-local"]:dir(rtl) {
+    background-position: left var(--lt-spacing-2) center;
   }
 
-  .fs-input[data-variant="date"],
-  .fs-input[data-variant="datetime-local"] {
-    background-image: var(--fs-icon-calendar);
+  .lt-input[data-variant="date"],
+  .lt-input[data-variant="datetime-local"] {
+    background-image: var(--lt-icon-calendar);
   }
 
-  .fs-input[data-variant="time"] {
-    background-image: var(--fs-icon-clock);
+  .lt-input[data-variant="time"] {
+    background-image: var(--lt-icon-clock);
   }
 
-  .fs-input[data-variant="date"]::-webkit-calendar-picker-indicator,
-  .fs-input[data-variant="time"]::-webkit-calendar-picker-indicator,
-  .fs-input[data-variant="datetime-local"]::-webkit-calendar-picker-indicator {
+  .lt-input[data-variant="date"]::-webkit-calendar-picker-indicator,
+  .lt-input[data-variant="time"]::-webkit-calendar-picker-indicator,
+  .lt-input[data-variant="datetime-local"]::-webkit-calendar-picker-indicator {
     position: absolute;
-    inset-inline-end: var(--fs-spacing-2);
+    inset-inline-end: var(--lt-spacing-2);
     top: 50%;
     transform: translateY(-50%);
     opacity: 0;
-    width: var(--fs-spacing-6);
-    height: var(--fs-spacing-6);
-    min-width: var(--fs-spacing-6);
-    min-height: var(--fs-spacing-6);
+    width: var(--lt-spacing-6);
+    height: var(--lt-spacing-6);
+    min-width: var(--lt-spacing-6);
+    min-height: var(--lt-spacing-6);
     cursor: pointer;
   }
 
@@ -128,15 +128,15 @@
      usynlig i et mørkt tema. Nettleserens egen knapp er skjult bak vårt ikon,
      og hentes fram igjen her. */
   @media (forced-colors: active) {
-    .fs-input[data-variant="date"],
-    .fs-input[data-variant="time"],
-    .fs-input[data-variant="datetime-local"] {
+    .lt-input[data-variant="date"],
+    .lt-input[data-variant="time"],
+    .lt-input[data-variant="datetime-local"] {
       background-image: none;
     }
 
-    .fs-input[data-variant="date"]::-webkit-calendar-picker-indicator,
-    .fs-input[data-variant="time"]::-webkit-calendar-picker-indicator,
-    .fs-input[data-variant="datetime-local"]::-webkit-calendar-picker-indicator {
+    .lt-input[data-variant="date"]::-webkit-calendar-picker-indicator,
+    .lt-input[data-variant="time"]::-webkit-calendar-picker-indicator,
+    .lt-input[data-variant="datetime-local"]::-webkit-calendar-picker-indicator {
       opacity: 1;
     }
   }

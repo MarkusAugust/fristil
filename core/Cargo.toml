@@ -1,15 +1,15 @@
 [package]
-name = "fristil-kjerne"
+name = "lotek-core"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Fristils sjekk og temagenerator, kompilert til WebAssembly for alle vertsspråk."
+description = "LO-TEKs sjekk og temagenerator, kompilert til WebAssembly for alle vertsspråk."
 publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-# Kommandolinja, `fristil`, er en egen crate i `cli/`. Den bruker kjernen som
+# Kommandolinja, `lotek`, er en egen crate i `cli/`. Den bruker kjernen som
 # et vanlig bibliotek, og bygges både for maskinen og som WASI-modul.
 [workspace]
 members = ["cli"]

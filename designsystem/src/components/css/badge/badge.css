@@ -1,5 +1,5 @@
-@layer fristil {
-  .fs-badge {
+@layer lotek {
+  .lt-badge {
     /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
        Uten border-box legges padding og ramme utenpå width, og feltet
        blir bredere enn boksen det ligger i. */
@@ -7,36 +7,36 @@
 
     display: inline-flex;
     align-items: center;
-    gap: var(--fs-spacing-1);
-    padding: var(--fs-badge-padding, var(--fs-spacing-0-5) var(--fs-spacing-2));
+    gap: var(--lt-spacing-1);
+    padding: var(--lt-badge-padding, var(--lt-spacing-0-5) var(--lt-spacing-2));
     font-family: inherit;
-    font-size: var(--fs-font-size-xs);
-    font-weight: var(--fs-font-weight-semibold);
-    line-height: var(--fs-line-height-default);
-    border-radius: var(--fs-badge-radius, var(--fs-spacing-4));
+    font-size: var(--lt-font-size-xs);
+    font-weight: var(--lt-font-weight-semibold);
+    line-height: var(--lt-line-height-default);
+    border-radius: var(--lt-badge-radius, var(--lt-spacing-4));
     white-space: nowrap;
     user-select: none;
-    background: var(--fs-color-accent-surface);
-    color: var(--fs-color-accent-text);
+    background: var(--lt-color-accent-surface);
+    color: var(--lt-color-accent-text);
   }
 
-  .fs-badge[data-color="success"] {
-    background: var(--fs-color-success-surface);
-    color: var(--fs-color-success-text);
+  .lt-badge[data-color="success"] {
+    background: var(--lt-color-success-surface);
+    color: var(--lt-color-success-text);
   }
 
-  .fs-badge[data-color="warning"] {
-    background: var(--fs-color-warning-surface);
-    color: var(--fs-color-warning-text);
+  .lt-badge[data-color="warning"] {
+    background: var(--lt-color-warning-surface);
+    color: var(--lt-color-warning-text);
   }
 
-  .fs-badge[data-color="danger"] {
-    background: var(--fs-color-danger-surface);
-    color: var(--fs-color-danger-text);
+  .lt-badge[data-color="danger"] {
+    background: var(--lt-color-danger-surface);
+    color: var(--lt-color-danger-text);
   }
 
-  .fs-badge[data-color="neutral"] {
-    background: var(--fs-color-neutral-surface);
-    color: var(--fs-color-neutral-text);
+  .lt-badge[data-color="neutral"] {
+    background: var(--lt-color-neutral-surface);
+    color: var(--lt-color-neutral-text);
   }
 }

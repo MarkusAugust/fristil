@@ -9,8 +9,8 @@ import {
   requiredMarkers,
 } from "../shared.js"
 
-export const FIELDSET_CLASS = "fs-fieldset" as const
-export const LEGEND_CLASS = "fs-legend" as const
+export const FIELDSET_CLASS = "lt-fieldset" as const
+export const LEGEND_CLASS = "lt-legend" as const
 
 export type FieldsetOptions = {
   /** Valideringstilstand for hele gruppen. Standard: `default`. */

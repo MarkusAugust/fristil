@@ -10,7 +10,7 @@ const STILARK: Record<string, string> = Object.fromEntries(
     .map(([n, m]) => [n.slice(2), (m as string).slice(2)]),
 )
 
-const CDN = `https://cdn.jsdelivr.net/npm/@fristil/designsystem@${pakke.version}`
+const CDN = `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@${pakke.version}`
 
 interface Props {
   /** Stilarkene eksempelet trenger, de samme du ville importert i en app. */
@@ -66,7 +66,7 @@ const forhaandsvisningsCss = [egenCss, visningsCss].filter(Boolean).join("\n")
  * Fanen for byggefunksjonen, når siden har noe å si der.
  *
  * Den sto før som en egen `## TypeScript`-seksjon lenger nede. Da hadde
- * css-sidene den og de ni med oppførsel ikke, siden disse viser `fs` i
+ * css-sidene den og de ni med oppførsel ikke, siden disse viser `lt` i
  * React- og Astro-fanene sine i stedet. Nå står alt om hvordan komponenten
  * lages i den samme seksjonen, på alle sidene.
  */
@@ -76,7 +76,7 @@ const harTypeScript = Astro.slots.has("ts")
  * Stilarkene, på den måten fanen de står i faktisk kan bruke.
  *
  * «Ren HTML» er definert ved å ikke ha noe byggesteg, så der kan det ikke
- * stå `import "@fristil/designsystem/tokens.css"`: en nettleser slår ikke
+ * stå `import "@lo-tek/interfaces/tokens.css"`: en nettleser slår ikke
  * opp et pakkenavn. Der skrives `<link>` med hele adressen. Importlinjene
  * hører i TypeScript-fanen, der det finnes et byggesteg.
  */
@@ -91,16 +91,16 @@ const lenker =
      * Og den ene fila som erstatter dem.
      *
      * Lista over er presis, og det er grunnen til at den står: den sier hva
-     * komponenten krever. Men «Kom i gang» anbefaler `fristil.css` til den som
+     * komponenten krever. Men «Kom i gang» anbefaler `lotek.css` til den som
      * lenker uten byggesteg, og uten denne linja anbefalte de to sidene hver
      * sin ting. Ingen side oppgir `tailwind.css` i `importer`, som er det
      * eneste stilarket den samlede fila ikke dekker, så linja er sann overalt.
      */
-    `<!-- Eller alt i én fil: ${CDN}/${STILARK["fristil.css"]} -->`,
+    `<!-- Eller alt i én fil: ${CDN}/${STILARK["lotek.css"]} -->`,
   ].join("\n")
 
 const importlinjer = importer
-  ?.map((fil) => `import "@fristil/designsystem/${fil}"`)
+  ?.map((fil) => `import "@lo-tek/interfaces/${fil}"`)
   .join("\n")
 
 /*

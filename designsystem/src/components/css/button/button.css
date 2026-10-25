@@ -1,5 +1,5 @@
-@layer fristil {
-  .fs-button {
+@layer lotek {
+  .lt-button {
     /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
        Uten border-box legges padding og ramme utenpå width, og feltet
        blir bredere enn boksen det ligger i. */
@@ -7,20 +7,20 @@
 
     display: inline-flex;
     align-items: center;
-    gap: var(--fs-spacing-2);
-    padding: var(--fs-button-padding, var(--fs-spacing-2) var(--fs-spacing-4));
+    gap: var(--lt-spacing-2);
+    padding: var(--lt-button-padding, var(--lt-spacing-2) var(--lt-spacing-4));
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
+    font-size: var(--lt-font-size-m);
     /* Vekt, linjeavstand og rammetykkelse er form, og form leses fra en
        komponentvariabel med tokenverdien som reserve. Et tema som vil ha
        fete knapper med tykk ramme, slik noen designsystemer har, setter dem
        uten å skrive en eneste selektor av. */
-    font-weight: var(--fs-button-font-weight, var(--fs-font-weight-medium));
-    line-height: var(--fs-button-line-height, var(--fs-line-height-default));
-    border: var(--fs-button-border-width, 1px) solid var(--fs-color-accent-fill);
-    border-radius: var(--fs-button-radius, var(--fs-spacing-1));
-    background: var(--fs-color-accent-fill);
-    color: var(--fs-color-accent-content);
+    font-weight: var(--lt-button-font-weight, var(--lt-font-weight-medium));
+    line-height: var(--lt-button-line-height, var(--lt-line-height-default));
+    border: var(--lt-button-border-width, 1px) solid var(--lt-color-accent-fill);
+    border-radius: var(--lt-button-radius, var(--lt-spacing-1));
+    background: var(--lt-color-accent-fill);
+    color: var(--lt-color-accent-content);
     cursor: pointer;
     text-decoration: none;
     user-select: none;
@@ -44,58 +44,58 @@
      er rollen som ligger der, og siden lysheten er rollens og ikke
      merkefargens, holder teksten oppå knappen kontrasten sin uansett kulør.
      `content oppå text` er et løfte i kontrakten. */
-  .fs-button:hover {
-    background: var(--fs-color-accent-text);
-    border-color: var(--fs-color-accent-text);
+  .lt-button:hover {
+    background: var(--lt-color-accent-text);
+    border-color: var(--lt-color-accent-text);
   }
 
-  .fs-button:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-button:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
   }
 
   /* Sekundær: omriss, gjennomsiktig bakgrunn */
-  .fs-button[data-variant="secondary"] {
+  .lt-button[data-variant="secondary"] {
     background: transparent;
-    color: var(--fs-color-accent-text);
-    border-color: var(--fs-color-accent-border);
+    color: var(--lt-color-accent-text);
+    border-color: var(--lt-color-accent-border);
   }
 
-  .fs-button[data-variant="secondary"]:hover:not(
+  .lt-button[data-variant="secondary"]:hover:not(
     :disabled,
     [aria-disabled="true"]
   ) {
-    background: var(--fs-color-accent-surface);
+    background: var(--lt-color-accent-surface);
   }
 
   /* Ghost: ingen kant, ingen bakgrunn */
-  .fs-button[data-variant="ghost"] {
+  .lt-button[data-variant="ghost"] {
     background: transparent;
-    color: var(--fs-color-accent-text);
+    color: var(--lt-color-accent-text);
     border-color: transparent;
   }
 
-  .fs-button[data-variant="ghost"]:hover:not(
+  .lt-button[data-variant="ghost"]:hover:not(
     :disabled,
     [aria-disabled="true"]
   ) {
-    background: var(--fs-color-accent-surface);
+    background: var(--lt-color-accent-surface);
   }
 
   /* Danger */
-  .fs-button[data-variant="danger"] {
-    background: var(--fs-color-danger-surface);
-    color: var(--fs-color-danger-text);
-    border-color: var(--fs-color-danger-text);
+  .lt-button[data-variant="danger"] {
+    background: var(--lt-color-danger-surface);
+    color: var(--lt-color-danger-text);
+    border-color: var(--lt-color-danger-text);
   }
 
-  .fs-button[data-variant="danger"]:hover:not(
+  .lt-button[data-variant="danger"]:hover:not(
     :disabled,
     [aria-disabled="true"]
   ) {
-    background: var(--fs-color-danger-fill);
-    border-color: var(--fs-color-danger-fill);
-    color: var(--fs-color-danger-content);
+    background: var(--lt-color-danger-fill);
+    border-color: var(--lt-color-danger-fill);
+    color: var(--lt-color-danger-content);
   }
 
   /*
@@ -106,11 +106,11 @@
    * er mer spesifikk enn denne uansett plass, og en deaktivert knapp treffes
    * fortsatt av `:hover`. Derfor unntar hver av dem den deaktivert selv.
    */
-  .fs-button:disabled,
-  .fs-button[aria-disabled="true"] {
-    background: var(--fs-color-disabled-surface);
-    color: var(--fs-color-disabled-text);
-    border-color: var(--fs-color-disabled-surface);
+  .lt-button:disabled,
+  .lt-button[aria-disabled="true"] {
+    background: var(--lt-color-disabled-surface);
+    color: var(--lt-color-disabled-text);
+    border-color: var(--lt-color-disabled-surface);
     /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
        deaktivert felt, og pointer-events ville bare hindret markøren i å
        vises. Elementet blir da ikke truffet av musa i det hele tatt. */
@@ -120,7 +120,7 @@
   /* aria-disabled er bare en opplysning til skjermlesere; elementet virker
      fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
      Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
-  .fs-button[aria-disabled="true"] {
+  .lt-button[aria-disabled="true"] {
     pointer-events: none;
   }
 }

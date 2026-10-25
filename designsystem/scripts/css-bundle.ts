@@ -1,5 +1,5 @@
 /**
- * Bygger `fristil.css` i minnet: alle stilarkene i én fil, uten `@import`.
+ * Bygger `lotek.css` i minnet: alle stilarkene i én fil, uten `@import`.
  *
  * De enkelte stilarkene henter delene sine med `@import`, og en nettleser
  * uten byggesteg må først laste og lese den ytre fila før den vet at de finnes.
@@ -25,11 +25,11 @@
  * Kommentarene strykes; de er skrevet for den som leser kilden, og kilden
  * ligger i pakken som før.
  *
- * Regnestykket står her framfor i `bygg-css.ts`, fordi to kallere trenger
- * det: `bygg-css.ts` skriver fila, og `agent-deler.ts` oppgir størrelsen i
+ * Regnestykket står her framfor i `build-css.ts`, fordi to kallere trenger
+ * det: `build-css.ts` skriver fila, og `agent-parts.ts` oppgir størrelsen i
  * regelbøkene. Størrelsen sto før som et hardkodet tall i generatoren, og
  * var 75 kB da fila var 90 kB. `bygg:css` kjører dessuten etter `generate`
- * i pakkens bygg, så generatoren kan ikke lese `dist/fristil.css`.
+ * i pakkens bygg, så generatoren kan ikke lese `dist/lotek.css`.
  */
 import { existsSync, readFileSync } from "node:fs"
 import { dirname, join, relative, resolve } from "node:path"
@@ -39,7 +39,7 @@ import { gzipSync } from "node:zlib"
 const PAKKE = fileURLToPath(new URL("../", import.meta.url))
 
 export interface SamletCss {
-  /** Hele fila, slik den skrives til `dist/fristil.css`. */
+  /** Hele fila, slik den skrives til `dist/lotek.css`. */
   css: string
   /** Antall CSS-oppføringer i `exports` som ble lest. */
   oppføringer: number
@@ -61,7 +61,7 @@ export function byggSamletCss(): SamletCss {
         navn.endsWith(".css") &&
         typeof sti === "string" &&
         navn !== "./tailwind.css" &&
-        navn !== "./fristil.css",
+        navn !== "./lotek.css",
     )
     .map(([navn, sti]) => ({ navn, fil: resolve(PAKKE, sti as string) }))
     .sort((a, b) => {
@@ -114,9 +114,9 @@ export function byggSamletCss(): SamletCss {
   for (const { fil } of oppføringer) ta(fil, null)
 
   const hode = [
-    `/* @fristil/designsystem ${versjon}. Alle stilarkene i én fil, uten @import,`,
+    `/* @lo-tek/interfaces ${versjon}. Alle stilarkene i én fil, uten @import,`,
     " * for den som lenker fra CDN eller node_modules. Et byggesteg bruker",
-    " * stilarkene. Generert av scripts/bygg-css.ts; rediger kildene, ikke denne. */",
+    " * stilarkene. Generert av scripts/build-css.ts; rediger kildene, ikke denne. */",
     "",
   ].join("\n")
 
@@ -124,7 +124,7 @@ export function byggSamletCss(): SamletCss {
 
   /*
    * Vakten teller det som faktisk står i resultatet, ikke det skriptet tror
-   * det gjorde. Hver kildefil pakker alt i `@layer fristil { … }`, så antall
+   * det gjorde. Hver kildefil pakker alt i `@layer lotek { … }`, så antall
    * slike blokker i utdata skal være antall filer som ble tatt. Et tall
    * mindre er en fil som ble hentet uten å komme med, eller en kildefil uten
    * lag; det siste ville latt konsumentens regler tape mot våre. Og ingen
@@ -133,7 +133,7 @@ export function byggSamletCss(): SamletCss {
   const gjenstaaende = css.match(/^\s*@import\b.*$/gm) ?? []
   if (gjenstaaende.length > 0)
     throw new Error(
-      `fristil.css har fortsatt @import: ${gjenstaaende[0]?.trim() ?? ""}`,
+      `lotek.css har fortsatt @import: ${gjenstaaende[0]?.trim() ?? ""}`,
     )
 
   /*
@@ -144,10 +144,10 @@ export function byggSamletCss(): SamletCss {
   const utenLag = [...tatt].filter((fil) =>
     fil.endsWith(join("src", "tokens", "boundary.css")),
   ).length
-  const lag = (css.match(/^@layer fristil \{/gm) ?? []).length
+  const lag = (css.match(/^@layer lotek \{/gm) ?? []).length
   if (lag !== tatt.size - utenLag || tatt.size < oppføringer.length)
     throw new Error(
-      `fristil.css har ${lag} @layer fristil-blokker, men ${tatt.size} filer ble tatt av ${oppføringer.length} oppføringer`,
+      `lotek.css har ${lag} @layer lotek-blokker, men ${tatt.size} filer ble tatt av ${oppføringer.length} oppføringer`,
     )
 
   return { css, oppføringer: oppføringer.length, filer: tatt.size, importer }

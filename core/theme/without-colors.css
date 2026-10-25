@@ -1,16 +1,16 @@
-/* Generert av @fristil/designsystem. Rediger oppskriften, ikke denne fila. */
+/* Generert av @lo-tek/interfaces. Rediger oppskriften, ikke denne fila. */
 
-@layer fristil, fristil-tema;
+@layer lotek, lotek-theme;
 
-@layer fristil-tema {
+@layer lotek-theme {
   :root {
-    --fs-font-family-base: Helvetica, Arial, sans-serif;
-    --fs-button-radius: 2.75rem;
-    --fs-pagination-radius: 2.75rem;
-    --fs-skip-link-radius: 2.75rem;
+    --lt-font-family-base: Helvetica, Arial, sans-serif;
+    --lt-button-radius: 2.75rem;
+    --lt-pagination-radius: 2.75rem;
+    --lt-skip-link-radius: 2.75rem;
   }
 
   :root {
-    font-family: var(--fs-font-family-base);
+    font-family: var(--lt-font-family-base);
   }
 }

@@ -10,11 +10,11 @@
  *     attributter. HTML-språktjenesten bruker den til fullføring og hover.
  *   - `snippets.json`: én snippet per element, med markupen som viser
  *     elementet på komponentsiden. Kodeblokkene der er alt etterprøvd av
- *     `sjekk-oppskrifter.ts`, så klassene og elementene i snippeten finnes.
+ *     `check-recipes.ts`, så klassene og elementene i snippeten finnes.
  *   - `designsystem/src/vocabulary/elements.ts`: elementene og attributtene,
  *     tagg for tagg, som manifestet skrives fra.
- *   - `designsystem/src/vocabulary/classes.ts`: hver `fs-`-klasse i pakkens CSS, med komponenten
- *     den hører til, og for hver byggefunksjon i `fs` hvilket attributt en
+ *   - `designsystem/src/vocabulary/classes.ts`: hver `lt-`-klasse i pakkens CSS, med komponenten
+ *     den hører til, og for hver byggefunksjon i `lt` hvilket attributt en
  *     variant, størrelse, farge eller tilstand blir til. Det leses ved å
  *     kalle funksjonene, ikke ved å lese kildekoden, så det er det pakken
  *     faktisk gir. `html-data` skiller ikke et tall fra en tekst, og har ingen
@@ -22,22 +22,22 @@
  *   - `designsystem/web-types.json`: JetBrains sitt format. Den følger
  *     npm-pakken, og WebStorm finner den selv fra `node_modules`.
  *
- * Kjør med: bun --filter @fristil/designsystem ordforrad
- * `sjekk-ordforrad.ts` kjører det samme i minnet og feiler hvis filene på
+ * Kjør med: bun --filter @lo-tek/interfaces vocabulary
+ * `check-vocabulary.ts` kjører det samme i minnet og feiler hvis filene på
  * disk er utdaterte.
  */
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { fs } from "../src/index.js"
+import { lt } from "../src/index.js"
 import type {
   Attribute,
   Classes,
   ClassInfo,
   Elements,
 } from "../src/vocabulary/types.js"
-import { flaggFor, lesByggefunksjoner } from "./byggefunksjoner.js"
+import { flaggFor, lesByggefunksjoner } from "./builder-functions.js"
 import {
   type AttributeDoc,
   type ClassDoc,
@@ -47,7 +47,7 @@ import {
 } from "./metadata"
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url))
-const DOCS = "https://fristil.sobernetics.no/components/"
+const DOCS = "https://lo-tek.sobernetics.no/components/"
 const PAGES = join(ROOT, "documentation/src/content/docs/components")
 
 const docsUrl = (element: ElementDoc) => `${DOCS}${element.slug}/`
@@ -117,7 +117,7 @@ export function webTypes(version: string) {
   return {
     $schema:
       "https://raw.githubusercontent.com/JetBrains/web-types/master/schema/web-types.json",
-    name: "@fristil/designsystem",
+    name: "@lo-tek/interfaces",
     version,
     "description-markup": "markdown",
     contributions: {
@@ -150,10 +150,10 @@ export function webTypes(version: string) {
         })),
       },
       /*
-       * Klassene, slik at `class="fs-…"` får fullføring i JetBrains-IDE-ene.
+       * Klassene, slik at `class="lt-…"` får fullføring i JetBrains-IDE-ene.
        *
        * Før sto bare de ni elementene her, så en utvikler fikk forslag på
-       * `<fs-field>` men ingenting på `fs-button`, enda klassene er den
+       * `<lt-field>` men ingenting på `lt-button`, enda klassene er den
        * største delen av systemet og den eneste delen en CSS-komponent har.
        *
        * Lista er den samme `classesData()` som skriver `classes.ts`, altså
@@ -174,11 +174,11 @@ export function webTypes(version: string) {
 /**
  * Markupen som viser elementet, fra komponentsiden.
  *
- * Den første kodeblokken med HTML på siden som faktisk inneholder `<fs-…>`,
+ * Den første kodeblokken med HTML på siden som faktisk inneholder `<lt-…>`,
  * uten stilark og uten Datastar. Som regel er det «Ren HTML»-fanen. På
  * dialogsiden er det ikke: der åpner «Ren HTML»-oppskriften dialogen med
  * `showModal()` fra skript, uten web-komponenten, og en snippet for
- * `<fs-dialog>` uten `<fs-dialog>` i seg var det første reviewfunnet.
+ * `<lt-dialog>` uten `<lt-dialog>` i seg var det første reviewfunnet.
  *
  * Snippeten er markupen fram til det første skriptet: stilarkene og
  * registreringen hører i sidemalen, én gang for hele appen, ikke der
@@ -291,7 +291,7 @@ export function snippets() {
  *
  * Formatet er IntelliJs eget: `$navn$` er en variabel, `$$` et dollartegn,
  * og variabelnavnet må være en identifikator, så `okt-tittel` blir
- * `okt_tittel`. Pluginen kopierer fila inn som `liveTemplates/Fristil.xml`.
+ * `okt_tittel`. Pluginen kopierer fila inn som `liveTemplates/Lotek.xml`.
  */
 export function liveTemplates(): string {
   const xml = (text: string) =>
@@ -325,7 +325,7 @@ export function liveTemplates(): string {
       "  </template>",
     ].join("\n")
   })
-  return `<!-- Generert av designsystem/scripts/generate-ordforrad.ts. Ikke rediger. -->\n<templateSet group="Fristil">\n${templates.join("\n")}\n</templateSet>\n`
+  return `<!-- Generert av designsystem/scripts/generate-vocabulary.ts. Ikke rediger. -->\n<templateSet group="LO-TEK">\n${templates.join("\n")}\n</templateSet>\n`
 }
 
 /*
@@ -368,22 +368,22 @@ export function diagnosticsData(): Elements {
 /*
  * Klassene. Lista kommer fra CSS-filene, én mappe per komponent, og navnet
  * på mappa er adressen til komponentsiden. Tittel og beskrivelse er sidens
- * egen frontmatter. Attributtene kommer fra byggefunksjonene i `fs`: hver
+ * egen frontmatter. Attributtene kommer fra byggefunksjonene i `lt`: hver
  * funksjon med `variants`, `sizes`, `colors`, `states`, `types` eller
  * `pickers` kalles én gang per verdi, og attributtet den skriver ut er det
  * som noteres, med verdien som ikke gir noe attributt som standard.
  */
-const COMPONENT_DIRS = ["css", "ramme", "frittstaende"].map((d) =>
+const COMPONENT_DIRS = ["css", "frame", "standalone"].map((d) =>
   join(ROOT, "designsystem/src/components", d),
 )
 
 /*
  * `tokens.css` har klasser som ikke hører til en komponent.
  *
- * `.fs-theme-control` er den første: den bytter tema, så selektoren bor der
+ * `.lt-theme-control` er den første: den bytter tema, så selektoren bor der
  * tokenverdiene bor framfor i en komponentmappe. Uten denne kilden meldte
- * `diagnoseMarkup` «Klassen finnes ikke i Fristil» på riktig markup, og
- * verken VS Code, IntelliJ eller `fristil sjekk` foreslo den.
+ * `diagnoseMarkup` «Klassen finnes ikke i LO-TEK» på riktig markup, og
+ * verken VS Code, IntelliJ eller `lotek sjekk` foreslo den.
  */
 const TOKEN_CSS = join(ROOT, "designsystem/src/tokens/tokens.css")
 
@@ -394,7 +394,7 @@ const OPTION_LISTS: Record<string, string> = {
   states: "state",
   types: "type",
   pickers: "picker",
-  // `fs.label({ required: "text" })`: lista heter markers, opsjonen required.
+  // `lt.label({ required: "text" })`: lista heter markers, opsjonen required.
   markers: "required",
 }
 
@@ -408,14 +408,14 @@ const TOKEN_PAGE = {
   // Leses fra siden, som for komponentene. Skrevet av for hånd drev den fra
   // frontmatteren uten at noe sa fra, og hoverboksen i VS Code og JetBrains
   // siterte en beskrivelse som ikke sto noe sted i dokumentasjonen.
-  title: frontmatter("../tilpasning", "title"),
-  description: frontmatter("../tilpasning", "description"),
-  link: "https://fristil.sobernetics.no/tilpasning/",
+  title: frontmatter("../customising", "title"),
+  description: frontmatter("../customising", "description"),
+  link: "https://lo-tek.sobernetics.no/customising/",
 }
 
 function classesInCss(css: string): string[] {
   const clean = css.replace(/\/\*[\s\S]*?\*\//g, "")
-  return [...new Set(clean.match(/\.fs-[\w-]+/g) ?? [])].map((c) => c.slice(1))
+  return [...new Set(clean.match(/\.lt-[\w-]+/g) ?? [])].map((c) => c.slice(1))
 }
 
 /** Klassene i det en byggefunksjon gir, også når svaret er nøstet. */
@@ -467,7 +467,7 @@ export function classesData(): Classes {
   for (const name of classesInCss(readFileSync(TOKEN_CSS, "utf8")))
     found[name] ??= { ...TOKEN_PAGE, attributes: {} }
 
-  for (const builder of Object.values(fs as Record<string, unknown>)) {
+  for (const builder of Object.values(lt as Record<string, unknown>)) {
     if (typeof builder !== "function") continue
     const build = builder as (options?: Record<string, unknown>) => unknown
     let base: unknown
@@ -482,7 +482,7 @@ export function classesData(): Classes {
     /*
      * Settene svaret består av. En byggefunksjon som `button` gir ett, og
      * `dialog` gir ett per del, `host`, `dialog`, `header` og så videre.
-     * Hvert sett sjekkes for seg, så `data-color` havner på `fs-dialog`, som
+     * Hvert sett sjekkes for seg, så `data-color` havner på `lt-dialog`, som
      * står i det samme settet, og ikke på overskriften.
      */
     const parts = (result: unknown): [string, Record<string, unknown>][] => {
@@ -501,9 +501,9 @@ export function classesData(): Classes {
       for (const [list, option] of Object.entries(OPTION_LISTS)) {
         const values = (builder as unknown as Record<string, unknown>)[list]
         if (!Array.isArray(values)) continue
-        // Hvert attributt en verdi blir til: `fs.input({ type: "date" })` gir både
+        // Hvert attributt en verdi blir til: `lt.input({ type: "date" })` gir både
         // `type` og `data-variant`. `type` er HTML sitt eget, og CSS-en leser det
-        // ikke, så det noteres ikke: `type="color"` er lovlig HTML på et fs-input.
+        // ikke, så det noteres ikke: `type="color"` er lovlig HTML på et lt-input.
         const emitted = new Map<string, string[]>()
         const silent: string[] = []
         for (const value of values as string[]) {
@@ -545,20 +545,20 @@ export function classesData(): Classes {
   }
 
   /*
-   * Flaggene, som `data-interactive` på `fs-card` og `data-optional` på
-   * `fs-label`: et `data-*`-attributt som kommer når et boolsk valg slås på.
-   * Uten dem manglet de i editoren og i regelbøkene, mens `fristil sjekk`
+   * Flaggene, som `data-interactive` på `lt-card` og `data-optional` på
+   * `lt-label`: et `data-*`-attributt som kommer når et boolsk valg slås på.
+   * Uten dem manglet de i editoren og i regelbøkene, mens `lotek sjekk`
    * kjente dem.
    *
    * De leses av byggefunksjonen selv, med valgene TypeScript ser i
-   * `src/fs.ts`, ikke fra `manifest.json` på disk. Lest derfra lå de en runde
+   * `src/lt.ts`, ikke fra `manifest.json` på disk. Lest derfra lå de en runde
    * bak: `generate` skriver denne fila før manifestet, så et nytt flagg kom
    * inn i manifestet ved første bygg, men hit først ved det neste, og
-   * `sjekk:ordforrad` felte bygget i mellomtiden.
+   * `check:vocabulary` felte bygget i mellomtiden.
    */
   const flags = new Map<string, Set<string>>()
   for (const builder of lesByggefunksjoner()) {
-    const build = (fs as Record<string, unknown>)[builder.name]
+    const build = (lt as Record<string, unknown>)[builder.name]
     if (typeof build !== "function") continue
     // Kaster byggefunksjonen, skal generate stoppe. Et flagg som stille
     // forsvant fra classes.ts, forsvant fra editorene og diagnostikken med.
@@ -623,7 +623,7 @@ export function files(): Record<string, string> {
    * `JSON.stringify` ikke setter avsluttende komma.
    */
   const module = (name: string, type: string, value: unknown) =>
-    `// Generert av designsystem/scripts/generate-ordforrad.ts. Ikke rediger.\n` +
+    `// Generert av designsystem/scripts/generate-vocabulary.ts. Ikke rediger.\n` +
     `import type { ${type} } from "./types.js"\n\n` +
     `export const ${name}: ${type} = ${JSON.stringify(value, null, 2)}\n`
   return {
@@ -648,7 +648,7 @@ export function files(): Record<string, string> {
 /**
  * Typene til hendelsene web-komponentene sender, for `addEventListener`.
  *
- * `FsEventMap` har hver hendelse som `CustomEvent` med `detail` slik
+ * `LtEventMap` har hver hendelse som `CustomEvent` med `detail` slik
  * metadataen beskriver den, og `HTMLElementEventMap` utvides med den. Det er
  * DOM-typen TypeScript selv har, så det samme gjelder i ren TypeScript, i et
  * skript i Astro eller Datastar, og i React gjennom en `ref`. Ingenting her
@@ -657,10 +657,10 @@ export function files(): Record<string, string> {
  * Sender to elementer en hendelse med samme navn, må `detail` være den
  * samme, ellers kunne bare én av dem få en type. Da stopper generatoren.
  *
- * Fila utvider også `HTMLElementTagNameMap`, så `querySelector("fs-dialog")`
- * gir `FsDialog` og ikke `Element`. Kartet sto i hver `fs-*.ts`, men en
+ * Fila utvider også `HTMLElementTagNameMap`, så `querySelector("lt-dialog")`
+ * gir `LtDialog` og ikke `Element`. Kartet sto i hver `lt-*.ts`, men en
  * inngang som `/register` importerer dem bare i koden, og i `.d.ts`-fila
- * forsvinner importen. Da var `querySelector("fs-dialog")` et `Element`, og
+ * forsvinner importen. Da var `querySelector("lt-dialog")` et `Element`, og
  * `addEventListener` på det ga `Event` uten `detail`, mens siden lovet det
  * motsatte. Hver inngang til web-komponentene tar med denne fila, gjennom
  * `host-element.ts` eller en egen re-eksport, så kartet følger med dem alle.
@@ -702,7 +702,7 @@ function eventTypes(): string {
   const tags = elements
     .map((element) => `    "${element.tag}": ${hosts.get(element.tag)?.name}`)
     .sort()
-  return `// Generert av designsystem/scripts/generate-ordforrad.ts fra metadata.ts. Ikke rediger.
+  return `// Generert av designsystem/scripts/generate-vocabulary.ts fra metadata.ts. Ikke rediger.
 
 ${imports.map((host) => `import type { ${host.name} } from "./${host.module}.js"`).join("\n")}
 
@@ -714,18 +714,18 @@ ${imports.map((host) => `import type { ${host.name} } from "./${host.module}.js"
  * \`document\`.
  *
  * \`HTMLElementTagNameMap\` utvides med elementene, så
- * \`querySelector("fs-dialog")\` gir \`FsDialog | null\`. Kartet står her, og
+ * \`querySelector("lt-dialog")\` gir \`LtDialog | null\`. Kartet står her, og
  * ikke i hver komponent, fordi hver inngang til web-komponentene tar med
- * denne fila: fra \`/register\` alene var \`querySelector("fs-dialog")\` ellers
+ * denne fila: fra \`/register\` alene var \`querySelector("lt-dialog")\` ellers
  * et \`Element\`, og lytteren på det fikk \`Event\` uten \`detail\`.
  */
-export interface FsEventMap {
+export interface LtEventMap {
 ${lines.join("\n")}
 }
 
 declare global {
-  interface HTMLElementEventMap extends FsEventMap {}
-  interface DocumentEventMap extends FsEventMap {}
+  interface HTMLElementEventMap extends LtEventMap {}
+  interface DocumentEventMap extends LtEventMap {}
   interface HTMLElementTagNameMap {
 ${tags.join("\n")}
   }
@@ -736,8 +736,8 @@ ${tags.join("\n")}
 /**
  * Klassen bak hvert element, lest fra kilden.
  *
- * Fila heter det samme som taggen, som `ramme/dialog/fs-dialog.ts` for
- * `<fs-dialog>`, og klassen står som `export class FsDialog`. Navnet leses
+ * Fila heter det samme som taggen, som `frame/dialog/lt-dialog.ts` for
+ * `<lt-dialog>`, og klassen står som `export class LtDialog`. Navnet leses
  * derfra, ikke fra en liste her, så et element som bytter mappe eller navn
  * stopper generatoren i stedet for å gi et kart som peker feil.
  */
@@ -752,9 +752,9 @@ function hostClasses(): Map<string, { name: string; module: string }> {
       )
     const module = (file[0] as string).replace(/\.ts$/, "")
     const source = readFileSync(join(components, file[0] as string), "utf8")
-    const name = /^export class (Fs\w+) extends /m.exec(source)?.[1]
+    const name = /^export class (Lt\w+) extends /m.exec(source)?.[1]
     if (!name)
-      throw new Error(`Fant ingen «export class Fs… extends» i ${file[0]}`)
+      throw new Error(`Fant ingen «export class Lt… extends» i ${file[0]}`)
     hosts.set(element.tag, { name, module })
   }
   return hosts

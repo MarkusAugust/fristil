@@ -10,11 +10,11 @@ En side som mister forbindelsen ser helt normal ut, men er frosset. Fyller bruke
 
 ```ts
 // main.ts, kjøres én gang når appen starter
-import { defineFsConnectionStatus } from "@fristil/designsystem/connection-status"
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/connection-status.css"
+import { defineLtConnectionStatus } from "@lo-tek/interfaces/connection-status"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/connection-status.css"
 
-defineFsConnectionStatus()
+defineLtConnectionStatus()
 ```
 
 ## Slik tar du den i bruk
@@ -26,24 +26,24 @@ defineFsConnectionStatus()
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/frittstaende/connection-status/connection-status.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/standalone/connection-status/connection-status.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
-    <fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
+    <lt-connection-status class="lt-connection-status" data-ignore-morph></lt-connection-status>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsConnectionStatus } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/frittstaende/connection-status/fs-connection-status.js"
+      import { defineLtConnectionStatus } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/connection-status/lt-connection-status.js"
 
-      defineFsConnectionStatus()
+      defineLtConnectionStatus()
     </script>
 
     <script type="module">
-      const samband = document.querySelector("fs-connection-status")
+      const samband = document.querySelector("lt-connection-status")
       if (!samband) throw new Error("fant ikke elementet")
 
       async function lagre(body) {
@@ -60,28 +60,28 @@ defineFsConnectionStatus()
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/fristil.d.ts, gir <fs-connection-status> typer i JSX
-    import "@fristil/designsystem/react-jsx"
+    // src/lotek.d.ts, gir <lt-connection-status> typer i JSX
+    import "@lo-tek/interfaces/react-jsx"
     ```
 
     ```tsx
-    import "@fristil/designsystem/connection-status.css"
-    import { fs } from "@fristil/designsystem/react"
+    import "@lo-tek/interfaces/connection-status.css"
+    import { lt } from "@lo-tek/interfaces/react"
     import {
-      defineFsConnectionStatus,
+      defineLtConnectionStatus,
       reportFailure,
       reportSuccess,
-    } from "@fristil/designsystem/connection-status"
-    import "@fristil/designsystem/tokens.css"
+    } from "@lo-tek/interfaces/connection-status"
+    import "@lo-tek/interfaces/tokens.css"
 
-    defineFsConnectionStatus()
+    defineLtConnectionStatus()
 
     export function Samband() {
-      return <fs-connection-status {...fs.connectionStatus()} />
+      return <lt-connection-status {...lt.connectionStatus()} />
     }
 
     export async function lagre(body: BodyInit) {
-      const samband = document.querySelector("fs-connection-status")
+      const samband = document.querySelector("lt-connection-status")
       if (!samband) throw new Error("fant ikke elementet")
       try {
         const svar = await fetch("/api/lagre", { method: "POST", body })
@@ -93,7 +93,7 @@ defineFsConnectionStatus()
     }
     ```
 
-    `reportFailure(element)` og `reportSuccess(element)` venter på at registreringen har kjørt før de kaller metoden. Et kall som kommer før `defineFsConnectionStatus()`, som den første meldingen fra en hendelsesstrøm, blir da gjort i det elementet er klart, i stedet for å feile.
+    `reportFailure(element)` og `reportSuccess(element)` venter på at registreringen har kjørt før de kaller metoden. Et kall som kommer før `defineLtConnectionStatus()`, som den første meldingen fra en hendelsesstrøm, blir da gjort i det elementet er klart, i stedet for å feile.
   </TabItem>
   <TabItem label="Datastar">
     ```html
@@ -103,25 +103,25 @@ defineFsConnectionStatus()
 
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/frittstaende/connection-status/connection-status.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/standalone/connection-status/connection-status.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsConnectionStatus } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/frittstaende/connection-status/fs-connection-status.js"
+      import { defineLtConnectionStatus } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/connection-status/lt-connection-status.js"
 
-      defineFsConnectionStatus()
+      defineLtConnectionStatus()
     </script>
 
-    <fs-connection-status class="fs-connection-status" data-ignore-morph></fs-connection-status>
+    <lt-connection-status class="lt-connection-status" data-ignore-morph></lt-connection-status>
 
     <script type="module">
       import { reportFailure, reportSuccess } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/frittstaende/connection-status/fs-connection-status.js"
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/connection-status/lt-connection-status.js"
 
-      const linje = document.querySelector("fs-connection-status")
+      const linje = document.querySelector("lt-connection-status")
 
       // Datastar sier fra om hvert kall med hendelsen `datastar-fetch`.
       document.addEventListener("datastar-fetch", (hendelse) => {
@@ -143,7 +143,7 @@ defineFsConnectionStatus()
 
 ## Hvorfor den lager sitt eget innhold
 
-Serveren kan per definisjon ikke fortelle deg at den er utilgjengelig. Er den nede, kommer det ingenting derfra å rendre. Derfor lager komponenten innholdet selv, og byggefunksjonen setter `data-ignore-morph` så en senere patch ikke river linja bort i det øyeblikket forbindelsen er tilbake. Se [Markup og oppførsel](/markup-og-oppforsel/).
+Serveren kan per definisjon ikke fortelle deg at den er utilgjengelig. Er den nede, kommer det ingenting derfra å rendre. Derfor lager komponenten innholdet selv, og byggefunksjonen setter `data-ignore-morph` så en senere patch ikke river linja bort i det øyeblikket forbindelsen er tilbake. Se [Markup og oppførsel](/markup-and-behaviour/).
 
 ## `navigator.onLine` er ikke nok
 
@@ -152,7 +152,7 @@ Nettleseren vet bare om maskinen har et nettverk, ikke om serveren svarer. Et ko
 Derfor melder appen selv fra:
 
 ```ts
-const samband = document.querySelector("fs-connection-status")
+const samband = document.querySelector("lt-connection-status")
 if (!samband) throw new Error("fant ikke elementet")
 
 try {
@@ -169,7 +169,7 @@ try {
 | `reportFailure()` | Et kall til serveren feilet |
 | `reportSuccess()` | Et kall lyktes igjen |
 
-`reportFailure(element)` og `reportSuccess(element)` fra `@fristil/designsystem/connection-status` gjør det samme, men venter først på at elementet er registrert.
+`reportFailure(element)` og `reportSuccess(element)` fra `@lo-tek/interfaces/connection-status` gjør det samme, men venter først på at elementet er registrert.
 
 Komponenten lytter i tillegg på nettleserens `offline` og `online`, så et nettverk som forsvinner fanges uten at du gjør noe.
 
@@ -189,17 +189,17 @@ Komponenten lytter i tillegg på nettleserens `offline` og `online`, så et nett
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-connection-status` | Vertselementet. Ligger som `display: contents` og tar ingen plass |
-| `.fs-connection-status__bar` | Selve linja. Har `data-state="offline"` eller `data-state="online"` |
+| `.lt-connection-status` | Vertselementet. Ligger som `display: contents` og tar ingen plass |
+| `.lt-connection-status__bar` | Selve linja. Har `data-state="offline"` eller `data-state="online"` |
 
 | Variabel | Reserve |
 | --- | --- |
-| `--fs-connection-status-layer` | `1000` |
-| `--fs-connection-status-padding` | `var(--fs-spacing-2) var(--fs-spacing-4)` |
+| `--lt-connection-status-layer` | `1000` |
+| `--lt-connection-status-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
 
 ```css
-.fs-connection-status__bar {
-  --fs-connection-status-layer: 9999;
+.lt-connection-status__bar {
+  --lt-connection-status-layer: 9999;
 }
 ```
 ## Tilgjengelighet

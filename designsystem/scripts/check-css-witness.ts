@@ -6,18 +6,18 @@
  * to noe forskjellig, er én av dem feil, og da skal det fram:
  *
  *   1. Hver lovlige verdi i manifestet, utenom standardverdien, har en
- *      selektor som `.fs-button[data-variant="ghost"]`. En verdi uten
+ *      selektor som `.lt-button[data-variant="ghost"]`. En verdi uten
  *      selektor gjør ingenting synlig. Det kan være riktig, som en verdi
  *      bare skript leser, og da står den i `UTEN_STYLING` med grunnen.
- *   2. Hver verdi en selektor bruker på en `fs-`-klasse, står i manifestet.
+ *   2. Hver verdi en selektor bruker på en `lt-`-klasse, står i manifestet.
  *      En selektor på en verdi ingen byggefunksjon gir, er enten en verdi
  *      som mangler i API-et, eller en intern verdi komponenten setter selv.
  *      Den siste står i `INTERN` med grunnen.
  *
- * Stilarkene leses av kjernens CSS-leser (`kjerne/src/styles.rs`), den samme
- * som `fristil sjekk --css` bruker, så vitnet og sjekken ser det samme.
+ * Stilarkene leses av kjernens CSS-leser (`core/src/styles.rs`), den samme
+ * som `lotek sjekk --css` bruker, så vitnet og sjekken ser det samme.
  *
- * Kjør med: bun scripts/sjekk-css-vitne.ts, eller som en del av `bun run build`.
+ * Kjør med: bun scripts/check-css-witness.ts, eller som en del av `bun run build`.
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs"
@@ -47,10 +47,10 @@ const manifest: Manifest = JSON.parse(
  * `klasse[attributt="verdi"]`.
  */
 const UTEN_STYLING: Record<string, string> = {
-  'fs-search[data-state="invalid"]':
-    "fs.search() setter alltid fs-input i tillegg, og tilstanden styles der.",
-  'fs-search[data-state="success"]':
-    "fs.search() setter alltid fs-input i tillegg, og tilstanden styles der.",
+  'lt-search[data-state="invalid"]':
+    "lt.search() setter alltid lt-input i tillegg, og tilstanden styles der.",
+  'lt-search[data-state="success"]':
+    "lt.search() setter alltid lt-input i tillegg, og tilstanden styles der.",
 }
 
 /**
@@ -59,14 +59,14 @@ const UTEN_STYLING: Record<string, string> = {
  * selektoren bare spør om attributtet finnes.
  */
 const INTERN: Record<string, string> = {
-  'fs-connection-status__bar[data-state="online"]':
-    "<fs-connection-status> setter den selv i nettleseren når forbindelsen er tilbake. Serveren skriver bare linja.",
-  'fs-toast__message[data-color="success"]':
-    "<fs-toast> lager meldingene selv, med fargen fra show(). Serveren skriver bare regionen.",
-  'fs-toast__message[data-color="warning"]':
-    "<fs-toast> lager meldingene selv, med fargen fra show(). Serveren skriver bare regionen.",
-  'fs-toast__message[data-color="danger"]':
-    "<fs-toast> lager meldingene selv, med fargen fra show(). Serveren skriver bare regionen.",
+  'lt-connection-status__bar[data-state="online"]':
+    "<lt-connection-status> setter den selv i nettleseren når forbindelsen er tilbake. Serveren skriver bare linja.",
+  'lt-toast__message[data-color="success"]':
+    "<lt-toast> lager meldingene selv, med fargen fra show(). Serveren skriver bare regionen.",
+  'lt-toast__message[data-color="warning"]':
+    "<lt-toast> lager meldingene selv, med fargen fra show(). Serveren skriver bare regionen.",
+  'lt-toast__message[data-color="danger"]':
+    "<lt-toast> lager meldingene selv, med fargen fra show(). Serveren skriver bare regionen.",
 }
 
 const nøkkel = (klasse: string, attributt: string, verdi?: string) =>
@@ -93,7 +93,7 @@ for (const sti of [
   for (const { class: klasse, attribute, value } of kjerne.inspectStyles(
     readFileSync(sti, "utf8"),
   ).attributes) {
-    if (klasse.startsWith("fs-") && attribute.startsWith("data-"))
+    if (klasse.startsWith("lt-") && attribute.startsWith("data-"))
       vitnet.set(nøkkel(klasse, attribute, value), fil)
   }
 }
@@ -102,7 +102,7 @@ const avvik: string[] = []
 const brukt = new Set<string>()
 
 // 1. Hver lovlige verdi har en selektor. En selektor som bare spør om
-// attributtet finnes, som `.fs-label[data-required]`, vitner for alle
+// attributtet finnes, som `.lt-label[data-required]`, vitner for alle
 // verdiene, og er det eneste et flagg kan ha.
 let verdier = 0
 for (const [klasse, { attributes }] of Object.entries(manifest.classes)) {
@@ -128,7 +128,7 @@ for (const [klasse, { attributes }] of Object.entries(manifest.classes)) {
 // 2. Hver verdi en selektor bruker, står i manifestet.
 for (const [k, fil] of vitnet) {
   const [, klasse, attributt, verdi] =
-    k.match(/^(fs-[^[]+)\[([^=\]]+)(?:="(.*)")?\]$/) ?? []
+    k.match(/^(lt-[^[]+)\[([^=\]]+)(?:="(.*)")?\]$/) ?? []
   const lovlige = manifest.classes[klasse]?.attributes[attributt]
   const kjent =
     lovlige !== undefined &&

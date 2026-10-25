@@ -9,9 +9,9 @@ import { elements } from "../src/vocabulary/elements"
 const ELEMENTER = Object.keys(elements)
 
 /*
- * Hver `fs-`-klasse komponentstilarkene styler, lest fra stilarkene selv.
- * Eksakte klassevelgere og ikke `[class*="fs-"]`: den traff også
- * Bootstraps `fs-1`, og bommet på en klasse med tab eller linjeskift foran.
+ * Hver `lt-`-klasse komponentstilarkene styler, lest fra stilarkene selv.
+ * Eksakte klassevelgere og ikke `[class*="lt-"]`: den traff også
+ * Bootstraps `lt-1`, og bommet på en klasse med tab eller linjeskift foran.
  */
 const KLASSER = new Set<string>()
 for await (const fil of new Bun.Glob("src/components/**/*.css").scan({
@@ -19,22 +19,22 @@ for await (const fil of new Bun.Glob("src/components/**/*.css").scan({
   absolute: true,
 })) {
   const kilde = (await Bun.file(fil).text()).replace(/\/\*[\s\S]*?\*\//g, "")
-  for (const [, navn] of kilde.matchAll(/\.(fs-[a-z0-9_-]+)/g))
+  for (const [, navn] of kilde.matchAll(/\.(lt-[a-z0-9_-]+)/g))
     KLASSER.add(navn)
 }
 
 /*
  * Barn uten egen klasse som får `display` fra en komponentregel.
- * `skjult.browser.test.ts` leter selv etter slike regler i stilarkene, så et
+ * `hidden.browser.test.ts` leter selv etter slike regler i stilarkene, så et
  * nytt barn som mangler her, feiler der.
  */
 const BARN = [
-  ".fs-accordion summary",
-  ".fs-breadcrumbs li",
-  ".fs-file-upload-list li",
-  ".fs-pagination *",
-  ".fs-select option",
-  ".fs-tabs__list a",
+  ".lt-accordion summary",
+  ".lt-breadcrumbs li",
+  ".lt-file-upload-list li",
+  ".lt-pagination *",
+  ".lt-select option",
+  ".lt-tabs__list a",
 ]
 
 const sections: Record<string, string[]> = {}
@@ -48,11 +48,11 @@ const sections: Record<string, string[]> = {}
 const alle: Record<string, string> = { ...cssTokens, ...colorTokens }
 
 for (const key of Object.keys(alle)) {
-  // Fargene grupperes på familie, resten på slag: `--fs-color-danger-*` blir
-  // «fs-color-danger», `--fs-spacing-4` blir «fs-spacing».
+  // Fargene grupperes på familie, resten på slag: `--lt-color-danger-*` blir
+  // «lt-color-danger», `--lt-spacing-4` blir «lt-spacing».
   const deler = key.replace(/^--/, "").split("-")
   const section = deler
-    .slice(0, key.startsWith("--fs-color-") ? 3 : 2)
+    .slice(0, key.startsWith("--lt-color-") ? 3 : 2)
     .join("-")
 
   if (!sections[section]) sections[section] = []
@@ -78,8 +78,8 @@ for (const key of Object.keys(alle)) {
  * fra `<html>`. Et barn kan melde seg ut med `color-scheme: normal`, men
  * det er en motregel verten aldri ba om å måtte skrive.
  *
- * Sto den på `:root`, tok Fristil over fargeskjemaet til et dokument det
- * ikke eier. En komponent som laster `fristil.css` inn i en vertsside ga hele
+ * Sto den på `:root`, tok LO-TEK over fargeskjemaet til et dokument det
+ * ikke eier. En komponent som laster `lotek.css` inn i en vertsside ga hele
  * verten mørke rullefelt og skjemakontroller i mørk modus, langt utenfor
  * komponenten selv, og verten hadde aldri bedt om det.
  *
@@ -89,12 +89,12 @@ for (const key of Object.keys(alle)) {
  *
  * Unntaket er temavelgeren nedenfor. Hvert av de tre valgene setter
  * `color-scheme` selv, og da skal konsumenten ikke skrive den: en regel
- * utenfor et lag slår `@layer fristil`.
+ * utenfor et lag slår `@layer lotek`.
  */
 const lines = [
   "/* Generert. Rediger tokens.ts, ikke denne fila. */",
   "",
-  "@layer fristil {",
+  "@layer lotek {",
   "  :root {",
 ]
 for (const [index, [section, props]] of Object.entries(sections).entries()) {
@@ -143,17 +143,17 @@ const lightLines = morkeNavn.map((name) => {
  * med `data-theme="dark"` på en lys side den lyse fokusringen, 2,4:1 mot den
  * mørke flaten, og en avslått knapp ble lysegrå. Deklarert på nytt i hver
  * temablokk, også mediespørringen så blokkene holder seg like, regnes de ut
- * mot temaets farger, også et generert tema i `fristil-tema`-laget.
+ * mot temaets farger, også et generert tema i `lotek-theme`-laget.
  *
  * Prisen er at en overstyring på `:root` ikke når inn i et `data-theme`: en
  * deklarasjon på elementet selv slår en verdi det arver. Lista er derfor
- * skrevet ut, så et nytt alias som `var(--fs-font-family-base)` ikke havner
+ * skrevet ut, så et nytt alias som `var(--lt-font-family-base)` ikke havner
  * her uten at noen har bestemt det.
  */
 const AVLEDET = [
-  "--fs-color-disabled-surface",
-  "--fs-color-disabled-text",
-  "--fs-focus-ring",
+  "--lt-color-disabled-surface",
+  "--lt-color-disabled-text",
+  "--lt-focus-ring",
 ]
 const avledetLines = AVLEDET.map((name) => {
   if (alle[name] === undefined)
@@ -175,7 +175,7 @@ const avledetLines = AVLEDET.map((name) => {
  * låse sitt eget tre uten å røre verten.
  */
 /*
- * `.fs-theme-control` lar brukeren velge tema uten en linje JavaScript.
+ * `.lt-theme-control` lar brukeren velge tema uten en linje JavaScript.
  *
  * Klassen står på en radioknapp, og `value` sier hvilket tema den velger.
  * Selektoren blir en ekstra linje på temablokkene framfor en kopi av dem, så
@@ -184,12 +184,12 @@ const avledetLines = AVLEDET.map((name) => {
  * «Følg systemet» trenger ingen temablokk: en verdi uten blokk treffer
  * ingenting, og da gjelder `:root` og mediespørringen igjen.
  *
- * Den trenger likevel `color-scheme`, og det er funnet underveis. Fristil
+ * Den trenger likevel `color-scheme`, og det er funnet underveis. LO-TEK
  * setter den ikke på bar `:root`, siden pakken kan være en gjest på en side den
  * ikke eier, så rådet har vært at konsumenten skriver `color-scheme: light
  * dark` på `<html>` selv. Gjør den det utenfor et lag, slår regelen
- * `@layer fristil`, og et valgt mørkt tema fikk lyse rullefelt og
- * skjemakontroller. Å svare med «legg den i et lag foran fristil» er en felle:
+ * `@layer lotek`, og et valgt mørkt tema fikk lyse rullefelt og
+ * skjemakontroller. Å svare med «legg den i et lag foran lotek» er en felle:
  * lagrekkefølgen er alt etablert av tokens.css, som lastes først, så en senere
  * `@layer`-setning legger laget bak. Kontrollen tar derfor ansvaret selv, og
  * den som bruker den trenger ikke skrive `color-scheme` i det hele tatt.
@@ -197,11 +197,11 @@ const avledetLines = AVLEDET.map((name) => {
  * Kontrollen vinner over `data-theme` på det samme elementet, siden `:has()`
  * tar spesifisiteten til argumentet sitt. Det er med vilje: serveren sender
  * valget den har lagret, og klikket skal slå igjennom før svaret er tilbake.
- * Rekkefølgen er etterprøvd i alle tre motorene i `tema.browser.test.ts`,
+ * Rekkefølgen er etterprøvd i alle tre motorene i `theme.browser.test.ts`,
  * ikke regnet ut her.
  */
 const control = (tema: string) =>
-  `:root:has(.fs-theme-control[value="${tema}"]:checked)`
+  `:root:has(.lt-theme-control[value="${tema}"]:checked)`
 
 lines.push(
   "",
@@ -241,15 +241,15 @@ lines.push(
    *
    * Roten får ingenting. Pakken kan være gjest på en side den ikke eier, og
    * en bakgrunn på `<html>` stoppet sidens egen `body`-bakgrunn fra å fylle
-   * vinduet. `fs-toast` er en fast kolonne over siden, og skal ikke bli en
+   * vinduet. `lt-toast` er en fast kolonne over siden, og skal ikke bli en
    * mørk stripe bak meldingene.
    */
   "  :where(",
-  '    [data-theme="light"]:not(:root, fs-toast),',
-  '    [data-theme="dark"]:not(:root, fs-toast)',
+  '    [data-theme="light"]:not(:root, lt-toast),',
+  '    [data-theme="dark"]:not(:root, lt-toast)',
   "  ) {",
-  "    background-color: var(--fs-color-neutral-canvas);",
-  "    color: var(--fs-color-neutral-text);",
+  "    background-color: var(--lt-color-neutral-canvas);",
+  "    color: var(--lt-color-neutral-text);",
   "  }",
   "",
   /*
@@ -272,7 +272,7 @@ lines.push(
   // Brytningen står inne i `:has(…)`. Et linjeskift mellom leddene utenfor
   // parentesen ville blitt en etterkommerselektor. Formen er Biomes.
   '  :root:not([data-theme="light"]):not([data-theme="dark"]):has(',
-  '    .fs-theme-control[value="auto"]:checked',
+  '    .lt-theme-control[value="auto"]:checked',
   "  ) {",
   "    color-scheme: light dark;",
   "  }",
@@ -281,10 +281,10 @@ lines.push(
    * `hidden` skal skjule, også en komponent som setter `display` selv.
    *
    * Forfatterstil i et hvilket som helst lag slår nettleserens
-   * `[hidden] { display: none }`, så `<div class="fs-alert" hidden>` sto
+   * `[hidden] { display: none }`, så `<div class="lt-alert" hidden>` sto
    * synlig. `!important` i laget er det nettleseren selv gjør, og slår alle
    * vanlige deklarasjoner uansett spesifisitet, også varianter som
-   * `.fs-select[data-picker="styled"] option`. Det slår også konsumentens
+   * `.lt-select[data-picker="styled"] option`. Det slår også konsumentens
    * egen `!important` uten lag, så `hidden` kan ikke overstyres her.
    *
    * Elementene står for seg, siden en web component ikke trenger en klasse,

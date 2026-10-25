@@ -4,8 +4,8 @@
       "start": 22,
       "end": 32,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/connection-status/",
-      "message": "<fs-connection-status> har ikke attributtet «onlinetext». Mente du online-text?",
+      "link": "https://lo-tek.sobernetics.no/components/connection-status/",
+      "message": "<lt-connection-status> har ikke attributtet «onlinetext». Mente du online-text?",
       "fix": {
         "title": "Bytt til online-text",
         "edits": [
@@ -22,7 +22,7 @@
       "start": 79,
       "end": 87,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
       "message": "optional er et boolsk attributt: det står der eller ikke. optional=\"false\" betyr det samme som optional. Ta det bort for å slå det av.",
       "fix": {
         "title": "Ta bort optional",
@@ -42,8 +42,8 @@
       "start": 22,
       "end": 32,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/connection-status/",
-      "message": "<fs-connection-status> har ikke attributtet «onlinetext». Mente du online-text?",
+      "link": "https://lo-tek.sobernetics.no/components/connection-status/",
+      "message": "<lt-connection-status> har ikke attributtet «onlinetext». Mente du online-text?",
       "fix": {
         "title": "Bytt til online-text",
         "edits": [
@@ -60,7 +60,7 @@
       "start": 79,
       "end": 87,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
       "message": "optional er et boolsk attributt: det står der eller ikke. optional=\"false\" betyr det samme som optional. Ta det bort for å slå det av.",
       "fix": {
         "title": "Ta bort optional",

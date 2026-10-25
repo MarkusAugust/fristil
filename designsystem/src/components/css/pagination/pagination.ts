@@ -1,8 +1,8 @@
 import { attributes } from "../shared.js"
 
-export const PAGINATION_CLASS = "fs-pagination" as const
+export const PAGINATION_CLASS = "lt-pagination" as const
 /** Hoppet i nummerrekken, som «1 2 … 9 10». */
-export const PAGINATION_GAP_CLASS = "fs-pagination__gap" as const
+export const PAGINATION_GAP_CLASS = "lt-pagination__gap" as const
 
 export type PaginationAttributes = {
   class: typeof PAGINATION_CLASS

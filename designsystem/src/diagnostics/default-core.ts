@@ -2,16 +2,16 @@
  * Kjernen fra pakken selv, lastet første gang den trengs, med pakkens eget
  * manifest og fargekontrakt, som ligger ved siden av modulen.
  *
- * Både sjekken (`@fristil/designsystem/diagnostics`) og temaet
- * (`@fristil/designsystem/tema` og `tema-sjekk`) bruker den samme instansen.
+ * Både sjekken (`@lo-tek/interfaces/diagnostics`) og temaet
+ * (`@lo-tek/interfaces/theme` og `tema-sjekk`) bruker den samme instansen.
  */
 
 import { type Core, loadCore } from "./core.js"
 
 /** Filene i pakken, sett fra både `src/diagnostics/` og `dist/diagnostics/`. */
-const MODULE = new URL("../../kjerne/fristil-kjerne.wasm", import.meta.url)
+const MODULE = new URL("../../core/lotek-core.wasm", import.meta.url)
 const MANIFEST = new URL("../../manifest/manifest.json", import.meta.url)
-const CONTRACT = new URL("../../src/tokens/fargekontrakt.json", import.meta.url)
+const CONTRACT = new URL("../../src/tokens/color-contract.json", import.meta.url)
 
 let core: Core | undefined
 
@@ -36,8 +36,8 @@ export function defaultCore(): Core {
     const node = globalThis.process?.versions?.node
     throw new Error(
       node
-        ? `Fristil krever Node 20.16 eller nyere i 20-serien, eller Node 22.3 eller nyere, og dette er Node ${node}.`
-        : "Fristil leser kjernen fra pakken, og det krever Node, Bun eller Deno. I nettleseren: last fristil-kjerne.wasm selv, gi den til loadCore, og gi kjernen manifest.json med loadManifest og fargekontrakt.json med loadContract.",
+        ? `LO-TEK krever Node 20.16 eller nyere i 20-serien, eller Node 22.3 eller nyere, og dette er Node ${node}.`
+        : "LO-TEK leser kjernen fra pakken, og det krever Node, Bun eller Deno. I nettleseren: last lotek-core.wasm selv, gi den til loadCore, og gi kjernen manifest.json med loadManifest og color-contract.json med loadContract.",
     )
   }
   let bytes: Uint8Array
@@ -45,7 +45,7 @@ export function defaultCore(): Core {
     bytes = fs.readFileSync(MODULE)
   } catch {
     throw new Error(
-      `Fant ikke kjernen i ${MODULE.pathname}. I repoet bygges den med «bun run kjerne» i designsystem/, som krever Rust.`,
+      `Fant ikke kjernen i ${MODULE.pathname}. I repoet bygges den med «bun run core» i designsystem/, som krever Rust.`,
     )
   }
   // Manifestet trengs bare av sjekken, og fargekontrakten bare av temaet.

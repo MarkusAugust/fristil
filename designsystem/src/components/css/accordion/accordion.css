@@ -1,71 +1,71 @@
-@layer fristil {
-  .fs-accordion {
+@layer lotek {
+  .lt-accordion {
     box-sizing: border-box;
-    border: 1px solid var(--fs-color-neutral-border-subtle);
-    border-radius: var(--fs-accordion-radius, var(--fs-spacing-1));
+    border: 1px solid var(--lt-color-neutral-border-subtle);
+    border-radius: var(--lt-accordion-radius, var(--lt-spacing-1));
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-strong);
-    background: var(--fs-color-neutral-canvas);
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-neutral-canvas);
   }
 
-  .fs-accordion + .fs-accordion {
-    margin-block-start: var(--fs-spacing-2);
+  .lt-accordion + .lt-accordion {
+    margin-block-start: var(--lt-spacing-2);
   }
 
-  .fs-accordion summary {
+  .lt-accordion summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--fs-spacing-2);
+    gap: var(--lt-spacing-2);
     padding: var(
-      --fs-accordion-padding,
-      var(--fs-spacing-3)
-        var(--fs-accordion-padding-inline, var(--fs-spacing-4))
+      --lt-accordion-padding,
+      var(--lt-spacing-3)
+        var(--lt-accordion-padding-inline, var(--lt-spacing-4))
     );
-    font-weight: var(--fs-font-weight-semibold);
+    font-weight: var(--lt-font-weight-semibold);
     cursor: pointer;
     /* Trekanten fra nettleseren er ulik i hver av dem. Den byttes ut med en
        som er lik overalt, og som snur med panelet. */
     list-style: none;
   }
 
-  .fs-accordion summary::-webkit-details-marker {
+  .lt-accordion summary::-webkit-details-marker {
     display: none;
   }
 
-  .fs-accordion summary::after {
+  .lt-accordion summary::after {
     content: "";
-    inline-size: var(--fs-spacing-2);
-    block-size: var(--fs-spacing-2);
+    inline-size: var(--lt-spacing-2);
+    block-size: var(--lt-spacing-2);
     flex: none;
-    border-inline-end: 2px solid var(--fs-color-accent-text);
-    border-block-end: 2px solid var(--fs-color-accent-text);
+    border-inline-end: 2px solid var(--lt-color-accent-text);
+    border-block-end: 2px solid var(--lt-color-accent-text);
     transform: rotate(45deg) translate(-2px, -2px);
   }
 
-  .fs-accordion[open] summary::after {
+  .lt-accordion[open] summary::after {
     transform: rotate(225deg) translate(-2px, -2px);
   }
 
   /* Kantene er logiske og bytter side i høyre-til-venstre, men `rotate` er
      fysisk. Uten disse pekte pila sidelengs: mot venstre lukket og mot høyre
      åpen. Vinkelen og forskyvningen snus, så den peker ned og opp som ellers. */
-  .fs-accordion summary:dir(rtl)::after {
+  .lt-accordion summary:dir(rtl)::after {
     transform: rotate(-45deg) translate(2px, -2px);
   }
 
-  .fs-accordion[open] summary:dir(rtl)::after {
+  .lt-accordion[open] summary:dir(rtl)::after {
     transform: rotate(-225deg) translate(2px, -2px);
   }
 
-  .fs-accordion summary:hover {
-    background: var(--fs-color-neutral-surface);
+  .lt-accordion summary:hover {
+    background: var(--lt-color-neutral-surface);
   }
 
-  .fs-accordion summary:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-accordion summary:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: -2px;
   }
 
@@ -73,27 +73,27 @@
      plass i dokumentets disposisjon. Uten dette fikk den nettleserens marg og
      størrelse, og raden ble høyere og teksten større enn uten overskrift.
      `:where` lar en klasse fra Heading på overskriften vinne. */
-  :where(.fs-accordion summary) > :where(h2, h3, h4, h5, h6) {
+  :where(.lt-accordion summary) > :where(h2, h3, h4, h5, h6) {
     margin: 0;
     font: inherit;
   }
 
   /* Samme luft til sidene som overskriften, så tekst og innhold står i
      samme linje også når den endres. */
-  .fs-accordion__content {
-    padding: 0 var(--fs-accordion-padding-inline, var(--fs-spacing-4))
-      var(--fs-spacing-4);
+  .lt-accordion__content {
+    padding: 0 var(--lt-accordion-padding-inline, var(--lt-spacing-4))
+      var(--lt-spacing-4);
   }
 
-  .fs-accordion__content > :first-child {
+  .lt-accordion__content > :first-child {
     margin-block-start: 0;
   }
 
-  .fs-accordion__content > :last-child {
+  .lt-accordion__content > :last-child {
     margin-block-end: 0;
   }
 
-  .fs-accordion[data-variant="plain"] {
+  .lt-accordion[data-variant="plain"] {
     border-inline: 0;
     border-block-start: 0;
     border-radius: 0;

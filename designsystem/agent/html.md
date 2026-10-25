@@ -1,122 +1,122 @@
-# Fristil i ren HTML
+# LO-TEK i ren HTML
 
-Regelboka for Fristil i et prosjekt uten byggesteg: håndskrevet HTML, der
+Regelboka for LO-TEK i et prosjekt uten byggesteg: håndskrevet HTML, der
 nettleseren laster filene direkte. Bruker du bundles, React, Astro eller
 Datastar, eller lager serveren markupen, er det en annen fil i denne mappa som
 gjelder.
 
-Dette er @fristil/designsystem 0.36.0. Fila er generert av pakken og følger
+Dette er @lo-tek/interfaces 0.36.0. Fila er generert av pakken og følger
 versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.
 
 ## Kortversjon
 
-1. **Én `<link>` til `fristil.css`, før alt annet.** Mangler den, ser
+1. **Én `<link>` til `lotek.css`, før alt annet.** Mangler den, ser
    komponentene ustilte ut. Svaret er da å legge inn lenka, aldri å skrive
    egen CSS for å få dem til å se riktige ut.
-2. **Bruk bare klassene og elementene i tabellene under.** `fs-modal`,
-   `fs-datepicker` og `data-variant="outlined"` finnes i andre designsystemer,
-   ikke i Fristil. Er du usikker på om noe finnes, står det her eller så gjør
+2. **Bruk bare klassene og elementene i tabellene under.** `lt-modal`,
+   `lt-datepicker` og `data-variant="outlined"` finnes i andre designsystemer,
+   ikke i LO-TEK. Er du usikker på om noe finnes, står det her eller så gjør
    det ikke det.
-3. **Ingen hardkodede farger eller piksler.** `var(--fs-color-…)` og
-   `var(--fs-spacing-…)`.
-4. **Web components registreres én gang med `defineFs*()`** i en
+3. **Ingen hardkodede farger eller piksler.** `var(--lt-color-…)` og
+   `var(--lt-spacing-…)`.
+4. **Web components registreres én gang med `defineLt*()`** i en
    `<script type="module">`, og et boolsk attributt er sant så lenge det står
    der: `hidden="false"` skjuler feilmeldingen likevel.
 5. **Kjør sjekken på det du har skrevet:**
-   `npx @fristil/designsystem sjekk side.html`. Den kjenner hver klasse, hvert
+   `npx @lo-tek/interfaces sjekk side.html`. Den kjenner hver klasse, hvert
    element, hvert attributt og hver lovlige verdi, skriver
    `fil:linje:kolonne: feil: melding`, eller `advarsel:`, og avslutter med
    feilkode hvis den finner noe. Med appen i gang, sjekk også hver side du har
-   endret: `npx @fristil/designsystem sjekk http://localhost:8080/side`. Da
+   endret: `npx @lo-tek/interfaces sjekk http://localhost:8080/side`. Da
    kreves det i tillegg at hver `for` og `aria-describedby` peker på en id som
    finnes, og at hvert felt har en ledetekst. Du er ferdig når begge svarer
-   «Markupen stemmer med Fristil».
+   «Markupen stemmer med LO-TEK».
 
 ## 1. Stilarket
 
 Én fil med alt, og det enkleste og raskeste uten bundles:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/dist/fristil.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/dist/lotek.css">
 ```
 
 Eller fra `node_modules`, hvis du serverer mappa:
 
 ```html
-<link rel="stylesheet" href="/node_modules/@fristil/designsystem/dist/fristil.css">
+<link rel="stylesheet" href="/node_modules/@lo-tek/interfaces/dist/lotek.css">
 ```
 
-`fristil.css` er 103 kB, 13 kB komprimert, og har alle komponentene. Velg den.
+`lotek.css` er 103 kB, 13 kB komprimert, og har alle komponentene. Velg den.
 Alternativet er ett stilark per komponent, og da gjelder at `tokens.css`
 definerer alle variablene, og alle de andre stilarkene bygger på den. Den må
 lastes, og står først av vane: rekkefølgen mellom den og de andre har ikke noe
 å si.
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/tokens/tokens.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/button/button.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/tokens/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/button/button.css">
 ```
 
 De enkelte stilarkene henter delene sine med `@import`, som nettleseren først
-ser når fila er lastet. `dist/fristil.css` har alt flatet ut, uten `@import`,
-og er derfor raskere når du lenker.
+ser når fila er lastet. `dist/lotek.css` har alt flatet ut, uten `@import`, og
+er derfor raskere når du lenker.
 
 ## 2. Hva som finnes
 
 35 CSS-komponenter og 9 web components, og dette er hele lista. Klassene er
-`fs-` + kebab-case. Varianter er alltid `data-*`-attributter, aldri egne
-klasser: `data-variant="secondary"`, ikke `fs-button--secondary`.
+`lt-` + kebab-case. Varianter er alltid `data-*`-attributter, aldri egne
+klasser: `data-variant="secondary"`, ikke `lt-button--secondary`.
 Standardvarianten har ingen attributt.
 
 ### CSS-komponenter (ingen JavaScript)
 
 | Klasse | Stilark | Attributter |
 | --- | --- | --- |
-| `fs-accordion`<br>`fs-accordion__content` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/accordion/accordion.css` | `data-variant`: plain |
-| `fs-alert`<br>`fs-alert__title` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/alert/alert.css` | `data-color`: info, success, warning, danger |
-| `fs-avatar`<br>`fs-avatar-stack` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/avatar/avatar.css` | `data-variant`: square<br>`data-size`: small, large |
-| `fs-badge` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/badge/badge.css` | `data-color`: success, warning, danger, neutral |
-| `fs-breadcrumbs` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/breadcrumbs/breadcrumbs.css` | ingen |
-| `fs-button` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/button/button.css` | `data-variant`: secondary, ghost, danger |
-| `fs-card`<br>`fs-card__title` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/card/card.css` | `data-variant`: filled<br>`data-interactive` (flag) |
-| `fs-checkbox`<br>`fs-checkbox-row` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/checkbox/checkbox.css` | `data-state`: invalid, success |
-| `fs-divider` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/divider/divider.css` | `data-variant`: subtle, strong |
-| `fs-error-text` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/error-text/error-text.css` | `data-variant`: warning |
-| `fs-fieldset`<br>`fs-legend` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/fieldset/fieldset.css` | `data-state`: invalid, success<br>`data-required`: symbol, text<br>`data-optional` (flag) |
-| `fs-file-upload`<br>`fs-file-upload-list` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/file-upload/file-upload.css` | `data-state`: invalid, success |
-| `fs-heading` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/heading/heading.css` | `data-size`: xs, s, m, xl, mega |
-| `fs-help-text` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/help-text/help-text.css` | `data-variant`: strong, success, warning |
-| `fs-icon` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/icon/icon.css` | ingen |
-| `fs-input` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/input/input.css` | `data-state`: invalid, success<br>`data-variant`: date, datetime-local, time |
-| `fs-label` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/label/label.css` | `data-required`: symbol, text<br>`data-optional` (flag) |
-| `fs-link` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/link/link.css` | ingen |
-| `fs-list` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/list/list.css` | `data-variant`: plain, divided |
-| `fs-pagination`<br>`fs-pagination__gap` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/pagination/pagination.css` | ingen |
-| `fs-paragraph` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/paragraph/paragraph.css` | `data-variant`: lead<br>`data-size`: small, large |
-| `fs-progress` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/progress/progress.css` | `data-color`: success, warning, danger |
-| `fs-radio`<br>`fs-radio-row` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/radio/radio.css` | `data-state`: invalid, success |
-| `fs-search`<br>`fs-search-row` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/search/search.css` | `data-state`: invalid, success |
-| `fs-select` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/select/select.css` | `data-state`: invalid, success<br>`data-picker`: styled |
-| `fs-skeleton` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/skeleton/skeleton.css` | `data-variant`: text, circle |
-| `fs-skip-link` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/skip-link/skip-link.css` | ingen |
-| `fs-spinner` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/spinner/spinner.css` | `data-size`: small, large |
-| `fs-sr-only` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/sr-only/sr-only.css` | ingen |
-| `fs-switch`<br>`fs-switch-row` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/switch/switch.css` | ingen |
-| `fs-table`<br>`fs-table__sort`<br>`fs-table-scroll` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/table/table.css` | `data-variant`: striped<br>`data-hoverable` (flag) |
-| `fs-tag` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/tag/tag.css` | `data-variant`: filled<br>`data-selectable` (flag) |
-| `fs-textarea` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/textarea/textarea.css` | `data-state`: invalid, success |
-| `fs-toggle-group`<br>`fs-toggle-group__option` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/toggle-group/toggle-group.css` | ingen |
-| `fs-tooltip`<br>`fs-tooltip__bubble` | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/css/tooltip/tooltip.css` | ingen |
+| `lt-accordion`<br>`lt-accordion__content` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/accordion/accordion.css` | `data-variant`: plain |
+| `lt-alert`<br>`lt-alert__title` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/alert/alert.css` | `data-color`: info, success, warning, danger |
+| `lt-avatar`<br>`lt-avatar-stack` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/avatar/avatar.css` | `data-variant`: square<br>`data-size`: small, large |
+| `lt-badge` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/badge/badge.css` | `data-color`: success, warning, danger, neutral |
+| `lt-breadcrumbs` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/breadcrumbs/breadcrumbs.css` | ingen |
+| `lt-button` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/button/button.css` | `data-variant`: secondary, ghost, danger |
+| `lt-card`<br>`lt-card__title` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/card/card.css` | `data-variant`: filled<br>`data-interactive` (flag) |
+| `lt-checkbox`<br>`lt-checkbox-row` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/checkbox/checkbox.css` | `data-state`: invalid, success |
+| `lt-divider` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/divider/divider.css` | `data-variant`: subtle, strong |
+| `lt-error-text` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/error-text/error-text.css` | `data-variant`: warning |
+| `lt-fieldset`<br>`lt-legend` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/fieldset/fieldset.css` | `data-state`: invalid, success<br>`data-required`: symbol, text<br>`data-optional` (flag) |
+| `lt-file-upload`<br>`lt-file-upload-list` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/file-upload/file-upload.css` | `data-state`: invalid, success |
+| `lt-heading` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/heading/heading.css` | `data-size`: xs, s, m, xl, mega |
+| `lt-help-text` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/help-text/help-text.css` | `data-variant`: strong, success, warning |
+| `lt-icon` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/icon/icon.css` | ingen |
+| `lt-input` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/input/input.css` | `data-state`: invalid, success<br>`data-variant`: date, datetime-local, time |
+| `lt-label` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/label/label.css` | `data-required`: symbol, text<br>`data-optional` (flag) |
+| `lt-link` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/link/link.css` | ingen |
+| `lt-list` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/list/list.css` | `data-variant`: plain, divided |
+| `lt-pagination`<br>`lt-pagination__gap` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/pagination/pagination.css` | ingen |
+| `lt-paragraph` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/paragraph/paragraph.css` | `data-variant`: lead<br>`data-size`: small, large |
+| `lt-progress` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/progress/progress.css` | `data-color`: success, warning, danger |
+| `lt-radio`<br>`lt-radio-row` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/radio/radio.css` | `data-state`: invalid, success |
+| `lt-search`<br>`lt-search-row` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/search/search.css` | `data-state`: invalid, success |
+| `lt-select` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/select/select.css` | `data-state`: invalid, success<br>`data-picker`: styled |
+| `lt-skeleton` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/skeleton/skeleton.css` | `data-variant`: text, circle |
+| `lt-skip-link` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/skip-link/skip-link.css` | ingen |
+| `lt-spinner` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/spinner/spinner.css` | `data-size`: small, large |
+| `lt-sr-only` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/sr-only/sr-only.css` | ingen |
+| `lt-switch`<br>`lt-switch-row` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/switch/switch.css` | ingen |
+| `lt-table`<br>`lt-table__sort`<br>`lt-table-scroll` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/table/table.css` | `data-variant`: striped<br>`data-hoverable` (flag) |
+| `lt-tag` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/tag/tag.css` | `data-variant`: filled<br>`data-selectable` (flag) |
+| `lt-textarea` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/textarea/textarea.css` | `data-state`: invalid, success |
+| `lt-toggle-group`<br>`lt-toggle-group__option` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/toggle-group/toggle-group.css` | ingen |
+| `lt-tooltip`<br>`lt-tooltip__bubble` | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/css/tooltip/tooltip.css` | ingen |
 
-I tillegg finnes `fs-theme-control`, en klasse på en radioknapp som lar
+I tillegg finnes `lt-theme-control`, en klasse på en radioknapp som lar
 brukeren velge tema. Den står i `tokens.css`, og er beskrevet under Tokens.
 
 ## 3. Tokens
 
 Ett lag. En farge er en celle i en matrise av **familie**, altså hva den
 betyr, og **rolle**, altså hva den gjør, og navnet er
-`--fs-color-<familie>-<rolle>`. Hver familie har hver rolle, så
-`--fs-color-danger-border` og `--fs-color-success-border` finnes begge.
+`--lt-color-<familie>-<rolle>`. Hver familie har hver rolle, så
+`--lt-color-danger-border` og `--lt-color-success-border` finnes begge.
 Rollene er de samme uansett familie: `surface` er en tonet flate, `fill` en
 fylt, `content` teksten oppå `fill`, `border` en ramme, og `text` familiens
 farge som tekst. Kant og tekst har et svakere og et sterkere trinn ved siden
@@ -127,22 +127,22 @@ Familier: `accent`, `visited`, `brand1`, `brand2`, `brand3`, `neutral`, `danger`
 
 Roller: `surface`, `border-subtle`, `border`, `border-strong`, `fill`, `text`, `text-strong`, `text-subtle`, `content`.
 
-Utenfor matrisen: `--fs-color-disabled-surface`, `--fs-color-disabled-text`, `--fs-color-neutral-canvas`, `--fs-color-neutral-raised`, `--fs-color-overlay`, `--fs-focus-ring`, `--fs-icon-calendar`, `--fs-icon-check`, `--fs-icon-clock`, `--fs-icon-dash`, `--fs-icon-search`, `--fs-shadow-overlay`.
+Utenfor matrisen: `--lt-color-disabled-surface`, `--lt-color-disabled-text`, `--lt-color-neutral-canvas`, `--lt-color-neutral-raised`, `--lt-color-overlay`, `--lt-focus-ring`, `--lt-icon-calendar`, `--lt-icon-check`, `--lt-icon-clock`, `--lt-icon-dash`, `--lt-icon-search`, `--lt-shadow-overlay`.
 ```
 
-Mål: `--fs-spacing-0-5`, `--fs-spacing-1`, `--fs-spacing-10`,
-`--fs-spacing-12`, `--fs-spacing-16`, `--fs-spacing-2`, `--fs-spacing-3`,
-`--fs-spacing-4`, `--fs-spacing-5`, `--fs-spacing-6`, `--fs-spacing-7`,
-`--fs-spacing-8`, `--fs-spacing-px`.
+Mål: `--lt-spacing-0-5`, `--lt-spacing-1`, `--lt-spacing-10`,
+`--lt-spacing-12`, `--lt-spacing-16`, `--lt-spacing-2`, `--lt-spacing-3`,
+`--lt-spacing-4`, `--lt-spacing-5`, `--lt-spacing-6`, `--lt-spacing-7`,
+`--lt-spacing-8`, `--lt-spacing-px`.
 
-Skrift: `--fs-font-size-l`, `--fs-font-size-m`, `--fs-font-size-mega`,
-`--fs-font-size-reference`, `--fs-font-size-s`, `--fs-font-size-xl`,
-`--fs-font-size-xs`, `--fs-font-size-xxl`, `--fs-font-size-xxs`,
-`--fs-font-weight-bold`, `--fs-font-weight-medium`,
-`--fs-font-weight-regular`, `--fs-font-weight-semibold`.
+Skrift: `--lt-font-size-l`, `--lt-font-size-m`, `--lt-font-size-mega`,
+`--lt-font-size-reference`, `--lt-font-size-s`, `--lt-font-size-xl`,
+`--lt-font-size-xs`, `--lt-font-size-xxl`, `--lt-font-size-xxs`,
+`--lt-font-weight-bold`, `--lt-font-weight-medium`,
+`--lt-font-weight-regular`, `--lt-font-weight-semibold`.
 
-Linjehøyde: `--fs-line-height-article`, `--fs-line-height-compact`,
-`--fs-line-height-default`, `--fs-line-height-heading`.
+Linjehøyde: `--lt-line-height-article`, `--lt-line-height-compact`,
+`--lt-line-height-default`, `--lt-line-height-heading`.
 
 `disabled` og `neutral` er ikke det samme. `disabled` er for kontroller som er
 slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet
@@ -158,12 +158,12 @@ bestemme selv setter `data-theme="light"` eller `data-theme="dark"` på
 Attributtet er en **temagrense** og virker på et hvilket som helst element,
 ikke bare på roten. Et tema kan ligge inne i et annet, begge veier.
 
-Det er dette en innebygd komponent skal bruke. Legger du Fristil inn i en side
+Det er dette en innebygd komponent skal bruke. Legger du LO-TEK inn i en side
 du ikke eier, setter du attributtet på komponentens eget rotelement:
 
 ```html
 <div data-theme="light">
-  <button class="fs-button">Lagre</button>
+  <button class="lt-button">Lagre</button>
 </div>
 ```
 
@@ -171,31 +171,30 @@ Da er komponenten lys uansett hva maskinen står på, og verten røres ikke.
 
 **Vertens CSS stopper ved grensen.** Verten har ofte regler uten lag, som
 `button { background: none; border: none }` eller en normalize, og de slår
-`@layer fristil`. Sett da `data-fs-boundary` på det samme rotelementet:
+`@layer lotek`. Sett da `data-lt-boundary` på det samme rotelementet:
 
 ```html
-<div data-fs-boundary data-theme="light">
-  <button class="fs-button">Lagre</button>
+<div data-lt-boundary data-theme="light">
+  <button class="lt-button">Lagre</button>
 </div>
 ```
 
 Under rotelementet ser nettleseren bort fra CSS uten lag, innenfor
-spesifisiteten under, og Fristils lag gjelder igjen. Regelen ligger i
-`fristil.css` og i `@fristil/designsystem/boundary.css`. Skrift og annet som
-arves kommer fortsatt fra verten, og `--fs-*`-variablene virker. Tre ting
-følger av den:
+spesifisiteten under, og LO-TEKs lag gjelder igjen. Regelen ligger i
+`lotek.css` og i `@lo-tek/interfaces/boundary.css`. Skrift og annet som arves
+kommer fortsatt fra verten, og `--lt-*`-variablene virker. Tre ting følger av
+den:
 
-- Egen CSS inne i grensen skal ligge i et lag etter `fristil`. CSS uten lag
+- Egen CSS inne i grensen skal ligge i et lag etter `lotek`. CSS uten lag
   forsvinner der på samme måte som vertens.
-- Elementer uten Fristil-klasse mister vertens CSS uten lag. Et lag verten har
-  erklært før `fristil`, som Tailwinds Preflight i `base`, gjelder fortsatt
-  der Fristil ikke setter noe.
+- Elementer uten LO-TEK-klasse mister vertens CSS uten lag. Et lag verten har
+  erklært før `lotek`, som Tailwinds Preflight i `base`, gjelder fortsatt der
+  LO-TEK ikke setter noe.
 - Grensen har spesifisiteten (0,2,0). En regel fra verten med samme
   spesifisitet vinner hvis den lastes etter grensen, og en med mer vinner
-  alltid. Det samme gjør `!important` og lag verten har erklært etter
-  `fristil`.
+  alltid. Det samme gjør `!important` og lag verten har erklært etter `lotek`.
 
-Fristil setter **ikke** `color-scheme` på `:root`. Egenskapen styrer
+LO-TEK setter **ikke** `color-scheme` på `:root`. Egenskapen styrer
 nettleserens egne flater, altså rullefelt, nedtrekkslister og kalenderpanel,
 og den arves nedover. Et barn kan melde seg ut med `color-scheme: normal`, men
 det er en motregel verten aldri ba om å måtte skrive: sto verdien på roten,
@@ -206,28 +205,28 @@ bruker du den, setter hvert valg `color-scheme` selv.
 
 ### La brukeren velge tema
 
-`fs-theme-control` på en radioknapp gjør `value` til et temavalg. Det er ren
+`lt-theme-control` på en radioknapp gjør `value` til et temavalg. Det er ren
 CSS, uten en linje JavaScript:
 
 ```html
-<fieldset class="fs-toggle-group">
-  <legend class="fs-sr-only">Tema</legend>
-  <label class="fs-toggle-group__option">
-    <input class="fs-theme-control" type="radio" name="tema"
+<fieldset class="lt-toggle-group">
+  <legend class="lt-sr-only">Tema</legend>
+  <label class="lt-toggle-group__option">
+    <input class="lt-theme-control" type="radio" name="tema"
            value="auto" checked /> Følg systemet
   </label>
-  <label class="fs-toggle-group__option">
-    <input class="fs-theme-control" type="radio" name="tema"
+  <label class="lt-toggle-group__option">
+    <input class="lt-theme-control" type="radio" name="tema"
            value="light" /> Lyst
   </label>
-  <label class="fs-toggle-group__option">
-    <input class="fs-theme-control" type="radio" name="tema"
+  <label class="lt-toggle-group__option">
+    <input class="lt-theme-control" type="radio" name="tema"
            value="dark" /> Mørkt
   </label>
 </fieldset>
 ```
 
-Valget styrer to ting. Fristils farger kommer fra tokenene, og nettleserens
+Valget styrer to ting. LO-TEKs farger kommer fra tokenene, og nettleserens
 **egne** flater fra `color-scheme`: `light` gir `light`, `dark` gir `dark`, og
 `auto` gir `light dark`. `light dark` er ikke et tema, men beskjeden om at
 siden fungerer i begge, så nettleseren kan velge etter systemet.
@@ -236,7 +235,7 @@ siden fungerer i begge, så nettleseren kan velge etter systemet.
 treffer ingenting, og da gjelder mediespørringen igjen.
 
 Du skal ikke skrive `color-scheme` selv når velgeren er i bruk. En slik regel
-utenfor et lag slår `@layer fristil` og låser nettleserens flater til systemet
+utenfor et lag slår `@layer lotek` og låser nettleserens flater til systemet
 mens brukeren har valgt noe annet.
 
 `light` og `dark` vinner over `data-theme` på `<html>`, slik at serveren kan
@@ -254,13 +253,13 @@ tre; en kontroll inne i en skyggerot setter ikke tema på siden.
 
 Tre regler gjelder alle sammen:
 
-1. **`defineFs*()` kjøres én gang** i en `<script type="module">` i sidemalen,
+1. **`defineLt*()` kjøres én gang** i en `<script type="module">` i sidemalen,
    før elementet brukes, ikke én gang per komponent. Importen har ingen
    bivirkning alene; det er `define`-kallet som registrerer elementet.
 2. **Boolske attributter er sanne så lenge de finnes.** `hidden="false"`,
    `disabled="false"` og `open="false"` slår *på*. Skal noe av det bort, må
    attributtet fjernes helt.
-3. **Du skriver markupen, komponenten fester oppførselen.** `<fs-field>` lager
+3. **Du skriver markupen, komponenten fester oppførselen.** `<lt-field>` lager
    ikke ledeteksten eller kontrollen din. Du skriver `for` på ledeteksten og
    `id` på kontrollen, eller legger `<label>` rundt den, så feltet har navn
    også uten JavaScript. Komponenten kobler hjelpeteksten og feilmeldingen med
@@ -271,15 +270,15 @@ Tre regler gjelder alle sammen:
 
 | Element | Kategori | Stilark | Registrering | Attributter | Hendelser | Klasser inni |
 | --- | --- | --- | --- | --- | --- | --- |
-| `<fs-field>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/ramme/field/field.css` | `defineFsField()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/dist/components/ramme/field/fs-field.js` | `disabled` (flag)<br>`optional` (flag)<br>`described-by` (text) | ingen | ingen |
-| `<fs-tabs>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/ramme/tabs/tabs.css` | `defineFsTabs()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/dist/components/ramme/tabs/fs-tabs.js` | `server-controlled` (flag)<br>`activation`: manual, automatic | `tab-select` (index) | `fs-tabs__list`<br>`fs-tabs__panel` |
-| `<fs-error-summary>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/ramme/error-summary/error-summary.css` | `defineFsErrorSummary()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/dist/components/ramme/error-summary/fs-error-summary.js` | `data-autofocus`: false, true<br>`hidden` (flag) | ingen | `fs-error-summary`<br>`fs-error-summary__title` |
-| `<fs-popover>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/ramme/popover/popover.css` | `defineFsPopover()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/dist/components/ramme/popover/fs-popover.js` | `open` (flag)<br>`placement`: bottom-start, bottom-end, top-start, top-end<br>`server-controlled` (flag) | `popover-toggle` (open) | `fs-popover` |
-| `<fs-suggestion>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/ramme/suggestion/suggestion.css` | `defineFsSuggestion()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/dist/components/ramme/suggestion/fs-suggestion.js` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `suggestion-select` (value, label) | `fs-suggestion__list`<br>`fs-suggestion__option`<br>`fs-suggestion__value`<br>`fs-suggestion__empty` |
-| `<fs-dialog>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/ramme/dialog/dialog.css` | `defineFsDialog()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/dist/components/ramme/dialog/fs-dialog.js` | `open` (flag)<br>`server-controlled` (flag) | `dialog-toggle` (open, returnValue) | `fs-dialog` (`data-color`: brand, info, success, warning, danger)<br>`fs-dialog__body`<br>`fs-dialog__title`<br>`fs-dialog__footer`<br>`fs-dialog__header`<br>`fs-dialog__subtitle` |
-| `<fs-toast>` | frittstaende | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/frittstaende/toast/toast.css` | `defineFsToast()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/dist/components/frittstaende/toast/fs-toast.js` | `duration` (number)<br>`label` (text)<br>`close-label` (text) | `toast-dismiss` | `fs-toast`<br>`fs-toast__message`<br>`fs-toast__close` |
-| `<fs-session-timeout>` | ramme | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/ramme/session-timeout/session-timeout.css` | `defineFsSessionTimeout()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/dist/components/ramme/session-timeout/fs-session-timeout.js` | `warn-at` (number)<br>`expires-at` (number)<br>`activity-interval` (number) | `session-warn`<br>`session-extend`<br>`session-logout`<br>`session-expired`<br>`session-activity` | `fs-session-timeout`<br>`fs-session-timeout__dialog`<br>`fs-session-timeout__title`<br>`fs-session-timeout__text`<br>`fs-session-timeout__count`<br>`fs-session-timeout__actions` |
-| `<fs-connection-status>` | frittstaende | `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/src/components/frittstaende/connection-status/connection-status.css` | `defineFsConnectionStatus()` fra `https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/dist/components/frittstaende/connection-status/fs-connection-status.js` | `offline-text` (text)<br>`online-text` (text) | `connection-lost`<br>`connection-restored` | `fs-connection-status`<br>`fs-connection-status__bar` |
+| `<lt-field>` | frame | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/frame/field/field.css` | `defineLtField()` fra `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/dist/components/frame/field/lt-field.js` | `disabled` (flag)<br>`optional` (flag)<br>`described-by` (text) | ingen | ingen |
+| `<lt-tabs>` | frame | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/frame/tabs/tabs.css` | `defineLtTabs()` fra `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/dist/components/frame/tabs/lt-tabs.js` | `server-controlled` (flag)<br>`activation`: manual, automatic | `tab-select` (index) | `lt-tabs__list`<br>`lt-tabs__panel` |
+| `<lt-error-summary>` | frame | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/frame/error-summary/error-summary.css` | `defineLtErrorSummary()` fra `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/dist/components/frame/error-summary/lt-error-summary.js` | `data-autofocus`: false, true<br>`hidden` (flag) | ingen | `lt-error-summary`<br>`lt-error-summary__title` |
+| `<lt-popover>` | frame | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/frame/popover/popover.css` | `defineLtPopover()` fra `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/dist/components/frame/popover/lt-popover.js` | `open` (flag)<br>`placement`: bottom-start, bottom-end, top-start, top-end<br>`server-controlled` (flag) | `popover-toggle` (open) | `lt-popover` |
+| `<lt-suggestion>` | frame | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/frame/suggestion/suggestion.css` | `defineLtSuggestion()` fra `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/dist/components/frame/suggestion/lt-suggestion.js` | `prefiltered` (flag)<br>`count-none` (text)<br>`count-zero` (text)<br>`count-one` (text)<br>`count-two` (text)<br>`count-few` (text)<br>`count-many` (text)<br>`count-other` (text)<br>`server-controlled` (flag) | `suggestion-select` (value, label) | `lt-suggestion__list`<br>`lt-suggestion__option`<br>`lt-suggestion__value`<br>`lt-suggestion__empty` |
+| `<lt-dialog>` | frame | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/frame/dialog/dialog.css` | `defineLtDialog()` fra `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/dist/components/frame/dialog/lt-dialog.js` | `open` (flag)<br>`server-controlled` (flag) | `dialog-toggle` (open, returnValue) | `lt-dialog` (`data-color`: brand, info, success, warning, danger)<br>`lt-dialog__body`<br>`lt-dialog__title`<br>`lt-dialog__footer`<br>`lt-dialog__header`<br>`lt-dialog__subtitle` |
+| `<lt-toast>` | standalone | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/standalone/toast/toast.css` | `defineLtToast()` fra `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/dist/components/standalone/toast/lt-toast.js` | `duration` (number)<br>`label` (text)<br>`close-label` (text) | `toast-dismiss` | `lt-toast`<br>`lt-toast__message`<br>`lt-toast__close` |
+| `<lt-session-timeout>` | frame | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/frame/session-timeout/session-timeout.css` | `defineLtSessionTimeout()` fra `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/dist/components/frame/session-timeout/lt-session-timeout.js` | `warn-at` (number)<br>`expires-at` (number)<br>`activity-interval` (number) | `session-warn`<br>`session-extend`<br>`session-logout`<br>`session-expired`<br>`session-activity` | `lt-session-timeout`<br>`lt-session-timeout__dialog`<br>`lt-session-timeout__title`<br>`lt-session-timeout__text`<br>`lt-session-timeout__count`<br>`lt-session-timeout__actions` |
+| `<lt-connection-status>` | standalone | `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/components/standalone/connection-status/connection-status.css` | `defineLtConnectionStatus()` fra `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/dist/components/standalone/connection-status/lt-connection-status.js` | `offline-text` (text)<br>`online-text` (text) | `connection-lost`<br>`connection-restored` | `lt-connection-status`<br>`lt-connection-status__bar` |
 
 Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
 `querySelector`, `FormData` og vanlig CSS virker rett inn i det.
@@ -287,23 +286,23 @@ Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
 ## 5. Et helt skjema
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/dist/fristil.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/dist/lotek.css">
 
 <form id="kontaktskjema" novalidate>
-  <fs-field>
-    <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
-    <input class="fs-input" id="navn" type="text" name="navn" required />
-    <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
-  </fs-field>
+  <lt-field>
+    <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
+    <input class="lt-input" id="navn" type="text" name="navn" required />
+    <p class="lt-error-text" hidden>Fyll inn navnet ditt.</p>
+  </lt-field>
 
-  <button class="fs-button" type="submit">Send</button>
+  <button class="lt-button" type="submit">Send</button>
 </form>
 
 <script type="module">
-  import { defineFsField } from
-    "https://cdn.jsdelivr.net/npm/@fristil/designsystem@0.36.0/dist/components/ramme/field/fs-field.js"
+  import { defineLtField } from
+    "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/dist/components/frame/field/lt-field.js"
 
-  defineFsField()
+  defineLtField()
 </script>
 ```
 
@@ -311,7 +310,7 @@ Feltet blir ugyldig når feilmeldingen vises, ikke ved å bytte klasse:
 
 ```js
 const navn = document.getElementById("navn")
-const feil = navn.closest("fs-field").querySelector(".fs-error-text")
+const feil = navn.closest("lt-field").querySelector(".lt-error-text")
 
 feil.hidden = navn.value.trim() !== ""
 ```
@@ -323,27 +322,27 @@ nettleseren som vanlig JavaScript, og `hendelse as CustomEvent<…>` gir
 ## 6. Sjekk det du har skrevet
 
 ```bash
-npx @fristil/designsystem sjekk side.html
+npx @lo-tek/interfaces sjekk side.html
 ```
 
 Mønsteret utvides av skallet, så det skal ikke stå i hermetegn: kommandoen
 leser hvert argument som en filsti og utvider ingenting selv. Ett funn gir
 feilkode, så den kan stå i CI. Den fanger et element som ikke finnes, et
-attributt elementet ikke har, en verdi utenfor lista, `fs-buton`,
-`data-variant="secundary"`, og `<fs-field>` uten kontroll eller ledetekst.
+attributt elementet ikke har, en verdi utenfor lista, `lt-buton`,
+`data-variant="secundary"`, og `<lt-field>` uten kontroll eller ledetekst.
 
 Lager koden HTML-en som strenger, finnes det ingen fil å sjekke. Sjekk da
 siden slik serveren sender den, som en hel side, med koblingen medregnet:
 
 ```bash
-npx @fristil/designsystem sjekk http://localhost:8080/skjema
-curl -s http://localhost:8080/skjema | npx @fristil/designsystem sjekk --rendret
+npx @lo-tek/interfaces sjekk http://localhost:8080/form
+curl -s http://localhost:8080/form | npx @lo-tek/interfaces sjekk --rendret
 ```
 
 I en test skrevet i JavaScript gjør `diagnosePage` det samme:
 
 ```js
-import { diagnosePage } from "@fristil/designsystem/diagnostics"
+import { diagnosePage } from "@lo-tek/interfaces/diagnostics"
 
 const funn = diagnosePage(html)
 // funn er tom når siden stemmer
@@ -354,16 +353,16 @@ const funn = diagnosePage(html)
 | Symptom | Årsak |
 | --- | --- |
 | Stilene mangler | `tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe |
-| En `<fs-toast>` eller `<fs-connection-status>` viser ingenting, et `<fs-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<fs-toast>` og `<fs-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<fs-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<fs-tabs>` bare viser ett panel, det adressen peker på eller det første, og `<fs-suggestion>` skjuler lista til de er registrert |
-| En komponent snakker norsk på en side på et annet språk | Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<fs-toast>`, `offline-text` og `online-text` på `<fs-connection-status>`, `count-none`, `count-one` og `count-other` på `<fs-suggestion>`, og `--fs-label-required-text`, `--fs-label-optional-text` og `--fs-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://fristil.sobernetics.no/oversettelse/ |
+| En `<lt-toast>` eller `<lt-connection-status>` viser ingenting, et `<lt-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting | `define`-funksjonen har ikke kjørt. `<lt-toast>` og `<lt-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<lt-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<lt-tabs>` bare viser ett panel, det adressen peker på eller det første, og `<lt-suggestion>` skjuler lista til de er registrert |
+| En komponent snakker norsk på en side på et annet språk | Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<lt-toast>`, `offline-text` og `online-text` på `<lt-connection-status>`, `count-none`, `count-one` og `count-other` på `<lt-suggestion>`, og `--lt-label-required-text`, `--lt-label-optional-text` og `--lt-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://lo-tek.sobernetics.no/translation/ |
 | Feilmeldingen vises aldri, og feltet regnes som gyldig | `hidden="false"` er satt på feilmeldingen, og det skjuler den like fullt. Attributtet må fjernes, ikke settes til `false` |
 | `SyntaxError` i nettleseren | TypeScript-syntaks i en `<script type="module">` uten byggesteg |
 
 ## Når CSS ikke strekker til
 
-Komponentene tilpasses med tokens og `--fs-`-variabler. Holder ikke det,
-kopierer `npx @fristil/designsystem overta <komponent>` kildekoden til én
+Komponentene tilpasses med tokens og `--lt-`-variabler. Holder ikke det,
+kopierer `npx @lo-tek/interfaces overta <komponent>` kildekoden til én
 komponent inn i prosjektet, så du eier den. Et helt fargetema av merkefargene
-dine lages med `npx @fristil/designsystem tema`.
+dine lages med `npx @lo-tek/interfaces tema`.
 
-Alt dette, med levende eksempler: https://fristil.sobernetics.no/
+Alt dette, med levende eksempler: https://lo-tek.sobernetics.no/

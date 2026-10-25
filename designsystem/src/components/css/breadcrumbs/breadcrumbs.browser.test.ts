@@ -12,7 +12,7 @@ import { breadcrumbs } from "./breadcrumbs"
 import "../../../tokens/tokens.css"
 import "./breadcrumbs.css"
 
-describe("fs-breadcrumbs", () => {
+describe("lt-breadcrumbs", () => {
   afterEach(() => {
     document.getElementById("oppskrift")?.remove()
   })
@@ -20,7 +20,7 @@ describe("fs-breadcrumbs", () => {
   beforeEach(() => {
     monter(`
       <nav aria-label="Du er her">
-        <ol class="fs-breadcrumbs">
+        <ol class="lt-breadcrumbs">
           <li><a href="#">Forsiden</a></li>
           <li><a href="#">Mine saker</a></li>
           <li><a href="#" aria-current="page" id="her">Søknad 2026-0481</a></li>
@@ -32,7 +32,7 @@ describe("fs-breadcrumbs", () => {
   it("gir skilletegnet en tom alternativ tekst, så det ikke leses opp", () => {
     // Generert innhold leses opp, og skjermleseren sa «skråstrek» mellom
     // hvert steg. Nettlesere uten formen beholder streken.
-    const ledd = document.querySelectorAll(".fs-breadcrumbs li")[1] as Element
+    const ledd = document.querySelectorAll(".lt-breadcrumbs li")[1] as Element
     const innhold = getComputedStyle(ledd, "::before").content
 
     if (CSS.supports("content", '"/" / ""')) {
@@ -54,7 +54,7 @@ describe("fs-breadcrumbs", () => {
     stil.textContent = snutt
     document.head.append(stil)
 
-    const ledd = document.querySelectorAll(".fs-breadcrumbs li")[1] as Element
+    const ledd = document.querySelectorAll(".lt-breadcrumbs li")[1] as Element
     const innhold = getComputedStyle(ledd, "::before").content
 
     // Tegnet er byttet, og alternativteksten står der nettleseren kan den.
@@ -67,21 +67,21 @@ describe("fs-breadcrumbs", () => {
   })
 
   it("legger skilletegnet inn med CSS, ikke i markupen", () => {
-    const andre = document.querySelectorAll(".fs-breadcrumbs li")[1]
+    const andre = document.querySelectorAll(".lt-breadcrumbs li")[1]
     const skille = getComputedStyle(andre, "::before")
 
     // Sto skråstreken i markupen, ville skjermlesere lest den opp mellom
     // hvert steg.
     expect(skille.content).toContain("/")
     expect(
-      document.querySelector(".fs-breadcrumbs")?.textContent,
+      document.querySelector(".lt-breadcrumbs")?.textContent,
     ).not.toContain("/")
   })
 
   it("skiller gjeldende side fra lenkene", () => {
     const her = getComputedStyle(document.getElementById("her") as Element)
     const foran = getComputedStyle(
-      document.querySelector(".fs-breadcrumbs a") as Element,
+      document.querySelector(".lt-breadcrumbs a") as Element,
     )
 
     expect(her.color).not.toBe(foran.color)
@@ -89,7 +89,7 @@ describe("fs-breadcrumbs", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(breadcrumbs()).toEqual({ class: "fs-breadcrumbs" })
+    expect(breadcrumbs()).toEqual({ class: "lt-breadcrumbs" })
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {

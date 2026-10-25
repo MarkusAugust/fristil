@@ -41,31 +41,31 @@ import { tag } from "./components/css/tag/tag.js"
 import { textarea } from "./components/css/textarea/textarea.js"
 import { toggleGroup } from "./components/css/toggle-group/toggle-group.js"
 import { tooltip } from "./components/css/tooltip/tooltip.js"
-import { connectionStatus } from "./components/frittstaende/connection-status/connection-status.js"
-import { toast } from "./components/frittstaende/toast/toast.js"
-import { dialog } from "./components/ramme/dialog/dialog.js"
-import { errorSummary } from "./components/ramme/error-summary/error-summary.js"
+import { connectionStatus } from "./components/standalone/connection-status/connection-status.js"
+import { toast } from "./components/standalone/toast/toast.js"
+import { dialog } from "./components/frame/dialog/dialog.js"
+import { errorSummary } from "./components/frame/error-summary/error-summary.js"
 import {
   computeFieldAttributes,
   createFieldId,
   type FieldOptions,
-} from "./components/ramme/field/field-core.js"
-import { popover } from "./components/ramme/popover/popover.js"
-import { sessionTimeout } from "./components/ramme/session-timeout/session-timeout.js"
-import { suggestion } from "./components/ramme/suggestion/suggestion.js"
+} from "./components/frame/field/field-core.js"
+import { popover } from "./components/frame/popover/popover.js"
+import { sessionTimeout } from "./components/frame/session-timeout/session-timeout.js"
+import { suggestion } from "./components/frame/suggestion/suggestion.js"
 import {
   type TabsWithStateOptions,
   tabsWithState,
-} from "./components/ramme/tabs/tabs.js"
+} from "./components/frame/tabs/tabs.js"
 import { type Attributes, setAttributes as setHtmlAttributes } from "./dom.js"
 
 // Typene til hendelsene, så `addEventListener` er typet også for den som
 // bare importerer denne inngangen. Uten linja forsvant importen fra
 // `.d.ts`-fila, og `HTMLElementEventMap` ble aldri utvidet.
-export type { FsEventMap } from "./components/events.js"
+export type { LtEventMap } from "./components/events.js"
 
 /**
- * Samme API som `fs`, men med `className` og `htmlFor`.
+ * Samme API som `lt`, men med `className` og `htmlFor`.
  *
  * Resten av systemet returnerer `class` og `for`, slik attributtene faktisk
  * heter i HTML. React godtar dem, og de havner riktig i DOM-en, men
@@ -74,9 +74,9 @@ export type { FsEventMap } from "./components/events.js"
  * advarsler per felt, og det er ikke en utvikleropplevelse vi kan by på.
  *
  * ```ts
- * import { fs } from "@fristil/designsystem/react"
+ * import { lt } from "@lo-tek/interfaces/react"
  *
- * <button {...fs.button({ variant: "secondary" })}>Lagre utkast</button>
+ * <button {...lt.button({ variant: "secondary" })}>Lagre utkast</button>
  * ```
  *
  * Kallstedene er identiske med resten av systemet; bare importstien er en
@@ -84,14 +84,14 @@ export type { FsEventMap } from "./components/events.js"
  * avhengighet til React av det.
  *
  * Astro og ren HTML tar `class` og `for` som de er. Der bruker du
- * `@fristil/designsystem` direkte.
+ * `@lo-tek/interfaces` direkte.
  */
 
 /**
  * Gir nøklene navnene React forventer, og verdiene typene React forventer.
  *
  * `tabindex` er ikke bare et annet navn: i HTML er verdien en streng, og i
- * React er `tabIndex` et tall. Lot vi strengen stå, kom `fs.tabs()` ut med
+ * React er `tabIndex` et tall. Lot vi strengen stå, kom `lt.tabs()` ut med
  * `tabIndex: "0"`, og TypeScript avviste den i enhver React-app. Den virket
  * i nettleseren, siden React gjør om verdien selv, så feilen viste seg bare
  * som en typefeil hos konsumenten.
@@ -187,9 +187,9 @@ function toHtmlAttributes(set: ReactSet): Attributes {
 }
 
 /**
- * Som `fs.setAttributes` i hovedinngangen, for settene herfra.
+ * Som `lt.setAttributes` i hovedinngangen, for settene herfra.
  *
- * En React-app når DOM-en gjennom en `ref`, og bruker da naturlig `fs` fra
+ * En React-app når DOM-en gjennom en `ref`, og bruker da naturlig `lt` fra
  * denne inngangen. Sendt rett til hovedinngangens `setAttributes` ble
  * `className` til attributtet `classname`, og oppryddingen fant ikke
  * byggefunksjonen bak settet. Her oversettes navnene tilbake først.
@@ -219,14 +219,14 @@ function forReact<Options, Result extends Record<string, unknown>, Extra>(
  * Videreeksportert fra hovedinngangen.
  *
  * `field.mdx` peker på den i en seksjon som ber leseren importere fra
- * `@fristil/designsystem/react`, og uten dette får en React-konsument som
+ * `@lo-tek/interfaces/react`, og uten dette får en React-konsument som
  * følger rådet «createFieldId is not exported». Den er trygg bare når
  * markupen rendres én gang; i en React-komponent er `useId()` svaret, også i
  * en app uten server.
  */
 export { createFieldId }
 
-export const fs = {
+export const lt = {
   accordion: forReact(accordion),
   alert: forReact(alert),
   avatar: forReact(avatar),
@@ -287,7 +287,7 @@ export const fs = {
 
   /**
    * De sammensatte byggefunksjonene gir ett attributtsett per element, og hvert sett
-   * må døpes om for seg. `host` har `tabindex`, og panelene i `fs.tabs()`
+   * må døpes om for seg. `host` har `tabindex`, og panelene i `lt.tabs()`
    * har både `tabindex` og `class`.
    */
   errorSummary: (options: Parameters<typeof errorSummary>[0] = {}) => {

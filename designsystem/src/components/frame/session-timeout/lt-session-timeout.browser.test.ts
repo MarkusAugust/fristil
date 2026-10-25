@@ -17,11 +17,11 @@ import {
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
 import {
-  defineFsSessionTimeout,
+  defineLtSessionTimeout,
   extendSession,
-  FsSessionTimeout,
+  LtSessionTimeout,
   resetSession,
-} from "./fs-session-timeout"
+} from "./lt-session-timeout"
 import { type SessionTimeoutOptions, sessionTimeout } from "./session-timeout"
 
 import "../../../tokens/tokens.css"
@@ -68,7 +68,7 @@ function varsel(
 ): string {
   const okt = sessionTimeout({ titleId: "okt-tittel", ...valg })
   return `
-    <fs-session-timeout ${attr(okt.host)}>
+    <lt-session-timeout ${attr(okt.host)}>
       <dialog ${attr(okt.dialog)}>
         <h2 ${attr(okt.title)}>${tekster.tittel}</h2>
         <p ${attr(okt.text)}>${tekster.før} <span ${attr(okt.count)}></span> ${tekster.etter}</p>
@@ -78,15 +78,15 @@ function varsel(
           <button ${attr(okt.logout)}>${tekster.ut}</button>
         </form>
       </dialog>
-    </fs-session-timeout>`
+    </lt-session-timeout>`
 }
 
 function dialog(): HTMLDialogElement {
   return document.querySelector("dialog") as HTMLDialogElement
 }
 
-function vert(): FsSessionTimeout {
-  return document.querySelector("fs-session-timeout") as FsSessionTimeout
+function vert(): LtSessionTimeout {
+  return document.querySelector("lt-session-timeout") as LtSessionTimeout
 }
 
 function opplest(): string {
@@ -144,15 +144,15 @@ function falskKlokke() {
   })
 }
 
-describe("fs-session-timeout", () => {
+describe("lt-session-timeout", () => {
   beforeAll(() => {
-    defineFsSessionTimeout()
+    defineLtSessionTimeout()
   })
 
   beforeEach(async () => {
     falskKlokke()
     monter(`<div lang="nb">${varsel()}</div>`)
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
   })
 
   afterEach(() => {
@@ -182,7 +182,7 @@ describe("fs-session-timeout", () => {
     await gaFram(5)
 
     const tall = dialog().querySelector(
-      ".fs-session-timeout__count",
+      ".lt-session-timeout__count",
     ) as HTMLElement
     // 13 - 5 = 8 sekunder igjen
     expect(tall.textContent).toBe("0:08")
@@ -238,9 +238,9 @@ describe("fs-session-timeout", () => {
   })
 })
 
-describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
+describe("lt-session-timeout tåler Escape, feil tall og et utløp", () => {
   beforeAll(() => {
-    defineFsSessionTimeout()
+    defineLtSessionTimeout()
   })
 
   beforeEach(() => {
@@ -254,7 +254,7 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
 
   async function monterKort(markup = varsel()) {
     monter(`<div lang="nb">${markup}</div>`)
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
     return vert()
   }
 
@@ -395,8 +395,8 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
   it("sender høyst én aktivitet i sekundet, også med activity-interval 0", async () => {
     const element = await monterKort(
       varsel({ warnAt: 100, expiresAt: 130 }).replace(
-        "<fs-session-timeout ",
-        '<fs-session-timeout activity-interval="0" ',
+        "<lt-session-timeout ",
+        '<lt-session-timeout activity-interval="0" ',
       ),
     )
     const hendelser = lytt(element, ["session-activity"])
@@ -558,15 +558,15 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
     // En mal uten byggefunksjonen kan glemme dem. Tilgjengeligheten krever
     // begge, så komponenten setter dem når de mangler, og bare da.
     await monterKort(`
-      <fs-session-timeout warn-at="3" expires-at="13">
+      <lt-session-timeout warn-at="3" expires-at="13">
         <dialog>
           <h2>Du blir snart logget ut</h2>
-          <p class="fs-session-timeout__text">Vi logger deg ut om
-            <span class="fs-session-timeout__count" aria-hidden="true"></span>.</p>
-          <span class="fs-sr-only" role="status"></span>
+          <p class="lt-session-timeout__text">Vi logger deg ut om
+            <span class="lt-session-timeout__count" aria-hidden="true"></span>.</p>
+          <span class="lt-sr-only" role="status"></span>
           <form method="dialog"><button value="extend">Fortsett</button></form>
         </dialog>
-      </fs-session-timeout>`)
+      </lt-session-timeout>`)
     await gaFram(4)
 
     expect(dialog().getAttribute("role")).toBe("alertdialog")
@@ -590,9 +590,9 @@ describe("fs-session-timeout tåler Escape, feil tall og et utløp", () => {
   })
 })
 
-describe("fs-session-timeout rører ikke markupen fra byggefunksjonen", () => {
+describe("lt-session-timeout rører ikke markupen fra byggefunksjonen", () => {
   beforeAll(() => {
-    defineFsSessionTimeout()
+    defineLtSessionTimeout()
   })
 
   beforeEach(() => {
@@ -618,7 +618,7 @@ describe("fs-session-timeout rører ikke markupen fra byggefunksjonen", () => {
     })
 
     beholder.innerHTML = varsel()
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
     await gaFram(2)
     poster.push(...observator.takeRecords())
     observator.disconnect()
@@ -629,16 +629,16 @@ describe("fs-session-timeout rører ikke markupen fra byggefunksjonen", () => {
 })
 
 /*
- * Et sent registrert tagnavn. `fs-session-timeout` har alt tatt
- * konstruktøren, så `defineFsSessionTimeout("fs-session-timeout-sen")`
+ * Et sent registrert tagnavn. `lt-session-timeout` har alt tatt
+ * konstruktøren, så `defineLtSessionTimeout("lt-session-timeout-sen")`
  * registrerer en underklasse av den.
  */
 describe("extendSession() og resetSession() venter på registreringen", () => {
   it("sender session-extend først når elementet er oppgradert", async () => {
     monter(
-      `<fs-session-timeout-sen class="fs-session-timeout" warn-at="3" expires-at="13"></fs-session-timeout-sen>`,
+      `<lt-session-timeout-sen class="lt-session-timeout" warn-at="3" expires-at="13"></lt-session-timeout-sen>`,
     )
-    const element = document.querySelector("fs-session-timeout-sen") as Element
+    const element = document.querySelector("lt-session-timeout-sen") as Element
     const forlenget: Event[] = []
     element.addEventListener("session-extend", (e) => forlenget.push(e))
 
@@ -650,13 +650,13 @@ describe("extendSession() og resetSession() venter på registreringen", () => {
     expect(ferdig).toBe(false)
     expect(forlenget).toHaveLength(0)
 
-    defineFsSessionTimeout("fs-session-timeout-sen")
+    defineLtSessionTimeout("lt-session-timeout-sen")
 
     await løfte
     expect(forlenget).toHaveLength(1)
 
     // `reset()` sender ingenting, så kallet må ses på metoden selv.
-    const nullstilt = vi.spyOn(FsSessionTimeout.prototype, "reset")
+    const nullstilt = vi.spyOn(LtSessionTimeout.prototype, "reset")
     await resetSession(element)
     expect(nullstilt).toHaveBeenCalledTimes(1)
     expect(forlenget).toHaveLength(1)
@@ -664,9 +664,9 @@ describe("extendSession() og resetSession() venter på registreringen", () => {
   })
 })
 
-describe("fs-session-timeout: en terskel som hoppes over", () => {
+describe("lt-session-timeout: en terskel som hoppes over", () => {
   beforeAll(() => {
-    defineFsSessionTimeout()
+    defineLtSessionTimeout()
   })
 
   beforeEach(() => {
@@ -681,7 +681,7 @@ describe("fs-session-timeout: en terskel som hoppes over", () => {
     // Et tikk som kommer sent, eller strupes i en fane i bakgrunnen, kan
     // hoppe fra 61 til 59. Før krevde opplesningen nøyaktig 60.
     monter(`<div lang="nb">${varsel({ warnAt: 1, expiresAt: 70 })}</div>`)
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
     await gaFram(9)
     expect(dialog().open).toBe(true)
 
@@ -689,15 +689,15 @@ describe("fs-session-timeout: en terskel som hoppes over", () => {
     await gaFram(1)
 
     expect(
-      dialog().querySelector(".fs-session-timeout__count")?.textContent,
+      dialog().querySelector(".lt-session-timeout__count")?.textContent,
     ).toBe("0:59")
     expect(opplest()).toContain("59 sekunder")
   })
 })
 
-describe("fs-session-timeout: opplesning på sidens språk, og flytting", () => {
+describe("lt-session-timeout: opplesning på sidens språk, og flytting", () => {
   beforeAll(() => {
-    defineFsSessionTimeout()
+    defineLtSessionTimeout()
   })
 
   beforeEach(() => {
@@ -711,7 +711,7 @@ describe("fs-session-timeout: opplesning på sidens språk, og flytting", () => 
   it("leser opp det samme som tallet viser når det ikke er hele minutter", async () => {
     // Rundet av sa opplesningen «2 minutter» mens tallet viste 1:30.
     monter(`<div lang="nb">${varsel({ warnAt: 1, expiresAt: 91 })}</div>`)
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
     await gaFram(1)
 
     expect(opplest()).toBe(
@@ -723,7 +723,7 @@ describe("fs-session-timeout: opplesning på sidens språk, og flytting", () => 
     monter(
       `<div lang="en">${varsel({ warnAt: 1, expiresAt: 91 }, ENGELSK)}</div>`,
     )
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
     await gaFram(1)
 
     expect(opplest()).toBe(
@@ -735,7 +735,7 @@ describe("fs-session-timeout: opplesning på sidens språk, og flytting", () => 
     // `Intl` kaster på en ugyldig kode. Da er nettleserens språk bedre enn
     // ingen opplesning.
     monter(`<div lang="!!">${varsel({ warnAt: 1, expiresAt: 91 })}</div>`)
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
     await gaFram(1)
 
     expect(opplest()).toMatch(/1.*30/)
@@ -752,7 +752,7 @@ describe("fs-session-timeout: opplesning på sidens språk, og flytting", () => 
       mode: "open",
     })
     rot.innerHTML = varsel({ warnAt: 1, expiresAt: 91 })
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
     await gaFram(1)
 
     expect(rot.querySelector("[role='status']")?.textContent).toBe(
@@ -765,16 +765,16 @@ describe("fs-session-timeout: opplesning på sidens språk, og flytting", () => 
     // `aria-hidden`, så skjermleseren hørte aldri hvor lang tid som var igjen.
     monter(`
       <div lang="nb">
-        <fs-session-timeout warn-at="1" expires-at="91">
+        <lt-session-timeout warn-at="1" expires-at="91">
           <dialog>
-            <h2>Ut om <span class="fs-session-timeout__count" aria-hidden="true"></span></h2>
-            <p class="fs-session-timeout__text">Lagre det du holder på med.</p>
-            <span class="fs-sr-only" role="status"></span>
+            <h2>Ut om <span class="lt-session-timeout__count" aria-hidden="true"></span></h2>
+            <p class="lt-session-timeout__text">Lagre det du holder på med.</p>
+            <span class="lt-sr-only" role="status"></span>
             <form method="dialog"><button value="extend">Fortsett</button></form>
           </dialog>
-        </fs-session-timeout>
+        </lt-session-timeout>
       </div>`)
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
     await gaFram(1)
 
     expect(opplest()).toBe("1 minutt og 30 sekunder")
@@ -820,7 +820,7 @@ describe("fs-session-timeout: opplesning på sidens språk, og flytting", () => 
       mode: "open",
     })
     rot.innerHTML = varsel({ warnAt: 1, expiresAt: 91 })
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
     const felt = flate.querySelector("#felt") as HTMLInputElement
     const annet = flate.querySelector("#annet") as HTMLButtonElement
 
@@ -837,7 +837,7 @@ describe("fs-session-timeout: opplesning på sidens språk, og flytting", () => 
       mode: "open",
     })
     rot.innerHTML = `<input id="felt">${varsel({ warnAt: 1, expiresAt: 91 })}`
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
     const felt = rot.querySelector("#felt") as HTMLInputElement
     const annet = flate.querySelector("#annet") as HTMLButtonElement
 
@@ -846,7 +846,7 @@ describe("fs-session-timeout: opplesning på sidens språk, og flytting", () => 
 
   it("er fortsatt modal etter at elementet er flyttet mens varselet står", async () => {
     const flate = monter(`${varsel()}<div id="annet"></div>`)
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
     await gaFram(3)
     expect(dialog().matches(":modal")).toBe(true)
 
@@ -857,9 +857,9 @@ describe("fs-session-timeout: opplesning på sidens språk, og flytting", () => 
   })
 })
 
-describe("fs-session-timeout når warn-at heves mens varselet står", () => {
+describe("lt-session-timeout når warn-at heves mens varselet står", () => {
   beforeAll(() => {
-    defineFsSessionTimeout()
+    defineLtSessionTimeout()
   })
 
   beforeEach(() => {
@@ -872,7 +872,7 @@ describe("fs-session-timeout når warn-at heves mens varselet står", () => {
 
   it("lar nedtellingen gå videre", async () => {
     monter(varsel())
-    await customElements.whenDefined("fs-session-timeout")
+    await customElements.whenDefined("lt-session-timeout")
     await gaFram(4)
     const tall = () => dialog().textContent?.match(/\d+:\d+/)?.[0]
     const for_ = tall()

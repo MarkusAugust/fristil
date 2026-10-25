@@ -1,48 +1,48 @@
-@layer fristil {
-  fs-popover {
+@layer lotek {
+  lt-popover {
     display: contents;
   }
 
-  .fs-popover {
+  .lt-popover {
     /* Panelet ligger i topplaget, så posisjonen er mot vindusruten. Verdiene
        settes av komponenten, som regner dem ut mot knappen. */
     position: fixed;
     inset: auto;
-    inset-block-start: var(--fs-popover-top, 0);
-    inset-inline-start: var(--fs-popover-left, 0);
+    inset-block-start: var(--lt-popover-top, 0);
+    inset-inline-start: var(--lt-popover-left, 0);
     margin: 0;
     /* Panelet er ofte en `<ul>` med handlinger. Nullstillingen hører her og
        ikke hos konsumenten: `data-variant="plain"` traff ingen regel på
-       `.fs-popover`, så lista sto med nettleserens kuler. Innrykket var alt borte, siden
+       `.lt-popover`, så lista sto med nettleserens kuler. Innrykket var alt borte, siden
        `padding` settes i den samme regelen. */
     list-style: none;
     box-sizing: border-box;
     inline-size: max-content;
     max-inline-size: var(
-      --fs-popover-width,
-      min(20rem, calc(100vw - var(--fs-spacing-8)))
+      --lt-popover-width,
+      min(20rem, calc(100vw - var(--lt-spacing-8)))
     );
-    padding: var(--fs-popover-padding, var(--fs-spacing-3));
+    padding: var(--lt-popover-padding, var(--lt-spacing-3));
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-strong);
-    background: var(--fs-color-neutral-canvas);
-    border: 1px solid var(--fs-color-neutral-border-subtle);
-    border-radius: var(--fs-popover-radius, var(--fs-spacing-1));
-    box-shadow: var(--fs-shadow-overlay);
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-neutral-canvas);
+    border: 1px solid var(--lt-color-neutral-border-subtle);
+    border-radius: var(--lt-popover-radius, var(--lt-spacing-1));
+    box-shadow: var(--lt-shadow-overlay);
   }
 
-  /* Posisjonen er fysisk: `--fs-popover-left` er avstanden fra venstre
+  /* Posisjonen er fysisk: `--lt-popover-left` er avstanden fra venstre
      vinduskant, regnet ut mot knappen. `inset-inline-start` er høyre kant i
      et dokument som leses fra høyre, så der snus den, slik ikonene i
      bakgrunnen snus med `:dir(rtl)`. */
-  .fs-popover:dir(rtl) {
+  .lt-popover:dir(rtl) {
     inset-inline-start: auto;
-    inset-inline-end: var(--fs-popover-left, 0);
+    inset-inline-end: var(--lt-popover-left, 0);
   }
 
-  .fs-popover:not(:popover-open) {
+  .lt-popover:not(:popover-open) {
     display: none;
   }
 }

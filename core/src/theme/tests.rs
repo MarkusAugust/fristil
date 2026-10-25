@@ -1,7 +1,7 @@
 //! At kontrakten holder, og at sjekken som skal si fra faktisk sier fra.
 //!
 //! Løftene er garantert av konstruksjonen og ikke av et justeringspass, så
-//! testene her er hele garantien. Ryker et av tallene i `fargekontrakt.json`,
+//! testene her er hele garantien. Ryker et av tallene i `color-contract.json`,
 //! er det disse som skal bli røde. De var `contract.browser.test.ts` mens
 //! temaet var skrevet i TypeScript, og påstandene er de samme.
 
@@ -96,10 +96,10 @@ fn family_count() -> usize {
     contract().families.len()
 }
 
-// Fristils eget tema.
+// LO-TEKs eget tema.
 
 #[test]
-fn fristils_own_theme_keeps_every_promise() {
+fn loteks_own_theme_keeps_every_promise() {
     for appearance in APPEARANCES {
         let matrix = build_matrix(&contract().brands, appearance).unwrap();
         assert!(
@@ -117,7 +117,7 @@ fn has_every_family_with_every_role() {
         assert_eq!(tokens.len(), family_count() * role_count() + 2);
         for family in &contract().families {
             for (r, _) in &contract().roles {
-                let name = format!("--fs-color-{family}-{}", role_to_css(r));
+                let name = format!("--lt-color-{family}-{}", role_to_css(r));
                 let value = &tokens.iter().find(|(n, _)| *n == name).unwrap().1;
                 assert!(
                     value.len() == 7 && value.starts_with('#'),
@@ -235,12 +235,12 @@ fn finds_the_cell_that_breaks_and_where_it_is() {
     let css = as_css(Appearance::Light, ":root");
     let old = tokens(Appearance::Light)
         .into_iter()
-        .find(|(n, _)| n == "--fs-color-danger-text")
+        .find(|(n, _)| n == "--lt-color-danger-text")
         .unwrap()
         .1;
     let css = css.replace(
-        &format!("--fs-color-danger-text: {old}"),
-        "--fs-color-danger-text: #ff9999",
+        &format!("--lt-color-danger-text: {old}"),
+        "--lt-color-danger-text: #ff9999",
     );
     let report = inspect_theme(&css);
     assert!(!report.problems.is_empty());
@@ -264,12 +264,12 @@ fn reads_a_dark_block_inside_media() {
 fn reports_a_value_it_cannot_calculate() {
     let fill = tokens(Appearance::Light)
         .into_iter()
-        .find(|(n, _)| n == "--fs-color-accent-fill")
+        .find(|(n, _)| n == "--lt-color-accent-fill")
         .unwrap()
         .1;
     let css = as_css(Appearance::Light, ":root").replace(
-        &format!("--fs-color-accent-fill: {fill}"),
-        "--fs-color-accent-fill: var(--noe-annet)",
+        &format!("--lt-color-accent-fill: {fill}"),
+        "--lt-color-accent-fill: var(--noe-annet)",
     );
     let report = inspect_theme(&css);
     assert_eq!(report.problems.len(), 1);
@@ -278,7 +278,7 @@ fn reports_a_value_it_cannot_calculate() {
 
 #[test]
 fn reports_an_incomplete_family() {
-    let report = inspect_theme(":root { color-scheme: light; --fs-color-brand4-fill: #336699; }");
+    let report = inspect_theme(":root { color-scheme: light; --lt-color-brand4-fill: #336699; }");
     assert_eq!(messages(&report).len(), 1);
     assert!(report.problems[0].message.contains("brand4 mangler"));
 }
@@ -287,7 +287,7 @@ fn reports_an_incomplete_family() {
 fn says_so_when_the_file_has_no_theme() {
     for css in [
         "body { color: red }",
-        "body { color: var(--fs-color-neutral-text) }",
+        "body { color: var(--lt-color-neutral-text) }",
     ] {
         let report = inspect_theme(css);
         assert!(report.problems[0].message.contains("Fant ingen"), "{css}");
@@ -300,9 +300,9 @@ fn a_theme_with_only_shape_and_system_colors_is_not_a_missing_theme() {
     // Skriften, formen og systemfargene lover ingen kontrast. En fil med bare
     // dem er et tema uten farger, også inni et `@layer` og en `@media`.
     for css in [
-        ":root { --fs-button-radius: 2.75rem }",
-        "@layer fristil-tema { :root { --fs-font-family-base: Georgia, serif } }",
-        "@media (prefers-color-scheme: dark) { :root { --fs-color-overlay: rgba(0, 0, 0, 0.72) } }",
+        ":root { --lt-button-radius: 2.75rem }",
+        "@layer lotek-theme { :root { --lt-font-family-base: Georgia, serif } }",
+        "@media (prefers-color-scheme: dark) { :root { --lt-color-overlay: rgba(0, 0, 0, 0.72) } }",
     ] {
         let report = inspect_theme(css);
         assert!(report.problems.is_empty(), "{css}: {:?}", messages(&report));
@@ -352,14 +352,14 @@ fn border_fill_and_subtle_text_hold_against_raised() {
         let get = |name: &str| {
             parse_hex(&matrix.tokens.iter().find(|(n, _)| n == name).unwrap().1).unwrap()
         };
-        let raised = get("--fs-color-neutral-raised");
+        let raised = get("--lt-color-neutral-raised");
         for family in &contract().families {
             for (r, required) in [
                 ("border", contract().graphic_requirement),
                 ("fill", contract().graphic_requirement),
                 ("text-subtle", contract().text_requirement),
             ] {
-                let ratio = contrast_ratio(get(&format!("--fs-color-{family}-{r}")), raised);
+                let ratio = contrast_ratio(get(&format!("--lt-color-{family}-{r}")), raised);
                 assert!(ratio >= required, "{family} {r} {appearance:?}: {ratio}");
             }
         }
@@ -381,11 +381,11 @@ fn fails_when_the_border_is_too_weak_against_raised() {
 
 #[test]
 fn keeps_a_value_before_a_nested_rule() {
-    let css = ":root { --fs-color-danger-text: #ff9999; &:hover { color: red } }";
+    let css = ":root { --lt-color-danger-text: #ff9999; &:hover { color: red } }";
     let blocks = parse_blocks(css);
     assert_eq!(blocks.len(), 1);
     assert_eq!(
-        declared(&blocks[0], "--fs-color-danger-text"),
+        declared(&blocks[0], "--lt-color-danger-text"),
         Some("#ff9999")
     );
     assert!(!inspect_theme(css).problems.is_empty());
@@ -393,7 +393,7 @@ fn keeps_a_value_before_a_nested_rule() {
 
 #[test]
 fn reads_media_inside_root_as_its_own_block() {
-    let css = ":root { --fs-color-danger-text: #ff9999; @media print { --fs-color-accent-fill: #123456 } }";
+    let css = ":root { --lt-color-danger-text: #ff9999; @media print { --lt-color-accent-fill: #123456 } }";
     assert_eq!(parse_blocks(css).len(), 2);
 }
 
@@ -412,17 +412,17 @@ fn reads_a_nested_rule_that_starts_with_an_element_and_a_colon() {
             "a:hover",
         ] {
             let css = format!(
-                "{outer} {{ {selector} {{ --fs-color-accent-text: #fdfdfd; --fs-color-accent-surface: #ffffff }} :root {{ --fs-color-danger-text: #ff9999 }} }}"
+                "{outer} {{ {selector} {{ --lt-color-accent-text: #fdfdfd; --lt-color-accent-surface: #ffffff }} :root {{ --lt-color-danger-text: #ff9999 }} }}"
             );
             let blocks = parse_blocks(&css);
             assert_eq!(blocks.len(), 2, "{css}");
             assert_eq!(
-                declared(&blocks[0], "--fs-color-accent-text"),
+                declared(&blocks[0], "--lt-color-accent-text"),
                 Some("#fdfdfd"),
                 "{css}"
             );
             assert_eq!(
-                declared(&blocks[1], "--fs-color-danger-text"),
+                declared(&blocks[1], "--lt-color-danger-text"),
                 Some("#ff9999"),
                 "{css}"
             );
@@ -438,30 +438,30 @@ fn reads_a_nested_rule_that_starts_with_an_element_and_a_colon() {
 
 #[test]
 fn a_custom_property_may_hold_a_block() {
-    let css = ":root { --noe: { a: b }; --fs-color-danger-text: #ff9999 }";
+    let css = ":root { --noe: { a: b }; --lt-color-danger-text: #ff9999 }";
     let blocks = parse_blocks(css);
     assert_eq!(blocks.len(), 1);
     assert_eq!(
-        declared(&blocks[0], "--fs-color-danger-text"),
+        declared(&blocks[0], "--lt-color-danger-text"),
         Some("#ff9999")
     );
 }
 
 #[test]
 fn reads_light_dark_as_not_given() {
-    let css = "[data-theme=\"dark\"] { color-scheme: light dark; --fs-color-danger-text: #ff9999 }";
+    let css = "[data-theme=\"dark\"] { color-scheme: light dark; --lt-color-danger-text: #ff9999 }";
     assert_eq!(parse_blocks(css)[0].appearance, Appearance::Dark);
 }
 
 #[test]
 fn is_not_fooled_by_a_class_called_darkmode() {
-    let css = ".darkmode-toggle { --fs-color-danger-text: #123456 }";
+    let css = ".darkmode-toggle { --lt-color-danger-text: #123456 }";
     assert_eq!(parse_blocks(css)[0].appearance, Appearance::Light);
 }
 
 #[test]
 fn reports_a_token_name_the_system_does_not_have() {
-    let report = inspect_theme(":root { --fs-color-danger-txt: #ff0000 }");
+    let report = inspect_theme(":root { --lt-color-danger-txt: #ff0000 }");
     assert_eq!(report.problems.len(), 1);
     assert!(report.problems[0]
         .message
@@ -482,7 +482,7 @@ fn checks_a_family_with_a_hyphen_in_its_name() {
         "text-subtle",
     ]
     .iter()
-    .map(|r| format!("--fs-color-min-merkevare-{r}: #ff0000;"))
+    .map(|r| format!("--lt-color-min-merkevare-{r}: #ff0000;"))
     .collect();
     let report = inspect_theme(&format!(":root {{{css}}}"));
     assert!(!report.problems.is_empty());
@@ -493,7 +493,7 @@ fn checks_a_family_with_a_hyphen_in_its_name() {
 
 #[test]
 fn reports_a_hex_color_with_alpha_instead_of_failing() {
-    let report = inspect_theme(":root { --fs-color-danger-text: #ff9999cc }");
+    let report = inspect_theme(":root { --lt-color-danger-text: #ff9999cc }");
     assert_eq!(report.problems.len(), 1);
     assert!(report.problems[0].message.contains("ikke kontrollert"));
 }
@@ -547,7 +547,7 @@ fn reads_every_dark_form_of_color_scheme() {
         "ONLY DARK",
         "Only Dark",
     ] {
-        let css = format!(":root {{ color-scheme: {value}; --fs-color-danger-text: #f1a7ab }}");
+        let css = format!(":root {{ color-scheme: {value}; --lt-color-danger-text: #f1a7ab }}");
         assert_eq!(
             parse_blocks(&css)[0].appearance,
             Appearance::Dark,
@@ -558,19 +558,19 @@ fn reads_every_dark_form_of_color_scheme() {
 
 #[test]
 fn the_last_color_scheme_wins() {
-    let css = ":root { color-scheme: light; color-scheme: dark; --fs-color-danger-text: #f1a7ab }";
+    let css = ":root { color-scheme: light; color-scheme: dark; --lt-color-danger-text: #f1a7ab }";
     assert_eq!(parse_blocks(css)[0].appearance, Appearance::Dark);
 }
 
 #[test]
 fn does_not_read_a_custom_property_as_color_scheme() {
-    let css = ":root { --my-color-scheme: dark; --fs-color-danger-text: #7a1f28 }";
+    let css = ":root { --my-color-scheme: dark; --lt-color-danger-text: #7a1f28 }";
     assert_eq!(parse_blocks(css)[0].appearance, Appearance::Light);
 }
 
 #[test]
 fn keeps_the_brace_message_in_a_truncated_file() {
-    let report = inspect_theme(":root { --fs-color-danger-text: #7a1f28");
+    let report = inspect_theme(":root { --lt-color-danger-text: #7a1f28");
     assert!(messages(&report)
         .iter()
         .any(|m| m.contains("ikke er lukket")));
@@ -578,7 +578,7 @@ fn keeps_the_brace_message_in_a_truncated_file() {
 
 #[test]
 fn reports_a_block_that_is_not_closed() {
-    let report = inspect_theme(":root { --fs-color-danger-text: #7a1f28 } [data-theme=\"dark\"] {");
+    let report = inspect_theme(":root { --lt-color-danger-text: #7a1f28 } [data-theme=\"dark\"] {");
     assert!(messages(&report)
         .iter()
         .any(|m| m.contains("ikke er lukket")));
@@ -586,7 +586,7 @@ fn reports_a_block_that_is_not_closed() {
 
 #[test]
 fn reports_a_layer_on_another_family_than_neutral() {
-    let report = inspect_theme(":root { --fs-color-danger-canvas: #ff0000 }");
+    let report = inspect_theme(":root { --lt-color-danger-canvas: #ff0000 }");
     assert_eq!(report.problems.len(), 1);
     assert!(report.problems[0]
         .message
@@ -596,7 +596,7 @@ fn reports_a_layer_on_another_family_than_neutral() {
 #[test]
 fn reads_a_value_with_important() {
     let report =
-        inspect_theme(":root { color-scheme: light; --fs-color-danger-text: #7a1f28 !important }");
+        inspect_theme(":root { color-scheme: light; --lt-color-danger-text: #7a1f28 !important }");
     assert_eq!(report.declarations, 1);
     assert!(report.problems.is_empty());
 }
@@ -604,7 +604,7 @@ fn reads_a_value_with_important() {
 #[test]
 fn counts_the_consumers_own_values_not_the_defaults() {
     let one_line =
-        inspect_theme(":root { color-scheme: light; --fs-color-neutral-canvas: #ffffff }");
+        inspect_theme(":root { color-scheme: light; --lt-color-neutral-canvas: #ffffff }");
     let whole = inspect_theme(&format!(
         ":root {{ color-scheme: light; {} }}",
         declarations(&tokens(Appearance::Light))
@@ -619,11 +619,11 @@ fn counts_the_consumers_own_values_not_the_defaults() {
 
 #[test]
 fn a_brace_in_a_string_does_not_end_the_block() {
-    let css = ":root { content: \"}\"; --fs-color-danger-text: #ff9999; }";
+    let css = ":root { content: \"}\"; --lt-color-danger-text: #ff9999; }";
     let blocks = parse_blocks(css);
     assert_eq!(blocks.len(), 1);
     assert_eq!(
-        declared(&blocks[0], "--fs-color-danger-text"),
+        declared(&blocks[0], "--lt-color-danger-text"),
         Some("#ff9999")
     );
     let report = inspect_theme(css);
@@ -635,7 +635,7 @@ fn a_brace_in_a_string_does_not_end_the_block() {
 
 #[test]
 fn a_semicolon_in_a_string_does_not_split_a_declaration() {
-    let css = ":root { color-scheme: light; font-family: \"a;--fs-color-accent-text: #ffffff\"; --fs-color-danger-text: #7a1f28 }";
+    let css = ":root { color-scheme: light; font-family: \"a;--lt-color-accent-text: #ffffff\"; --lt-color-danger-text: #7a1f28 }";
     let blocks = parse_blocks(css);
     assert_eq!(
         blocks[0].declarations.len(),
@@ -648,20 +648,20 @@ fn a_semicolon_in_a_string_does_not_split_a_declaration() {
 
 #[test]
 fn a_brace_in_a_url_is_not_a_block() {
-    let css = ":root { color-scheme: light; background: url(data:image/svg+xml,{x}); --fs-color-danger-text: #7a1f28 }";
+    let css = ":root { color-scheme: light; background: url(data:image/svg+xml,{x}); --lt-color-danger-text: #7a1f28 }";
     assert_eq!(parse_blocks(css).len(), 1);
     assert!(inspect_theme(css).problems.is_empty());
 }
 
 #[test]
 fn a_comment_in_the_selector_is_not_shown() {
-    let css = ":root /* lyst */ { --fs-color-danger-text: #ff9999 }";
+    let css = ":root /* lyst */ { --lt-color-danger-text: #ff9999 }";
     assert_eq!(parse_blocks(css)[0].selector, ":root");
 }
 
 #[test]
 fn reads_a_block_that_is_not_closed_to_the_end_of_the_file() {
-    let report = inspect_theme(":root { --fs-color-danger-text: #ff9999");
+    let report = inspect_theme(":root { --lt-color-danger-text: #ff9999");
     assert_eq!(report.blocks, 1);
     assert!(messages(&report)
         .iter()
@@ -669,13 +669,13 @@ fn reads_a_block_that_is_not_closed_to_the_end_of_the_file() {
     assert!(messages(&report).iter().any(|m| m.contains("danger: text")));
 }
 
-// En bar `:root` gjelder i begge temaer. Fristils mørke blokk overstyrer
+// En bar `:root` gjelder i begge temaer. LO-TEKs mørke blokk overstyrer
 // bare tokenene den selv har, så en lys verdi som ingen mørk blokk tar,
 // står også i mørkt.
 
 #[test]
 fn checks_a_bare_root_against_the_dark_theme_too() {
-    let report = inspect_theme(":root { --fs-color-neutral-text: #0d4e8c }");
+    let report = inspect_theme(":root { --lt-color-neutral-text: #0d4e8c }");
     assert!(
         report
             .problems
@@ -688,8 +688,8 @@ fn checks_a_bare_root_against_the_dark_theme_too() {
 
 #[test]
 fn a_dark_block_takes_over_the_value_from_a_bare_root() {
-    let css = ":root { --fs-color-neutral-text: #0d4e8c }
-        [data-theme=\"dark\"] { --fs-color-neutral-text: #e8eaed }";
+    let css = ":root { --lt-color-neutral-text: #0d4e8c }
+        [data-theme=\"dark\"] { --lt-color-neutral-text: #e8eaed }";
     assert!(
         inspect_theme(css).problems.is_empty(),
         "{:?}",
@@ -700,8 +700,8 @@ fn a_dark_block_takes_over_the_value_from_a_bare_root() {
 #[test]
 fn a_block_bound_to_light_is_checked_only_as_light() {
     for css in [
-        "[data-theme=\"light\"] { --fs-color-neutral-text: #0d4e8c }",
-        ":root { color-scheme: light; --fs-color-neutral-text: #0d4e8c }",
+        "[data-theme=\"light\"] { --lt-color-neutral-text: #0d4e8c }",
+        ":root { color-scheme: light; --lt-color-neutral-text: #0d4e8c }",
     ] {
         assert!(inspect_theme(css).problems.is_empty(), "{css}");
     }
@@ -710,7 +710,7 @@ fn a_block_bound_to_light_is_checked_only_as_light() {
 #[test]
 fn light_and_dark_together_is_both_themes() {
     let report =
-        inspect_theme(":root { color-scheme: light dark; --fs-color-neutral-text: #0d4e8c }");
+        inspect_theme(":root { color-scheme: light dark; --lt-color-neutral-text: #0d4e8c }");
     assert!(
         report
             .problems
@@ -723,7 +723,7 @@ fn light_and_dark_together_is_both_themes() {
 
 #[test]
 fn a_print_block_is_not_checked_as_dark() {
-    let report = inspect_theme(":root { @media print { --fs-color-neutral-text: #0d4e8c } }");
+    let report = inspect_theme(":root { @media print { --lt-color-neutral-text: #0d4e8c } }");
     assert!(report.problems.is_empty(), "{:?}", messages(&report));
 }
 
@@ -731,7 +731,7 @@ fn a_print_block_is_not_checked_as_dark() {
 fn light_must_be_a_word() {
     for selector in [".highlight", ".lightbox", "@layer brand { :root"] {
         let close = if selector.contains('{') { "}" } else { "" };
-        let css = format!("{selector} {{ --fs-color-neutral-text: #0d4e8c }}{close}");
+        let css = format!("{selector} {{ --lt-color-neutral-text: #0d4e8c }}{close}");
         let report = inspect_theme(&css);
         assert!(
             report
@@ -743,8 +743,8 @@ fn light_must_be_a_word() {
         );
     }
     for css in [
-        ".light-mode { --fs-color-neutral-text: #0d4e8c }",
-        "@media only print { :root { --fs-color-neutral-text: #0d4e8c } }",
+        ".light-mode { --lt-color-neutral-text: #0d4e8c }",
+        "@media only print { :root { --lt-color-neutral-text: #0d4e8c } }",
     ] {
         assert!(inspect_theme(css).problems.is_empty(), "{css}");
     }
@@ -755,7 +755,7 @@ fn not_dark_is_both_themes_and_not_light() {
     // `:root:not([data-theme="dark"])` treffer også systemets mørke modus
     // når `data-theme` mangler.
     let report =
-        inspect_theme(":root:not([data-theme=\"dark\"]) { --fs-color-neutral-text: #0d4e8c }");
+        inspect_theme(":root:not([data-theme=\"dark\"]) { --lt-color-neutral-text: #0d4e8c }");
     assert!(
         report
             .problems
@@ -769,14 +769,14 @@ fn not_dark_is_both_themes_and_not_light() {
 #[test]
 fn dark_inside_not_does_not_make_a_dark_block() {
     let blocks =
-        parse_blocks(".kort:not([data-theme=\"dark\"]) { --fs-color-neutral-text: #0d4e8c }");
+        parse_blocks(".kort:not([data-theme=\"dark\"]) { --lt-color-neutral-text: #0d4e8c }");
     assert_eq!(blocks[0].appearance, Appearance::Light);
 }
 
 // Systemfargene er ingen celle, og lover ingen kontrast.
 
 #[test]
-fn fristils_own_tokens_css_has_no_problems() {
+fn loteks_own_tokens_css_has_no_problems() {
     let report = inspect_theme(&crate::package_file("src/tokens/tokens.css"));
     assert!(report.problems.is_empty(), "{:?}", messages(&report));
     assert!(report.promises > 0);
@@ -786,15 +786,15 @@ fn fristils_own_tokens_css_has_no_problems() {
 fn the_system_colors_are_not_cells() {
     // Slik design-tokens.mdx ber om: overstyringen skrives på hver temagrense.
     let css = "[data-theme=\"light\"] {
-            --fs-color-disabled-surface: #e4e4e5;
-            --fs-color-disabled-text: #8a8d91;
-            --fs-color-overlay: #000000;
-            --fs-color-danger-text: #7a1f28;
+            --lt-color-disabled-surface: #e4e4e5;
+            --lt-color-disabled-text: #8a8d91;
+            --lt-color-overlay: #000000;
+            --lt-color-danger-text: #7a1f28;
         }
         [data-theme=\"dark\"] {
-            --fs-color-disabled-surface: var(--fs-color-neutral-raised);
-            --fs-color-disabled-text: #5c5f63;
-            --fs-color-overlay: rgba(0, 0, 0, 0.72);
+            --lt-color-disabled-surface: var(--lt-color-neutral-raised);
+            --lt-color-disabled-text: #5c5f63;
+            --lt-color-overlay: rgba(0, 0, 0, 0.72);
         }";
     let report = inspect_theme(css);
     assert!(report.problems.is_empty(), "{:?}", messages(&report));
@@ -812,7 +812,7 @@ fn media_not_dark_is_light_and_only_light() {
         "not screen and (prefers-color-scheme: dark)",
         "NOT (Prefers-Color-Scheme:dark)",
     ] {
-        let css = format!("@media {media} {{ :root {{ --fs-color-accent-text: #0d4e8c }} }}");
+        let css = format!("@media {media} {{ :root {{ --lt-color-accent-text: #0d4e8c }} }}");
         assert_eq!(
             parse_blocks(&css)[0].appearance,
             Appearance::Light,
@@ -837,10 +837,10 @@ fn media_not_print_and_dark_applies_in_both_schemes() {
         "not tv and (prefers-color-scheme: dark)",
         "not print and (prefers-color-scheme: light)",
     ] {
-        let css = format!("@media {media} {{ :root {{ --fs-color-accent-text: #0d4e8c }} }}");
+        let css = format!("@media {media} {{ :root {{ --lt-color-accent-text: #0d4e8c }} }}");
         let blocks = parse_blocks(&css);
         assert_eq!(blocks[0].appearance, Appearance::Light, "{media}");
-        let bare = inspect_theme(":root { --fs-color-accent-text: #0d4e8c }");
+        let bare = inspect_theme(":root { --lt-color-accent-text: #0d4e8c }");
         let report = inspect_theme(&css);
         assert!(!report.problems.is_empty(), "{media}");
         assert_eq!(messages(&report).len(), messages(&bare).len(), "{media}");
@@ -852,14 +852,14 @@ fn media_not_print_and_dark_applies_in_both_schemes() {
 fn media_not_type_without_and_stays_dark() {
     // En medietype uten `and` foran skjemaet er ikke en negert spørring om
     // fargeskjema, og `dark` leses som før.
-    let css = "@media not screen, (prefers-color-scheme: dark) { :root { --fs-color-danger-text: #f1a7ab } }";
+    let css = "@media not screen, (prefers-color-scheme: dark) { :root { --lt-color-danger-text: #f1a7ab } }";
     assert_eq!(parse_blocks(css)[0].appearance, Appearance::Dark);
 }
 
 #[test]
 fn media_not_light_is_dark() {
     let css =
-        "@media not (prefers-color-scheme: light) { :root { --fs-color-danger-text: #f1a7ab } }";
+        "@media not (prefers-color-scheme: light) { :root { --lt-color-danger-text: #f1a7ab } }";
     assert_eq!(parse_blocks(css)[0].appearance, Appearance::Dark);
     assert!(inspect_theme(css).problems.is_empty());
 }

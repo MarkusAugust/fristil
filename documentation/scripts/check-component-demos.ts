@@ -1,7 +1,7 @@
 /**
  * Kontrollerer at de levende forhåndsvisningene på komponentsidene virker.
  *
- * `sjekk-dokumentasjon.ts` leser mdx-filene som tekst og kontrollerer at hver
+ * `check-documentation.ts` leser mdx-filene som tekst og kontrollerer at hver
  * klasse og variabel er nevnt. Den sier ingenting om at eksempelet virker.
  * Da API-et la om til at serveren skriver markupen, sto tre demoer igjen med
  * `heading=`, `label=` og `<option>`-barn, og begge sjekkene meldte grønt
@@ -95,7 +95,7 @@ side.on("console", (melding) => {
    * kommer på riktig markup blir slått av, og da er den verdiløs.
    *
    * Dette skriptet går bare gjennom komponentsidene. Resten av siden,
-   * mønstersidene og forsiden medregnet, dekkes av `sjekk-tilgjengelighet.ts`,
+   * mønstersidene og forsiden medregnet, dekkes av `check-accessibility.ts`,
    * som besøker hver eneste bygde side.
    */
   if (melding.type() === "warning") {
@@ -145,7 +145,7 @@ async function pa(
  * Krever at noe demoen lagde faktisk står å se inne i forhåndsvisningen.
  *
  * Komponenter som fester innholdet sitt til vinduet fant vi ikke her før.
- * `<fs-connection-status>` skriver linja si med `position: fixed` øverst,
+ * `<lt-connection-status>` skriver linja si med `position: fixed` øverst,
  * og i dokumentasjonen la den seg i toppen av vinduet, bak den faste toppen
  * på siden. Leseren trykket på knappen midt i siden, og det så ut som at
  * ingenting skjedde, mens denne sjekken meldte grønt fordi elementet fantes
@@ -198,7 +198,7 @@ async function synligIBoksen(
   )
 }
 
-await pa("tabs", "demo-tabs", "fs-tabs", async (side, id) => {
+await pa("tabs", "demo-tabs", "lt-tabs", async (side, id) => {
   const svar = await side.evaluate((id) => {
     const rot = document.getElementById(id)?.shadowRoot
     const faner = [...(rot?.querySelectorAll("[role='tab']") ?? [])]
@@ -221,17 +221,17 @@ await pa("tabs", "demo-tabs", "fs-tabs", async (side, id) => {
 await pa(
   "error-summary",
   "demo-error-summary",
-  "fs-error-summary",
+  "lt-error-summary",
   async (side, id) => {
     const svar = await side.evaluate((id) => {
       const rot = document.getElementById(id)?.shadowRoot
-      const boks = rot?.querySelector("fs-error-summary")
+      const boks = rot?.querySelector("lt-error-summary")
       ;(rot?.querySelector("li a") as HTMLElement | undefined)?.click()
       return {
-        klasse: boks?.classList.contains("fs-error-summary") ?? false,
+        klasse: boks?.classList.contains("lt-error-summary") ?? false,
         rolle: boks?.getAttribute("role") ?? "",
         tittel: (
-          rot?.querySelector(".fs-error-summary__title")?.textContent ?? ""
+          rot?.querySelector(".lt-error-summary__title")?.textContent ?? ""
         ).trim(),
         fokus: (rot?.activeElement as HTMLElement | null)?.id ?? "",
       }
@@ -247,7 +247,7 @@ await pa(
   },
 )
 
-await pa("suggestion", "demo-suggestion", "fs-suggestion", async (side, id) => {
+await pa("suggestion", "demo-suggestion", "lt-suggestion", async (side, id) => {
   const svar = await side.evaluate((id) => {
     const rot = document.getElementById(id)?.shadowRoot
     const felt = rot?.querySelector("input") as HTMLInputElement | null
@@ -276,7 +276,7 @@ await pa("suggestion", "demo-suggestion", "fs-suggestion", async (side, id) => {
   krev(svar.status.length > 0, "antall treff meldes ikke til skjermlesere")
 })
 
-await pa("popover", "demo-popover", "fs-popover", async (side, id) => {
+await pa("popover", "demo-popover", "lt-popover", async (side, id) => {
   const svar = await side.evaluate((id) => {
     const rot = document.getElementById(id)?.shadowRoot
     // Delene slås opp slik komponenten selv gjør det: panelet er det som
@@ -300,7 +300,7 @@ await pa("popover", "demo-popover", "fs-popover", async (side, id) => {
   krev(svar.synlig, "panelet havner ikke i topplaget")
 })
 
-await pa("dialog", "demo-dialog", "fs-dialog", async (side, id) => {
+await pa("dialog", "demo-dialog", "lt-dialog", async (side, id) => {
   const svar = await side.evaluate((id) => {
     const rot = document.getElementById(id)?.shadowRoot
     const knapp = rot?.querySelector("[data-apne]") as HTMLElement | null
@@ -318,7 +318,7 @@ await pa("dialog", "demo-dialog", "fs-dialog", async (side, id) => {
   krev(svar.fokusInne, "fokus havner ikke inne i dialogen")
 })
 
-await pa("field", "demo-field", "fs-field", async (side, id) => {
+await pa("field", "demo-field", "lt-field", async (side, id) => {
   const svar = await side.evaluate((id) => {
     const rot = document.getElementById(id)?.shadowRoot
     const felt = rot?.querySelector("input") as HTMLInputElement | null
@@ -326,37 +326,37 @@ await pa("field", "demo-field", "fs-field", async (side, id) => {
     return {
       koblet: Boolean(ledetekst?.htmlFor) && ledetekst?.htmlFor === felt?.id,
       beskrevet: Boolean(felt?.getAttribute("aria-describedby")),
-      klasse: ledetekst?.classList.contains("fs-label") ?? false,
+      klasse: ledetekst?.classList.contains("lt-label") ?? false,
     }
   }, id)
 
   krev(svar.koblet, "ledeteksten peker ikke på feltet")
   krev(svar.beskrevet, "hjelpeteksten er ikke koblet til feltet")
-  krev(svar.klasse, "ledeteksten mangler fs-label")
+  krev(svar.klasse, "ledeteksten mangler lt-label")
 })
 
-await pa("toast", "demo-toast", "fs-toast", async (side, id) => {
+await pa("toast", "demo-toast", "lt-toast", async (side, id) => {
   const svar = await side.evaluate((id) => {
     const rot = document.getElementById(id)?.shadowRoot
     ;(rot?.getElementById("demo-toast-knapp") as HTMLElement | null)?.click()
-    const ko = rot?.querySelector("fs-toast")
+    const ko = rot?.querySelector("lt-toast")
     return {
       rolle: ko?.getAttribute("role") ?? "",
-      meldinger: rot?.querySelectorAll(".fs-toast__message").length ?? 0,
-      lukkeknapp: rot?.querySelectorAll(".fs-toast__close").length ?? 0,
+      meldinger: rot?.querySelectorAll(".lt-toast__message").length ?? 0,
+      lukkeknapp: rot?.querySelectorAll(".lt-toast__close").length ?? 0,
     }
   }, id)
 
   krev(svar.rolle === "status", "regionen er ikke en status-region")
   krev(svar.meldinger === 1, `et klikk ga ${svar.meldinger} meldinger`)
   krev(svar.lukkeknapp === 1, "meldingen har ingen lukkeknapp")
-  await synligIBoksen(side, id, ".fs-toast__message")
+  await synligIBoksen(side, id, ".lt-toast__message")
 })
 
 await pa(
   "connection-status",
   "demo-samband",
-  "fs-connection-status",
+  "lt-connection-status",
   async (side, id) => {
     await side.evaluate((id) => {
       const rot = document.getElementById(id)?.shadowRoot
@@ -369,7 +369,7 @@ await pa(
         (
           document
             .getElementById(id)
-            ?.shadowRoot?.querySelector(".fs-connection-status__bar")
+            ?.shadowRoot?.querySelector(".lt-connection-status__bar")
             ?.textContent ?? ""
         ).trim().length > 0,
       id,
@@ -377,7 +377,7 @@ await pa(
     )
     const svar = await side.evaluate((id) => {
       const rot = document.getElementById(id)?.shadowRoot
-      const linje = rot?.querySelector(".fs-connection-status__bar")
+      const linje = rot?.querySelector(".lt-connection-status__bar")
       return {
         tekst: (linje?.textContent ?? "").trim(),
         tilstand: (linje as HTMLElement | null)?.dataset.state ?? "",
@@ -388,14 +388,14 @@ await pa(
     krev(svar.tekst.length > 0, "linja sier ingenting")
     krev(svar.tilstand === "offline", "linja melder ikke at sambandet er nede")
     krev(svar.rolle === "status", "linja er ikke en status-region")
-    await synligIBoksen(side, id, ".fs-connection-status__bar")
+    await synligIBoksen(side, id, ".lt-connection-status__bar")
   },
 )
 
 await pa(
   "session-timeout",
   "demo-okt",
-  "fs-session-timeout",
+  "lt-session-timeout",
   async (side, id) => {
     // Demoen varsler etter fem sekunder. Her ventes det på at dialogen
     // faktisk åpner seg, ikke på klokka: en fast pause ville feilet
@@ -417,13 +417,13 @@ await pa(
       return {
         rolle: dialog?.getAttribute("role") ?? "",
         nedtelling: (
-          rot?.querySelector(".fs-session-timeout__count")?.textContent ?? ""
+          rot?.querySelector(".lt-session-timeout__count")?.textContent ?? ""
         ).trim(),
         skjultForSkjermleser:
           rot
-            ?.querySelector(".fs-session-timeout__count")
+            ?.querySelector(".lt-session-timeout__count")
             ?.getAttribute("aria-hidden") ?? "",
-        knapper: rot?.querySelectorAll(".fs-session-timeout__actions button")
+        knapper: rot?.querySelectorAll(".lt-session-timeout__actions button")
           .length,
       }
     }, id)

@@ -1,5 +1,5 @@
 /**
- * At ordforrådet og editorfilene på disk er de `generate-ordforrad.ts` ville
+ * At ordforrådet og editorfilene på disk er de `generate-vocabulary.ts` ville
  * skrevet nå, og at
  * `metadata.ts` dekker hvert element pakken registrerer og hver klasse i
  * CSS-en, med deler som treffer markupen på komponentsidene.
@@ -12,7 +12,7 @@
  * Lista over forventede elementer kommer altså fra pakken, ikke fra
  * metadataen, ellers etterprøver vakten bare seg selv.
  *
- * Kjør med: bun scripts/sjekk-ordforrad.ts, eller som en del av `bun run build`.
+ * Kjør med: bun scripts/check-vocabulary.ts, eller som en del av `bun run build`.
  * Krever at `designsystem/dist` er bygd.
  *
  * I bygget har `generate` nettopp skrevet filene, så del 1 sammenligner med
@@ -24,7 +24,7 @@
 
 import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
-import { classesData, files, ROOT } from "./generate-ordforrad"
+import { classesData, files, ROOT } from "./generate-vocabulary"
 import { elements } from "./metadata"
 
 const findings: string[] = []
@@ -47,11 +47,11 @@ for (const [path, expected] of Object.entries(generated)) {
   }
   if (actual === null)
     findings.push(
-      `${path} finnes ikke. Kjør bun --filter @fristil/designsystem ordforrad.`,
+      `${path} finnes ikke. Kjør bun --filter @lo-tek/interfaces vocabulary.`,
     )
   else if (actual !== expected)
     findings.push(
-      `${path} er utdatert. Kjør bun --filter @fristil/designsystem ordforrad.`,
+      `${path} er utdatert. Kjør bun --filter @lo-tek/interfaces vocabulary.`,
     )
 }
 
@@ -67,7 +67,7 @@ const pkg = JSON.parse(
  * samme elementet ikke telles to ganger om det står bak to inngangspunkter.
  */
 const registered = new Map<string, readonly string[]>()
-/** Delene modulen eksporterer i `FS_…_PARTS`, for elementene som har dem. */
+/** Delene modulen eksporterer i `LT_…_PARTS`, for elementene som har dem. */
 const exportedParts = new Map<string, Record<string, string>>()
 /** Hver tagg noen modul eksporterer, hovedinngangen medregnet. */
 const allTags = new Set<string>()
@@ -154,8 +154,8 @@ for (const [tag, parts] of exportedParts) {
 // færre. Typesjekken ser ikke dette: navnet står bare i en streng, i
 // `new CustomEvent("…")` eller i komponentens egen `emit("…")`.
 const kilde = (tag: string): string | null => {
-  const slug = tag.replace(/^fs-/, "")
-  for (const kategori of ["ramme", "frittstaende"]) {
+  const slug = tag.replace(/^lt-/, "")
+  for (const kategori of ["frame", "standalone"]) {
     try {
       return readFileSync(
         join(ROOT, "designsystem/src/components", kategori, slug, `${tag}.ts`),
@@ -261,7 +261,7 @@ for (const [name, info] of Object.entries(classes)) {
       )
     else if (
       !Object.values(parent.parts ?? {}).some((part) =>
-        // Hele navnet: `.fs-dialog` skal ikke telle som `.fs-dialog__title`.
+        // Hele navnet: `.lt-dialog` skal ikke telle som `.lt-dialog__title`.
         new RegExp(`\\.${name}(?![\\w-])`).test(part.selector),
       )
     )
@@ -284,7 +284,7 @@ for (const [name, info] of Object.entries(classes)) {
 }
 
 // 3. Hver snippet viser elementet sitt. «Har markup» holdt ikke: dialogens
-// snippet hadde en `<dialog>` og ikke noe `<fs-dialog>`.
+// snippet hadde en `<dialog>` og ikke noe `<lt-dialog>`.
 const snippets = JSON.parse(generated["designsystem/snippets.json"]) as Record<
   string,
   { body: string[] }

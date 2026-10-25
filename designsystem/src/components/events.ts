@@ -1,14 +1,14 @@
-// Generert av designsystem/scripts/generate-ordforrad.ts fra metadata.ts. Ikke rediger.
+// Generert av designsystem/scripts/generate-vocabulary.ts fra metadata.ts. Ikke rediger.
 
-import type { FsConnectionStatus } from "./frittstaende/connection-status/fs-connection-status.js"
-import type { FsToast } from "./frittstaende/toast/fs-toast.js"
-import type { FsDialog } from "./ramme/dialog/fs-dialog.js"
-import type { FsErrorSummary } from "./ramme/error-summary/fs-error-summary.js"
-import type { FsField } from "./ramme/field/fs-field.js"
-import type { FsPopover } from "./ramme/popover/fs-popover.js"
-import type { FsSessionTimeout } from "./ramme/session-timeout/fs-session-timeout.js"
-import type { FsSuggestion } from "./ramme/suggestion/fs-suggestion.js"
-import type { FsTabs } from "./ramme/tabs/fs-tabs.js"
+import type { LtDialog } from "./frame/dialog/lt-dialog.js"
+import type { LtErrorSummary } from "./frame/error-summary/lt-error-summary.js"
+import type { LtField } from "./frame/field/lt-field.js"
+import type { LtPopover } from "./frame/popover/lt-popover.js"
+import type { LtSessionTimeout } from "./frame/session-timeout/lt-session-timeout.js"
+import type { LtSuggestion } from "./frame/suggestion/lt-suggestion.js"
+import type { LtTabs } from "./frame/tabs/lt-tabs.js"
+import type { LtConnectionStatus } from "./standalone/connection-status/lt-connection-status.js"
+import type { LtToast } from "./standalone/toast/lt-toast.js"
 
 /**
  * Hendelsene web-komponentene sender, med `detail` slik komponenten sender
@@ -18,50 +18,50 @@ import type { FsTabs } from "./ramme/tabs/fs-tabs.js"
  * `document`.
  *
  * `HTMLElementTagNameMap` utvides med elementene, så
- * `querySelector("fs-dialog")` gir `FsDialog | null`. Kartet står her, og
+ * `querySelector("lt-dialog")` gir `LtDialog | null`. Kartet står her, og
  * ikke i hver komponent, fordi hver inngang til web-komponentene tar med
- * denne fila: fra `/register` alene var `querySelector("fs-dialog")` ellers
+ * denne fila: fra `/register` alene var `querySelector("lt-dialog")` ellers
  * et `Element`, og lytteren på det fikk `Event` uten `detail`.
  */
-export interface FsEventMap {
-  /** `<fs-tabs>`: Brukeren valgte en fane. `index` teller fra 0. */
+export interface LtEventMap {
+  /** `<lt-tabs>`: Brukeren valgte en fane. `index` teller fra 0. */
   "tab-select": CustomEvent<{ index: number }>
-  /** `<fs-popover>`: Brukeren åpnet eller lukket panelet, eller `show()`, `hide()` eller `toggle()` ble kalt. Settes `open` som egenskap eller attributt, kommer ingen hendelse. */
+  /** `<lt-popover>`: Brukeren åpnet eller lukket panelet, eller `show()`, `hide()` eller `toggle()` ble kalt. Settes `open` som egenskap eller attributt, kommer ingen hendelse. */
   "popover-toggle": CustomEvent<{ open: boolean }>
-  /** `<fs-suggestion>`: Brukeren valgte et forslag. `label` er teksten, `value` koden fra `data-value`, eller teksten når alternativet ikke har noen. Feltet får også `input` og `change`, som om brukeren hadde skrevet det. */
+  /** `<lt-suggestion>`: Brukeren valgte et forslag. `label` er teksten, `value` koden fra `data-value`, eller teksten når alternativet ikke har noen. Feltet får også `input` og `change`, som om brukeren hadde skrevet det. */
   "suggestion-select": CustomEvent<{ value: string; label: string }>
-  /** `<fs-dialog>`: Dialogen åpnet eller lukket seg. `returnValue` er verdien til knappen som lukket den, eller en tom streng. */
+  /** `<lt-dialog>`: Dialogen åpnet eller lukket seg. `returnValue` er verdien til knappen som lukket den, eller en tom streng. */
   "dialog-toggle": CustomEvent<{ open: boolean; returnValue: string }>
-  /** `<fs-toast>`: En melding ble lukket, av brukeren, fordi tiden gikk ut, eller med `dismiss()`. `clear()` sender ingen. */
+  /** `<lt-toast>`: En melding ble lukket, av brukeren, fordi tiden gikk ut, eller med `dismiss()`. `clear()` sender ingen. */
   "toast-dismiss": CustomEvent<null>
-  /** `<fs-session-timeout>`: Varselet åpnet seg. */
+  /** `<lt-session-timeout>`: Varselet åpnet seg. */
   "session-warn": CustomEvent<null>
-  /** `<fs-session-timeout>`: Økten fortsetter: brukeren lukket varselet med en annen knapp enn utlogging eller med Escape, eller appen kalte `extend()`. */
+  /** `<lt-session-timeout>`: Økten fortsetter: brukeren lukket varselet med en annen knapp enn utlogging eller med Escape, eller appen kalte `extend()`. */
   "session-extend": CustomEvent<null>
-  /** `<fs-session-timeout>`: Brukeren valgte å logge ut. */
+  /** `<lt-session-timeout>`: Brukeren valgte å logge ut. */
   "session-logout": CustomEvent<null>
-  /** `<fs-session-timeout>`: Tiden er ute. */
+  /** `<lt-session-timeout>`: Tiden er ute. */
   "session-expired": CustomEvent<null>
-  /** `<fs-session-timeout>`: Brukeren er aktiv. Kommer høyst én gang per `activity-interval`, så appen kan holde serverøkten i live. */
+  /** `<lt-session-timeout>`: Brukeren er aktiv. Kommer høyst én gang per `activity-interval`, så appen kan holde serverøkten i live. */
   "session-activity": CustomEvent<null>
-  /** `<fs-connection-status>`: Forbindelsen er borte. */
+  /** `<lt-connection-status>`: Forbindelsen er borte. */
   "connection-lost": CustomEvent<null>
-  /** `<fs-connection-status>`: Forbindelsen er tilbake. */
+  /** `<lt-connection-status>`: Forbindelsen er tilbake. */
   "connection-restored": CustomEvent<null>
 }
 
 declare global {
-  interface HTMLElementEventMap extends FsEventMap {}
-  interface DocumentEventMap extends FsEventMap {}
+  interface HTMLElementEventMap extends LtEventMap {}
+  interface DocumentEventMap extends LtEventMap {}
   interface HTMLElementTagNameMap {
-    "fs-connection-status": FsConnectionStatus
-    "fs-dialog": FsDialog
-    "fs-error-summary": FsErrorSummary
-    "fs-field": FsField
-    "fs-popover": FsPopover
-    "fs-session-timeout": FsSessionTimeout
-    "fs-suggestion": FsSuggestion
-    "fs-tabs": FsTabs
-    "fs-toast": FsToast
+    "lt-connection-status": LtConnectionStatus
+    "lt-dialog": LtDialog
+    "lt-error-summary": LtErrorSummary
+    "lt-field": LtField
+    "lt-popover": LtPopover
+    "lt-session-timeout": LtSessionTimeout
+    "lt-suggestion": LtSuggestion
+    "lt-tabs": LtTabs
+    "lt-toast": LtToast
   }
 }

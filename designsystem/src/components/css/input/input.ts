@@ -7,7 +7,7 @@ import {
   type NonDefaultFieldState,
 } from "../shared.js"
 
-export const INPUT_CLASS = "fs-input" as const
+export const INPUT_CLASS = "lt-input" as const
 
 export const inputTypes = [
   "text",

@@ -2,7 +2,7 @@
  * Pekeren til Markdown-utgaven, i sidehodet på hver side Starlight lager.
  *
  * En agent som har hentet HTML-en, finner Markdown-utgaven her uten å kjenne
- * regelen for adressen. Lenken er også det `markdownsider.mjs` leser når den
+ * regelen for adressen. Lenken er også det `markdown-pages.mjs` leser når den
  * skriver filene: står den på en side, lages fila, og står den ikke, lages den
  * ikke. Da kan lenken aldri peke på noe som mangler.
  *
@@ -10,7 +10,7 @@
  */
 
 import { defineRouteMiddleware } from "@astrojs/starlight/route-data"
-import { markdownAdresse } from "./markdownadresse"
+import { markdownAdresse } from "./markdown-address"
 
 export const onRequest = defineRouteMiddleware((kontekst) => {
   const rute = kontekst.locals.starlightRoute

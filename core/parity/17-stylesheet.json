@@ -6,15 +6,15 @@
       "start": 26,
       "end": 47,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/button/",
+      "link": "https://lo-tek.sobernetics.no/components/button/",
       "message": "data-variant=\"danger\" på button har ingen regel i stilarkene, så den gjør ingenting synlig. Style verdien, eller ta den bort."
     },
     {
       "start": 147,
       "end": 154,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/card/",
-      "message": "Klassen «fs-card» står i markupen, men ingen av stilarkene styler den. Er fristil.css, eller stilarket til card, lastet?"
+      "link": "https://lo-tek.sobernetics.no/components/card/",
+      "message": "Klassen «lt-card» står i markupen, men ingen av stilarkene styler den. Er lotek.css, eller stilarket til card, lastet?"
     }
   ]
 }

@@ -4,7 +4,7 @@
       "start": 57,
       "end": 61,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
       "message": "Hjelpeteksten står inni <label>, og blir en del av feltets navn. Skjermleseren leser den som navnet på feltet, og aria-describedby peker på noe inni navnet. Flytt den ut av <label>, ved siden av feltet."
     }
   ],
@@ -13,7 +13,7 @@
       "start": 57,
       "end": 61,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
       "message": "Hjelpeteksten står inni <label>, og blir en del av feltets navn. Skjermleseren leser den som navnet på feltet, og aria-describedby peker på noe inni navnet. Flytt den ut av <label>, ved siden av feltet."
     }
   ]

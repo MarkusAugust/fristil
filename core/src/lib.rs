@@ -1,4 +1,4 @@
-//! Fristils diagnostikk, én implementasjon for alle vertsspråk.
+//! LO-TEKs diagnostikk, én implementasjon for alle vertsspråk.
 //!
 //! Kjernen kompileres til en WebAssembly-modul uten importer. Den samme fila
 //! kjøres av Node, Bun og nettleseren, av JVM-en gjennom Chicory, og av hvert
@@ -518,9 +518,9 @@ mod tests {
     #[test]
     fn a_flag_on_a_class_takes_no_value() {
         let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::for_tests());
-        assert!(markup(r#"<label class="fs-label" data-optional>Navn</label>"#).is_empty());
-        assert!(markup(r#"<label class="fs-label" data-optional="">Navn</label>"#).is_empty());
-        let found = markup(r#"<label class="fs-label" data-optional="false">Navn</label>"#);
+        assert!(markup(r#"<label class="lt-label" data-optional>Navn</label>"#).is_empty());
+        assert!(markup(r#"<label class="lt-label" data-optional="">Navn</label>"#).is_empty());
+        let found = markup(r#"<label class="lt-label" data-optional="false">Navn</label>"#);
         assert_eq!(found.len(), 1, "{found:?}");
         assert_eq!(found[0].rule, "boolsk-med-verdi");
         assert!(
@@ -536,26 +536,26 @@ mod tests {
     fn skips_comments_in_template_languages() {
         let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::for_tests());
         for comment in [
-            "{{-- <fs-feil> --}}",
-            "{{/* <fs-feil> */}}",
-            "{# <fs-feil> #}",
-            "{#- <fs-feil> -#}",
-            "@* <fs-feil> *@",
-            "<%-- <fs-feil> --%>",
+            "{{-- <lt-feil> --}}",
+            "{{/* <lt-feil> */}}",
+            "{# <lt-feil> #}",
+            "{#- <lt-feil> -#}",
+            "@* <lt-feil> *@",
+            "<%-- <lt-feil> --%>",
         ] {
             assert!(markup(comment).is_empty(), "{comment}");
         }
         // `{#if}` i Svelte er en blokk, ikke en kommentar, og en ulukket
         // kommentar blanker ikke resten.
-        assert_eq!(markup("{#if x}<fs-feil></fs-feil>{/if}").len(), 1);
-        assert_eq!(markup("{{-- <fs-feil>").len(), 1);
+        assert_eq!(markup("{#if x}<lt-feil></lt-feil>{/if}").len(), 1);
+        assert_eq!(markup("{{-- <lt-feil>").len(), 1);
     }
 
     #[test]
     fn checks_the_color_of_a_dialog() {
         let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::for_tests());
-        assert!(markup(r#"<dialog class="fs-dialog" data-color="danger"></dialog>"#).is_empty());
-        let found = markup(r#"<dialog class="fs-dialog" data-color="red"></dialog>"#);
+        assert!(markup(r#"<dialog class="lt-dialog" data-color="danger"></dialog>"#).is_empty());
+        let found = markup(r#"<dialog class="lt-dialog" data-color="red"></dialog>"#);
         assert_eq!(found.len(), 1, "{found:?}");
         assert_eq!(found[0].rule, "ugyldig-klasseverdi");
     }
@@ -597,9 +597,9 @@ mod tests {
             assert_eq!(lines.line_and_column(at), *want, "ved {at}");
             assert_eq!(line_and_column(&text, at), *want, "ved {at}, alene");
         }
-        let found = check("<div>\r<div>\r<span class=\"fs-buton\">x</span></div></div>");
+        let found = check("<div>\r<div>\r<span class=\"lt-buton\">x</span></div></div>");
         let (line, column) = line_and_column(
-            &utf16("<div>\r<div>\r<span class=\"fs-buton\">x</span></div></div>"),
+            &utf16("<div>\r<div>\r<span class=\"lt-buton\">x</span></div></div>"),
             found[0].start,
         );
         assert_eq!((line, column), (3, 14));
@@ -608,12 +608,12 @@ mod tests {
     #[test]
     fn a_missing_id_gives_a_message_without_trailing_space() {
         for (attribute, ends) in [
-            ("for", "gjør fs.field({ id }) det."),
-            ("aria-describedby", "gjør fs.field({ id }) det."),
-            ("aria-labelledby", "gjør fs.field({ id }) det."),
+            ("for", "gjør lt.field({ id }) det."),
+            ("aria-describedby", "gjør lt.field({ id }) det."),
+            ("aria-labelledby", "gjør lt.field({ id }) det."),
             ("aria-controls", "koblingen til det elementet styrer."),
         ] {
-            let html = format!(r#"<label class="fs-label" {attribute}="borte">x</label>"#);
+            let html = format!(r#"<label class="lt-label" {attribute}="borte">x</label>"#);
             let findings = check(&html);
             let found = findings
                 .iter()
@@ -629,7 +629,7 @@ mod tests {
 
     #[test]
     fn names_the_rule() {
-        let findings = check(r#"<button class="fs-buton">Send</button>"#);
+        let findings = check(r#"<button class="lt-buton">Send</button>"#);
         assert_eq!(findings[0].rule, "ukjent-klasse");
         assert!(findings.iter().all(|f| types::RULES.contains(&f.rule)));
     }
@@ -640,7 +640,7 @@ mod tests {
         // Kommentaren står i en textarea og er tekst, så funnet på feltet
         // etter står.
         let in_textarea =
-            found(r#"<textarea><!-- fristil-ignore-next --></textarea><input class="fs-inptu">"#);
+            found(r#"<textarea><!-- lotek-ignore-next --></textarea><input class="lt-inptu">"#);
         let rules: Vec<&str> = in_textarea.iter().map(|f| f.rule).collect();
         assert_eq!(
             rules,
@@ -648,19 +648,19 @@ mod tests {
             "{rules:?}"
         );
         // En ekte kommentar undertrykker som før.
-        assert!(found(r#"<!-- fristil-ignore-next --><input class="fs-inptu">"#).is_empty());
+        assert!(found(r#"<!-- lotek-ignore-next --><input class="lt-inptu">"#).is_empty());
     }
 
     #[test]
     fn checks_against_another_manifest() {
-        let html = utf16("<fs-kart sone=\"oslo\"></fs-kart>");
+        let html = utf16("<lt-kart sone=\"oslo\"></lt-kart>");
         assert_eq!(
             diagnose_markup(&html, &manifest::for_tests())[0].rule,
             "ukjent-element"
         );
         let mut vocabulary = (*manifest::for_tests()).clone();
         vocabulary.elements.push(types::Element {
-            tag: "fs-kart".into(),
+            tag: "lt-kart".into(),
             link: String::new(),
             attributes: vec![("sone".into(), types::Attribute::Text)],
             parts: Vec::new(),
@@ -702,50 +702,50 @@ mod tests {
     #[test]
     fn says_what_the_style_sheets_do_not_style() {
         let styles = styles::read_styles(
-            r#".fs-button { } .fs-button[data-variant="ghost"] { }
-            .fs-input[data-state="invalid"] { } .fs-search { }
-            .fs-label[data-optional] { }"#,
+            r#".lt-button { } .lt-button[data-variant="ghost"] { }
+            .lt-input[data-state="invalid"] { } .lt-search { }
+            .lt-label[data-optional] { }"#,
         );
         let found =
             |html: &str| diagnose_styled(&utf16(html), &manifest::for_tests(), &styles, false);
-        assert!(found(r#"<button class="fs-button" data-variant="ghost">x</button>"#).is_empty());
+        assert!(found(r#"<button class="lt-button" data-variant="ghost">x</button>"#).is_empty());
         // Standardverdien trenger ingen regel.
-        assert!(found(r#"<button class="fs-button" data-variant="primary">x</button>"#).is_empty());
+        assert!(found(r#"<button class="lt-button" data-variant="primary">x</button>"#).is_empty());
 
-        let unstyled = found(r#"<button class="fs-button" data-variant="danger">x</button>"#);
+        let unstyled = found(r#"<button class="lt-button" data-variant="danger">x</button>"#);
         assert_eq!(unstyled.len(), 1);
         assert_eq!(unstyled[0].rule, "ustylet-verdi");
 
-        let missing = found(r#"<div class="fs-card">x</div>"#);
+        let missing = found(r#"<div class="lt-card">x</div>"#);
         assert_eq!(missing[0].rule, "ustylet-klasse");
-        assert!(missing[0].message.contains("fs-card"));
+        assert!(missing[0].message.contains("lt-card"));
 
-        // Tilstanden på fs-search styles på fs-input, på det samme elementet.
-        assert!(found(r#"<input class="fs-search fs-input" data-state="invalid">"#).is_empty());
+        // Tilstanden på lt-search styles på lt-input, på det samme elementet.
+        assert!(found(r#"<input class="lt-search lt-input" data-state="invalid">"#).is_empty());
         // Et flagg styles av en selektor som spør om det finnes.
-        assert!(found(r#"<label class="fs-label" data-optional>x</label>"#).is_empty());
-        // Klasser utenfor Fristil er ikke sjekkens sak.
+        assert!(found(r#"<label class="lt-label" data-optional>x</label>"#).is_empty());
+        // Klasser utenfor LO-TEK er ikke sjekkens sak.
         assert!(found(r#"<div class="kort">x</div>"#).is_empty());
         // Markup som ikke vises på en hel side, sjekkes ikke mot stilarkene.
         let page =
             |html: &str| diagnose_styled(&utf16(html), &manifest::for_tests(), &styles, true);
-        assert!(page(r#"<template><div class="fs-card"></div></template><textarea><div class="fs-card"></div></textarea><button data-x='<div class="fs-card">'>x</button>"#)
+        assert!(page(r#"<template><div class="lt-card"></div></template><textarea><div class="lt-card"></div></textarea><button data-x='<div class="lt-card">'>x</button>"#)
             .iter()
             .all(|f| !f.rule.starts_with("ustylet")));
         assert_eq!(
-            page(r#"<div class="fs-card"></div>"#)[0].rule,
+            page(r#"<div class="lt-card"></div>"#)[0].rule,
             "ustylet-klasse"
         );
         // Og en kommentar undertrykker, som for de andre reglene.
         assert!(found(
-            "<!-- fristil-ignore-next ustylet-klasse -->\n<div class=\"fs-card\">x</div>"
+            "<!-- lotek-ignore-next ustylet-klasse -->\n<div class=\"lt-card\">x</div>"
         )
         .is_empty());
     }
 
     #[test]
     fn styled_input_says_what_is_wrong() {
-        assert!(styled_input(r#"{"html": "<b></b>", "css": [".fs-x {}"], "page": true}"#).is_ok());
+        assert!(styled_input(r#"{"html": "<b></b>", "css": [".lt-x {}"], "page": true}"#).is_ok());
         assert!(styled_input(r#"{"html": "<b></b>", "css": []}"#).is_ok());
         for wrong in [
             "ikke json",
@@ -768,7 +768,7 @@ mod tests {
             "<%= optional %>",
         ] {
             let found = markup(&format!(
-                r#"<label class="fs-label" data-optional="{value}">Navn</label>"#
+                r#"<label class="lt-label" data-optional="{value}">Navn</label>"#
             ));
             assert_eq!(found.len(), 1, "{value}: {found:?}");
             assert_eq!(found[0].rule, "boolsk-med-verdi");
@@ -778,7 +778,7 @@ mod tests {
                 found[0].message
             );
 
-            let found = markup(&format!(r#"<fs-popover open="{value}"></fs-popover>"#));
+            let found = markup(&format!(r#"<lt-popover open="{value}"></lt-popover>"#));
             assert_eq!(found.len(), 1, "{value}: {found:?}");
             assert_eq!(found[0].rule, "boolsk-med-verdi");
         }
@@ -795,20 +795,20 @@ mod tests {
             "@(Model.Optional)",
         ] {
             let html = format!(
-                r#"<label class="fs-label" data-optional="{value}">Navn</label><fs-popover open="{value}"></fs-popover>"#
+                r#"<label class="lt-label" data-optional="{value}">Navn</label><lt-popover open="{value}"></lt-popover>"#
             );
             assert!(markup(&html).is_empty(), "{value}: {:?}", markup(&html));
         }
         // Står attributtet alt i en betingelse, er malen i verdien ufarlig.
         for html in [
-            r#"<fs-popover {{ if .Open }} open="{{ .Open }}" {{ end }}></fs-popover>"#,
-            r#"<label class="fs-label" {% if optional %} data-optional="{{ optional }}" {% endif %}>Navn</label>"#,
+            r#"<lt-popover {{ if .Open }} open="{{ .Open }}" {{ end }}></lt-popover>"#,
+            r#"<label class="lt-label" {% if optional %} data-optional="{{ optional }}" {% endif %}>Navn</label>"#,
         ] {
             assert!(markup(html).is_empty(), "{html}: {:?}", markup(html));
         }
         // En mal i en verdi som ikke er et flagg, er ingen feil.
         assert!(
-            markup(r#"<label class="fs-label" data-required="{{ .Required }}">Navn</label>"#)
+            markup(r#"<label class="lt-label" data-required="{{ .Required }}">Navn</label>"#)
                 .is_empty()
         );
     }
@@ -816,17 +816,17 @@ mod tests {
     #[test]
     fn bootstrap_font_sizes_are_not_ours() {
         for n in 1..=6 {
-            let found = check(&format!(r#"<p class="fs-{n}">Tekst</p>"#));
-            assert!(found.is_empty(), "fs-{n}: {found:?}");
+            let found = check(&format!(r#"<p class="lt-{n}">Tekst</p>"#));
+            assert!(found.is_empty(), "lt-{n}: {found:?}");
         }
         // Et tall med noe etter er fortsatt en skrivefeil hos oss.
-        assert_eq!(check(r#"<p class="fs-1x">Tekst</p>"#).len(), 1);
+        assert_eq!(check(r#"<p class="lt-1x">Tekst</p>"#).len(), 1);
     }
 
     #[test]
     fn knows_the_newer_global_attributes() {
         let found = check(
-            r#"<fs-popover writingsuggestions="false" autocorrect="off" headingoffset="1"></fs-popover>"#,
+            r#"<lt-popover writingsuggestions="false" autocorrect="off" headingoffset="1"></lt-popover>"#,
         );
         assert!(found.is_empty(), "{found:?}");
     }
@@ -834,16 +834,16 @@ mod tests {
     #[test]
     fn a_disabled_link_with_href_can_still_be_followed() {
         for html in [
-            r#"<a class="fs-link" aria-disabled="true" href="/arsoppgave">Se årsoppgave</a>"#,
-            r#"<a class="fs-button" href="/videre" aria-disabled=" TRUE ">Videre</a>"#,
+            r#"<a class="lt-link" aria-disabled="true" href="/arsoppgave">Se årsoppgave</a>"#,
+            r#"<a class="lt-button" href="/videre" aria-disabled=" TRUE ">Videre</a>"#,
         ] {
             let found = check(html);
             assert_eq!(found.len(), 1, "{html}: {found:?}");
             assert_eq!(found[0].rule, "deaktivert-med-href");
         }
         for html in [
-            r#"<a class="fs-link" role="link" tabindex="0" aria-disabled="true">Se årsoppgave</a>"#,
-            r#"<a class="fs-link" aria-disabled="false" href="/arsoppgave">Se årsoppgave</a>"#,
+            r#"<a class="lt-link" role="link" tabindex="0" aria-disabled="true">Se årsoppgave</a>"#,
+            r#"<a class="lt-link" aria-disabled="false" href="/arsoppgave">Se årsoppgave</a>"#,
             r#"<a class="app-link" aria-disabled="true" href="/arsoppgave">Se årsoppgave</a>"#,
         ] {
             assert!(check(html).is_empty(), "{html}: {:?}", check(html));
@@ -859,7 +859,7 @@ mod tests {
                 .filter(|r| *r == "ikon-uten-navn")
                 .collect()
         };
-        let svg = r#"<svg class="fs-icon" aria-hidden="true"><path d="M0 0"/></svg>"#;
+        let svg = r#"<svg class="lt-icon" aria-hidden="true"><path d="M0 0"/></svg>"#;
         for html in [
             format!("<button>{svg}</button>"),
             format!(r#"<a href="/hjem"> {svg} </a>"#),
@@ -869,7 +869,7 @@ mod tests {
             format!("<button aria-label=\"  \">{svg}</button>"),
             format!("<button>&nbsp;{svg}&#160;</button>"),
             format!(
-                r#"<button type="button" class="fs-button" data-variant="ghost" onclick="slett()">{svg}</button>"#
+                r#"<button type="button" class="lt-button" data-variant="ghost" onclick="slett()">{svg}</button>"#
             ),
             format!(r#"<button data-testid="slett">{svg}</button>"#),
         ] {
@@ -880,7 +880,7 @@ mod tests {
             format!("<button aria-label=\"Slett\">{svg}</button>"),
             format!("<button aria-labelledby=\"t\">{svg}</button>"),
             format!("<button title=\"Slett\">{svg}</button>"),
-            format!("<button>{svg}<span class=\"fs-sr-only\">Slett</span></button>"),
+            format!("<button>{svg}<span class=\"lt-sr-only\">Slett</span></button>"),
             r#"<button><svg role="img" aria-label="Slett"></svg></button>"#.to_string(),
             r#"<button><svg><title>Slett</title></svg></button>"#.to_string(),
             r#"<button><img src="x.svg" alt="Slett"></button>"#.to_string(),
@@ -898,12 +898,12 @@ mod tests {
             format!("<BUTTON ARIA-LABEL=\"Slett\">{svg}</BUTTON>"),
             r#"<button><IMG SRC="x.svg" ALT="Slett"></button>"#.to_string(),
             format!("<button {{...props}}>{svg}</button>"),
-            format!("<button class=\"fs-button\">{svg}<slot /></button>"),
+            format!("<button class=\"lt-button\">{svg}<slot /></button>"),
             format!("<button>{svg}<span x-text=\"navn\"></span></button>"),
             format!("<button>{svg}<span data-text=\"$navn\"></span></button>"),
             format!("<button>{svg}<Trans id=\"slett\" /></button>"),
             format!("<button>{svg}<app-tekst></app-tekst></button>"),
-            r#"<button><svg {...fs.icon({ label })}></svg></button>"#.to_string(),
+            r#"<button><svg {...lt.icon({ label })}></svg></button>"#.to_string(),
             format!("<label for=\"b\">Slett</label><button id=\"b\">{svg}</button>"),
             format!(r#"<a :href="url">{svg}</a>"#),
             format!("<button><span :hidden=\"x\"></span>{svg}</button>"),

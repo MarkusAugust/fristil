@@ -1,15 +1,15 @@
-package no.fristil
+package no.lotek
 
 /*
  * Byggefunksjonene der valgene virker sammen, så de ikke kan skrives som en
- * tabell i manifestet. Resten genereres fra manifestet (`Fs.kt`). Alle testes
+ * tabell i manifestet. Resten genereres fra manifestet (`Lt.kt`). Alle testes
  * mot svarene fra TypeScript i `ContractTest`, så de ikke kan gå fra
  * hverandre.
  */
 
 /** Id-en må være oppgitt. TypeScript lager en tilfeldig, men den gir ulik markup ved hver kjøring. */
 private fun requireId(builder: String, id: String): String {
-    require(id.isNotBlank()) { "Fs.$builder: id kan ikke være tom. Bruk feltets navn eller en annen fast id." }
+    require(id.isNotBlank()) { "Lt.$builder: id kan ikke være tom. Bruk feltets navn eller en annen fast id." }
     return id
 }
 
@@ -21,19 +21,19 @@ private fun requireKeys(builder: String, keys: List<String>): List<String> {
     val seen = HashSet<String>()
     for (key in keys) {
         require(key.isNotEmpty()) {
-            "Fs.$builder: en nøkkel i keys er tom. Nøklene blir id-er, og hver må være en fast verdi fra dataene."
+            "Lt.$builder: en nøkkel i keys er tom. Nøklene blir id-er, og hver må være en fast verdi fra dataene."
         }
         require(key.none(::isJsWhitespace)) {
-            "Fs.$builder: nøkkelen «$key» har mellomrom. Nøklene blir id-er, og en id kan ikke ha mellomrom."
+            "Lt.$builder: nøkkelen «$key» har mellomrom. Nøklene blir id-er, og en id kan ikke ha mellomrom."
         }
         require(seen.add(key)) {
-            "Fs.$builder: nøkkelen «$key» står to ganger i keys. Nøklene blir id-er, og to like id-er peker på det samme elementet."
+            "Lt.$builder: nøkkelen «$key» står to ganger i keys. Nøklene blir id-er, og to like id-er peker på det samme elementet."
         }
     }
     return keys
 }
 
-/** Ledeteksten for `fs.label` og `fs.legend`: `optional` gjelder bare uten `required`. */
+/** Ledeteksten for `lt.label` og `lt.legend`: `optional` gjelder bare uten `required`. */
 private fun marked(
     className: String,
     required: RequiredMarker?,
@@ -47,29 +47,29 @@ private fun marked(
     return a
 }
 
-/** `fs.label`: en ledetekst. Markeringen er bare visuell, så sett `required` på feltet også. */
-fun Fs.label(
+/** `lt.label`: en ledetekst. Markeringen er bare visuell, så sett `required` på feltet også. */
+fun Lt.label(
     required: RequiredMarker? = null,
     optional: Boolean? = null,
     disabled: Boolean? = null,
-): Attributes = Attributes(marked("fs-label", required, optional, disabled))
+): Attributes = Attributes(marked("lt-label", required, optional, disabled))
 
-/** `fs.legend`: ledeteksten for en gruppe, med samme markering som [label]. */
-fun Fs.legend(
+/** `lt.legend`: ledeteksten for en gruppe, med samme markering som [label]. */
+fun Lt.legend(
     required: RequiredMarker? = null,
     optional: Boolean? = null,
     disabled: Boolean? = null,
-): Attributes = Attributes(marked("fs-legend", required, optional, disabled))
+): Attributes = Attributes(marked("lt-legend", required, optional, disabled))
 
-/** `fs.errorSummary`: feiloppsummeringen. Boksen skjules når [count] er null. */
-fun Fs.errorSummary(
+/** `lt.errorSummary`: feiloppsummeringen. Boksen skjules når [count] er null. */
+fun Lt.errorSummary(
     count: Number? = null,
     id: String? = null,
 ): ErrorSummaryParts {
-    val host = linkedMapOf("class" to "fs-error-summary", "role" to "alert", "tabindex" to "-1")
+    val host = linkedMapOf("class" to "lt-error-summary", "role" to "alert", "tabindex" to "-1")
     if (id != null) host["id"] = id
     if ((count?.toDouble() ?: 0.0) == 0.0) host["hidden"] = ""
-    return ErrorSummaryParts(host = Attributes(host), title = Attributes(mapOf("class" to "fs-error-summary__title")))
+    return ErrorSummaryParts(host = Attributes(host), title = Attributes(mapOf("class" to "lt-error-summary__title")))
 }
 
 /** Id-ene i `aria-describedby`, delt på mellomrom slik JavaScript deler dem, uten tomme og doble. */
@@ -106,15 +106,15 @@ private fun isJsWhitespace(c: Char): Boolean =
         c == ' ' || c == ' ' || c == ' ' || c == '　' || c == '﻿'
 
 /**
- * `fs.field`: kobler ledetekst, kontroll, hjelpetekst og feilmelding.
+ * `lt.field`: kobler ledetekst, kontroll, hjelpetekst og feilmelding.
  *
  * ```kotlin
- * val felt = Fs.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
+ * val felt = Lt.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
  * "<label ${felt.label.toHtml()}>E-postadresse</label>"
- * "<input ${(Fs.input(type = InputType.EMAIL, state = felt.state) + felt.control).toHtml()}>"
+ * "<input ${(Lt.input(type = InputType.EMAIL, state = felt.state) + felt.control).toHtml()}>"
  * ```
  */
-fun Fs.field(
+fun Lt.field(
     id: String,
     help: Boolean? = null,
     error: Boolean? = null,
@@ -145,7 +145,7 @@ private fun computeField(
     val errorId = givenErrorId ?: "$id-error"
     val isInvalid = invalid == true
 
-    val label = linkedMapOf("class" to "fs-label", "for" to id)
+    val label = linkedMapOf("class" to "lt-label", "for" to id)
     if (required != null) label["data-required"] = required.value
     if (optional == true && required == null) label["data-optional"] = ""
     if (disabled == true) label["aria-disabled"] = "true"
@@ -175,8 +175,8 @@ private fun computeField(
     )
 }
 
-/** `fs.suggestion`: et felt med forslagsliste. `<fs-suggestion>` tar tastaturet og filtreringen. */
-fun Fs.suggestion(
+/** `lt.suggestion`: et felt med forslagsliste. `<lt-suggestion>` tar tastaturet og filtreringen. */
+fun Lt.suggestion(
     invalid: Boolean? = null,
     error: Boolean? = null,
     disabled: Boolean? = null,
@@ -205,7 +205,7 @@ fun Fs.suggestion(
     val marked = isOpen && active % 1.0 == 0.0 && active >= 0 && active < n
 
     val control = LinkedHashMap(field.control)
-    control["class"] = "fs-input"
+    control["class"] = "lt-input"
     control["type"] = "text"
     control["role"] = "combobox"
     control["autocomplete"] = "off"
@@ -216,7 +216,7 @@ fun Fs.suggestion(
     if (marked) control["aria-activedescendant"] = optionId(active.toInt())
 
     val list = linkedMapOf(
-        "class" to "fs-suggestion__list",
+        "class" to "lt-suggestion__list",
         "id" to listId,
         "role" to "listbox",
         "aria-labelledby" to labelId,
@@ -225,7 +225,7 @@ fun Fs.suggestion(
     if (!isOpen) list["hidden"] = ""
     if (pending == true) list["aria-busy"] = "true"
 
-    val empty = linkedMapOf("class" to "fs-suggestion__empty")
+    val empty = linkedMapOf("class" to "lt-suggestion__empty")
     if (!(n == 0.0 && pending != true)) empty["hidden"] = ""
 
     return SuggestionParts(
@@ -236,7 +236,7 @@ fun Fs.suggestion(
         options = optionKeys.indices.map { index ->
             Attributes(
                 mapOf(
-                    "class" to "fs-suggestion__option",
+                    "class" to "lt-suggestion__option",
                     "id" to optionId(index),
                     "role" to "option",
                     "aria-selected" to if (marked && index.toDouble() == active) "true" else "false",
@@ -246,12 +246,12 @@ fun Fs.suggestion(
         empty = Attributes(empty),
         status = Attributes(
             mapOf(
-                "class" to "fs-sr-only",
+                "class" to "lt-sr-only",
                 "id" to statusId,
                 "role" to "status",
             ),
         ),
-        value = Attributes(mapOf("class" to "fs-suggestion__value", "type" to "hidden")),
+        value = Attributes(mapOf("class" to "lt-suggestion__value", "type" to "hidden")),
         help = field.help,
         error = field.error,
         state = field.state,
@@ -259,33 +259,33 @@ fun Fs.suggestion(
 }
 
 /**
- * `fs.tabs`: en fanerad der fanene er lenker til panelene. Bare lenker, id-er
+ * `lt.tabs`: en fanerad der fanene er lenker til panelene. Bare lenker, id-er
  * og klasser: uten JavaScript er raden en innholdsfortegnelse, og panelene
- * står etter hverandre. Rollene, valget og `hidden` skriver `<fs-tabs>`.
+ * står etter hverandre. Rollene, valget og `hidden` skriver `<lt-tabs>`.
  * Panelene får id av [keys], og [label] er navnet på raden; tom kaster. Den første fanen
  * er valgt; en annen kommer fra adressen, som `#sak-vedlegg`.
  */
-fun Fs.tabs(
+fun Lt.tabs(
     id: String,
     keys: List<String>,
     label: String,
 ): TabsParts {
     requireId("tabs", id)
     require(id.none(::isJsWhitespace)) {
-        "Fs.tabs: id-en «$id» har mellomrom. Den blir en del av hver id, og en id kan ikke ha mellomrom."
+        "Lt.tabs: id-en «$id» har mellomrom. Den blir en del av hver id, og en id kan ikke ha mellomrom."
     }
     // Mellomrom slik JavaScript regner det, som `trim()` i TypeScript.
     require(!label.all(::isJsWhitespace)) {
-        "Fs.tabs: label mangler eller er tom. Raden må ha et navn som sier hva fanene velger mellom, ellers sier skjermleseren bare «faneliste»."
+        "Lt.tabs: label mangler eller er tom. Raden må ha et navn som sier hva fanene velger mellom, ellers sier skjermleseren bare «faneliste»."
     }
     val tabKeys = requireKeys("tabs", keys)
     fun panelId(key: String) = "$id-$key"
 
     return TabsParts(
-        list = Attributes(mapOf("class" to "fs-tabs__list", "aria-label" to label)),
+        list = Attributes(mapOf("class" to "lt-tabs__list", "aria-label" to label)),
         tabs = tabKeys.map { key -> Attributes(mapOf("href" to "#${panelId(key)}")) },
         panels = tabKeys.map { key ->
-            Attributes(mapOf("id" to panelId(key), "class" to "fs-tabs__panel"))
+            Attributes(mapOf("id" to panelId(key), "class" to "lt-tabs__panel"))
         },
         headings = tabKeys.map { key -> Attributes(mapOf("id" to "$id-$key-heading")) },
     )

@@ -1,4 +1,4 @@
-# Slik jobber vi i Fristil
+# Slik jobber vi i LO-TEK
 
 ## Grener og pull requests
 
@@ -10,7 +10,7 @@ git checkout -b det-du-jobber-med
 
 # arbeid og commit, og kjør så det CI kjører før du sender noe fra deg
 git commit -am "Rett …"
-bun run sjekk
+bun run check
 
 git push -u origin det-du-jobber-med
 gh pr create --fill
@@ -18,11 +18,11 @@ gh pr create --fill
 
 Grenen kan slås sammen når CI er grønn. GitHub er satt opp til å kreve det, så en rød kjøring stopper knappen.
 
-## `bun run sjekk`
+## `bun run check`
 
 Kjører stegene i `.github/workflows/ci.yml`, i samme rekkefølge og på samme
 måte: hvert `run:` med bash og `-eo pipefail`, i mappa steget oppgir.
-`scripts/sjekk.ts` leser stegene fra fila, så en ny sjekk i CI kjøres lokalt
+`scripts/check.ts` leser stegene fra fila, så en ny sjekk i CI kjøres lokalt
 fra første dag. Jobbene går etter hverandre:
 
 | Jobb | Hva den kontrollerer |
@@ -44,16 +44,16 @@ har installert. Står det noe i `ci.yml` skriptet ikke forstår, som `env`,
 at endringen er committet. Steget feiler ellers på dine egne endringer.
 
 Det krever i tillegg til Bun: Rust, siden sjekken i pakken bygges fra
-`kjerne/`; Java 17 eller nyere, for jar-en og Kotlin-testene; og nett første
+`core/`; Java 17 eller nyere, for jar-en og Kotlin-testene; og nett første
 gang, når VS Code lastes ned. På Linux uten skjerm, altså uten `DISPLAY` og
 `WAYLAND_DISPLAY` satt, trengs også `xvfb-run`; har maskinen skjerm, kjøres
 VS Code på den.
-Installer [rustup](https://rustup.rs), og `kjerne/rust-toolchain.toml` henter
+Installer [rustup](https://rustup.rs), og `core/rust-toolchain.toml` henter
 riktig versjon og målene ved første kall.
 
 Hele kjøringen tar rundt seks minutter på en Mac med M-brikke. Mest tid går til
 nettlesertestene, axe mot dokumentasjonen, språkserveren og jar-en. Under
-arbeid er `bun --filter @fristil/designsystem test:browser --project chromium`
+arbeid er `bun --filter @lo-tek/interfaces test:browser --project chromium`
 nok. `bun run test -- --project chromium` virker ikke: `bun run` legger
 argumentene bakerst i skriptteksten, og `test` er to kommandoer etter
 hverandre, så flaggene havner på den siste.
@@ -61,46 +61,46 @@ hverandre, så flaggene havner på den siste.
 Nettleserne hentes én gang:
 
 ```bash
-bun --filter @fristil/designsystem nettlesere
+bun --filter @lo-tek/interfaces browsers
 ```
 
 Bruk den formen, ikke `bunx playwright install`, som kan hente en annen versjon enn den vitest bruker, og heller ikke `bun --filter <pakke> run <skript>`, som gir «No packages matched the filter». Skriptnavnet skal stå uten `run`.
 
 Kan Playwrights nettlesere ikke hentes, uten nett eller bak en brannmur,
-kjører `bun --filter @fristil/designsystem test:chromium` testene i en Chrome
+kjører `bun --filter @lo-tek/interfaces test:chromium` testene i en Chrome
 eller Chromium som alt står på maskinen. Stien leses fra `CHROMIUM`, ellers
 prøves de vanlige stedene. Bare Chromium: Firefox og WebKit må være
 Playwrights egne bygg.
 
 ## Genererte filer
 
-Filene i de to tabellene under skrives av et skript, og en endring rett i dem blir overskrevet ved neste kjøring. `bun --filter @fristil/designsystem generate` skriver alle sammen, i rekkefølgen under, og `bun run build` kjører `generate` rett etter kjernen, før noen sjekk leser filene.
+Filene i de to tabellene under skrives av et skript, og en endring rett i dem blir overskrevet ved neste kjøring. `bun --filter @lo-tek/interfaces generate` skriver alle sammen, i rekkefølgen under, og `bun run build` kjører `generate` rett etter kjernen, før noen sjekk leser filene.
 
 | Fil | Kilde |
 | --- | --- |
-| `designsystem/src/tokens/matrise.ts` | `src/tokens/fargekontrakt.json` og merkefargene, regnet av kjernen i `scripts/generate-matrise.ts` |
+| `designsystem/src/tokens/matrix-cells.ts` | `src/tokens/color-contract.json` og merkefargene, regnet av kjernen i `scripts/generate-matrix.ts` |
 | `designsystem/src/tokens/tokens.css` | `src/tokens/tokens.ts` og fargematrisen |
 | `designsystem/src/tailwind/tailwind.css` | de samme tokenene |
-| ordforrådet, tabellen under | `scripts/generate-ordforrad.ts` |
-| `designsystem/agent/*.md`, regelbøkene for kodeagenter | `scripts/generate-agent.ts` og `agent-deler.ts` |
-| `designsystem/manifest/manifest.json`, `byggetilfeller.json` og `filer.json` | `scripts/generate-manifest.ts`, fra `src/fs.ts`, ordforrådet og mappene. `filer.json` er regelbøkene og komponentfilene kommandolinja leser |
+| ordforrådet, tabellen under | `scripts/generate-vocabulary.ts` |
+| `designsystem/agent/*.md`, regelbøkene for kodeagenter | `scripts/generate-agent.ts` og `agent-parts.ts` |
+| `designsystem/manifest/manifest.json`, `build-cases.json` og `files.json` | `scripts/generate-manifest.ts`, fra `src/lt.ts`, ordforrådet og mappene. `files.json` er regelbøkene og komponentfilene kommandolinja leser |
 
-Ordforrådet har i tillegg sin egen kommando, `bun --filter @fristil/designsystem ordforrad`, som skriver bare disse, alle i pakken. Editorene leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og IntelliJ-pluginen leser klassene fra prosjektets manifest, med manifestet i Kotlin-pakken som reserve.
+Ordforrådet har i tillegg sin egen kommando, `bun --filter @lo-tek/interfaces vocabulary`, som skriver bare disse, alle i pakken. Editorene leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og IntelliJ-pluginen leser klassene fra prosjektets manifest, med manifestet i Kotlin-pakken som reserve.
 
 | Fil | Hva den er |
 | --- | --- |
 | `designsystem/html-data.json` | VS Codes format for tagger og attributter |
 | `designsystem/snippets.json` | én snippet per element |
 | `designsystem/src/vocabulary/elements.ts` | elementene og attributtene, som manifestet skrives fra |
-| `designsystem/src/vocabulary/classes.ts` | hver `fs-`-klasse, lest ved å kalle byggefunksjonene |
+| `designsystem/src/vocabulary/classes.ts` | hver `lt-`-klasse, lest ved å kalle byggefunksjonene |
 | `designsystem/web-types.json` | JetBrains sitt format, følger npm-pakken |
 | `designsystem/src/components/events.ts` | typene til hendelsene og tagnavnene, som utvider `HTMLElementEventMap` og `HTMLElementTagNameMap` |
 
-Alle seks kommer fra `designsystem/scripts/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene, gjennom `scripts/generate-ordforrad.ts`. De står nærmere beskrevet under [Editorutvidelsen](#editorutvidelsen).
+Alle seks kommer fra `designsystem/scripts/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene, gjennom `scripts/generate-vocabulary.ts`. De står nærmere beskrevet under [Editorutvidelsen](#editorutvidelsen).
 
-I regelbøkene står prosaen i generatoren, mens listene og tallene leses fra pakken: klassene, elementene, byggefunksjonene og tokennavnene hentes der de faktisk bor, så en regelbok kan ikke stå og love noe som ikke finnes. `sjekk-agent.ts` kontrollerer begge deler.
+I regelbøkene står prosaen i generatoren, mens listene og tallene leses fra pakken: klassene, elementene, byggefunksjonene og tokennavnene hentes der de faktisk bor, så en regelbok kan ikke stå og love noe som ikke finnes. `check-agent.ts` kontrollerer begge deler.
 
-Bygget stopper ikke på en utdatert fil: `generate` skriver dem på nytt før noen sjekk leser dem, så `sjekk:ordforrad` og `sjekk:agent` sammenligner alltid med det som nettopp ble skrevet. Glemmer du å regenerere, eller å committe det som ble generert, sier CI fra: steget «Ingenting er ugenerert» kjører `git status --porcelain` etter bygget og feller hvis bygget endret en sporet fil.
+Bygget stopper ikke på en utdatert fil: `generate` skriver dem på nytt før noen sjekk leser dem, så `check:vocabulary` og `check:agent` sammenligner alltid med det som nettopp ble skrevet. Glemmer du å regenerere, eller å committe det som ble generert, sier CI fra: steget «Ingenting er ugenerert» kjører `git status --porcelain` etter bygget og feller hvis bygget endret en sporet fil.
 
 ## Versjonslogg og utgivelser
 
@@ -111,7 +111,7 @@ Når en versjon skal ut:
 ```bash
 bun run prepare-version 0.4.0
 git checkout -b slipp-0.4.0 && git commit -am "Versjon 0.4.0"
-bun run sjekk
+bun run check
 git push -u origin slipp-0.4.0 && gh pr create --fill
 ```
 
@@ -130,7 +130,7 @@ bun run tag pakke
 
 **Tagg med én gang grenen er slått sammen.** Dokumentasjonen rulles ut av
 Netlify i det master endrer seg, og oppskriftene der peker på
-`cdn.jsdelivr.net/npm/@fristil/designsystem@<versjon>`, altså på den versjonen
+`cdn.jsdelivr.net/npm/@lo-tek/interfaces@<versjon>`, altså på den versjonen
 `package.json` oppgir. Den finnes ikke på npm før taggen har kjørt
 `publish.yml`. Venter du med taggen, står «Ren HTML»- og Datastar-oppskriftene
 på tolv sider og peker på en pakke som ikke er der ennå. Begge byggene tar et par
@@ -138,7 +138,7 @@ minutter, så tagger du med det samme, er vinduet i praksis lukket.
 
 Rekkefølgen er ikke til å bytte om på. Tagger du før versjonen er på master, stopper kontrollene i `publish.yml` kjøringen: taggen må si det samme som `package.json`, og commiten den står på må være på master. Taggen må da fjernes med `git push origin :refs/tags/v0.4.0` og `git tag -d v0.4.0` før du kan sette den på nytt. `git push` alene sender ingen tagger, så det siste steget kan ikke hoppes over.
 
-Taggen starter `.github/workflows/publish.yml`, som bygger pakken og legger den ut på npm. Arbeidsflyten har ingen hemmeligheter i seg: den ber npm om en kortlevd legitimasjon gjennom GitHubs OIDC, og det virker bare så lenge pakken har en utgiver registrert under Settings på npmjs.com (GitHub Actions, `MarkusAugust`, `fristil`, `publish.yml`). npm signerer samtidig en attestasjon som viser hvilken commit versjonen kom fra.
+Taggen starter `.github/workflows/publish.yml`, som bygger pakken og legger den ut på npm. Arbeidsflyten har ingen hemmeligheter i seg: den ber npm om en kortlevd legitimasjon gjennom GitHubs OIDC, og det virker bare så lenge pakken har en utgiver registrert under Settings på npmjs.com (GitHub Actions, `MarkusAugust`, `lotek`, `publish.yml`). npm signerer samtidig en attestasjon som viser hvilken commit versjonen kom fra.
 
 Den aller første utgivelsen kan ikke gjøres slik, for en utgiver kan bare kobles til en pakke som alt finnes. Den gjøres fra maskinen, med `npm login` først:
 
@@ -148,32 +148,32 @@ cd designsystem && npm publish --access public
 
 En versjon kan aldri publiseres på nytt eller overskrives, og `npm unpublish` er stengt etter 72 timer. Skal en versjon ut av sirkulasjon, er `npm deprecate` veien.
 
-Når npm-pakken er ute, kjører samme arbeidsflyt en jobb til, bygd av den publiserte tarballen: `fristil.wasm` og `fristil.jar` legges ved utgivelsen på GitHub.
+Når npm-pakken er ute, kjører samme arbeidsflyt en jobb til, bygd av den publiserte tarballen: `lotek.wasm` og `lotek.jar` legges ved utgivelsen på GitHub.
 
-Kotlin-pakken går til Maven Central som `io.github.markusaugust:fristil`, `fristil-kotlinx-html`, `fristil-kommandolinje` og `fristil-gradle-plugin`, men ikke av seg selv. Central har et månedlig tak på antall utgivelser og filer for en gratis organisasjon, og hver kjøring dit teller, så Maven-jobben kjører bare når du starter arbeidsflyten for hånd på taggen og ber om den:
+Kotlin-pakken går til Maven Central som `io.github.markusaugust:lo-tek-interfaces`, `lo-tek-kotlinx-html`, `lo-tek-cli` og `lo-tek-gradle-plugin`, men ikke av seg selv. Central har et månedlig tak på antall utgivelser og filer for en gratis organisasjon, og hver kjøring dit teller, så Maven-jobben kjører bare når du starter arbeidsflyten for hånd på taggen og ber om den:
 
 ```bash
 gh workflow run publish.yml --ref v0.34.0 -f maven=true
 ```
 
-Gjør det når en endring angår Kotlin-konsumentene, ikke for hver tagg. Maven-versjonen kan hoppe over npm-versjoner: hver Maven-versjon bygges av npm-pakken med samme nummer, så 0.34.3 på Central er den samme Fristil som 0.34.3 på npm, også når 0.34.1 og 0.34.2 aldri gikk dit. Versjonen i `kotlin/gradle.properties` settes av `prepare-version`. Central krever et navnerom bekreftet på central.sonatype.com, et brukertoken og en GPG-nøkkel, og hemmelighetene står i kommentaren over jobben i `publish.yml`. Mangler de, publiseres ingenting til Central, og kjøringen får en advarsel. En versjon på Central kan heller aldri byttes ut.
+Gjør det når en endring angår Kotlin-konsumentene, ikke for hver tagg. Maven-versjonen kan hoppe over npm-versjoner: hver Maven-versjon bygges av npm-pakken med samme nummer, så 0.34.3 på Central er den samme LO-TEK som 0.34.3 på npm, også når 0.34.1 og 0.34.2 aldri gikk dit. Versjonen i `kotlin/gradle.properties` settes av `prepare-version`. Central krever et navnerom bekreftet på central.sonatype.com, et brukertoken og en GPG-nøkkel, og hemmelighetene står i kommentaren over jobben i `publish.yml`. Mangler de, publiseres ingenting til Central, og kjøringen får en advarsel. En versjon på Central kan heller aldri byttes ut.
 
-Hovedtallet skal opp når et klassenavn, et `data-*`-attributt, et `part`-navn, et tokennavn, en `--fs-*`-variabel, en funksjon i `fs` eller en oppføring i `exports` forsvinner eller endrer betydning. Reglene står øverst i versjonsloggen, og er det leseren av pakken forholder seg til.
+Hovedtallet skal opp når et klassenavn, et `data-*`-attributt, et `part`-navn, et tokennavn, en `--lt-*`-variabel, en funksjon i `lt` eller en oppføring i `exports` forsvinner eller endrer betydning. Reglene står øverst i versjonsloggen, og er det leseren av pakken forholder seg til.
 
 ## Editorutvidelsen
 
 `editor/` er VS Code-utvidelsen. `package.json` peker på
 `dist/html-data.json` og `dist/snippets.json`, som bygget kopierer fra
 pakken og som gir fullføring og snippets uten kode, og på `dist/extension.js`, som kobler sjekken til editoren med
-streker, lyspærer, fullføring og hover. Sjekken er Rust-kjernen i `kjerne/`,
+streker, lyspærer, fullføring og hover. Sjekken er Rust-kjernen i `core/`,
 bygget til WebAssembly. Den samme modulen ligger i pakken, som
-`@fristil/designsystem/diagnostics` og `fristil sjekk`, og utvidelsen har en
+`@lo-tek/interfaces/diagnostics` og `lotek sjekk`, og utvidelsen har en
 kopi i `dist/`. Kjernen bærer ingen data: hver vert gir den manifestet fra
 pakken, og utvidelsen har en kopi av det i `dist/manifest/` som reserve.
 Manifestet skrives fra
 `designsystem/src/vocabulary/elements.ts` og `classes.ts`. `classes.ts` leses
-fra pakkens CSS og fra byggefunksjonene i `fs`, kalt én gang per variant, så
-en ny variant er med når `fs` gir den. Filene genereres fra
+fra pakkens CSS og fra byggefunksjonene i `lt`, kalt én gang per variant, så
+en ny variant er med når `lt` gir den. Filene genereres fra
 `designsystem/scripts/metadata.ts`, CSS-en og «Ren HTML»-fanene på komponentsidene,
 sammen med `designsystem/web-types.json` for JetBrains. Endrer du et
 attributt på en komponent, stopper typesjekken til `metadata.ts` har en
@@ -182,14 +182,14 @@ dem, og feller ikke en utdatert fil; glemmer du å committe det bygget skrev, gj
 steget «Ingenting er ugenerert» i CI det. Filene kan også skrives alene:
 
 ```bash
-bun --filter @fristil/designsystem ordforrad
+bun --filter @lo-tek/interfaces vocabulary
 ```
 
-Kjernen har ingen VS Code i seg, og `kjerne/scripts/sjekk-diagnostikk.ts`
+Kjernen har ingen VS Code i seg, og `core/scripts/check-diagnostics.ts`
 kjører den over hver feiltype den skal fange, snippetene medregnet som rene
-tilfeller. Legger du til en regel i `kjerne/src/`, legg til tilfellet som feller den, og se
-at det faktisk feller ved å skru regelen av. Se `kjerne/README.md`. `bun --filter fristil-vscode
-sjekk` bygger `dist/extension.js` og pakker `fristil.vsix`.
+tilfeller. Legger du til en regel i `core/src/`, legg til tilfellet som feller den, og se
+at det faktisk feller ved å skru regelen av. Se `core/README.md`. `bun --filter interfaces
+sjekk` bygger `dist/extension.js` og pakker `lotek.vsix`.
 
 Utvidelsen har sitt eget versjonsnummer i `editor/package.json` og sin egen
 logg i `editor/CHANGELOG.md`, og gis ut med en egen tagg:
@@ -198,10 +198,10 @@ logg i `editor/CHANGELOG.md`, og gis ut med en egen tagg:
 bun run tag utvidelse
 ```
 
-Taggen starter `.github/workflows/publiser-utvidelse.yml`. Marketplace har
+Taggen starter `.github/workflows/publish-extension.yml`. Marketplace har
 ingen OIDC, så arbeidsflyten trenger hemmeligheten `VSCE_PAT`: et personlig
 token fra Azure DevOps med rettigheten «Marketplace: Manage», laget av den
-som eier utgiveren `fristil` på marketplace.visualstudio.com. Utgiveren må
+som eier utgiveren `lotek` på marketplace.visualstudio.com. Utgiveren må
 opprettes der før første utgivelse.
 
 IntelliJ-pluginen har sitt nummer i `editor-intellij/gradle.properties` og
@@ -230,13 +230,13 @@ eksempelet, og du ser ikke lenger det en konsument får.
 
 Funksjoner, variabler, typer og konstanter navngis på engelsk, også lokale
 variabler, og aldri blandet i ett navn. Kommentarene er på norsk.
-`sjekk-identifikatorer.ts` feller et norsk navn i koden som sendes ut;
+`check-identifiers.ts` feller et norsk navn i koden som sendes ut;
 testfiler, `src/testing/`, `src/types/` og skriptene i `scripts/` er unntatt.
 
 En sjekk skal ikke spørre kilden om kilden. Det forventede, antallet eller
 innholdet, skal komme fra et annet sted enn køen sjekken går gjennom, ellers
-etterprøver vakten bare seg selv. `sjekk-agent.ts` leser derfor mappa på
-disk, og `sjekk-ordforrad.ts` leser `exports` i pakken, ikke metadataen.
+etterprøver vakten bare seg selv. `check-agent.ts` leser derfor mappa på
+disk, og `check-vocabulary.ts` leser `exports` i pakken, ikke metadataen.
 
 ## Commit-meldinger
 
@@ -253,7 +253,7 @@ git config user.name "MASK"
 git config user.email "m.a.sobergklyver@gmail.com"
 ```
 
-CI-jobben **Forfattere** (`bun run sjekk:forfattere`) går gjennom hele historikken og feiler på begge deler. Grener får beskrivende navn, ikke `claude/…`.
+CI-jobben **Forfattere** (`bun run check:authors`) går gjennom hele historikken og feiler på begge deler. Grener får beskrivende navn, ikke `claude/…`.
 
 ## Når CI er rød på master
 

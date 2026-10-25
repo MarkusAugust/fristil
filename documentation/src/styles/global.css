@@ -1,22 +1,22 @@
 /*
  * Lagrekkefølgen står først, og er ikke pynt. Lagene teller i den rekkefølgen
- * de først blir nevnt, og det siste vinner uansett spesifisitet. `fristil` må
+ * de først blir nevnt, og det siste vinner uansett spesifisitet. `lotek` må
  * ligge etter Starlights og Tailwinds grunnlag, så komponentene ikke blir
  * nullstilt, og før `utilities`, så en Tailwind-klasse fortsatt kan overstyre
- * en komponent. `fristil-tema` er laget et generert tema ligger i, og står
- * her selv om siden ikke har noe tema: temaets egen `@layer fristil,
- * fristil-tema;` flytter ikke lag som alt er erklært, så uten plassen ville
+ * en komponent. `lotek-theme` er laget et generert tema ligger i, og står
+ * her selv om siden ikke har noe tema: temaets egen `@layer lotek,
+ * lotek-theme;` flytter ikke lag som alt er erklært, så uten plassen ville
  * et tema havnet sist, etter `utilities`. Dette er det samme rådet
  * dokumentasjonen gir konsumentene.
  */
-@layer theme, base, starlight, fristil, fristil-tema, components, utilities;
+@layer theme, base, starlight, lotek, lotek-theme, components, utilities;
 
 @import "@astrojs/starlight-tailwind";
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-/* Fristils tokens som Tailwind-verdier, altså `p-4`, `text-fs-muted` og resten. */
-@import "@fristil/designsystem/tailwind.css";
+/* LO-TEKs tokens som Tailwind-verdier, altså `p-4`, `text-lt-muted` og resten. */
+@import "@lo-tek/interfaces/tailwind.css";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -208,7 +208,7 @@
 	   direkte slår den arvede fargen fra forhåndsvisningen, uansett
 	   spesifisitet. */
   /* Tabeller ruller sidelengs framfor å brekke kodeord midt i taggen.
-     Rullefeltet legges rundt hver tabell av rehype-tabellrull.mjs, og det er
+     Rullefeltet legges rundt hver tabell av rehype-table-scroll.mjs, og det er
      det som har kortutseendet. Tabellen selv skal ikke klippe noe: gjør den
      det, er kolonnene utenfor kanten borte uten vei tilbake. */
   .sl-markdown-content .tabell-rull {
@@ -217,7 +217,7 @@
   }
 
   .sl-markdown-content .tabell-rull:focus-visible {
-    outline: 2px solid var(--fs-color-accent-fill);
+    outline: 2px solid var(--lt-color-accent-fill);
     outline-offset: 2px;
   }
 

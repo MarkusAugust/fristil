@@ -1,5 +1,5 @@
-@layer fristil {
-  .fs-divider {
+@layer lotek {
+  .lt-divider {
     /* <hr> har både ramme og høyde fra nettleseren. Begge må bort før
        fargen under er den eneste som vises. */
     border: 0;
@@ -8,28 +8,28 @@
        vinner de over stretch, og streken krymper til innholdet sitt, som er
        ingenting. Den var 0 piksler bred og usynlig. Den strekker seg også
        selv når forelderen sentrerer barna eller legger dem til start. */
-    margin-block: var(--fs-divider-space, var(--fs-spacing-4));
+    margin-block: var(--lt-divider-space, var(--lt-spacing-4));
     margin-inline: 0;
     align-self: stretch;
     justify-self: stretch;
-    background: var(--fs-color-neutral-border-subtle);
+    background: var(--lt-color-neutral-border-subtle);
   }
 
-  .fs-divider[data-variant="strong"] {
-    background: var(--fs-color-neutral-border-strong);
+  .lt-divider[data-variant="strong"] {
+    background: var(--lt-color-neutral-border-strong);
   }
 
   /* Flatefargen alene var så nær lerretet at streken nesten forsvant.
      raised ligger mellom den og border-subtle i begge temaer. */
-  .fs-divider[data-variant="subtle"] {
-    background: var(--fs-color-neutral-raised);
+  .lt-divider[data-variant="subtle"] {
+    background: var(--lt-color-neutral-raised);
   }
 
   /* Høykontrast: bakgrunner tvinges til sideflatens farge, og streken var
      bare en bakgrunn. Den ble usynlig. En systemfarge overlever. */
   @media (forced-colors: active) {
-    .fs-divider,
-    .fs-divider[data-variant] {
+    .lt-divider,
+    .lt-divider[data-variant] {
       background: CanvasText;
     }
   }

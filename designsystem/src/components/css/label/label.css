@@ -1,39 +1,39 @@
-@layer fristil {
-  .fs-label {
+@layer lotek {
+  .lt-label {
     display: block;
     font-family: inherit;
-    font-size: var(--fs-font-size-s);
-    font-weight: var(--fs-font-weight-semibold);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-strong);
+    font-size: var(--lt-font-size-s);
+    font-weight: var(--lt-font-weight-semibold);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
   }
 
-  .fs-label[data-required]::after {
-    content: var(--fs-label-required-symbol, " *");
-    color: var(--fs-color-danger-text);
-    font-weight: var(--fs-font-weight-bold);
+  .lt-label[data-required]::after {
+    content: var(--lt-label-required-symbol, " *");
+    color: var(--lt-color-danger-text);
+    font-weight: var(--lt-font-weight-bold);
   }
 
-  .fs-label[data-required="text"]::after {
+  .lt-label[data-required="text"]::after {
     /* `\e5` er å. Skrevet rett ut ble det «pÃ¥krevd» når siden manglet
        `<meta charset>` og tjeneren ikke sendte tegnsettet. */
-    content: var(--fs-label-required-text, " (p\e5 krevd)");
-    color: var(--fs-color-danger-text);
-    font-weight: var(--fs-font-weight-regular);
-    font-size: var(--fs-font-size-xs);
+    content: var(--lt-label-required-text, " (p\e5 krevd)");
+    color: var(--lt-color-danger-text);
+    font-weight: var(--lt-font-weight-regular);
+    font-size: var(--lt-font-size-xs);
   }
 
   /* Ikke når feltet også er merket påkrevd: byggefunksjonen velger påkrevd,
      og håndskrevet markup med begge skal gi det samme. Fargen er ikke
      `disabled-text`: teksten er ikke deaktivert, og den hadde 4,37:1. */
-  .fs-label[data-optional]:not([data-required])::after {
-    content: var(--fs-label-optional-text, " (valgfri)");
-    color: var(--fs-color-neutral-text-subtle);
-    font-weight: var(--fs-font-weight-regular);
-    font-size: var(--fs-font-size-xs);
+  .lt-label[data-optional]:not([data-required])::after {
+    content: var(--lt-label-optional-text, " (valgfri)");
+    color: var(--lt-color-neutral-text-subtle);
+    font-weight: var(--lt-font-weight-regular);
+    font-size: var(--lt-font-size-xs);
   }
 
-  .fs-label[aria-disabled="true"] {
-    color: var(--fs-color-neutral-text-subtle);
+  .lt-label[aria-disabled="true"] {
+    color: var(--lt-color-neutral-text-subtle);
   }
 }

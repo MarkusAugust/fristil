@@ -3,53 +3,53 @@ title: Avatar
 description: Profilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 En rund flate med et bilde eller initialer. Komponenten sier ingenting om hvem personen er: det gjør teksten ved siden av, eller en tekst du gir bildet.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "avatar.css"]}
+<Example importer={["tokens.css", "avatar.css"]}
   stiler={["avatar"]} kode={`
-<span class="fs-avatar" data-size="small" aria-hidden="true">ON</span>
-<span class="fs-avatar" aria-hidden="true">ON</span>
-<span class="fs-avatar" data-size="large" aria-hidden="true">ON</span>
-<span class="fs-avatar" data-variant="square" aria-hidden="true">KB</span>
+<span class="lt-avatar" data-size="small" aria-hidden="true">ON</span>
+<span class="lt-avatar" aria-hidden="true">ON</span>
+<span class="lt-avatar" data-size="large" aria-hidden="true">ON</span>
+<span class="lt-avatar" data-variant="square" aria-hidden="true">KB</span>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<span {...fs.avatar({ size: "small" })} aria-hidden="true">ON</span>
+<span {...lt.avatar({ size: "small" })} aria-hidden="true">ON</span>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const bilde = document.querySelector<HTMLElement>("#profil")
 
-fs.setAttributes(bilde, fs.avatar({ size: "large" }))
+lt.setAttributes(bilde, lt.avatar({ size: "large" }))
 ```
 
 Lista som lar bildene overlappe har ingen attributter, bare en klasse, og den ligger på funksjonen:
 
 ```tsx
-<ul className={fs.avatar.stack}>
-  <li><span {...fs.avatar({ size: "small" })} aria-hidden="true">ON</span></li>
+<ul className={lt.avatar.stack}>
+  <li><span {...lt.avatar({ size: "small" })} aria-hidden="true">ON</span></li>
 </ul>
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | Attributt | Effekt |
 | --- | --- |
@@ -60,8 +60,8 @@ Lista som lar bildene overlappe har ingen attributter, bare en klasse, og den li
 
 ## Med navn ved siden av
 
-<Eksempel stiler={["avatar"]} kode={`
-<span class="fs-avatar" data-size="small" aria-hidden="true">ON</span>
+<Example stiler={["avatar"]} kode={`
+<span class="lt-avatar" data-size="small" aria-hidden="true">ON</span>
 <span>Ola Nordmann</span>
 `} />
 
@@ -72,18 +72,18 @@ Bildet og navnet er to elementer ved siden av hverandre. Hvordan de stilles opp 
 Står bildet alene, må det si hvem det er:
 
 ```html
-<span class="fs-avatar">
+<span class="lt-avatar">
   <img src="/bilder/ola.jpg" alt="Ola Nordmann" />
 </span>
 ```
 
 ## Flere bilder som overlapper
 
-<Eksempel stiler={["avatar"]} layout="stabel" maxWidth="30rem" kode={`
-<ul class="fs-avatar-stack">
-  <li><span class="fs-avatar" data-size="small" aria-hidden="true">ON</span></li>
-  <li><span class="fs-avatar" data-size="small" aria-hidden="true">KB</span></li>
-  <li><span class="fs-avatar" data-size="small" aria-hidden="true">MH</span></li>
+<Example stiler={["avatar"]} layout="stabel" maxWidth="30rem" kode={`
+<ul class="lt-avatar-stack">
+  <li><span class="lt-avatar" data-size="small" aria-hidden="true">ON</span></li>
+  <li><span class="lt-avatar" data-size="small" aria-hidden="true">KB</span></li>
+  <li><span class="lt-avatar" data-size="small" aria-hidden="true">MH</span></li>
 </ul>
 <p>Ola Nordmann, Kari Berg og Mats Hansen følger saken</p>
 `} />
@@ -94,21 +94,21 @@ Rekkefølgen snus i CSS: det første elementet i markupen står lengst til høyr
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-avatar` | Flaten med bildet eller initialene |
+| `.lt-avatar` | Flaten med bildet eller initialene |
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-avatar-stack` | Lista med bilder som overlapper |
+| `.lt-avatar-stack` | Lista med bilder som overlapper |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-avatar-size` | `var(--fs-spacing-10)` |
-| `--fs-avatar-radius` | `var(--fs-spacing-1)` |
-| `--fs-avatar-stack-overlap` | `calc(var(--fs-spacing-2) * -1)` |
+| `--lt-avatar-size` | `var(--lt-spacing-10)` |
+| `--lt-avatar-radius` | `var(--lt-spacing-1)` |
+| `--lt-avatar-stack-overlap` | `calc(var(--lt-spacing-2) * -1)` |
 
-`--fs-avatar-size` gjelder standardstørrelsen. `data-size="small"` og `data-size="large"` setter sin egen.
+`--lt-avatar-size` gjelder standardstørrelsen. `data-size="small"` og `data-size="large"` setter sin egen.
 
-`--fs-avatar-radius` gjelder bare firkantvarianten. Den runde er alltid rund. Se [Tilpasning](../../tilpasning/).
+`--lt-avatar-radius` gjelder bare firkantvarianten. Den runde er alltid rund. Se [Tilpasning](../../customising/).
 
 ## Tilgjengelighet
 

@@ -1,11 +1,11 @@
 import { attributes, createGuard, idOrFallback } from "../../css/shared.js"
 
-export const DIALOG_CLASS = "fs-dialog" as const
-export const DIALOG_HEADER_CLASS = "fs-dialog__header" as const
-export const DIALOG_TITLE_CLASS = "fs-dialog__title" as const
-export const DIALOG_SUBTITLE_CLASS = "fs-dialog__subtitle" as const
-export const DIALOG_BODY_CLASS = "fs-dialog__body" as const
-export const DIALOG_FOOTER_CLASS = "fs-dialog__footer" as const
+export const DIALOG_CLASS = "lt-dialog" as const
+export const DIALOG_HEADER_CLASS = "lt-dialog__header" as const
+export const DIALOG_TITLE_CLASS = "lt-dialog__title" as const
+export const DIALOG_SUBTITLE_CLASS = "lt-dialog__subtitle" as const
+export const DIALOG_BODY_CLASS = "lt-dialog__body" as const
+export const DIALOG_FOOTER_CLASS = "lt-dialog__footer" as const
 
 /**
  * Fargen på toppen, og hva den betyr.
@@ -30,7 +30,7 @@ export type DialogOptions = {
   /**
    * Dialogen er åpen. Standard: lukket.
    *
-   * Dette er serverens beskjed til `<fs-dialog>`. Styrer du dialogen selv
+   * Dette er serverens beskjed til `<lt-dialog>`. Styrer du dialogen selv
    * fra nettleseren, med `showModal()`, skal du la den være: kallet kaster
    * `InvalidStateError` på en dialog som alt står åpen.
    */
@@ -76,7 +76,7 @@ export type DialogAttributes = {
  *
  * Det er et problem for en server som bare sender HTML, for den kan ikke
  * kalle noe i nettleseren. Derfor sier serveren at dialogen er åpen, og
- * `<fs-dialog>` gjør kallet.
+ * `<lt-dialog>` gjør kallet.
  *
  * De to `open`-ene er ikke det samme, og det er verdt å holde dem fra hverandre:
  *
@@ -93,18 +93,18 @@ export type DialogAttributes = {
  *   det som en boks på siden til komponenten gjør den om til en modal.
  *
  * ```ts
- * const boks = fs.dialog({ titleId: "slett-tittel", open: true })
+ * const boks = lt.dialog({ titleId: "slett-tittel", open: true })
  * ```
  * ```html
- * <fs-dialog {...boks.host}>
+ * <lt-dialog {...boks.host}>
  *   <dialog {...boks.dialog}>
  *     <h2 {...boks.title}>Slette søknaden?</h2>
  *     <div {...boks.body}>Søknaden og vedleggene blir borte.</div>
  *     <form method="dialog" {...boks.footer}>
- *       <button class="fs-button" value="avbryt">Avbryt</button>
+ *       <button class="lt-button" value="avbryt">Avbryt</button>
  *     </form>
  *   </dialog>
- * </fs-dialog>
+ * </lt-dialog>
  * ```
  */
 export const dialog = Object.assign(
@@ -114,7 +114,7 @@ export const dialog = Object.assign(
     color = "neutral",
   }: DialogOptions): DialogAttributes => {
     // Reserven gjelder bare den som ikke har en typesjekk.
-    const titleId = idOrFallback("fs.dialog()", givenId, "titleId")
+    const titleId = idOrFallback("lt.dialog()", givenId, "titleId")
 
     return {
       host: attributes({

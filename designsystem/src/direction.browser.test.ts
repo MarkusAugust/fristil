@@ -34,16 +34,16 @@ describe("høyre til venstre", () => {
     // og gjør bare avlesningen avhengig av hvor raskt maskinen er.
     const uten = document.createElement("style")
     uten.dataset.test = ""
-    uten.textContent = `.fs-switch { transition: none; }`
+    uten.textContent = `.lt-switch { transition: none; }`
     document.head.append(uten)
 
     monter(`
-      <input class="fs-input fs-search" type="search" id="sok" />
-      <input class="fs-input" type="date" data-variant="date" id="dato" />
-      <input class="fs-switch" type="checkbox" role="switch" id="av" />
-      <input class="fs-switch" type="checkbox" role="switch" id="pa" checked />
-      <select class="fs-select" id="liste"><option>Valg</option></select>
-      <select class="fs-select" data-picker="styled" id="liste-stylet"><option>Valg</option></select>
+      <input class="lt-input lt-search" type="search" id="sok" />
+      <input class="lt-input" type="date" data-variant="date" id="dato" />
+      <input class="lt-switch" type="checkbox" role="switch" id="av" />
+      <input class="lt-switch" type="checkbox" role="switch" id="pa" checked />
+      <select class="lt-select" id="liste"><option>Valg</option></select>
+      <select class="lt-select" data-picker="styled" id="liste-stylet"><option>Valg</option></select>
     `)
   })
 
@@ -76,8 +76,8 @@ describe("høyre til venstre", () => {
    */
   it("snur pila i nedtrekkslista, og plassen den ligger i", async () => {
     monter(`
-      <div dir="ltr"><select class="fs-select" id="venstremot"><option>Valg</option></select></div>
-      <div dir="rtl"><select class="fs-select" id="hoyremot"><option>خيار</option></select></div>
+      <div dir="ltr"><select class="lt-select" id="venstremot"><option>Valg</option></select></div>
+      <div dir="rtl"><select class="lt-select" id="hoyremot"><option>خيار</option></select></div>
     `)
     await ventPaTegning()
 
@@ -108,8 +108,8 @@ describe("høyre til venstre", () => {
     // Da skal ingen av sidene ha reservert plass i tillegg. Firefox 150 har
     // ikke `appearance: base-select`, og skal ha feltet som før.
     monter(`
-      <div dir="ltr"><select class="fs-select" data-picker="styled" id="stylet-ltr"><option>Valg</option></select></div>
-      <div dir="rtl"><select class="fs-select" data-picker="styled" id="stylet-rtl"><option>خيار</option></select></div>
+      <div dir="ltr"><select class="lt-select" data-picker="styled" id="stylet-ltr"><option>Valg</option></select></div>
+      <div dir="rtl"><select class="lt-select" data-picker="styled" id="stylet-rtl"><option>خيار</option></select></div>
     `)
     await ventPaTegning()
 
@@ -167,9 +167,9 @@ describe("høyre til venstre", () => {
         .map(
           (retning) => `
         <div dir="${retning}" style="padding: 4rem 12rem">
-          <span class="fs-tooltip">
+          <span class="lt-tooltip">
             <button type="button" id="knapp-${retning}" aria-describedby="boble-${retning}">Arkiver</button>
-            <span class="fs-tooltip__bubble" role="tooltip" id="boble-${retning}" style="display: block">Saken flyttes til arkivet</span>
+            <span class="lt-tooltip__bubble" role="tooltip" id="boble-${retning}" style="display: block">Saken flyttes til arkivet</span>
           </span>
         </div>`,
         )
@@ -199,8 +199,8 @@ describe("høyre til venstre", () => {
         .map(
           (retning) => `
         <div dir="${retning}">
-          <details class="fs-accordion" id="lukket-${retning}"><summary>Spørsmål</summary></details>
-          <details class="fs-accordion" id="apen-${retning}" open><summary>Spørsmål</summary></details>
+          <details class="lt-accordion" id="lukket-${retning}"><summary>Spørsmål</summary></details>
+          <details class="lt-accordion" id="apen-${retning}" open><summary>Spørsmål</summary></details>
         </div>`,
         )
         .join(""),

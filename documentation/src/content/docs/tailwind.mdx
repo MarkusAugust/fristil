@@ -1,11 +1,11 @@
 ---
 title: Tailwind
-description: Bruk Tailwind fritt sammen med Fristil, med de samme verdiene og uten at noe slåss om rekkefølgen.
+description: Bruk Tailwind fritt sammen med LO-TEK, med de samme verdiene og uten at noe slåss om rekkefølgen.
 ---
 
-import TailwindEksempel from "../../components/TailwindEksempel.astro"
+import TailwindExample from "../../components/TailwindExample.astro"
 
-Tailwind er ikke påkrevd i Fristil, og er heller ikke i veien. Bruker du det, skal du kunne skrive `p-6` på en `.fs-button` og forvente at det virker, og bygge dine egne flater med Fristils farger uten å slå opp et eneste variabelnavn.
+Tailwind er ikke påkrevd i LO-TEK, og er heller ikke i veien. Bruker du det, skal du kunne skrive `p-6` på en `.lt-button` og forvente at det virker, og bygge dine egne flater med LO-TEKs farger uten å slå opp et eneste variabelnavn.
 
 Pakken har ingen avhengighet til Tailwind. Temaet er en vanlig CSS-fil, så det er versjonen i appen din som leser den, og to versjoner kan ikke komme i konflikt.
 
@@ -13,62 +13,62 @@ Pakken har ingen avhengighet til Tailwind. Temaet er en vanlig CSS-fil, så det 
 
 ```css
 /* app.css */
-@layer theme, base, fristil, fristil-tema, components, utilities;
+@layer theme, base, lotek, lotek-theme, components, utilities;
 
 @import "tailwindcss";
-@import "@fristil/designsystem/tokens.css";
-@import "@fristil/designsystem/tailwind.css";
+@import "@lo-tek/interfaces/tokens.css";
+@import "@lo-tek/interfaces/tailwind.css";
 
 /* og stilarkene for komponentene du bruker */
-@import "@fristil/designsystem/button.css";
+@import "@lo-tek/interfaces/button.css";
 ```
 
-Den første linja er det eneste du må huske. Uten den nullstiller Tailwinds Preflight komponentene, eller komponentene slår klassene dine. `fristil-tema` er laget et [generert tema](../eget-tema/) ligger i, og skal stå der selv om du ikke har noe tema ennå. [Lagrekkefølgen](#lagrekkefølgen) forklarer hvorfor.
+Den første linja er det eneste du må huske. Uten den nullstiller Tailwinds Preflight komponentene, eller komponentene slår klassene dine. `lotek-theme` er laget et [generert tema](../your-own-theme/) ligger i, og skal stå der selv om du ikke har noe tema ennå. [Lagrekkefølgen](#lagrekkefølgen) forklarer hvorfor.
 
 Det er alt. Ingen `tailwind.config.ts`, ingen forhåndsinnstilling som skal importeres i JavaScript.
 
-### Når Fristil og Tailwind er to stilark
+### Når LO-TEK og Tailwind er to stilark
 
-Kommer Fristil inn som en `<link>`, og Tailwind fra et annet sted, finnes det ingen felles inngangsfil å sette linja øverst i. Da hører den i et `<style>` som står først i `<head>`, før begge:
+Kommer LO-TEK inn som en `<link>`, og Tailwind fra et annet sted, finnes det ingen felles inngangsfil å sette linja øverst i. Da hører den i et `<style>` som står først i `<head>`, før begge:
 
 ```html
 <head>
-  <style>@layer theme, base, fristil, fristil-tema, components, utilities;</style>
+  <style>@layer theme, base, lotek, lotek-theme, components, utilities;</style>
 
   <link rel="stylesheet" href="/statisk/tailwind-bygget.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css" />
 </head>
 ```
 
-En `@layer`-setning oppretter bare lag som ikke finnes ennå, og flytter ikke dem som alt er erklært. Tailwind erklærer `theme, base, components, utilities` på første linje av sin egen CSS, og Fristils `tokens.css` åpner `@layer fristil`. Det stilarket som lastes først avgjør derfor rekkefølgen, og begge rekkefølgene står som feil i tabellen under. Setningen i `<head>` avgjør den før noen av filene rekker å erklære noe, og da er det likegyldig hvilket av de to stilarkene som lastes først. Et [generert tema](../eget-tema/) du laster som en `<link>` er et slikt stilark: det erklærer `@layer fristil, fristil-tema;` selv, så ligger det før den bundlede CSS-en, hører linja i `<head>` også der.
+En `@layer`-setning oppretter bare lag som ikke finnes ennå, og flytter ikke dem som alt er erklært. Tailwind erklærer `theme, base, components, utilities` på første linje av sin egen CSS, og LO-TEKs `tokens.css` åpner `@layer lotek`. Det stilarket som lastes først avgjør derfor rekkefølgen, og begge rekkefølgene står som feil i tabellen under. Setningen i `<head>` avgjør den før noen av filene rekker å erklære noe, og da er det likegyldig hvilket av de to stilarkene som lastes først. Et [generert tema](../your-own-theme/) du laster som en `<link>` er et slikt stilark: det erklærer `@layer lotek, lotek-theme;` selv, så ligger det før den bundlede CSS-en, hører linja i `<head>` også der.
 
-Temaet med `fs-`-klassene, `tailwind.css`, er en `@theme`-blokk Tailwinds kompilator må lese, og kan ikke lenkes. Er det ingen kompilator i bildet, får du komponentene og tokenene, men ikke `text-fs-l` og `bg-fs-neutral-canvas`.
+Temaet med `lt-`-klassene, `tailwind.css`, er en `@theme`-blokk Tailwinds kompilator må lese, og kan ikke lenkes. Er det ingen kompilator i bildet, får du komponentene og tokenene, men ikke `text-lt-l` og `bg-lt-neutral-canvas`.
 
 ## Overstyr en komponent med vanlige klasser
 
-Komponentene ligger i `@layer fristil`, og utility-klassene kommer etter. En Tailwind-klasse vinner derfor over komponentens egen verdi, uten `!important` og uten å slå spesifisitet:
+Komponentene ligger i `@layer lotek`, og utility-klassene kommer etter. En Tailwind-klasse vinner derfor over komponentens egen verdi, uten `!important` og uten å slå spesifisitet:
 
-<TailwindEksempel stiler={["button"]} layout="stabel" maxWidth="26rem" kode={`
-<button class="fs-button">Send søknad</button>
-<button class="fs-button w-full justify-center rounded-full">Send søknad</button>
-<button class="fs-button" data-variant="secondary">Lagre utkast</button>
-<button class="fs-button px-8 py-4 text-fs-l" data-variant="secondary">Lagre utkast</button>
+<TailwindExample stiler={["button"]} layout="stabel" maxWidth="26rem" kode={`
+<button class="lt-button">Send søknad</button>
+<button class="lt-button w-full justify-center rounded-full">Send søknad</button>
+<button class="lt-button" data-variant="secondary">Lagre utkast</button>
+<button class="lt-button px-8 py-4 text-lt-l" data-variant="secondary">Lagre utkast</button>
 `} />
 
 Knappen beholder farger, fokusmarkering og deaktivert tilstand. Du endrer bare det du peker på.
 
-## Bygg dine egne flater med Fristils verdier
+## Bygg dine egne flater med LO-TEKs verdier
 
-Alt temaet legger til heter `fs-`, som klassene ellers i systemet. Da vet du alltid hvilke verdier som er Fristils, og Tailwinds egne er urørt: `bg-neutral-100` betyr fortsatt det samme.
+Alt temaet legger til heter `lt-`, som klassene ellers i systemet. Da vet du alltid hvilke verdier som er LO-TEKs, og Tailwinds egne er urørt: `bg-neutral-100` betyr fortsatt det samme.
 
-<TailwindEksempel stiler={["badge", "link"]} layout="stabel" maxWidth="30rem" kode={`
-<article class="rounded-xl border border-fs-neutral-border-subtle bg-fs-neutral-canvas p-4 shadow-fs-overlay">
+<TailwindExample stiler={["badge", "link"]} layout="stabel" maxWidth="30rem" kode={`
+<article class="rounded-xl border border-lt-neutral-border-subtle bg-lt-neutral-canvas p-4 shadow-lt-overlay">
   <div class="mb-2 flex items-center justify-between gap-2">
-    <h3 class="text-fs-l font-semibold text-fs-neutral-text-strong">Søknad om bostøtte</h3>
-    <span class="fs-badge" data-color="success">Innvilget</span>
+    <h3 class="text-lt-l font-semibold text-lt-neutral-text-strong">Søknad om bostøtte</h3>
+    <span class="lt-badge" data-color="success">Innvilget</span>
   </div>
-  <p class="text-fs-neutral-text-subtle">Sendt 4. mars. Saksnummer 2026-0481.</p>
-  <a class="fs-link mt-3 inline-block" href="#">Se vedtaket</a>
+  <p class="text-lt-neutral-text-subtle">Sendt 4. mars. Saksnummer 2026-0481.</p>
+  <a class="lt-link mt-3 inline-block" href="#">Se vedtaket</a>
 </article>
 `} />
 
@@ -77,50 +77,50 @@ Eksempelet over er ikke tegnet av. Det kompileres av en ekte Tailwind når dokum
 ## Hva temaet gir deg
 
 Fargene følger matrisen: hver celle blir en klasse, og navnet er
-`<verktøy>-fs-<familie>-<rolle>`.
+`<verktøy>-lt-<familie>-<rolle>`.
 
 | Klasser | Verdi |
 | --- | --- |
-| `bg-fs-accent-fill`, `text-fs-accent-content` | Fylt flate, og teksten oppå den |
-| `text-fs-accent-text`, `bg-fs-accent-surface` | Lenker, og en tonet aksentflate |
-| `border-fs-neutral-border`, `border-fs-neutral-border-subtle` | Kanter og streker |
-| `bg-fs-neutral-canvas`, `text-fs-neutral-text-strong`, `text-fs-neutral-text-subtle` | Siden, brødteksten og dempet tekst |
-| `bg-fs-success-surface`, `text-fs-success-text` | Status. Det samme for `warning`, `danger` og `visited` |
-| `bg-fs-brand1-surface` | Merkefargene, når betydningen ikke finnes ennå |
-| `text-fs-xxs` til `text-fs-mega` | Tekststørrelser |
-| `max-w-fs-aside`, `max-w-fs-wide-content` | Bredder for sideoppsett |
-| `shadow-fs-overlay` | Skyggen under flater som ligger over siden |
+| `bg-lt-accent-fill`, `text-lt-accent-content` | Fylt flate, og teksten oppå den |
+| `text-lt-accent-text`, `bg-lt-accent-surface` | Lenker, og en tonet aksentflate |
+| `border-lt-neutral-border`, `border-lt-neutral-border-subtle` | Kanter og streker |
+| `bg-lt-neutral-canvas`, `text-lt-neutral-text-strong`, `text-lt-neutral-text-subtle` | Siden, brødteksten og dempet tekst |
+| `bg-lt-success-surface`, `text-lt-success-text` | Status. Det samme for `warning`, `danger` og `visited` |
+| `bg-lt-brand1-surface` | Merkefargene, når betydningen ikke finnes ennå |
+| `text-lt-xxs` til `text-lt-mega` | Tekststørrelser |
+| `max-w-lt-aside`, `max-w-lt-wide-content` | Bredder for sideoppsett |
+| `shadow-lt-overlay` | Skyggen under flater som ligger over siden |
 
-Fargene, tekststørrelsene og skyggen peker på `--fs-`-variablene, og fargene snur derfor med temaet. `bg-fs-neutral-canvas` er hvit i lyst tema og nesten svart i mørkt, uten at du skriver `dark:`.
+Fargene, tekststørrelsene og skyggen peker på `--lt-`-variablene, og fargene snur derfor med temaet. `bg-lt-neutral-canvas` er hvit i lyst tema og nesten svart i mørkt, uten at du skriver `dark:`.
 
-Breddene er unntaket. `max-w-fs-aside`, `max-w-fs-wide-content` og de andre breddene er faste verdier, de samme som `Containers` i `@fristil/designsystem/tokens`, fordi det ikke finnes noen `--fs-`-variabel for dem. Vil du ha andre bredder, legger du dem til i din egen `@theme`.
+Breddene er unntaket. `max-w-lt-aside`, `max-w-lt-wide-content` og de andre breddene er faste verdier, de samme som `Containers` i `@lo-tek/interfaces/tokens`, fordi det ikke finnes noen `--lt-`-variabel for dem. Vil du ha andre bredder, legger du dem til i din egen `@theme`.
 
 ### Avstandene er de samme
 
-Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og temaet setter `--spacing` til `--fs-spacing-1`. `p-4` er dermed fire ganger grunnenheten, som er `--fs-spacing-4`, den samme verdien komponentene bruker.
+Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og temaet setter `--spacing` til `--lt-spacing-1`. `p-4` er dermed fire ganger grunnenheten, som er `--lt-spacing-4`, den samme verdien komponentene bruker.
 
-Trinnene i skalaen er egne verdier, ikke regnet av enheten. Setter du bare `--fs-spacing-1`, følger Tailwind-klassene med, og det i komponentene som bruker enheten direkte, som luften mellom listepunkter, mens `--fs-spacing-4` og resten av komponentene står der de sto. Da er `p-4` ikke lenger det samme som en knapps padding, og komponentene spriker innbyrdes. Skal du endre skalaen, skriv om hele:
+Trinnene i skalaen er egne verdier, ikke regnet av enheten. Setter du bare `--lt-spacing-1`, følger Tailwind-klassene med, og det i komponentene som bruker enheten direkte, som luften mellom listepunkter, mens `--lt-spacing-4` og resten av komponentene står der de sto. Da er `p-4` ikke lenger det samme som en knapps padding, og komponentene spriker innbyrdes. Skal du endre skalaen, skriv om hele:
 
 ```css
 :root {
-	--fs-spacing-0-5: 0.15rem;
-	--fs-spacing-1: 0.3rem;
-	--fs-spacing-2: 0.6rem;
-	--fs-spacing-3: 0.9rem;
-	--fs-spacing-4: 1.2rem;
-	--fs-spacing-5: 1.5rem;
-	--fs-spacing-6: 1.8rem;
-	--fs-spacing-7: 2.1rem;
-	--fs-spacing-8: 2.4rem;
-	--fs-spacing-10: 3rem;
-	--fs-spacing-12: 3.6rem;
-	--fs-spacing-16: 4.8rem;
+	--lt-spacing-0-5: 0.15rem;
+	--lt-spacing-1: 0.3rem;
+	--lt-spacing-2: 0.6rem;
+	--lt-spacing-3: 0.9rem;
+	--lt-spacing-4: 1.2rem;
+	--lt-spacing-5: 1.5rem;
+	--lt-spacing-6: 1.8rem;
+	--lt-spacing-7: 2.1rem;
+	--lt-spacing-8: 2.4rem;
+	--lt-spacing-10: 3rem;
+	--lt-spacing-12: 3.6rem;
+	--lt-spacing-16: 4.8rem;
 }
 ```
 
-Da følger både komponentene og Tailwind-klassene med. `--fs-spacing-px` er den faste pikselen og står utenfor skalaen.
+Da følger både komponentene og Tailwind-klassene med. `--lt-spacing-px` er den faste pikselen og står utenfor skalaen.
 
-Brekkpunktene er med vilje utelatt fra temaet. Fristils `sm` til `2xl` har allerede Tailwinds verdier, så `md:` virker som før.
+Brekkpunktene er med vilje utelatt fra temaet. LO-TEKs `sm` til `2xl` har allerede Tailwinds verdier, så `md:` virker som før.
 
 ## Lagrekkefølgen
 
@@ -128,23 +128,23 @@ Lagene teller i den rekkefølgen de først blir nevnt, og det siste vinner uanse
 
 | Rekkefølge | Hva som skjer |
 | --- | --- |
-| `fristil` før `base` | Preflight nullstiller komponentene. Knappen mister bakgrunnen. |
-| `fristil` etter `utilities` | Komponentene slår klassene dine. `p-6` gjør ingenting. |
-| `fristil-tema` etter `utilities` | Et generert tema slår klassene dine. `font-mono` på `<html>` gjør ingenting. |
-| `base`, `fristil`, `fristil-tema`, `utilities` | Alt virker |
+| `lotek` før `base` | Preflight nullstiller komponentene. Knappen mister bakgrunnen. |
+| `lotek` etter `utilities` | Komponentene slår klassene dine. `p-6` gjør ingenting. |
+| `lotek-theme` etter `utilities` | Et generert tema slår klassene dine. `font-mono` på `<html>` gjør ingenting. |
+| `base`, `lotek`, `lotek-theme`, `utilities` | Alt virker |
 
-`fristil-tema` står i linja selv om du ikke har noe tema. Et generert tema erklærer bare `@layer fristil, fristil-tema;`, og en `@layer`-setning flytter ikke lag som alt er erklært. Uten en plass i linja havner temaet derfor sist, etter `utilities`, den dagen du legger det til.
+`lotek-theme` står i linja selv om du ikke har noe tema. Et generert tema erklærer bare `@layer lotek, lotek-theme;`, og en `@layer`-setning flytter ikke lag som alt er erklært. Uten en plass i linja havner temaet derfor sist, etter `utilities`, den dagen du legger det til.
 
-Feiltilfellene er testet i `tilpasning.browser.test.ts`, som bygger hvert av dem i et eget dokument, det første og listetesten med Tailwinds egen Preflight, og leser av hva knappen, lista og rotelementet faktisk får. Dokumentasjonssiden du leser nå bruker den samme lagrekkefølgen, men uten Preflight: Starlight har sitt eget grunnlag i laget `starlight`, og siden laster bare `theme.css` og `utilities.css` fra Tailwind.
+Feiltilfellene er testet i `customising.browser.test.ts`, som bygger hvert av dem i et eget dokument, det første og listetesten med Tailwinds egen Preflight, og leser av hva knappen, lista og rotelementet faktisk får. Dokumentasjonssiden du leser nå bruker den samme lagrekkefølgen, men uten Preflight: Starlight har sitt eget grunnlag i laget `starlight`, og siden laster bare `theme.css` og `utilities.css` fra Tailwind.
 
 ## Tre ting som er greie å vite
 
 **Ingen komponent bruker shadow DOM.** Alt står i vanlig DOM, så utility-klasser og din egen CSS når fram overalt.
 
-**`@apply` virker, men trengs sjelden.** Skal du samle en gjentakelse, er en vanlig klasse i din egen CSS enklere å lese, og den kan bruke `var(--fs-color-…)` direkte.
+**`@apply` virker, men trengs sjelden.** Skal du samle en gjentakelse, er en vanlig klasse i din egen CSS enklere å lese, og den kan bruke `var(--lt-color-…)` direkte.
 
-**Preflight er Tailwinds valg, ikke vårt.** Fristils komponenter nullstiller det de trenger selv, blant annet `box-sizing`, så de virker like godt uten Preflight som med.
+**Preflight er Tailwinds valg, ikke vårt.** LO-TEKs komponenter nullstiller det de trenger selv, blant annet `box-sizing`, så de virker like godt uten Preflight som med.
 
 ## Uten Tailwind
 
-Ingenting av dette er påkrevd. `var(--fs-color-accent-fill)` og `class="fs-button"` virker like godt i ren CSS, og i alle andre verktøy som skriver CSS. Se [Tilpasning](../tilpasning/).
+Ingenting av dette er påkrevd. `var(--lt-color-accent-fill)` og `class="lt-button"` virker like godt i ren CSS, og i alle andre verktøy som skriver CSS. Se [Tilpasning](../customising/).

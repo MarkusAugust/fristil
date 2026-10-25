@@ -14,7 +14,7 @@ export const DELINGSBILDE = [
   ["og:image", `${BASE}/og.png`],
   ["og:image:width", "1200"],
   ["og:image:height", "630"],
-  ["og:image:alt", "Fristil. Rammeverksuavhengig designsystem."],
+  ["og:image:alt", "LO-TEK. Rammeverksuavhengig designsystem."],
   ["twitter:image", `${BASE}/og.png`],
 ]
 

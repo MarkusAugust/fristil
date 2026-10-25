@@ -6,24 +6,24 @@ description: Rammekomponent som kobler ledetekst, felt, hjelpetekst og feilmeldi
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import FieldDemo from "../../../components/FieldDemo.astro"
 
-Et skjemafelt er tilgjengelig når hjelpeteksten og feilmeldingen er koblet til selve feltet. Fristil gir deg den koblingen på to måter, og **du skal bruke den ene, ikke begge**.
+Et skjemafelt er tilgjengelig når hjelpeteksten og feilmeldingen er koblet til selve feltet. LO-TEK gir deg den koblingen på to måter, og **du skal bruke den ene, ikke begge**.
 
 | Lager du markupen med JavaScript? | Bruk |
 | --- | --- |
-| **Ja.** React, Astro, en Node-server, eller en app helt uten server | [`fs.field()`](#som-funksjon). Da trenger du ikke web componenten |
-| **Nei.** En Go-mal, en PHP-fil, en Razor-visning eller håndskrevet HTML | [`<fs-field>`](#som-element) |
+| **Ja.** React, Astro, en Node-server, eller en app helt uten server | [`lt.field()`](#som-funksjon). Da trenger du ikke web componenten |
+| **Nei.** En Go-mal, en PHP-fil, en Razor-visning eller håndskrevet HTML | [`<lt-field>`](#som-element) |
 
 Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverandre. Forskjellen er bare om koden som lager HTML-en kan kalle en TypeScript-funksjon.
 
-`<fs-field>` lager ingen markup selv og bruker ikke Shadow DOM, så `FormData`, skjemabiblioteker og testverktøy finner elementene som før.
+`<lt-field>` lager ingen markup selv og bruker ikke Shadow DOM, så `FormData`, skjemabiblioteker og testverktøy finner elementene som før.
 
 :::note[Andre komponenter er ikke enten eller]
-`<fs-field>` kan erstattes helt av byggefunksjonen, fordi koblingen er markup og ikke oppførsel. Det samme gjelder [Dialog](../dialog/), når appen selv kaller `showModal()`. [Tabs](../tabs/), [Popover](../popover/), [Suggestion](../suggestion/) og [Error Summary](../error-summary/) gjør noe en funksjon ikke kan, som piltaster og fokus, så der bruker du byggefunksjonen **og** komponenten. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+`<lt-field>` kan erstattes helt av byggefunksjonen, fordi koblingen er markup og ikke oppførsel. Det samme gjelder [Dialog](../dialog/), når appen selv kaller `showModal()`. [Tabs](../tabs/), [Popover](../popover/), [Suggestion](../suggestion/) og [Error Summary](../error-summary/) gjør noe en funksjon ikke kan, som piltaster og fokus, så der bruker du byggefunksjonen **og** komponenten. Se [Markup og oppførsel](/markup-and-behaviour/#byggefunksjon-eller-web-component).
 :::
 
 ## Slik tar du den i bruk
 
-`defineFsField()` registrerer web componenten i nettleseren, og kalles én gang ved oppstart. Flere kall er ufarlige. Stilarket må importeres fordi barna er dine egne elementer med klassene `fs-label`, `fs-input` og så videre, og de klassene må ligge på siden. `field.css` samler dem.
+`defineLtField()` registrerer web componenten i nettleseren, og kalles én gang ved oppstart. Flere kall er ufarlige. Stilarket må importeres fordi barna er dine egne elementer med klassene `lt-label`, `lt-input` og så videre, og de klassene må ligge på siden. `field.css` samler dem.
 
 <Tabs>
   <TabItem label="Prøv den">
@@ -33,37 +33,37 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/field/field.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/field/field.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
     <!-- novalidate: ellers stopper nettleseren et tomt påkrevd felt før
          submit-hendelsen, og feilmeldingen under blir aldri vist. -->
     <form id="kontaktskjema" novalidate>
-      <fs-field>
-        <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
-        <input class="fs-input" id="navn" type="text" name="navn" required />
-        <p class="fs-error-text" hidden>Fyll inn navnet ditt.</p>
-      </fs-field>
+      <lt-field>
+        <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
+        <input class="lt-input" id="navn" type="text" name="navn" required />
+        <p class="lt-error-text" hidden>Fyll inn navnet ditt.</p>
+      </lt-field>
 
-      <button class="fs-button" type="submit">Send</button>
+      <button class="lt-button" type="submit">Send</button>
     </form>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsField } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/field/fs-field.js"
+      import { defineLtField } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/field/lt-field.js"
 
-      defineFsField()
+      defineLtField()
     </script>
 
     <script type="module">
       const skjema = document.getElementById("kontaktskjema")
       const navnInput = document.getElementById("navn")
-      const feil = navnInput.closest("fs-field").querySelector(".fs-error-text")
+      const feil = navnInput.closest("lt-field").querySelector(".lt-error-text")
 
       skjema.addEventListener("submit", (hendelse) => {
         hendelse.preventDefault()
@@ -85,18 +85,18 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     `for` og `id` skriver du selv, som HTML krever for at feltet skal ha et navn før skriptet har kjørt. Feltet er ugyldig når feilmeldingen synes: skriptet slår `hidden` av og på, og komponenten kobler feilmeldingen til feltet og setter `aria-invalid`. `new FormData(skjema)` plukker opp feltet av seg selv. Det er hele poenget med at komponenten holder seg i vanlig DOM.
   </TabItem>
   <TabItem label="React">
-    I React kaller du `fs.field()`. Da står koblingen i markupen React selv rendrer, på serveren som i nettleseren, og du trenger ikke registrere noe.
+    I React kaller du `lt.field()`. Da står koblingen i markupen React selv rendrer, på serveren som i nettleseren, og du trenger ikke registrere noe.
 
     ```tsx
     // main.tsx, kjøres én gang når appen starter
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/field.css"
-    import "@fristil/designsystem/button.css"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/field.css"
+    import "@lo-tek/interfaces/button.css"
     ```
 
     ```tsx
     // Kontaktskjema.tsx
-    import { fs } from "@fristil/designsystem/react"
+    import { lt } from "@lo-tek/interfaces/react"
     import { useId, useState } from "react"
 
     export function Kontaktskjema() {
@@ -104,7 +104,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
       const [berørt, setBerørt] = useState(false)
 
       const ugyldig = berørt && navn.trim() === ""
-      const felt = fs.field({
+      const felt = lt.field({
         id: useId(),
         required: "symbol",
         error: true,
@@ -121,7 +121,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
         >
           <label {...felt.label}>Fullt navn</label>
           <input
-            {...fs.input({ type: "text" })}
+            {...lt.input({ type: "text" })}
             {...felt.control}
             name="navn"
             required
@@ -129,9 +129,9 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
             onChange={(e) => setNavn(e.target.value)}
             onBlur={() => setBerørt(true)}
           />
-          <p {...fs.errorText()} {...felt.error}>Fyll inn navnet ditt.</p>
+          <p {...lt.errorText()} {...felt.error}>Fyll inn navnet ditt.</p>
 
-          <button {...fs.button()} type="submit">Send</button>
+          <button {...lt.button()} type="submit">Send</button>
         </form>
       )
     }
@@ -144,49 +144,49 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     :::
 
     :::caution[Web componenten gir hydreringsfeil i React med server-rendring]
-    Komponenten skriver `aria-describedby`, id-er og klassen på elementene i det den registreres, altså før React hydrerer. React finner da attributter den ikke rendret, og utviklingsbygget i React 19 melder «A tree hydrated but some attributes of the server rendered HTML didn't match the client properties». Feltet virker, men feilen står i konsollen på hver side med et felt. Bruk `fs.field()`.
+    Komponenten skriver `aria-describedby`, id-er og klassen på elementene i det den registreres, altså før React hydrerer. React finner da attributter den ikke rendret, og utviklingsbygget i React 19 melder «A tree hydrated but some attributes of the server rendered HTML didn't match the client properties». Feltet virker, men feilen står i konsollen på hver side med et felt. Bruk `lt.field()`.
 
-    Rendrer appen bare i nettleseren, uten server, virker `<fs-field>` også i React. Ugyldig styres da med `hidden={!ugyldig}` på feilmeldingen, et vanlig HTML-attributt React skriver likt i alle versjoner.
+    Rendrer appen bare i nettleseren, uten server, virker `<lt-field>` også i React. Ugyldig styres da med `hidden={!ugyldig}` på feilmeldingen, et vanlig HTML-attributt React skriver likt i alle versjoner.
     :::
   </TabItem>
   <TabItem label="Astro">
-    Trenger feltet bare å vises i én tilstand, gjør `fs.field()` koblingen ved bygging. Da sendes ingen JavaScript for feltet i det hele tatt:
+    Trenger feltet bare å vises i én tilstand, gjør `lt.field()` koblingen ved bygging. Da sendes ingen JavaScript for feltet i det hele tatt:
 
     ```astro
     ---
-    import { fs } from "@fristil/designsystem"
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/field.css"
+    import { lt } from "@lo-tek/interfaces"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/field.css"
 
-    const navn = fs.field({ id: "navn", required: "symbol", error: true })
+    const navn = lt.field({ id: "navn", required: "symbol", error: true })
     ---
 
     <label {...navn.label}>Fullt navn</label>
-    <input {...fs.input({ type: "text" })} {...navn.control} name="navn" required />
-    <p {...fs.errorText()} {...navn.error}>Fyll inn navnet ditt.</p>
+    <input {...lt.input({ type: "text" })} {...navn.control} name="navn" required />
+    <p {...lt.errorText()} {...navn.error}>Fyll inn navnet ditt.</p>
     ```
 
-    Skal feltet kunne bli ugyldig mens brukeren står i det, bruker du `<fs-field>` og registrerer den i en `<script>`-tagg. Astro pakker den og kjører den på klienten:
+    Skal feltet kunne bli ugyldig mens brukeren står i det, bruker du `<lt-field>` og registrerer den i en `<script>`-tagg. Astro pakker den og kjører den på klienten:
 
     ```astro
     ---
-    import { fs } from "@fristil/designsystem"
+    import { lt } from "@lo-tek/interfaces"
 
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/field.css"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/field.css"
 
-    const navn = fs.field({ id: "navn", required: "symbol", error: true })
+    const navn = lt.field({ id: "navn", required: "symbol", error: true })
     ---
 
-    <fs-field>
+    <lt-field>
       <label {...navn.label}>Fullt navn</label>
-      <input {...fs.input({ type: "text" })} {...navn.control} name="navn" required />
-      <p {...fs.errorText()} {...navn.error}>Fyll inn navnet ditt.</p>
-    </fs-field>
+      <input {...lt.input({ type: "text" })} {...navn.control} name="navn" required />
+      <p {...lt.errorText()} {...navn.error}>Fyll inn navnet ditt.</p>
+    </lt-field>
 
     <script>
-      import { defineFsField } from "@fristil/designsystem/field"
-      defineFsField()
+      import { defineLtField } from "@lo-tek/interfaces/field"
+      defineLtField()
     </script>
     ```
   </TabItem>
@@ -203,12 +203,12 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/field/field.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/input/input.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/error-text/error-text.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/field/field.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/input/input.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/error-text/error-text.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
+    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
@@ -218,10 +218,10 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
       data-computed:ugyldig="$beroert && $navn.trim() === ''"
       data-on:submit__prevent="$beroert = true; !$ugyldig && @post('/kontakt')"
     >
-      <fs-field>
-        <label class="fs-label" for="navn" data-required="symbol">Fullt navn</label>
+      <lt-field>
+        <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
         <input
-          class="fs-input"
+          class="lt-input"
           id="navn"
           type="text"
           name="navn"
@@ -229,41 +229,41 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
           data-bind:navn
           data-on:blur="$beroert = true"
         />
-        <p class="fs-error-text" hidden data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
-      </fs-field>
+        <p class="lt-error-text" hidden data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
+      </lt-field>
 
-      <button class="fs-button" type="submit">Send</button>
+      <button class="lt-button" type="submit">Send</button>
     </form>
 
     <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
     <script type="module">
-      import { defineFsField } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/field/fs-field.js"
+      import { defineLtField } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/field/lt-field.js"
 
-      defineFsField()
+      defineLtField()
     </script>
     ```
 
-    `data-attr:hidden` skjuler feilmeldingen når feltet er gyldig og viser den når det er ugyldig. `<fs-field>` ser at feilmeldingen synes, og setter `aria-invalid` og `aria-describedby` på feltet. Feltet har ingen id komponenten har laget, så en patch fra serveren kjenner det igjen, og det brukeren har skrevet står.
+    `data-attr:hidden` skjuler feilmeldingen når feltet er gyldig og viser den når det er ugyldig. `<lt-field>` ser at feilmeldingen synes, og setter `aria-invalid` og `aria-describedby` på feltet. Feltet har ingen id komponenten har laget, så en patch fra serveren kjenner det igjen, og det brukeren har skrevet står.
   </TabItem>
 </Tabs>
 
-**`fs.input()` skal bare få `type`.** Tilstanden ligger i `felt.control`, og de to overlapper med vilje ikke. Sendte du `state` til begge, ville `aria-invalid` blitt skrevet ut to ganger i maler som gjengir attributtene bokstavelig, som Astro og ren HTML. `felt.state` finnes fortsatt hvis du vil drive noe annet med den.
+**`lt.input()` skal bare få `type`.** Tilstanden ligger i `felt.control`, og de to overlapper med vilje ikke. Sendte du `state` til begge, ville `aria-invalid` blitt skrevet ut to ganger i maler som gjengir attributtene bokstavelig, som Astro og ren HTML. `felt.state` finnes fortsatt hvis du vil drive noe annet med den.
 
 ### Merkingen
 
-`data-required` på ledeteksten velger hvordan et påkrevd felt merkes, `symbol` eller `text`, og står i markupen, så merket synes også før skriptet har kjørt. `optional` på `<fs-field>` snur det om: merk det valgfrie framfor det påkrevde, når nesten alt i skjemaet må fylles ut. `optional` har ingen plass i oppskriften over, siden den viser ett felt og ikke et skjema.
+`data-required` på ledeteksten velger hvordan et påkrevd felt merkes, `symbol` eller `text`, og står i markupen, så merket synes også før skriptet har kjørt. `optional` på `<lt-field>` snur det om: merk det valgfrie framfor det påkrevde, når nesten alt i skjemaet må fylles ut. `optional` har ingen plass i oppskriften over, siden den viser ett felt og ikke et skjema.
 
 ```html
-<fs-field>
-  <label class="fs-label" for="epost" data-required="text">E-postadresse</label>
-  <input class="fs-input" id="epost" type="email" required />
-</fs-field>
+<lt-field>
+  <label class="lt-label" for="epost" data-required="text">E-postadresse</label>
+  <input class="lt-input" id="epost" type="email" required />
+</lt-field>
 
-<fs-field optional>
+<lt-field optional>
   <label for="melding">Melding til saksbehandler</label>
-  <textarea class="fs-textarea" id="melding" rows="3"></textarea>
-</fs-field>
+  <textarea class="lt-textarea" id="melding" rows="3"></textarea>
+</lt-field>
 ```
 
 ## Hvorfor koblingen er vanskelig
@@ -281,20 +281,20 @@ Hver `id` må være unik, `aria-describedby` må peke på begge tekstene, og `ar
 
 ## Som funksjon
 
-`fs.field()` regner ut attributtene der du rendrer, enten ved bygging i Astro, på hver render i React, eller på serveren. Nettleseren trenger ingen registrert komponent, og koblingen står ferdig i HTML-en før noe skript har kjørt:
+`lt.field()` regner ut attributtene der du rendrer, enten ved bygging i Astro, på hver render i React, eller på serveren. Nettleseren trenger ingen registrert komponent, og koblingen står ferdig i HTML-en før noe skript har kjørt:
 
 ```tsx
-const felt = fs.field({ id: "epost", required: "symbol", help: true, error: true, invalid })
+const felt = lt.field({ id: "epost", required: "symbol", help: true, error: true, invalid })
 
 <label {...felt.label}>E-postadresse</label>
-<input {...fs.input({ type: "email" })} {...felt.control} />
-<p {...fs.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
-<p {...fs.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
+<input {...lt.input({ type: "email" })} {...felt.control} />
+<p {...lt.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
+<p {...lt.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
 ```
 
-Bruker du React, importer fra `@fristil/designsystem/react`, som gir `className` og `htmlFor` i stedet for HTML-navnene.
+Bruker du React, importer fra `@lo-tek/interfaces/react`, som gir `className` og `htmlFor` i stedet for HTML-navnene.
 
-**`id` er påkrevd.** I React kommer den fra `useId()`. Ellers er feltets eget navn som regel det opplagte valget. Vet du sikkert at markupen rendres én gang, som på en Astro-side, kan du kalle `createFieldId()`, som du får fra både `@fristil/designsystem` og `@fristil/designsystem/react`.
+**`id` er påkrevd.** I React kommer den fra `useId()`. Ellers er feltets eget navn som regel det opplagte valget. Vet du sikkert at markupen rendres én gang, som på en Astro-side, kan du kalle `createFieldId()`, som du får fra både `@lo-tek/interfaces` og `@lo-tek/interfaces/react`.
 
 Grunnen er at en id som lages av seg selv er tilfeldig: to kjøringer gir to ulike. Rendres det samme feltet på en server og så i nettleseren, peker `for` og `aria-describedby` på noe annet enn det som står der, og React melder avvik ved hydreringen.
 
@@ -302,15 +302,15 @@ Skriver du JavaScript uten typer, ser du ingen type. Da lager funksjonen en id l
 
 ## Som element
 
-Kan ikke koden som lager HTML-en kalle en TypeScript-funksjon, gjør `<fs-field>` den samme koblingen i nettleseren. Du skriver elementene dine som vanlig, med `for` på ledeteksten og `id` på feltet, eller med ledeteksten rundt feltet. Det er det HTML krever for at feltet skal ha et navn før skriptet har kjørt, og for at stemmestyring skal finne det. Komponenten setter `aria-describedby` og `aria-invalid` på feltet og gir hjelpeteksten og feilmeldingen id.
+Kan ikke koden som lager HTML-en kalle en TypeScript-funksjon, gjør `<lt-field>` den samme koblingen i nettleseren. Du skriver elementene dine som vanlig, med `for` på ledeteksten og `id` på feltet, eller med ledeteksten rundt feltet. Det er det HTML krever for at feltet skal ha et navn før skriptet har kjørt, og for at stemmestyring skal finne det. Komponenten setter `aria-describedby` og `aria-invalid` på feltet og gir hjelpeteksten og feilmeldingen id.
 
 Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. Uten en id fra komponenten blir feltet stående.
 
-Sender serveren det samme området på nytt mens brukeren holder på, som i en Datastar-app, river morfingen koblingen bort: ingenting av den sto i HTML-en serveren sendte. Komponenten ser det og setter den tilbake, så malen din trenger ingen `data-preserve-attr`. Begrunnelsen står i [Markup og oppførsel](/markup-og-oppforsel/#når-markupen-ikke-lages-med-javascript).
+Sender serveren det samme området på nytt mens brukeren holder på, som i en Datastar-app, river morfingen koblingen bort: ingenting av den sto i HTML-en serveren sendte. Komponenten ser det og setter den tilbake, så malen din trenger ingen `data-preserve-attr`. Begrunnelsen står i [Markup og oppførsel](/markup-and-behaviour/#når-markupen-ikke-lages-med-javascript).
 
 I en løkke lager du id-en av en nøkkel i dataene, som `merknad-{{.Kode}}`, aldri av indeksen eller en teller. En id som følger plassen, flytter det brukeren skrev til feil rad når serveren setter inn en ny. Lager malen id-en av noe som skifter mellom rendringene, sier komponenten fra i konsollen når en oppdatering byttet ut feltet av den grunn.
 
-Finner komponenten ikke delene sine, sier den fra i konsollen. Et `<fs-field>` uten en kontroll gir en advarsel med navnet på det som mangler, framfor et felt som stilltiende står uten kobling. Det samme gjelder et felt uten ledetekst, men bare når det heller ikke har et navn på annet vis: en `<label for>` utenfor elementet, `aria-label` eller `aria-labelledby` på kontrollen teller, som i et søkefelt med bare et ikon. Og et felt med mer enn én kontroll gir en advarsel, siden bare den første får koblingen.
+Finner komponenten ikke delene sine, sier den fra i konsollen. Et `<lt-field>` uten en kontroll gir en advarsel med navnet på det som mangler, framfor et felt som stilltiende står uten kobling. Det samme gjelder et felt uten ledetekst, men bare når det heller ikke har et navn på annet vis: en `<label for>` utenfor elementet, `aria-label` eller `aria-labelledby` på kontrollen teller, som i et søkefelt med bare et ikon. Og et felt med mer enn én kontroll gir en advarsel, siden bare den første får koblingen.
 
 ## Automatisk kobling
 
@@ -320,13 +320,13 @@ Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og førs
 2. Gir hjelpetekst og feilmelding `id` ved behov.
 3. Setter `aria-describedby` på kontrollen: hjelpeteksten alltid, og feilmeldingen i tillegg når den synes. En skjult feilmelding skal ikke leses opp.
 4. Setter `aria-invalid="true"` på kontrollen når feilmeldingen synes, altså har tekst og står uten `hidden` og uten `display: none`. `data-show` i Datastar og `data-text` i en beholder som står tom, virker derfor også.
-5. Setter `data-optional` på ledeteksten når `<fs-field>` har `optional`.
+5. Setter `data-optional` på ledeteksten når `<lt-field>` har `optional`.
 
 Feilmeldingen kan ligge i markupen hele tiden med `hidden`, eller rendres av malen bare når feltet er ugyldig. Komponenten rører aldri `hidden` på den.
 
-Komponenten krever to klassenavn av deg: `fs-help-text` på hjelpeteksten og `fs-error-text` på feilmeldingen. Kontrollen finner den på tagnavnet, altså `<input>`, `<textarea>` eller `<select>`, og et `type="hidden"` teller ikke som kontroll. Ledeteksten finner den på en `<label>` inni elementet, eller på en `<label for>` utenfor som peker på kontrollens `id`. Har kontrollen ingen `id`, og ledeteksten står ikke rundt den, sier komponenten fra: feltet har da ikke noe navn uten JavaScript. Har kontrollen `id`, skriver komponenten `for` fra den, og sier fra i konsollen når ledeteksten pekte på en annen id: uten JavaScript hadde feltet da ingen ledetekst. Skriv `for` i malen også; det er den som gir feltet et navn før skriptet kjører.
+Komponenten krever to klassenavn av deg: `lt-help-text` på hjelpeteksten og `lt-error-text` på feilmeldingen. Kontrollen finner den på tagnavnet, altså `<input>`, `<textarea>` eller `<select>`, og et `type="hidden"` teller ikke som kontroll. Ledeteksten finner den på en `<label>` inni elementet, eller på en `<label for>` utenfor som peker på kontrollens `id`. Har kontrollen ingen `id`, og ledeteksten står ikke rundt den, sier komponenten fra: feltet har da ikke noe navn uten JavaScript. Har kontrollen `id`, skriver komponenten `for` fra den, og sier fra i konsollen når ledeteksten pekte på en annen id: uten JavaScript hadde feltet da ingen ledetekst. Skriv `for` i malen også; det er den som gir feltet et navn før skriptet kjører.
 
-Delene er bare dem som hører til dette feltet. Står et `<fs-field>` inni et annet, som et søkefelt i et sprettoppvindu inni feltet, ser det ytre feltet bare sin egen kontroll, ledetekst, hjelpetekst og feilmelding, og det indre sine.
+Delene er bare dem som hører til dette feltet. Står et `<lt-field>` inni et annet, som et søkefelt i et sprettoppvindu inni feltet, ser det ytre feltet bare sin egen kontroll, ledetekst, hjelpetekst og feilmelding, og det indre sine.
 
 ## Attributter
 
@@ -344,4 +344,4 @@ Det finnes ikke noe `invalid`-attributt. Feltet er ugyldig når feilmeldingen sy
 - Skriv `for` på ledeteksten og `id` på feltet, eller legg ledeteksten rundt feltet. Uten det har feltet ikke noe navn før skriptet har kjørt. Uten id får feltet ikke fokus tilbake etter en `innerHTML`-oppdatering med htmx, som finner det igjen på id, og stemmestyring på Windows er ikke etterprøvd med ledeteksten rundt feltet.
 - Sett `required` på `<input>` i tillegg til `data-required` på ledeteksten.
 - Vis feilmeldingen når brukeren har forlatt feltet, ikke for hvert tastetrykk. Meldingen leses opp hver gang den dukker opp.
-- Én kontroll per `<fs-field>`. Komponenten kobler seg til den første den finner. Grupper hører hjemme i en `<fieldset>` med `<legend>`.
+- Én kontroll per `<lt-field>`. Komponenten kobler seg til den første den finner. Grupper hører hjemme i en `<fieldset>` med `<legend>`.

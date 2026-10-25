@@ -1,6 +1,6 @@
 /**
- * Språkserveren, startet av utvidelsen: `fristil lsp`, kjørt som WASI-modul
- * med Node sin egen `node:wasi`, akkurat som `npx @fristil/designsystem lsp`.
+ * Språkserveren, startet av utvidelsen: `lotek lsp`, kjørt som WASI-modul
+ * med Node sin egen `node:wasi`, akkurat som `npx @lo-tek/interfaces lsp`.
  *
  * Modulen ligger ved siden av i `dist/`. Den leser manifestet prosjektet har
  * installert, eller det Gradle-pluginen har skrevet. Som reserve har
@@ -16,7 +16,7 @@ async function main() {
   // når utvidelsen pakkes.
   const folder = dirname(process.argv[1] ?? ".")
   process.exit(
-    await runCommandLine(join(folder, "fristil.wasm"), ["lsp"], folder),
+    await runCommandLine(join(folder, "lotek.wasm"), ["lsp"], folder),
   )
 }
 

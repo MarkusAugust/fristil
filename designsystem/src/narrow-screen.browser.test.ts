@@ -3,7 +3,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 import { page, userEvent } from "vitest/browser"
 
-import { defineFs } from "./register"
+import { defineLt } from "./register"
 import { monter, ventPaTegning } from "./testing/a11y"
 
 import "./tokens/tokens.css"
@@ -53,7 +53,7 @@ function element<T extends Element>(selektor: string): T {
 const KOMPONENTER: Record<string, Tilfelle[]> = {
   accordion: [
     {
-      markup: `<details class="fs-accordion" open>
+      markup: `<details class="lt-accordion" open>
         <summary>Hvem kan søke om bostøtte for hele kalenderåret 2026?</summary>
         <p>Alle over 18 år som bor i en godkjent bolig.</p>
       </details>`,
@@ -61,25 +61,25 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
   ],
   alert: [
     {
-      markup: `<div class="fs-alert" data-color="danger">
-        <p class="fs-alert__title">Søknaden ble ikke sendt</p>
+      markup: `<div class="lt-alert" data-color="danger">
+        <p class="lt-alert__title">Søknaden ble ikke sendt</p>
         <p>Nettverket svarte ikke. Prøv igjen om litt.</p>
       </div>`,
     },
   ],
   avatar: [
     {
-      markup: `<span class="fs-avatar" data-size="lg" role="img" aria-label="Kari Nordmann">KN</span>`,
+      markup: `<span class="lt-avatar" data-size="lg" role="img" aria-label="Kari Nordmann">KN</span>`,
     },
   ],
   badge: [
     {
-      markup: `<span class="fs-badge" data-color="warning">Venter på dokumentasjon fra arbeidsgiver</span>`,
+      markup: `<span class="lt-badge" data-color="warning">Venter på dokumentasjon fra arbeidsgiver</span>`,
     },
   ],
   breadcrumbs: [
     {
-      markup: `<ol class="fs-breadcrumbs">
+      markup: `<ol class="lt-breadcrumbs">
         <li><a href="#">Forsiden</a></li>
         <li><a href="#">Mine saker og søknader</a></li>
         <li><a href="#" aria-current="page">Søknad 2026-0481</a></li>
@@ -87,87 +87,87 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
     },
   ],
   button: [
-    { markup: `<button class="fs-button">${LANG}</button>` },
+    { markup: `<button class="lt-button">${LANG}</button>` },
     {
       markup: `<div style="white-space: nowrap">
-        <button class="fs-button">${LANG}</button>
+        <button class="lt-button">${LANG}</button>
       </div>`,
     },
     {
-      markup: `<button class="fs-button">Send søknaden nå</button>
-        <button class="fs-button" data-variant="secondary">Lagre som utkast</button>`,
+      markup: `<button class="lt-button">Send søknaden nå</button>
+        <button class="lt-button" data-variant="secondary">Lagre som utkast</button>`,
     },
   ],
   card: [
     {
-      markup: `<div class="fs-card">
-        <h3 class="fs-card__title">Søknad om bostøtte for 2026</h3>
+      markup: `<div class="lt-card">
+        <h3 class="lt-card__title">Søknad om bostøtte for 2026</h3>
         <p>Sendt 4. mars. Saksnummer 2026-0481.</p>
       </div>`,
     },
   ],
   checkbox: [
     {
-      markup: `<label><input class="fs-checkbox" type="checkbox" /> Jeg bekrefter at opplysningene i søknaden er riktige og fullstendige</label>`,
+      markup: `<label><input class="lt-checkbox" type="checkbox" /> Jeg bekrefter at opplysningene i søknaden er riktige og fullstendige</label>`,
     },
   ],
-  divider: [{ markup: `<hr class="fs-divider" />` }],
+  divider: [{ markup: `<hr class="lt-divider" />` }],
   "error-text": [
     {
-      markup: `<p class="fs-error-text">Skriv fødselsnummeret med elleve siffer, uten mellomrom eller bindestrek</p>`,
+      markup: `<p class="lt-error-text">Skriv fødselsnummeret med elleve siffer, uten mellomrom eller bindestrek</p>`,
     },
   ],
   fieldset: [
     {
-      markup: `<fieldset class="fs-fieldset">
-        <legend class="fs-legend">Hvem bor i husstanden sammen med deg i 2026?</legend>
-        <label><input class="fs-radio" type="radio" name="h" /> Bare meg</label>
+      markup: `<fieldset class="lt-fieldset">
+        <legend class="lt-legend">Hvem bor i husstanden sammen med deg i 2026?</legend>
+        <label><input class="lt-radio" type="radio" name="h" /> Bare meg</label>
       </fieldset>`,
     },
   ],
   "file-upload": [
-    { markup: `<input class="fs-file-upload" type="file" multiple />` },
+    { markup: `<input class="lt-file-upload" type="file" multiple />` },
     {
-      markup: `<ul class="fs-file-upload-list">
+      markup: `<ul class="lt-file-upload-list">
         <li>
           soknad-om-bostotte-2026-vedlegg-1.pdf
-          <button class="fs-button" data-variant="ghost" type="button">Fjern soknad-om-bostotte-2026-vedlegg-1.pdf</button>
+          <button class="lt-button" data-variant="ghost" type="button">Fjern soknad-om-bostotte-2026-vedlegg-1.pdf</button>
         </li>
       </ul>`,
     },
   ],
   heading: [
     {
-      markup: `<h1 class="fs-heading" data-size="xl">Søknad om bostøtte for hele kalenderåret 2026</h1>`,
+      markup: `<h1 class="lt-heading" data-size="xl">Søknad om bostøtte for hele kalenderåret 2026</h1>`,
     },
   ],
   "help-text": [
     {
-      markup: `<p class="fs-help-text">Elleve siffer. Du finner det på bankkortet eller i skattemeldingen.</p>`,
+      markup: `<p class="lt-help-text">Elleve siffer. Du finner det på bankkortet eller i skattemeldingen.</p>`,
     },
   ],
   icon: [
     {
-      markup: `<button class="fs-button" type="button"><svg class="fs-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" /></svg>${LANG}</button>`,
+      markup: `<button class="lt-button" type="button"><svg class="lt-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" /></svg>${LANG}</button>`,
     },
   ],
   input: [
-    { markup: `<input class="fs-input" value="${LANG}" />` },
-    { markup: `<input class="fs-input" type="date" data-variant="date" />` },
+    { markup: `<input class="lt-input" value="${LANG}" />` },
+    { markup: `<input class="lt-input" type="date" data-variant="date" />` },
   ],
   label: [
     {
-      markup: `<label class="fs-label" data-required>Fødselsnummer til den som søker om bostøtte</label>`,
+      markup: `<label class="lt-label" data-required>Fødselsnummer til den som søker om bostøtte</label>`,
     },
   ],
   link: [
     {
-      markup: `<a class="fs-link" href="#">Les mer om hvem som kan søke om bostøtte for hele kalenderåret 2026</a>`,
+      markup: `<a class="lt-link" href="#">Les mer om hvem som kan søke om bostøtte for hele kalenderåret 2026</a>`,
     },
   ],
   list: [
     {
-      markup: `<ul class="fs-list">
+      markup: `<ul class="lt-list">
         <li>Lønnsslipp for de tre siste månedene før søknaden ble sendt</li>
         <li>Husleiekontrakt</li>
       </ul>`,
@@ -175,7 +175,7 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
   ],
   pagination: [
     {
-      markup: `<ul class="fs-pagination">
+      markup: `<ul class="lt-pagination">
         <li><a href="#">Forrige</a></li><li><a href="#">1</a></li><li><a href="#">2</a></li>
         <li><a href="#">3</a></li><li><a href="#">4</a></li><li><a href="#">Neste</a></li>
       </ul>`,
@@ -183,66 +183,66 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
   ],
   paragraph: [
     {
-      markup: `<p class="fs-paragraph">Søknadsfristen er 1. mars. Vi behandler søknaden innen fire uker, og sender svaret til innboksen din.</p>`,
+      markup: `<p class="lt-paragraph">Søknadsfristen er 1. mars. Vi behandler søknaden innen fire uker, og sender svaret til innboksen din.</p>`,
     },
   ],
   progress: [
     {
-      markup: `<progress class="fs-progress" value="40" max="100" aria-label="Lastet opp"></progress>
-        <progress class="fs-progress" aria-label="Laster opp"></progress>`,
+      markup: `<progress class="lt-progress" value="40" max="100" aria-label="Lastet opp"></progress>
+        <progress class="lt-progress" aria-label="Laster opp"></progress>`,
     },
   ],
   radio: [
     {
-      markup: `<label><input class="fs-radio" type="radio" name="r" /> Jeg leier en kommunal bolig gjennom hele kalenderåret 2026</label>`,
+      markup: `<label><input class="lt-radio" type="radio" name="r" /> Jeg leier en kommunal bolig gjennom hele kalenderåret 2026</label>`,
     },
   ],
   search: [
     {
-      markup: `<input class="fs-input fs-search" type="search" aria-label="Søk" value="${LANG}" />`,
+      markup: `<input class="lt-input lt-search" type="search" aria-label="Søk" value="${LANG}" />`,
     },
   ],
   select: [
     {
-      markup: `<select class="fs-select" aria-label="Kommune">
+      markup: `<select class="lt-select" aria-label="Kommune">
         <option>Bergen</option>
         <option>Nordre Follo og omegn interkommunale bostøttekontor</option>
       </select>`,
     },
   ],
-  skeleton: [{ markup: `<div class="fs-skeleton"></div>` }],
+  skeleton: [{ markup: `<div class="lt-skeleton"></div>` }],
   "skip-link": [
     {
-      markup: `<a class="fs-skip-link" href="#hoved">Hopp til hovedinnholdet på siden om bostøtte</a>`,
+      markup: `<a class="lt-skip-link" href="#hoved">Hopp til hovedinnholdet på siden om bostøtte</a>`,
       // Lenken står utenfor synet til den får fokus. Ett ekte tastetrykk
       // først: et programmert `focus()` alene ga av og til ingen `:focus` i
       // Firefox i CI.
       aapne: async () => {
         await userEvent.tab()
-        element<HTMLAnchorElement>(".fs-skip-link").focus()
+        element<HTMLAnchorElement>(".lt-skip-link").focus()
       },
-      apen: ".fs-skip-link:focus",
+      apen: ".lt-skip-link:focus",
     },
   ],
   spinner: [
     {
-      markup: `<span class="fs-spinner" role="status" aria-label="Laster saken"></span>`,
+      markup: `<span class="lt-spinner" role="status" aria-label="Laster saken"></span>`,
     },
   ],
   "sr-only": [
     {
-      markup: `<span class="fs-sr-only">${LANG}, og en lang forklaring bare skjermlesere hører</span>`,
+      markup: `<span class="lt-sr-only">${LANG}, og en lang forklaring bare skjermlesere hører</span>`,
     },
   ],
   switch: [
     {
-      markup: `<label><input class="fs-switch" type="checkbox" role="switch" /> Send meg varsel på SMS når saken er ferdig behandlet</label>`,
+      markup: `<label><input class="lt-switch" type="checkbox" role="switch" /> Send meg varsel på SMS når saken er ferdig behandlet</label>`,
     },
   ],
   table: [
     {
-      markup: `<div class="fs-table-scroll" tabindex="0">
-        <table class="fs-table">
+      markup: `<div class="lt-table-scroll" tabindex="0">
+        <table class="lt-table">
           <thead><tr><th>Fakturanummer</th><th>Forfallsdato</th><th>Beløp</th></tr></thead>
           <tbody><tr><td>2026-0481</td><td>4. mars 2026</td><td>1 240 kr</td></tr></tbody>
         </table>
@@ -251,21 +251,21 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
   ],
   tag: [
     {
-      markup: `<button class="fs-tag" data-selectable aria-pressed="true">Under behandling</button>
-        <button class="fs-tag" data-selectable aria-pressed="false">Ferdig behandlet</button>`,
+      markup: `<button class="lt-tag" data-selectable aria-pressed="true">Under behandling</button>
+        <button class="lt-tag" data-selectable aria-pressed="false">Ferdig behandlet</button>`,
     },
   ],
   textarea: [
     {
-      markup: `<textarea class="fs-textarea" aria-label="Begrunnelse">${LANG}</textarea>`,
+      markup: `<textarea class="lt-textarea" aria-label="Begrunnelse">${LANG}</textarea>`,
     },
   ],
   "toggle-group": [
     {
-      markup: `<fieldset class="fs-toggle-group">
+      markup: `<fieldset class="lt-toggle-group">
         <legend>Visning</legend>
-        <label class="fs-toggle-group__option"><input type="radio" name="v" checked /> Liste over saker</label>
-        <label class="fs-toggle-group__option"><input type="radio" name="v" /> Kalendervisning</label>
+        <label class="lt-toggle-group__option"><input type="radio" name="v" checked /> Liste over saker</label>
+        <label class="lt-toggle-group__option"><input type="radio" name="v" /> Kalendervisning</label>
       </fieldset>`,
     },
   ],
@@ -278,9 +278,9 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
        * komponentsiden, og den trenger ankerplassering eller JavaScript.
        */
       markup: `<div style="text-align: center">
-        <span class="fs-tooltip">
-          <button class="fs-button" type="button" aria-describedby="hint">Arkiver</button>
-          <span class="fs-tooltip__bubble" role="tooltip" id="hint" style="display: block">Saken flyttes til arkivet, og kan hentes fram igjen senere</span>
+        <span class="lt-tooltip">
+          <button class="lt-button" type="button" aria-describedby="hint">Arkiver</button>
+          <span class="lt-tooltip__bubble" role="tooltip" id="hint" style="display: block">Saken flyttes til arkivet, og kan hentes fram igjen senere</span>
         </span>
       </div>`,
     },
@@ -288,10 +288,10 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
 
   "connection-status": [
     {
-      markup: `<fs-connection-status></fs-connection-status>`,
+      markup: `<lt-connection-status></lt-connection-status>`,
       aapne: async () => {
         const status = element<HTMLElement & { reportFailure(): void }>(
-          "fs-connection-status",
+          "lt-connection-status",
         )
         status.reportFailure()
       },
@@ -299,122 +299,122 @@ const KOMPONENTER: Record<string, Tilfelle[]> = {
   ],
   toast: [
     {
-      markup: `<fs-toast></fs-toast>`,
+      markup: `<lt-toast></lt-toast>`,
       aapne: () =>
-        element<HTMLElement & { show(text: string): void }>("fs-toast").show(
+        element<HTMLElement & { show(text: string): void }>("lt-toast").show(
           `${LANG} er mottatt, og du får svar innen fire uker`,
         ),
-      apen: "fs-toast > *",
+      apen: "lt-toast > *",
     },
   ],
 
   dialog: [
     {
-      markup: `<fs-dialog open>
-        <dialog class="fs-dialog" aria-labelledby="boks-tittel" open>
-          <h2 class="fs-dialog__title" id="boks-tittel">Vil du trekke søknaden om bostøtte for hele kalenderåret 2026?</h2>
-          <div class="fs-dialog__body"><p>Saken blir avsluttet, og du må søke på nytt.</p></div>
-          <form method="dialog" class="fs-dialog__footer">
-            <button class="fs-button" value="trekk">Trekk søknaden</button>
-            <button class="fs-button" data-variant="secondary" value="avbryt">Avbryt</button>
+      markup: `<lt-dialog open>
+        <dialog class="lt-dialog" aria-labelledby="boks-tittel" open>
+          <h2 class="lt-dialog__title" id="boks-tittel">Vil du trekke søknaden om bostøtte for hele kalenderåret 2026?</h2>
+          <div class="lt-dialog__body"><p>Saken blir avsluttet, og du må søke på nytt.</p></div>
+          <form method="dialog" class="lt-dialog__footer">
+            <button class="lt-button" value="trekk">Trekk søknaden</button>
+            <button class="lt-button" data-variant="secondary" value="avbryt">Avbryt</button>
           </form>
         </dialog>
-      </fs-dialog>`,
+      </lt-dialog>`,
     },
   ],
   "error-summary": [
     {
-      markup: `<fs-error-summary class="fs-error-summary" role="alert" tabindex="-1" data-autofocus="false">
-        <h2 class="fs-error-summary__title">Skjemaet har to feil som må rettes før du kan sende</h2>
-        <ul class="fs-list">
+      markup: `<lt-error-summary class="lt-error-summary" role="alert" tabindex="-1" data-autofocus="false">
+        <h2 class="lt-error-summary__title">Skjemaet har to feil som må rettes før du kan sende</h2>
+        <ul class="lt-list">
           <li><a href="#fnr">Skriv fødselsnummeret med elleve siffer, uten mellomrom</a></li>
           <li><a href="#kommune">Velg kommunen du bodde i 1. januar 2026</a></li>
         </ul>
-      </fs-error-summary>`,
+      </lt-error-summary>`,
     },
   ],
   field: [
     {
-      markup: `<fs-field>
-        <label class="fs-label" for="smal-epost">E-postadressen vi skal sende vedtaket til</label>
-        <input class="fs-input" id="smal-epost" value="kari.nordmann.med.et.langt.navn@eksempel.no" />
-        <p class="fs-help-text">Vi sender aldri reklame eller nyhetsbrev.</p>
-        <p class="fs-error-text">Skriv en e-postadresse med @ og et domene</p>
-      </fs-field>`,
+      markup: `<lt-field>
+        <label class="lt-label" for="smal-epost">E-postadressen vi skal sende vedtaket til</label>
+        <input class="lt-input" id="smal-epost" value="kari.nordmann.med.et.langt.navn@eksempel.no" />
+        <p class="lt-help-text">Vi sender aldri reklame eller nyhetsbrev.</p>
+        <p class="lt-error-text">Skriv en e-postadresse med @ og et domene</p>
+      </lt-field>`,
     },
   ],
   popover: [
     {
-      markup: `<fs-popover open>
-        <button class="fs-button" aria-expanded="false" aria-controls="handlinger">Handlinger</button>
-        <div popover id="handlinger" class="fs-popover">
+      markup: `<lt-popover open>
+        <button class="lt-button" aria-expanded="false" aria-controls="handlinger">Handlinger</button>
+        <div popover id="handlinger" class="lt-popover">
           <p>Flytt saken til en annen saksbehandler i det samme kontoret</p>
         </div>
-      </fs-popover>`,
+      </lt-popover>`,
     },
   ],
   "session-timeout": [
     {
-      markup: `<fs-session-timeout warn-at="600" expires-at="900">
-        <dialog class="fs-session-timeout__dialog" role="alertdialog" aria-labelledby="okt-tittel">
-          <h2 class="fs-session-timeout__title" id="okt-tittel">Du blir snart logget ut av søknaden om bostøtte</h2>
-          <p class="fs-session-timeout__text">Vi logger deg ut om
-            <span class="fs-session-timeout__count" aria-hidden="true"></span>.</p>
-          <span class="fs-sr-only" role="status"></span>
-          <form method="dialog" class="fs-session-timeout__actions">
-            <button class="fs-button" value="extend">Fortsett å være innlogget</button>
-            <button class="fs-button" data-variant="secondary" value="logout">Logg ut nå</button>
+      markup: `<lt-session-timeout warn-at="600" expires-at="900">
+        <dialog class="lt-session-timeout__dialog" role="alertdialog" aria-labelledby="okt-tittel">
+          <h2 class="lt-session-timeout__title" id="okt-tittel">Du blir snart logget ut av søknaden om bostøtte</h2>
+          <p class="lt-session-timeout__text">Vi logger deg ut om
+            <span class="lt-session-timeout__count" aria-hidden="true"></span>.</p>
+          <span class="lt-sr-only" role="status"></span>
+          <form method="dialog" class="lt-session-timeout__actions">
+            <button class="lt-button" value="extend">Fortsett å være innlogget</button>
+            <button class="lt-button" data-variant="secondary" value="logout">Logg ut nå</button>
           </form>
         </dialog>
-      </fs-session-timeout>`,
+      </lt-session-timeout>`,
       // Varselet som om tiden var nesten ute.
       aapne: () =>
-        element<HTMLDialogElement>(".fs-session-timeout__dialog").showModal(),
+        element<HTMLDialogElement>(".lt-session-timeout__dialog").showModal(),
     },
   ],
   suggestion: [
     {
-      markup: `<fs-suggestion>
-        <label class="fs-label">Kommune</label>
+      markup: `<lt-suggestion>
+        <label class="lt-label">Kommune</label>
         <div>
-          <input class="fs-input" name="kommune" type="text" />
-          <ul class="fs-suggestion__list">
+          <input class="lt-input" name="kommune" type="text" />
+          <ul class="lt-suggestion__list">
             <li>Bergen</li>
             <li>Bjørnafjorden og omegn interkommunale bostøttekontor</li>
           </ul>
-          <span class="fs-sr-only" role="status"></span>
+          <span class="lt-sr-only" role="status"></span>
         </div>
-      </fs-suggestion>`,
+      </lt-suggestion>`,
       aapne: () => {
-        const felt = element<HTMLInputElement>("fs-suggestion input")
+        const felt = element<HTMLInputElement>("lt-suggestion input")
         felt.focus()
         felt.value = "B"
         felt.dispatchEvent(new InputEvent("input", { bubbles: true }))
       },
       // Komponenten må ha åpnet lista. En liste den aldri kjente igjen,
       // står også uten `hidden`, så det er feltet som spørres.
-      apen: 'fs-suggestion input[aria-expanded="true"]',
+      apen: 'lt-suggestion input[aria-expanded="true"]',
     },
   ],
   tabs: [
     {
-      markup: `<fs-tabs>
-        <ul class="fs-tabs__list" aria-label="Deler av saken">
+      markup: `<lt-tabs>
+        <ul class="lt-tabs__list" aria-label="Deler av saken">
           <li><a href="#smal-soknaden">Søknaden</a></li>
           <li><a href="#smal-vedlegg">Vedlegg og dokumentasjon</a></li>
           <li><a href="#smal-vedtak">Vedtak</a></li>
           <li><a href="#smal-klage">Klage på vedtaket</a></li>
         </ul>
-        <section class="fs-tabs__panel" id="smal-soknaden"><h2>Søknaden</h2>Søknaden kom 3. mars.</section>
-        <section class="fs-tabs__panel" id="smal-vedlegg"><h2>Vedlegg og dokumentasjon</h2>To vedlegg.</section>
-        <section class="fs-tabs__panel" id="smal-vedtak"><h2>Vedtak</h2>Ikke behandlet ennå.</section>
-        <section class="fs-tabs__panel" id="smal-klage"><h2>Klage på vedtaket</h2>Ingen klage.</section>
-      </fs-tabs>`,
+        <section class="lt-tabs__panel" id="smal-soknaden"><h2>Søknaden</h2>Søknaden kom 3. mars.</section>
+        <section class="lt-tabs__panel" id="smal-vedlegg"><h2>Vedlegg og dokumentasjon</h2>To vedlegg.</section>
+        <section class="lt-tabs__panel" id="smal-vedtak"><h2>Vedtak</h2>Ikke behandlet ennå.</section>
+        <section class="lt-tabs__panel" id="smal-klage"><h2>Klage på vedtaket</h2>Ingen klage.</section>
+      </lt-tabs>`,
     },
   ],
 }
 
-/** Komponentmappene, lest fra testfilene. Hver mappe har en, se `sjekk-testfiler.ts`. */
+/** Komponentmappene, lest fra testfilene. Hver mappe har en, se `check-test-files.ts`. */
 const MAPPER = Object.keys(
   import.meta.glob("./components/*/*/*.browser.test.ts"),
 ).map((sti) => sti.split("/")[3])
@@ -425,7 +425,7 @@ const TILFELLER = Object.entries(KOMPONENTER).flatMap(([mappe, liste]) =>
 
 describe(`komponentene i et vindu på ${SMAL} piksler`, () => {
   beforeAll(async () => {
-    defineFs()
+    defineLt()
     await page.viewport(SMAL, 640)
   })
 
@@ -469,7 +469,7 @@ describe(`komponentene i et vindu på ${SMAL} piksler`, () => {
     // rullefeltet sitt, og tekst bare skjermlesere hører.
     let iToppen = 0
     for (const node of document.querySelectorAll("body *")) {
-      if (node.closest(".fs-table-scroll, .fs-sr-only")) continue
+      if (node.closest(".lt-table-scroll, .lt-sr-only")) continue
       const stil = getComputedStyle(node)
       if (stil.visibility === "hidden") continue
       const boks = node.getBoundingClientRect()

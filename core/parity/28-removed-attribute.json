@@ -4,8 +4,8 @@
       "start": 10,
       "end": 17,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "invalid er tatt ut av <fs-field>. Feltet er ugyldig når feilmeldingen, .fs-error-text, står synlig, eller når serveren har skrevet aria-invalid på kontrollen. I Datastar: data-attr:hidden=\"!$ugyldig\" på feilmeldingen.",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "invalid er tatt ut av <lt-field>. Feltet er ugyldig når feilmeldingen, .lt-error-text, står synlig, eller når serveren har skrevet aria-invalid på kontrollen. I Datastar: data-attr:hidden=\"!$ugyldig\" på feilmeldingen.",
       "fix": {
         "title": "Ta bort invalid",
         "edits": [
@@ -22,8 +22,8 @@
       "start": 18,
       "end": 33,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "required-marker er tatt ut av <fs-field>. Påkrevd-merket står som data-required på <label>, og vises da også uten JavaScript.",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "required-marker er tatt ut av <lt-field>. Påkrevd-merket står som data-required på <label>, og vises da også uten JavaScript.",
       "fix": {
         "title": "Ta bort required-marker",
         "edits": [
@@ -40,8 +40,8 @@
       "start": 38,
       "end": 48,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "control-id er tatt ut av <fs-field>. Skriv id på kontrollen og for på ledeteksten i malen. Komponenten skriver aldri id på kontrollen.",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "control-id er tatt ut av <lt-field>. Skriv id på kontrollen og for på ledeteksten i malen. Komponenten skriver aldri id på kontrollen.",
       "fix": {
         "title": "Ta bort control-id",
         "edits": [
@@ -60,8 +60,8 @@
       "start": 10,
       "end": 17,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "invalid er tatt ut av <fs-field>. Feltet er ugyldig når feilmeldingen, .fs-error-text, står synlig, eller når serveren har skrevet aria-invalid på kontrollen. I Datastar: data-attr:hidden=\"!$ugyldig\" på feilmeldingen.",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "invalid er tatt ut av <lt-field>. Feltet er ugyldig når feilmeldingen, .lt-error-text, står synlig, eller når serveren har skrevet aria-invalid på kontrollen. I Datastar: data-attr:hidden=\"!$ugyldig\" på feilmeldingen.",
       "fix": {
         "title": "Ta bort invalid",
         "edits": [
@@ -78,8 +78,8 @@
       "start": 18,
       "end": 33,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "required-marker er tatt ut av <fs-field>. Påkrevd-merket står som data-required på <label>, og vises da også uten JavaScript.",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "required-marker er tatt ut av <lt-field>. Påkrevd-merket står som data-required på <label>, og vises da også uten JavaScript.",
       "fix": {
         "title": "Ta bort required-marker",
         "edits": [
@@ -96,8 +96,8 @@
       "start": 38,
       "end": 48,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "control-id er tatt ut av <fs-field>. Skriv id på kontrollen og for på ledeteksten i malen. Komponenten skriver aldri id på kontrollen.",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "control-id er tatt ut av <lt-field>. Skriv id på kontrollen og for på ledeteksten i malen. Komponenten skriver aldri id på kontrollen.",
       "fix": {
         "title": "Ta bort control-id",
         "edits": [

@@ -9,11 +9,11 @@ import base from "./vitest.config"
  * For et miljø uten nett, eller der Playwrights egne nettlesere ikke kan
  * hentes. Bare Chromium: Playwright kan bruke en vanlig Chrome eller
  * Chromium, men Firefox og WebKit må være Playwrights egne bygg. CI og
- * `bun run sjekk` bruker fortsatt alle tre.
+ * `bun run check` bruker fortsatt alle tre.
  *
  * Stien leses fra `CHROMIUM`, og ellers prøves de vanlige stedene.
  *
- *     CHROMIUM=/usr/bin/chromium bun --filter @fristil/designsystem test:chromium
+ *     CHROMIUM=/usr/bin/chromium bun --filter @lo-tek/interfaces test:chromium
  */
 const candidates = [
   process.env.CHROMIUM,

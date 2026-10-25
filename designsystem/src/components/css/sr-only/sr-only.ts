@@ -1,6 +1,6 @@
 import { attributes } from "../shared.js"
 
-export const SR_ONLY_CLASS = "fs-sr-only" as const
+export const SR_ONLY_CLASS = "lt-sr-only" as const
 
 export type SrOnlyAttributes = {
   class: typeof SR_ONLY_CLASS

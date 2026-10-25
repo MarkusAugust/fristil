@@ -1,4 +1,4 @@
-package no.fristil.build
+package no.lotek.build
 
 import com.dylibso.chicory.build.time.compiler.Config
 import com.dylibso.chicory.build.time.compiler.Generator
@@ -33,12 +33,12 @@ abstract class CompileCore : DefaultTask() {
     @get:OutputDirectory
     abstract val sources: DirectoryProperty
 
-    /** Navnet på klassen, med pakken. Kjernen er `no.fristil.FristilCore`. */
+    /** Navnet på klassen, med pakken. Kjernen er `no.lotek.LotekCore`. */
     @get:Input
     abstract val className: Property<String>
 
     init {
-        className.convention("no.fristil.FristilCore")
+        className.convention("no.lotek.LotekCore")
     }
 
     @TaskAction

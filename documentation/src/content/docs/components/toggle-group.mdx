@@ -3,60 +3,60 @@ title: Toggle Group
 description: Gruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 Gruppen er radioknapper i forkledning. Hvert alternativ er en `<label>` med en `<input type="radio">` inni, krympet bort visuelt. Da beholder du piltastene, `FormData` og at skjermleseren sier «2 av 3», uten at noe av det må skrives på nytt.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "toggle-group.css", "sr-only.css"]}
+<Example importer={["tokens.css", "toggle-group.css", "sr-only.css"]}
   stiler={["toggle-group", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
-<fieldset class="fs-toggle-group">
-  <legend class="fs-sr-only">Visning</legend>
+<fieldset class="lt-toggle-group">
+  <legend class="lt-sr-only">Visning</legend>
 
-  <label class="fs-toggle-group__option">
+  <label class="lt-toggle-group__option">
     <input type="radio" name="visning" value="liste" checked /> Liste
   </label>
-  <label class="fs-toggle-group__option">
+  <label class="lt-toggle-group__option">
     <input type="radio" name="visning" value="kart" /> Kart
   </label>
-  <label class="fs-toggle-group__option">
+  <label class="lt-toggle-group__option">
     <input type="radio" name="visning" value="kalender" /> Kalender
   </label>
 </fieldset>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<fieldset {...fs.toggleGroup()}>
-  <legend {...fs.srOnly()}>Visning</legend>
-  <label className={fs.toggleGroup.option}>
+<fieldset {...lt.toggleGroup()}>
+  <legend {...lt.srOnly()}>Visning</legend>
+  <label className={lt.toggleGroup.option}>
     <input type="radio" name="visning" value="liste" defaultChecked />
     Liste
   </label>
 </fieldset>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const gruppe = document.querySelector<HTMLFieldSetElement>("#visning")
 if (!gruppe) throw new Error("fant ikke elementet")
 
-fs.setAttributes(gruppe, fs.toggleGroup())
+lt.setAttributes(gruppe, lt.toggleGroup())
 ```
 
-`fs.toggleGroup.option` gir klassen på hvert alternativ. Selve valget leser du som vanlig:
+`lt.toggleGroup.option` gir klassen på hvert alternativ. Selve valget leser du som vanlig:
 
 ```ts
 gruppe.addEventListener("change", (hendelse) => {
@@ -65,7 +65,7 @@ gruppe.addEventListener("change", (hendelse) => {
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
 `<legend>` er påkrevd selv når den er skjult. Uten den vet ikke den som hører siden hva de tre alternativene velger mellom.
 
@@ -83,18 +83,18 @@ gruppe.addEventListener("change", (hendelse) => {
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-toggle-group` | Gruppen |
-| `.fs-toggle-group__option` | Ledeteksten rundt hvert alternativ |
+| `.lt-toggle-group` | Gruppen |
+| `.lt-toggle-group__option` | Ledeteksten rundt hvert alternativ |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-toggle-group-radius` | `var(--fs-spacing-1)` |
-| `--fs-toggle-group-height` | `var(--fs-spacing-10)` |
-| `--fs-toggle-group-padding` | `0 var(--fs-spacing-4)` |
+| `--lt-toggle-group-radius` | `var(--lt-spacing-1)` |
+| `--lt-toggle-group-height` | `var(--lt-spacing-10)` |
+| `--lt-toggle-group-padding` | `0 var(--lt-spacing-4)` |
 
 Den valgte flaten settes med `:has(input:checked)`, altså fra tilstanden på den ekte radioknappen. Det er ingen egen klasse å holde i synk.
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

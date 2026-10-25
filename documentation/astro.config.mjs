@@ -5,10 +5,10 @@ import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "astro/config"
 import remarkGfm from "remark-gfm"
 import pakke from "../designsystem/package.json" with { type: "json" }
-import { DELINGSBILDE, metaAttributter } from "./src/delingsbilde.mjs"
-import { markdownsider } from "./src/plugins/markdownsider.mjs"
-import { rehypeTabellrull } from "./src/plugins/rehype-tabellrull.mjs"
-import { remarkVersjon } from "./src/plugins/remark-versjon.mjs"
+import { DELINGSBILDE, metaAttributter } from "./src/share-image.mjs"
+import { markdownsider } from "./src/plugins/markdown-pages.mjs"
+import { rehypeTabellrull } from "./src/plugins/rehype-table-scroll.mjs"
+import { remarkVersjon } from "./src/plugins/remark-version.mjs"
 
 /*
  * Sitemapen tar bare med HTML-sidene av seg selv. `llms.txt` og
@@ -50,7 +50,7 @@ export default defineConfig({
     // Står foran Starlight, som da lar være å legge til sin egen.
     sitemap({ customPages: AGENTFILER }),
     startlight({
-      title: "Fristil - Dokumentasjon",
+      title: "LO-TEK - Dokumentasjon",
       // Pekeren til llms.txt på hver side, for en agent som leser sidehodet.
       head: [
         {
@@ -73,7 +73,7 @@ export default defineConfig({
         })),
       ],
       // Pekeren til hver sides Markdown-utgave, som `markdownsider` skriver.
-      routeMiddleware: "./src/rutedata.ts",
+      routeMiddleware: "./src/route-data.ts",
       defaultLocale: "root",
       locales: {
         root: { label: "Norsk", lang: "nb" },
@@ -93,7 +93,7 @@ export default defineConfig({
        * root, og forhåndsvisningen legger selv inn nøyaktig de stilarkene
        * `stiler`-lista oppgir, med `?inline`. Et stilark i `customCss` nådde
        * altså aldri eksemplene det var ment for: de har sine egne kopier.
-       * Utenfor forhåndsvisningene er det bare `.fs-preview` selv som står i
+       * Utenfor forhåndsvisningene er det bare `.lt-preview` selv som står i
        * vanlig DOM, og den er dokumentasjonens egen klasse fra `global.css`.
        *
        * `tokens.css` må være global. Variablene settes på `:root` og arves inn
@@ -102,49 +102,49 @@ export default defineConfig({
        *
        * `button.css` står igjen, og grunnen er Vite framfor smak. Tas det ut
        * herfra, slutter Vite å skrive stilarket i det hele tatt:
-       * `src/pages/demo/sideskjelett.astro` importerer det selv, men med så få
+       * `src/pages/demo/page-skeleton.astro` importerer det selv, men med så få
        * importører havnet det ikke i noen chunk, og demosiden kom ut med
-       * uformede knapper. `scripts/sjekk-stilark.ts` fant det, og er grunnen
+       * uformede knapper. `scripts/check-stylesheets.ts` fant det, og er grunnen
        * til at den finnes.
        */
       customCss: [
         "./src/styles/global.css",
-        "@fristil/designsystem/tokens.css",
-        "@fristil/designsystem/button.css",
+        "@lo-tek/interfaces/tokens.css",
+        "@lo-tek/interfaces/button.css",
       ],
       sidebar: [
         {
           label: "Start her",
           items: [
-            { label: "Introduksjon", slug: "introduksjon" },
-            { label: "Kom i gang", slug: "kom-i-gang" },
-            { label: "Rammeverk", slug: "rammeverk" },
-            { label: "Markup og oppførsel", slug: "markup-og-oppforsel" },
+            { label: "Introduksjon", slug: "introduction" },
+            { label: "Kom i gang", slug: "getting-started" },
+            { label: "Rammeverk", slug: "frameworks" },
+            { label: "Markup og oppførsel", slug: "markup-and-behaviour" },
             { label: "Design tokens", slug: "design-tokens" },
-            { label: "Tilpasning", slug: "tilpasning" },
+            { label: "Tilpasning", slug: "customising" },
             { label: "Tailwind", slug: "tailwind" },
-            { label: "Tilgjengelighet", slug: "tilgjengelighet" },
-            { label: "Oversettelse", slug: "oversettelse" },
-            { label: "Eget tema", slug: "eget-tema" },
-            { label: "Typesikker bruk", slug: "typesikker-bruk" },
+            { label: "Tilgjengelighet", slug: "accessibility" },
+            { label: "Oversettelse", slug: "translation" },
+            { label: "Eget tema", slug: "your-own-theme" },
+            { label: "Typesikker bruk", slug: "type-safe-use" },
             { label: "Kotlin og Java", slug: "kotlin" },
-            { label: "Editoren", slug: "editoren" },
-            { label: "Kommandolinjen", slug: "kommandolinjen" },
-            { label: "Kodeagenter", slug: "kodeagenter" },
-            { label: "Lisens og pris", slug: "lisens" },
-            { label: "Veikart", slug: "veikart" },
-            { label: "Versjonslogg", link: "/versjonslogg/" },
+            { label: "Editoren", slug: "the-editor" },
+            { label: "Kommandolinjen", slug: "command-line" },
+            { label: "Kodeagenter", slug: "coding-agents" },
+            { label: "Lisens og pris", slug: "licence" },
+            { label: "Veikart", slug: "roadmap" },
+            { label: "Versjonslogg", link: "/changelog/" },
           ],
         },
         {
           label: "Mønstre",
           items: [
-            { label: "Skjema med validering", slug: "monster/skjema" },
-            { label: "Liste med filtre", slug: "monster/liste" },
-            { label: "Sideskjelett", slug: "monster/sideskjelett" },
-            { label: "Bekreft en handling", slug: "monster/bekreftelse" },
-            { label: "Dato i et skjema", slug: "monster/dato" },
-            { label: "La brukeren velge tema", slug: "monster/tema" },
+            { label: "Skjema med validering", slug: "patterns/form" },
+            { label: "Liste med filtre", slug: "patterns/list" },
+            { label: "Sideskjelett", slug: "patterns/page-skeleton" },
+            { label: "Bekreft en handling", slug: "patterns/confirmation" },
+            { label: "Dato i et skjema", slug: "patterns/date" },
+            { label: "La brukeren velge tema", slug: "patterns/theme" },
           ],
         },
         {

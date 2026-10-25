@@ -1,11 +1,11 @@
 //! Undertrykking av funn med en kommentar i markupen.
 //!
 //! ```html
-//! <!-- fristil-ignore-next -->
-//! <fs-ny-ting>…</fs-ny-ting>
+//! <!-- lotek-ignore-next -->
+//! <lt-ny-ting>…</lt-ny-ting>
 //!
-//! <!-- fristil-ignore-next ukjent-klasse ugyldig-klasseverdi -->
-//! <div class="fs-eksperiment">…</div>
+//! <!-- lotek-ignore-next ukjent-klasse ugyldig-klasseverdi -->
+//! <div class="lt-eksperiment">…</div>
 //! ```
 //!
 //! Kommentaren gjelder den neste taggen: funn som begynner mellom `<` og `>` i
@@ -17,7 +17,7 @@ use crate::diagnose::tag_end;
 use crate::text::*;
 use crate::types::Finding;
 
-const MARKER: &str = "fristil-ignore-next";
+const MARKER: &str = "lotek-ignore-next";
 
 struct Ignore {
     start: usize,
@@ -84,21 +84,21 @@ mod tests {
     #[test]
     fn suppresses_the_next_tag_only() {
         let html =
-            r#"<!-- fristil-ignore-next --><b class="fs-buton"></b><i class="fs-buton"></i>"#;
+            r#"<!-- lotek-ignore-next --><b class="lt-buton"></b><i class="lt-buton"></i>"#;
         assert_eq!(rules(html), ["ukjent-klasse"]);
     }
 
     #[test]
     fn suppresses_only_the_named_rules() {
-        let tag = r#"<button class="fs-button fs-buton" data-variant="x"></button>"#;
+        let tag = r#"<button class="lt-button lt-buton" data-variant="x"></button>"#;
         assert_eq!(rules(tag), ["ukjent-klasse", "ugyldig-klasseverdi"]);
-        let html = format!("<!-- fristil-ignore-next ugyldig-klasseverdi -->\n{tag}");
+        let html = format!("<!-- lotek-ignore-next ugyldig-klasseverdi -->\n{tag}");
         assert_eq!(rules(&html), ["ukjent-klasse"]);
     }
 
     #[test]
     fn ignores_other_comments() {
-        let html = r#"<!-- fristil-ignore-nextish --><b class="fs-buton"></b>"#;
+        let html = r#"<!-- lotek-ignore-nextish --><b class="lt-buton"></b>"#;
         assert_eq!(rules(html), ["ukjent-klasse"]);
     }
 }

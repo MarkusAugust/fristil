@@ -1,4 +1,4 @@
-package no.fristil
+package no.lotek
 
 /**
  * En liten JSON-leser, så pakken ikke trenger noen avhengighet for å lese
@@ -6,7 +6,7 @@ package no.fristil
  *
  * Gir `Map` (i rekkefølgen nøklene står), `List`, `String`, `Double`,
  * `Boolean` og `null`. Kjernen skriver selv JSON-en den leser, så feil i den
- * er en feil i Fristil, og meldingen sier hvor.
+ * er en feil i LO-TEK, og meldingen sier hvor.
  */
 internal object Json {
     /** En tekst som en JSON-streng, med anførselstegn. */

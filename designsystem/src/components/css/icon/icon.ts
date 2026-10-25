@@ -1,6 +1,6 @@
 import { attributes } from "../shared.js"
 
-export const ICON_CLASS = "fs-icon" as const
+export const ICON_CLASS = "lt-icon" as const
 
 export type IconOptions = {
   /**
@@ -20,12 +20,12 @@ export type IconAttributes = {
 
 /**
  * Attributtene for et ikon. Klassen hører på en `<svg>`, og svg-en kommer fra
- * appens eget ikonsett: Fristil sender ingen ikoner.
+ * appens eget ikonsett: LO-TEK sender ingen ikoner.
  *
  * Ikonet er like stort som teksten rundt, og tegnes i fargen svg-en sier,
  * som bør være `currentColor`. Uten `label` er det pynt, og står det alene i
  * en knapp, må knappen få navnet sitt et annet sted: `aria-label` på knappen,
- * eller en tekst med `fs-sr-only`. Kjernen sier fra om en knapp som mangler
+ * eller en tekst med `lt-sr-only`. Kjernen sier fra om en knapp som mangler
  * det.
  *
  * ```ts

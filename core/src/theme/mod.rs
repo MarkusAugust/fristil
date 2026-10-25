@@ -111,29 +111,29 @@ const SURFACES: [&str; 11] = [
 
 /// Navnet brukeren skrev, til feilmeldingen.
 ///
-/// Verdien lander i `--fs-button-radius`, men det var `buttonRadius` som ble
+/// Verdien lander i `--lt-button-radius`, men det var `buttonRadius` som ble
 /// skrevet. En feilmelding som navngir vår egen variabel sender leseren til
 /// feil sted i sin egen fil.
 fn recipe_name(variable: &str) -> String {
     let named = match variable {
-        "--fs-font-family-base" => "fontFamily",
-        "--fs-font-weight-regular" => "weights.regular",
-        "--fs-font-weight-medium" => "weights.medium",
-        "--fs-font-weight-semibold" => "weights.semibold",
-        "--fs-font-weight-bold" => "weights.bold",
-        "--fs-line-height-default" => "lineHeights.default",
-        "--fs-line-height-heading" => "lineHeights.heading",
-        "--fs-line-height-article" => "lineHeights.article",
-        "--fs-line-height-compact" => "lineHeights.compact",
-        "--fs-button-border-width" => "buttonBorderWidth",
-        "--fs-button-font-weight" => "buttonFontWeight",
+        "--lt-font-family-base" => "fontFamily",
+        "--lt-font-weight-regular" => "weights.regular",
+        "--lt-font-weight-medium" => "weights.medium",
+        "--lt-font-weight-semibold" => "weights.semibold",
+        "--lt-font-weight-bold" => "weights.bold",
+        "--lt-line-height-default" => "lineHeights.default",
+        "--lt-line-height-heading" => "lineHeights.heading",
+        "--lt-line-height-article" => "lineHeights.article",
+        "--lt-line-height-compact" => "lineHeights.compact",
+        "--lt-button-border-width" => "buttonBorderWidth",
+        "--lt-button-font-weight" => "buttonFontWeight",
         _ => "",
     };
     if !named.is_empty() {
         return named.into();
     }
     if let Some(name) = variable
-        .strip_prefix("--fs-")
+        .strip_prefix("--lt-")
         .and_then(|v| v.strip_suffix("-radius"))
     {
         return if BUTTONS.contains(&name) {
@@ -239,39 +239,39 @@ fn path<'a>(value: Option<&'a Json>, key: &str) -> Option<&'a Json> {
 fn typography_declarations(t: &Json) -> Result<Declarations, String> {
     let mut out = Vec::new();
     let t = Some(t);
-    maybe(&mut out, "--fs-font-family-base", path(t, "fontFamily"))?;
+    maybe(&mut out, "--lt-font-family-base", path(t, "fontFamily"))?;
     let weights = path(t, "weights");
     maybe(
         &mut out,
-        "--fs-font-weight-regular",
+        "--lt-font-weight-regular",
         path(weights, "regular"),
     )?;
-    maybe(&mut out, "--fs-font-weight-medium", path(weights, "medium"))?;
+    maybe(&mut out, "--lt-font-weight-medium", path(weights, "medium"))?;
     maybe(
         &mut out,
-        "--fs-font-weight-semibold",
+        "--lt-font-weight-semibold",
         path(weights, "semibold"),
     )?;
-    maybe(&mut out, "--fs-font-weight-bold", path(weights, "bold"))?;
+    maybe(&mut out, "--lt-font-weight-bold", path(weights, "bold"))?;
     let heights = path(t, "lineHeights");
     maybe(
         &mut out,
-        "--fs-line-height-default",
+        "--lt-line-height-default",
         path(heights, "default"),
     )?;
     maybe(
         &mut out,
-        "--fs-line-height-heading",
+        "--lt-line-height-heading",
         path(heights, "heading"),
     )?;
     maybe(
         &mut out,
-        "--fs-line-height-article",
+        "--lt-line-height-article",
         path(heights, "article"),
     )?;
     maybe(
         &mut out,
-        "--fs-line-height-compact",
+        "--lt-line-height-compact",
         path(heights, "compact"),
     )?;
     Ok(out)
@@ -285,17 +285,17 @@ fn shape_declarations(f: &Json) -> Result<Declarations, String> {
         ("surfaceRadius", &SURFACES[..]),
     ] {
         for name in names {
-            maybe(&mut out, &format!("--fs-{name}-radius"), f.get(key))?;
+            maybe(&mut out, &format!("--lt-{name}-radius"), f.get(key))?;
         }
     }
     maybe(
         &mut out,
-        "--fs-button-border-width",
+        "--lt-button-border-width",
         f.get("buttonBorderWidth"),
     )?;
     maybe(
         &mut out,
-        "--fs-button-font-weight",
+        "--lt-button-font-weight",
         f.get("buttonFontWeight"),
     )?;
     Ok(out)
@@ -310,13 +310,13 @@ fn lines(declarations: &Declarations, indent: &str) -> String {
 }
 
 /// Temavelgeren må stå i konsumentens tema også, ellers byttet
-/// `.fs-theme-control` til Fristils egne farger inne i et tema.
+/// `.lt-theme-control` til LO-TEKs egne farger inne i et tema.
 fn control(name: &str) -> String {
-    format!(":root:has(.fs-theme-control[value=\"{name}\"]:checked)")
+    format!(":root:has(.lt-theme-control[value=\"{name}\"]:checked)")
 }
 
-/// Setter temaet sammen, i sitt eget lag, `fristil-tema`, erklært etter
-/// `fristil`. Erklæringen avgjør rekkefølgen uavhengig av når stilarkene
+/// Setter temaet sammen, i sitt eget lag, `lotek-theme`, erklært etter
+/// `lotek`. Erklæringen avgjør rekkefølgen uavhengig av når stilarkene
 /// lastes: både Astro og TanStack Start legger bundlet CSS inn rett før
 /// `</head>`, etter en `<link>` appen selv har skrevet.
 fn to_css(
@@ -345,10 +345,10 @@ fn to_css(
     if !root.is_empty() {
         parts.push(format!("  :root {{\n{}\n  }}", lines(&root, "    ")));
     }
-    // Skriften settes som en ekte regel: Fristil arver skrift med vilje, så et
+    // Skriften settes som en ekte regel: LO-TEK arver skrift med vilje, så et
     // token alene ville ikke endret én eneste bokstav.
     if given(path(typography, "fontFamily")).is_some() {
-        parts.push("  :root {\n    font-family: var(--fs-font-family-base);\n  }".into());
+        parts.push("  :root {\n    font-family: var(--lt-font-family-base);\n  }".into());
     }
     // Begge attributtene skrives, ikke bare det mørke: `data-theme` er en
     // temagrense og virker på et hvilket som helst element.
@@ -370,11 +370,11 @@ fn to_css(
     }
 
     Ok([
-        "/* Generert av @fristil/designsystem. Rediger oppskriften, ikke denne fila. */",
+        "/* Generert av @lo-tek/interfaces. Rediger oppskriften, ikke denne fila. */",
         "",
-        "@layer fristil, fristil-tema;",
+        "@layer lotek, lotek-theme;",
         "",
-        "@layer fristil-tema {",
+        "@layer lotek-theme {",
         &parts.join("\n\n"),
         "}",
         "",
@@ -392,7 +392,7 @@ pub struct Theme {
 /// Bygger temaet, og kontrollerer hvert løfte mens det bygges.
 ///
 /// `input` er oppskriften: merkefargene per familie, og `typography` og
-/// `shape`. En familie som utelates, arver Fristils egen kulør.
+/// `shape`. En familie som utelates, arver LO-TEKs egen kulør.
 pub fn build_theme(input: &Json) -> Result<Theme, String> {
     if !contract::loaded() {
         return Err(contract::NOT_LOADED.into());
@@ -418,7 +418,7 @@ pub fn build_theme(input: &Json) -> Result<Theme, String> {
         return Err("Temaet er tomt. Oppgi enten merkefarger, eller skrift og form.".into());
     }
     // Et tema uten farger er ikke en kuriositet: bruker organisasjonen
-    // Fristils farger fra før, er det skriften og hjørnene som skiller.
+    // LO-TEKs farger fra før, er det skriften og hjørnene som skiller.
     if given_families.is_empty() {
         return Ok(Theme {
             light: vec![],
@@ -469,13 +469,13 @@ mod recipe_tests {
     }
 
     #[test]
-    fn fristils_own_colors_keep_every_promise() {
+    fn loteks_own_colors_keep_every_promise() {
         let t = theme(r##"{"accent": "#1362ae"}"##).unwrap();
         assert!(t.violations.is_empty(), "{:?}", t.violations);
         assert!(t
             .light
             .iter()
-            .any(|(n, _)| n == "--fs-color-neutral-canvas"));
+            .any(|(n, _)| n == "--lt-color-neutral-canvas"));
         assert_eq!(t.light.len(), t.dark.len());
     }
 
@@ -496,9 +496,9 @@ mod recipe_tests {
         let t =
             theme(r#"{"typography": {"weights": {"bold": 700}, "lineHeights": {"default": 1.5}}}"#)
                 .unwrap();
-        assert!(t.css.contains("--fs-font-weight-bold: 700;"), "{}", t.css);
+        assert!(t.css.contains("--lt-font-weight-bold: 700;"), "{}", t.css);
         assert!(
-            t.css.contains("--fs-line-height-default: 1.5;"),
+            t.css.contains("--lt-line-height-default: 1.5;"),
             "{}",
             t.css
         );
@@ -507,11 +507,11 @@ mod recipe_tests {
     #[test]
     fn the_theme_control_stands_in_a_consumer_theme_too() {
         // Den samme asymmetrien som rammet `[data-theme="light"]` i 0.23.0:
-        // uten disse byttet velgeren til Fristils egne farger inne i et
+        // uten disse byttet velgeren til LO-TEKs egne farger inne i et
         // konsumenttema, siden bare attributtblokkene hadde temaets verdier.
         let css = theme(r##"{"accent": "#7c3aed"}"##).unwrap().css;
-        assert!(css.contains(r#":root:has(.fs-theme-control[value="light"]:checked)"#));
-        assert!(css.contains(r#":root:has(.fs-theme-control[value="dark"]:checked)"#));
+        assert!(css.contains(r#":root:has(.lt-theme-control[value="light"]:checked)"#));
+        assert!(css.contains(r#":root:has(.lt-theme-control[value="dark"]:checked)"#));
     }
 
     #[test]
@@ -540,7 +540,7 @@ mod recipe_tests {
 
     #[test]
     fn the_check_finds_a_broken_promise() {
-        let report = check::inspect_theme(":root { --fs-color-accent-text: #ffffff; }");
+        let report = check::inspect_theme(":root { --lt-color-accent-text: #ffffff; }");
         assert_eq!(report.blocks, 1);
         assert!(
             report

@@ -6,9 +6,9 @@ import {
   type NonDefaultFieldState,
 } from "../shared.js"
 
-export const CHECKBOX_CLASS = "fs-checkbox" as const
+export const CHECKBOX_CLASS = "lt-checkbox" as const
 /** Raden som holder boksen og teksten ved siden av hverandre. */
-export const CHECKBOX_ROW_CLASS = "fs-checkbox-row" as const
+export const CHECKBOX_ROW_CLASS = "lt-checkbox-row" as const
 
 export type CheckboxOptions = {
   /** Valideringstilstand. Standard: `default`. */

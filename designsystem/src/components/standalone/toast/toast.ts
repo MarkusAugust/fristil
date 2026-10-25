@@ -6,11 +6,11 @@ import { DEFAULT_TEXTS } from "../../default-texts.js"
  *
  * Fram til 0.28.0 var dette klassen på hver melding, og regionen ble stylet
  * med elementnavnet. Registrert under et annet navn, med
- * `defineFsToast("min-toast")`, mistet den da plasseringen sin.
+ * `defineLtToast("min-toast")`, mistet den da plasseringen sin.
  */
-export const TOAST_CLASS = "fs-toast" as const
-export const TOAST_MESSAGE_CLASS = "fs-toast__message" as const
-export const TOAST_CLOSE_CLASS = "fs-toast__close" as const
+export const TOAST_CLASS = "lt-toast" as const
+export const TOAST_MESSAGE_CLASS = "lt-toast__message" as const
+export const TOAST_CLOSE_CLASS = "lt-toast__close" as const
 
 export type ToastOptions = {
   /** Tekst som sier hva regionen er. Blir `aria-label`. */
@@ -42,7 +42,7 @@ export type ToastAttributes = {
  * Regionen er `role="status"` og ikke `role="alert"`. En melding som kommer
  * fordi noe gikk bra skal ikke avbryte det skjermleseren holder på med.
  *
- * `data-ignore-morph` er ikke valgfri. `<fs-toast>` lager og fjerner sine egne
+ * `data-ignore-morph` er ikke valgfri. `<lt-toast>` lager og fjerner sine egne
  * elementer inni regionen, og uten attributtet river Datastars morfing dem bort
  * ved neste patch, fordi serverens utgave av regionen er tom. Attributtet må
  * stå i HTML-en serveren sender: komponenten kan ikke sette det på seg selv,

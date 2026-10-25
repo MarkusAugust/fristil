@@ -1,7 +1,7 @@
 //! En liten JSON-leser, uten avhengigheter.
 //!
-//! Den leser manifestet, som Fristil selv skriver, men også filer brukeren har
-//! skrevet: oppskriften til `fristil tema`, package.json og meldingene fra
+//! Den leser manifestet, som LO-TEK selv skriver, men også filer brukeren har
+//! skrevet: oppskriften til `lotek tema`, package.json og meldingene fra
 //! editoren. Den trenger ikke være rask eller tilgivende, men den må svare som
 //! `JSON.parse`, som kommandolinja brukte da den var skrevet i TypeScript. Et
 //! objekt beholder rekkefølgen på nøklene, fordi rekkefølgen i manifestet er

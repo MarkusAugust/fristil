@@ -40,13 +40,13 @@ jobs:
         run: bun install --frozen-lockfile
 
       # rustup finnes på maskinen og henter versjonen i
-      # `kjerne/rust-toolchain.toml`.
+      # `core/rust-toolchain.toml`.
       - name: Rust-versjon
-        working-directory: kjerne
+        working-directory: core
         run: rustc --version
 
       - name: Pakk npm-pakken
-        run: bun --filter @fristil/designsystem pakk
+        run: bun --filter @lo-tek/interfaces pack
 
       - name: Les versjonen
         id: versjon
@@ -78,7 +78,7 @@ jobs:
 
       - name: Bygg og test
         working-directory: editor-intellij
-        run: ./gradlew build -Pfristil.pakke=../designsystem
+        run: ./gradlew build -Plotek.pakke=../designsystem
 
       # Marketplace har ingen OIDC. Tokenet lages under profilen på
       # plugins.jetbrains.com (My Tokens) og legges inn som hemmeligheten
@@ -93,4 +93,4 @@ jobs:
             echo "Hemmeligheten JETBRAINS_MARKETPLACE_TOKEN mangler." >&2
             exit 1
           fi
-          ./gradlew publishPlugin -Pfristil.pakke=../designsystem
+          ./gradlew publishPlugin -Plotek.pakke=../designsystem

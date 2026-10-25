@@ -1,7 +1,7 @@
 import { attributes } from "../../css/shared.js"
 
-export const ERROR_SUMMARY_CLASS = "fs-error-summary" as const
-export const ERROR_SUMMARY_TITLE_CLASS = "fs-error-summary__title" as const
+export const ERROR_SUMMARY_CLASS = "lt-error-summary" as const
+export const ERROR_SUMMARY_TITLE_CLASS = "lt-error-summary__title" as const
 
 export type ErrorSummaryOptions = {
   /** Antall feil serveren fant. Er det null, skjules boksen. */
@@ -26,18 +26,18 @@ export type ErrorSummaryAttributes = {
 /**
  * Attributtene for en feiloppsummering.
  *
- * Serveren skriver hele boksen, også overskriften og lista. `<fs-error-summary>`
+ * Serveren skriver hele boksen, også overskriften og lista. `<lt-error-summary>`
  * flytter bare fokus og håndterer klikk på lenkene. Tidligere lagde komponenten
  * overskriften selv, og da forsvant den ved hver morfing i Datastar.
  *
  * ```ts
- * const feil = fs.errorSummary({ count: errors.length, id: "feil" })
+ * const feil = lt.errorSummary({ count: errors.length, id: "feil" })
  * ```
  * ```html
- * <fs-error-summary {...feil.host}>
+ * <lt-error-summary {...feil.host}>
  *   <h2 {...feil.title}>Du må rette 2 feil</h2>
  *   <ul><li><a href="#epost">E-posten mangler @</a></li></ul>
- * </fs-error-summary>
+ * </lt-error-summary>
  * ```
  */
 export const errorSummary = ({

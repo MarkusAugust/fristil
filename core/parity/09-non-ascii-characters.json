@@ -4,7 +4,7 @@
       "start": 148,
       "end": 171,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/button/",
+      "link": "https://lo-tek.sobernetics.no/components/button/",
       "message": "data-variant kan ikke være «sekundær» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt."
     }
   ],
@@ -13,7 +13,7 @@
       "start": 148,
       "end": 171,
       "severity": "warning",
-      "link": "https://fristil.sobernetics.no/components/button/",
+      "link": "https://lo-tek.sobernetics.no/components/button/",
       "message": "data-variant kan ikke være «sekundær» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt."
     }
   ]

@@ -12,7 +12,7 @@ use crate::styles::Styles;
 use crate::text::*;
 use crate::types::*;
 
-pub const DOCS: &str = "https://fristil.sobernetics.no/components/";
+pub const DOCS: &str = "https://lo-tek.sobernetics.no/components/";
 
 const GLOBAL: &[&str] = &[
     "accesskey",
@@ -807,7 +807,7 @@ fn check_field(
     if has("aria-label").is_some() || has("aria-labelledby").is_some() {
         return vec![];
     }
-    // Bare kontrollens egen id. `<fs-field>` skriver ikke id på kontrollen,
+    // Bare kontrollens egen id. `<lt-field>` skriver ikke id på kontrollen,
     // så en `<label for>` utenfor kan bare peke på en id malen har skrevet.
     let id = has("id").and_then(|a| a.value.clone());
     if id
@@ -818,12 +818,12 @@ fn check_field(
     }
     let leading = &content[..indent];
     // `\r` alene er også et linjeskift, som i `Lines`. Ellers havnet
-    // ledeteksten på linja til `<fs-field>` i et dokument med `\r`-linjeskift.
+    // ledeteksten på linja til `<lt-field>` i et dokument med `\r`-linjeskift.
     let newline = leading
         .iter()
         .any(|&c| c == b'\n' as u16 || c == b'\r' as u16);
     // Rettingen settes bare inn når kontrollen har id. En `<label>` uten `for`
-    // ved siden av feltet er ikke koblet til det, og `<fs-field>` sier fra om
+    // ved siden av feltet er ikke koblet til det, og `<lt-field>` sier fra om
     // nettopp den; å legge ledeteksten rundt feltet eller skrive id på det er
     // mer enn én innsetting, så da står bare meldingen.
     let Some(id) = id.filter(|id| !id.is_empty()) else {
@@ -891,12 +891,12 @@ fn block(name: &str) -> &str {
 
 /// Om en klasse skal sjekkes mot ordforrådet.
 ///
-/// Alt som begynner med `fs-` er Fristils. En overtatt komponent har et annet
+/// Alt som begynner med `lt-` er LO-TEKs. En overtatt komponent har et annet
 /// navn, som `app-button`, og da sjekkes bare den blokken, med elementer og
-/// varianter: resten av prosjektets `app-*`-klasser er ikke Fristils sak.
+/// varianter: resten av prosjektets `app-*`-klasser er ikke LO-TEKs sak.
 fn checked_class(vocabulary: &Vocabulary, token: &[u16]) -> bool {
-    if starts_at(token, 0, "fs-") {
-        // Bootstraps `fs-1` til `fs-6` (skriftstørrelse) er ikke våre.
+    if starts_at(token, 0, "lt-") {
+        // Bootstraps `lt-1` til `lt-6` (skriftstørrelse) er ikke våre.
         let rest = &token[3..];
         return !(!rest.is_empty()
             && rest
@@ -906,7 +906,7 @@ fn checked_class(vocabulary: &Vocabulary, token: &[u16]) -> bool {
     vocabulary
         .classes
         .iter()
-        .filter(|c| !c.name.starts_with("fs-"))
+        .filter(|c| !c.name.starts_with("lt-"))
         .any(|c| {
             let block = block(&c.name);
             starts_at(token, 0, block)
@@ -917,12 +917,12 @@ fn checked_class(vocabulary: &Vocabulary, token: &[u16]) -> bool {
 }
 
 /// Om en tagg som begynner ved `at` er en av elementene i ordforrådet som
-/// ikke heter `fs-…`, som en overtatt `<app-dialog>`.
+/// ikke heter `lt-…`, som en overtatt `<app-dialog>`.
 fn own_element_at(vocabulary: &Vocabulary, source: &[u16], at: usize) -> bool {
     vocabulary
         .elements
         .iter()
-        .filter(|e| !e.tag.starts_with("fs-"))
+        .filter(|e| !e.tag.starts_with("lt-"))
         .any(|e| {
             let end = at + e.tag.encode_utf16().count();
             starts_at_ci(source, at, &e.tag) && source.get(end).is_none_or(|&c| !is_name_char(c))
@@ -972,9 +972,9 @@ fn check_classes(
                 find_class(vocabulary, &utf16(m)).unwrap().link.clone()
             }),
             message: {
-                // En overtatt komponent er ikke lenger Fristils.
-                let place = if starts_at(token, 0, "fs-") {
-                    "i Fristil"
+                // En overtatt komponent er ikke lenger LO-TEKs.
+                let place = if starts_at(token, 0, "lt-") {
+                    "i LO-TEK"
                 } else {
                     "i manifestet for kopien"
                 };
@@ -1099,11 +1099,11 @@ fn check_classes(
 /// `aria-disabled` sier fra til skjermleseren, og stilen slår av musa med
 /// `pointer-events: none`, men Enter følger fortsatt `href`. Lenken må
 /// skrives uten, med `role="link"` og `tabindex="0"` så den fortsatt er en
-/// lenke i tabrekkefølgen. Det er det `fs.link({ disabled: true })` gir.
+/// lenke i tabrekkefølgen. Det er det `lt.link({ disabled: true })` gir.
 fn check_disabled_link(present: &[&Class], attributes: &[ReadAttribute]) -> Option<Finding> {
     let info = present
         .iter()
-        .find(|info| info.name == "fs-link" || info.name == "fs-button")?;
+        .find(|info| info.name == "lt-link" || info.name == "lt-button")?;
     attributes.iter().find(|a| {
         equals(&a.name, "aria-disabled")
             && a.value.as_deref().is_some_and(|v| {
@@ -1145,7 +1145,7 @@ fn collapse_spaces(t: &[u16]) -> String {
 }
 
 /// Siden om ikoner, der regelen for en knapp med bare ikon er forklart.
-const ICON_LINK: &str = "https://fristil.sobernetics.no/components/icon/";
+const ICON_LINK: &str = "https://lo-tek.sobernetics.no/components/icon/";
 
 /// Elementene som aldri har innhold, og derfor ingen lukketagg.
 const NO_CONTENT: &[&str] = &[
@@ -1250,7 +1250,7 @@ fn is_inert(a: &ReadAttribute, own_data: &[&str]) -> bool {
             || name.starts_with("aria-")
             || (name.starts_with("on") && name.len() > 2)
             // Et `data-*` kan et hvilket som helst bibliotek fylle knappen
-            // fra, som `data-i18n`. Fristils egne, som `data-variant`, og
+            // fra, som `data-i18n`. LO-TEKs egne, som `data-variant`, og
             // `data-testid` gjør det ikke.
             || name == "data-testid"
             || own_data.contains(&name.as_str()))
@@ -1313,7 +1313,7 @@ fn only_icons(content: &[u16]) -> bool {
                 || equals(&name, "img")
                 || plain(&attributes, "class")
                     .and_then(|a| a.value.as_deref())
-                    .is_some_and(|v| words(v).iter().any(|(_, w)| equals(w, "fs-icon")));
+                    .is_some_and(|v| words(v).iter().any(|(_, w)| equals(w, "lt-icon")));
             if !hidden_here {
                 let named = has_text_value(&attributes, "aria-label")
                     || has_text_value(&attributes, "aria-labelledby")
@@ -1459,7 +1459,7 @@ fn check_icon_only(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
             severity: Severity::Error,
             link: ICON_LINK.into(),
             message: format!(
-                "<{name}> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «{kind}» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen fs-sr-only."
+                "<{name}> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «{kind}» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen lt-sr-only."
             ),
             fix: Some(Fix::one(
 "Gi den et navn med aria-label".into(),
@@ -1554,9 +1554,9 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
 
     let mut i = 0;
     while i < source.len() {
-        let is_fs = source[i] == LT
-            && (starts_at_ci(&source, i + 1, "fs-") || own_element_at(vocabulary, &source, i + 1));
-        if !is_fs {
+        let is_lt = source[i] == LT
+            && (starts_at_ci(&source, i + 1, "lt-") || own_element_at(vocabulary, &source, i + 1));
+        if !is_lt {
             i += 1;
             continue;
         }
@@ -1579,7 +1579,7 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
                 severity: Severity::Error,
                 link: DOCS.into(),
                 message: format!(
-                    "<{tag}> finnes ikke i Fristil. Elementene er {}.",
+                    "<{tag}> finnes ikke i LO-TEK. Elementene er {}.",
                     list(vocabulary.elements.iter().map(|e| e.tag.as_str()))
                 ),
                 fix: None,
@@ -1632,8 +1632,8 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
             ));
         }
 
-        if tag == "fs-session-timeout" {
-            if let Some(close) = closing_tag(&source, end, "fs-session-timeout") {
+        if tag == "lt-session-timeout" {
+            if let Some(close) = closing_tag(&source, end, "lt-session-timeout") {
                 findings.extend(check_session_timeout(
                     &tag,
                     name_start,
@@ -1644,8 +1644,8 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
             }
         }
 
-        if tag == "fs-field" {
-            let close = closing_tag(&source, end, "fs-field").unwrap_or(source.len());
+        if tag == "lt-field" {
+            let close = closing_tag(&source, end, "lt-field").unwrap_or(source.len());
             let content = &source[(end + 1).min(close.max(end + 1))..close.max(end + 1)];
             let labels = labels.get_or_insert_with(|| label_targets(&source));
             findings.extend(check_field(
@@ -1661,9 +1661,9 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
     }
     findings.extend(check_icon_only(&source, vocabulary));
     // Treet bygges én gang og deles av reglene som trenger det. Bare når
-    // det står noe fra Fristil i teksten: på en side med tusenvis av tagger
+    // det står noe fra LO-TEK i teksten: på en side med tusenvis av tagger
     // uten en eneste komponent kostet treet mer enn resten av sjekken.
-    if contains_str(&source, "fs-")
+    if contains_str(&source, "lt-")
         || vocabulary
             .elements
             .iter()
@@ -1742,7 +1742,7 @@ pub fn check_styles_visible(
                 severity: Severity::Warning,
                 link: info.link.clone(),
                 message: format!(
-                    "Klassen «{name}» står i markupen, men ingen av stilarkene styler den. Er fristil.css, eller stilarket til {}, lastet?",
+                    "Klassen «{name}» står i markupen, men ingen av stilarkene styler den. Er lotek.css, eller stilarket til {}, lastet?",
                     lossy(&lowercase(&utf16(&info.title)))
                 ),
                 fix: None,
@@ -1777,8 +1777,8 @@ pub fn check_styles_visible(
                     Some(lossy(value))
                 };
                 // Verdien kan styles på en annen klasse på det samme
-                // elementet, som tilstanden på fs-search, som styles på
-                // fs-input.
+                // elementet, som tilstanden på lt-search, som styles på
+                // lt-input.
                 if tokens
                     .iter()
                     .any(|t| styles.styles_value(t, attribute, wanted.as_deref()))

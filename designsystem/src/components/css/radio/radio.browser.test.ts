@@ -14,18 +14,18 @@ import "./radio.css"
 import "../label/label.css"
 import "../fieldset/fieldset.css"
 
-describe("fs-radio", () => {
+describe("lt-radio", () => {
   beforeEach(() => {
     monter(`
-      <fieldset class="fs-fieldset">
-        <legend class="fs-legend">Leveringsmåte</legend>
-        <div class="fs-radio-row">
-          <input class="fs-radio" type="radio" id="post" name="levering" checked />
-          <label class="fs-label" for="post">Vanlig post</label>
+      <fieldset class="lt-fieldset">
+        <legend class="lt-legend">Leveringsmåte</legend>
+        <div class="lt-radio-row">
+          <input class="lt-radio" type="radio" id="post" name="levering" checked />
+          <label class="lt-label" for="post">Vanlig post</label>
         </div>
-        <div class="fs-radio-row">
-          <input class="fs-radio" type="radio" id="hentes" name="levering" />
-          <label class="fs-label" for="hentes">Hentes på kontoret</label>
+        <div class="lt-radio-row">
+          <input class="lt-radio" type="radio" id="hentes" name="levering" />
+          <label class="lt-label" for="hentes">Hentes på kontoret</label>
         </div>
       </fieldset>
     `)
@@ -59,8 +59,8 @@ describe("fs-radio", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(radio()).toEqual({ class: "fs-radio", type: "radio" })
-    expect(radio.row).toBe("fs-radio-row")
+    expect(radio()).toEqual({ class: "lt-radio", type: "radio" })
+    expect(radio.row).toBe("lt-radio-row")
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {

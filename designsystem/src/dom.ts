@@ -16,7 +16,7 @@ import { managedNames } from "./components/css/shared.js"
  * forvalter, og da er `data-*`-navnene det eneste funksjonen trygt kan ta:
  * de er systemets egne. Et sett rett fra en byggefunksjon bruker ikke denne
  * lista. Det rydder nøyaktig det byggefunksjonen forvalter, så
- * `fs.popover().trigger` på en sekundærknapp lar `data-variant` stå.
+ * `lt.popover().trigger` på en sekundærknapp lar `data-variant` stå.
  */
 const SAFE_FOR_UNKNOWN = [
   "data-variant",
@@ -35,7 +35,7 @@ const SAFE_FOR_UNKNOWN = [
 /**
  * Navn som aldri fjernes, heller ikke når byggefunksjonen forvalter dem.
  *
- * `id` og `for` er koblinger andre elementer peker på. `fs.errorSummary()`
+ * `id` og `for` er koblinger andre elementer peker på. `lt.errorSummary()`
  * tar en valgfri `id`, og et kall uten den strøk id-en konsumenten selv
  * hadde skrevet på boksen: hver lenke og hver `aria-*` som pekte dit, røk.
  */
@@ -44,7 +44,7 @@ const NEVER_REMOVED: readonly string[] = ["id", "for"]
 let warnedAboutUnknownSet = false
 
 /** Klassene systemet eier. Konsumentens egne klasser beholdes. */
-const IS_SYSTEM_CLASS = /^fs-/
+const IS_SYSTEM_CLASS = /^lt-/
 
 /**
  * Verdiene en byggefunksjon kan sende ut.
@@ -57,27 +57,27 @@ const IS_SYSTEM_CLASS = /^fs-/
 export type Attributes = Record<string, string | boolean | undefined>
 
 /**
- * Setter attributtene fra en `fs`-funksjon på et element.
+ * Setter attributtene fra en `lt`-funksjon på et element.
  *
  * ```ts
- * import { fs } from "@fristil/designsystem"
+ * import { lt } from "@lo-tek/interfaces"
  *
  * const felt = document.querySelector("input")
- * fs.setAttributes(felt, fs.input({ type: "email", state: "invalid" }))
+ * lt.setAttributes(felt, lt.input({ type: "email", state: "invalid" }))
  * ```
  *
  * Kall den på nytt for å endre tilstand. Det byggefunksjonen forvalter og
- * som ikke er med i det nye settet, fjernes, og `fs-`-klassene byttes. En
- * byggefunksjon forvalter attributtene den har et valg for: `fs.spinner()`
+ * som ikke er med i det nye settet, fjernes, og `lt-`-klassene byttes. En
+ * byggefunksjon forvalter attributtene den har et valg for: `lt.spinner()`
  * har `label`, og eier dermed `role` og `aria-label`. Det den ikke har et
- * valg for, står som det står: `fs.button()` har aldri skrevet `disabled`,
+ * valg for, står som det står: `lt.button()` har aldri skrevet `disabled`,
  * så en deaktivert knapp er fortsatt deaktivert etterpå. `id` og `for`
  * fjernes aldri.
  *
  * Skal to sett på samme element, sendes de hver for seg, ikke spredd sammen:
  *
  * ```ts
- * fs.setAttributes(felt, fs.input({ type: "email" }), kobling.control)
+ * lt.setAttributes(felt, lt.input({ type: "email" }), kobling.control)
  * ```
  *
  * Et spredd objekt er et nytt objekt, og da vet ikke funksjonen hvilken
@@ -117,7 +117,7 @@ export function setAttributes(
       } else if (value !== undefined) {
         // `undefined` overstyrer ikke et tidligere sett: byggefunksjonene
         // stryker slike nøkler selv, og et håndskrevet sett skal ikke kunne
-        // ta `aria-invalid` fra `fs.input()` ved å nevne den uten verdi.
+        // ta `aria-invalid` fra `lt.input()` ved å nevne den uten verdi.
         merged[name] = value
       }
     }
@@ -129,7 +129,7 @@ export function setAttributes(
       (klasse) => !IS_SYSTEM_CLASS.test(klasse),
     )
     // `setAttribute` og ikke `className`: på en `<svg>` er `className` et
-    // skrivebeskyttet `SVGAnimatedString`, og `fs.icon()` hører på en svg.
+    // skrivebeskyttet `SVGAnimatedString`, og `lt.icon()` hører på en svg.
     element.setAttribute(
       "class",
       [...new Set([...classes, ...ownClasses])].filter(Boolean).join(" "),
@@ -151,18 +151,18 @@ export function setAttributes(
 /**
  * Sier fra, én gang, om et sett som ser ut som en spredning av to.
  *
- * `{ ...fs.input(), ...felt.control }` settes riktig, men er et nytt objekt
+ * `{ ...lt.input(), ...felt.control }` settes riktig, men er et nytt objekt
  * uten en byggefunksjon bak seg. Neste kall fjerner da ikke `aria-invalid`
  * når feltet blir gyldig, og ingenting annet ville sagt det.
  */
 function warnAboutUnknownSet(set: Attributes): void {
   if (warnedAboutUnknownSet) return
-  if (typeof set.class !== "string" || !/(^|\s)fs-/.test(set.class)) return
+  if (typeof set.class !== "string" || !/(^|\s)lt-/.test(set.class)) return
   warnedAboutUnknownSet = true
   console.warn(
-    "fs.setAttributes(): settet kommer ikke rett fra en byggefunksjon, så " +
+    "lt.setAttributes(): settet kommer ikke rett fra en byggefunksjon, så " +
       "bare data-attributtene ryddes. Send settene hver for seg framfor å " +
-      "spre dem: fs.setAttributes(element, fs.input(), felt.control).",
+      "spre dem: lt.setAttributes(element, lt.input(), felt.control).",
   )
 }
 

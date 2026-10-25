@@ -7,9 +7,9 @@
  * utility-klasse som stille ikke finnes.
  *
  * Her kompileres temaet med en ekte Tailwind, og det kontrolleres at
- * klassene faktisk kommer ut med Fristils tokens i seg.
+ * klassene faktisk kommer ut med LO-TEKs tokens i seg.
  *
- * Kjør med: bun scripts/sjekk-tailwind.ts
+ * Kjør med: bun scripts/check-tailwind.ts
  */
 
 import { readFile } from "node:fs/promises"
@@ -57,24 +57,24 @@ const compiler = await compile(input, { base: pakke, loadStylesheet })
 const fargeklasser: [klasse: string, inneholder: string][] = Object.keys(
   colorTokens,
 )
-  .filter((navn) => navn.startsWith("--fs-color-"))
-  .map((navn) => [`bg-fs-${navn.slice("--fs-color-".length)}`, `var(${navn})`])
+  .filter((navn) => navn.startsWith("--lt-color-"))
+  .map((navn) => [`bg-lt-${navn.slice("--lt-color-".length)}`, `var(${navn})`])
 
 /** Klassen, og det den må inneholde for at koblingen skal være ekte. */
 const forventet: [klasse: string, inneholder: string][] = [
-  ["p-4", "calc(var(--fs-spacing-1) * 4)"],
-  ["gap-2", "calc(var(--fs-spacing-1) * 2)"],
-  // Tailwinds egen `px` er den faste pikselen, som `--fs-spacing-px`. Tabellen
+  ["p-4", "calc(var(--lt-spacing-1) * 4)"],
+  ["gap-2", "calc(var(--lt-spacing-1) * 2)"],
+  // Tailwinds egen `px` er den faste pikselen, som `--lt-spacing-px`. Tabellen
   // på Design tokens-siden oppgir den som motstykket, og det må være sant.
   ["p-px", "1px"],
   ...fargeklasser,
   // Én farge også som tekst, så navnerommet ikke bare virker for bakgrunn.
-  ["text-fs-accent-text", "var(--fs-color-accent-text)"],
-  ["border-fs-neutral-border", "var(--fs-color-neutral-border)"],
-  ["text-fs-xxs", "var(--fs-font-size-xxs)"],
-  ["text-fs-mega", "var(--fs-font-size-mega)"],
-  ["max-w-fs-aside", "384px"],
-  ["shadow-fs-overlay", "var(--fs-shadow-overlay)"],
+  ["text-lt-accent-text", "var(--lt-color-accent-text)"],
+  ["border-lt-neutral-border", "var(--lt-color-neutral-border)"],
+  ["text-lt-xxs", "var(--lt-font-size-xxs)"],
+  ["text-lt-mega", "var(--lt-font-size-mega)"],
+  ["max-w-lt-aside", "384px"],
+  ["shadow-lt-overlay", "var(--lt-shadow-overlay)"],
 ]
 
 const css = compiler.build(forventet.map(([klasse]) => klasse))
@@ -94,8 +94,8 @@ for (const [klasse, inneholder] of forventet) {
 
 /** Klasser som ville betydd at vi har tatt over noe som er Tailwinds eget. */
 const skalIkkeRøres: [klasse: string, ikke: string][] = [
-  ["bg-neutral-100", "--fs-color"],
-  ["max-w-md", "--container-fs"],
+  ["bg-neutral-100", "--lt-color"],
+  ["max-w-md", "--container-lt"],
 ]
 
 const annetCss = compiler.build(skalIkkeRøres.map(([klasse]) => klasse))
@@ -106,7 +106,7 @@ for (const [klasse, ikke] of skalIkkeRøres) {
   ).exec(annetCss)
 
   if (regel?.[0].includes(ikke)) {
-    feil.push(`.${klasse} er overstyrt av Fristil: ${regel[0].trim()}`)
+    feil.push(`.${klasse} er overstyrt av LO-TEK: ${regel[0].trim()}`)
   }
 }
 
@@ -120,5 +120,5 @@ if (feil.length > 0) {
 }
 
 console.log(
-  `Tailwind-temaet gir ${forventet.length} kontrollerte klasser Fristils verdier, ${fargeklasser.length} av dem hver sin farge, og lar Tailwinds egne være i fred.`,
+  `Tailwind-temaet gir ${forventet.length} kontrollerte klasser LO-TEKs verdier, ${fargeklasser.length} av dem hver sin farge, og lar Tailwinds egne være i fred.`,
 )

@@ -7,26 +7,26 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { defineFsToast, type FsToast, showToast } from "./fs-toast"
-import { toast as fsToast } from "./toast"
+import { defineLtToast, type LtToast, showToast } from "./lt-toast"
+import { toast as ltToast } from "./toast"
 
 import "../../../tokens/tokens.css"
 import "./toast.css"
 
 async function tegn() {
-  const toast = document.querySelector("fs-toast") as FsToast
-  await customElements.whenDefined("fs-toast")
+  const toast = document.querySelector("lt-toast") as LtToast
+  await customElements.whenDefined("lt-toast")
   await ventPaTegning()
   return toast
 }
 
-describe("fs-toast", () => {
+describe("lt-toast", () => {
   beforeAll(() => {
-    defineFsToast()
+    defineLtToast()
   })
 
   beforeEach(async () => {
-    monter(`<fs-toast label="Meldinger"></fs-toast>`)
+    monter(`<lt-toast label="Meldinger"></lt-toast>`)
     await tegn()
   })
 
@@ -46,7 +46,7 @@ describe("fs-toast", () => {
     expect(melding.textContent).toContain("Søknaden er sendt")
     expect(melding.dataset.color).toBe("success")
 
-    const lukk = melding.querySelector(".fs-toast__close") as HTMLElement
+    const lukk = melding.querySelector(".lt-toast__close") as HTMLElement
     // Lukkeknappen er alltid der. En melding som bare forsvinner av seg selv
     // rekker ikke den som leser sakte.
     expect(lukk.getAttribute("aria-label")).toBe("Lukk melding")
@@ -55,11 +55,11 @@ describe("fs-toast", () => {
   it("fjerner meldingen når lukkeknappen trykkes", async () => {
     const toast = await tegn()
     const melding = toast.show("Vedlegget er lastet opp")
-    const lukk = melding.querySelector(".fs-toast__close") as HTMLElement
+    const lukk = melding.querySelector(".lt-toast__close") as HTMLElement
 
     lukk.click()
 
-    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(0)
+    expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(0)
   })
 
   it("lar en melding bli stående når levetiden er null", async () => {
@@ -68,7 +68,7 @@ describe("fs-toast", () => {
 
     await new Promise((resolve) => setTimeout(resolve, 50))
 
-    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(1)
+    expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(1)
   })
 
   it("fjerner meldingen når levetiden er ute", async () => {
@@ -77,7 +77,7 @@ describe("fs-toast", () => {
 
     await new Promise((resolve) => setTimeout(resolve, 120))
 
-    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(0)
+    expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(0)
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
@@ -89,15 +89,15 @@ describe("fs-toast", () => {
   })
 })
 
-describe("fs-toast holder pausen og fokus", () => {
+describe("lt-toast holder pausen og fokus", () => {
   beforeAll(() => {
-    defineFsToast()
+    defineLtToast()
   })
 
   it("holder pausen til både musa og fokus har forlatt meldingen", async () => {
     // Pausen var to uavhengige par: musa som gikk ut startet klokka igjen
     // mens fokus sto i meldingen, og meldingen forsvant under brukeren.
-    monter(`<fs-toast></fs-toast><button id="annet">Annet</button>`)
+    monter(`<lt-toast></lt-toast><button id="annet">Annet</button>`)
     const toast = await tegn()
     const melding = toast.show("Lagret", { duration: 40 })
     const lukk = melding.querySelector("button") as HTMLElement
@@ -107,16 +107,16 @@ describe("fs-toast holder pausen og fokus", () => {
     melding.dispatchEvent(new MouseEvent("mouseleave"))
     await new Promise((r) => setTimeout(r, 120))
     expect(
-      toast.querySelectorAll(".fs-toast__message"),
+      toast.querySelectorAll(".lt-toast__message"),
       "forsvant med fokus i",
     ).toHaveLength(1)
     ;(document.getElementById("annet") as HTMLElement).focus()
     await new Promise((r) => setTimeout(r, 120))
-    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(0)
+    expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(0)
   })
 
   it("flytter fokus til meldingen ved siden av når den som hadde fokus lukkes", async () => {
-    monter(`<fs-toast></fs-toast>`)
+    monter(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     const eldste = toast.show("Første", { duration: 0 })
     const midten = toast.show("Andre", { duration: 0 })
@@ -126,42 +126,42 @@ describe("fs-toast holder pausen og fokus", () => {
     lukk.focus()
     lukk.click()
 
-    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(2)
+    expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(2)
     // Den under, altså den eldre, ikke den nyeste øverst.
     expect(document.activeElement).toBe(eldste.querySelector("button"))
   })
 
   it("lar duration=0 på elementet bety at meldingene blir stående", async () => {
-    monter(`<fs-toast duration="0"></fs-toast>`)
+    monter(`<lt-toast duration="0"></lt-toast>`)
     const toast = await tegn()
     toast.show("Blir stående")
     await new Promise((r) => setTimeout(r, 50))
-    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(1)
+    expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(1)
   })
 
   it("lar et tomt duration bety standardverdien", async () => {
-    // `Number("")` er 0, og `<fs-toast duration>` lot meldingene stå.
-    monter(`<fs-toast duration></fs-toast>`)
+    // `Number("")` er 0, og `<lt-toast duration>` lot meldingene stå.
+    monter(`<lt-toast duration></lt-toast>`)
     const toast = await tegn()
     expect(toast.duration).toBe(6000)
   })
 
   it("er ikke atomisk, så bare den nye meldingen leses opp", async () => {
-    monter(`<fs-toast></fs-toast>`)
+    monter(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     expect(toast.getAttribute("aria-atomic")).toBe("false")
-    expect(fsToast().host["aria-atomic"]).toBe("false")
+    expect(ltToast().host["aria-atomic"]).toBe("false")
   })
 
   it("heter Varsler både i byggefunksjonen og i komponenten", async () => {
-    monter(`<fs-toast></fs-toast>`)
+    monter(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     expect(toast.getAttribute("aria-label")).toBe("Varsler")
-    expect(fsToast().host["aria-label"]).toBe("Varsler")
+    expect(ltToast().host["aria-label"]).toBe("Varsler")
   })
 
   it("gir en ukjent farge ingen kant", async () => {
-    monter(`<fs-toast></fs-toast>`)
+    monter(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     const melding = toast.show("Rar", {
       color: "lilla" as unknown as "success",
@@ -171,23 +171,23 @@ describe("fs-toast holder pausen og fokus", () => {
   })
 
   it("fjerner alle med clear()", async () => {
-    monter(`<fs-toast></fs-toast>`)
+    monter(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     toast.show("En", { duration: 0 })
     toast.show("To", { duration: 0 })
     toast.clear()
-    expect(toast.querySelectorAll(".fs-toast__message")).toHaveLength(0)
+    expect(toast.querySelectorAll(".lt-toast__message")).toHaveLength(0)
   })
 })
 
 /*
- * Et sent registrert tagnavn. `fs-toast` har alt tatt konstruktøren, så
- * `defineFsToast("fs-toast-sen")` registrerer en underklasse av den.
+ * Et sent registrert tagnavn. `lt-toast` har alt tatt konstruktøren, så
+ * `defineLtToast("lt-toast-sen")` registrerer en underklasse av den.
  */
 describe("showToast() venter på registreringen", () => {
   it("viser meldingen først når elementet er oppgradert", async () => {
-    monter(`<fs-toast-sen role="status" aria-live="polite"></fs-toast-sen>`)
-    const element = document.querySelector("fs-toast-sen") as Element
+    monter(`<lt-toast-sen role="status" aria-live="polite"></lt-toast-sen>`)
+    const element = document.querySelector("lt-toast-sen") as Element
 
     let ferdig = false
     const løfte = showToast(element, "Søknaden er lagret", {
@@ -198,9 +198,9 @@ describe("showToast() venter på registreringen", () => {
     })
     await ventPaTegning()
     expect(ferdig).toBe(false)
-    expect(element.querySelector(".fs-toast__message")).toBeNull()
+    expect(element.querySelector(".lt-toast__message")).toBeNull()
 
-    defineFsToast("fs-toast-sen")
+    defineLtToast("lt-toast-sen")
 
     const melding = await løfte
     expect(element.contains(melding)).toBe(true)
@@ -209,40 +209,40 @@ describe("showToast() venter på registreringen", () => {
   })
 })
 
-describe("fs-toast under et annet tagnavn", () => {
+describe("lt-toast under et annet tagnavn", () => {
   it("ligger fortsatt fast i hjørnet", async () => {
     /*
      * Plasseringen sto på elementnavnet, så en region registrert som noe
-     * annet enn `fs-toast` havnet i vanlig flyt. Den står nå på klassen, som
+     * annet enn `lt-toast` havnet i vanlig flyt. Den står nå på klassen, som
      * komponenten setter selv.
      */
-    defineFsToast("annen-toast")
+    defineLtToast("annen-toast")
     monter("<annen-toast></annen-toast>")
     await customElements.whenDefined("annen-toast")
-    const region = document.querySelector("annen-toast") as FsToast
+    const region = document.querySelector("annen-toast") as LtToast
 
     region.show("Lagret")
 
-    expect(region.classList.contains("fs-toast")).toBe(true)
+    expect(region.classList.contains("lt-toast")).toBe(true)
     expect(getComputedStyle(region).position).toBe("fixed")
-    expect(region.querySelectorAll(".fs-toast__message")).toHaveLength(1)
+    expect(region.querySelectorAll(".lt-toast__message")).toHaveLength(1)
   })
 
   it("gir verten klassen fra byggefunksjonen", () => {
-    expect(fsToast().host.class).toBe("fs-toast")
-    expect(fsToast().message.class).toBe("fs-toast__message")
+    expect(ltToast().host.class).toBe("lt-toast")
+    expect(ltToast().message.class).toBe("lt-toast__message")
   })
 })
 
-describe("fs-toast og fokus og navn", () => {
+describe("lt-toast og fokus og navn", () => {
   beforeAll(() => {
-    defineFsToast()
+    defineLtToast()
   })
 
   it("sender fokus tilbake dit det kom fra når alle meldingene fjernes", () => {
     // Før falt fokus til `body`, og neste Tab startet på toppen av siden.
-    monter(`<button id="ute">Lagre</button><fs-toast duration="0"></fs-toast>`)
-    const region = document.querySelector("fs-toast") as FsToast
+    monter(`<button id="ute">Lagre</button><lt-toast duration="0"></lt-toast>`)
+    const region = document.querySelector("lt-toast") as LtToast
     const ute = document.getElementById("ute") as HTMLButtonElement
     const melding = region.show("Lagret")
     ute.focus()
@@ -254,8 +254,8 @@ describe("fs-toast og fokus og navn", () => {
   })
 
   it("sender fokus tilbake når den siste meldingen lukkes", () => {
-    monter(`<button id="ute">Lagre</button><fs-toast duration="0"></fs-toast>`)
-    const region = document.querySelector("fs-toast") as FsToast
+    monter(`<button id="ute">Lagre</button><lt-toast duration="0"></lt-toast>`)
+    const region = document.querySelector("lt-toast") as LtToast
     const ute = document.getElementById("ute") as HTMLButtonElement
     const melding = region.show("Lagret")
     ute.focus()
@@ -272,8 +272,8 @@ describe("fs-toast og fokus og navn", () => {
     // siden, og siden rullet dit.
     monter(`
       <button id="a">A</button><button id="b">B</button>
-      <fs-toast duration="0"></fs-toast>`)
-    const region = document.querySelector("fs-toast") as FsToast
+      <lt-toast duration="0"></lt-toast>`)
+    const region = document.querySelector("lt-toast") as LtToast
     const a = document.getElementById("a") as HTMLButtonElement
     const b = document.getElementById("b") as HTMLButtonElement
     const melding = region.show("Lagret")
@@ -290,8 +290,8 @@ describe("fs-toast og fokus og navn", () => {
   })
 
   it("gir regionen standardnavnet når label fjernes", () => {
-    monter(`<fs-toast label="Meldinger"></fs-toast>`)
-    const region = document.querySelector("fs-toast") as FsToast
+    monter(`<lt-toast label="Meldinger"></lt-toast>`)
+    const region = document.querySelector("lt-toast") as LtToast
     expect(region.getAttribute("aria-label")).toBe("Meldinger")
 
     region.removeAttribute("label")
@@ -301,8 +301,8 @@ describe("fs-toast og fokus og navn", () => {
 
   it("lar en aria-label forfatteren har satt stå", () => {
     // Før skrev `label` over den.
-    monter(`<fs-toast aria-label="Forfatter"></fs-toast>`)
-    const region = document.querySelector("fs-toast") as FsToast
+    monter(`<lt-toast aria-label="Forfatter"></lt-toast>`)
+    const region = document.querySelector("lt-toast") as LtToast
 
     region.setAttribute("label", "Annet")
     expect(region.getAttribute("aria-label")).toBe("Forfatter")
@@ -317,17 +317,17 @@ describe("fs-toast og fokus og navn", () => {
  * og komponenten trodde ingen melding hadde fokus: fokus falt til `body`
  * i stedet for til nabomeldingen eller dit det kom fra.
  */
-describe("fs-toast i en skyggerot", () => {
+describe("lt-toast i en skyggerot", () => {
   beforeAll(() => {
-    defineFsToast()
+    defineLtToast()
   })
 
   function monterISkygge() {
     monter(`<button id="ute">Lagre</button><div id="vert"></div>`)
     const vert = document.getElementById("vert") as HTMLElement
     const rot = vert.attachShadow({ mode: "open" })
-    rot.innerHTML = `<fs-toast duration="0"></fs-toast>`
-    const region = rot.querySelector("fs-toast") as FsToast
+    rot.innerHTML = `<lt-toast duration="0"></lt-toast>`
+    const region = rot.querySelector("lt-toast") as LtToast
     const ute = document.getElementById("ute") as HTMLButtonElement
     return { rot, region, ute }
   }

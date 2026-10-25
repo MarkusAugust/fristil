@@ -11,21 +11,21 @@ import {
 } from "../../host-element.js"
 import { computeFieldAttributes } from "./field-core.js"
 
-export const FS_FIELD_TAG = "fs-field" as const
+export const LT_FIELD_TAG = "lt-field" as const
 
 /**
  * Delene feltet finner, som selektorer relativt til elementet. Komponenten
  * finner delene med disse, og manifestet beskriver dem for den som setter
  * sammen markupen selv, så de to ikke kan si noe ulikt.
  */
-export const FS_FIELD_PARTS = {
+export const LT_FIELD_PARTS = {
   label: "label",
   control: "input:not([type='hidden']), textarea, select",
   help: `.${HELP_TEXT_CLASS}`,
   error: `.${ERROR_TEXT_CLASS}`,
 } as const
 
-const CONTROL_SELECTOR = FS_FIELD_PARTS.control
+const CONTROL_SELECTOR = LT_FIELD_PARTS.control
 
 type Marker = "none" | "symbol" | "text"
 
@@ -36,7 +36,7 @@ function readMarker(value: string | null | undefined): Marker | undefined {
 }
 
 /**
- * Attributtene `<fs-field>` observerer. De fleste regner den ut selv, og
+ * Attributtene `<lt-field>` observerer. De fleste regner den ut selv, og
  * setter tilbake om de blir borte. `id` på kontrollen, og `hidden` og `style`
  * på feilmeldingen, leser den bare: de er malens.
  *
@@ -65,7 +65,7 @@ const DERIVED_ATTRIBUTES = [
  *
  * Tre attributter både leses fra kontrollen og skrives dit igjen:
  * `aria-invalid`, `aria-describedby` og `disabled`. De leses fordi serveren
- * kan ha skrevet feltet med `fs.field()`, og da står svaret allerede der. Men
+ * kan ha skrevet feltet med `lt.field()`, og da står svaret allerede der. Men
  * en naiv avlesning er komponentens eget ekko fra forrige runde. For
  * `aria-invalid` gjorde det at `felt.invalid = false` fjernet flagget på
  * verten mens den røde rammen ble stående for godt. For `aria-describedby`
@@ -114,7 +114,7 @@ function readControlWord(control: Element): ControlWord {
  *
  * Komponenten er for markup som blir til uten JavaScript: en Go-mal, en
  * PHP-fil, en Razor-visning eller håndskrevet HTML. Lages markupen med
- * JavaScript, uansett hvor koden kjører, skal `fs.field()` skrive
+ * JavaScript, uansett hvor koden kjører, skal `lt.field()` skrive
  * attributtene i stedet, og da trengs ikke dette elementet.
  *
  * Komponenten rendrer ingenting. Den satte tidligere et `<slot>`-element inn i
@@ -136,7 +136,7 @@ function readControlWord(control: Element): ControlWord {
  * er ingen egen tilstand på verten: en mal rendrer feilmeldingen når feltet
  * er ugyldig, og klientkode slår `hidden` av og på.
  */
-export class FsField extends HostElement {
+export class LtField extends HostElement {
   static observedAttributes = ["disabled", "optional", "described-by"] as const
 
   private observer?: MutationObserver
@@ -247,7 +247,7 @@ export class FsField extends HostElement {
         (r) =>
           r.type === "attributes" &&
           r.attributeName === "style" &&
-          !(r.target as Element).matches?.(FS_FIELD_PARTS.error),
+          !(r.target as Element).matches?.(LT_FIELD_PARTS.error),
       )
       if (!onlyForeignStyle) this.sync()
     })
@@ -291,7 +291,7 @@ export class FsField extends HostElement {
   }
 
   private resolveLabel(control: HTMLElement | null): HTMLLabelElement | null {
-    const inside = this.ownPart<HTMLLabelElement>(FS_FIELD_PARTS.label)
+    const inside = this.ownPart<HTMLLabelElement>(LT_FIELD_PARTS.label)
     if (inside || !control?.id) return inside
 
     const root = this.getRootNode() as Document | ShadowRoot
@@ -355,7 +355,7 @@ export class FsField extends HostElement {
    * Delene som hører til dette feltet, og ikke til et felt lenger ned.
    *
    * Et felt kan stå inni et annet: et søkefelt i et sprettoppvindu inni
-   * feltet, eller et `<fs-field>` i et `<fs-field>`. `querySelector` over
+   * feltet, eller et `<lt-field>` i et `<lt-field>`. `querySelector` over
    * hele undertreet fant da det innerste feltets kontroll først, og det ytre
    * feltet skrev koblingen sin på den. Avgrensningen er den samme som
    * `derivedParts()` i `host-element.ts` bruker for de andre komponentene.
@@ -439,8 +439,8 @@ export class FsField extends HostElement {
     const control = this.ownPart<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >(CONTROL_SELECTOR)
-    const help = this.ownPart<HTMLElement>(FS_FIELD_PARTS.help)
-    const error = this.ownPart<HTMLElement>(FS_FIELD_PARTS.error)
+    const help = this.ownPart<HTMLElement>(LT_FIELD_PARTS.help)
+    const error = this.ownPart<HTMLElement>(LT_FIELD_PARTS.error)
 
     if (!control) {
       warnAboutMarkup(
@@ -464,7 +464,7 @@ export class FsField extends HostElement {
       this,
       "har mer enn én kontroll. Bare den første får ledeteksten, " +
         "hjelpeteksten og feilmeldingen koblet til seg. Gi hver kontroll " +
-        "sitt eget <fs-field>, eller legg en gruppe i et <fieldset> med " +
+        "sitt eget <lt-field>, eller legg en gruppe i et <fieldset> med " +
         "<legend>.",
       () => this.ownParts(CONTROL_SELECTOR).length > 1,
     )
@@ -506,7 +506,7 @@ export class FsField extends HostElement {
         "den samme id-en.",
       () => {
         const now = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
-        const labelNow = this.ownPart<HTMLLabelElement>(FS_FIELD_PARTS.label)
+        const labelNow = this.ownPart<HTMLLabelElement>(LT_FIELD_PARTS.label)
         if (!now || !labelNow?.contains(now)) return false
         const target = labelNow.getAttribute("for")
         return target !== null && target !== now.id
@@ -530,7 +530,7 @@ export class FsField extends HostElement {
       this,
       "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
         "skjermleser leser det opp uten navn. Står ledeteksten utenfor " +
-        "<fs-field>, må for på den peke på id-en til feltet.",
+        "<lt-field>, må for på den peke på id-en til feltet.",
       /*
        * Tre lovlige måter å gi feltet et navn på, og ingen av dem skal gi en
        * advarsel: en `<label>` inni, en `<label for>` utenfor, eller
@@ -540,7 +540,7 @@ export class FsField extends HostElement {
       () => {
         const named = this.ownPart<HTMLElement>(CONTROL_SELECTOR)
         if (!named || this.resolveLabel(named)) return false
-        // En <label> rundt hele <fs-field> gir også kontrollen et navn.
+        // En <label> rundt hele <lt-field> gir også kontrollen et navn.
         if (((named as HTMLInputElement).labels?.length ?? 0) > 0) return false
         return (
           !named.hasAttribute("aria-label") &&
@@ -561,7 +561,7 @@ export class FsField extends HostElement {
     if (help) {
       if (help.id) this.lastHelpId = help.id
       else {
-        this.lastHelpId ??= uniqueId("fs-field-help")
+        this.lastHelpId ??= uniqueId("lt-field-help")
         setAttr(help, "id", this.lastHelpId)
       }
       this.managedIds.add(help.id)
@@ -569,14 +569,14 @@ export class FsField extends HostElement {
     if (error) {
       if (error.id) this.lastErrorId = error.id
       else {
-        this.lastErrorId ??= uniqueId("fs-field-error")
+        this.lastErrorId ??= uniqueId("lt-field-error")
         setAttr(error, "id", this.lastErrorId)
       }
       this.managedIds.add(error.id)
     }
 
     // Markeringene leses også fra markupen. Skrev serveren dem med
-    // `fs.field()`, står de på ledeteksten, og en komponent som bare så på
+    // `lt.field()`, står de på ledeteksten, og en komponent som bare så på
     // sine egne attributter ville fjernet dem igjen. I React ga det en
     // hydreringsfeil: serveren sendte `data-required="symbol"`, komponenten
     // tok det bort, og så mente React at HTML-en ikke stemte.
@@ -584,7 +584,7 @@ export class FsField extends HostElement {
     const marker = readMarker(serverLabel.required)
 
     // Tilstanden leses fra markupen, ikke bare fra et attributt på verten.
-    // Skrev serveren feltet med `fs.field()`, står svaret allerede på
+    // Skrev serveren feltet med `lt.field()`, står svaret allerede på
     // kontrollen, og en komponent som regnet ut sitt eget ville fjernet det
     // igjen. Da kranglet de to halvdelene av API-et med hverandre. Se
     // `ControlMemory` for hvordan serverens ord skilles fra komponentens eget.
@@ -614,7 +614,7 @@ export class FsField extends HostElement {
 
     /*
      * Id-ene serveren selv la i `aria-describedby`, utenom dem komponenten
-     * forvalter. `fs.field({ describedBy })` skriver dem rett på kontrollen,
+     * forvalter. `lt.field({ describedBy })` skriver dem rett på kontrollen,
      * og de skal med videre. De forvaltede strykes her og legges til igjen
      * etter dagens tilstand, ellers ble feilmeldingens id stående etter at
      * feilen var borte.
@@ -639,7 +639,7 @@ export class FsField extends HostElement {
       // `computeFieldAttributes` krever en id. Kontrollens egen brukes når den
       // finnes; ellers en stamme som aldri skrives, siden komponenten verken
       // skriver id på kontrollen eller `for` ut fra den.
-      id: control.id || "fs-field",
+      id: control.id || "lt-field",
       help: Boolean(help),
       // Bare en synlig feilmelding beskriver feltet. Sier serveren ugyldig
       // mens meldingen er skjult, skal ikke pekeren gå til noe skjult.
@@ -716,9 +716,9 @@ export class FsField extends HostElement {
     // selv satte den og feltet ikke lenger er ugyldig. En `data-state` en
     // mal har skrevet for hånd, er malens.
     const isSystemField =
-      control.classList.contains("fs-input") ||
-      control.classList.contains("fs-textarea") ||
-      control.classList.contains("fs-select")
+      control.classList.contains("lt-input") ||
+      control.classList.contains("lt-textarea") ||
+      control.classList.contains("lt-select")
 
     const state = computed.control["data-state"]
     if (state && isSystemField && !control.hasAttribute("data-state")) {
@@ -735,6 +735,6 @@ export class FsField extends HostElement {
   }
 }
 
-export function defineFsField(tagName: string = FS_FIELD_TAG): void {
-  defineElement(tagName, FsField)
+export function defineLtField(tagName: string = LT_FIELD_TAG): void {
+  defineElement(tagName, LtField)
 }

@@ -1,8 +1,8 @@
 import { attributes } from "../shared.js"
 
-export const TOGGLE_GROUP_CLASS = "fs-toggle-group" as const
+export const TOGGLE_GROUP_CLASS = "lt-toggle-group" as const
 /** Ledeteksten rundt hvert alternativ. */
-export const TOGGLE_GROUP_OPTION_CLASS = "fs-toggle-group__option" as const
+export const TOGGLE_GROUP_OPTION_CLASS = "lt-toggle-group__option" as const
 
 export type ToggleGroupAttributes = {
   class: typeof TOGGLE_GROUP_CLASS
@@ -21,7 +21,7 @@ export type ToggleGroupAttributes = {
  *
  * ```ts
  * <fieldset {...toggleGroup()}>
- *   <legend class="fs-sr-only">Visning</legend>
+ *   <legend class="lt-sr-only">Visning</legend>
  *   <label class={toggleGroup.option}>
  *     <input type="radio" name="visning" value="liste" checked /> Liste
  *   </label>

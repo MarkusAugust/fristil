@@ -8,22 +8,22 @@ import "../../../tokens/tokens.css"
 import "./suggestion.css"
 
 /*
- * Ingen `defineFsSuggestion()` her, med vilje. Fila kjører i sin egen ramme,
- * så `fs-suggestion` er uregistrert gjennom hele testen, og det er den
+ * Ingen `defineLtSuggestion()` her, med vilje. Fila kjører i sin egen ramme,
+ * så `lt-suggestion` er uregistrert gjennom hele testen, og det er den
  * tilstanden regelen i `suggestion.css` gjelder for: markup skrevet uten
  * JavaScript, før komponenten har rukket å lukke lista.
  */
 describe("suggestion.css før komponenten er registrert", () => {
   it("holder en bar liste skjult", async () => {
-    expect(customElements.get("fs-suggestion")).toBeUndefined()
+    expect(customElements.get("lt-suggestion")).toBeUndefined()
     monter(`
-      <fs-suggestion>
+      <lt-suggestion>
         <label>Kommune</label>
         <div>
-          <input class="fs-input" name="kommune">
-          <ul class="fs-suggestion__list"><li>Bergen</li><li>Bodø</li></ul>
+          <input class="lt-input" name="kommune">
+          <ul class="lt-suggestion__list"><li>Bergen</li><li>Bodø</li></ul>
         </div>
-      </fs-suggestion>
+      </lt-suggestion>
     `)
     await ventPaTegning()
 

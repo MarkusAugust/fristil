@@ -1,105 +1,105 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { fs } from "./fs"
+import { lt } from "./lt"
 
-describe("fs: felles form", () => {
+describe("lt: felles form", () => {
   it("gir samme form for alle komponentene: valgobjekt inn, attributter ut", () => {
-    expect(fs.button()).toEqual({ class: "fs-button" })
-    expect(fs.badge()).toEqual({ class: "fs-badge" })
-    expect(fs.link()).toEqual({ class: "fs-link" })
-    expect(fs.label()).toEqual({ class: "fs-label" })
-    expect(fs.textarea()).toEqual({ class: "fs-textarea" })
-    expect(fs.select()).toEqual({ class: "fs-select" })
-    expect(fs.helpText()).toEqual({ class: "fs-help-text" })
-    expect(fs.errorText()).toEqual({ class: "fs-error-text" })
+    expect(lt.button()).toEqual({ class: "lt-button" })
+    expect(lt.badge()).toEqual({ class: "lt-badge" })
+    expect(lt.link()).toEqual({ class: "lt-link" })
+    expect(lt.label()).toEqual({ class: "lt-label" })
+    expect(lt.textarea()).toEqual({ class: "lt-textarea" })
+    expect(lt.select()).toEqual({ class: "lt-select" })
+    expect(lt.helpText()).toEqual({ class: "lt-help-text" })
+    expect(lt.errorText()).toEqual({ class: "lt-error-text" })
   })
 
   it("utelater attributtet når verdien er standardverdien", () => {
-    expect(fs.button({ variant: "primary" })).toEqual({ class: "fs-button" })
-    expect(fs.button({ variant: "danger" })).toEqual({
-      class: "fs-button",
+    expect(lt.button({ variant: "primary" })).toEqual({ class: "lt-button" })
+    expect(lt.button({ variant: "danger" })).toEqual({
+      class: "lt-button",
       "data-variant": "danger",
     })
   })
 
   it("eksponerer lovlige verdier og en vakt på hver komponent", () => {
-    expect(fs.button.variants).toContain("ghost")
-    expect(fs.button.isVariant("ghost")).toBe(true)
-    expect(fs.button.isVariant("gost")).toBe(false)
+    expect(lt.button.variants).toContain("ghost")
+    expect(lt.button.isVariant("ghost")).toBe(true)
+    expect(lt.button.isVariant("gost")).toBe(false)
 
-    expect(fs.badge.colors).toContain("neutral")
-    expect(fs.badge.isColor("neutral")).toBe(true)
+    expect(lt.badge.colors).toContain("neutral")
+    expect(lt.badge.isColor("neutral")).toBe(true)
   })
 })
 
-describe("fs.input", () => {
+describe("lt.input", () => {
   it("setter type og ikonvariant fra samme verdi", () => {
     // Den vanligste feilen med håndskrevet markup er at data-variant og
     // type kommer i utakt. Her er det umulig.
-    expect(fs.input({ type: "date" })).toEqual({
-      class: "fs-input",
+    expect(lt.input({ type: "date" })).toEqual({
+      class: "lt-input",
       type: "date",
       "data-variant": "date",
     })
   })
 
   it("gir ikke ikonvariant til typer som ikke har et ikon", () => {
-    expect(fs.input({ type: "email" })).toEqual({
-      class: "fs-input",
+    expect(lt.input({ type: "email" })).toEqual({
+      class: "lt-input",
       type: "email",
     })
   })
 
   it("setter aria-invalid sammen med data-state", () => {
-    expect(fs.input({ state: "invalid" })).toEqual({
-      class: "fs-input",
+    expect(lt.input({ state: "invalid" })).toEqual({
+      class: "lt-input",
       type: "text",
       "data-state": "invalid",
       "aria-invalid": "true",
     })
 
-    expect(fs.input({ state: "success" })).toEqual({
-      class: "fs-input",
+    expect(lt.input({ state: "success" })).toEqual({
+      class: "lt-input",
       type: "text",
       "data-state": "success",
     })
   })
 
   it("deler tilstandstype med textarea og select", () => {
-    const tilstand = fs.isState("invalid") ? "invalid" : "default"
-    expect(fs.input({ state: tilstand })["data-state"]).toBe("invalid")
-    expect(fs.textarea({ state: tilstand })["data-state"]).toBe("invalid")
-    expect(fs.select({ state: tilstand })["data-state"]).toBe("invalid")
+    const tilstand = lt.isState("invalid") ? "invalid" : "default"
+    expect(lt.input({ state: tilstand })["data-state"]).toBe("invalid")
+    expect(lt.textarea({ state: tilstand })["data-state"]).toBe("invalid")
+    expect(lt.select({ state: tilstand })["data-state"]).toBe("invalid")
   })
 })
 
-describe("fs.label", () => {
+describe("lt.label", () => {
   it("lar required vinne over optional, så bare én markering vises", () => {
-    expect(fs.label({ required: "text", optional: true })).toEqual({
-      class: "fs-label",
+    expect(lt.label({ required: "text", optional: true })).toEqual({
+      class: "lt-label",
       "data-required": "text",
     })
   })
 })
 
-describe("fs.field", () => {
+describe("lt.field", () => {
   it("kobler ledetekst og kontroll", () => {
-    const felt = fs.field({ id: "epost" })
+    const felt = lt.field({ id: "epost" })
 
     expect(felt.label.for).toBe("epost")
     expect(felt.control.id).toBe("epost")
   })
 
   it("tar hjelpeteksten med i aria-describedby", () => {
-    const felt = fs.field({ id: "epost", help: true })
+    const felt = lt.field({ id: "epost", help: true })
 
     expect(felt.control["aria-describedby"]).toBe("epost-help")
     expect(felt.help.id).toBe("epost-help")
   })
 
   it("tar feilmeldingen med bare når feltet er ugyldig", () => {
-    const gyldig = fs.field({ id: "epost", help: true, error: true })
-    const ugyldig = fs.field({
+    const gyldig = lt.field({ id: "epost", help: true, error: true })
+    const ugyldig = lt.field({
       id: "epost",
       help: true,
       error: true,
@@ -118,10 +118,10 @@ describe("fs.field", () => {
   })
 
   it("gir en tilstand som kan sendes rett inn i input()", () => {
-    const felt = fs.field({ id: "epost", invalid: true })
+    const felt = lt.field({ id: "epost", invalid: true })
 
-    expect(fs.input({ type: "email", state: felt.state })).toEqual({
-      class: "fs-input",
+    expect(lt.input({ type: "email", state: felt.state })).toEqual({
+      class: "lt-input",
       type: "email",
       "data-state": "invalid",
       "aria-invalid": "true",
@@ -129,7 +129,7 @@ describe("fs.field", () => {
   })
 
   it("tar med ekstra id-er kalleren oppgir", () => {
-    const felt = fs.field({
+    const felt = lt.field({
       id: "epost",
       help: true,
       describedBy: ["vilkaar"],
@@ -150,9 +150,9 @@ describe("fs.field", () => {
      * den gamle, valgfrie id-en.
      */
     // @ts-expect-error id er påkrevd
-    const utenNoe = () => fs.field()
+    const utenNoe = () => lt.field()
     // @ts-expect-error id er påkrevd
-    const utenId = () => fs.field({ help: true })
+    const utenId = () => lt.field({ help: true })
 
     expect(typeof utenNoe).toBe("function")
     expect(typeof utenId).toBe("function")
@@ -161,13 +161,13 @@ describe("fs.field", () => {
   it("lager id-er likevel, og sier fra, når JavaScript utelater dem", () => {
     /*
      * En konsument uten TypeScript ser ingen type, og ren HTML med
-     * `<script type="module">` er en førsteklasses måte å bruke Fristil på.
+     * `<script type="module">` er en førsteklasses måte å bruke LO-TEK på.
      * Uten reserven ble id-ene til strenger som `undefined-help` og
      * `undefined-list`, og `for`, `aria-controls` og `aria-describedby` pekte
      * dit. Koblingen var brutt, og den så gyldig ut.
      *
      * Hver byggefunksjon som tar en id er med. Første utgave hadde reserven bare i
-     * `fs.field()`, og da sa forslagsfeltet «fs.field()» i meldingen og sendte
+     * `lt.field()`, og da sa forslagsfeltet «lt.field()» i meldingen og sendte
      * utvikleren til feil sted, mens halve id-ene fortsatt ble `undefined-…`.
      */
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
@@ -175,25 +175,25 @@ describe("fs.field", () => {
       byggefunksjon(valg)
 
     const felt = utenId(
-      fs.field as (o: unknown) => ReturnType<typeof fs.field>,
+      lt.field as (o: unknown) => ReturnType<typeof lt.field>,
       {
         help: true,
         error: true,
       },
     )
-    expect(felt.control.id).toMatch(/^fs-field-/)
+    expect(felt.control.id).toMatch(/^lt-field-/)
     expect(felt.label.for).toBe(felt.control.id)
     expect(JSON.stringify(felt)).not.toContain("undefined")
 
     const forslag = utenId(
-      fs.suggestion as (o: unknown) => ReturnType<typeof fs.suggestion>,
+      lt.suggestion as (o: unknown) => ReturnType<typeof lt.suggestion>,
       { keys: ["a", "b"] },
     )
     expect(JSON.stringify(forslag)).not.toContain("undefined")
     expect(forslag.control["aria-controls"]).toBe(forslag.list.id)
 
     const faner = utenId(
-      fs.tabs as (o: unknown) => ReturnType<typeof fs.tabs>,
+      lt.tabs as (o: unknown) => ReturnType<typeof lt.tabs>,
       {
         keys: ["a", "b"],
         label: "Faner",
@@ -202,24 +202,24 @@ describe("fs.field", () => {
     expect(JSON.stringify(faner)).not.toContain("undefined")
 
     const vindu = utenId(
-      fs.popover as (o: unknown) => ReturnType<typeof fs.popover>,
+      lt.popover as (o: unknown) => ReturnType<typeof lt.popover>,
       {},
     )
     expect(vindu.trigger["aria-controls"]).toBe(vindu.panel.id)
 
     const boks = utenId(
-      fs.dialog as (o: unknown) => ReturnType<typeof fs.dialog>,
+      lt.dialog as (o: unknown) => ReturnType<typeof lt.dialog>,
       {},
     )
     expect(boks.dialog["aria-labelledby"]).toBe(boks.title.id)
 
     const meldinger = advarsel.mock.calls.map((k) => String(k[0])).join("\n")
     for (const navn of [
-      "fs.field()",
-      "fs.suggestion()",
-      "fs.tabs()",
-      "fs.popover()",
-      "fs.dialog()",
+      "lt.field()",
+      "lt.suggestion()",
+      "lt.tabs()",
+      "lt.popover()",
+      "lt.dialog()",
     ]) {
       expect(meldinger, `${navn} sa ikke fra`).toContain(navn)
     }
@@ -228,27 +228,27 @@ describe("fs.field", () => {
   })
 
   it("regner den tomme strengen som ingen id", () => {
-    // `fs.field({ id: "" })` slapp gjennom både typen og reserven, og ga
+    // `lt.field({ id: "" })` slapp gjennom både typen og reserven, og ga
     // `for=""` og `help.id="-help"`. Koblingen var brutt, og ingenting sa fra.
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
 
-    const felt = fs.field({ id: "  ", help: true })
+    const felt = lt.field({ id: "  ", help: true })
 
-    expect(felt.control.id).toMatch(/^fs-field-/)
+    expect(felt.control.id).toMatch(/^lt-field-/)
     expect(felt.help.id).toBe(`${felt.control.id}-help`)
     advarsel.mockRestore()
   })
 })
 
-describe("fs.field sammen med feltfunksjonene", () => {
+describe("lt.field sammen med feltfunksjonene", () => {
   it("overlapper ikke med input(), så attributter ikke settes dobbelt", () => {
-    const felt = fs.field({
+    const felt = lt.field({
       id: "epost",
       help: true,
       error: true,
       invalid: true,
     })
-    const input = fs.input({ type: "email" })
+    const input = lt.input({ type: "email" })
 
     const felles = Object.keys(input).filter((navn) => navn in felt.control)
 
@@ -259,14 +259,14 @@ describe("fs.field sammen med feltfunksjonene", () => {
   })
 
   it("lar control bære både tilstandsfargen og aria-invalid", () => {
-    const felt = fs.field({ id: "epost", invalid: true })
+    const felt = lt.field({ id: "epost", invalid: true })
 
     expect(felt.control["data-state"]).toBe("invalid")
     expect(felt.control["aria-invalid"]).toBe("true")
   })
 
   it("setter ingen av dem når feltet er gyldig", () => {
-    const felt = fs.field({ id: "epost" })
+    const felt = lt.field({ id: "epost" })
 
     expect(felt.control["data-state"]).toBeUndefined()
     expect(felt.control["aria-invalid"]).toBeUndefined()
@@ -274,7 +274,7 @@ describe("fs.field sammen med feltfunksjonene", () => {
 })
 
 /**
- * Hvor mange byggefunksjoner `fs` har, utenom `setAttributes`, `isState` og
+ * Hvor mange byggefunksjoner `lt` har, utenom `setAttributes`, `isState` og
  * `isMarker`.
  *
  * Tallet står skrevet her framfor å bli lest ut av lista det skal kontrollere.
@@ -300,8 +300,8 @@ const SAMMENSATTE_NAVN = [
 ]
 
 describe("formen på navnerommet", () => {
-  /** Byggefunksjonene, altså alt i `fs` som kan kalles uten argumenter. */
-  const byggefunksjoner = Object.entries(fs).filter(
+  /** Byggefunksjonene, altså alt i `lt` som kan kalles uten argumenter. */
+  const byggefunksjoner = Object.entries(lt).filter(
     ([navn, verdi]) =>
       typeof verdi === "function" &&
       navn !== "setAttributes" &&
@@ -320,18 +320,18 @@ describe("formen på navnerommet", () => {
 
   it.each(
     byggefunksjoner,
-  )("fs.%s() gir en fs-prefikset klasse uten argumenter", (_navn, byggefunksjon) => {
+  )("lt.%s() gir en lt-prefikset klasse uten argumenter", (_navn, byggefunksjon) => {
     const attributter = byggefunksjon()
 
     expect(typeof attributter.class).toBe("string")
     for (const klasse of String(attributter.class).split(" ")) {
-      expect(klasse.startsWith("fs-")).toBe(true)
+      expect(klasse.startsWith("lt-")).toBe(true)
     }
   })
 
   it.each(
     byggefunksjoner,
-  )("fs.%s() setter ingen tomme attributter", (_navn, byggefunksjon) => {
+  )("lt.%s() setter ingen tomme attributter", (_navn, byggefunksjon) => {
     const tomme = Object.entries(byggefunksjon())
       .filter(([, verdi]) => verdi === undefined)
       .map(([navn]) => navn)
@@ -359,7 +359,7 @@ describe("attributter bare morferen leser", () => {
    */
   const MORFERATTRIBUTTER = ["data-ignore-morph", "data-preserve-attr"]
 
-  /** Alt i `fs` som ikke er en byggefunksjon. */
+  /** Alt i `lt` som ikke er en byggefunksjon. */
   const HJELPERE = ["setAttributes", "isState", "isMarker"]
 
   /**
@@ -370,20 +370,20 @@ describe("attributter bare morferen leser", () => {
   const SAMMENSATTE: Record<string, () => unknown> = Object.assign(
     Object.create(null),
     {
-      dialog: () => fs.dialog({ titleId: "tittel" }),
-      errorSummary: () => fs.errorSummary({ count: 2, id: "feil" }),
-      field: () => fs.field({ id: "epost", help: true, error: true }),
-      popover: () => fs.popover({ id: "panel" }),
-      sessionTimeout: () => fs.sessionTimeout({ titleId: "okt" }),
+      dialog: () => lt.dialog({ titleId: "tittel" }),
+      errorSummary: () => lt.errorSummary({ count: 2, id: "feil" }),
+      field: () => lt.field({ id: "epost", help: true, error: true }),
+      popover: () => lt.popover({ id: "panel" }),
+      sessionTimeout: () => lt.sessionTimeout({ titleId: "okt" }),
       suggestion: () =>
-        fs.suggestion({ id: "sok", keys: ["a", "b"], open: true }),
-      tableSort: () => fs.tableSort({ direction: "ascending" }),
-      tabs: () => fs.tabs({ id: "faner", keys: ["a", "b"], label: "Faner" }),
-      toast: () => fs.toast(),
+        lt.suggestion({ id: "sok", keys: ["a", "b"], open: true }),
+      tableSort: () => lt.tableSort({ direction: "ascending" }),
+      tabs: () => lt.tabs({ id: "faner", keys: ["a", "b"], label: "Faner" }),
+      toast: () => lt.toast(),
     },
   )
 
-  const byggefunksjoner = Object.entries(fs).filter(
+  const byggefunksjoner = Object.entries(lt).filter(
     ([navn, verdi]) => typeof verdi === "function" && !HJELPERE.includes(navn),
   ) as [string, () => unknown][]
 
@@ -405,10 +405,10 @@ describe("attributter bare morferen leser", () => {
     return ut
   }
 
-  it("har hver byggefunksjon i fs, og bare byggefunksjoner", () => {
+  it("har hver byggefunksjon i lt, og bare byggefunksjoner", () => {
     // Uten dette kunne tabellen under vært tom, eller mistet en byggefunksjon som
     // fikk nytt navn, og folketellingen ville stemt likevel. Og en ny vakt i
-    // `fs`, som `isColor`, ville blitt kalt som en byggefunksjon og gitt `false`,
+    // `lt`, som `isColor`, ville blitt kalt som en byggefunksjon og gitt `false`,
     // altså ingen attributter å telle.
     expect(byggefunksjoner.length).toBe(ANTALL_BYGGEFUNKSJONER)
     expect(Object.keys(SAMMENSATTE).sort()).toEqual(
@@ -418,7 +418,7 @@ describe("attributter bare morferen leser", () => {
     for (const navn of SAMMENSATTE_NAVN) {
       expect(
         byggefunksjoner.map(([n]) => n),
-        `fs.${navn} finnes ikke`,
+        `lt.${navn} finnes ikke`,
       ).toContain(navn)
     }
 
@@ -429,7 +429,7 @@ describe("attributter bare morferen leser", () => {
       // morferattributter» skal betyde at de ikke er der, ikke at ingen så.
       expect(
         attributtnavn(kall(byggefunksjon)).length,
-        `fs.${byggefunksjon[0]}() ga ingen attributter`,
+        `lt.${byggefunksjon[0]}() ga ingen attributter`,
       ).toBeGreaterThan(0)
     }
   })

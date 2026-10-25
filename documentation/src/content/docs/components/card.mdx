@@ -3,58 +3,58 @@ title: Card
 description: Boks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
 En ramme rundt innhold som hører sammen, som én sak i en liste over saker. Kortet er en beholder, ikke en komponent med oppførsel: det er innholdet som bestemmer hva brukeren kan gjøre.
 
 ## Slik tar du den i bruk
 
-<Eksempel importer={["tokens.css", "card.css", "badge.css", "button.css"]}
+<Example importer={["tokens.css", "card.css", "badge.css", "button.css"]}
   stiler={["card", "badge", "button"]} layout="stabel" maxWidth="32rem" kode={`
-<div class="fs-card">
-  <h3 class="fs-card__title">Søknad om bostøtte</h3>
+<div class="lt-card">
+  <h3 class="lt-card__title">Søknad om bostøtte</h3>
   <p>Sendt 4. mars. Saksnummer 2026-0481.</p>
-  <span class="fs-badge" data-color="success">Innvilget</span>
+  <span class="lt-badge" data-color="success">Innvilget</span>
 </div>
 
-<div class="fs-card" data-variant="filled">
-  <h3 class="fs-card__title">Søknad om barnehageplass</h3>
+<div class="lt-card" data-variant="filled">
+  <h3 class="lt-card__title">Søknad om barnehageplass</h3>
   <p>Vi mangler fødselsattest før vi kan behandle søknaden.</p>
-  <button class="fs-button" data-variant="secondary">Last opp vedlegg</button>
+  <button class="lt-button" data-variant="secondary">Last opp vedlegg</button>
 </div>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
 
 **Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<div {...fs.card({ variant: "outline" })}>
-  <h3 className={fs.card.title}>Søknad 2024/1187</h3>
+<div {...lt.card({ variant: "outline" })}>
+  <h3 className={lt.card.title}>Søknad 2024/1187</h3>
   <p>Under behandling.</p>
 </div>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
 
 **Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
 const kort = document.createElement("a")
 kort.href = `/sak/${sak.id}`
 
-fs.setAttributes(kort, fs.card({ interactive: true }))
+lt.setAttributes(kort, lt.card({ interactive: true }))
 ```
 
-`fs.card.title` gir klassen på overskriften. Se [Typesikker bruk](../../typesikker-bruk/).
+`lt.card.title` gir klassen på overskriften. Se [Typesikker bruk](../../type-safe-use/).
 
 </Fragment>
-</Eksempel>
+</Example>
 
 | `data-variant` | Brukes til |
 | --- | --- |
@@ -63,9 +63,9 @@ fs.setAttributes(kort, fs.card({ interactive: true }))
 
 ## Hele kortet som lenke
 
-<Eksempel stiler={["card"]} layout="stabel" maxWidth="32rem" kode={`
-<a class="fs-card" data-interactive href="#">
-  <h3 class="fs-card__title">Se hele saken</h3>
+<Example stiler={["card"]} layout="stabel" maxWidth="32rem" kode={`
+<a class="lt-card" data-interactive href="#">
+  <h3 class="lt-card__title">Se hele saken</h3>
   <p>Alle dokumenter, meldinger og vedtak samlet.</p>
 </a>
 `} />
@@ -78,33 +78,33 @@ Har kortet flere handlinger, skal ikke hele kortet være en lenke. Da havner kna
 
 | Klasse | Hva det er |
 | --- | --- |
-| `.fs-card` | Selve kortet. Varianten kommer fra `data-variant`. |
-| `.fs-card__title` | Overskriften inne i kortet |
+| `.lt-card` | Selve kortet. Varianten kommer fra `data-variant`. |
+| `.lt-card__title` | Overskriften inne i kortet |
 
 | Variabel | Standard |
 | --- | --- |
-| `--fs-card-padding` | `var(--fs-spacing-4)` |
-| `--fs-card-radius` | `var(--fs-spacing-2)` |
+| `--lt-card-padding` | `var(--lt-spacing-4)` |
+| `--lt-card-radius` | `var(--lt-spacing-2)` |
 
 Et eksempel. Et kort som bærer en hel seksjon tåler mer luft enn et som står i en liste:
 
-<Eksempel stiler={["card", "heading", "paragraph"]} layout="rad" egenCss={`
+<Example stiler={["card", "heading", "paragraph"]} layout="rad" egenCss={`
 .luftig-kort {
-	--fs-card-padding: var(--fs-spacing-6);
+	--lt-card-padding: var(--lt-spacing-6);
 }
 `} kode={`
-<div class="fs-card">
-  <h3 class="fs-heading" data-size="s">Standard</h3>
-  <p class="fs-paragraph">Luften som følger med pakken.</p>
+<div class="lt-card">
+  <h3 class="lt-heading" data-size="s">Standard</h3>
+  <p class="lt-paragraph">Luften som følger med pakken.</p>
 </div>
 
-<div class="fs-card luftig-kort">
-  <h3 class="fs-heading" data-size="s">Luftig</h3>
-  <p class="fs-paragraph">Samme markup, én klasse mer.</p>
+<div class="lt-card luftig-kort">
+  <h3 class="lt-heading" data-size="s">Luftig</h3>
+  <p class="lt-paragraph">Samme markup, én klasse mer.</p>
 </div>
 `} />
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
 ## Tilgjengelighet
 

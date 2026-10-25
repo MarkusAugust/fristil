@@ -1,21 +1,21 @@
-@layer fristil {
-  .fs-error-text {
+@layer lotek {
+  .lt-error-text {
     display: block;
     /* Hele margin settes, ikke bare toppen: uten dette arver <p>
        nettleserens 1em i bunn hos konsumenter uten reset. */
-    margin: var(--fs-spacing-1) 0 0;
+    margin: var(--lt-spacing-1) 0 0;
     font-family: inherit;
-    font-size: var(--fs-font-size-xs);
-    font-weight: var(--fs-font-weight-medium);
-    line-height: var(--fs-line-height-compact);
-    color: var(--fs-color-danger-text);
+    font-size: var(--lt-font-size-xs);
+    font-weight: var(--lt-font-weight-medium);
+    line-height: var(--lt-line-height-compact);
+    color: var(--lt-color-danger-text);
   }
 
-  .fs-error-text[hidden] {
+  .lt-error-text[hidden] {
     display: none;
   }
 
-  .fs-error-text[data-variant="warning"] {
-    color: var(--fs-color-warning-text);
+  .lt-error-text[data-variant="warning"] {
+    color: var(--lt-color-warning-text);
   }
 }

@@ -6,9 +6,9 @@ import {
   type NonDefaultFieldState,
 } from "../shared.js"
 
-export const FILE_UPLOAD_CLASS = "fs-file-upload" as const
+export const FILE_UPLOAD_CLASS = "lt-file-upload" as const
 /** Lista over filene som er valgt. */
-export const FILE_UPLOAD_LIST_CLASS = "fs-file-upload-list" as const
+export const FILE_UPLOAD_LIST_CLASS = "lt-file-upload-list" as const
 
 export type FileUploadOptions = {
   /** Valideringstilstand. Standard: `default`. */

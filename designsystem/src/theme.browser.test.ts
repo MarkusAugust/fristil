@@ -11,7 +11,7 @@ import tokenKilde from "./tokens/tokens.css?inline"
 import "./tokens/tokens.css"
 
 /**
- * At `data-theme` er en temagrense, og at Fristil ikke rører verten.
+ * At `data-theme` er en temagrense, og at LO-TEK ikke rører verten.
  *
  * Begge deler kom fra en komponent som legges inn i en vertsside den ikke
  * eier. Den setter `data-theme="light"` på sitt eget rotelement og forventer
@@ -31,7 +31,7 @@ import "./tokens/tokens.css"
 
 const LYS = "#0d4e8c"
 const MORK = "#99c8ff"
-const TOKEN = "--fs-color-accent-text"
+const TOKEN = "--lt-color-accent-text"
 
 /** Verdien et element faktisk ser, arv medregnet. */
 function token(el: Element): string {
@@ -107,7 +107,7 @@ describe("data-theme er en temagrense i alle motorer", () => {
  */
 function blokk(velger: string): Map<string, string> {
   // Selektoren står alene («… {») eller først i en liste («…,»), siden
-  // temablokkene fikk `.fs-theme-control` som en ekstra linje.
+  // temablokkene fikk `.lt-theme-control` som en ekstra linje.
   const start = [`${velger} {`, `${velger},`]
     .map((m) => tokenKilde.indexOf(m))
     .filter((i) => i >= 0)
@@ -136,7 +136,7 @@ describe("de to temablokkene er symmetriske", () => {
 
   it("gir lysblokka nøyaktig verdiene fra :root", () => {
     // Navnene alene holder ikke. Hentet `lightLines` fra feil kilde, eller
-    // fikk `--fs-icon-*` de mørke strekfargene sine, ville navnene fortsatt
+    // fikk `--lt-icon-*` de mørke strekfargene sine, ville navnene fortsatt
     // stemt mens fargene var gale.
     const rot = blokk("  :root")
     const avvik = [...blokk('[data-theme="light"]')].filter(
@@ -171,12 +171,12 @@ describe("de to temablokkene er symmetriske", () => {
  */
 function velg(tema: "auto" | "light" | "dark" | "ingen"): void {
   document.body.innerHTML = `
-    <fieldset class="fs-toggle-group">
-      <legend class="fs-sr-only">Tema</legend>
+    <fieldset class="lt-toggle-group">
+      <legend class="lt-sr-only">Tema</legend>
       ${["auto", "light", "dark"]
         .map(
-          (v) => `<label class="fs-toggle-group__option">
-            <input class="fs-theme-control" type="radio" name="tema"
+          (v) => `<label class="lt-toggle-group__option">
+            <input class="lt-theme-control" type="radio" name="tema"
                    value="${v}" id="valg-${v}"> ${v}
           </label>`,
         )
@@ -189,7 +189,7 @@ function velg(tema: "auto" | "light" | "dark" | "ingen"): void {
 }
 
 /**
- * At `.fs-theme-control` lar brukeren velge tema uten en linje JavaScript.
+ * At `.lt-theme-control` lar brukeren velge tema uten en linje JavaScript.
  *
  * Kontrollen må vinne over `data-theme` på `<html>`, for serveren sender det
  * valget den har lagret, og klikket skal slå igjennom med én gang framfor å
@@ -245,7 +245,7 @@ describe("temavelgeren virker uten JavaScript", () => {
   it("står på begge temablokkene i tokens.css", () => {
     // Sto den bare på den mørke, kom brukeren seg aldri tilbake til lyst.
     for (const tema of ["light", "dark"]) {
-      const velger = `:root:has(.fs-theme-control[value="${tema}"]:checked)`
+      const velger = `:root:has(.lt-theme-control[value="${tema}"]:checked)`
       expect(tokenKilde).toContain(velger)
       expect(blokk(`  [data-theme="${tema}"]`).size).toBeGreaterThan(0)
     }
@@ -256,7 +256,7 @@ describe("temavelgeren virker uten JavaScript", () => {
      * Dette er den ene regelen `auto` har, og den kom av en felle.
      *
      * Rådet var at konsumenten skriver `color-scheme: light dark` på `<html>`
-     * selv. Gjør den det utenfor et lag, slår regelen `@layer fristil`, og et
+     * selv. Gjør den det utenfor et lag, slår regelen `@layer lotek`, og et
      * valgt mørkt tema fikk lyse rullefelt. Kontrollen tar det selv i stedet,
      * så den som bruker den ikke skal skrive `color-scheme` i det hele tatt.
      */

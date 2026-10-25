@@ -1,4 +1,4 @@
-package no.fristil
+package no.lotek
 
 /**
  * Attributtene en byggefunksjon gir: navn og verdi, i rekkefølgen de ble satt.
@@ -8,7 +8,7 @@ package no.fristil
  * helst malmotor. Uten malmotor skriver [toHtml] det ut.
  *
  * ```kotlin
- * val knapp = Fs.button(variant = ButtonVariant.SECONDARY)
+ * val knapp = Lt.button(variant = ButtonVariant.SECONDARY)
  * "<button ${knapp.toHtml()}>Lagre utkast</button>"
  * ```
  */
@@ -17,7 +17,7 @@ class Attributes(values: Map<String, String> = emptyMap()) : Map<String, String>
     operator fun plus(other: Map<String, String>): Attributes = Attributes(LinkedHashMap(this).apply { putAll(other) })
 
     /**
-     * Attributtene som HTML, med verdiene escapet: `class="fs-button" hidden`.
+     * Attributtene som HTML, med verdiene escapet: `class="lt-button" hidden`.
      * Den tomme teksten skrives som navnet alene, som i HTML betyr det samme.
      */
     fun toHtml(): String =

@@ -1,4 +1,4 @@
-//! `fristil sjekk <fil|adresse…>`: den samme sjekken som editoren kjører mens
+//! `lotek sjekk <fil|adresse…>`: den samme sjekken som editoren kjører mens
 //! du skriver, over ferdige filer.
 //!
 //! Uten filer leses standard inn, så en test kan sende HTML-en serveren
@@ -11,10 +11,10 @@ use std::io::{IsTerminal, Read};
 
 use crate::fetch;
 use crate::output::{count, error, fail, log, shown};
-use fristil_kjerne::styles::{read_styles, Styles};
-use fristil_kjerne::text::utf16;
-use fristil_kjerne::types::Severity;
-use fristil_kjerne::{diagnose_markup, diagnose_page, diagnose_styled, manifest, Lines};
+use lotek_core::styles::{read_styles, Styles};
+use lotek_core::text::utf16;
+use lotek_core::types::Severity;
+use lotek_core::{diagnose_markup, diagnose_page, diagnose_styled, manifest, Lines};
 
 /// Teksten uten en BOM (U+FEFF) først, slik nettleseren og editoren leser
 /// den. Med den ville linje 1 fått én kolonne mer enn editoren viser, og
@@ -54,7 +54,7 @@ pub fn read_fragments(base: &str, manifests: &[&str]) -> Vec<String> {
     for path in manifests {
         let Ok(bytes) = std::fs::read(path) else {
             fail(&format!(
-                "Fant ikke manifestet «{}».\n\nFragmentet skrives av fristil overta, ved siden av kopien.\n",
+                "Fant ikke manifestet «{}».\n\nFragmentet skrives av lotek overta, ved siden av kopien.\n",
                 shown(path)
             ));
         };
@@ -71,7 +71,7 @@ pub fn read_fragments(base: &str, manifests: &[&str]) -> Vec<String> {
 }
 
 /// Ordforrådet: manifestet i pakken, med fragmentene lagt til.
-fn vocabulary(manifests: &[&str]) -> std::rc::Rc<fristil_kjerne::types::Vocabulary> {
+fn vocabulary(manifests: &[&str]) -> std::rc::Rc<lotek_core::types::Vocabulary> {
     let base = crate::package::manifest();
     let texts = read_fragments(&base, manifests);
     let all: Vec<&str> = texts.iter().map(String::as_str).collect();
@@ -103,7 +103,7 @@ fn normalized(path: &std::path::Path) -> std::path::PathBuf {
     out
 }
 
-/// Fila en pakkesti som `@fristil/designsystem/fristil.css` peker på.
+/// Fila en pakkesti som `@lo-tek/interfaces/lotek.css` peker på.
 ///
 /// Leter etter `node_modules/<pakke>` oppover fra stilarkets mappe, og slår
 /// opp underveien i `exports` i pakkens `package.json`: en nøyaktig nøkkel,
@@ -114,7 +114,7 @@ fn normalized(path: &std::path::Path) -> std::path::PathBuf {
 /// En sti som begynner med `.` eller `/` er en fil, ikke en pakke, og gir
 /// `None`.
 fn package_file(folder: &std::path::Path, spec: &str) -> Option<std::path::PathBuf> {
-    use fristil_kjerne::json::{parse, Json};
+    use lotek_core::json::{parse, Json};
     let spec = spec.strip_prefix('~').unwrap_or(spec);
     if spec.starts_with('.') || spec.starts_with('/') || spec.starts_with('\\') {
         return None;
@@ -187,7 +187,7 @@ fn package_file(folder: &std::path::Path, spec: &str) -> Option<std::path::PathB
 /// Stilarkene, med det de importerer.
 ///
 /// `@import` følges til en fil ved siden av, og til en pakke i
-/// `node_modules`, som `@fristil/designsystem/fristil.css`. En adresse på
+/// `node_modules`, som `@lo-tek/interfaces/lotek.css`. En adresse på
 /// nettet hentes ikke.
 fn read_style_sheets(paths: &[&str]) -> Styles {
     let mut styles = Styles::default();
@@ -252,7 +252,7 @@ pub fn run(arguments: &[String]) {
     let mut missing: Vec<String> = Vec::new();
     let mut unreachable: Vec<String> = Vec::new();
 
-    // Fragmentene fra `fristil overta`, så markupen for en kopi sjekkes også.
+    // Fragmentene fra `lotek overta`, så markupen for en kopi sjekkes også.
     let manifests: Vec<&str> = arguments
         .iter()
         .filter_map(|a| a.strip_prefix("--manifest="))
@@ -274,7 +274,7 @@ pub fn run(arguments: &[String]) {
         // det. Chicory melder et rør som en terminal, så som WASI-modul
         // stoler kommandolinja bare på verten.
         let terminal = if cfg!(target_os = "wasi") {
-            std::env::var("FRISTIL_TERMINAL").is_ok_and(|v| v == "1")
+            std::env::var("LOTEK_TERMINAL").is_ok_and(|v| v == "1")
         } else {
             std::io::stdin().is_terminal()
         };
@@ -377,7 +377,7 @@ pub fn run(arguments: &[String]) {
     if found > 0 {
         fail(&format!("\n{found} funn i {files}."));
     }
-    log(&format!("Markupen stemmer med Fristil i {files}."));
+    log(&format!("Markupen stemmer med LO-TEK i {files}."));
 }
 
 #[cfg(test)]
@@ -402,14 +402,14 @@ mod tests {
 
     #[test]
     fn style_sheets_that_import_each_other_are_read_once() {
-        let root = std::env::temp_dir().join(format!("fristil-import-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("lotek-import-{}", std::process::id()));
         std::fs::create_dir_all(root.join("a")).unwrap();
         std::fs::create_dir_all(root.join("b")).unwrap();
-        std::fs::write(root.join("a/x.css"), "@import \"../b/y.css\";\n.fs-a { }").unwrap();
-        std::fs::write(root.join("b/y.css"), "@import \"../a/x.css\";\n.fs-b { }").unwrap();
+        std::fs::write(root.join("a/x.css"), "@import \"../b/y.css\";\n.lt-a { }").unwrap();
+        std::fs::write(root.join("b/y.css"), "@import \"../a/x.css\";\n.lt-b { }").unwrap();
         let start = root.join("a/x.css");
         let styles = read_style_sheets(&[start.to_str().unwrap()]);
-        assert!(styles.classes.contains("fs-a") && styles.classes.contains("fs-b"));
+        assert!(styles.classes.contains("lt-a") && styles.classes.contains("lt-b"));
         assert_eq!(styles.imports.len(), 2, "hvert stilark leses én gang");
         std::fs::remove_dir_all(root).unwrap();
     }
