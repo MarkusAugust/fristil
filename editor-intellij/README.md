@@ -15,6 +15,15 @@ Det er etterprøvd: med `web-types.json` på plass gir `class="fs-` forslag i en
 Pluginen lukker det hullet. I tillegg viser den feilmeldingene fra sjekken,
 som ingen annen kilde gir i IntelliJ.
 
+## Live templates
+
+Skriv `fs-field` og trykk Tab, og markupen fra komponentsiden står der, med
+id-en som variabel og `for` som følger med. Malene ligger i
+`designsystem/live-templates.xml`, generert av `generate-ordforrad.ts` fra de
+samme oppskriftene som snippetene i VS Code, og Gradle kopierer fila inn som
+`liveTemplates/Fristil.xml`. En ny komponent får en mal av seg selv ved neste
+`generate`, men pluginen må gis ut på nytt for at brukerne skal få den.
+
 ## Feilmeldingene
 
 `FristilAnnotator` kjører den samme Rust-kjernen som `fristil sjekk` og VS
@@ -25,7 +34,12 @@ Ingen Node, ingen prosess å starte.
 Det er et vanlig `Annotator` på HTML-språket, av samme grunn som fullføringen:
 da kalles det også for injiserte fragmenter. Sjekken er `diagnoseMarkup`, fordi
 en fil eller et fragment er en mal. Hvert funn har regelnavnet og en lenke til
-dokumentasjonen, og en rettelse når kjernen har en. Et funn undertrykkes med
+dokumentasjonen, og en rettelse når kjernen har en. En rettelse kan være
+flere endringer, som `id` på feltet og `for` på ledeteksten; de brukes bakfra,
+så posisjonene holder. I en streng regnes hver endring om til sin del av
+vertsstrengen og skrives gjennom strengens egen manipulator, så
+anførselstegnene rettelsen setter inn, rømmes i en `"…"`-streng, og en mal
+som `$navn` i strengen står urørt. Et funn undertrykkes med
 `<!-- fristil-ignore-next regelnavn -->` over taggen.
 
 Sjekken går mot prosjektets manifest, funnet slik språkserveren finner det:

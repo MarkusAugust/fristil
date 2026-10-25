@@ -71,7 +71,7 @@ type Case = {
   page?: boolean
 }
 
-const FIELD_OK = `<fs-field id="f"><label>Navn</label><input class="fs-input" name="navn"></fs-field>`
+const FIELD_OK = `<fs-field id="f"><label for="navn">Navn</label><input class="fs-input" name="navn" id="navn"></fs-field>`
 
 const cases: Case[] = [
   {
@@ -106,7 +106,7 @@ const cases: Case[] = [
   },
   {
     name: "et felt med to kontroller",
-    html: `<fs-field><label>Telefon</label><input name="a"><select name="b"></select></fs-field>`,
+    html: `<fs-field><label for="a">Telefon</label><input name="a" id="a"><select name="b"></select></fs-field>`,
     count: 1,
     mentions: [
       "<fs-field> har delen «control» mer enn én gang",
@@ -117,10 +117,10 @@ const cases: Case[] = [
   },
   {
     name: "to hjelpetekster i et felt, der bare den første kobles",
-    html: `<fs-field><label>Navn</label><input name="n"><p class="fs-help-text">A</p><p class="fs-help-text">B</p></fs-field>`,
+    html: `<fs-field><label for="n">Navn</label><input name="n" id="n"><p class="fs-help-text">A</p><p class="fs-help-text">B</p></fs-field>`,
     count: 1,
     mentions: ["«help»"],
-    coversAt: 75,
+    coversAt: 90,
   },
   {
     name: "en klasse med to av en del som skal stå én gang",
@@ -131,10 +131,10 @@ const cases: Case[] = [
   },
   {
     name: "deler som står flere ganger der det er lov, eller hører til noe annet",
-    html: `<fs-popover><button>Meny</button><ul class="fs-popover"><li><button>A</button></li><li><button>B</button></li></ul></fs-popover>
+    html: `<fs-popover><button>Meny</button><ul class="fs-popover" id="meny"><li><button>A</button></li><li><button>B</button></li></ul></fs-popover>
 <fs-dialog><dialog><h2>Tittel</h2><div class="fs-dialog__body"><h3>Del</h3></div></dialog></fs-dialog>
-<fs-field><label>A</label><input name="a"><fs-field><label>B</label><input name="b"></fs-field></fs-field>
-<fs-tabs><div class="fs-tabs__list"><button>A</button><button>B</button></div><div class="fs-tabs__panel">A</div><div class="fs-tabs__panel">B</div></fs-tabs>
+<fs-field><label>A <input name="a"></label><fs-field><label>B <input name="b"></label></fs-field></fs-field>
+<fs-tabs><ul class="fs-tabs__list" aria-label="Deler"><li><a href="#pa">A</a></li><li><a href="#pb">B</a></li></ul><div class="fs-tabs__panel" id="pa">A</div><div class="fs-tabs__panel" id="pb">B</div></fs-tabs>
 <div class="fs-card"><h3 class="fs-card__title">A</h3><div class="fs-card"><h3 class="fs-card__title">B</h3></div></div>
 <ul class="fs-list"><li>A</li><li>B</li></ul>`,
     count: 0,
@@ -148,15 +148,15 @@ const cases: Case[] = [
   },
   {
     name: "en skjult verdi er ikke en kontroll til, og en delt knapp er ikke to utløsere",
-    html: `<fs-field><input type="hidden" name="x"><input type="checkbox" name="y"><label>Jeg godtar</label></fs-field>
+    html: `<fs-field><input type="hidden" name="x"><label><input type="checkbox" name="y"> Jeg godtar</label></fs-field>
 <fs-popover><button type="button">Lagre</button><button type="button" aria-controls="m">Flere valg</button><ul class="fs-popover" id="m"><li><button type="button">Lagre som</button></li></ul></fs-popover>
-<fieldset class="fs-fieldset"><legend class="fs-legend">Adresse</legend><p class="fs-help-text">Der du bor</p><fs-field><label>Gate</label><input name="g"><p class="fs-help-text">Med nummer</p></fs-field></fieldset>
+<fieldset class="fs-fieldset"><legend class="fs-legend">Adresse</legend><p class="fs-help-text">Der du bor</p><fs-field><label for="g">Gate</label><input name="g" id="g"><p class="fs-help-text">Med nummer</p></fs-field></fieldset>
 <table class="fs-table"><caption>A</caption><thead></thead><tbody></tbody><tbody></tbody></table>`,
     count: 0,
   },
   {
     name: "en dyp nøsting og et felt med mange kontroller går fort",
-    html: `<ul class="fs-list">${"<li>x".repeat(3000)}</ul><fs-field><label>A</label>${'<input name="a">'.repeat(2000)}</fs-field>`,
+    html: `<ul class="fs-list">${"<li>x".repeat(3000)}</ul><fs-field><label for="a">A</label><input name="a" id="a">${'<input name="a">'.repeat(1999)}</fs-field>`,
     count: 1999,
     maxMs: 500,
   },
@@ -167,7 +167,7 @@ const cases: Case[] = [
   },
   {
     name: "en del til kan undertrykkes",
-    html: `<fs-field><label>A</label><input name="a"><!-- fristil-ignore-next del-flere-ganger --><input name="b"></fs-field>`,
+    html: `<fs-field><label for="a">A</label><input name="a" id="a"><!-- fristil-ignore-next del-flere-ganger --><input name="b"></fs-field>`,
     count: 0,
   },
   {
@@ -240,14 +240,14 @@ const cases: Case[] = [
   },
   {
     name: "et boolsk attributt med «false»",
-    html: `<fs-field disabled="false"><label>N</label><input></fs-field>`,
+    html: `<fs-field disabled="false"><label>N <input></label></fs-field>`,
     count: 1,
     mentions: ["boolsk", 'disabled="false" betyr det samme som disabled'],
     severity: "warning",
   },
   {
     name: "et boolsk attributt med sitt eget navn eller tom verdi er greit",
-    html: `<fs-field disabled="disabled" optional=""><label>N</label><input></fs-field>`,
+    html: `<fs-field disabled="disabled" optional=""><label>N <input></label></fs-field>`,
     count: 0,
   },
   {
@@ -364,12 +364,12 @@ const cases: Case[] = [
   },
   {
     name: "PHP i taggen",
-    html: `<fs-field <?= $av ? 'disabled' : '' ?>><label>N</label><input></fs-field>`,
+    html: `<fs-field <?= $av ? 'disabled' : '' ?>><label>N <input></label></fs-field>`,
     count: 0,
   },
   {
     name: "Razor i verdien",
-    html: `<fs-field disabled="@Model.Disabled"><label>N</label><input></fs-field>`,
+    html: `<fs-field disabled="@Model.Disabled"><label>N <input></label></fs-field>`,
     count: 0,
   },
   {
@@ -425,12 +425,12 @@ const cases: Case[] = [
   },
   {
     name: "felt i felt",
-    html: `<fs-field><label>A</label><input><fs-field><label>B</label><input></fs-field></fs-field>`,
+    html: `<fs-field><label>A <input></label><fs-field><label>B <input></label></fs-field></fs-field>`,
     count: 0,
   },
   {
     name: "et felt uten lukketagg",
-    html: `<fs-field><label>A</label><input>`,
+    html: `<fs-field><label>A <input></label>`,
     count: 0,
   },
   {
@@ -465,7 +465,7 @@ const cases: Case[] = [
   },
   {
     name: "en skrivefeil uten bindestrek",
-    html: `<fs-field describedBy="vilkar"><label>N</label><input></fs-field>`,
+    html: `<fs-field describedBy="vilkar"><label>N <input></label></fs-field>`,
     count: 1,
     mentions: ["Mente du described-by?"],
   },
@@ -562,17 +562,17 @@ const cases: Case[] = [
   },
   {
     name: "rettelsen for et boolsk attributt tar med verdien og mellomrommet",
-    html: `<fs-field disabled="false" id="x"><label>N</label><input></fs-field>`,
+    html: `<fs-field disabled="false" id="x"><label>N <input></label></fs-field>`,
     count: 1,
-    fixed: `<fs-field id="x"><label>N</label><input></fs-field>`,
+    fixed: `<fs-field id="x"><label>N <input></label></fs-field>`,
     fixTitle: "Ta bort disabled",
     fixPreferred: true,
   },
   {
     name: "rettelsen for et boolsk attributt sist i taggen",
-    html: `<fs-field id="x" disabled="false"><label>N</label><input></fs-field>`,
+    html: `<fs-field id="x" disabled="false"><label>N <input></label></fs-field>`,
     count: 1,
-    fixed: `<fs-field id="x"><label>N</label><input></fs-field>`,
+    fixed: `<fs-field id="x"><label>N <input></label></fs-field>`,
   },
   {
     name: "rettelsen for et felt uten ledetekst",
@@ -663,9 +663,9 @@ const cases: Case[] = [
   },
   {
     name: "«Ta bort» over flere linjer",
-    html: `<fs-field\n  disabled="false"\n  id="x"><label>N</label><input></fs-field>`,
+    html: `<fs-field\n  disabled="false"\n  id="x"><label>N <input></label></fs-field>`,
     count: 1,
-    fixed: `<fs-field\n  id="x"><label>N</label><input></fs-field>`,
+    fixed: `<fs-field\n  id="x"><label>N <input></label></fs-field>`,
   },
   {
     name: "rettelse på en klasse uten anførselstegn",
@@ -840,14 +840,14 @@ cases.push(
   },
   {
     name: "side: bar markup inni <fs-field> er riktig",
-    html: `<fs-field><label class="fs-label">Navn</label><input class="fs-input"><p class="fs-help-text">Hjelp</p><p class="fs-error-text" hidden>Feil</p></fs-field>`,
+    html: `<fs-field><label class="fs-label" for="navn">Navn</label><input class="fs-input" id="navn"><p class="fs-help-text">Hjelp</p><p class="fs-error-text" hidden>Feil</p></fs-field>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: en id som peker feil inni <fs-field>, meldes likevel",
+    name: "side: en id som peker feil inni <fs-field>, meldes likevel, og ledeteksten er da ikke koblet",
     html: `<fs-field><label class="fs-label" for="x">Navn</label><input class="fs-input" id="y"></fs-field>`,
-    count: 1,
+    count: 2,
     page: true,
     mentions: ["«x»"],
   },
@@ -880,14 +880,15 @@ cases.push(
     mentions: ["«hjelp»"],
   },
   {
-    name: "side: <fs-suggestion> setter for på ledeteksten selv",
+    name: "side: en ledetekst uten for inni <fs-suggestion> meldes, for malen skal skrive den",
     html: `<fs-suggestion><label class="fs-label">Kommune</label><input class="fs-input" type="text"></fs-suggestion>`,
-    count: 0,
+    count: 1,
     page: true,
+    mentions: ["Ledeteksten er ikke koblet"],
   },
   {
     name: "side: en hjelpetekst inni <fs-suggestion> må kobles",
-    html: `<fs-suggestion><label class="fs-label">Kommune</label><input class="fs-input" type="text"><p class="fs-help-text">Hjelp</p></fs-suggestion>`,
+    html: `<fs-suggestion><label class="fs-label" for="k">Kommune</label><input class="fs-input" type="text" id="k"><p class="fs-help-text">Hjelp</p></fs-suggestion>`,
     count: 1,
     page: true,
     mentions: ["Hjelpeteksten"],
@@ -1048,19 +1049,353 @@ cases.push(
 
 // Snippetene fra komponentsidene skal være rene, også som hele sider: de
 // skal kunne limes inn og virke, koblingen medregnet.
+/**
+ * Snippeten slik den står i dokumentet etter at brukeren har godtatt
+ * tabbestoppene: `${1:navn}` blir `navn`, og `$1` det samme, slik VS Code
+ * speiler dem. Rømmingen tas bort til slutt.
+ */
+function utenTabbestopp(body: string[]): string {
+  const text = body.join("\n")
+  const defaults = new Map<string, string>()
+  for (const m of text.matchAll(/\$\{(\d+):([^}]*)\}/g))
+    defaults.set(m[1], m[2])
+  return text
+    .replace(/\$\{(\d+):([^}]*)\}/g, (_, _n, value: string) => value)
+    .replace(/(?<!\\)\$(\d+)\b/g, (_, n: string) => defaults.get(n) ?? "")
+    .replace(/\\\$/g, "$")
+    .replace(/\\\\/g, "\\")
+}
+
 for (const [tag, snippet] of Object.entries(snippets()))
   for (const page of [false, true])
     cases.push({
       name: `snippeten for <${tag}>${page ? " som hel side" : ""}`,
-      html: snippet.body
-        .join("\n")
-        .replace(/\\\$/g, "$")
-        .replace(/\\\\/g, "\\"),
+      html: utenTabbestopp(snippet.body),
       count: 0,
       page,
     })
 
 const started = performance.now()
+
+// Koblingen malen må skrive selv, så feltet virker uten JavaScript og
+// overlever en oppdatering fra serveren (plan v6, PR 3).
+const TABS = (
+  rad: string,
+  paneler = `<section class="fs-tabs__panel" id="soknaden"><h2>Søknaden</h2></section><section class="fs-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>`,
+) => `<fs-tabs>${rad}${paneler}</fs-tabs>`
+const RAD = `<ul class="fs-tabs__list" aria-label="Deler av saken"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`
+cases.push(
+  {
+    name: "en ledetekst uten for ved siden av et felt uten id",
+    html: `<fs-field><label class="fs-label">Kommune</label><input class="fs-input" name="kommune"></fs-field>`,
+    count: 1,
+    mentions: ["Ledeteksten er ikke koblet til <input>", "for på ledeteksten"],
+    severity: "warning",
+    covers: "input",
+    fixTitle: "Gi feltet id «kommune»",
+    fixed: `<fs-field><label for="kommune" class="fs-label">Kommune</label><input id="kommune" class="fs-input" name="kommune"></fs-field>`,
+    fixPreferred: true,
+  },
+  {
+    name: "en ledetekst som peker på en annen id enn feltets",
+    html: `<fs-field><label class="fs-label" for="annen">Kommune</label><input class="fs-input" id="kommune" name="kommune"></fs-field>`,
+    count: 1,
+    mentions: ["Ledeteksten er ikke koblet"],
+    noFix: true,
+  },
+  {
+    name: "et name som ikke kan bli en id gir ingen rettelse",
+    html: `<fs-field><label class="fs-label">E-post</label><input class="fs-input" name="items[0].email"></fs-field>`,
+    count: 1,
+    noFix: true,
+  },
+  {
+    name: "et name som alt er en id på siden gir ingen rettelse",
+    html: `<p id="kommune"></p><fs-field><label class="fs-label">Kommune</label><input class="fs-input" name="kommune"></fs-field>`,
+    count: 1,
+    noFix: true,
+  },
+  {
+    name: "et felt med for og id er koblet",
+    html: `<fs-field><label class="fs-label" for="kommune">Kommune</label><input class="fs-input" id="kommune" name="kommune"></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "en ledetekst rundt feltet er koblet",
+    html: `<fs-field><label class="fs-label">Kommune <input class="fs-input" name="kommune"></label></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "et felt med aria-label trenger ingen kobling",
+    html: `<fs-field><label class="fs-label">Søk</label><input class="fs-input" name="q" aria-label="Søk i saken"></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "en bundet id er serverens sak",
+    html: `<fs-field><label class="fs-label" :for="id">Kommune</label><input class="fs-input" :id="id" name="kommune"></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "en id med malsyntaks er serverens sak",
+    html: `<fs-field><label class="fs-label" for="{{ .Id }}">Kommune</label><input class="fs-input" id="{{ .Id }}" name="kommune"></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "asp-for gir id i Razor",
+    html: `<fs-field><label class="fs-label" asp-for="Kommune">Kommune</label><input class="fs-input" asp-for="Kommune"></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "forslagsfeltet med ledetekst uten for",
+    html: `<fs-suggestion><label class="fs-label">Sted</label><input class="fs-input" id="sted" name="sted"><ul class="fs-suggestion__list"><li>Bergen</li></ul><span class="fs-sr-only" role="status"></span></fs-suggestion>`,
+    count: 1,
+    mentions: ["Ledeteksten er ikke koblet"],
+    noFix: true,
+  },
+  {
+    name: "forslagsfeltet uten ledetekst i det hele tatt",
+    html: `<fs-suggestion><input class="fs-input" name="sted"><ul class="fs-suggestion__list"><li>Bergen</li></ul><span class="fs-sr-only" role="status"></span></fs-suggestion>`,
+    count: 1,
+    mentions: ["ingen ledetekst koblet til seg"],
+    noFix: true,
+  },
+  {
+    name: "et panel i sprettoppvinduet uten id",
+    html: `<fs-popover><button class="fs-button" type="button">Meny</button><div class="fs-popover" popover>Innhold</div></fs-popover>`,
+    count: 1,
+    mentions: ["«panel» uten id", "popovertarget"],
+    covers: "div",
+    noFix: true,
+  },
+  {
+    name: "et panel med id",
+    html: `<fs-popover><button class="fs-button" type="button" popovertarget="meny">Meny</button><div class="fs-popover" popover id="meny">Innhold</div></fs-popover>`,
+    count: 0,
+  },
+  {
+    name: "et panel med bundet id",
+    html: `<fs-popover><button class="fs-button" type="button">Meny</button><div class="fs-popover" popover :id="id">Innhold</div></fs-popover>`,
+    count: 0,
+  },
+  {
+    name: "en fane som peker på et panel som ikke finnes",
+    html: TABS(
+      RAD,
+      `<section class="fs-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>`,
+    ),
+    count: 1,
+    mentions: ["#vedlegg", "ingen element har den id-en"],
+    covers: "a",
+  },
+  {
+    name: "et panel utenfor raden teller",
+    html: `${TABS(RAD, `<section class="fs-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>`)}<section class="fs-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>`,
+    count: 0,
+  },
+  {
+    name: "en lenke med malsyntaks i href er serverens sak",
+    html: TABS(
+      `<ul class="fs-tabs__list" aria-label="Deler"><li><a href="#{{ .Id }}">Søknaden</a></li></ul>`,
+      `<section class="fs-tabs__panel" id="{{ .Id }}"></section>`,
+    ),
+    count: 0,
+  },
+  {
+    name: "en knapp med role=tab i raden",
+    html: TABS(
+      `<ul class="fs-tabs__list" aria-label="Deler av saken"><li><a href="#soknaden">Søknaden</a></li><li><button type="button" role="tab">Vedlegg</button></li></ul>`,
+    ),
+    count: 1,
+    mentions: ['role="tab" står på <button>', "Fanene er lenker"],
+    covers: "button",
+  },
+  {
+    name: "en lenke med role=tab er en fane",
+    html: TABS(
+      `<ul class="fs-tabs__list" aria-label="Deler av saken" role="tablist"><li role="presentation"><a href="#soknaden" role="tab">Søknaden</a></li><li role="presentation"><a href="#vedlegg" role="tab">Vedlegg</a></li></ul>`,
+    ),
+    count: 0,
+  },
+  {
+    name: "en fanerad uten navn",
+    html: TABS(
+      `<ul class="fs-tabs__list"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`,
+    ),
+    count: 1,
+    mentions: ["fanerad uten navn", "«faneliste»"],
+    covers: "ul",
+    fixTitle: "Gi raden et navn med aria-label",
+    fixed: TABS(
+      `<ul aria-label="Deler av saken" class="fs-tabs__list"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`,
+    ),
+  },
+  {
+    name: "en fanerad med aria-labelledby",
+    html: `<h2 id="deler">Deler av saken</h2>${TABS(`<ul class="fs-tabs__list" aria-labelledby="deler"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`)}`,
+    count: 0,
+  },
+  {
+    name: "en fanerad med bundet aria-label",
+    html: TABS(
+      `<ul class="fs-tabs__list" :aria-label="navn"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`,
+    ),
+    count: 0,
+  },
+  {
+    name: "hjelpeteksten inni ledeteksten",
+    html: `<fs-field><label class="fs-label" for="epost">E-post <span class="fs-help-text">Vi sender aldri reklame.</span></label><input class="fs-input" id="epost" name="epost"></fs-field>`,
+    count: 1,
+    mentions: ["Hjelpeteksten står inni <label>", "del av feltets navn"],
+    covers: "span",
+  },
+  {
+    name: "feilmeldingen inni ledeteksten",
+    html: `<fs-field><label class="fs-label" for="epost">E-post <span class="fs-error-text">Skriv en e-postadresse.</span></label><input class="fs-input" id="epost" name="epost"></fs-field>`,
+    count: 1,
+    mentions: ["Feilmeldingen står inni <label>"],
+  },
+  {
+    name: "hjelpeteksten ved siden av ledeteksten",
+    html: `<fs-field><label class="fs-label" for="epost">E-post</label><input class="fs-input" id="epost" name="epost"><p class="fs-help-text">Vi sender aldri reklame.</p></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "alternativer med data-value uten verdifelt",
+    html: `<fs-suggestion><label class="fs-label" for="k">Kommune</label><input class="fs-input" id="k" name="k"><ul class="fs-suggestion__list"><li data-value="4601">Bergen</li></ul><span class="fs-sr-only" role="status"></span></fs-suggestion>`,
+    count: 1,
+    mentions: ["data-value, men ikke noe .fs-suggestion__value"],
+    covers: "li",
+  },
+  {
+    name: "et verdifelt uten alternativer med data-value",
+    html: `<fs-suggestion><label class="fs-label" for="k">Kommune</label><input class="fs-input" id="k" name="k"><input type="hidden" class="fs-suggestion__value" name="nr"><ul class="fs-suggestion__list"><li>Bergen</li></ul><span class="fs-sr-only" role="status"></span></fs-suggestion>`,
+    count: 1,
+    mentions: ["ingen alternativer med data-value"],
+    covers: "input",
+  },
+  {
+    name: "data-value og verdifelt sammen",
+    html: `<fs-suggestion><label class="fs-label" for="k">Kommune</label><input class="fs-input" id="k" name="k"><input type="hidden" class="fs-suggestion__value" name="nr"><ul class="fs-suggestion__list"><li data-value="4601">Bergen</li></ul><span class="fs-sr-only" role="status"></span></fs-suggestion>`,
+    count: 0,
+  },
+  {
+    name: "en tom liste serveren fyller senere",
+    html: `<fs-suggestion><label class="fs-label" for="k">Kommune</label><input class="fs-input" id="k" name="k"><input type="hidden" class="fs-suggestion__value" name="nr"><ul class="fs-suggestion__list"></ul><span class="fs-sr-only" role="status"></span></fs-suggestion>`,
+    count: 0,
+  },
+  {
+    name: "en skjult feilmelding ved siden av aria-invalid",
+    html: `<fs-field><label class="fs-label" for="fnr">Fødselsnummer</label><input class="fs-input" id="fnr" name="fnr" aria-invalid="true"><p class="fs-error-text" hidden>Skriv elleve siffer.</p></fs-field>`,
+    count: 1,
+    mentions: ["Feilmeldingen har hidden", 'aria-invalid="true"'],
+    covers: "p",
+  },
+  {
+    name: "en skjult feilmelding på et gyldig felt",
+    html: `<fs-field><label class="fs-label" for="fnr">Fødselsnummer</label><input class="fs-input" id="fnr" name="fnr"><p class="fs-error-text" hidden>Skriv elleve siffer.</p></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "en feilmelding Datastar skjuler er serverens sak",
+    html: `<fs-field><label class="fs-label" for="fnr">Fødselsnummer</label><input class="fs-input" id="fnr" name="fnr" aria-invalid="true"><p class="fs-error-text" data-attr:hidden="!$ugyldig">Skriv elleve siffer.</p></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "invalid på fs-field, slik det ble skrevet før",
+    html: `<fs-field invalid><label class="fs-label" for="fnr">Fødselsnummer</label><input class="fs-input" id="fnr" name="fnr"></fs-field>`,
+    count: 1,
+    mentions: ["invalid er tatt ut av <fs-field>", "aria-invalid"],
+    covers: "invalid",
+    fixTitle: "Ta bort invalid",
+    fixed: `<fs-field><label class="fs-label" for="fnr">Fødselsnummer</label><input class="fs-input" id="fnr" name="fnr"></fs-field>`,
+  },
+  {
+    name: "required-marker på fs-field, slik det ble skrevet før",
+    html: `<fs-field required-marker="*"><label class="fs-label" for="fnr">Fødselsnummer</label><input class="fs-input" id="fnr" name="fnr"></fs-field>`,
+    count: 1,
+    mentions: ["data-required"],
+    fixed: `<fs-field><label class="fs-label" for="fnr">Fødselsnummer</label><input class="fs-input" id="fnr" name="fnr"></fs-field>`,
+  },
+  {
+    name: "en id komponenten lagde selv, kopiert inn i malen",
+    html: `<fs-field><label class="fs-label" for="e">E-post</label><input class="fs-input" id="e" name="epost"><p class="fs-help-text" id="fs-field-help-a1b2c3d">Hjelp</p></fs-field>`,
+    count: 1,
+    mentions: ["kopiert fra DevTools"],
+    covers: "fs-field-help-a1b2c3d",
+  },
+  {
+    name: "en id fra createFieldId, kopiert inn i malen",
+    html: `<fs-field><label class="fs-label" for="fs-field-3-k2x9qa">E-post</label><input class="fs-input" id="fs-field-3-k2x9qa" name="epost"></fs-field>`,
+    count: 1,
+    mentions: ["kopiert fra DevTools"],
+  },
+  {
+    name: "den samme id-en på en rendret side er riktig",
+    html: `<fs-field><label class="fs-label" for="e">E-post</label><input class="fs-input" id="e" name="epost" aria-describedby="fs-field-help-a1b2c3d"><p class="fs-help-text" id="fs-field-help-a1b2c3d">Hjelp</p></fs-field>`,
+    count: 0,
+    page: true,
+  },
+  {
+    name: "en egen id som begynner med fs-",
+    html: `<fs-field><label class="fs-label" for="e">E-post</label><input class="fs-input" id="e" name="epost"><p class="fs-help-text" id="fs-field-help">Hjelp</p></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "et kodet fragment finner panelet sitt, som i nettleseren",
+    html: TABS(
+      `<ul class="fs-tabs__list" aria-label="Deler"><li><a href="#s%C3%B8knaden">Søknaden</a></li></ul>`,
+      `<section class="fs-tabs__panel" id="søknaden"></section>`,
+    ),
+    count: 0,
+  },
+  {
+    name: "invalid bundet i Datastar, slik den gamle oppskriften skrev det",
+    html: `<fs-field data-attr:invalid="$ugyldig"><label class="fs-label" for="e">E-post</label><input class="fs-input" id="e"></fs-field>`,
+    count: 1,
+    mentions: ["invalid er tatt ut av <fs-field>"],
+    fixTitle: "Ta bort data-attr:invalid",
+    fixed: `<fs-field><label class="fs-label" for="e">E-post</label><input class="fs-input" id="e"></fs-field>`,
+  },
+  {
+    name: "invalid bundet i Vue",
+    html: `<fs-field :invalid="ugyldig"><label class="fs-label" for="e">E-post</label><input class="fs-input" id="e"></fs-field>`,
+    count: 1,
+    mentions: ["invalid er tatt ut av <fs-field>"],
+  },
+  {
+    name: "id-ene forslagsfeltet lager selv, kopiert inn i malen",
+    html: `<fs-suggestion><label class="fs-label" for="k">Kommune</label><input class="fs-input" id="k"><ul class="fs-suggestion__list" id="fs-suggestion-list-a1b2c3d"><li id="fs-suggestion-option-q9w8e7r">Bergen</li></ul></fs-suggestion>`,
+    count: 2,
+    mentions: ["kopiert fra DevTools"],
+  },
+  {
+    name: "en bundet for på ledeteksten er serverens sak",
+    html: `<fs-suggestion><label class="fs-label" :for="'k'">Kommune</label><input class="fs-input" id="k"><ul class="fs-suggestion__list"><li>Bergen</li></ul></fs-suggestion>`,
+    count: 0,
+  },
+  {
+    name: "[attr.id] og [attr.for] i Angular er serverens sak",
+    html: `<fs-field><label class="fs-label" [attr.for]="id">Kommune</label><input class="fs-input" [attr.id]="id" name="kommune"></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "meldingen om et panel uten id er ren tekst",
+    html: `<fs-popover><button class="fs-button" type="button">Meny</button><div class="fs-popover" popover>Innhold</div></fs-popover>`,
+    count: 1,
+    notMentions: ["`"],
+  },
+  {
+    name: "en vert i en løkke i malen er serverens sak",
+    html: `{{ range .Felt }}<fs-field><label class="fs-label">{{ .Navn }}</label><input class="fs-input" name="{{ .Navn }}"></fs-field>{{ end }}`,
+    count: 0,
+  },
+  {
+    name: "en ledetekst med v-if er serverens sak",
+    html: `<fs-field><label class="fs-label" v-if="vis">Kommune</label><input class="fs-input" name="kommune"></fs-field>`,
+    count: 0,
+  },
+)
+
 for (const c of cases) {
   const fail = (message: string) => findings.push(`${c.name}: ${message}`)
   let found: Finding[]
@@ -1102,14 +1437,19 @@ for (const c of cases) {
   if (!first.link.startsWith("https://fristil.sobernetics.no/"))
     fail(`lenken peker ikke på dokumentasjonen: ${first.link}`)
   if (c.noFix && first.fix)
-    fail(`funnet har en rettelse, «${first.fix.text}», og skulle ikke hatt det`)
+    fail(
+      `funnet har en rettelse, «${first.fix.edits.map((e) => e.text).join("», «")}», og skulle ikke hatt det`,
+    )
   if (c.fixed !== undefined || c.fixTitle || c.fixPreferred !== undefined) {
     if (!first.fix) fail("funnet har ingen rettelse")
     else {
-      const applied =
-        c.html.slice(0, first.fix.start) +
-        first.fix.text +
-        c.html.slice(first.fix.end)
+      // Bakfra, så posisjonene i de første endringene holder.
+      const applied = [...first.fix.edits]
+        .sort((a, b) => b.start - a.start)
+        .reduce(
+          (tekst, e) => tekst.slice(0, e.start) + e.text + tekst.slice(e.end),
+          c.html,
+        )
       if (c.fixed !== undefined && applied !== c.fixed)
         fail(`rettelsen ga «${applied}», ikke «${c.fixed}»`)
       if (c.fixTitle && first.fix.title !== c.fixTitle)

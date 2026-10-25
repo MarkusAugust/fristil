@@ -76,9 +76,12 @@ class ParityTest {
                         "fix",
                         buildMap {
                             put("title", fix.title)
-                            put("start", fix.start.toDouble())
-                            put("end", fix.end.toDouble())
-                            put("text", fix.text)
+                            put(
+                                "edits",
+                                fix.edits.map { e ->
+                                    mapOf("start" to e.start.toDouble(), "end" to e.end.toDouble(), "text" to e.text)
+                                },
+                            )
                             fix.preferred?.let { put("preferred", it) }
                         },
                     )

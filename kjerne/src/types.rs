@@ -16,7 +16,9 @@ pub enum Attribute {
 
 /// En del av et element eller en klasse, som kontrollen i `<fs-field>`, med
 /// selektoren komponenten finner den med. Uten `multiple` gjelder den første,
-/// og med `unique` er en del til av samme slag en feil.
+/// og med `unique` er en del til av samme slag en feil. Med `stable_id` må
+/// delen ha en id fra serveren: komponenten skriver aldri en, siden en
+/// oppdatering ellers bytter delen ut.
 #[derive(Clone, Debug)]
 pub struct Part {
     pub name: String,
@@ -24,6 +26,7 @@ pub struct Part {
     pub description: String,
     pub multiple: bool,
     pub unique: bool,
+    pub stable_id: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -32,6 +35,8 @@ pub struct Element {
     pub link: String,
     pub attributes: Vec<(String, Attribute)>,
     pub parts: Vec<Part>,
+    /// Attributter som er tatt ut, med hva som gjelder i stedet.
+    pub removed: Vec<(String, String)>,
 }
 
 /// Et attributt en klasse tar, som `data-variant` på `fs-button`, eller et
@@ -68,14 +73,34 @@ pub enum Severity {
     Warning,
 }
 
-/// En rettelse editoren kan tilby: bytt ut teksten fra `start` til `end`.
+/// Én endring i en rettelse: bytt ut teksten fra `start` til `end` med `text`.
 #[derive(Clone, Debug)]
-pub struct Fix {
-    pub title: String,
+pub struct Edit {
     pub start: usize,
     pub end: usize,
     pub text: String,
+}
+
+/// En rettelse editoren kan tilby: én eller flere endringer som hører sammen,
+/// som `id` på feltet og `for` på ledeteksten. Endringene står i den
+/// rekkefølgen de har i teksten, og overlapper ikke; den som bruker dem,
+/// bruker dem bakfra, så posisjonene holder.
+#[derive(Clone, Debug)]
+pub struct Fix {
+    pub title: String,
+    pub edits: Vec<Edit>,
     pub preferred: bool,
+}
+
+impl Fix {
+    /// En rettelse med én endring.
+    pub fn one(title: String, start: usize, end: usize, text: String, preferred: bool) -> Fix {
+        Fix {
+            title,
+            edits: vec![Edit { start, end, text }],
+            preferred,
+        }
+    }
 }
 
 /// Ett funn. Posisjonene er UTF-16-indekser i den opprinnelige teksten.
@@ -115,4 +140,14 @@ pub const RULES: &[&str] = &[
     "tekst-ikke-koblet",
     "ustylet-klasse",
     "ustylet-verdi",
+    "kontroll-uten-kobling",
+    "panel-uten-id",
+    "fanelenke-uten-panel",
+    "fane-uten-lenke",
+    "fanerad-uten-navn",
+    "tekst-i-ledetekst",
+    "verdi-uten-felt",
+    "feilmelding-motsier",
+    "utgatt-attributt",
+    "id-fra-komponenten",
 ];

@@ -27,16 +27,23 @@
 
 export type Severity = "error" | "warning"
 
-/**
- * En rettelse editoren kan tilby: bytt ut teksten fra `start` til `end`.
- * `preferred` er den sikre, som `onlinetext` til `online-text`: samme
- * bokstaver, bare skrevet annerledes. Et forslag på avstand er et forslag.
- */
-export type Fix = {
-  title: string
+/** Én endring i en rettelse: bytt ut teksten fra `start` til `end` med `text`. */
+export type Edit = {
   start: number
   end: number
   text: string
+}
+
+/**
+ * En rettelse editoren kan tilby: én eller flere endringer som hører sammen,
+ * som `id` på feltet og `for` på ledeteksten. De står i tekstens rekkefølge
+ * og overlapper ikke; bruk dem bakfra, så posisjonene holder. `preferred` er
+ * den sikre, som `onlinetext` til `online-text`: samme bokstaver, bare
+ * skrevet annerledes. Et forslag på avstand er et forslag.
+ */
+export type Fix = {
+  title: string
+  edits: Edit[]
   preferred?: boolean
 }
 

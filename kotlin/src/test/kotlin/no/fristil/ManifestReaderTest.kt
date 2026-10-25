@@ -57,8 +57,8 @@ class ManifestReaderTest {
             for ((part, p) in rawParts) {
                 val r = read.parts.getValue(part)
                 val pm = p.map()
-                known(p, "selector", "description", "content", "multiple", "unique", "optional", at = "$name $part")
-                assertEquals(listOf(pm["selector"], pm["description"], pm["content"], pm["multiple"] == true, pm["unique"] == true, pm["optional"] == true), listOf(r.selector, r.description, r.content.name.lowercase(), r.multiple, r.unique, r.optional), "$name $part")
+                known(p, "selector", "description", "content", "multiple", "unique", "optional", "stableId", at = "$name $part")
+                assertEquals(listOf(pm["selector"], pm["description"], pm["content"], pm["multiple"] == true, pm["unique"] == true, pm["optional"] == true, pm["stableId"] == true), listOf(r.selector, r.description, r.content.name.lowercase(), r.multiple, r.unique, r.optional, r.stableId), "$name $part")
                 parts += 1
             }
             val attrs = expected["attributes"].map()
@@ -84,13 +84,17 @@ class ManifestReaderTest {
         assertEquals(elements.keys.toList(), Fristil.manifest.elements.keys.toList())
         var parts = 0
         var events = 0
+        var stable = 0
+        var removed = 0
         for ((tag, el) in elements) {
             val read = Fristil.manifest.elements.getValue(tag)
             val e = el.map()
-            known(el, "link", "description", "attributes", "parts", "events", at = tag)
+            known(el, "link", "description", "attributes", "parts", "events", "removed", at = tag)
             assertEquals(tag, read.tag)
             assertEquals(e["link"], read.link)
             assertEquals(e["description"], read.description)
+            assertEquals(e["removed"] ?: emptyMap<String, String>(), read.removed, "$tag removed")
+            removed += read.removed.size
             for ((name, a) in e["attributes"].map()) {
                 known(a, "type", "values", "description", at = "$tag $name")
                 val r = read.attributes.getValue(name)
@@ -104,8 +108,9 @@ class ManifestReaderTest {
             for ((name, p) in rawParts) {
                 val r = read.parts.getValue(name)
                 val pm = p.map()
-                known(p, "selector", "description", "content", "multiple", "unique", "optional", at = "$tag $name")
-                assertEquals(listOf(pm["selector"], pm["description"], pm["content"], pm["multiple"] == true, pm["unique"] == true, pm["optional"] == true), listOf(r.selector, r.description, r.content.name.lowercase(), r.multiple, r.unique, r.optional), "$tag $name")
+                known(p, "selector", "description", "content", "multiple", "unique", "optional", "stableId", at = "$tag $name")
+                assertEquals(listOf(pm["selector"], pm["description"], pm["content"], pm["multiple"] == true, pm["unique"] == true, pm["optional"] == true, pm["stableId"] == true), listOf(r.selector, r.description, r.content.name.lowercase(), r.multiple, r.unique, r.optional, r.stableId), "$tag $name")
+                if (r.stableId) stable += 1
                 parts += 1
             }
             val rawEvents = e["events"]?.map() ?: emptyMap()
@@ -117,6 +122,7 @@ class ManifestReaderTest {
             }
         }
         assertTrue(parts > 0 && events > 0, "Fant $parts deler og $events hendelser, så sammenligningen sa ingenting.")
+        assertTrue(stable > 0 && removed > 0, "Fant $stable deler med stableId og $removed utgåtte attributter, så de grenene i leseren er uprøvd.")
     }
 
     /** Formen på et svar slik rå-JSON-en skriver den, med `optional` bare når den står der. */

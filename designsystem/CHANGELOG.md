@@ -25,6 +25,13 @@ egen overskrift «Brytende».
 
 ### Brytende
 
+- **En rettelse fra `diagnoseMarkup` er en liste av endringer.** `Fix` har
+  `edits`, hver med `start`, `end` og `text`, i tekstens rekkefølge og uten
+  overlapp, i stedet for ett `start`, `end` og `text`. Det samme i Kotlin,
+  `Fix(title, edits, preferred)` med `Edit`. Grunnen er «Gi feltet id
+  «epost»», som skriver `id` på feltet og `for` på ledeteksten under ett.
+  **Slik oppdaterer du:** bruk `fix.edits` bakfra, så posisjonene i de
+  første holder. Språkserveren og editorene gjør det alt.
 - **Fanene i `<fs-tabs>` er lenker til panelene, ikke knapper.** Raden er en
   `<ul class="fs-tabs__list">` med `<li><a href="#panel">`, og hvert
   `.fs-tabs__panel` har den id-en lenken peker på. Uten JavaScript er raden
@@ -80,6 +87,35 @@ egen overskrift «Brytende».
   sjekkes som i `fs.tabs()`. **Slik oppdaterer du:**
   `fs.suggestion({ id, count: kommuner.length })` blir
   `fs.suggestion({ id, keys: kommuner.map((k) => k.nr) })`.
+
+### Nytt
+
+- **Ti regler i kjernen om det malen må skrive selv**, for at komponentene
+  skal virke uten JavaScript og overleve en oppdatering fra serveren, i
+  `fristil sjekk`, språkserveren, VS Code og IntelliJ: `kontroll-uten-kobling`
+  (ledeteksten har verken `for` mot feltet eller står rundt det, med rettelsen
+  «Gi feltet id «navn»» fra feltets `name`), `panel-uten-id` i
+  `<fs-popover>`, `fanelenke-uten-panel`, `fane-uten-lenke` (`role="tab"` på
+  noe som ikke er en lenke), `fanerad-uten-navn` (med rettelse),
+  `tekst-i-ledetekst` (hjelpetekst eller feilmelding inni `<label>`),
+  `verdi-uten-felt` (`data-value` uten `.fs-suggestion__value`, og omvendt),
+  `feilmelding-motsier` (`hidden` på feilmeldingen ved siden av
+  `aria-invalid="true"`), `utgatt-attributt` (`invalid`, `required-marker` og
+  `control-id` på `<fs-field>`, med rettelse og beskjed om hva som gjelder i
+  stedet) og `id-fra-komponenten` (en id komponenten lagde selv, kopiert inn
+  fra DevTools; bare i markupmodus). Reglene tier der malen avgjør markupen,
+  også ved en bundet id som `:id`, `th:id` eller `asp-for`. Hver bygde side
+  i dokumentasjonen gir null funn, og hver forhåndsvisning på den lest som
+  markup, og det er en vaktpost i bygget.
+- **Manifestet sier hvilke deler som må ha id fra serveren**, `stableId` på
+  delen, og hvilke attributter som er tatt ut av et element, `removed` med
+  beskjeden. Begge er tillegg; `schemaVersion` er fortsatt 1.
+- **`fs.progress({ valueText })`** skriver `aria-valuetext`, som skjermleseren
+  leser i stedet for prosenten: «Steg 3 av 7» sier mer, og `max` leses sjelden
+  opp.
+- **Snippetene har id-en som tabbestopp**, og `for` og `href` følger med. Og
+  `live-templates.xml` i pakken har de samme oppskriftene som live templates
+  for IntelliJ, med id-en som variabel.
 
 ### Rettet
 

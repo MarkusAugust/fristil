@@ -143,6 +143,7 @@ data class Manifest(
                             detail = (ev.obj(path)["detail"]?.obj("$path.detail") ?: emptyMap()).mapValues { (field, t) -> t.str("$path.detail.$field") },
                         )
                     },
+                removed = (e["removed"]?.obj("$at.removed") ?: emptyMap()).mapValues { (name, note) -> note.str("$at.removed.$name") },
             )
 
         private fun parts(value: Any?, at: String): Map<String, Part> =
@@ -156,6 +157,7 @@ data class Manifest(
                     multiple = part["multiple"] == true,
                     unique = part["unique"] == true,
                     optional = part["optional"] == true,
+                    stableId = part["stableId"] == true,
                 )
             }
 
@@ -216,6 +218,8 @@ data class ManifestElement(
     val parts: Map<String, Part>,
     /** Hendelsene elementet sender. Alle bobler. */
     val events: Map<String, ElementEvent>,
+    /** Attributter som er tatt ut av elementet, med hva som gjelder i stedet. */
+    val removed: Map<String, String>,
 )
 
 /** Et attributt på et element, som `server-controlled`. [values] er tom utenom for [AttributeType.VALUES]. */
@@ -231,7 +235,8 @@ enum class AttributeType { FLAG, TEXT, NUMBER, VALUES }
  * En del av et element, som kontrollen i `<fs-field>`. [selector] er den
  * komponenten finner delen med, relativt til elementet. Uten [multiple]
  * gjelder den første, og med [unique] er en del til av samme slag en feil,
- * ikke vanlig innhold. Uten [optional] trenger elementet delen.
+ * ikke vanlig innhold. Uten [optional] trenger elementet delen. Med
+ * [stableId] må delen ha en id fra serveren: komponenten skriver aldri en.
  */
 data class Part(
     val selector: String,
@@ -240,6 +245,7 @@ data class Part(
     val multiple: Boolean,
     val unique: Boolean,
     val optional: Boolean,
+    val stableId: Boolean,
 )
 
 /**

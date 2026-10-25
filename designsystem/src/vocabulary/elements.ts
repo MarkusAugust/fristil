@@ -27,9 +27,10 @@ export const elements: Elements = {
       },
       "control": {
         "selector": "input:not([type='hidden']), textarea, select",
-        "description": "Kontrollen feltet kobler: et `<input>`, `<textarea>` eller `<select>` med sine `<option>`. `type=\"hidden\"` teller ikke, og bare den første får koblingen.",
+        "description": "Kontrollen feltet kobler: et `<input>`, `<textarea>` eller `<select>` med sine `<option>`. `type=\"hidden\"` teller ikke, og bare den første får koblingen. Malen skriver `for` på ledeteksten og `id` på kontrollen, eller legger ledeteksten rundt den.",
         "content": "none",
-        "unique": true
+        "unique": true,
+        "stableId": true
       },
       "help": {
         "selector": ".fs-help-text",
@@ -45,6 +46,11 @@ export const elements: Elements = {
         "unique": true,
         "optional": true
       }
+    },
+    "removed": {
+      "invalid": "Feltet er ugyldig når feilmeldingen, `.fs-error-text`, står synlig, eller når serveren har skrevet `aria-invalid` på kontrollen. I Datastar: `data-attr:hidden=\"!$ugyldig\"` på feilmeldingen.",
+      "required-marker": "Påkrevd-merket står som `data-required` på `<label>`, og vises da også uten JavaScript.",
+      "control-id": "Skriv `id` på kontrollen og `for` på ledeteksten i malen. Komponenten skriver aldri id på kontrollen."
     }
   },
   "fs-tabs": {
@@ -154,8 +160,9 @@ export const elements: Elements = {
       },
       "panel": {
         "selector": "[popover], .fs-popover",
-        "description": "Panelet som åpnes: elementet med `popover`, eller klassen.",
-        "content": "free"
+        "description": "Panelet som åpnes: elementet med `popover`, eller klassen. Det må ha en id fra serveren, som `popovertarget` og `aria-controls` peker på; uten den går fokus tapt etter en oppdatering.",
+        "content": "free",
+        "stableId": true
       }
     },
     "events": {
@@ -210,9 +217,10 @@ export const elements: Elements = {
     "parts": {
       "control": {
         "selector": "[role='combobox'], input:not([type='hidden'])",
-        "description": "Feltet brukeren skriver i: `role=\"combobox\"`, ellers det første `<input>`.",
+        "description": "Feltet brukeren skriver i: `role=\"combobox\"`, ellers det første `<input>`. Malen skriver `for` på ledeteksten og `id` på feltet, eller legger ledeteksten rundt det.",
         "content": "none",
-        "unique": true
+        "unique": true,
+        "stableId": true
       },
       "list": {
         "selector": "[role='listbox'], .fs-suggestion__list",

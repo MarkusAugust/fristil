@@ -34,6 +34,7 @@ pub mod suppress;
 pub mod text;
 pub mod theme;
 pub mod types;
+pub mod wiring;
 
 /// En fil i pakken, til testene: fra `designsystem/` ved siden av. Bygget
 /// leser den aldri.
@@ -52,13 +53,13 @@ use types::{Finding, Severity, Vocabulary};
 
 /// Det `diagnoseMarkup` finner: ordforrådet, for en mal eller et fragment.
 pub fn diagnose_markup(html: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
-    suppress::apply(html, diagnose::diagnose(html, vocabulary))
+    suppress::apply(html, diagnose::diagnose(html, vocabulary, false))
 }
 
 /// Det `diagnosePage` finner: ordforrådet og koblingen på en hel side.
 pub fn diagnose_page(html: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     let page: Utf16 = references::page_source(html);
-    let mut findings = diagnose::diagnose(&page, vocabulary);
+    let mut findings = diagnose::diagnose(&page, vocabulary, true);
     findings.extend(references::check_references(&page));
     findings.sort_by_key(|f| f.start);
     suppress::apply(&references::page_source_with_comments(html), findings)
@@ -83,7 +84,7 @@ pub fn diagnose_styled(
     };
     let visible = diagnose::without_hidden(&source);
     let mut findings = diagnose::check_styles_visible(&visible, vocabulary, styles);
-    findings.extend(diagnose::diagnose_visible(visible, vocabulary));
+    findings.extend(diagnose::diagnose_visible(visible, vocabulary, page));
     if page {
         findings.extend(references::check_references(&source));
     }
@@ -162,12 +163,22 @@ pub fn to_json(findings: &[Finding], text: &[u16]) -> String {
             json_string(&f.message),
         ));
         if let Some(r) = &f.fix {
+            let edits: Vec<String> = r
+                .edits
+                .iter()
+                .map(|e| {
+                    format!(
+                        "{{\"start\":{},\"end\":{},\"text\":{}}}",
+                        e.start,
+                        e.end,
+                        json_string(&e.text)
+                    )
+                })
+                .collect();
             out.push_str(&format!(
-                ",\"fix\":{{\"title\":{},\"start\":{},\"end\":{},\"text\":{},\"preferred\":{}}}",
+                ",\"fix\":{{\"title\":{},\"edits\":[{}],\"preferred\":{}}}",
                 json_string(&r.title),
-                r.start,
-                r.end,
-                json_string(&r.text),
+                edits.join(","),
                 r.preferred
             ));
         }
@@ -518,7 +529,7 @@ mod tests {
             found[0].message
         );
         let fix = found[0].fix.as_ref().unwrap();
-        assert_eq!(fix.text, "");
+        assert_eq!(fix.edits[0].text, "");
     }
 
     #[test]
@@ -597,15 +608,9 @@ mod tests {
     #[test]
     fn a_missing_id_gives_a_message_without_trailing_space() {
         for (attribute, ends) in [
-            ("for", "<fs-field>, som setter den i nettleseren."),
-            (
-                "aria-describedby",
-                "<fs-field>, som setter den i nettleseren.",
-            ),
-            (
-                "aria-labelledby",
-                "<fs-field>, som setter den i nettleseren.",
-            ),
+            ("for", "gjør fs.field({ id }) det."),
+            ("aria-describedby", "gjør fs.field({ id }) det."),
+            ("aria-labelledby", "gjør fs.field({ id }) det."),
             ("aria-controls", "koblingen til det elementet styrer."),
         ] {
             let html = format!(r#"<label class="fs-label" {attribute}="borte">x</label>"#);
@@ -659,6 +664,7 @@ mod tests {
             link: String::new(),
             attributes: vec![("sone".into(), types::Attribute::Text)],
             parts: Vec::new(),
+            removed: Vec::new(),
         });
         assert!(diagnose_markup(&html, &vocabulary).is_empty());
     }
@@ -681,7 +687,10 @@ mod tests {
         );
         let wrong = found(r#"<button class="app-button__ikon">x</button>"#);
         assert_eq!(wrong[0].rule, "ukjent-klasse");
-        assert_eq!(wrong[0].fix.as_ref().unwrap().text, "app-button__icon");
+        assert_eq!(
+            wrong[0].fix.as_ref().unwrap().edits[0].text,
+            "app-button__icon"
+        );
         assert_eq!(
             found(r#"<button class="app-button" data-variant="secondary">x</button>"#).len(),
             1

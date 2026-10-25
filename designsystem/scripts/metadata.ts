@@ -110,6 +110,13 @@ export type PartDoc = {
   unique?: true
   /** Elementet virker uten delen. */
   optional?: true
+  /**
+   * Delen må ha en id serveren skriver, fordi en oppdatering fra serveren
+   * ellers bytter den ut: komponenten skriver aldri id på det brukeren
+   * rører. `fristil sjekk` melder delen når id-en mangler, og for en
+   * kontroll når ledeteksten verken har `for` mot den eller står rundt den.
+   */
+  stableId?: true
 }
 
 /**
@@ -137,6 +144,12 @@ export type ElementDoc = {
   events: Record<string, EventDoc>
   /** Tom for elementene som lager alt innholdet sitt selv. */
   parts: Record<string, PartDoc>
+  /**
+   * Attributter som er tatt ut av elementet, med hva som gjelder i stedet.
+   * `fristil sjekk` melder dem med beskjeden, så en mal fra en eldre versjon
+   * får vite hva den skal skrive.
+   */
+  removed?: Record<string, string>
 }
 
 /** Klassen til en komponent, slik generatoren ser den. */
@@ -154,8 +167,17 @@ function element<T extends Component>(
   description: string,
   attributes: Attributes<T>,
   events: Record<string, EventDoc> = {},
+  removed?: Record<string, string>,
 ): ElementDoc {
-  return { tag, slug, description, attributes, events, parts: PARTS[tag] ?? {} }
+  return {
+    tag,
+    slug,
+    description,
+    attributes,
+    events,
+    parts: PARTS[tag] ?? {},
+    ...(removed ? { removed } : {}),
+  }
 }
 
 /** Delene til rammekomponentene, etter tagg. */
@@ -168,9 +190,10 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
     },
     control: {
       description:
-        'Kontrollen feltet kobler: et `<input>`, `<textarea>` eller `<select>` med sine `<option>`. `type="hidden"` teller ikke, og bare den første får koblingen.',
+        'Kontrollen feltet kobler: et `<input>`, `<textarea>` eller `<select>` med sine `<option>`. `type="hidden"` teller ikke, og bare den første får koblingen. Malen skriver `for` på ledeteksten og `id` på kontrollen, eller legger ledeteksten rundt den.',
       content: "none",
       unique: true,
+      stableId: true,
     },
     help: {
       description: "Hjelpeteksten, som leses opp sammen med kontrollen.",
@@ -226,16 +249,19 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       content: "text",
     },
     panel: {
-      description: "Panelet som åpnes: elementet med `popover`, eller klassen.",
+      description:
+        "Panelet som åpnes: elementet med `popover`, eller klassen. Det må ha en id fra serveren, som `popovertarget` og `aria-controls` peker på; uten den går fokus tapt etter en oppdatering.",
       content: "free",
+      stableId: true,
     },
   }),
   [FS_SUGGESTION_TAG]: parts(FS_SUGGESTION_PARTS, {
     control: {
       description:
-        'Feltet brukeren skriver i: `role="combobox"`, ellers det første `<input>`.',
+        'Feltet brukeren skriver i: `role="combobox"`, ellers det første `<input>`. Malen skriver `for` på ledeteksten og `id` på feltet, eller legger ledeteksten rundt det.',
       content: "none",
       unique: true,
+      stableId: true,
     },
     list: { description: "Lista med forslag.", content: "parts", unique: true },
     option: {
@@ -353,6 +379,15 @@ export const elements: readonly ElementDoc[] = [
       "described-by": text(
         "Ekstra id-er som skal med i `aria-describedby`, adskilt med mellomrom.",
       ),
+    },
+    {},
+    {
+      invalid:
+        'Feltet er ugyldig når feilmeldingen, `.fs-error-text`, står synlig, eller når serveren har skrevet `aria-invalid` på kontrollen. I Datastar: `data-attr:hidden="!$ugyldig"` på feilmeldingen.',
+      "required-marker":
+        "Påkrevd-merket står som `data-required` på `<label>`, og vises da også uten JavaScript.",
+      "control-id":
+        "Skriv `id` på kontrollen og `for` på ledeteksten i malen. Komponenten skriver aldri id på kontrollen.",
     },
   ),
 

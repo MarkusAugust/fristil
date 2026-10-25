@@ -6,21 +6,21 @@
       "end": 23,
       "severity": "error",
       "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "for=\"finnes-ikke\" peker på id-en «finnes-ikke», som ikke finnes på siden. Skjermleseren mister ledeteksten. Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren."
+      "message": "for=\"finnes-ikke\" peker på id-en «finnes-ikke», som ikke finnes på siden. Skjermleseren mister ledeteksten. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det."
     },
     {
       "start": 48,
       "end": 53,
       "severity": "warning",
       "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "<input> har ingen ledetekst: ingen <label for> som peker på det, ingen <label> rundt, og verken aria-label eller aria-labelledby. En skjermleser leser feltet opp uten navn. Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren."
+      "message": "<input> har ingen ledetekst: ingen <label for> som peker på det, ingen <label> rundt, og verken aria-label eller aria-labelledby. En skjermleser leser feltet opp uten navn. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det."
     },
     {
       "start": 104,
       "end": 111,
       "severity": "error",
       "link": "https://fristil.sobernetics.no/components/field/",
-      "message": "aria-describedby=\"hjelp mangler\" peker på id-en «mangler», som ikke finnes på siden. Skjermleseren mister beskrivelsen. Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren."
+      "message": "aria-describedby=\"hjelp mangler\" peker på id-en «mangler», som ikke finnes på siden. Skjermleseren mister beskrivelsen. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det."
     },
     {
       "start": 175,

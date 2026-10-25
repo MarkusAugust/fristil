@@ -8,9 +8,13 @@
       "message": "<fs-connection-status> har ikke attributtet «onlinetext». Mente du online-text?",
       "fix": {
         "title": "Bytt til online-text",
-        "start": 22,
-        "end": 32,
-        "text": "online-text",
+        "edits": [
+          {
+            "start": 22,
+            "end": 32,
+            "text": "online-text"
+          }
+        ],
         "preferred": true
       }
     },
@@ -22,9 +26,13 @@
       "message": "optional er et boolsk attributt: det står der eller ikke. optional=\"false\" betyr det samme som optional. Ta det bort for å slå det av.",
       "fix": {
         "title": "Ta bort optional",
-        "start": 78,
-        "end": 95,
-        "text": "",
+        "edits": [
+          {
+            "start": 78,
+            "end": 95,
+            "text": ""
+          }
+        ],
         "preferred": true
       }
     }
@@ -38,9 +46,13 @@
       "message": "<fs-connection-status> har ikke attributtet «onlinetext». Mente du online-text?",
       "fix": {
         "title": "Bytt til online-text",
-        "start": 22,
-        "end": 32,
-        "text": "online-text",
+        "edits": [
+          {
+            "start": 22,
+            "end": 32,
+            "text": "online-text"
+          }
+        ],
         "preferred": true
       }
     },
@@ -52,9 +64,13 @@
       "message": "optional er et boolsk attributt: det står der eller ikke. optional=\"false\" betyr det samme som optional. Ta det bort for å slå det av.",
       "fix": {
         "title": "Ta bort optional",
-        "start": 78,
-        "end": 95,
-        "text": "",
+        "edits": [
+          {
+            "start": 78,
+            "end": 95,
+            "text": ""
+          }
+        ],
         "preferred": true
       }
     }

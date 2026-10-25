@@ -22,7 +22,7 @@
 //! stå for.
 
 use crate::diagnose::{is_templated_content, tag_end};
-use crate::references::{tree, value, Node};
+use crate::references::{value, Node};
 use crate::text::*;
 use crate::types::*;
 
@@ -51,7 +51,7 @@ enum Combinator {
 /// En selektor uten komma: de enkle selektorene fra venstre, og
 /// kombinatoren foran hver av dem etter den første.
 #[derive(Debug, PartialEq)]
-struct Complex {
+pub(crate) struct Complex {
     compounds: Vec<Vec<Test>>,
     combinators: Vec<Combinator>,
 }
@@ -212,7 +212,7 @@ impl Reader {
 }
 
 /// Selektorlista, eller `None` når den har noe matcheren ikke kjenner.
-fn parse(selector: &str) -> Option<Vec<Complex>> {
+pub(crate) fn parse(selector: &str) -> Option<Vec<Complex>> {
     let mut reader = Reader::new(selector);
     let mut out = Vec::new();
     loop {
@@ -297,7 +297,7 @@ fn matches_at(nodes: &[Node], n: usize, host: usize, c: &Complex, k: usize) -> b
     }
 }
 
-fn matches(nodes: &[Node], n: usize, host: usize, list: &[Complex]) -> bool {
+pub(crate) fn matches(nodes: &[Node], n: usize, host: usize, list: &[Complex]) -> bool {
     list.iter()
         .any(|c| matches_at(nodes, n, host, c, c.compounds.len() - 1))
 }
@@ -380,10 +380,68 @@ fn first_sentence(description: &str) -> String {
     }
 }
 
-pub fn check_parts(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
+/// Nodene som hører til verten `h`, og innholdet dens i teksten.
+///
+/// Nodene er etterkommerne der den nærmeste verten av samme slag er `h`,
+/// utenom det som står i en `<template>`: et felt inni et felt er det indre
+/// feltets, som `part.closest(host.localName) === host` i komponentene.
+/// Innholdet går fra slutten av åpningstaggen til sluttaggen, ikke vertens
+/// egne attributter og ikke teksten etter den. `None` når verten er tom.
+pub(crate) fn host_content(
+    source: &[u16],
+    nodes: &[Node],
+    h: usize,
+    is_host: &dyn Fn(&Node) -> bool,
+) -> Option<(Vec<usize>, (usize, usize))> {
+    let mut own = Vec::new();
+    let mut last = h;
+    for n in h + 1..nodes.len() {
+        if !is_ancestor(nodes, h, n) {
+            break;
+        }
+        last = n;
+        let mut p = nodes[n].parent;
+        let mut nearest = None;
+        while let Some(i) = p {
+            if is_host(&nodes[i]) {
+                nearest = Some(i);
+                break;
+            }
+            p = nodes[i].parent;
+        }
+        if nearest == Some(h) && !in_template(nodes, n) {
+            own.push(n);
+        }
+    }
+    if own.is_empty() {
+        return None;
+    }
+    let from = tag_end(source, nodes[h].name_end).map_or(nodes[h].name_end, |e| e + 1);
+    let next = nodes
+        .get(last + 1)
+        .map_or(source.len(), |n| n.name_start.saturating_sub(1));
+    let close = format!("</{}", nodes[h].name);
+    let to = (from..next.max(from))
+        .rev()
+        .find(|&i| starts_at_ci(source, i, &close))
+        .unwrap_or(next.max(from));
+    Some((own, (from, to)))
+}
+
+/// Om malen avgjør markupen i verten: malsyntaks i innholdet, eller et
+/// `v-if` på en av delene. Da sier reglene ingenting.
+pub(crate) fn templated_host(
+    source: &[u16],
+    nodes: &[Node],
+    own: &[usize],
+    (from, to): (usize, usize),
+) -> bool {
+    decides_markup(&source[from..to]) || own.iter().any(|&n| has_directive(&nodes[n]))
+}
+
+pub(crate) fn check_parts(source: &[u16], vocabulary: &Vocabulary, nodes: &[Node]) -> Vec<Finding> {
     // Bare vertene som har en del med `unique` kan gi et funn, og bare dem
-    // som står i teksten. Står ingen, bygges ikke treet: det kostet mer enn
-    // resten av sjekken på en side med tusenvis av tagger uten en eneste vert.
+    // som står i teksten.
     let unique = |parts: &[Part]| parts.iter().any(|p| p.unique);
     let present = |name: &str| contains_str(source, name);
     let elements: Vec<&Element> = vocabulary
@@ -399,7 +457,6 @@ pub fn check_parts(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     if elements.is_empty() && classes.is_empty() {
         return Vec::new();
     }
-    let nodes = tree(source);
     let mut hosts: Vec<Host> = Vec::new();
     for e in elements {
         let tag = e.tag.clone();
@@ -428,44 +485,10 @@ pub fn check_parts(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
         let parsed: Vec<Option<Vec<Complex>>> =
             host.parts.iter().map(|p| parse(&p.selector)).collect();
         for h in (0..nodes.len()).filter(|&h| (host.is)(&nodes[h])) {
-            // Nodene som hører til denne verten: etterkommerne der den
-            // nærmeste verten av samme slag er denne.
-            let mut own = Vec::new();
-            let mut last = h;
-            for n in h + 1..nodes.len() {
-                if !is_ancestor(&nodes, h, n) {
-                    break;
-                }
-                last = n;
-                let mut p = nodes[n].parent;
-                let mut nearest = None;
-                while let Some(i) = p {
-                    if (host.is)(&nodes[i]) {
-                        nearest = Some(i);
-                        break;
-                    }
-                    p = nodes[i].parent;
-                }
-                if nearest == Some(h) && !in_template(&nodes, n) {
-                    own.push(n);
-                }
-            }
-            if own.is_empty() {
+            let Some((own, range)) = host_content(source, nodes, h, &*host.is) else {
                 continue;
-            }
-            // Innholdet er fra slutten av åpningstaggen til sluttaggen, ikke
-            // vertens egne attributter og ikke teksten etter den.
-            let from = tag_end(source, nodes[h].name_end).map_or(nodes[h].name_end, |e| e + 1);
-            let next = nodes
-                .get(last + 1)
-                .map_or(source.len(), |n| n.name_start.saturating_sub(1));
-            let close = format!("</{}", nodes[h].name);
-            let to = (from..next.max(from))
-                .rev()
-                .find(|&i| starts_at_ci(source, i, &close))
-                .unwrap_or(next.max(from));
-            if decides_markup(&source[from..to]) || (h + 1..=last).any(|n| has_directive(&nodes[n]))
-            {
+            };
+            if templated_host(source, nodes, &own, range) {
                 continue;
             }
             for (k, part) in host.parts.iter().enumerate() {
@@ -478,7 +501,7 @@ pub fn check_parts(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
                 let hits: Vec<usize> = own
                     .iter()
                     .copied()
-                    .filter(|&n| matches(&nodes, n, h, list))
+                    .filter(|&n| matches(nodes, n, h, list))
                     .collect();
                 for &n in hits.iter().skip(1) {
                     let node = &nodes[n];
@@ -549,7 +572,7 @@ mod tests {
 
     fn rules(html: &str) -> Vec<String> {
         let v = crate::manifest::for_tests();
-        check_parts(&utf16(html), &v)
+        check_parts(&utf16(html), &v, &crate::references::tree(&utf16(html)))
             .into_iter()
             .map(|f| f.message)
             .collect()
@@ -596,7 +619,7 @@ mod tests {
             }
         }
         let html = r#"<fs-session-timeout class="fs-session-timeout"><dialog class="fs-session-timeout__dialog"><p class="fs-session-timeout__text">A</p><p class="fs-session-timeout__text">B</p></dialog></fs-session-timeout>"#;
-        let found = check_parts(&utf16(html), &v);
+        let found = check_parts(&utf16(html), &v, &crate::references::tree(&utf16(html)));
         assert_eq!(found.len(), 1, "{found:?}");
     }
 

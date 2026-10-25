@@ -1,8 +1,9 @@
 //! Koblingen på en hel side: at hver id det pekes på finnes, og at hvert felt
 //! og hver tekst er koblet.
 //!
-//! En oversettelse av `designsystem/src/diagnostics/references.ts`, med de
-//! samme meldingene. Kommentarene der forklarer reglene.
+//! Reglene sto først i TypeScript, i `references.ts`, og ble oversatt hit
+//! med de samme meldingene. TypeScript-utgaven er borte: kjernen er den ene
+//! implementasjonen, og TypeScript, Kotlin og editorene kaller den.
 
 use std::collections::{HashMap, HashSet};
 
@@ -13,7 +14,7 @@ use crate::types::*;
 const LINK: &str = "https://fristil.sobernetics.no/components/field/";
 const SUMMARY_LINK: &str = "https://fristil.sobernetics.no/components/error-summary/";
 
-const HOW: &str = "Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren.";
+const HOW: &str = "Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det.";
 
 /// Attributtene som peker på id-er, og hva skjermleseren mister når de bommer.
 const REFERENCES: &[(&str, &str)] = &[
@@ -48,18 +49,18 @@ pub(crate) fn value<'a>(node: &'a Node, name: &str) -> Option<&'a ReadAttribute>
     node.attributes.iter().find(|a| equals(&a.name, name))
 }
 
-fn non_empty<'a>(node: &'a Node, name: &str) -> Option<&'a Utf16> {
+pub(crate) fn non_empty<'a>(node: &'a Node, name: &str) -> Option<&'a Utf16> {
     value(node, name).and_then(|a| a.non_empty_value())
 }
 
-fn has_class(node: &Node, test: impl Fn(&[u16]) -> bool) -> bool {
+pub(crate) fn has_class(node: &Node, test: impl Fn(&[u16]) -> bool) -> bool {
     value(node, "class")
         .and_then(|a| a.value.as_deref())
         .is_some_and(|v| words(v).iter().any(|(_, t)| test(t)))
 }
 
 /// Noden selv eller en forfar som oppfyller vilkåret.
-fn within(nodes: &[Node], node: usize, test: impl Fn(&Node) -> bool) -> bool {
+pub(crate) fn within(nodes: &[Node], node: usize, test: impl Fn(&Node) -> bool) -> bool {
     let mut n = Some(node);
     while let Some(i) = n {
         if test(&nodes[i]) {
@@ -125,7 +126,7 @@ fn parse_code(digits: &[u16], radix: u32) -> Option<u32> {
 
 /// En attributtverdi slik nettleseren leser den, med entitetene dekodet:
 /// `/&(#x[0-9a-f]+|#[0-9]+|[a-z]+);/gi`.
-fn decode(t: &[u16]) -> Utf16 {
+pub(crate) fn decode(t: &[u16]) -> Utf16 {
     let mut out = Vec::with_capacity(t.len());
     let mut i = 0;
     while i < t.len() {
@@ -242,7 +243,7 @@ fn decode_uri_component(t: &[u16]) -> Option<Utf16> {
 }
 
 /// Id-en en lenke som `href="#f%C3%B8dselsdato"` går til.
-fn fragment(href: &[u16]) -> Utf16 {
+pub(crate) fn fragment(href: &[u16]) -> Utf16 {
     match decode_uri_component(href) {
         Some(d) => decode(&d),
         None => decode(href),

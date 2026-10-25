@@ -925,7 +925,7 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
   const galt = join(mappe, "galt.html")
   await writeFile(
     riktig,
-    `<fs-field id="f"><label>Navn</label><input class="fs-input" name="navn"></fs-field>\n`,
+    `<fs-field id="f"><label for="navn">Navn</label><input class="fs-input" name="navn" id="navn"></fs-field>\n`,
   )
   await writeFile(
     galt,

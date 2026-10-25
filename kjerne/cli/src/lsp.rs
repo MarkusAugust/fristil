@@ -549,10 +549,19 @@ impl Server {
             .filter(|f| at(f.start) <= to && from <= at(f.end))
             .map(|f| {
                 let fix = f.fix.as_ref().unwrap();
-                let edit = object(vec![
-                    ("range", range(&lines, fix.start, fix.end)),
-                    ("newText", text(&fix.text)),
-                ]);
+                // Én kodehandling med alle endringene: editoren bruker dem
+                // under ett, så `id` på feltet og `for` på ledeteksten kommer
+                // sammen.
+                let edits = fix
+                    .edits
+                    .iter()
+                    .map(|e| {
+                        object(vec![
+                            ("range", range(&lines, e.start, e.end)),
+                            ("newText", text(&e.text)),
+                        ])
+                    })
+                    .collect();
                 object(vec![
                     ("title", text(&fix.title)),
                     ("kind", text("quickfix")),
@@ -562,7 +571,7 @@ impl Server {
                         "edit",
                         object(vec![(
                             "changes",
-                            Json::Object(vec![(uri.to_string(), Json::Array(vec![edit]))]),
+                            Json::Object(vec![(uri.to_string(), Json::Array(edits))]),
                         )]),
                     ),
                 ])

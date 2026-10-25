@@ -174,7 +174,7 @@ eget rom. Markup som står i en attributtverdi, som et kodeeksempel bak en
 kopieringsknapp, eller inni en `<textarea>`, er tekst. Ingen av dem sjekkes.
 
 ```text
-http://localhost:8080/skjema:12:30: feil: for="epost" peker på id-en «epost», som ikke finnes på siden. Skjermleseren mister ledeteksten. Lag koblingen med fs.field({ id }) der koden kan kalle en JavaScript-funksjon, eller legg feltet i <fs-field>, som setter den i nettleseren.
+http://localhost:8080/skjema:12:30: feil: for="epost" peker på id-en «epost», som ikke finnes på siden. Skjermleseren mister ledeteksten. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør fs.field({ id }) det.
 ```
 
 Det er denne sjekken som virker likt i alle språk. HTML-en serveren sender, ser

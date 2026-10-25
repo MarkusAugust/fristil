@@ -5,13 +5,17 @@ import com.intellij.codeInsight.intention.PriorityAction
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiLanguageInjectionHost
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlDocument
 import no.fristil.Finding
 import no.fristil.Fix
@@ -82,7 +86,9 @@ class FristilAnnotator : Annotator {
 }
 
 /**
- * Rettelsen kjernen foreslår: bytt ut teksten fra `start` til `end`.
+ * Rettelsen kjernen foreslår: én eller flere endringer, hver et bytte av
+ * teksten fra `start` til `end`. De brukes bakfra, så posisjonene i de
+ * første holder når de siste er gjort.
  *
  * Posisjonene gjelder teksten slik den var da funnet ble gjort. IntelliJ
  * kaster annotasjonene og kjører annotatoren på nytt når teksten endres, så
@@ -96,16 +102,47 @@ private class ReplaceFix(private val fix: Fix) : IntentionAction, PriorityAction
     override fun getPriority(): PriorityAction.Priority =
         if (fix.preferred == true) PriorityAction.Priority.TOP else PriorityAction.Priority.NORMAL
 
+    private val end: Int = fix.edits.maxOfOrNull { it.end } ?: 0
+
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean =
-        file != null && fix.end <= file.textLength
+        file != null && end <= file.textLength
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (file == null) return
-        // For et injisert fragment er dette dokumentet til fragmentet, og
-        // endringen havner på riktig sted i strengen i vertsfila.
         val document = PsiDocumentManager.getInstance(project).getDocument(file) ?: return
-        if (fix.end > document.textLength) return
-        document.replaceString(fix.start, fix.end, fix.text)
+        if (end > document.textLength) return
+        val injected = InjectedLanguageManager.getInstance(project)
+        if (injected.isInjectedFragment(file)) {
+            // Et injisert fragment: dokumentet er fragmentets, med teksten
+            // slik den er uten rømming. En endring skrevet rett i det havner
+            // urømt i vertsfila, og `aria-label="…"` i en "…"-streng i Kotlin
+            // brøt literalen. Hver endring regnes derfor om til vertsfila og
+            // skrives gjennom vertsstrengens manipulator, som rømmer den.
+            // Hele fragmentet på én gang holdt ikke: en mal som `$navn` deler
+            // fragmentet i flere deler av strengen, og plassholderen ble
+            // skrevet inn i stedet for `$navn`.
+            val hostFile = injected.getTopLevelFile(file)
+            val hostDocument = PsiDocumentManager.getInstance(project).getDocument(hostFile) ?: return
+            // Alle omregnet før noe endres, og brukt bakfra i vertsfila.
+            val targets =
+                fix.edits
+                    .map { injected.injectedToHost(file, TextRange(it.start, it.end)) to it.text }
+                    .sortedByDescending { it.first.startOffset }
+            for ((range, text) in targets) {
+                PsiDocumentManager.getInstance(project).commitDocument(hostDocument)
+                val at = hostFile.findElementAt(range.startOffset) ?: return
+                val host =
+                    PsiTreeUtil.getParentOfType(at, PsiLanguageInjectionHost::class.java, false) ?: return
+                val inHost = ElementManipulators.getValueTextRange(host).shiftRight(host.textRange.startOffset)
+                // En endring som ikke står inni én del av strengen, rører ikke vi.
+                if (!inHost.contains(range)) return
+                ElementManipulators.handleContentChange(host, range.shiftLeft(host.textRange.startOffset), text)
+            }
+            return
+        }
+        for (edit in fix.edits.sortedByDescending { it.start }) {
+            document.replaceString(edit.start, edit.end, edit.text)
+        }
         PsiDocumentManager.getInstance(project).commitDocument(document)
     }
 

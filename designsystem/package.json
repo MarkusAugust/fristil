@@ -334,6 +334,7 @@
     "agent",
     "dist",
     "web-types.json",
+    "live-templates.xml",
     "manifest/manifest.json",
     "manifest/filer.json",
     "kjerne/fristil-kjerne.wasm",

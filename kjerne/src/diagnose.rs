@@ -1,9 +1,10 @@
 //! Ordforrådet: elementer, attributter, klasser og verdier.
 //!
-//! En oversettelse av `designsystem/src/diagnostics/diagnostics.ts`, funksjon
-//! for funksjon og med de samme meldingene. Kommentarene der forklarer
-//! hvorfor reglene er som de er; her står bare det som er annerledes i Rust.
-//! Hvert regulært uttrykk er skrevet ut som en løkke, med det samme svaret.
+//! Reglene sto først i TypeScript, i `diagnostics.ts`, og ble oversatt hit
+//! funksjon for funksjon med de samme meldingene. TypeScript-utgaven er
+//! borte: kjernen er den ene implementasjonen, og TypeScript, Kotlin og
+//! editorene kaller den. Hvert regulært uttrykk fra den tida er skrevet ut
+//! som en løkke, med det samme svaret.
 
 use std::collections::HashMap;
 
@@ -557,13 +558,13 @@ fn check_attribute(
                 "ukjent-attributt",
                 Severity::Warning,
                 format!("<{tag}> har ikke attributtet «{name}». Mente du {meant}?"),
-                Some(Fix {
-                    title: format!("Bytt til {meant}"),
-                    start: a.start,
-                    end: a.end,
-                    text: meant.clone(),
-                    preferred: true,
-                }),
+                Some(Fix::one(
+                    format!("Bytt til {meant}"),
+                    a.start,
+                    a.end,
+                    meant.clone(),
+                    true,
+                )),
             ));
         }
         if templated_tag || is_global(&a.name) {
@@ -609,13 +610,13 @@ fn check_attribute(
                     format!(
                         "{name} er et boolsk attributt: det står der eller ikke. {name}=\"{v}\" betyr det samme som {name}. Ta det bort for å slå det av."
                     ),
-                    Some(Fix {
-                        title: format!("Ta bort {name}"),
-                        start: a.space_start,
-                        end: a.value_end,
-                        text: String::new(),
-                        preferred: true,
-                    }),
+                    Some(Fix::one(
+format!("Ta bort {name}"),
+a.space_start,
+a.value_end,
+String::new(),
+true,
+)),
                 ));
             }
             None
@@ -839,19 +840,19 @@ fn check_field(
         format!(
             "<{tag}> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn."
         ),
-        Some(Fix {
-            title: "Sett inn en ledetekst".into(),
-            start: content_start + indent,
-            end: content_start + indent,
-            // Ledeteksten peker på kontrollens id: uten `for` har feltet ingen
+        Some(Fix::one(
+"Sett inn en ledetekst".into(),
+content_start + indent,
+content_start + indent,
+// Ledeteksten peker på kontrollens id: uten `for` har feltet ingen
             // ledetekst før JavaScript har kjørt.
-            text: format!(
+format!(
                 "<label for=\"{}\">Ledetekst</label>{}",
                 lossy(&id),
                 if newline { lossy(leading) } else { String::new() }
             ),
-            preferred: true,
-        }),
+true,
+)),
     )]
 }
 
@@ -982,12 +983,8 @@ fn check_classes(
                     None => format!("Klassen «{t}» finnes ikke {place}."),
                 }
             },
-            fix: meant.map(|(m, sure)| Fix {
-                title: format!("Bytt til {m}"),
-                start,
-                end: start + token.len(),
-                text: m,
-                preferred: sure,
+            fix: meant.map(|(m, sure)| {
+                Fix::one(format!("Bytt til {m}"), start, start + token.len(), m, sure)
             }),
             rule: "ukjent-klasse",
         });
@@ -1040,13 +1037,13 @@ fn check_classes(
                             "{name} er et flagg på {}: det står der eller ikke. {name}=\"{v}\" betyr det samme som {name}. Ta det bort for å slå det av.",
                             lossy(&lowercase(&utf16(&info.title)))
                         ),
-                        fix: Some(Fix {
-                            title: format!("Ta bort {name}"),
-                            start: a.space_start,
-                            end: a.value_end,
-                            text: String::new(),
-                            preferred: true,
-                        }),
+                        fix: Some(Fix::one(
+                            format!("Ta bort {name}"),
+                            a.space_start,
+                            a.value_end,
+                            String::new(),
+                            true,
+                        )),
                         rule: "boolsk-med-verdi",
                     });
                 }
@@ -1079,12 +1076,14 @@ fn check_classes(
                     lossy(&lowercase(&utf16(&info.title))),
                     list(takes.values.iter().map(String::as_str))
                 ),
-                fix: meant.map(|(m, sure)| Fix {
-                    title: format!("Bytt til {m}"),
-                    start: a.value_start,
-                    end: a.value_start + value.len(),
-                    text: m,
-                    preferred: sure,
+                fix: meant.map(|(m, sure)| {
+                    Fix::one(
+                        format!("Bytt til {m}"),
+                        a.value_start,
+                        a.value_start + value.len(),
+                        m,
+                        sure,
+                    )
                 }),
                 rule: "ugyldig-klasseverdi",
             });
@@ -1157,7 +1156,10 @@ const NO_CONTENT: &[&str] = &[
 /// `x-bind:aria-label`, `data-attr:aria-label`, `[attr.aria-label]` og
 /// `th:title` blir det samme attributtet i siden, og store og små bokstaver
 /// er like.
-fn attribute<'a>(attributes: &'a [ReadAttribute], name: &str) -> Option<&'a ReadAttribute> {
+pub(crate) fn attribute<'a>(
+    attributes: &'a [ReadAttribute],
+    name: &str,
+) -> Option<&'a ReadAttribute> {
     attributes.iter().find(|a| {
         let full = lossy(&lowercase(&a.name));
         let n = full.strip_suffix(']').unwrap_or(&full);
@@ -1459,13 +1461,13 @@ fn check_icon_only(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
             message: format!(
                 "<{name}> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «{kind}» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen fs-sr-only."
             ),
-            fix: Some(Fix {
-                title: "Gi den et navn med aria-label".into(),
-                start: name_end,
-                end: name_end,
-                text: " aria-label=\"Beskriv handlingen\"".into(),
-                preferred: true,
-            }),
+            fix: Some(Fix::one(
+"Gi den et navn med aria-label".into(),
+name_end,
+name_end,
+" aria-label=\"Beskriv handlingen\"".into(),
+true,
+)),
             rule: "ikon-uten-navn",
         });
     }
@@ -1514,12 +1516,14 @@ fn closing_tag(t: &[u16], from: usize, name: &str) -> Option<usize> {
 }
 
 /// Alle funn i teksten, i den rekkefølgen de står.
-pub fn diagnose(text: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
-    diagnose_visible(without_hidden(text), vocabulary)
+pub fn diagnose(text: &[u16], vocabulary: &Vocabulary, page: bool) -> Vec<Finding> {
+    diagnose_visible(without_hidden(text), vocabulary, page)
 }
 
 /// Som [`diagnose`], på tekst som alt er lest med [`without_hidden`].
-pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> {
+/// `page` er sant for en hel side, der id-ene komponentene lager selv er
+/// riktige, og usant for en mal, der de er kopiert inn fra DevTools.
+pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> Vec<Finding> {
     let mut findings = Vec::new();
     let mut labels: Option<Vec<Utf16>> = None;
     let mut cache = Cache::new();
@@ -1591,6 +1595,34 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> 
         let attributes = read_attributes(b, name_end);
         let conditional = has_condition(b, name_end, &attributes);
         for a in &attributes {
+            // Et attributt som er tatt ut, med beskjed om hva som gjelder i
+            // stedet, fra `removed` i manifestet. Foran `ukjent-attributt`,
+            // som ellers ville foreslått det nærmeste navnet.
+            // Også bundet, som `data-attr:invalid` i Datastar eller `:invalid`
+            // i Vue: det var slik den gamle oppskriften skrev det.
+            let removed = element
+                .removed
+                .iter()
+                .find(|(n, _)| attribute(std::slice::from_ref(a), n).is_some());
+            if let Some((name, note)) = removed {
+                let written = lossy(&a.name);
+                findings.push(Finding {
+                    start: a.start,
+                    end: a.end,
+                    severity: Severity::Warning,
+                    link: element.link.clone(),
+                    message: format!("{name} er tatt ut av <{tag}>. {}", note.replace('`', "")),
+                    fix: Some(Fix::one(
+                        format!("Ta bort {written}"),
+                        a.space_start,
+                        a.value_end,
+                        String::new(),
+                        true,
+                    )),
+                    rule: "utgatt-attributt",
+                });
+                continue;
+            }
             findings.extend(check_attribute(
                 &tag,
                 element,
@@ -1628,7 +1660,21 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> 
         }
     }
     findings.extend(check_icon_only(&source, vocabulary));
-    findings.extend(crate::parts::check_parts(&source, vocabulary));
+    // Treet bygges én gang og deles av reglene som trenger det. Bare når
+    // det står noe fra Fristil i teksten: på en side med tusenvis av tagger
+    // uten en eneste komponent kostet treet mer enn resten av sjekken.
+    if contains_str(&source, "fs-")
+        || vocabulary
+            .elements
+            .iter()
+            .any(|e| contains_str(&source, &e.tag))
+    {
+        let nodes = crate::references::tree(&source);
+        findings.extend(crate::parts::check_parts(&source, vocabulary, &nodes));
+        findings.extend(crate::wiring::check_wiring(
+            &source, vocabulary, &nodes, page,
+        ));
+    }
     findings.sort_by_key(|f| f.start);
     findings
 }

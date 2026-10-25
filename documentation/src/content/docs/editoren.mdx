@@ -17,9 +17,9 @@ Det du får, i HTML-filer og i malspråkene:
 
 - **Fullføring** av `<fs-field>`, `<fs-popover>` og de andre elementene, med attributtene og de lovlige verdiene. Inne i `class="…"` fullføres `fs-`-klassene, og inne i et attributt en klasse tar, som `data-variant` på `fs-button`, verdiene byggefunksjonen kjenner.
 - **Forklaring** når du holder musa over en `fs-`-klasse, og i HTML-filer også over et element, med lenke til komponentsiden, eller over et attributt.
-- **Feilmeldinger**, som røde og gule streker: et element som ikke finnes, et attributt elementet ikke har, en verdi utenfor lista, en klasse som `fs-buton`, og `data-variant="secundary"` på en knapp. `<fs-field>` uten kontroll eller uten ledetekst får samme beskjed som komponenten gir i nettleseren.
-- **Hurtigrettelser** der det finnes ett riktig svar: lyspæra bytter `fs-buton` til `fs-button`, tar bort `invalid="false"`, og setter inn en ledetekst.
-- **Snippets**: skriv `fs-popover` og velg snippeten, og markupen fra komponentsiden står der.
+- **Feilmeldinger**, som røde og gule streker: et element som ikke finnes, et attributt elementet ikke har, en verdi utenfor lista, en klasse som `fs-buton`, og `data-variant="secundary"` på en knapp. `<fs-field>` uten kontroll eller uten ledetekst får samme beskjed som komponenten gir i nettleseren. Og det malen må skrive selv for at komponentene skal virke uten JavaScript og overleve en oppdatering fra serveren: en ledetekst som verken har `for` mot feltet eller står rundt det, et panel i `<fs-popover>` uten id, en fane som peker på et panel som ikke finnes, en fanerad uten navn, `role="tab"` på noe som ikke er en lenke, hjelpetekst inni `<label>`, `data-value` uten `.fs-suggestion__value`, en skjult feilmelding ved siden av `aria-invalid="true"`, de utgåtte `invalid`, `required-marker` og `control-id` på `<fs-field>`, og en id komponenten lagde selv, kopiert inn fra DevTools.
+- **Hurtigrettelser** der det finnes ett riktig svar: lyspæra bytter `fs-buton` til `fs-button`, tar bort `invalid="false"` og de utgåtte attributtene, setter inn en ledetekst, gir raden et navn, og gir feltet id og ledeteksten `for` i ett grep, fra feltets `name`.
+- **Snippets**: skriv `fs-popover` og velg snippeten, og markupen fra komponentsiden står der. Id-en er et tabbestopp: skriv den én gang, så følger `for` på ledeteksten og `href` på fanene med.
 
 Malspråkene den virker i uten innstillinger: PHP, Razor, Astro, Svelte, Vue, Twig, Blade, Jinja, Django, Handlebars, ERB, Go-maler, EJS, Liquid, Nunjucks og Edge. Der det står malsyntaks, holder den seg unna: en mal er ikke hel, og kontrollen kan stå i en partial. Lista er innstillingen `fristil.languages`.
 
@@ -39,6 +39,8 @@ fun lagreknapp() = """
 ```
 
 `// language=HTML` og `@Language("HTML")` er IntelliJs egne merker, og krever ingen avhengighet. Uten et slikt merke er strengen bare tekst for IDE-en, og da er det ingenting for pluginen å feste seg i. Fullføringen gir bare klassene, ikke elementene eller attributtene. Etterprøvd i Kotlin og TypeScript i IntelliJ IDEA Ultimate 2026.2.3.
+
+Fra versjon 0.4.0 har pluginen **live templates**: skriv `fs-field` og trykk Tab, og markupen fra komponentsiden står der, med id-en som variabel og `for` som følger med. De lages fra de samme oppskriftene som snippetene i VS Code.
 
 Fra versjon 0.3.0 gir pluginen også **feilmeldingene**, i HTML-filer og i merkede strenger: et element, en klasse, et attributt eller en verdi som ikke finnes, med hurtigrettelse der det finnes ett riktig svar. Sjekken er den samme Rust-kjernen som `fristil sjekk` og VS Code bruker, kjørt i IDE-ens egen JVM. Den trenger ikke Node eller JavaScript-støtten i IDE-en, og leter etter manifestet slik [språkserveren](#språkserveren) gjør, fra fila og oppover til prosjektmappa, så komponenter du har overtatt er kjent. Fullføringen leser klassene fra det samme manifestet, så den foreslår de overtatte komponentene og aldri en klasse sjekken avviser. Et funn du vil beholde, undertrykkes med `<!-- fristil-ignore-next regelnavn -->` over taggen.
 

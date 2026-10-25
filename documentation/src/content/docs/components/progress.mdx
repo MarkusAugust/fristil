@@ -14,7 +14,7 @@ Vet du ikke hvor langt det er kommet, er [Spinner](../spinner/) riktigere.
 <Eksempel importer={["tokens.css", "progress.css"]}
   stiler={["progress"]} layout="stabel" maxWidth="26rem" kode={`
 <progress class="fs-progress" value="3" max="7"
-          aria-label="Steg 3 av 7"></progress>
+          aria-label="Framdrift i søknaden" aria-valuetext="Steg 3 av 7"></progress>
 
 <progress class="fs-progress" value="100" max="100" data-color="success"
           aria-label="Opplastingen er ferdig"></progress>
@@ -30,8 +30,10 @@ Vet du ikke hvor langt det er kommet, er [Spinner](../spinner/) riktigere.
 ```tsx
 import { fs } from "@fristil/designsystem/react"
 
-<progress {...fs.progress({ value: 3, max: 7, label: "Steg 3 av 7" })} />
+<progress {...fs.progress({ value: 3, max: 7, label: "Framdrift i søknaden", valueText: "Steg 3 av 7" })} />
 ```
+
+`valueText` blir `aria-valuetext`, og skjermleseren leser den i stedet for prosenten. `max` leses sjelden opp, så «43 prosent» er alt brukeren får uten den; «Steg 3 av 7» sier hvor mange steg som er igjen.
 
 Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
 
@@ -43,7 +45,7 @@ const stolpe = document.querySelector<HTMLProgressElement>("#opplasting")
 if (stolpe) stolpe.value = 64
 ```
 
-Skal stolpen tilbake til ubestemt, fjerner du attributtet: `stolpe.removeAttribute("value")`. Bruker du `fs.setAttributes(stolpe, fs.progress({ … }))` i stedet, sender du alle valgene på nytt: `fs.progress()` forvalter `value`, `max` og `aria-label`, så et kall uten `label` tar navnet bort, og `max` settes til 100 når du ikke oppgir den.
+Skal stolpen tilbake til ubestemt, fjerner du attributtet: `stolpe.removeAttribute("value")`. Bruker du `fs.setAttributes(stolpe, fs.progress({ … }))` i stedet, sender du alle valgene på nytt: `fs.progress()` forvalter `value`, `max`, `aria-label` og `aria-valuetext`, så et kall uten `label` tar navnet bort, og `max` settes til 100 når du ikke oppgir den.
 
 Se [Typesikker bruk](../../typesikker-bruk/).
 

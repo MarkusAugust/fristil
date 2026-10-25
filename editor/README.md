@@ -45,9 +45,11 @@ der ingen kompilator ser på attributtene.
 - **Forklaring** når du holder musa over en `fs-`-klasse, og i HTML-filer
   også over et element eller et attributt, med lenke til komponentsiden.
 - **Snippets**: skriv `fs-popover`, velg snippeten øverst i lista, og
-  markupen fra komponentsiden står der. Utvidelsen setter snippets øverst i
-  HTML-filer, for ellers ligger Emmet der: `fs-popover` er også en
-  Emmet-forkortelse, og Tab tar det som ligger øverst.
+  markupen fra komponentsiden står der. Id-en er et tabbestopp: skriv den
+  én gang, så følger `for` på ledeteksten og `href` på fanene med.
+  Utvidelsen setter snippets øverst i HTML-filer, for ellers ligger Emmet
+  der: `fs-popover` er også en Emmet-forkortelse, og Tab tar det som ligger
+  øverst.
 - **Feilmeldinger**, som røde og gule streker med komponentsiden som lenke: et
   `<fs-…>`-element som ikke finnes, et attributt elementet ikke har, en verdi
   utenfor lista, et tall som ikke er et tall, `invalid="false"`, som betyr
@@ -56,11 +58,22 @@ der ingen kompilator ser på attributtene.
   `<label for>` utenfor feltet må stå i samme fil, for utvidelsen ser én fil
   om gangen. Kommentarer, skript og stilark leses ikke, og der det står
   malsyntaks, Go, Jinja, PHP, ASP, JS-maler eller Razor, holder den seg unna:
-  en mal er ikke hel, og kontrollen kan stå i en partial.
+  en mal er ikke hel, og kontrollen kan stå i en partial. Den sjekker også
+  det malen må skrive selv for at komponentene skal virke uten JavaScript
+  og overleve en oppdatering fra serveren: en ledetekst som verken har
+  `for` mot feltet eller står rundt det, et panel i `<fs-popover>` uten id,
+  en fane som peker på et panel som ikke finnes, en fanerad uten navn,
+  `role="tab"` på noe som ikke er en lenke, hjelpetekst inni `<label>`,
+  `data-value` uten `.fs-suggestion__value`, en skjult feilmelding ved siden
+  av `aria-invalid="true"`, de utgåtte attributtene på `<fs-field>`, og en
+  id komponenten lagde selv, kopiert inn fra DevTools. Der id-en er bundet,
+  som `:id`, `th:id` eller `asp-for`, tier den.
 
 - **Hurtigrettelser** der det finnes ett riktig svar: lyspæra bytter
   `fs-buton` til `fs-button` og `onlinetext` til `online-text`, tar bort
-  `invalid="false"`, og setter inn en ledetekst i et felt som mangler en.
+  `invalid="false"` og de utgåtte attributtene, setter inn en ledetekst i et
+  felt som mangler en, gir raden et navn, og gir feltet id og ledeteksten
+  `for` i ett grep, fra feltets `name`.
 
 Det utvidelsen ikke gjør, er å validere HTML. En `</body>` for mye er en
 jobb for en HTML-linter, og Fristil sier bare fra om Fristil.

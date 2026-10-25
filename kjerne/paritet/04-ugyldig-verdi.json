@@ -8,9 +8,13 @@
       "message": "data-variant kan ikke være «ghots» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt.",
       "fix": {
         "title": "Bytt til ghost",
-        "start": 40,
-        "end": 45,
-        "text": "ghost",
+        "edits": [
+          {
+            "start": 40,
+            "end": 45,
+            "text": "ghost"
+          }
+        ],
         "preferred": false
       }
     },
@@ -38,9 +42,13 @@
       "message": "data-variant kan ikke være «ghots» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt.",
       "fix": {
         "title": "Bytt til ghost",
-        "start": 40,
-        "end": 45,
-        "text": "ghost",
+        "edits": [
+          {
+            "start": 40,
+            "end": 45,
+            "text": "ghost"
+          }
+        ],
         "preferred": false
       }
     },

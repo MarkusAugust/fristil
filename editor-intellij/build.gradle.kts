@@ -58,6 +58,15 @@ intellijPlatform {
         // Vises på Marketplace og i IDE-en ved oppdatering, og må være på
         // engelsk som beskrivelsen. Skriv en ny linje for hver versjon.
         changeNotes = """
+            <b>0.4.0</b>: Live templates for every web component, generated from the
+            same recipes as the VS Code snippets, with the id as a variable that
+            <code>for</code> and <code>href</code> follow. Ten new diagnostics about
+            the wiring a template has to write itself: a label not linked to its
+            field, a popover panel without an id, a tab without a panel, a tab row
+            without a name, and the attributes removed from
+            <code>&lt;fs-field&gt;</code>, among others. A quick fix can now make
+            several edits at once, such as the field's id and the label's
+            <code>for</code>.<br>
             <b>0.3.0</b>: Diagnostics from Fristil's checker, in HTML files and in
             HTML injected into strings, with quick fixes. The checker is written in
             Rust and runs inside the IDE as WebAssembly, without Node.js. It checks
@@ -84,6 +93,15 @@ intellijPlatform {
     // signeringen, og Marketplace signerer den selv.
     publishing {
         token = providers.gradleProperty("intellijPlatformPublishingToken")
+    }
+}
+
+tasks.processResources {
+    // Live templates genereres i designsystemet fra de samme oppskriftene
+    // som snippetene i VS Code. Fila kopieres inn der `plugin.xml` peker.
+    from(rootDir.resolve("../designsystem/live-templates.xml")) {
+        into("liveTemplates")
+        rename { "Fristil.xml" }
     }
 }
 
