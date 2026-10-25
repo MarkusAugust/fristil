@@ -293,7 +293,31 @@ for (const element of elements) {
   const body = snippets[element.tag]?.body ?? []
   if (!body.some((line) => line.includes(`<${element.tag}`)))
     findings.push(`Snippeten for <${element.tag}> inneholder ikke elementet`)
+  // Hver id er et tabbestopp, og hvert tabbestopp er definert én gang:
+  // id-en skrives én gang, og `for` og `href` følger med.
+  const text = body.join("\n")
+  for (const m of text.matchAll(/\bid="([^"]*)"/g))
+    if (!/^\$\{\d+:[^}]+\}$/.test(m[1]))
+      findings.push(
+        `Snippeten for <${element.tag}> har id="${m[1]}" uten tabbestopp`,
+      )
+  const defined = new Set([...text.matchAll(/\$\{(\d+):/g)].map((m) => m[1]))
+  for (const m of text.matchAll(/(?<!\\)\$(\d+)\b/g))
+    if (!defined.has(m[1]))
+      findings.push(
+        `Snippeten for <${element.tag}> speiler $${m[1]}, som ikke er definert`,
+      )
 }
+
+// Live templates for IntelliJ har de samme id-ene som variabler.
+const liveTemplates = generated["designsystem/live-templates.xml"] ?? ""
+for (const element of elements) {
+  if (!liveTemplates.includes(`<template name="${element.tag}"`))
+    findings.push(`Live templates mangler <${element.tag}>`)
+}
+for (const m of liveTemplates.matchAll(/id=&quot;([^&]*)&quot;/g))
+  if (!/^\$[A-Za-z0-9_]+\$$/.test(m[1]))
+    findings.push(`Live templates har id=&quot;${m[1]}&quot; uten variabel`)
 
 // 4. Tell, sist. Både likt det forventede og større enn null.
 const counted = registered.size

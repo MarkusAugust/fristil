@@ -24,8 +24,10 @@
         <br><br>
         Diagnostics come from Fristil's own checker, compiled from Rust to
         WebAssembly and run inside the IDE with Chicory, a pure Java runtime:
-        unknown elements, classes, attributes and values, with quick fixes where
-        the checker has one. No Node.js is needed.
+        unknown elements, classes, attributes and values, and the wiring a
+        template has to write itself, with quick fixes where the checker has
+        one. No Node.js is needed. Live templates insert each component's
+        markup from the documentation, with the id as a variable.
         <br><br>
         <a href="https://github.com/MarkusAugust/fristil">Source code</a> (MIT)
         <br><br>
@@ -59,6 +61,13 @@
         <annotator
             language="HTML"
             implementationClass="no.fristil.intellij.FristilAnnotator" />
+
+        <!--
+            Live templates: skriv `fs-field` og Tab, og markupen fra
+            komponentsiden står der, med id-en som variabel. Fila genereres i
+            designsystemet og kopieres inn av Gradle.
+        -->
+        <defaultLiveTemplates file="/liveTemplates/Fristil" />
     </extensions>
 
     <applicationListeners>

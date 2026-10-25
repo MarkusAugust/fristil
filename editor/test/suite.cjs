@@ -85,4 +85,31 @@ exports.run = async () => {
     list.items.some((item) => (item.label.label ?? item.label) === "fs-button"),
     "fs-button er ikke blant forslagene",
   )
+
+  // Snippeten for feltet: id-en skrives én gang, og `for` følger med.
+  const extension = vscode.extensions.all.find(
+    (e) => e.packageJSON.name === "fristil-vscode",
+  )
+  assert.ok(extension, "fant ikke utvidelsen")
+  const snippets = JSON.parse(
+    require("node:fs").readFileSync(
+      require("node:path").join(extension.extensionPath, "dist/snippets.json"),
+      "utf8",
+    ),
+  )
+  const third = await vscode.workspace.openTextDocument({
+    language: "html",
+    content: "",
+  })
+  const editor = await vscode.window.showTextDocument(third)
+  await editor.insertSnippet(
+    new vscode.SnippetString(snippets["fs-field"].body.join("\n")),
+  )
+  await vscode.commands.executeCommand("type", { text: "epost" })
+  const text = third.getText()
+  assert.ok(
+    text.includes('id="epost"') && text.includes('for="epost"'),
+    `id og for følger ikke hverandre i snippeten: ${text}`,
+  )
+  assert.ok(!text.includes("navn"), `plassholderen står igjen: ${text}`)
 }

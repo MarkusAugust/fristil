@@ -219,19 +219,113 @@ export function recipe(element: ElementDoc): string {
 const escapeSnippet = (line: string) =>
   line.replace(/\\/g, "\\\\").replace(/\$/g, "\\$")
 
+const escapeRegex = (text: string) =>
+  text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+/**
+ * Id-ene i en oppskrift, i rekkefølge, og alt som peker på hver av dem.
+ *
+ * Id-en er det malen skriver selv etter v6: `for` på ledeteksten og `id` på
+ * feltet, `href` på fanen og `id` på panelet. I en snippet blir hver id et
+ * tabbestopp, og pekerne speil av det, så den skrives én gang.
+ */
+function idsIn(body: string): string[] {
+  return [...new Set([...body.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]))]
+}
+
+/**
+ * Pekerne på en id: `for`, `aria-labelledby`, `aria-controls` og `href="#…"`.
+ * `write(name, value)` skriver attributtet på nytt der verdien er id-en.
+ */
+function mirror(
+  body: string,
+  id: string,
+  write: (attribute: string, prefix: string) => string,
+): string {
+  const esc = escapeRegex(id)
+  return body
+    .replace(
+      new RegExp(`\\b(for|aria-labelledby|aria-controls)="${esc}"`, "g"),
+      (_, attribute: string) => write(attribute, ""),
+    )
+    .replace(new RegExp(`\\bhref="#${esc}"`, "g"), () => write("href", "#"))
+}
+
+/** Snippeten med tabbestopp: `${1:navn}` der id-en står, `$1` der den pekes på. */
+function withTabstops(body: string): string {
+  let out = body
+  idsIn(body).forEach((id, i) => {
+    const n = i + 1
+    out = out.replace(
+      new RegExp(`\\bid="${escapeRegex(id)}"`, "g"),
+      () => `id="\${${n}:${id}}"`,
+    )
+    out = mirror(
+      out,
+      id,
+      (attribute, prefix) => `${attribute}="${prefix}$${n}"`,
+    )
+  })
+  return out
+}
+
 export function snippets() {
   const out: Record<
     string,
     { prefix: string; body: string[]; description: string }
   > = {}
   for (const element of elements) {
+    // Tabbestoppene settes inn etter rømmingen, ellers rømmes de også.
+    const body = recipe(element).split("\n").map(escapeSnippet).join("\n")
     out[element.tag] = {
       prefix: element.tag,
-      body: recipe(element).split("\n").map(escapeSnippet),
+      body: withTabstops(body).split("\n"),
       description: element.description,
     }
   }
   return out
+}
+
+/**
+ * Live templates for IntelliJ, fra de samme oppskriftene som snippetene.
+ *
+ * Formatet er IntelliJs eget: `$navn$` er en variabel, `$$` et dollartegn,
+ * og variabelnavnet må være en identifikator, så `okt-tittel` blir
+ * `okt_tittel`. Pluginen kopierer fila inn som `liveTemplates/Fristil.xml`.
+ */
+export function liveTemplates(): string {
+  const xml = (text: string) =>
+    text
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\n/g, "&#10;")
+  const templates = elements.map((element) => {
+    let body = recipe(element).replace(/\$/g, "$$$$")
+    const variables = idsIn(body).map((id) => {
+      const name = id.replace(/[^A-Za-z0-9_]/g, "_")
+      body = body.replace(
+        new RegExp(`\\bid="${escapeRegex(id)}"`, "g"),
+        () => `id="$${name}$"`,
+      )
+      body = mirror(
+        body,
+        id,
+        (attribute, prefix) => `${attribute}="${prefix}$${name}$"`,
+      )
+      return `    <variable name="${name}" expression="" defaultValue="${xml(JSON.stringify(id))}" alwaysStopAt="true" />`
+    })
+    return [
+      `  <template name="${element.tag}" value="${xml(body)}" description="${xml(element.description)}" toReformat="false" toShortenFQNames="false">`,
+      ...variables,
+      "    <context>",
+      '      <option name="HTML" value="true" />',
+      "    </context>",
+      "  </template>",
+    ].join("\n")
+  })
+  return `<!-- Generert av designsystem/scripts/generate-ordforrad.ts. Ikke rediger. -->\n<templateSet group="Fristil">\n${templates.join("\n")}\n</templateSet>\n`
 }
 
 /*
@@ -546,6 +640,7 @@ export function files(): Record<string, string> {
       classesData(),
     ),
     "designsystem/web-types.json": json(webTypes(version)),
+    "designsystem/live-templates.xml": liveTemplates(),
     "designsystem/src/components/events.ts": eventTypes(),
   }
 }
