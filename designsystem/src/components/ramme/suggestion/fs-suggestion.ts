@@ -79,7 +79,7 @@ const OPTION_SELECTOR = FS_SUGGESTION_PARTS.option
  * skjult `.fs-suggestion__value`, får det koden fra `data-value`, eller
  * teksten når alternativet ikke har noen. Uten JavaScript sendes teksten, og serveren
  * slår opp. Komponenten rendrer ingenting. Den lagde tidligere
- * hele feltet selv, og da fantes det verken labelElement eller inndatafelt før
+ * hele feltet selv, og da fantes det verken ledetekst eller inndatafelt før
  * skriptet hadde kjørt, og ingenting ble med i innsendingen.
  *
  * Det komponenten gjør er det nettleseren ikke gjør: filtrerer alternativene
@@ -442,7 +442,7 @@ export class FsSuggestion extends HostElement {
       warnAboutMarkup(
         this,
         "for på ledeteksten pekte på en annen id enn feltets. Komponenten " +
-          "skrev den om, men uten JavaScript hadde feltet da ingen labelElement, " +
+          "skrev den om, men uten JavaScript hadde feltet da ingen ledetekst, " +
           "og en skjermleser leste det opp uten navn. Gi ledeteksten feltets " +
           "id i malen.",
         () => {
@@ -457,7 +457,7 @@ export class FsSuggestion extends HostElement {
         this,
         "<label> er ikke koblet til feltet: feltet har ingen id, og " +
           "ledeteksten står ikke rundt det. Uten JavaScript har feltet da " +
-          "ingen labelElement, og en skjermleser leser det opp uten navn. Skriv " +
+          "ingen ledetekst, og en skjermleser leser det opp uten navn. Skriv " +
           "id på feltet og samme for på ledeteksten, eller legg <label> rundt " +
           "feltet. Komponenten lager ikke " +
           "id-en selv: en id serveren ikke sendte, får en oppdatering fra " +
@@ -476,11 +476,11 @@ export class FsSuggestion extends HostElement {
         },
       )
       // `for` går foran det at ledeteksten står rundt feltet. Peker den på en
-      // annen id, har feltet ingen labelElement, også med JavaScript.
+      // annen id, har feltet ingen ledetekst, også med JavaScript.
       warnAboutMarkup(
         this,
         "<label> står rundt feltet, men for på ledeteksten peker på en annen " +
-          "id enn feltets. for går foran, så feltet har ingen labelElement, og en " +
+          "id enn feltets. for går foran, så feltet har ingen ledetekst, og en " +
           "skjermleser leser det opp uten navn. Ta bort for, eller gi feltet " +
           "den samme id-en.",
         () => {
@@ -492,7 +492,7 @@ export class FsSuggestion extends HostElement {
         },
       )
     } else {
-      // Uten labelElement inni kan den stå utenfor, med `for` på feltets id.
+      // Uten ledetekst inni kan den stå utenfor, med `for` på feltets id.
       // Den får klassen, som i `<fs-field>`; en patch av dette området
       // rører den ikke, så den trenger ingen reparasjon.
       if (control.id) {
@@ -503,7 +503,7 @@ export class FsSuggestion extends HostElement {
       }
       warnAboutMarkup(
         this,
-        "fant ingen <label>. Feltet får da ingen labelElement, og en " +
+        "fant ingen <label>. Feltet får da ingen ledetekst, og en " +
           "skjermleser leser det opp uten navn. Står ledeteksten utenfor " +
           "<fs-suggestion>, må for på den peke på id-en til feltet.",
         () => {
@@ -557,8 +557,8 @@ export class FsSuggestion extends HostElement {
       if (!option.id) {
         setAttr(option, "id", this.rememberedId(option, "fs-suggestion-option"))
       }
-      // Fra starten, ikke først når lista lukkes: Firefox leser et
-      // alternativ uten `aria-selected` som valgt.
+      // Fra starten, ikke først når lista lukkes: ellers sto alternativene
+      // serveren sendte, uten til da, mens resten av lista hadde det.
       if (!option.hasAttribute("aria-selected")) {
         setAttr(option, "aria-selected", "false")
       }

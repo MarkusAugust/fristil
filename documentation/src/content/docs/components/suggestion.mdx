@@ -341,7 +341,6 @@ Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role
 - **Lista har et navn**, ledeteksten. `fs.suggestion()` gir ledeteksten id og lista `aria-labelledby` mot den. Kommer markupen uten, gjør komponenten det samme, men står ledeteksten rundt feltet, får den ingen id, siden en oppdatering da ville byttet ut ledeteksten og feltet i den. Lista får da teksten i ledeteksten som `aria-label`. Et navn serveren har skrevet, står.
 - **Hvert alternativ sier om det er valgt**, med `aria-selected`, fra starten.
 - **Mens svaret er underveis** sier lista `aria-busy="true"`, som `fs.suggestion({ id, pending: true })` skriver, og «Ingen treff» holdes skjult.
-
 - **Fokus blir i feltet.** Markeringen flyttes med `aria-activedescendant`, ikke ved å flytte fokus, slik at brukeren kan fortsette å skrive.
 - **Antall treff leses opp.** Uten det får den som ikke ser skjermen ingen beskjed om at lista snevret seg inn. Teksten skrives av komponenten, og tømmer en oppdatering fra serveren elementet, skriver komponenten den på nytt.
 - **Escape lukker lista** uten å tømme feltet, og et klikk utenfor gjør det samme.

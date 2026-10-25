@@ -135,8 +135,8 @@ egen overskrift «Brytende».
 ### Rettet
 
 - **Hvert alternativ i forslagslista har `aria-selected` fra starten.**
-  Komponenten skrev det først når lista ble lukket, og Firefox leser et
-  alternativ uten `aria-selected` som valgt.
+  Komponenten skrev det først når lista ble lukket, så alternativene serveren
+  sendte, sto uten fram til da, mens resten av lista hadde det.
 - **`<fs-popover>` skriver aldri id på panelet.** Den lagde en når malen ikke
   hadde skrevet en, og Datastar og idiomorph byttet da ut panelet ved neste
   oppdatering, med fokus og det brukeren gjorde i det. Nå beholdes panelet.
