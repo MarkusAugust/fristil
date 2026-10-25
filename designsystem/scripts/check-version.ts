@@ -66,9 +66,7 @@ if (!(pakke.files as string[]).includes("CHANGELOG.md")) {
  * verdien for å bytte den, og det er nettopp det som svikter stille, slik det
  * gjorde for CDN-adressene i dokumentasjonen. Derfor denne.
  */
-const iDekket = /Designsystemarkitektur · LO-TEK ([^\s·]+) · ([^<]+)/.exec(
-  dekk,
-)
+const iDekket = /Designsystemarkitektur · LO-TEK ([^\s·]+) · ([^<]+)/.exec(dekk)
 
 /*
  * Datoen har en fasit: den dagen versjonen ble gitt ut, som står i overskriften

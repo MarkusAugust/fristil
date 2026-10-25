@@ -575,9 +575,7 @@ for (const fil of readdirSync(SIDER).filter(
       for (const m of fraImporter[1].matchAll(/"([^"]+)"/g)) oppgitt.add(m[1])
     for (const m of fane.kode.matchAll(/href="[^"]*\/([a-z-]+\.css)"/g))
       oppgitt.add(m[1])
-    for (const m of fane.kode.matchAll(
-      /@lotek\/designsystem\/([a-z-]+\.css)/g,
-    ))
+    for (const m of fane.kode.matchAll(/@lotek\/designsystem\/([a-z-]+\.css)/g))
       oppgitt.add(m[1])
 
     const brukteKlasser = new Set<string>()
@@ -714,9 +712,7 @@ for (const fil of readdirSync(SIDER).filter(
       let importert = false
       for (const gjerde of gjerder(fane.kode)) {
         if (
-          /import \{[^}]*\bfs\b[^}]*\} from "@lotek\/designsystem/.test(
-            gjerde,
-          )
+          /import \{[^}]*\bfs\b[^}]*\} from "@lotek\/designsystem/.test(gjerde)
         )
           importert = true
         if (!importert && /\bfs\.[a-zA-Z]/.test(gjerde)) {

@@ -11,7 +11,10 @@ import { type Core, loadCore } from "./core.js"
 /** Filene i pakken, sett fra både `src/diagnostics/` og `dist/diagnostics/`. */
 const MODULE = new URL("../../core/lotek-core.wasm", import.meta.url)
 const MANIFEST = new URL("../../manifest/manifest.json", import.meta.url)
-const CONTRACT = new URL("../../src/tokens/color-contract.json", import.meta.url)
+const CONTRACT = new URL(
+  "../../src/tokens/color-contract.json",
+  import.meta.url,
+)
 
 let core: Core | undefined
 

@@ -1,10 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-
-import {
-  defineLtToast,
-  LtToast,
-} from "./components/standalone/toast/lt-toast"
 import { defineElement, whenUpgraded } from "./components/host-element"
+import { defineLtToast, LtToast } from "./components/standalone/toast/lt-toast"
 import * as pakke from "./index"
 import { defineLt } from "./register"
 

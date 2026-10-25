@@ -41,8 +41,6 @@ import { tag } from "./components/css/tag/tag.js"
 import { textarea } from "./components/css/textarea/textarea.js"
 import { toggleGroup } from "./components/css/toggle-group/toggle-group.js"
 import { tooltip } from "./components/css/tooltip/tooltip.js"
-import { connectionStatus } from "./components/standalone/connection-status/connection-status.js"
-import { toast } from "./components/standalone/toast/toast.js"
 import { dialog } from "./components/frame/dialog/dialog.js"
 import { errorSummary } from "./components/frame/error-summary/error-summary.js"
 import {
@@ -57,6 +55,8 @@ import {
   type TabsWithStateOptions,
   tabsWithState,
 } from "./components/frame/tabs/tabs.js"
+import { connectionStatus } from "./components/standalone/connection-status/connection-status.js"
+import { toast } from "./components/standalone/toast/toast.js"
 import { type Attributes, setAttributes as setHtmlAttributes } from "./dom.js"
 
 // Typene til hendelsene, så `addEventListener` er typet også for den som

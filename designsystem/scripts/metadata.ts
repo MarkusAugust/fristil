@@ -13,10 +13,6 @@
  * Fila sendes ikke ut i pakken. Den leses bare av `generate-vocabulary.ts`.
  */
 
-import type { LtConnectionStatus } from "../src/components/standalone/connection-status/lt-connection-status.js"
-import { LT_CONNECTION_STATUS_TAG } from "../src/components/standalone/connection-status/lt-connection-status.js"
-import type { LtToast } from "../src/components/standalone/toast/lt-toast.js"
-import { LT_TOAST_TAG } from "../src/components/standalone/toast/lt-toast.js"
 import type { LtDialog } from "../src/components/frame/dialog/lt-dialog.js"
 import {
   LT_DIALOG_PARTS,
@@ -52,6 +48,10 @@ import {
   LT_TABS_PARTS,
   LT_TABS_TAG,
 } from "../src/components/frame/tabs/lt-tabs.js"
+import type { LtConnectionStatus } from "../src/components/standalone/connection-status/lt-connection-status.js"
+import { LT_CONNECTION_STATUS_TAG } from "../src/components/standalone/connection-status/lt-connection-status.js"
+import type { LtToast } from "../src/components/standalone/toast/lt-toast.js"
+import { LT_TOAST_TAG } from "../src/components/standalone/toast/lt-toast.js"
 
 /** En lovlig verdi, med hva den betyr. */
 export type ValueDoc = { name: string; description: string }

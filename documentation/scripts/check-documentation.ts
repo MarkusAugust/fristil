@@ -575,9 +575,7 @@ for (const fil of [
 ]) {
   const innhold = les(`${DOKUMENTASJON}${fil}`)
 
-  for (const treff of innhold.matchAll(
-    /@lotek\/designsystem@([^/\s"'`)]+)/g,
-  )) {
+  for (const treff of innhold.matchAll(/@lotek\/designsystem@([^/\s"'`)]+)/g)) {
     // `VERSJON` er formen i markdown. I en `.astro`-fil kjører ingen remark, og
     // der er den riktige formen å lese versjonen av `package.json` i koden.
     // Unntaket må være bundet til filtypen: uten det slapp

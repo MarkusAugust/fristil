@@ -124,7 +124,10 @@ if (!webTypes.includes(webTypesFør)) {
  * dato, og et tall som er målt skal ikke settes av et skript som ikke har målt
  * noe.
  */
-const dekkSti = join(monorepoRot, "presentation/design-system-architecture.html")
+const dekkSti = join(
+  monorepoRot,
+  "presentation/design-system-architecture.html",
+)
 let dekk = ""
 try {
   dekk = readFileSync(dekkSti, "utf8")

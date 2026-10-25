@@ -312,8 +312,9 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   ].entries()) {
     // Bivirkningsimport uten `from`, dynamisk import og enkeltfnutter feiler
     // like stille i en nettleser som den ene formen som sto her før.
-    const naken =
-      /(?:from|import)\s*\(?\s*\n?\s*["']@lotek\/designsystem/.test(blokk[1])
+    const naken = /(?:from|import)\s*\(?\s*\n?\s*["']@lotek\/designsystem/.test(
+      blokk[1],
+    )
     krev(
       !naken,
       `${sti}, markupblokk ${nummer + 1} importerer et pakkenavn i nettleseren. Bruk hele URL-en.`,

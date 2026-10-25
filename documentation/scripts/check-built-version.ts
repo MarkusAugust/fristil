@@ -102,7 +102,10 @@ for (const filsti of iKilden) {
  * `&#x22;`. Første utgave lette etter `version "VERSJON"` og var død.
  */
 const MAVEN = [
-  ["markusaugust:lo-tek-interfaces:VERSJON", `markusaugust:lo-tek-interfaces:${version}`],
+  [
+    "markusaugust:lo-tek-interfaces:VERSJON",
+    `markusaugust:lo-tek-interfaces:${version}`,
+  ],
   ["version &#x22;VERSJON&#x22;", `version &#x22;${version}&#x22;`],
   ["webjars/lo-tek/VERSJON/", `webjars/lo-tek/${version}/`],
 ]

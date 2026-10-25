@@ -49,7 +49,10 @@ kjerne.loadManifest(
   readFileSync(join(ROT, "designsystem/manifest/manifest.json"), "utf8"),
 )
 kjerne.loadContract(
-  readFileSync(join(ROT, "designsystem/src/tokens/color-contract.json"), "utf8"),
+  readFileSync(
+    join(ROT, "designsystem/src/tokens/color-contract.json"),
+    "utf8",
+  ),
 )
 
 /**

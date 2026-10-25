@@ -69,8 +69,7 @@ const IMPORT = /(?:from|import)\s*\(?\s*\n?\s*["'](@lotek\/[^"']*)["']/g
  * bytter den når siden bygges, og `check-built-version.ts` kontrollerer at det
  * faktisk skjedde.
  */
-const CDN =
-  /cdn\.jsdelivr\.net\/npm\/@lotek\/designsystem@([^/]+)\/([^"'\s]+)/g
+const CDN = /cdn\.jsdelivr\.net\/npm\/@lotek\/designsystem@([^/]+)\/([^"'\s]+)/g
 
 const linjen = (tekst: string, indeks: number) =>
   tekst.slice(0, indeks).split("\n").length

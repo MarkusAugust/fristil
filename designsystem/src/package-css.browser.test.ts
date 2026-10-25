@@ -132,9 +132,7 @@ describe("stilarkene pakken sender ut", () => {
     expect(
       afterFirstBlock("@layer lotek { .lt-a { color: red } }\n").trim(),
     ).toBe("")
-    expect(afterFirstBlock("@layer lotek { .lt-a { color: red }")).not.toBe(
-      "",
-    )
+    expect(afterFirstBlock("@layer lotek { .lt-a { color: red }")).not.toBe("")
   })
 
   it("har ingen tegn utenfor ASCII utenom kommentarene", () => {

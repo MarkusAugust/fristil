@@ -11,8 +11,7 @@
  * Funksjonen gjør ingenting på en server, som de enkelte gjør, så den kan stå
  * øverst i en modul som kjøres begge steder.
  */
-import { defineLtConnectionStatus } from "./components/standalone/connection-status/lt-connection-status.js"
-import { defineLtToast } from "./components/standalone/toast/lt-toast.js"
+
 import { defineLtDialog } from "./components/frame/dialog/lt-dialog.js"
 import { defineLtErrorSummary } from "./components/frame/error-summary/lt-error-summary.js"
 import { defineLtField } from "./components/frame/field/lt-field.js"
@@ -20,6 +19,8 @@ import { defineLtPopover } from "./components/frame/popover/lt-popover.js"
 import { defineLtSessionTimeout } from "./components/frame/session-timeout/lt-session-timeout.js"
 import { defineLtSuggestion } from "./components/frame/suggestion/lt-suggestion.js"
 import { defineLtTabs } from "./components/frame/tabs/lt-tabs.js"
+import { defineLtConnectionStatus } from "./components/standalone/connection-status/lt-connection-status.js"
+import { defineLtToast } from "./components/standalone/toast/lt-toast.js"
 
 // Typene til hendelsene og tagnavnene, så `querySelector("lt-dialog")` og
 // `addEventListener` er typet også for den som bare importerer denne

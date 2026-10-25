@@ -32,15 +32,7 @@ if (import.meta.main) {
   )
   if (cargo.exitCode !== 0) process.exit(cargo.exitCode ?? 1)
   const wasi = Bun.spawnSync(
-    [
-      "cargo",
-      "build",
-      "--release",
-      "-p",
-      "lotek",
-      "--target",
-      "wasm32-wasip1",
-    ],
+    ["cargo", "build", "--release", "-p", "lotek", "--target", "wasm32-wasip1"],
     { cwd: KJERNE, stdout: "inherit", stderr: "inherit" },
   )
   if (wasi.exitCode !== 0) process.exit(wasi.exitCode ?? 1)

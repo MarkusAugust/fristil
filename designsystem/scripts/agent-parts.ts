@@ -18,8 +18,8 @@ import { fileURLToPath } from "node:url"
 import { lt } from "../src/index.js"
 import { classes } from "../src/vocabulary/classes.js"
 import { elements } from "../src/vocabulary/elements.js"
-import { byggSamletCss, samletStørrelse } from "./css-bundle.js"
 import { FAMILIES, ROLES, roleToCss } from "./color-contract.js"
+import { byggSamletCss, samletStørrelse } from "./css-bundle.js"
 
 export const PAKKE = fileURLToPath(new URL("../", import.meta.url))
 

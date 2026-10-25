@@ -5,10 +5,10 @@ import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "astro/config"
 import remarkGfm from "remark-gfm"
 import pakke from "../designsystem/package.json" with { type: "json" }
-import { DELINGSBILDE, metaAttributter } from "./src/share-image.mjs"
 import { markdownsider } from "./src/plugins/markdown-pages.mjs"
 import { rehypeTabellrull } from "./src/plugins/rehype-table-scroll.mjs"
 import { remarkVersjon } from "./src/plugins/remark-version.mjs"
+import { DELINGSBILDE, metaAttributter } from "./src/share-image.mjs"
 
 /*
  * Sitemapen tar bare med HTML-sidene av seg selv. `llms.txt` og
