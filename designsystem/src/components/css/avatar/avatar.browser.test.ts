@@ -7,20 +7,20 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { piksel } from "../../../testing/piksel"
+import { piksel } from "../../../testing/pixel"
 import { avatar } from "./avatar"
 import avatarCss from "./avatar.css?inline"
 
 import "../../../tokens/tokens.css"
 import "./avatar.css"
 
-describe("fs-avatar", () => {
+describe("lt-avatar", () => {
   beforeEach(() => {
     monter(`
-      <span class="fs-avatar" data-size="small" id="liten" aria-hidden="true">ON</span>
-      <span class="fs-avatar" id="vanlig" aria-hidden="true">ON</span>
-      <span class="fs-avatar" data-size="large" id="stor" aria-hidden="true">ON</span>
-      <span class="fs-avatar" data-variant="square" id="firkant" aria-hidden="true">KB</span>
+      <span class="lt-avatar" data-size="small" id="liten" aria-hidden="true">ON</span>
+      <span class="lt-avatar" id="vanlig" aria-hidden="true">ON</span>
+      <span class="lt-avatar" data-size="large" id="stor" aria-hidden="true">ON</span>
+      <span class="lt-avatar" data-variant="square" id="firkant" aria-hidden="true">KB</span>
       <p>Ola Nordmann</p>
     `)
   })
@@ -47,9 +47,9 @@ describe("fs-avatar", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(avatar()).toEqual({ class: "fs-avatar" })
+    expect(avatar()).toEqual({ class: "lt-avatar" })
     expect(avatar({ size: "large", variant: "square" })).toEqual({
-      class: "fs-avatar",
+      class: "lt-avatar",
       "data-size": "large",
       "data-variant": "square",
     })
@@ -61,7 +61,7 @@ describe("fs-avatar", () => {
   })
 })
 
-describe("fs-avatar som knapp", () => {
+describe("lt-avatar som knapp", () => {
   /*
    * Ringen rundt bildet er en `outline` i laget, og den slo nettleserens egen
    * fokusmarkering. En avatar som er en knapp fikk da bare den tynne ringen
@@ -72,7 +72,7 @@ describe("fs-avatar som knapp", () => {
   it("viser fokusringen og ikke ringen rundt bildet", () => {
     monter(`
       <style>${avatarCss.replaceAll(":focus-visible", "[data-fokus]")}</style>
-      <button class="fs-avatar" id="profil" aria-label="Profil">ON</button>
+      <button class="lt-avatar" id="profil" aria-label="Profil">ON</button>
     `)
     const knapp = document.getElementById("profil") as HTMLButtonElement
     expect(getComputedStyle(knapp).outlineWidth).toBe("1px")
@@ -84,7 +84,7 @@ describe("fs-avatar som knapp", () => {
   })
 })
 
-describe("fs-avatar med bilde", () => {
+describe("lt-avatar med bilde", () => {
   it("tegner ringen over et lyst bilde", async () => {
     // Ringen var en skygge innover, og den males under innholdet. Et bilde
     // som fylte flaten dekket den, så ringen fantes bare med initialer. Ringen
@@ -94,10 +94,10 @@ describe("fs-avatar med bilde", () => {
       '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="white"/></svg>',
     )}`
     const stil =
-      "--fs-avatar-size: 96px; --fs-color-neutral-border-subtle: rgb(255, 0, 0)"
+      "--lt-avatar-size: 96px; --lt-color-neutral-border-subtle: rgb(255, 0, 0)"
     monter(`
-      <span class="fs-avatar" id="rund" style="${stil}"><img src="${hvitt}" alt="" /></span>
-      <span class="fs-avatar" data-variant="square" id="firkant" style="${stil}"><img src="${hvitt}" alt="" /></span>
+      <span class="lt-avatar" id="rund" style="${stil}"><img src="${hvitt}" alt="" /></span>
+      <span class="lt-avatar" data-variant="square" id="firkant" style="${stil}"><img src="${hvitt}" alt="" /></span>
     `)
     for (const bilde of document.querySelectorAll("img")) await bilde.decode()
     await ventPaTegning()
@@ -124,9 +124,9 @@ describe("fs-avatar med bilde", () => {
       '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="white"/></svg>',
     )}`
     monter(`
-      <ul class="fs-avatar-stack" style="--fs-avatar-size: 96px; --fs-avatar-stack-overlap: -24px">
-        <li><span class="fs-avatar" id="bak" style="--fs-color-neutral-border-subtle: rgb(255, 0, 0)"><img src="${hvitt}" alt="" /></span></li>
-        <li><span class="fs-avatar" id="foran" style="--fs-color-neutral-border-subtle: rgb(255, 255, 255)"><img src="${hvitt}" alt="" /></span></li>
+      <ul class="lt-avatar-stack" style="--lt-avatar-size: 96px; --lt-avatar-stack-overlap: -24px">
+        <li><span class="lt-avatar" id="bak" style="--lt-color-neutral-border-subtle: rgb(255, 0, 0)"><img src="${hvitt}" alt="" /></span></li>
+        <li><span class="lt-avatar" id="foran" style="--lt-color-neutral-border-subtle: rgb(255, 255, 255)"><img src="${hvitt}" alt="" /></span></li>
       </ul>
     `)
     for (const bilde of document.querySelectorAll("img")) await bilde.decode()
@@ -164,9 +164,9 @@ describe("fs-avatar med bilde", () => {
     )}`
     monter(`
       <style>${avatarCss.replaceAll(":focus-visible", "[data-fokus]")}</style>
-      <ul class="fs-avatar-stack" id="stabel" style="--fs-avatar-size: 96px; --fs-avatar-stack-overlap: -24px; --fs-focus-ring: 2px solid rgb(255, 0, 0)">
-        <li><button class="fs-avatar" id="bak" data-fokus aria-label="Bak"><img src="${hvitt}" alt="" /></button></li>
-        <li><button class="fs-avatar" id="foran" aria-label="Foran"><img src="${hvitt}" alt="" /></button></li>
+      <ul class="lt-avatar-stack" id="stabel" style="--lt-avatar-size: 96px; --lt-avatar-stack-overlap: -24px; --lt-focus-ring: 2px solid rgb(255, 0, 0)">
+        <li><button class="lt-avatar" id="bak" data-fokus aria-label="Bak"><img src="${hvitt}" alt="" /></button></li>
+        <li><button class="lt-avatar" id="foran" aria-label="Foran"><img src="${hvitt}" alt="" /></button></li>
       </ul>
     `)
     for (const bilde of document.querySelectorAll("img")) await bilde.decode()

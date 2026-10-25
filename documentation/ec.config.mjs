@@ -2,22 +2,22 @@ import { defineEcConfig } from "@astrojs/starlight/expressive-code"
 import { ecTabindex } from "./src/plugins/ec-tabindex.mjs"
 
 /*
- * Valgene for Expressive Code står her og ikke i `astro.config.mjs`.
- * `<Code>`-komponenten krever at valgene der kan gjøres om til JSON, og et
- * tillegg med funksjoner kan ikke det. Starlight leser denne fila selv.
+ * The Expressive Code options are here and not in `astro.config.mjs`. The
+ * `<Code>` component requires the options there to be serialisable as JSON,
+ * and a plugin with functions is not. Starlight reads this file itself.
  */
 export default defineEcConfig({
   /*
-   * Expressive Code skriver stilarket sitt som en `<link>` inne i
-   * `<body>`, ved den første kodeblokken på siden. På komponentsidene ser
-   * nettleseren den først rundt 36 000 tegn inn i dokumentet, og må stoppe
-   * tegningen på den: 59 av 61 sider hadde et tegneblokkerende stilark
-   * midt i innholdet. Med `emitExternalStylesheet: false` legges stilen
-   * inline i stedet, og ingen side har det lenger. Prisen er omtrent
-   * 4 kB gzip mer HTML per side, altså ingen ekstra rundtur mot en litt
-   * større førstelevering.
+   * Expressive Code writes its stylesheet as a `<link>` inside `<body>`, at
+   * the first code block on the page. On the component pages the browser only
+   * sees it about 36,000 characters into the document, and has to stop
+   * rendering on it: 59 of 61 pages had a render-blocking stylesheet in the
+   * middle of the content. With `emitExternalStylesheet: false` the styles are
+   * inlined instead, and no page has that any more. The cost is about 4 kB
+   * gzip more HTML per page: no extra round trip, in exchange for a slightly
+   * larger first response.
    */
   emitExternalStylesheet: false,
-  // Tastaturtilgang til kodefeltene i HTML-en. Se `ec-tabindex.mjs`.
+  // Keyboard access to the code blocks in the HTML. See `ec-tabindex.mjs`.
   plugins: [ecTabindex()],
 })

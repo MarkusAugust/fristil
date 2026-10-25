@@ -5,29 +5,30 @@ import type { Family } from "./matrix.js"
 export type { Violation }
 
 /**
- * Bygger et helt fargetema av noen få merkefarger.
+ * Builds a complete colour theme from a few brand colours.
  *
- * Temaet er kontrakten anvendt på konsumentens kulører. Kuløren er deres,
- * lysheten er rollens, og løftene holder av konstruksjon. Derfor finnes det
- * ikke noe justeringspass her: det er ingenting å flytte på.
+ * The theme is the contract applied to the consumer's hues. The hue comes
+ * from the consumer, the lightness from the role, and the promises hold by
+ * construction. That is why there is no adjustment pass here: there is
+ * nothing to move.
  *
  * ```ts
- * const tema = buildTheme({ accent: "#7c3aed", danger: "#b3261e" })
- * console.log(tema.css)
+ * const theme = buildTheme({ accent: "#7c3aed", danger: "#b3261e" })
+ * console.log(theme.css)
  * ```
  */
 
 export type ThemeTypography = {
-  /** Skriftstakken hele temaet skal bruke, skrevet som i CSS. */
+  /** The font stack the whole theme uses, written as in CSS. */
   fontFamily?: string
-  /** Vektene, som tall eller nøkkelord. */
+  /** The weights, as numbers or keywords. */
   weights?: {
     regular?: string | number
     medium?: string | number
     semibold?: string | number
     bold?: string | number
   }
-  /** Linjeavstand for kontroller, overskrifter, brødtekst og små flater. */
+  /** Line heights for controls, headings, body text and small surfaces. */
   lineHeights?: {
     default?: string | number
     heading?: string | number
@@ -37,66 +38,66 @@ export type ThemeTypography = {
 }
 
 /**
- * Formen i temaet: hjørner og rammer.
+ * The shape of the theme: corners and borders.
  *
- * Knappen står for seg, feltet for seg, og flatene for seg. Skillet er verdt
- * å holde: et annet norsk designsystem har helt runde knapper, mens feltene
- * har nesten rette hjørner, og ett felles tall ville gjort feltene til
- * kapsler.
+ * The button, the field and the surfaces are set separately. The distinction
+ * is worth keeping: another Norwegian design system has fully round buttons
+ * and fields with almost square corners, and one shared number would have
+ * turned the fields into capsules.
  *
- * Avkryssingsboksen, merket, etiketten, valggruppa, avataren og skjelettet
- * står med vilje utenfor. Der er hjørnet ikke et stilvalg, men
- * selve formen: en avkryssingsboks som blir rund, ser ut som en radioknapp,
- * og et merke som blir firkantet, ser ut som en knapp.
+ * The checkbox, the badge, the tag, the toggle group, the avatar and the
+ * skeleton are left out on purpose. There the corner is not a style choice
+ * but the shape itself: a checkbox that turns round looks like a radio
+ * button, and a badge that turns square looks like a button.
  */
 export type ThemeShape = {
-  /** Hjørner på knappen, paginering og hopplenken. */
+  /** Corners on the button, the pagination and the skip link. */
   buttonRadius?: string
-  /** Hjørner på feltet, tekstområdet og nedtrekkslista. */
+  /** Corners on the field, the text area and the select. */
   fieldRadius?: string
   /**
-   * Hjørner på kort, dialog, sprettoppvindu, varsel, trekkspill,
-   * feiloppsummering, filopplasting, økttidsvarsel, forslagslista,
-   * meldingen og hjelpeboblen.
+   * Corners on the card, dialog, popover, alert, accordion, error summary,
+   * file upload, session timeout, suggestion list, toast and tooltip.
    */
   surfaceRadius?: string
-  /** Rammetykkelsen på knappen. */
+  /** The border width of the button. */
   buttonBorderWidth?: string
-  /** Vekten på knappeteksten. */
+  /** The font weight of the button text. */
   buttonFontWeight?: string | number
 }
 
 /**
- * Merkefargene.
+ * The brand colours.
  *
- * Hver familie er valgfri for seg, og en du utelater arver Fristils egen
- * kulør. Utelater du alle, blir temaet et som bare setter skrift og form.
+ * Each family is optional on its own, and one you leave out inherits
+ * LO-TEK's default hue. Leave them all out, and the theme only sets type and
+ * shape.
  */
 export type ThemeColors = Partial<Record<Family, string>>
 
 export type ThemeInput = ThemeColors & {
-  /** Skrift og linjeavstand. Utelates den, står Fristils egen typografi. */
+  /** Type and line height. Left out, LO-TEK's default typography stays. */
   typography?: ThemeTypography
-  /** Hjørner og rammer. Utelates den, står Fristils egen form. */
+  /** Corners and borders. Left out, LO-TEK's default shape stays. */
   shape?: ThemeShape
 }
 
 export type Theme = {
   light: Record<string, string>
   dark: Record<string, string>
-  /** Løfter som ikke holder. Tom når temaet er i orden. */
+  /** Promises that do not hold. Empty when the theme is sound. */
   violations: Violation[]
   css: string
 }
 
 /**
- * Bygger temaet, og kontrollerer hvert løfte mens det bygges.
+ * Builds the theme, and checks every promise while it is built.
  *
- * Regningen skjer i kjernen, skrevet i Rust, som `fristil tema` og Fristil for
- * Kotlin bruker. Verdiene i typografi og form skrives rett inn i en
- * CSS-regel, så en verdi som kan bryte ut av den, som `4px; } html {`, en
- * ulukket parentes eller `</style>`, avvises med en forklaring som navngir
- * feltet i oppskriften.
+ * The arithmetic happens in the core, written in Rust, which `lotek theme` and
+ * LO-TEK for Kotlin use. The typography and shape values are written straight
+ * into a CSS rule, so a value that could break out of it, such as
+ * `4px; } html {`, an unclosed parenthesis or `</style>`, is rejected with an
+ * explanation that names the field in the recipe.
  */
 export function buildTheme(input: ThemeInput): Theme {
   return defaultCore().buildTheme(input)

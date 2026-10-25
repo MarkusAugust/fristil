@@ -1,9 +1,9 @@
-@layer fristil {
-  .fs-link {
-    color: var(--fs-color-accent-text);
+@layer lotek {
+  .lt-link {
+    color: var(--lt-color-accent-text);
     font-family: inherit;
     font-size: inherit;
-    line-height: var(--fs-line-height-default);
+    line-height: var(--lt-line-height-default);
     text-decoration-line: underline;
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.14em;
@@ -13,24 +13,24 @@
       text-decoration-color 120ms ease;
   }
 
-  /* Før `:hover`, med samme spesifisitet: den som står sist vinner, og en
-     besøkt lenke skal også skifte farge under musa. */
-  .fs-link:visited {
-    color: var(--fs-color-visited-text);
+  /* Before `:hover`, with the same specificity: the last one wins, and a
+     visited link should also change colour under the mouse. */
+  .lt-link:visited {
+    color: var(--lt-color-visited-text);
   }
 
-  .fs-link:hover {
-    color: var(--fs-color-accent-text-strong);
+  .lt-link:hover {
+    color: var(--lt-color-accent-text-strong);
   }
 
-  .fs-link:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-link:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
-    border-radius: var(--fs-spacing-0-5);
+    border-radius: var(--lt-spacing-0-5);
   }
 
-  .fs-link[aria-disabled="true"] {
-    color: var(--fs-color-neutral-text-subtle);
+  .lt-link[aria-disabled="true"] {
+    color: var(--lt-color-neutral-text-subtle);
     text-decoration: none;
     cursor: not-allowed;
     pointer-events: none;

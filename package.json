@@ -1,5 +1,5 @@
 {
-  "name": "fristil-monorepo",
+  "name": "lo-tek-monorepo",
   "private": true,
   "workspaces": [
     "designsystem",
@@ -7,17 +7,17 @@
     "editor"
   ],
   "scripts": {
-    "dev": "bun --filter @fristil/documentation dev",
-    "build": "bun --filter @fristil/designsystem build && bun --filter fristil-vscode sjekk && bun --filter @fristil/documentation build",
-    "typecheck": "tsc -b && bun --filter @fristil/designsystem typecheck:scripts && bun --filter fristil-vscode typecheck",
-    "typecheck:tests": "bun --filter @fristil/designsystem typecheck:tests",
-    "test": "bun --filter @fristil/designsystem test:browser && bun --filter @fristil/designsystem sjekk:uten-javascript && bun --filter @fristil/designsystem sjekk:tailwind",
-    "test:docs": "bun --filter @fristil/documentation test:docs",
+    "dev": "bun --filter @lo-tek/documentation dev",
+    "build": "bun --filter @lo-tek/interfaces build && bun --filter interfaces check && bun --filter @lo-tek/documentation build",
+    "typecheck": "tsc -b && bun --filter @lo-tek/interfaces typecheck:scripts && bun --filter interfaces typecheck",
+    "typecheck:tests": "bun --filter @lo-tek/interfaces typecheck:tests",
+    "test": "bun --filter @lo-tek/interfaces test:browser && bun --filter @lo-tek/interfaces check:without-javascript && bun --filter @lo-tek/interfaces check:tailwind",
+    "test:docs": "bun --filter @lo-tek/documentation test:docs",
     "lint": "biome check .",
     "prepare-version": "bun designsystem/scripts/prepare-version.ts",
     "tag": "bun designsystem/scripts/tag.ts",
-    "sjekk": "bun scripts/sjekk.ts",
-    "sjekk:forfattere": "bun designsystem/scripts/sjekk-forfattere.ts"
+    "check": "bun scripts/check.ts",
+    "check:authors": "bun designsystem/scripts/check-authors.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16",

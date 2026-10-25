@@ -1,0 +1,20 @@
+{
+  "markup": [
+    {
+      "start": 57,
+      "end": 61,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "The help text is inside <label>, and becomes part of the field's name. The screen reader reads it as the name of the field, and aria-describedby points at something inside the name. Move it out of the <label>, next to the field."
+    }
+  ],
+  "page": [
+    {
+      "start": 57,
+      "end": 61,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "The help text is inside <label>, and becomes part of the field's name. The screen reader reads it as the name of the field, and aria-describedby points at something inside the name. Move it out of the <label>, next to the field."
+    }
+  ]
+}

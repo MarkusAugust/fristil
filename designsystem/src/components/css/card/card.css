@@ -1,64 +1,65 @@
-@layer fristil {
-  .fs-card {
+@layer lotek {
+  .lt-card {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: var(--fs-spacing-2);
-    padding: var(--fs-card-padding, var(--fs-spacing-4));
-    /* Hele `font`, ikke bare familien: et kort som er en <button> arvet
-       ellers nettleserens knappeskrift, 13 piksler. */
+    gap: var(--lt-spacing-2);
+    padding: var(--lt-card-padding, var(--lt-spacing-4));
+    /* The whole `font`, not just the family: a card that is a <button>
+       otherwise inherited the browser's button font, 13 pixels. */
     font: inherit;
-    color: var(--fs-color-neutral-text-strong);
-    background: var(--fs-color-neutral-canvas);
-    border: 1px solid var(--fs-color-neutral-border-subtle);
-    border-radius: var(--fs-card-radius, var(--fs-spacing-2));
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-neutral-canvas);
+    border: 1px solid var(--lt-color-neutral-border-subtle);
+    border-radius: var(--lt-card-radius, var(--lt-spacing-2));
   }
 
   /*
-   * Kortet er en flekskolonne, og et barn strekkes da til hele bredden.
-   * Et merke, en etikett, en knapp eller en lenke skal ha sin egen bredde,
-   * ellers ble «Innvilget» et bånd tvers over kortet. Regelen spør etter
-   * elementtypen og ikke klassen: står andre komponenters klasser her, regnes
-   * de som kortets i ordforrådet. Avsnitt, lister og bilder strekkes som før.
+   * The card is a flex column, and a child is then stretched to the full
+   * width. A badge, a label, a button or a link should keep its natural
+   * width, or "Approved" became a band across the card. The rule asks for
+   * the element type and not the class: if other components' classes were
+   * here, the vocabulary would count them as the card's. Paragraphs, lists
+   * and images stretch as before.
    */
-  .fs-card > :where(span, a, button) {
+  .lt-card > :where(span, a, button) {
     align-self: flex-start;
   }
 
-  .fs-card__title {
+  .lt-card__title {
     margin: 0;
-    font-size: var(--fs-font-size-l);
-    font-weight: var(--fs-font-weight-semibold);
-    line-height: var(--fs-line-height-compact);
+    font-size: var(--lt-font-size-l);
+    font-weight: var(--lt-font-weight-semibold);
+    line-height: var(--lt-line-height-compact);
   }
 
-  /* Bare elementet teller, så en klasse på avsnittet vinner: `fs-paragraph`
-     med sin egen linjehøyde, `fs-help-text`, `fs-error-text` og en
-     `fs-card__title` som er en <p>. Med `.fs-card p` slo kortet dem. */
-  :where(.fs-card) p {
+  /* Only the element counts, so a class on the paragraph wins: `lt-paragraph`
+     with its line height, `lt-help-text`, `lt-error-text` and an
+     `lt-card__title` that is a <p>. With `.lt-card p` the card beat them. */
+  :where(.lt-card) p {
     margin: 0;
-    line-height: var(--fs-line-height-article);
+    line-height: var(--lt-line-height-article);
   }
 
-  .fs-card[data-variant="filled"] {
-    background: var(--fs-color-neutral-surface);
+  .lt-card[data-variant="filled"] {
+    background: var(--lt-color-neutral-surface);
     border-color: transparent;
   }
 
-  /* Hele kortet er klikkbart. Elementet er da en <a> eller en <button>, og
-     fokusmarkeringen kommer derfra, ikke herfra. */
-  .fs-card[data-interactive] {
+  /* The whole card is clickable. The element is then an <a> or a <button>,
+     and the focus ring comes from there, not from here. */
+  .lt-card[data-interactive] {
     text-align: start;
     text-decoration: none;
     cursor: pointer;
   }
 
-  .fs-card[data-interactive]:hover {
-    border-color: var(--fs-color-accent-border);
+  .lt-card[data-interactive]:hover {
+    border-color: var(--lt-color-accent-border);
   }
 
-  .fs-card[data-interactive]:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-card[data-interactive]:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
   }
 }

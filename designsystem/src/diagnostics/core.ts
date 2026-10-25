@@ -1,33 +1,33 @@
 /**
- * Kjernen: Fristils sjekk og temagenerator, skrevet i Rust og bygget til én
- * WebAssembly-modul.
+ * The core: LO-TEK's check and theme generator, written in Rust and built to
+ * a single WebAssembly module.
  *
- * Den samme modulen kjøres her, i VS Code, på JVM-en (Chicory) og i IntelliJ,
- * og gir det samme svaret overalt. Modulen har ingen importer, så den trenger
- * ingen lim: lasteren skriver teksten inn som UTF-8 og leser svaret ut som
- * JSON, slik hvert vertsspråk gjør det.
+ * The same module runs here, in VS Code, on the JVM (Chicory) and in
+ * IntelliJ, and gives the same answer everywhere. The module has no imports,
+ * so it needs no glue: the loader writes the text in as UTF-8 and reads the
+ * answer out as JSON, as every host language does.
  *
- * Kjernen bærer ingen data. Ordforrådet og fargekontrakten gis den med
- * `loadManifest` og `loadContract`, fra filene i pakken.
+ * The core carries no data. The vocabulary and the colour contract are given
+ * to it with `loadManifest` and `loadContract`, from the files in the package.
  *
- * `diagnoseMarkup` og `diagnosePage` i `index.ts` laster modulen og filene
- * fra pakken selv. `loadCore` er for den som har modulen på en annen måte,
- * som en utvidelse som pakker den med seg, eller en nettleser:
+ * `diagnoseMarkup` and `diagnosePage` in `index.ts` load the module and the
+ * files from the package themselves. `loadCore` is for anyone who has the
+ * module some other way, such as an extension that bundles it, or a browser:
  *
  * ```ts
- * const kjerne = loadCore(await WebAssembly.compileStreaming(fetch(url)))
- * kjerne.loadManifest(await (await fetch(manifestUrl)).text())
- * kjerne.diagnosePage(html)
+ * const core = loadCore(await WebAssembly.compileStreaming(fetch(url)))
+ * core.loadManifest(await (await fetch(manifestUrl)).text())
+ * core.diagnosePage(html)
  * ```
  *
- * Synkron, fordi Node, Bun og VS Code tillater det. I nettleseren må modulen
- * kompileres med `WebAssembly.compile` først, og den kompilerte modulen gis
- * hit.
+ * Synchronous, because Node, Bun and VS Code allow it. In the browser the
+ * module must be compiled with `WebAssembly.compile` first, and the compiled
+ * module passed here.
  */
 
 export type Severity = "error" | "warning"
 
-/** Én endring i en rettelse: bytt ut teksten fra `start` til `end` med `text`. */
+/** One edit in a fix: replace the text from `start` to `end` with `text`. */
 export type Edit = {
   start: number
   end: number
@@ -35,11 +35,12 @@ export type Edit = {
 }
 
 /**
- * En rettelse editoren kan tilby: én eller flere endringer som hører sammen,
- * som `id` på feltet og `for` på ledeteksten. De står i tekstens rekkefølge
- * og overlapper ikke; bruk dem bakfra, så posisjonene holder. `preferred` er
- * den sikre, som `onlinetext` til `online-text`: samme bokstaver, bare
- * skrevet annerledes. Et forslag på avstand er et forslag.
+ * A fix the editor can offer: one or more edits that belong together, such
+ * as `id` on the field and `for` on the label. They are in text order and do
+ * not overlap; apply them from the end, so the positions hold. `preferred`
+ * marks the safe one, such as `onlinetext` to `online-text`: the same
+ * letters, only written differently. A suggestion at a distance is a
+ * suggestion.
  */
 export type Fix = {
   title: string
@@ -48,32 +49,32 @@ export type Fix = {
 }
 
 export type Finding = {
-  /** Der funnet begynner, som indeks i teksten (UTF-16, som en `string`). */
+  /** Where the finding starts, as an index into the text (UTF-16, like a `string`). */
   start: number
   end: number
-  /** Linja funnet begynner på, fra 1. */
+  /** The line the finding starts on, from 1. */
   line: number
-  /** Kolonnen funnet begynner på, fra 1, i UTF-16-enheter. */
+  /** The column the finding starts at, from 1, in UTF-16 units. */
   column: number
   message: string
   severity: Severity
-  /** Navnet på regelen, som `ukjent-klasse`. Det er det `fristil-ignore-next` tar. */
+  /** The name of the rule, such as `unknown-class`. That is what `lotek-ignore-next` takes. */
   rule: string
-  /** Komponentsiden, som lenke i meldingen. */
+  /** The component page, as a link in the message. */
   link: string
   fix?: Fix
 }
 
 export type CoreVersion = {
-  /** Versjonen av kjernen. */
+  /** The version of the core. */
   core: string
-  /** Versjonen av `@fristil/designsystem` manifestet er skrevet fra, eller `null` uten manifest. */
+  /** The version of `@lo-tek/interfaces` the manifest was written from, or `null` without a manifest. */
   manifest: string | null
-  /** Formen på manifestet kjernen forstår. */
+  /** The manifest format the core understands. */
   schemaVersion: number
 }
 
-/** Et løfte i fargekontrakten som ikke holder. */
+/** A promise in the colour contract that does not hold. */
 export type Violation = {
   family: string
   promise: string
@@ -81,56 +82,56 @@ export type Violation = {
   required: number
 }
 
-/** Temaet `buildTheme` gir: tokenene per utseende, løftene som ryker, og CSS-en. */
+/** The theme `buildTheme` returns: the tokens per appearance, the promises that break, and the CSS. */
 export type CoreTheme = {
   light: Record<string, string>
   dark: Record<string, string>
-  /** Løfter som ikke holder. Tom når temaet er i orden. */
+  /** Promises that do not hold. Empty when the theme is sound. */
   violations: Violation[]
   css: string
 }
 
-/** Det `inspectTheme` fant i et tema konsumenten har skrevet selv. */
+/** What `inspectTheme` found in a theme the consumer has written by hand. */
 export type CoreThemeReport = {
   problems: { selector: string; message: string }[]
-  /** Blokker som faktisk ble lest. */
+  /** Blocks that were actually read. */
   blocks: number
-  /** Verdier konsumenten selv skrev, og som ble forstått. */
+  /** Values the consumer wrote, and that were understood. */
   declarations: number
-  /** Løfter som faktisk ble kontrollert. */
+  /** Promises that were actually checked. */
   promises: number
 }
 
-/** Det `inspectStyles` fant i et stilark. */
+/** What `inspectStyles` found in a stylesheet. */
 export type CoreStyles = {
-  /** Hver klasse som står i en selektor. */
+  /** Every class that appears in a selector. */
   classes: string[]
-  /** Hver klasse med et attributt, og verdien når selektoren krever en. */
+  /** Every class with an attribute, and the value when the selector requires one. */
   attributes: { class: string; attribute: string; value?: string }[]
-  /** Adressene i `@import`. */
+  /** The URLs in `@import`. */
   imports: string[]
 }
 
 export type Core = {
-  /** Sjekker en mal eller et fragment. Kaster uten manifest. */
+  /** Checks a template or a fragment. Throws without a manifest. */
   diagnoseMarkup(html: string): Finding[]
-  /** Sjekker en hel side, med koblingene. Kaster uten manifest. */
+  /** Checks a whole page, including the wiring. Throws without a manifest. */
   diagnosePage(html: string): Finding[]
-  /** Gir kjernen ordforrådet. Kaster med kjernens forklaring hvis det ikke kan leses. */
+  /** Gives the core the vocabulary. Throws with the core's explanation if it cannot be read. */
   loadManifest(json: string): void
-  /** Gir kjernen fargekontrakten. Kaster med kjernens forklaring hvis den ikke kan leses. */
+  /** Gives the core the colour contract. Throws with the core's explanation if it cannot be read. */
   loadContract(json: string): void
   version(): CoreVersion
-  /** Bygger et tema av oppskriften. Kaster uten fargekontrakt, eller når oppskriften ikke kan brukes. */
+  /** Builds a theme from the recipe. Throws without a colour contract, or when the recipe cannot be used. */
   buildTheme(recipe: unknown): CoreTheme
-  /** Kontrollerer hvert løfte i et tema skrevet som CSS. Kaster uten fargekontrakt. */
+  /** Checks every promise in a theme written as CSS. Throws without a colour contract. */
   inspectTheme(css: string): CoreThemeReport
-  /** Klassene og attributtverdiene et stilark styler, lest med kjernens CSS-leser. */
+  /** The classes and attribute values a stylesheet styles, read with the core's CSS reader. */
   inspectStyles(css: string): CoreStyles
   /**
-   * Sjekken med stilarkene i tillegg: en klasse ingen av dem styler, og en
-   * verdi uten regel. `page` sjekker som `diagnosePage`, ellers som
-   * `diagnoseMarkup`. Kaster uten manifest.
+   * The check with the stylesheets as well: a class none of them styles, and
+   * a value without a rule. `page` checks as `diagnosePage`, otherwise as
+   * `diagnoseMarkup`. Throws without a manifest.
    */
   diagnoseStyled(html: string, css: string[], page: boolean): Finding[]
 }
@@ -151,7 +152,7 @@ type Exports = {
   result_len(): number
 }
 
-/** Laster kjernen fra modulens bytes eller en ferdig kompilert modul. */
+/** Loads the core from the module's bytes or an already compiled module. */
 export function loadCore(source: BufferSource | WebAssembly.Module): Core {
   const module =
     source instanceof WebAssembly.Module
@@ -161,11 +162,11 @@ export function loadCore(source: BufferSource | WebAssembly.Module): Core {
   const encoder = new TextEncoder()
   const decoder = new TextDecoder()
 
-  /** Skriver teksten inn i modulens minne og gir pekeren og lengden. */
+  /** Writes the text into the module's memory and returns the pointer and length. */
   const write = (text: string): [number, number] => {
     const bytes = encoder.encode(text)
     const pointer = e.alloc(bytes.length)
-    // Minnet kan vokse ved hvert kall, så visningen lages etter `alloc`.
+    // The memory can grow on every call, so the view is created after `alloc`.
     new Uint8Array(e.memory.buffer, pointer, bytes.length).set(bytes)
     return [pointer, bytes.length]
   }
@@ -175,7 +176,7 @@ export function loadCore(source: BufferSource | WebAssembly.Module): Core {
         new Uint8Array(e.memory.buffer, e.result_ptr(), e.result_len()),
       ),
     ) as T
-  /** Svaret fra et kall som kan avvises: verdien, eller kjernens forklaring som feil. */
+  /** The answer from a call that can be rejected: the value, or the core's explanation as an error. */
   const answer = <T>(status: number): T => {
     if (status !== 0) throw new Error(read<{ error: string }>().error)
     return read<T>()

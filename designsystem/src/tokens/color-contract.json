@@ -1,0 +1,231 @@
+{
+  "$comment": "The colour contract: the families, LO-TEK's brand colours, the lightness and saturation per role, the layers only the neutral family has, the contrast requirements and the promises. Read by the core (core/src/theme/) and by the scripts in designsystem/. A promise with own: true is checked against the family's own role, otherwise against the layer in the neutral family.",
+  "families": [
+    "accent",
+    "visited",
+    "brand1",
+    "brand2",
+    "brand3",
+    "neutral",
+    "danger",
+    "warning",
+    "success"
+  ],
+  "brands": {
+    "accent": "#1362ae",
+    "visited": "#5a77a8",
+    "brand1": "#0d7a5f",
+    "brand2": "#5b3fa0",
+    "brand3": "#b04c5c",
+    "neutral": "#24272b",
+    "danger": "#a82e39",
+    "warning": "#896508",
+    "success": "#316f2a"
+  },
+  "roles": {
+    "surface": {
+      "lightness": {
+        "light": 0.96,
+        "dark": 0.26
+      },
+      "chroma": 0.22
+    },
+    "borderSubtle": {
+      "lightness": {
+        "light": 0.88,
+        "dark": 0.34
+      },
+      "chroma": 0.35
+    },
+    "border": {
+      "lightness": {
+        "light": 0.575,
+        "dark": 0.625
+      },
+      "chroma": 0.55
+    },
+    "borderStrong": {
+      "lightness": {
+        "light": 0.48,
+        "dark": 0.74
+      },
+      "chroma": 0.6
+    },
+    "fill": {
+      "lightness": {
+        "light": 0.53,
+        "dark": 0.65
+      },
+      "chroma": 1
+    },
+    "text": {
+      "lightness": {
+        "light": 0.42,
+        "dark": 0.82
+      },
+      "chroma": 0.85
+    },
+    "textStrong": {
+      "lightness": {
+        "light": 0.28,
+        "dark": 0.93
+      },
+      "chroma": 0.5
+    },
+    "textSubtle": {
+      "lightness": {
+        "light": 0.485,
+        "dark": 0.73
+      },
+      "chroma": 0.7
+    },
+    "content": {
+      "lightness": {
+        "light": 0.99,
+        "dark": 0.16
+      },
+      "chroma": 0.04
+    }
+  },
+  "layers": {
+    "canvas": {
+      "lightness": {
+        "light": 1,
+        "dark": 0.18
+      },
+      "chroma": 0.08
+    },
+    "raised": {
+      "lightness": {
+        "light": 0.92,
+        "dark": 0.32
+      },
+      "chroma": 0.12
+    }
+  },
+  "requirements": {
+    "text": 4.6,
+    "graphic": 3.1
+  },
+  "promises": [
+    {
+      "name": "text on canvas",
+      "foreground": "text",
+      "background": "canvas",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "text on surface",
+      "foreground": "text",
+      "background": "surface",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "text on raised",
+      "foreground": "text",
+      "background": "raised",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "text on its own surface",
+      "foreground": "text",
+      "background": "surface",
+      "own": true,
+      "requirement": "text"
+    },
+    {
+      "name": "textStrong on canvas",
+      "foreground": "textStrong",
+      "background": "canvas",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "textStrong on surface",
+      "foreground": "textStrong",
+      "background": "surface",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "textStrong on raised",
+      "foreground": "textStrong",
+      "background": "raised",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "textSubtle on canvas",
+      "foreground": "textSubtle",
+      "background": "canvas",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "textSubtle on surface",
+      "foreground": "textSubtle",
+      "background": "surface",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "textSubtle on raised",
+      "foreground": "textSubtle",
+      "background": "raised",
+      "own": false,
+      "requirement": "text"
+    },
+    {
+      "name": "border on canvas",
+      "foreground": "border",
+      "background": "canvas",
+      "own": false,
+      "requirement": "graphic"
+    },
+    {
+      "name": "border on raised",
+      "foreground": "border",
+      "background": "raised",
+      "own": false,
+      "requirement": "graphic"
+    },
+    {
+      "name": "border on its own surface",
+      "foreground": "border",
+      "background": "surface",
+      "own": true,
+      "requirement": "graphic"
+    },
+    {
+      "name": "fill on canvas",
+      "foreground": "fill",
+      "background": "canvas",
+      "own": false,
+      "requirement": "graphic"
+    },
+    {
+      "name": "fill on raised",
+      "foreground": "fill",
+      "background": "raised",
+      "own": false,
+      "requirement": "graphic"
+    },
+    {
+      "name": "content on top of fill",
+      "foreground": "content",
+      "background": "fill",
+      "own": true,
+      "requirement": "text"
+    },
+    {
+      "name": "content on top of text",
+      "foreground": "content",
+      "background": "text",
+      "own": true,
+      "requirement": "text"
+    }
+  ]
+}

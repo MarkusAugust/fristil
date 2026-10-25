@@ -12,18 +12,18 @@ import { list } from "./list"
 import "../../../tokens/tokens.css"
 import "./list.css"
 
-describe("fs-list", () => {
+describe("lt-list", () => {
   beforeEach(() => {
     monter(`
-      <ul class="fs-list" id="vanlig">
+      <ul class="lt-list" id="vanlig">
         <li>Fødselsattest</li>
         <li>Bekreftelse fra arbeidsgiver</li>
       </ul>
-      <ul class="fs-list" data-variant="plain" id="ren">
+      <ul class="lt-list" data-variant="plain" id="ren">
         <li>Sendt 4. mars</li>
         <li>Under behandling</li>
       </ul>
-      <ul class="fs-list" data-variant="divided" id="delt">
+      <ul class="lt-list" data-variant="divided" id="delt">
         <li>Faktura 2026-0481</li>
         <li>Faktura 2026-0482</li>
       </ul>
@@ -47,9 +47,9 @@ describe("fs-list", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(list()).toEqual({ class: "fs-list" })
+    expect(list()).toEqual({ class: "lt-list" })
     expect(list({ variant: "divided" })).toEqual({
-      class: "fs-list",
+      class: "lt-list",
       "data-variant": "divided",
     })
   })

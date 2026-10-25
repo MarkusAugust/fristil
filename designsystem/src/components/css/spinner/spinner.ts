@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const SPINNER_CLASS = "fs-spinner" as const
+export const SPINNER_CLASS = "lt-spinner" as const
 
 export const spinnerSizes = ["small", "medium", "large"] as const
 
@@ -8,9 +8,9 @@ export type SpinnerSize = (typeof spinnerSizes)[number]
 export type NonDefaultSpinnerSize = Exclude<SpinnerSize, "medium">
 
 export type SpinnerOptions = {
-  /** Størrelse. Standard: `medium`. */
+  /** Size. Default: `medium`. */
   size?: SpinnerSize
-  /** Hva som lastes. Blir `aria-label`, så ringen har et navn for skjermlesere. */
+  /** What is loading. Becomes `aria-label`, so the ring has a name for screen readers. */
   label?: string
 }
 
@@ -22,15 +22,15 @@ export type SpinnerAttributes = {
 }
 
 /**
- * Attributtene for en venteindikator.
+ * The attributes for a loading indicator.
  *
- * Uten `label` er ringen bare en form, og skjermlesere melder ingenting. Med
- * `label` blir den en `role="status"` som sier hva som pågår. Har du allerede
- * en synlig tekst ved siden av, la den bære beskjeden og dropp `label`, så
- * det samme ikke leses opp to ganger.
+ * Without `label` the ring is only a shape, and screen readers announce
+ * nothing. With `label` it becomes a `role="status"` that says what is going
+ * on. If you already have a visible text next to it, let that carry the
+ * message and drop `label`, so the same thing is not announced twice.
  *
  * ```ts
- * <span {...spinner({ label: "Laster søknader" })} />
+ * <span {...spinner({ label: "Loading applications" })} />
  * ```
  */
 export const spinner = Object.assign(

@@ -16,7 +16,7 @@ documentation/scripts/.lokal/
 # Midlertidige demoapper for etterprøving mot ekte SSR, ikke del av pakken
 demoer-lokalt/
 
-# Pakket utvidelse, lages av `bun --filter fristil-vscode sjekk`
+# Pakket utvidelse, lages av `bun --filter interfaces check`
 *.vsix
 .vscode-test/
 
@@ -26,23 +26,23 @@ editor-intellij/.gradle/
 editor-intellij/.kotlin/
 editor-intellij/.intellijPlatform/
 editor-intellij/build/
-presentasjon/index.html
+presentation/index.html
 
 # Kotlin-prosjektets byggemapper
 kotlin/.gradle/
 kotlin/.kotlin/
 kotlin/build/
 kotlin/kotlinx-html/build/
-kotlin/kommandolinje/build/
+kotlin/cli/build/
 kotlin/gradle-plugin/build/
 kotlin/buildSrc/.gradle/
 kotlin/buildSrc/.kotlin/
 kotlin/buildSrc/build/
 
 # Rust-kjernens byggemapper. Modulen bygges fra kildekoden.
-kjerne/target/
-kjerne/dist/
-designsystem/kjerne/
+core/target/
+core/dist/
+designsystem/core/
 
-# Tarballen `bun --filter @fristil/designsystem pakk` lager for Kotlin-pakken
+# Tarballen `bun --filter @lo-tek/interfaces pack` lager for Kotlin-pakken
 designsystem/*.tgz

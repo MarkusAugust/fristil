@@ -1,31 +1,31 @@
-@layer fristil {
-  .fs-paragraph {
+@layer lotek {
+  .lt-paragraph {
     margin: 0;
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-paragraph-line-height, var(--fs-line-height-article));
-    color: var(--fs-color-neutral-text-strong);
-    /* Under 75 tegn per linje. Lengre linjer gjør det vanskelig å finne
-       tilbake til starten av neste. */
-    max-inline-size: var(--fs-paragraph-width, 70ch);
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-paragraph-line-height, var(--lt-line-height-article));
+    color: var(--lt-color-neutral-text-strong);
+    /* Under 75 characters per line. Longer lines make it hard to find the
+       start of the next one. */
+    max-inline-size: var(--lt-paragraph-width, 70ch);
   }
 
-  .fs-paragraph + .fs-paragraph {
-    margin-block-start: var(--fs-paragraph-gap, var(--fs-spacing-3));
+  .lt-paragraph + .lt-paragraph {
+    margin-block-start: var(--lt-paragraph-gap, var(--lt-spacing-3));
   }
 
-  .fs-paragraph[data-size="small"] {
-    font-size: var(--fs-font-size-s);
+  .lt-paragraph[data-size="small"] {
+    font-size: var(--lt-font-size-s);
   }
 
-  .fs-paragraph[data-size="large"] {
-    font-size: var(--fs-font-size-l);
+  .lt-paragraph[data-size="large"] {
+    font-size: var(--lt-font-size-l);
     line-height: 1.55;
   }
 
-  .fs-paragraph[data-variant="lead"] {
-    font-size: var(--fs-font-size-l);
+  .lt-paragraph[data-variant="lead"] {
+    font-size: var(--lt-font-size-l);
     line-height: 1.55;
-    color: var(--fs-color-neutral-text-subtle);
+    color: var(--lt-color-neutral-text-subtle);
   }
 }

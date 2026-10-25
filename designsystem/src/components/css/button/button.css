@@ -1,126 +1,128 @@
-@layer fristil {
-  .fs-button {
-    /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
-       Uten border-box legges padding og ramme utenpå width, og feltet
-       blir bredere enn boksen det ligger i. */
+@layer lotek {
+  .lt-button {
+    /* The design system cannot assume the consumer has a CSS reset. Without
+       border-box, padding and border are added outside the width, and the
+       element becomes wider than the box it sits in. */
     box-sizing: border-box;
 
     display: inline-flex;
     align-items: center;
-    gap: var(--fs-spacing-2);
-    padding: var(--fs-button-padding, var(--fs-spacing-2) var(--fs-spacing-4));
+    gap: var(--lt-spacing-2);
+    padding: var(--lt-button-padding, var(--lt-spacing-2) var(--lt-spacing-4));
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    /* Vekt, linjeavstand og rammetykkelse er form, og form leses fra en
-       komponentvariabel med tokenverdien som reserve. Et tema som vil ha
-       fete knapper med tykk ramme, slik noen designsystemer har, setter dem
-       uten å skrive en eneste selektor av. */
-    font-weight: var(--fs-button-font-weight, var(--fs-font-weight-medium));
-    line-height: var(--fs-button-line-height, var(--fs-line-height-default));
-    border: var(--fs-button-border-width, 1px) solid var(--fs-color-accent-fill);
-    border-radius: var(--fs-button-radius, var(--fs-spacing-1));
-    background: var(--fs-color-accent-fill);
-    color: var(--fs-color-accent-content);
+    font-size: var(--lt-font-size-m);
+    /* Weight, line height and border width are shape, and shape is read from
+       a component variable with the token value as the fallback. A theme
+       that wants bold buttons with a thick border, as some design systems
+       have, sets them without overriding a single selector. */
+    font-weight: var(--lt-button-font-weight, var(--lt-font-weight-medium));
+    line-height: var(--lt-button-line-height, var(--lt-line-height-default));
+    border: var(--lt-button-border-width, 1px) solid var(--lt-color-accent-fill);
+    border-radius: var(--lt-button-radius, var(--lt-spacing-1));
+    background: var(--lt-color-accent-fill);
+    color: var(--lt-color-accent-content);
     cursor: pointer;
     text-decoration: none;
     user-select: none;
 
-    /* Teksten får brekke. Med `white-space: nowrap` sprengte en knapp med en
-       lang norsk ledetekst boksen sin på en telefon, og da ruller hele siden
-       sidelengs. Knappen skal aldri bli bredere enn plassen den får.
+    /* The text may wrap. With `white-space: nowrap` a button with a long
+       label burst its box on a phone, and then the whole page scrolls
+       sideways. The button must never become wider than the room it gets.
 
-       `normal` står eksplisitt fordi `white-space` arves: en konsument med
-       `nowrap` på noe rundt ville ellers fått problemet tilbake. Målt i
-       Chromium holder `text-wrap: balance` alene, siden den setter
-       `text-wrap-mode: wrap` og dermed slår den arvede verdien, men den
-       eksplisitte linja gjelder også der `text-wrap` ikke er støttet. */
+       `normal` is explicit because `white-space` is inherited: a consumer
+       with `nowrap` on something around it would otherwise get the problem
+       back. Checked in Chromium, `text-wrap: balance` alone is enough, since
+       it sets `text-wrap-mode: wrap` and so beats the inherited value, but
+       the explicit line also applies where `text-wrap` is not supported. */
     white-space: normal;
     max-inline-size: 100%;
     text-align: center;
     text-wrap: balance;
   }
 
-  /* Hover går bort fra `content`: mørkere i lyst tema, lysere i mørkt. `text`
-     er rollen som ligger der, og siden lysheten er rollens og ikke
-     merkefargens, holder teksten oppå knappen kontrasten sin uansett kulør.
-     `content oppå text` er et løfte i kontrakten. */
-  .fs-button:hover {
-    background: var(--fs-color-accent-text);
-    border-color: var(--fs-color-accent-text);
+  /* Hover moves away from `content`: darker in the light theme, lighter in
+     the dark one. `text` is the role that sits there, and since the
+     lightness belongs to the role and not the brand colour, the text on the
+     button keeps its contrast whatever the hue. `content on text` is a
+     promise in the contract. */
+  .lt-button:hover {
+    background: var(--lt-color-accent-text);
+    border-color: var(--lt-color-accent-text);
   }
 
-  .fs-button:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-button:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
   }
 
-  /* Sekundær: omriss, gjennomsiktig bakgrunn */
-  .fs-button[data-variant="secondary"] {
+  /* Secondary: outline, transparent background */
+  .lt-button[data-variant="secondary"] {
     background: transparent;
-    color: var(--fs-color-accent-text);
-    border-color: var(--fs-color-accent-border);
+    color: var(--lt-color-accent-text);
+    border-color: var(--lt-color-accent-border);
   }
 
-  .fs-button[data-variant="secondary"]:hover:not(
+  .lt-button[data-variant="secondary"]:hover:not(
     :disabled,
     [aria-disabled="true"]
   ) {
-    background: var(--fs-color-accent-surface);
+    background: var(--lt-color-accent-surface);
   }
 
-  /* Ghost: ingen kant, ingen bakgrunn */
-  .fs-button[data-variant="ghost"] {
+  /* Ghost: no border, no background */
+  .lt-button[data-variant="ghost"] {
     background: transparent;
-    color: var(--fs-color-accent-text);
+    color: var(--lt-color-accent-text);
     border-color: transparent;
   }
 
-  .fs-button[data-variant="ghost"]:hover:not(
+  .lt-button[data-variant="ghost"]:hover:not(
     :disabled,
     [aria-disabled="true"]
   ) {
-    background: var(--fs-color-accent-surface);
+    background: var(--lt-color-accent-surface);
   }
 
   /* Danger */
-  .fs-button[data-variant="danger"] {
-    background: var(--fs-color-danger-surface);
-    color: var(--fs-color-danger-text);
-    border-color: var(--fs-color-danger-text);
+  .lt-button[data-variant="danger"] {
+    background: var(--lt-color-danger-surface);
+    color: var(--lt-color-danger-text);
+    border-color: var(--lt-color-danger-text);
   }
 
-  .fs-button[data-variant="danger"]:hover:not(
+  .lt-button[data-variant="danger"]:hover:not(
     :disabled,
     [aria-disabled="true"]
   ) {
-    background: var(--fs-color-danger-fill);
-    border-color: var(--fs-color-danger-fill);
-    color: var(--fs-color-danger-content);
+    background: var(--lt-color-danger-fill);
+    border-color: var(--lt-color-danger-fill);
+    color: var(--lt-color-danger-content);
   }
 
   /*
-   * Deaktivert står sist.
+   * Disabled comes last.
    *
-   * Sto regelen over variantene, vant de på rekkefølgen: en deaktivert
-   * sekundær-, ghost- eller fareknapp så ut som en aktiv. Variantenes hover
-   * er mer spesifikk enn denne uansett plass, og en deaktivert knapp treffes
-   * fortsatt av `:hover`. Derfor unntar hver av dem den deaktivert selv.
+   * When the rule was above the variants, they won on order: a disabled
+   * secondary, ghost or danger button looked like an active one. The
+   * variants' hover is more specific than this wherever it stands, and a
+   * disabled button is still matched by `:hover`. So each of them excludes
+   * the disabled state itself.
    */
-  .fs-button:disabled,
-  .fs-button[aria-disabled="true"] {
-    background: var(--fs-color-disabled-surface);
-    color: var(--fs-color-disabled-text);
-    border-color: var(--fs-color-disabled-surface);
-    /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
-       deaktivert felt, og pointer-events ville bare hindret markøren i å
-       vises. Elementet blir da ikke truffet av musa i det hele tatt. */
+  .lt-button:disabled,
+  .lt-button[aria-disabled="true"] {
+    background: var(--lt-color-disabled-surface);
+    color: var(--lt-color-disabled-text);
+    border-color: var(--lt-color-disabled-surface);
+    /* No pointer-events: none here. The browser already blocks a disabled
+       field, and pointer-events would only stop the cursor from showing. The
+       element is then not hit by the mouse at all. */
     cursor: not-allowed;
   }
 
-  /* aria-disabled er bare en opplysning til skjermlesere; elementet virker
-     fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
-     Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
-  .fs-button[aria-disabled="true"] {
+  /* aria-disabled is only information for screen readers; the element still
+     works. Here pointer-events stops the mouse, at the cost of the cursor.
+     If the field should really be off, use `disabled` or `readonly`. */
+  .lt-button[aria-disabled="true"] {
     pointer-events: none;
   }
 }

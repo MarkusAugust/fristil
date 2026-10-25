@@ -1,22 +1,23 @@
 /**
- * Å bruke attributtene på et element i vanlig DOM.
+ * Applying the attributes to an element in the plain DOM.
  *
- * I JSX sprer du objektet rett inn i elementet. Uten JSX måtte du løkke
- * gjennom det selv, og passe på å fjerne attributter fra forrige tilstand.
- * Går et felt fra ugyldig til gyldig, utelater byggefunksjonen `data-state`, og et
- * `setAttribute` alene ville latt den gamle verdien bli stående.
+ * In JSX you spread the object straight onto the element. Without JSX you
+ * would have to loop through it yourself, and take care to remove attributes
+ * from the previous state. When a field goes from invalid to valid, the
+ * builder function leaves out `data-state`, and a `setAttribute` alone would
+ * have left the old value in place.
  */
 
 import { managedNames } from "./components/css/shared.js"
 
 /**
- * Det et sett uten en byggefunksjon bak seg får ryddet.
+ * What gets cleaned up for a set without a builder function behind it.
  *
- * Et håndskrevet eller spredd sett står ikke i kartet over hva det
- * forvalter, og da er `data-*`-navnene det eneste funksjonen trygt kan ta:
- * de er systemets egne. Et sett rett fra en byggefunksjon bruker ikke denne
- * lista. Det rydder nøyaktig det byggefunksjonen forvalter, så
- * `fs.popover().trigger` på en sekundærknapp lar `data-variant` stå.
+ * A handwritten or spread set is not in the map of what it manages, and then
+ * the `data-*` names are the only ones the function can safely remove: they
+ * belong to the system. A set straight from a builder function does not use
+ * this list. It cleans up exactly what the builder function manages, so
+ * `lt.popover().trigger` on a secondary button leaves `data-variant` alone.
  */
 const SAFE_FOR_UNKNOWN = [
   "data-variant",
@@ -33,61 +34,64 @@ const SAFE_FOR_UNKNOWN = [
 ] as const
 
 /**
- * Navn som aldri fjernes, heller ikke når byggefunksjonen forvalter dem.
+ * Names that are never removed, not even when the builder function manages
+ * them.
  *
- * `id` og `for` er koblinger andre elementer peker på. `fs.errorSummary()`
- * tar en valgfri `id`, og et kall uten den strøk id-en konsumenten selv
- * hadde skrevet på boksen: hver lenke og hver `aria-*` som pekte dit, røk.
+ * `id` and `for` are connections other elements point to. `lt.errorSummary()`
+ * takes an optional `id`, and a call without it removed the id the consumer
+ * had written on the box: every link and every `aria-*` pointing there broke.
  */
 const NEVER_REMOVED: readonly string[] = ["id", "for"]
 
 let warnedAboutUnknownSet = false
 
-/** Klassene systemet eier. Konsumentens egne klasser beholdes. */
-const IS_SYSTEM_CLASS = /^fs-/
+/** The classes that belong to the system. The consumer's classes are kept. */
+const IS_SYSTEM_CLASS = /^lt-/
 
 /**
- * Verdiene en byggefunksjon kan sende ut.
+ * The values a builder function can output.
  *
- * `true` og `false` er med fordi flere av dem er boolske HTML-attributter:
- * `disabled` på en bryter, `multiple` på et filfelt, `hidden` på en
- * feilmelding. I HTML er et slikt attributt sant så lenge det finnes, uansett
- * verdi, så `true` settes som tom streng og `false` fjerner det.
+ * `true` and `false` are included because several of them are boolean HTML
+ * attributes: `disabled` on a switch, `multiple` on a file field, `hidden` on
+ * an error text. In HTML such an attribute is true as long as it exists,
+ * whatever its value, so `true` is set as the empty string and `false`
+ * removes it.
  */
 export type Attributes = Record<string, string | boolean | undefined>
 
 /**
- * Setter attributtene fra en `fs`-funksjon på et element.
+ * Sets the attributes from an `lt` function on an element.
  *
  * ```ts
- * import { fs } from "@fristil/designsystem"
+ * import { lt } from "@lo-tek/interfaces"
  *
- * const felt = document.querySelector("input")
- * fs.setAttributes(felt, fs.input({ type: "email", state: "invalid" }))
+ * const field = document.querySelector("input")
+ * lt.setAttributes(field, lt.input({ type: "email", state: "invalid" }))
  * ```
  *
- * Kall den på nytt for å endre tilstand. Det byggefunksjonen forvalter og
- * som ikke er med i det nye settet, fjernes, og `fs-`-klassene byttes. En
- * byggefunksjon forvalter attributtene den har et valg for: `fs.spinner()`
- * har `label`, og eier dermed `role` og `aria-label`. Det den ikke har et
- * valg for, står som det står: `fs.button()` har aldri skrevet `disabled`,
- * så en deaktivert knapp er fortsatt deaktivert etterpå. `id` og `for`
- * fjernes aldri.
+ * Call it again to change state. What the builder function manages and is
+ * not in the new set is removed, and the `lt-` classes are replaced. A
+ * builder function manages the attributes it has an option for:
+ * `lt.spinner()` has `label`, and so manages `role` and `aria-label`. What it
+ * has no option for stays as it is: `lt.button()` has never written
+ * `disabled`, so a disabled button is still disabled afterwards. `id` and
+ * `for` are never removed.
  *
- * Skal to sett på samme element, sendes de hver for seg, ikke spredd sammen:
+ * When two sets go on the same element, pass them separately, not spread
+ * together:
  *
  * ```ts
- * fs.setAttributes(felt, fs.input({ type: "email" }), kobling.control)
+ * lt.setAttributes(field, lt.input({ type: "email" }), wiring.control)
  * ```
  *
- * Et spredd objekt er et nytt objekt, og da vet ikke funksjonen hvilken
- * byggefunksjon det kom fra. Det settes riktig, men bare `data-*` ryddes.
- * Et uttrykkelig `false` i et håndskrevet sett fjerner attributtet.
+ * A spread object is a new object, and then the function does not know which
+ * builder function it came from. It is set correctly, but only `data-*` is
+ * cleaned up. An explicit `false` in a handwritten set removes the attribute.
  *
- * Den tar `null`, og gjør da ingenting. `document.querySelector()` gir
- * `Element | null`, så uten det måtte hvert eneste kallsted i en `strict`-app
- * skrive en vakt eller et utropstegn rundt et oppslag som nesten alltid
- * treffer. Det er den samme avveiningen som `element?.classList`.
+ * It accepts `null`, and then does nothing. `document.querySelector()`
+ * returns `Element | null`, so without that every call site in a `strict` app
+ * would need a guard or an exclamation mark around a lookup that almost
+ * always succeeds. It is the same trade-off as `element?.classList`.
  */
 export function setAttributes(
   element: Element | null | undefined,
@@ -111,13 +115,13 @@ export function setAttributes(
       if (name === "class") {
         if (typeof value === "string") classes.push(...value.split(/\s+/))
       } else if (value === false) {
-        // Et uttrykkelig `false` i et håndskrevet sett er en bestilling.
+        // An explicit `false` in a handwritten set is a request.
         merged[name] = false
         removable.add(name)
       } else if (value !== undefined) {
-        // `undefined` overstyrer ikke et tidligere sett: byggefunksjonene
-        // stryker slike nøkler selv, og et håndskrevet sett skal ikke kunne
-        // ta `aria-invalid` fra `fs.input()` ved å nevne den uten verdi.
+        // `undefined` does not override an earlier set: the builder functions
+        // drop such keys themselves, and a handwritten set must not be able to
+        // take `aria-invalid` from `lt.input()` by naming it without a value.
         merged[name] = value
       }
     }
@@ -126,10 +130,10 @@ export function setAttributes(
 
   if (classes.length > 0) {
     const ownClasses = [...element.classList].filter(
-      (klasse) => !IS_SYSTEM_CLASS.test(klasse),
+      (token) => !IS_SYSTEM_CLASS.test(token),
     )
-    // `setAttribute` og ikke `className`: på en `<svg>` er `className` et
-    // skrivebeskyttet `SVGAnimatedString`, og `fs.icon()` hører på en svg.
+    // `setAttribute` and not `className`: on an `<svg>`, `className` is a
+    // read-only `SVGAnimatedString`, and `lt.icon()` belongs on an svg.
     element.setAttribute(
       "class",
       [...new Set([...classes, ...ownClasses])].filter(Boolean).join(" "),
@@ -149,20 +153,22 @@ export function setAttributes(
 }
 
 /**
- * Sier fra, én gang, om et sett som ser ut som en spredning av to.
+ * Warns, once, about a set that looks like two spread together.
  *
- * `{ ...fs.input(), ...felt.control }` settes riktig, men er et nytt objekt
- * uten en byggefunksjon bak seg. Neste kall fjerner da ikke `aria-invalid`
- * når feltet blir gyldig, og ingenting annet ville sagt det.
+ * `{ ...lt.input(), ...field.control }` is set correctly, but is a new object
+ * without a builder function behind it. The next call then does not remove
+ * `aria-invalid` when the field becomes valid, and nothing else would have
+ * said so.
  */
 function warnAboutUnknownSet(set: Attributes): void {
   if (warnedAboutUnknownSet) return
-  if (typeof set.class !== "string" || !/(^|\s)fs-/.test(set.class)) return
+  if (typeof set.class !== "string" || !/(^|\s)lt-/.test(set.class)) return
   warnedAboutUnknownSet = true
   console.warn(
-    "fs.setAttributes(): settet kommer ikke rett fra en byggefunksjon, så " +
-      "bare data-attributtene ryddes. Send settene hver for seg framfor å " +
-      "spre dem: fs.setAttributes(element, fs.input(), felt.control).",
+    "lt.setAttributes(): the set does not come straight from a builder " +
+      "function, so only the data attributes are cleaned up. Pass the sets " +
+      "separately instead of spreading them: " +
+      "lt.setAttributes(element, lt.input(), field.control).",
   )
 }
 

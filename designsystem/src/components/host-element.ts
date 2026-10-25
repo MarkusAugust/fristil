@@ -1,17 +1,17 @@
 /**
- * Grunnlaget web-komponentene arver fra, og registreringen av dem.
+ * The base the web components inherit from, and their registration.
  *
- * `HTMLElement` og `customElements` finnes bare i nettleseren. En
- * `class X extends HTMLElement` blir evaluert i det modulen lastes, så en
- * server som bare ville hente `fs.button()` fra pakken stoppet med
- * «HTMLElement is not defined» før den kom så langt. Det rammet ni av
- * inngangspunktene, hovedinngangen inkludert, og gjorde pakken ubrukelig i
- * nettopp den situasjonen den er bygd for: at serveren skriver markupen.
+ * `HTMLElement` and `customElements` only exist in the browser. A
+ * `class X extends HTMLElement` is evaluated when the module loads, so a
+ * server that only wanted `lt.button()` from the package stopped with
+ * "HTMLElement is not defined" before it got that far. That hit nine of the
+ * entry points, the main entry included, and made the package useless in
+ * exactly the situation it is built for: the server writing the markup.
  *
- * Reserven er en tom klasse. Den blir aldri brukt til noe, for uten
- * `customElements` blir ingenting registrert, og uten registrering lager
- * nettleseren aldri en forekomst. Den finnes bare for at modulen skal kunne
- * lastes.
+ * The fallback is an empty class. It is never used for anything, because
+ * without `customElements` nothing is registered, and without registration
+ * the browser never creates an instance. It only exists so the module can
+ * load.
  */
 
 export const HostElement =
@@ -20,24 +20,26 @@ export const HostElement =
     : HTMLElement
 
 /*
- * Typene til hendelsene, som `dialog-toggle` med `detail.open`. Hver
- * web-komponent arver herfra, så typene følger med alle inngangene til dem,
- * og `addEventListener` på et element blir typet uten en egen import.
+ * The types of the events, such as `dialog-toggle` with `detail.open`. Every
+ * web component inherits from here, so the types come with all their entry
+ * points, and `addEventListener` on an element is typed without a separate
+ * import.
  */
-export type { FsEventMap } from "./events.js"
+export type { LtEventMap } from "./events.js"
 
 /**
- * Registrerer en web component, én gang, og bare i nettleseren.
+ * Registers a web component, once, and only in the browser.
  *
- * Kalles `defineFs*` fra en modul som også kjøres på serveren, som i
- * TanStack Start eller en React-app med server-rendring, skal det ikke skje
- * noe. Der finnes det ingen `customElements` å registrere i.
+ * When `defineLt*` is called from a module that also runs on the server, as
+ * in TanStack Start or a server-rendered React app, nothing happens. There is
+ * no `customElements` there to register in.
  *
- * En konstruktør kan bare stå i registeret én gang. Står klassen der alt,
- * under et annet navn, registreres en underklasse: `defineFsToast("app-toast")`
- * fulgt av `defineFs()` kastet ellers NotSupportedError på `fs-toast`, og
- * komponentene etter den i lista ble aldri registrert. Med underklassen
- * virker begge navnene, og `instanceof` holder for begge.
+ * A constructor can only be in the registry once. If the class is already
+ * there under another name, a subclass is registered:
+ * `defineLtToast("app-toast")` followed by `defineLt()` otherwise threw
+ * NotSupportedError on `lt-toast`, and the components after it in the list
+ * were never registered. With the subclass both names work, and `instanceof`
+ * holds for both.
  */
 export function defineElement(
   tagName: string,
@@ -52,8 +54,8 @@ export function defineElement(
   try {
     customElements.define(tagName, element)
   } catch (error) {
-    // Reserven for nettlesere uten `getName`: navnet er ledig, så en
-    // NotSupportedError herfra betyr at konstruktøren alt er i bruk.
+    // The fallback for browsers without `getName`: the name is free, so a
+    // NotSupportedError here means the constructor is already in use.
     if (!(error instanceof DOMException && error.name === "NotSupportedError"))
       throw error
     customElements.define(tagName, class extends element {})
@@ -61,9 +63,9 @@ export function defineElement(
 }
 
 /**
- * Om konstruktøren alt står i registeret, under et hvilket som helst navn.
- * `getName` kom i Chrome 117, Firefox 116 og Safari 17; uten den svares
- * `false`, og `define` får si fra selv.
+ * Whether the constructor is already in the registry, under any name.
+ * `getName` arrived in Chrome 117, Firefox 116 and Safari 17; without it the
+ * answer is `false`, and `define` reports the problem itself.
  */
 function isRegistered(element: CustomElementConstructor): boolean {
   if (typeof customElements.getName !== "function") return false
@@ -71,17 +73,16 @@ function isRegistered(element: CustomElementConstructor): boolean {
 }
 
 /**
- * Setter et attributt, men bare når verdien faktisk er en annen.
+ * Sets an attribute, but only when the value actually differs.
  *
- * Komponentene observerer de attributtene de selv setter, for å kunne sette
- * dem tilbake etter en patch. En skriving av en verdi som alt står der teller
- * som en endring, så observatøren kaller seg selv, skriver på nytt, og
- * mikrotaskkøen tømmes aldri. Siden fryser, og en testkjøring henger uten
- * feilmelding: ingen stakksporing, ingen påstand, bare stillhet. Det er
- * derfor ingen test kan fange det, og hvorfor skrivingen går gjennom én
- * funksjon som alle komponentene bruker.
+ * The components observe the attributes they set themselves, so they can set
+ * them back after a patch. Writing a value that is already there counts as a
+ * change, so the observer calls itself, writes again, and the microtask queue
+ * never empties. The page freezes, and a test run hangs without an error: no
+ * stack trace, no assertion, just silence. That is why no test can catch it,
+ * and why writes go through one function all the components use.
  *
- * `null` fjerner attributtet.
+ * `null` removes the attribute.
  */
 export function setAttr(
   element: Element,
@@ -96,41 +97,42 @@ export function setAttr(
 }
 
 /**
- * Slår et boolsk attributt av eller på, uten å skrive når det står slik alt.
+ * Turns a boolean attribute on or off, without writing when it is already so.
  *
- * `el.hidden = true` på noe som alt er skjult skriver attributtet på nytt, og
- * det teller som en endring. `toggleAttribute` gjør ikke det: står
- * attributtet slik det skal, skjer ingenting. Den er derfor den eneste
- * lovlige veien til `hidden`, `disabled` og de andre boolske attributtene i en
- * komponent som observerer sine egne.
+ * `el.hidden = true` on something already hidden writes the attribute again,
+ * and that counts as a change. `toggleAttribute` does not: if the attribute
+ * is already as it should be, nothing happens. So it is the only permitted
+ * way to `hidden`, `disabled` and the other boolean attributes in a component
+ * that observes the attributes it writes.
  *
- * `Boolean(on)` og ikke `on` alene: med `undefined` som andre argument
- * veksler `toggleAttribute` i stedet for å fjerne. React 19 skriver
- * `el.open = undefined` når en prop går fra `true` til borte, og setteren
- * satte da attributtet tilbake: en dialog brukeren hadde lukket, åpnet seg
- * igjen i det appen fulgte etter.
+ * `Boolean(on)` and not `on` alone: with `undefined` as the second argument
+ * `toggleAttribute` toggles instead of removing. React 19 writes
+ * `el.open = undefined` when a prop goes from `true` to absent, and the
+ * setter then put the attribute back: a dialog the user had closed opened
+ * again as the app followed along.
  */
 export function setFlag(element: Element, name: string, on: boolean): void {
   element.toggleAttribute(name, Boolean(on))
 }
 
 /**
- * Språket nærmest elementet, eller `undefined` når siden ikke sier noe.
+ * The language nearest the element, or `undefined` when the page does not
+ * say.
  *
- * `undefined` gir `Intl` nettleserens eget språk. Et `lang` som ikke er en
- * gyldig språkkode får `Intl` til å kaste, og da er nettleserens språk
- * bedre enn ingen tekst.
+ * `undefined` gives `Intl` the browser's language. A `lang` that is not a
+ * valid language tag makes `Intl` throw, and then the browser's language is
+ * better than no text.
  */
 export function languageOf(element: Element): string | undefined {
   /*
-   * `closest()` stopper ved en skyggerot. Står elementet i en, som hver
-   * forhåndsvisning i dokumentasjonen, fortsetter letingen fra verten, ellers
-   * fant den aldri `lang` på `<html>`.
+   * `closest()` stops at a shadow root. If the element is in one, as in
+   * every preview in the documentation, the search continues from the host;
+   * otherwise it never found `lang` on `<html>`.
    */
   let node: Element | null = element
   while (node) {
     const owner = node.closest("[lang]")
-    // `lang=""` betyr «ukjent språk» og stopper arven fra foreldrene.
+    // `lang=""` means "unknown language" and stops inheritance from the ancestors.
     if (owner) {
       const lang = owner.getAttribute("lang")?.trim()
       if (!lang) return undefined
@@ -148,42 +150,44 @@ export function languageOf(element: Element): string | undefined {
 }
 
 /**
- * Skriver tekst i et element, men bare når teksten er en annen.
+ * Writes text in an element, but only when the text differs.
  *
- * `textContent` er en `childList`-endring, og komponentene observerer barna
- * sine. Å skrive den samme teksten på nytt teller som en endring, og da
- * kaller observatøren seg selv.
+ * `textContent` is a `childList` change, and the components observe their
+ * children. Writing the same text again counts as a change, and then the
+ * observer calls itself.
  *
- * `textContent` er all tekst i undertreet slått sammen, så sammenligningen
- * ser ikke forskjell på `<b>3</b> treff` og `3 treff`. Funksjonen er ment for
- * elementer komponenten fyller med ren tekst, som meldingen om antall treff i
- * forslagsfeltet.
+ * `textContent` is all the text in the subtree joined, so the comparison does
+ * not tell `<b>3</b> matches` from `3 matches`. The function is meant for
+ * elements the component fills with plain text, such as the match count in
+ * the suggestion field.
  */
 export function setText(element: Element, text: string): void {
   if (element.textContent !== text) element.textContent = text
 }
 
-/** Legger på en klasse, men bare når den ikke står der fra før. */
+/** Adds a class, but only when it is not already there. */
 export function addClass(element: Element, name: string): void {
   if (!element.classList.contains(name)) element.classList.add(name)
 }
 
-/** En id komponenten lager selv, når markupen ikke hadde noen. */
+/** An id the component creates itself, when the markup had none. */
 export function uniqueId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`
 }
 
 /**
- * Delene med en rolle, og de uten bare når komponenten satte rollene selv.
+ * The parts with a role, and those without only when the component set the
+ * roles itself.
  *
- * Komponentene fyller inn roller der markupen kom uten: en knapp i raden
- * blir en fane, en `<li>` i lista blir et alternativ. Men har serveren
- * skrevet rollene, er et element uten rolle noe annet, som en «lukk»-knapp
- * i raden, og skal ikke få rolle, id og `tabindex="-1"` av komponenten.
- * `roledByHost` er rollene komponenten selv satte: er hver rolle som finnes
- * komponentens, er markupen bar, og et element uten rolle som serveren
- * sender inn senere er en ny del. Delene avgrenses til verten, siden
- * komponenter i komponenter er vanlig markup.
+ * The components fill in roles where the markup came without them: a button
+ * in the row becomes a tab, an `<li>` in the list becomes an option. But if
+ * the server wrote the roles, an element without a role is something else,
+ * such as a "close" button in the row, and must not get a role, an id and
+ * `tabindex="-1"` from the component. `roledByHost` holds the roles the
+ * component set itself: if every role present was set by the component, the
+ * markup is bare, and an element without a role that the server sends later
+ * is a new part. The parts are limited to the host, since components inside
+ * components are ordinary markup.
  */
 export function derivedParts<T extends Element>(
   host: Element,
@@ -201,59 +205,60 @@ export function derivedParts<T extends Element>(
 }
 
 /**
- * Attributtet som gir serveren tilstanden tilbake.
+ * The attribute that gives the state back to the server.
  *
- * Komponentene reparerer som standard det brukeren har gjort: valgte fanen,
- * det åpne sprettoppvinduet, den utvidede forslagslista. En morfing river det
- * bort, siden ingenting av det sto i HTML-en serveren sendte, og komponenten
- * setter det tilbake. Da trenger ingen mal å kjenne til attributtene.
+ * By default the components repair what the user has done: the selected tab,
+ * the open popover, the expanded suggestion list. A morph tears it away,
+ * since none of it was in the HTML the server sent, and the component sets it
+ * back. Then no template needs to know the attributes.
  *
- * Noen ganger er det serveren som skal bestemme: «gå videre til steg 2» er en
- * ekte ting en server vil kunne gjøre. Står `server-controlled` på verten,
- * setter komponenten ikke tilbake det brukeren gjorde, og hver patch
- * bestemmer. Koblingen og tastaturet gjør den fortsatt, og hva attributtet
- * betyr for hver komponent, står i komponenten.
+ * Sometimes the server should decide: "go on to step 2" is a real thing a
+ * server wants to be able to do. With `server-controlled` on the host, the
+ * component does not set back what the user did, and each patch decides. It
+ * still does the wiring and the keyboard, and what the attribute means for
+ * each component is documented in the component.
  *
- * Dette erstatter `data-preserve-attr`, som krevde at malen skrev av navnene
- * på hvert attributt komponenten kom til å røre. Ett attributt å huske i
- * stedet for ni, og standardvalget er det som er riktig nesten alltid.
+ * This replaces `data-preserve-attr`, which required the template to copy the
+ * name of every attribute the component would touch. One attribute to
+ * remember instead of nine, and the default is the right choice almost
+ * always.
  *
- * Fredningen er dessuten morferens egen mekanisme: `data-preserve-attr` er et
- * `data-*`-attributt, og et slikt attributt betyr bare noe for koden som leser
- * det. Reparasjon leser markupen, og virker uansett hvem som morfer.
+ * Preserving is also a mechanism of one particular morpher:
+ * `data-preserve-attr` is a `data-*` attribute, and such an attribute only
+ * means something to the code that reads it. Repair reads the markup, and
+ * works whoever does the morphing.
  */
 export const SERVER_CONTROLLED = "server-controlled" as const
 
-/** Om serveren bestemmer tilstanden i dette elementet. */
+/** Whether the server decides the state in this element. */
 export function isServerControlled(element: Element): boolean {
   return element.hasAttribute(SERVER_CONTROLLED)
 }
 
 /**
- * Sier fra når markupen en komponent fikk, ikke henger sammen.
+ * Warns when the markup a component received does not fit together.
  *
- * En komponent som ikke finner delene sine kan ikke gjøre jobben, og det
- * eneste alternativet til en beskjed er stillhet. Det var stillhet lenge:
- * en mal uten en kontroll i `<fs-field>` ga et felt uten kobling, og
- * ingenting sa fra før noen leste siden med skjermleser.
+ * A component that cannot find its parts cannot do its job, and the only
+ * alternative to a message is silence. It was silent for a long time: a
+ * template without a control in `<lt-field>` gave a field without wiring,
+ * and nothing said so until someone read the page with a screen reader.
  *
- * Beskjeden kommer én gang per element og melding. En komponent
- * synkroniserer seg ved hver patch, og en advarsel per patch ville fylt
- * konsollen så fort at den ble ubrukelig. Meldingen må derfor være den
- * samme hver gang: interpolerer du et tall inn i den, er hver runde en ny
- * melding, og dedupliseringen er borte.
+ * The message comes once per element and message. A component syncs on every
+ * patch, and a warning per patch would fill the console so fast it became
+ * useless. So the message must be the same every time: interpolate a number
+ * into it and every round is a new message, and the deduplication is gone.
  *
- * `stillBroken` er grunnen til at advarselen kan stoles på. Den kalles på
- * nytt når siden har falt til ro, og bare da skrives noe ut. En komponent
- * ser markupen sin i det den kobles til, og der er den ofte halvferdig:
- * HTML som strømmer fra en Go- eller Kotlin-server leveres i pakker, og et
- * brudd midt mellom ledeteksten og feltet er helt vanlig. Uten den siste
- * sjekken advarte komponenten om markup som var i orden et øyeblikk senere,
- * og en advarsel som også kommer på riktig markup blir slått av.
+ * `stillBroken` is why the warning can be trusted. It is called again when
+ * the page has settled, and only then is anything written. A component sees
+ * its markup as it connects, and the markup is often unfinished then: HTML
+ * streamed from a Go or Kotlin server arrives in chunks, and a break between
+ * the label and the field is perfectly normal. Without the final check the
+ * component warned about markup that was fine a moment later, and a warning
+ * that also fires on correct markup gets switched off.
  *
- * Den kommer i alle miljøer, ikke bare under utvikling. Pakken har ingen
- * byggetrinn som kunne fjernet den, og en advarsel som bare utløses av
- * markup som faktisk er gal, hører hjemme der den skjer.
+ * It comes in every environment, not only during development. The package
+ * has no build step that could remove it, and a warning that only fires on
+ * markup that really is wrong belongs where it happens.
  */
 const reported = new WeakMap<Element, Set<string>>()
 const queued = new WeakMap<Element, Set<string>>()
@@ -291,12 +296,11 @@ export function warnAboutMarkup(
 }
 
 /**
- * Kjører etter at siden har falt til ro.
+ * Runs once the page has settled.
  *
- * Først må parseren være ferdig, ellers ser vi bare den delen av markupen
- * som har rukket å komme. Så to tegninger, slik at en morfing, en
- * React-hydrering eller et skript som fyller elementet i neste oppgave
- * rekker å bli ferdig først.
+ * First the parser must be done, or we only see the part of the markup that
+ * has arrived so far. Then two frames, so a morph, a React hydration or a
+ * script that fills the element in the next task has time to finish first.
  */
 function whenSettled(run: () => void): void {
   let done = false
@@ -312,21 +316,21 @@ function whenSettled(run: () => void): void {
       return
     }
     /*
-     * En reserve, fordi `requestAnimationFrame` ikke alltid fyrer i en ramme
-     * som ikke tegnes. Testet i en `<iframe>` med `display: none`: Chromium
-     * og WebKit fyrer likevel, Firefox gjør det ikke. Uten reserven ble
-     * meldingen stående i køen for alltid der, og sperret en senere, ekte
-     * advarsel om det samme.
+     * A fallback, because `requestAnimationFrame` does not always fire in a
+     * frame that is not painted. Tested in an `<iframe>` with
+     * `display: none`: Chromium and WebKit fire anyway, Firefox does not.
+     * Without the fallback the message stayed in the queue there for ever,
+     * and blocked a later, real warning about the same thing.
      *
-     * Den avlyses ikke. Et forsøk på å avlyse den i den første rammen var
-     * verre enn problemet: fyrer første ramme og fanen blir skjult før den
-     * andre, er både reserven borte og den andre rammen borte, og da kjører
-     * sjekken aldri. `once` er engangs, så det gjør ingenting at begge veier
-     * er i gang samtidig, og den som kommer først vinner.
+     * It is not cancelled. An attempt to cancel it in the first frame was
+     * worse than the problem: if the first frame fires and the tab is hidden
+     * before the second, both the fallback and the second frame are gone,
+     * and the check never runs. `once` runs only once, so it does no harm
+     * that both paths are running, and whichever comes first wins.
      *
-     * Et sekund er valgt så to rammer vinner i alt annet enn en side som står
-     * helt stille. Skjer det, er en advarsel om markup som fortsatt er
-     * halvferdig et lite problem ved siden av at siden er frosset.
+     * One second is chosen so two frames win in anything but a page that is
+     * completely stalled. If that happens, a warning about markup that is
+     * still unfinished is a small problem next to a frozen page.
      */
     setTimeout(once, 1000)
     requestAnimationFrame(() => requestAnimationFrame(once))
@@ -343,25 +347,27 @@ function whenSettled(run: () => void): void {
 }
 
 /**
- * Venter til elementet er oppgradert til komponenten sin, og gir det tilbake
- * med riktig type.
+ * Waits until the element has been upgraded to its component, and returns it
+ * with the right type.
  *
- * De frittstående komponentene har et imperativt API: `show()`,
- * `reportFailure()`, `extend()`. Kalles en av dem før `defineFs*` har kjørt,
- * er elementet fortsatt et vanlig `HTMLElement`, og kallet feiler med
- * «reportSuccess is not a function». I drift skjedde det i gapet mellom at
- * serverens HTML sto der og at registreringen var lastet: den første
- * meldingen fra hendelsesstrømmen kom inn i det gapet, og appen la en
- * `typeof`-vakt rundt hvert kall for å komme rundt det.
+ * The components with an imperative API have `show()`, `reportFailure()` and
+ * `extend()`. If one of them is called before `defineLt*` has run, the
+ * element is still a plain `HTMLElement`, and the call fails with
+ * "reportSuccess is not a function". In production it happened in the gap
+ * between the server's HTML being there and the registration being loaded:
+ * the first message from the event stream arrived in that gap, and the app
+ * put a `typeof` guard around every call to get around it.
  *
- * Hjelperne rundt metodene venter i stedet på `whenDefined` for elementets
- * eget tagnavn, så et kall som kommer for tidlig blir gjort i det
- * registreringen er der. `upgrade()` tar med et element som ennå ikke står i
- * dokumentet; et som står der, er alt oppgradert når `whenDefined` løses.
+ * The helpers around the methods instead wait for `whenDefined` on the
+ * element's actual tag name, so a call that comes too early is made as soon
+ * as the registration is there. `upgrade()` covers an element not yet in the
+ * document; one that is in it is already upgraded when `whenDefined`
+ * resolves.
  *
- * Et element ingen registrerer ville ellers ventet i stillhet for alltid.
- * Etter tre sekunder sier hjelperen fra i konsollen, én gang per tagnavn,
- * og venter videre: kommer registreringen sent, skal kallet fortsatt gjøres.
+ * An element nobody registers would otherwise wait silently for ever. After
+ * three seconds the helper says so in the console, once per tag name, and
+ * keeps waiting: if the registration comes late, the call should still be
+ * made.
  */
 const UPGRADE_WARNING_MS = 3000
 const warnedTags = new Set<string>()
@@ -375,14 +381,14 @@ export async function whenUpgraded<T extends HTMLElement>(
       if (customElements.get(tag) || warnedTags.has(tag)) return
       warnedTags.add(tag)
       console.warn(
-        `<${tag}> er ikke registrert etter ${UPGRADE_WARNING_MS / 1000} sekunder. ` +
-          `Kall defineFs() fra @fristil/designsystem/register ved oppstart, ikke i en effekt.`,
+        `<${tag}> is not registered after ${UPGRADE_WARNING_MS / 1000} seconds. ` +
+          `Call defineLt() from @lo-tek/interfaces/register at startup, not in an effect.`,
         element,
       )
     }, UPGRADE_WARNING_MS)
-    // `finally`: `whenDefined` avviser et navn uten bindestrek, og uten
-    // opprydning ville timeren advart om «ikke registrert» tre sekunder
-    // etter at kallet alt hadde feilet med den riktige feilen.
+    // `finally`: `whenDefined` rejects a name without a hyphen, and without
+    // the cleanup the timer would have warned "not registered" three seconds
+    // after the call had already failed with the right error.
     try {
       await customElements.whenDefined(tag)
     } finally {

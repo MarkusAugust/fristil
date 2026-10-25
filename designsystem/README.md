@@ -1,130 +1,130 @@
-# @fristil/designsystem
+# @lo-tek/interfaces
 
-Rammeverksuavhengig designsystem for web: tokens, CSS-komponenter og web components. Alt er bygd på ting nettleseren allerede forstår, så de samme komponentene virker i ren HTML, React, Astro og [Datastar](https://data-star.dev).
+A framework-agnostic design system for the web: tokens, CSS components and web components. Everything is built on things the browser already understands, so the same components work in plain HTML, React, Astro and [Datastar](https://data-star.dev).
 
-> Fristil er før 1.0. Et undertall kan ha brytende endringer, og de står under «Brytende» i [versjonsloggen](https://github.com/MarkusAugust/fristil/blob/master/designsystem/CHANGELOG.md).
+> LO-TEK is pre-1.0. A minor version can contain breaking changes, and they are listed under "Breaking" (in versions up to 0.36.0, "Brytende") in the [changelog](https://github.com/MarkusAugust/lo-tek/blob/master/designsystem/CHANGELOG.md).
 
-Hele dokumentasjonen, med komponentsider, tokens, mønstre og eksempler for fire miljøer, ligger på **[fristil.sobernetics.no](https://fristil.sobernetics.no/)**.
+The full documentation, with component pages, tokens, patterns and examples for four environments, is at **[lo-tek.sobernetics.no](https://lo-tek.sobernetics.no/)**.
 
-**Kodeagenter** finner reglene på [fristil.sobernetics.no/llms.txt](https://fristil.sobernetics.no/llms.txt), med én regelbok per miljø under [`/agent/`](https://fristil.sobernetics.no/kodeagenter/). De samme regelbøkene ligger i pakken, i `node_modules/@fristil/designsystem/agent/`.
+**Coding agents** find the rules at [lo-tek.sobernetics.no/llms.txt](https://lo-tek.sobernetics.no/llms.txt), with one rulebook per environment under [`/agent/`](https://lo-tek.sobernetics.no/coding-agents/). The same rulebooks ship in the package, in `node_modules/@lo-tek/interfaces/agent/`.
 
-## Installasjon
+## Installation
 
 ```bash
-npm install @fristil/designsystem
+npm install @lo-tek/interfaces
 ```
 
-Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasser, og ingenting registreres ved import alene, så du betaler bare for det du faktisk kaller.
+The package has no dependencies. The web components are plain `HTMLElement` classes, and nothing is registered on import alone, so you only pay for what you actually call.
 
-## CSS-komponenter
+## CSS components
 
-En klasse og noen `data-*`-attributter, ingen JavaScript. `tokens.css` definerer variablene alt annet bygger på, så den må lastes. Den står først av vane; rekkefølgen har ikke noe å si.
+A class and a few `data-*` attributes, no JavaScript. `tokens.css` defines the variables everything else builds on, so it has to be loaded. It comes first out of habit; the order makes no difference.
 
-Med et byggesteg importerer du bare stilarkene du bruker, så en side med bare knapper ikke laster CSS for en dialog:
+With a build step you import only the stylesheets you use, so a page with only buttons does not load CSS for a dialog:
 
 ```js
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/button.css"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/button.css"
 ```
 
-Uten et byggesteg lenker du den samlede fila, som har alt i seg:
+Without a build step you link the combined file, which has everything in it:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem/dist/fristil.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces/dist/lotek.css" />
 ```
 
-Markupen er den samme uansett hvilken av de to du valgte:
+The markup is the same whichever of the two you chose:
 
 ```html
-<button class="fs-button">Send søknad</button>
-<button class="fs-button" data-variant="secondary">Lagre utkast</button>
+<button class="lt-button">Submit application</button>
+<button class="lt-button" data-variant="secondary">Save draft</button>
 ```
 
-## Attributtene som funksjoner
+## The attributes as functions
 
-`fs` gir de samme klassene og attributtene med fullføring og typesjekk i editoren. Hver komponent tar ett objekt med valg og gir attributtene ut:
+`lt` gives the same classes and attributes with completion and type checking in the editor. Each component takes one object of options and returns the attributes:
 
 ```js
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-fs.button({ variant: "secondary" })
-// { class: "fs-button", "data-variant": "secondary" }
+lt.button({ variant: "secondary" })
+// { class: "lt-button", "data-variant": "secondary" }
 ```
 
-I React importerer du fra `@fristil/designsystem/react`, som gir `className` og `htmlFor` i stedet for HTML-navnene:
+In React you import from `@lo-tek/interfaces/react`, which gives `className` and `htmlFor` instead of the HTML names:
 
 ```jsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<button {...fs.button({ variant: "secondary" })}>Lagre utkast</button>
+<button {...lt.button({ variant: "secondary" })}>Save draft</button>
 ```
 
 ## Web components
 
-Ingenting registreres ved import alene. Du kaller `defineFs*` selv, så du bestemmer når elementet finnes:
+Nothing is registered on import alone. You call `defineLt*` yourself, so you decide when the element exists:
 
 ```js
-import { defineFsToast } from "@fristil/designsystem/toast"
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/toast.css"
+import { defineLtToast } from "@lo-tek/interfaces/toast"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/toast.css"
 
-defineFsToast()
+defineLtToast()
 ```
 
 ```html
-<fs-toast class="fs-toast" role="status" aria-live="polite" aria-atomic="false"
-          aria-label="Varsler" data-ignore-morph></fs-toast>
+<lt-toast class="lt-toast" role="status" aria-live="polite" aria-atomic="false"
+          aria-label="Notifications" data-ignore-morph></lt-toast>
 ```
 
-Hver `defineFs*` tar også et eget tagnavn, som `defineFsToast("app-toast")`, og flere kall er ufarlige, også ved siden av `defineFs()`. Stilarkene er likevel skrevet for `fs-*`-navnene: en `<fs-field>` registrert som `<min-felt>` kobler fortsatt ledeteksten til feltet, men `display`-regelen på elementnavnet følger ikke med, `<fs-tabs>` og `<fs-suggestion>` skjuler ikke innholdet før registreringen, og `<fs-dialog>` plasserer ikke lenger en dialog som står åpen før den er modal. De fire som setter klassen sin selv, `<fs-toast>`, `<fs-session-timeout>`, `<fs-connection-status>` og `<fs-error-summary>`, ser like ut under et annet navn.
+Every `defineLt*` also takes a tag name of your choice, such as `defineLtToast("app-toast")`, and repeated calls are harmless, also alongside `defineLt()`. The stylesheets are still written for the `lt-*` names: an `<lt-field>` registered as `<my-field>` still wires the label to the field, but the `display` rule on the element name does not follow, `<lt-tabs>` and `<lt-suggestion>` do not hide their content before registration, and `<lt-dialog>` no longer positions a dialog that is open before it is modal. The four that set their class themselves, `<lt-toast>`, `<lt-session-timeout>`, `<lt-connection-status>` and `<lt-error-summary>`, look the same under another name.
 
-## Serveren skriver markupen
+## The server writes the markup
 
-Fristil er bygget for apper der HTML-en kommer fra serveren, enten det er TanStack Start, React Server Components eller Datastar. Ingen web-komponent lager noder i markup serveren har sendt, fordi rammeverket rundt da river det bort igjen ved neste oppdatering.
+LO-TEK is built for apps where the HTML comes from the server, whether that is TanStack Start, React Server Components or Datastar. No web component creates nodes in markup the server has sent, because the surrounding framework would tear them out again on the next update.
 
-Byggefunksjonene i `fs` gir markupen, komponentene gir oppførselen, og de to overlapper ikke:
+The builder functions in `lt` give the markup, the components give the behaviour, and the two do not overlap:
 
 ```js
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-fs.errorSummary({ count: 2, id: "feil" })
-// { host: { class: "fs-error-summary", role: "alert", tabindex: "-1", id: "feil" },
-//   title:     { class: "fs-error-summary__title" } }
+lt.errorSummary({ count: 2, id: "errors" })
+// { host: { class: "lt-error-summary", role: "alert", tabindex: "-1", id: "errors" },
+//   title:     { class: "lt-error-summary__title" } }
 ```
 
-`id` er påkrevd i `fs.field()`, `fs.suggestion()`, `fs.tabs()` og `fs.popover()`, og `titleId` i `fs.dialog()`. `fs.tabs()` og `fs.suggestion()` tar også `keys`, én nøkkel fra dataene per fane eller alternativ, og `fs.tabs()` krever `label`, navnet på raden. Grunnen er hydrering: lager funksjonen id-en selv, lager serveren og nettleseren hver sin, og koblingen mellom delene er brutt til React har rettet den opp. I React kommer den fra `useId()`. I `fs.errorSummary()` er den valgfri, siden den bare navngir boksen slik at noe annet kan peke på den.
+`id` is required in `lt.field()`, `lt.suggestion()`, `lt.tabs()` and `lt.popover()`, and `titleId` in `lt.dialog()`. `lt.tabs()` and `lt.suggestion()` also take `keys`, one key from the data per tab or option, and `lt.tabs()` requires `label`, the name of the tab list. The reason is hydration: if the function creates the id itself, the server and the browser each create their own, and the wiring between the parts is broken until React has corrected it. In React it comes from `useId()`. In `lt.errorSummary()` it is optional, since it only names the box so that something else can point to it.
 
-Hele begrunnelsen, med testene bak, står på [Markup og oppførsel](https://fristil.sobernetics.no/markup-og-oppforsel/).
+The full reasoning, with the tests behind it, is on [Markup and behaviour](https://lo-tek.sobernetics.no/markup-and-behaviour/).
 
-## Eget fargetema
+## Your own colour theme
 
-Kommandolinja lager et fullt tema av merkefargene dine, med kontrastkravene regnet ut i OKLCH:
+The CLI creates a complete theme from your brand colours, with the contrast requirements computed in OKLCH:
 
 ```bash
-npx @fristil/designsystem tema --aksent=#7c3aed --fare=#b3261e \
-  --suksess=#2b6940 --advarsel=#8a5a00 --noytral=#1a1a1a --ut=tema.css
+npx @lo-tek/interfaces theme --accent=#7c3aed --danger=#b3261e \
+  --success=#2b6940 --warning=#8a5a00 --neutral=#1a1a1a --out=theme.css
 ```
 
-Strekker ikke tilpasning gjennom CSS til, kopierer `overta` kildekoden til én komponent inn i prosjektet ditt, med henvisningene skrevet om:
+If customising through CSS is not enough, `takeover` copies the source code of one component into your project, with the imports rewritten:
 
 ```bash
-npx @fristil/designsystem overta button --ut=src/ui
+npx @lo-tek/interfaces takeover button --out=src/ui
 ```
 
-`npx @fristil/designsystem --hjelp` viser resten.
+`npx @lo-tek/interfaces --help` shows the rest.
 
-## Tilpasning
+## Customising
 
-Komponentene ligger i `@layer fristil`, så dine egne regler vinner uten `!important`. Bygger du en komponent inn i en side du ikke eier, gir `data-fs-boundary` på rotelementet Fristils stil tilbake der vertens CSS uten lag ellers ville tatt den; se Tilpasning i dokumentasjonen. Form og størrelse leses fra `--fs-*`-variabler med tokenverdien som reserve:
+The components are in `@layer lotek`, so your own rules win without `!important`. If you embed a component in a page you do not control, `data-lt-boundary` on the root element gives LO-TEK its styles back where the host's unlayered CSS would otherwise take them; see Customising in the documentation. Shape and size are read from `--lt-*` variables with the token value as fallback:
 
 ```css
-.fs-button {
-  --fs-button-padding: var(--fs-spacing-3) var(--fs-spacing-6);
+.lt-button {
+  --lt-button-padding: var(--lt-spacing-3) var(--lt-spacing-6);
 }
 ```
 
-Tailwind er valgfritt. Temaet er en ren CSS-fil, `@fristil/designsystem/tailwind.css`, så pakken har ingen avhengighet til Tailwind og kan ikke komme i konflikt med versjonen din.
+Tailwind is optional. The theme is a plain CSS file, `@lo-tek/interfaces/tailwind.css`, so the package has no dependency on Tailwind and cannot conflict with your version.
 
-## Lisens
+## Licence
 
 MIT

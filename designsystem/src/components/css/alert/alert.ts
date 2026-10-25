@@ -1,8 +1,8 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const ALERT_CLASS = "fs-alert" as const
-/** Overskriften inne i meldingen. */
-export const ALERT_TITLE_CLASS = "fs-alert__title" as const
+export const ALERT_CLASS = "lt-alert" as const
+/** The heading inside the message. */
+export const ALERT_TITLE_CLASS = "lt-alert__title" as const
 
 export const alertColors = ["info", "success", "warning", "danger"] as const
 
@@ -10,7 +10,7 @@ export type AlertColor = (typeof alertColors)[number]
 export type NonNeutralAlertColor = AlertColor
 
 export type AlertOptions = {
-  /** Hva meldingen betyr. Utelatt gir den nøytrale. */
+  /** What the message means. Left out, it is the neutral one. */
   color?: AlertColor
 }
 
@@ -20,16 +20,16 @@ export type AlertAttributes = {
 }
 
 /**
- * Attributtene for en melding som gjelder hele siden eller et helt skjema.
+ * The attributes for a message about the whole page or a whole form.
  *
- * Rollen settes ikke her, fordi den avhenger av når meldingen kommer.
- * Står den i markupen fra start, skal den ikke ha noen rolle. Dukker den opp
- * mens siden står stille, trenger den `role="status"`, eller `role="alert"`
- * hvis brukeren må stoppe opp.
+ * The role is not set here, because it depends on when the message comes.
+ * If it is in the markup from the start, it should have no role. If it
+ * appears while the page is idle, it needs `role="status"`, or
+ * `role="alert"` if the user must stop.
  *
  * ```ts
  * <div {...alert({ color: "warning" })}>
- *   <p class={alert.title}>Søknaden er ikke sendt</p>
+ *   <p class={alert.title}>The application has not been sent</p>
  * </div>
  * ```
  */
@@ -40,7 +40,7 @@ export const alert = Object.assign(
       "data-color": color,
     }),
   {
-    /** Klassen på overskriften inne i meldingen. */
+    /** The class on the heading inside the message. */
     title: ALERT_TITLE_CLASS,
     colors: alertColors,
     isColor: createGuard(alertColors),

@@ -7,7 +7,7 @@ import {
   type NonDefaultFieldState,
 } from "../shared.js"
 
-export const INPUT_CLASS = "fs-input" as const
+export const INPUT_CLASS = "lt-input" as const
 
 export const inputTypes = [
   "text",
@@ -26,31 +26,32 @@ export const inputTypes = [
 
 export type InputType = (typeof inputTypes)[number]
 
-/** Typene som får et ikon i feltet, og som åpner nettleserens egen velger. */
-const TYPER_MED_IKON = ["date", "time", "datetime-local"] as const
-type TypeMedIkon = (typeof TYPER_MED_IKON)[number]
+/** The types that get an icon in the field, and that open the browser's own picker. */
+const TYPES_WITH_ICON = ["date", "time", "datetime-local"] as const
+type TypeWithIcon = (typeof TYPES_WITH_ICON)[number]
 
 export type InputOptions = {
-  /** HTML-typen. Settes som `type`, og styrer ikonet. Standard: `text`. */
+  /** The HTML type. Set as `type`, and decides the icon. Default: `text`. */
   type?: InputType
-  /** Valideringstilstand. Standard: `default`. */
+  /** Validation state. Default: `default`. */
   state?: FieldState
 }
 
 export type InputAttributes = {
   class: typeof INPUT_CLASS
   type: InputType
-  "data-variant"?: TypeMedIkon
+  "data-variant"?: TypeWithIcon
   "data-state"?: NonDefaultFieldState
   "aria-invalid"?: "true"
 }
 
 /**
- * Attributtene for et tekstfelt.
+ * The attributes for a text field.
  *
- * `type` setter både HTML-typen og ikonvarianten, så de to kan ikke komme i
- * utakt. Skriver du dem for hånd, er det lett å få et datofelt som ser ut
- * som et datofelt, men der ingenting skjer når brukeren trykker på ikonet.
+ * `type` sets both the HTML type and the icon variant, so the two cannot get
+ * out of step. Write them by hand, and it is easy to get a date field that
+ * looks like a date field, but where nothing happens when the user presses
+ * the icon.
  *
  * ```ts
  * <input {...input({ type: "date", state: "invalid" })} />
@@ -61,8 +62,8 @@ export const input = Object.assign(
     attributes({
       class: INPUT_CLASS,
       type,
-      "data-variant": (TYPER_MED_IKON as readonly string[]).includes(type)
-        ? (type as TypeMedIkon)
+      "data-variant": (TYPES_WITH_ICON as readonly string[]).includes(type)
+        ? (type as TypeWithIcon)
         : undefined,
       "data-state": state === "default" ? undefined : state,
       "aria-invalid": state === "invalid" ? ("true" as const) : undefined,

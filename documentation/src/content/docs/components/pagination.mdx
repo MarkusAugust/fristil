@@ -1,86 +1,86 @@
 ---
 title: Pagination
-description: Sidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.
+description: Page navigation for long lists. A CSS component with two classes and no JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
-Navigering mellom sider i en lang liste. Hver side er en lenke med sin egen adresse, ikke en knapp: da kan brukeren åpne side tre i ny fane, kopiere adressen, og komme tilbake med tilbakeknappen.
+Navigation between pages of a long list. Each page is a link with its own address, not a button: the user can then open page three in a new tab, copy the address, and come back with the back button.
 
-## Slik tar du den i bruk
+## How to use it
 
-<Eksempel importer={["tokens.css", "pagination.css"]}
-  stiler={["pagination"]} layout="stabel" maxWidth="34rem" kode={`
-<nav aria-label="Sidenavigering">
-  <ul class="fs-pagination">
-    <li><a href="#" aria-label="Forrige side">Forrige</a></li>
-    <li><a href="#" aria-label="Side 1">1</a></li>
-    <li><a href="#" aria-label="Side 2" aria-current="page">2</a></li>
-    <li><a href="#" aria-label="Side 3">3</a></li>
-    <li><span class="fs-pagination__gap">…</span></li>
-    <li><a href="#" aria-label="Side 9">9</a></li>
-    <li><a href="#" aria-label="Neste side">Neste</a></li>
+<Example imports={["tokens.css", "pagination.css"]}
+  styles={["pagination"]} layout="stack" maxWidth="34rem" code={`
+<nav aria-label="Pagination">
+  <ul class="lt-pagination">
+    <li><a href="#" aria-label="Previous page">Previous</a></li>
+    <li><a href="#" aria-label="Page 1">1</a></li>
+    <li><a href="#" aria-label="Page 2" aria-current="page">2</a></li>
+    <li><a href="#" aria-label="Page 3">3</a></li>
+    <li><span class="lt-pagination__gap">…</span></li>
+    <li><a href="#" aria-label="Page 9">9</a></li>
+    <li><a href="#" aria-label="Next page">Next</a></li>
   </ul>
 </nav>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<nav aria-label="Sidenavigering">
-  <ul {...fs.pagination()}>
-    <li><a href="?side=1" aria-current="page">1</a></li>
-    <li><a href="?side=2">2</a></li>
+<nav aria-label="Pagination">
+  <ul {...lt.pagination()}>
+    <li><a href="?page=1" aria-current="page">1</a></li>
+    <li><a href="?page=2">2</a></li>
   </ul>
 </nav>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-const liste = document.querySelector<HTMLUListElement>("#sider")
+const list = document.querySelector<HTMLUListElement>("#pages")
 
-fs.setAttributes(liste, fs.pagination())
+lt.setAttributes(list, lt.pagination())
 ```
 
-`fs.pagination.gap` gir klassen på hoppet i nummerrekken. Se [Typesikker bruk](../../typesikker-bruk/).
+`lt.pagination.gap` gives the class for the gap in the number sequence. See [Type-safe use](../../type-safe-use/).
 
 </Fragment>
-</Eksempel>
+</Example>
 
-Et tall alene sier lite når det leses opp midt i en rekke. `aria-label="Side 3"` gjør lenken forståelig, og `aria-current="page"` sier hvilken brukeren står på.
+A number on its own says little when it is read out in the middle of a sequence. `aria-label="Page 3"` makes the link understandable, and `aria-current="page"` says which page the user is on.
 
-Er brukeren på første side, skal «Forrige» ikke være en lenke. Bytt den ut med `<span aria-disabled="true">` eller la den være ute.
+If the user is on the first page, "Previous" should not be a link. Replace it with `<span aria-disabled="true">` or leave it out.
 
-## Klasser du kan style
+## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.fs-pagination` | Listen med sidene. Lenkene og knappene inni styles av komponenten. |
-| `.fs-pagination__gap` | Hoppet i nummerrekken, som «1 2 … 9 10» |
+| `.lt-pagination` | The list of pages. The links and buttons inside are styled by the component. |
+| `.lt-pagination__gap` | The gap in the number sequence, as in "1 2 … 9 10" |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
-| `--fs-pagination-gap` | `var(--fs-spacing-1)` |
-| `--fs-pagination-size` | `var(--fs-spacing-10)` |
-| `--fs-pagination-radius` | `var(--fs-spacing-1)` |
+| `--lt-pagination-gap` | `var(--lt-spacing-1)` |
+| `--lt-pagination-size` | `var(--lt-spacing-10)` |
+| `--lt-pagination-radius` | `var(--lt-spacing-1)` |
 
-`--fs-pagination-size` er minste bredde og høyde på hvert nummer. WCAG 2.2 krever 24 piksler; standarden her er 40, fordi et nummer i en lang rekke er lett å bomme på med finger.
+`--lt-pagination-size` is the minimum width and height of each number. WCAG 2.2 requires 24 pixels; the default here is 40, because a number in a long row is easy to miss with a finger.
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
-## Tilgjengelighet
+## Accessibility
 
-- Si hvor brukeren er, også utenfor selve velgeren: «Viser 21 til 40 av 184 saker» over listen hjelper mer enn tallrekken alene.
-- Etter at en ny side er lastet, flytt fokus til toppen av listen. Ellers står fokus igjen på et tall som nå betyr noe annet.
-- Har listen få sider, vis alle. Hoppet med «…» er bare verdt det fra rundt ti sider og oppover.
-- Er innholdet en strøm uten slutt, er «Vis flere»-knapp ofte bedre enn sidetall. Uendelig rulling uten knapp gjør bunnteksten uoppnåelig.
+- Say where the user is, also outside the pagination itself: "Showing 21 to 40 of 184 cases" above the list helps more than the row of numbers alone.
+- After a new page has loaded, move focus to the top of the list. Otherwise focus stays on a number that now means something else.
+- If the list has few pages, show them all. The "…" gap is only worth it from around ten pages up.
+- If the content is an endless stream, a "Show more" button is often better than page numbers. Infinite scrolling without a button makes the footer unreachable.

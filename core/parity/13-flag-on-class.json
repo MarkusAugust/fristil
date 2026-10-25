@@ -1,0 +1,78 @@
+{
+  "markup": [
+    {
+      "start": 25,
+      "end": 48,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/card/",
+      "message": "data-interactive is a flag on card: it is either there or not. data-interactive=\"true\" means the same as data-interactive. Remove it to turn it off.",
+      "fix": {
+        "title": "Remove data-interactive",
+        "edits": [
+          {
+            "start": 24,
+            "end": 48,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 103,
+      "end": 121,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/label/",
+      "message": "data-optional is a flag on label: it is either there or not. data-optional=\"ja\" means the same as data-optional. Remove it to turn it off.",
+      "fix": {
+        "title": "Remove data-optional",
+        "edits": [
+          {
+            "start": 102,
+            "end": 121,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    }
+  ],
+  "page": [
+    {
+      "start": 25,
+      "end": 48,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/card/",
+      "message": "data-interactive is a flag on card: it is either there or not. data-interactive=\"true\" means the same as data-interactive. Remove it to turn it off.",
+      "fix": {
+        "title": "Remove data-interactive",
+        "edits": [
+          {
+            "start": 24,
+            "end": 48,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 103,
+      "end": 121,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/label/",
+      "message": "data-optional is a flag on label: it is either there or not. data-optional=\"ja\" means the same as data-optional. Remove it to turn it off.",
+      "fix": {
+        "title": "Remove data-optional",
+        "edits": [
+          {
+            "start": 102,
+            "end": 121,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    }
+  ]
+}

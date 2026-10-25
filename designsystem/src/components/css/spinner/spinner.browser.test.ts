@@ -12,12 +12,12 @@ import { spinner } from "./spinner"
 import "../../../tokens/tokens.css"
 import "./spinner.css"
 
-describe("fs-spinner", () => {
+describe("lt-spinner", () => {
   beforeEach(() => {
     monter(`
-      <span class="fs-spinner" id="vanlig" role="status" aria-label="Laster søknader"></span>
-      <span class="fs-spinner" data-size="small" id="liten" aria-hidden="true"></span>
-      <span class="fs-spinner" data-size="large" id="stor" aria-hidden="true"></span>
+      <span class="lt-spinner" id="vanlig" role="status" aria-label="Laster søknader"></span>
+      <span class="lt-spinner" data-size="small" id="liten" aria-hidden="true"></span>
+      <span class="lt-spinner" data-size="large" id="stor" aria-hidden="true"></span>
     `)
   })
 
@@ -39,9 +39,9 @@ describe("fs-spinner", () => {
   })
 
   it("setter rolle bare når den har noe å melde", () => {
-    expect(spinner()).toEqual({ class: "fs-spinner" })
+    expect(spinner()).toEqual({ class: "lt-spinner" })
     expect(spinner({ size: "large", label: "Laster søknader" })).toEqual({
-      class: "fs-spinner",
+      class: "lt-spinner",
       "data-size": "large",
       role: "status",
       "aria-label": "Laster søknader",

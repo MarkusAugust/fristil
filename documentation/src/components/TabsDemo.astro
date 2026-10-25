@@ -1,25 +1,26 @@
 ---
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 import Preview from "./Preview.astro"
 
-// Markupen serveren sender: lenkene, id-ene på panelene og overskriftene, og
-// klassene. Rollene, tabbestoppene og hvilke paneler som er skjult skriver
-// komponenten, slik at siden er en innholdsfortegnelse uten JavaScript.
-const faner = fs.tabs({
+// The markup the server sends: the links, the ids on the panels and headings,
+// and the classes. The roles, the tab stops and which panels are hidden are
+// written by the component, so without JavaScript the page is a table of
+// contents.
+const faner = lt.tabs({
   id: "demo",
-  keys: ["soknaden", "vedlegg", "meldinger"],
-  label: "Deler av saken",
+  keys: ["application", "attachments", "messages"],
+  label: "Parts of the case",
 })
-const titler = ["Søknaden", "Vedlegg", "Meldinger"]
+const titler = ["Application", "Attachments", "Messages"]
 const innhold = [
-  "Søknaden ble sendt 4. mars 2026. Saksnummer 2026-0481.",
-  "Tre vedlegg er lastet opp. Siste kom 6. mars.",
-  "Ingen meldinger i denne saken ennå.",
+  "The application was sent on 4 March 2026. Case number 2026-0481.",
+  "Three attachments have been uploaded. The last one arrived on 6 March.",
+  "No messages in this case yet.",
 ]
 ---
 
-<Preview id="demo-tabs" stiler={["tabs", "paragraph"]} maxWidth="34rem">
-	<fs-tabs>
+<Preview id="demo-tabs" styles={["tabs", "paragraph"]} maxWidth="34rem">
+	<lt-tabs>
 		<ul {...faner.list}>
 			{faner.tabs.map((fane, i) => <li><a {...fane}>{titler[i]}</a></li>)}
 		</ul>
@@ -28,15 +29,15 @@ const innhold = [
 			faner.panels.map((panel, i) => (
 				<section {...panel}>
 					<h3 {...faner.headings[i]}>{titler[i]}</h3>
-					<p class="fs-paragraph">{innhold[i]}</p>
+					<p class="lt-paragraph">{innhold[i]}</p>
 				</section>
 			))
 		}
-	</fs-tabs>
+	</lt-tabs>
 </Preview>
 
 <script>
-	import { defineFsTabs } from "@fristil/designsystem/tabs"
+	import { defineLtTabs } from "@lo-tek/interfaces/tabs"
 
-	defineFsTabs()
+	defineLtTabs()
 </script>

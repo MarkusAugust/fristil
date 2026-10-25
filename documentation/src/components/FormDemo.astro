@@ -1,0 +1,252 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview
+	id="demo-form"
+	styles={[
+		"error-summary",
+		"list",
+		"label",
+		"input",
+		"help-text",
+		"error-text",
+		"button",
+		"sr-only",
+	]}
+	layout="stack"
+	maxWidth="34rem"
+	extraCss={`
+		/* The layout is the app's choice, not the system's. LO-TEK provides
+		   the fields, while the spacing between them belongs to the form that
+		   puts them together. Two fields stuck together read as one. */
+		#demo-application {
+			display: flex;
+			flex-direction: column;
+			gap: var(--lt-spacing-5);
+		}
+
+		/* The button gets more space above it than the fields have between
+		   them, so it does not look like part of the last field. */
+		.demo-button-row {
+			margin-block-start: var(--lt-spacing-2);
+		}
+	`}
+>
+	<form id="demo-application" novalidate>
+		<lt-error-summary
+			id="demo-errors"
+			class="lt-error-summary"
+			role="alert"
+			tabindex="-1"
+			data-autofocus="false"
+			hidden=""
+		>
+			<h2 class="lt-error-summary__title">The form cannot be sent</h2>
+			<ul class="lt-list"></ul>
+		</lt-error-summary>
+
+		<div>
+			<label class="lt-label" data-required="symbol" for="demo-email">Email address</label>
+			<input
+				class="lt-input"
+				id="demo-email"
+				name="epost"
+				type="email"
+				required
+				aria-describedby="demo-email-help"
+			/>
+			<p class="lt-help-text" id="demo-email-help">We send the receipt here.</p>
+			<p class="lt-error-text" id="demo-email-error" hidden></p>
+		</div>
+
+		<div>
+			<label class="lt-label" data-required="symbol" for="demo-birth-date">Date of birth</label>
+			<input
+				class="lt-input"
+				id="demo-birth-date"
+				name="fodselsdato"
+				type="date"
+				data-variant="date"
+				required
+				min="1900-01-01"
+				max="2026-12-31"
+			/>
+			<p class="lt-error-text" id="demo-birth-date-error" hidden></p>
+		</div>
+
+		<div class="demo-button-row">
+			<button class="lt-button" type="submit">Send the application</button>
+		</div>
+
+		<p class="lt-sr-only" role="status" id="demo-status"></p>
+	</form>
+</Preview>
+
+<script>
+	import { defineLtErrorSummary } from "@lo-tek/interfaces/error-summary"
+
+	defineLtErrorSummary()
+
+	// The preview sits in a shadow root, so we go through the host element.
+	const surface = document.getElementById("demo-form")?.shadowRoot
+	const skjema = surface?.getElementById("demo-application") as HTMLFormElement | null
+	const oppsummering = surface?.getElementById("demo-errors")
+	const status = surface?.getElementById("demo-status")
+	const felter = skjema ? [...skjema.querySelectorAll("input")] : []
+
+	/** Fields the user has typed in, and which can therefore get an error message. */
+	const rort = new Set<HTMLInputElement>()
+	let forsokt = false
+
+	/**
+	 * The messages are our own, not the browser's default texts.
+	 *
+	 * The email address is checked in addition to `type="email"`. The browser
+	 * accepts `jo@example`, with no top-level domain, since that is a valid
+	 * address on an internal network. In a form that sends a receipt by email
+	 * it is almost always a typo.
+	 */
+	const ADRESSE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/
+
+	function meldingFor(felt: HTMLInputElement): string {
+		if (felt.value === "") {
+			return felt.name === "epost"
+				? "Enter your email address"
+				: "Enter your date of birth"
+		}
+
+		if (felt.name === "epost") {
+			return felt.checkValidity() && ADRESSE.test(felt.value)
+				? ""
+				: "Enter the full email address, for example jo@example.com"
+		}
+
+		return felt.checkValidity() ? "" : "Enter a date that exists"
+	}
+
+	/** Shows or removes the error message for one field. */
+	function vis(felt: HTMLInputElement, melding: string) {
+		const feiltekst = surface?.getElementById(`${felt.id}-error`)
+		if (feiltekst) {
+			feiltekst.textContent = melding
+			feiltekst.hidden = melding === ""
+		}
+
+		const beskrevetAv = (felt.getAttribute("aria-describedby") ?? "")
+			.split(/\s+/)
+			.filter((id) => id && id !== `${felt.id}-error`)
+
+		if (melding) {
+			felt.setAttribute("aria-invalid", "true")
+			felt.dataset.state = "invalid"
+			beskrevetAv.push(`${felt.id}-error`)
+		} else {
+			felt.removeAttribute("aria-invalid")
+			delete felt.dataset.state
+		}
+
+		// The error text comes out of aria-describedby again when the field
+		// becomes valid. Otherwise the field points at text that is not on
+		// screen.
+		if (beskrevetAv.length > 0) {
+			felt.setAttribute("aria-describedby", beskrevetAv.join(" "))
+		} else {
+			felt.removeAttribute("aria-describedby")
+		}
+	}
+
+	/**
+	 * Builds the summary of what is actually in the form now.
+	 *
+	 * It is read from the fields, not kept as a separate list alongside them.
+	 * If you fix one of two errors, the remaining one is what is left, and the
+	 * heading counts correctly.
+	 *
+	 * The box is `role="alert"`, and every change to it is announced at once.
+	 * While the user types and moves between fields, it is therefore only
+	 * written when its content actually changes, and it does not become
+	 * visible. It used to be rewritten on every keystroke in an invalid field
+	 * and on every Tab, and the screen reader cut off the label of the next
+	 * field. On submit it is always written, so it is announced and the user
+	 * knows the attempt was rejected.
+	 */
+	function oppsummer(innsending = false) {
+		const feil = felter
+			.filter((felt) => felt.getAttribute("aria-invalid") === "true")
+			.map((felt) => ({
+				id: felt.id,
+				melding: surface?.getElementById(`${felt.id}-error`)?.textContent ?? "",
+			}))
+
+		const liste = oppsummering?.querySelector("ul")
+		const markup = feil
+			.map((f) => `<li><a href="#${f.id}">${f.melding}</a></li>`)
+			.join("")
+		if (liste && (innsending || liste.innerHTML !== markup)) {
+			liste.innerHTML = markup
+		}
+
+		// The heading and hidden are written here, as a server would do it.
+		// The component creates no markup: if it did, a Datastar morph would
+		// remove it again. See "Markup and behaviour".
+		const title = oppsummering?.querySelector(".lt-error-summary__title")
+
+		// Only a submit shows the box. In between it can only disappear, when
+		// the last error has been fixed.
+		if (oppsummering && (innsending || feil.length === 0)) {
+			oppsummering.hidden = feil.length === 0
+		}
+
+		// If the list is empty, the heading is left alone. "The form has 0
+		// errors" would have been the last thing announced.
+		const overskrift =
+			feil.length === 1
+				? "The form has one error"
+				: `The form has ${feil.length} errors`
+		if (feil.length > 0 && title && title.textContent !== overskrift) {
+			title.textContent = overskrift
+		}
+
+		return feil.length
+	}
+
+	for (const felt of felter) {
+		// While the user types we say nothing new, but an error message that
+		// is already there disappears as soon as the field is correct.
+		felt.addEventListener("input", () => {
+			rort.add(felt)
+
+			if (felt.getAttribute("aria-invalid") === "true") {
+				vis(felt, meldingFor(felt))
+				oppsummer()
+			}
+		})
+
+		// When the field is left, the user is done with it, and then an error
+		// message is a help and not an interruption.
+		felt.addEventListener("blur", () => {
+			if (!rort.has(felt) && !forsokt) return
+
+			vis(felt, meldingFor(felt))
+			oppsummer()
+		})
+	}
+
+	skjema?.addEventListener("submit", (hendelse) => {
+		hendelse.preventDefault()
+		forsokt = true
+
+		for (const felt of felter) vis(felt, meldingFor(felt))
+
+		const antall = oppsummer(true)
+
+		if (status) {
+			status.textContent = antall === 0 ? "The application has been sent." : ""
+		}
+
+		// The box has `data-autofocus="false"`, since it is also built when a
+		// field is left. So it is the submit that has to move focus there.
+		if (antall > 0) oppsummering?.focus()
+	})
+</script>

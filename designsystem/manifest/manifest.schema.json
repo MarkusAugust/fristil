@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://fristil.sobernetics.no/manifest.schema.json",
-  "title": "Fristils manifest",
-  "description": "Det Fristil lover: elementene, klassene med innholdet og delene sine, byggefunksjonene og tokenene. Generert av designsystem/scripts/generate-manifest.ts fra koden, aldri skrevet for hånd.",
+  "$id": "https://lo-tek.sobernetics.no/manifest.schema.json",
+  "title": "LO-TEKs manifest",
+  "description": "Det LO-TEK lover: elementene, klassene med innholdet og delene sine, byggefunksjonene og tokenene. Generert av designsystem/scripts/generate-manifest.ts fra koden, aldri skrevet for hånd.",
   "type": "object",
   "required": [
     "schemaVersion",
@@ -22,11 +22,11 @@
     },
     "version": {
       "type": "string",
-      "description": "Versjonen av @fristil/designsystem manifestet er skrevet fra."
+      "description": "Versjonen av @lo-tek/interfaces manifestet er skrevet fra."
     },
     "elements": {
       "type": "object",
-      "description": "Hvert <fs-…>-element, med attributtene komponenten leser.",
+      "description": "Hvert <lt-…>-element, med attributtene komponenten leser.",
       "additionalProperties": {
         "type": "object",
         "required": ["link", "attributes"],
@@ -72,7 +72,7 @@
     },
     "classes": {
       "type": "object",
-      "description": "Hver fs-klasse, med komponenten den hører til og attributtene den tar.",
+      "description": "Hver lt-klasse, med komponenten den hører til og attributtene den tar.",
       "additionalProperties": {
         "type": "object",
         "required": [
@@ -102,7 +102,7 @@
           },
           "partOf": {
             "type": "string",
-            "description": "Klassen denne er en del av, når den bare er en del av en annen komponents markup, som fs-card__title i fs-card. Forelderen har en del som treffer den."
+            "description": "Klassen denne er en del av, når den bare er en del av en annen komponents markup, som lt-card__title i lt-card. Forelderen har en del som treffer den."
           },
           "parts": {
             "type": "object",
@@ -159,7 +159,7 @@
     },
     "builders": {
       "type": "array",
-      "description": "Hver byggefunksjon i fs, med valgene og formen på svaret.",
+      "description": "Hver byggefunksjon i lt, med valgene og formen på svaret.",
       "items": {
         "type": "object",
         "required": ["name", "options", "returns"],
@@ -229,7 +229,7 @@
     },
     "tokens": {
       "type": "object",
-      "description": "Tokenene et stilark utenfor pakken kan bygge på. Fargene står som akser med hva de er til, ikke som verdier, siden et tema kan ha andre verdier enn Fristils egne.",
+      "description": "Tokenene et stilark utenfor pakken kan bygge på. Fargene står som akser med hva de er til, ikke som verdier, siden et tema kan ha andre verdier enn LO-TEKs egne.",
       "required": [
         "spacing",
         "breakpoints",
@@ -272,21 +272,21 @@
             },
             "roles": {
               "type": "object",
-              "description": "Rollene slik de skrives i CSS, med hva hver er til. Et fargetoken heter --fs-color-<familie>-<rolle>.",
+              "description": "Rollene slik de skrives i CSS, med hva hver er til. Et fargetoken heter --lt-color-<familie>-<rolle>.",
               "additionalProperties": {
                 "type": "string"
               }
             },
             "layers": {
               "type": "object",
-              "description": "Lagene bare den nøytrale familien har, som --fs-color-neutral-canvas.",
+              "description": "Lagene bare den nøytrale familien har, som --lt-color-neutral-canvas.",
               "additionalProperties": {
                 "type": "string"
               }
             },
             "tokens": {
               "type": "array",
-              "description": "Hvert --fs-color-*-navn pakken sender ut.",
+              "description": "Hvert --lt-color-*-navn pakken sender ut.",
               "items": {
                 "type": "string"
               }
@@ -296,7 +296,7 @@
         },
         "components": {
           "type": "object",
-          "description": "Komponentvariablene per komponent, som --fs-button-padding under button, med standardverdien, altså reserven i stilarket.",
+          "description": "Komponentvariablene per komponent, som --lt-button-padding under button, med standardverdien, altså reserven i stilarket.",
           "additionalProperties": {
             "type": "object",
             "description": "Variabelnavn til standardverdi.",
@@ -500,7 +500,7 @@
         },
         "unique": {
           "const": true,
-          "description": "En del til av samme slag er en feil, ikke vanlig innhold. Uten feltet kan resten være innhold, som knappene i et panel. fristil sjekk melder en slik del som står mer enn én gang."
+          "description": "En del til av samme slag er en feil, ikke vanlig innhold. Uten feltet kan resten være innhold, som knappene i et panel. lotek sjekk melder en slik del som står mer enn én gang."
         },
         "optional": {
           "const": true,

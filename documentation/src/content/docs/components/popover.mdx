@@ -1,274 +1,274 @@
 ---
 title: Popover
-description: Panel som henger under en knapp og lukker seg selv. Rammekomponent.
+description: Panel that hangs below a button and closes itself. Frame component.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import PopoverDemo from "../../../components/PopoverDemo.astro"
 
-Panelet bruker nettleserens egen `popover`, så det havner i topplaget og legger seg over alt annet uten at noen trenger å finne en `z-index` som er høy nok.
+The panel uses the browser's own `popover`, so it ends up in the top layer and sits above everything else without anyone having to find a `z-index` that is high enough.
 
-Resten gjør komponenten. Panelet åpnes i `manual`-modus, ikke `auto`, siden nettleserens egen lukking rekker å lukke panelet før knappen får klikket sitt, og knappen da ikke kan brukes til å lukke igjen. Escape, klikk utenfor og fokus tilbake til knappen er derfor skrevet i komponenten. Skriver du `popover` uten verdi for hånd, er panelet `auto`, og da følger komponenten med når nettleseren lukker det.
+The component does the rest. The panel is opened in `manual` mode, not `auto`, since the browser's own light dismiss closes the panel before the button gets its click, and the button then cannot be used to close it again. Escape, click outside and focus back to the button are therefore written in the component. If you write `popover` without a value by hand, the panel is `auto`, and then the component follows along when the browser closes it.
 
-Plasseringen er også vår. `position-anchor` finnes ennå ikke i alle nettlesere, så komponenten regner ut posisjonen mot knappen og setter den som to variabler på panelet.
+The positioning is also ours. `position-anchor` is not yet available in all browsers, so the component computes the position relative to the button and sets it as two variables on the panel.
 
-:::note[To veier til den samme markupen]
-Lages markupen med JavaScript, gir `fs.popover()` koblingen mellom knapp og panel, id-en og `popover`-attributtet, ferdig i HTML-en. Blir den til uten JavaScript, holder det med en knapp og et panel med klassen `fs-popover` og en id: komponenten setter `popover="manual"` og skriver `aria-controls` på knappen. Id-en skriver malen, siden `aria-controls` peker på den. Komponenten lager aldri en: et panel med en id serveren ikke sendte, ble byttet ut ved neste oppdatering, med fokus. Mangler id-en, virker vinduet, men knappen er ikke koblet til panelet, og komponenten, `fristil sjekk` og editorene sier fra. Posisjonen, Escape og klikk utenfor kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+:::note[Two paths to the same markup]
+When the markup is produced with JavaScript, `lt.popover()` gives the wiring between button and panel, the id and the `popover` attribute, ready in the HTML. When it is produced without JavaScript, a button and a panel with the class `lt-popover` and an id are enough: the component sets `popover="manual"` and writes `aria-controls` on the button. The template writes the id, since `aria-controls` points to it. The component never creates one: a panel with an id the server did not send was replaced on the next update, along with focus. If the id is missing, the popover works, but the button is not wired to the panel, and the component, `lotek check` and the editors warn about it. The position, Escape and click outside come from the component in both cases. See [Markup and behaviour](/markup-and-behaviour/#builder-function-or-web-component).
 :::
 
 ```ts
-// main.ts, kjøres én gang når appen starter
-import { defineFsPopover } from "@fristil/designsystem/popover"
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/popover.css"
+// main.ts, runs once when the app starts
+import { defineLtPopover } from "@lo-tek/interfaces/popover"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/popover.css"
 
-defineFsPopover()
+defineLtPopover()
 ```
 
-## Slik tar du den i bruk
+## How to use it
 <Tabs>
-  <TabItem label="Prøv den">
+  <TabItem label="Try it">
     <PopoverDemo />
   </TabItem>
-  <TabItem label="Ren HTML">
+  <TabItem label="Plain HTML">
     ```html
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/popover/popover.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`,
+         not `import`: a browser does not resolve a package name. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/components/frame/popover/popover.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/components/css/button/button.css">
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/lotek.css -->
     ```
 
     ```html
-    <!-- `popover` og `aria-controls` setter komponenten. Id-en på panelet
-         skriver du: det er den knappen peker på. -->
-    <fs-popover id="meny" placement="bottom-end">
-      <button class="fs-button" data-variant="secondary" type="button">Handlinger</button>
+    <!-- The component sets `popover` and `aria-controls`. You write the id on
+         the panel: that is what the button points to. -->
+    <lt-popover id="menu" placement="bottom-end">
+      <button class="lt-button" data-variant="secondary" type="button">Actions</button>
 
-      <ul class="fs-popover" id="handlinger">
-        <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
-        <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
+      <ul class="lt-popover" id="actions">
+        <li><button class="lt-button" data-variant="ghost" type="button">Archive the case</button></li>
+        <li><button class="lt-button" data-variant="ghost" type="button">Download as PDF</button></li>
       </ul>
-    </fs-popover>
+    </lt-popover>
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
-      import { defineFsPopover } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/popover/fs-popover.js"
+      import { defineLtPopover } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/components/frame/popover/lt-popover.js"
 
-      defineFsPopover()
+      defineLtPopover()
     </script>
 
     <script type="module">
-      const meny = document.getElementById("meny")
-      const panel = meny.querySelector(".fs-popover")
+      const menu = document.getElementById("menu")
+      const panel = menu.querySelector(".lt-popover")
 
-      // Lukk menyen når en handling er valgt
-      meny.addEventListener("click", (hendelse) => {
-        if (panel.contains(hendelse.target) && hendelse.target.closest("button")) meny.hide()
+      // Close the menu when an action has been chosen
+      menu.addEventListener("click", (event) => {
+        if (panel.contains(event.target) && event.target.closest("button")) menu.hide()
       })
     </script>
     ```
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/fristil.d.ts, gir <fs-popover> typer i JSX
-    import "@fristil/designsystem/react-jsx"
+    // src/lotek.d.ts, gives <lt-popover> types in JSX
+    import "@lo-tek/interfaces/react-jsx"
     ```
 
     ```tsx
-    // main.tsx, kjøres én gang når appen starter
-    import { defineFsPopover } from "@fristil/designsystem/popover"
-    import "@fristil/designsystem/popover.css"
-    import "@fristil/designsystem/button.css"
+    // main.tsx, runs once when the app starts
+    import { defineLtPopover } from "@lo-tek/interfaces/popover"
+    import "@lo-tek/interfaces/popover.css"
+    import "@lo-tek/interfaces/button.css"
 
-    defineFsPopover()
+    defineLtPopover()
     ```
 
     ```tsx
     import { useRef } from "react"
-    import { fs } from "@fristil/designsystem/react"
-    import "@fristil/designsystem/tokens.css"
+    import { lt } from "@lo-tek/interfaces/react"
+    import "@lo-tek/interfaces/tokens.css"
 
-    export function Handlingsmeny({ påArkiver }: { påArkiver: () => void }) {
-      const meny = useRef<HTMLElement & { hide(): void }>(null)
-      const boks = fs.popover({ id: "handlinger", placement: "bottom-end" })
+    export function ActionsMenu({ onArchive }: { onArchive: () => void }) {
+      const menu = useRef<HTMLElement & { hide(): void }>(null)
+      const box = lt.popover({ id: "actions", placement: "bottom-end" })
 
-      const velg = (handling: () => void) => () => {
-        handling()
-        meny.current?.hide()
+      const choose = (action: () => void) => () => {
+        action()
+        menu.current?.hide()
       }
 
       return (
-        <fs-popover ref={meny} {...boks.host}>
-          <button {...boks.trigger} {...fs.button({ variant: "secondary" })}>
-            Handlinger
+        <lt-popover ref={menu} {...box.host}>
+          <button {...box.trigger} {...lt.button({ variant: "secondary" })}>
+            Actions
           </button>
 
-          <ul {...boks.panel}>
+          <ul {...box.panel}>
             <li>
-              <button {...fs.button({ variant: "ghost" })} onClick={velg(påArkiver)}>
-                Arkiver saken
+              <button {...lt.button({ variant: "ghost" })} onClick={choose(onArchive)}>
+                Archive the case
               </button>
             </li>
           </ul>
-        </fs-popover>
+        </lt-popover>
       )
     }
     ```
 
-    Panelet åpnes og lukkes av komponenten selv, så du trenger ingen tilstand i React for det. Skal du lukke etter en handling, kaller du `hide()` på elementet.
+    The component opens and closes the panel itself, so you need no state in React for it. To close after an action, call `hide()` on the element.
   </TabItem>
   <TabItem label="Astro">
     ```astro
     ---
-    import { fs } from "@fristil/designsystem"
-    import "@fristil/designsystem/button.css"
-    import "@fristil/designsystem/link.css"
-    import "@fristil/designsystem/tokens.css"
-    import "@fristil/designsystem/popover.css"
+    import { lt } from "@lo-tek/interfaces"
+    import "@lo-tek/interfaces/button.css"
+    import "@lo-tek/interfaces/link.css"
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/popover.css"
 
-    const boks = fs.popover({ id: "handlinger", placement: "bottom-end" })
+    const box = lt.popover({ id: "actions", placement: "bottom-end" })
 
     ---
 
-    <fs-popover {...boks.host}>
-      <button {...boks.trigger} {...fs.button({ variant: "secondary" })}>Handlinger</button>
+    <lt-popover {...box.host}>
+      <button {...box.trigger} {...lt.button({ variant: "secondary" })}>Actions</button>
 
-      <ul {...boks.panel}>
-        <li><a {...fs.link()} href="/sak/481/pdf">Last ned som PDF</a></li>
-        <li><a {...fs.link()} href="/sak/481/arkiv">Arkiver saken</a></li>
+      <ul {...box.panel}>
+        <li><a {...lt.link()} href="/case/481/pdf">Download as PDF</a></li>
+        <li><a {...lt.link()} href="/case/481/archive">Archive the case</a></li>
       </ul>
-    </fs-popover>
+    </lt-popover>
 
     <script>
-      import { defineFsPopover } from "@fristil/designsystem/popover"
-      defineFsPopover()
+      import { defineLtPopover } from "@lo-tek/interfaces/popover"
+      defineLtPopover()
     </script>
     ```
 
-    Er handlingene lenker, ligger de i sidekilden og kan følges av en søkemotor. Selve panelet er skjult av `popover` til komponenten åpner det.
+    When the actions are links, they are in the page source and can be followed by a search engine. The panel itself is hidden by `popover` until the component opens it.
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <!-- Datastar selv. Uten den gjør `data-`-attributtene under ingenting. -->
+    <!-- Datastar itself. Without it the `data-` attributes below do nothing. -->
     <script type="module"
             src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"></script>
 
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/popover/popover.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`,
+         not `import`: a browser does not resolve a package name. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/components/frame/popover/popover.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/components/css/button/button.css">
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/lotek.css -->
 
-    <div data-signals="{apen: false}">
-      <fs-popover
+    <div data-signals="{menuOpen: false}">
+      <lt-popover
         server-controlled
         placement="bottom-end"
-        data-attr:open="$apen"
-        data-on:popover-toggle="$apen = evt.detail.open"
+        data-attr:open="$menuOpen"
+        data-on:popover-toggle="$menuOpen = evt.detail.open"
       >
-        <button class="fs-button" data-variant="secondary" type="button">Handlinger</button>
+        <button class="lt-button" data-variant="secondary" type="button">Actions</button>
 
-        <ul class="fs-popover" id="handlinger">
+        <ul class="lt-popover" id="actions">
           <li>
-            <button class="fs-button" data-variant="ghost" type="button" data-on:click="$apen = false">
-              Arkiver saken
+            <button class="lt-button" data-variant="ghost" type="button" data-on:click="$menuOpen = false">
+              Archive the case
             </button>
           </li>
         </ul>
-      </fs-popover>
+      </lt-popover>
     </div>
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
-      import { defineFsPopover } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/popover/fs-popover.js"
+      import { defineLtPopover } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/components/frame/popover/lt-popover.js"
 
-      defineFsPopover()
+      defineLtPopover()
     </script>
     ```
 
-    `data-attr:open` setter og fjerner attributtet etter signalet, og `data-on:popover-toggle` fanger opp at brukeren lukket panelet med Escape eller et klikk utenfor. Uten den siste ville signalet og panelet kommet i utakt.
+    `data-attr:open` sets and removes the attribute according to the signal, and `data-on:popover-toggle` picks up that the user closed the panel with Escape or a click outside. Without the latter the signal and the panel would get out of step.
 
-    `server-controlled` hører med når signalet styrer `open`. Komponenten setter ellers attributtet tilbake når noe fjerner det, siden et fjernet attributt ikke er til å skille fra en oppdatering som river det bort, og da lot panelet seg ikke lukke fra signalet. Styrer du panelet fra JavaScript i stedet, med `meny.open = false`, trengs det ikke: en egenskap er en beskjed komponenten kan se.
+    `server-controlled` belongs with it when the signal controls `open`. Otherwise the component puts the attribute back when something removes it, since a removed attribute cannot be told apart from an update that tears it off, and then the panel could not be closed from the signal. If you control the panel from JavaScript instead, with `menu.open = false`, it is not needed: a property is a message the component can see.
   </TabItem>
 </Tabs>
 
 ```ts
-const boks = fs.popover({ id: "handlinger", placement: "bottom-end" })
+const box = lt.popover({ id: "actions", placement: "bottom-end" })
 ```
 
 ```html
-<fs-popover placement="bottom-end">
-  <button class="fs-button" data-variant="secondary" type="button"
-          aria-expanded="false" aria-controls="handlinger">Handlinger</button>
+<lt-popover placement="bottom-end">
+  <button class="lt-button" data-variant="secondary" type="button"
+          aria-expanded="false" aria-controls="actions">Actions</button>
 
-  <ul class="fs-popover" id="handlinger" popover="manual">
-    <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
-    <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
+  <ul class="lt-popover" id="actions" popover="manual">
+    <li><button class="lt-button" data-variant="ghost" type="button">Archive the case</button></li>
+    <li><button class="lt-button" data-variant="ghost" type="button">Download as PDF</button></li>
   </ul>
-</fs-popover>
+</lt-popover>
 ```
 
-Komponenten kjenner igjen panelet på `popover` eller klassen `fs-popover`, og knappen på `aria-controls` som peker på panelet, ellers på at den er den første knappen utenfor panelet som ikke peker på noe annet med `aria-controls`.
+The component recognises the panel by `popover` or the class `lt-popover`, and the button by `aria-controls` pointing to the panel, otherwise by it being the first button outside the panel that does not point to something else with `aria-controls`.
 
-Lages markupen med JavaScript, skriver `fs.popover()` koblingen, id-en, klassen og `popover`. Kommer den fra en mal uten JavaScript, skriver malen id-en på panelet, og komponenten setter `popover="manual"` og `aria-controls`, og lar det serveren har skrevet stå. Komponenten setter dessuten `open` på verten, `aria-expanded` på knappen og posisjonen på panelet. Alt den har skrevet setter den tilbake når en oppdatering fra serveren river det bort.
+When the markup is produced with JavaScript, `lt.popover()` writes the wiring, the id, the class and `popover`. When it comes from a template without JavaScript, the template writes the id on the panel, and the component sets `popover="manual"` and `aria-controls`, and leaves what the server wrote in place. The component also sets `open` on the host, `aria-expanded` on the button and the position on the panel. Everything it wrote, it puts back when an update from the server tears it away.
 
-Reparasjonen gjelder én vei: har noen bedt om at vinduet er åpent, blir det stående. Sender serveren `open`, åpnes det, for det er noe serveren faktisk sa.
+The repair goes one way: if someone has asked for the popover to be open, it stays open. If the server sends `open`, it opens, because that is something the server actually said.
 
-Lukk med egenskapen, altså `meny.open = false`, `hide()` eller `toggle()`. Det er en beskjed komponenten kan se. Forskjellen mellom dem er hendelsen: `hide()` og `toggle()` sender `popover-toggle`, egenskapen gjør det ikke. Fjerner du attributtet utenfra i stedet, som med Datastars `data-attr:open`, er det ikke til å skille fra en oppdatering som river det bort, og da setter komponenten det tilbake. Der er `server-controlled` svaret. Se [Markup og oppførsel](/markup-og-oppforsel/).
+Close with the property, `menu.open = false`, `hide()` or `toggle()`. That is a message the component can see. The difference between them is the event: `hide()` and `toggle()` send `popover-toggle`, the property does not. If you remove the attribute from outside instead, as with Datastar's `data-attr:open`, it cannot be told apart from an update that tears it off, and then the component puts it back. There `server-controlled` is the answer. See [Markup and behaviour](/markup-and-behaviour/).
 
-## Attributter
+## Attributes
 
-| Attributt | Type | Effekt |
+| Attribute | Type | Effect |
 | --- | --- | --- |
-| `open` | boolsk | Om panelet er åpent. Speiles når brukeren åpner og lukker. |
-| `placement` | streng | `bottom-start`, `bottom-end`, `top-start` eller `top-end`. `start` og `end` følger leseretningen, så i en side med `dir="rtl"` er `start` høyre kant. Er det ikke plass langs kanten, skyves panelet inn i vinduet framfor å bytte andre. `fs.popover({ id, placement })` skriver det på verten, `fs.popover.isPlacement` sjekker en verdi, og `popoverPlacements` fra hovedinngangen lister dem |
-| `server-controlled` | boolsk | Serveren bestemmer om panelet er åpent. Komponenten setter ikke `open` tilbake når en oppdatering fra serveren fjerner det, slik den gjør uten attributtet. |
+| `open` | boolean | Whether the panel is open. Mirrored when the user opens and closes it. |
+| `placement` | string | `bottom-start`, `bottom-end`, `top-start` or `top-end`. `start` and `end` follow the reading direction, so on a page with `dir="rtl"` `start` is the right edge. If there is no room along the edge, the panel is pushed into the window rather than switching to the other. `lt.popover({ id, placement })` writes it on the host, `lt.popover.isPlacement` checks a value, and `popoverPlacements` from the main entry point lists them |
+| `server-controlled` | boolean | The server decides whether the panel is open. The component does not put `open` back when an update from the server removes it, as it does without the attribute. |
 
-## Hendelser og metoder
+## Events and methods
 
-| Navn | Hva det er |
+| Name | What it is |
 | --- | --- |
-| `popover-toggle` | Hendelse med `{ open: boolean }` i `detail`. Sendes når brukeren åpner eller lukker panelet, og fra `show()`, `hide()` og `toggle()`, ikke når `open` settes som egenskap eller attributt |
-| `show()`, `hide()`, `toggle()` | Metoder på elementet |
+| `popover-toggle` | Event with `{ open: boolean }` in `detail`. Sent when the user opens or closes the panel, and from `show()`, `hide()` and `toggle()`, not when `open` is set as a property or attribute |
+| `show()`, `hide()`, `toggle()` | Methods on the element |
 
 ```js
-const meny = document.querySelector("fs-popover")
+const menu = document.querySelector("lt-popover")
 
-meny.addEventListener("popover-toggle", (hendelse) => {
-  console.log(hendelse.detail.open ? "åpnet" : "lukket")
+menu.addEventListener("popover-toggle", (event) => {
+  console.log(event.detail.open ? "opened" : "closed")
 })
 ```
 
-Panelet flytter seg med siden når brukeren ruller eller endrer vindusstørrelsen. Er det ikke plass under knappen, legger det seg over.
+The panel moves with the page when the user scrolls or resizes the window. If there is no room below the button, it goes above.
 
-## Klasser du kan style
+## Classes you can style
 
-Komponenten rendrer i vanlig DOM, så markupen din treffes av vanlige selektorer:
+The component renders in plain DOM, so your markup is matched by ordinary selectors:
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.fs-popover` | Panelet. Komponenten kjenner det igjen på klassen eller på `popover`, og fyller inn den andre |
+| `.lt-popover` | The panel. The component recognises it by the class or by `popover`, and fills in the other |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
-| `--fs-popover-width` | `min(20rem, calc(100vw - var(--fs-spacing-8)))`, den største bredden. Panelet er så bredt som innholdet, opp til denne |
-| `--fs-popover-padding` | `var(--fs-spacing-3)` |
-| `--fs-popover-radius` | `var(--fs-spacing-1)` |
-| `--fs-popover-top` | settes av komponenten |
-| `--fs-popover-left` | settes av komponenten |
+| `--lt-popover-width` | `min(20rem, calc(100vw - var(--lt-spacing-8)))`, the maximum width. The panel is as wide as its content, up to this |
+| `--lt-popover-padding` | `var(--lt-spacing-3)` |
+| `--lt-popover-radius` | `var(--lt-spacing-1)` |
+| `--lt-popover-top` | set by the component |
+| `--lt-popover-left` | set by the component |
 
-Posisjonen settes som `--fs-popover-top` og `--fs-popover-left` på elementet. De to er regnet ut fra knappens plass på skjermen, og er de eneste verdiene komponenten skriver inn direkte. Alt annet står i stilarket, så du kan overstyre det uten `!important`.
+The position is set as `--lt-popover-top` and `--lt-popover-left` on the element. The two are computed from the button's place on the screen, and are the only values the component writes directly. Everything else is in the stylesheet, so you can override it without `!important`.
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
-## Tilgjengelighet
+## Accessibility
 
-- Panelet er ikke en dialog. Fokus flyttes ikke inn automatisk, og resten av siden er fortsatt i bruk. Trenger du å stoppe brukeren, bruk [Dialog](../dialog/).
-- Escape lukker og gir fokus tilbake til knappen. Uten det står fokus på noe som ikke finnes lenger.
-- Innholdet i panelet skal kunne nås med Tab, i samme rekkefølge som det står i markupen.
-- Ikke legg et skjema som må fylles ut i et panel som lukker seg ved klikk utenfor.
+- The panel is not a dialog. Focus is not moved inside automatically, and the rest of the page is still usable. If you need to stop the user, use [Dialog](../dialog/).
+- Escape closes it and returns focus to the button. Without that, focus is on something that no longer exists.
+- The content of the panel should be reachable with Tab, in the same order as in the markup.
+- Do not put a form that must be filled in inside a panel that closes on a click outside.

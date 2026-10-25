@@ -12,11 +12,11 @@ import { table, tableSort, tableSortDirections } from "./table"
 import "../../../tokens/tokens.css"
 import "./table.css"
 
-describe("fs-table", () => {
+describe("lt-table", () => {
   beforeEach(() => {
     monter(`
-      <div class="fs-table-scroll" tabindex="0" role="region" aria-label="Fakturaer">
-        <table class="fs-table" data-variant="striped" id="tabell">
+      <div class="lt-table-scroll" tabindex="0" role="region" aria-label="Fakturaer">
+        <table class="lt-table" data-variant="striped" id="tabell">
           <caption>Fakturaer i 2026</caption>
           <thead>
             <tr>
@@ -53,13 +53,13 @@ describe("fs-table", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(table()).toEqual({ class: "fs-table" })
+    expect(table()).toEqual({ class: "lt-table" })
     expect(table({ variant: "striped", hoverable: true })).toEqual({
-      class: "fs-table",
+      class: "lt-table",
       "data-variant": "striped",
       "data-hoverable": "",
     })
-    expect(table.scroll).toBe("fs-table-scroll")
+    expect(table.scroll).toBe("lt-table-scroll")
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
@@ -72,12 +72,12 @@ describe("kolonner som kan sorteres", () => {
   /** Den samme tabellen to ganger: med vanlige overskrifter og med knapper. */
   beforeEach(() => {
     const rad = (knapper: boolean, id: string) => `
-      <table class="fs-table">
+      <table class="lt-table">
         <thead>
           <tr id="${id}">
-            <th scope="col" ${knapper ? 'aria-sort="ascending"' : ""}>${knapper ? '<button type="button" class="fs-table__sort">Dato</button>' : "Dato"}</th>
-            <th scope="col">${knapper ? '<button type="button" class="fs-table__sort">Beløp</button>' : "Beløp"}</th>
-            <th scope="col" data-align="end" ${knapper ? 'aria-sort="descending"' : ""}>${knapper ? '<button type="button" class="fs-table__sort">Antall</button>' : "Antall"}</th>
+            <th scope="col" ${knapper ? 'aria-sort="ascending"' : ""}>${knapper ? '<button type="button" class="lt-table__sort">Dato</button>' : "Dato"}</th>
+            <th scope="col">${knapper ? '<button type="button" class="lt-table__sort">Beløp</button>' : "Beløp"}</th>
+            <th scope="col" data-align="end" ${knapper ? 'aria-sort="descending"' : ""}>${knapper ? '<button type="button" class="lt-table__sort">Antall</button>' : "Antall"}</th>
           </tr>
         </thead>
         <tbody>
@@ -105,7 +105,7 @@ describe("kolonner som kan sorteres", () => {
   })
 
   it("setter teksten i overskriften der den står uten knapp", () => {
-    const knapp = document.querySelector("#med .fs-table__sort") as HTMLElement
+    const knapp = document.querySelector("#med .lt-table__sort") as HTMLElement
     const vanlig = document.querySelector("#uten th") as HTMLElement
     const celle = document.getElementById("med-celle") as HTMLElement
     const fraRaden = (tekst: Element, rad: string) =>
@@ -118,7 +118,7 @@ describe("kolonner som kan sorteres", () => {
 
   it("lar teksten i en høyrestilt overskrift slutte der tallene slutter", () => {
     const knapp = document.querySelector(
-      "#med th[data-align='end'] .fs-table__sort",
+      "#med th[data-align='end'] .lt-table__sort",
     ) as HTMLElement
     const tall = document.querySelector(
       "#med-celle ~ td[data-align='end']",
@@ -129,7 +129,7 @@ describe("kolonner som kan sorteres", () => {
 
   it("lar knappen fylle cellen, så hele cellen kan trykkes", () => {
     const celle = document.querySelector("#med th") as HTMLElement
-    const knapp = celle.querySelector(".fs-table__sort") as HTMLElement
+    const knapp = celle.querySelector(".lt-table__sort") as HTMLElement
 
     expect(knapp.getBoundingClientRect().width).toBe(
       celle.getBoundingClientRect().width,
@@ -139,7 +139,7 @@ describe("kolonner som kan sorteres", () => {
   it("tegner en egen pil for hver retning, og en for ingen", () => {
     const pil = (th: Element) =>
       getComputedStyle(
-        th.querySelector(".fs-table__sort") as Element,
+        th.querySelector(".lt-table__sort") as Element,
         "::after",
       ).maskImage
     const celler = [...document.querySelectorAll("#med th")]
@@ -152,7 +152,7 @@ describe("kolonner som kan sorteres", () => {
   })
 
   it("holder pila utenfor navnet på knappen", () => {
-    const knapp = document.querySelector("#med .fs-table__sort") as HTMLElement
+    const knapp = document.querySelector("#med .lt-table__sort") as HTMLElement
 
     expect(getComputedStyle(knapp, "::after").content).toBe('""')
   })
@@ -160,7 +160,7 @@ describe("kolonner som kan sorteres", () => {
   it("setter aria-sort på overskriften og klassen på knappen", () => {
     expect(tableSort()).toEqual({
       header: {},
-      button: { class: "fs-table__sort", type: "button" },
+      button: { class: "lt-table__sort", type: "button" },
     })
     for (const direction of tableSortDirections) {
       expect(tableSort({ direction }).header).toEqual({

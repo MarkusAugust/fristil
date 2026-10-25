@@ -1,38 +1,38 @@
 import axe from "axe-core"
 
 /**
- * Hjelpere for tilgjengelighetstesting i nettleser.
+ * Helpers for accessibility testing in the browser.
  *
- * Systemet lover at tilgjengelighet er løst sentralt. Disse funksjonene gjør
- * løftet til noe som faktisk kontrolleres, slik at en komponent ikke kan
- * sendes ut med for svak kontrast eller manglende kobling mellom ledetekst
- * og felt uten at en test sier fra.
+ * The system promises that accessibility is solved centrally. These
+ * functions turn the promise into something that is actually checked, so a
+ * component cannot ship with too little contrast or missing wiring between
+ * label and field without a test saying so.
  */
 
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
 
 /**
- * Setter opp en flate med designsystemets sidefarger og legger HTML-en inn i
- * den.
+ * Sets up a surface with the design system's page colours and puts the HTML
+ * in it.
  *
- * Bakgrunnen må være ugjennomsiktig og satt eksplisitt: axe regner ut
- * kontrast ved å lete oppover etter en bakgrunnsfarge, og finner den ingen,
- * melder den «incomplete» i stedet for å gi et svar. Da hadde testen stilt
- * seg likegyldig til nettopp det vi vil kontrollere.
+ * The background must be opaque and set explicitly: axe computes contrast by
+ * looking upwards for a background colour, and if it finds none, it reports
+ * "incomplete" instead of giving an answer. The test would then have been
+ * indifferent to exactly what we want to check.
  */
 export function monter(html: string): HTMLElement {
-  document.body.style.background = "var(--fs-color-neutral-canvas)"
-  document.body.style.color = "var(--fs-color-neutral-text-strong)"
-  document.body.innerHTML = `<div id="fs-testflate">${html}</div>`
+  document.body.style.background = "var(--lt-color-neutral-canvas)"
+  document.body.style.color = "var(--lt-color-neutral-text-strong)"
+  document.body.innerHTML = `<div id="lt-testflate">${html}</div>`
 
-  const flate = document.getElementById("fs-testflate")
+  const flate = document.getElementById("lt-testflate")
   if (!(flate instanceof HTMLElement)) {
-    throw new Error("Klarte ikke å montere testflaten")
+    throw new Error("Could not mount the test surface")
   }
 
-  flate.style.background = "var(--fs-color-neutral-canvas)"
-  flate.style.color = "var(--fs-color-neutral-text-strong)"
-  flate.style.padding = "var(--fs-spacing-4)"
+  flate.style.background = "var(--lt-color-neutral-canvas)"
+  flate.style.color = "var(--lt-color-neutral-text-strong)"
+  flate.style.padding = "var(--lt-spacing-4)"
 
   return flate
 }
@@ -44,14 +44,16 @@ export type Tilgjengelighetsbrudd = {
 }
 
 /**
- * Kjører axe mot `rot` og returnerer bruddene på WCAG 2.1 nivå A og AA.
+ * Runs axe against `rot` and returns the violations of WCAG 2.1 level A and
+ * AA.
  *
- * Det axe ikke kunne avgjøre («incomplete»), er ikke brudd, og feller ikke
- * testen. Oftest er det kontrast over en gradient, et pseudoelement eller et
- * bilde. Men de telles, og står det noen, skrives én linje med antallet og
- * reglene, så en komponent der axe stille har sluttet å kunne svare, synes.
- * Med rapportøren Vitest velger utenfor en terminal, vises ikke konsollen
- * for en test som består. `--silent=false --reporter=default` viser den.
+ * What axe could not decide ("incomplete") is not a violation, and does not
+ * fail the test. Most often it is contrast over a gradient, a pseudo-element
+ * or an image. But they are counted, and if there are any, one line is
+ * written with the count and the rules, so a component where axe has
+ * silently stopped being able to answer shows up. With the reporter Vitest
+ * picks outside a terminal, the console is not shown for a test that
+ * passes. `--silent=false --reporter=default` shows it.
  */
 export async function finnTilgjengelighetsbrudd(
   rot: Element = document.body,
@@ -66,7 +68,7 @@ export async function finnTilgjengelighetsbrudd(
   )
   if (uavklarte > 0)
     console.info(
-      `axe kunne ikke avgjøre ${uavklarte} kontroller (${document.documentElement.getAttribute("data-theme") ?? "uten tema"}): ${resultat.incomplete.map((u) => `${u.id} (${u.nodes.length})`).join(", ")}`,
+      `axe could not decide ${uavklarte} checks (${document.documentElement.getAttribute("data-theme") ?? "no theme"}): ${resultat.incomplete.map((u) => `${u.id} (${u.nodes.length})`).join(", ")}`,
     )
 
   return resultat.violations.map((brudd) => ({
@@ -77,17 +79,17 @@ export async function finnTilgjengelighetsbrudd(
 }
 
 /**
- * Kaster med en lesbar oppsummering hvis axe finner brudd, i lyst eller
- * mørkt tema.
+ * Throws with a readable summary if axe finds violations, in the light or
+ * the dark theme.
  *
- * Begge temaene sjekkes hver gang, med `data-theme` på `<html>`. Før ble
- * bare lyst sjekket, og en farge som holdt kontrasten i lyst og ikke i
- * mørkt, slapp gjennom. Står det `data-theme` lenger inne, gjelder det der,
- * som på en ekte side. Temaet på `<html>` settes tilbake etterpå.
+ * Both themes are checked every time, with `data-theme` on `<html>`. Before,
+ * only light was checked, and a colour that held its contrast in light but
+ * not in dark got through. If there is a `data-theme` further in, it applies
+ * there, as on a real page. The theme on `<html>` is restored afterwards.
  *
- * Feilmeldingen skal si hvilket tema, hvilken regel som ryker og på hvilket
- * element, slik at den som får testen rød slipper å kjøre axe manuelt for å
- * forstå hva som er galt.
+ * The error message must say which theme, which rule breaks and on which
+ * element, so whoever gets the red test does not have to run axe by hand to
+ * understand what is wrong.
  */
 export async function forventIngenTilgjengelighetsbrudd(
   rot: Element = document.body,
@@ -95,10 +97,11 @@ export async function forventIngenTilgjengelighetsbrudd(
   const html = document.documentElement
   const before = html.getAttribute("data-theme")
   const brudd: Tilgjengelighetsbrudd[] = []
-  // Overgangene slås av før temaet byttes. En overgang som alt er i gang,
-  // stopper ikke av at `transition` settes til `none` etterpå, og axe leste
-  // fargen på en lenke midt mellom den lyse og den mørke. Animasjonene av
-  // også, som i `sjekk-tilgjengelighet.ts`, så axe leser en fast tilstand.
+  // Transitions are turned off before the theme changes. A transition that
+  // is already running does not stop when `transition` is set to `none`
+  // afterwards, and axe read the colour of a link halfway between light and
+  // dark. Animations off too, as in `check-accessibility.ts`, so axe reads a
+  // settled state.
   const uten = document.createElement("style")
   uten.textContent =
     "*, *::before, *::after { transition: none !important; animation: none !important }"
@@ -111,9 +114,9 @@ export async function forventIngenTilgjengelighetsbrudd(
         brudd.push({ ...b, regel: `${b.regel} (${tema})` })
     }
   } finally {
-    // Temaet tilbake mens overgangene fortsatt er av, og først etter en
-    // tegning slås de på igjen. Ellers leste en test som så på fargene
-    // etterpå, en verdi på vei tilbake fra mørkt.
+    // The theme is restored while transitions are still off, and they are
+    // turned on again only after a frame. Otherwise a test that looked at the
+    // colours afterwards read a value on its way back from dark.
     if (before === null) html.removeAttribute("data-theme")
     else html.setAttribute("data-theme", before)
     await ventPaTegning()
@@ -131,19 +134,19 @@ export async function forventIngenTilgjengelighetsbrudd(
     .join("\n\n")
 
   throw new Error(
-    `Fant ${brudd.length} tilgjengelighetsbrudd:\n\n${oppsummering}\n`,
+    `Found ${brudd.length} accessibility violations:\n\n${oppsummering}\n`,
   )
 }
 
 /**
- * Venter til nettleseren har tegnet ferdig.
+ * Waits until the browser has finished painting.
  *
- * axe leser utregnet stil. Uten denne pausen kan axe rekke å lese et
- * element som ennå ikke har fått stilene sine.
+ * axe reads computed style. Without this pause, axe can read an element
+ * that has not yet got its styles.
  *
- * Har elementet en `updateComplete`, ventes det også på den. Ingen av
- * Fristils komponenter har en etter at Lit ble fjernet i 0.5.0, men en test
- * kan gi den et element fra et annet bibliotek.
+ * If the element has an `updateComplete`, that is awaited too. None of
+ * LO-TEK's components has one since Lit was removed in 0.5.0, but a test can
+ * pass it an element from another library.
  */
 export async function ventPaTegning(element?: Element): Promise<void> {
   const oppdatering = (element as { updateComplete?: Promise<unknown> })

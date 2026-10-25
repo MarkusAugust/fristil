@@ -1,0 +1,34 @@
+{
+  "markup": [
+    {
+      "start": 1,
+      "end": 19,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
+      "message": "<lt-session-timeout> found no <dialog>. The warning cannot be shown, and the session times out without warning."
+    },
+    {
+      "start": 73,
+      "end": 91,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
+      "message": "<lt-session-timeout> found no <dialog>. The warning cannot be shown, and the session times out without warning."
+    }
+  ],
+  "page": [
+    {
+      "start": 1,
+      "end": 19,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
+      "message": "<lt-session-timeout> found no <dialog>. The warning cannot be shown, and the session times out without warning."
+    },
+    {
+      "start": 73,
+      "end": 91,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/session-timeout/",
+      "message": "<lt-session-timeout> found no <dialog>. The warning cannot be shown, and the session times out without warning."
+    }
+  ]
+}

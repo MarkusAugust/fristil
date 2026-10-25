@@ -2,17 +2,17 @@
   "version": 1.1,
   "tags": [
     {
-      "name": "fs-field",
+      "name": "lt-field",
       "description": {
         "kind": "markdown",
-        "value": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `fs.field()` i stedet."
+        "value": "Wires label, field, help text and error text together: sets `aria-describedby` and `aria-invalid` on the control and an id on the help text and the error text. Never writes an id on the control: the template writes `for` and `id`, or wraps the field in the label. The field is invalid when the error text is there without `hidden`. Exists for markup produced without JavaScript. When the markup is produced with JavaScript, use `lt.field()` instead."
       },
       "attributes": [
         {
           "name": "disabled",
           "description": {
             "kind": "markdown",
-            "value": "Kontrollen er slått av."
+            "value": "The control is disabled."
           },
           "valueSet": "v"
         },
@@ -20,7 +20,7 @@
           "name": "optional",
           "description": {
             "kind": "markdown",
-            "value": "Feltet er valgfritt, og ledeteksten sier det."
+            "value": "The field is optional, and the label says so."
           },
           "valueSet": "v"
         },
@@ -28,29 +28,29 @@
           "name": "described-by",
           "description": {
             "kind": "markdown",
-            "value": "Ekstra id-er som skal med i `aria-describedby`, adskilt med mellomrom."
+            "value": "Extra ids to include in `aria-describedby`, separated by spaces."
           }
         }
       ],
       "references": [
         {
-          "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/field/"
+          "name": "Documentation",
+          "url": "https://lo-tek.sobernetics.no/components/field/"
         }
       ]
     },
     {
-      "name": "fs-tabs",
+      "name": "lt-tabs",
       "description": {
         "kind": "markdown",
-        "value": "Fanerad. Fanene er lenker til panelene i en `.fs-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri."
+        "value": "Tab list. The tabs are links to the panels in an `.lt-tabs__list`, so without JavaScript the list is a table of contents; `role=\"tab\"` on anything other than a link is not a tab. The component adds keyboard and focus handling, sets roles and wiring, gives each panel its tab's name, makes only the selected panel a tab stop, and hides the rest with `hidden=\"until-found\"`, so find in page and links into a panel reach them. Each selection is written to the URL. It never writes an id on a tab or a panel. When the page loads, the selected tab is the one with `aria-selected` from the server, otherwise the one the URL points to, otherwise the first one not hidden with `hidden`. Under `server-controlled` the URL never selects."
       },
       "attributes": [
         {
           "name": "server-controlled",
           "description": {
             "kind": "markdown",
-            "value": "Serveren bestemmer hvilken fane som er valgt. Komponenten setter ikke brukerens valg tilbake etter en oppdatering fra serveren, og adressen velger ingen fane. Et klikk og søk i siden velger fanen til serveren svarer."
+            "value": "The server decides which tab is selected. The component does not put the user's selection back after an update from the server, and the URL selects no tab. A click and find in page select the tab until the server responds."
           },
           "valueSet": "v"
         },
@@ -58,21 +58,21 @@
           "name": "activation",
           "description": {
             "kind": "markdown",
-            "value": "Hva piltastene gjør. Standard er at de velger fanen med en gang."
+            "value": "What the arrow keys do. By default they select the tab at once."
           },
           "values": [
             {
               "name": "manual",
               "description": {
                 "kind": "markdown",
-                "value": "Piltastene flytter bare fokus, og Enter eller mellomrom velger. Når innholdet i et panel tar tid å laste."
+                "value": "The arrow keys only move focus, and Enter or Space selects. For when a panel's content takes time to load."
               }
             },
             {
               "name": "automatic",
               "description": {
                 "kind": "markdown",
-                "value": "Piltastene velger fanen, det samme som uten attributtet."
+                "value": "The arrow keys select the tab, the same as without the attribute."
               }
             }
           ]
@@ -80,37 +80,37 @@
       ],
       "references": [
         {
-          "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/tabs/"
+          "name": "Documentation",
+          "url": "https://lo-tek.sobernetics.no/components/tabs/"
         }
       ]
     },
     {
-      "name": "fs-error-summary",
+      "name": "lt-error-summary",
       "description": {
         "kind": "markdown",
-        "value": "Feiloppsummering. Flytter fokus til boksen når den kommer til syne, og til kontrollen når en lenke i lista følges."
+        "value": "Error summary. Moves focus to the box when it appears, and to the control when a link in the list is followed."
       },
       "attributes": [
         {
           "name": "data-autofocus",
           "description": {
             "kind": "markdown",
-            "value": "Om fokus flyttes til boksen når den kommer til syne. Standard er på."
+            "value": "Whether focus moves to the box when it appears. On by default."
           },
           "values": [
             {
               "name": "false",
               "description": {
                 "kind": "markdown",
-                "value": "La fokus stå der det er."
+                "value": "Leave focus where it is."
               }
             },
             {
               "name": "true",
               "description": {
                 "kind": "markdown",
-                "value": "Flytt fokus, det samme som uten attributtet. Alt annet enn «false» flytter fokus."
+                "value": "Move focus, the same as without the attribute. Anything other than \"false\" moves focus."
               }
             }
           ]
@@ -119,30 +119,30 @@
           "name": "hidden",
           "description": {
             "kind": "markdown",
-            "value": "Boksen er skjult. Serveren tar attributtet bort når skjemaet feiler, og komponenten flytter fokus da."
+            "value": "The box is hidden. The server removes the attribute when the form fails, and the component then moves focus."
           },
           "valueSet": "v"
         }
       ],
       "references": [
         {
-          "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/error-summary/"
+          "name": "Documentation",
+          "url": "https://lo-tek.sobernetics.no/components/error-summary/"
         }
       ]
     },
     {
-      "name": "fs-popover",
+      "name": "lt-popover",
       "description": {
         "kind": "markdown",
-        "value": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en."
+        "value": "A panel that hangs from a button and closes itself. A button and a panel with the class `lt-popover` and an id from the template; the component sets `popover` and `aria-controls` where the markup came without them, but never the id."
       },
       "attributes": [
         {
           "name": "open",
           "description": {
             "kind": "markdown",
-            "value": "Panelet er åpent. Serveren kan sende attributtet for å åpne panelet."
+            "value": "The panel is open. The server can send the attribute to open the panel."
           },
           "valueSet": "v"
         },
@@ -150,35 +150,35 @@
           "name": "placement",
           "description": {
             "kind": "markdown",
-            "value": "Hvilken kant av knappen panelet henger fra."
+            "value": "Which edge of the button the panel hangs from."
           },
           "values": [
             {
               "name": "bottom-start",
               "description": {
                 "kind": "markdown",
-                "value": "Under knappen, langs startkanten. Standard."
+                "value": "Below the button, along the start edge. The default."
               }
             },
             {
               "name": "bottom-end",
               "description": {
                 "kind": "markdown",
-                "value": "Under knappen, langs sluttkanten."
+                "value": "Below the button, along the end edge."
               }
             },
             {
               "name": "top-start",
               "description": {
                 "kind": "markdown",
-                "value": "Over knappen, langs startkanten."
+                "value": "Above the button, along the start edge."
               }
             },
             {
               "name": "top-end",
               "description": {
                 "kind": "markdown",
-                "value": "Over knappen, langs sluttkanten."
+                "value": "Above the button, along the end edge."
               }
             }
           ]
@@ -187,30 +187,30 @@
           "name": "server-controlled",
           "description": {
             "kind": "markdown",
-            "value": "Serveren bestemmer om panelet er åpent. Komponenten setter ikke `open` tilbake når en oppdatering fra serveren fjerner det."
+            "value": "The server decides whether the panel is open. The component does not put `open` back when an update from the server removes it."
           },
           "valueSet": "v"
         }
       ],
       "references": [
         {
-          "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/popover/"
+          "name": "Documentation",
+          "url": "https://lo-tek.sobernetics.no/components/popover/"
         }
       ]
     },
     {
-      "name": "fs-suggestion",
+      "name": "lt-suggestion",
       "description": {
         "kind": "markdown",
-        "value": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.fs-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff."
+        "value": "Field with a suggestion list. A `<label for>`, an `<input id>`, an `.lt-suggestion__list` with `<li>` items and a `[role=status]` are enough; the component sets the roles and the wiring where the markup came without them, and gives the list and the options ids. The field never gets an id from the component. Filters as the user types, moves the highlight with the arrow keys and announces the number of matches."
       },
       "attributes": [
         {
           "name": "prefiltered",
           "description": {
             "kind": "markdown",
-            "value": "Appen har alt filtrert lista, så komponenten lar den stå. Trengs når appens filter er et annet enn «teksten inneholder søkeordet»."
+            "value": "The app has already filtered the list, so the component leaves it as it is. Needed when the app's filter is something other than \"the text contains the search term\"."
           },
           "valueSet": "v"
         },
@@ -218,79 +218,79 @@
           "name": "count-none",
           "description": {
             "kind": "markdown",
-            "value": "Opplesningen ved null treff. Standard er «Ingen treff»."
+            "value": "The announcement for no matches. The default is \"No matches\"."
           }
         },
         {
           "name": "count-zero",
           "description": {
             "kind": "markdown",
-            "value": "Opplesningen i bøyningsformen `zero`, for språk som har den. `{n}` er tallet."
+            "value": "The announcement in the plural form `zero`, for languages that have it. `{n}` is the number."
           }
         },
         {
           "name": "count-one",
           "description": {
             "kind": "markdown",
-            "value": "Opplesningen for ett treff. `{n}` er tallet."
+            "value": "The announcement for one match. `{n}` is the number."
           }
         },
         {
           "name": "count-two",
           "description": {
             "kind": "markdown",
-            "value": "Opplesningen i bøyningsformen `two`, for språk som har den. `{n}` er tallet."
+            "value": "The announcement in the plural form `two`, for languages that have it. `{n}` is the number."
           }
         },
         {
           "name": "count-few",
           "description": {
             "kind": "markdown",
-            "value": "Opplesningen i bøyningsformen `few`, for språk som har den. `{n}` er tallet."
+            "value": "The announcement in the plural form `few`, for languages that have it. `{n}` is the number."
           }
         },
         {
           "name": "count-many",
           "description": {
             "kind": "markdown",
-            "value": "Opplesningen i bøyningsformen `many`, for språk som har den. `{n}` er tallet."
+            "value": "The announcement in the plural form `many`, for languages that have it. `{n}` is the number."
           }
         },
         {
           "name": "count-other",
           "description": {
             "kind": "markdown",
-            "value": "Opplesningen for alle andre antall, og reserven når en form mangler. `{n}` er tallet."
+            "value": "The announcement for every other count, and the fallback when a form is missing. `{n}` is the number."
           }
         },
         {
           "name": "server-controlled",
           "description": {
             "kind": "markdown",
-            "value": "Serveren bestemmer om lista er utvidet og hvilket alternativ som er markert. Komponenten setter dem ikke tilbake etter en oppdatering fra serveren."
+            "value": "The server decides whether the list is expanded and which option is highlighted. The component does not put them back after an update from the server."
           },
           "valueSet": "v"
         }
       ],
       "references": [
         {
-          "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/suggestion/"
+          "name": "Documentation",
+          "url": "https://lo-tek.sobernetics.no/components/suggestion/"
         }
       ]
     },
     {
-      "name": "fs-dialog",
+      "name": "lt-dialog",
       "description": {
         "kind": "markdown",
-        "value": "Gjør en `<dialog class=\"fs-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `fs-dialog__body` når verken `aria-labelledby` eller `aria-label` står der."
+        "value": "Makes a `<dialog class=\"lt-dialog\">` modal with `showModal()`, for servers that cannot call it themselves. The host around the dialog. Gives the dialog its name from the first heading outside `lt-dialog__body` when neither `aria-labelledby` nor `aria-label` is there."
       },
       "attributes": [
         {
           "name": "open",
           "description": {
             "kind": "markdown",
-            "value": "Dialogen er åpen. Skal serveren vise den, må `open` også stå på `<dialog>`."
+            "value": "The dialog is open. For the server to show it, `open` must be on `<dialog>` too."
           },
           "valueSet": "v"
         },
@@ -298,116 +298,116 @@
           "name": "server-controlled",
           "description": {
             "kind": "markdown",
-            "value": "Fjerner en oppdatering fra serveren `open` fra `<dialog>` mens dialogen er åpen, lukker komponenten den og sender `dialog-toggle`, i stedet for å sette `open` tilbake."
+            "value": "When an update from the server removes `open` from `<dialog>` while the dialog is open, the component closes it and dispatches `dialog-toggle`, instead of putting `open` back."
           },
           "valueSet": "v"
         }
       ],
       "references": [
         {
-          "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/dialog/"
+          "name": "Documentation",
+          "url": "https://lo-tek.sobernetics.no/components/dialog/"
         }
       ]
     },
     {
-      "name": "fs-toast",
+      "name": "lt-toast",
       "description": {
         "kind": "markdown",
-        "value": "Kø av korte meldinger i hjørnet av skjermen. Meldingene lages fra skript med `show(tekst, { color, duration })`."
+        "value": "A queue of short messages in the corner of the screen. The messages are created from script with `show(text, { color, duration })`."
       },
       "attributes": [
         {
           "name": "duration",
           "description": {
             "kind": "markdown",
-            "value": "Millisekunder før en melding forsvinner. Standard er 6000, og 0 lar meldingene stå."
+            "value": "Milliseconds before a message disappears. The default is 6000, and 0 keeps the messages."
           }
         },
         {
           "name": "label",
           "description": {
             "kind": "markdown",
-            "value": "Tekst som sier hva regionen er for skjermlesere."
+            "value": "Text that tells screen readers what the region is for."
           }
         },
         {
           "name": "close-label",
           "description": {
             "kind": "markdown",
-            "value": "Hva lukkeknappen i hver melding heter for skjermlesere. Standard er «Lukk melding»."
+            "value": "What the close button in each message is called for screen readers. The default is \"Close message\"."
           }
         }
       ],
       "references": [
         {
-          "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/toast/"
+          "name": "Documentation",
+          "url": "https://lo-tek.sobernetics.no/components/toast/"
         }
       ]
     },
     {
-      "name": "fs-session-timeout",
+      "name": "lt-session-timeout",
       "description": {
         "kind": "markdown",
-        "value": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.fs-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live."
+        "value": "Warns before a signed-in session expires, and counts down. The renderer writes the dialog and the text inside the element: a `<dialog>` with `.lt-session-timeout__count` for the number, `[role=status]` for the announcement and the buttons in a `<form method=\"dialog\">`. Dispatches `session-warn` when the dialog opens, `session-extend` when the user wants to continue, `session-logout` when the user logs out, `session-expired` when time is up, and `session-activity` at most once per `activity-interval` while the user is active, so the app can keep the server session alive."
       },
       "attributes": [
         {
           "name": "warn-at",
           "description": {
             "kind": "markdown",
-            "value": "Sekunder uten aktivitet før varselet kommer."
+            "value": "Seconds without activity before the warning appears."
           }
         },
         {
           "name": "expires-at",
           "description": {
             "kind": "markdown",
-            "value": "Sekunder uten aktivitet før økten er ute."
+            "value": "Seconds without activity before the session expires."
           }
         },
         {
           "name": "activity-interval",
           "description": {
             "kind": "markdown",
-            "value": "Sekunder mellom hver `session-activity` mens brukeren er aktiv. Standard 60."
+            "value": "Seconds between each `session-activity` while the user is active. Default 60."
           }
         }
       ],
       "references": [
         {
-          "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/session-timeout/"
+          "name": "Documentation",
+          "url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         }
       ]
     },
     {
-      "name": "fs-connection-status",
+      "name": "lt-connection-status",
       "description": {
         "kind": "markdown",
-        "value": "Sier fra når forbindelsen til serveren er borte. Appen melder fra med `reportFailure()` og `reportSuccess()`."
+        "value": "Tells the user when the connection to the server is lost. The app reports with `reportFailure()` and `reportSuccess()`."
       },
       "attributes": [
         {
           "name": "offline-text",
           "description": {
             "kind": "markdown",
-            "value": "Teksten når forbindelsen er borte."
+            "value": "The text when the connection is lost."
           }
         },
         {
           "name": "online-text",
           "description": {
             "kind": "markdown",
-            "value": "Teksten når den kommer tilbake."
+            "value": "The text when it comes back."
           }
         }
       ],
       "references": [
         {
-          "name": "Dokumentasjon",
-          "url": "https://fristil.sobernetics.no/components/connection-status/"
+          "name": "Documentation",
+          "url": "https://lo-tek.sobernetics.no/components/connection-status/"
         }
       ]
     }

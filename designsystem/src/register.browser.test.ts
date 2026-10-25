@@ -1,84 +1,80 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-
-import {
-  defineFsToast,
-  FsToast,
-} from "./components/frittstaende/toast/fs-toast"
 import { defineElement, whenUpgraded } from "./components/host-element"
+import { defineLtToast, LtToast } from "./components/standalone/toast/lt-toast"
 import * as pakke from "./index"
-import { defineFs } from "./register"
+import { defineLt } from "./register"
 
 /*
- * Tagnavnene hentes fra hovedinngangen, ikke fra `register.ts`. Da feller
- * testen en komponent som er lagt til i pakken uten å bli med i
- * registreringen, som er den feilen som ellers ville vært stille.
+ * The tag names come from the main entry point, not from `register.ts`. Then
+ * the test fails on a component added to the package without being included
+ * in the registration, which is the mistake that would otherwise be silent.
  */
 const tagger = Object.entries(pakke)
   .filter(([navn]) => navn.endsWith("_TAG"))
   .map(([, verdi]) => verdi as string)
 
-describe("defineFs()", () => {
-  it("tåler at en komponent alt er registrert under et eget navn", () => {
+describe("defineLt()", () => {
+  it("copes with a component already registered under a custom name", () => {
     /*
-     * En konstruktør kan bare stå i registeret én gang. Var klassen alt
-     * registrert under et annet navn, kastet `customElements.define`
-     * NotSupportedError, og komponentene etter den i lista ble aldri
-     * registrert.
+     * A constructor can only be in the registry once. If the class was
+     * already registered under another name, `customElements.define` threw
+     * NotSupportedError, and the components after it in the list were never
+     * registered.
      */
-    defineFsToast("app-toast")
+    defineLtToast("app-toast")
 
-    expect(() => defineFs()).not.toThrow()
+    expect(() => defineLt()).not.toThrow()
 
     for (const tag of tagger) {
       expect(customElements.get(tag), tag).toBeDefined()
     }
-    expect(document.createElement("app-toast")).toBeInstanceOf(FsToast)
-    expect(document.createElement("fs-toast")).toBeInstanceOf(FsToast)
+    expect(document.createElement("app-toast")).toBeInstanceOf(LtToast)
+    expect(document.createElement("lt-toast")).toBeInstanceOf(LtToast)
   })
 
-  it("registrerer hver web component pakken har", () => {
+  it("registers every web component in the package", () => {
     expect(tagger.length).toBeGreaterThanOrEqual(9)
 
-    defineFs()
+    defineLt()
 
     for (const tag of tagger) {
       expect(customElements.get(tag), tag).toBeDefined()
     }
   })
 
-  it("tåler å bli kalt to ganger", () => {
-    defineFs()
-    expect(() => defineFs()).not.toThrow()
+  it("copes with being called twice", () => {
+    defineLt()
+    expect(() => defineLt()).not.toThrow()
   })
 })
 
 describe("defineElement()", () => {
-  it("registrerer samme klasse under to navn", () => {
+  it("registers the same class under two names", () => {
     class Egen extends HTMLElement {}
-    defineElement("fs-egen-første", Egen)
+    defineElement("lt-egen-første", Egen)
 
-    expect(() => defineElement("fs-egen-andre", Egen)).not.toThrow()
+    expect(() => defineElement("lt-egen-andre", Egen)).not.toThrow()
 
-    expect(customElements.get("fs-egen-andre")).toBeDefined()
-    expect(document.createElement("fs-egen-andre")).toBeInstanceOf(Egen)
+    expect(customElements.get("lt-egen-andre")).toBeDefined()
+    expect(document.createElement("lt-egen-andre")).toBeInstanceOf(Egen)
   })
 
-  it("klarer seg uten customElements.getName", () => {
-    // Chrome før 117, Firefox før 116 og Safari før 17 har ikke `getName`.
+  it("works without customElements.getName", () => {
+    // Chrome before 117, Firefox before 116 and Safari before 17 lack `getName`.
     class Egen extends HTMLElement {}
-    defineElement("fs-egen-uten-getname", Egen)
+    defineElement("lt-egen-uten-getname", Egen)
     Object.defineProperty(customElements, "getName", {
       value: undefined,
       configurable: true,
     })
 
     try {
-      expect(() => defineElement("fs-egen-uten-getname-to", Egen)).not.toThrow()
+      expect(() => defineElement("lt-egen-uten-getname-to", Egen)).not.toThrow()
     } finally {
       Reflect.deleteProperty(customElements, "getName")
     }
 
-    expect(document.createElement("fs-egen-uten-getname-to")).toBeInstanceOf(
+    expect(document.createElement("lt-egen-uten-getname-to")).toBeInstanceOf(
       Egen,
     )
   })
@@ -90,10 +86,10 @@ describe("whenUpgraded()", () => {
     vi.restoreAllMocks()
   })
 
-  it("sier fra én gang om et element ingen registrerer", async () => {
+  it("warns once about an element nobody registers", async () => {
     vi.useFakeTimers()
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    const element = document.createElement("fs-aldri-registrert")
+    const element = document.createElement("lt-aldri-registrert")
 
     void whenUpgraded(element)
     void whenUpgraded(element)
@@ -103,11 +99,11 @@ describe("whenUpgraded()", () => {
     vi.advanceTimersByTime(1)
     expect(advarsel).toHaveBeenCalledTimes(1)
     expect(String(advarsel.mock.calls[0]?.[0])).toContain(
-      "<fs-aldri-registrert> er ikke registrert",
+      "<lt-aldri-registrert> is not registered",
     )
   })
 
-  it("avviser et element som ikke kan være en komponent, uten å advare", async () => {
+  it("rejects an element that cannot be a component, without warning", async () => {
     vi.useFakeTimers()
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
 
@@ -117,13 +113,13 @@ describe("whenUpgraded()", () => {
     expect(advarsel).not.toHaveBeenCalled()
   })
 
-  it("tier når registreringen kommer før fristen", async () => {
+  it("stays quiet when the registration comes before the deadline", async () => {
     vi.useFakeTimers()
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    const element = document.createElement("fs-registrert-i-tide")
+    const element = document.createElement("lt-registrert-i-tide")
 
     const løfte = whenUpgraded(element)
-    customElements.define("fs-registrert-i-tide", class extends HTMLElement {})
+    customElements.define("lt-registrert-i-tide", class extends HTMLElement {})
     await løfte
     vi.advanceTimersByTime(3000)
 

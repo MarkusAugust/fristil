@@ -1,0 +1,15 @@
+{{/* Go html/template. Skrivefeilen med vilje er lt-fiedl. */}}
+{{define "skjema"}}
+<form action="/soknad" method="post" novalidate>
+  <lt-field {{if .Feil.Epost}}invalid{{end}}>
+    <label class="lt-label" data-required="text">E-postadresse</label>
+    <input class="lt-input" type="email" name="epost" value="{{.Epost}}">
+    <p class="lt-error-text">{{.Feil.Epost}}</p>
+  </lt-field>
+  {{range .Valg}}
+    <label class="lt-checkbox"><input type="checkbox" name="valg" value="{{.Verdi}}" {{if .Valgt}}checked{{end}}> {{.Navn}}</label>
+  {{end}}
+  <button class="lt-button" data-variant="{{.Variant}}" type="submit">Send</button>
+  <div class="lt-fiedl">Ekstra</div>
+</form>
+{{end}}

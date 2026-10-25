@@ -1,12 +1,12 @@
 import { attributes } from "../shared.js"
 
-export const LINK_CLASS = "fs-link" as const
+export const LINK_CLASS = "lt-link" as const
 
 export type LinkOptions = {
   /**
-   * Lenken er ikke klikkbar ennå. Gir `aria-disabled`, `role="link"` og
-   * `tabindex="0"`, så skjermlesere fortsatt finner den som en lenke og kan
-   * si fra. `href` må tas bort ved siden av: ellers følger Enter den.
+   * The link cannot be clicked yet. Gives `aria-disabled`, `role="link"` and
+   * `tabindex="0"`, so screen readers still find it as a link and can say
+   * so. Remove `href` as well: otherwise Enter follows it.
    */
   disabled?: boolean
 }
@@ -19,16 +19,15 @@ export type LinkAttributes = {
 }
 
 /**
- * Attributtene for en lenke.
+ * The attributes for a link.
  *
  * ```ts
- * <a {...link()} href="/kvittering">Se kvittering</a>
- * <a {...link({ disabled: true })}>Se årsoppgave</a>
+ * <a {...link()} href="/receipt">See receipt</a>
+ * <a {...link({ disabled: true })}>See annual statement</a>
  * ```
  *
- * En `<a>` uten `href` er ingen lenke for skjermleseren og står ikke i
- * tabrekkefølgen. `role` og `tabindex` gir den begge tilbake mens den er
- * deaktivert.
+ * An `<a>` without `href` is no link to a screen reader and is not in the
+ * tab order. `role` and `tabindex` give it both back while it is disabled.
  */
 export const link = ({ disabled = false }: LinkOptions = {}): LinkAttributes =>
   attributes({

@@ -1,36 +1,37 @@
 import { attributes } from "../shared.js"
 
-export const TOOLTIP_CLASS = "fs-tooltip" as const
-/** Selve boblen med teksten. */
-export const TOOLTIP_BUBBLE_CLASS = "fs-tooltip__bubble" as const
+export const TOOLTIP_CLASS = "lt-tooltip" as const
+/** The bubble with the text. */
+export const TOOLTIP_BUBBLE_CLASS = "lt-tooltip__bubble" as const
 
 export type TooltipAttributes = {
   class: typeof TOOLTIP_CLASS
 }
 
 /**
- * Attributtene for omslaget rundt en utløser og en hjelpeboble.
+ * The attributes for the wrapper around a trigger and a tooltip bubble.
  *
- * Boblen vises på hover og på fokus. Fokusdelen er ikke valgfri: en boble som
- * bare kommer med musa finnes ikke for den som bruker tastatur.
+ * The bubble shows on hover and on focus. The focus part is not optional: a
+ * bubble that only comes with the mouse does not exist for keyboard users.
  *
- * Teksten i boblen må kobles til utløseren med `aria-describedby`. Uten den
- * er boblen bare noe som dukker opp på skjermen, og leses aldri opp.
+ * The text in the bubble must be connected to the trigger with
+ * `aria-describedby`. Without it the bubble is just something that appears
+ * on screen, and is never announced.
  *
- * Bruk den til et tillegg, aldri til noe brukeren må ha. På en berøringsskjerm
- * finnes hverken hover eller fokus før noe trykkes.
+ * Use it for something extra, never for something the user must have. On a
+ * touch screen there is neither hover nor focus before something is tapped.
  *
  * ```ts
  * <span {...tooltip()}>
- *   <button aria-describedby="hint">Arkiver</button>
- *   <span class={tooltip.bubble} role="tooltip" id="hint">Flyttes til arkivet</span>
+ *   <button aria-describedby="hint">Archive</button>
+ *   <span class={tooltip.bubble} role="tooltip" id="hint">Moves it to the archive</span>
  * </span>
  * ```
  */
 export const tooltip = Object.assign(
   (): TooltipAttributes => attributes({ class: TOOLTIP_CLASS }),
   {
-    /** Klassen på boblen med teksten. */
+    /** The class on the bubble with the text. */
     bubble: TOOLTIP_BUBBLE_CLASS,
   },
 )

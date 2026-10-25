@@ -1,0 +1,16 @@
+/* Generert av @lo-tek/interfaces. Rediger oppskriften, ikke denne fila. */
+
+@layer lotek, lotek-theme;
+
+@layer lotek-theme {
+  :root {
+    --lt-font-family-base: Helvetica, Arial, sans-serif;
+    --lt-button-radius: 2.75rem;
+    --lt-pagination-radius: 2.75rem;
+    --lt-skip-link-radius: 2.75rem;
+  }
+
+  :root {
+    font-family: var(--lt-font-family-base);
+  }
+}

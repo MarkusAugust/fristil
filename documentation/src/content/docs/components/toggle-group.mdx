@@ -1,104 +1,104 @@
 ---
 title: Toggle Group
-description: Gruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.
+description: A group where one option is selected at a time. A CSS component with two classes and no JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
-Gruppen er radioknapper i forkledning. Hvert alternativ er en `<label>` med en `<input type="radio">` inni, krympet bort visuelt. Da beholder du piltastene, `FormData` og at skjermleseren sier «2 av 3», uten at noe av det må skrives på nytt.
+The group is radio buttons in disguise. Each option is a `<label>` with an `<input type="radio">` inside, shrunk away visually. You keep the arrow keys, `FormData` and the screen reader saying "2 of 3", without having to rewrite any of it.
 
-## Slik tar du den i bruk
+## How to use it
 
-<Eksempel importer={["tokens.css", "toggle-group.css", "sr-only.css"]}
-  stiler={["toggle-group", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
-<fieldset class="fs-toggle-group">
-  <legend class="fs-sr-only">Visning</legend>
+<Example imports={["tokens.css", "toggle-group.css", "sr-only.css"]}
+  styles={["toggle-group", "sr-only"]} layout="stack" maxWidth="30rem" code={`
+<fieldset class="lt-toggle-group">
+  <legend class="lt-sr-only">View</legend>
 
-  <label class="fs-toggle-group__option">
-    <input type="radio" name="visning" value="liste" checked /> Liste
+  <label class="lt-toggle-group__option">
+    <input type="radio" name="view" value="list" checked /> List
   </label>
-  <label class="fs-toggle-group__option">
-    <input type="radio" name="visning" value="kart" /> Kart
+  <label class="lt-toggle-group__option">
+    <input type="radio" name="view" value="map" /> Map
   </label>
-  <label class="fs-toggle-group__option">
-    <input type="radio" name="visning" value="kalender" /> Kalender
+  <label class="lt-toggle-group__option">
+    <input type="radio" name="view" value="calendar" /> Calendar
   </label>
 </fieldset>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<fieldset {...fs.toggleGroup()}>
-  <legend {...fs.srOnly()}>Visning</legend>
-  <label className={fs.toggleGroup.option}>
-    <input type="radio" name="visning" value="liste" defaultChecked />
-    Liste
+<fieldset {...lt.toggleGroup()}>
+  <legend {...lt.srOnly()}>View</legend>
+  <label className={lt.toggleGroup.option}>
+    <input type="radio" name="view" value="list" defaultChecked />
+    List
   </label>
 </fieldset>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-const gruppe = document.querySelector<HTMLFieldSetElement>("#visning")
-if (!gruppe) throw new Error("fant ikke elementet")
+const group = document.querySelector<HTMLFieldSetElement>("#view")
+if (!group) throw new Error("element not found")
 
-fs.setAttributes(gruppe, fs.toggleGroup())
+lt.setAttributes(group, lt.toggleGroup())
 ```
 
-`fs.toggleGroup.option` gir klassen på hvert alternativ. Selve valget leser du som vanlig:
+`lt.toggleGroup.option` gives the class for each option. You read the choice itself as usual:
 
 ```ts
-gruppe.addEventListener("change", (hendelse) => {
-  const valgt = (hendelse.target as HTMLInputElement).value
+group.addEventListener("change", (event) => {
+  const selected = (event.target as HTMLInputElement).value
 })
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
-`<legend>` er påkrevd selv når den er skjult. Uten den vet ikke den som hører siden hva de tre alternativene velger mellom.
+`<legend>` is required even when it is hidden. Without it, someone listening to the page does not know what the three options choose between.
 
-## Når det ikke er denne du skal ha
+## When this is not the one you want
 
-| Situasjon | Komponent |
+| Situation | Component |
 | --- | --- |
-| Ett valg blant tre til fem korte alternativer | **Toggle Group** |
-| Ett valg blant mange, eller lange alternativer | [Radio](../radio/) i en [Fieldset](../fieldset/) |
-| Flere valg samtidig | [Checkbox](../checkbox/) |
-| Av og på for én innstilling | [Switch](../switch/) |
-| Handlinger, som «fet, kursiv, understreket» | Knapper med `aria-pressed` |
+| One choice among three to five short options | **Toggle Group** |
+| One choice among many, or long options | [Radio](../radio/) in a [Fieldset](../fieldset/) |
+| Several choices at once | [Checkbox](../checkbox/) |
+| On and off for one setting | [Switch](../switch/) |
+| Actions, such as "bold, italic, underline" | Buttons with `aria-pressed` |
 
-## Klasser du kan style
+## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.fs-toggle-group` | Gruppen |
-| `.fs-toggle-group__option` | Ledeteksten rundt hvert alternativ |
+| `.lt-toggle-group` | The group |
+| `.lt-toggle-group__option` | The label around each option |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
-| `--fs-toggle-group-radius` | `var(--fs-spacing-1)` |
-| `--fs-toggle-group-height` | `var(--fs-spacing-10)` |
-| `--fs-toggle-group-padding` | `0 var(--fs-spacing-4)` |
+| `--lt-toggle-group-radius` | `var(--lt-spacing-1)` |
+| `--lt-toggle-group-height` | `var(--lt-spacing-10)` |
+| `--lt-toggle-group-padding` | `0 var(--lt-spacing-4)` |
 
-Den valgte flaten settes med `:has(input:checked)`, altså fra tilstanden på den ekte radioknappen. Det er ingen egen klasse å holde i synk.
+The selected surface is set with `:has(input:checked)`, that is from the state of the real radio button. There is no separate class to keep in sync.
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
-## Tilgjengelighet
+## Accessibility
 
-- Radioknappen er krympet bort, ikke fjernet. `display: none` ville tatt den ut av tastaturrekkefølgen, og da virker ikke piltastene.
-- Piltastene flytter mellom alternativene og velger samtidig. Tab hopper ut av hele gruppen. Slik virker radioknapper, og det skal ikke overstyres.
-- Alternativene må være korte. Blir teksten lang, er det egentlig en liste med radioknapper.
-- Ikke la et valg utløse noe som ikke kan angres. Brukeren treffer alle alternativene på veien når hen blar med piltastene.
+- The radio button is shrunk away, not removed. `display: none` would take it out of the keyboard order, and the arrow keys would then stop working.
+- The arrow keys move between the options and select at the same time. Tab leaves the whole group. That is how radio buttons work, and it should not be overridden.
+- The options have to be short. If the text gets long, it is really a list of radio buttons.
+- Do not let a choice trigger something that cannot be undone. The user lands on every option on the way when moving with the arrow keys.

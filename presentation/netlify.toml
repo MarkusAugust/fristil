@@ -1,0 +1,12 @@
+# The presentation at designsystemarkitektur.sobernetics.no, the domain of
+# the Netlify project designsystemarkitetktur.
+#
+# It is a separate Netlify project, with this folder as its base directory, and
+# it builds from master on every push, like the documentation. Nothing is
+# compiled: the deck is one HTML file, and the build copies it to index.html so
+# the address is the root, as it was when the file was uploaded by hand. The
+# copy is made during the build and is not tracked in git.
+[build]
+  base = "presentation"
+  publish = "."
+  command = "cp design-system-architecture.html index.html"

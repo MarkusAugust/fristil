@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design system architecture</title>
+<style>
+/*
+ * The presentation on design system architecture.
+ *
+ * One file, no dependencies, no build step. The font is the same stack
+ * another Norwegian design system specifies for screen, not a web font from
+ * another domain: a presentation must not be able to fail because of the
+ * network in a meeting room.
+ *
+ * The colours are LO-TEK's own tokens, copied with the same values. That is
+ * not decoration. The presentation is about the design system, so it should
+ * look like it.
+ */
+
+:root {
+  /* The palette, verbatim from designsystem/src/tokens/tokens.ts */
+  --graphite-0: #ffffff;
+  --graphite-5: #f4f4f4;
+  --graphite-10: #e5e5e5;
+  --graphite-30: #b2b2b2;
+  --graphite-50: #757575;
+  --graphite-70: #4d4d4d;
+  --graphite-100: #1a1a1a;
+  --azure-10: #cde1f9;
+  --azure-30: #9ccff2;
+  --azure-70: #1362ae;
+  --azure-100: #093e61;
+  --denim-10: #e2eaf7;
+  --denim-30: #b5cbee;
+  --denim-70: #5a77a8;
+  --denim-100: #2c436b;
+  --forest-10: #e3f5ea;
+  --forest-30: #b9e1c8;
+  --forest-100: #2b6940;
+  --ochre-10: #f9ede2;
+  --ochre-30: #f0d2b6;
+  --ochre-100: #6b492c;
+  --burgundy-10: #f7e2e8;
+  --burgundy-30: #f3a7b0;
+  --burgundy-100: #6f2c3f;
+
+  --flate: #10161f;
+  --flate-kort: #171f2b;
+  --tekst: #f2f5f9;
+  --tekst-dempet: #a7b4c6;
+  --kant: rgba(205, 225, 249, 0.16);
+  --sans: Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  /* The surface is dark, and the browser should know. It belongs on the root
+     element and not on `body`: the canvas and the window's scrollbar follow
+     the root, and on a narrow screen the scrollbar is exactly what you see. */
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--flate);
+  color: var(--tekst);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * The background: two slow patches of light in the brand colours.
+ *
+ * They sit behind everything and do not catch the mouse. The movement is long
+ * on purpose, and stops completely for anyone who has asked for reduced
+ * motion.
+ */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: -30%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+body::before {
+  background: radial-gradient(38% 42% at 50% 50%, rgba(19, 98, 174, 0.34), rgba(19, 98, 174, 0) 70%);
+  animation: lys-en 40s ease-in-out infinite;
+}
+
+body::after {
+  background: radial-gradient(34% 38% at 50% 50%, rgba(44, 67, 107, 0.4), rgba(44, 67, 107, 0) 70%);
+  animation: lys-to 52s ease-in-out infinite;
+}
+
+@keyframes lys-en {
+  0%, 100% { transform: translate3d(-16%, -10%, 0) scale(1); }
+  50% { transform: translate3d(14%, 12%, 0) scale(1.16); }
+}
+
+@keyframes lys-to {
+  0%, 100% { transform: translate3d(18%, 14%, 0) scale(1.08); }
+  50% { transform: translate3d(-12%, -12%, 0) scale(0.94); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none; }
+}
+
+/* ---------- The stage ---------- */
+
+.dekk {
+  position: relative;
+  z-index: 1;
+  min-block-size: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 3vh, 2.5rem);
+}
+
+.lysbilde {
+  display: none;
+  inline-size: min(72rem, 100%);
+  max-block-size: calc(100dvh - 4rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: clamp(1.75rem, 3.4vw, 3.2rem);
+  background: linear-gradient(180deg, rgba(23, 31, 43, 0.96), rgba(16, 22, 31, 0.96));
+  border: 1px solid var(--kant);
+  border-radius: 1.25rem;
+  box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.9);
+}
+
+.lysbilde[data-vist] { display: block; }
+
+h1 {
+  font-size: clamp(2.4rem, 4.6vw, 3.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin-block-end: 1.2rem;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 2.5vw, 2.1rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-block-end: 1rem;
+  color: var(--azure-30);
+}
+
+h3 {
+  font-size: 1.02rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tekst-dempet);
+  margin-block-end: 0.5rem;
+}
+
+p { margin-block-end: 0.9rem; font-size: clamp(1rem, 1.25vw, 1.12rem); }
+p:last-child { margin-block-end: 0; }
+
+ul, ol { margin: 0 0 1rem 1.2rem; font-size: clamp(1rem, 1.2vw, 1.08rem); }
+li { margin-block-end: 0.55rem; }
+li:last-child { margin-block-end: 0; }
+
+strong { color: var(--graphite-0); }
+a { color: var(--azure-30); }
+
+.ingress {
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+  color: var(--tekst);
+  margin-block-end: 1.4rem;
+}
+
+.dempet { color: var(--tekst-dempet); }
+
+/* ---------- Marks ---------- */
+
+/*
+ * The chapter title slides.
+ *
+ * The icons are drawn in the presentation's own palette, as a glass surface
+ * with a light edge and a highlight on top. The motifs are close to the
+ * platform rather than desktop metaphors: a browser window, a component that
+ * wraps around markup, one source with two entry points, a DOM tree, braces
+ * with a tick, stacked layers, a package with a way out, and a warning
+ * triangle for the pitfalls.
+ */
+.lysbilde.kapittel[data-vist] {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-block-size: min(30rem, 68vh);
+}
+/* Without this, flex stretches the pill to full width. */
+.lysbilde.kapittel .merke { align-self: flex-start; }
+.kapittel-topp {
+  display: flex;
+  align-items: center;
+  gap: 1.35rem;
+  margin-block-end: 1.35rem;
+  margin-block-start: 1.6rem;
+}
+.kapittel-topp h2 { margin: 0; }
+.kapittelikon { flex: none; }
+@media (max-width: 860px) {
+  .lysbilde.kapittel[data-vist] { display: block; min-block-size: 0; }
+  .kapittel-topp { gap: 0.9rem; margin-block-start: 1rem; }
+  .kapittelikon { width: 56px; height: 56px; }
+}
+
+/* Where the slide belongs, above the heading. */
+.kapittelmerke {
+  margin: 0 0 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--azure-30);
+  opacity: 0.72;
+}
+/* The slides in the chapter, on its title slide. */
+.kapittelliste {
+  margin: 1.1rem 0 0;
+  padding-inline-start: 1.3rem;
+  color: var(--tekst-dempet);
+}
+.kapittelliste li { margin-block-end: 0.3rem; }
+/* The overview of the requirements and the pitfalls. */
+.beslutninger {
+  list-style: none;
+  margin: 1.4rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+  /* Eight rows did not fit the height at 1280×800. Two columns read
+     downwards, so the requirements stay in order and the pitfalls come last. */
+  grid-template-rows: repeat(4, auto);
+  grid-auto-flow: column;
+  column-gap: 2rem;
+}
+.beslutninger li { display: flex; align-items: center; gap: 1rem; }
+.beslutninger .kapittelikon { width: 46px; height: 46px; flex: none; }
+.beslutninger strong { display: block; }
+.beslutninger span { color: var(--tekst-dempet); font-size: 0.88rem; }
+@media (max-width: 860px) {
+  .beslutninger { grid-template-rows: none; grid-auto-flow: row; }
+  .beslutninger .kapittelikon { width: 40px; height: 40px; }
+}
+
+/* The title on the first slide. It has no logo: the presentation is about
+   the architecture, and LO-TEK is the example, not the sender. */
+.tittel-topp h1 {
+  margin: 0 0 1.2rem;
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+  line-height: 1.14;
+  /* A hard line break forced two lines even when one would fit. Now it
+     only wraps when it has to, and then evenly. */
+  text-wrap: balance;
+}
+
+.merke {
+  display: inline-block;
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-block-end: 0.6rem;
+}
+
+.merke-blaa { background: var(--azure-10); color: var(--azure-100); }
+/*
+ * The mark on the title slide is too long for one line on a phone, and broken
+ * over two lines the pill became a big blue box. On a narrow screen it is a
+ * plain line of text, like the chapter mark. The text is left untouched,
+ * because check-version.ts reads the version and the date from it.
+ */
+@media (max-width: 860px) {
+  .forside-merke {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    color: var(--azure-30);
+  }
+}
+.merke-gronn { background: var(--forest-10); color: var(--forest-100); }
+.merke-gul { background: var(--ochre-10); color: var(--ochre-100); }
+.merke-roed { background: var(--burgundy-10); color: var(--burgundy-100); }
+
+/* ---------- Code ---------- */
+
+/*
+ * Code panels appear where the code is the point, and nowhere else. A panel
+ * that only shows that code exists says nothing, and takes the place of the
+ * sentence that explains why.
+ */
+pre {
+  font-family: var(--mono);
+  font-size: clamp(0.78rem, 0.95vw, 0.92rem);
+  line-height: 1.55;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  max-inline-size: 100%;
+  background: rgba(9, 62, 97, 0.34);
+  border: 1px solid var(--kant);
+  border-radius: 0.6rem;
+  color: var(--azure-10);
+  white-space: pre;
+  tab-size: 2;
+}
+
+pre b { color: var(--graphite-0); font-weight: 700; }
+pre i { color: var(--tekst-dempet); font-style: normal; }
+code { font-family: var(--mono); font-size: 0.92em; color: var(--azure-30); }
+
+.kodetittel {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--tekst-dempet);
+  margin-block-end: 0.35rem;
+}
+
+/* ---------- Layout ---------- */
+
+/*
+ * `min-inline-size: 0` on the children is not decoration.
+ *
+ * A grid item has `auto` as its minimum size, that is the width of its
+ * content, and a line of code that cannot wrap then makes the whole item
+ * wider than the screen. The code block could scroll on its own, but the page
+ * could still be dragged sideways. Without it, a grid item becomes as wide as
+ * the longest line of code, and the page can be dragged sideways on a phone.
+ */
+.rader { display: grid; gap: 1.1rem; }
+.rader > * { min-inline-size: 0; }
+.to { grid-template-columns: 1fr 1fr; }
+.tre { grid-template-columns: repeat(3, 1fr); }
+.to-skjev { grid-template-columns: 1.15fr 1fr; }
+/* Two columns with a title above each panel, where the panels should be
+   equally tall: the title takes its space, and the panel below fills the
+   rest. */
+.like-hoyde > div { display: flex; flex-direction: column; }
+.like-hoyde > div > :last-child { flex: 1; }
+
+.boks {
+  padding: 1rem 1.1rem;
+  background: rgba(205, 225, 249, 0.05);
+  border: 1px solid var(--kant);
+  border-radius: 0.8rem;
+}
+
+.boks h3 { margin-block-end: 0.4rem; }
+.boks p:last-child, .boks ul:last-child { margin-block-end: 0; }
+
+table { inline-size: 100%; border-collapse: collapse; font-size: clamp(0.92rem, 1.1vw, 1.02rem); }
+th, td { text-align: start; padding: 0.55rem 0.7rem; border-block-end: 1px solid var(--kant); vertical-align: top; }
+th { color: var(--tekst-dempet); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+tr:last-child td { border-block-end: none; }
+
+.tall {
+  font-size: clamp(1.9rem, 3.4vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--azure-30);
+  display: block;
+  margin-block-end: 0.3rem;
+}
+
+/*
+ * The line at the bottom: what the point means for the teams, and what it
+ * costs whoever maintains the system. It is on every slide that takes a
+ * position.
+ */
+.perspektiv {
+  margin-block-start: 1.4rem;
+  padding-block-start: 1.1rem;
+  border-block-start: 1px solid var(--kant);
+  display: grid;
+  gap: 0.7rem 1.4rem;
+  font-size: clamp(0.92rem, 1.1vw, 1rem);
+}
+
+/*
+ * Two columns, not a label in front of the text.
+ *
+ * With `display: inline-block` and a minimum width, the second line of the
+ * text wrapped back under the label, and the paragraph lost its left edge. A
+ * grid keeps the two apart however long the text is.
+ */
+.perspektiv p {
+  display: grid;
+  grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+  gap: 0.2rem 1.4rem;
+  margin: 0;
+}
+
+.rolle {
+  font-weight: 700;
+  color: var(--azure-30);
+}
+
+.rolle-forvalter { color: var(--ochre-30); }
+
+/*
+ * What is LO-TEK's solution, kept apart from the requirement.
+ *
+ * The presentation is about the architecture, and LO-TEK is the example. A
+ * third row in the line at the bottom says how LO-TEK solved the requirement,
+ * and a green mark stands in front of the title of code that is LO-TEK's own
+ * API. The audience can then always see what applies to everyone, and what is
+ * one way of doing it.
+ */
+.rolle-lotek { color: var(--forest-30); }
+.lotek-mark {
+  display: inline-block;
+  margin-inline-end: 0.5rem;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  background: var(--forest-10);
+  color: var(--forest-100);
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 860px) {
+  .perspektiv p { grid-template-columns: 1fr; }
+}
+
+/* ---------- Controls ---------- */
+
+.styring {
+  position: fixed;
+  inset-block-end: 1rem;
+  inset-inline-end: 1rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.dekk:hover ~ .styring,
+.styring:hover,
+.styring:focus-within { opacity: 1; }
+
+.styring button {
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.9rem;
+  color: var(--tekst);
+  background: rgba(23, 31, 43, 0.92);
+  border: 1px solid var(--kant);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.styring button:hover { background: var(--azure-70); border-color: var(--azure-70); }
+.styring button:focus-visible { outline: 2px solid var(--azure-30); outline-offset: 2px; }
+
+.teller {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--tekst-dempet);
+  padding-inline: 0.4rem;
+}
+
+/* ---------- Small screen ---------- */
+
+/*
+ * The card disappears below 860 pixels.
+ *
+ * V7 scaled the whole stage down and set it upright at 560 pixels, which was
+ * still a card in the middle of the screen with a frame around it. On a phone
+ * that is wrong: the frame takes the space the text needs, and the scaling
+ * makes the type smaller than it should be. Here the card goes away instead,
+ * and the slide becomes plain text straight on the background, with full font
+ * size and a readable line length.
+ */
+@media (max-width: 860px) {
+  /* A plain block and not a grid: a grid column with `auto` becomes as wide
+     as its content, and the slide was 512 pixels wide on a 375 screen. */
+  .dekk { display: block; padding: 0; }
+
+  .lysbilde {
+    inline-size: 100%;
+    max-block-size: none;
+    overflow: visible;
+    padding: 1.5rem 1.15rem 6.5rem;
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  h1 { font-size: 2.1rem; }
+  h2 { font-size: 1.45rem; }
+  p, li { font-size: 1.02rem; }
+  pre { font-size: 0.8rem; }
+
+  .to, .tre, .to-skjev { grid-template-columns: 1fr; }
+
+  .boks { padding: 0.9rem; }
+
+  .rolle { display: block; min-inline-size: 0; margin-block-end: 0.1rem; }
+
+  /* Without a keyboard, the buttons must be there all the time. */
+  .styring {
+    opacity: 1;
+    inset-inline: 0;
+    inset-block-end: 0;
+    justify-content: center;
+    padding: 0.7rem;
+    background: rgba(16, 22, 31, 0.96);
+    border-block-start: 1px solid var(--kant);
+  }
+
+  .styring button { flex: 1; max-inline-size: 9rem; }
+
+  /* A table scrolls on its own rather than pushing the page wide. */
+  .tabellrull { overflow-x: auto; }
+}
+
+@media (max-width: 420px) {
+  h1 { font-size: 1.8rem; }
+  .tall { font-size: 1.7rem; }
+}
+</style>
+</head>
+<body>
+<div class="dekk" id="dekk">
+
+<!-- 1 -->
+<section class="lysbilde">
+  <span class="merke merke-blaa forside-merke">Design system architecture · LO-TEK 0.36.0 · 25 October 2026</span>
+  <div class="tittel-topp">
+    <h1>Architecture for a design system without a framework</h1>
+  </div>
+  <p class="ingress">A text field with a label, help text and an error message is HTML and ARIA. In a design system built for one framework, it is still tied to a framework you cannot replace, and has to be rewritten every time the framework changes direction.</p>
+  <p>These are five requirements a design system must meet to avoid that, and two it should meet. For each of them: what it involves and what it costs. None of them is free, and the price is at the bottom of the slides.</p>
+  <p>Everything rests on this one sentence:</p>
+  <div class="boks">
+    <p style="font-size: clamp(1.05rem, 1.5vw, 1.25rem); margin: 0;"><strong>Markup comes from whoever renders it. The web component adds the behaviour.</strong></p>
+  </div>
+  <p class="dempet" style="margin-block-start: 1rem;">The example throughout is LO-TEK, a design system built to these requirements and published at <a href="https://lo-tek.sobernetics.no/" target="_blank" rel="noreferrer">lo-tek.sobernetics.no</a> and on npm as <code>@lo-tek/interfaces</code>.</p>
+</section>
+
+<!-- 2 -->
+<section class="lysbilde">
+  <h2>In short</h2>
+  <p>Frameworks come and go. A design system tied to one of them has to be rewritten every time the framework changes direction. If it is to remain when the apps around it are replaced, it has to build on what the browser already understands.</p>
+  <ol>
+    <li><strong>The browser must be the platform.</strong> The components are CSS classes and web components, and work the same in React, in Astro, in plain HTML and with a server written in Kotlin.</li>
+    <li><strong>Markup must come from whoever renders it.</strong> Whoever renders, with CSR or SSR, creates the elements and the classes. The web component never adds nodes, and everything it writes, it works out from the markup and from what the user does.</li>
+    <li><strong>Accessibility must be written in one place.</strong> The same function works out the wiring, whether it is called where the markup is rendered or by the web component in the browser.</li>
+    <li><strong>The web component must read state from the DOM.</strong> It keeps no copy of the state, and puts back what a re-render tears away.</li>
+    <li><strong>The types should work without a framework.</strong> The builder functions are plain TypeScript functions, so the editor knows the options in every environment.</li>
+    <li><strong>The consumer's CSS must win.</strong> An ordinary rule written by the team must beat the system's, without <code>!important</code>.</li>
+    <li><strong>The team should be able to take over the code.</strong> A single component can be copied into the project the day the system falls short.</li>
+  </ol>
+  <p class="dempet">At the bottom of the slides there are up to three lines: what the requirement means for the teams that use the system, what it costs those who maintain it, and how LO-TEK solved it.</p>
+</section>
+
+<!-- 3 -->
+<section class="lysbilde">
+  <h2>Five requirements and two recommendations</h2>
+  <p>The rest of the presentation takes one point at a time. The first makes the others possible, and the last means you can leave the system whenever you want. At the end come the pitfalls, and then LO-TEK in use: a form field and a game that show the architecture works.</p>
+  <ol class="beslutninger" role="list">
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="foplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="goplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#foplattform)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#goplattform)"/>
+      <rect x="14" y="17" width="44" height="38" rx="5" fill="none" stroke="#9ccff2" stroke-width="2.4"/>
+      <path d="M14 27 H58" stroke="#9ccff2" stroke-width="2.4"/>
+      <circle cx="20.5" cy="22" r="1.9" fill="#cde1f9"/>
+      <circle cx="27" cy="22" r="1.9" fill="#b5cbee" opacity="0.75"/>
+      <circle cx="33.5" cy="22" r="1.9" fill="#b5cbee" opacity="0.5"/>
+      <path d="M21 36 H41 M21 43 H51 M21 50 H35" stroke="#cde1f9" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/></svg><div><strong>The browser must be the platform</strong><span>5 slides</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="foeierskap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="goeierskap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#foeierskap)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#goeierskap)"/>
+      <rect x="11" y="13" width="50" height="46" rx="8" fill="none" stroke="#b5cbee"
+            stroke-width="2.2" stroke-dasharray="7 5" opacity="0.75"/>
+      <rect x="23" y="24" width="26" height="24" rx="3.5" fill="#1362ae" stroke="#cde1f9" stroke-width="2.2"/>
+      <path d="M29 32 H43 M29 39 H38" stroke="#cde1f9" stroke-width="2.2" stroke-linecap="round"/></svg><div><strong>Markup must come from whoever renders it</strong><span>6 slides</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fokontrakt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gokontrakt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fokontrakt)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gokontrakt)"/>
+      <rect x="26" y="45" width="20" height="14" rx="4" fill="#1362ae" stroke="#9ccff2" stroke-width="2.2"/>
+      <path d="M20 17 v10 a6 6 0 0 0 6 6 h4 a6 6 0 0 1 6 6 v6" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M52 17 v10 a6 6 0 0 1 -6 6 h-4 a6 6 0 0 0 -6 6 v6" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="20" cy="15" r="3.4" fill="#cde1f9"/>
+      <circle cx="52" cy="15" r="3.4" fill="#cde1f9"/></svg><div><strong>Accessibility must be written in one place</strong><span>1 slide</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fofasit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gofasit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fofasit)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gofasit)"/>
+      <rect x="28" y="13" width="16" height="12" rx="3.5" fill="#1362ae" stroke="#cde1f9" stroke-width="2.2"/>
+      <path d="M36 25 v8 M22 41 v-4 a4 4 0 0 1 4-4 h20 a4 4 0 0 1 4 4 v4" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <rect x="14" y="43" width="16" height="12" rx="3.5" fill="none" stroke="#9ccff2" stroke-width="2.2"/>
+      <rect x="42" y="43" width="16" height="12" rx="3.5" fill="none" stroke="#9ccff2" stroke-width="2.2"/></svg><div><strong>The web component must read state from the DOM</strong><span>3 slides</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fotyper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gotyper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fotyper)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gotyper)"/>
+      <path d="M24 17 a8 8 0 0 0 -8 8 v6 a5 5 0 0 1 -5 5 a5 5 0 0 1 5 5 v6 a8 8 0 0 0 8 8"
+            fill="none" stroke="#9ccff2" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M48 17 a8 8 0 0 1 8 8 v6 a5 5 0 0 0 5 5 a5 5 0 0 0 -5 5 v6 a8 8 0 0 1 -8 8"
+            fill="none" stroke="#9ccff2" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M28 36.5 L34 42.5 L45 29.5" fill="none" stroke="#cde1f9" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><strong>The types should work without a framework</strong><span>2 slides</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="folag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="golag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#folag)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#golag)"/>
+      <path d="M36 40 L14 50 L36 60 L58 50 Z" fill="none" stroke="#b5cbee" stroke-width="2.2" opacity="0.5" stroke-linejoin="round"/>
+      <path d="M36 28 L14 38 L36 48 L58 38 Z" fill="none" stroke="#b5cbee" stroke-width="2.2" opacity="0.75" stroke-linejoin="round"/>
+      <path d="M36 16 L14 26 L36 36 L58 26 Z" fill="#1362ae" stroke="#cde1f9" stroke-width="2.4" stroke-linejoin="round"/></svg><div><strong>The consumer's CSS must win</strong><span>1 slide</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fooverta" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gooverta" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fooverta)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gooverta)"/>
+      <path d="M16 32 v20 a4 4 0 0 0 4 4 h32 a4 4 0 0 0 4 -4 v-20" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M12 24 h48 v8 h-48 Z" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M36 46 V14" stroke="#cde1f9" stroke-width="3" stroke-linecap="round"/>
+      <path d="M28 21 L36 13 L44 21" fill="none" stroke="#cde1f9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><div><strong>The team should be able to take over the code</strong><span>1 slide</span></div></li>
+    <li><svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fofeller" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gofeller" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fofeller)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gofeller)"/>
+      <path d="M36 15 L59 55 H13 Z" fill="#1362ae" stroke="#cde1f9" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M36 29 V42" stroke="#cde1f9" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="36" cy="48.5" r="2.1" fill="#cde1f9"/></svg><div><strong>The pitfalls</strong><span>3 slides</span></div></li>
+  </ol>
+</section>
+
+<!-- 4 -->
+<section class="lysbilde kapittel">
+  <span class="merke merke-blaa">Requirement 1 of 7</span>
+  <div class="kapittel-topp">
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gplattform" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fplattform)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gplattform)"/>
+      <rect x="14" y="17" width="44" height="38" rx="5" fill="none" stroke="#9ccff2" stroke-width="2.4"/>
+      <path d="M14 27 H58" stroke="#9ccff2" stroke-width="2.4"/>
+      <circle cx="20.5" cy="22" r="1.9" fill="#cde1f9"/>
+      <circle cx="27" cy="22" r="1.9" fill="#b5cbee" opacity="0.75"/>
+      <circle cx="33.5" cy="22" r="1.9" fill="#b5cbee" opacity="0.5"/>
+      <path d="M21 36 H41 M21 43 H51 M21 50 H35" stroke="#cde1f9" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/></svg>
+    <h2>The browser must be the platform</h2>
+  </div>
+  <p class="ingress">The system builds only on what the browser can already do. No runtime for appearance, no dependencies, and nothing that has to be rewritten when the apps around it change framework.</p>
+  <ol class="kapittelliste">
+      <li>Why platform first, and not React first</li>
+      <li>What the browser does by itself</li>
+      <li>The price of building on the browser itself</li>
+      <li>What it costs your app</li>
+      <li>What one button puts in <code>node_modules</code></li>
+  </ol>
+</section>
+
+<!-- 5 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 1 of 7 · The browser must be the platform</p>
+  <h2>Why platform first, and not React first</h2>
+  <p>The reason not to build on React is not that something else is better today. The reason is that the apps around the system are going to be replaced, and the system is meant to remain.</p>
+  <ul>
+    <li><strong>Lifetimes differ.</strong> React has gone from classes via hooks to server components in ten years, and each shift hit everyone who built on it. A CSS class from ten years ago still works unchanged, and so does a web component written to Custom Elements v1.</li>
+    <li><strong>It only goes one way.</strong> From components built on the platform, anyone can make a React package later. From a React library, nobody can make an HTML version.</li>
+    <li><strong>The portfolio spans many frameworks at once.</strong> New apps in React, ten-year-old apps in something else, and publishing systems that only send HTML. A design system tied to one framework reaches only the part that uses it.</li>
+    <li><strong>Appearance needs no runtime.</strong> A button, a badge and a card are CSS. If they become React components, the framework has to load and run before they look right.</li>
+  </ul>
+  <div class="perspektiv">
+    <p><span class="rolle">Product teams</span><span>React developers do not get ready-made React components, but classes and attributes with types.</span></p>
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Has to make the independence invisible day to day, or it feels like a step backwards compared with a React library.</span></p>
+    <p><span class="rolle rolle-lotek">In LO-TEK</span><span>The entry point <code>@lo-tek/interfaces/react</code> gives the same builder functions with <code>className</code> and <code>htmlFor</code>.</span></p>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 1 of 7 · The browser must be the platform</p>
+  <h2>What the browser does by itself</h2>
+  <p>Most of what is hard in a design system is already solved in the browser. If the system builds on the browser, that is code nobody has to maintain.</p>
+  <div class="rader to">
+    <div class="boks">
+      <h3>What the browser takes care of</h3>
+      <ul>
+        <li><strong>The focus trap in a dialog.</strong> <code>showModal()</code> makes the rest of the page inert, keeps focus inside and closes with Escape.</li>
+        <li><strong>The top layer.</strong> A dialog and a popover sit above everything else without anyone counting <code>z-index</code>.</li>
+        <li><strong>The form.</strong> Validation, submission and <code>:invalid</code> exist and work without a single line from the system.</li>
+        <li><strong>Appearance.</strong> Colour, shape and spacing are CSS, and are in place before any script has had time to run.</li>
+      </ul>
+    </div>
+    <div class="boks">
+      <h3>What the system does not have to maintain</h3>
+      <ul>
+        <li>No focus trap of its own, no z-index ladder of its own, no form engine of its own.</li>
+        <li>No runtime for what is only appearance.</li>
+        <li>No rewrite when the apps around it change framework.</li>
+        <li>No version of React, Vue or Svelte to keep up with.</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-block-start: 1.1rem;">What remains is the wiring between the parts, keyboard handling where the browser has no ready-made control, and a consistent look. That is a far smaller job than building focus, layers and forms yourself.</p>
+</section>
+
+<!-- 7 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 1 of 7 · The browser must be the platform</p>
+  <h2>The price of building on the browser itself</h2>
+  <p>The independence is not free. The design system team pays for it, not the product teams.</p>
+  <div class="rader tre">
+    <div class="boks">
+      <span class="tall">3</span>
+      <p>browser engines in every test run: Chromium, Firefox and WebKit. The whole premise is that the system uses the browser's own APIs, and those are exactly what behave differently from engine to engine.</p>
+    </div>
+    <div class="boks">
+      <h3>Waiting for the last engine</h3>
+      <p>The requirement is not that all three engines have the feature. The requirement is that the engine without it gives something that works.</p>
+      <pre>appearance: base-select
+<i>Chromium 148 ✓  WebKit 26.4 ✓</i>
+<i>Firefox 150     ✗</i></pre>
+      <p style="margin-block-start: 0.6rem;">That is why it is optional and not the default. Without support, the user gets the browser's own drop-down.</p>
+    </div>
+    <div class="boks">
+      <h3>Names that cannot be renamed</h3>
+      <p>Class names, <code>data-*</code>, token names and the paths in the package are all things a consumer builds on. Breaking them requires a new major version. What the web component does in the browser is behaviour, and can be fixed like an ordinary bug.</p>
+    </div>
+  </div>
+  <div class="perspektiv">
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Needs a guard for every rule, or the rule is forgotten within a month.</span></p>
+    <p><span class="rolle rolle-lotek">In LO-TEK</span><span>Around 1,500 tests run in each of the three engines. The styled drop-down is switched on with <code>data-picker="styled"</code>.</span></p>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 1 of 7 · The browser must be the platform</p>
+  <h2>What it costs your app</h2>
+  <p>A design system makes demands on the app that adopts it. These are the demands LO-TEK makes, and for comparison the demands a React-based design system makes, taken from <code>peerDependencies</code> in <code>@skatteetaten/ds-forms 3.0.0</code>:</p>
+  <p>To use the form components in that system, your app needs twelve packages: React 19, i18next, react-i18next, date-fns and eight packages from the system itself. LO-TEK requires none, and which framework the app uses makes no difference.</p>
+  <p>This is not a criticism. A React-based system is a reasonable choice when everything is React. The question is what it costs those who do not use React.</p>
+  <p class="kodetittel" style="margin-block-start: 1.1rem;">One button on screen, in an empty app. Built with esbuild, gzipped.</p>
+  <div class="tabellrull">
+  <table>
+    <thead><tr><th>What has to load</th><th>LO-TEK</th><th>A React-based system</th></tr></thead>
+    <tbody>
+      <tr><td>JavaScript</td><td><strong>0 kB</strong>, the button is a class</td><td>119.0 kB</td></tr>
+      <tr><td>CSS</td><td>2.8 kB</td><td>4.3 kB</td></tr>
+      <tr><td>Total</td><td><strong>2.8 kB</strong></td><td><strong>123.3 kB</strong></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-block-start: 1rem;">Of the 119 kilobytes, 67 are React itself. If you already have React, that system adds around 51 kB for the one button. In LO-TEK, the builder functions in <code>lt</code> cost an extra 4.8 kB.</p>
+  <p class="dempet" style="margin-block-start: 0.9rem;">The package has <strong>no dependencies</strong>, and no JavaScript module in it does anything just by being imported. Every module can be loaded on a server without a DOM, so <code>import { lt }</code> works with server rendering.</p>
+</section>
+
+<!-- 9 · The dependency graph -->
+<section class="lysbilde avh">
+<style>
+/*
+ * The dependency graph.
+ *
+ * One button in a React and TypeScript app that already has React. Five
+ * copies of that app, one `npm install` in each with what the documentation
+ * says for a button, and then package-lock.json is read. Each package is a
+ * dot, each dependency a line. The graph is laid out in layers from left to
+ * right by the longest path from the app, so what everything finally rests on
+ * is furthest to the right.
+ *
+ * The colour says only one thing: whether the package is the design system's
+ * own (azure) or something the design system pulls in (ochre, the palette's
+ * warning colour, because this is what costs). Blue against orange also holds
+ * for colour-blind vision. What the app already had is a hollow square, and is
+ * not counted.
+ *
+ * The rows of numbers are the comparison, and are always shown. The two rows
+ * with a CSS track also have what one button costs to load there. The graphs
+ * are equally tall, and a layer spreads its packages over the whole height.
+ * One row at a time shows its graph below, at the same scale as the others,
+ * and the graph area has a fixed height so the slide does not jump when you
+ * switch.
+ */
+/* Ochre-50 is not on the root, and is copied from tokens.ts like the others. */
+.avh { --ochre-50: #e7b78a; }
+.avh h2 { margin-block-end: 0.7rem; }
+.avh-forklaring {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 1.1rem;
+  margin: 0.2rem 0 0.6rem;
+  font-size: 0.86rem;
+  color: var(--tekst-dempet);
+}
+.avh-forklaring svg { inline-size: 26px; block-size: 14px; vertical-align: -2px; margin-inline-end: 0.35rem; }
+/*
+ * The date the numbers were checked.
+ *
+ * It stood at the end of this paragraph, after three sentences about
+ * something else, and nobody looking at the numbers noticed when they were
+ * read. The numbers have a shelf life, so the date comes first, and stands
+ * out. It sits inside the paragraph rather than in a block of its own because
+ * the slide has no room for one more line: a block of its own made it scroll
+ * 15 pixels at 1280x800.
+ */
+.avh-maalt {
+  color: var(--graphite-0);
+  font-weight: 600;
+}
+.avh-bytt {
+  margin-inline-start: auto;
+  font: inherit;
+  font-size: 0.86rem;
+  color: var(--azure-30);
+  background: none;
+  border: 1px solid var(--kant);
+  border-radius: 999px;
+  padding: 0.25rem 0.8rem;
+  cursor: pointer;
+}
+.avh-bytt:hover, .avh-bytt:focus-visible { border-color: var(--azure-30); outline: none; }
+
+/* The rows: one button per system, and the selected one has an azure edge. */
+.avh-liste { display: grid; margin-block-end: 0.5rem; border-block-start: 1px solid var(--kant); }
+.avh-hode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.9rem;
+  inline-size: 100%;
+  padding: 0.4rem 0.6rem 0.4rem 0.8rem;
+  font: inherit;
+  text-align: start;
+  color: var(--tekst);
+  background: none;
+  border: 0;
+  border-block-end: 1px solid var(--kant);
+  border-inline-start: 3px solid transparent;
+  cursor: pointer;
+}
+.avh-hode:hover { background: rgba(205, 225, 249, 0.05); }
+.avh-hode:focus-visible { outline: 2px solid var(--azure-30); outline-offset: -2px; }
+.avh-hode[aria-selected="true"] { border-inline-start-color: var(--azure-30); background: rgba(205, 225, 249, 0.07); }
+.avh-hode strong { font-size: 1.05rem; color: var(--graphite-0); }
+.avh-hode code { font-size: 0.82rem; }
+.avh-tall { margin-inline-start: auto; display: flex; gap: 1.1rem; font-size: 0.82rem; color: var(--tekst-dempet); white-space: nowrap; }
+.avh-tall b { font-size: 1.05rem; font-weight: 700; color: var(--tekst); margin-inline-end: 0.25rem; }
+
+/* In short windows, such as 1280×800, the slide scrolled 73 pixels. The rows
+ * and the spacing are tightened until it fits, without the graph changing
+ * scale. */
+@media (max-height: 840px) {
+  .lysbilde.avh { padding-block: 1.6rem; }
+  .avh h2 { margin-block-end: 0.4rem; }
+  .avh > p:not(.dempet, .kapittelmerke) { margin-block-end: 0.5rem; }
+  .avh-forklaring { margin-block-end: 0.3rem; }
+  .avh-liste { margin-block-end: 0.3rem; }
+  .avh-hode { padding-block: 0.2rem; }
+}
+
+/* The graph area: all five lie on top of each other, so the height is that of the tallest. */
+.avh-scene { position: relative; }
+.avh-graf { display: grid; }
+.avh-graf > svg { grid-area: 1 / 1; visibility: hidden; }
+.avh-graf > svg[data-valgt] { visibility: visible; }
+
+.avh-svg { display: block; inline-size: 100%; block-size: auto; overflow: visible; font-family: var(--sans); }
+.avh-kant { fill: none; stroke: rgba(205, 225, 249, 0.3); stroke-width: 1.25; transition: opacity 0.12s, stroke 0.12s; }
+.avh-kant[data-peer] { stroke-dasharray: 4 3; }
+.avh-node { cursor: default; outline: none; transition: opacity 0.12s; }
+.avh-node .prikk { stroke: var(--flate-kort); stroke-width: 2; }
+.avh-node[data-type="system"] .prikk { fill: var(--azure-30); }
+.avh-node[data-type="annen"] .prikk { fill: var(--ochre-50); }
+.avh-node[data-type="grunn"] .prikk { fill: var(--flate-kort); stroke: var(--graphite-50); stroke-width: 1.75; }
+.avh-node[data-type="app"] .prikk { fill: none; stroke: var(--tekst-dempet); stroke-width: 1.25; }
+/* The halo in the surface colour keeps the name readable where the lines cross it. */
+.avh-node text { fill: var(--tekst-dempet); font-size: 11px; pointer-events: none; paint-order: stroke; stroke: var(--flate-kort); stroke-width: 3px; stroke-linejoin: round; }
+.avh-node[data-type="app"] text { fill: var(--tekst); font-weight: 700; }
+/* The hit area is larger than the dot. */
+.avh-node .treff { fill: transparent; }
+.avh-node:focus-visible .prikk, .avh-node:hover .prikk { stroke: var(--graphite-0); }
+
+/* When one package is selected, the rest recede. */
+.avh-svg[data-aktiv] .avh-kant { opacity: 0.1; }
+.avh-svg[data-aktiv] .avh-kant[data-aktiv] { opacity: 1; stroke: var(--azure-30); stroke-width: 1.75; }
+.avh-svg[data-aktiv] .avh-node { opacity: 0.28; }
+.avh-svg[data-aktiv] .avh-node[data-aktiv] { opacity: 1; }
+.avh-svg[data-aktiv] .avh-node[data-aktiv] text { fill: var(--tekst); }
+
+.avh-tips {
+  position: absolute;
+  z-index: 3;
+  max-inline-size: 22rem;
+  padding: 0.55rem 0.75rem;
+  background: var(--flate);
+  border: 1px solid var(--kant);
+  border-radius: 0.6rem;
+  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.8);
+  font-size: 0.84rem;
+  line-height: 1.4;
+  color: var(--tekst-dempet);
+  pointer-events: none;
+}
+.avh-tips strong { display: block; color: var(--graphite-0); font-size: 0.95rem; }
+.avh-tips b { color: var(--tekst); font-weight: 700; }
+.avh-tips p { margin: 0; font-size: inherit; }
+
+.avh-tabeller h3 { margin-block-start: 0.9rem; }
+.avh-tabeller table { font-size: 0.86rem; }
+.avh-tabeller td, .avh-tabeller th { padding: 0.35rem 0.55rem; }
+.avh-tabeller td:nth-child(4) { text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.avh[data-visning="tabell"] .avh-liste, .avh[data-visning="tabell"] .avh-scene { display: none; }
+.avh:not([data-visning="tabell"]) .avh-tabeller { display: none; }
+@media (max-width: 860px) {
+  /* On a narrow screen the table is the view. A graph at 375 pixels says nothing. */
+  .avh .avh-liste, .avh .avh-scene, .avh .avh-bytt, .avh .avh-forklaring { display: none; }
+  .avh:not([data-visning="tabell"]) .avh-tabeller { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .avh-kant, .avh-node { transition: none; }
+}
+</style>
+
+  <p class="kapittelmerke">Requirement 1 of 7 · The browser must be the platform</p>
+  <h2>What one button puts in <code>node_modules</code></h2>
+  <p>Five copies of a React and TypeScript app that already has React 19. In each of them, what the documentation says is needed for one button is installed, and then <code>package-lock.json</code> is read. Furthest to the right are the packages everything else rests on.</p>
+
+  <div class="avh-forklaring" role="group" aria-label="Legend">
+    <span><svg viewBox="0 0 26 14" aria-hidden="true"><circle cx="13" cy="7" r="5.5" fill="#9ccff2" stroke="#171f2b" stroke-width="2"/></svg>The design system's own packages</span>
+    <span><svg viewBox="0 0 26 14" aria-hidden="true"><circle cx="13" cy="7" r="5.5" fill="#e7b78a" stroke="#171f2b" stroke-width="2"/></svg>Packages it pulls in</span>
+    <span><svg viewBox="0 0 26 14" aria-hidden="true"><rect x="7.5" y="1.5" width="11" height="11" rx="2" fill="#171f2b" stroke="#757575" stroke-width="1.75"/></svg>Already in the app</span>
+    <span><svg viewBox="0 0 26 14" aria-hidden="true"><path d="M1 7 H25" stroke="rgba(205,225,249,0.6)" stroke-width="1.5"/></svg>Dependency</span>
+    <span><svg viewBox="0 0 26 14" aria-hidden="true"><path d="M1 7 H25" stroke="rgba(205,225,249,0.6)" stroke-width="1.5" stroke-dasharray="4 3"/></svg>Peer dependency</span>
+    <button type="button" class="avh-bytt" aria-pressed="false">Show as table</button>
+  </div>
+
+  <div class="avh-liste" role="tablist" aria-orientation="vertical" aria-label="Design system"></div>
+  <div class="avh-scene"><div class="avh-graf"></div></div>
+  <div class="avh-tabeller"></div>
+
+  <p class="dempet" style="margin-block-start: 0.7rem; font-size: 0.86rem;"><span class="avh-maalt">Checked 12 October 2026</span>, with the versions that were the latest then. Aksel and Digdir have no separate button package, so the button costs the whole React package. LO-TEK is the same package whether you use the classes or the builder function: the import decides what loads, not the installation. “CSS for the button” is what has to load for one button when you use only CSS (tokens and button), minified and gzipped as on the previous slide. Dashed lines are peer dependencies, which npm 7 and later install by themselves.</p>
+
+<script>
+(() => {
+  // Nodes: [name, version, type, unpacked bytes]. Edges: [from, to, 0 = regular, 1 = peer].
+  // The type "grunn" is what the app already has, and is not counted.
+  const DATA = {"skatt":{"navn":"Skatteetaten","scope":"@skatteetaten/","kommando":"npm install @skatteetaten/ds-{core-designtokens,buttons}","n":[["your app","","app",0],["@babel/runtime","7.29.10","annen",247215],["@skatteetaten/ds-buttons","3.0.0","system",93796],["@skatteetaten/ds-core-designtokens","3.0.0","system",32338],["@skatteetaten/ds-core-utils","3.0.0","system",164875],["@skatteetaten/ds-icons","3.0.0","system",205462],["@skatteetaten/ds-progress","3.0.0","system",10752],["html-parse-stringify","4.0.1","annen",57003],["i18next","26.4.4","annen",524379],["react-i18next","17.0.16","annen",957407],["use-sync-external-store","1.7.0","annen",28183],["react","19.3.0","grunn",0]],"e":[[0,2,0],[0,3,0],[2,4,1],[2,5,1],[2,6,1],[2,8,1],[2,11,1],[2,9,1],[4,8,1],[4,11,1],[4,9,1],[5,4,1],[5,8,1],[5,11,1],[5,9,1],[6,4,1],[6,8,1],[6,11,1],[6,9,1],[9,1,0],[9,7,0],[9,10,0],[9,8,1],[9,11,1],[10,11,1]]},"aksel":{"navn":"Aksel","scope":"@navikt/","kommando":"npm install @navikt/ds-{react,css}","n":[["your app","","app",0],["@date-fns/tz","1.5.0","annen",100524],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.27.20","annen",934317],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.19.1","system",11147411],["@navikt/ds-css","8.19.1","system",1747680],["@navikt/ds-react","8.19.1","system",7369081],["@navikt/ds-tokens","8.19.1","system",439537],["date-fns","4.4.0","annen",10902084],["react-day-picker","10.0.1","annen",987344],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,8,0],[0,9,0],[2,6,0],[3,2,0],[3,6,0],[4,5,0],[4,6,0],[4,13,0],[4,14,1],[4,15,1],[5,3,0],[5,14,1],[5,15,1],[9,4,0],[9,5,0],[9,7,0],[9,10,0],[9,11,0],[9,12,0],[9,14,1],[9,15,1],[12,1,0],[12,11,0],[12,14,1]]},"digdir":{"navn":"Designsystemet (Digdir)","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-{react,css}","n":[["your app","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-react","1.23.0","system",812522],["@digdir/designsystemet-types","1.23.0","system",3454],["@digdir/designsystemet-web","1.23.0","system",971002],["@floating-ui/core","1.8.0","annen",218589],["@floating-ui/dom","1.8.0","annen",174208],["@floating-ui/react","0.26.23","annen",733859],["@floating-ui/react-dom","2.1.9","annen",63904],["@floating-ui/utils","0.2.12","annen",66066],["@navikt/aksel-icons","8.19.1","annen",11147411],["@radix-ui/react-compose-refs","1.1.5","annen",12899],["@radix-ui/react-slot","1.5.0","annen",49653],["@tanstack/react-virtual","3.14.16","annen",63728],["@tanstack/virtual-core","3.19.1","annen",478978],["@u-elements/u-combobox","2.1.5","annen",72957],["@u-elements/u-datalist","2.0.3","annen",54586],["@u-elements/u-details","1.0.0","annen",32981],["@u-elements/u-tabs","1.0.4","annen",53518],["clsx","2.1.1","annen",8555],["tabbable","6.5.0","annen",427160],["react","19.3.0","grunn",0],["react-dom","19.3.0","grunn",0]],"e":[[0,1,0],[0,2,0],[1,3,0],[2,3,0],[2,4,0],[2,6,0],[2,7,0],[2,10,0],[2,12,0],[2,13,0],[2,19,0],[2,21,1],[2,22,1],[4,6,0],[4,15,0],[4,16,0],[4,17,0],[4,18,0],[5,9,0],[6,5,0],[6,9,0],[7,8,0],[7,9,0],[7,20,0],[7,21,1],[7,22,1],[8,6,0],[8,21,1],[8,22,1],[11,21,1],[12,11,0],[12,21,1],[13,14,0],[13,21,1],[13,22,1]]},"digdircss":{"navn":"Digdir, CSS only","scope":"@digdir/","kommando":"npm install @digdir/designsystemet-css","knapp":5418,"n":[["your app","","app",0],["@digdir/designsystemet-css","1.23.0","system",509727],["@digdir/designsystemet-types","1.23.0","system",3454]],"e":[[0,1,0],[1,2,0]]},"lotek":{"navn":"LO-TEK","scope":"@lo-tek/","kommando":"npm install @lo-tek/interfaces","knapp":2838,"n":[["your app","","app",0],["@lo-tek/interfaces","0.32.1","system",3278919]],"e":[[0,1,0]]}}
+
+  const TYPENAVN = { system: "The design system's own", annen: "Pulled in", grunn: "Already in the app", app: "The app" }
+  const BREDDE = 1136 // fixed, so all the graphs have the same scale
+  const RAD = 30      // distance between packages in the same layer
+  const VENSTRE = 70
+  const HOYRE = 70
+  const R = 6
+  const NS = "http://www.w3.org/2000/svg"
+
+  // Everything is divided by 1024, as on the previous slide: then LO-TEK's button is 2.8 kB in both places.
+  const mb = (b) => {
+    if (b >= 1024 * 1024) return (b / 1024 / 1024).toFixed(1) + " MB"
+    return Math.round(b / 1024) + " kB"
+  }
+  const kb = (b) => (b / 1024).toFixed(1) + " kB"
+  const el = (navn, attr = {}) => {
+    const e = document.createElementNS(NS, navn)
+    for (const [k, v] of Object.entries(attr)) e.setAttribute(k, v)
+    return e
+  }
+  const lag = (navn, klasse, tekst) => {
+    const e = document.createElement(navn)
+    if (klasse) e.className = klasse
+    if (tekst !== undefined) e.textContent = tekst
+    return e
+  }
+
+  /* Lays the graph out in layers: the rank is the longest path from the app.
+     Cycles are broken with DFS, so a package that points back does not make
+     the rank grow without end. */
+  function lagdel(sys) {
+    const n = sys.n.length
+    const ut = Array.from({ length: n }, () => [])
+    const inn = Array.from({ length: n }, () => [])
+    for (const [a, b] of sys.e) {
+      ut[a].push(b)
+      inn[b].push(a)
+    }
+    const farge = new Array(n).fill(0)
+    const bak = new Set()
+    const dfs = (v) => {
+      farge[v] = 1
+      for (const t of ut[v]) {
+        if (farge[t] === 1) bak.add(v + ">" + t)
+        else if (!farge[t]) dfs(t)
+      }
+      farge[v] = 2
+    }
+    // From every unvisited node, not just from the app: a package nobody reaches
+    // from the app can still be in a cycle, and then the rank would grow without end.
+    for (let v = 0; v < n; v++) if (!farge[v]) dfs(v)
+    const rang = new Array(n).fill(0)
+    let endret = true
+    for (let runde = 0; endret && runde < n; runde++) {
+      endret = false
+      for (const [a, b] of sys.e) {
+        if (bak.has(a + ">" + b)) continue
+        if (rang[b] < rang[a] + 1) {
+          rang[b] = rang[a] + 1
+          endret = true
+        }
+      }
+    }
+    const lagene = []
+    for (let i = 0; i < n; i++) (lagene[rang[i]] ??= []).push(i)
+    // The order in each layer: the centre of gravity of the neighbours in the
+    // layer before, so the lines cross as little as possible. Three sweeps,
+    // back and forth.
+    const plass = new Array(n).fill(0)
+    const sorter = (l) => l.forEach((i, p) => { plass[i] = p })
+    lagene.forEach(sorter)
+    const sveip = (naboer) => {
+      for (let r = 1; r < lagene.length; r++) {
+        const midt = (i) => {
+          const nb = naboer[i].filter((j) => rang[j] !== rang[i])
+          return nb.length ? nb.reduce((s, j) => s + plass[j], 0) / nb.length : plass[i]
+        }
+        lagene[r].sort((a, b) => midt(a) - midt(b) || sys.n[a][0].localeCompare(sys.n[b][0]))
+        sorter(lagene[r])
+      }
+    }
+    sveip(inn)
+    sveip(ut)
+    sveip(inn)
+    return { lag: lagene, rang, inn, ut }
+  }
+
+  const systemer = Object.values(DATA).map((sys) => ({
+    ...sys,
+    ...lagdel(sys),
+    nye: sys.n.filter((p) => p[2] === "system" || p[2] === "annen").length,
+    sum: sys.n.reduce((s, p) => s + p[3], 0),
+  }))
+  // Most new packages at the top: the list is a ranking.
+  systemer.sort((a, b) => b.nye - a.nye)
+
+  const maksRang = Math.max(...systemer.map((s) => s.lag.length - 1))
+  const KOL = (BREDDE - VENSTRE - HOYRE) / maksRang // avstand mellom lagene
+  // All the graphs are equally tall, and a layer spreads its packages over the
+  // whole height. A small graph then gets as much room as the largest, and none
+  // stands in a clump.
+  const maksRader = Math.max(...systemer.map((s) => Math.max(...s.lag.map((l) => l.length))))
+  const HOYDE = maksRader * RAD + 20
+
+  const seksjon = document.querySelector(".avh")
+  const liste = seksjon.querySelector(".avh-liste")
+  const scene = seksjon.querySelector(".avh-scene")
+  const graf = seksjon.querySelector(".avh-graf")
+  const tabeller = seksjon.querySelector(".avh-tabeller")
+  const tips = lag("div", "avh-tips")
+  tips.setAttribute("role", "tooltip")
+  tips.hidden = true
+  scene.append(tips)
+
+  const faner = []
+  function velg(nr) {
+    faner.forEach(({ knapp, svg }, i) => {
+      knapp.setAttribute("aria-selected", String(i === nr))
+      knapp.tabIndex = i === nr ? 0 : -1
+      svg.toggleAttribute("data-valgt", i === nr)
+    })
+    tips.hidden = true
+  }
+
+  systemer.forEach((sys, nr) => {
+    const { lag: lagene, rang, inn, ut } = sys
+    // The design system's own scope is in the row, and is stripped. Others are kept.
+    const kort = (navn) => navn.startsWith(sys.scope) ? navn.slice(sys.scope.length) : navn
+    const hoyde = HOYDE
+    const x = (i) => VENSTRE + rang[i] * KOL
+    const y = (i) => 10 + (lagene[rang[i]].indexOf(i) + 0.5) * ((hoyde - 20) / lagene[rang[i]].length)
+
+    // The row of numbers, which is also the tab.
+    const knapp = lag("button", "avh-hode")
+    knapp.type = "button"
+    knapp.setAttribute("role", "tab")
+    knapp.id = `avh-fane-${nr}`
+    knapp.append(lag("strong", "", sys.navn), lag("code", "", sys.kommando))
+    const tall = lag("span", "avh-tall")
+    const tallene = [[sys.nye, sys.nye === 1 ? "new package" : "new packages"], [sys.e.length, sys.e.length === 1 ? "link" : "links"], [mb(sys.sum), "unpacked"]]
+    if (sys.knapp) tallene.push([kb(sys.knapp), "CSS for the button"])
+    for (const [verdi, tekst] of tallene) {
+      const s = lag("span")
+      s.append(lag("b", "", verdi), tekst)
+      tall.append(s)
+    }
+    knapp.append(tall)
+    knapp.setAttribute("aria-label", `${sys.navn}, ${sys.kommando}: ${sys.nye} ${sys.nye === 1 ? "new package" : "new packages"}, ${sys.e.length} ${sys.e.length === 1 ? "link" : "links"}, ${mb(sys.sum)} unpacked${sys.knapp ? `, ${kb(sys.knapp)} CSS for the button` : ""}`)
+    knapp.addEventListener("click", () => velg(nr))
+    liste.append(knapp)
+
+    const svg = el("svg", { class: "avh-svg", id: `avh-graf-${nr}`, viewBox: `0 0 ${BREDDE} ${hoyde}`, role: "tabpanel", "aria-labelledby": knapp.id })
+    knapp.setAttribute("aria-controls", svg.id)
+    const kanter = el("g")
+    const noder = el("g")
+    svg.append(kanter, noder)
+
+    const kantEl = sys.e.map(([a, b, peer]) => {
+      const x1 = x(a) + (a === 0 ? 34 : R), y1 = y(a), x2 = x(b) - R, y2 = y(b)
+      const d = rang[a] === rang[b]
+        ? `M${x1 - R} ${y1} C${x1 + 26} ${y1}, ${x2 + 26 + R} ${y2}, ${x2 + R} ${y2}`
+        : `M${x1} ${y1} C${(x1 + x2) / 2} ${y1}, ${(x1 + x2) / 2} ${y2}, ${x2} ${y2}`
+      const p = el("path", { class: "avh-kant", d })
+      if (peer) p.setAttribute("data-peer", "")
+      kanter.append(p)
+      return p
+    })
+
+    sys.n.forEach((p, i) => {
+      const [fulltNavn, versjon, type] = p
+      const g = el("g", { class: "avh-node", role: "img", "data-type": type, tabindex: "0", transform: `translate(${x(i)} ${y(i)})` })
+      g.setAttribute("aria-label", type === "app" ? fulltNavn : `${fulltNavn} ${versjon}, ${TYPENAVN[type].toLowerCase()}, required by ${inn[i].length}`)
+      if (type === "app") {
+        g.append(el("rect", { class: "prikk", x: -34, y: -11, width: 68, height: 22, rx: 6 }))
+        const t = el("text", { "text-anchor": "middle", y: 4 })
+        t.textContent = fulltNavn
+        g.append(t)
+      } else {
+        g.append(el("circle", { class: "treff", r: 16 }))
+        g.append(type === "grunn"
+          ? el("rect", { class: "prikk", x: -R, y: -R, width: 2 * R, height: 2 * R, rx: 1.5 })
+          : el("circle", { class: "prikk", r: R }))
+        // Every other column gets the text above and below, so neighbours on the
+        // same row do not write over each other. In the same column the row
+        // spacing is enough.
+        const over = rang[i] % 2 === 1
+        const t = el("text", { "text-anchor": "middle", y: over ? -10 : 19 })
+        t.textContent = kort(fulltNavn)
+        g.append(t)
+      }
+      g.addEventListener("pointerenter", () => marker(i))
+      g.addEventListener("focus", () => marker(i))
+      g.addEventListener("pointerleave", avmarker)
+      g.addEventListener("blur", avmarker)
+      noder.append(g)
+    })
+
+    // The nodes are focusable, but not buttons: Enter and Space must not reach
+    // the presentation's key listener and move to the next slide.
+    noder.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    })
+    const nodeEl = [...noder.children]
+    function marker(i) {
+      svg.setAttribute("data-aktiv", "")
+      const nabo = new Set([i, ...inn[i], ...ut[i]])
+      nodeEl.forEach((g, j) => g.toggleAttribute("data-aktiv", nabo.has(j)))
+      kantEl.forEach((k, j) => {
+        const [a, b] = sys.e[j]
+        k.toggleAttribute("data-aktiv", a === i || b === i)
+      })
+      visTips(i)
+    }
+    function avmarker() {
+      svg.removeAttribute("data-aktiv")
+      nodeEl.forEach((g) => g.removeAttribute("data-aktiv"))
+      kantEl.forEach((k) => k.removeAttribute("data-aktiv"))
+      tips.hidden = true
+    }
+    function visTips(i) {
+      const [fulltNavn, versjon, type, byte] = sys.n[i]
+      tips.replaceChildren(lag("strong", "", type === "app" ? "Your app" : `${fulltNavn} ${versjon}`))
+      if (type === "app") {
+        tips.append(lag("p", "", `Asks for ${ut[i].length} ${ut[i].length === 1 ? "package" : "packages"} and gets ${sys.nye}.`))
+      } else if (type === "grunn") {
+        tips.append(lag("p", "", `${TYPENAVN[type]}, ${versjon}. Not counted.`))
+      } else {
+        tips.append(lag("p", "", `${TYPENAVN[type]} · ${mb(byte)} unpacked`))
+      }
+      if (type !== "app") {
+        const kreves = lag("p")
+        kreves.append(lag("b", "", inn[i].length === 1 ? "Required by 1: " : `Required by ${inn[i].length}: `), inn[i].map((j) => (j === 0 ? "your app" : kort(sys.n[j][0]))).join(", "))
+        tips.append(kreves)
+        if (ut[i].length) {
+          const krever = lag("p")
+          krever.append(lag("b", "", `Requires ${ut[i].length}: `), ut[i].map((j) => kort(sys.n[j][0])).join(", "))
+          tips.append(krever)
+        }
+      }
+      const s = scene.getBoundingClientRect()
+      const n = nodeEl[i].getBoundingClientRect()
+      tips.hidden = false
+      let venstre = n.right - s.left + 10
+      if (venstre + tips.offsetWidth > s.width) venstre = n.left - s.left - tips.offsetWidth - 10
+      tips.style.left = Math.max(0, venstre) + "px"
+      tips.style.top = Math.max(0, n.top - s.top - 6) + "px"
+    }
+
+    graf.append(svg)
+    faner.push({ knapp, svg })
+
+    // The table: the same, without the drawing.
+    tabeller.append(lag("h3", "", `${sys.navn}: ${sys.nye} ${sys.nye === 1 ? "new package" : "new packages"}, ${mb(sys.sum)} unpacked`))
+    const rull = lag("div", "tabellrull")
+    const tabell = lag("table")
+    const thead = lag("thead")
+    const hr = lag("tr")
+    for (const t of ["Package", "Version", "Type", "Unpacked", "Required by"]) hr.append(lag("th", "", t))
+    thead.append(hr)
+    const tbody = lag("tbody")
+    sys.n.forEach((p, i) => {
+      if (i === 0 || p[2] === "grunn") return
+      const tr = lag("tr")
+      for (const v of [p[0], p[1], TYPENAVN[p[2]], mb(p[3]), inn[i].map((j) => (j === 0 ? "your app" : kort(sys.n[j][0]))).join(", ")]) tr.append(lag("td", "", v))
+      tbody.append(tr)
+    })
+    tabell.append(thead, tbody)
+    rull.append(tabell)
+    tabeller.append(rull)
+  })
+
+  // Up and down arrows switch rows when a row has focus, and Home and End go to
+  // the first and the last, as the tabs pattern says. Left and right move
+  // through the presentation, and are left alone.
+  liste.addEventListener("keydown", (e) => {
+    const nr = faner.findIndex((f) => f.knapp === document.activeElement)
+    if (nr < 0) return
+    const til = { ArrowDown: (nr + 1) % faner.length, ArrowUp: (nr + faner.length - 1) % faner.length, Home: 0, End: faner.length - 1 }[e.key]
+    if (til === undefined) return
+    e.preventDefault()
+    e.stopPropagation()
+    velg(til)
+    faner[til].knapp.focus()
+  })
+  velg(0)
+
+  const bytt = seksjon.querySelector(".avh-bytt")
+  bytt.addEventListener("click", () => {
+    const tilTabell = seksjon.getAttribute("data-visning") !== "tabell"
+    if (tilTabell) seksjon.setAttribute("data-visning", "tabell")
+    else seksjon.removeAttribute("data-visning")
+    bytt.setAttribute("aria-pressed", String(tilTabell))
+    bytt.textContent = tilTabell ? "Show as graph" : "Show as table"
+  })
+})()
+</script>
+</section>
+
+
+<!-- 10 -->
+<section class="lysbilde kapittel">
+  <span class="merke merke-blaa">Requirement 2 of 7</span>
+  <div class="kapittel-topp">
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="feierskap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="geierskap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#feierskap)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#geierskap)"/>
+      <rect x="11" y="13" width="50" height="46" rx="8" fill="none" stroke="#b5cbee"
+            stroke-width="2.2" stroke-dasharray="7 5" opacity="0.75"/>
+      <rect x="23" y="24" width="26" height="24" rx="3.5" fill="#1362ae" stroke="#cde1f9" stroke-width="2.2"/>
+      <path d="M29 32 H43 M29 39 H38" stroke="#cde1f9" stroke-width="2.2" stroke-linecap="round"/></svg>
+    <h2>Markup must come from whoever renders it</h2>
+  </div>
+  <p class="ingress">Markup comes from whoever renders it: React in the browser, a server, or both. The web component adds no nodes to it. The attributes it sets, such as classes, <code>role</code>, <code>id</code> and <code>aria-selected</code>, it works out from the markup and from what the user does, so it can set them again after every re-render. The markup is in plain DOM, so the web component does not use shadow DOM.</p>
+  <ol class="kapittelliste">
+      <li>Three ways to render</li>
+      <li>The strictest case: SSR with DOM morphing</li>
+      <li>The two layers</li>
+      <li>Three categories, and one question</li>
+      <li>Two paths to the same contract</li>
+      <li>What the web component may write</li>
+  </ol>
+</section>
+
+<!-- 11 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 2 of 7 · Markup must come from whoever renders it</p>
+  <h2>Three ways to render</h2>
+  <p>A design system has to work wherever the markup is rendered. There are three cases, and most teams probably still work with the first.</p>
+  <div class="rader tre">
+    <div class="boks">
+      <span class="merke merke-blaa">CSR</span>
+      <p>The framework in the browser renders from JSON. When the data changes, React re-renders the results, and nodes a web component has inserted can be thrown away.</p>
+      <pre>const response = await fetch("/api/results")
+setResults(await response.json())</pre>
+    </div>
+    <div class="boks">
+      <span class="merke merke-gronn">SSR</span>
+      <p>The server renders HTML. On an update it sends the HTML again, and a library such as Datastar inserts it with DOM morphing. Attributes that were not in what the server sent are removed.</p>
+    </div>
+    <div class="boks">
+      <span class="merke merke-gul">Both</span>
+      <p>The server renders first, React takes over with hydration, and then React renders in the browser. The markup has to be the same in both places, or React reports a hydration mismatch.</p>
+    </div>
+  </div>
+  <div class="boks" style="margin-block-start: 1.1rem;">
+    <p style="margin: 0;"><strong>In all three, someone other than the web component re-renders the DOM.</strong> If React creates the nodes again, what the web component set on the old ones is gone. DOM morphing removes every attribute that was not in the server's HTML. And if the web component has written anything before hydration, React reports a mismatch. The web component must therefore be able to work out again everything it writes.</p>
+  </div>
+  <div class="perspektiv">
+    <p><span class="rolle rolle-lotek">In LO-TEK</span><span><code>&lt;lt-suggestion&gt;</code> reads the highlighted option from <code>aria-selected</code> and the number of matches from the list, so it also works when React re-renders the matches after an asynchronous search.</span></p>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 2 of 7 · Markup must come from whoever renders it</p>
+  <h2>The strictest case: SSR with DOM morphing</h2>
+  <p>With SSR, the HTML is built on the server. When the page updates, the server sends that piece of HTML again, and a library merges it into the page. This is called <i>DOM morphing</i>. Below are the two lines in Datastar that do it, and they are the reason the system is built the way it is.</p>
+<style>
+/*
+ * The morph, step by step.
+ *
+ * The panel tells the whole story: the page comes from the server, the user
+ * types an address without a domain, the component shows the error message
+ * and wires it up with aria-describedby, the form is submitted, the server
+ * answers with a Server-Sent Event, and Datastar morphs. It runs the two
+ * Datastar lines on two real elements and draws the chips from r.attributes
+ * after each step, so it cannot lie about what the morph does. What the
+ * screen reader says is worked out from the same element.
+ *
+ * The code view is untouched: the panel is swapped in instead of the code.
+ * The panel has the same height in every step from 1280 pixels wide and up,
+ * so nothing below jumps while you click. Narrower than that, the server's
+ * answer wraps over several lines, and the panel grows with it. The steps are
+ * driven by the presenter, one button press at a time. The variant is chosen
+ * with two buttons and not radio buttons: the arrow keys belong to the
+ * presentation.
+ */
+.morf-topp { display: flex; align-items: baseline; gap: 1rem; }
+.morf-topp .kodetittel { margin: 0 0 0.35rem; }
+.morf-bytt, .morf-knapp {
+  font: inherit;
+  font-size: 0.84rem;
+  color: var(--azure-30);
+  background: none;
+  border: 1px solid var(--kant);
+  border-radius: 999px;
+  padding: 0.15rem 0.75rem;
+  cursor: pointer;
+}
+.morf-bytt { margin-inline-start: auto; }
+.morf-bytt:hover, .morf-bytt:focus-visible, .morf-knapp:hover, .morf-knapp:focus-visible { border-color: var(--azure-30); outline: none; }
+/* The button is never switched off with disabled: that throws focus to body,
+   and the next Enter goes to the presentation. aria-disabled gives the look,
+   and nesteSteg rejects the press. */
+.morf-knapp[aria-disabled="true"] { color: var(--tekst-dempet); cursor: default; border-color: var(--kant); }
+.morf-knapp[aria-pressed="true"] { background: rgba(156, 207, 242, 0.14); border-color: var(--azure-30); color: var(--graphite-0); }
+
+.morf-scene > [data-skjult] { display: none; }
+
+.morf-panel {
+  padding: 0.35rem 1rem 0.4rem;
+  background: rgba(9, 62, 97, 0.34);
+  border: 1px solid var(--kant);
+  border-radius: 0.6rem;
+  font-size: 0.86rem;
+}
+.morf-rad { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; }
+.morf-rad .morf-utgang { font-size: 0.8rem; color: var(--tekst-dempet); margin-inline-end: 0.2rem; }
+.morf-rad .morf-styring { margin-inline-start: auto; display: flex; gap: 0.5rem; }
+/* r gets a little more room than s: after the morph r has the most chips, and they should fit on two rows. */
+.morf-kolonner { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1rem; margin-block: 0.25rem 0.2rem; }
+.morf-kolonne h3 { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--tekst-dempet); margin-block-end: 0.2rem; }
+.morf-kolonne h3 code { color: var(--azure-30); text-transform: none; letter-spacing: 0; }
+
+/* What the user sees: label, field and error message, on one line. */
+.morf-felt { display: flex; align-items: center; gap: 0.5rem; margin-block-start: 0.2rem; font-size: 0.82rem; }
+.morf-etikett { color: var(--tekst-dempet); }
+.morf-input {
+  min-inline-size: 9rem;
+  padding: 0.12rem 0.5rem;
+  border: 1px solid var(--graphite-30);
+  border-radius: 0.3rem;
+  background: var(--graphite-0);
+  color: var(--graphite-100);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  transition: border-color 0.2s;
+}
+.morf-input:empty::before { content: "\00a0"; }
+.morf-input[data-ugyldig] { border-color: #e7b78a; box-shadow: 0 0 0 1px #e7b78a; }
+.morf-feil { color: #e7b78a; }
+.morf-feil[hidden] { display: none; }
+.morf-opplest { margin: 0 0 0 auto; font-size: 0.78rem; color: var(--tekst-dempet); }
+.morf-opplest b { color: var(--tekst); font-weight: 400; }
+
+.morf-brikker { display: flex; flex-wrap: wrap; gap: 0.28rem; min-block-size: 3.75rem; align-content: flex-start; }
+.morf-brikke {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 0.16rem 0.36rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--kant);
+  color: var(--azure-10);
+  background: rgba(205, 225, 249, 0.06);
+  transition: opacity 0.3s, transform 0.3s, border-color 0.2s, background 0.2s;
+}
+.morf-brikke[data-kilde="komponent"] { border-color: var(--azure-30); background: rgba(156, 207, 242, 0.16); color: var(--graphite-0); }
+.morf-brikke[data-tilstand="sjekkes"] { border-color: var(--graphite-0); background: rgba(205, 225, 249, 0.18); }
+.morf-brikke[data-tilstand="fjernes"] { border-color: #e7b78a; color: #e7b78a; background: rgba(231, 183, 138, 0.14); text-decoration: line-through; }
+.morf-brikke[data-tilstand="borte"] { opacity: 0; transform: translateY(0.4rem); }
+.morf-brikke[data-tilstand="ny"], .morf-linje[data-tilstand="ny"] { animation: morf-inn 0.3s ease-out; }
+@keyframes morf-inn { from { opacity: 0; transform: translateY(-0.4rem); } }
+
+/* The traffic: what goes to the server, and what comes back. */
+.morf-trafikk { font-family: var(--mono); font-size: 0.74rem; line-height: 1.25; min-block-size: 3.75rem; color: var(--azure-10); white-space: pre-wrap; overflow-wrap: anywhere; }
+.morf-linje { display: block; }
+.morf-linje i { color: var(--tekst-dempet); font-style: normal; }
+.morf-tom { font-size: 0.8rem; color: var(--tekst-dempet); }
+.morf-tekst { margin: 0; font-size: 0.86rem; color: var(--tekst); min-block-size: 1.3em; }
+.morf-tekst[data-tone="varsel"] { color: #e7b78a; }
+.morf-tekst[data-tone="ok"] { color: var(--forest-30); }
+@media (max-width: 860px) {
+  /* On a narrow screen the code stays, as before. */
+  .morf-bytt { display: none; }
+  .morf-scene > .morf-panel { display: none; }
+  .morf-scene > pre[data-skjult] { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .morf-brikke, .morf-linje, .morf-input { transition: none; animation: none; }
+}
+</style>
+  <div class="morf-topp">
+    <p class="kodetittel">datastar.js 1.0.4, the loop that goes through the attributes on every update</p>
+    <button type="button" class="morf-bytt" aria-pressed="false">Show the morph</button>
+  </div>
+  <div class="morf-scene">
+  <pre><i>// r = the element in the page now, s = what the server sent,</i>
+<i>// o = the names in data-preserve-attr. Just before, s is copied into r.</i>
+for (let {name: l} of Array.from(<b>r</b>.attributes))
+  !<b>s</b>.hasAttribute(l) &amp;&amp; !<b>o</b>.includes(l) &amp;&amp; <b>r</b>.removeAttribute(l)
+
+<i>// If the attribute is there, but not in what the server sent,</i>
+<i>// remove it. Unless the template has protected the name.</i></pre>
+  <div class="morf-panel" role="group" data-skjult aria-label="The morph, step by step">
+    <div class="morf-rad">
+      <span class="morf-utgang">Variant:</span>
+      <button type="button" class="morf-knapp" data-utgang="uten" aria-pressed="true">Without protection</button>
+      <button type="button" class="morf-knapp" data-utgang="fredet" aria-pressed="false">With data-preserve-attr</button>
+      <span class="morf-styring">
+        <button type="button" class="morf-knapp" data-steg="neste">Next step</button>
+        <button type="button" class="morf-knapp" data-steg="start">Start over</button>
+      </span>
+    </div>
+    <div class="morf-felt">
+      <span class="morf-etikett">Email</span><span class="morf-input"></span><span class="morf-feil" id="epost-feil" hidden>Enter a valid email address</span>
+      <p class="morf-opplest"></p>
+    </div>
+    <div class="morf-kolonner">
+      <div class="morf-kolonne">
+        <h3>The browser, the element <code>r</code></h3>
+        <div class="morf-brikker" data-side="r"></div>
+      </div>
+      <div class="morf-kolonne">
+        <h3>To and from the server, the element <code>s</code></h3>
+        <div class="morf-trafikk"></div>
+      </div>
+    </div>
+    <p class="morf-tekst" aria-live="polite"></p>
+  </div>
+  </div>
+<script>
+(() => {
+  const seksjon = document.currentScript.closest(".lysbilde")
+  const scene = seksjon.querySelector(".morf-scene")
+  const kode = scene.querySelector("pre")
+  const panel = scene.querySelector(".morf-panel")
+  const bytt = seksjon.querySelector(".morf-bytt")
+  const brikkerR = panel.querySelector('[data-side="r"]')
+  const trafikk = panel.querySelector(".morf-trafikk")
+  const felt = panel.querySelector(".morf-input")
+  const feil = panel.querySelector(".morf-feil")
+  const opplest = panel.querySelector(".morf-opplest")
+  const tekst = panel.querySelector(".morf-tekst")
+  const neste = panel.querySelector('[data-steg="neste"]')
+  const start = panel.querySelector('[data-steg="start"]')
+  const utganger = [...panel.querySelectorAll("[data-utgang]")]
+  const stille = matchMedia("(prefers-reduced-motion: reduce)").matches
+  const ADRESSE = "alex@example"
+
+  // Two real elements. r is what is in the page, s what the server sent.
+  let r, s, steg, utgang = "uten", lopende = 0, opptatt = false
+  const SISTE = 6
+  const oppdaterKnapp = () => neste.setAttribute("aria-disabled", String(opptatt || steg >= SISTE))
+
+  const brikke = (navn, verdi, kilde) => {
+    const b = document.createElement("span")
+    b.className = "morf-brikke"
+    b.dataset.navn = navn
+    if (kilde) b.dataset.kilde = kilde
+    b.textContent = verdi === "" ? navn : `${navn}="${verdi}"`
+    return b
+  }
+  // Draws r from the element's own attributes, and from nothing else.
+  function tegnR(komponentens = []) {
+    brikkerR.replaceChildren()
+    for (const { name, value } of r.attributes) {
+      brikkerR.append(brikke(name, value, komponentens.includes(name) ? "komponent" : ""))
+    }
+  }
+  // One line in the traffic. The first part is muted, the rest is the payload.
+  function linje(merke, innhold) {
+    const l = document.createElement("span")
+    l.className = "morf-linje"
+    l.dataset.tilstand = "ny"
+    const m = document.createElement("i")
+    m.textContent = merke
+    l.append(m, innhold)
+    trafikk.append(l)
+  }
+  const som = (el) => {
+    const a = [...el.attributes].map(({ name, value }) => (value === "" ? name : `${name}="${value}"`)).join(" ")
+    return `<input ${a}>`
+  }
+  // What a screen reader says about the field, worked out from r: the name from
+  // the label, invalid from aria-invalid, and the description by following
+  // aria-describedby to the element with that id, as the screen reader does.
+  function lesOpp() {
+    let t = "Email"
+    if (r.getAttribute("aria-invalid") === "true") t += ", invalid"
+    const peker = r.getAttribute("aria-describedby")
+    const beskrivelse = peker && document.getElementById(peker)
+    if (beskrivelse && !beskrivelse.hidden) t += `, ${beskrivelse.textContent}`
+    opplest.replaceChildren("The screen reader says: ")
+    const b = document.createElement("b")
+    b.textContent = `“${t}”`
+    opplest.append(b)
+  }
+  const si = (t, tone) => {
+    tekst.textContent = t
+    if (tone) tekst.dataset.tone = tone
+    else delete tekst.dataset.tone
+  }
+  const vent = (ms) => new Promise((klar) => setTimeout(klar, stille ? 0 : ms))
+
+  function fraStart() {
+    lopende++
+    r = document.createElement("input")
+    r.setAttribute("id", "epost")
+    r.setAttribute("class", "lt-input")
+    r.setAttribute("required", "")
+    s = null
+    steg = 0
+    felt.textContent = ""
+    delete felt.dataset.ugyldig
+    feil.hidden = true
+    trafikk.replaceChildren()
+    const t = document.createElement("span")
+    t.className = "morf-tom"
+    t.textContent = "nothing yet"
+    trafikk.append(t)
+    tegnR()
+    lesOpp()
+    si("The server sent the page, with an empty email field. Everything in r came from there.")
+    opptatt = false
+    oppdaterKnapp()
+  }
+
+  async function nesteSteg() {
+    if (opptatt || steg >= SISTE) return
+    steg++
+    oppdaterKnapp()
+    const mitt = ++lopende
+    if (steg === 1) {
+      felt.textContent = ADRESSE
+      si(`The user types “${ADRESSE}” and moves on to the next field.`)
+    } else if (steg === 2) {
+      feil.hidden = false
+      felt.dataset.ugyldig = ""
+      r.setAttribute("aria-describedby", "epost-feil")
+      tegnR(["aria-describedby"])
+      brikkerR.lastElementChild.dataset.tilstand = "ny"
+      lesOpp()
+      si("The component in the browser sees that the address has no domain, shows the error message, and wires it to the field with aria-describedby.")
+    } else if (steg === 3) {
+      trafikk.replaceChildren()
+      linje("→ ", `POST /answer  {"email": "${ADRESSE}"}`)
+      si("The user submits the form. Datastar sends the fields to the server as JSON.")
+    } else if (steg === 4) {
+      s = document.createElement("input")
+      s.setAttribute("id", "epost")
+      s.setAttribute("class", "lt-input")
+      s.setAttribute("required", "")
+      s.setAttribute("aria-invalid", "true")
+      if (utgang === "fredet") s.setAttribute("data-preserve-attr", "aria-describedby")
+      linje("← ", "event: datastar-patch-elements")
+      linje("  ", `data: elements ${som(s)}`)
+      si(utgang === "fredet"
+        ? "The server validates and answers with a Server-Sent Event: the field again, with aria-invalid, and aria-describedby protected in data-preserve-attr."
+        : "The server validates and answers with a Server-Sent Event: the field again, with aria-invalid. It does not know about aria-describedby.")
+    } else if (steg === 5) {
+      opptatt = true
+      oppdaterKnapp()
+      si("Datastar finds the element with the same id, first copies in what the server sent, and then goes through the attributes in r, one at a time.")
+      // As datastar.js does it, with o read the way Datastar reads it: first
+      // what the server sent is copied, except what is protected, then the loop
+      // from the code panel runs over what is in r.
+      const o = (s.getAttribute("data-preserve-attr") ?? "").split(" ").filter(Boolean)
+      const hadde = [...r.attributes].map((a) => a.name)
+      for (let { name: l, value: f } of s.attributes) r.getAttribute(l) !== f && !o.includes(l) && r.setAttribute(l, f)
+      tegnR(["aria-describedby"])
+      for (const b of brikkerR.children) if (!hadde.includes(b.dataset.navn)) b.dataset.tilstand = "ny"
+      await vent(700)
+      if (mitt !== lopende) return
+      const fjernet = []
+      for (let { name: l } of Array.from(r.attributes)) {
+        const b = brikkerR.querySelector(`[data-navn="${l}"]`)
+        b.dataset.tilstand = "sjekkes"
+        await vent(550)
+        if (mitt !== lopende) return
+        if (!s.hasAttribute(l) && !o.includes(l)) {
+          r.removeAttribute(l)
+          fjernet.push(l)
+          b.dataset.tilstand = "fjernes"
+          await vent(650)
+          if (mitt !== lopende) return
+          b.dataset.tilstand = "borte"
+        } else {
+          delete b.dataset.tilstand
+        }
+      }
+      await vent(350)
+      if (mitt !== lopende) return
+      tegnR(fjernet.includes("aria-describedby") ? [] : ["aria-describedby"])
+      lesOpp()
+      opptatt = false
+      oppdaterKnapp()
+      si(fjernet.includes("aria-describedby")
+        ? "aria-describedby was not in what the server sent, and has been removed. aria-invalid came in with the copy."
+        : "aria-describedby was in data-preserve-attr, and was left alone. aria-invalid came in with the copy.")
+    } else if (steg === 6) {
+      oppdaterKnapp()
+      if (r.hasAttribute("aria-describedby")) {
+        si("The screen reader reads the error message, but only because the template protected the name. If the component changes what it sets, every template has to change with it.", "ok")
+      } else {
+        si("The error message is there on screen, but the wiring is gone. The screen reader reads the field without it, and nothing reports it.", "varsel")
+      }
+    }
+  }
+
+  neste.addEventListener("click", nesteSteg)
+  start.addEventListener("click", fraStart)
+  for (const k of utganger) {
+    k.addEventListener("click", () => {
+      utgang = k.dataset.utgang
+      for (const a of utganger) a.setAttribute("aria-pressed", String(a === k))
+      fraStart()
+    })
+  }
+  bytt.addEventListener("click", () => {
+    const visPanel = kode.hasAttribute("data-skjult") === false
+    kode.toggleAttribute("data-skjult", visPanel)
+    panel.toggleAttribute("data-skjult", !visPanel)
+    bytt.setAttribute("aria-pressed", String(visPanel))
+    bytt.textContent = visPanel ? "Show the code" : "Show the morph"
+    if (visPanel) fraStart()
+  })
+  fraStart()
+})()
+</script>
+  <p style="margin-block-start: 1rem;">The emergency exit is <code>data-preserve-attr</code>, where the HTML template on the server lists everything the web component has set. Every template then has to change in step with the web component, with no compiler to say so, so a design system cannot build on it.</p>
+  <p style="margin-block-start: 1rem;">If a web component has added <code>aria-describedby</code> in the browser, it is gone at the next update, and the screen reader loses the wiring without anything reporting it. In React, a re-render of the parent component can throw away nodes a web component has inserted. Therefore:</p>
+  <div class="boks">
+    <p style="margin: 0;"><strong>A web component never adds nodes to markup that someone else renders. Everything it writes there, it works out from the markup and from what the user does, so it can write the same again after every re-render.</strong></p>
+  </div>
+  <p style="margin-block-start: 1rem;">Datastar removes every attribute the server did not send. React reports a mismatch if the web component wrote anything before hydration. Whatever the framework, what the web component has set must survive attributes being removed.</p>
+</section>
+
+<!-- 13 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 2 of 7 · Markup must come from whoever renders it</p>
+  <h2>The two layers</h2>
+  <p>The rule on the previous slide splits the system into two layers: what is rendered, and what the web component does afterwards. The split is necessary because a re-render can tear away attributes and replace nodes. When a node is replaced, the event listeners on it disappear too, and the web component adds them again when MutationObserver reports the new node. A builder function never sets an event listener, and a web component writes only what it can work out from the markup and from what the user does.</p>
+  <div class="tabellrull">
+  <table>
+    <thead><tr><th>Layer</th><th>Contents</th><th>Who produces it</th></tr></thead>
+    <tbody>
+      <tr><td>The builder functions</td><td>Classes, <code>data-*</code>, the accessibility wiring</td><td>The code that renders, when it can call a JavaScript function. A template in another language writes the classes itself.</td></tr>
+      <tr><td>Web components</td><td>Keyboard, focus, positioning, and the wiring where the markup lacks it</td><td>The component in the browser, once the markup is in place</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-block-start: 1rem;"><strong>No shadow DOM.</strong> Shadow DOM is the reason many have tried web components and given up: a field in a shadow root is outside the form around it, and you have to report the value from the host element with <code>ElementInternals</code> to get it into the submission. Here you write the <code>&lt;input&gt;</code> yourself, in plain DOM, and the web component wraps around it.</p>
+  <div class="perspektiv">
+    <p><span class="rolle rolle-lotek">In LO-TEK</span><span>The builder functions are in <code>lt</code>, for example <code>lt.button()</code> and <code>lt.field()</code>, and every web component is called <code>&lt;lt-…&gt;</code>.</span></p>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 2 of 7 · Markup must come from whoever renders it</p>
+  <h2>Three categories, and one question</h2>
+  <p>With SSR the server writes all the HTML, and with CSR the framework does. Which category a component belongs to is therefore not about who writes the HTML. It is about <strong>who creates the nodes, and what a web component does with them while the page is alive</strong>.</p>
+  <div class="rader tre">
+    <div class="boks">
+      <span class="merke merke-blaa">CSS only</span>
+      <p>Whoever renders creates everything, and no JavaScript runs. The markup is static: a class and a few <code>data-*</code>.</p>
+      <pre>&lt;button class="lt-button"
+  data-variant="secondary"&gt;</pre>
+    </div>
+    <div class="boks">
+      <span class="merke merke-gronn">Frame</span>
+      <p>Whoever renders decides which nodes exist. The web component listens, and sets only attributes it works out from them.</p>
+      <pre>&lt;lt-field&gt;
+  &lt;label&gt;…&lt;/label&gt;
+  &lt;input class="lt-input"&gt;
+&lt;/lt-field&gt;</pre>
+    </div>
+    <div class="boks">
+      <span class="merke merke-gul">Standalone</span>
+      <p>Toasts, and the bar that tells you when the connection drops. They send no value with the form, and they create their content themselves when the app calls them. If a component has more text than a couple of labels, it is a frame.</p>
+      <pre>toast.show("Saved")</pre>
+    </div>
+  </div>
+  <p style="margin-block-start: 1.1rem;">One sentence decides where a component ends up.</p>
+  <div class="boks">
+    <p style="margin: 0;"><strong>A component that sends a value with the form, or has content that must come from whoever renders, cannot create the markup itself.</strong> It is a frame.</p>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 2 of 7 · Markup must come from whoever renders it</p>
+  <h2>Two paths to the same contract</h2>
+  <p>What matters is whether the code that creates the markup <strong>can call a function</strong>. Where it runs makes no difference.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>The code can call a function: React, Astro, Node, Kotlin</p>
+      <pre>const field = lt.field({ id: useId(), help: true })
+
+&lt;div&gt;
+  &lt;label {...field.label}&gt;Email&lt;/label&gt;
+  &lt;input {...lt.input({ type: "email" })} {...field.control} /&gt;
+  &lt;p {...lt.helpText()} {...field.help}&gt;We never send spam&lt;/p&gt;
+&lt;/div&gt;
+
+<i>// The wiring is in the markup from the first render.</i>
+<i>// The web component is not needed.</i></pre>
+    </div>
+    <div>
+      <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>The markup is created without JavaScript: Go, PHP, Python, by hand</p>
+      <pre>&lt;lt-field&gt;
+  &lt;label class="lt-label"&gt;Email&lt;/label&gt;
+  &lt;input class="lt-input" type="email"&gt;
+  &lt;p class="lt-help-text"&gt;We never send spam&lt;/p&gt;
+&lt;/lt-field&gt;
+
+<i>// No ids, no for, no aria-describedby.</i>
+<i>// The web component sets the wiring in the browser.</i></pre>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;">The two are not a matter of taste. They are two paths for two kinds of code, and both give the same wiring between label, field and help text.</p>
+  <div class="perspektiv">
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Has to test both paths against the same contract.</span></p>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 2 of 7 · Markup must come from whoever renders it</p>
+  <h2>What the web component may write</h2>
+  <p>The rule says that everything the web component writes in markup others have rendered is worked out from the markup and from what the user does. This is how <code>&lt;lt-field&gt;</code> from the previous slide sets <code>id</code>, <code>for</code> and <code>aria-describedby</code> on elements it did not render itself.</p>
+  <ul>
+    <li><strong>It reads before it writes.</strong> The id is taken from the field or from the label's <code>for</code>, and ids that were rendered in <code>aria-describedby</code> are included in the result.</li>
+    <li><strong>It compares before it writes.</strong> If the same value is already there, the web component writes nothing.</li>
+    <li><strong>It remembers what it wrote itself, and on which node.</strong> Only that can it put back when an update tears it away. An id it has created comes back as the same id.</li>
+  </ul>
+  <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>The helper all writes go through, simplified</p>
+  <pre>function setAttr(el, name, value) {
+  if (el.getAttribute(name) !== value) el.setAttribute(name, value)
+}</pre>
+  <div class="perspektiv">
+    <p><span class="rolle">Product teams</span><span>Can write as much or as little of the wiring as they like.</span></p>
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Has to build the web component so it keeps track of what it has written itself, node by node. Otherwise it cannot tell what it wrote from what was rendered.</span></p>
+    <p><span class="rolle rolle-lotek">In LO-TEK</span><span>The memory is a <code>WeakMap</code> keyed by the node. The tabs, the dialog and the others set roles, ids and wiring only when they are missing. The field writes the whole wiring every time, and includes what was rendered.</span></p>
+  </div>
+</section>
+
+<!-- 17 -->
+<section class="lysbilde kapittel">
+  <span class="merke merke-blaa">Requirement 3 of 7</span>
+  <div class="kapittel-topp">
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="fkontrakt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gkontrakt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#fkontrakt)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gkontrakt)"/>
+      <rect x="26" y="45" width="20" height="14" rx="4" fill="#1362ae" stroke="#9ccff2" stroke-width="2.2"/>
+      <path d="M20 17 v10 a6 6 0 0 0 6 6 h4 a6 6 0 0 1 6 6 v6" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M52 17 v10 a6 6 0 0 1 -6 6 h-4 a6 6 0 0 0 -6 6 v6" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="20" cy="15" r="3.4" fill="#cde1f9"/>
+      <circle cx="52" cy="15" r="3.4" fill="#cde1f9"/></svg>
+    <h2>Accessibility must be written in one place</h2>
+  </div>
+  <p class="ingress">The rules for how a form field is wired up for a screen reader exist in one place in the code, and both the builder function and the web component use that same code.</p>
+  <ol class="kapittelliste">
+      <li>One function, two entry points</li>
+  </ol>
+</section>
+
+<!-- 18 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 3 of 7 · Accessibility must be written in one place</p>
+  <h2>One function, two entry points</h2>
+  <p>The wiring between label, field, help text and error message is the same whoever writes the markup. That is why it exists in one place, and the two paths are two calls to the same function.</p>
+  <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>frame/field/field-core.ts</p>
+  <pre>computeFieldAttributes(...)
+   ├── lt.field()      <i>← called where the markup is rendered</i>
+   └── &lt;lt-field&gt;      <i>← the web component calls it on elements already in the DOM</i></pre>
+  <p style="margin-block-start: 1rem;">If the contract changes, it changes there, not in the web component. If every server had to write the wiring itself, the system would be for JavaScript only, and everyone else would get a handwritten fallback. That is what breaks first.</p>
+  <div class="perspektiv">
+    <p><span class="rolle">Product teams</span><span>Get the same wiring whether the markup is made in React, in a Go template or by hand.</span></p>
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Has to write the contract as a pure function without a DOM, so that both the code that renders and a web component can call it.</span></p>
+    <p><span class="rolle rolle-lotek">In LO-TEK</span><span>Kotlin has its own <code>Lt.field()</code>, written by hand. A test runs it against 237 combinations of options with the answer from TypeScript, and one difference stops the build.</span></p>
+  </div>
+</section>
+
+<!-- 19 -->
+<section class="lysbilde kapittel">
+  <span class="merke merke-blaa">Requirement 4 of 7</span>
+  <div class="kapittel-topp">
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="ffasit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gfasit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#ffasit)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gfasit)"/>
+      <rect x="28" y="13" width="16" height="12" rx="3.5" fill="#1362ae" stroke="#cde1f9" stroke-width="2.2"/>
+      <path d="M36 25 v8 M22 41 v-4 a4 4 0 0 1 4-4 h20 a4 4 0 0 1 4 4 v4" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <rect x="14" y="43" width="16" height="12" rx="3.5" fill="none" stroke="#9ccff2" stroke-width="2.2"/>
+      <rect x="42" y="43" width="16" height="12" rx="3.5" fill="none" stroke="#9ccff2" stroke-width="2.2"/></svg>
+    <h2>The web component must read state from the DOM</h2>
+  </div>
+  <p class="ingress">If the state is in the markup, the web component reads it from there. It never keeps a separate copy of anything that is also rendered, and it puts back what a re-render tears away.</p>
+  <ol class="kapittelliste">
+      <li>When a re-render tears away what the web component set</li>
+      <li>The web component must never work out what it can read</li>
+      <li>The web component should speak up when the markup does not fit together</li>
+  </ol>
+</section>
+
+<!-- 20 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 4 of 7 · The web component must read state from the DOM</p>
+  <h2>When a re-render tears away what the web component set</h2>
+  <p>A re-render can remove what the web component set: DOM morphing strips the attribute, and React can replace the node. The web component knows what it has worked out itself and writes it back straight away. Whoever renders therefore needs to know nothing about what the web component does:</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>The markup, rendered with CSR or SSR</p>
+      <pre>&lt;lt-field&gt;
+  &lt;label class="lt-label"&gt;Email&lt;/label&gt;
+  &lt;input class="lt-input" type="email"&gt;
+  &lt;p class="lt-help-text"&gt;We never send spam&lt;/p&gt;
+&lt;/lt-field&gt;</pre>
+      <p class="dempet" style="margin-block-start: 0.6rem;">No ids, no <code>for</code>, no <code>aria-describedby</code> and no list of what has to be preserved. The web component sets the wiring and puts it back every time it disappears.</p>
+    </div>
+    <div>
+      <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>If the markup alone is to decide the state</p>
+      <pre>&lt;lt-field server-controlled&gt;</pre>
+      <p class="dempet" style="margin-block-start: 0.6rem;">One attribute on the host element, and the web component repairs nothing. Then what was rendered applies, every time. The name says server, but the attribute applies just as much to CSR.</p>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;"><strong>If the web component worked out the attribute, it can work it out again. If the user did something, the web component knows what it was, because it was there when it happened.</strong> That is what makes the repair possible.</p>
+  <p>It does not flicker, and that has been tested. DOM morphing removes the attribute, MutationObserver calls the web component in a microtask before the next paint, and it puts the attribute back. The rendered version is in the DOM for a moment without anyone seeing it.</p>
+  <div class="perspektiv">
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Has to compare before every write. If the web component writes the same value again, MutationObserver triggers itself, and the test run hangs instead of failing.</span></p>
+  </div>
+</section>
+
+<!-- 21 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 4 of 7 · The web component must read state from the DOM</p>
+  <h2>The web component must never work out what it can read</h2>
+  <p>Whoever renders and the web component look at the same page. If the web component keeps a separate version of something that is also rendered, the state exists in two places, and then it is only a matter of time before the two disagree.</p>
+  <p>That a field is invalid is stated as <code>aria-invalid</code> on the control. If the web component reads it from there, it always agrees with what was rendered. If it reads a separate attribute on the host element instead, sooner or later it will remove something that was just rendered. In React that shows up as a hydration mismatch, in Datastar as an error message on a valid field.</p>
+  <div class="boks">
+    <p style="margin: 0;"><strong>If the state is in the markup, the web component must read it from there.</strong></p>
+  </div>
+  <p style="margin-block-start: 1rem;">Which tab is selected is therefore read from <code>aria-selected</code> and not from a separate attribute. When the web component both reads and writes an attribute, it also has to know who set it.</p>
+  <div class="boks">
+    <p style="margin: 0;"><strong>Note the value the web component wrote, and on which node. If something else is there next time, someone else has touched it.</strong> Never decide who set it from what the web component believed last time.</p>
+  </div>
+  <p class="dempet" style="margin-block-start: 1rem;">Without that, the same markup gives two different answers, depending on which states the host element has been in before.</p>
+</section>
+
+<!-- 22 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 4 of 7 · The web component must read state from the DOM</p>
+  <h2>The web component should speak up when the markup does not fit together</h2>
+  <p class="ingress">HTML has no compiler. If a team writes a field without a label, nothing stops it, and the page looks entirely right.</p>
+  <p>The one who notices the bug is the one who cannot see the screen: the field is read out without a name. A web component that gives up without a word passes the bug on to the user. Instead it should write one line in the console, while the developer is still working on the code.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>The markup that was written</p>
+      <pre>&lt;lt-field&gt;
+  &lt;input class="lt-input" id="date-of-birth"&gt;
+&lt;/lt-field&gt;</pre>
+    </div>
+    <div>
+      <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>What the developer sees</p>
+      <pre>lt-field: found no &lt;label&gt;.
+The field then gets no label, and
+a screen reader reads it out without a name.</pre>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;">A warning that raises false alarms gets ignored. Three choices make this one trustworthy:</p>
+  <ul>
+    <li><strong>It waits until the parser is done and two frames have passed.</strong> HTML from a server arrives in pieces, and a framework can render in several passes, so a moment without a label is entirely normal. The web component looks again and speaks up only if it is still wrong.</li>
+    <li><strong>The same message every time.</strong> A number in the message, as in “Found 3 tabs, but 1 panel”, makes it a new message for every panel, and the one warning becomes twenty.</li>
+    <li><strong>It points at the real bug.</strong> The popover finds its button by looking up the panel's id. If the id is missing, the message should say so, and not that the button is missing. Otherwise the developer looks in the wrong place.</li>
+  </ul>
+  <div class="perspektiv">
+    <p><span class="rolle rolle-lotek">In LO-TEK</span><span>A check in CI reads the console on every page of the built documentation and fails if there is a warning in it.</span></p>
+  </div>
+</section>
+
+<!-- 23 -->
+<section class="lysbilde kapittel">
+  <span class="merke merke-blaa">Recommendation 5 of 7</span>
+  <div class="kapittel-topp">
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="ftyper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gtyper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#ftyper)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gtyper)"/>
+      <path d="M24 17 a8 8 0 0 0 -8 8 v6 a5 5 0 0 1 -5 5 a5 5 0 0 1 5 5 v6 a8 8 0 0 0 8 8"
+            fill="none" stroke="#9ccff2" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M48 17 a8 8 0 0 1 8 8 v6 a5 5 0 0 0 5 5 a5 5 0 0 0 -5 5 v6 a8 8 0 0 1 -8 8"
+            fill="none" stroke="#9ccff2" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M28 36.5 L34 42.5 L45 29.5" fill="none" stroke="#cde1f9" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h2>The types should work without a framework</h2>
+  </div>
+  <p class="ingress">You should not lose autocompletion and red squiggles in the editor because you do not use React. The builder functions are plain TypeScript functions that return attributes.</p>
+  <p class="dempet">This is what stops framework independence from feeling like a step backwards.</p>
+  <ol class="kapittelliste">
+      <li>One object in, attributes out</li>
+      <li>Coding agents get a check in every environment</li>
+  </ol>
+</section>
+
+<!-- 24 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Recommendation 5 of 7 · The types should work without a framework</p>
+  <h2>One object in, attributes out</h2>
+  <p>The objection to leaving React is usually the developer experience: you lose components that know their own options. The answer is that a builder function gives the same, because it is a plain TypeScript function. It returns attributes, and the editor knows them.</p>
+  <div class="rader to like-hoyde" style="margin-block-start: 1.1rem;">
+    <div>
+      <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>The call, and what comes out</p>
+      <pre>lt.button({ variant: "secondary" })
+<i>// { class: "lt-button", "data-variant": "secondary" }</i>
+
+lt.input({ type: "email", state: "invalid" })
+<i>// { class: "lt-input", type: "email",</i>
+<i>//   "data-state": "invalid", "aria-invalid": "true" }</i></pre>
+    </div>
+    <div>
+      <p class="kodetittel">The shape is fixed</p>
+      <div class="boks">
+      <ul>
+        <li>Always an object, never positional arguments.</li>
+        <li>The default value gives no attribute. The CSS already has it.</li>
+        <li>The allowed values are attached to the function, so they show up in the editor.</li>
+        <li>One term, one meaning: <code>variant</code> is visual weight, <code>color</code> is what a status means, <code>state</code> is validation.</li>
+      </ul>
+      </div>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;">If you make a typo, for example <code>variant: "secondry"</code>, you get a red squiggle in the editor before you save, wherever TypeScript sees the code: in JSX, in Astro and in JavaScript with type checking switched on. Without type checking, you can check the value at runtime with <code>lt.button.isVariant()</code>.</p>
+  <div class="perspektiv">
+    <p><span class="rolle">Product teams</span><span>Get the types without installing a framework, and without anyone having written a component for their particular framework.</span></p>
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Has to keep the allowed values, the types and the CSS in step. A value that does nothing is worse than no value.</span></p>
+  </div>
+</section>
+
+<!-- 25 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Recommendation 5 of 7 · The types should work without a framework</p>
+  <h2>Coding agents should get a check in every environment</h2>
+  <p>A coding agent fills the gaps with what it has seen in other design systems: <code>lt-modal</code>, <code>data-variant="outline"</code>. It stops only if something speaks up while it works.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>With JavaScript, TypeScript speaks up</p>
+      <pre><i>// button.ts</i>
+lt.button({ variant: "outline" })
+
+<i>$ tsc</i>
+button.ts(2,34): error TS2322: Type '"outline"'
+  is not assignable to type '"danger" | "primary"
+  | "secondary" | "ghost" | undefined'.</pre>
+      <p class="dempet" style="margin-block-start: 0.6rem;">The rulebook, one Markdown file per environment that the agent reads, tells it to use the builder functions. TypeScript does not see a class written by hand in a string.</p>
+    </div>
+    <div>
+      <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>Without JavaScript, the design system provides the check itself</p>
+      <pre><i>$ npx @lo-tek/interfaces check page.html</i>
+page.html:1:14: warning: The class “lt-modal”
+  does not exist in LO-TEK.
+page.html:2:29: warning: data-variant cannot be
+  “outline” on button. Allowed values:
+  secondary, ghost, danger, and primary with no attribute.
+
+2 findings in 1 file.
+<i>$ echo $?</i>
+1</pre>
+      <p class="dempet" style="margin-block-start: 0.6rem;">The check reads the HTML or the template, skips what is template syntax, and exits with an error code, as <code>tsc</code> does. With no findings it answers “The markup matches LO-TEK in 1 file.” and exits with 0.</p>
+    </div>
+  </div>
+  <div class="perspektiv">
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Has to generate the rulebooks from the code and test them in every build. If a rulebook mentions a class, an element or a token that does not exist, the build stops.</span></p>
+    <p><span class="rolle rolle-lotek">In LO-TEK</span><span>The check is also in VS Code and IntelliJ, and in Kotlin <code>Lotek.diagnosePage()</code> checks the page the server sends. The rulebooks are at <code>lo-tek.sobernetics.no/llms.txt</code>.</span></p>
+  </div>
+</section>
+
+<!-- 26 -->
+<section class="lysbilde kapittel">
+  <span class="merke merke-blaa">Requirement 6 of 7</span>
+  <div class="kapittel-topp">
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="flag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="glag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#flag)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#glag)"/>
+      <path d="M36 40 L14 50 L36 60 L58 50 Z" fill="none" stroke="#b5cbee" stroke-width="2.2" opacity="0.5" stroke-linejoin="round"/>
+      <path d="M36 28 L14 38 L36 48 L58 38 Z" fill="none" stroke="#b5cbee" stroke-width="2.2" opacity="0.75" stroke-linejoin="round"/>
+      <path d="M36 16 L14 26 L36 36 L58 26 Z" fill="#1362ae" stroke="#cde1f9" stroke-width="2.4" stroke-linejoin="round"/></svg>
+    <h2>The consumer's CSS must win</h2>
+  </div>
+  <p class="ingress">All component CSS is in a layer of its own. An entirely ordinary rule written by the team beats the system's, without <code>!important</code> and without specificity tricks.</p>
+  <ol class="kapittelliste">
+      <li>The layer that makes it possible</li>
+  </ol>
+</section>
+
+<!-- 27 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Requirement 6 of 7 · The consumer's CSS must win</p>
+  <h2>The layer that makes it possible</h2>
+  <p>A team that has to write <code>!important</code> to move a button four pixels stops using the system. That is why all component CSS is in a layer of its own, and a rule outside any layer beats everything inside one.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>Without the layer, your rule loses on specificity</p>
+      <pre>.lt-button           <i>(0,1,0)</i>
+.lt-button:disabled  <i>(0,2,0)  ← the system's wins</i></pre>
+      <p class="kodetittel" style="margin-block-start: 0.9rem;">With the layer, your rule wins regardless</p>
+      <pre>@layer lotek {
+  .lt-button:disabled { … }
+}
+.lt-button { … }  <i>← unlayered, wins</i></pre>
+    </div>
+    <div>
+      <p class="kodetittel">Shape and size are read from a variable</p>
+      <pre>padding: var(--lt-button-padding,
+             var(--lt-spacing-2) var(--lt-spacing-4));</pre>
+      <p style="margin-block-start: 0.6rem;">The default value follows the spacing scale, also when the consumer changes <code>--lt-spacing-*</code>. The variables are deliberately not registered with <code>@property</code>: a registered initial value becomes the value when the variable is not set, and then <code>var()</code> never reaches the fallback.</p>
+    </div>
+  </div>
+  <div class="perspektiv">
+    <p><span class="rolle">Product teams</span><span>Can override everything from their own CSS, without copying the system's code.</span></p>
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Has to test the layer and the variables in a browser, not assume they work. Both have their own tests.</span></p>
+  </div>
+</section>
+
+<!-- 28 -->
+<section class="lysbilde kapittel">
+  <span class="merke merke-blaa">Recommendation 7 of 7</span>
+  <div class="kapittel-topp">
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="foverta" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="goverta" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#foverta)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#goverta)"/>
+      <path d="M16 32 v20 a4 4 0 0 0 4 4 h32 a4 4 0 0 0 4 -4 v-20" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M12 24 h48 v8 h-48 Z" fill="none" stroke="#9ccff2" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M36 46 V14" stroke="#cde1f9" stroke-width="3" stroke-linecap="round"/>
+      <path d="M28 21 L36 13 L44 21" fill="none" stroke="#cde1f9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h2>The team should be able to take over the code</h2>
+  </div>
+  <p class="ingress">A design system never covers everything. Instead of writing a wrapper around something that falls short, the team should be able to copy the source code of one component into its project.</p>
+  <ol class="kapittelliste">
+      <li>When the system falls short</li>
+  </ol>
+</section>
+
+<!-- 29 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">Recommendation 7 of 7 · The team should be able to take over the code</p>
+  <h2>When the system falls short</h2>
+  <p>A team that needs something the system has not thought of should be able to move on the same day. If they copy the component by hand, its imports point at files that do not exist in their project. The command below copies the source code and rewrites the imports, so the rest of the system still comes from the package and can be upgraded.</p>
+  <div class="boks">
+    <p style="margin: 0;">The order the team should try: <strong>first tokens, then component variables, then their own CSS in a layer of its own.</strong> Only when none of these is enough does the team take over the component. The first three cost nothing to upgrade from.</p>
+  </div>
+  <p style="margin-block-start: 1rem;">What makes the copy usable is that the references out of the component point at the package afterwards, and not at files the team does not have.</p>
+  <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>The source code of one component, into your project</p>
+  <pre>npx @lo-tek/interfaces takeover button --out=src/ui</pre>
+  <p style="margin-block-start: 1rem;">The command rewrites the references, so that <code>../shared.js</code> becomes <code>@lo-tek/interfaces/shared</code>. The lookup is built from <code>exports</code> in the package, so what is copied actually works where it lands. Next to the copy it writes a manifest, so <code>check --manifest</code> knows the classes in the copy.</p>
+  <div class="perspektiv">
+    <p><span class="rolle">Product teams</span><span>Move on without waiting for the system.</span></p>
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Has to make sure everything a component imports is in <code>exports</code>, or the copy points at something the team does not have.</span></p>
+  </div>
+</section>
+
+<!-- 30 -->
+<section class="lysbilde kapittel">
+  <span class="merke merke-gul">Chapter 8</span>
+  <div class="kapittel-topp">
+    <svg class="kapittelikon" viewBox="0 0 72 72" width="72" height="72" aria-hidden="true" focusable="false"><defs><linearGradient id="ffeller" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22304a"/><stop offset="1" stop-color="#151d2b"/></linearGradient><linearGradient id="gfeller" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs><rect x="1" y="1" width="70" height="70" rx="17" fill="url(#ffeller)"/><rect x="1" y="1" width="70" height="70" rx="17" fill="none" stroke="#9ccff2" stroke-opacity="0.32" stroke-width="1.5"/><path d="M18 1 H54 a17 17 0 0 1 17 17 v6 H1 v-6 A17 17 0 0 1 18 1 Z" fill="url(#gfeller)"/>
+      <path d="M36 15 L59 55 H13 Z" fill="#1362ae" stroke="#cde1f9" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M36 29 V42" stroke="#cde1f9" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="36" cy="48.5" r="2.1" fill="#cde1f9"/></svg>
+    <h2>The pitfalls</h2>
+  </div>
+  <p class="ingress">The requirements are easy to describe. The bugs come where the system meets React, a server without a DOM, or the code that runs before the web component is registered. Most were found in real apps, not in the unit tests.</p>
+  <ol class="kapittelliste">
+      <li>React 19 and web components</li>
+      <li>The server and hydration</li>
+      <li>Before the web component is registered</li>
+  </ol>
+</section>
+
+<!-- 31 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">The pitfalls</p>
+  <h2>React 19 and web components</h2>
+  <p>If a web component has a property with the same name as an attribute, React 19 sets the property and not the attribute. That causes three bugs, and the first two give no error message:</p>
+  <ul>
+    <li><strong>A boolean attribute cannot be sent as an empty string.</strong> <code>el.open = ""</code> is falsy, and the setter removes the attribute again. Send <code>true</code>.</li>
+    <li><strong>An option cannot borrow the name of a standard property.</strong> <code>autofocus="false"</code> becomes <code>el.autofocus = "false"</code>, and a non-empty string is truthy. Put the option in <code>data-*</code>, which React always sends as an attribute.</li>
+    <li><strong>A getter needs a setter.</strong> Without one, React throws “Cannot set property”, and the attribute never arrives.</li>
+  </ul>
+  <p>The spelling differs too. React wants <code>className</code>, <code>htmlFor</code> and <code>tabIndex</code>, and <code>tabIndex</code> as a number. A builder function that returns HTML names therefore needs a separate version for React.</p>
+  <div class="perspektiv">
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Has to test in a real React app. The bugs showed up there, and not in the unit tests.</span></p>
+    <p><span class="rolle rolle-lotek">In LO-TEK</span><span>The flags are sent as <code>true</code>, and the error summary's option is called <code>data-autofocus</code>.</span></p>
+  </div>
+</section>
+
+<!-- 32 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">The pitfalls</p>
+  <h2>The server and hydration</h2>
+  <div class="rader to">
+    <div class="boks">
+      <h3>An id that is generated automatically</h3>
+      <p>The server and the browser each generate their own id, and React reports a hydration mismatch. React does not promise to patch up attributes that differ, so the wiring between label and field can stay broken. Make <code>id</code> required in the type, and add a console message alongside for those the type does not reach. A check that has to infer from the environment what the developer meant guesses wrong in at least one environment.</p>
+    </div>
+    <div class="boks">
+      <h3>A class that extends <code>HTMLElement</code></h3>
+      <p><code>class X extends HTMLElement</code> is evaluated as soon as the module loads, and <code>HTMLElement</code> exists only in the browser. A server then cannot import anything from the package, not even a builder function. Extend a class that falls back to an empty class without a DOM.</p>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;">No browser test catches the second, because <code>HTMLElement</code> exists there. It has to be tested in an environment without a DOM.</p>
+  <div class="perspektiv">
+    <p><span class="rolle rolle-lotek">In LO-TEK</span><span><code>HostElement</code> is <code>HTMLElement</code> in the browser and an empty class without a DOM, and a script imports every entry in <code>exports</code> in Bun without a DOM.</span></p>
+  </div>
+</section>
+
+<!-- 33 -->
+<section class="lysbilde">
+  <p class="kapittelmerke">The pitfalls</p>
+  <h2>Before the web component is registered</h2>
+  <p>Until a web component is registered, it is a plain <code>HTMLElement</code>, with no methods and no behaviour.</p>
+  <ul>
+    <li><strong>Register on import, never in an effect.</strong> A <code>useEffect</code> runs only after React has put the elements in the DOM. If the app calls a method on the element before that, it gets “reportSuccess is not a function”.</li>
+    <li><strong>An imperative call has to wait for registration.</strong> A helper that waits for <code>customElements.whenDefined()</code> for the element's own tag name makes the order irrelevant. It speaks up in the console if it takes too long.</li>
+    <li><strong>The flicker before registration is solved in CSS.</strong> <code>:not(:defined)</code> applies until the web component is registered. With it, the stylesheet can show only the first panel, so whoever renders does not have to write <code>hidden</code> on the rest.</li>
+  </ul>
+  <div class="perspektiv">
+    <p><span class="rolle rolle-lotek">In LO-TEK</span><span><code>defineLt()</code> registers all nine, and <code>showToast</code>, <code>reportFailure</code> and the other imperative calls wait by themselves.</span></p>
+  </div>
+</section>
+
+<!-- 34 -->
+<section class="lysbilde">
+  <h2>A form field, with and without JavaScript</h2>
+  <p>This is what it looks like for someone using a design system built to these five requirements and two recommendations. The example is LO-TEK. You install one package, import the stylesheet for what you need and write ordinary HTML.</p>
+  <div class="rader to">
+    <div>
+      <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>Classes only: no JavaScript in the browser</p>
+      <pre>import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/field.css"
+
+&lt;label class="lt-label"&gt;Email&lt;/label&gt;
+&lt;input class="lt-input" type="email"&gt;
+&lt;p class="lt-error-text"&gt;Enter a valid address&lt;/p&gt;</pre>
+    </div>
+    <div>
+      <p class="kodetittel"><span class="lotek-mark">LO-TEK</span>The same markup, with one element around it</p>
+      <pre>import { defineLtField } from "@lo-tek/interfaces/field"
+defineLtField()
+
+<b>&lt;lt-field invalid&gt;</b>
+  &lt;label class="lt-label"&gt;Email&lt;/label&gt;
+  &lt;input class="lt-input" type="email"&gt;
+  &lt;p class="lt-error-text"&gt;Enter a valid address&lt;/p&gt;
+<b>&lt;/lt-field&gt;</b></pre>
+    </div>
+  </div>
+  <p style="margin-block-start: 1rem;">On the left, no code runs. The label, the field and the error message are ordinary HTML elements with classes from the system. They look right, but nothing wires them together: a screen reader reads the field out without a name and does not read the error message. On the right are exactly the same elements, with one element around them. It is <code>&lt;lt-field&gt;</code> that sets <code>id</code>, <code>for</code> and <code>aria-describedby</code>, so that a screen reader reads out both the label and the error message.</p>
+  <div class="perspektiv">
+    <p><span class="rolle">Product teams</span><span>Can start with tokens and a few buttons and adopt the rest when they need it.</span></p>
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Has to preserve this simplicity, even when a component gets complicated on the inside.</span></p>
+  </div>
+</section>
+
+<!-- 35 -->
+<section class="lysbilde">
+  <h2>The demo that shows it works</h2>
+  <p><strong>Førstelinja</strong> is a game built with LO-TEK, in three versions: Kotlin with Datastar, React with TanStack Start, and Astro with whole pages from the server. Same game server, same screen, same components, and you can play against someone playing in another version.</p>
+  <p>It is also a stress test. A component can look right in a unit test and still break the moment a real server or React re-renders the page. The TanStack Start version renders in the browser from JSON, as an ordinary CSR app does, and the other two render on the server.</p>
+  <p class="kodetittel">The panel in the game: what actually went over the network, read from the traffic</p>
+  <div class="tabellrull">
+  <table>
+    <thead><tr><th>Version</th><th>Over the network</th><th>Where it is rendered</th></tr></thead>
+    <tbody>
+      <tr><td>Datastar</td><td><code>SSE · datastar-patch-elements · HTML · 16 kB</code></td><td>on the server</td></tr>
+      <tr><td>TanStack Start</td><td><code>SSE · tilstand · JSON · 2.4 kB</code></td><td>in the browser</td></tr>
+      <tr><td>Astro</td><td><code>SSE · puls · JSON · 0.5 kB</code>, and a new page on submit</td><td>on the server</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-block-start: 1rem;">Three entirely different paths, and the user sees no difference. Play it yourself: <a href="https://forstelinja-react.up.railway.app" target="_blank" rel="noreferrer">forstelinja-react.up.railway.app</a>, and press “Hva skjedde?” (What happened?) at the bottom right to see the traffic while you play.</p>
+  <div class="perspektiv">
+    <p><span class="rolle">Product teams</span><span>Can find their own framework in the list and see that the screen is the same.</span></p>
+    <p><span class="rolle rolle-forvalter">Design system team</span><span>Has to keep three real apps alive alongside the package. Unit tests do not see what these see.</span></p>
+  </div>
+</section>
+
+<!-- 36 -->
+<section class="lysbilde">
+  <h2>Checklist for your own design system</h2>
+  <p class="ingress">One question per requirement and recommendation, and one per pitfall. If you can answer yes to all of them, the system has what it takes.</p>
+  <div class="rader to-skjev">
+    <div class="boks">
+      <h3>The requirements and recommendations</h3>
+      <ol>
+        <li>Does a button look right before a single script has run?</li>
+        <li>Does what the web component has set survive a re-render, with both CSR and SSR?</li>
+        <li>Does the accessibility wiring exist in one place, and do both the builder function and the web component use it?</li>
+        <li>Does the web component read the state from the markup, and not from a separate copy?</li>
+        <li>Is a developer or a coding agent told about an invalid value, also in markup without JavaScript?</li>
+        <li>Does the team's own CSS beat the system's without <code>!important</code>?</li>
+        <li>Can a team take over one component and still get new versions of the rest?</li>
+      </ol>
+    </div>
+    <div class="boks">
+      <h3>The pitfalls</h3>
+      <ul>
+        <li>Does a boolean option work when React 19 sets it as a property?</li>
+        <li>Can every module be imported on a server without a DOM?</li>
+        <li>Does an imperative call work even before the web component is registered?</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-block-start: 1.2rem;"><strong>LO-TEK:</strong> <a href="https://lo-tek.sobernetics.no/" target="_blank" rel="noreferrer">lo-tek.sobernetics.no</a> · <strong>Package:</strong> <code>@lo-tek/interfaces</code> · <strong>The game:</strong> <a href="https://forstelinja-react.up.railway.app" target="_blank" rel="noreferrer">forstelinja-react.up.railway.app</a></p>
+</section>
+
+
+
+
+</div>
+
+<div class="styring">
+  <button type="button" id="forrige" aria-label="Previous slide">Previous</button>
+  <span class="teller" id="teller" aria-live="polite"></span>
+  <button type="button" id="neste" aria-label="Next slide">Next</button>
+</div>
+
+<script>
+/*
+ * Navigation.
+ *
+ * Arrow keys, Space and Enter move through the slides. Home and End go to the
+ * first and the last. The address gets #slide-6, so that a link points at one
+ * particular slide, and a reload lands in the same place. The older form
+ * #lysbilde-6 is still read, so links made before the translation still work.
+ */
+const lysbilder = [...document.querySelectorAll(".lysbilde")]
+const teller = document.getElementById("teller")
+let gjeldende = 0
+
+function vis(nr) {
+  gjeldende = Math.max(0, Math.min(nr, lysbilder.length - 1))
+  lysbilder.forEach((l, i) => {
+    if (i === gjeldende) l.setAttribute("data-vist", "")
+    else l.removeAttribute("data-vist")
+  })
+  // If focus was on something in the slide that was just hidden, such as a
+  // graph node clicked with the mouse, it stays there in Safari and Firefox,
+  // and Enter and Space go to the hidden control instead of moving on.
+  // The buttons in the controls keep focus, as they are always visible.
+  const aktiv = document.activeElement
+  if (aktiv && aktiv !== document.body && !lysbilder[gjeldende].contains(aktiv) && !aktiv.closest(".styring")) aktiv.blur()
+  teller.textContent = `${gjeldende + 1} / ${lysbilder.length}`
+  lysbilder[gjeldende].scrollTop = 0
+  window.scrollTo(0, 0)
+  history.replaceState(null, "", `#slide-${gjeldende + 1}`)
+}
+
+function fraAdressen() {
+  const treff = /^#(?:slide|lysbilde)-(\d+)$/.exec(location.hash)
+  return treff ? Number(treff[1]) - 1 : 0
+}
+
+document.getElementById("neste").addEventListener("click", () => vis(gjeldende + 1))
+document.getElementById("forrige").addEventListener("click", () => vis(gjeldende - 1))
+
+document.addEventListener("keydown", (e) => {
+  // Cmd+arrow and Alt+arrow are the browser's own forward and back, and must not move slides.
+  if (e.altKey || e.ctrlKey || e.metaKey) return
+  // Enter on a link should follow the link, and Space on a button should press
+  // it. Without this line the presentation moved on instead, and the links on
+  // the first and last slides could not be followed with the keyboard.
+  const påKontroll =
+    e.target instanceof HTMLButtonElement || e.target instanceof HTMLAnchorElement
+  if (påKontroll && (e.key === " " || e.key === "Enter")) return
+  if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " " || e.key === "Enter") {
+    e.preventDefault()
+    vis(gjeldende + 1)
+  } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+    e.preventDefault()
+    vis(gjeldende - 1)
+  } else if (e.key === "Home") {
+    e.preventDefault()
+    vis(0)
+  } else if (e.key === "End") {
+    e.preventDefault()
+    vis(lysbilder.length - 1)
+  }
+})
+
+// The address is corrected after clamping, so #slide-99 becomes #slide-36.
+// replaceState does not fire hashchange, so there is no loop.
+window.addEventListener("hashchange", () => vis(fraAdressen()))
+
+vis(fraAdressen())
+</script>
+</body>
+</html>

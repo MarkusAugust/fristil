@@ -7,14 +7,14 @@ import {
   type NonDefaultFieldState,
 } from "../shared.js"
 
-export const SELECT_CLASS = "fs-select" as const
+export const SELECT_CLASS = "lt-select" as const
 
 /**
- * Hvem som tegner nedtrekkslista.
+ * Who draws the dropdown list.
  *
- * `auto` er nettleserens egen liste, et vindu fra operativsystemet som ikke
- * kan styles. `styled` ber nettleseren tegne den inne i siden i stedet, slik
- * at den får designsystemets farger, avstander og skygge.
+ * `auto` is the browser's own list, a window from the operating system that
+ * cannot be styled. `styled` asks the browser to draw it inside the page
+ * instead, so it gets the design system's colours, spacing and shadow.
  */
 export const selectPickers = ["auto", "styled"] as const
 export type SelectPicker = (typeof selectPickers)[number]
@@ -22,9 +22,9 @@ export type NonDefaultSelectPicker = Exclude<SelectPicker, "auto">
 export const isSelectPicker = createGuard(selectPickers)
 
 export type SelectOptions = {
-  /** Valideringstilstand. Standard: `default`. */
+  /** Validation state. Default: `default`. */
   state?: FieldState
-  /** Hvem som tegner nedtrekkslista. Standard: `auto`. */
+  /** Who draws the dropdown list. Default: `auto`. */
   picker?: SelectPicker
 }
 
@@ -36,7 +36,7 @@ export type SelectAttributes = {
 }
 
 /**
- * Attributtene for en nedtrekksliste.
+ * The attributes for a dropdown list.
  *
  * ```ts
  * <select {...select({ state: "invalid" })} />

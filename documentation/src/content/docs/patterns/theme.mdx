@@ -1,0 +1,140 @@
+---
+title: Letting the user choose a theme
+description: A theme picker in plain CSS, and the two ways to make the choice last.
+---
+
+import FramedPage from "../../../components/FramedPage.astro"
+
+The colours follow the device setting without you doing anything. If the user wants to override it, the switch itself is plain CSS: `lt-theme-control` on a radio button turns its `value` into a theme choice. Making the choice **last** is something else, and that is the app's job.
+
+<FramedPage src="/demo/theme/" title="The theme picker" height="34rem" />
+
+## The markup
+
+The group is a plain `<fieldset>` with radio buttons, that is, the [toggle group](../../components/toggle-group/). The class goes on each button, not on the group.
+
+```html
+<fieldset class="lt-toggle-group">
+  <legend class="lt-sr-only">Theme</legend>
+  <label class="lt-toggle-group__option">
+    <input class="lt-theme-control" type="radio" name="theme"
+           value="auto" checked /> Follow the system
+  </label>
+  <label class="lt-toggle-group__option">
+    <input class="lt-theme-control" type="radio" name="theme"
+           value="light" /> Light
+  </label>
+  <label class="lt-toggle-group__option">
+    <input class="lt-theme-control" type="radio" name="theme"
+           value="dark" /> Dark
+  </label>
+</fieldset>
+```
+
+Three values mean something: `auto`, `light` and `dark`. "Follow the system" has no theme block, and that is on purpose: a value without a block matches nothing, so the device setting applies again.
+
+`light` and `dark` beat `data-theme` on `<html>`. So the server can send the choice it has stored, while a click still takes effect before the response is back.
+
+`auto` does not: its rule explicitly opts out when `<html>` carries a theme, so the server's value stands. Without that, `:has()` would beat the attribute on specificity. For "Follow the system" to work immediately, whatever stores the choice also has to remove the attribute. Both recipes below do.
+
+## What each option does
+
+The choice controls two things, and they are not the same. LO-TEK's colours come from the tokens. The browser's **own** surfaces, that is, scrollbars, the dropdown of a `<select>` and the calendar panel in a date field, are controlled by the CSS property `color-scheme`.
+
+| `value` | LO-TEK's colours | `color-scheme` |
+| --- | --- | --- |
+| `auto` | no override: the media query, or `data-theme` if it is there | `light dark`, or that of `data-theme` |
+| `light` | light tokens | `light` |
+| `dark` | dark tokens | `dark` |
+
+`light dark` is not a theme. It tells the browser that the page works in both, so it can draw its own surfaces according to the system setting. `light` and `dark` lock it to one.
+
+You should not set `color-scheme` yourself when you use the picker. See the last point at the bottom.
+
+## Making it last
+
+CSS can switch the theme, but not remember it. Three ways, with different requirements:
+
+| Way | Requires | Survives a page load |
+| --- | --- | --- |
+| The control alone | nothing | no |
+| Cookie, read on the server | a server that renders HTML | yes |
+| `localStorage` | JavaScript | yes |
+
+None of them requires a framework.
+
+### Cookie read on the server
+
+This is the way for an app that renders HTML on a server, whatever language the server is written in. The group sits in a plain form, and the whole round trip is three steps without a line of JavaScript:
+
+```http
+POST /theme          theme=dark
+→ Set-Cookie: theme=dark; Path=/; Max-Age=31536000; SameSite=Lax
+→ 303 See Other
+
+GET /application    Cookie: theme=dark
+→ <html data-theme="dark">
+```
+
+The server reads the header and writes the attribute. In Astro:
+
+```astro
+---
+const stored = Astro.cookies.get("theme")?.value
+const theme = stored === "light" || stored === "dark" ? stored : undefined
+---
+
+<html lang="en" data-theme={theme}>
+```
+
+Allow-list the two values. A cookie comes from the client, so it can contain anything: an old value, or one someone wrote themselves. If you copy it straight in, `<html>` gets a `data-theme` without a block, and the page falls back to the system theme without any of the buttons being checked.
+
+`auto` should therefore give **no** `data-theme`. If you write `data-theme="auto"`, no theme block matches, and you have a value in the markup that means nothing.
+
+At the same time, set `checked` on the button that matches the cookie, so the group shows the stored choice.
+
+### localStorage on a static site
+
+A fully static site has no server that can read the cookie. Then `localStorage` is the only thing that lasts, and the script has to be **blocking in `<head>`**, before the page is drawn:
+
+```html
+<!-- In <head>, without defer, before the page is drawn -->
+<script>
+  const stored = localStorage.getItem("theme")
+  if (stored === "light" || stored === "dark") {
+    document.documentElement.dataset.theme = stored
+  }
+</script>
+```
+
+Check against the two values rather than against "not `auto`". `localStorage` is shared by everything on the same origin, so the key can contain something other than what you wrote: an old value, or another app's. If you write it straight in, `<html>` gets a `data-theme` without a block, and the page falls back to the system theme without any of the buttons being checked.
+
+If the script is at the bottom of `<body>`, or has `defer`, the page gets drawn in the wrong theme first.
+
+Something also has to store the choice. This can go anywhere after the group:
+
+```html
+<script type="module">
+  const stored = localStorage.getItem("theme")
+  const chosen = stored === "light" || stored === "dark" ? stored : "auto"
+
+  for (const button of document.querySelectorAll(".lt-theme-control")) {
+    button.checked = button.value === chosen
+
+    button.addEventListener("change", () => {
+      localStorage.setItem("theme", button.value)
+      // The attribute from the script in <head> has to go, or it stands in
+      // front of "Follow the system", which has no theme block to win with.
+      delete document.documentElement.dataset.theme
+    })
+  }
+</script>
+```
+
+## What the system does not do
+
+- **Storing the choice.** The control switches the theme and remembers nothing. Making it last is the app's job, through a cookie or `localStorage`.
+- **Working inside a shadow root.** `:has()` does not see out of its own tree, so a control in a shadow root does not set the theme on the page. It has to be in the same tree as `<html>`.
+- **Deciding between two pickers.** If there are two groups on the page, that is, two different `name`s or two forms, one button is checked in each. If they say different things, CSS cannot know which applies, and the tokens and `color-scheme` can end up following different ones. Use one group per page.
+- **Giving part of the page its own theme.** The control applies to the whole document. If only a section should have its own theme, that is `data-theme` on that section, and it is a [theme boundary](../../customising/#light-and-dark).
+- **Needing `color-scheme` from you.** Each option sets it itself, "Follow the system" included. If you write it on `<html>` outside a layer, the rule beats `@layer lotek`, and the browser's own surfaces stay locked to the system while the user has chosen something else.

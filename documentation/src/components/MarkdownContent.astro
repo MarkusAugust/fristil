@@ -1,24 +1,24 @@
 ---
 /**
- * Dokumentasjonens brødtekst, med ett tillegg: tabeller som ikke ruller skal
- * ikke være et tabbstopp.
+ * The documentation's body text, with one addition: tables that do not scroll
+ * are not tab stops.
  *
- * Hver tabell får et rullefelt med `tabindex="0"` av
- * `src/plugins/rehype-tabellrull.mjs`, slik at kolonnene utenfor kanten er
- * nåbare med tastatur. På en bred skjerm ruller ingen av dem, og da er de 150
- * stoppene bare støy for den som tabber seg gjennom siden. Skriptet under tar
- * `tabindex` bort igjen når tabellen får plass, og setter den tilbake når
- * vinduet krymper.
+ * Every table gets a scroll container with `tabindex="0"` from
+ * `src/plugins/rehype-table-scroll.mjs`, so the columns beyond the edge can be
+ * reached with the keyboard. On a wide screen none of them scroll, and then
+ * the 150 stops are only noise for someone tabbing through the page. The
+ * script below removes `tabindex` again when the table fits, and puts it back
+ * when the window shrinks.
  *
- * Attributtet står i HTML-en og fjernes av skript, ikke motsatt: uten
- * JavaScript beholder leseren tilgangen til kolonnene.
+ * The attribute is in the HTML and removed by script, not the other way
+ * round: without JavaScript the reader keeps access to the columns.
  *
- * Det samme gjelder `role="region"` og teksten som navngir området: en
- * tabell som får plass skal ikke ligge i skjermleserens liste over områder.
+ * The same goes for `role="region"` and the text that names the region: a
+ * table that fits must not be in the screen reader's list of regions.
  *
- * Skriptet setter også `data-mer-venstre` og `data-mer-hoyre`, som global.css
- * tegner en skygge av. Uten den ser en avskåret kolonne ut som om tabellen
- * slutter der.
+ * The script also sets `data-mer-venstre` and `data-mer-hoyre`, which
+ * global.css draws a shadow from. Without it, a cut-off column looks as if
+ * the table ends there.
  */
 
 import Default from "@astrojs/starlight/components/MarkdownContent.astro"
@@ -28,15 +28,15 @@ import Default from "@astrojs/starlight/components/MarkdownContent.astro"
 
 <script>
 	for (const rullefelt of document.querySelectorAll<HTMLElement>(
-		".tabell-rull",
+		".table-scroll",
 	)) {
 		const navn = rullefelt.getAttribute("aria-label") ?? ""
 
 		const oppdater = () => {
 			const ruller = rullefelt.scrollWidth > rullefelt.clientWidth
 
-			// En tabell som får plass skal verken være et tabbstopp eller et
-			// eget område i skjermleserens liste.
+			// A table that fits is neither a tab stop nor a region of its own
+			// in the screen reader's list.
 			if (ruller) {
 				rullefelt.setAttribute("tabindex", "0")
 				rullefelt.setAttribute("role", "region")
@@ -47,7 +47,7 @@ import Default from "@astrojs/starlight/components/MarkdownContent.astro"
 				rullefelt.removeAttribute("aria-label")
 			}
 
-			// Skyggen ved kanten sier at det er mer å se den veien.
+			// The shadow at the edge says there is more to see that way.
 			rullefelt.toggleAttribute("data-mer-venstre", rullefelt.scrollLeft > 1)
 			rullefelt.toggleAttribute(
 				"data-mer-hoyre",

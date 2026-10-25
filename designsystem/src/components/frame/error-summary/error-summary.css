@@ -1,0 +1,47 @@
+@import "../../css/list/list.css";
+
+@layer lotek {
+  lt-error-summary[hidden] {
+    display: none;
+  }
+
+  /* The component sets the class on the element itself. The consumer's
+     markup stays where it is. */
+  .lt-error-summary {
+    display: block;
+    box-sizing: border-box;
+    padding: var(--lt-error-summary-padding, var(--lt-spacing-4));
+    font-family: inherit;
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-danger-surface);
+    border-inline-start: var(--lt-spacing-1) solid var(--lt-color-danger-text);
+    border-radius: var(--lt-error-summary-radius, var(--lt-spacing-1));
+  }
+
+  .lt-error-summary:focus-visible {
+    outline: var(--lt-focus-ring);
+    outline-color: var(--lt-color-danger-text);
+    outline-offset: 2px;
+  }
+
+  .lt-error-summary__title {
+    margin: 0 0 var(--lt-spacing-2);
+    font-size: var(--lt-font-size-l);
+    font-weight: var(--lt-font-weight-semibold);
+    line-height: var(--lt-line-height-compact);
+  }
+
+  .lt-error-summary a {
+    color: var(--lt-color-danger-text);
+    text-decoration: underline;
+    text-underline-offset: 0.14em;
+  }
+
+  .lt-error-summary a:focus-visible {
+    outline: var(--lt-focus-ring);
+    outline-color: var(--lt-color-danger-text);
+    outline-offset: 2px;
+  }
+}

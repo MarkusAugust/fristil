@@ -1,135 +1,135 @@
-# Fristil Designsystem
+# LO-TEK Design System
 
-Fristil er et rammeverksuavhengig designsystem for web. Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
+LO-TEK is a framework-agnostic design system for the web. The components are CSS classes and web components, things the browser already understands. A design system tied to one framework has to be rewritten when the framework is replaced. The browser's own APIs are not replaced.
 
-**Skal du bruke Fristil i en app, står alt i [dokumentasjonen](https://fristil.sobernetics.no/).** Der ligger installasjon, komponentsidene, tokens, tilpasning, Tailwind-oppsettet og eksempler for ren HTML, React, Astro og Datastar. Denne fila handler om å jobbe med Fristil, ikke om å bruke det.
+**If you want to use LO-TEK in an app, everything is in the [documentation](https://lo-tek.sobernetics.no/).** It covers installation, the component pages, tokens, customising, the Tailwind setup and examples for plain HTML, React, Astro and Datastar. This file is about working on LO-TEK, not about using it.
 
-**Kodeagenter** finner reglene på [fristil.sobernetics.no/llms.txt](https://fristil.sobernetics.no/llms.txt), med én regelbok per miljø under [`/agent/`](https://fristil.sobernetics.no/kodeagenter/). De samme regelbøkene ligger i pakken, i `node_modules/@fristil/designsystem/agent/`.
+**Coding agents** find the rules at [lo-tek.sobernetics.no/llms.txt](https://lo-tek.sobernetics.no/llms.txt), with one rulebook per environment under [`/agent/`](https://lo-tek.sobernetics.no/coding-agents/). The same rulebooks ship in the package, in `node_modules/@lo-tek/interfaces/agent/`.
 
 ## Status
 
-Fristil er før 1.0. Et undertall kan ha brytende endringer, og de står under
-«Brytende» i [versjonsloggen](designsystem/CHANGELOG.md).
+LO-TEK is pre-1.0. A minor version can contain breaking changes, and they are listed under
+"Breaking" in the [changelog](designsystem/CHANGELOG.md).
 
-Bidrag fra andre skjer kun etter avtale med eier.
+Contributions from others happen only by agreement with the maintainer.
 
-### Planlagt
+### Planned
 
-Det som kommer, og i hvilken rekkefølge, står på
-[veikartet](https://fristil.sobernetics.no/veikart/). Siden ligger i
-`documentation/src/content/docs/veikart.mdx`, og den er det eneste stedet
-planene står, så README og dokumentasjon ikke kan si noe ulikt.
+What is coming, and in what order, is on the
+[roadmap](https://lo-tek.sobernetics.no/roadmap/). The page lives in
+`documentation/src/content/docs/roadmap.mdx`, and it is the only place
+the plans are written down, so the README and the documentation cannot disagree.
 
-## Repoet
+## The repository
 
-Bun-monorepo med tre workspaces, og ett Gradle-prosjekt ved siden av:
+A Bun monorepo with three workspaces, and one Gradle project alongside:
 
-| Workspace | Pakke | Innhold |
+| Workspace | Package | Contents |
 | --- | --- | --- |
-| `designsystem/` | `@fristil/designsystem` | tokens, CSS-komponenter, web components, temageneratoren |
-| `documentation/` | `@fristil/documentation` | Astro 6 + Starlight, demoene og sjekkene av dem |
-| `editor/` | `fristil-vscode` | VS Code-utvidelsen: fullføring, snippets og diagnostikk |
-| `editor-intellij/` | ikke en bun-workspace | IntelliJ-pluginen, bygget med Gradle |
+| `designsystem/` | `@lo-tek/interfaces` | tokens, CSS components, web components, the theme generator |
+| `documentation/` | `@lo-tek/documentation` | Astro 6 + Starlight, the demos and the checks of them |
+| `editor/` | `interfaces` | the VS Code extension: completion, snippets and diagnostics |
+| `editor-intellij/` | not a bun workspace | the IntelliJ plugin, built with Gradle |
 
-Komponentene ligger under `designsystem/src/components/`, delt i tre kategorier etter hvem som lager markupen og om en web-komponent legger oppførsel på den:
+The components live under `designsystem/src/components/`, split into three categories by who creates the markup and whether a web component adds behaviour to it:
 
-- `css/<komponent>/`: en klasse og `data-*`-attributter, ingen JavaScript.
-- `ramme/<komponent>/`: web component som kobler sammen elementene du selv legger inn, som `<fs-field>`.
-- `frittstaende/<komponent>/`: web component som lager alt innholdet sitt selv, fordi det ikke finnes noe for serveren å sende, som `<fs-connection-status>`.
+- `css/<component>/`: a class and `data-*` attributes, no JavaScript.
+- `frame/<component>/`: a web component that wires together the elements you put in yourself, such as `<lt-field>`.
+- `standalone/<component>/`: a web component that creates all its content itself, because there is nothing for the server to send, such as `<lt-connection-status>`.
 
-Ingen komponent bruker shadow DOM. Kategorien sier hvem som lager nodene: den som rendrer, eller web-komponenten selv. Mer om hvordan en ny komponent legges til står under [Ny komponent](#ny-komponent), og om arbeidsflyten i [CONTRIBUTING.md](CONTRIBUTING.md).
+No component uses shadow DOM. The category says who creates the nodes: the renderer, or the web component itself. How to add a new component is under [New component](#new-component), and the workflow is in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Lokal utvikling
+## Local development
 
-Forutsetning: Bun og Rust ([rustup](https://rustup.rs)). `bun run sjekk` krever også Java 17 eller nyere, se [CONTRIBUTING.md](CONTRIBUTING.md).
+Prerequisites: Bun and Rust ([rustup](https://rustup.rs)). `bun run check` also needs Java 17 or later, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
 bun install
-bun run build   # må kjøres én gang: dokumentasjonen leser fra designsystem/dist
-bun run dev     # dokumentasjonssiden
+bun run build   # must run once: the documentation reads from designsystem/dist
+bun run dev     # the documentation site
 ```
 
-Bygget genererer også `tokens.css` fra `tokens.ts`. Endrer du TypeScript eller tokens i pakken, kjør `bun run build` på nytt.
+The build also generates `tokens.css` from `tokens.ts`. If you change TypeScript or tokens in the package, run `bun run build` again.
 
 ```bash
-bun run lint             # Biome, har siste ordet om formatering
+bun run lint             # Biome, has the last word on formatting
 bun run typecheck        # tsc -b
-bun run typecheck:tests  # testene, som tsc -b ikke leser
-bun run test             # nettlesertestene i Chromium, Firefox og WebKit
-bun run test:docs        # sjekkene mot den bygde dokumentasjonen
-bun run sjekk            # stegene i ci.yml, i samme rekkefølge som CI
+bun run typecheck:tests  # the tests, which tsc -b does not read
+bun run test             # the browser tests in Chromium, Firefox and WebKit
+bun run test:docs        # the checks against the built documentation
+bun run check            # the steps in ci.yml, in the same order as CI
 ```
 
-Nettleserne hentes med `bun --filter @fristil/designsystem nettlesere`.
+The browsers are installed with `bun --filter @lo-tek/interfaces browsers`.
 
-## Arbeidsflyt
+## Workflow
 
-`master` er beskyttet og skal alltid være grønn, så alt arbeid går gjennom en gren og en pull request. Kjør `bun run sjekk` før du sender noe fra deg. Hele flyten, inkludert hvordan en versjon slippes, står i [CONTRIBUTING.md](CONTRIBUTING.md). Endringer en konsument merker, skrives inn i [designsystem/CHANGELOG.md](designsystem/CHANGELOG.md) i samme pull request.
+`master` is protected and must always be green, so all work goes through a branch and a pull request. Run `bun run check` before you send anything off. The whole flow, including how a version is released, is in [CONTRIBUTING.md](CONTRIBUTING.md). Changes a consumer will notice go into [designsystem/CHANGELOG.md](designsystem/CHANGELOG.md) in the same pull request.
 
-## Ny komponent
+## New component
 
-1. Lag mappa under riktig kategori, med komponenten, stilarket og en `*.browser.test.ts` ved siden av.
-2. Legg til `exports`-oppføringer i `designsystem/package.json`, både CSS og JS.
-3. Eksporter fra `designsystem/src/index.ts` hvis den skal med i `fs`.
-4. Legg byggefunksjonen inn i `designsystem/src/react.ts`, med React-navnene på attributtene.
-5. Deklarer elementet og egenskapene i `designsystem/src/jsx/react.ts`.
-6. Legg stilarket inn i `STILARK` i `documentation/src/components/Preview.astro`, ellers mangler stilene i eksemplene.
-7. Skriv komponentsiden under `documentation/src/content/docs/components/` og legg den i sidebaren i `documentation/astro.config.mjs`.
+1. Create the folder under the right category, with the component, the stylesheet and a `*.browser.test.ts` next to them.
+2. Add `exports` entries in `designsystem/package.json`, for both CSS and JS.
+3. Export from `designsystem/src/index.ts` if it belongs in `lt`.
+4. Add the builder function to `designsystem/src/react.ts`, with the React names of the attributes.
+5. Declare the element and its properties in `designsystem/src/jsx/react.ts`.
+6. Add the stylesheet to `STILARK` in `documentation/src/components/Preview.astro`, otherwise the styles are missing from the examples.
+7. Write the component page under `documentation/src/content/docs/components/` and add it to the sidebar in `documentation/astro.config.mjs`.
 
-Steg 4 og 5 er ikke valgfrie: `react.browser.test.ts` krever at hver funksjon i `fs` finnes i `/react`, og en test leser `static observedAttributes` fra komponentene og krever at hvert attributt er deklarert for JSX.
+Steps 4 and 5 are not optional: `react.browser.test.ts` requires every function in `lt` to exist in `/react`, and a test reads `static observedAttributes` from the components and requires every attribute to be declared for JSX.
 
-Åtte sjekker holder dette på plass, og de kjøres av `bun run sjekk`:
+Eight checks keep this in place, and `bun run check` runs them:
 
-| Sjekk | Hva den krever |
+| Check | What it requires |
 | --- | --- |
-| `pakke-css.browser.test.ts` | Alt utenom grensen mot en vertsside ligger i `@layer fristil`, ingenting står etter laget, alle klasser er `fs-`-prefikset i kebab-case, og hvert token en reserve peker på finnes |
-| `fs.browser.test.ts` | Hver byggefunksjon i `fs` gir en klasse og ingen `undefined`-attributter |
-| `sjekk-eksport.ts` | Alt `exports` lover blir med i tarballen, ingen testfiler gjør det, og hvert kart i pakken peker på en fil som er med |
-| `sjekk-typer.ts` | Hver inngang til web-komponentene typer `querySelector` og `addEventListener` alene, også `/register` og `/react-jsx` |
-| `sjekk-dokumentasjon.ts` | Komponenten har en side som nevner hver klasse og hver `--fs-`-variabel den har, som hele ord |
-| `sjekk-testfiler.ts` | Komponentmappa har minst én `*.browser.test.ts` |
-| `react.browser.test.ts` | Hver byggefunksjon finnes i `/react`, og ingen sender ut et attributt React staver annerledes |
-| `sjekk-skriving.ts` | All skriving i en `ramme`-komponent går gjennom `setAttr`, `setFlag` og `addClass` |
+| `package-css.browser.test.ts` | Everything except the boundary against a host page is in `@layer lotek`, nothing comes after the layer, every class has the `lt-` prefix in kebab-case, and every token a fallback points to exists |
+| `lt.browser.test.ts` | Every builder function in `lt` returns a class and no `undefined` attributes |
+| `check-exports.ts` | Everything `exports` promises ends up in the tarball, no test files do, and every map in the package points to a file that is included |
+| `check-types.ts` | Every entry point to the web components types `querySelector` and `addEventListener` on its own, `/register` and `/react-jsx` included |
+| `check-documentation.ts` | The component has a page that mentions each of its classes and each of its `--lt-` variables, as whole words |
+| `check-test-files.ts` | The component folder has at least one `*.browser.test.ts` |
+| `react.browser.test.ts` | Every builder function exists in `/react`, and none emits an attribute React spells differently |
+| `check-writes.ts` | Every write in a frame component goes through `setAttr`, `setFlag` and `addClass` |
 
-### Navnekonvensjoner
+### Naming conventions
 
-| Ting | Form | Eksempel |
+| Thing | Form | Example |
 | --- | --- | --- |
-| CSS-klasse | `fs-` + kebab-case | `fs-session-timeout` |
-| Web component | `fs-` + kebab-case | `<fs-session-timeout>` |
-| Klasse | `Fs` + PascalCase | `FsSessionTimeout` |
-| Registreringsfunksjon | `defineFs` + PascalCase | `defineFsSessionTimeout()` |
-| Tagg-konstant | `FS_` + SCREAMING_SNAKE | `FS_SESSION_TIMEOUT_TAG` |
+| CSS class | `lt-` + kebab-case | `lt-session-timeout` |
+| Web component | `lt-` + kebab-case | `<lt-session-timeout>` |
+| Class | `Lt` + PascalCase | `LtSessionTimeout` |
+| Registration function | `defineLt` + PascalCase | `defineLtSessionTimeout()` |
+| Tag constant | `LT_` + SCREAMING_SNAKE | `LT_SESSION_TIMEOUT_TAG` |
 | Variant | `data-variant` | `data-variant="secondary"` |
-| Tilstand | `data-state` | `data-state="invalid"` |
+| State | `data-state` | `data-state="invalid"` |
 
-### To ting som er lette å gjøre feil
+### Two things that are easy to get wrong
 
-**Bruk alltid tokens i CSS:** `var(--fs-color-…)`, `var(--fs-spacing-…)`. Hardkodede farger og pikselverdier hører ikke hjemme i en komponent.
+**Always use tokens in CSS:** `var(--lt-color-…)`, `var(--lt-spacing-…)`. Hard-coded colours and pixel values do not belong in a component.
 
-**Registrer web components i en eksportert `defineFs*`-funksjon**, som går gjennom `defineElement`. Da bestemmer konsumenten når elementet registreres, pakken får ingen bivirkninger ved import, og modulen kan lastes på en server uten DOM.
+**Register web components in an exported `defineLt*` function**, which goes through `defineElement`. The consumer then decides when the element is registered, the package has no side effects on import, and the module can be loaded on a server without a DOM.
 
 ## Tokens
 
-`tokens.css` er generert, og endringer gjort direkte i den blir overskrevet. Kilden er `designsystem/src/tokens/tokens.ts` for alt som ikke er farge. Fargene har ingen verdi skrevet noe sted: merkefargene, lyshetene per rolle og løftene står i `src/tokens/fargekontrakt.json`, og kjernen i `kjerne/` regner fargene av dem. Skal du flytte en farge, er det den fila du redigerer:
+`tokens.css` is generated, and changes made directly in it are overwritten. The source is `designsystem/src/tokens/tokens.ts` for everything except colour. The colours have no value written down anywhere: the brand colours, the lightness per role and the promises are in `src/tokens/color-contract.json`, and the core in `core/` computes the colours from them. To move a colour, that is the file you edit:
 
 ```bash
-bun --filter @fristil/designsystem generate
+bun --filter @lo-tek/interfaces generate
 ```
 
-Fargene er en matrise av **familie**, altså hva fargen betyr, og **rolle**, altså hva den gjør. Navnet er `--fs-color-<familie>-<rolle>`, som `--fs-color-danger-fill`. Hver familie har hver rolle, og rollen bestemmer lysheten, så kontrasten kan garanteres uansett merkefarge.
+The colours are a matrix of **family**, what the colour means, and **role**, what it does. The name is `--lt-color-<family>-<role>`, such as `--lt-color-danger-fill`. Every family has every role, and the role sets the lightness, so the contrast can be guaranteed whatever the brand colour.
 
-Merk forskjellen på `disabled` og `neutral`. `disabled` er for kontroller som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3. `neutral` er for dempet informasjon brukeren faktisk skal lese eller trykke på, og må holde 4,5:1.
+Note the difference between `disabled` and `neutral`. `disabled` is for controls that are switched off, and is exempt from the contrast requirement in WCAG 1.4.3. `neutral` is for muted information the user actually has to read or press, and must hold 4.5:1.
 
-Temageneratoren bygger et helt tema av en konsuments merkefarger. Den er skrevet i Rust, i `kjerne/src/theme/`, og når JavaScript gjennom `@fristil/designsystem/tema`. Løftene den må holde, står i `src/tokens/fargekontrakt.json`, og de samme løftene sjekker Fristils egne farger. Testene for kontrakten står i `kjerne/src/theme/tests.rs`.
+The theme generator builds a complete theme from a consumer's brand colours. It is written in Rust, in `core/src/theme/`, and reaches JavaScript through `@lo-tek/interfaces/theme`. The promises it has to keep are in `src/tokens/color-contract.json`, and the same promises check LO-TEK's own colours. The tests for the contract are in `core/src/theme/tests.rs`.
 
-## Tester
+## Tests
 
-Hver komponent har en `*.browser.test.ts` ved siden av seg, som kjøres i Chromium, Firefox og WebKit gjennom Playwright. Det er ikke pynt: hele premisset er at vi bruker nettleserens egne API-er, og det er nettopp de som spriker.
+Every component has a `*.browser.test.ts` next to it, which runs in Chromium, Firefox and WebKit through Playwright. That is not decoration: the whole premise is that we use the browser's own APIs, and those are exactly what differ between browsers.
 
-Test det komponenten lover utad, altså klasser, attributter, `aria-*`-koblinger og hendelser, ikke interne detaljer.
+Test what the component promises to the outside, meaning classes, attributes, `aria-*` wiring and events, not internal details.
 
-Hver komponent har også en tilgjengelighetstest som kjører axe mot WCAG 2.1 nivå A og AA:
+Every component also has an accessibility test that runs axe against WCAG 2.1 level A and AA:
 
 ```ts
 import {
@@ -138,10 +138,10 @@ import {
 	ventPaTegning,
 } from "../../../testing/a11y"
 
-it("har nok kontrast i alle varianter", async () => {
+it("has enough contrast in every variant", async () => {
 	monter(`
-		<span class="fs-min-komponent">Innhold</span>
-		<span class="fs-min-komponent" data-variant="primary">Innhold</span>
+		<span class="lt-my-component">Content</span>
+		<span class="lt-my-component" data-variant="primary">Content</span>
 	`)
 
 	await ventPaTegning()
@@ -149,26 +149,26 @@ it("har nok kontrast i alle varianter", async () => {
 })
 ```
 
-`monter` setter opp en flate med designsystemets sidefarger. Den delen er ikke pynt: axe regner ut kontrast ved å lete oppover etter en bakgrunnsfarge, og finner den ingen, melder den «incomplete» i stedet for å gi et svar.
+`monter` sets up a surface with the design system's page colours. That part is not decoration: axe computes contrast by searching upwards for a background colour, and if it finds none, it reports "incomplete" instead of giving an answer.
 
-Skriv markupen slik komponenten faktisk skal brukes, med ledetekst på feltet og tekst i merket. Tester du markup ingen ville skrevet, tester du ingenting. Axe fanger kontrast, manglende ledetekster og feil bruk av `aria-*`. Den fanger ikke fokushåndtering, så flytter komponenten fokus, trenger det sin egen test.
+Write the markup the way the component will actually be used, with a label on the field and text in the badge. If you test markup nobody would write, you test nothing. Axe catches contrast, missing labels and wrong use of `aria-*`. It does not catch focus handling, so if the component moves focus, that needs its own test.
 
-### Sjekkene mot dokumentasjonen
+### The checks against the documentation
 
-Komponenttestene kjører mot komponentene isolert, og fanger derfor ikke feil som oppstår først når de settes inn på en side. `bun run test:docs` kjører mot den bygde siden: axe i begge temaer, at dokumentasjonen nevner det koden har, at demoene på mønstersidene fortsatt virker, og at ingenting havner utenfor skjermen på en telefon.
+The component tests run against the components in isolation, and so do not catch errors that only appear once they are placed on a page. `bun run test:docs` runs against the built site: axe in both themes, that the documentation mentions what the code has, that the demos on the pattern pages still work, and that nothing ends up off screen on a phone.
 
-## Lisens og navn
+## Licence and name
 
-Fristil er utgitt under MIT. Det koster ingenting, og hver versjon som er sluppet forblir MIT:
-den tillatelsen kan ikke trekkes tilbake, heller ikke av meg. Du kan bruke det kommersielt,
-endre det og sende det med i et lukket produkt. Det eneste vilkåret er at copyright-notisen
-følger med.
+LO-TEK is released under MIT. It costs nothing, and every version that has been released stays MIT:
+that permission cannot be withdrawn, not even by me. You can use it commercially,
+modify it and ship it in a closed product. The only condition is that the copyright notice
+comes with it.
 
-Navnet Fristil og merket er ikke en del av den tillatelsen. Du står fritt til å forke koden, men
-ikke til å kalle resultatet Fristil eller publisere under det navnet.
+The name LO-TEK and the mark are not part of that permission. You are free to fork the code, but
+not to call the result LO-TEK or publish under that name.
 
-Bidrag: issues er alltid velkomne. Pull requests tas imot etter en samtale først, og den som
-bidrar signerer [CLA.md](CLA.md). Hele bildet står i [dokumentasjonen](https://fristil.sobernetics.no/lisens/).
+Contributions: issues are always welcome. Pull requests are accepted after a conversation first, and the
+contributor signs [CLA.md](CLA.md). The full picture is in the [documentation](https://lo-tek.sobernetics.no/licence/).
 
 ---
 

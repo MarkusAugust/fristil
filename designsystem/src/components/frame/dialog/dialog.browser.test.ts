@@ -1,0 +1,1554 @@
+/// <reference path="../../../types/css.d.ts" />
+
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
+import { userEvent } from "vitest/browser"
+import {
+  forventIngenTilgjengelighetsbrudd,
+  monter,
+  ventPaTegning,
+} from "../../../testing/a11y"
+import { attr } from "../../../testing/markup"
+import { dialog } from "./dialog"
+import { defineLtDialog } from "./lt-dialog"
+
+import "../../../tokens/tokens.css"
+import "./dialog.css"
+import "../../css/button/button.css"
+
+describe(".lt-dialog", () => {
+  beforeEach(() => {
+    monter(`
+      <button class="lt-button" id="apne" type="button">Slett søknaden</button>
+      <dialog class="lt-dialog" id="dialog" aria-labelledby="dialog-tittel">
+        <h2 class="lt-dialog__title" id="dialog-tittel">Slette søknaden?</h2>
+        <div class="lt-dialog__body">
+          <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+        </div>
+        <div class="lt-dialog__footer">
+          <button class="lt-button" data-variant="secondary" id="avbryt" type="button">Avbryt</button>
+          <button class="lt-button" data-variant="danger" id="slett" type="button">Slett søknaden</button>
+        </div>
+      </dialog>
+    `)
+  })
+
+  afterEach(() => {
+    const d = document.getElementById("dialog") as HTMLDialogElement | null
+    if (d?.open) d.close()
+  })
+
+  it("flytter fokus inn i dialogen når den åpnes med showModal", () => {
+    const d = document.getElementById("dialog") as HTMLDialogElement
+    d.showModal()
+
+    expect(d.open).toBe(true)
+    // showModal() flytter fokus selv. Et <dialog open> i markupen gjør ikke
+    // det, og er derfor bare en boks på siden.
+    expect(d.contains(document.activeElement)).toBe(true)
+  })
+
+  it("lukkes med Escape uten at vi skriver noe for det", async () => {
+    const d = document.getElementById("dialog") as HTMLDialogElement
+    d.showModal()
+
+    // Et `cancel` sendt for hånd utløser ikke nettleserens egen lukking, og
+    // en test som gjorde det og deretter kalte `close()` selv, prøvde bare
+    // sin egen kode. Her trykkes tasten på ekte.
+    await userEvent.keyboard("{Escape}")
+
+    expect(d.open).toBe(false)
+  })
+
+  it("melder tilbake hva brukeren valgte", () => {
+    const d = document.getElementById("dialog") as HTMLDialogElement
+    d.showModal()
+    d.close("slett")
+
+    expect(d.returnValue).toBe("slett")
+  })
+
+  it("setter attributtene fra byggefunksjonen", () => {
+    const boks = dialog({ titleId: "dialog-tittel" })
+
+    expect(boks.dialog).toEqual({
+      class: "lt-dialog",
+      "aria-labelledby": "dialog-tittel",
+    })
+    // Skal dialogen vises, står `open` begge steder. På `<dialog>` er det
+    // reserven for den som ikke har JavaScript: uten den er innholdet skjult.
+    expect(dialog({ titleId: "t", open: true }).dialog).toEqual({
+      class: "lt-dialog",
+      "aria-labelledby": "t",
+      open: true,
+    })
+    expect(boks.title).toEqual({
+      class: "lt-dialog__title",
+      id: "dialog-tittel",
+    })
+    expect(boks.body).toEqual({ class: "lt-dialog__body" })
+    expect(boks.footer).toEqual({ class: "lt-dialog__footer" })
+    expect(dialog.title).toBe("lt-dialog__title")
+  })
+
+  it("har ingen tilgjengelighetsbrudd når den er åpen", async () => {
+    const d = document.getElementById("dialog") as HTMLDialogElement
+    d.showModal()
+
+    await ventPaTegning()
+    await forventIngenTilgjengelighetsbrudd()
+  })
+})
+
+describe("bredden på dialogen", () => {
+  it("blir ikke bredere enn boksen den står i", async () => {
+    /*
+     * Dialogen regnet bredden sin mot vindusruten. Står den i en smalere
+     * boks, som i et panel eller en forhåndsvisning, stakk den utenfor.
+     *
+     * En `<dialog open>` er absolutt plassert av nettleseren, så `100%`
+     * måles mot nærmeste plasserte forelder. Derfor `position: relative` på
+     * boksen her; uten den er det vindusruten som gjelder, og det er riktig
+     * for en dialog åpnet med `showModal()`.
+     */
+    monter(`
+      <div id="smal" style="width: 240px; position: relative">
+        <dialog class="lt-dialog" id="i-boks" open>
+          <p>Innhold</p>
+        </dialog>
+      </div>
+
+      <div id="smal-flate" style="width: 240px">
+        <div class="lt-dialog" id="som-boks">
+          <p>Innhold</p>
+        </div>
+      </div>
+    `)
+
+    await ventPaTegning()
+
+    for (const [boksId, dialogId] of [
+      ["smal", "i-boks"],
+      ["smal-flate", "som-boks"],
+    ]) {
+      const boks = document.getElementById(boksId) as HTMLElement
+      const dialog = document.getElementById(dialogId) as HTMLElement
+
+      expect(
+        dialog.getBoundingClientRect().width,
+        dialogId,
+      ).toBeLessThanOrEqual(boks.getBoundingClientRect().width)
+    }
+  })
+})
+
+/**
+ * Serveren kan si at dialogen er åpen, og komponenten gjør kallet.
+ *
+ * Uten dette kunne en app som bare sender HTML ikke åpne en dialog i det
+ * hele tatt: `showModal()` er et kall, og `<dialog open>` er bare en boks på
+ * siden. Det ble funnet i en app skrevet i Kotlin med Datastar.
+ */
+/**
+ * Lukker dialogen og venter på `close`-hendelsen, ikke på en tegning.
+ *
+ * Hendelsen er en køet oppgave, og komponentens lytter kjører i den. En
+ * tegning kan komme før, og da leste testen verten før komponenten hadde
+ * fjernet `open`. Lytteren her legges til etter komponentens, så den kjører
+ * sist.
+ */
+async function lukkOgVent(d: HTMLDialogElement, verdi?: string) {
+  const lukket = new Promise((ferdig) =>
+    d.addEventListener("close", ferdig, { once: true }),
+  )
+  d.close(verdi)
+  await lukket
+  await ventPaTegning()
+}
+
+describe("lt-dialog", () => {
+  beforeAll(() => {
+    defineLtDialog()
+  })
+
+  async function monterDialog(open: boolean) {
+    const boks = dialog({ titleId: "tittel", open })
+    monter(`
+      <lt-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+          <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
+          <form method="dialog" ${attr(boks.footer)}>
+            <button class="lt-button" id="lukk" value="lukk">Lukk</button>
+          </form>
+        </dialog>
+      </lt-dialog>
+    `)
+    await customElements.whenDefined("lt-dialog")
+    await ventPaTegning()
+    return {
+      vert: document.querySelector("lt-dialog") as HTMLElement,
+      d: document.querySelector("dialog") as HTMLDialogElement,
+    }
+  }
+
+  afterEach(() => {
+    const d = document.querySelector("dialog") as HTMLDialogElement | null
+    if (d?.open) d.close()
+  })
+
+  it("åpner modalt når serveren sier at den er åpen", async () => {
+    const { d } = await monterDialog(true)
+
+    expect(d.open).toBe(true)
+    // `:modal` er forskjellen på `showModal()` og `show()`. Bare den første
+    // gjør resten av siden utilgjengelig og lukker på Escape. Fokus flyttes
+    // av begge, så det alene skiller dem ikke.
+    expect(d.matches(":modal")).toBe(true)
+    expect(d.contains(document.activeElement)).toBe(true)
+  })
+
+  it("lar den stå lukket når serveren ikke sier noe", async () => {
+    const { d } = await monterDialog(false)
+
+    expect(d.open).toBe(false)
+  })
+
+  it("åpner og lukker når serveren snur attributtet", async () => {
+    const { vert, d } = await monterDialog(false)
+
+    vert.setAttribute("open", "")
+    await ventPaTegning()
+    expect(d.open).toBe(true)
+
+    vert.removeAttribute("open")
+    await ventPaTegning()
+    expect(d.open).toBe(false)
+  })
+
+  it("fjerner open fra verten når brukeren lukker", async () => {
+    const { vert, d } = await monterDialog(true)
+
+    await lukkOgVent(d)
+
+    // Markupen skal si det samme som skjermen. Ellers ville neste patch
+    // åpnet dialogen igjen, siden verten fortsatt sa `open`.
+    expect(vert.hasAttribute("open")).toBe(false)
+  })
+
+  it("kaster ikke når markupen bygges løsrevet fra siden", async () => {
+    // En morfer lager serverens utgave i et løsrevet tre for å sammenligne.
+    // Elementet tas i bruk også der, og `showModal()` kaster på en dialog
+    // som ikke står i dokumentet.
+    //
+    // Feilen kommer ikke ut av `innerHTML`: et unntak i en reaksjon på en
+    // web component rapporteres til vinduet i stedet. Derfor lyttes
+    // det på `error` framfor å pakke inn kallet.
+    const feil: string[] = []
+    const lytter = (event: ErrorEvent) => feil.push(event.message)
+    window.addEventListener("error", lytter)
+
+    const boks = dialog({ titleId: "t", open: true })
+    const holder = document.createElement("div")
+    holder.innerHTML = `
+      <lt-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Tittel</h2>
+        </dialog>
+      </lt-dialog>`
+
+    await ventPaTegning()
+    window.removeEventListener("error", lytter)
+
+    expect(feil).toEqual([])
+    // To ting skal gjelde her. Komponenten skal ikke ha kalt `showModal()`,
+    // som er det `:modal` svarer på. Og serverens eget `open` skal stå
+    // igjen, for det er reserven for den som ikke har JavaScript: uten den
+    // er dialogen skjult, og innholdet finnes ikke.
+    expect(holder.querySelector("dialog")?.matches(":modal")).toBe(false)
+    expect(holder.querySelector("dialog")?.hasAttribute("open")).toBe(true)
+  })
+
+  it("skriver open på verten som serverens beskjed", () => {
+    // `true` og ikke `""`: React 19 setter egenskapen, og den tomme
+    // strengen er usann, så setteren i komponenten fjerner attributtet igjen.
+    expect(dialog({ titleId: "t", open: true }).host).toEqual({ open: true })
+    expect(dialog({ titleId: "t" }).host).toEqual({})
+  })
+
+  it("ber ikke malen frede noe", () => {
+    // `showModal()` setter `open` på `<dialog>` selv, og en morfing river det
+    // bort igjen. Før måtte malen skrive `data-preserve-attr="open"` for å
+    // hindre det. Nå setter komponenten attributtet tilbake, og kommer lista
+    // hit igjen, har noen gjenopptatt kontrakten malen måtte skrive av.
+    expect("data-preserve-attr" in dialog({ titleId: "t" }).dialog).toBe(false)
+    expect("data-preserve-attr" in dialog({ titleId: "t" }).host).toBe(false)
+  })
+
+  it("åpner igjen når serveren sender open på nytt", async () => {
+    const { vert, d } = await monterDialog(true)
+
+    await lukkOgVent(d)
+    expect(vert.hasAttribute("open")).toBe(false)
+
+    // Dette er det en morfing gjør: serverens node sier fortsatt `open`.
+    vert.setAttribute("open", "")
+    await ventPaTegning()
+
+    expect(d.open, "serveren kunne ikke åpne dialogen på nytt").toBe(true)
+  })
+
+  it("melder fra når den åpnes og lukkes", async () => {
+    const meldinger: boolean[] = []
+    const { vert, d } = await monterDialog(false)
+    vert.addEventListener("dialog-toggle", (event) => {
+      meldinger.push(event.detail.open)
+    })
+
+    vert.setAttribute("open", "")
+    await ventPaTegning()
+    await lukkOgVent(d)
+
+    expect(meldinger).toEqual([true, false])
+  })
+
+  it("åpner også når malen glemte open på selve dialogen", async () => {
+    // Håndskrevet markup, og dokumentasjonen har vist dette lenge: verten
+    // sier `open`, men `<dialog>` har det ikke. Byggefunksjonen gir begge nå,
+    // så dette tilfellet finnes bare i maler noen har skrevet selv.
+    monter(`
+      <lt-dialog open>
+        <dialog class="lt-dialog" aria-labelledby="tittel">
+          <h2 class="lt-dialog__title" id="tittel">Tittel</h2>
+        </dialog>
+      </lt-dialog>
+    `)
+    await customElements.whenDefined("lt-dialog")
+    await ventPaTegning()
+
+    expect(document.querySelector("dialog")?.matches(":modal")).toBe(true)
+  })
+
+  it("lukker selv om attributtet på dialogen ble fjernet først", async () => {
+    /*
+     * React eier `open` på `<dialog>` nå, og oppdaterer barn før forelder.
+     * Lukker appen dialogen, fjernes attributtet på `<dialog>` før det på
+     * verten, og komponenten kommer hit med `dialog.open` alt usann.
+     *
+     * Uten at komponenten ser på `:modal` ble dialogen stående i topplaget,
+     * usynlig, med resten av siden inert: en side der ingenting kunne
+     * klikkes, og ingenting synlig som forklarte hvorfor.
+     */
+    const { vert, d } = await monterDialog(true)
+    expect(d.matches(":modal")).toBe(true)
+
+    d.removeAttribute("open")
+    vert.removeAttribute("open")
+    await ventPaTegning()
+
+    expect(d.matches(":modal"), "dialogen står igjen i topplaget").toBe(false)
+
+    // Og siden er brukbar igjen: en knapp utenfor kan få fokus.
+    const knapp = document.createElement("button")
+    document.body.append(knapp)
+    knapp.focus()
+    const fikkFokus = document.activeElement === knapp
+    knapp.remove()
+    expect(fikkFokus, "resten av siden er fortsatt inert").toBe(true)
+  })
+
+  it("åpner ikke igjen en dialog brukeren lukket før skriptet kom", async () => {
+    /*
+     * Serveren skriver `open` begge steder, så innholdet finnes uten
+     * JavaScript, og `<form method="dialog">` lukker boksen uten JavaScript
+     * også. Skjer det før komponenten har fått kjøre, finnes det ingen
+     * lytter, og første `sync()` så en vert som sa «åpen» og en lukket
+     * dialog. Da spratt dialogen opp igjen rett etter at brukeren hadde
+     * lukket den. På mobil skjedde det hver gang, fordi vinduet der er langt
+     * nok til å rekke et trykk.
+     *
+     * Markupen bygges løsrevet og lukkes der. `sync()` gir seg på en dialog
+     * som ikke står i siden, så ingen lytter er festet, og det er nettopp
+     * tilstanden en side har før skriptet er lastet.
+     */
+    const boks = dialog({ titleId: "tittel", open: true })
+    const holder = document.createElement("div")
+    holder.innerHTML = `
+      <lt-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Tittel</h2>
+          <form method="dialog" ${attr(boks.footer)}>
+            <button class="lt-button" value="lukk">Lukk</button>
+          </form>
+        </dialog>
+      </lt-dialog>`
+
+    const d = holder.querySelector("dialog") as HTMLDialogElement
+    expect(d.open, "serveren sendte den ikke åpen").toBe(true)
+
+    // Brukeren lukker boksen mens den bare er en boks på siden.
+    d.close("lukk")
+
+    document.body.append(holder)
+    await ventPaTegning()
+
+    expect(d.open, "dialogen spratt opp igjen").toBe(false)
+    expect(
+      holder.querySelector("lt-dialog")?.hasAttribute("open"),
+      "verten sier fortsatt at den er åpen",
+    ).toBe(false)
+
+    holder.remove()
+  })
+
+  it("sender ingen close-hendelse når serveren sender dialogen åpen", async () => {
+    /*
+     * Serveren skriver `open` på `<dialog>`, og komponenten må ta det bort
+     * før `showModal()`. Gjør den det med `close()`, sender nettleseren en
+     * ekte `close`-hendelse, og den kommer ved hver eneste lasting. En app
+     * som lytter på `close` rett på `<dialog>`, slik det komplette
+     * eksempelet i dokumentasjonen gjør, fikk da en spøkelseslukking før
+     * brukeren hadde sett dialogen. `dialog-toggle` så den ikke, for
+     * `handleClose` stopper på `:modal`.
+     */
+    const hendelser: string[] = []
+    // `close` bobler ikke. En lytter på dokumentet i bobleefasen ser den
+    // aldri, og testen ville meldt grønt uansett hva komponenten gjorde.
+    const lytter = (e: Event) => {
+      if ((e.target as HTMLElement)?.tagName === "DIALOG")
+        hendelser.push("close")
+    }
+    document.addEventListener("close", lytter, true)
+
+    const { d } = await monterDialog(true)
+    document.removeEventListener("close", lytter, true)
+
+    expect(d.matches(":modal")).toBe(true)
+    expect(hendelser).toEqual([])
+  })
+
+  it("lukker ikke seg selv når serveren lukker og åpner i samme omgang", async () => {
+    const { vert, d } = await monterDialog(true)
+    const meldinger: boolean[] = []
+    vert.addEventListener("dialog-toggle", (event) => {
+      meldinger.push(event.detail.open)
+    })
+
+    // `close`-hendelsen er køet, ikke synkron. Uten en sperre kom den fram
+    // etter at dialogen var åpnet igjen, og lukket den på nytt.
+    vert.removeAttribute("open")
+    vert.setAttribute("open", "")
+
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(d.matches(":modal"), "dialogen lukket seg selv etterpå").toBe(true)
+    expect(vert.hasAttribute("open")).toBe(true)
+    expect(meldinger).toEqual([false, true])
+  })
+
+  it("styrer bare sin egen dialog, ikke en lenger ned i treet", async () => {
+    // En annen komponent kan ha sin egen `<dialog>` inni denne. Den står
+    // først i dokumentet her, så en komponent som bare spurte etter «den
+    // første dialogen» ville åpnet feil boks.
+    const boks = dialog({ titleId: "tittel", open: true })
+    monter(`
+      <lt-dialog ${attr(boks.host)}>
+        <div class="et-eller-annet-kort">
+          <dialog id="fremmed"><p>Noe helt annet</p></dialog>
+        </div>
+        <dialog ${attr(boks.dialog)} id="min">
+          <h2 ${attr(boks.title)}>Tittel</h2>
+        </dialog>
+      </lt-dialog>
+    `)
+    await customElements.whenDefined("lt-dialog")
+    await ventPaTegning()
+
+    expect((document.getElementById("min") as HTMLDialogElement).open).toBe(
+      true,
+    )
+    expect((document.getElementById("fremmed") as HTMLDialogElement).open).toBe(
+      false,
+    )
+  })
+
+  it("sier hvilken knapp som lukket den", async () => {
+    const { vert, d } = await monterDialog(true)
+    let svar: string | undefined
+    vert.addEventListener("dialog-toggle", (event) => {
+      svar = event.detail.returnValue
+    })
+
+    await lukkOgVent(d, "slett")
+
+    expect(svar).toBe("slett")
+  })
+
+  it("melder ikke forrige knapp når serveren lukker en dialog den åpnet på nytt", async () => {
+    const { vert, d } = await monterDialog(true)
+    await lukkOgVent(d, "slett")
+    vert.setAttribute("open", "")
+    await ventPaTegning()
+    expect(d.matches(":modal")).toBe(true)
+
+    const svar: Array<{ open: boolean; returnValue: string }> = []
+    vert.addEventListener("dialog-toggle", (event) => {
+      svar.push(event.detail)
+    })
+    vert.removeAttribute("open")
+    await ventPaTegning()
+
+    // Før kom «slett» fra forrige gang, og en app som slettet på den verdien
+    // slettet noe brukeren aldri ba om.
+    expect(svar).toEqual([{ open: false, returnValue: "" }])
+  })
+
+  it("åpnes av serveren også etter at verten er flyttet", async () => {
+    const { vert, d } = await monterDialog(true)
+    await lukkOgVent(d, "lukk")
+
+    // En morfer flytter verten og sender den åpen igjen. Før så komponenten
+    // `returnValue` fra lukkingen, trodde brukeren hadde lukket dialogen før
+    // skriptet kom, og tok `open` fra verten.
+    const annet = document.createElement("div")
+    document.body.append(annet)
+    vert.remove()
+    vert.setAttribute("open", "")
+    annet.append(vert)
+    await ventPaTegning()
+
+    expect(d.matches(":modal")).toBe(true)
+    expect(vert.hasAttribute("open")).toBe(true)
+  })
+
+  it("lar knappens verdi stå når open skrives på verten før close er kommet", async () => {
+    // Et rammeverk som skriver samme `open` på nytt rett etter klikket. Før
+    // åpnet komponenten dialogen igjen og tømte verdien, og en lytter på
+    // `close` leste en tom verdi i stedet for «slett».
+    const { vert, d } = await monterDialog(true)
+    const lest: string[] = []
+    d.addEventListener("close", () => lest.push(d.returnValue))
+    const lukket = new Promise((ferdig) =>
+      d.addEventListener("close", ferdig, { once: true }),
+    )
+
+    d.close("slett")
+    vert.setAttribute("open", "")
+    await lukket
+    await ventPaTegning()
+
+    expect(lest).toEqual(["slett"])
+    expect(d.matches(":modal")).toBe(false)
+    expect(vert.hasAttribute("open")).toBe(false)
+  })
+
+  it("åpner en dialog som flyttes inn i en ny vert", async () => {
+    // En dialog lukket med en knapp, flyttet inn i en ny vert serveren
+    // sender åpen. Før trodde den nye verten at brukeren hadde lukket den
+    // før skriptet kom.
+    const { d } = await monterDialog(true)
+    await lukkOgVent(d, "lukk")
+
+    const ny = document.createElement("lt-dialog")
+    ny.setAttribute("open", "")
+    ny.append(d)
+    document.body.append(ny)
+    await ventPaTegning()
+
+    expect(d.matches(":modal")).toBe(true)
+    expect(ny.hasAttribute("open")).toBe(true)
+  })
+
+  it("melder ingenting når dialogen flyttes inne i verten", async () => {
+    // En patch som bytter rekkefølgen på barna tar dialogen ut av
+    // topplaget, og komponenten åpner den igjen. Før meldte den `open: true`
+    // for en dialog som hadde vært åpen hele tiden.
+    const { vert, d } = await monterDialog(true)
+    const svar: boolean[] = []
+    vert.addEventListener("dialog-toggle", (event) => {
+      svar.push(event.detail.open)
+    })
+
+    vert.prepend(document.createElement("span"))
+    vert.append(d)
+    await ventPaTegning()
+
+    expect(d.matches(":modal")).toBe(true)
+    expect(svar).toEqual([])
+  })
+
+  it("melder ingenting når en åpen dialog flyttes", async () => {
+    const { vert, d } = await monterDialog(true)
+    const svar: boolean[] = []
+    vert.addEventListener("dialog-toggle", (event) => {
+      svar.push(event.detail.open)
+    })
+
+    const annet = document.createElement("div")
+    document.body.append(annet)
+    annet.append(vert)
+    await ventPaTegning()
+
+    expect(d.matches(":modal")).toBe(true)
+    expect(svar).toEqual([])
+  })
+
+  it("har ingen tilgjengelighetsbrudd når den er åpen", async () => {
+    await monterDialog(true)
+
+    await forventIngenTilgjengelighetsbrudd()
+  })
+})
+
+/**
+ * Dialogen skal stå riktig også før den er blitt en ekte modal.
+ *
+ * Serveren sender `<dialog open>` fordi innholdet ellers ikke finnes uten
+ * JavaScript. Nettleseren legger den da i den vanlige flyten, og først når
+ * komponenten kaller `showModal()` flyttes den til topplaget og midtstilles.
+ * På en treg forbindelse er hoppet mellom de to øyeblikkene godt synlig, og
+ * det ble meldt fra en telefon: dialogen sto høyt oppe i siden og landet
+ * midt på et halvt sekund senere.
+ */
+describe("dialogen før den er modal", () => {
+  /*
+   * Tilstanden testes i en ramme uten skript.
+   *
+   * Første utgave laget elementet i selve testsiden, og den var ikke til å
+   * stole på: i en full kjøring er `<lt-dialog>` alt registrert av en annen
+   * testfil, så dialogen rakk å bli modal før stilen ble lest. En ramme med
+   * bare markup og stilark er nøyaktig det serveren sender, og ingenting
+   * annet.
+   */
+  async function iRammeUtenSkript(
+    markup: string,
+    bredde = 800,
+    hoyde = 600,
+  ): Promise<{
+    dialog: HTMLDialogElement
+    vindu: Window
+    rydd: () => void
+  }> {
+    const tokens = (await import("../../../tokens/tokens.css?inline")).default
+    const dialogstil = (await import("./dialog.css?inline")).default
+
+    const ramme = document.createElement("iframe")
+    ramme.width = String(bredde)
+    ramme.height = String(hoyde)
+    ramme.srcdoc = `<!doctype html><html><head><style>${tokens}\n${dialogstil}</style></head><body>${markup}</body></html>`
+    document.body.append(ramme)
+
+    await new Promise((klar) => {
+      ramme.addEventListener("load", klar, { once: true })
+    })
+
+    /*
+     * Vent på at ramma har en størrelse, ikke bare på `load`.
+     *
+     * `100vmax` i stilarket regnes mot rammas eget vindu, og det er null til
+     * den er lagt ut. Lokalt rakk den det før testen leste stilen, i CI ikke,
+     * og da ble skyggen null piksler bred uten at noe var galt med regelen.
+     */
+    await vi.waitFor(() => {
+      if (!(ramme.contentWindow?.innerWidth ?? 0))
+        throw new Error("ramma er ikke lagt ut")
+    })
+
+    const dok = ramme.contentDocument as Document
+    return {
+      dialog: dok.querySelector("dialog") as HTMLDialogElement,
+      vindu: ramme.contentWindow as Window,
+      rydd: () => ramme.remove(),
+    }
+  }
+
+  it("står midt i vinduet, med flaten bak malt", async () => {
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(`
+      <lt-dialog>
+        <dialog class="lt-dialog" open>
+          <h2 class="lt-dialog__title">Velkommen</h2>
+          <p>Innhold som finnes uten JavaScript.</p>
+        </dialog>
+      </lt-dialog>`)
+
+    try {
+      // Ingen skript i ramma, så dialogen er åpen uten å være modal. Det er
+      // nøyaktig tilstanden serveren sender.
+      expect(boks.matches(":modal")).toBe(false)
+      expect(boks.open).toBe(true)
+
+      const stil = vindu.getComputedStyle(boks)
+      expect(stil.position).toBe("fixed")
+
+      /*
+       * Skyggen maler flaten bak, siden `::backdrop` bare finnes i topplaget.
+       *
+       * To lag: kortets egen skygge, og flaten. Og flaten skal faktisk dekke
+       * ramma, ikke bare stå der som en tynn kant.
+       */
+      const lag = stil.boxShadow.split(/,(?![^(]*\))/)
+      expect(lag).toHaveLength(2)
+
+      const spredning = Math.max(
+        ...[...stil.boxShadow.matchAll(/(\d+(?:\.\d+)?)px/g)].map((t) =>
+          Number(t[1]),
+        ),
+      )
+      expect(spredning).toBeGreaterThanOrEqual(
+        Math.max(vindu.innerWidth, vindu.innerHeight),
+      )
+
+      // Og den står midt i ramma, ikke øverst i flyten.
+      const rute = boks.getBoundingClientRect()
+      expect(
+        Math.abs(rute.top + rute.height / 2 - vindu.innerHeight / 2),
+      ).toBeLessThan(4)
+    } finally {
+      rydd()
+    }
+  })
+
+  /*
+   * Den egentlige påstanden: ingen hopp, verken loddrett eller vannrett.
+   *
+   * Regelen som gir dialogen plassen til en modal før den er det, er skrevet
+   * tre ganger, og hver runde flyttet hoppet framfor å fjerne det. Først sto
+   * den øverst i flyten og landet på midten. Så ble den midtstilt, og
+   * nettleserens eget maksmål for bredden klipte den i det den ble modal. Så
+   * kom maksmålet på høyden med, og da vant det på spesifisitet før modalen
+   * og sluttet å gjelde etterpå, så en høy dialog hoppet i stedet.
+   *
+   * Testen leser boksen i begge tilstander og krever at den står stille. Den
+   * kjøres med to slags innhold, siden et kort innhold aldri treffer
+   * maksmålene og da etterprøver ingenting.
+   */
+  for (const { navn, innhold } of [
+    {
+      navn: "med kort innhold",
+      innhold: "<p>Innhold som finnes uten JavaScript.</p>",
+    },
+    {
+      navn: "med innhold som er høyere enn skjermen",
+      innhold: `<div class="lt-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>`,
+    },
+  ]) {
+    it(`flytter seg ikke når den blir modal, ${navn}`, async () => {
+      const {
+        dialog: boks,
+        vindu,
+        rydd,
+      } = await iRammeUtenSkript(
+        `
+        <lt-dialog>
+          <dialog class="lt-dialog" open>
+            <h2 class="lt-dialog__title">Velkommen</h2>
+            ${innhold}
+          </dialog>
+        </lt-dialog>`,
+        390,
+        700,
+      )
+
+      try {
+        // Er dialogen allerede modal her, er alle påstandene under sanne
+        // uten at noe er etterprøvd.
+        expect(boks.matches(":modal")).toBe(false)
+
+        const før = boks.getBoundingClientRect()
+
+        /*
+         * Så smal ramme at nettleserens eget maksmål for bredden på en modal
+         * er mindre enn bredden dialogen ellers ville tatt. Uten det er det
+         * ingenting å klippe, og testen ville vært grønn også med feilen i.
+         * Maksmålet regnes med dialogens egen skriftstørrelse, siden `2em`
+         * gjør det.
+         */
+        const em = Number.parseFloat(vindu.getComputedStyle(boks).fontSize)
+        expect(
+          Math.abs(før.width - (vindu.innerWidth - 6 - 2 * em)),
+        ).toBeLessThanOrEqual(1)
+
+        boks.close()
+        boks.showModal()
+        expect(boks.matches(":modal")).toBe(true)
+
+        const etter = boks.getBoundingClientRect()
+
+        // Én piksel slingringsmonn for avrunding, ikke mer.
+        expect(Math.abs(etter.left - før.left)).toBeLessThanOrEqual(1)
+        expect(Math.abs(etter.top - før.top)).toBeLessThanOrEqual(1)
+        expect(Math.abs(etter.width - før.width)).toBeLessThanOrEqual(1)
+        expect(Math.abs(etter.height - før.height)).toBeLessThanOrEqual(1)
+      } finally {
+        rydd()
+      }
+    })
+  }
+
+  it("lar kroppen rulle, ikke dialogen, i begge tilstander", async () => {
+    /*
+     * `.lt-dialog__body` hadde `overflow-y: auto` uten å kunne rulle: dialogen
+     * var en blokk, så kroppens høyde var innholdsbestemt og ble aldri
+     * klippet. Det som rullet var dialogen selv, og bare når den var modal, så
+     * overskriften og knapperaden forsvant ut av syne sammen med teksten.
+     */
+    const { dialog: boks, rydd } = await iRammeUtenSkript(
+      `
+      <lt-dialog>
+        <dialog class="lt-dialog" open>
+          <h2 class="lt-dialog__title">Vilkår</h2>
+          <div class="lt-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>
+          <div class="lt-dialog__footer">
+            <button class="lt-button" type="button">Lukk</button>
+          </div>
+        </dialog>
+      </lt-dialog>`,
+      390,
+      700,
+    )
+
+    const kropp = boks.querySelector(".lt-dialog__body") as HTMLElement
+    const bunn = boks.querySelector(".lt-dialog__footer") as HTMLElement
+
+    const somDenSkal = () => {
+      expect(kropp.scrollHeight).toBeGreaterThan(kropp.clientHeight + 1)
+      // Dialogen selv ruller ikke, så tittelen og knappene blir stående.
+      expect(boks.scrollHeight).toBeLessThanOrEqual(boks.clientHeight + 1)
+      const kort = boks.getBoundingClientRect()
+      const rad = bunn.getBoundingClientRect()
+      expect(rad.top).toBeGreaterThanOrEqual(kort.top - 1)
+      expect(rad.bottom).toBeLessThanOrEqual(kort.bottom + 1)
+    }
+
+    try {
+      // Er dialogen allerede modal her, er påstandene under sanne uten at
+      // noe er etterprøvd.
+      expect(boks.matches(":modal")).toBe(false)
+      somDenSkal()
+
+      // Og i topplaget, der nettleseren selv gir dialogen `overflow: auto`.
+      boks.close()
+      boks.showModal()
+      expect(boks.matches(":modal")).toBe(true)
+      somDenSkal()
+    } finally {
+      rydd()
+    }
+  })
+
+  it("holder en lukket dialog skjult, også med kropp", async () => {
+    /*
+     * Kolonnen ga klassen en `display`, og en forfatterregel slår nettleserens
+     * eget stilark uansett lag og spesifisitet. Uten at den skjulte tilstanden
+     * ble tatt tilbake, sto en lukket dialog som et kort oppå innholdet rundt:
+     * fra sidelasting for alt som sender dialogen lukket, og etter hver
+     * lukking. Det er den anbefalte bruken med JavaScript.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(`
+      <lt-dialog>
+        <dialog class="lt-dialog">
+          <h2 class="lt-dialog__title">Slette søknaden?</h2>
+          <div class="lt-dialog__body">
+            <p>Søknaden og vedleggene blir borte.</p>
+          </div>
+        </dialog>
+      </lt-dialog>`)
+
+    try {
+      expect(boks.open).toBe(false)
+      expect(vindu.getComputedStyle(boks).display).toBe("none")
+      expect(boks.getBoundingClientRect().height).toBe(0)
+
+      // Og den kommer tilbake når den åpnes, som en kolonne.
+      boks.showModal()
+      expect(vindu.getComputedStyle(boks).display).toBe("flex")
+
+      // Og forsvinner igjen etter lukking, som er der den ble stående.
+      boks.close()
+      expect(vindu.getComputedStyle(boks).display).toBe("none")
+      expect(boks.getBoundingClientRect().height).toBe(0)
+    } finally {
+      rydd()
+    }
+  })
+
+  it("lar dialogen selv rulle når den ikke har en kropp", async () => {
+    /*
+     * `overflow: auto` i regelen før modalen speiler det nettleseren gir en
+     * modal. Uten den er `overflow` `visible` fram til `showModal()`, og høyt
+     * innhold som ikke ligger i `.lt-dialog__body` renner ut av det avrundede
+     * kortet framfor å kunne rulles. Boksen er like stor uansett, så
+     * hopptestene ser det ikke.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(
+      `
+      <lt-dialog>
+        <dialog class="lt-dialog" open>
+          <h2 class="lt-dialog__title">Vilkår</h2>
+          ${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}
+        </dialog>
+      </lt-dialog>`,
+      390,
+      700,
+    )
+
+    try {
+      expect(boks.matches(":modal")).toBe(false)
+      expect(vindu.getComputedStyle(boks).overflow).toBe("auto")
+      expect(boks.scrollHeight).toBeGreaterThan(boks.clientHeight + 1)
+    } finally {
+      rydd()
+    }
+  })
+
+  it("skjuler ikke en dialog som vises som popover", async () => {
+    /*
+     * En popover setter aldri `open`, så regelen som tar tilbake den skjulte
+     * tilstanden må ha det samme unntaket som nettleserens eget stilark har.
+     * Uten det forsvant et `<dialog popover>` helt, uten et ord.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(`
+      <dialog class="lt-dialog" popover id="hjelp">
+        <h2 class="lt-dialog__title">Hva betyr dette?</h2>
+        <div class="lt-dialog__body">
+          <p>Søknaden er registrert, men ikke behandlet.</p>
+        </div>
+      </dialog>`)
+
+    try {
+      expect(vindu.getComputedStyle(boks).display).toBe("none")
+
+      boks.showPopover()
+      expect(boks.matches(":popover-open")).toBe(true)
+      expect(vindu.getComputedStyle(boks).display).toBe("flex")
+      expect(boks.getBoundingClientRect().width).toBeGreaterThan(0)
+
+      boks.hidePopover()
+      expect(vindu.getComputedStyle(boks).display).toBe("none")
+    } finally {
+      rydd()
+    }
+  })
+
+  it("lar dialogen være en blokk når den ikke har en kropp", async () => {
+    /*
+     * Kolonnen slås på av `:has(> .lt-dialog__body)`, og det vilkåret er med
+     * vilje. En dialog uten kropp skal ikke endre utseende av at kolonnen kom:
+     * en knapp som står rett i dialogen skal beholde bredden sin framfor å bli
+     * en egen rad i full bredde.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(`
+      <lt-dialog>
+        <dialog class="lt-dialog" open>
+          <h2 class="lt-dialog__title">Vilkår</h2>
+          <p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>
+          <button class="lt-button" type="button">Lukk</button>
+        </dialog>
+      </lt-dialog>`)
+
+    try {
+      expect(vindu.getComputedStyle(boks).display).toBe("block")
+
+      const knapp = boks.querySelector(".lt-button") as HTMLElement
+      const bredde = knapp.getBoundingClientRect().width
+      expect(bredde).toBeGreaterThan(0)
+      // Ikke strukket til full bredde slik et flekselement ville blitt.
+      expect(bredde).toBeLessThan(boks.getBoundingClientRect().width / 2)
+    } finally {
+      rydd()
+    }
+  })
+
+  it("lar dialogen være en blokk når kroppen er pakket inn", async () => {
+    /*
+     * Det dokumentasjonen lover i tabellen over klassene: kroppen må være et
+     * direkte barn. Er den pakket inn, i et `<form>` for eksempel, er det
+     * dialogen som ruller, som før kolonnen kom. Da forsvinner overskriften ut
+     * av syne, og det er grunnen til at vilkåret står skrevet.
+     */
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(
+      `
+      <lt-dialog>
+        <dialog class="lt-dialog" open>
+          <form method="dialog">
+            <h2 class="lt-dialog__title">Vilkår</h2>
+            <div class="lt-dialog__body">${"<p>Vilkårene gjelder fra den datoen søknaden er registrert.</p>".repeat(40)}</div>
+          </form>
+        </dialog>
+      </lt-dialog>`,
+      390,
+      700,
+    )
+
+    try {
+      expect(vindu.getComputedStyle(boks).display).toBe("block")
+
+      const kropp = boks.querySelector(".lt-dialog__body") as HTMLElement
+      expect(kropp.scrollHeight).toBeLessThanOrEqual(kropp.clientHeight + 1)
+      expect(boks.scrollHeight).toBeGreaterThan(boks.clientHeight + 1)
+    } finally {
+      rydd()
+    }
+  })
+
+  it("rører ikke en dialog som brukes uten komponenten", async () => {
+    // En `.lt-dialog` som står alene, og med vilje ikke er modal, skal stå
+    // der den står.
+    const {
+      dialog: boks,
+      vindu,
+      rydd,
+    } = await iRammeUtenSkript(
+      `<dialog class="lt-dialog" open>Uten vert</dialog>`,
+    )
+
+    try {
+      expect(vindu.getComputedStyle(boks).position).not.toBe("fixed")
+    } finally {
+      rydd()
+    }
+  })
+})
+
+describe("lt-dialog med server-controlled", () => {
+  beforeAll(() => {
+    defineLtDialog()
+  })
+
+  it("melder fra én gang også når React tar open fra barnet før verten", async () => {
+    // React oppdaterer barn før forelder. Da er vertens `open` alt borte i
+    // det komponenten lukker dialogen, og uten en melding herfra fikk appen
+    // aldri vite at den ble lukket.
+    const boks = dialog({ titleId: "sc2-tittel", open: true })
+    monter(`
+      <lt-dialog server-controlled ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+        </dialog>
+      </lt-dialog>
+    `)
+    await customElements.whenDefined("lt-dialog")
+    await ventPaTegning()
+
+    const vert = document.querySelector("lt-dialog") as HTMLElement
+    const d = document.querySelector("dialog") as HTMLDialogElement
+    const meldinger: boolean[] = []
+    vert.addEventListener("dialog-toggle", (e) => meldinger.push(e.detail.open))
+
+    d.removeAttribute("open")
+    vert.removeAttribute("open")
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(d.matches(":modal")).toBe(false)
+    expect(meldinger).toEqual([false])
+  })
+
+  it("lukker en modal dialog når patchen tar open fra den", async () => {
+    /*
+     * Serveren eier tilstanden, og sender området på nytt uten `open` på
+     * `<dialog>`. Reparasjonen var slått av, men ingen kalte `close()`:
+     * dialogen sto igjen med `:modal` og `display: none`, og ingenting på
+     * siden kunne klikkes. Dokumentasjonen lover at hver patch bestemmer,
+     * også når dialogen står i topplaget.
+     */
+    const boks = dialog({ titleId: "sc-tittel", open: true })
+    monter(`
+      <lt-dialog server-controlled ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+          <form method="dialog" ${attr(boks.footer)}>
+            <button class="lt-button" value="lukk">Lukk</button>
+          </form>
+        </dialog>
+      </lt-dialog>
+      <button id="utenfor">Utenfor</button>
+    `)
+    await customElements.whenDefined("lt-dialog")
+    await ventPaTegning()
+
+    const vert = document.querySelector("lt-dialog") as HTMLElement
+    const d = document.querySelector("dialog") as HTMLDialogElement
+    const meldinger: boolean[] = []
+    vert.addEventListener("dialog-toggle", (e) => meldinger.push(e.detail.open))
+    expect(d.matches(":modal")).toBe(true)
+
+    d.removeAttribute("open")
+    await ventPaTegning()
+    await ventPaTegning()
+
+    expect(d.matches(":modal"), "dialogen står igjen i topplaget").toBe(false)
+    expect(vert.hasAttribute("open")).toBe(false)
+    expect(meldinger).toEqual([false])
+
+    const knapp = document.getElementById("utenfor") as HTMLElement
+    knapp.focus()
+    expect(document.activeElement, "resten av siden er fortsatt inert").toBe(
+      knapp,
+    )
+  })
+})
+
+describe("dialogen med farget topp", () => {
+  it("gir toppen fargen og flytter luften ut i delene", async () => {
+    // Uten dette skrev to dialoger i spilldemoen om padding på tre klasser
+    // for å få et farget bånd helt ut i kantene.
+    const boks = dialog({ titleId: "farge-tittel", color: "success" })
+    expect(boks.dialog["data-color"]).toBe("success")
+    expect(dialog({ titleId: "x" }).dialog["data-color"]).toBeUndefined()
+
+    monter(`
+      <dialog ${attr(boks.dialog)} open>
+        <div ${attr(boks.header)}>
+          <h2 ${attr(boks.title)}>Full pott</h2>
+          <p ${attr(boks.subtitle)}>25 av 25 poeng</p>
+        </div>
+        <div ${attr(boks.body)}><p>Alle fire traff.</p></div>
+        <form method="dialog" ${attr(boks.footer)}><button class="lt-button" value="lukk">Lukk</button></form>
+      </dialog>
+    `)
+    await ventPaTegning()
+
+    const d = document.querySelector("dialog") as HTMLElement
+    const topp = d.querySelector(".lt-dialog__header") as HTMLElement
+    const kropp = d.querySelector(".lt-dialog__body") as HTMLElement
+    const fot = d.querySelector(".lt-dialog__footer") as HTMLElement
+    // En referanse med tokenet rett på, så fargen sammenlignes ferdig regnet.
+    const referanse = document.createElement("div")
+    referanse.style.background = "var(--lt-color-success-surface)"
+    document.body.append(referanse)
+
+    expect(getComputedStyle(d).paddingTop).toBe("0px")
+    expect(getComputedStyle(topp).paddingTop).not.toBe("0px")
+    expect(getComputedStyle(kropp).paddingTop).not.toBe("0px")
+    expect(getComputedStyle(fot).marginTop).toBe("0px")
+    expect(getComputedStyle(topp).backgroundColor).toBe(
+      getComputedStyle(referanse).backgroundColor,
+    )
+    expect(getComputedStyle(topp).backgroundColor).not.toBe(
+      getComputedStyle(kropp).backgroundColor,
+    )
+    referanse.remove()
+  })
+
+  it("gir ingen stripe når toppen står uten farge", async () => {
+    const boks = dialog({ titleId: "noytral-tittel" })
+    monter(`
+      <dialog ${attr(boks.dialog)} open>
+        <div ${attr(boks.header)}><h2 ${attr(boks.title)}>Nøytral</h2></div>
+        <div ${attr(boks.body)}><p>Tekst.</p></div>
+      </dialog>
+    `)
+    await ventPaTegning()
+
+    const topp = document.querySelector(".lt-dialog__header") as HTMLElement
+    const kropp = document.querySelector(".lt-dialog__body") as HTMLElement
+    const referanse = document.createElement("div")
+    referanse.style.paddingTop = "var(--lt-spacing-2)"
+    document.body.append(referanse)
+
+    // Toppens bunnluft er overskriftens vanlige marg, og kroppen legger
+    // ingenting til, så avstanden ned til teksten er den samme som uten topp.
+    expect(getComputedStyle(topp).paddingBottom).toBe(
+      getComputedStyle(referanse).paddingTop,
+    )
+    expect(getComputedStyle(kropp).paddingTop).toBe("0px")
+    referanse.remove()
+  })
+
+  it("gir neutral samme luft som ingen farge", async () => {
+    const boks = dialog({ titleId: "uten-tittel" })
+    const noytral = dialog({ titleId: "noytral-verdi-tittel" })
+    monter(`
+      <dialog ${attr(boks.dialog)} id="uten" open>
+        <div ${attr(boks.header)}><h2 ${attr(boks.title)}>Uten</h2></div>
+        <div ${attr(boks.body)}><p>Tekst.</p></div>
+      </dialog>
+      <dialog ${attr(noytral.dialog)} id="noytral" data-color="neutral" open>
+        <div ${attr(noytral.header)}><h2 ${attr(noytral.title)}>Nøytral</h2></div>
+        <div ${attr(noytral.body)}><p>Tekst.</p></div>
+      </dialog>
+    `)
+    await ventPaTegning()
+
+    // `neutral` er standardverdien, og editoren foreslår den. Før fikk den
+    // 20 piksler under overskriften i stedet for 8.
+    const stil = (id: string, del: string) =>
+      getComputedStyle(document.querySelector(`#${id} ${del}`) as Element)
+    expect(stil("noytral", ".lt-dialog__header").paddingBottom).toBe(
+      stil("uten", ".lt-dialog__header").paddingBottom,
+    )
+    expect(stil("noytral", ".lt-dialog__body").paddingTop).toBe("0px")
+  })
+
+  it("holder avstanden til knapperaden når toppen uten farge står rett over den", async () => {
+    // En bekreftelsesdialog med bare overskrift og knapper. Med bunnluften
+    // satt til null sto knappene helt inntil overskriften.
+    const medTopp = dialog({ titleId: "kort-tittel" })
+    monter(`
+      <dialog ${attr(medTopp.dialog)} open id="med">
+        <div ${attr(medTopp.header)}><h2 ${attr(medTopp.title)}>Slette?</h2></div>
+        <form method="dialog" ${attr(medTopp.footer)}><button class="lt-button" value="ja">Ja</button></form>
+      </dialog>
+      <dialog ${attr(dialog({ titleId: "kort-tittel-2" }).dialog)} open id="uten">
+        <h2 class="lt-dialog__title" id="kort-tittel-2">Slette?</h2>
+        <form method="dialog" class="lt-dialog__footer"><button class="lt-button" value="ja">Ja</button></form>
+      </dialog>
+    `)
+    await ventPaTegning()
+
+    // Til knappen, ikke til knapperadens boks: radens luft ligger inni boksen
+    // med topp, og under boksen som marg uten. Det brukeren ser er knappen.
+    const avstand = (id: string) => {
+      const d = document.getElementById(id) as HTMLElement
+      const tittel = d.querySelector("h2") as HTMLElement
+      const knapp = d.querySelector("button") as HTMLElement
+      return (
+        knapp.getBoundingClientRect().top -
+        tittel.getBoundingClientRect().bottom
+      )
+    }
+    expect(Math.round(avstand("med"))).toBe(Math.round(avstand("uten")))
+    expect(avstand("med")).toBeGreaterThan(0)
+  })
+
+  it("står som før uten en topp", async () => {
+    const boks = dialog({ titleId: "vanlig-tittel" })
+    monter(`
+      <dialog ${attr(boks.dialog)} open>
+        <h2 ${attr(boks.title)}>Vanlig</h2>
+        <div ${attr(boks.body)}><p>Tekst.</p></div>
+      </dialog>
+    `)
+    await ventPaTegning()
+
+    const d = document.querySelector("dialog") as HTMLElement
+    expect(getComputedStyle(d).paddingTop).not.toBe("0px")
+  })
+
+  it("kjenner fargene sine", () => {
+    expect(dialog.colors).toEqual([
+      "neutral",
+      "brand",
+      "info",
+      "success",
+      "warning",
+      "danger",
+    ])
+    expect(dialog.isColor("brand")).toBe(true)
+    expect(dialog.isColor("lilla")).toBe(false)
+    expect(dialog.header).toBe("lt-dialog__header")
+  })
+})
+
+describe("lt-dialog kobler fra bar struktur", () => {
+  beforeAll(() => {
+    defineLtDialog()
+  })
+
+  afterEach(() => {
+    const d = document.querySelector("dialog") as HTMLDialogElement | null
+    if (d?.open) d.close()
+  })
+
+  const BAR = `
+    <lt-dialog>
+      <dialog>
+        <h2>Slette søknaden?</h2>
+        <div class="lt-dialog__body"><p>Søknaden og vedleggene blir borte.</p></div>
+        <form method="dialog" class="lt-dialog__footer">
+          <button class="lt-button" value="avbryt">Avbryt</button>
+        </form>
+      </dialog>
+    </lt-dialog>`
+
+  async function monterBar(markup = BAR) {
+    monter(markup)
+    await customElements.whenDefined("lt-dialog")
+    await ventPaTegning()
+    return {
+      d: document.querySelector("dialog") as HTMLDialogElement,
+      tittel: document.querySelector("h2") as HTMLElement,
+    }
+  }
+
+  it("gir dialogen klassen og navnet sitt fra overskriften", async () => {
+    const { d, tittel } = await monterBar()
+
+    expect(d.classList.contains("lt-dialog")).toBe(true)
+    expect(tittel.classList.contains("lt-dialog__title")).toBe(true)
+    expect(tittel.id).not.toBe("")
+    expect(d.getAttribute("aria-labelledby")).toBe(tittel.id)
+  })
+
+  it("lar et navn fra aria-label stå, og rører ikke overskriften", async () => {
+    // Overskriften er da ikke tittelen, og skal verken få id eller klassen
+    // som stiler den som en.
+    const { d, tittel } = await monterBar(
+      BAR.replace("<dialog>", '<dialog aria-label="Slett søknaden">'),
+    )
+
+    expect(d.hasAttribute("aria-labelledby")).toBe(false)
+    expect(d.getAttribute("aria-label")).toBe("Slett søknaden")
+    expect(tittel.id).toBe("")
+    expect(tittel.classList.contains("lt-dialog__title")).toBe(false)
+  })
+
+  it("gir klassen til overskriften serveren pekte på", async () => {
+    const { d } = await monterBar(
+      BAR.replace("<dialog>", '<dialog aria-labelledby="egen-tittel">').replace(
+        "<h2>Slette søknaden?</h2>",
+        '<p id="egen-tittel">Slette søknaden?</p><h2>Vedlegg</h2>',
+      ),
+    )
+    const egen = document.getElementById("egen-tittel") as HTMLElement
+    const h2 = d.querySelector("h2") as HTMLElement
+
+    expect(egen.classList.contains("lt-dialog__title")).toBe(true)
+    expect(h2.classList.contains("lt-dialog__title")).toBe(false)
+    expect(h2.id).toBe("")
+  })
+
+  it("gjør ikke en overskrift i kroppen til tittel", async () => {
+    // Overskriften i kroppen hører til innholdet. Tittelen er den første
+    // overskriften utenfor kroppen, også når den står etter kroppen.
+    const { d } = await monterBar(
+      BAR.replace("<h2>Slette søknaden?</h2>", "")
+        .replace(
+          "<p>Søknaden og vedleggene blir borte.</p>",
+          "<h3>Vedleggene</h3><p>Søknaden og vedleggene blir borte.</p>",
+        )
+        .replace(
+          '<form method="dialog"',
+          '<h2>Slette søknaden?</h2><form method="dialog"',
+        ),
+    )
+    const h3 = d.querySelector("h3") as HTMLElement
+    const h2 = d.querySelector("h2") as HTMLElement
+
+    expect(h3.classList.contains("lt-dialog__title")).toBe(false)
+    expect(h3.id).toBe("")
+    expect(h2.classList.contains("lt-dialog__title")).toBe(true)
+    expect(d.getAttribute("aria-labelledby")).toBe(h2.id)
+  })
+
+  it("rører ikke overskriften i en nøstet dialog", async () => {
+    // Den nøstede dialogens overskrift står først i dokumentrekkefølge, og
+    // er likevel ikke den ytre dialogens tittel. Det er overskriften etter.
+    const { d } = await monterBar(
+      BAR.replace("<h2>Slette søknaden?</h2>", "").replace(
+        '<form method="dialog"',
+        '<dialog id="indre"><h2>Er du sikker?</h2></dialog>' +
+          '<h2 id="ytre">Slette søknaden?</h2><form method="dialog"',
+      ),
+    )
+    const indre = d.querySelector("#indre h2") as HTMLElement
+    const ytre = d.querySelector("#ytre") as HTMLElement
+
+    expect(indre.classList.contains("lt-dialog__title")).toBe(false)
+    expect(ytre.classList.contains("lt-dialog__title")).toBe(true)
+    expect(d.getAttribute("aria-labelledby")).toBe("ytre")
+  })
+
+  it("teller ikke en kropp utenfor sin egen dialog", async () => {
+    // En bekreftelse i kroppen til en innstillingsdialog: den indre
+    // dialogens overskrift står i den ytre dialogens kropp, men kroppen er
+    // ikke den indres, så overskriften er fortsatt tittelen dens.
+    monter(`
+      <dialog id="ytre" aria-label="Innstillinger">
+        <div class="lt-dialog__body">
+          <lt-dialog>
+            <dialog id="indre">
+              <h2 id="sikker">Er du sikker?</h2>
+              <form method="dialog" class="lt-dialog__footer">
+                <button class="lt-button" value="avbryt">Avbryt</button>
+              </form>
+            </dialog>
+          </lt-dialog>
+        </div>
+      </dialog>
+    `)
+    await customElements.whenDefined("lt-dialog")
+    await ventPaTegning()
+    const indre = document.getElementById("indre") as HTMLDialogElement
+    const tittel = document.getElementById("sikker") as HTMLElement
+
+    expect(tittel.classList.contains("lt-dialog__title")).toBe(true)
+    expect(indre.getAttribute("aria-labelledby")).toBe("sikker")
+  })
+
+  it("åpner ikke igjen når en klasse endres i samme oppgave som lukkingen", async () => {
+    /*
+     * `close()` fjerner `open` synkront og køer `close`-hendelsen, og
+     * observatøren kjører før den. Så komponenten en klassepost og kjørte
+     * hele `sync()`, fant den en vert med `open` og en dialog som ikke var
+     * modal, og åpnet den igjen. Brukeren måtte lukke to ganger.
+     */
+    const { d } = await monterBar(
+      BAR.replace("<lt-dialog>", "<lt-dialog open>").replace(
+        "<dialog>",
+        "<dialog open>",
+      ),
+    )
+    const vert = document.querySelector("lt-dialog") as HTMLElement
+    const knapp = d.querySelector("button") as HTMLButtonElement
+    expect(d.matches(":modal")).toBe(true)
+
+    const meldt: boolean[] = []
+    vert.addEventListener("dialog-toggle", (e) => meldt.push(e.detail.open))
+    const lukket = new Promise((r) =>
+      d.addEventListener("close", r, { once: true }),
+    )
+    d.close("slett")
+    knapp.classList.add("opptatt")
+    await lukket
+    await ventPaTegning()
+
+    expect(d.open).toBe(false)
+    expect(vert.hasAttribute("open")).toBe(false)
+    expect(meldt).toEqual([false])
+  })
+
+  it("åpner ikke igjen når en node endres inne i dialogen i samme oppgave", async () => {
+    // Samme løp som over, gjennom en annen dør: en `childList`-post inne i
+    // dialogen, som `knapp.textContent = "Sletter…"` eller en patch fra en
+    // hendelsesstrøm, er ikke et bytte av dialogen og skal ikke kjøre
+    // åpne-og-lukke-logikken.
+    const { d } = await monterBar(
+      BAR.replace("<lt-dialog>", "<lt-dialog open>").replace(
+        "<dialog>",
+        "<dialog open>",
+      ),
+    )
+    const vert = document.querySelector("lt-dialog") as HTMLElement
+    const kropp = d.querySelector(".lt-dialog__body") as HTMLElement
+    expect(d.matches(":modal")).toBe(true)
+
+    const meldt: boolean[] = []
+    vert.addEventListener("dialog-toggle", (e) => meldt.push(e.detail.open))
+    const lukket = new Promise((r) =>
+      d.addEventListener("close", r, { once: true }),
+    )
+    d.close("slett")
+    kropp.append(document.createElement("p"))
+    await lukket
+    await ventPaTegning()
+
+    expect(d.open).toBe(false)
+    expect(vert.hasAttribute("open")).toBe(false)
+    expect(meldt).toEqual([false])
+  })
+
+  it("setter koblingen tilbake med den samme id-en etter en patch", async () => {
+    const { d, tittel } = await monterBar()
+    const id = tittel.id
+
+    // Slik en morfing gjør det: alt som ikke sto i serverens HTML tas bort.
+    d.removeAttribute("class")
+    d.removeAttribute("aria-labelledby")
+    tittel.removeAttribute("id")
+    tittel.removeAttribute("class")
+    await ventPaTegning()
+
+    expect(tittel.id).toBe(id)
+    expect(d.getAttribute("aria-labelledby")).toBe(id)
+    expect(d.classList.contains("lt-dialog")).toBe(true)
+    expect(tittel.classList.contains("lt-dialog__title")).toBe(true)
+  })
+
+  it("skriver ingenting på markup fra lt.dialog()", async () => {
+    // Den direkte påstanden bak «det serveren skrev står»: null
+    // mutasjonsposter fra komponentens første runde.
+    const boks = dialog({ titleId: "tittel" })
+    const omslag = document.createElement("div")
+    omslag.innerHTML = `
+      <lt-dialog ${attr(boks.host)}>
+        <dialog ${attr(boks.dialog)}>
+          <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
+          <div ${attr(boks.body)}><p>Saken er ferdigbehandlet.</p></div>
+        </dialog>
+      </lt-dialog>`
+    const vert = omslag.querySelector("lt-dialog") as HTMLElement
+    const poster: MutationRecord[] = []
+    const observatør = new MutationObserver((r) => poster.push(...r))
+    observatør.observe(vert, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    })
+
+    document.body.append(omslag)
+    await customElements.whenDefined("lt-dialog")
+    await ventPaTegning()
+
+    expect(poster.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
+    observatør.disconnect()
+    omslag.remove()
+  })
+})
+
+describe("lt-dialog når React skriver egenskapen", () => {
+  beforeAll(() => {
+    defineLtDialog()
+  })
+
+  it("fjerner open når egenskapen settes til undefined", async () => {
+    /*
+     * React 19 skriver `el.open = undefined` når en prop går fra `true` til
+     * borte. `toggleAttribute(navn, undefined)` veksler, så en dialog
+     * brukeren hadde lukket fikk `open` tilbake og åpnet seg igjen.
+     */
+    const boks = dialog({ titleId: "tittel" })
+    monter(
+      `<lt-dialog><dialog ${attr(boks.dialog)}><h2 ${attr(boks.title)}>Slette?</h2></dialog></lt-dialog>`,
+    )
+    await customElements.whenDefined("lt-dialog")
+    const vert = document.querySelector("lt-dialog") as HTMLElement & {
+      open: boolean | undefined
+    }
+
+    vert.open = undefined
+    expect(vert.hasAttribute("open"), "undefined på en lukket").toBe(false)
+
+    vert.open = true
+    await ventPaTegning()
+    expect(vert.hasAttribute("open")).toBe(true)
+
+    vert.open = undefined
+    await ventPaTegning()
+    expect(vert.hasAttribute("open"), "undefined på en åpen").toBe(false)
+    expect(document.querySelector("dialog")?.matches(":modal")).toBe(false)
+  })
+})

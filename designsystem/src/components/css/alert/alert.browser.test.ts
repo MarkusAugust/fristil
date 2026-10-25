@@ -13,24 +13,24 @@ import "../../../tokens/tokens.css"
 import "./alert.css"
 import "../help-text/help-text.css"
 
-describe("fs-alert", () => {
+describe("lt-alert", () => {
   beforeEach(() => {
     monter(`
-      <div class="fs-alert">
-        <p class="fs-alert__title">Saken er registrert</p>
+      <div class="lt-alert">
+        <p class="lt-alert__title">Saken er registrert</p>
         <p>Du får svar innen tre uker.</p>
       </div>
-      <div class="fs-alert" data-color="success" id="vellykket">
+      <div class="lt-alert" data-color="success" id="vellykket">
         <p>Søknaden er sendt.</p>
       </div>
-      <div class="fs-alert" data-color="warning" id="advarsel">
+      <div class="lt-alert" data-color="warning" id="advarsel">
         <p>Fristen går ut om tre dager.</p>
       </div>
-      <div class="fs-alert" data-color="danger" id="feil" role="alert">
-        <p class="fs-alert__title">Søknaden ble ikke sendt</p>
+      <div class="lt-alert" data-color="danger" id="feil" role="alert">
+        <p class="lt-alert__title">Søknaden ble ikke sendt</p>
         <p>Nettverket svarte ikke. Prøv igjen.</p>
       </div>
-      <div class="fs-alert" data-color="info" id="info">
+      <div class="lt-alert" data-color="info" id="info">
         <p>Tjenesten er oppdatert.</p>
       </div>
     `)
@@ -54,11 +54,11 @@ describe("fs-alert", () => {
   })
 
   it("lar marginen til en hjelpetekst i meldingen stå", () => {
-    // `.fs-alert p` nullet den, siden den slo `.fs-help-text` på spesifisitet.
+    // `.lt-alert p` nullet den, siden den slo `.lt-help-text` på spesifisitet.
     monter(`
-      <div class="fs-alert">
+      <div class="lt-alert">
         <p>Du får svar innen tre uker.</p>
-        <p class="fs-help-text" id="hjelp">Saksnummeret står i kvitteringen.</p>
+        <p class="lt-help-text" id="hjelp">Saksnummeret står i kvitteringen.</p>
       </div>
     `)
 
@@ -69,12 +69,12 @@ describe("fs-alert", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(alert()).toEqual({ class: "fs-alert" })
+    expect(alert()).toEqual({ class: "lt-alert" })
     expect(alert({ color: "danger" })).toEqual({
-      class: "fs-alert",
+      class: "lt-alert",
       "data-color": "danger",
     })
-    expect(alert.title).toBe("fs-alert__title")
+    expect(alert.title).toBe("lt-alert__title")
     expect(alert.isColor("danger")).toBe(true)
     expect(alert.isColor("critical")).toBe(false)
   })

@@ -1,40 +1,40 @@
-@layer fristil {
-  /* Lenken ligger utenfor skjermen til den får fokus. Den kan ikke skjules
-     med display eller visibility, for da kan tastaturet heller ikke nå den,
-     og hele poenget forsvinner. */
-  .fs-skip-link {
+@layer lotek {
+  /* The link sits off screen until it gets focus. It cannot be hidden with
+     display or visibility, because then the keyboard cannot reach it either,
+     and the whole point is lost. */
+  .lt-skip-link {
     position: absolute;
-    inset-inline-start: var(--fs-spacing-2);
-    inset-block-start: var(--fs-spacing-2);
+    inset-inline-start: var(--lt-spacing-2);
+    inset-block-start: var(--lt-spacing-2);
     z-index: 100;
-    transform: translateY(calc(-100% - var(--fs-spacing-4)));
+    transform: translateY(calc(-100% - var(--lt-spacing-4)));
     display: inline-block;
     padding: var(
-      --fs-skip-link-padding,
-      var(--fs-spacing-2) var(--fs-spacing-4)
+      --lt-skip-link-padding,
+      var(--lt-spacing-2) var(--lt-spacing-4)
     );
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-accent-content);
-    background: var(--fs-color-accent-fill);
-    border-radius: var(--fs-skip-link-radius, var(--fs-spacing-1));
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-accent-content);
+    background: var(--lt-color-accent-fill);
+    border-radius: var(--lt-skip-link-radius, var(--lt-spacing-1));
     text-decoration: underline;
   }
 
-  /* `:focus` og ikke `:focus-visible`. Fokus satt fra kode etter et
-     museklikk regnes ikke som «synlig fokus», og lenken ville da blitt
-     stående skjult for den som hopper dit fra et skript. Etter et tastetrykk
-     regnes det som synlig, men det er museklikket som avgjør valget. */
-  .fs-skip-link:focus {
+  /* `:focus` and not `:focus-visible`. Focus set from code after a mouse
+     click does not count as "visible focus", and the link would then stay
+     hidden for someone a script sends there. After a key press it counts as
+     visible, but it is the mouse click that decides. */
+  .lt-skip-link:focus {
     transform: translateY(0);
-    outline: var(--fs-focus-ring);
-    outline-color: var(--fs-color-neutral-text-strong);
+    outline: var(--lt-focus-ring);
+    outline-color: var(--lt-color-neutral-text-strong);
     outline-offset: 2px;
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .fs-skip-link {
+    .lt-skip-link {
       transition: transform 120ms ease;
     }
   }

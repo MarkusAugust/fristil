@@ -1,94 +1,94 @@
 ---
 title: Breadcrumbs
-description: Brødsmulesti som viser hvor på siden brukeren er. CSS-komponent med én klasse og ingen JavaScript.
+description: A breadcrumb trail that shows where on the site the user is. A CSS component with one class and no JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
-Stien fra forsiden til der brukeren står nå. Klassen settes på en `<ol>` inne i en `<nav>`: rekkefølgen betyr noe, så listen må være nummerert selv om tallene ikke vises.
+The path from the front page to where the user is now. The class goes on an `<ol>` inside a `<nav>`: the order matters, so the list has to be numbered even though the numbers are not shown.
 
-## Slik tar du den i bruk
+## How to use it
 
-<Eksempel importer={["tokens.css", "breadcrumbs.css"]}
-  stiler={["breadcrumbs"]} layout="stabel" maxWidth="32rem" kode={`
-<nav aria-label="Du er her">
-  <ol class="fs-breadcrumbs">
-    <li><a href="#">Forsiden</a></li>
-    <li><a href="#">Mine saker</a></li>
-    <li><a href="#" aria-current="page">Søknad 2026-0481</a></li>
+<Example imports={["tokens.css", "breadcrumbs.css"]}
+  styles={["breadcrumbs"]} layout="stack" maxWidth="32rem" code={`
+<nav aria-label="You are here">
+  <ol class="lt-breadcrumbs">
+    <li><a href="#">Home</a></li>
+    <li><a href="#">My cases</a></li>
+    <li><a href="#" aria-current="page">Application 2026-0481</a></li>
   </ol>
 </nav>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<nav aria-label="Du er her">
-  <ol {...fs.breadcrumbs()}>
-    <li><a href="/">Forsiden</a></li>
-    <li aria-current="page">Bostøtte</li>
+<nav aria-label="You are here">
+  <ol {...lt.breadcrumbs()}>
+    <li><a href="/">Home</a></li>
+    <li aria-current="page">Housing benefit</li>
   </ol>
 </nav>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-const sti = document.querySelector<HTMLOListElement>("#brodsmuler")
+const trail = document.querySelector<HTMLOListElement>("#breadcrumbs")
 
-fs.setAttributes(sti, fs.breadcrumbs())
+lt.setAttributes(trail, lt.breadcrumbs())
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
-Tre ting må stå i markupen:
+Three things have to be in the markup:
 
-| Hva | Hvorfor |
+| What | Why |
 | --- | --- |
-| `<nav aria-label="Du er her">` | Skjermlesere lister opp navigasjonene på siden. Uten teksten heter denne bare «navigasjon». |
-| `<ol>`, ikke `<ul>` | Rekkefølgen er en del av betydningen |
-| `aria-current="page"` på siste steg | Sier hvilken side brukeren er på. Fargen alene sier ingenting. |
+| `<nav aria-label="You are here">` | Screen readers list the navigation regions on the page. Without the text this one is just called "navigation". |
+| `<ol>`, not `<ul>` | The order is part of the meaning |
+| `aria-current="page"` on the last step | Says which page the user is on. Colour alone says nothing. |
 
-Skilletegnet legges inn med CSS. Sto skråstreken i markupen, ville skjermlesere lest «skråstrek» mellom hvert steg.
+The separator is added with CSS. If the slash were in the markup, screen readers would read "slash" between every step.
 
-## Klasser du kan style
+## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.fs-breadcrumbs` | Listen med stegene |
+| `.lt-breadcrumbs` | The list of steps |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
-| `--fs-breadcrumbs-gap` | `var(--fs-spacing-2)` |
+| `--lt-breadcrumbs-gap` | `var(--lt-spacing-2)` |
 
-Skilletegnet kommer fra `::before` på hvert steg etter det første, og kan byttes. Ta med den tomme alternativteksten etter tegnet: generert innhold leses opp, og uten den sier skjermleseren det nye tegnet mellom hvert steg, slik den sa «skråstrek» før. Den første regelen er reserven for nettlesere som ikke kjenner formen og ellers forkaster hele deklarasjonen, som i stilarket selv:
+The separator comes from `::before` on every step after the first, and can be replaced. Keep the empty alternative text after the character: generated content is read out, and without it the screen reader says the new character between every step, just as it used to say "slash". The first rule is the fallback for browsers that do not know the syntax and would otherwise discard the whole declaration, as in the stylesheet itself:
 
 ```css
-.fs-breadcrumbs li + li::before {
+.lt-breadcrumbs li + li::before {
 	content: "›";
 }
 
 @supports (content: "/" / "") {
-	.fs-breadcrumbs li + li::before {
+	.lt-breadcrumbs li + li::before {
 		content: "›" / "";
 	}
 }
 ```
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
-## Tilgjengelighet
+## Accessibility
 
-- Siste steg skal være der brukeren er nå, ikke et sted å gå. Enten som en lenke med `aria-current="page"`, eller som ren tekst.
-- Ikke kort ned stegene til «...» på liten skjerm uten at de kan foldes ut. Da mister brukeren nettopp den oversikten stien er til for.
-- Stien erstatter ikke en tilbakeknapp. Den viser hvor i strukturen brukeren er, ikke hvor hen kom fra.
+- The last step should be where the user is now, not somewhere to go. Either as a link with `aria-current="page"`, or as plain text.
+- Do not shorten the steps to "..." on a small screen unless they can be expanded. The user then loses exactly the overview the trail is for.
+- The trail does not replace a back button. It shows where in the structure the user is, not where they came from.

@@ -1,24 +1,24 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const PROGRESS_CLASS = "fs-progress" as const
+export const PROGRESS_CLASS = "lt-progress" as const
 
 export const progressColors = ["success", "warning", "danger"] as const
 
 export type ProgressColor = (typeof progressColors)[number]
 
 export type ProgressOptions = {
-  /** Hvor langt det er kommet. Utelat den, og stolpen blir ubestemt. */
+  /** How far it has come. Leave it out, and the bar is indeterminate. */
   value?: number
-  /** Hva som er fullt. Standard: `100`. */
+  /** What counts as full. Default: `100`. */
   max?: number
-  /** Hva tallet betyr. Standard er aksentfargen, altså «dette pågår». */
+  /** What the number means. The default is the accent colour, meaning "this is in progress". */
   color?: ProgressColor
-  /** Hva som pågår. Blir `aria-label`, så stolpen har et navn. */
+  /** What is in progress. Becomes `aria-label`, so the bar has a name. */
   label?: string
   /**
-   * Hvor langt det er kommet, med ord. Blir `aria-valuetext`, som
-   * skjermleseren leser i stedet for prosenten: «Steg 3 av 7» sier mer enn
-   * «43 prosent», og `max` leses sjelden opp.
+   * How far it has come, in words. Becomes `aria-valuetext`, which the
+   * screen reader reads instead of the percentage: "Step 3 of 7" says more
+   * than "43 percent", and `max` is rarely announced.
    */
   valueText?: string
 }
@@ -33,24 +33,25 @@ export type ProgressAttributes = {
 }
 
 /**
- * Attributtene for en framdriftsstolpe på et `<progress>`.
+ * The attributes for a progress bar on a `<progress>`.
  *
- * Elementet har semantikken innebygd: nettleseren melder det som
- * `role="progressbar"` og leser opp hvor langt det er kommet. Du trenger
- * verken rolle, `aria-valuenow` eller `aria-valuemax`.
+ * The element has the semantics built in: the browser exposes it as
+ * `role="progressbar"` and announces how far it has come. You need neither a
+ * role, `aria-valuenow` nor `aria-valuemax`.
  *
- * Utelater du `value`, blir stolpen ubestemt: «noe pågår, vi vet ikke hvor
- * lenge». Det er det samme som `fs.spinner()` sier, så velg én av dem.
+ * Leave out `value`, and the bar becomes indeterminate: "something is going
+ * on, we do not know for how long". That is the same as `lt.spinner()` says,
+ * so choose one of them.
  *
  * ```ts
- * <progress {...progress({ value: 3, max: 7, label: "Steg 3 av 7" })} />
+ * <progress {...progress({ value: 3, max: 7, label: "Step 3 of 7" })} />
  * ```
  *
- * `max` har standardverdien 100 og skrives alltid ut, i strid med regelen om
- * at en standardverdi ikke gir noe attributt. Grunnen er at den regelen
- * gjelder utseende, der CSS-en alt har svaret. `max` er semantikk, og HTMLs
- * egen standard er `1`: en `<progress value="40">` uten `max` viser en full
- * stolpe, uten at noe sier fra.
+ * `max` defaults to 100 and is always written out, against the rule that a
+ * default gives no attribute. The reason is that the rule is about
+ * appearance, where the CSS already has the answer. `max` is semantics, and
+ * HTML's own default is `1`: a `<progress value="40">` without `max` shows a
+ * full bar, without anything saying so.
  */
 export const progress = Object.assign(
   ({
@@ -62,8 +63,8 @@ export const progress = Object.assign(
   }: ProgressOptions = {}): ProgressAttributes =>
     attributes({
       class: PROGRESS_CLASS,
-      // Tallene sendes ut som strenger, som resten av returverdiene: det er
-      // HTML-formen, og den er det `setAttributes` tar imot.
+      // The numbers are sent out as strings, like the rest of the return
+      // values: that is the HTML form, and it is what `setAttributes` accepts.
       value: value === undefined ? undefined : String(value),
       max: String(max),
       "data-color": color,

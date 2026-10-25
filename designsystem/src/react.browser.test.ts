@@ -1,25 +1,25 @@
 import { describe, expect, it } from "vitest"
 import type { Attributes } from "./dom"
-import { fs } from "./fs"
-import { fs as fsReact, type ReactSet } from "./react"
+import { lt } from "./lt"
+import { lt as ltReact, type ReactSet } from "./react"
 
-describe("fs fra /react", () => {
+describe("lt fra /react", () => {
   it("gir className i stedet for class", () => {
-    expect(fsReact.button({ variant: "danger" })).toEqual({
-      className: "fs-button",
+    expect(ltReact.button({ variant: "danger" })).toEqual({
+      className: "lt-button",
       "data-variant": "danger",
     })
   })
 
   it("gir htmlFor i stedet for for på ledeteksten", () => {
-    const felt = fsReact.field({ id: "epost" })
+    const felt = ltReact.field({ id: "epost" })
 
-    expect(felt.label).toEqual({ className: "fs-label", htmlFor: "epost" })
+    expect(felt.label).toEqual({ className: "lt-label", htmlFor: "epost" })
   })
 
   it("lar dataattributter og aria stå urørt", () => {
-    expect(fsReact.input({ type: "date", state: "invalid" })).toEqual({
-      className: "fs-input",
+    expect(ltReact.input({ type: "date", state: "invalid" })).toEqual({
+      className: "lt-input",
       type: "date",
       "data-variant": "date",
       "data-state": "invalid",
@@ -28,20 +28,20 @@ describe("fs fra /react", () => {
   })
 
   it("beholder lovlige verdier og vaktene fra funksjonen", () => {
-    expect(fsReact.button.variants).toEqual(fs.button.variants)
-    expect(fsReact.button.isVariant("ghost")).toBe(true)
-    expect(fsReact.badge.isColor("neutral")).toBe(true)
-    expect(fsReact.input.isType("date")).toBe(true)
+    expect(ltReact.button.variants).toEqual(lt.button.variants)
+    expect(ltReact.button.isVariant("ghost")).toBe(true)
+    expect(ltReact.badge.isColor("neutral")).toBe(true)
+    expect(ltReact.input.isType("date")).toBe(true)
   })
 
-  it("gir samme kobling som fs.field for alt som ikke må døpes om", () => {
-    const vanlig = fs.field({
+  it("gir samme kobling som lt.field for alt som ikke må døpes om", () => {
+    const vanlig = lt.field({
       id: "epost",
       help: true,
       error: true,
       invalid: true,
     })
-    const forReact = fsReact.field({
+    const forReact = ltReact.field({
       id: "epost",
       help: true,
       error: true,
@@ -118,7 +118,7 @@ describe("fs fra /react", () => {
      * den: uten den ville vakten prøvd et kall som ikke er lovlig, og fått en
      * advarsel i konsollen i tillegg.
      */
-    // `label` fordi `fs.tabs()` krever et navn på raden og kaster uten.
+    // `label` fordi `lt.tabs()` krever et navn på raden og kaster uten.
     const ekstra: Record<string, unknown>[] = [
       { id: "sak" },
       {
@@ -160,7 +160,7 @@ describe("fs fra /react", () => {
   /** `setAttributes` tar et element og skriver på det, og bygger ingenting. */
   const IKKE_BYGGEFUNKSJONER = ["setAttributes"]
 
-  const byggefunksjoner = Object.entries(fsReact).filter(
+  const byggefunksjoner = Object.entries(ltReact).filter(
     ([navn, verdi]) =>
       typeof verdi === "function" && !IKKE_BYGGEFUNKSJONER.includes(navn),
   ) as [string, (valg?: Record<string, unknown>) => unknown][]
@@ -192,7 +192,7 @@ describe("fs fra /react", () => {
     // `react.ts` har sin egen liste, og en ny komponent må inn i begge.
     // Sjekken går begge veier: en funksjon som bare finnes i den ene er like
     // gal uansett hvilken av dem det er.
-    expect(Object.keys(fsReact).sort()).toEqual(Object.keys(fs).sort())
+    expect(Object.keys(ltReact).sort()).toEqual(Object.keys(lt).sort())
   })
 })
 
@@ -200,14 +200,14 @@ describe("fs fra /react", () => {
  * `tabindex` er ikke bare et annet navn.
  *
  * I HTML er verdien en streng, i React er `tabIndex` et tall. Lot vi
- * strengen stå, kom `fs.tabs()` ut med `tabIndex: "0"`, og TypeScript avviste
+ * strengen stå, kom `lt.tabs()` ut med `tabIndex: "0"`, og TypeScript avviste
  * den i enhver React-app. Den virket i nettleseren, siden React gjør om
  * verdien selv, så feilen viste seg bare som en typefeil hos konsumenten.
  * Det ble funnet i en ekte React-app, ikke her.
  */
 describe("tabIndex kommer ut som et tall", () => {
   it("på feiloppsummeringen", () => {
-    expect(typeof fsReact.errorSummary({ count: 1 }).host.tabIndex).toBe(
+    expect(typeof ltReact.errorSummary({ count: 1 }).host.tabIndex).toBe(
       "number",
     )
   })
@@ -222,17 +222,17 @@ describe("tabIndex kommer ut som et tall", () => {
  * falskt element i et skript, ikke i en app, men en `ref` i React er nettopp
  * et element å kalle den på.
  */
-describe("fs.setAttributes fra /react", () => {
+describe("lt.setAttributes fra /react", () => {
   it("skriver class og for, ikke className og htmlFor", () => {
     const ledetekst = document.createElement("label")
 
-    fsReact.setAttributes(
+    ltReact.setAttributes(
       ledetekst,
-      fsReact.label(),
-      fsReact.field({ id: "epost" }).label,
+      ltReact.label(),
+      ltReact.field({ id: "epost" }).label,
     )
 
-    expect(ledetekst.getAttribute("class")).toBe("fs-label")
+    expect(ledetekst.getAttribute("class")).toBe("lt-label")
     expect(ledetekst.getAttribute("for")).toBe("epost")
     expect(ledetekst.hasAttribute("classname")).toBe(false)
     expect(ledetekst.hasAttribute("htmlfor")).toBe(false)
@@ -241,44 +241,44 @@ describe("fs.setAttributes fra /react", () => {
   it("rydder det byggefunksjonen forvalter, som hovedinngangen", () => {
     const felt = document.createElement("input")
 
-    fsReact.setAttributes(felt, fsReact.input({ state: "invalid" }))
+    ltReact.setAttributes(felt, ltReact.input({ state: "invalid" }))
     expect(felt.getAttribute("aria-invalid")).toBe("true")
     expect(felt.getAttribute("data-state")).toBe("invalid")
 
-    fsReact.setAttributes(felt, fsReact.input())
+    ltReact.setAttributes(felt, ltReact.input())
     expect(felt.hasAttribute("aria-invalid")).toBe(false)
     expect(felt.hasAttribute("data-state")).toBe(false)
-    expect(felt.className).toBe("fs-input")
+    expect(felt.className).toBe("lt-input")
   })
 
   it("skriver tabIndex som tabindex", () => {
     const boks = document.createElement("div")
-    const { host } = fsReact.errorSummary({ count: 1 })
+    const { host } = ltReact.errorSummary({ count: 1 })
 
-    fsReact.setAttributes(boks, host)
+    ltReact.setAttributes(boks, host)
 
     expect(boks.getAttribute("tabindex")).toBe(String(host.tabIndex))
   })
 
   it("gir det samme elementet som hovedinngangen", () => {
     const par: [Attributes, ReactSet][] = [
-      [fs.button({ variant: "danger" }), fsReact.button({ variant: "danger" })],
+      [lt.button({ variant: "danger" }), ltReact.button({ variant: "danger" })],
       [
-        fs.input({ type: "date", state: "invalid" }),
-        fsReact.input({ type: "date", state: "invalid" }),
+        lt.input({ type: "date", state: "invalid" }),
+        ltReact.input({ type: "date", state: "invalid" }),
       ],
-      [fs.field({ id: "a" }).label, fsReact.field({ id: "a" }).label],
+      [lt.field({ id: "a" }).label, ltReact.field({ id: "a" }).label],
       [
-        fs.errorSummary({ count: 1 }).host,
-        fsReact.errorSummary({ count: 1 }).host,
+        lt.errorSummary({ count: 1 }).host,
+        ltReact.errorSummary({ count: 1 }).host,
       ],
-      [fs.suggestion({ id: "s" }).list, fsReact.suggestion({ id: "s" }).list],
+      [lt.suggestion({ id: "s" }).list, ltReact.suggestion({ id: "s" }).list],
     ]
     for (const [vanlig, forReact] of par) {
       const a = document.createElement("div")
       const b = document.createElement("div")
-      fs.setAttributes(a, vanlig)
-      fsReact.setAttributes(b, forReact)
+      lt.setAttributes(a, vanlig)
+      ltReact.setAttributes(b, forReact)
       expect(b.outerHTML).toBe(a.outerHTML)
     }
   })

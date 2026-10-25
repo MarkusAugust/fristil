@@ -1,12 +1,13 @@
 /**
- * Kjøres inne i VS Code av `scripts/sjekk-vscode.ts`: utvidelsen er lastet,
- * og språkserveren skal gi funn og hurtigrettelser i et ekte dokument.
+ * Run inside VS Code by `scripts/check-vscode.ts`: the extension is loaded,
+ * and the language server must give findings and quick fixes in a real
+ * document.
  */
 
 const assert = require("node:assert")
 const vscode = require("vscode")
 
-/** Venter til funnene for dokumentet er slik testen vil, eller gir opp. */
+/** Waits until the document's findings are what the test wants, or gives up. */
 async function diagnosticsFor(uri, wanted) {
   for (let attempt = 0; attempt < 120; attempt++) {
     const found = vscode.languages.getDiagnostics(uri)
@@ -14,25 +15,25 @@ async function diagnosticsFor(uri, wanted) {
     await new Promise((resolve) => setTimeout(resolve, 250))
   }
   throw new Error(
-    `Ventet forgjeves på funnene: ${JSON.stringify(vscode.languages.getDiagnostics(uri))}`,
+    `Waited in vain for the findings: ${JSON.stringify(vscode.languages.getDiagnostics(uri))}`,
   )
 }
 
 exports.run = async () => {
   const document = await vscode.workspace.openTextDocument({
     language: "html",
-    content: '<p>🧾</p>\n<button class="fs-buton">Send</button>\n',
+    content: '<p>🧾</p>\n<button class="lt-buton">Send</button>\n',
   })
   await vscode.window.showTextDocument(document)
 
   const found = await diagnosticsFor(document.uri, (d) => d.length > 0)
-  assert.strictEqual(found.length, 1, "ett funn")
-  assert.strictEqual(found[0].source, "Fristil")
+  assert.strictEqual(found.length, 1, "one finding")
+  assert.strictEqual(found[0].source, "LO-TEK")
   assert.strictEqual(found[0].range.start.line, 1)
   assert.strictEqual(found[0].range.start.character, 15)
   assert.strictEqual(
     typeof found[0].code === "object" ? found[0].code.value : found[0].code,
-    "ukjent-klasse",
+    "unknown-class",
   )
 
   const actions = await vscode.commands.executeCommand(
@@ -40,21 +41,18 @@ exports.run = async () => {
     document.uri,
     found[0].range,
   )
-  const fix = actions.find((a) => a.title === "Bytt til fs-button")
-  assert.ok(
-    fix,
-    `ingen rettelse blant ${actions.map((a) => a.title).join(", ")}`,
-  )
+  const fix = actions.find((a) => a.title === "Change to lt-button")
+  assert.ok(fix, `no fix among ${actions.map((a) => a.title).join(", ")}`)
   await vscode.workspace.applyEdit(fix.edit)
   assert.ok(
-    document.getText().includes('class="fs-button"'),
-    "rettelsen ble ikke brukt",
+    document.getText().includes('class="lt-button"'),
+    "the fix was not applied",
   )
   await diagnosticsFor(document.uri, (d) => d.length === 0)
 
-  // To endringer av språklista rett etter hverandre gir én server, ikke to:
-  // funnet skal komme én gang.
-  const config = vscode.workspace.getConfiguration("fristil")
+  // Two changes to the language list in quick succession give one server, not
+  // two: the finding must come once.
+  const config = vscode.workspace.getConfiguration("lotek")
   const languages = config.get("languages")
   await Promise.all([
     config.update("languages", [...languages, "plaintext"], true),
@@ -62,19 +60,19 @@ exports.run = async () => {
   ])
   const second = await vscode.workspace.openTextDocument({
     language: "html",
-    content: '<button class="fs-buton">Send</button>\n',
+    content: '<button class="lt-buton">Send</button>\n',
   })
   await new Promise((resolve) => setTimeout(resolve, 3000))
   const once = await diagnosticsFor(second.uri, (d) => d.length > 0)
   assert.strictEqual(
-    once.filter((d) => d.source === "Fristil").length,
+    once.filter((d) => d.source === "LO-TEK").length,
     1,
-    `funnet kom ${once.length} ganger etter to omstarter`,
+    `the finding came ${once.length} times after two restarts`,
   )
 
-  // Fullføringen er fortsatt utvidelsens egen.
+  // Completion is still the extension's own.
   const edit = new vscode.WorkspaceEdit()
-  edit.insert(document.uri, new vscode.Position(2, 0), '<b class="fs-')
+  edit.insert(document.uri, new vscode.Position(2, 0), '<b class="lt-')
   await vscode.workspace.applyEdit(edit)
   const list = await vscode.commands.executeCommand(
     "vscode.executeCompletionItemProvider",
@@ -82,15 +80,15 @@ exports.run = async () => {
     new vscode.Position(2, 13),
   )
   assert.ok(
-    list.items.some((item) => (item.label.label ?? item.label) === "fs-button"),
-    "fs-button er ikke blant forslagene",
+    list.items.some((item) => (item.label.label ?? item.label) === "lt-button"),
+    "lt-button is not among the suggestions",
   )
 
-  // Snippeten for feltet: id-en skrives én gang, og `for` følger med.
+  // The snippet for the field: the id is typed once, and `for` follows.
   const extension = vscode.extensions.all.find(
-    (e) => e.packageJSON.name === "fristil-vscode",
+    (e) => e.packageJSON.name === "interfaces",
   )
-  assert.ok(extension, "fant ikke utvidelsen")
+  assert.ok(extension, "did not find the extension")
   const snippets = JSON.parse(
     require("node:fs").readFileSync(
       require("node:path").join(extension.extensionPath, "dist/snippets.json"),
@@ -103,19 +101,22 @@ exports.run = async () => {
   })
   const editor = await vscode.window.showTextDocument(third)
   await editor.insertSnippet(
-    new vscode.SnippetString(snippets["fs-field"].body.join("\n")),
+    new vscode.SnippetString(snippets["lt-field"].body.join("\n")),
   )
-  // Første tabbestopp er skjemaets id, det andre feltets, speilet i `for`.
+  // The first tab stop is the form's id, the second the field's, mirrored in `for`.
   await vscode.commands.executeCommand("jumpToNextSnippetPlaceholder")
-  await vscode.commands.executeCommand("type", { text: "epost" })
+  await vscode.commands.executeCommand("type", { text: "email" })
   const text = third.getText()
   assert.ok(
-    text.includes('id="epost"') && text.includes('for="epost"'),
-    `id og for følger ikke hverandre i snippeten: ${text}`,
+    text.includes('id="email"') && text.includes('for="email"'),
+    `id and for do not follow each other in the snippet: ${text}`,
   )
   assert.ok(
-    text.includes('id="kontaktskjema"'),
-    `det første tabbestoppet skulle stått urørt: ${text}`,
+    text.includes('id="contact-form"'),
+    `the first tab stop should have been left untouched: ${text}`,
   )
-  assert.ok(!text.includes('id="navn"'), `plassholderen står igjen: ${text}`)
+  assert.ok(
+    !text.includes('id="name"'),
+    `the placeholder is still there: ${text}`,
+  )
 }

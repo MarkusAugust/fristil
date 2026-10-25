@@ -4,30 +4,31 @@ import Preview from "./Preview.astro"
 
 <Preview
 	id="demo-toast"
-	stiler={["toast", "button"]}
+	styles={["toast", "button"]}
 	maxWidth="30rem"
-	fastInni
-	ekstraCss={`
-		/* Bare for visningen: meldingene legger seg i hjørnet av boksen, slik de
-		   legger seg i hjørnet av vinduet i en app. Høyden gir dem plass. */
-		.flate { min-block-size: 10rem; }
+	fixedInside
+	extraCss={`
+		/* Only for the preview: the messages sit in the corner of the box, as
+		   they sit in the corner of the window in an app. The height gives them
+		   room. */
+		.surface { min-block-size: 10rem; }
 	`}
 >
-	<button class="fs-button" id="demo-toast-knapp" type="button">Lagre søknaden</button>
-	<fs-toast id="demo-toast-kø" label="Meldinger"></fs-toast>
+	<button class="lt-button" id="demo-toast-button" type="button">Save the application</button>
+	<lt-toast id="demo-toast-queue" label="Notifications"></lt-toast>
 </Preview>
 
 <script>
-	import { defineFsToast } from "@fristil/designsystem/toast"
+	import { defineLtToast } from "@lo-tek/interfaces/toast"
 
-	defineFsToast()
+	defineLtToast()
 
-	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
-	const flate = document.getElementById("demo-toast")?.shadowRoot
-	const knapp = flate?.getElementById("demo-toast-knapp")
-	const meldinger = flate?.getElementById("demo-toast-kø")
+	// The preview sits in a shadow root, so we go through the host element.
+	const surface = document.getElementById("demo-toast")?.shadowRoot
+	const knapp = surface?.getElementById("demo-toast-button")
+	const meldinger = surface?.getElementById("demo-toast-queue")
 
 	knapp?.addEventListener("click", () => {
-		meldinger?.show("Søknaden er lagret", { color: "success" })
+		meldinger?.show("The application has been saved", { color: "success" })
 	})
 </script>

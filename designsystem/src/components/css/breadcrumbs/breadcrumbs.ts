@@ -1,26 +1,27 @@
 import { attributes } from "../shared.js"
 
-export const BREADCRUMBS_CLASS = "fs-breadcrumbs" as const
+export const BREADCRUMBS_CLASS = "lt-breadcrumbs" as const
 
 export type BreadcrumbsAttributes = {
   class: typeof BREADCRUMBS_CLASS
 }
 
 /**
- * Attributtene for en brødsmulesti.
+ * The attributes for a breadcrumb trail.
  *
- * Klassen hører på en `<ol>` inne i en `<nav>` med en tekst som sier hva
- * navigasjonen er, for eksempel `aria-label="Du er her"`. Rekkefølgen betyr
- * noe, så listen må være nummerert selv om tallene ikke vises.
+ * The class goes on an `<ol>` inside a `<nav>` with a text that says what
+ * the navigation is, for example `aria-label="You are here"`. The order
+ * matters, so the list must be numbered even though the numbers are not
+ * shown.
  *
- * Skilletegnet mellom stegene legges inn med CSS. Sto det i markupen, ville
- * skjermlesere lest «skråstrek» mellom hvert steg.
+ * The separator between the steps is added with CSS. Had it been in the
+ * markup, screen readers would have read "slash" between every step.
  *
  * ```ts
- * <nav aria-label="Du er her">
+ * <nav aria-label="You are here">
  *   <ol {...breadcrumbs()}>
- *     <li><a href="/">Forsiden</a></li>
- *     <li><a href="/saker" aria-current="page">Mine saker</a></li>
+ *     <li><a href="/">Home</a></li>
+ *     <li><a href="/cases" aria-current="page">My cases</a></li>
  *   </ol>
  * </nav>
  * ```

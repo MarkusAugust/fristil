@@ -1,0 +1,25 @@
+package no.lotek.gradle
+
+import java.io.File
+import java.nio.file.FileSystems
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+class ShownTest {
+    @Test
+    fun `a file inside the project is shown relative to it, others absolute`() {
+        val project = File("/project").absoluteFile
+        assertEquals("templates${File.separator}a.html", shown(File(project, "templates/a.html"), project))
+        val outside = File("/other/b.html").absoluteFile
+        assertEquals(outside.absolutePath, shown(outside, project))
+    }
+
+    @Test
+    fun `a file on another drive is shown absolute`() {
+        // Only Windows has drives. Elsewhere there is nothing to test.
+        val roots = FileSystems.getDefault().rootDirectories.toList()
+        if (roots.size < 2) return
+        val file = roots[1].resolve("b.html").toFile()
+        assertEquals(file.absolutePath, shown(file, roots[0].resolve("project").toFile()))
+    }
+}

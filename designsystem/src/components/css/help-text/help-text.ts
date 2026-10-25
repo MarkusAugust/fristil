@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const HELP_TEXT_CLASS = "fs-help-text" as const
+export const HELP_TEXT_CLASS = "lt-help-text" as const
 
 export const helpTextVariants = [
   "muted",
@@ -13,7 +13,7 @@ export type HelpTextVariant = (typeof helpTextVariants)[number]
 export type NonDefaultHelpTextVariant = Exclude<HelpTextVariant, "muted">
 
 export type HelpTextOptions = {
-  /** Hvor mye teksten skal rope. Standard: `muted`. */
+  /** How loudly the text should speak. Default: `muted`. */
   variant?: HelpTextVariant
 }
 
@@ -23,7 +23,7 @@ export type HelpTextAttributes = {
 }
 
 /**
- * Attributtene for hjelpetekst under et felt.
+ * The attributes for help text below a field.
  *
  * ```ts
  * <p {...helpText({ variant: "warning" })}>…</p>

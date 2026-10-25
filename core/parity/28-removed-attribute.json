@@ -1,0 +1,114 @@
+{
+  "markup": [
+    {
+      "start": 10,
+      "end": 17,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "invalid has been removed from <lt-field>. The field is invalid when the error text, .lt-error-text, is visible, or when the server has written aria-invalid on the control. In Datastar: data-attr:hidden=\"!$invalid\" on the error text.",
+      "fix": {
+        "title": "Remove invalid",
+        "edits": [
+          {
+            "start": 9,
+            "end": 17,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 18,
+      "end": 33,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "required-marker has been removed from <lt-field>. The required marker is data-required on <label>, and then shows without JavaScript too.",
+      "fix": {
+        "title": "Remove required-marker",
+        "edits": [
+          {
+            "start": 17,
+            "end": 37,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 38,
+      "end": 48,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "control-id has been removed from <lt-field>. Write id on the control and for on the label in the template. The component never writes an id on the control.",
+      "fix": {
+        "title": "Remove control-id",
+        "edits": [
+          {
+            "start": 37,
+            "end": 54,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    }
+  ],
+  "page": [
+    {
+      "start": 10,
+      "end": 17,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "invalid has been removed from <lt-field>. The field is invalid when the error text, .lt-error-text, is visible, or when the server has written aria-invalid on the control. In Datastar: data-attr:hidden=\"!$invalid\" on the error text.",
+      "fix": {
+        "title": "Remove invalid",
+        "edits": [
+          {
+            "start": 9,
+            "end": 17,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 18,
+      "end": 33,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "required-marker has been removed from <lt-field>. The required marker is data-required on <label>, and then shows without JavaScript too.",
+      "fix": {
+        "title": "Remove required-marker",
+        "edits": [
+          {
+            "start": 17,
+            "end": 37,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 38,
+      "end": 48,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "control-id has been removed from <lt-field>. Write id on the control and for on the label in the template. The component never writes an id on the control.",
+      "fix": {
+        "title": "Remove control-id",
+        "edits": [
+          {
+            "start": 37,
+            "end": 54,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    }
+  ]
+}

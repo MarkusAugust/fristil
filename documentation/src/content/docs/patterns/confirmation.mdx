@@ -1,0 +1,102 @@
+---
+title: Confirming an action
+description: Dialog, wording and what happens afterwards, when the action cannot be undone.
+---
+
+import ConfirmationDemo from "../../../components/ConfirmationDemo.astro"
+
+A confirmation is an interruption. It is worth it when the action cannot be undone, and only then.
+
+<ConfirmationDemo />
+
+## The markup
+
+```html
+<button class="lt-button" data-variant="danger" id="delete" type="button">
+  Delete the application
+</button>
+
+<dialog class="lt-dialog" id="confirm" aria-labelledby="confirm-title">
+  <h2 class="lt-dialog__title" id="confirm-title">Delete the application?</h2>
+
+  <div class="lt-dialog__body">
+    <p>The application and its attachments will be gone. This cannot be undone.</p>
+  </div>
+
+  <form method="dialog" class="lt-dialog__footer">
+    <button class="lt-button" data-variant="secondary" value="cancel">Cancel</button>
+    <button class="lt-button" data-variant="danger" value="delete">Delete the application</button>
+  </form>
+</dialog>
+
+<lt-toast id="messages" label="Notifications"></lt-toast>
+
+<script type="module">
+  import { defineLtToast } from
+    "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/components/standalone/toast/lt-toast.js"
+
+  defineLtToast()
+
+  const dialog = document.getElementById("confirm")
+  const messages = document.getElementById("messages")
+
+  document.getElementById("delete").addEventListener("click", () => {
+    // Escape and close() without a value leave the previous value in place.
+    dialog.returnValue = ""
+    dialog.showModal()
+  })
+
+  dialog.addEventListener("close", async () => {
+    if (dialog.returnValue !== "delete") return
+
+    await deleteApplication()
+    messages.show("The application has been deleted", { color: "success" })
+  })
+</script>
+```
+
+`showModal()`, not `open`. Only that moves focus in, keeps focus in the dialog, closes on Escape and makes the rest of the page unreachable.
+
+`<form method="dialog">` closes the dialog when a button is pressed, and puts the button's `value` in `dialog.returnValue`. You need no listeners on the buttons, and Enter works as expected.
+
+## Wording
+
+| Where | Write | Do not write |
+| --- | --- | --- |
+| The heading | The question: "Delete the application?" | "Are you sure?", "Confirm" |
+| The body text | What happens: "The application and its attachments will be gone." | "This action cannot be undone." on its own |
+| The button | The action: "Delete the application" | "OK", "Yes" |
+
+The button text matters most. Someone who hears the dialog without seeing the heading hears only the buttons. "OK" says nothing about what is about to happen.
+
+## Afterwards
+
+The action is done, and the user needs to know. A toast in the corner is enough for something that went well:
+
+```js
+messages.show("The application has been deleted", { color: "success" })
+```
+
+But the toast disappears. So:
+
+- **The undo button does not belong there.** If the action should be undoable, the button belongs in the page, and then perhaps a confirmation was not what you needed.
+- **Nor does an error.** If the deletion failed, that is an [Alert](../../components/alert/) in the page, or a toast with `duration: 0` that stays.
+- **Focus has to go somewhere.** The browser returns focus to the button that opened the dialog. If that button is gone, because the row it was in has been deleted, you have to move focus yourself, for example to the heading of the list.
+
+## When not to confirm
+
+If the action can be undone, undo is better than confirmation. An extra click every time costs more than an undo button for the few times someone gets it wrong.
+
+Confirmation is right when:
+
+- something disappears for good
+- something is sent to others, such as an application or a message
+- something costs money
+
+Confirmation is wrong when the action is merely inconvenient to redo. Then you create a dialog everyone clicks away without reading, and the next time it matters, they do the same.
+
+## What the system does not do
+
+- **Preventing double clicks.** Reject a new press while the action is in progress, and show it with `aria-disabled="true"`. If you switch the button off with `disabled`, it loses the focus the browser just gave back to it when the dialog closed, and focus ends up on `<body>`.
+- **Remembering the choice.** "Don't ask me again" is a setting your app has to keep.
+- **Deciding what is dangerous.** `data-variant="danger"` is a colour. What deserves it is a judgement.

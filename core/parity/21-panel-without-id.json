@@ -1,0 +1,20 @@
+{
+  "markup": [
+    {
+      "start": 72,
+      "end": 75,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/popover/",
+      "message": "<lt-popover> has the part \"panel\" without an id. The panel that opens: the element with popover, or the class. It needs an id from the server, which aria-controls on the button points to. The component never creates one, and without it the button cannot be wired to the panel."
+    }
+  ],
+  "page": [
+    {
+      "start": 72,
+      "end": 75,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/popover/",
+      "message": "<lt-popover> has the part \"panel\" without an id. The panel that opens: the element with popover, or the class. It needs an id from the server, which aria-controls on the button points to. The component never creates one, and without it the button cannot be wired to the panel."
+    }
+  ]
+}

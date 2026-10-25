@@ -1,0 +1,483 @@
+---
+title: Markup and behaviour
+description: Who writes the HTML, who attaches the behaviour, and which of the two forms to use.
+---
+
+LO-TEK has two layers. One gives you the markup, the other adds behaviour to it.
+
+> The markup comes from whoever renders it. The web component adds the behaviour. It never adds nodes, and everything it writes, it computes from the markup and from what the user does.
+
+This holds whether your app renders everything in the browser, server-renders with hydration, or sends HTML from the server all the way. LO-TEK is not a system for one of them.
+
+## Does this work in a client-rendered app?
+
+Yes, and that is worth saying plainly, because the split above is easy to read as something that only concerns servers.
+
+If you have a React app with no server at all, React creates all the markup in the browser. Then you call the builder functions where you render, exactly as you would on a server:
+
+```tsx
+const field = lt.field({ id: "email", help: true, invalid })
+
+<label {...field.label}>Email address</label>
+<input {...lt.input({ type: "email" })} {...field.control} />
+<p {...lt.helpText()} {...field.help}>We send the receipt here.</p>
+```
+
+The builder functions are pure functions as long as you give them the ids they ask for. Then they do not care where they run.
+
+The only thing that changes between rendering models is how often the markup can be replaced, and that is why the components are not allowed to create it:
+
+| Rendering model | Markup is created by | Can replace it afterwards |
+| --- | --- | --- |
+| Client-side rendering (CSR) | React, in the browser | React, on the next render |
+| Server-side rendering with hydration (SSR) | The server, then React | React, on the next render |
+| Hypermedia (Datastar, htmx) | The server, also while the page is open | The server's response |
+
+In all three, something other than the component decides what is in the DOM. If the component creates its own content, that content is cleared away.
+
+By markup we mean the structure: the elements, the classes, the roles and the
+wiring between them. The component never creates it. State that changes while
+the user is working, like `aria-expanded` on an open menu, is set by the
+component, and the component sets it again when an update from the server tears it away.
+So the line is not between attribute and node, but between what describes
+the page and what describes what the user just did.
+
+## Builder function or web component?
+
+This is the question people get stuck on. The answer depends on whether the code that creates the markup can call a function.
+
+### The wiring: either the builder function or the component
+
+The wiring between the parts is markup: `for` and `id` in a field, `href` from the tab to the panel in a tab list, `popover` and `aria-controls` in a popover, `role="combobox"` and `role="listbox"` in a suggestion field, `aria-labelledby` on a dialog, `role="alert"` and `tabindex="-1"` on an error summary. The builder function and the component write the same wiring, so you use one of them.
+
+| Do you create the markup with JavaScript? | Use |
+| --- | --- |
+| **Yes.** React, Astro, a Node server, or an app with no server at all | `lt.field()`, `lt.tabs()`, `lt.popover()`, `lt.suggestion()`, `lt.dialog()`, `lt.errorSummary()`. The attributes are already in the HTML |
+| **No.** A Go template, a PHP file, a Razor view, a CMS or hand-written HTML | The structure, with `for` and `id` on the field. The component sets the roles, the wiring and the ids on help texts and lists in the browser |
+
+The builder functions are TypeScript. If the code that creates the HTML can call them, that is the shortest path: the browser needs no registered component for the semantics to be right. If it cannot, the component fills in what is missing, leaves what the server wrote, and sets it again if a patch removes it. `<lt-field>` does not need the component at all when `lt.field()` has written the field, and a dialog does not need it when the app calls `showModal()` itself. The others need it regardless, for the behaviour.
+
+### The behaviour: always the component
+
+Arrow keys, focus and position are not something a function can give you. They come from the component, whoever wrote the wiring.
+
+```ts
+const tabs = lt.tabs({ id: "case", keys: ["application", "attachments"], label: "Parts of the case" }) // the markup
+defineLtTabs()                                                                                         // the arrow keys
+```
+
+| Component | The builder function gives you | The component gives you |
+| --- | --- | --- |
+| `<lt-field>` | the wiring | the same wiring, so pick one |
+| `<lt-tabs>` | the links, ids on the panels and headings, the classes | the roles, `aria-selected`, `aria-controls`, `hidden` and the tab stops, plus arrow keys, Home and End. In React, `lt.tabs()` from `/react` also writes the roles and the selection |
+| `<lt-popover>` | the wiring, the id, the `popover` attribute | `popover` and `aria-controls` when the markup came without them, but never the id, plus position, Escape, clicking outside |
+| `<lt-suggestion>` | the roles, the wiring and ids on the list and the options | the same when the markup came without them, plus filtering, arrow keys, number of matches |
+| `<lt-error-summary>` | the class, `role="alert"`, `tabindex="-1"` | the same when the markup came without them, plus focus here and on to the field |
+| `<lt-dialog>` | the dialog and the wiring to the heading | the same when the markup came without them, plus `showModal()`, which a server cannot call |
+
+The rule behind the table: **the builder function gives markup, the component gives behaviour, and where the wiring is markup, the component fills it in when the server could not.**
+
+### The standalone components
+
+[`<lt-toast>`](/components/toast/) and [`<lt-connection-status>`](/components/connection-status/) also have builder functions, but there they only give an empty element with the right attributes. The component creates all the content itself, because it does not exist until the user has done something. See [Introduction](/introduction/#standalone).
+
+## The problem it solves
+
+A web component that creates its own content in plain DOM ends up in conflict with the framework around it. The framework treats the HTML from the server as the truth, and anything the component has added is something it does not know about.
+
+This is not theoretical. We tested it, with real Datastar and an earlier version of `<lt-field>` that set the wiring itself. The server sent the same field again, once:
+
+| | Before the server patched | After |
+| --- | --- | --- |
+| `aria-describedby` on the field | `lt-field-help-6vlv1ah` | gone |
+| `class` on the label | `lt-label` | gone |
+| Error message hidden | yes | no, it is shown |
+
+The last row is the worst. A hidden error message became visible, so the user got "The email address is missing @" on a field that was filled in correctly. And nothing came back, because nothing triggered a new round in the component.
+
+The reason is in Datastar's own source code. This is how attributes are synchronised during a morph, where `r` is the element in the page and `s` is the one the server sent:
+
+```js
+for (let {name: l} of Array.from(r.attributes))
+  !s.hasAttribute(l) && !o.includes(l) && r.removeAttribute(l)
+```
+
+An attribute that is not in the server's HTML is removed. React has the same problem in another form: a structural render of the parent component can throw away nodes a web component has inserted.
+
+## The two layers
+
+| Layer | What it is | Where it runs |
+| --- | --- | --- |
+| The `lt` builder functions | Classes, `data-*`, the accessibility wiring | Wherever you create the markup, on the server or in the browser |
+| The web components | Keyboard, focus, positioning | In the browser, once the HTML is there |
+
+They do not overlap. A builder function never sets an event listener, and a component never overwrites an attribute the server has written. If the wiring is missing, the component fills it in.
+
+A builder function returns attributes from an object of options, without touching the DOM:
+
+```ts
+import { lt } from "@lo-tek/interfaces"
+
+lt.errorSummary({ count: 2, id: "errors" })
+// { host: { class: "lt-error-summary", role: "alert", tabindex: "-1", id: "errors" },
+//   title:     { class: "lt-error-summary__title" } }
+```
+
+That is the whole reason the same API works in all three environments. None of this needs a runtime.
+
+## The three environments
+
+**React Server Components.** The builder functions are pure functions with no client code. They run on the server and disappear. If you also use a web component, call `defineLt*` from a client component.
+
+**TanStack Start.** Spread the attributes in JSX. React writes them and sends them out the same way on every re-render, so nothing can get out of step.
+
+```tsx
+const summary = lt.errorSummary({ count: errors.length, id: "errors" })
+
+<lt-error-summary {...summary.host}>
+  <h2 {...summary.title}>Fix {errors.length} errors</h2>
+</lt-error-summary>
+```
+
+**Datastar.** The template on the server writes the same attributes. Because they are in the server's version, the morph finds nothing to remove.
+
+Datastar is the strictest of the three, and what sets it apart is that an attribute
+can disappear while the page is open: every patch tears away whatever is not in
+the response from the server. The requirement is therefore stated against the removal and not against
+Datastar: what a component has set must survive attributes being removed
+from an element that stays.
+
+## When the component has to change something
+
+Some attributes change while the user is working. `aria-expanded` on a button that opens a panel, `hidden` on a tab panel, the position of a popover. That is real behaviour, and the component has to be allowed to do it.
+
+An update from the server tears them away, since none of them were in the HTML it sent. The component notices and sets them again. You do not need to do anything, and your template does not need to know about the attributes at all.
+
+If the server alone should decide the state, say so on the host element:
+
+```html
+<lt-tabs server-controlled>
+```
+
+Then the component does not restore what the user did, and each update decides. That is the option a server needs when it should be able to move the tab itself. The component still does the wiring and the keyboard. What the attribute means for each component is on the pages for [the tabs](/components/tabs/#when-the-server-decides-the-tab), [the dialog](/components/dialog/#attributes), [the popover](/components/popover/#attributes) and [the suggestion field](/components/suggestion/#attributes).
+
+## When the markup is not made with JavaScript
+
+`lt.field()` is a TypeScript function. If you create the markup with JavaScript, you call it, and it does not matter where the code runs: React, Astro, a Node server or an app with no server at all.
+
+If the markup comes about without JavaScript, in a Go template, a PHP file, a Razor view or hand-written HTML, that option does not exist. Then `<lt-field>` does the same wiring in the browser instead. That is all a page the server sends once needs.
+
+### When the server sends the same region again
+
+This applies to you if you use Datastar or htmx, that is, where the server
+updates part of the page while the user is working. If you do not, you can
+skip the rest of this section.
+
+#### What happens in an update
+
+Datastar can update in several ways. The default, and the recommended one, is called
+`outer`, and it *morphs*: the server sends new HTML for a region, and Datastar
+changes the elements already there so they match the new
+version. The elements are kept, and only what differs is changed. That is why
+text you have typed in a field stays with Datastar. idiomorph, which htmx
+can morph with, sets the value from the server's HTML, so there the server has to send
+the text back for it to stay. The exception is the field that has focus when
+`ignoreActiveValue` is turned on in idiomorph, with
+`hx-swap="morph:{ignoreActiveValue:true}"`; it is off by default.
+
+The morph recognises an element by its tag name and its id. If the element in
+the page has an id, and the server's element has none or a different one, it is not morphed:
+the old one is removed and the server's is inserted, as if you had used `replace`.
+That has consequences for everything the components put an id on themselves, and we will come
+back to that.
+
+(There is also `replace`, which swaps the element out instead. Then you lose
+everything the browser has added, so it is no way around what follows.)
+
+These are the four ways a page can be updated, and what happens to
+a field the user is in. The morphs, `innerHTML` and the page without JavaScript
+have been checked in Chromium, Firefox and WebKit against the markup the recipes show,
+with real Datastar and idiomorph. That htmx moves focus back to the element
+with the same id is htmx's own behaviour:
+
+| Way | The elements | Focus | The text in the field | What the component wrote |
+| --- | --- | --- | --- | --- |
+| Datastar, `outer` | kept | stays | stays, as long as the server does not send a different `value` | set again |
+| htmx with idiomorph | kept | stays | set from the server's HTML, except the field with focus when `ignoreActiveValue` is on | set again |
+| htmx with `innerHTML` (the default) | replaced | htmx moves it back to the element with the same id | set from the server's HTML | written again on the new elements |
+| Without JavaScript | the page reloads | the browser decides | set from the server's HTML | does not exist; `for`, `id` and the error message from the server do the job |
+
+So the one sentence for htmx is: the server sends the values back. The
+same goes for `checked` on a checkbox. No client code can preserve
+what the user typed when the element is replaced or the value is set again.
+
+But the morph also removes everything the new version does not have:
+
+```
+The server sent:   <a href="#attachments">Attachments</a>
+The user clicks, and <lt-tabs> sets:
+The page now has:  <a href="#attachments" role="tab" aria-selected="true">Attachments</a>
+
+The server updates the region, and still sends:
+                   <a href="#attachments">Attachments</a>
+
+The tab selection is gone.
+```
+
+The server does not know which tab the user chose, so it sends the same
+HTML as before, and the morph sets the page back.
+
+#### The simplest solution: send only what changed
+
+Datastar lets you point out what to update, with `selector` and
+`mode: inner`. If the scoreboard has changed, send the scoreboard:
+
+```
+event: datastar-patch-elements
+data: selector #scoreboard
+data: mode inner
+data: elements <tr><td>Maya</td><td>34</td></tr>
+```
+
+Then the tabs and the form are not touched at all, and nothing can be
+lost. This is the usual way to use Datastar, and it removes the whole
+problem.
+
+The rest of this section applies when you still have to send a larger region
+again.
+
+#### Write what HTML requires, and let the component wire the rest
+
+The server writes what has to be there for the field to work without JavaScript:
+`for` on the label and `id` on the field, or the label around the field.
+The component writes the rest. This is everything the server sends:
+
+```html
+<lt-field>
+  <label class="lt-label" for="email" data-required="symbol">Email</label>
+  <input class="lt-input" id="email" type="email">
+  <p class="lt-help-text">We never send spam.</p>
+  <p class="lt-error-text">Enter a valid address.</p>
+</lt-field>
+```
+
+No `aria-describedby` and no `aria-invalid`. The classes say which
+element is which, and the visible error message says the field is invalid.
+The component does the rest, and this is what the page has afterwards:
+
+```
+label.class         lt-label
+label.for           email
+input.id            email
+aria-describedby    lt-field-help-1k0quej lt-field-error-dibhi29
+aria-invalid        true
+data-state          invalid
+```
+
+The id on the field is the server's. The component never writes an id on the field, only on
+the help text and the error message, which hold nothing the user can lose. If
+the template renders the error message only when the field is invalid, the field is valid when it is not
+there.
+
+This holds whatever language the server is written in. A Go template, a
+PHP file or a Ktor app writes the same thing, and none of them needs to
+know the rules. That is the whole point of the wiring living in the component.
+
+The patch tears the wiring away, since none of it was in the HTML the server
+sent. The component sees that it is gone, and sets it again. The ids on
+the help text and the error message are the same as before: the component remembers them,
+so that a screen reader in the middle of reading does not follow a pointer that changes
+under it.
+
+#### The component restores what the user did
+
+Some things the server cannot possibly know: which tab the user chose, and whether
+the popover is open. That is the user's state, not the server's, and it
+lives only in the browser. None of it is in the HTML the server sent, so
+the morph tears it away.
+
+The components set it again. Your template does not need to know which
+attributes are involved:
+
+| Component | What it restores |
+| --- | --- |
+| `<lt-field>` | `aria-describedby`, `aria-invalid` and the ids on the help text and the error message, the same as before |
+| `<lt-tabs>` | the tab selection: `aria-selected` and `tabindex` on the tabs, `hidden` on the panels |
+| `<lt-popover>` | `open` on the host, `aria-expanded` on the button, the position of the panel |
+| `<lt-suggestion>` | whether the list is open, what is highlighted, what the filtering hides, the code in the value field and the number of matches in the status element |
+| `<lt-dialog>` | `open` on the `<dialog>` itself, which the browser sets in `showModal()` |
+
+This replaces `data-preserve-attr`, which required the template to copy out the names of
+every attribute the component was going to touch. Nine strings to keep in step with a
+package that could change, with no compiler looking at them.
+
+Preserving has one more weakness. `data-preserve-attr` is a `data-*` attribute,
+and such an attribute only means something to the code that reads it. Preserving works,
+then, because the morpher reads the list. Repair works because the component reads
+the markup, and that does not depend on who morphs.
+
+#### Ids that survive an update
+
+Repair depends on one thing: that the morph keeps the elements. The tab selection
+is tied to the link itself, and the text the user typed is in the field itself.
+If the element is replaced, it is gone, and no component can bring it back.
+
+The morph recognises an element by its id. An element without an id is kept. An
+element with an id the server did not send is replaced: Datastar and idiomorph both
+do this, on purpose. That is why the components never write an id on the field in
+`<lt-field>` and `<lt-suggestion>`. `for` and `id` are written by the template, as HTML
+requires anyway for the field to have a name before the script has run, or else
+the label wraps the field and no id is needed. The latter has a cost: without an id
+the field does not get focus back after an `innerHTML` update with htmx, which
+finds it again by id, and a morph recognises the field by its position.
+If the server inserts a field of the same kind in front of it, the text the user typed can
+end up in that one.
+
+The panels in a tab list and the panel in a popover need an id for the wiring,
+and there the server writes them:
+
+| Component | Write an id on |
+| --- | --- |
+| `<lt-tabs>` | each panel, the id the link points to. The tabs themselves have no id, and the component never writes one |
+| `<lt-field>` | the control, with `for` on the label (or the label around the field) |
+| `<lt-suggestion>` | the field, with `for` on the label (or the label around the field) |
+| `<lt-popover>` | the panel |
+
+The builder functions already do this: `lt.tabs({ id: "case", keys: ["attachments"], label })`
+writes `case-attachments` on the panel and `case-attachments-heading` on the heading, and
+the Kotlin binding does the same. If you write the template by hand,
+you write the ids yourself, and they must be the same on every render.
+
+In a loop, make the id from a key in the data, never from something that follows
+the render:
+
+| The id is made from | On an update |
+| --- | --- |
+| a random number | a new id every time, the element is replaced |
+| a counter | changes when the server sends only a slice, the element is replaced |
+| the index in the list | the element is kept, but now stands for another row: what the user typed ends up in the wrong row |
+| a key in the data (`note-{{.Code}}`) | the right row, also when the server inserts a new one |
+
+It is the same rule as `key` in React: only the data knows that the row is the
+same as last time.
+
+If it goes wrong anyway, the component says so in the console, once, at the
+moment the patch replaced the elements and something was lost. A page that never
+patches, or patches narrowly, gets no warning: there, bare markup is still
+enough.
+
+#### When the server alone decides the state
+
+Preserving gave one thing repair had to replace: whoever wrote the markup
+could decide the state alone. "Go on to step 2" is a real
+thing a server will want to do.
+
+One attribute does it, on the host:
+
+```html
+<lt-tabs server-controlled>
+```
+
+Then the component does not restore what the user did, and each patch
+decides. If the attribute is set while the page is open, the component forgets what
+the user has done, and what is in the markup is the starting point. What it
+forgot does not come back when the attribute is removed again. The default
+is the opposite, because it is right almost always: the user does not lose what
+they just did.
+
+The popover sits in between, on purpose. If someone has asked
+for the popover to be open, it stays open through a patch. If the server sends
+`open`, it opens, because that is something the server actually said.
+
+An app closes it with the property: `menu.open = false`, `hide()` or
+`toggle()`. If you control `open` with an attribute from outside, as with Datastar's
+`data-attr:open`, the component cannot tell that apart from a morph, and then
+the page should say `server-controlled` and let the server alone decide the state.
+
+#### When the user triggers the update
+
+Datastar sends its signals with every request the client starts. If you let
+the component update a signal, the server knows what the user has done, and can
+send the right HTML straight away:
+
+```html
+<lt-tabs server-controlled data-on:tab-select="$tab = evt.detail.index">
+```
+
+The component does the keyboard and the accessibility, the signal follows, and
+the server renders from `$tab`. Then the server is the one that knows, and
+`server-controlled` says so. Without the attribute the two would fight over the
+same thing: the component restores the tab the user chose, while the server sends
+its own.
+
+If you do not bind a signal, the component is the one that knows, and then it should
+repair. That is the default, and it is also the right choice when **the server**
+pushes an update on its own because another user did something.
+
+#### In short
+
+1. **Send only what changed.** Then the problem does not arise.
+2. **Write what HTML requires, and let the component wire the rest.** `for` and `id`
+   on the field are written by the template; `aria-describedby`, `aria-invalid` and the ids on
+   the help text and the error message are written by the component, in any
+   language.
+3. **The component restores what the user did,** as long as the patch
+   keeps the elements. If you send the whole region again, the server must write ids
+   on the panels in the tab list and the panel in the popover, or they are replaced, and
+   the ids in a loop come from a key in the data. The list and the options in
+   the suggestion field can be replaced; the component wires them again. If the server alone should decide the state, say so
+   with `server-controlled`.
+
+There is one exception. If you have to send a large region again while the user is
+filling it in, the server can write the whole wiring itself. Then the component has
+nothing to add, and the morph nothing to remove.
+
+The rule is the three points above.
+
+## Warnings about broken markup
+
+A component attaches behaviour to markup someone else has written, and that markup can come from a Go template or a CMS where no compiler checks it. For a long time, when the component did not find its parts, it did nothing, without a word, and the fault only showed when someone read the page with a screen reader.
+
+Now a warning appears in the console with the element that is missing something:
+
+```
+lt-field: found no control to wire. The label, the help text and the error message have no field, and the wiring cannot be made. Insert an <input>, <textarea> or <select>.
+```
+
+The message appears once per element, not once per update, and only when the markup is actually wrong. An empty region the server has not filled yet is not an error.
+
+## Before the component is registered
+
+The markup is the server's, so it is there and readable long before `defineLt*()` has run. `lt.suggestion()` writes `hidden` on a closed list, so the markup is right from the first paint. `lt.tabs()` does not write `hidden`: without JavaScript all the panels should be shown, like a table of contents with the content below.
+
+With JavaScript, all the panels would have stood one below the other until the component was registered, and the suggestion list would have been open under a field nobody has touched. The rules in the stylesheets handle that. For the suggestion field it is simple:
+
+```css
+lt-suggestion:not(:defined) .lt-suggestion__list {
+  display: none;
+}
+```
+
+The empty message in the suggestion field has a similar rule, and it also applies after registration: `.lt-suggestion__empty` is not shown after a list with `hidden`.
+
+The tab rule in `tabs.css` sits behind `@media (scripting: enabled)`, and shows one panel until the component is registered, the one the component is going to select: the server's `hidden` applies when it exists, otherwise the panel the address points to (`:target`, or the panel containing it), otherwise the first. Under `server-controlled` the address does not select, and the first visible one is shown. It only reaches the panels inside `<lt-tabs>`: if a panel is outside, the server must write `hidden` on it itself. And it cannot connect `aria-selected` on a tab to its panel, so markup with `aria-selected` from the server must also have `hidden` on the other panels. See [the tabs page](/components/tabs/#before-the-component-is-registered).
+
+The rules are mentioned here because `:not(:defined)` is easy to mistake for a bug when you read the CSS.
+
+## Components that create their own content
+
+Two components cannot follow the rule, and they are described in [the architecture](/introduction/#three-categories):
+
+[`<lt-connection-status>`](/components/connection-status/) says when the connection is gone. The server cannot report that itself: if it is unreachable, nothing comes from it.
+
+[`<lt-toast>`](/components/toast/) shows messages the app creates while the page is open. The server has no version of them to send.
+
+Both must have `data-ignore-morph`, which tells the morph to leave the content alone. So should [`<lt-session-timeout>`](/components/session-timeout/): the dialog is your markup, but the number is written by the component, and a morph would empty it until the next tick. `open`, which `showModal()` sets, the component restores itself. The region in [`<lt-suggestion>`](/components/suggestion/) that announces the number of matches does not need it: if a patch empties it, the component writes the number again. The builder functions write the attribute where it is needed. If you write the markup by hand, in a Go or Kotlin template, you have to write it yourself: the components do not set it.
+
+Repair is not enough here. An attribute the component set itself, it can set again. A message it created, and that a patch emptied, is gone. The name `data-ignore-morph` is the morpher's own, not LO-TEK's.
+
+## What LO-TEK does not do
+
+LO-TEK does not server-render web components. There is no Lit SSR, no declarative shadow DOM, no build step that requires Node.
+
+That is a choice. Lit SSR requires a JavaScript server, and a design system that needs Node to put a date field on the page is no longer framework-independent. Instead we have removed the need: the markup comes from the server anyway, so there is nothing to server-render.

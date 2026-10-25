@@ -12,12 +12,12 @@ import { heading } from "./heading"
 import "../../../tokens/tokens.css"
 import "./heading.css"
 
-describe("fs-heading", () => {
+describe("lt-heading", () => {
   beforeEach(() => {
     monter(`
-      <h1 class="fs-heading" data-size="mega" id="mega">Søknad om bostøtte</h1>
-      <h2 class="fs-heading" id="standard">Om søkeren</h2>
-      <h3 class="fs-heading" data-size="s" id="liten">Vedlegg</h3>
+      <h1 class="lt-heading" data-size="mega" id="mega">Søknad om bostøtte</h1>
+      <h2 class="lt-heading" id="standard">Om søkeren</h2>
+      <h3 class="lt-heading" data-size="s" id="liten">Vedlegg</h3>
     `)
   })
 
@@ -40,9 +40,9 @@ describe("fs-heading", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(heading()).toEqual({ class: "fs-heading" })
+    expect(heading()).toEqual({ class: "lt-heading" })
     expect(heading({ size: "mega" })).toEqual({
-      class: "fs-heading",
+      class: "lt-heading",
       "data-size": "mega",
     })
     expect(heading.isSize("xs")).toBe(true)

@@ -2,33 +2,33 @@
 import Preview from "./Preview.astro"
 ---
 
-<Preview id="demo-okt" stiler={["session-timeout", "button", "sr-only"]} maxWidth="34rem">
-	<p class="fs-paragraph">
-		Her er økten satt til fem sekunder, så du slipper å vente i 25 minutter.
-		Slutt å røre tastaturet og musa, så kommer varselet.
+<Preview id="demo-session" styles={["session-timeout", "button", "sr-only"]} maxWidth="34rem">
+	<p class="lt-paragraph">
+		Here the session is set to five seconds, so you do not have to wait 25 minutes.
+		Stop touching the keyboard and mouse, and the warning appears.
 	</p>
-	<fs-session-timeout
-		class="fs-session-timeout"
+	<lt-session-timeout
+		class="lt-session-timeout"
 		warn-at="5"
 		expires-at="65"
 		data-ignore-morph>
-		<dialog class="fs-session-timeout__dialog" role="alertdialog" aria-labelledby="demo-okt-tittel">
-			<h2 class="fs-session-timeout__title" id="demo-okt-tittel">Du blir snart logget ut</h2>
-			<p class="fs-session-timeout__text">
-				Vi logger deg ut om <span class="fs-session-timeout__count" aria-hidden="true"></span>
-				for å beskytte opplysningene dine.
+		<dialog class="lt-session-timeout__dialog" role="alertdialog" aria-labelledby="demo-session-title">
+			<h2 class="lt-session-timeout__title" id="demo-session-title">You will soon be signed out</h2>
+			<p class="lt-session-timeout__text">
+				We will sign you out in <span class="lt-session-timeout__count" aria-hidden="true"></span>
+				to protect your information.
 			</p>
-			<span class="fs-sr-only" role="status"></span>
-			<form method="dialog" class="fs-session-timeout__actions">
-				<button class="fs-button" value="extend">Fortsett å være innlogget</button>
-				<button class="fs-button" data-variant="secondary" value="logout">Logg ut nå</button>
+			<span class="lt-sr-only" role="status"></span>
+			<form method="dialog" class="lt-session-timeout__actions">
+				<button class="lt-button" value="extend">Stay signed in</button>
+				<button class="lt-button" data-variant="secondary" value="logout">Sign out now</button>
 			</form>
 		</dialog>
-	</fs-session-timeout>
+	</lt-session-timeout>
 </Preview>
 
 <script>
-	import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
+	import { defineLtSessionTimeout } from "@lo-tek/interfaces/session-timeout"
 
-	defineFsSessionTimeout()
+	defineLtSessionTimeout()
 </script>

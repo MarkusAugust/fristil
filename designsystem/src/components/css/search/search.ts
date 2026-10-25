@@ -6,12 +6,12 @@ import {
   isFieldState,
 } from "../shared.js"
 
-export const SEARCH_CLASS = "fs-search" as const
-/** Raden med søkefeltet og knappen ved siden av. */
-export const SEARCH_ROW_CLASS = "fs-search-row" as const
+export const SEARCH_CLASS = "lt-search" as const
+/** The row with the search field and the button next to it. */
+export const SEARCH_ROW_CLASS = "lt-search-row" as const
 
 export type SearchOptions = {
-  /** Valideringstilstand. Standard: `default`. */
+  /** Validation state. Default: `default`. */
   state?: FieldState
 }
 
@@ -23,11 +23,12 @@ export type SearchAttributes = {
 }
 
 /**
- * Attributtene for et søkefelt.
+ * The attributes for a search field.
  *
- * Feltet er en `fs-input` med plass til forstørrelsesglasset, så begge
- * klassene settes. `type="search"` gir nettleserens eget kryss for å tømme
- * feltet, og på mobil et tastatur med «Søk» i stedet for «Enter».
+ * The field is an `lt-input` with room for the magnifying glass, so both
+ * classes are set. `type="search"` gives the browser's own cross for
+ * clearing the field, and on mobile a keyboard with "Search" instead of
+ * "Enter".
  *
  * ```ts
  * <input {...search()} name="q" />
@@ -47,7 +48,7 @@ export const search = Object.assign(
     ) as SearchAttributes
   },
   {
-    /** Klassen på raden med feltet og knappen. */
+    /** The class on the row with the field and the button. */
     row: SEARCH_ROW_CLASS,
     states: fieldStates,
     isState: isFieldState,

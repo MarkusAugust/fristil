@@ -1,92 +1,94 @@
-@layer fristil {
+@layer lotek {
   /*
-   * Fyllfargen bæres av `color` på verten, og den fylte delen leser
-   * `currentColor`.
+   * The fill colour is carried by `color` on the host, and the filled part
+   * reads `currentColor`.
    *
-   * Grunnen er at den fylte delen har to navn, `::-webkit-progress-value` i
-   * Chromium og WebKit og `::-moz-progress-bar` i Gecko, og de kan ikke stå i
-   * samme selektorliste: et pseudoelement motoren ikke kjenner gjør hele
-   * regelen ugyldig. Fargen må derfor bestemmes ett sted og arves inn, og
-   * `currentColor` er den innebygde måten å gjøre det.
+   * The reason is that the filled part has two names,
+   * `::-webkit-progress-value` in Chromium and WebKit and
+   * `::-moz-progress-bar` in Gecko, and they cannot be in the same selector
+   * list: a pseudo-element the engine does not know makes the whole rule
+   * invalid. The colour must therefore be decided in one place and
+   * inherited, and `currentColor` is the built-in way to do that.
    *
-   * `<progress>` har ingen tekst, så `color` er ledig til oppgaven.
-   * `data-color` endrer `--fs-progress-fill`, som `color` leser.
+   * `<progress>` has no text, so `color` is free for the job.
+   * `data-color` changes `--lt-progress-fill`, which `color` reads.
    */
-  .fs-progress {
+  .lt-progress {
     box-sizing: border-box;
     appearance: none;
     display: block;
     inline-size: 100%;
-    block-size: var(--fs-progress-height, var(--fs-spacing-2));
+    block-size: var(--lt-progress-height, var(--lt-spacing-2));
     border: 0;
-    /* Sporet alene er 1,12:1 mot siden, og uten en kant så ingen hvor langt
-       stolpen går. `neutral-border` holder 3:1. En `outline` innover og ikke
-       en `border`: med `border-box` tok kanten 2 piksler av høyden, og en
-       stolpe på 2 piksler mistet fyllet helt. */
-    /* Langformene, siden dette ikke er en fokusring: kortformen med `solid`
-       er forbeholdt `--fs-focus-ring`, og `pakke-css.browser.test.ts`
-       avviser den. */
+    /* The track alone is 1.12:1 against the page, and without an edge nobody
+       could see how far the bar goes. `neutral-border` holds 3:1. An inward
+       `outline` and not a `border`: with `border-box` the border took 2
+       pixels of the height, and a 2 pixel bar lost its fill entirely. */
+    /* The longhands, since this is not a focus ring: the shorthand with
+       `solid` is reserved for `--lt-focus-ring`, and
+       `package-css.browser.test.ts` rejects it. */
     outline-width: 1px;
     outline-style: solid;
-    outline-color: var(--fs-progress-border, var(--fs-color-neutral-border));
+    outline-color: var(--lt-progress-border, var(--lt-color-neutral-border));
     outline-offset: -1px;
-    border-radius: var(--fs-progress-radius, var(--fs-spacing-1));
+    border-radius: var(--lt-progress-radius, var(--lt-spacing-1));
     overflow: hidden;
-    background: var(--fs-progress-track, var(--fs-color-neutral-surface));
-    color: var(--fs-progress-fill, var(--fs-color-accent-fill));
+    background: var(--lt-progress-track, var(--lt-color-neutral-surface));
+    color: var(--lt-progress-fill, var(--lt-color-accent-fill));
   }
 
-  .fs-progress[data-color="success"] {
-    --fs-progress-fill: var(--fs-color-success-fill);
+  .lt-progress[data-color="success"] {
+    --lt-progress-fill: var(--lt-color-success-fill);
   }
 
-  .fs-progress[data-color="warning"] {
-    --fs-progress-fill: var(--fs-color-warning-fill);
+  .lt-progress[data-color="warning"] {
+    --lt-progress-fill: var(--lt-color-warning-fill);
   }
 
-  .fs-progress[data-color="danger"] {
-    --fs-progress-fill: var(--fs-color-danger-fill);
+  .lt-progress[data-color="danger"] {
+    --lt-progress-fill: var(--lt-color-danger-fill);
   }
 
-  /* Sporet bak, i Chromium og WebKit. */
-  .fs-progress::-webkit-progress-bar {
-    background: var(--fs-progress-track, var(--fs-color-neutral-surface));
+  /* The track behind, in Chromium and WebKit. */
+  .lt-progress::-webkit-progress-bar {
+    background: var(--lt-progress-track, var(--lt-color-neutral-surface));
   }
 
-  /* Den fylte delen. Hver motor sin regel, av grunnen øverst. */
-  .fs-progress::-webkit-progress-value {
+  /* The filled part. One rule per engine, for the reason at the top. */
+  .lt-progress::-webkit-progress-value {
     background: currentColor;
     transition: inline-size 200ms ease-out;
   }
 
-  .fs-progress::-moz-progress-bar {
+  .lt-progress::-moz-progress-bar {
     background: currentColor;
     transition: inline-size 200ms ease-out;
   }
 
   /*
-   * Ubestemt: en stolpe uten `value`. Da vet vi ikke hvor langt det er kommet,
-   * og en stripe som sveiper over den sier «det pågår» uten å love et tall.
+   * Indeterminate: a bar without `value`. We then do not know how far it has
+   * come, and a stripe sweeping across it says "in progress" without
+   * promising a number.
    */
-  .fs-progress:indeterminate {
+  .lt-progress:indeterminate {
     background:
       linear-gradient(90deg, transparent 0%, currentColor 50%, transparent 100%)
       no-repeat,
-      var(--fs-progress-track, var(--fs-color-neutral-surface));
+      var(--lt-progress-track, var(--lt-color-neutral-surface));
     background-size: 40% 100%;
-    animation: fs-progress-slide 1400ms ease-in-out infinite;
+    animation: lt-progress-slide 1400ms ease-in-out infinite;
   }
 
-  /* Uten denne tegner Chromium og WebKit sitt eget spor oppå gradienten. */
-  .fs-progress:indeterminate::-webkit-progress-bar {
+  /* Without this Chromium and WebKit draw their own track on top of the gradient. */
+  .lt-progress:indeterminate::-webkit-progress-bar {
     background: transparent;
   }
 
-  .fs-progress:indeterminate::-moz-progress-bar {
+  .lt-progress:indeterminate::-moz-progress-bar {
     background: transparent;
   }
 
-  @keyframes fs-progress-slide {
+  @keyframes lt-progress-slide {
     from {
       background-position: -40% 0;
     }
@@ -95,58 +97,60 @@
     }
   }
 
-  /* Som i spinneren: saktere framfor stillestående. En indikator som står
-     stille sier ikke lenger at noe pågår. */
+  /* As in the spinner: slower rather than still. An indicator that stands
+     still no longer says that something is going on. */
   @media (prefers-reduced-motion: reduce) {
-    .fs-progress:indeterminate {
+    .lt-progress:indeterminate {
       animation-duration: 4200ms;
     }
 
-    .fs-progress::-webkit-progress-value {
+    .lt-progress::-webkit-progress-value {
       transition: none;
     }
 
-    .fs-progress::-moz-progress-bar {
+    .lt-progress::-moz-progress-bar {
       transition: none;
     }
   }
 
   /*
-   * Høykontrast: egne farger overstyres, så den fylte delen må hentes fra
-   * systemfargene. `Highlight` er den samme som det valgte ellers i systemet,
-   * og kanten gir tilbake formen når bakgrunnen blir `Canvas`.
+   * High contrast: custom colours are overridden, so the filled part must
+   * take its colour from the system colours. `Highlight` is the same as
+   * selection elsewhere in the system, and the edge brings back the shape
+   * when the background becomes `Canvas`.
    */
   @media (forced-colors: active) {
-    .fs-progress,
-    .fs-progress[data-color] {
-      --fs-progress-fill: Highlight;
+    .lt-progress,
+    .lt-progress[data-color] {
+      --lt-progress-fill: Highlight;
 
-      /* Den samme kanten innover som ellers, i systemets tekstfarge. En
-         `border` ville tatt 2 piksler av høyden, se over. */
+      /* The same inward edge as otherwise, in the system text colour. A
+         `border` would have taken 2 pixels of the height, see above. */
       outline-color: CanvasText;
     }
 
     /*
-     * Variabelen over er ikke nok for den fylte delen. Den leser
-     * `currentColor`, og modusen tvinger bakgrunnen tilbake til `Canvas` når
-     * verdien ikke er en systemfarge, så stolpen så tom ut uansett `value`.
-     * Systemfargen må stå på selve pseudoelementet.
+     * The variable above is not enough for the filled part. It reads
+     * `currentColor`, and the mode forces the background back to `Canvas`
+     * when the value is not a system colour, so the bar looked empty
+     * whatever the `value`. The system colour must be on the pseudo-element
+     * itself.
      */
-    .fs-progress::-webkit-progress-value {
+    .lt-progress::-webkit-progress-value {
       background: Highlight;
     }
 
-    .fs-progress::-moz-progress-bar {
+    .lt-progress::-moz-progress-bar {
       background: Highlight;
     }
 
     /*
-     * Stripen i en ubestemt stolpe er en gradient, og modusen fjerner
-     * gradienter. Uten unntaket sto en tom ramme igjen, og ingenting sa at
-     * noe pågikk. Fargene er systemets egne, så brukerens valg gjelder
-     * fortsatt.
+     * The stripe in an indeterminate bar is a gradient, and the mode removes
+     * gradients. Without the exception an empty frame was left, and nothing
+     * said that something was going on. The colours are the system's, so
+     * the user's choice still applies.
      */
-    .fs-progress:indeterminate {
+    .lt-progress:indeterminate {
       forced-color-adjust: none;
       background:
         linear-gradient(90deg, Canvas 0%, Highlight 50%, Canvas 100%) no-repeat,

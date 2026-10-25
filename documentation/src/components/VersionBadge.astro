@@ -1,0 +1,49 @@
+---
+import pakke from "../../../designsystem/package.json" with { type: "json" }
+
+/*
+ * The version is read from the package when the site is built, so the badge
+ * follows `prepare-version` without anyone remembering it. The badge sits
+ * next to the logo link and not inside it: a link inside a link is invalid
+ * HTML. The name starts with the visible text, so someone using voice control
+ * who says "v0.30.0" hits the link.
+ */
+const { version } = pakke
+---
+
+<a
+  href="/changelog/"
+  class="version-badge"
+  aria-label={`v${version}, changelog`}
+  translate="no"
+>v{version}</a>
+
+<style>
+  .version-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border: 1px solid rgb(148 163 184 / 0.35);
+    border-radius: 999px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    font-weight: 500;
+    color: inherit;
+    opacity: 0.75;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: opacity 150ms, border-color 150ms;
+  }
+
+  .version-badge:hover {
+    opacity: 1;
+    border-color: rgb(148 163 184 / 0.7);
+  }
+
+  .version-badge:focus-visible {
+    opacity: 1;
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+</style>

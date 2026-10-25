@@ -1,0 +1,339 @@
+---
+title: Frameworks
+description: Setting up LO-TEK in plain HTML, React, Astro and Datastar, with the same components and the same API.
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components"
+
+The CSS components are classes and require nothing from the framework. The web components sometimes need setup, and this page collects it.
+
+All the web components are registered the same way, and each of them has its own page with examples per environment: [Field](../components/field/), [Tabs](../components/tabs/), [Dialog](../components/dialog/), [Error Summary](../components/error-summary/), [Popover](../components/popover/), [Suggestion](../components/suggestion/), [Toast](../components/toast/), [Session Timeout](../components/session-timeout/) and [Connection Status](../components/connection-status/).
+
+Three things apply everywhere:
+
+1. **The `define` function must run once** when the app starts, before the element is used.
+2. **Boolean attributes are true as long as they exist.** `invalid="false"` makes the field invalid. If the attribute should go, it must be removed entirely.
+3. **The server writes the markup, the component attaches behaviour.** See [Markup and behaviour](../markup-and-behaviour/) for why, and what it means in each environment.
+
+React also has `@lo-tek/interfaces/react`, which gives `className` and `htmlFor`. Without it, React writes "Invalid DOM property" in the console for every element. The others use the HTML names directly.
+
+## Plain HTML
+
+No build tools, no package manager in the browser.
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="/node_modules/@lo-tek/interfaces/src/tokens/tokens.css" />
+    <link rel="stylesheet" href="/node_modules/@lo-tek/interfaces/src/components/frame/field/field.css" />
+    <link rel="stylesheet" href="/node_modules/@lo-tek/interfaces/src/components/css/button/button.css" />
+    <!-- Or everything in one file: /node_modules/@lo-tek/interfaces/dist/lotek.css -->
+  </head>
+  <body>
+    <form id="contact-form">
+      <lt-field>
+        <label class="lt-label" for="name" data-required="symbol">Full name</label>
+        <input class="lt-input" id="name" type="text" name="name" required />
+        <p class="lt-error-text" hidden>Enter your name.</p>
+      </lt-field>
+
+      <button class="lt-button" type="submit">Send</button>
+    </form>
+
+    <script type="module">
+      import { defineLtField } from "/node_modules/@lo-tek/interfaces/dist/components/frame/field/lt-field.js"
+      defineLtField()
+
+      document.getElementById("contact-form").addEventListener("submit", (event) => {
+        event.preventDefault()
+        console.log(Object.fromEntries(new FormData(event.currentTarget)))
+      })
+    </script>
+  </body>
+</html>
+```
+
+`new FormData(...)` picks up the field by itself, because `<lt-field>` keeps the elements in plain DOM.
+
+The CSS components do not even need the script:
+
+```html
+<link rel="stylesheet" href="/node_modules/@lo-tek/interfaces/src/tokens/tokens.css" />
+<link rel="stylesheet" href="/node_modules/@lo-tek/interfaces/src/components/css/button/button.css" />
+<!-- Or everything in one file: /node_modules/@lo-tek/interfaces/dist/lotek.css -->
+
+<button class="lt-button" data-variant="secondary">Save draft</button>
+```
+
+This is the part that lasts longest. The class and the data attribute are a contract the browser understands directly.
+
+:::caution[TypeScript does not belong in `<script type="module">`]
+A `<script>` tag in an HTML file is run by the browser as plain JavaScript. If you write `event as CustomEvent<…>` there, you get a `SyntaxError` and the whole script stops. Type syntax requires a build step.
+:::
+
+## React
+
+<Tabs>
+  <TabItem label="Setup">
+    ```tsx
+    // main.tsx
+    import "@lo-tek/interfaces/tokens.css"
+    import "@lo-tek/interfaces/field.css"
+    import "@lo-tek/interfaces/suggestion.css"
+
+    import { defineLt } from "@lo-tek/interfaces/register"
+
+    defineLt()
+    ```
+
+    The call is at the top of the module, not in a `useEffect`. An effect runs after the first paint, so the elements in the markup are plain `HTMLElement`s when React paints them, and a call to `show()` or `reportFailure()` before the effect fails with "is not a function". The function does nothing on a server, so it can sit in a root module that runs in both places, as in TanStack Start. If you use one component, call its own function, like `defineLtTabs()`, and keep the rest out of the bundle.
+
+    If you use the CSS components, import `lt` from the React entry point:
+
+    ```tsx
+    import { lt } from "@lo-tek/interfaces/react"
+
+    <button {...lt.button({ variant: "secondary" })}>Save draft</button>
+    ```
+
+    If this is in `main.tsx` before `createRoot`, the elements are registered before React gets to paint anything.
+  </TabItem>
+  <TabItem label="TypeScript types">
+    Import the types for web components once. Put the import in a `.d.ts` file, so it never ends up in the bundle:
+
+    ```ts
+    // src/lotek.d.ts
+    import "@lo-tek/interfaces/react-jsx"
+    ```
+
+    Without it, TypeScript does not know `<lt-field>` at all:
+
+    ```
+    Property 'lt-field' does not exist on type 'JSX.IntrinsicElements'
+    ```
+
+    With it, you get autocompletion and errors on the attributes:
+
+    ```tsx
+    <lt-field describedBy="terms" />         // error: the attribute is described-by
+    <lt-toast closeLabel="Close" />          // error: the attribute is close-label
+    <lt-connection-status offline="Down" />  // error: unknown attribute
+    ```
+
+    :::caution[Only one copy of `@types/react`]
+    The types work by the package extending React's `JSX.IntrinsicElements`. If the project has two installations of `@types/react`, which easily happens in a monorepo, the package extends one while your code uses the other, and the elements stay unknown. Run `npm ls @types/react` if something looks odd.
+    :::
+  </TabItem>
+  <TabItem label="Usage">
+    Write a field with `lt.field()`. The wiring between the label, the field and the error message is then in the markup React renders itself, and nothing needs to be registered.
+
+    ```tsx
+    // ContactForm.tsx
+    import { lt } from "@lo-tek/interfaces/react"
+    import { useId, useState } from "react"
+
+    export function ContactForm() {
+      const [name, setName] = useState("")
+      const [touched, setTouched] = useState(false)
+
+      const invalid = touched && name.trim() === ""
+      const field = lt.field({
+        id: useId(),
+        required: "symbol",
+        error: true,
+        invalid,
+      })
+
+      return (
+        <form onSubmit={(e) => e.preventDefault()}>
+          <label {...field.label}>Full name</label>
+          <input
+            {...lt.input({ type: "text" })}
+            {...field.control}
+            name="name"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={() => setTouched(true)}
+          />
+          <p {...lt.errorText()} {...field.error}>Enter your name.</p>
+
+          <button {...lt.button()} type="submit">Send</button>
+        </form>
+      )
+    }
+    ```
+
+    The id comes from `useId()`, so the server and the browser create the same one.
+
+    :::caution[Do not use the web component for fields in React with server rendering]
+    The component writes the wiring on the elements before React hydrates, and React reports mismatches on the label, the field and the error message. See [Field](../components/field/) for when `<lt-field>` is the right route.
+    :::
+
+    Use the other web components together with the builder function, like `lt.tabs()` in `<lt-tabs>`. Boolean attributes on them are written `open={isOpen || undefined}`, never `open=""` or `open={isOpen}`: React 18 writes `false` as the attribute `open="false"`, which is true. React 19 sets the property to `""`, and the component reads it as false.
+  </TabItem>
+</Tabs>
+
+## Astro
+
+An `.astro` file is HTML with frontmatter above it. The stylesheets are imported there, and `lt` is used directly in the template, since Astro supports spreading as JSX does.
+
+```astro
+---
+import { lt } from "@lo-tek/interfaces"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/button.css"
+import "@lo-tek/interfaces/badge.css"
+---
+
+<button {...lt.button({ variant: "secondary" })}>Save draft</button>
+<span {...lt.badge({ color: "success" })}>Approved</span>
+```
+
+Runs at build time. What comes out is plain HTML:
+
+```html
+<button class="lt-button" data-variant="secondary">Save draft</button>
+<span class="lt-badge" data-color="success">Approved</span>
+```
+
+Zero JavaScript sent to the browser. `lt` is gone once the page is built.
+
+### Fields without JavaScript
+
+`lt.field()` computes the wiring in the frontmatter, so it also becomes static HTML:
+
+```astro
+---
+import { lt } from "@lo-tek/interfaces"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/field.css"
+
+const email = lt.field({ id: "email", required: "symbol", help: true, error: true })
+---
+
+<label {...email.label}>Email address</label>
+<input {...lt.input({ type: "email" })} {...email.control} name="email" required />
+<p {...lt.helpText()} {...email.help}>We send the receipt here.</p>
+<p {...lt.errorText()} {...email.error}>Enter a valid address.</p>
+```
+
+No `<lt-field>`, no runtime.
+
+### Web components in Astro
+
+If the field should be able to become invalid while the user is in it, the component must be registered. Astro bundles `<script>` tags and runs them on the client:
+
+```astro
+---
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/field.css"
+---
+
+<lt-field>
+  <label class="lt-label" for="name" data-required="symbol">Full name</label>
+  <input class="lt-input" id="name" type="text" name="name" required />
+  <p class="lt-error-text" hidden>Enter your name.</p>
+</lt-field>
+
+<script>
+  import { defineLtField } from "@lo-tek/interfaces/field"
+  defineLtField()
+</script>
+```
+
+`customElements` exists only in the browser, so the registration cannot be in the frontmatter. A `<script>` in the template is all it takes: the components are ordinary web components, and need neither an Astro integration nor a `client:` directive.
+
+### Astro and Datastar
+
+Astro builds the HTML, Datastar gives it behaviour, and neither part requires a component model in the browser.
+
+## HTML with Datastar
+
+[Datastar](https://data-star.dev) adds reactivity to plain HTML with `data-*` attributes. One script, no build step. The same premise as LO-TEK.
+
+```html
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
+></script>
+```
+
+The stylesheets are linked, since a browser does not resolve a package name:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/tokens/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/components/frame/field/field.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/components/css/button/button.css">
+<!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/lotek.css -->
+```
+
+```html
+<form
+  data-signals="{name: '', touched: false}"
+  data-computed:invalid="$touched && $name.trim() === ''"
+>
+  <lt-field>
+    <label class="lt-label" for="name" data-required="symbol">Full name</label>
+    <input
+      class="lt-input"
+      id="name"
+      type="text"
+      name="name"
+      data-bind:name
+      data-on:blur="$touched = true"
+    />
+    <p class="lt-error-text" hidden data-attr:hidden="!$invalid">Enter your name.</p>
+  </lt-field>
+
+  <button class="lt-button" type="submit">Send</button>
+</form>
+
+<script type="module">
+  import { defineLtField } from
+    "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/components/frame/field/lt-field.js"
+
+  defineLtField()
+</script>
+```
+
+Three attributes do the whole job:
+
+- `data-signals` creates the state.
+- `data-computed:invalid` derives the validation from it.
+- `data-bind:name` binds the field both ways, and `data-on:blur` marks that the user has left it.
+
+`data-attr:hidden` on the error message connects Datastar to the component: it **hides the error message when the field is valid and shows it when it is invalid**, and `<lt-field>` treats the field as invalid when the error message is visible.
+
+`lt` is used on the server or in the build step, if at all. Datastar does not need it in the browser.
+
+### HTML from the server
+
+Datastar can let the server send HTML while the page is open, over Server-Sent Events. See [`@starfederation/datastar-sdk`](https://github.com/starfederation/datastar-typescript).
+
+A web component upgrades itself when it is inserted into the document, as long as `defineLtField()` has run once. The server can therefore send this as plain HTML:
+
+```html
+<lt-field>
+  <label class="lt-label" for="email" data-required="text">Email address</label>
+  <input class="lt-input" id="email" type="email" value="sam@" />
+  <p class="lt-help-text">We send the receipt here.</p>
+  <p class="lt-error-text">Enter a valid address.</p>
+</lt-field>
+```
+
+The component then sets `lt-label`, gives the help text and the error message ids, adds `aria-invalid` because the error message is visible, and builds `aria-describedby`, without any JavaScript being sent for this particular field. The field has no id the component created, so the next update from the server recognises it.
+
+That is the point of the `frame` components living in plain DOM: the markup is the data, and the accessibility is wired where it lands.
+
+## Known pitfalls
+
+| Symptom | Cause |
+| --- | --- |
+| An `<lt-toast>` or `<lt-connection-status>` shows nothing, or an `<lt-session-timeout>` never warns | The `define` function has not run. `<lt-toast>` and `<lt-connection-status>` create their content themselves, so without registration the element is empty, and `<lt-session-timeout>` does not count the time. A `frame` component's markup is yours and is there regardless, except that Tabs shows only the first panel and Suggestion hides the list until they are registered |
+| The error message is never shown, and the field is treated as valid | `hidden="false"` is set on the error message, and it hides it all the same. The attribute must be removed, not set to `false` |
+| `SyntaxError` in the browser | TypeScript syntax in a `<script type="module">` without a build step |
+| The styles are missing | `tokens.css` is not imported |
+| React: "Invalid DOM property `class`" | Import `lt` from `@lo-tek/interfaces/react` |

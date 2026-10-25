@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const DIVIDER_CLASS = "fs-divider" as const
+export const DIVIDER_CLASS = "lt-divider" as const
 
 export const dividerVariants = ["default", "subtle", "strong"] as const
 
@@ -8,7 +8,7 @@ export type DividerVariant = (typeof dividerVariants)[number]
 export type NonDefaultDividerVariant = Exclude<DividerVariant, "default">
 
 export type DividerOptions = {
-  /** Hvor tydelig streken er. Standard: `default`. */
+  /** How visible the line is. Default: `default`. */
   variant?: DividerVariant
 }
 
@@ -18,11 +18,12 @@ export type DividerAttributes = {
 }
 
 /**
- * Attributtene for en skillelinje.
+ * The attributes for a divider.
  *
- * Klassen hører på et `<hr>`. Skiller streken to deler av innholdet, er den
- * en opplysning skjermlesere skal få. Er den bare pynt mellom to bokser som
- * allerede er atskilt, sett `aria-hidden="true"` på den.
+ * The class goes on an `<hr>`. If the line separates two parts of the
+ * content, it is information screen readers should get. If it is only
+ * decoration between two boxes that are already apart, set
+ * `aria-hidden="true"` on it.
  *
  * ```ts
  * <hr {...divider({ variant: "subtle" })} />

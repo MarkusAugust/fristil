@@ -1,0 +1,64 @@
+---
+/**
+ * Shows a whole page in a frame, with a way to open it on its own.
+ *
+ * Some patterns are about the page as a whole: the skip link must be the first
+ * thing in `<body>`, `<main>` can only exist once, and the landmarks only make
+ * sense in relation to each other. None of that can be shown in a box inside
+ * another page. The demo is therefore a real page at its own address, shown
+ * here in an `<iframe>` and openable in its own tab.
+ *
+ * The frame has its own viewport width, so what you see is what the page
+ * actually does at that width, with no scaling tricks.
+ */
+
+interface Props {
+  /** The address of the demo page. */
+  src: string
+  /** What the frame contains. Becomes `title`, which screen readers announce. */
+  title: string
+  /** The height of the frame. */
+  height?: string
+}
+
+const { src, title, height = "34rem" } = Astro.props
+---
+
+<figure class="framed-page not-content">
+	<iframe src={src} title={title} loading="lazy" style={`height: ${height}`}
+	></iframe>
+
+	<figcaption>
+		<a href={src} target="_blank" rel="noreferrer">
+			Open {title.toLowerCase()} in a new tab
+		</a>
+		<span> (there, Tab and the skip link work as on a real page)</span>
+	</figcaption>
+</figure>
+
+<style>
+	.framed-page {
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--lt-spacing-2);
+	}
+
+	.framed-page iframe {
+		inline-size: 100%;
+		border: 1px solid var(--lt-color-neutral-border-subtle);
+		border-radius: var(--lt-spacing-2);
+		background: var(--lt-color-neutral-canvas);
+		/* The frame is a separate page, and scrolls on its own. */
+		overflow: auto;
+	}
+
+	.framed-page figcaption {
+		font-size: var(--lt-font-size-s);
+		color: var(--lt-color-neutral-text-subtle);
+	}
+
+	.framed-page a {
+		color: var(--lt-color-accent-fill);
+	}
+</style>

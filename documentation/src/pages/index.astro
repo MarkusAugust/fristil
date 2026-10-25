@@ -1,23 +1,24 @@
 ---
-import "@fristil/designsystem/button.css"
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/sr-only.css"
-import FristilLogo from "../components/FristilLogo.astro"
-import Versjonsmerke from "../components/Versjonsmerke.astro"
+import "@lo-tek/interfaces/button.css"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/sr-only.css"
+import Logo from "../components/Logo.astro"
+import VersionBadge from "../components/VersionBadge.astro"
 import "../styles/custom-pages-tailwind.css"
 import sobernetics from "../assets/sobernetics.svg?raw"
-import { DELINGSBILDE, metaAttributter } from "../delingsbilde.mjs"
+import { DELINGSBILDE, metaAttributter } from "../share-image.mjs"
 
-const tittel = "Fristil designsystem"
+const tittel = "LO-TEK design system"
 const beskrivelse =
-  "Rammeverksuavhengig designsystem der komponentene er CSS-klasser og web components. Samme API i React, Astro, Datastar og ren HTML."
+  "A framework-independent design system where the components are CSS classes and web components. The same API in React, Astro, Datastar and plain HTML."
 ---
 
 <!DOCTYPE html>
-<!-- Sida er alltid mørk. `data-theme` gir både Fristils mørke tokens og
-     `color-scheme: dark`, som er det rullefeltet og nettleserens egne flater
-     leser. `class="dark"` er Tailwinds egen bryter og gjør noe annet. -->
-<html lang="nb" class="dark" data-theme="dark">
+<!-- The page is always dark. `data-theme` gives both LO-TEK's dark tokens and
+     `color-scheme: dark`, which is what the scrollbar and the browser's own
+     surfaces read. `class="dark"` is Tailwind's own switch and does something
+     else. -->
+<html lang="en" class="dark" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -31,14 +32,14 @@ const beskrivelse =
   <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
   <title>{tittel}</title>
   <meta name="description" content={beskrivelse} />
-  <!-- Forsiden står utenfor Starlight, så taggene for delte lenker, som
-       Starlight skriver på de andre sidene, står her. -->
+  <!-- The front page sits outside Starlight, so the tags for shared links,
+       which Starlight writes on the other pages, are here. -->
   <meta property="og:title" content={tittel} />
   <meta property="og:description" content={beskrivelse} />
   <meta property="og:type" content="website" />
   <meta property="og:url" content={Astro.site?.href} />
-  <meta property="og:locale" content="nb" />
-  <meta property="og:site_name" content="Fristil - Dokumentasjon" />
+  <meta property="og:locale" content="en" />
+  <meta property="og:site_name" content="LO-TEK" />
   <meta name="twitter:card" content="summary_large_image" />
   {DELINGSBILDE.map((tagg) => {
     const { property, name, content } = metaAttributter(tagg)
@@ -51,16 +52,16 @@ const beskrivelse =
     <div class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-4 sm:px-8 sm:py-5">
       <div class="inline-flex items-center gap-6">
         <a href="/" class="inline-flex items-center text-inherit no-underline">
-            <FristilLogo size="sm" />
+            <Logo size="sm" />
         </a>
-        <Versjonsmerke />
+        <VersionBadge />
       </div>
       <nav>
           <ul class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-zinc-300 sm:gap-x-8 sm:text-base">
-            <li><a class="transition-colors hover:text-white" href="/introduksjon/">Dokumentasjon</a></li>
-            <li><a class="transition-colors hover:text-white" href="/components/">Komponenter</a></li>
+            <li><a class="transition-colors hover:text-white" href="/introduction/">Documentation</a></li>
+            <li><a class="transition-colors hover:text-white" href="/components/">Components</a></li>
             <li><a class="transition-colors hover:text-white" href="/llms.txt">llms.txt</a></li>
-            <li><a class="transition-colors hover:text-white" href="https://github.com/MarkusAugust/fristil" target="_blank" rel="noreferrer">GitHub</a></li>
+            <li><a class="transition-colors hover:text-white" href="https://github.com/MarkusAugust/lo-tek" target="_blank" rel="noreferrer">GitHub</a></li>
           </ul>
         </nav>
     </div>
@@ -71,48 +72,49 @@ const beskrivelse =
     <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_18%_18%,rgba(96,165,250,0.18),transparent_32%),radial-gradient(circle_at_82%_8%,rgba(167,139,250,0.16),transparent_34%),radial-gradient(circle_at_50%_100%,rgba(129,140,248,0.12),transparent_42%)]"></div>
     <div class="mx-auto grid w-full max-w-6xl gap-12 px-4 sm:px-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] lg:items-stretch">
       <div class="flex max-w-3xl flex-col">
-        <FristilLogo size="lg" className="mb-8" subtitle={false} />
-        <!-- Ett tekstelement, ikke to spenn. To spenn ble lest opp som
-             «Rammeverksuavhengigdesignsystem» i ett ord. Orddeling lar det
-             lange ordet brekke der det faktisk kan brekke. -->
+        <Logo size="lg" className="mb-8" subtitle={false} />
+        <!-- One text element, not two spans. Two spans were read out as one
+             run-together word. Hyphenation lets a long word break where it
+             can actually break. -->
         <h1 class="mb-4 bg-linear-to-br from-blue-300 via-blue-400 to-violet-400 bg-clip-text text-3xl font-black tracking-tight text-balance text-transparent hyphens-auto sm:text-5xl">
-          Rammeverksuavhengig designsystem
+          Framework-independent design system
         </h1>
         <p class="mb-8 max-w-2xl text-lg font-medium text-balance text-zinc-400 sm:text-2xl">
-          CSS-klasser og web components.
+          CSS classes and web components.
         </p>
         <p class="mb-8 max-w-2xl text-base leading-8 text-zinc-300 sm:text-xl">
-          Komponentene er ting nettleseren allerede forstår. Bruker teamet React, Astro, Datastar eller ren HTML, er det samme system og samme API. Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
+          The components are things the browser already understands. Whether the team uses React, Astro, Datastar or plain HTML, it is the same system and the same API. A design system tied to one framework has to be rewritten when the framework is replaced. The browser's own APIs are not replaced.
         </p>
         <p class="mb-8 max-w-2xl text-base leading-8 text-zinc-300 sm:text-xl">
-          Dokumentasjonen er skrevet for utviklere og lest like godt av kodeagenter: hver side finnes også som Markdown, og en regelbok per rammeverk følger pakken.
+          The documentation is written for developers and read just as well by coding agents: every page also exists as Markdown, and a rulebook per framework ships with the package.
         </p>
         <div class="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
-          <a href="/kom-i-gang/" class="inline-flex w-full items-center justify-center rounded-xl bg-linear-to-br from-blue-300 via-blue-400 to-violet-400 px-8 py-3.5 text-base font-semibold text-zinc-950 shadow-[0_18px_38px_-24px_rgba(96,165,250,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_44px_-24px_rgba(96,165,250,0.55)] sm:w-auto">
-          Kom i gang
+          <a href="/getting-started/" class="inline-flex w-full items-center justify-center rounded-xl bg-linear-to-br from-blue-300 via-blue-400 to-violet-400 px-8 py-3.5 text-base font-semibold text-zinc-950 shadow-[0_18px_38px_-24px_rgba(96,165,250,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_44px_-24px_rgba(96,165,250,0.55)] sm:w-auto">
+          Get started
         </a>
           <a href="/components/" class="inline-flex w-full items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/90 px-8 py-3.5 text-base font-semibold text-zinc-100 transition hover:border-blue-400 hover:bg-zinc-900 sm:w-auto">
-          Se komponenter
+          See the components
         </a>
         </div>
-        <!-- Sitatet er ikke tillagt noen, så det er et avsnitt og ikke en
-             blockquote: en blockquote uten kilde lover en avsender som ikke
-             finnes.
+        <!-- The quote is not attributed to anyone, so it is a paragraph and not
+             a blockquote: a blockquote without a source promises a sender who
+             does not exist.
 
-             Anførselstegnet er sitt eget element, ikke et `::before` på
-             avsnittet. `bg-clip-text` maler teksten med elementets egen
-             bakgrunn, så et tegn som stikker utenfor boksen blir usynlig.
-             Her har det sin egen dempede farge og er ren dekor.
+             The quotation mark is its own element, not a `::before` on the
+             paragraph. `bg-clip-text` paints the text with the element's own
+             background, so a character that sticks out of the box becomes
+             invisible. Here it has its own muted colour and is pure
+             decoration.
 
-             Tegnet er “ og ikke «. Som stor dekor er « to tynne vinkler som
-             ligger i bunnen av sin egen boks, så det havner ved linje to
-             uansett hva margen sier. “ er fylt og sitter øverst av seg selv.
-             Løpende tekst i dokumentasjonen bruker fortsatt «».
-             På bred skjerm sentreres sitatet i plassen som er til overs ved
-             siden av «Dette får du». `my-auto` blir null når den plassen er
-             brukt opp, og da la sitatet seg rett under knappene. `pt-12` er
-             gulvet, omtrent den avstanden sitatet hadde før heltetekst fikk
-             et avsnitt til. -->
+             The character is “ and not «. As large decoration, « is two thin
+             angles sitting at the bottom of their own box, so it ends up at
+             line two whatever the margin says. “ is filled and sits at the top
+             by itself.
+             On a wide screen the quote is centred in the space left over next
+             to "What you get". `my-auto` becomes zero when that space is used
+             up, and the quote then sat right under the buttons. `pt-12` is the
+             floor, roughly the distance the quote had before the hero text got
+             another paragraph. -->
         <div class="mx-auto mt-10 flex w-fit max-w-xl items-center gap-3 lg:my-auto lg:pt-12">
           <span
             aria-hidden="true"
@@ -121,25 +123,25 @@ const beskrivelse =
             &ldquo;
           </span>
           <p class="bg-linear-to-br from-logo-lilla via-pink-400 to-rose-400 bg-clip-text font-sitat text-lg italic leading-snug text-balance text-transparent sm:text-xl">
-            En kompromissløs og minimalistisk sportsbil bygget rett på nettleserens egne API-er. Fristil kaster all tung bagasje og gir deg en ekte, ufiltrert følelse av veien: selve DOM-en.
+            An uncompromising, minimalist sports car built straight on the browser's own APIs. LO-TEK throws out all the heavy baggage and gives you a real, unfiltered feel for the road: the DOM itself.
           </p>
         </div>
       </div>
 
       <aside class="rounded-[1.75rem] border border-zinc-800 bg-zinc-900/72 p-6 shadow-[0_28px_80px_-42px_rgba(0,0,0,0.9)] backdrop-blur-sm sm:p-8">
-        <p class="mb-6 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Dette får du</p>
+        <p class="mb-6 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">What you get</p>
         <div class="space-y-4">
           <div class="rounded-2xl border border-zinc-800/90 bg-zinc-950/80 p-5">
-            <h2 class="mb-2 text-lg font-bold text-white">En knapp koster én klasse</h2>
-            <p class="text-sm leading-7 text-zinc-300">En knapp er én CSS-klasse og null JavaScript. En forslagsliste er en web component, fordi tastatur og opplesning må følge hva lista viser. Du laster bare det komponenten faktisk trenger.</p>
+            <h2 class="mb-2 text-lg font-bold text-white">A button costs one class</h2>
+            <p class="text-sm leading-7 text-zinc-300">A button is one CSS class and no JavaScript. A suggestion list is a web component, because keyboard handling and announcements have to follow what the list shows. You load only what the component actually needs.</p>
           </div>
           <div class="rounded-2xl border border-zinc-800/90 bg-zinc-950/80 p-5">
-            <h2 class="mb-2 text-lg font-bold text-white">Koblingen gjøres ett sted</h2>
-            <p class="text-sm leading-7 text-zinc-300">Ledetekst, felt, hjelpetekst og feilmelding skal peke på hverandre med <code class="text-zinc-200">for</code>, <code class="text-zinc-200">id</code> og <code class="text-zinc-200">aria-describedby</code>. Systemet setter dem, så hver app slipper.</p>
+            <h2 class="mb-2 text-lg font-bold text-white">The wiring is done in one place</h2>
+            <p class="text-sm leading-7 text-zinc-300">Label, field, help text and error text have to point at each other with <code class="text-zinc-200">for</code>, <code class="text-zinc-200">id</code> and <code class="text-zinc-200">aria-describedby</code>. The system sets them, so each app does not have to.</p>
           </div>
           <div class="rounded-2xl border border-zinc-800/90 bg-zinc-950/80 p-5">
-            <h2 class="mb-2 text-lg font-bold text-white">Ta det i bruk gradvis</h2>
-            <p class="text-sm leading-7 text-zinc-300">Begynn med tokens og noen knapper. Hent resten når du trenger det. Ingenting krever at du tar alt.</p>
+            <h2 class="mb-2 text-lg font-bold text-white">Adopt it gradually</h2>
+            <p class="text-sm leading-7 text-zinc-300">Start with the tokens and a few buttons. Bring in the rest when you need it. Nothing requires you to take everything.</p>
           </div>
         </div>
       </aside>
@@ -149,33 +151,33 @@ const beskrivelse =
   <section class="pb-24 pt-2 sm:pt-4">
     <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
       <div class="mb-10 max-w-2xl">
-        <p class="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Arkitektur</p>
-        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Tre kategorier: bare CSS, ramme og frittstående</h2>
+        <p class="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Architecture</p>
+        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Three categories: CSS only, frame and standalone</h2>
       </div>
       <div class="grid gap-5 lg:grid-cols-3">
         <article class="group min-w-0 rounded-3xl border border-zinc-800 bg-zinc-900/86 p-8 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.88)] transition hover:-translate-y-1 hover:border-blue-400/70 hover:shadow-[0_30px_80px_-42px_rgba(96,165,250,0.3)]">
           <div class="mb-4 text-4xl">🎨</div>
           <h3 class="mb-3 text-xl font-bold">css</h3>
           <p class="text-sm leading-7 text-zinc-300">
-            En klasse på et vanlig HTML-element. Ingen JavaScript lastes. Varianter styres med dataattributter.
+            A class on a plain HTML element. No JavaScript is loaded. Variants are set with data attributes.
           </p>
-          <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;button class="fs-button"&gt;</code>
+          <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;button class="lt-button"&gt;</code>
         </article>
         <article class="group min-w-0 rounded-3xl border border-zinc-800 bg-zinc-900/86 p-8 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.88)] transition hover:-translate-y-1 hover:border-sky-400/70 hover:shadow-[0_30px_80px_-42px_rgba(56,189,248,0.3)]">
           <div class="mb-4 text-4xl">⚡</div>
-          <h3 class="mb-3 text-xl font-bold">ramme</h3>
+          <h3 class="mb-3 text-xl font-bold">frame</h3>
           <p class="text-sm leading-7 text-zinc-300">
-            Du skriver HTML-en. Komponenten fyller inn koblingen der den mangler, fester tastatur og fokus, og lar elementene bli liggende i vanlig DOM.
+            You write the HTML. The component fills in the wiring where it is missing, adds keyboard handling and focus, and leaves the elements in the plain DOM.
           </p>
-          <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;fs-field&gt;…&lt;/fs-field&gt;</code>
+          <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;lt-field&gt;…&lt;/lt-field&gt;</code>
         </article>
         <article class="group min-w-0 rounded-3xl border border-zinc-800 bg-zinc-900/86 p-8 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.88)] transition hover:-translate-y-1 hover:border-violet-400/70 hover:shadow-[0_30px_80px_-42px_rgba(167,139,250,0.3)]">
           <div class="mb-4 text-4xl">🔒</div>
-          <h3 class="mb-3 text-xl font-bold">frittstående</h3>
+          <h3 class="mb-3 text-xl font-bold">standalone</h3>
           <p class="text-sm leading-7 text-zinc-300">
-            Komponenten lager alt innholdet selv, fordi det ikke finnes noe for serveren å sende. Som linja som sier fra at forbindelsen er borte: serveren som er borte, kan ikke melde det selv.
+            The component creates all of its content itself, because there is nothing for the server to send. Like the bar that says the connection is gone: a server that is gone cannot report it.
           </p>
-          <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;fs-connection-status&gt;</code>
+          <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;lt-connection-status&gt;</code>
         </article>
       </div>
     </div>
@@ -184,74 +186,74 @@ const beskrivelse =
   <section class="border-t border-zinc-800/80 bg-zinc-900/30 py-24">
     <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
       <div class="mb-10 max-w-2xl">
-        <p class="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Styrker</p>
-        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Fire ting du slipper å løse selv</h2>
+        <p class="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Strengths</p>
+        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Four things you do not have to solve yourself</h2>
       </div>
 
       <div class="grid gap-5 lg:grid-cols-2">
         <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
-          <h3 class="mb-3 text-xl font-bold">Editoren kjenner komponentene</h3>
+          <h3 class="mb-3 text-xl font-bold">The editor knows the components</h3>
           <p class="mb-5 text-sm leading-7 text-zinc-300">
-            Skriver du <code class="text-zinc-200">data-variant="secundary"</code> for hånd, skjer det ingenting: knappen blir stående med standardstilen, og nettleseren sier ikke fra. Skriver du det gjennom funksjonen, får du en feil i editoren før du rekker å lagre.
+            Write <code class="text-zinc-200">data-variant="secundary"</code> by hand and nothing happens: the button keeps the default style, and the browser says nothing. Write it through the function and you get an error in the editor before you can save.
           </p>
           <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>&lt;button
-  &#123;...fs.button(&#123;
+  &#123;...lt.button(&#123;
     variant: "secondary",
   &#125;)&#125;
 &gt;
-  Lagre utkast
+  Save draft
 &lt;/button&gt;</code></pre>
           <p class="mt-5 text-sm leading-7 text-zinc-300">
-            Funksjonen returnerer et vanlig objekt med attributter. Derfor virker det samme kallet i JSX, i en Astro-mal og i ren JavaScript.
+            The function returns a plain object of attributes. That is why the same call works in JSX, in an Astro template and in plain JavaScript.
           </p>
           <p class="mt-5 text-sm leading-7 text-zinc-300">
-            Skriver du HTML uten TypeScript, gjør <a href="/editoren/" class="text-blue-300 underline-offset-4 hover:underline">utvidelsen for VS Code</a> det samme: <code class="text-zinc-200">secundary</code> får en strek, og lyspæra retter til <code class="text-zinc-200">secondary</code>. JetBrains får fullføringen fra pakken selv, fra 0.15.0.
+            If you write HTML without TypeScript, <a href="/the-editor/" class="text-blue-300 underline-offset-4 hover:underline">the VS Code extension</a> does the same: <code class="text-zinc-200">secundary</code> gets a squiggle, and the light bulb corrects it to <code class="text-zinc-200">secondary</code>. JetBrains gets completion from the package itself, from 0.15.0.
           </p>
         </article>
 
         <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
-          <h3 class="mb-3 text-xl font-bold">Din CSS vinner over vår</h3>
+          <h3 class="mb-3 text-xl font-bold">Your CSS beats ours</h3>
           <p class="mb-5 text-sm leading-7 text-zinc-300">
-            All CSS-en vår ligger i et eget cascade layer. Da vinner en helt vanlig regel i din egen CSS over vår, uansett hvor spesifikk vår er, og uten <code class="text-zinc-200">!important</code>. Skal du bare endre form eller størrelse, finnes det en variabel per komponent.
+            All our CSS sits in its own cascade layer. An ordinary rule in your own CSS then beats ours, however specific ours is, and without <code class="text-zinc-200">!important</code>. If you only want to change shape or size, there is a variable per component.
           </p>
           <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>:root &#123;
-  --fs-button-radius: 9999px;
+  --lt-button-radius: 9999px;
 &#125;</code></pre>
           <p class="mt-5 text-sm leading-7 text-zinc-300">
-            Testene åpner en nettleser og kontrollerer at regelen din faktisk vinner, at variabelen slår gjennom, og at en Tailwind-utility slår komponentens egen verdi.
+            The tests open a browser and check that your rule actually wins, that the variable comes through, and that a Tailwind utility beats the component's own value.
           </p>
         </article>
 
         <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
-          <h3 class="mb-3 text-xl font-bold">Fargene holder kontrastkravet</h3>
+          <h3 class="mb-3 text-xl font-bold">The colours meet the contrast requirement</h3>
           <p class="mb-5 text-sm leading-7 text-zinc-300">
-            Hvert fargepar i systemet er regnet ut og kontrollert mot kravet i WCAG, i både lyst og mørkt tema. Oppgir du dine egne merkefarger, regnes familiene deres ut på nytt med <code class="text-zinc-200">buildTheme</code> fra <code class="text-zinc-200">@fristil/designsystem/tema</code>.
+            Every colour pair in the system is computed and checked against the WCAG requirement, in both light and dark themes. If you give your own brand colours, their families are computed afresh with <code class="text-zinc-200">buildTheme</code> from <code class="text-zinc-200">@lo-tek/interfaces/tema</code>.
           </p>
           <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>const tema = buildTheme(&#123;
   accent: "#0062ba",
 &#125;)
 
-// tema.violations er tom
-// når kontrasten holder</code></pre>
+// tema.violations is empty
+// when the contrast holds</code></pre>
           <p class="mt-5 text-sm leading-7 text-zinc-300">
-            Fargene regnes i OKLCH, fordi lyshet i HSL betyr noe ulikt for hver kulør. Merkefargen gir kuløren, mens rollen setter lysheten og hvor mye av metningen som blir med.
+            The colours are computed in OKLCH, because lightness in HSL means something different for each hue. The brand colour gives the hue, while the role sets the lightness and how much of the chroma is kept.
           </p>
           <p class="mt-5 text-sm leading-7 text-zinc-300">
-            Komponentene kjøres gjennom axe i Chromium, Firefox og WebKit. Hver side i denne dokumentasjonen kjøres gjennom axe i begge temaer.
+            The components are run through axe in Chromium, Firefox and WebKit. Every page of this documentation is run through axe in both themes.
           </p>
         </article>
 
         <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
-          <h3 class="mb-3 text-xl font-bold">Kodeagenten slipper å gjette</h3>
+          <h3 class="mb-3 text-xl font-bold">The coding agent does not have to guess</h3>
           <p class="mb-5 text-sm leading-7 text-zinc-300">
-            En agent som ikke kjenner designsystemet, finner opp <code class="text-zinc-200">fs-modal</code>, hardkoder fargene og skriver egen CSS når stilarket mangler. Fristil har en regelbok for agenter per rammeverk, og den følger pakken. Når agenten er ferdig, sier sjekken hva som er galt, med fil og linje.
+            An agent that does not know the design system invents <code class="text-zinc-200">lt-modal</code>, hard-codes the colours and writes its own CSS when the stylesheet is missing. LO-TEK has a rulebook for agents per framework, and it ships with the package. When the agent is done, the check says what is wrong, with file and line.
           </p>
-          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>npx @fristil/designsystem sjekk skjema.html
+          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>npx @lo-tek/interfaces check form.html
 
-skjema.html:3:13: advarsel: Klassen «fs-modal»
-  finnes ikke i Fristil.</code></pre>
+form.html:3:13: warning: The class "lt-modal"
+  does not exist in LO-TEK.</code></pre>
           <p class="mt-5 text-sm leading-7 text-zinc-300">
-            Hele dokumentasjonen finnes også som Markdown, laget av de samme sidene du leser nå, og <a href="/llms.txt" class="text-blue-300 underline-offset-4 hover:underline">llms.txt</a> viser vei. Mer om oppsettet under <a href="/kodeagenter/" class="text-blue-300 underline-offset-4 hover:underline">Kodeagenter</a>.
+            The whole documentation also exists as Markdown, made from the same pages you are reading now, and <a href="/llms.txt" class="text-blue-300 underline-offset-4 hover:underline">llms.txt</a> shows the way. More about the setup under <a href="/coding-agents/" class="text-blue-300 underline-offset-4 hover:underline">Coding agents</a>.
           </p>
         </article>
       </div>
@@ -261,7 +263,7 @@ skjema.html:3:13: advarsel: Klassen «fs-modal»
 
   <footer class="border-t border-zinc-800 bg-zinc-900/90 py-10 text-center text-sm text-zinc-300">
     <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
-      <p>&copy; 2026 August Søberg-Klyver. Fristil er et rammeverksuavhengig designsystem, utgitt under MIT-lisens.</p>
+      <p>&copy; 2026 August Søberg-Klyver. LO-TEK is a framework-independent design system, released under the MIT licence.</p>
       <a class="sobernetics" href="https://sobernetics.no"><Fragment set:html={sobernetics} /></a>
     </div>
   </footer>
@@ -280,12 +282,12 @@ skjema.html:3:13: advarsel: Klassen «fs-modal»
     --sobernetics-accent: #f44851;
     display: inline-block;
     margin-top: 1.25rem;
-    color: var(--fs-color-neutral-text-subtle);
+    color: var(--lt-color-neutral-text-subtle);
   }
 
   .sobernetics:hover,
   .sobernetics:focus-visible {
-    color: var(--fs-color-neutral-text-strong);
+    color: var(--lt-color-neutral-text-strong);
   }
 
   .sobernetics svg {

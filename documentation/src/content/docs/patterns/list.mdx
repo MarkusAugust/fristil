@@ -1,0 +1,118 @@
+---
+title: List with filters
+description: "Search, filters and the four states a list has: loading, results, empty and failed."
+---
+
+import ListDemo from "../../../components/ListDemo.astro"
+
+A list is not one thing. It is four states, and the three other than "here is the result" are the ones that get forgotten.
+
+Try searching for something that does not exist, and press "Reload the list" a few times. Every third load fails on purpose:
+
+<ListDemo />
+
+## The four states
+
+| State | What the user should see |
+| --- | --- |
+| Loading | Placeholders in the shape the content will take, and a message in a `role="status"` element |
+| Results | The result. The count is announced, and does not need to be visible |
+| Empty | Why it is empty, and a way forward |
+| Failed | What went wrong, and a way to try again |
+
+The empty state is the most important one to write well. "No matches" on its own leaves the user with nothing to do. Say what was searched for, and give a button that resets.
+
+## Announcing the number of matches
+
+```html
+<p class="lt-sr-only" role="status" id="matches"></p>
+```
+
+Someone looking at the screen sees that the list changed. Someone listening to the page does not, unless you tell them. Write the count into an element with `role="status"`, and it is announced without interrupting.
+
+Wait a little before searching while the user types. The demo waits 300 milliseconds. Without the pause, the number of matches is announced on every keystroke.
+
+## Filters
+
+The filters are buttons with `aria-pressed`, collected in a group with a label:
+
+```html
+<div role="group" aria-labelledby="filters">
+  <h3 class="lt-heading" data-size="xs" id="filters">Status</h3>
+
+  <button class="lt-tag" data-selectable aria-pressed="true" type="button">Approved</button>
+  <button class="lt-tag" data-selectable aria-pressed="false" type="button">Rejected</button>
+</div>
+```
+
+`aria-pressed` is what makes the screen reader say "selected". Colour alone says nothing. See [Tag](../../components/tag/).
+
+## The table
+
+A table with more than two columns becomes wider than a phone. Put it in its scroll container, and give the region a name:
+
+```html
+<div class="lt-table-scroll" tabindex="0" role="region" aria-label="Cases">
+  <table class="lt-table" data-variant="striped">…</table>
+</div>
+```
+
+`tabindex="0"` is not optional. Without it, nobody navigating by keyboard reaches the columns beyond the edge.
+
+### Sorting
+
+The "Case number" and "Sent" columns in the demo can be sorted. The button in the header and the arrow are [LO-TEK's](../../components/table/#sortable-columns), while the order is the demo's: it keeps track of the column and direction, and writes `aria-sort` on one header. A click fetches nothing again, but the table is redrawn, so the demo puts focus back on the button.
+
+### The row below the table
+
+The number of matches, how many are shown per page and the pages often sit in one row below the table. The row is layout, and the layout is yours:
+
+```html
+<div class="table-footer">
+  <p class="lt-paragraph">Showing 1 to 10 of 137</p>
+  <div class="table-footer__count">
+    <label class="lt-label" for="per-page">Per page</label>
+    <select class="lt-select" id="per-page"><option>10</option><option>50</option></select>
+  </div>
+  <nav aria-label="Pages"><ul class="lt-pagination">…</ul></nav>
+</div>
+```
+
+```css
+.table-footer,
+.table-footer__count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lt-spacing-2) var(--lt-spacing-6);
+}
+
+.table-footer__count {
+  --lt-select-width: auto;
+  gap: var(--lt-spacing-2);
+}
+```
+
+`--lt-select-width: auto` makes the select as wide as its content. `.lt-label` is a block, and the row around it puts it next to the field.
+
+If the content per row is more than a few fields, [cards](../../components/card/) in a [list](../../components/list/) are often better than a table on a small screen.
+
+## Failed, not empty
+
+The two are different, and should look different. An empty list is an answer. A failed list is no answer, and needs `role="alert"`. The way forward, the button that tries again, belongs outside the results area, so it is there whatever the state:
+
+```html
+<div class="lt-alert" data-color="danger" role="alert">
+  <p class="lt-alert__title">Could not fetch the cases</p>
+  <p>The network did not respond. Try again.</p>
+</div>
+```
+
+Never leave the placeholders in place when something fails. The user then waits for something that is not coming.
+
+## What the system does not do
+
+- **Fetching data, and how long you wait before showing placeholders.** Below roughly 300 milliseconds it is better to show nothing than a flash of grey.
+- **Paging or "show more".** [Pagination](../../components/pagination/) gives the appearance; which page you are on belongs in the URL.
+- **The sorting itself.** LO-TEK draws the button and the arrow from `aria-sort`. Which column is sorted, and the order of the rows, are up to the app.
+- **What a reasonable default sort is.** That depends on what the list is.

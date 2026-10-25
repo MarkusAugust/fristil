@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const TAG_CLASS = "fs-tag" as const
+export const TAG_CLASS = "lt-tag" as const
 
 export const tagVariants = ["outline", "filled"] as const
 
@@ -8,9 +8,9 @@ export type TagVariant = (typeof tagVariants)[number]
 export type NonDefaultTagVariant = Exclude<TagVariant, "outline">
 
 export type TagOptions = {
-  /** Omriss eller dempet flate. Standard: `outline`. */
+  /** Outline or muted surface. Default: `outline`. */
   variant?: TagVariant
-  /** Merkelappen kan slås av og på. Bruk bare på en `<button>`. */
+  /** The tag can be toggled on and off. Use only on a `<button>`. */
   selectable?: boolean
 }
 
@@ -21,18 +21,18 @@ export type TagAttributes = {
 }
 
 /**
- * Attributtene for en merkelapp.
+ * The attributes for a tag.
  *
- * En merkelapp merker innhold: emneord på en artikkel, valgte filtre over en
- * liste. Sier den hvilken tilstand noe er i, er [Badge](../badge/badge.js)
- * riktig i stedet.
+ * A tag labels content: keywords on an article, selected filters above a
+ * list. If it says what state something is in, [Badge](../badge/badge.js)
+ * is right instead.
  *
- * `selectable` gir hover og fokusmarkering, men gjør ingenting trykkbart.
- * Elementet må være en `<button>`, og du setter `aria-pressed` selv, siden
- * bare du vet om lappen er valgt.
+ * `selectable` gives hover and a focus ring, but makes nothing pressable.
+ * The element must be a `<button>`, and you set `aria-pressed` yourself,
+ * since only you know whether the tag is selected.
  *
  * ```ts
- * <button {...tag({ selectable: true })} aria-pressed="true">Bostøtte</button>
+ * <button {...tag({ selectable: true })} aria-pressed="true">Housing benefit</button>
  * ```
  */
 export const tag = Object.assign(

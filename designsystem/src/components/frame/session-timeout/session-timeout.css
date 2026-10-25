@@ -1,0 +1,50 @@
+@import "../../css/button/button.css";
+/* The announcement is in the markup with `lt-sr-only`, and must be hidden
+   without the consumer loading anything more. */
+@import "../../css/sr-only/sr-only.css";
+
+@layer lotek {
+  /* Both the element and the class. `lt.sessionTimeout()` outputs
+     `lt-session-timeout`, and a class a builder function advertises must do
+     something. Only the element selector was here, so the class was dead. */
+  lt-session-timeout,
+  .lt-session-timeout {
+    display: contents;
+  }
+
+  .lt-session-timeout__dialog {
+    max-inline-size: var(--lt-session-timeout-width, 26rem);
+    padding: var(--lt-session-timeout-padding, var(--lt-spacing-5));
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-neutral-canvas);
+    border: 1px solid var(--lt-color-neutral-border-subtle);
+    border-radius: var(--lt-session-timeout-radius, var(--lt-spacing-1));
+    box-shadow: var(--lt-shadow-overlay);
+  }
+
+  .lt-session-timeout__dialog::backdrop {
+    background: var(--lt-color-overlay);
+  }
+
+  .lt-session-timeout__title {
+    margin: 0 0 var(--lt-spacing-2);
+    font-size: var(--lt-font-size-l);
+    line-height: 1.3;
+  }
+
+  .lt-session-timeout__text {
+    margin: 0 0 var(--lt-spacing-4);
+    line-height: var(--lt-line-height-default);
+  }
+
+  .lt-session-timeout__count {
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--lt-font-weight-semibold);
+  }
+
+  .lt-session-timeout__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lt-spacing-2);
+  }
+}

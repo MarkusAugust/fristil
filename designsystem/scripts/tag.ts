@@ -1,194 +1,210 @@
 /**
- * Setter og dytter taggen som gir ut en versjon.
+ * Sets and pushes the tag that releases a version.
  *
- * Taggen er det siste steget i en utgivelse, etter `bun run prepare-version`
- * og etter at versjonen er slått sammen til master. Den starter
- * arbeidsflyten som gir ut, og den skal settes med én gang: dokumentasjonen
- * rulles ut når master endrer seg, og peker da på en versjon som ikke finnes
- * før taggen har kjørt.
+ * The tag is the last step of a release, after `bun run prepare-version` and
+ * after the version has been merged to master. It starts the workflow that
+ * releases, and it should be set straight away: the documentation is
+ * deployed when master changes, and then points at a version that does not
+ * exist until the tag has run.
  *
- *   bun run tag                  viser hva som er tagget, og gjør ingenting
- *   bun run tag pakke            v<versjon>: npm og GitHub Releases
- *   bun run tag utvidelse        utvidelse-v<versjon>: VS Code Marketplace
- *   bun run tag intellij         intellij-v<versjon>: JetBrains Marketplace
- *   bun run tag pakke utvidelse  flere på én gang
- *   --prøv                        sier hva som ville skjedd, uten å tagge
+ *   bun run tag                     shows what is tagged, and does nothing
+ *   bun run tag package             v<version>: npm and GitHub Releases
+ *   bun run tag extension           extension-v<version>: VS Code Marketplace
+ *   bun run tag intellij            intellij-v<version>: JetBrains Marketplace
+ *   bun run tag package extension   several at once
+ *   --dry-run                        says what would happen, without tagging
  *
- * Skriptet nekter når master ikke er hentet, når arbeidstreet har endringer,
- * når taggen finnes fra før, og når versjonen mangler i versjonsloggen. Uten
- * argumenter tagger det ingenting: hva som skal ut, velges hver gang.
+ * The script refuses when master has not been fetched, when the working tree
+ * has changes, when the tag already exists, and when the version is missing
+ * from the changelog. Without arguments it tags nothing: what goes out is
+ * chosen every time.
  *
- * Feilet pushen etter at taggen ble satt, står taggen igjen lokalt. Står den
- * på samme commit, pusher skriptet den neste gang i stedet for å sette den
- * på nytt.
+ * If the push failed after the tag was set, the tag is left locally. If it is
+ * on the same commit, the script pushes it next time instead of setting it
+ * again.
  */
 
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-const ROT = fileURLToPath(new URL("../../", import.meta.url))
+const ROOT = fileURLToPath(new URL("../../", import.meta.url))
 
-type Del = {
-  /** Navnet i kommandoen. */
-  navn: string
-  /** Hva taggen gir ut. */
-  gir: string
-  prefiks: string
-  versjon: () => string
-  /** Versjonsloggen versjonen skal stå i, om delen har en. */
-  logg?: { sti: string; overskrift: (versjon: string) => RegExp }
+type Part = {
+  /** The name in the command. */
+  name: string
+  /** What the tag releases. */
+  releases: string
+  prefix: string
+  /**
+   * Prefixes the same part was tagged with before. A version tagged with one
+   * of them counts as released, so it is not released a second time under
+   * the new prefix.
+   */
+  formerPrefixes?: string[]
+  version: () => string
+  /** The changelog the version must be in, if the part has one. */
+  changelog?: { path: string; heading: (version: string) => RegExp }
 }
 
-const lesJson = (sti: string) =>
-  JSON.parse(readFileSync(join(ROT, sti), "utf8")) as { version: string }
+const readJson = (path: string) =>
+  JSON.parse(readFileSync(join(ROOT, path), "utf8")) as { version: string }
 
-const DELER: Del[] = [
+const PARTS: Part[] = [
   {
-    navn: "pakke",
-    gir: "@fristil/designsystem på npm, og kommandolinja på GitHub Releases",
-    prefiks: "v",
-    versjon: () => lesJson("designsystem/package.json").version,
-    logg: {
-      sti: "designsystem/CHANGELOG.md",
-      overskrift: (v) => new RegExp(`^## ${v.replaceAll(".", "\\.")} \\(`, "m"),
+    name: "package",
+    releases: "@lo-tek/interfaces on npm, and the CLI on GitHub Releases",
+    prefix: "v",
+    version: () => readJson("designsystem/package.json").version,
+    changelog: {
+      path: "designsystem/CHANGELOG.md",
+      heading: (v) => new RegExp(`^## ${v.replaceAll(".", "\\.")} \\(`, "m"),
     },
   },
   {
-    navn: "utvidelse",
-    gir: "VS Code-utvidelsen på Marketplace",
-    prefiks: "utvidelse-v",
-    versjon: () => lesJson("editor/package.json").version,
-    logg: {
-      sti: "editor/CHANGELOG.md",
-      overskrift: (v) => new RegExp(`^## ${v.replaceAll(".", "\\.")}$`, "m"),
+    name: "extension",
+    releases: "the VS Code extension on Marketplace",
+    prefix: "extension-v",
+    formerPrefixes: ["utvidelse-v"],
+    version: () => readJson("editor/package.json").version,
+    changelog: {
+      path: "editor/CHANGELOG.md",
+      heading: (v) => new RegExp(`^## ${v.replaceAll(".", "\\.")}$`, "m"),
     },
   },
   {
-    navn: "intellij",
-    gir: "IntelliJ-pluginen på JetBrains Marketplace",
-    prefiks: "intellij-v",
-    versjon: () => {
-      const treff = /^pluginVersion=(.+)$/m.exec(
-        readFileSync(join(ROT, "editor-intellij/gradle.properties"), "utf8"),
+    name: "intellij",
+    releases: "the IntelliJ plugin on JetBrains Marketplace",
+    prefix: "intellij-v",
+    version: () => {
+      const match = /^pluginVersion=(.+)$/m.exec(
+        readFileSync(join(ROOT, "editor-intellij/gradle.properties"), "utf8"),
       )
-      if (!treff)
-        stopp("Fant ikke pluginVersion i editor-intellij/gradle.properties.")
-      return treff[1].trim()
+      if (!match)
+        stop("Found no pluginVersion in editor-intellij/gradle.properties.")
+      return match[1].trim()
     },
   },
 ]
 
-function stopp(melding: string): never {
-  console.error(`✗ ${melding}`)
+function stop(message: string): never {
+  console.error(`✗ ${message}`)
   process.exit(1)
 }
 
-function git(...argumenter: string[]): string {
-  const svar = Bun.spawnSync(["git", ...argumenter], { cwd: ROT })
-  if (svar.exitCode !== 0)
-    stopp(`git ${argumenter.join(" ")} feilet:\n${svar.stderr.toString()}`)
-  return svar.stdout.toString().trim()
+function git(...args: string[]): string {
+  const result = Bun.spawnSync(["git", ...args], { cwd: ROOT })
+  if (result.exitCode !== 0)
+    stop(`git ${args.join(" ")} failed:\n${result.stderr.toString()}`)
+  return result.stdout.toString().trim()
 }
 
-/** Commiten en lokal tagg peker på, eller `undefined` om den ikke finnes. */
-function lokalTagg(tagg: string): string | undefined {
-  const svar = Bun.spawnSync(
-    ["git", "rev-parse", "--quiet", "--verify", `refs/tags/${tagg}^{commit}`],
-    { cwd: ROT },
+/** The commit a local tag points at, or `undefined` if it does not exist. */
+function localTag(tag: string): string | undefined {
+  const result = Bun.spawnSync(
+    ["git", "rev-parse", "--quiet", "--verify", `refs/tags/${tag}^{commit}`],
+    { cwd: ROOT },
   )
-  return svar.exitCode === 0 ? svar.stdout.toString().trim() : undefined
+  return result.exitCode === 0 ? result.stdout.toString().trim() : undefined
 }
 
-const argumenter = process.argv.slice(2)
-const prøv = argumenter.includes("--prøv")
-const valgt = argumenter.filter((a) => a !== "--prøv")
-const ukjent = valgt.filter((a) => !DELER.some((d) => d.navn === a))
-if (ukjent.length > 0)
-  stopp(
-    `Ukjent del: ${ukjent.join(", ")}. Velg blant ${DELER.map((d) => d.navn).join(", ")}.`,
+const args = process.argv.slice(2)
+const dryRun = args.includes("--dry-run")
+const chosen = args.filter((a) => a !== "--dry-run")
+const unknown = chosen.filter((a) => !PARTS.some((p) => p.name === a))
+if (unknown.length > 0)
+  stop(
+    `Unknown part: ${unknown.join(", ")}. Choose from ${PARTS.map((p) => p.name).join(", ")}.`,
   )
 
 git("fetch", "--quiet", "--tags", "origin", "master")
-const eksisterende = new Set(
+const existing = new Set(
   git("ls-remote", "--tags", "origin")
     .split("\n")
-    .map((linje) => linje.split("refs/tags/")[1])
+    .map((line) => line.split("refs/tags/")[1])
     .filter(Boolean),
 )
 
-const status = DELER.map((d) => {
-  const versjon = d.versjon()
-  const tagg = `${d.prefiks}${versjon}`
-  return { del: d, versjon, tagg, finnes: eksisterende.has(tagg) }
+const status = PARTS.map((part) => {
+  const version = part.version()
+  const tag = `${part.prefix}${version}`
+  // The tag on GitHub, under the current prefix or a former one.
+  const taggedAs = [part.prefix, ...(part.formerPrefixes ?? [])]
+    .map((prefix) => `${prefix}${version}`)
+    .find((name) => existing.has(name))
+  return { part, version, tag, taggedAs }
 })
 
-if (valgt.length === 0) {
-  console.log("Versjonene på denne commiten, og om de er tagget:\n")
-  for (const { del, tagg, finnes } of status)
+if (chosen.length === 0) {
+  console.log("The versions on this commit, and whether they are tagged:\n")
+  for (const { part, tag, taggedAs } of status)
     console.log(
-      `  ${del.navn.padEnd(10)} ${tagg.padEnd(22)} ${finnes ? "tagget" : "ikke tagget"}`,
+      `  ${part.name.padEnd(10)} ${tag.padEnd(22)} ${taggedAs === undefined ? "not tagged" : taggedAs === tag ? "tagged" : `tagged as ${taggedAs}`}`,
     )
   console.log(
-    "\nVelg hva som skal ut, for eksempel: bun run tag pakke utvidelse",
+    "\nChoose what goes out, for example: bun run tag package extension",
   )
   process.exit(0)
 }
 
-// Taggen skal på master slik den er på GitHub, ikke på en lokal commit.
-const her = git("rev-parse", "HEAD")
+// The tag goes on master as it is on GitHub, not on a local commit.
+const here = git("rev-parse", "HEAD")
 const master = git("rev-parse", "origin/master")
-if (her !== master)
-  stopp(
-    `Du står på ${her.slice(0, 7)}, og master på GitHub er ${master.slice(0, 7)}.\n  Slå sammen versjonen først, og kjør: git checkout master && git pull`,
+if (here !== master)
+  stop(
+    `You are on ${here.slice(0, 7)}, and master on GitHub is ${master.slice(0, 7)}.\n  Merge the version first, and run: git checkout master && git pull`,
   )
 if (git("status", "--porcelain") !== "")
-  stopp("Arbeidstreet har endringer. Commit eller fjern dem før du tagger.")
+  stop("The working tree has changes. Commit or remove them before tagging.")
 
-const skal = status.filter((s) => valgt.includes(s.del.navn))
-for (const { del, versjon, tagg, finnes } of skal) {
-  if (finnes)
-    stopp(
-      `${tagg} finnes fra før. En versjon gis bare ut én gang: sett en ny versjon for ${del.navn}.`,
+const selected = status.filter((s) => chosen.includes(s.part.name))
+for (const { part, version, tag, taggedAs } of selected) {
+  if (taggedAs !== undefined)
+    stop(
+      `${taggedAs} already exists. A version is released only once: set a new version for ${part.name}.`,
     )
-  const lokal = lokalTagg(tagg)
-  if (lokal !== undefined && lokal !== her)
-    stopp(
-      `${tagg} finnes lokalt på ${lokal.slice(0, 7)}, men ikke på GitHub. Fjern den med git tag -d ${tagg} og kjør på nytt.`,
+  const local = localTag(tag)
+  if (local !== undefined && local !== here)
+    stop(
+      `${tag} exists locally on ${local.slice(0, 7)}, but not on GitHub. Remove it with git tag -d ${tag} and run again.`,
     )
-  if (del.logg) {
-    const logg = readFileSync(join(ROT, del.logg.sti), "utf8")
-    if (!del.logg.overskrift(versjon).test(logg))
-      stopp(
-        `${del.logg.sti} har ingen overskrift for ${versjon}. ${del.navn === "pakke" ? "Kjør bun run prepare-version først." : "Skriv den før du tagger."}`,
+  if (part.changelog) {
+    const changelog = readFileSync(join(ROOT, part.changelog.path), "utf8")
+    if (!part.changelog.heading(version).test(changelog))
+      stop(
+        `${part.changelog.path} has no heading for ${version}. ${part.name === "package" ? "Run bun run prepare-version first." : "Write it before tagging."}`,
       )
   }
 }
 
-for (const { del, tagg } of skal) {
-  if (prøv) {
-    console.log(`Ville tagget ${tagg} på ${her.slice(0, 7)}: ${del.gir}.`)
+for (const { part, tag } of selected) {
+  if (dryRun) {
+    console.log(`Would tag ${tag} on ${here.slice(0, 7)}: ${part.releases}.`)
     continue
   }
-  // Med `tag.gpgsign` blir taggen signert og må ha en melding. Uten `-m`
-  // åpner git en editor, og den finnes ikke når skriptet kjører.
-  if (lokalTagg(tagg) === undefined)
-    git("tag", "-m", `Gir ut ${tagg}`, tagg, her)
-  git("push", "--quiet", "origin", tagg)
-  console.log(`Tagget ${tagg} på ${her.slice(0, 7)}. Gir ut ${del.gir}.`)
-}
-if (!prøv)
+  // With `tag.gpgsign` the tag is signed and must have a message. Without
+  // `-m` git opens an editor, and there is none when the script runs.
+  if (localTag(tag) === undefined) git("tag", "-m", `Release ${tag}`, tag, here)
+  git("push", "--quiet", "origin", tag)
   console.log(
-    "\nFølg med under Actions på GitHub. Arbeidsflytene kontrollerer selv at taggen og versjonen stemmer.",
+    `Tagged ${tag} on ${here.slice(0, 7)}. Releasing ${part.releases}.`,
+  )
+}
+if (!dryRun)
+  console.log(
+    "\nFollow along under Actions on GitHub. The workflows check for themselves that the tag and the version agree.",
   )
 
 /*
- * De andre delene står med en versjon som ikke er tagget? Dokumentasjonen
- * beskriver det den nyeste versjonen av hver gjør, så en utgivelse som bare
- * tagger pakken, lar Editoren-siden love noe Marketplace ikke har.
+ * The other parts have a version that is not tagged? The documentation
+ * describes what the latest version of each does, so a release that only
+ * tags the package lets the Editor page promise something Marketplace does
+ * not have.
  */
-const glemt = status.filter((s) => !s.finnes && !skal.includes(s))
-if (glemt.length > 0)
+const forgotten = status.filter(
+  (s) => s.taggedAs === undefined && !selected.includes(s),
+)
+if (forgotten.length > 0)
   console.log(
-    `\nIkke tagget ennå: ${glemt.map((s) => `${s.tagg} (bun run tag ${s.del.navn})`).join(", ")}. Står versjonen på master, skal taggen settes nå.`,
+    `\nNot tagged yet: ${forgotten.map((s) => `${s.tag} (bun run tag ${s.part.name})`).join(", ")}. If the version is on master, the tag should be set now.`,
   )

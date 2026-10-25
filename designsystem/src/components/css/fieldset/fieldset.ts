@@ -9,13 +9,13 @@ import {
   requiredMarkers,
 } from "../shared.js"
 
-export const FIELDSET_CLASS = "fs-fieldset" as const
-export const LEGEND_CLASS = "fs-legend" as const
+export const FIELDSET_CLASS = "lt-fieldset" as const
+export const LEGEND_CLASS = "lt-legend" as const
 
 export type FieldsetOptions = {
-  /** Valideringstilstand for hele gruppen. Standard: `default`. */
+  /** Validation state for the whole group. Default: `default`. */
   state?: FieldState
-  /** Slår av alle kontrollene i gruppen. */
+  /** Disables all the controls in the group. */
   disabled?: boolean
 }
 
@@ -26,11 +26,11 @@ export type FieldsetAttributes = {
 }
 
 export type LegendOptions = {
-  /** Marker gruppen som påkrevd, med stjerne eller med ordet «(påkrevd)». */
+  /** Marks the group as required, with an asterisk or with the word "(required)". */
   required?: RequiredMarker
-  /** Marker gruppen som valgfri. Velg én av `required` og `optional`. */
+  /** Marks the group as optional. Choose one of `required` and `optional`. */
   optional?: boolean
-  /** Demper teksten når gruppen er slått av. */
+  /** Mutes the text when the group is disabled. */
   disabled?: boolean
 }
 
@@ -42,15 +42,15 @@ export type LegendAttributes = {
 }
 
 /**
- * Attributtene for en gruppe med kontroller som hører sammen.
+ * The attributes for a group of controls that belong together.
  *
- * `<fieldset>` med `<legend>` er den ene måten å gi et sett radioknapper eller
- * avkryssingsbokser en felles ledetekst som skjermlesere faktisk leser opp
- * før hvert valg.
+ * `<fieldset>` with `<legend>` is the one way to give a set of radio buttons
+ * or checkboxes a shared label that screen readers actually announce before
+ * each choice.
  *
  * ```ts
  * <fieldset {...fieldset({ state: "invalid" })}>
- *   <legend {...legend({ required: "symbol" })}>Leveringsmåte</legend>
+ *   <legend {...legend({ required: "symbol" })}>Delivery method</legend>
  * </fieldset>
  * ```
  */
@@ -68,9 +68,9 @@ export const fieldset = Object.assign(
 )
 
 /**
- * Attributtene for ledeteksten på en gruppe.
+ * The attributes for the label of a group.
  *
- * Samme markering som `label()`, men på et `<legend>`.
+ * The same marker as `label()`, but on a `<legend>`.
  */
 export const legend = Object.assign(
   ({ required, optional, disabled }: LegendOptions = {}): LegendAttributes =>

@@ -1,27 +1,28 @@
 /**
- * VS Code-utvidelsen: språkserveren for funnene og rettelsene, og
- * fullføring og forklaring oppå.
+ * The VS Code extension: the language server for the findings and fixes, and
+ * completion and hover on top.
  *
- * Funnene og hurtigrettelsene kommer fra språkserveren, `fristil lsp`, den
- * samme som Neovim og Helix bruker, skrevet i Rust og kjørt som
- * WASI-modul (se `server.ts`). Den leser manifestet prosjektet faktisk har,
- * også med komponenter tatt over med `fristil overta`. Her er resten:
+ * The findings and quick fixes come from the language server, `lotek lsp`,
+ * the same one Neovim and Helix use, written in Rust and run as a WASI module
+ * (see `server.ts`). It reads the manifest the project actually has, also
+ * with components taken over with `lotek takeover`. Here is the rest:
  *
- *   - inne i `class="…"` fullføres `fs-`-klassene, og inne i et attributt en
- *     klasse tar, som `data-variant` på `fs-button`, fullføres verdiene.
- *     I andre språk enn HTML, der VS Codes egen HTML-tjeneste ikke er med,
- *     fullføres også `<fs-…>`-elementene, attributtene og verdiene deres;
- *   - musa over en `fs-`-klasse i et `class`-attributt gir komponenten,
- *     beskrivelsen og lenken.
+ *   - inside `class="…"` the `lt-` classes are completed, and inside an
+ *     attribute a class takes, like `data-variant` on `lt-button`, the values
+ *     are. In languages other than HTML, where VS Code's own HTML service is
+ *     not present, the `<lt-…>` elements, their attributes and their values
+ *     are completed too;
+ *   - hovering over an `lt-` class in a `class` attribute gives the
+ *     component, the description and the link.
  *
- * Taggen markøren står i leses fra et vindu bakover, ikke fra hele
- * dokumentet: fullføringen utløses på mellomrom og bindestrek, og en stor
- * fil skal ikke kopieres for hvert tastetrykk.
+ * The tag the cursor is in is read from a window backwards, not from the
+ * whole document: completion is triggered on space and hyphen, and a large
+ * file should not be copied on every keystroke.
  */
 
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import type { Manifest } from "@fristil/designsystem/diagnostics"
+import type { Manifest } from "@lo-tek/interfaces/diagnostics"
 import * as vscode from "vscode"
 import {
   LanguageClient,
@@ -30,12 +31,12 @@ import {
   TransportKind,
 } from "vscode-languageclient/node"
 
-/** Så langt bakover det leses etter taggen markøren står i. En tagg er kortere. */
+/** How far back to read for the tag the cursor is in. A tag is shorter. */
 const WINDOW = 4000
 
 /**
- * Der taggen som begynner før `from` slutter, eller -1 når den ikke er lukket.
- * `>` i en verdi i anførselstegn, og i `<?…?>` og `<%…%>`, avslutter den ikke.
+ * Where the tag that begins before `from` ends, or -1 when it is not closed.
+ * `>` in a quoted value, and in `<?…?>` and `<%…%>`, does not end it.
  */
 function tagEnd(text: string, from: number): number {
   let quote: string | null = null
@@ -56,13 +57,13 @@ function tagEnd(text: string, from: number): number {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  // Ordforrådet for fullføringen og forklaringen er manifestet utvidelsen er
-  // bygget fra, som bygget legger i `dist/manifest/`. Språkserveren sjekker
-  // derimot mot prosjektets manifest når det har et, og mot dette bare som
-  // reserve. Har prosjektet en eldre pakke installert, kan fullføringen
-  // derfor foreslå en klasse serveren streker under, og en komponent tatt
-  // over med `fristil overta` foreslås ikke. Fullføring fra serveren står
-  // på veikartet.
+  // The vocabulary for completion and hover is the manifest the extension was
+  // built from, which the build puts in `dist/manifest/`. The language server,
+  // on the other hand, checks against the project's manifest when it has one,
+  // and against this one only as a fallback. If the project has an older
+  // package installed, completion can therefore suggest a class the server
+  // underlines, and a component taken over with `lotek takeover` is not
+  // suggested. Completion from the server is on the roadmap.
   const { classes, elements }: Manifest = JSON.parse(
     readFileSync(
       join(context.extensionPath, "dist/manifest/manifest.json"),
@@ -73,13 +74,13 @@ export function activate(context: vscode.ExtensionContext) {
   const elementNames = Object.keys(elements)
 
   const languages = () =>
-    vscode.workspace.getConfiguration("fristil").get<string[]>("languages") ?? [
+    vscode.workspace.getConfiguration("lotek").get<string[]>("languages") ?? [
       "html",
     ]
   const selector = (): vscode.DocumentSelector =>
     languages().map((language) => ({ language }))
 
-  /* Språkserveren */
+  /* The language server */
 
   let client: LanguageClient | undefined
   const serverOptions: ServerOptions = {
@@ -87,22 +88,22 @@ export function activate(context: vscode.ExtensionContext) {
       .fsPath,
     transport: TransportKind.stdio,
   }
-  // Et nytt bygg eller en oppgradering av pakken endrer manifestet. Én
-  // overvåker for hele levetiden, ikke én per omstart.
+  // A new build or an upgrade of the package changes the manifest. One
+  // watcher for the whole lifetime, not one per restart.
   const manifests = vscode.workspace.createFileSystemWatcher(
-    "**/{build/fristil/manifest.json,node_modules/@fristil/designsystem/manifest/manifest.json}",
+    "**/{build/lotek/manifest.json,node_modules/@lo-tek/interfaces/manifest/manifest.json}",
   )
   context.subscriptions.push(manifests)
 
   /*
-   * Omstartene står i kø. To endringer av språklista rett etter hverandre
-   * ventet ellers begge på den samme gamle klienten, og startet hver sin
-   * server: funnene kom to ganger, og den ene serveren ble aldri stoppet.
+   * The restarts are queued. Otherwise two changes to the language list in
+   * quick succession both waited for the same old client, and each started
+   * its own server: the findings came twice, and one server was never stopped.
    */
   /*
-   * En klient som ikke klarte å starte, kaster når den stoppes. Da ble alle
-   * senere omstarter stående i `catch`, og funnene kom ikke tilbake før
-   * vinduet ble lastet på nytt.
+   * A client that failed to start throws when it is stopped. Every later
+   * restart then got stuck in `catch`, and the findings did not come back
+   * until the window was reloaded.
    */
   const stopClient = async () => {
     const old = client
@@ -110,7 +111,7 @@ export function activate(context: vscode.ExtensionContext) {
     try {
       await old?.stop()
     } catch {
-      // Den kjørte ikke, og er ikke noe å stoppe.
+      // It was not running, so there is nothing to stop.
     }
   }
   let restarts: Promise<void> = Promise.resolve()
@@ -118,7 +119,7 @@ export function activate(context: vscode.ExtensionContext) {
     restarts = restarts
       .then(async () => {
         await stopClient()
-        client = new LanguageClient("fristil", "Fristil", serverOptions, {
+        client = new LanguageClient("lotek", "LO-TEK", serverOptions, {
           documentSelector: languages().flatMap((language) => [
             { scheme: "file", language },
             { scheme: "untitled", language },
@@ -129,22 +130,22 @@ export function activate(context: vscode.ExtensionContext) {
       })
       .catch((error: unknown) => {
         void vscode.window.showErrorMessage(
-          `Fristil kunne ikke starte språkserveren: ${error instanceof Error ? error.message : String(error)}`,
+          `LO-TEK could not start the language server: ${error instanceof Error ? error.message : String(error)}`,
         )
       })
     return restarts
   }
 
-  /* Taggen markøren står i */
+  /* The tag the cursor is in */
 
   type Tag = {
-    /** Fra `<` til markøren. */
+    /** From `<` to the cursor. */
     before: string
-    /** Fra markøren til `>`, tom når taggen ikke er lukket i vinduet. */
+    /** From the cursor to `>`, empty when the tag is not closed within the window. */
     after: string
   }
 
-  /** Anførselstegnet teksten slutter inne i, om noe. */
+  /** The quote the text ends inside, if any. */
   const openQuote = (text: string) => {
     let quote: string | null = null
     for (const char of text) {
@@ -169,20 +170,20 @@ export function activate(context: vscode.ExtensionContext) {
     const start = before.lastIndexOf("<")
     if (start < 0) return undefined
     const head = before.slice(start)
-    // En `>` inne i en verdi, som `x-show="n > 0"`, avslutter ikke taggen.
+    // A `>` inside a value, like `x-show="n > 0"`, does not end the tag.
     if (tagEnd(head, 1) >= 0) return undefined
     const rest = document.getText(
       new vscode.Range(position, document.positionAt(offset + WINDOW)),
     )
-    // Står markøren inne i en verdi, lukkes den først, ellers snur pariteten
-    // og en `"` i en senere tagg leses som en åpning.
+    // If the cursor is inside a value, that value is closed first; otherwise
+    // the parity flips and a `"` in a later tag is read as an opening.
     const quote = openQuote(head)
     const from = quote ? rest.indexOf(quote) : -1
     const end = quote && from < 0 ? -1 : tagEnd(rest, quote ? from + 1 : 0)
     return { before: head, after: end < 0 ? "" : rest.slice(0, end) }
   }
 
-  /** Klassene i taggen, foran og bak markøren. `class` går foran `:class`. */
+  /** The classes in the tag, before and after the cursor. `class` takes precedence over `:class`. */
   const classesIn = (tag: Tag) => {
     const text = tag.before + tag.after
     const hit =
@@ -196,11 +197,11 @@ export function activate(context: vscode.ExtensionContext) {
     )
   }
 
-  /** Om markøren står inne i verdien til `class`. */
+  /** Whether the cursor is inside the value of `class`. */
   const inClassValue = (tag: Tag) =>
     /(?:^|\s):?class\s*=\s*(?:"[^"]*|'[^']*|[^\s"'>]*)$/i.test(tag.before)
 
-  /* Fullføringen */
+  /* Completion */
 
   const markdown = (text: string) => {
     const md = new vscode.MarkdownString(text)
@@ -212,13 +213,13 @@ export function activate(context: vscode.ExtensionContext) {
     const takes = Object.entries(info.attributes)
       .map(([attribute, a]) =>
         a.flag
-          ? `\`${attribute}\`: flagg, virker ved å stå der`
+          ? `\`${attribute}\`: flag, takes effect by being present`
           : `\`${attribute}\`: ${(a.values ?? []).join(", ")}` +
-            (a.default ? ` (${a.default} uten attributt)` : ""),
+            (a.default ? ` (${a.default} without the attribute)` : ""),
       )
       .join("  \n")
     return markdown(
-      `**${info.title}** · ${info.description}\n\n${takes ? `${takes}\n\n` : ""}[Dokumentasjon](${info.link})`,
+      `**${info.title}** · ${info.description}\n\n${takes ? `${takes}\n\n` : ""}[Documentation](${info.link})`,
     )
   }
 
@@ -243,7 +244,7 @@ export function activate(context: vscode.ExtensionContext) {
         items.push(it)
       }
 
-      // Klassene, inne i class="…".
+      // The classes, inside class="…".
       if (inClassValue(tag)) {
         for (const name of classNames)
           item(
@@ -256,12 +257,12 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       const isHtml = document.languageId === "html"
-      const element = /^<(fs-[a-z0-9-]+)(?=[\s/])/i
+      const element = /^<(lt-[a-z0-9-]+)(?=[\s/])/i
         .exec(tag.before)?.[1]
         .toLowerCase()
 
-      // Verdiene til et attributt: det en klasse på taggen tar, eller det et
-      // <fs-…>-element tar utenfor HTML.
+      // The values of an attribute: one a class on the tag takes, or one an
+      // <lt-…> element takes outside HTML.
       const inValue = /([A-Za-z][\w:-]*)\s*=\s*["']?[^"'>]*$/.exec(tag.before)
       if (inValue) {
         const attribute = inValue[1].toLowerCase()
@@ -272,13 +273,13 @@ export function activate(context: vscode.ExtensionContext) {
             item(
               value,
               vscode.CompletionItemKind.EnumMember,
-              `${attribute} på ${classes[name].title}`,
+              `${attribute} on ${classes[name].title}`,
             )
           if (takes.default)
             item(
               takes.default,
               vscode.CompletionItemKind.EnumMember,
-              `standard: det samme som uten ${attribute}`,
+              `default: the same as no ${attribute}`,
             )
         }
         if (!isHtml && element && elements[element]) {
@@ -288,26 +289,26 @@ export function activate(context: vscode.ExtensionContext) {
               item(
                 value,
                 vscode.CompletionItemKind.EnumMember,
-                `${attribute} på <${element}>`,
+                `${attribute} on <${element}>`,
               )
         }
         return items.length ? items : undefined
       }
 
-      // Utenfor HTML finnes ingen HTML-tjeneste, så elementene og attributtene
-      // deres fullføres her.
+      // Outside HTML there is no HTML service, so the elements and their
+      // attributes are completed here.
       if (isHtml) return undefined
-      if (/^<fs-[a-z0-9-]*$/i.test(tag.before)) {
+      if (/^<lt-[a-z0-9-]*$/i.test(tag.before)) {
         for (const name of elementNames)
           item(
             name,
             vscode.CompletionItemKind.Class,
             undefined,
-            markdown(`[Dokumentasjon](${elements[name].link})`),
+            markdown(`[Documentation](${elements[name].link})`),
           )
         return items
       }
-      // Attributtnavn: markøren står i taggen, utenfor anførselstegn.
+      // Attribute names: the cursor is in the tag, outside quotes.
       if (
         element &&
         elements[element] &&
@@ -325,25 +326,25 @@ export function activate(context: vscode.ExtensionContext) {
     },
   }
 
-  /* Forklaringen */
+  /* Hover */
 
   const hover: vscode.HoverProvider = {
     provideHover(document, position) {
       const range = document.getWordRangeAtPosition(
         position,
-        /fs-[A-Za-z0-9_-]+/,
+        /lt-[A-Za-z0-9_-]+/,
       )
       if (!range) return undefined
       const word = document.getText(range)
       if (!classes[word]) return undefined
-      // Bare i et class-attributt: «bruk fs-button her» i løpende tekst er tekst.
+      // Only in a class attribute: "use lt-button here" in running text is text.
       const tag = tagAt(document, range.start)
       if (!tag || !inClassValue(tag)) return undefined
       return new vscode.Hover(classDocumentation(word), range)
     },
   }
 
-  /* Registreringen. Byttes språklista, registreres alt på nytt. */
+  /* Registration. When the language list changes, everything is registered again. */
 
   const providers: vscode.Disposable[] = []
   const register = () => {
@@ -367,7 +368,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration("fristil.languages")) register()
+      if (event.affectsConfiguration("lotek.languages")) register()
     }),
     {
       dispose() {

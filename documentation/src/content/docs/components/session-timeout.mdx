@@ -1,277 +1,277 @@
 ---
 title: Session Timeout
-description: Varsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.
+description: Warns before a logged-in session expires, and counts down. You write the dialog, the component keeps the time.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import SessionTimeoutDemo from "../../../components/SessionTimeoutDemo.astro"
 
-Dette er tingen hver store organisasjon bygger selv, og gjør feil. Enten kommer det ingen advarsel, og brukeren mister et halvutfylt søknadsskjema. Eller dialogen stjeler fokus midt i en setning. Eller skjermleseren leser nedtellingen hvert eneste sekund.
+This is the thing every large organisation builds itself, and gets wrong. Either no warning comes, and the user loses a half-completed application form. Or the dialog steals focus in the middle of a sentence. Or the screen reader reads the countdown every single second.
 
-Du skriver dialogen og teksten selv, på språket appen bruker. Komponenten teller aktivitet, åpner dialogen, fyller inn tallet og leser opp nedtellingen.
+You write the dialog and the text yourself, in the language the app uses. The component tracks activity, opens the dialog, fills in the number and announces the countdown.
 
 ```ts
-// main.ts, kjøres én gang når appen starter
-import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
-import "@fristil/designsystem/tokens.css"
-import "@fristil/designsystem/session-timeout.css"
+// main.ts, runs once when the app starts
+import { defineLtSessionTimeout } from "@lo-tek/interfaces/session-timeout"
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/session-timeout.css"
 
-defineFsSessionTimeout()
+defineLtSessionTimeout()
 ```
 
-## Slik tar du den i bruk
+## How to use it
 <Tabs>
-  <TabItem label="Prøv den">
+  <TabItem label="Try it">
     <SessionTimeoutDemo />
   </TabItem>
-  <TabItem label="Ren HTML">
+  <TabItem label="Plain HTML">
     ```html
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/session-timeout/session-timeout.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`,
+         not `import`: a browser does not resolve a package name. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/components/frame/session-timeout/session-timeout.css">
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/lotek.css -->
     ```
 
     ```html
-    <fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
+    <lt-session-timeout class="lt-session-timeout" warn-at="1500" expires-at="1800"
                         data-ignore-morph>
-      <dialog class="fs-session-timeout__dialog" role="alertdialog" aria-labelledby="okt-tittel">
-        <h2 class="fs-session-timeout__title" id="okt-tittel">Du blir snart logget ut</h2>
-        <p class="fs-session-timeout__text">
-          Vi logger deg ut om <span class="fs-session-timeout__count" aria-hidden="true"></span>
-          for å beskytte opplysningene dine.
+      <dialog class="lt-session-timeout__dialog" role="alertdialog" aria-labelledby="session-title">
+        <h2 class="lt-session-timeout__title" id="session-title">You will soon be logged out</h2>
+        <p class="lt-session-timeout__text">
+          We will log you out in <span class="lt-session-timeout__count" aria-hidden="true"></span>
+          to protect your information.
         </p>
-        <span class="fs-sr-only" role="status"></span>
-        <form method="dialog" class="fs-session-timeout__actions">
-          <button class="fs-button" value="extend">Fortsett å være innlogget</button>
-          <button class="fs-button" data-variant="secondary" value="logout">Logg ut nå</button>
+        <span class="lt-sr-only" role="status"></span>
+        <form method="dialog" class="lt-session-timeout__actions">
+          <button class="lt-button" value="extend">Stay logged in</button>
+          <button class="lt-button" data-variant="secondary" value="logout">Log out now</button>
         </form>
       </dialog>
-    </fs-session-timeout>
+    </lt-session-timeout>
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
-      import { defineFsSessionTimeout } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/session-timeout/fs-session-timeout.js"
+      import { defineLtSessionTimeout } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/components/frame/session-timeout/lt-session-timeout.js"
 
-      defineFsSessionTimeout()
+      defineLtSessionTimeout()
     </script>
 
     <script type="module">
-      const okt = document.querySelector("fs-session-timeout")
+      const session = document.querySelector("lt-session-timeout")
 
-      okt.addEventListener("session-extend", async () => {
-        await fetch("/api/forleng-okt", { method: "POST" })
+      session.addEventListener("session-extend", async () => {
+        await fetch("/api/extend-session", { method: "POST" })
       })
 
-      okt.addEventListener("session-expired", () => {
-        location.href = "/logg-inn?arsak=utlopt"
+      session.addEventListener("session-expired", () => {
+        location.href = "/log-in?reason=expired"
       })
     </script>
     ```
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/fristil.d.ts, gir <fs-session-timeout> typer i JSX
-    import "@fristil/designsystem/react-jsx"
+    // src/lotek.d.ts, gives <lt-session-timeout> types in JSX
+    import "@lo-tek/interfaces/react-jsx"
     ```
 
     ```tsx
-    import "@fristil/designsystem/session-timeout.css"
+    import "@lo-tek/interfaces/session-timeout.css"
     import { useEffect, useId, useRef } from "react"
-    import { fs } from "@fristil/designsystem/react"
-    import { defineFsSessionTimeout } from "@fristil/designsystem/session-timeout"
-    import "@fristil/designsystem/tokens.css"
+    import { lt } from "@lo-tek/interfaces/react"
+    import { defineLtSessionTimeout } from "@lo-tek/interfaces/session-timeout"
+    import "@lo-tek/interfaces/tokens.css"
 
-    defineFsSessionTimeout()
+    defineLtSessionTimeout()
 
-    export function Okt() {
+    export function SessionWarning() {
       const ref = useRef<HTMLElement>(null)
-      const okt = fs.sessionTimeout({ titleId: useId(), warnAt: 1500, expiresAt: 1800 })
+      const session = lt.sessionTimeout({ titleId: useId(), warnAt: 1500, expiresAt: 1800 })
 
       useEffect(() => {
         const element = ref.current
         if (!element) return
 
-        const forleng = () => fetch("/api/forleng-okt", { method: "POST" })
-        const utlopt = () => { location.href = "/logg-inn?arsak=utlopt" }
+        const extend = () => fetch("/api/extend-session", { method: "POST" })
+        const expired = () => { location.href = "/log-in?reason=expired" }
 
-        element.addEventListener("session-extend", forleng)
-        element.addEventListener("session-expired", utlopt)
+        element.addEventListener("session-extend", extend)
+        element.addEventListener("session-expired", expired)
         return () => {
-          element.removeEventListener("session-extend", forleng)
-          element.removeEventListener("session-expired", utlopt)
+          element.removeEventListener("session-extend", extend)
+          element.removeEventListener("session-expired", expired)
         }
       }, [])
 
       return (
-        <fs-session-timeout ref={ref} {...okt.host}>
-          <dialog {...okt.dialog}>
-            <h2 {...okt.title}>Du blir snart logget ut</h2>
-            <p {...okt.text}>
-              Vi logger deg ut om <span {...okt.count} /> for å beskytte opplysningene dine.
+        <lt-session-timeout ref={ref} {...session.host}>
+          <dialog {...session.dialog}>
+            <h2 {...session.title}>You will soon be logged out</h2>
+            <p {...session.text}>
+              We will log you out in <span {...session.count} /> to protect your information.
             </p>
-            <span {...okt.live} />
-            <form {...okt.actions}>
-              <button {...okt.extend}>Fortsett å være innlogget</button>
-              <button {...okt.logout}>Logg ut nå</button>
+            <span {...session.live} />
+            <form {...session.actions}>
+              <button {...session.extend}>Stay logged in</button>
+              <button {...session.logout}>Log out now</button>
             </form>
           </dialog>
-        </fs-session-timeout>
+        </lt-session-timeout>
       )
     }
     ```
 
-    Teksten er vanlig JSX, så den kan komme fra `t()` i i18next eller fra et hvilket som helst annet oppsett. Se [Oversettelse](/oversettelse/).
+    The text is ordinary JSX, so it can come from `t()` in i18next or from any other setup. See [Translation](/translation/).
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <!-- Datastar selv. Uten den gjør `data-`-attributtene under ingenting. -->
+    <!-- Datastar itself. Without it the `data-` attributes below do nothing. -->
     <script type="module"
             src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"></script>
 
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/tokens/tokens.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/src/components/ramme/session-timeout/session-timeout.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/fristil.css -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`,
+         not `import`: a browser does not resolve a package name. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/tokens/tokens.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/src/components/frame/session-timeout/session-timeout.css">
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/lotek.css -->
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
-      import { defineFsSessionTimeout } from
-        "https://cdn.jsdelivr.net/npm/@fristil/designsystem@VERSJON/dist/components/ramme/session-timeout/fs-session-timeout.js"
+      import { defineLtSessionTimeout } from
+        "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSION/dist/components/frame/session-timeout/lt-session-timeout.js"
 
-      defineFsSessionTimeout()
+      defineLtSessionTimeout()
     </script>
 
-    <fs-session-timeout class="fs-session-timeout" warn-at="1500" expires-at="1800"
+    <lt-session-timeout class="lt-session-timeout" warn-at="1500" expires-at="1800"
                         data-ignore-morph
-                        data-on:session-extend="@post('/api/forleng-okt')"
-                        data-on:session-expired="window.location = '/logg-inn?arsak=utlopt'">
-      <dialog class="fs-session-timeout__dialog" role="alertdialog" aria-labelledby="okt-tittel">
-        <h2 class="fs-session-timeout__title" id="okt-tittel">Du blir snart logget ut</h2>
-        <p class="fs-session-timeout__text">
-          Vi logger deg ut om <span class="fs-session-timeout__count" aria-hidden="true"></span>
-          for å beskytte opplysningene dine.
+                        data-on:session-extend="@post('/api/extend-session')"
+                        data-on:session-expired="window.location = '/log-in?reason=expired'">
+      <dialog class="lt-session-timeout__dialog" role="alertdialog" aria-labelledby="session-title">
+        <h2 class="lt-session-timeout__title" id="session-title">You will soon be logged out</h2>
+        <p class="lt-session-timeout__text">
+          We will log you out in <span class="lt-session-timeout__count" aria-hidden="true"></span>
+          to protect your information.
         </p>
-        <span class="fs-sr-only" role="status"></span>
-        <form method="dialog" class="fs-session-timeout__actions">
-          <button class="fs-button" value="extend">Fortsett å være innlogget</button>
-          <button class="fs-button" data-variant="secondary" value="logout">Logg ut nå</button>
+        <span class="lt-sr-only" role="status"></span>
+        <form method="dialog" class="lt-session-timeout__actions">
+          <button class="lt-button" value="extend">Stay logged in</button>
+          <button class="lt-button" data-variant="secondary" value="logout">Log out now</button>
         </form>
       </dialog>
-    </fs-session-timeout>
+    </lt-session-timeout>
     ```
 
-    `data-ignore-morph` ber morfingen la varselet være. Uten den tar morfingen `open` og tallet mens dialogen står i topplaget. Komponenten setter `open` tilbake, og tallet kommer igjen ved neste tikk, men med attributtet står tallet hele tiden.
+    `data-ignore-morph` tells the morph to leave the warning alone. Without it the morph removes `open` and the number while the dialog is in the top layer. The component puts `open` back, and the number returns on the next tick, but with the attribute the number is there all the time.
   </TabItem>
 </Tabs>
 
-## Hvorfor du skriver dialogen selv
+## Why you write the dialog yourself
 
-Teksten i varselet hører til appen. Den skal stå på språket appen bruker, med de ordene appen bruker om innlogging, og komme fra det oversettelsesoppsettet appen alt har. Lå teksten i komponenten, kunne den ikke oversettes i det hele tatt. Se [Oversettelse](/oversettelse/).
+The text in the warning belongs to the app. It should be in the language the app uses, with the words the app uses about logging in, and come from the translation setup the app already has. If the text were in the component, it could not be translated at all. See [Translation](/translation/).
 
-Komponenten finner delene på det som uansett må stå der:
+The component finds the parts by what has to be there anyway:
 
-| Del | Kjennes igjen på |
+| Part | Recognised by |
 | --- | --- |
-| Dialogen | Den første `<dialog>` inne i elementet |
-| Tallet | `.fs-session-timeout__count`. Står tomt, og komponenten fyller det inn |
-| Opplesningen | `[role=status]`. Står tom, og komponenten fyller den inn |
-| Knappene | Knapper i et `<form method="dialog">` |
+| The dialog | The first `<dialog>` inside the element |
+| The number | `.lt-session-timeout__count`. Is empty, and the component fills it in |
+| The announcement | `[role=status]`. Is empty, and the component fills it in |
+| The buttons | Buttons in a `<form method="dialog">` |
 
-Knappene er vanlige knapper. Nettleseren lukker dialogen og setter `returnValue` til knappens `value`, uten skript. `value="logout"` logger ut. Alt annet, Escape og knappen med `value="extend"` medregnet, betyr at brukeren vil fortsette.
+The buttons are ordinary buttons. The browser closes the dialog and sets `returnValue` to the button's `value`, without script. `value="logout"` logs out. Everything else, Escape and the button with `value="extend"` included, means the user wants to continue.
 
-Mangler klassen `fs-session-timeout__dialog`, `role="alertdialog"` eller et navn på dialogen, fyller komponenten dem inn. Navnet kommer fra den første overskriften, som får en id hvis den ikke har en. Det den som rendrer har skrevet, blir stående.
+If the class `lt-session-timeout__dialog`, `role="alertdialog"` or a name on the dialog is missing, the component fills them in. The name comes from the first heading, which gets an id if it has none. What the renderer wrote stays.
 
-Nedtellingen er klientens klokke, og endrer seg ut fra når brukeren sist rørte tastaturet. Derfor setter byggefunksjonen `data-ignore-morph`, så en patch fra serveren lar varselet være. Tar en patch likevel `open` fra en dialog som står i topplaget, setter komponenten det tilbake. Se [Markup og oppførsel](/markup-og-oppforsel/).
+The countdown is the client's clock, and changes depending on when the user last touched the keyboard. That is why the builder function sets `data-ignore-morph`, so a patch from the server leaves the warning alone. If a patch still removes `open` from a dialog that is in the top layer, the component puts it back. See [Markup and behaviour](/markup-and-behaviour/).
 
-## Attributter
+## Attributes
 
-| Attributt | Betydning | Standard |
+| Attribute | Meaning | Default |
 | --- | --- | --- |
-| `warn-at` | Sekunder uten aktivitet før varselet kommer | 1500 (25 minutter) |
-| `expires-at` | Sekunder uten aktivitet før økten er ute | 1800 (30 minutter) |
-| `activity-interval` | Sekunder mellom hver `session-activity` mens brukeren er aktiv. Minst 1 | 60 |
+| `warn-at` | Seconds without activity before the warning appears | 1500 (25 minutes) |
+| `expires-at` | Seconds without activity before the session is over | 1800 (30 minutes) |
+| `activity-interval` | Seconds between each `session-activity` while the user is active. At least 1 | 60 |
 
-Aktivitet er tastetrykk, klikk og rulling, også rulling i en tabell eller et panel. Rulling teller også når en skjermleser i lesemodus ruller siden, siden den ikke sender tastetrykk til siden. Det betyr at rulling som kode gjør, som en logg som følger med, også holder klokka i gang. Mens dialogen står åpen teller ikke aktivitet, ellers ville et tilfeldig museklikk forlenget økten uten at brukeren mente det.
+Activity is keystrokes, clicks and scrolling, also scrolling in a table or a panel. Scrolling also counts when a screen reader in browse mode scrolls the page, since it does not send keystrokes to the page. This means that scrolling done by code, like a log that follows along, also keeps the clock going. While the dialog is open, activity does not count, otherwise a random mouse click would extend the session without the user meaning to.
 
-Er `warn-at` eller `expires-at` ikke et tall større enn eller lik null, brukes standardverdien, og er `warn-at` ikke mindre enn `expires-at`, kommer varselet aldri. Komponenten sier fra om begge deler i konsollen.
+If `warn-at` or `expires-at` is not a number greater than or equal to zero, the default is used, and if `warn-at` is not less than `expires-at`, the warning never appears. The component warns about both in the console.
 
-Etter `session-expired` og `session-logout` står komponenten stille til `extend()` eller `reset()` kalles. Uten det fikk en app som ikke navigerte bort ny dialog og ny `session-expired` hvert `expires-at`-sekund, for en økt som alt var borte.
+After `session-expired` and `session-logout` the component stands still until `extend()` or `reset()` is called. Without that, an app that did not navigate away got a new dialog and a new `session-expired` every `expires-at` seconds, for a session that was already gone.
 
-## Hendelser
+## Events
 
-| Hendelse | Når | Hva du gjør |
+| Event | When | What you do |
 | --- | --- | --- |
-| `session-warn` | Dialogen åpner seg | Som regel ingenting |
-| `session-extend` | Brukeren velger å fortsette, med knappen eller Escape | Be serveren forlenge økten |
-| `session-logout` | Brukeren velger å logge ut | Send brukeren til utloggingen |
-| `session-expired` | Tiden er ute | Send brukeren til innloggingen |
-| `session-activity` | Brukeren er aktiv, høyst én gang per `activity-interval` | Be serveren holde økten i live |
+| `session-warn` | The dialog opens | Usually nothing |
+| `session-extend` | The user chooses to continue, with the button or Escape | Ask the server to extend the session |
+| `session-logout` | The user chooses to log out | Send the user to the logout |
+| `session-expired` | The time is up | Send the user to the login |
+| `session-activity` | The user is active, at most once per `activity-interval` | Ask the server to keep the session alive |
 
-Komponenten vet ikke hvordan økten din forlenges. Den sier fra, du gjør kallet.
+The component does not know how your session is extended. It tells you, you make the call.
 
-**Lytt på `session-activity` hvis serverøkten bare forlenges av kall til serveren.** Klokka her nullstilles av aktivitet i nettleseren. En bruker som skriver i et langt skjema uten et eneste kall, får derfor aldri varselet, mens serverøkten går ut, og innsendingen feiler. Hendelsen kommer i starten av et intervall og på slutten hvis brukeren har gjort noe siden, så serveren er aldri mer enn ett intervall bak.
+**Listen for `session-activity` if the server session is only extended by calls to the server.** The clock here is reset by activity in the browser. A user typing in a long form without a single call therefore never gets the warning, while the server session expires, and the submission fails. The event comes at the start of an interval and at the end if the user has done something since, so the server is never more than one interval behind.
 
-**Flere faner deler ikke klokke.** Hver fane teller sin egen aktivitet, så en fane brukeren ikke bruker, viser varselet og sender `session-expired` mens brukeren arbeider i en annen. Skal fanene følge hverandre, la dem si fra til hverandre og kall `reset()`, både når brukeren er aktiv og når brukeren velger å fortsette i varselet. En fane som alt er logget ut, skal ikke startes igjen:
+**Several tabs do not share a clock.** Each tab counts its own activity, so a tab the user is not using shows the warning and sends `session-expired` while the user is working in another. If the tabs should follow each other, let them tell each other and call `reset()`, both when the user is active and when the user chooses to continue in the warning. A tab that is already logged out should not be started again:
 
 ```js
-const kanal = new BroadcastChannel("okt")
-let ute = false
-for (const navn of ["session-activity", "session-extend"]) {
-	okt.addEventListener(navn, () => kanal.postMessage("aktiv"))
+const channel = new BroadcastChannel("session")
+let loggedOut = false
+for (const name of ["session-activity", "session-extend"]) {
+	session.addEventListener(name, () => channel.postMessage("active"))
 }
-for (const navn of ["session-expired", "session-logout"]) {
-	okt.addEventListener(navn, () => (ute = true))
+for (const name of ["session-expired", "session-logout"]) {
+	session.addEventListener(name, () => (loggedOut = true))
 }
-kanal.addEventListener("message", () => {
-	if (!ute) okt.reset()
+channel.addEventListener("message", () => {
+	if (!loggedOut) session.reset()
 })
 ```
 
-## Metoder
+## Methods
 
-| Metode | Hva den gjør |
+| Method | What it does |
 | --- | --- |
-| `extend()` | Nullstiller klokka, lukker varselet og sender `session-extend` |
-| `reset()` | Nullstiller klokka og lukker varselet uten å sende noe. For en app som alt har forlenget økten selv, som når en autolagring gikk gjennom |
+| `extend()` | Resets the clock, closes the warning and sends `session-extend` |
+| `reset()` | Resets the clock and closes the warning without sending anything. For an app that has already extended the session itself, as when an autosave went through |
 
-`extendSession(element)` og `resetSession(element)` fra `@fristil/designsystem/session-timeout` gjør det samme, men venter først på at elementet er registrert.
+`extendSession(element)` and `resetSession(element)` from `@lo-tek/interfaces/session-timeout` do the same, but first wait for the element to be registered.
 
-## Klasser du kan style
+## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.fs-session-timeout` | Vertselementet. Ligger som `display: contents` og tar ingen plass |
-| `.fs-session-timeout__dialog` | Selve dialogen |
-| `.fs-session-timeout__title` | Overskriften |
-| `.fs-session-timeout__text` | Avsnittet med nedtellingen i |
-| `.fs-session-timeout__count` | Tallet som teller ned |
-| `.fs-session-timeout__actions` | Skjemaet med knappene |
+| `.lt-session-timeout` | The host element. Is `display: contents` and takes no space |
+| `.lt-session-timeout__dialog` | The dialog itself |
+| `.lt-session-timeout__title` | The heading |
+| `.lt-session-timeout__text` | The paragraph with the countdown in it |
+| `.lt-session-timeout__count` | The number that counts down |
+| `.lt-session-timeout__actions` | The form with the buttons |
 
-Form og størrelse leses fra komponentvariabler, med systemets verdi som reserve:
+Shape and size are read from component variables, with the system's value as the fallback:
 
-| Variabel | Reserve |
+| Variable | Fallback |
 | --- | --- |
-| `--fs-session-timeout-width` | `26rem` |
-| `--fs-session-timeout-padding` | `var(--fs-spacing-5)` |
-| `--fs-session-timeout-radius` | `var(--fs-spacing-1)` |
+| `--lt-session-timeout-width` | `26rem` |
+| `--lt-session-timeout-padding` | `var(--lt-spacing-5)` |
+| `--lt-session-timeout-radius` | `var(--lt-spacing-1)` |
 
 ```css
-.fs-session-timeout__dialog {
-  --fs-session-timeout-width: 32rem;
+.lt-session-timeout__dialog {
+  --lt-session-timeout-width: 32rem;
 }
 ```
-## Tilgjengelighet
+## Accessibility
 
-Dialogen er en ekte `<dialog>` åpnet med `showModal()`, så fokusfellen, Escape og topplaget kommer fra nettleseren. Den har `role="alertdialog"`, fordi den avbryter noe brukeren ikke ba om å bli avbrutt i.
+The dialog is a real `<dialog>` opened with `showModal()`, so the focus trap, Escape and the top layer come from the browser. It has `role="alertdialog"`, because it interrupts something the user did not ask to be interrupted in.
 
-Tre ting er gjort med vilje, og alle tre er grunner til at dette er vanskelig å få riktig selv:
+Three things are done on purpose, and all three are reasons this is hard to get right yourself:
 
-- **Fokus går tilbake dit brukeren var.** Uten det starter neste tastetrykk på toppen av siden, midt i et skjema.
-- **Nedtellingen leses ikke opp hvert sekund.** Tallet på skjermen har `aria-hidden`, og opplesningen melder fra ved to minutter, ett minutt, 30 sekunder og 10 sekunder. En opplesning i sekundet gjør dialogen ubrukelig.
-- **Opplesningen står på sidens språk.** Den er avsnittet ditt, med tallet byttet ut med en uttalt varighet. Varigheten skrives med nettleserens `Intl` etter `lang` på siden, så den sier «1 minutt og 30 sekunder» på en norsk side og «1 minute and 30 seconds» på en engelsk.
+- **Focus returns to where the user was.** Without that, the next keystroke starts at the top of the page, in the middle of a form.
+- **The countdown is not announced every second.** The number on the screen has `aria-hidden`, and the announcement speaks at two minutes, one minute, 30 seconds and 10 seconds. An announcement every second makes the dialog unusable.
+- **The announcement is in the page's language.** It is your paragraph, with the number replaced by a spoken duration. The duration is written with the browser's `Intl` from the `lang` of the page, so it says "1 minute and 30 seconds" on an English page and "1 minutt og 30 sekunder" on a Norwegian one.
 
-Sett knappen som forlenger først. Det er den de fleste vil ha, og den skal være det første tastaturet treffer.
+Put the button that extends first. It is the one most people want, and it should be the first thing the keyboard reaches.

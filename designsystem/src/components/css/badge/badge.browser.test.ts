@@ -6,7 +6,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/farge"
+import { farge } from "../../../testing/color"
 
 import "../../../tokens/tokens.css"
 import "./badge.css"
@@ -20,56 +20,56 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("fs-badge", () => {
+describe("lt-badge", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <span id="default" class="fs-badge">Info</span>
-      <span id="success" class="fs-badge" data-color="success">Aktiv</span>
-      <span id="warning" class="fs-badge" data-color="warning">Advarsel</span>
-      <span id="danger" class="fs-badge" data-color="danger">Feil</span>
-      <span id="neutral" class="fs-badge" data-color="neutral">Inaktiv</span>
+      <span id="default" class="lt-badge">Info</span>
+      <span id="success" class="lt-badge" data-color="success">Aktiv</span>
+      <span id="warning" class="lt-badge" data-color="warning">Advarsel</span>
+      <span id="danger" class="lt-badge" data-color="danger">Feil</span>
+      <span id="neutral" class="lt-badge" data-color="neutral">Inaktiv</span>
     `
   })
 
   it("applies default (interactive) colors", () => {
     const badge = css("default")
-    expect(badge.backgroundColor).toBe(farge("--fs-color-accent-surface"))
-    expect(badge.color).toBe(farge("--fs-color-accent-text"))
+    expect(badge.backgroundColor).toBe(farge("--lt-color-accent-surface"))
+    expect(badge.color).toBe(farge("--lt-color-accent-text"))
   })
 
   it("applies success colors", () => {
     const badge = css("success")
-    expect(badge.backgroundColor).toBe(farge("--fs-color-success-surface"))
-    expect(badge.color).toBe(farge("--fs-color-success-text"))
+    expect(badge.backgroundColor).toBe(farge("--lt-color-success-surface"))
+    expect(badge.color).toBe(farge("--lt-color-success-text"))
   })
 
   it("applies warning colors", () => {
     const badge = css("warning")
-    expect(badge.backgroundColor).toBe(farge("--fs-color-warning-surface"))
-    expect(badge.color).toBe(farge("--fs-color-warning-text"))
+    expect(badge.backgroundColor).toBe(farge("--lt-color-warning-surface"))
+    expect(badge.color).toBe(farge("--lt-color-warning-text"))
   })
 
   it("applies danger colors", () => {
     const badge = css("danger")
-    expect(badge.backgroundColor).toBe(farge("--fs-color-danger-surface"))
-    expect(badge.color).toBe(farge("--fs-color-danger-text"))
+    expect(badge.backgroundColor).toBe(farge("--lt-color-danger-surface"))
+    expect(badge.color).toBe(farge("--lt-color-danger-text"))
   })
 
   it("applies neutral colors", () => {
     const badge = css("neutral")
-    expect(badge.backgroundColor).toBe(farge("--fs-color-neutral-surface"))
-    expect(badge.color).toBe(farge("--fs-color-neutral-text"))
+    expect(badge.backgroundColor).toBe(farge("--lt-color-neutral-surface"))
+    expect(badge.color).toBe(farge("--lt-color-neutral-text"))
   })
 })
 
-describe("fs-badge tilgjengelighet", () => {
+describe("lt-badge tilgjengelighet", () => {
   it("har nok kontrast i alle fargevarianter", async () => {
     monter(`
-      <span class="fs-badge">Under behandling</span>
-      <span class="fs-badge" data-color="success">Innvilget</span>
-      <span class="fs-badge" data-color="warning">Mangler vedlegg</span>
-      <span class="fs-badge" data-color="danger">Avslått</span>
-      <span class="fs-badge" data-color="neutral">Arkivert</span>
+      <span class="lt-badge">Under behandling</span>
+      <span class="lt-badge" data-color="success">Innvilget</span>
+      <span class="lt-badge" data-color="warning">Mangler vedlegg</span>
+      <span class="lt-badge" data-color="danger">Avslått</span>
+      <span class="lt-badge" data-color="neutral">Arkivert</span>
     `)
 
     await ventPaTegning()

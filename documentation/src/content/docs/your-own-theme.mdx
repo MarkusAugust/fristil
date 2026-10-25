@@ -1,0 +1,231 @@
+---
+title: Your own theme
+description: Build a colour theme from your brand colours, with contrast checked in both themes.
+---
+
+LO-TEK has its own hues. If your organisation has others, you can write the cells by hand, but then keeping the contrast promises is up to you: every colour is part of several pairs, and every pair has to meet the requirement in both the light and the dark theme. `lotek check-theme` tells you if one breaks.
+
+The generator takes your brand colours and builds the rest.
+
+## Creating the theme
+
+```bash
+npx @lo-tek/interfaces theme \
+  --accent=#7c3aed \
+  --danger=#b3261e \
+  --success=#2b6940 \
+  --warning=#8a5a00 \
+  --neutral=#1a1a1a \
+  --out=theme.css
+```
+
+Or with a file, which can live in the repository. Call it `lotek.theme.json`:
+
+```json
+{
+  "accent": "#7c3aed",
+  "danger": "#b3261e",
+  "success": "#2b6940",
+  "warning": "#8a5a00",
+  "neutral": "#1a1a1a"
+}
+```
+
+```bash
+npx @lo-tek/interfaces theme lotek.theme.json --out=theme.css
+```
+
+All of them are optional. A family you leave out inherits LO-TEK's own hue.
+
+| Family | Used for |
+| --- | --- |
+| `--accent` | Links, buttons and focus indication |
+| `--danger` | Errors, deletion and rejection |
+| `--success` | Completed and approved |
+| `--warning` | Something that needs attention |
+| `--neutral` | The page, body text and borders. Almost without hue |
+| `--visited` | Visited links |
+| `--brand1`, `--brand2`, `--brand3` | Surfaces, sections and categories. They mean nothing in themselves |
+
+## Using it
+
+Load the file after `tokens.css`. It overrides what the recipe mentions, and the rest still comes from there:
+
+```css
+@import "@lo-tek/interfaces/tokens.css";
+@import "./theme.css";
+```
+
+The theme covers both the light and the dark theme, and both the system setting and an explicit `data-theme`.
+
+`color-scheme` decides how the browser draws its own surfaces: the dropdown of a `<select>`, scrollbars and the calendar panel in a date field. Without it they stay light on a dark page.
+
+LO-TEK sets it wherever someone has chosen a theme: on `[data-theme="light"]`, on `[data-theme="dark"]` and on the three options of the [theme picker](../patterns/theme/). It is not set on bare `:root`, because the property is inherited, so a value there applies to the whole document. A child can opt out with `color-scheme: normal`, but that is a counter-rule the host never asked to have to write. If you want the browser's surfaces to follow the system on the whole page, write one line yourself:
+
+```css
+:root {
+	color-scheme: light dark;
+}
+```
+
+**If you use the theme picker, do not write that line.** Each of the three options sets `color-scheme` itself. If you write it anyway, outside a layer, the rule beats `@layer lotek`, and the browser's surfaces stay locked to the system while the user has chosen something else.
+
+## What the generator does
+
+**It fills the matrix.** Every family you give gets the nine roles, and every role gets its fixed lightness. If you give only some of the families, the rest inherit LO-TEK's own hues.
+
+**The hue and chroma are yours, the lightness is the role's.** Give a light purple or a dark purple and you get the same purple family: the role decides how light each cell is, and that is what lets the contrast be guaranteed. The chroma carries over, so a muted brand colour gives a muted family.
+
+The computation happens in OKLCH, not in HSL. In HSL, lightness means something different for each hue: `hsl(60 100% 50%)` is bright yellow and `hsl(240 100% 50%)` is almost black, with the same numbers. In OKLCH, lightness is the same perceived lightness whatever the hue, so one lightness per role can apply to every colour.
+
+**Contrast is guaranteed, not adjusted.** The lightnesses are computed against a sweep around the whole colour wheel, at the highest chroma sRGB can show for each hue. That is why the promises hold whatever brand colour you give, and the generator does not need to move your colour afterwards. It used to, every single time, because one step had been chosen too light.
+
+Every theme is still checked against the promises before it is written out, and the run exits with an error if one breaks, rather than delivering a theme that only looks right. With an almost white or almost black brand colour that does not happen: the lightness is the role's, so such a colour just gives a grey family.
+
+## What the generator does not do
+
+It does not pick colours for you. If you give a hue that is too close to another, for example an orange danger and a yellow warning, the two look alike in use even though both meet the contrast requirement. The colours have to be distinguishable from each other, and that is a judgement, not a calculation.
+
+Nor does it touch the icons in `tokens.css`. They are drawn in neutral colours and work in both themes.
+
+## Typography and shape
+
+Colours are the hardest part to get right, which is why the generator started there. But two systems with the same hues still look different if the typeface and the corners differ. So the recipe can also say how things should look:
+
+```json
+{
+  "accent": "#1362ae",
+  "danger": "#a82e39",
+  "success": "#316f2a",
+  "warning": "#9f7509",
+  "typography": {
+    "fontFamily": "Helvetica, Arial, sans-serif",
+    "weights": { "bold": 700 },
+    "lineHeights": { "default": 1.666, "heading": 1.333, "article": 1.666 }
+  },
+  "shape": {
+    "buttonRadius": "2.75rem",
+    "fieldRadius": "0.25rem",
+    "surfaceRadius": "0.5rem",
+    "buttonBorderWidth": "3px",
+    "buttonFontWeight": 700
+  }
+}
+```
+
+Six of the values also exist as flags: `--font`, `--button-radius`, `--field-radius`, `--surface-radius`, `--button-border` and `--button-weight`. The weights and line heights are set only from a file. A command line with eight typography numbers is unreadable, and typography is something you decide once and keep, which is exactly what a file in the repository is for.
+
+A flag that does not exist stops the run rather than being ignored, so a typo is reported. The same goes for a key in the recipe file. The exception is `$schema`, which editors insert by themselves and which says nothing about the theme.
+
+These are the keys inside the two blocks, and a key that does not exist stops the run rather than being ignored:
+
+| Key | What it sets |
+| --- | --- |
+| `typography.fontFamily` | the font stack, as a token and as a rule on `:root` |
+| `typography.weights.regular` · `.medium` · `.semibold` · `.bold` | the four weights |
+| `typography.lineHeights.default` | controls: button, input, table |
+| `typography.lineHeights.heading` | headings |
+| `typography.lineHeights.article` | body text and lists |
+| `typography.lineHeights.compact` | small surfaces: help text, tooltip, card title |
+| `shape.buttonRadius` | the button, pagination and the skip link |
+| `shape.fieldRadius` | the input, the textarea and the select |
+| `shape.surfaceRadius` | card, dialog, popover, alert, accordion, error summary, file upload, session timeout, the suggestion list, the toast and the tooltip |
+| `shape.buttonBorderWidth` | the border width of the button |
+| `shape.buttonFontWeight` | the weight of the button text |
+
+Everything here is optional. If you leave out both blocks, the theme is exactly what it was before: colours only.
+
+### Without colours
+
+If your organisation already uses LO-TEK's hues, it is the typeface and the corners that set it apart. Then you leave out the brand colours altogether, and get a theme that leaves the colours as they are:
+
+```bash
+npx @lo-tek/interfaces theme \
+  --font="Helvetica, Arial, sans-serif" \
+  --button-radius=2.75rem \
+  --out=theme.css
+```
+
+A theme with no content at all throws. Give a colour, a font or a shape.
+
+### Why three kinds of corners
+
+A single shared number would be simpler and wrong. Another design system has fully round buttons and fields with almost square corners, and with one number the fields become capsules.
+
+The checkbox, the badge, the tag, the toggle group, the avatar, the skeleton and the progress bar are left out. There the corner is not a style choice but the shape itself: a checkbox that turns round looks like a radio button, and a badge that turns square looks like a button.
+
+### The theme beats the defaults
+
+The generated file puts itself in its own layer, declared after the package's:
+
+```css
+@layer lotek, lotek-theme;
+```
+
+The declaration fixes the order regardless of when the stylesheets load, and that is not a detail: both Astro and TanStack Start put their bundled CSS right before `</head>`, that is, after a `<link>` you wrote yourself. If the theme were in the same layer as the package, it would lose to the defaults in those two. Both layers still come before unlayered CSS, so your own rules win as before.
+
+If you use Tailwind, `lotek-theme` has to be in the layer order on the first line of your CSS, between `lotek` and `components`:
+
+```css
+@layer theme, base, lotek, lotek-theme, components, utilities;
+```
+
+A `@layer` statement only creates layers that do not exist yet. If `utilities` is already in the order when the theme declares its layer, `lotek-theme` ends up last, after `utilities`, and the theme beats your Tailwind classes. See [Layer order](../tailwind/#layer-order).
+
+It applies both ways. If the theme is loaded as a `<link>` before the bundled CSS, the line in your CSS comes too late: the theme has already declared `lotek` and `lotek-theme`, so `base` ends up after them, and Preflight resets the components. Then the line has to be in a `<style>` first in `<head>`, before the theme. See [When LO-TEK and Tailwind are two stylesheets](../tailwind/#when-lo-tek-and-tailwind-are-two-stylesheets).
+
+### The font is set as a rule
+
+LO-TEK inherits the font on purpose, so a token alone would not change a single letter. If you give `fontFamily`, the generator therefore writes both the token and the rule that uses it:
+
+```css
+:root {
+  font-family: var(--lt-font-family-base);
+}
+```
+
+The rule is in `@layer lotek-theme`, like the rest of the theme, so your own unlayered CSS still beats it, and so does a layer declared after it, such as `utilities` in the order above.
+
+## Programmatic use
+
+If you need the theme somewhere other than the command line, for example in a build step:
+
+```ts
+import { buildTheme } from "@lo-tek/interfaces/theme"
+
+const theme = buildTheme({
+  accent: "#7c3aed",
+  danger: "#b3261e",
+  success: "#2b6940",
+  warning: "#8a5a00",
+})
+
+theme.css        // finished CSS
+theme.light      // the cells in the light theme, as an object
+theme.dark       // the cells in the dark theme
+theme.violations // promises that do not hold. Empty when the theme is fine
+```
+
+The keys are the family names: `accent`, `visited`, `brand1` to `brand3`, `neutral`, `danger`, `warning` and `success`. They have the same names on the command line.
+
+The theme is computed by the core, written in Rust and compiled to WebAssembly, the same one `lotek theme` and LO-TEK for Kotlin use. `buildTheme` loads it from the package in Node, Bun and Deno. In the browser, for example in a theme picker, you load it yourself:
+
+```ts
+import { loadCore } from "@lo-tek/interfaces/diagnostics"
+import wasmUrl from "@lo-tek/interfaces/core.wasm?url"
+import contract from "@lo-tek/interfaces/color-contract.json?raw"
+
+const core = loadCore(await WebAssembly.compileStreaming(fetch(wasmUrl)))
+core.loadContract(contract)
+const theme = core.buildTheme({ accent: "#7c3aed" })
+```
+
+The core has no colours in it. You give it the colour contract, that is, the lightness per role and the promises, with `loadContract`, from the file in the package. `?url` and `?raw` are Vite's way of getting the address of a file and its text. Without a build step, put `lotek-core.wasm` and `color-contract.json` from the package next to the page, and fetch them from there.
+
+If you want to do the maths yourself, `@lo-tek/interfaces/color` has the functions: `parseHex`, `toHex`, `rgbToOklch`, `oklchToRgb` and `contrastRatio`. The lightness of each role and the contrast requirements are in `@lo-tek/interfaces/contract`, and LO-TEK's own colours in `@lo-tek/interfaces/matrix`.
+
+## The check
+
+The promises are run against twelve accent colours spread around the whole colour wheel, from bright red to almost black, each together with ten neutral colours from black and white to tinted grey, in both themes. If one cell is too light, the test fails with the pair that broke and how far off it was.
+
+If you write the cells by hand rather than generating them, `lotek check-theme theme.css` is the same check on your own file.

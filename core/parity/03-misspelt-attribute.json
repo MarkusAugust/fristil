@@ -1,0 +1,78 @@
+{
+  "markup": [
+    {
+      "start": 22,
+      "end": 32,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/connection-status/",
+      "message": "<lt-connection-status> has no attribute \"onlinetext\". Did you mean online-text?",
+      "fix": {
+        "title": "Change to online-text",
+        "edits": [
+          {
+            "start": 22,
+            "end": 32,
+            "text": "online-text"
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 79,
+      "end": 87,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "optional is a boolean attribute: it is either there or not. optional=\"false\" means the same as optional. Remove it to turn it off.",
+      "fix": {
+        "title": "Remove optional",
+        "edits": [
+          {
+            "start": 78,
+            "end": 95,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    }
+  ],
+  "page": [
+    {
+      "start": 22,
+      "end": 32,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/connection-status/",
+      "message": "<lt-connection-status> has no attribute \"onlinetext\". Did you mean online-text?",
+      "fix": {
+        "title": "Change to online-text",
+        "edits": [
+          {
+            "start": 22,
+            "end": 32,
+            "text": "online-text"
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 79,
+      "end": 87,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/field/",
+      "message": "optional is a boolean attribute: it is either there or not. optional=\"false\" means the same as optional. Remove it to turn it off.",
+      "fix": {
+        "title": "Remove optional",
+        "edits": [
+          {
+            "start": 78,
+            "end": 95,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    }
+  ]
+}

@@ -1,96 +1,96 @@
 ---
 title: Badge
-description: Kompakt statusmerke. CSS-komponent med én klasse og ingen JavaScript.
+description: Compact status badge. A CSS component with one class and no JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
-Et lite merke som viser hvilken tilstand noe er i. Fargen styres med `data-color`.
+A small badge that shows what state something is in. The colour is set with `data-color`.
 
-## Slik tar du den i bruk
+## How to use it
 
-<Eksempel importer={["tokens.css", "badge.css"]}
-  stiler={["badge"]} kode={`
-<span class="fs-badge">Under behandling</span>
-<span class="fs-badge" data-color="success">Innvilget</span>
-<span class="fs-badge" data-color="warning">Mangler vedlegg</span>
-<span class="fs-badge" data-color="danger">Avslått</span>
-<span class="fs-badge" data-color="neutral">Arkivert</span>
+<Example imports={["tokens.css", "badge.css"]}
+  styles={["badge"]} code={`
+<span class="lt-badge">In progress</span>
+<span class="lt-badge" data-color="success">Approved</span>
+<span class="lt-badge" data-color="warning">Attachment missing</span>
+<span class="lt-badge" data-color="danger">Rejected</span>
+<span class="lt-badge" data-color="neutral">Archived</span>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<span {...fs.badge()}>Under behandling</span>
+<span {...lt.badge()}>In progress</span>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
+**If you have the element in a variable,** set them on it with `setAttributes`. That is the way without JSX, whether you just created the element or found it in a page the server sent:
 
 ```ts
-import { fs, type BadgeColor } from "@fristil/designsystem"
+import { lt, type BadgeColor } from "@lo-tek/interfaces"
 
-const merke = document.createElement("span")
-merke.textContent = "Innvilget"
+const badge = document.createElement("span")
+badge.textContent = "Approved"
 
-fs.setAttributes(merke, fs.badge({ color: "success" }))
+lt.setAttributes(badge, lt.badge({ color: "success" }))
 ```
 
-Kommer fargen fra et API, valider den først:
+If the colour comes from an API, validate it first:
 
 ```ts
-const farge: BadgeColor = fs.badge.isColor(svar.status) ? svar.status : "info"
+const color: BadgeColor = lt.badge.isColor(response.status) ? response.status : "info"
 
-fs.setAttributes(merke, fs.badge({ color: farge }))
+lt.setAttributes(badge, lt.badge({ color }))
 ```
 
-`fs.setAttributes` rydder også bort attributter fra forrige kall, så merket kan skifte farge uten at den gamle blir stående. Se [Typesikker bruk](../../typesikker-bruk/).
+`lt.setAttributes` also clears attributes from the previous call, so the badge can change colour without the old one staying behind. See [Type-safe use](../../type-safe-use/).
 
 </Fragment>
-</Eksempel>
+</Example>
 
-| `data-color` | Brukes til |
+| `data-color` | Used for |
 | --- | --- |
-| *(utelatt)* | Informasjon, pågående tilstand. `fs.badge({ color: "info" })` gir det samme, uten attributt |
-| `success` | Fullført, godkjent, aktiv |
-| `warning` | Krever oppmerksomhet, men er ikke en feil |
-| `danger` | Avslått, utløpt, kritisk |
-| `neutral` | Inaktiv, arkivert, ukjent |
+| *(omitted)* | Information, ongoing state. `lt.badge({ color: "info" })` gives the same, without an attribute |
+| `success` | Completed, approved, active |
+| `warning` | Needs attention, but is not an error |
+| `danger` | Rejected, expired, critical |
+| `neutral` | Inactive, archived, unknown |
 
-## I en liste
+## In a list
 
-Merket står som regel sammen med det det sier noe om. Her i en [List](../list/) med skille mellom radene:
+The badge usually sits next to what it describes. Here in a [List](../list/) with dividers between the rows:
 
-<Eksempel stiler={["badge", "list"]} layout="stabel" maxWidth="26rem" kode={`
-<ul class="fs-list" data-variant="divided">
-  <li>Faktura 2026-0481 <span class="fs-badge" data-color="success">Betalt</span></li>
-  <li>Faktura 2026-0482 <span class="fs-badge" data-color="danger">Forfalt</span></li>
+<Example styles={["badge", "list"]} layout="stack" maxWidth="26rem" code={`
+<ul class="lt-list" data-variant="divided">
+  <li>Invoice 2026-0481 <span class="lt-badge" data-color="success">Paid</span></li>
+  <li>Invoice 2026-0482 <span class="lt-badge" data-color="danger">Overdue</span></li>
 </ul>
 `} />
 
-Skal merket stå til høyre i raden, er det appens oppsett som avgjør det, med `display: flex` og `justify-content: space-between` på `li`-elementet.
+If the badge should sit at the right of the row, the app's layout decides that, with `display: flex` and `justify-content: space-between` on the `li` element.
 
-## Klasser du kan style
+## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.fs-badge` | Selve merket. Fargen kommer fra `data-color`. |
+| `.lt-badge` | The badge itself. The colour comes from `data-color`. |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
-| `--fs-badge-padding` | `var(--fs-spacing-0-5) var(--fs-spacing-2)` |
-| `--fs-badge-radius` | `var(--fs-spacing-4)` |
+| `--lt-badge-padding` | `var(--lt-spacing-0-5) var(--lt-spacing-2)` |
+| `--lt-badge-radius` | `var(--lt-spacing-4)` |
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
-## Tilgjengelighet
+## Accessibility
 
-- Fargen alene sier ingenting til en skjermleser. Teksten må bære betydningen: «Avslått», ikke bare et rødt punkt.
-- `<span>` inni en tekstlinje, `<div>` når merket står alene.
-- Endrer merket seg mens siden står stille, legg `role="status"` og `aria-live="polite"` på elementet rundt.
+- Colour alone says nothing to a screen reader. The text has to carry the meaning: "Rejected", not just a red dot.
+- `<span>` inside a line of text, `<div>` when the badge stands alone.
+- If the badge changes while the page is otherwise still, put `role="status"` and `aria-live="polite"` on the element around it.

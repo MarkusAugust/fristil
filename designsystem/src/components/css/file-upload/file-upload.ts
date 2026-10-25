@@ -6,16 +6,16 @@ import {
   type NonDefaultFieldState,
 } from "../shared.js"
 
-export const FILE_UPLOAD_CLASS = "fs-file-upload" as const
-/** Lista over filene som er valgt. */
-export const FILE_UPLOAD_LIST_CLASS = "fs-file-upload-list" as const
+export const FILE_UPLOAD_CLASS = "lt-file-upload" as const
+/** The list of the selected files. */
+export const FILE_UPLOAD_LIST_CLASS = "lt-file-upload-list" as const
 
 export type FileUploadOptions = {
-  /** Valideringstilstand. Standard: `default`. */
+  /** Validation state. Default: `default`. */
   state?: FieldState
-  /** Tillat flere filer. */
+  /** Allow several files. */
   multiple?: boolean
-  /** Filtypene feltet tar imot, som `.pdf,image/*`. */
+  /** The file types the field accepts, such as `.pdf,image/*`. */
   accept?: string
 }
 
@@ -29,14 +29,14 @@ export type FileUploadAttributes = {
 }
 
 /**
- * Attributtene for et filopplastingsfelt.
+ * The attributes for a file upload field.
  *
- * Feltet er et vanlig `<input type="file">`. Knappen inni er nettleserens
- * egen, og teksten på den kommer fra operativsystemets språk. Den kan ikke
- * oversettes, så ledeteksten over feltet må si hva som skal lastes opp.
+ * The field is a plain `<input type="file">`. The button inside is the
+ * browser's own, and its text comes from the operating system's language. It
+ * cannot be translated, so the label above the field must say what to upload.
  *
- * `accept` er en hjelp i filvelgeren, ikke en sperre. Brukeren kan velge
- * «alle filer», så typen må sjekkes på serveren uansett.
+ * `accept` is a help in the file picker, not a barrier. The user can choose
+ * "all files", so the type must be checked on the server anyway.
  *
  * ```ts
  * <input {...fileUpload({ multiple: true, accept: ".pdf" })} />
@@ -57,7 +57,7 @@ export const fileUpload = Object.assign(
       "aria-invalid": state === "invalid" ? ("true" as const) : undefined,
     }),
   {
-    /** Klassen på lista over valgte filer. */
+    /** The class on the list of selected files. */
     list: FILE_UPLOAD_LIST_CLASS,
     states: fieldStates,
     isState: isFieldState,

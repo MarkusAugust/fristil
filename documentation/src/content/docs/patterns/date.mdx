@@ -1,0 +1,75 @@
+---
+title: Dates in a form
+description: Why LO-TEK has no date picker, and how to ask for a date that works everywhere.
+---
+
+import DateDemo from "../../../components/DateDemo.astro"
+
+LO-TEK has no date picker. The browser has one, and it is better than ours was.
+
+<DateDemo />
+
+## The markup
+
+```html
+<lt-field>
+  <label class="lt-label" for="date-of-birth">Date of birth</label>
+  <input class="lt-input" data-variant="date" id="date-of-birth"
+         name="date-of-birth" type="date"
+         min="1900-01-01" max="2026-12-31">
+  <p class="lt-help-text">Type the date as 31/05/2026, or pick it in the calendar.</p>
+</lt-field>
+```
+
+If your server runs JavaScript, it writes the attributes itself and does not need `<lt-field>`:
+
+```ts
+import { lt } from "@lo-tek/interfaces"
+
+const field = lt.field({ id: "date-of-birth", help: true, invalid })
+const control = lt.input({ type: "date", state: field.state })
+```
+
+## Why there is no component
+
+We had one, `<lt-calendar>`, and removed it. The sums did not add up:
+
+| Task | Who does it |
+| --- | --- |
+| Opening the calendar panel | the browser |
+| Keyboard navigation in the panel | the browser |
+| Translation and first day of the week | the browser, following the user's own settings |
+| Valid range | `min` and `max` |
+| ISO value to the server | the browser |
+| Wiring the label, help text and error text | `lt.field()` |
+
+What was left for a separate component was nothing, apart from the panel looking the same in every browser. That is the same trade-off we have already made for `<select>`: the dropdown is drawn by the operating system, and nobody misses it looking the same in every browser.
+
+The panel is also transient. It is not part of the page; it opens and closes again.
+
+## Two browser differences you need to know
+
+This is tested in Chromium, Firefox and WebKit, not read in a specification. The tests used a Norwegian locale (`nb`), where the browser shows the date as 31.05.2026, so the examples below keep that format on purpose.
+
+**WebKit requires the separators.** If the user types `31052026` without full stops, the field stays empty with `validity.badInput`, and the form sends nothing. `31.05.2026` works. So the help text should say how to write the date, with an example in the page's format, such as "Type the date as 31/05/2026, or pick it in the calendar."
+
+**Chromium accepts the wrong order as valid.** `20260531` became the year 60531, and `validity.valid` was still `true`. So `min` and `max` should always be set. Without them a typo gets through as a silently wrong date.
+
+## Validating on the server
+
+```ts
+const date = formData.get("date-of-birth")
+
+if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+  return error("Enter the date as day, month and year.")
+}
+```
+
+The field always sends ISO when the browser accepted the date. But `badInput` means the server gets an empty string from someone who meant to type something, and your app has to point out that difference.
+
+## What the system does not do
+
+- **We do not validate the date.** `min` and `max` are the browser's check, and it can be bypassed. The server has to do it again.
+- **We do not translate the error messages.** The browser's own bubbles ("Please enter a valid value") come in the browser's language. If you want them in the page's language, you have to turn them off with `novalidate` and show `<p class="lt-error-text">` yourself.
+- **We do not handle date ranges.** From and to are two fields, and that one has to come before the other is your app's rule.
+- **We have no date picker you can style.** If you need a calendar that looks the same in every browser, that is a separate project in your app, not something that lives here.

@@ -17,19 +17,19 @@ import "../help-text/help-text.css"
 import "../badge/badge.css"
 import "../button/button.css"
 
-describe("fs-card", () => {
+describe("lt-card", () => {
   beforeEach(() => {
     monter(`
-      <div class="fs-card" id="vanlig">
-        <h3 class="fs-card__title">Søknad om bostøtte</h3>
+      <div class="lt-card" id="vanlig">
+        <h3 class="lt-card__title">Søknad om bostøtte</h3>
         <p>Sendt 4. mars. Saksnummer 2026-0481.</p>
       </div>
-      <div class="fs-card" data-variant="filled" id="fylt">
-        <h3 class="fs-card__title">Søknad om barnehageplass</h3>
+      <div class="lt-card" data-variant="filled" id="fylt">
+        <h3 class="lt-card__title">Søknad om barnehageplass</h3>
         <p>Under behandling.</p>
       </div>
-      <a class="fs-card" data-interactive href="#" id="klikkbar">
-        <h3 class="fs-card__title">Se hele saken</h3>
+      <a class="lt-card" data-interactive href="#" id="klikkbar">
+        <h3 class="lt-card__title">Se hele saken</h3>
         <p>Alle dokumenter og meldinger.</p>
       </a>
     `)
@@ -37,11 +37,11 @@ describe("fs-card", () => {
 
   it("lar et merke, en knapp og en lenke ha sin egen bredde, og strekker avsnittet", () => {
     monter(`
-      <div class="fs-card" id="med-merke" style="width: 400px">
+      <div class="lt-card" id="med-merke" style="width: 400px">
         <p>Sendt 4. mars.</p>
-        <span class="fs-badge" data-color="success">Innvilget</span>
-        <button class="fs-button" data-variant="secondary">Last opp vedlegg</button>
-        <a class="fs-link" href="#">Se vedtaket</a>
+        <span class="lt-badge" data-color="success">Innvilget</span>
+        <button class="lt-button" data-variant="secondary">Last opp vedlegg</button>
+        <a class="lt-link" href="#">Se vedtaket</a>
       </div>
     `)
     const kort = document.getElementById("med-merke") as HTMLElement
@@ -51,9 +51,9 @@ describe("fs-card", () => {
       kort.clientWidth -
       2 * Number.parseFloat(getComputedStyle(kort).paddingLeft)
 
-    expect(bredde(".fs-badge")).toBeLessThan(innside / 2)
-    expect(bredde(".fs-button")).toBeLessThan(innside)
-    expect(bredde(".fs-link")).toBeLessThan(innside / 2)
+    expect(bredde(".lt-badge")).toBeLessThan(innside / 2)
+    expect(bredde(".lt-button")).toBeLessThan(innside)
+    expect(bredde(".lt-link")).toBeLessThan(innside / 2)
     expect(bredde("p")).toBeCloseTo(innside, 0)
   })
 
@@ -77,13 +77,13 @@ describe("fs-card", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(card()).toEqual({ class: "fs-card" })
+    expect(card()).toEqual({ class: "lt-card" })
     expect(card({ variant: "filled", interactive: true })).toEqual({
-      class: "fs-card",
+      class: "lt-card",
       "data-variant": "filled",
       "data-interactive": "",
     })
-    expect(card.title).toBe("fs-card__title")
+    expect(card.title).toBe("lt-card__title")
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
@@ -92,12 +92,12 @@ describe("fs-card", () => {
   })
 })
 
-describe("fs-card som knapp", () => {
+describe("lt-card som knapp", () => {
   it("har samme skrift som et kort som er en lenke", () => {
     // En <button> arver ikke skriften, og kortet hadde 13 piksler.
     monter(`
-      <a class="fs-card" data-interactive href="#"><p id="i-lenke">Tekst</p></a>
-      <button class="fs-card" data-interactive type="button"><p id="i-knapp">Tekst</p></button>
+      <a class="lt-card" data-interactive href="#"><p id="i-lenke">Tekst</p></a>
+      <button class="lt-card" data-interactive type="button"><p id="i-knapp">Tekst</p></button>
     `)
     const skrift = (id: string) =>
       getComputedStyle(document.getElementById(id) as HTMLElement).fontSize
@@ -106,15 +106,15 @@ describe("fs-card som knapp", () => {
   })
 })
 
-describe("avsnitt i fs-card", () => {
+describe("avsnitt i lt-card", () => {
   it("lar klassen på avsnittet vinne over kortet", () => {
-    // `.fs-card p` slo `.fs-paragraph` på spesifisitet, så
-    // `--fs-paragraph-line-height` virket overalt unntatt i et kort.
+    // `.lt-card p` slo `.lt-paragraph` på spesifisitet, så
+    // `--lt-paragraph-line-height` virket overalt unntatt i et kort.
     monter(`
-      <p class="fs-paragraph" id="utenfor" style="--fs-paragraph-line-height: 1.2">Tekst</p>
-      <div class="fs-card">
-        <p class="fs-paragraph" id="inni" style="--fs-paragraph-line-height: 1.2">Tekst</p>
-        <p class="fs-help-text" id="hjelp">Hjelp</p>
+      <p class="lt-paragraph" id="utenfor" style="--lt-paragraph-line-height: 1.2">Tekst</p>
+      <div class="lt-card">
+        <p class="lt-paragraph" id="inni" style="--lt-paragraph-line-height: 1.2">Tekst</p>
+        <p class="lt-help-text" id="hjelp">Hjelp</p>
       </div>
     `)
     const stil = (id: string) =>

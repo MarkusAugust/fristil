@@ -1,10 +1,11 @@
 /**
- * Gjør et attributtsett fra en `fs`-byggefunksjon om til HTML.
+ * Turns an attribute set from an `lt` builder function into HTML.
  *
- * Testene skal skrive markupen slik en server ville gjort det, altså med
- * byggefunksjonen, og ikke håndskrive attributtene. Gjør de det siste, kan markupen
- * i testen si noe annet enn den byggefunksjonen faktisk sender ut, og da måler vi
- * ikke det konsumenten får.
+ * The tests should write the markup the way a server would, with the
+ * builder function, not write the attributes by hand. If they do the latter,
+ * the markup in the test can say something other than what the builder
+ * function actually outputs, and then we are not testing what the consumer
+ * gets.
  */
 export function attr(values: Record<string, unknown>): string {
   return Object.entries(values)

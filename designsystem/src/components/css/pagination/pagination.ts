@@ -1,25 +1,25 @@
 import { attributes } from "../shared.js"
 
-export const PAGINATION_CLASS = "fs-pagination" as const
-/** Hoppet i nummerrekken, som «1 2 … 9 10». */
-export const PAGINATION_GAP_CLASS = "fs-pagination__gap" as const
+export const PAGINATION_CLASS = "lt-pagination" as const
+/** The gap in the row of numbers, as in "1 2 … 9 10". */
+export const PAGINATION_GAP_CLASS = "lt-pagination__gap" as const
 
 export type PaginationAttributes = {
   class: typeof PAGINATION_CLASS
 }
 
 /**
- * Attributtene for sidenavigering.
+ * The attributes for pagination.
  *
- * Klassen hører på en `<ul>` inne i en `<nav aria-label="Sidenavigering">`.
- * Hver side er en lenke med egen adresse, ikke en knapp: da kan brukeren
- * åpne side tre i ny fane, og komme tilbake med tilbakeknappen.
+ * The class goes on a `<ul>` inside a `<nav aria-label="Pagination">`. Each
+ * page is a link with its own address, not a button: the user can then open
+ * page three in a new tab, and come back with the back button.
  *
- * Gjeldende side markeres med `aria-current="page"`, som både gir fargen og
- * er det skjermleseren leser opp.
+ * The current page is marked with `aria-current="page"`, which both gives
+ * the colour and is what the screen reader announces.
  *
  * ```ts
- * <nav aria-label="Sidenavigering">
+ * <nav aria-label="Pagination">
  *   <ul {...pagination()}>…</ul>
  * </nav>
  * ```
@@ -27,7 +27,7 @@ export type PaginationAttributes = {
 export const pagination = Object.assign(
   (): PaginationAttributes => attributes({ class: PAGINATION_CLASS }),
   {
-    /** Klassen på hoppet i nummerrekken. */
+    /** The class on the gap in the row of numbers. */
     gap: PAGINATION_GAP_CLASS,
   },
 )

@@ -1,4 +1,4 @@
-// Byggelogikken for Kotlin-pakken: generatoren som leser manifestet.
+// The build logic for the Kotlin package: the generator that reads the manifest.
 plugins {
     `kotlin-dsl`
 }
@@ -8,6 +8,6 @@ repositories {
 }
 
 dependencies {
-    // Gjør WebAssembly-modulen om til JVM-bytekode når pakken bygges.
+    // Turns the WebAssembly module into JVM bytecode when the package is built.
     implementation("com.dylibso.chicory:build-time-compiler:1.7.5")
 }

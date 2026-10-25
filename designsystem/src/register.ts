@@ -1,40 +1,43 @@
 /**
- * Registrerer alle web-komponentene i ett kall.
+ * Registers all the web components in one call.
  *
- * Hver komponent har sin egen `defineFs*`, og en app som bare bruker feltet
- * kan nøye seg med `defineFsField()` og holde resten utenfor det som bygges. Men de
- * fleste appene bruker flere, og spilldemoen sto med sju kall i en
- * `useEffect`, altså etter første tegning. Da er elementene i markupen
- * vanlige `HTMLElement` i det React tegner dem, og det første kallet på
- * `reportSuccess()` kom før effekten. Ett kall, ved import, lukker gapet.
+ * Each component has its own `defineLt*`, and an app that only uses the field
+ * can settle for `defineLtField()` and keep the rest out of its bundle. But
+ * most apps use several, and a demo app had seven calls in a `useEffect`,
+ * that is, after the first paint. Then the elements in the markup are plain
+ * `HTMLElement`s when React paints them, and the first call to
+ * `reportSuccess()` came before the effect. One call, at import, closes the
+ * gap.
  *
- * Funksjonen gjør ingenting på en server, som de enkelte gjør, så den kan stå
- * øverst i en modul som kjøres begge steder.
+ * Like the individual functions, it does nothing on a server, so it can sit
+ * at the top of a module that runs in both places.
  */
-import { defineFsConnectionStatus } from "./components/frittstaende/connection-status/fs-connection-status.js"
-import { defineFsToast } from "./components/frittstaende/toast/fs-toast.js"
-import { defineFsDialog } from "./components/ramme/dialog/fs-dialog.js"
-import { defineFsErrorSummary } from "./components/ramme/error-summary/fs-error-summary.js"
-import { defineFsField } from "./components/ramme/field/fs-field.js"
-import { defineFsPopover } from "./components/ramme/popover/fs-popover.js"
-import { defineFsSessionTimeout } from "./components/ramme/session-timeout/fs-session-timeout.js"
-import { defineFsSuggestion } from "./components/ramme/suggestion/fs-suggestion.js"
-import { defineFsTabs } from "./components/ramme/tabs/fs-tabs.js"
 
-// Typene til hendelsene og tagnavnene, så `querySelector("fs-dialog")` og
-// `addEventListener` er typet også for den som bare importerer denne
-// inngangen. Uten linja forsvant importene over fra `.d.ts`-fila, og verken
-// `HTMLElementEventMap` eller `HTMLElementTagNameMap` ble utvidet.
-export type { FsEventMap } from "./components/events.js"
+import { defineLtDialog } from "./components/frame/dialog/lt-dialog.js"
+import { defineLtErrorSummary } from "./components/frame/error-summary/lt-error-summary.js"
+import { defineLtField } from "./components/frame/field/lt-field.js"
+import { defineLtPopover } from "./components/frame/popover/lt-popover.js"
+import { defineLtSessionTimeout } from "./components/frame/session-timeout/lt-session-timeout.js"
+import { defineLtSuggestion } from "./components/frame/suggestion/lt-suggestion.js"
+import { defineLtTabs } from "./components/frame/tabs/lt-tabs.js"
+import { defineLtConnectionStatus } from "./components/standalone/connection-status/lt-connection-status.js"
+import { defineLtToast } from "./components/standalone/toast/lt-toast.js"
 
-export function defineFs(): void {
-  defineFsField()
-  defineFsTabs()
-  defineFsErrorSummary()
-  defineFsPopover()
-  defineFsSuggestion()
-  defineFsDialog()
-  defineFsToast()
-  defineFsSessionTimeout()
-  defineFsConnectionStatus()
+// The types of the events and tag names, so `querySelector("lt-dialog")` and
+// `addEventListener` are typed also for someone who only imports this entry
+// point. Without the line the imports above disappeared from the `.d.ts`
+// file, and neither `HTMLElementEventMap` nor `HTMLElementTagNameMap` was
+// extended.
+export type { LtEventMap } from "./components/events.js"
+
+export function defineLt(): void {
+  defineLtField()
+  defineLtTabs()
+  defineLtErrorSummary()
+  defineLtPopover()
+  defineLtSuggestion()
+  defineLtDialog()
+  defineLtToast()
+  defineLtSessionTimeout()
+  defineLtConnectionStatus()
 }

@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { managedNames } from "./components/css/shared"
-import { fs } from "./fs"
+import { lt } from "./lt"
 
-describe("fs.setAttributes", () => {
+describe("lt.setAttributes", () => {
   it("gjør ingenting når elementet er borte", () => {
     /*
      * `document.querySelector()` gir `Element | null`, og uten dette måtte
      * hvert kallsted i en `strict`-app skrive en vakt rundt et oppslag som
      * nesten alltid treffer. Den skal ikke kaste, og den skal ikke gjøre noe.
      */
-    expect(() => fs.setAttributes(null, fs.button())).not.toThrow()
-    expect(() => fs.setAttributes(undefined, fs.button())).not.toThrow()
+    expect(() => lt.setAttributes(null, lt.button())).not.toThrow()
+    expect(() => lt.setAttributes(undefined, lt.button())).not.toThrow()
   })
 
   let element: HTMLInputElement
@@ -21,18 +21,18 @@ describe("fs.setAttributes", () => {
     element = document.getElementById("felt") as HTMLInputElement
   })
 
-  it("bruker attributtene fra en fs-funksjon", () => {
-    fs.setAttributes(element, fs.input({ type: "email", state: "invalid" }))
+  it("bruker attributtene fra en lt-funksjon", () => {
+    lt.setAttributes(element, lt.input({ type: "email", state: "invalid" }))
 
-    expect(element.className).toBe("fs-input")
+    expect(element.className).toBe("lt-input")
     expect(element.getAttribute("type")).toBe("email")
     expect(element.getAttribute("data-state")).toBe("invalid")
     expect(element.getAttribute("aria-invalid")).toBe("true")
   })
 
   it("rydder bort tilstand fra forrige kall", () => {
-    fs.setAttributes(element, fs.input({ type: "email", state: "invalid" }))
-    fs.setAttributes(element, fs.input({ type: "email" }))
+    lt.setAttributes(element, lt.input({ type: "email", state: "invalid" }))
+    lt.setAttributes(element, lt.input({ type: "email" }))
 
     // Byggefunksjonen utelater data-state i normaltilstand. Uten oppryddingen
     // ville feltet blitt stående rødt etter at feilen var rettet.
@@ -45,38 +45,38 @@ describe("fs.setAttributes", () => {
     element.setAttribute("data-testid", "epostfelt")
     element.setAttribute("name", "epost")
 
-    fs.setAttributes(element, fs.input({ type: "email", state: "invalid" }))
-    fs.setAttributes(element, fs.input({ type: "email" }))
+    lt.setAttributes(element, lt.input({ type: "email", state: "invalid" }))
+    lt.setAttributes(element, lt.input({ type: "email" }))
 
     expect(element.getAttribute("data-testid")).toBe("epostfelt")
     expect(element.getAttribute("name")).toBe("epost")
   })
 
   it("beholder konsumentens egne klasser", () => {
-    element.className = "min-klasse fs-gammel"
+    element.className = "min-klasse lt-gammel"
 
-    fs.setAttributes(element, fs.input({ type: "text" }))
+    lt.setAttributes(element, lt.input({ type: "text" }))
 
     expect(element.classList.contains("min-klasse")).toBe(true)
-    expect(element.classList.contains("fs-input")).toBe(true)
-    // fs-klasser eies av systemet og byttes ut
-    expect(element.classList.contains("fs-gammel")).toBe(false)
+    expect(element.classList.contains("lt-input")).toBe(true)
+    // lt-klasser eies av systemet og byttes ut
+    expect(element.classList.contains("lt-gammel")).toBe(false)
   })
 
-  it("virker på et helt felt sammen med fs.field", () => {
+  it("virker på et helt felt sammen med lt.field", () => {
     document.body.innerHTML = `
       <label id="ledetekst"></label>
       <input id="kontroll" />
       <p id="feil"></p>
     `
-    const felt = fs.field({ id: "epost", error: true, invalid: true })
+    const felt = lt.field({ id: "epost", error: true, invalid: true })
 
     // Hentes før, siden felt.control setter id-en på kontrollen
     const ledetekst = document.getElementById("ledetekst") as HTMLLabelElement
     const kontroll = document.getElementById("kontroll") as HTMLInputElement
 
-    fs.setAttributes(ledetekst, felt.label)
-    fs.setAttributes(kontroll, fs.input({ type: "email" }), felt.control)
+    lt.setAttributes(ledetekst, felt.label)
+    lt.setAttributes(kontroll, lt.input({ type: "email" }), felt.control)
 
     expect(ledetekst.getAttribute("for")).toBe("epost")
     expect(kontroll.id).toBe("epost")
@@ -90,7 +90,7 @@ describe("boolske attributter", () => {
   it("setter et boolsk attributt som tom streng, slik HTML forventer", () => {
     const element = document.createElement("input")
 
-    fs.setAttributes(element, fs.switch({ disabled: true }))
+    lt.setAttributes(element, lt.switch({ disabled: true }))
 
     expect(element.getAttribute("disabled")).toBe("")
     expect(element.disabled).toBe(true)
@@ -100,17 +100,17 @@ describe("boolske attributter", () => {
   it("fjerner det boolske attributtet når det ikke er med lenger", () => {
     const element = document.createElement("input")
 
-    fs.setAttributes(element, fs.switch({ disabled: true }))
-    fs.setAttributes(element, fs.switch())
+    lt.setAttributes(element, lt.switch({ disabled: true }))
+    lt.setAttributes(element, lt.switch())
 
     expect(element.hasAttribute("disabled")).toBe(false)
   })
 
   it("tar imot attributtene fra et helt felt", () => {
     const element = document.createElement("input")
-    const field = fs.field({ id: "epost", disabled: true })
+    const field = lt.field({ id: "epost", disabled: true })
 
-    fs.setAttributes(element, fs.input({ type: "email" }), field.control)
+    lt.setAttributes(element, lt.input({ type: "email" }), field.control)
 
     expect(element.disabled).toBe(true)
     expect(element.id).toBe("epost")
@@ -165,13 +165,13 @@ const ALT_PAA: Record<string, unknown> = {
   direction: "descending",
 }
 
-/** `fs.label({ required: "symbol" })` henger på `label.markers`. */
+/** `lt.label({ required: "symbol" })` henger på `label.markers`. */
 const NOKKEL: Record<string, string> = { markers: "required" }
 
 type Byggefunksjon = ((valg?: unknown) => unknown) & Record<string, unknown>
 
 function byggefunksjonene(): [string, Byggefunksjon][] {
-  return Object.entries(fs).filter(([navn, verdi]) => {
+  return Object.entries(lt).filter(([navn, verdi]) => {
     if (typeof verdi !== "function") return false
     return !["setAttributes", "isState", "isMarker"].includes(navn)
   }) as [string, Byggefunksjon][]
@@ -251,7 +251,7 @@ describe("hvert sett vet hva det forvalter", () => {
     expect(alle.length).toBeGreaterThan(40)
   })
 
-  it.each(alle)("fs.%s() sender hvert sett gjennom attributes()", (navn, f) => {
+  it.each(alle)("lt.%s() sender hvert sett gjennom attributes()", (navn, f) => {
     const sett = settene(f(GRUNNVALG[navn] ?? {}), navn)
 
     expect(sett.length).toBeGreaterThan(0)
@@ -262,7 +262,7 @@ describe("hvert sett vet hva det forvalter", () => {
 
   it.each(
     alle,
-  )("fs.%s() forvalter de samme navnene uansett valg", (navn, f) => {
+  )("lt.%s() forvalter de samme navnene uansett valg", (navn, f) => {
     const av = new Map(settene(f(GRUNNVALG[navn] ?? {}), navn))
 
     for (const valg of valgsettene(navn, f)) {
@@ -294,8 +294,8 @@ describe("hvert sett vet hva det forvalter", () => {
 
   it.each(
     alle,
-  )("fs.%s() kan gå mellom hvert valgsett og grunnsettet, begge veier", (navn, f) => {
-    type Sett = Parameters<typeof fs.setAttributes>[1]
+  )("lt.%s() kan gå mellom hvert valgsett og grunnsettet, begge veier", (navn, f) => {
+    type Sett = Parameters<typeof lt.setAttributes>[1]
     const av = new Map(settene(f(GRUNNVALG[navn] ?? {}), navn))
     let sjekket = 0
 
@@ -306,8 +306,8 @@ describe("hvert sett vet hva det forvalter", () => {
 
         // Fra valgene og tilbake: alt valget satte, skal bort.
         const ned = document.createElement("div")
-        fs.setAttributes(ned, paa as Sett)
-        fs.setAttributes(ned, grunn as Sett)
+        lt.setAttributes(ned, paa as Sett)
+        lt.setAttributes(ned, grunn as Sett)
         expect(navnPaa(ned), `${sti}, tilbake til grunnsettet`).toEqual(
           navnI(grunn),
         )
@@ -315,8 +315,8 @@ describe("hvert sett vet hva det forvalter", () => {
         // Og motsatt vei: det grunnsettet hadde og valget ikke har, som
         // `hidden` på en feilmelding, skal også bort.
         const opp = document.createElement("div")
-        fs.setAttributes(opp, grunn as Sett)
-        fs.setAttributes(opp, paa as Sett)
+        lt.setAttributes(opp, grunn as Sett)
+        lt.setAttributes(opp, paa as Sett)
         expect(navnPaa(opp), `${sti}, fra grunnsettet`).toEqual(navnI(paa))
         sjekket++
       }
@@ -330,39 +330,39 @@ describe("setAttributes lar det byggefunksjonen ikke forvalter, stå", () => {
   /** Elementet har attributtene fra før, og mister ingen av dem. */
   const TILFELLER: [string, Record<string, string>, () => unknown][] = [
     [
-      "en deaktivert knapp og fs.button()",
+      "en deaktivert knapp og lt.button()",
       { type: "submit", disabled: "" },
-      () => fs.button({ variant: "secondary" }),
+      () => lt.button({ variant: "secondary" }),
     ],
     [
-      "et deaktivert felt med hjelpetekst og fs.input()",
+      "et deaktivert felt med hjelpetekst og lt.input()",
       { disabled: "", "aria-describedby": "hjelp", name: "epost" },
-      () => fs.input({ state: "invalid" }),
+      () => lt.input({ state: "invalid" }),
     ],
     [
-      "et åpent details og fs.accordion()",
+      "et åpent details og lt.accordion()",
       { open: "" },
-      () => fs.accordion({ variant: "plain" }),
+      () => lt.accordion({ variant: "plain" }),
     ],
     [
-      "et skjult avsnitt og fs.helpText()",
+      "et skjult avsnitt og lt.helpText()",
       { hidden: "" },
-      () => fs.helpText({ variant: "warning" }),
+      () => lt.helpText({ variant: "warning" }),
     ],
     [
-      "en deaktivert nedtrekksliste og fs.select()",
+      "en deaktivert nedtrekksliste og lt.select()",
       { disabled: "" },
-      () => fs.select(),
+      () => lt.select(),
     ],
     [
-      "et tekstområde koblet til en teller og fs.textarea()",
+      "et tekstområde koblet til en teller og lt.textarea()",
       { "aria-describedby": "teller" },
-      () => fs.textarea(),
+      () => lt.textarea(),
     ],
     [
-      "en deaktivert avkryssingsboks og fs.checkbox()",
+      "en deaktivert avkryssingsboks og lt.checkbox()",
       { disabled: "", "aria-describedby": "feil" },
-      () => fs.checkbox({ state: "invalid" }),
+      () => lt.checkbox({ state: "invalid" }),
     ],
   ]
 
@@ -372,7 +372,7 @@ describe("setAttributes lar det byggefunksjonen ikke forvalter, stå", () => {
       element.setAttribute(navn, verdi)
     }
 
-    fs.setAttributes(element, sett() as Parameters<typeof fs.setAttributes>[1])
+    lt.setAttributes(element, sett() as Parameters<typeof lt.setAttributes>[1])
 
     for (const navn of Object.keys(fraFor)) {
       expect(element.hasAttribute(navn), navn).toBe(true)
@@ -381,20 +381,20 @@ describe("setAttributes lar det byggefunksjonen ikke forvalter, stå", () => {
 
   it("rydder fortsatt det byggefunksjonen selv forvalter", () => {
     const bryter = document.createElement("input")
-    fs.setAttributes(bryter, fs.switch({ disabled: true }))
+    lt.setAttributes(bryter, lt.switch({ disabled: true }))
     expect(bryter.hasAttribute("disabled")).toBe(true)
-    fs.setAttributes(bryter, fs.switch())
+    lt.setAttributes(bryter, lt.switch())
     expect(bryter.hasAttribute("disabled"), "bryteren").toBe(false)
 
     const filfelt = document.createElement("input")
-    fs.setAttributes(filfelt, fs.fileUpload({ multiple: true, accept: ".pdf" }))
-    fs.setAttributes(filfelt, fs.fileUpload())
+    lt.setAttributes(filfelt, lt.fileUpload({ multiple: true, accept: ".pdf" }))
+    lt.setAttributes(filfelt, lt.fileUpload())
     expect(filfelt.hasAttribute("multiple"), "multiple").toBe(false)
     expect(filfelt.hasAttribute("accept"), "accept").toBe(false)
 
     const lenke = document.createElement("a")
-    fs.setAttributes(lenke, fs.link({ disabled: true }))
-    fs.setAttributes(lenke, fs.link())
+    lt.setAttributes(lenke, lt.link({ disabled: true }))
+    lt.setAttributes(lenke, lt.link())
     expect(lenke.hasAttribute("aria-disabled"), "lenken").toBe(false)
   })
 
@@ -403,45 +403,45 @@ describe("setAttributes lar det byggefunksjonen ikke forvalter, stå", () => {
     // byggefunksjon, og utløseren til et sprettoppvindu gjorde en
     // sekundærknapp primær.
     const knapp = document.createElement("button")
-    fs.setAttributes(knapp, fs.button({ variant: "secondary" }))
-    fs.setAttributes(knapp, fs.popover({ id: "p" }).trigger)
+    lt.setAttributes(knapp, lt.button({ variant: "secondary" }))
+    lt.setAttributes(knapp, lt.popover({ id: "p" }).trigger)
     expect(knapp.getAttribute("data-variant")).toBe("secondary")
 
     const dato = document.createElement("input")
-    fs.setAttributes(dato, fs.input({ type: "date", state: "success" }))
-    fs.setAttributes(dato, fs.field({ id: "d", help: true }).help)
+    lt.setAttributes(dato, lt.input({ type: "date", state: "success" }))
+    lt.setAttributes(dato, lt.field({ id: "d", help: true }).help)
     expect(dato.getAttribute("data-variant")).toBe("date")
     expect(dato.getAttribute("data-state")).toBe("success")
   })
 
   it("fjerner aldri id, heller ikke når byggefunksjonen har et valg for den", () => {
-    const boks = document.createElement("fs-error-summary")
+    const boks = document.createElement("lt-error-summary")
     boks.id = "skjemafeil"
 
-    fs.setAttributes(boks, fs.errorSummary({ count: 2 }).host)
+    lt.setAttributes(boks, lt.errorSummary({ count: 2 }).host)
 
     expect(boks.id).toBe("skjemafeil")
   })
 
   it("lar byggefunksjonen eie attributtene den har et valg for", () => {
-    // `fs.spinner()` har `label`. Skrev du `aria-label` for hånd og kaller
+    // `lt.spinner()` har `label`. Skrev du `aria-label` for hånd og kaller
     // uten valget, er det byggefunksjonens ord som gjelder.
     const ring = document.createElement("span")
-    fs.setAttributes(ring, fs.spinner({ label: "Laster" }))
+    lt.setAttributes(ring, lt.spinner({ label: "Laster" }))
     expect(ring.getAttribute("role")).toBe("status")
 
-    fs.setAttributes(ring, fs.spinner())
+    lt.setAttributes(ring, lt.spinner())
 
     expect(ring.hasAttribute("role")).toBe(false)
     expect(ring.hasAttribute("aria-label")).toBe(false)
   })
 
   it("skjuler og viser feiloppsummeringen etter antallet", () => {
-    const boks = document.createElement("fs-error-summary")
-    fs.setAttributes(boks, fs.errorSummary({ count: 0 }).host)
+    const boks = document.createElement("lt-error-summary")
+    lt.setAttributes(boks, lt.errorSummary({ count: 0 }).host)
     expect(boks.hasAttribute("hidden")).toBe(true)
 
-    fs.setAttributes(boks, fs.errorSummary({ count: 2 }).host)
+    lt.setAttributes(boks, lt.errorSummary({ count: 2 }).host)
     expect(boks.hasAttribute("hidden")).toBe(false)
   })
 
@@ -449,21 +449,21 @@ describe("setAttributes lar det byggefunksjonen ikke forvalter, stå", () => {
     const felt = document.createElement("input")
     felt.setAttribute("data-state", "invalid")
 
-    fs.setAttributes(felt)
+    lt.setAttributes(felt)
 
     expect(felt.getAttribute("data-state")).toBe("invalid")
   })
 
   it("lar et håndskrevet sett ta bort et attributt med false, ikke med undefined", () => {
     const felt = document.createElement("input")
-    fs.setAttributes(felt, fs.input({ state: "invalid" }), {
+    lt.setAttributes(felt, lt.input({ state: "invalid" }), {
       "aria-invalid": undefined,
     })
     expect(felt.getAttribute("aria-invalid"), "undefined overstyrer ikke").toBe(
       "true",
     )
 
-    fs.setAttributes(felt, fs.input({ state: "invalid" }), {
+    lt.setAttributes(felt, lt.input({ state: "invalid" }), {
       "aria-invalid": false,
     })
     expect(felt.hasAttribute("aria-invalid"), "false fjerner").toBe(false)
@@ -474,7 +474,7 @@ describe("setAttributes lar det byggefunksjonen ikke forvalter, stå", () => {
     const felt = document.createElement("input")
     felt.setAttribute("data-state", "invalid")
 
-    fs.setAttributes(felt, fs.input())
+    lt.setAttributes(felt, lt.input())
 
     expect(felt.hasAttribute("data-state")).toBe(false)
   })
@@ -483,14 +483,14 @@ describe("setAttributes lar det byggefunksjonen ikke forvalter, stå", () => {
 describe("setAttributes med flere sett", () => {
   it("setter begge, og rydder det begge forvalter", () => {
     const kontroll = document.createElement("input")
-    const ugyldig = fs.field({ id: "epost", error: true, invalid: true })
-    fs.setAttributes(kontroll, fs.input({ type: "email" }), ugyldig.control)
+    const ugyldig = lt.field({ id: "epost", error: true, invalid: true })
+    lt.setAttributes(kontroll, lt.input({ type: "email" }), ugyldig.control)
     expect(kontroll.getAttribute("aria-invalid")).toBe("true")
-    expect(kontroll.className).toBe("fs-input")
+    expect(kontroll.className).toBe("lt-input")
     expect(kontroll.id).toBe("epost")
 
-    const gyldig = fs.field({ id: "epost", error: true })
-    fs.setAttributes(kontroll, fs.input({ type: "email" }), gyldig.control)
+    const gyldig = lt.field({ id: "epost", error: true })
+    lt.setAttributes(kontroll, lt.input({ type: "email" }), gyldig.control)
 
     expect(kontroll.hasAttribute("aria-invalid")).toBe(false)
     expect(kontroll.hasAttribute("aria-describedby")).toBe(false)
@@ -515,13 +515,13 @@ describe("setAttributes med flere sett", () => {
       const kontroll = document.createElement("input")
       kontroll.setAttribute("disabled", "")
 
-      fersk.setAttributes(kontroll, { ...fs.input({ state: "invalid" }) })
-      fersk.setAttributes(kontroll, { ...fs.input() })
+      fersk.setAttributes(kontroll, { ...lt.input({ state: "invalid" }) })
+      fersk.setAttributes(kontroll, { ...lt.input() })
 
       expect(kontroll.hasAttribute("data-state"), "data-state").toBe(false)
       expect(kontroll.hasAttribute("disabled"), "disabled").toBe(true)
       expect(
-        advarsler.filter((a) => a.includes("fs.setAttributes()")),
+        advarsler.filter((a) => a.includes("lt.setAttributes()")),
       ).toHaveLength(1)
     } finally {
       console.warn = ekte
@@ -538,7 +538,7 @@ describe("setAttributes med flere sett", () => {
     }
     try {
       const kontroll = document.createElement("input")
-      fersk.setAttributes(kontroll, fs.input(), fs.field({ id: "a" }).control)
+      fersk.setAttributes(kontroll, lt.input(), lt.field({ id: "a" }).control)
       expect(advarsler).toEqual([])
     } finally {
       console.warn = ekte
@@ -547,19 +547,19 @@ describe("setAttributes med flere sett", () => {
 })
 
 /**
- * `open` kommer fra `fs.dialog()`, men sveipen over byggefunksjonene hopper over
- * den, siden den krever et valgobjekt. Forvaltet ikke `fs.dialog()` `open`,
+ * `open` kommer fra `lt.dialog()`, men sveipen over byggefunksjonene hopper over
+ * den, siden den krever et valgobjekt. Forvaltet ikke `lt.dialog()` `open`,
  * kunne `setAttributes` åpne en dialog, men aldri lukke den igjen, og det er
  * nøyaktig feilen `data-size` hadde.
  */
 describe("setAttributes og dialogen", () => {
   it("kan både sette og fjerne open på verten", () => {
-    const vert = document.createElement("fs-dialog")
+    const vert = document.createElement("lt-dialog")
 
-    fs.setAttributes(vert, fs.dialog({ titleId: "t", open: true }).host)
+    lt.setAttributes(vert, lt.dialog({ titleId: "t", open: true }).host)
     expect(vert.hasAttribute("open")).toBe(true)
 
-    fs.setAttributes(vert, fs.dialog({ titleId: "t" }).host)
+    lt.setAttributes(vert, lt.dialog({ titleId: "t" }).host)
     expect(vert.hasAttribute("open")).toBe(false)
   })
 })
@@ -567,18 +567,18 @@ describe("setAttributes og dialogen", () => {
 describe("setAttributes og de boolske valgene", () => {
   it("fjerner de boolske valgene på kort, tabell og etikett", () => {
     const kort = document.createElement("a")
-    fs.setAttributes(kort, fs.card({ interactive: true }))
-    fs.setAttributes(kort, fs.card())
+    lt.setAttributes(kort, lt.card({ interactive: true }))
+    lt.setAttributes(kort, lt.card())
     expect(kort.hasAttribute("data-interactive")).toBe(false)
 
     const tabell = document.createElement("table")
-    fs.setAttributes(tabell, fs.table({ hoverable: true }))
-    fs.setAttributes(tabell, fs.table())
+    lt.setAttributes(tabell, lt.table({ hoverable: true }))
+    lt.setAttributes(tabell, lt.table())
     expect(tabell.hasAttribute("data-hoverable")).toBe(false)
 
     const etikett = document.createElement("span")
-    fs.setAttributes(etikett, fs.tag({ selectable: true }))
-    fs.setAttributes(etikett, fs.tag())
+    lt.setAttributes(etikett, lt.tag({ selectable: true }))
+    lt.setAttributes(etikett, lt.tag())
     expect(etikett.hasAttribute("data-selectable")).toBe(false)
   })
 
@@ -587,44 +587,44 @@ describe("setAttributes og de boolske valgene", () => {
     // var koblingen brutt uten at noe sa fra. Det samme gjelder rollen et
     // forslagsfelt har fått.
     const kontroll = document.createElement("input")
-    const felt = fs.field({ id: "epost" })
-    fs.setAttributes(kontroll, {
-      ...fs.input(),
+    const felt = lt.field({ id: "epost" })
+    lt.setAttributes(kontroll, {
+      ...lt.input(),
       ...felt.control,
       name: "epost",
     })
 
-    fs.setAttributes(kontroll, fs.input({ state: "invalid" }))
+    lt.setAttributes(kontroll, lt.input({ state: "invalid" }))
 
     expect(kontroll.id).toBe("epost")
     expect(kontroll.getAttribute("name")).toBe("epost")
 
     const sok = document.createElement("input")
-    fs.setAttributes(
+    lt.setAttributes(
       sok,
-      fs.suggestion({ id: "by", keys: ["a", "b", "c"] }).control,
+      lt.suggestion({ id: "by", keys: ["a", "b", "c"] }).control,
     )
-    fs.setAttributes(sok, fs.input({ state: "invalid" }))
+    lt.setAttributes(sok, lt.input({ state: "invalid" }))
     expect(sok.getAttribute("role")).toBe("combobox")
   })
 
   it("lar type stå på en knapp", () => {
-    // `type` sto i lista over det som ryddes, og `fs.button()` skriver den
+    // `type` sto i lista over det som ryddes, og `lt.button()` skriver den
     // aldri: knappen mistet `type="submit"` uten at noe sa fra.
     const knapp = document.createElement("button")
     knapp.setAttribute("type", "submit")
 
-    fs.setAttributes(knapp, fs.button({ variant: "secondary" }))
+    lt.setAttributes(knapp, lt.button({ variant: "secondary" }))
 
     expect(knapp.getAttribute("type")).toBe("submit")
   })
 
   it("fjerner placement når sprettoppvinduet går tilbake til standard", () => {
-    const vert = document.createElement("fs-popover")
-    fs.setAttributes(vert, fs.popover({ id: "p", placement: "top-end" }).host)
+    const vert = document.createElement("lt-popover")
+    lt.setAttributes(vert, lt.popover({ id: "p", placement: "top-end" }).host)
     expect(vert.getAttribute("placement")).toBe("top-end")
 
-    fs.setAttributes(vert, fs.popover({ id: "p" }).host)
+    lt.setAttributes(vert, lt.popover({ id: "p" }).host)
 
     expect(vert.hasAttribute("placement")).toBe(false)
   })

@@ -1,105 +1,107 @@
 import { Containers, colorTokens } from "../src/tokens/tokens"
 
 /*
- * Tailwind-temaet genereres, det skrives ikke.
+ * The Tailwind theme is generated, not written.
  *
- * Fila var 62 håndskrevne oppføringer som pekte på tokens, og hver ny farge
- * måtte legges inn to steder. Nå som hvert token heter `--fs-<slag>-<navn>`,
- * er oversettelsen mekanisk: Tailwinds navnerom er `--color-*`, `--text-*` og
- * `--container-*`, og slaget står alt i navnet vårt.
+ * The file was 62 hand-written entries pointing at tokens, and every new
+ * colour had to be added in two places. Now that every token is called
+ * `--lt-<kind>-<name>`, the translation is mechanical: Tailwind's namespaces
+ * are `--color-*`, `--text-*` and `--container-*`, and the kind is already in
+ * our name.
  */
 
-const linjer: string[] = [
-  "/* Generert. Rediger tokens.ts eller generate-tailwind.ts, ikke denne fila. */",
+const lines: string[] = [
+  "/* Generated. Edit tokens.ts or generate-tailwind.ts, not this file. */",
   "",
   "/*",
-  " * Fristils verdier som Tailwind-tema.",
+  " * LO-TEK's values as a Tailwind theme.",
   " *",
-  " * Fila er ren CSS, og pakken har ingen avhengighet til Tailwind. Det er",
-  " * Tailwind-versjonen i appen din som leser den, så to versjoner kan ikke",
-  " * komme i konflikt: her finnes det ingen andre.",
+  " * The file is plain CSS, and the package has no dependency on Tailwind. It",
+  " * is the Tailwind version in your app that reads it, so two versions cannot",
+  " * conflict: there is no other one here.",
   " *",
-  " * Krever Tailwind 4 og at `tokens.css` er lastet, siden verdiene peker dit.",
+  " * Requires Tailwind 4 and `tokens.css` to be loaded, since the values point there.",
   " *",
   " * ```css",
-  " * @layer theme, base, fristil, fristil-tema, components, utilities;",
+  " * @layer theme, base, lotek, lotek-theme, components, utilities;",
   " *",
   ' * @import "tailwindcss";',
-  ' * @import "@fristil/designsystem/tokens.css";',
-  ' * @import "@fristil/designsystem/tailwind.css";',
+  ' * @import "@lo-tek/interfaces/tokens.css";',
+  ' * @import "@lo-tek/interfaces/tailwind.css";',
   " * ```",
   " *",
-  " * Rekkefølgen på den første linja er ikke pynt. Lagene teller i den",
-  " * rekkefølgen de først blir nevnt, og vinneren er det siste laget, uansett",
-  " * spesifisitet. Står `fristil` foran `base`, slår Tailwinds Preflight",
-  " * komponentene våre og nullstiller for eksempel bakgrunnen på en knapp. Står",
-  " * det etter `utilities`, slår komponentene våre `p-6` og resten av klassene",
-  " * dine. Mellom `base` og `components` er det eneste stedet begge deler virker.",
+  " * The order of the first line matters. Layers count in the order they are",
+  " * first mentioned, and the winner is the last layer, whatever the",
+  " * specificity. With `lotek` before `base`, Tailwind's Preflight beats our",
+  " * components and resets, for example, the background of a button. With it",
+  " * after `utilities`, our components beat `p-6` and the rest of your",
+  " * classes. Between `base` and `components` is the only place both work.",
   " *",
-  " * `fristil-tema` er laget et tema fra `fristil tema` ligger i. Det skal stå i",
-  " * linja selv om du ikke har noe tema ennå: temaet erklærer bare `fristil,",
-  " * fristil-tema`, og en `@layer`-setning flytter ikke lag som alt er erklært,",
-  " * så uten plassen her havner temaet sist, etter `utilities`, og slår",
-  " * klassene dine.",
+  " * `lotek-theme` is the layer a theme from `lotek theme` goes in. It must be",
+  " * in the line even if you have no theme yet: the theme declares only",
+  " * `lotek, lotek-theme`, and an `@layer` statement does not move layers that",
+  " * are already declared, so without the place here the theme ends up last,",
+  " * after `utilities`, and beats your classes.",
   " *",
-  " * Alt vi legger til heter `fs-`, som klassene ellers i systemet. Da rører vi",
-  " * ikke Tailwinds egne verdier: `bg-neutral-100` betyr fortsatt det samme.",
+  " * Everything we add is called `lt-`, like the other classes in the system.",
+  " * That way we leave Tailwind's own values alone: `bg-neutral-100` still",
+  " * means the same.",
   " */",
   "",
   "@theme inline {",
   "  /*",
-  "   * Avstandsenheten. Tailwind regner `p-4` som `calc(var(--spacing) * 4)`,",
-  "   * så med `--fs-spacing-1` som enhet er `p-4` fire ganger enheten, altså",
-  "   * `--fs-spacing-4` så lenge skalaen står som den er. Trinnene er egne",
-  "   * verdier, ikke regnet av enheten: skriver du om skalaen, skriv om alle",
-  "   * trinnene, ikke bare `--fs-spacing-1`, ellers holder ikke komponentene",
-  "   * og klassene følge.",
+  "   * The spacing unit. Tailwind computes `p-4` as `calc(var(--spacing) * 4)`,",
+  "   * so with `--lt-spacing-1` as the unit, `p-4` is four times the unit, that",
+  "   * is, `--lt-spacing-4` as long as the scale stays as it is. The steps are",
+  "   * values of their own, not computed from the unit: if you rewrite the",
+  "   * scale, rewrite every step, not only `--lt-spacing-1`, or the components",
+  "   * and the classes drift apart.",
   "   */",
-  "  --spacing: var(--fs-spacing-1);",
+  "  --spacing: var(--lt-spacing-1);",
   "",
-  "  /* Fargene, én klasse per celle i matrisen */",
+  "  /* The colours, one class per cell in the matrix */",
 ]
 
 /*
- * Hver farge blir en klasse, gruppert på familie.
+ * Every colour becomes a class, grouped by family.
  *
- * `--fs-color-danger-fill` gir `--color-fs-danger-fill`, altså
- * `bg-fs-danger-fill` og `text-fs-danger-fill`. Skygge og fokusring er ikke
- * farger og hører i sine egne navnerom.
+ * `--lt-color-danger-fill` gives `--color-lt-danger-fill`, that is,
+ * `bg-lt-danger-fill` and `text-lt-danger-fill`. Shadow and focus ring are not
+ * colours and belong in their own namespaces.
  */
-let forrigeFamilie = ""
-for (const navn of Object.keys(colorTokens).sort()) {
-  if (!navn.startsWith("--fs-color-")) continue
-  const familie = navn.slice(11).split("-")[0]
-  if (familie !== forrigeFamilie) {
-    if (forrigeFamilie) linjer.push("")
-    forrigeFamilie = familie
+let previousFamily = ""
+for (const name of Object.keys(colorTokens).sort()) {
+  if (!name.startsWith("--lt-color-")) continue
+  const family = name.slice(11).split("-")[0]
+  if (family !== previousFamily) {
+    if (previousFamily) lines.push("")
+    previousFamily = family
   }
-  linjer.push(`  --color-fs-${navn.slice(11)}: var(${navn});`)
+  lines.push(`  --color-lt-${name.slice(11)}: var(${name});`)
 }
 
-linjer.push(
+lines.push(
   "",
-  "  /* Tekststørrelser */",
+  "  /* Text sizes */",
   ...["xxs", "xs", "s", "m", "l", "xl", "xxl", "mega"].map(
-    (navn) => `  --text-fs-${navn}: var(--fs-font-size-${navn});`,
+    (name) => `  --text-lt-${name}: var(--lt-font-size-${name});`,
   ),
   "",
-  "  /* Bredder for sideoppsett */",
-  ...Object.entries(Containers).map(([navn, verdi]) => {
-    const kebab = navn.replace(/[A-Z]/g, (b) => `-${b.toLowerCase()}`)
-    return `  --container-fs-${kebab}: ${verdi};`
+  "  /* Widths for page layout */",
+  ...Object.entries(Containers).map(([name, value]) => {
+    const kebab = name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
+    return `  --container-lt-${kebab}: ${value};`
   }),
   "",
-  "  /* Skyggen under flater som ligger over siden */",
-  "  --shadow-fs-overlay: var(--fs-shadow-overlay);",
+  "  /* The shadow under surfaces that sit above the page */",
+  "  --shadow-lt-overlay: var(--lt-shadow-overlay);",
   "}",
 )
 
 await Bun.write(
   new URL("../src/tailwind/tailwind.css", import.meta.url),
-  `${linjer.join("\n")}\n`,
+  `${lines.join("\n")}\n`,
 )
 
-const antall = linjer.filter((l) => l.trim().startsWith("--")).length
-console.log(`✓ tailwind.css generert: ${antall} oppføringer`)
+const count = lines.filter((l) => l.trim().startsWith("--")).length
+console.log(`✓ tailwind.css generated: ${count} entries`)

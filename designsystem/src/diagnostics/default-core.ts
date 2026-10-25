@@ -1,26 +1,30 @@
 /**
- * Kjernen fra pakken selv, lastet første gang den trengs, med pakkens eget
- * manifest og fargekontrakt, som ligger ved siden av modulen.
+ * The core from the package itself, loaded the first time it is needed, with
+ * the package's manifest and colour contract, which sit next to the module.
  *
- * Både sjekken (`@fristil/designsystem/diagnostics`) og temaet
- * (`@fristil/designsystem/tema` og `tema-sjekk`) bruker den samme instansen.
+ * Both the check (`@lo-tek/interfaces/diagnostics`) and the theme
+ * (`@lo-tek/interfaces/theme` and `theme-check`) use the same instance.
  */
 
 import { type Core, loadCore } from "./core.js"
 
-/** Filene i pakken, sett fra både `src/diagnostics/` og `dist/diagnostics/`. */
-const MODULE = new URL("../../kjerne/fristil-kjerne.wasm", import.meta.url)
+/** The files in the package, seen from both `src/diagnostics/` and `dist/diagnostics/`. */
+const MODULE = new URL("../../core/lotek-core.wasm", import.meta.url)
 const MANIFEST = new URL("../../manifest/manifest.json", import.meta.url)
-const CONTRACT = new URL("../../src/tokens/fargekontrakt.json", import.meta.url)
+const CONTRACT = new URL(
+  "../../src/tokens/color-contract.json",
+  import.meta.url,
+)
 
 let core: Core | undefined
 
 /*
- * Lastes første gang den trengs, ikke når modulen importeres: den som bare
- * vil ha typene, eller `loadCore`, skal ikke betale for den.
+ * Loaded the first time it is needed, not when the module is imported:
+ * anyone who only wants the types, or `loadCore`, should not pay for it.
  *
- * `node:fs` hentes med `process.getBuiltinModule` i stedet for en import, så
- * fila kan pakkes for nettleseren uten at pakkeverktøyet leter etter `fs`.
+ * `node:fs` is fetched with `process.getBuiltinModule` instead of an import,
+ * so the file can be bundled for the browser without the bundler looking
+ * for `fs`.
  */
 export function defaultCore(): Core {
   if (core) return core
@@ -28,16 +32,16 @@ export function defaultCore(): Core {
     | typeof import("node:fs")
     | undefined
   if (!fs) {
-    // `getBuiltinModule` kom i Node 20.16 og 22.3, så Node 21 og 22.0 til 22.2
-    // er utenfor selv om de er nyere enn 20.16. `engines` i package.json
-    // sier det samme. En Node uten den er Node, og skal få vite at det er
-    // versjonen som er feil, med begge grensene, så Node 22.1 ikke får høre
-    // at den er eldre enn 20.16.
+    // `getBuiltinModule` arrived in Node 20.16 and 22.3, so Node 21 and 22.0
+    // to 22.2 are excluded even though they are newer than 20.16. `engines`
+    // in package.json says the same. A Node without it is still Node, and
+    // should be told that the version is wrong, with both limits, so Node
+    // 22.1 is not told it is older than 20.16.
     const node = globalThis.process?.versions?.node
     throw new Error(
       node
-        ? `Fristil krever Node 20.16 eller nyere i 20-serien, eller Node 22.3 eller nyere, og dette er Node ${node}.`
-        : "Fristil leser kjernen fra pakken, og det krever Node, Bun eller Deno. I nettleseren: last fristil-kjerne.wasm selv, gi den til loadCore, og gi kjernen manifest.json med loadManifest og fargekontrakt.json med loadContract.",
+        ? `LO-TEK requires Node 20.16 or later in the 20 series, or Node 22.3 or later, and this is Node ${node}.`
+        : "LO-TEK reads the core from the package, which requires Node, Bun or Deno. In the browser, load lotek-core.wasm yourself, pass it to loadCore, and give the core manifest.json with loadManifest and color-contract.json with loadContract.",
     )
   }
   let bytes: Uint8Array
@@ -45,11 +49,11 @@ export function defaultCore(): Core {
     bytes = fs.readFileSync(MODULE)
   } catch {
     throw new Error(
-      `Fant ikke kjernen i ${MODULE.pathname}. I repoet bygges den med «bun run kjerne» i designsystem/, som krever Rust.`,
+      `Could not find the core at ${MODULE.pathname}. In the repository it is built with "bun run core" in designsystem/, which requires Rust.`,
     )
   }
-  // Manifestet trengs bare av sjekken, og fargekontrakten bare av temaet.
-  // Hver av dem leses første gang et kall trenger den.
+  // The manifest is only needed by the check, and the colour contract only
+  // by the theme. Each is read the first time a call needs it.
   const loaded = loadCore(bytes)
   let manifest = false
   let contract = false

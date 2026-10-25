@@ -1,52 +1,53 @@
-@layer fristil {
-  .fs-alert {
+@layer lotek {
+  .lt-alert {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: var(--fs-spacing-1);
-    padding: var(--fs-alert-padding, var(--fs-spacing-3) var(--fs-spacing-4));
+    gap: var(--lt-spacing-1);
+    padding: var(--lt-alert-padding, var(--lt-spacing-3) var(--lt-spacing-4));
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-strong);
-    background: var(--fs-color-neutral-surface);
-    border-radius: var(--fs-alert-radius, var(--fs-spacing-1));
-    /* Hver farge har en strek på kanten og en svak flate, satt lenger ned.
-       Teksten holder kontrasten mot den flaten i begge temaer. */
-    border-inline-start: var(--fs-alert-accent, var(--fs-spacing-1)) solid
-      var(--fs-color-neutral-text);
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-neutral-surface);
+    border-radius: var(--lt-alert-radius, var(--lt-spacing-1));
+    /* Each colour has a line on the edge and a faint surface, set further
+       down. The text keeps its contrast against that surface in both
+       themes. */
+    border-inline-start: var(--lt-alert-accent, var(--lt-spacing-1)) solid
+      var(--lt-color-neutral-text);
   }
 
-  .fs-alert__title {
+  .lt-alert__title {
     margin: 0;
-    font-size: var(--fs-font-size-m);
-    font-weight: var(--fs-font-weight-semibold);
-    line-height: var(--fs-line-height-default);
+    font-size: var(--lt-font-size-m);
+    font-weight: var(--lt-font-weight-semibold);
+    line-height: var(--lt-line-height-default);
   }
 
-  /* Bare elementet teller, så marginen til en `fs-help-text` eller
-     `fs-error-text` i meldingen vinner, som i kortet. */
-  :where(.fs-alert) p {
+  /* Only the element counts, so the margin of an `lt-help-text` or
+     `lt-error-text` in the message wins, as in the card. */
+  :where(.lt-alert) p {
     margin: 0;
   }
 
-  .fs-alert[data-color="success"] {
-    background: var(--fs-color-success-surface);
-    border-inline-start-color: var(--fs-color-success-text);
+  .lt-alert[data-color="success"] {
+    background: var(--lt-color-success-surface);
+    border-inline-start-color: var(--lt-color-success-text);
   }
 
-  .fs-alert[data-color="warning"] {
-    background: var(--fs-color-warning-surface);
-    border-inline-start-color: var(--fs-color-warning-text);
+  .lt-alert[data-color="warning"] {
+    background: var(--lt-color-warning-surface);
+    border-inline-start-color: var(--lt-color-warning-text);
   }
 
-  .fs-alert[data-color="danger"] {
-    background: var(--fs-color-danger-surface);
-    border-inline-start-color: var(--fs-color-danger-text);
+  .lt-alert[data-color="danger"] {
+    background: var(--lt-color-danger-surface);
+    border-inline-start-color: var(--lt-color-danger-text);
   }
 
-  .fs-alert[data-color="info"] {
-    background: var(--fs-color-accent-surface);
-    border-inline-start-color: var(--fs-color-accent-border);
+  .lt-alert[data-color="info"] {
+    background: var(--lt-color-accent-surface);
+    border-inline-start-color: var(--lt-color-accent-border);
   }
 }

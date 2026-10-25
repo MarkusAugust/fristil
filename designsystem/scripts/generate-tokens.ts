@@ -6,221 +6,229 @@ import {
 } from "../src/tokens/tokens"
 import { elements } from "../src/vocabulary/elements"
 
-const ELEMENTER = Object.keys(elements)
+const ELEMENTS = Object.keys(elements)
 
 /*
- * Hver `fs-`-klasse komponentstilarkene styler, lest fra stilarkene selv.
- * Eksakte klassevelgere og ikke `[class*="fs-"]`: den traff også
- * Bootstraps `fs-1`, og bommet på en klasse med tab eller linjeskift foran.
+ * Every `lt-` class the component stylesheets style, read from the
+ * stylesheets themselves. Exact class selectors and not `[class*="lt-"]`: that
+ * also matched an unrelated `lt-1`, and missed a class with a tab or a line
+ * break in front.
  */
-const KLASSER = new Set<string>()
-for await (const fil of new Bun.Glob("src/components/**/*.css").scan({
+const CLASSES = new Set<string>()
+for await (const file of new Bun.Glob("src/components/**/*.css").scan({
   cwd: `${import.meta.dir}/..`,
   absolute: true,
 })) {
-  const kilde = (await Bun.file(fil).text()).replace(/\/\*[\s\S]*?\*\//g, "")
-  for (const [, navn] of kilde.matchAll(/\.(fs-[a-z0-9_-]+)/g))
-    KLASSER.add(navn)
+  const source = (await Bun.file(file).text()).replace(/\/\*[\s\S]*?\*\//g, "")
+  for (const [, name] of source.matchAll(/\.(lt-[a-z0-9_-]+)/g))
+    CLASSES.add(name)
 }
 
 /*
- * Barn uten egen klasse som får `display` fra en komponentregel.
- * `skjult.browser.test.ts` leter selv etter slike regler i stilarkene, så et
- * nytt barn som mangler her, feiler der.
+ * Children without a class of their own that get `display` from a component
+ * rule. `hidden.browser.test.ts` looks for such rules in the stylesheets
+ * itself, so a new child missing here fails there.
  */
-const BARN = [
-  ".fs-accordion summary",
-  ".fs-breadcrumbs li",
-  ".fs-file-upload-list li",
-  ".fs-pagination *",
-  ".fs-select option",
-  ".fs-tabs__list a",
+const CHILDREN = [
+  ".lt-accordion summary",
+  ".lt-breadcrumbs li",
+  ".lt-file-upload-list li",
+  ".lt-pagination *",
+  ".lt-select option",
+  ".lt-tabs__list a",
 ]
 
 const sections: Record<string, string[]> = {}
 
 /*
- * Fargene kommer fra matrisen, resten fra `tokens.ts`.
+ * The colours come from the matrix, the rest from `tokens.ts`.
  *
- * Systemets egne farger er kontrakten anvendt på systemets egne kulører, så
- * det finnes ingen håndskrevet utgave som kan komme ut av takt med løftene.
+ * The system's own colours are the contract applied to the system's own
+ * hues, so there is no hand-written copy that can drift from the promises.
  */
-const alle: Record<string, string> = { ...cssTokens, ...colorTokens }
+const all: Record<string, string> = { ...cssTokens, ...colorTokens }
 
-for (const key of Object.keys(alle)) {
-  // Fargene grupperes på familie, resten på slag: `--fs-color-danger-*` blir
-  // «fs-color-danger», `--fs-spacing-4` blir «fs-spacing».
-  const deler = key.replace(/^--/, "").split("-")
-  const section = deler
-    .slice(0, key.startsWith("--fs-color-") ? 3 : 2)
+for (const key of Object.keys(all)) {
+  // The colours are grouped by family, the rest by kind: `--lt-color-danger-*`
+  // becomes "lt-color-danger", `--lt-spacing-4` becomes "lt-spacing".
+  const parts = key.replace(/^--/, "").split("-")
+  const section = parts
+    .slice(0, key.startsWith("--lt-color-") ? 3 : 2)
     .join("-")
 
   if (!sections[section]) sections[section] = []
-  sections[section].push(`  ${key}: ${alle[key]};`)
+  sections[section].push(`  ${key}: ${all[key]};`)
 }
 
 /*
- * Alt legges i et cascade layer.
+ * Everything goes in a cascade layer.
  *
- * Uten det måtte en konsument som vil ha egne farger slå spesifisiteten vår.
- * Den mørke mediespørringen bruker :root:not([data-theme="light"]), altså
- * 0,2,0, og en vanlig :root i konsumentens CSS taper mot den. Overstyringen
- * virket da i lyst tema og med data-theme, men røk stille for alle som har
- * operativsystemet i mørkt. CSS uten layer slår alltid CSS i et layer,
- * uansett spesifisitet, så nå holder en enkel :root.
+ * Without it, a consumer who wants their own colours would have to beat our
+ * specificity. The dark media query uses :root:not([data-theme="light"]),
+ * that is, 0,2,0, and a plain :root in the consumer's CSS loses to it. The
+ * override then worked in the light theme and with data-theme, but silently
+ * broke for everyone with the operating system in dark mode. CSS without a
+ * layer always beats CSS in a layer, whatever the specificity, so a plain
+ * :root is now enough.
  */
 /*
- * `color-scheme` settes bare der noen har valgt et tema, aldri på bar `:root`.
+ * `color-scheme` is set only where someone has chosen a theme, never on bare
+ * `:root`.
  *
- * Egenskapen styrer nettleserens egne flater: nedtrekkslista til en
- * `<select>`, rullefelt, kalenderpanelet i et datofelt og standardfargen på
- * en side uten egen bakgrunn. Den er derfor nødvendig, men den arves nedover
- * fra `<html>`. Et barn kan melde seg ut med `color-scheme: normal`, men
- * det er en motregel verten aldri ba om å måtte skrive.
+ * The property controls the browser's own surfaces: the dropdown of a
+ * `<select>`, scrollbars, the calendar panel of a date field and the default
+ * colour of a page without a background of its own. It is therefore needed,
+ * but it is inherited from `<html>` downwards. A child can opt out with
+ * `color-scheme: normal`, but that is a counter-rule the host never asked to
+ * have to write.
  *
- * Sto den på `:root`, tok Fristil over fargeskjemaet til et dokument det
- * ikke eier. En komponent som laster `fristil.css` inn i en vertsside ga hele
- * verten mørke rullefelt og skjemakontroller i mørk modus, langt utenfor
- * komponenten selv, og verten hadde aldri bedt om det.
+ * On `:root`, LO-TEK took over the colour scheme of a document that is not
+ * its own. A component that loads `lotek.css` into a host page gave the whole
+ * host dark scrollbars and form controls in dark mode, far outside the
+ * component itself, and the host had never asked for it.
  *
- * En side som vil at nettleserens flater skal følge systemet, skriver derfor
- * `color-scheme: light dark` på `<html>` selv. Det er den samme avtalen som
- * for lagrekkefølgen: to linjer konsumenten eier.
+ * A page that wants the browser's surfaces to follow the system therefore
+ * writes `color-scheme: light dark` on `<html>` itself. It is the same
+ * arrangement as for the layer order: two lines the consumer writes.
  *
- * Unntaket er temavelgeren nedenfor. Hvert av de tre valgene setter
- * `color-scheme` selv, og da skal konsumenten ikke skrive den: en regel
- * utenfor et lag slår `@layer fristil`.
+ * The exception is the theme picker below. Each of the three options sets
+ * `color-scheme` itself, and then the consumer should not write it: a rule
+ * outside a layer beats `@layer lotek`.
  */
 const lines = [
-  "/* Generert. Rediger tokens.ts, ikke denne fila. */",
+  "/* Generated. Edit tokens.ts, not this file. */",
   "",
-  "@layer fristil {",
+  "@layer lotek {",
   "  :root {",
 ]
 for (const [index, [section, props]] of Object.entries(sections).entries()) {
-  // Tom linje mellom gruppene, men ikke før den første: to på rad ville
-  // biome flagget hver gang fila genereres på nytt.
+  // A blank line between the groups, but not before the first: two in a row
+  // would be flagged by biome every time the file is regenerated.
   if (index > 0) lines.push("")
   lines.push(`    /* ${section} */`)
   lines.push(...props.map((line) => `  ${line}`))
 }
 lines.push("  }")
 
-const morkeNavn = Object.keys({ ...darkTokens, ...darkColorTokens })
+const darkNames = Object.keys({ ...darkTokens, ...darkColorTokens })
 
-const darkLines = morkeNavn.map(
+const darkLines = darkNames.map(
   (name) => `      ${name}: ${{ ...darkTokens, ...darkColorTokens }[name]};`,
 )
 
 /*
- * De lyse verdiene for nøyaktig de tokenene mørkt tema overstyrer.
+ * The light values for exactly the tokens the dark theme overrides.
  *
- * Uten denne lista sto `[data-theme="light"]` med bare `color-scheme`, mens
- * `[data-theme="dark"]` hadde alle 90. De to var altså ikke samme slags
- * regel: mørkt tema virket på et hvilket som helst element, lyst tema bare
- * på `<html>`, fordi et barn ikke kan overstyre en variabel det arver uten
- * å deklarere den på nytt. En komponent med `data-theme="light"` på sin egen
- * `<div>` fikk derfor mørke farger på en lys vertsside.
+ * Without this list, `[data-theme="light"]` had only `color-scheme`, while
+ * `[data-theme="dark"]` had all 90. The two were not the same kind of rule:
+ * the dark theme worked on any element, the light theme only on `<html>`,
+ * because a child cannot override a variable it inherits without declaring it
+ * again. A component with `data-theme="light"` on its own `<div>` therefore
+ * got dark colours on a light host page.
  *
- * Lista bygges av de samme nøklene, ikke av en egen håndskrevet utgave, så
- * de to blokkene ikke kan komme ut av takt. Et token uten lys verdi ville
- * vært en feil i `tokens.ts`, og stopper genereringen her.
+ * The list is built from the same keys, not from a hand-written copy, so the
+ * two blocks cannot drift apart. A token without a light value would be an
+ * error in `tokens.ts`, and stops the generation here.
  */
-const lightLines = morkeNavn.map((name) => {
-  const verdi = alle[name]
-  if (verdi === undefined)
+const lightLines = darkNames.map((name) => {
+  const value = all[name]
+  if (value === undefined)
     throw new Error(
-      `${name} er overstyrt i mørkt tema, men har ingen lys verdi i tokens.ts.`,
+      `${name} is overridden in the dark theme, but has no light value in tokens.ts.`,
     )
-  return `      ${name}: ${verdi};`
+  return `      ${name}: ${value};`
 })
 
 /*
- * Tokenene som er bygget av andre tokens, som fokusringen og avslått tilstand.
+ * The tokens built from other tokens, such as the focus ring and the
+ * disabled state.
  *
- * En `var()` i en egendefinert egenskap regnes ut der den deklareres, og
- * barna arver den ferdige verdien. Sto de bare på `:root`, fikk en seksjon
- * med `data-theme="dark"` på en lys side den lyse fokusringen, 2,4:1 mot den
- * mørke flaten, og en avslått knapp ble lysegrå. Deklarert på nytt i hver
- * temablokk, også mediespørringen så blokkene holder seg like, regnes de ut
- * mot temaets farger, også et generert tema i `fristil-tema`-laget.
+ * A `var()` in a custom property is computed where it is declared, and the
+ * children inherit the finished value. With them only on `:root`, a section
+ * with `data-theme="dark"` on a light page got the light focus ring, 2.4:1
+ * against the dark surface, and a disabled button turned light grey.
+ * Declared again in each theme block, the media query included so the blocks
+ * stay alike, they are computed against the theme's colours, a generated
+ * theme in the `lotek-theme` layer included.
  *
- * Prisen er at en overstyring på `:root` ikke når inn i et `data-theme`: en
- * deklarasjon på elementet selv slår en verdi det arver. Lista er derfor
- * skrevet ut, så et nytt alias som `var(--fs-font-family-base)` ikke havner
- * her uten at noen har bestemt det.
+ * The cost is that an override on `:root` does not reach into a
+ * `data-theme`: a declaration on the element itself beats a value it
+ * inherits. The list is therefore written out, so a new alias like
+ * `var(--lt-font-family-base)` does not end up here without someone deciding
+ * it.
  */
-const AVLEDET = [
-  "--fs-color-disabled-surface",
-  "--fs-color-disabled-text",
-  "--fs-focus-ring",
+const DERIVED = [
+  "--lt-color-disabled-surface",
+  "--lt-color-disabled-text",
+  "--lt-focus-ring",
 ]
-const avledetLines = AVLEDET.map((name) => {
-  if (alle[name] === undefined)
-    throw new Error(`${name} finnes ikke i tokens.ts.`)
-  return `      ${name}: ${alle[name]};`
+const derivedLines = DERIVED.map((name) => {
+  if (all[name] === undefined)
+    throw new Error(`${name} does not exist in tokens.ts.`)
+  return `      ${name}: ${all[name]};`
 })
 
 /*
- * Mørkt tema skrives to ganger, og det er med vilje.
+ * The dark theme is written twice, and that is on purpose.
  *
- * Mediespørringen gjør at systemvalget gjelder uten at konsumenten skriver
- * noe. `:not([data-theme="light"])` lar en app tvinge lyst tema på hele
- * dokumentet fra en maskin som står i mørkt.
+ * The media query makes the system setting apply without the consumer
+ * writing anything. `:not([data-theme="light"])` lets an app force the light
+ * theme on the whole document from a device set to dark.
  *
- * Attributtreglene under er noe annet: de er temagrenser, og virker på et
- * hvilket som helst element. Begge deklarerer alle de 90 tokenene, slik at
- * et tema kan ligge inne i et annet, begge veier, og slik at en innebygd
- * komponent kan
- * låse sitt eget tre uten å røre verten.
+ * The attribute rules below are something else: they are theme boundaries,
+ * and work on any element. Both declare all 90 tokens, so one theme can sit
+ * inside another, both ways, and so an embedded component can lock its own
+ * tree without touching the host.
  */
 /*
- * `.fs-theme-control` lar brukeren velge tema uten en linje JavaScript.
+ * `.lt-theme-control` lets the user choose a theme without a line of
+ * JavaScript.
  *
- * Klassen står på en radioknapp, og `value` sier hvilket tema den velger.
- * Selektoren blir en ekstra linje på temablokkene framfor en kopi av dem, så
- * de 90 tokenene står ett sted.
+ * The class is on a radio button, and `value` says which theme it selects.
+ * The selector becomes an extra line on the theme blocks rather than a copy
+ * of them, so the 90 tokens are in one place.
  *
- * «Følg systemet» trenger ingen temablokk: en verdi uten blokk treffer
- * ingenting, og da gjelder `:root` og mediespørringen igjen.
+ * "Follow the system" needs no theme block: a value without a block matches
+ * nothing, and then `:root` and the media query apply again.
  *
- * Den trenger likevel `color-scheme`, og det er funnet underveis. Fristil
- * setter den ikke på bar `:root`, siden pakken kan være en gjest på en side den
- * ikke eier, så rådet har vært at konsumenten skriver `color-scheme: light
- * dark` på `<html>` selv. Gjør den det utenfor et lag, slår regelen
- * `@layer fristil`, og et valgt mørkt tema fikk lyse rullefelt og
- * skjemakontroller. Å svare med «legg den i et lag foran fristil» er en felle:
- * lagrekkefølgen er alt etablert av tokens.css, som lastes først, så en senere
- * `@layer`-setning legger laget bak. Kontrollen tar derfor ansvaret selv, og
- * den som bruker den trenger ikke skrive `color-scheme` i det hele tatt.
+ * It still needs `color-scheme`, which was found along the way. LO-TEK does
+ * not set it on bare `:root`, since the package can be a guest on a page that
+ * is not its own, so the advice has been for the consumer to write
+ * `color-scheme: light dark` on `<html>` themselves. Done outside a layer,
+ * that rule beats `@layer lotek`, and a chosen dark theme got light
+ * scrollbars and form controls. Answering "put it in a layer before lotek" is
+ * a trap: the layer order is already established by tokens.css, which loads
+ * first, so a later `@layer` statement puts the layer behind. The control
+ * therefore takes care of it itself, and whoever uses it does not need to
+ * write `color-scheme` at all.
  *
- * Kontrollen vinner over `data-theme` på det samme elementet, siden `:has()`
- * tar spesifisiteten til argumentet sitt. Det er med vilje: serveren sender
- * valget den har lagret, og klikket skal slå igjennom før svaret er tilbake.
- * Rekkefølgen er etterprøvd i alle tre motorene i `tema.browser.test.ts`,
- * ikke regnet ut her.
+ * The control wins over `data-theme` on the same element, since `:has()`
+ * takes the specificity of its argument. That is on purpose: the server
+ * sends the choice it has stored, and the click should take effect before
+ * the response is back. The order is tested in all three engines in
+ * `theme.browser.test.ts`, not worked out here.
  */
-const control = (tema: string) =>
-  `:root:has(.fs-theme-control[value="${tema}"]:checked)`
+const control = (theme: string) =>
+  `:root:has(.lt-theme-control[value="${theme}"]:checked)`
 
 lines.push(
   "",
   "  @media (prefers-color-scheme: dark) {",
   '    :root:not([data-theme="light"]) {',
   ...darkLines,
-  ...avledetLines,
+  ...derivedLines,
   "    }",
   "  }",
   "",
-  // Tvinger appen fram et tema, må nettleserens egne flater følge med.
-  // Ellers får en app som står på lyst tema på en mørk maskin en svart
-  // nedtrekksliste under et hvitt felt.
+  // When the app forces a theme, the browser's own surfaces must follow.
+  // Otherwise an app set to the light theme on a dark device gets a black
+  // dropdown under a white field.
   '  [data-theme="light"],',
   `  ${control("light")} {`,
   "    color-scheme: light;",
   "",
   ...lightLines.map((l) => l.slice(2)),
-  ...avledetLines.map((l) => l.slice(2)),
+  ...derivedLines.map((l) => l.slice(2)),
   "  }",
   "",
   '  [data-theme="dark"],',
@@ -228,77 +236,81 @@ lines.push(
   "    color-scheme: dark;",
   "",
   ...darkLines.map((l) => l.slice(2)),
-  ...avledetLines.map((l) => l.slice(2)),
+  ...derivedLines.map((l) => l.slice(2)),
   "  }",
   "",
   /*
-   * En temagrense gir også flaten og teksten. Uten dette sto en
-   * `<div data-theme="dark">` på en lys side gjennomsiktig: tokenene ble
-   * mørke, men bakgrunnen var fortsatt sidens hvite, og brødteksten ble
-   * 1,23:1. Bare `light` og `dark`: andre verdier har ingen temablokk.
-   * `:where` gir spesifisitet null, så en komponent med `data-theme` på seg
-   * beholder sin egen flate.
+   * A theme boundary also gives the surface and the text. Without this, a
+   * `<div data-theme="dark">` on a light page was transparent: the tokens
+   * turned dark, but the background was still the page's white, and the
+   * body text was 1.23:1. Only `light` and `dark`: other values have no theme
+   * block. `:where` gives zero specificity, so a component with `data-theme`
+   * on it keeps its own surface.
    *
-   * Roten får ingenting. Pakken kan være gjest på en side den ikke eier, og
-   * en bakgrunn på `<html>` stoppet sidens egen `body`-bakgrunn fra å fylle
-   * vinduet. `fs-toast` er en fast kolonne over siden, og skal ikke bli en
-   * mørk stripe bak meldingene.
+   * The root gets nothing. The package can be a guest on a page that is not
+   * its own, and a background on `<html>` stopped the page's own `body`
+   * background from filling the window. `lt-toast` is a fixed column above
+   * the page, and must not become a dark stripe behind the messages.
    */
   "  :where(",
-  '    [data-theme="light"]:not(:root, fs-toast),',
-  '    [data-theme="dark"]:not(:root, fs-toast)',
+  '    [data-theme="light"]:not(:root, lt-toast),',
+  '    [data-theme="dark"]:not(:root, lt-toast)',
   "  ) {",
-  "    background-color: var(--fs-color-neutral-canvas);",
-  "    color: var(--fs-color-neutral-text);",
+  "    background-color: var(--lt-color-neutral-canvas);",
+  "    color: var(--lt-color-neutral-text);",
   "  }",
   "",
   /*
-   * Ingen tokens her: `auto` skal nettopp falle tilbake på mediespørringen.
-   * Bare nettleserens egne flater trenger å få vite at begge er i orden.
+   * No tokens here: `auto` is meant to fall back on the media query. Only
+   * the browser's own surfaces need to be told that both are fine.
    *
-   * Vilkåret er ikke pynt. `auto` betyr «ingen overstyring fra meg», så har
-   * serveren skrevet et tema, er det serverens verdi som står, både for
-   * tokenene og for flatene. Uten vilkåret vant `auto` på `color-scheme` fordi
-   * `:has()` er mer spesifikk enn attributtet, mens tokenene kom fra
-   * attributtblokka: mørke farger med lyse rullefelt, altså nøyaktig spriket
-   * blokkene over finnes for å hindre.
+   * The condition matters. `auto` means "no override from me", so if the
+   * server has written a theme, the server's value stands, both for the
+   * tokens and for the surfaces. Without the condition, `auto` won on
+   * `color-scheme` because `:has()` is more specific than the attribute,
+   * while the tokens came from the attribute block: dark colours with light
+   * scrollbars, exactly the mismatch the blocks above exist to prevent.
    *
-   * Det spør på **verdi** og ikke på om attributtet finnes. Et `data-theme`
-   * uten blokk, som `auto` eller en skrivefeil, lar tokenene falle til `:root`
-   * og mediespørringen. Spurte vi bare `:not([data-theme])`, ble `auto`-regelen
-   * blokkert av en slik verdi, og `color-scheme` sto usatt mens tokenene fulgte
-   * systemet: det samme spriket, utløst av den andre enden.
+   * It asks about the **value** and not whether the attribute exists. A
+   * `data-theme` without a block, such as `auto` or a typo, lets the tokens
+   * fall to `:root` and the media query. Had we asked only
+   * `:not([data-theme])`, the `auto` rule would be blocked by such a value,
+   * and `color-scheme` would be unset while the tokens followed the system:
+   * the same mismatch, triggered from the other end.
    */
-  // Brytningen står inne i `:has(…)`. Et linjeskift mellom leddene utenfor
-  // parentesen ville blitt en etterkommerselektor. Formen er Biomes.
+  // The line break is inside `:has(…)`. A line break between the parts
+  // outside the parenthesis would become a descendant selector. The form is Biome's.
   '  :root:not([data-theme="light"]):not([data-theme="dark"]):has(',
-  '    .fs-theme-control[value="auto"]:checked',
+  '    .lt-theme-control[value="auto"]:checked',
   "  ) {",
   "    color-scheme: light dark;",
   "  }",
   "",
   /*
-   * `hidden` skal skjule, også en komponent som setter `display` selv.
+   * `hidden` must hide, also a component that sets `display` itself.
    *
-   * Forfatterstil i et hvilket som helst lag slår nettleserens
-   * `[hidden] { display: none }`, så `<div class="fs-alert" hidden>` sto
-   * synlig. `!important` i laget er det nettleseren selv gjør, og slår alle
-   * vanlige deklarasjoner uansett spesifisitet, også varianter som
-   * `.fs-select[data-picker="styled"] option`. Det slår også konsumentens
-   * egen `!important` uten lag, så `hidden` kan ikke overstyres her.
+   * Author styles in any layer beat the browser's
+   * `[hidden] { display: none }`, so `<div class="lt-alert" hidden>` stayed
+   * visible. `!important` in the layer is what the browser itself does, and
+   * beats all ordinary declarations whatever the specificity, variants like
+   * `.lt-select[data-picker="styled"] option` included. It also beats the
+   * consumer's own `!important` without a layer, so `hidden` cannot be
+   * overridden here.
    *
-   * Elementene står for seg, siden en web component ikke trenger en klasse,
-   * og barna i `BARN` har ingen. `until-found` skal ikke skjules helt:
-   * nettleseren søker i det.
+   * The elements are listed separately, since a web component needs no
+   * class, and the children in `CHILDREN` have none. `until-found` must not be
+   * hidden completely: the browser searches in it.
    */
   "  :is(",
   ...[
-    ...[...KLASSER].sort().map((navn) => `.${navn}`),
-    ...ELEMENTER,
-    ...BARN,
-  ].map((velger, i, alle) => `    ${velger}${i < alle.length - 1 ? "," : ""}`),
+    ...[...CLASSES].sort().map((name) => `.${name}`),
+    ...ELEMENTS,
+    ...CHILDREN,
+  ].map(
+    (selector, i, list) => `    ${selector}${i < list.length - 1 ? "," : ""}`,
+  ),
   '  )[hidden]:not([hidden="until-found" i]) {',
-  "    /* biome-ignore lint/complexity/noImportantStyles: `hidden` skal vinne over komponentens `display`, slik nettleseren selv gjør */",
+  "    /* biome-ignore lint/complexity/noImportantStyles: `hidden` must win over the component's `display`, as the browser itself does */",
   "    display: none !important;",
   "  }",
   "}",
@@ -310,5 +322,5 @@ await Bun.write(
 )
 
 console.log(
-  `✓ tokens.css generert: ${Object.keys(alle).length} verdier, ${darkLines.length} overstyrt i mørkt tema`,
+  `✓ tokens.css generated: ${Object.keys(all).length} values, ${darkLines.length} overridden in the dark theme`,
 )

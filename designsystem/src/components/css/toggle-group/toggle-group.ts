@@ -1,29 +1,29 @@
 import { attributes } from "../shared.js"
 
-export const TOGGLE_GROUP_CLASS = "fs-toggle-group" as const
-/** Ledeteksten rundt hvert alternativ. */
-export const TOGGLE_GROUP_OPTION_CLASS = "fs-toggle-group__option" as const
+export const TOGGLE_GROUP_CLASS = "lt-toggle-group" as const
+/** The label around each option. */
+export const TOGGLE_GROUP_OPTION_CLASS = "lt-toggle-group__option" as const
 
 export type ToggleGroupAttributes = {
   class: typeof TOGGLE_GROUP_CLASS
 }
 
 /**
- * Attributtene for en gruppe der ett alternativ er valgt om gangen.
+ * The attributes for a group where one option is selected at a time.
  *
- * Gruppen er radioknapper i forkledning. Hvert alternativ er en `<label>` med
- * en `<input type="radio">` inni, krympet bort visuelt. Da beholder du
- * piltastene, `FormData` og at skjermleseren sier «2 av 3» uten at noe av det
- * må skrives på nytt.
+ * The group is radio buttons in disguise. Each option is a `<label>` with an
+ * `<input type="radio">` inside, visually shrunk away. You then keep the
+ * arrow keys, `FormData` and the screen reader saying "2 of 3" without
+ * writing any of it again.
  *
- * Er valgene handlinger framfor en innstilling, som «fet, kursiv,
- * understreket», hører knapper med `aria-pressed` hjemme i stedet.
+ * If the choices are actions rather than a setting, such as "bold, italic,
+ * underline", buttons with `aria-pressed` belong there instead.
  *
  * ```ts
  * <fieldset {...toggleGroup()}>
- *   <legend class="fs-sr-only">Visning</legend>
+ *   <legend class="lt-sr-only">View</legend>
  *   <label class={toggleGroup.option}>
- *     <input type="radio" name="visning" value="liste" checked /> Liste
+ *     <input type="radio" name="view" value="list" checked /> List
  *   </label>
  * </fieldset>
  * ```
@@ -31,7 +31,7 @@ export type ToggleGroupAttributes = {
 export const toggleGroup = Object.assign(
   (): ToggleGroupAttributes => attributes({ class: TOGGLE_GROUP_CLASS }),
   {
-    /** Klassen på ledeteksten rundt hvert alternativ. */
+    /** The class on the label around each option. */
     option: TOGGLE_GROUP_OPTION_CLASS,
   },
 )

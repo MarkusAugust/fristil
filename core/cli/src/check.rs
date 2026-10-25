@@ -1,0 +1,421 @@
+//! `lotek check <file|address…>`: the same check the editor runs while you
+//! type, over finished files.
+//!
+//! Without files, standard input is read, so a test can send the HTML the
+//! server actually sends. An address is fetched and checked as a whole page:
+//! then every id referred to must also exist, and every field must be wired.
+//! `--rendered` does the same for files and standard input. A template is not
+//! checked that way without the flag, since an id in a template can be in
+//! another file.
+
+use std::io::{IsTerminal, Read};
+
+use crate::fetch;
+use crate::output::{count, error, fail, log, shown};
+use lotek_core::styles::{read_styles, Styles};
+use lotek_core::text::utf16;
+use lotek_core::types::Severity;
+use lotek_core::{diagnose_markup, diagnose_page, diagnose_styled, manifest, Lines};
+
+/// The text without a leading BOM (U+FEFF), as the browser and the editor
+/// read it. With it, line 1 would get one column more than the editor shows,
+/// and the Node host, where `response.text()` removes it, would answer
+/// differently from the executable and the JVM.
+pub fn without_bom(text: String) -> String {
+    match text.strip_prefix('\u{feff}') {
+        Some(rest) => rest.to_string(),
+        None => text,
+    }
+}
+
+/// All of standard input. If the pipe is in non-blocking mode, it waits and
+/// reads again until the writer is done, instead of giving up with whatever
+/// happened to have arrived.
+fn read_all_input() -> Vec<u8> {
+    let mut bytes = Vec::new();
+    let mut buffer = [0u8; 64 * 1024];
+    let mut stdin = std::io::stdin().lock();
+    loop {
+        match stdin.read(&mut buffer) {
+            Ok(0) => return bytes,
+            Ok(n) => bytes.extend_from_slice(&buffer[..n]),
+            Err(e) if e.kind() == std::io::ErrorKind::Interrupted => {}
+            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                std::thread::sleep(std::time::Duration::from_millis(5));
+            }
+            Err(_) => return bytes,
+        }
+    }
+}
+
+/// The fragments in the files, each checked against `base` on its own, so an
+/// error says which file it is in.
+pub fn read_fragments(base: &str, manifests: &[&str]) -> Vec<String> {
+    let mut texts = Vec::new();
+    for path in manifests {
+        let Ok(bytes) = std::fs::read(path) else {
+            fail(&format!(
+                "Manifest not found: \"{}\".\n\nThe fragment is written by lotek takeover, next to the copy.\n",
+                shown(path)
+            ));
+        };
+        let text = String::from_utf8_lossy(&bytes).into_owned();
+        if let Err(reason) = manifest::with_fragments(base, &[&text]) {
+            fail(&format!(
+                "\"{}\" cannot be read as a manifest: {reason}\n",
+                shown(path)
+            ));
+        }
+        texts.push(text);
+    }
+    texts
+}
+
+/// The vocabulary: the manifest in the package, with the fragments added.
+fn vocabulary(manifests: &[&str]) -> std::rc::Rc<lotek_core::types::Vocabulary> {
+    let base = crate::package::manifest();
+    let texts = read_fragments(&base, manifests);
+    let all: Vec<&str> = texts.iter().map(String::as_str).collect();
+    match manifest::with_fragments(&base, &all) {
+        Ok(vocabulary) => std::rc::Rc::new(vocabulary),
+        Err(reason) => fail(&format!(
+            "The manifests cannot be read together: {reason}\n"
+        )),
+    }
+}
+
+/// The path without `.` and `..`, so two paths to the same file are equal.
+/// Without this, `a/../b/y.css` and `a/../b/../b/y.css` were two files, and
+/// two style sheets importing each other through `../` gave an endless loop.
+fn normalized(path: &std::path::Path) -> std::path::PathBuf {
+    use std::path::Component;
+    let mut out = std::path::PathBuf::new();
+    for part in path.components() {
+        match part {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                if matches!(out.components().next_back(), Some(Component::Normal(_))) {
+                    out.pop();
+                } else {
+                    out.push("..");
+                }
+            }
+            other => out.push(other.as_os_str()),
+        }
+    }
+    out
+}
+
+/// The file a package path like `@lo-tek/interfaces/lotek.css` points to.
+///
+/// Looks for `node_modules/<package>` upwards from the style sheet's folder,
+/// and looks up the subpath in `exports` in the package's `package.json`: an
+/// exact key, otherwise a pattern like `./*`, and the value as a string or as
+/// a conditions object (`style`, `default`). A package imported by name alone
+/// uses `.` and then `style`. Without a match, the direct path is used.
+///
+/// A path that starts with `.` or `/` is a file, not a package, and gives
+/// `None`.
+fn package_file(folder: &std::path::Path, spec: &str) -> Option<std::path::PathBuf> {
+    use lotek_core::json::{parse, Json};
+    let spec = spec.strip_prefix('~').unwrap_or(spec);
+    if spec.starts_with('.') || spec.starts_with('/') || spec.starts_with('\\') {
+        return None;
+    }
+    let mut parts = spec.splitn(if spec.starts_with('@') { 3 } else { 2 }, '/');
+    let name = if spec.starts_with('@') {
+        format!("{}/{}", parts.next()?, parts.next()?)
+    } else {
+        parts.next()?.to_string()
+    };
+    let sub = parts.next().unwrap_or("");
+    let start = if folder.is_absolute() {
+        folder.to_path_buf()
+    } else {
+        std::env::current_dir().ok()?.join(folder)
+    };
+    fn pick(entry: &Json) -> Option<String> {
+        match entry {
+            Json::String(s) => Some(s.clone()),
+            Json::Object(_) => ["style", "default", "import"]
+                .iter()
+                .find_map(|c| entry.get(c).and_then(pick)),
+            _ => None,
+        }
+    }
+    let lookup = |pkg: &Json| -> Option<String> {
+        let key = if sub.is_empty() {
+            ".".to_string()
+        } else {
+            format!("./{sub}")
+        };
+        let exports = pkg.get("exports");
+        if let Some(found) = exports.and_then(|e| e.get(&key)).and_then(pick) {
+            return Some(found);
+        }
+        // A pattern, like `"./*": "./dist/*"`.
+        if let Some(Json::Object(entries)) = exports {
+            for (pattern, value) in entries {
+                let Some((before, after)) = pattern.split_once('*') else {
+                    continue;
+                };
+                let Some(middle) = key
+                    .strip_prefix(before)
+                    .and_then(|rest| rest.strip_suffix(after))
+                else {
+                    continue;
+                };
+                if let Some(target) = pick(value) {
+                    return Some(target.replace('*', middle));
+                }
+            }
+        }
+        if sub.is_empty() {
+            return pkg.get("style").and_then(pick);
+        }
+        None
+    };
+    let mut dir = Some(normalized(&start));
+    while let Some(here) = dir {
+        let root = here.join("node_modules").join(&name);
+        if let Ok(text) = std::fs::read_to_string(root.join("package.json")) {
+            let target = parse(&text).ok().and_then(|pkg| lookup(&pkg));
+            return Some(normalized(&root.join(target.as_deref().unwrap_or(sub))));
+        }
+        dir = here.parent().map(std::path::Path::to_path_buf);
+    }
+    None
+}
+
+/// The style sheets, with what they import.
+///
+/// `@import` is followed to a file next to it, and to a package in
+/// `node_modules`, like `@lo-tek/interfaces/lotek.css`. An address on the
+/// web is not fetched.
+fn read_style_sheets(paths: &[&str]) -> Styles {
+    let mut styles = Styles::default();
+    let mut seen: Vec<std::path::PathBuf> = Vec::new();
+    let mut queue: Vec<(std::path::PathBuf, bool)> = paths
+        .iter()
+        .map(|p| (normalized(std::path::Path::new(p)), true))
+        .collect();
+    while let Some((path, given)) = queue.pop() {
+        if seen.contains(&path) {
+            continue;
+        }
+        seen.push(path.clone());
+        let Ok(bytes) = std::fs::read(&path) else {
+            if given {
+                fail(&format!(
+                    "Style sheet not found: \"{}\".",
+                    shown(&path.display().to_string())
+                ));
+            }
+            continue;
+        };
+        let read = read_styles(&String::from_utf8_lossy(&bytes));
+        let folder = path
+            .parent()
+            .map(std::path::Path::to_path_buf)
+            .unwrap_or_default();
+        for import in &read.imports {
+            if import.contains("://") || import.starts_with("data:") {
+                continue;
+            }
+            let beside = normalized(&folder.join(import));
+            queue.push((
+                if beside.exists() {
+                    beside
+                } else {
+                    package_file(&folder, import).unwrap_or_else(|| {
+                        if import.starts_with('.') || import.starts_with('/') {
+                            beside
+                        } else {
+                            normalized(&std::path::Path::new("node_modules").join(import))
+                        }
+                    })
+                },
+                false,
+            ));
+        }
+        styles.extend(read);
+    }
+    styles
+}
+
+struct Source {
+    name: String,
+    text: String,
+    page: bool,
+}
+
+pub fn run(arguments: &[String]) {
+    let rendered = arguments.iter().any(|a| a == "--rendered");
+    let mut sources: Vec<Source> = Vec::new();
+    let mut missing: Vec<String> = Vec::new();
+    let mut unreachable: Vec<String> = Vec::new();
+
+    // The fragments from `lotek takeover`, so the markup for a copy is checked
+    // too.
+    let manifests: Vec<&str> = arguments
+        .iter()
+        .filter_map(|a| a.strip_prefix("--manifest="))
+        .collect();
+    let inputs: Vec<&String> = arguments
+        .iter()
+        .filter(|a| *a != "--rendered" && !a.starts_with("--manifest=") && !a.starts_with("--css="))
+        .collect();
+    let vocabulary = vocabulary(&manifests);
+    // The style sheets, so the check also sees what is not styled.
+    let style_sheets: Vec<&str> = arguments
+        .iter()
+        .filter_map(|a| a.strip_prefix("--css="))
+        .collect();
+    let styles = (!style_sheets.is_empty()).then(|| read_style_sheets(&style_sheets));
+
+    if inputs.is_empty() {
+        // WASI cannot see whether standard input is a terminal, so the host
+        // says so. Chicory reports a pipe as a terminal, so as a WASI module
+        // the command line trusts only the host.
+        let terminal = if cfg!(target_os = "wasi") {
+            std::env::var("LOTEK_TERMINAL").is_ok_and(|v| v == "1")
+        } else {
+            std::io::stdin().is_terminal()
+        };
+        if terminal {
+            error("Reading markup from standard input. End with Ctrl-D.");
+        }
+        let bytes = read_all_input();
+        let text = without_bom(String::from_utf8_lossy(&bytes).into_owned());
+        // Empty input is not markup that matches. A glob that matched nothing
+        // would otherwise pass without having looked at anything.
+        if text.trim().is_empty() {
+            fail("No markup to check: standard input was empty.");
+        }
+        sources.push(Source {
+            name: "stdin".into(),
+            text,
+            page: rendered,
+        });
+    }
+
+    for input in inputs {
+        // A page the host has already fetched, in place of the address. See
+        // `fetch::from_host`.
+        let answer = if let Some(file) = input.strip_prefix("--fetched=") {
+            Some(fetch::from_host(file))
+        } else if fetch::is_address(input) {
+            Some(fetch::page(input))
+        } else {
+            None
+        };
+        match answer {
+            Some(Ok((address, text))) => sources.push(Source {
+                name: address,
+                text,
+                page: true,
+            }),
+            Some(Err(reason)) => unreachable.push(reason),
+            None => match std::fs::read(input) {
+                Ok(bytes) => sources.push(Source {
+                    name: input.clone(),
+                    text: without_bom(String::from_utf8_lossy(&bytes).into_owned()),
+                    page: rendered,
+                }),
+                Err(_) => missing.push(input.clone()),
+            },
+        }
+    }
+
+    if !missing.is_empty() || !unreachable.is_empty() {
+        for path in &missing {
+            error(&format!("File not found: \"{}\".", shown(path)));
+        }
+        for reason in &unreachable {
+            error(reason);
+        }
+        std::process::exit(1);
+    }
+
+    // As for standard input: if every file is empty, there is nothing to
+    // check. One empty file among several, like an empty partial in a glob,
+    // is not an error.
+    if !sources.is_empty() && sources.iter().all(|s| s.text.trim().is_empty()) {
+        fail(&if sources.len() == 1 {
+            format!(
+                "No markup to check: \"{}\" is empty.",
+                shown(&sources[0].name)
+            )
+        } else {
+            format!("No markup to check: all {} files are empty.", sources.len())
+        });
+    }
+
+    let mut found = 0;
+    for source in &sources {
+        let text = utf16(&source.text);
+        let findings = match &styles {
+            Some(styles) => diagnose_styled(&text, &vocabulary, styles, source.page),
+            None if source.page => diagnose_page(&text, &vocabulary),
+            None => diagnose_markup(&text, &vocabulary),
+        };
+        let lines = Lines::new(&text);
+        for finding in findings {
+            found += 1;
+            let (line, column) = lines.line_and_column(finding.start);
+            let kind = match finding.severity {
+                Severity::Error => "error",
+                Severity::Warning => "warning",
+            };
+            log(&format!(
+                "{}:{line}:{column}: {kind}: {}",
+                shown(&source.name),
+                finding.message
+            ));
+        }
+    }
+
+    let files = count(sources.len(), "file", "files");
+    if found > 0 {
+        fail(&format!(
+            "\n{} in {files}.",
+            count(found, "finding", "findings")
+        ));
+    }
+    log(&format!("The markup matches LO-TEK in {files}."));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn normalizes_paths() {
+        assert_eq!(
+            normalized(std::path::Path::new("a/../b/./y.css")),
+            std::path::PathBuf::from("b/y.css")
+        );
+        assert_eq!(
+            normalized(std::path::Path::new("../a/x.css")),
+            std::path::PathBuf::from("../a/x.css")
+        );
+        assert_eq!(
+            normalized(std::path::Path::new("/r/a/../b")),
+            std::path::PathBuf::from("/r/b")
+        );
+    }
+
+    #[test]
+    fn style_sheets_that_import_each_other_are_read_once() {
+        let root = std::env::temp_dir().join(format!("lotek-import-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("a")).unwrap();
+        std::fs::create_dir_all(root.join("b")).unwrap();
+        std::fs::write(root.join("a/x.css"), "@import \"../b/y.css\";\n.lt-a { }").unwrap();
+        std::fs::write(root.join("b/y.css"), "@import \"../a/x.css\";\n.lt-b { }").unwrap();
+        let start = root.join("a/x.css");
+        let styles = read_style_sheets(&[start.to_str().unwrap()]);
+        assert!(styles.classes.contains("lt-a") && styles.classes.contains("lt-b"));
+        assert_eq!(styles.imports.len(), 2, "each style sheet is read once");
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}

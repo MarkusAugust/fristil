@@ -1,25 +1,27 @@
 /**
- * Gir hvert kodefelt tastaturtilgang i HTML-en, ikke først når et skript
- * har kjørt.
+ * Gives every code block keyboard access in the HTML, not only once a script
+ * has run.
  *
- * Expressive Code setter `tabindex="0"` og `role="region"` på en `<pre>` som
- * kan rulles, og tar dem bort fra en som ikke kan det. Det gjør skriptet
- * `ec.*.js` etter at en `ResizeObserver` har meldt fra, en pause på 250 ms og
- * en `requestIdleCallback` uten frist. Til da kan et felt som er bredere enn
- * spalten ikke nås med tastaturet, og uten JavaScript kan det aldri nås.
+ * Expressive Code sets `tabindex="0"` and `role="region"` on a `<pre>` that
+ * can scroll, and removes them from one that cannot. The script `ec.*.js` does
+ * this after a `ResizeObserver` has reported, a 250 ms pause and a
+ * `requestIdleCallback` with no timeout. Until then a block wider than the
+ * column cannot be reached with the keyboard, and without JavaScript it never
+ * can.
  *
- * Én gang i CI (5. oktober 2026, `/introduksjon/`, lyst tema) hadde ingen av
- * de fire feltene på siden fått `tabindex` etter 20 sekunder. Lokalt kom den
- * innen 300 ms, også med 30 ganger strupet CPU, og årsaken er ikke funnet.
+ * Once in CI (5 October 2026, `/introduction/`, light theme) none of the four
+ * blocks on the page had got `tabindex` after 20 seconds. Locally it came
+ * within 300 ms, even with the CPU throttled 30 times, and the cause has not
+ * been found.
  *
- * Her settes begge attributtene på hvert felt når siden bygges, og skriptet
- * tar dem bort der feltet får plass. Det er det samme mønsteret som
- * tabellene følger, se `rehype-tabellrull.mjs`: tilgangen står i markupen, og
- * skriptet rydder bort det som ikke trengs.
+ * Here both attributes are set on every block when the site is built, and the
+ * script removes them where the block fits. It is the same pattern the tables
+ * follow, see `rehype-table-scroll.mjs`: the access is in the markup, and the
+ * script clears away what is not needed.
  */
 export function ecTabindex() {
   return {
-    name: "fristil-ec-tabindex",
+    name: "lotek-ec-tabindex",
     hooks: {
       postprocessRenderedBlock: ({ renderData }) => {
         besok(renderData.blockAst)

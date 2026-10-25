@@ -1,39 +1,39 @@
-@layer fristil {
-  .fs-skeleton {
+@layer lotek {
+  .lt-skeleton {
     box-sizing: border-box;
     display: block;
     inline-size: 100%;
-    block-size: var(--fs-skeleton-height, var(--fs-spacing-4));
-    border-radius: var(--fs-skeleton-radius, var(--fs-spacing-1));
-    background: var(--fs-color-neutral-surface);
-    /* Skimmeret er en gradient som beveger seg over flaten, ikke en
-       gjennomsiktighet som pulserer. Da blir kontrasten mot sideflaten den
-       samme hele veien. */
+    block-size: var(--lt-skeleton-height, var(--lt-spacing-4));
+    border-radius: var(--lt-skeleton-radius, var(--lt-spacing-1));
+    background: var(--lt-color-neutral-surface);
+    /* The shimmer is a gradient moving across the surface, not an opacity
+       that pulses. The contrast against the page surface then stays the
+       same all the way. */
     background-image: linear-gradient(
       90deg,
       transparent 0%,
-      var(--fs-color-neutral-canvas) 50%,
+      var(--lt-color-neutral-canvas) 50%,
       transparent 100%
     );
     background-size: 200% 100%;
     background-repeat: no-repeat;
-    animation: fs-skeleton-shimmer 1600ms ease-in-out infinite;
+    animation: lt-skeleton-shimmer 1600ms ease-in-out infinite;
   }
 
-  /* Tekstlinjene er lave, så standardradien er mindre. Variabelen gjelder
-     her også. */
-  .fs-skeleton[data-variant="text"] {
-    block-size: var(--fs-font-size-m);
-    border-radius: var(--fs-skeleton-radius, var(--fs-spacing-0-5));
+  /* The text lines are low, so the default radius is smaller. The variable
+     applies here too. */
+  .lt-skeleton[data-variant="text"] {
+    block-size: var(--lt-font-size-m);
+    border-radius: var(--lt-skeleton-radius, var(--lt-spacing-0-5));
   }
 
-  .fs-skeleton[data-variant="circle"] {
-    inline-size: var(--fs-skeleton-height, var(--fs-spacing-10));
-    block-size: var(--fs-skeleton-height, var(--fs-spacing-10));
+  .lt-skeleton[data-variant="circle"] {
+    inline-size: var(--lt-skeleton-height, var(--lt-spacing-10));
+    block-size: var(--lt-skeleton-height, var(--lt-spacing-10));
     border-radius: 50%;
   }
 
-  @keyframes fs-skeleton-shimmer {
+  @keyframes lt-skeleton-shimmer {
     from {
       background-position: 150% 0;
     }
@@ -43,16 +43,17 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .fs-skeleton {
+    .lt-skeleton {
       animation: none;
       background-image: none;
     }
   }
 
-  /* Høykontrast: flaten og skimmeret er bakgrunner, og begge tvinges til
-     sideflatens farge. Uten en kant var plassholderen usynlig. */
+  /* High contrast: the surface and the shimmer are backgrounds, and both are
+     forced to the page surface colour. Without a border the placeholder was
+     invisible. */
   @media (forced-colors: active) {
-    .fs-skeleton {
+    .lt-skeleton {
       border: 1px solid GrayText;
       animation: none;
       background-image: none;

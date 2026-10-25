@@ -1,0 +1,393 @@
+---
+title: Command line
+description: The commands in @lo-tek/interfaces, with flags, output and exit codes. Check markup and whole pages, get the rulebook for coding agents, take over a component and make a theme.
+---
+
+The package has a command line with seven commands. It has no dependencies, and
+you do not need to install anything extra:
+
+```bash
+npx @lo-tek/interfaces <command>
+```
+
+When the package is in `package.json`, the command is called `lotek`, so `npx lotek check`
+and a script with `lotek check` do the same thing. `npx @lo-tek/interfaces`
+without a command, or with `--help`, shows the full overview.
+
+| Command | Does |
+| --- | --- |
+| `check` | checks markup against LO-TEK, in files, from standard input or from an address |
+| `agent` | writes the rulebook for coding agents for your environment |
+| `takeover` | copies the source code of one component into the project |
+| `theme` | makes a colour theme from your brand colours |
+| `check-theme` | checks that a theme meets the contrast requirements |
+| `manifest` | writes the manifest the check uses, with the fragments from `takeover` |
+| `lsp` | the language server for editors, see [The editor](../the-editor/#the-language-server) |
+
+## Without Node
+
+The commands are written once, in Rust, and built as a WebAssembly module
+for WASI. `npx` runs it with Node, but the same module also runs without it,
+and gives the same answer, byte for byte. Pick what is already on the machine:
+
+| If you have | Run |
+| --- | --- |
+| Java 17 or newer | `java -jar lotek.jar check form.html` |
+| [wasmtime](https://wasmtime.dev) | `wasmtime run --dir=. --env LOTEK_PACKAGE=package lotek.wasm check form.html` |
+| Rust | `cargo install --git https://github.com/MarkusAugust/lo-tek lotek`, then `lotek check form.html` |
+
+`lotek.jar` and `lotek.wasm` are attached to every
+[release on GitHub](https://github.com/MarkusAugust/lo-tek/releases/latest),
+with the same version as the npm package. Neither is signed with a certificate.
+Instead, GitHub attests which commit and which workflow each file was
+built from, and you can check that yourself:
+
+```bash
+gh attestation verify lotek.jar --repo MarkusAugust/lo-tek
+```
+
+The jar contains everything and needs no dependencies. The executable and
+`lotek.wasm` carry no data: they read the manifest, the colour contract,
+the rulebooks and the components from `@lo-tek/interfaces` in `node_modules`,
+or from the folder `LOTEK_PACKAGE` points to. Without Node, you fetch the package from
+the npm registry and unpack it, and it ends up in `package/`:
+
+```bash
+curl -sL https://registry.npmjs.org/@lo-tek/interfaces/-/interfaces-VERSION.tgz | tar xz
+LOTEK_PACKAGE=package lotek check form.html
+```
+
+Replace the version with the one you want to check against. Without the package, the command stops
+and says what it is missing.
+
+An address is fetched by the host, since WASI has no network. `npx` and `java -jar`
+fetch both `http://` and `https://`. The executable from `cargo install`
+fetches `http://`, which is what a local server answers on. For `https://` with
+`cargo install`, you send the page in yourself:
+`curl -s https://… | lotek check --rendered`.
+
+### The drawbacks of wasmtime
+
+wasmtime is there for those who already have it, or who do not have Node, Java or
+Rust. It is the weakest of the hosts, and you should know why before you choose it:
+
+- **You have to trust a third party.** wasmtime is installed from
+  [wasmtime.dev](https://wasmtime.dev), outside npm, Maven and cargo, and is
+  made by the Bytecode Alliance, not by LO-TEK.
+- **No addresses.** wasmtime has no network, and no host fetches the page
+  for the module. `lotek check http://…` says it could not connect. Send
+  the page in yourself: `curl -s http://localhost:8080/form | wasmtime run
+  --dir=. --env LOTEK_PACKAGE=package lotek.wasm check --rendered`.
+- **Only the folders you open.** wasmtime sees only what you give it with `--dir`.
+  With `--dir=.`, paths under the working folder work, and a file outside gives "File
+  not found", even though it exists. The package must also be under a folder you
+  open, and `LOTEK_PACKAGE` is given with `--env`, since wasmtime does not pass
+  your environment to the module. The language server needs `--dir=/::/`, which gives it the whole
+  file system.
+- **No notice about standard input.** The other hosts say "Reading markup from
+  standard input" when you run `check` without files in a terminal. wasmtime cannot
+  tell, so the command waits silently until you end it with Ctrl-D.
+- **Windows is not tested.** The other hosts translate `C:\…` into what
+  the module understands. In wasmtime you have to open the drive yourself with `--dir`.
+- **Not tested in CI.** `npx`, `java -jar` and the executable are tested on
+  every change, with the same runs. wasmtime has been tested by hand.
+
+## check
+
+`check` is the same check the [editor](../the-editor/) runs while you
+type. It knows every class, every element, every attribute and every
+allowed value in the package you have installed.
+
+```bash
+npx @lo-tek/interfaces check templates/*.html
+npx @lo-tek/interfaces check http://localhost:8080/form
+curl -s http://localhost:8080/form | npx @lo-tek/interfaces check --rendered
+```
+
+It reads three kinds of input:
+
+- **files**, given as arguments;
+- **standard input**, when no files are given;
+- **an address** starting with `http://` or `https://`. It is fetched by
+  the command line, see [Without Node](#without-node). A page that answers with anything other than 2xx, or with anything other than HTML,
+  gives an error code instead of being checked.
+
+Each finding is written the way a compiler writes it, with file, line and column:
+
+```text
+form.html:4:27: warning: data-variant cannot be "outline" on button. Allowed values: secondary, ghost, danger, and primary without the attribute.
+form.html:5:13: warning: The class "lt-modal" does not exist in LO-TEK.
+
+2 findings in 1 file.
+```
+
+| Flag | Meaning |
+| --- | --- |
+| `--rendered` | check files and standard input as whole pages, with the wiring |
+| `--css=<file>` | also check that the stylesheets style the markup. See [With the stylesheets](#with-the-stylesheets) |
+| `--manifest=<file>` | also check a component you have taken over. See [takeover](#takeover) |
+
+The exit code is 0 when there are no findings, and 1 otherwise, also when all the findings are
+warnings. A warning in a template is an error no compiler sees. Empty standard
+input, files that are all empty, a file that does not exist, and an address that does not
+answer or answers with an empty page also give 1. One empty file among several, such as an
+empty partial in a glob, is not an error.
+
+### Templates and whole pages
+
+A template is often split into pieces. A label can be in one file and the field in
+another, and template syntax such as `{{ }}`, `{% %}`, `<?= ?>`, `@variable` and `<%= %>`
+stands where the value comes later. Without flags, `check` therefore checks only what
+can be decided in one file: elements, classes, attributes, values, that every
+`<lt-field>` has a label, and that a part that should appear once does not appear
+more than once. An `<lt-field>` with two controls wires only the first, and
+an `lt-table` with two `<caption>` elements gets its name from the first. Which
+parts this applies to is in the manifest as `unique`. Other parts can appear
+several times, such as the buttons in the panel of `<lt-popover>`. If there is
+template syntax in the component, including `v-if` or an expression in `{…}`, the
+rule says nothing, since a condition can give two parts in the template and one on the page.
+
+A page as the server sends it is whole. Then `check` can also require that
+the wiring is right:
+
+- every id in `for`, `aria-describedby`, `aria-labelledby` and `aria-controls`
+  exists on the page, and `for` points to a field or a button;
+- no id appears more than once;
+- every field with an `lt-` class has a label: a `<label for>`, a
+  `<label>` around it, `aria-label` or `aria-labelledby`;
+- every visible help text and error text is pointed to from `aria-describedby`.
+  A text is not visible when it or a parent has `hidden`, or
+  is in a closed `<dialog>` or `<details>`. A status element, with
+  `role="status"`, `role="alert"` or `aria-live`, is announced on its own and
+  needs no wiring;
+- every link in `<lt-error-summary>` goes to an id that exists.
+
+An address is always checked this way. Files and standard input are checked this way with
+`--rendered`. Bare markup inside `<lt-field>` gives no findings, since the web component
+sets the wiring in the browser. The same applies to a field inside
+`<lt-suggestion>`. An id that is written and points to the wrong place is reported wherever it
+appears.
+
+Two things are not read as part of the page. The content of a `<template>` is not in
+the document, and in a shadow root, `<template shadowrootmode>`, the ids have their
+own scope. Markup in an attribute value, such as a code example behind a
+copy button, or inside a `<textarea>`, is text. None of them are checked.
+
+```text
+http://localhost:8080/form:12:30: error: for="email" points to the id "email", which does not exist on the page. The screen reader loses the label. Write for on the label and id on the field in the template, or put the label around the field. If the markup is made with JavaScript, lt.field({ id }) does this.
+```
+
+This is the check that works the same in every language. The HTML the server sends
+looks the same whether it comes from Kotlin, Go, PHP or Node, and that is what
+is checked, not the code that makes it.
+
+### With the stylesheets
+
+The markup can be right and still look wrong: the component's stylesheet is
+not loaded, or a variant has no rule. With `--css`, `check` reads the
+stylesheets the page loads, with what they import, and reports both:
+
+```bash
+npx @lo-tek/interfaces check --css=public/app.css --manifest=src/ui/button/lotek-manifest.json templates/*.html
+```
+
+```text
+templates/button.html:1:28: warning: data-variant="glass" on button has no rule in the stylesheets, so it does nothing visible. Style the value, or remove it.
+templates/card.html:1:13: warning: The class "lt-card" is in the markup, but none of the stylesheets style it. Is lotek.css, or the stylesheet for card, loaded?
+
+2 findings in 2 files.
+```
+
+The first message comes for a value the manifest knows, but which none of the
+stylesheets style. A value LO-TEK does not have, such as `data-variant="glass"` on
+`lt-button`, is rejected before the stylesheets are read, with a message listing the allowed
+values. The message is most useful for a component you have [taken over](#takeover):
+if you add a variant to the fragment, but not to the CSS, the markup is valid
+and looks like the default. The output above is from such a copy: `button.html` is
+`<button class="app-button" data-variant="glass">`, with `glass` added to
+the fragment. `@import` is followed to neighbouring files and to packages in
+`node_modules`, such as `@lo-tek/interfaces/lotek.css`. `--css` can be given several
+times. The stylesheets are read with a real CSS parser, so nesting, `:is()`,
+`:where()`, `@layer` and `@media` are understood the way the browser understands them.
+
+### The rendered page
+
+What the server sends is not always what the user sees. The web components add
+markup, a script can set a class, and the stylesheets are the ones the browser
+actually loaded. `diagnoseRendered` checks the page as the browser has rendered
+it, with Playwright:
+
+```ts
+import { diagnoseRendered } from "@lo-tek/interfaces/diagnostics"
+
+test("the form is right as it is shown", async ({ page }) => {
+  await page.goto("http://localhost:8080/form")
+  expect(await diagnoseRendered(page)).toEqual([])
+})
+```
+
+It gives what `diagnosePage` gives, and what the stylesheets do not style. A stylesheet from
+a CDN is also read when it answers with `Access-Control-Allow-Origin`, as
+jsDelivr and unpkg do. With [LO-TEK for Kotlin](../kotlin/#the-rendered-page)
+it is called `assertLotekRendered`.
+
+### In tests and in CI
+
+With a running server, one line is enough:
+
+```bash
+npx @lo-tek/interfaces check http://localhost:8080/ http://localhost:8080/form
+```
+
+The same check exists as functions, for tests written in JavaScript or
+TypeScript:
+
+```ts
+import { diagnoseMarkup, diagnosePage } from "@lo-tek/interfaces/diagnostics"
+
+expect(diagnoseMarkup(template)).toEqual([]) // a template or a piece of a page
+expect(diagnosePage(html)).toEqual([]) // a whole page, with the wiring
+```
+
+Each finding has `start`, `end`, `line`, `column`, `severity`, `rule` and
+`message`, and some have a `fix` the editor can offer. The check is the same
+Rust core the editors use, built to WebAssembly and included in the package.
+
+If the app is written in another language, the test runs the command over the HTML it
+renders. In Kotlin:
+
+```kotlin
+@Test
+fun `the form is wired correctly`() {
+    val html = app.render("/form")
+    val check = ProcessBuilder("npx", "@lo-tek/interfaces", "check", "--rendered")
+        .redirectErrorStream(true)
+        .start()
+    check.outputStream.use { it.write(html.toByteArray()) }
+    val output = check.inputStream.bufferedReader().readText()
+    assertEquals(0, check.waitFor(), output)
+}
+```
+
+The test fails with the findings as its message, and that is the message a coding agent reads
+and fixes from.
+
+Without Node in CI, you replace `npx @lo-tek/interfaces` with `java -jar lotek.jar`.
+With [LO-TEK for Kotlin](../kotlin/) it becomes `assertLotek(html)`, with the
+same check run in the JVM.
+
+## agent
+
+Writes the rulebook for coding agents to standard output. No file is written anywhere.
+
+```bash
+npx @lo-tek/interfaces agent
+npx @lo-tek/interfaces agent --framework=datastar
+```
+
+Without flags, the environment is read from the dependencies in `package.json`: Astro, React,
+Datastar, or a build step such as Vite. If there is no `package.json`, as in a Kotlin or Go app,
+it is the rulebook for templates. Which one it chose, and why, is written to standard error.
+
+| `--framework` | The rulebook for |
+| --- | --- |
+| `html` | hand-written HTML without a build step, where the browser loads the files directly |
+| `templates` | server-written HTML: Go templates, Razor, PHP, Jinja, ERB and others, and HTML written in code |
+| `bundles` | a build step where the markup is plain HTML: Vue, Svelte, Solid, Lit and Vite |
+| `react` | React |
+| `astro` | Astro |
+| `datastar` | HTML with Datastar |
+
+How the agent finds the rulebook is described on [Coding agents](../coding-agents/).
+
+## takeover
+
+Copies the source code of one component into the project: the TypeScript file and
+the stylesheet. The copy is yours from the moment it is written, and the command does
+three things so that it can be:
+
+- **The copy gets a new name.** `lt-button` becomes `app-button` in the classes,
+  the tags, `customElements.define` and the selectors. The copy can therefore stand
+  beside the original, and you change the name in the markup where the copy is to be used.
+  The variables from the theme, `--lt-*`, are the same, so the copy follows your theme
+  as before.
+- **The references out of the component are rewritten** to the package, so the rest of
+  the system still comes from `@lo-tek/interfaces` and can be upgraded.
+- **A fragment of the manifest is written next to it**, `lotek-manifest.json`,
+  with the classes, elements and values of the copy under the new name. With
+  it, `check` checks the markup for the copy too:
+
+```bash
+npx @lo-tek/interfaces takeover button --out=src/ui
+npx @lo-tek/interfaces check --manifest=src/ui/button/lotek-manifest.json templates/*.html
+```
+
+Without `--manifest`, `check` leaves alone everything that does not start with `lt-`. With it,
+only the copy's own names are checked, `app-button` with its variants and elements, not
+the rest of the project's classes. If you change the copy, for example with a new
+variant, you write it into the fragment too. `--manifest` can be given several
+times, once for each copy.
+
+| Flag | Meaning |
+| --- | --- |
+| `--out=<folder>` | where the copy goes. Default: `src/lotek` |
+| `--overwrite=yes` | overwrite a copy that already exists |
+
+Without a name, the command lists the components. When you should take over a component, and
+what you should try first, is described on [Customising](../customising/#when-css-is-not-enough).
+
+## manifest
+
+Writes the manifest `check` uses: LO-TEK's classes, elements and allowed
+values, with the fragments from `takeover` added. That is what an editor or another
+tool needs to know the vocabulary the project actually has.
+
+```bash
+npx @lo-tek/interfaces manifest --manifest=src/ui/button/lotek-manifest.json --out=build/lotek/manifest.json
+```
+
+| Flag | Meaning |
+| --- | --- |
+| `--manifest=<file>` | a fragment from `takeover`. Can be given several times |
+| `--out=<file>` | write to a file instead of to standard output |
+
+The [Gradle plugin](../kotlin/#the-gradle-plugin) writes the same file to
+`build/lotek/manifest.json` when `manifests` has fragments.
+
+## theme
+
+Makes a colour theme from your brand colours, with a light and a dark appearance and
+the contrast requirements met. The theme is written to standard output, or to a file.
+
+```bash
+npx @lo-tek/interfaces theme --accent=#7c3aed --danger=#b3261e \
+  --success=#2b6940 --warning=#8a5a00 --out=theme.css
+npx @lo-tek/interfaces theme lotek.theme.json --out=theme.css
+```
+
+| Flag | Meaning |
+| --- | --- |
+| `--accent`, `--danger`, `--success`, `--warning`, `--neutral`, `--visited` | the colours for the roles, in hexadecimal |
+| `--brand1`, `--brand2`, `--brand3` | brand colours for surfaces and categories |
+| `--font` | the font stack the theme uses |
+| `--button-radius`, `--field-radius`, `--surface-radius` | the corners of buttons, fields and surfaces |
+| `--button-border`, `--button-weight` | the border width and the weight of the button text |
+| `--out=<file>` | write to a file instead of to standard output |
+
+What each role controls, and how the theme is put to use, is described on
+[Your own theme](../your-own-theme/).
+
+## check-theme
+
+Checks a theme you have written yourself. The command reads the
+`--lt-color-*` values in each block and says which cell fails, and why.
+
+```bash
+npx @lo-tek/interfaces check-theme theme.css
+```
+
+One violation gives an error code. A theme made with `theme` already meets the requirements.
+
+A theme without colours, with only font and shape, has no contrast to
+check. The command says so and exits without an error code. A file without
+any `--lt-*` values gives an error code, because then the check has not looked at anything.

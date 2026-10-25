@@ -1,124 +1,124 @@
 ---
 title: Label
-description: Ledetekst for skjemafelt, med markering av påkrevd og valgfritt. CSS-komponent.
+description: A label for form fields, with marking of required and optional. A CSS component.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
-Riktig typografi på `<label>`, og en fast måte å markere påkrevde og valgfrie felt på. Setter du opp et helt felt, er [Field](../field/) som regel enklere. Den setter `for`, `id` og `aria-describedby` for deg.
+The right typography on `<label>`, and one consistent way to mark required and optional fields. If you are setting up a whole field, [Field](../field/) is usually simpler. It sets `for`, `id` and `aria-describedby` for you.
 
-## Slik tar du den i bruk
+## How to use it
 
-<Eksempel importer={["tokens.css", "label.css", "input.css"]}
-  stiler={["label", "input"]} layout="stabel" maxWidth="26rem" kode={`
-<label class="fs-label" for="navn">Fullt navn</label>
-<input class="fs-input" id="navn" type="text" />
+<Example imports={["tokens.css", "label.css", "input.css"]}
+  styles={["label", "input"]} layout="stack" maxWidth="26rem" code={`
+<label class="lt-label" for="name">Full name</label>
+<input class="lt-input" id="name" type="text" />
 
-<label class="fs-label" data-required="symbol" for="epost">E-postadresse</label>
-<input class="fs-input" id="epost" type="email" required />
+<label class="lt-label" data-required="symbol" for="email">Email address</label>
+<input class="lt-input" id="email" type="email" required />
 
-<label class="fs-label" data-required="text" for="telefon">Telefonnummer</label>
-<input class="fs-input" id="telefon" type="tel" required />
+<label class="lt-label" data-required="text" for="phone">Phone number</label>
+<input class="lt-input" id="phone" type="tel" required />
 
-<label class="fs-label" data-optional="" for="adresse">Adresse</label>
-<input class="fs-input" id="adresse" type="text" />
+<label class="lt-label" data-optional="" for="address">Address</label>
+<input class="lt-input" id="address" type="text" />
 
-<label class="fs-label" aria-disabled="true" for="orgnr">Organisasjonsnummer</label>
-<input class="fs-input" id="orgnr" type="text" disabled />
+<label class="lt-label" aria-disabled="true" for="org-number">Organisation number</label>
+<input class="lt-input" id="org-number" type="text" disabled />
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<label {...fs.label()} htmlFor="navn">Fullt navn</label>
-<input {...fs.input({ type: "text" })} id="navn" />
+<label {...lt.label()} htmlFor="name">Full name</label>
+<input {...lt.input({ type: "text" })} id="name" />
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-const ledetekst = document.querySelector<HTMLLabelElement>("#epost-label")
-if (!ledetekst) throw new Error("fant ikke elementet")
+const label = document.querySelector<HTMLLabelElement>("#email-label")
+if (!label) throw new Error("element not found")
 
-fs.setAttributes(ledetekst, fs.label({ required: "symbol" }))
-ledetekst.htmlFor = "epost"
+lt.setAttributes(label, lt.label({ required: "symbol" }))
+label.htmlFor = "email"
 ```
 
-`for` setter du selv. Funksjonen returnerer bare Fristils egne attributter.
+You set `for` yourself. The function returns only LO-TEK's own attributes.
 
-Setter du opp et helt felt, gjør [`fs.field`](../field/) både markeringen og koblingen til kontrollen:
+If you are setting up a whole field, [`lt.field`](../field/) does both the marking and the wiring to the control:
 
 ```ts
-const input = document.querySelector<HTMLInputElement>("#epost")
+const input = document.querySelector<HTMLInputElement>("#email")
 
-const felt = fs.field({ id: "epost", required: "symbol" })
+const field = lt.field({ id: "email", required: "symbol" })
 
-fs.setAttributes(ledetekst, felt.label)
-fs.setAttributes(input, fs.input({ type: "email" }), felt.control)
+lt.setAttributes(label, field.label)
+lt.setAttributes(input, lt.input({ type: "email" }), field.control)
 if (input) input.required = true
 ```
 
-`required: "symbol"` gir bare stjernen. At feltet må fylles ut, sier `required` på selve feltet.
+`required: "symbol"` gives only the asterisk. That the field has to be filled in is said by `required` on the field itself.
 
 </Fragment>
-</Eksempel>
+</Example>
 
-| Attributt | Effekt |
+| Attribute | Effect |
 | --- | --- |
-| *(utelatt)* | Vanlig ledetekst |
-| `data-required="symbol"` | ` *` i farefargen |
-| `data-required="text"` | ` (påkrevd)` i farefargen |
-| `data-optional=""` | ` (valgfri)` i dempet farge |
-| `aria-disabled="true"` | Dempet tekstfarge |
+| *(omitted)* | An ordinary label |
+| `data-required="symbol"` | ` *` in the danger colour |
+| `data-required="text"` | ` (required)` in the danger colour |
+| `data-optional=""` | ` (optional)` in a muted colour |
+| `aria-disabled="true"` | Muted text colour |
 
-Velg én av `data-required` og `data-optional` og hold deg til den gjennom skjemaet. Setter du begge, viser systemet bare den ene: det er det samme `::after`, og byggefunksjonen dropper `data-optional` når feltet er påkrevd.
+Choose one of `data-required` and `data-optional` and stick to it throughout the form. If you set both, the system shows only one: they are the same `::after`, and the builder function drops `data-optional` when the field is required.
 
-## Sammen med et felt
+## Together with a field
 
-`for` må matche `id` på feltet. Uten koblingen leses ikke ledeteksten opp når feltet får fokus, og et klikk på teksten flytter ikke fokus dit.
+`for` has to match the `id` of the field. Without the wiring the label is not read out when the field gets focus, and a click on the text does not move focus there.
 
-<Eksempel stiler={["label", "input", "help-text"]} layout="stabel" maxWidth="26rem" kode={`
-<label class="fs-label" data-required="symbol" for="epost">E-postadresse</label>
-<input class="fs-input" id="epost" type="email" required aria-describedby="epost-hjelp" />
-<p class="fs-help-text" id="epost-hjelp">Vi bruker adressen til å sende kvittering.</p>
+<Example styles={["label", "input", "help-text"]} layout="stack" maxWidth="26rem" code={`
+<label class="lt-label" data-required="symbol" for="email">Email address</label>
+<input class="lt-input" id="email" type="email" required aria-describedby="email-help" />
+<p class="lt-help-text" id="email-help">We use the address to send you a receipt.</p>
 `} />
 
-## Klasser du kan style
+## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.fs-label` | Ledeteksten. Markeringene legges på med `::after`. |
+| `.lt-label` | The label. The markers are added with `::after`. |
 
-Markeringen bak `data-required` og `data-optional` er tekst i `::after`, og teksten leses fra en variabel. Da kan den byttes, eller oversettes, uten å endre markupen:
+The marker behind `data-required` and `data-optional` is text in `::after`, and the text is read from a variable. It can then be replaced, or translated, without changing the markup:
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
-| `--fs-label-required-symbol` | `" *"` |
-| `--fs-label-required-text` | `" (påkrevd)"` |
-| `--fs-label-optional-text` | `" (valgfri)"` |
+| `--lt-label-required-symbol` | `" *"` |
+| `--lt-label-required-text` | `" (required)"` |
+| `--lt-label-optional-text` | `" (optional)"` |
 
 ```css
-:root:lang(en) {
-	--fs-label-required-text: " (required)";
-	--fs-label-optional-text: " (optional)";
+:root:lang(nb) {
+	--lt-label-required-text: " (påkrevd)";
+	--lt-label-optional-text: " (valgfri)";
 }
 ```
 
-Variablene gjelder også `.fs-legend` i [Fieldset](../fieldset/). Se [Oversettelse](../../oversettelse/).
+The variables also apply to `.lt-legend` in [Fieldset](../fieldset/). See [Translation](../../translation/).
 
-Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
+See [Customising](../../customising/) for how the layer works.
 
-## Tilgjengelighet
+## Accessibility
 
-- `data-required` er bare visuelt. Sett `required` på selve feltet, ellers vet ikke skjermleseren at det må fylles ut.
-- Stjernen og «(påkrevd)» legges til med `::after`. Innhold i `::after` regnes med i navnet på feltet, så en skjermleser kan lese det etter ledeteksten. Det er `required` på feltet som sier at det må fylles ut.
-- Skjul aldri ledeteksten helt. Trenger du den visuelt borte, bruk `.fs-sr-only` fra `sr-only.css` framfor `placeholder`, som forsvinner så snart brukeren skriver.
+- `data-required` is only visual. Set `required` on the field itself, or the screen reader will not know it has to be filled in.
+- The asterisk and "(required)" are added with `::after`. Content in `::after` counts towards the field's name, so a screen reader may read it after the label. It is `required` on the field that says it has to be filled in.
+- Never hide the label completely. If you need it gone visually, use `.lt-sr-only` from `sr-only.css` rather than `placeholder`, which disappears as soon as the user types.

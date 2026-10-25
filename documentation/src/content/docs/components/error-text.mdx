@@ -1,96 +1,96 @@
 ---
 title: Error Text
-description: Feilmelding under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.
+description: Error message below a form field. A CSS component with one class and no JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
-Meldingen som vises når et felt ikke kan sendes inn slik det står. Den hører rett under feltet, ikke øverst på siden. Skal teksten forklare hva feltet forventer før brukeren har gjort noe, bruk [Help Text](../help-text/).
+The message shown when a field cannot be submitted as it stands. It belongs right below the field, not at the top of the page. If the text should explain what the field expects before the user has done anything, use [Help Text](../help-text/).
 
-## Slik tar du den i bruk
+## How to use it
 
-<Eksempel importer={["tokens.css", "error-text.css"]}
-  stiler={["error-text"]} layout="stabel" maxWidth="30rem" kode={`
-<p class="fs-error-text">Skriv en e-postadresse med krøllalfa, for eksempel ola&#64;eksempel.no.</p>
-<p class="fs-error-text" data-variant="warning">Adressen finnes ikke i folkeregisteret. Sjekk at den stemmer.</p>
+<Example imports={["tokens.css", "error-text.css"]}
+  styles={["error-text"]} layout="stack" maxWidth="30rem" code={`
+<p class="lt-error-text">Enter an email address with an at sign, for example jane&#64;example.com.</p>
+<p class="lt-error-text" data-variant="warning">We cannot find this address in the population register. Check that it is correct.</p>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<p {...fs.errorText()}>Fyll inn navnet ditt.</p>
+<p {...lt.errorText()}>Enter your name.</p>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-const input = document.querySelector<HTMLInputElement>("#epost")
-const feilmelding = document.querySelector<HTMLElement>("#epost-feil")
+const input = document.querySelector<HTMLInputElement>("#email")
+const errorText = document.querySelector<HTMLElement>("#email-error")
 
-function oppdater(erGyldig: boolean) {
-  const felt = fs.field({ id: "epost", error: true, invalid: !erGyldig })
+function update(isValid: boolean) {
+  const field = lt.field({ id: "email", error: true, invalid: !isValid })
 
-  fs.setAttributes(input, fs.input({ type: "email" }), felt.control)
-  fs.setAttributes(feilmelding, fs.errorText(), felt.error)
+  lt.setAttributes(input, lt.input({ type: "email" }), field.control)
+  lt.setAttributes(errorText, lt.errorText(), field.error)
 }
 ```
 
-[`fs.field()`](../field/) setter alle tre tingene som må stemme: `data-state`, `aria-invalid` og `aria-describedby`. `felt.error` inneholder `hidden` når feltet er gyldig, og feilmeldingen tas da heller ikke med i `aria-describedby`, siden en skjult melding ikke skal pekes på.
+[`lt.field()`](../field/) sets all three things that have to agree: `data-state`, `aria-invalid` and `aria-describedby`. `field.error` contains `hidden` when the field is valid, and the error text is then left out of `aria-describedby` too, since a hidden message should not be pointed to.
 
 </Fragment>
-</Eksempel>
+</Example>
 
-| `data-variant` | Brukes til |
+| `data-variant` | Used for |
 | --- | --- |
-| *(utelatt)* | Feil som stopper innsending |
-| `warning` | Noe ser rart ut, men brukeren får fortsette |
+| *(omitted)* | Errors that stop submission |
+| `warning` | Something looks odd, but the user may continue |
 
-## Koblet til feltet
+## Wired to the field
 
-Tre ting må stemme samtidig: `data-state` for fargen, `aria-invalid` for skjermleseren, og `aria-describedby` for selve teksten.
+Three things have to agree at the same time: `data-state` for the colour, `aria-invalid` for the screen reader, and `aria-describedby` for the text itself.
 
-<Eksempel stiler={["error-text", "label", "input"]} layout="stabel" maxWidth="30rem" kode={`
-<label class="fs-label" for="epost">E-postadresse</label>
+<Example styles={["error-text", "label", "input"]} layout="stack" maxWidth="30rem" code={`
+<label class="lt-label" for="email">Email address</label>
 <input
-  class="fs-input"
-  id="epost"
+  class="lt-input"
+  id="email"
   type="email"
   data-state="invalid"
   aria-invalid="true"
-  aria-describedby="epost-feil"
-  value="ola.eksempel.no"
+  aria-describedby="email-error"
+  value="jane.example.com"
 />
-<p class="fs-error-text" id="epost-feil">Skriv en e-postadresse med krøllalfa.</p>
+<p class="lt-error-text" id="email-error">Enter an email address with an at sign.</p>
 `} />
 
-[Field](../field/) setter alle tre når du gir den `invalid`. Det er grunnen til at den komponenten finnes.
+[Field](../field/) sets all three when you give it `invalid`. That is why that component exists.
 
-## Ordlyd i meldingen
+## Wording the message
 
-- Si hva brukeren skal gjøre, ikke hva systemet mislikte. «Skriv dato som DD-MM-ÅÅÅÅ» hjelper der «Ugyldig verdi» ikke gjør det.
-- Ta med et eksempel når formatet er uvanlig.
-- Ikke legg skylden på brukeren, og dropp utropstegnet.
+- Say what the user should do, not what the system objected to. "Enter the date as DD-MM-YYYY" helps where "Invalid value" does not.
+- Include an example when the format is unusual.
+- Do not blame the user, and drop the exclamation mark.
 
-## Klasser du kan style
+## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.fs-error-text` | Meldingen. Fargen kommer fra `data-variant`. |
+| `.lt-error-text` | The message. The colour comes from `data-variant`. |
 
-Se [Tilpasning](../../tilpasning/) for hvordan laget virker.
+See [Customising](../../customising/) for how the layer works.
 
-## Tilgjengelighet
+## Accessibility
 
-- Vis feilen når brukeren har forlatt feltet, ikke mens han skriver.
-- Dukker meldingen opp mens siden ellers står stille, legg `role="alert"` på elementet.
-- Sendes et skjema inn med flere feil, flytt fokus til det første som feilet.
-- Fjern aldri meldingen uten å fjerne `aria-invalid` samtidig.
+- Show the error when the user has left the field, not while they are typing.
+- If the message appears while the page is otherwise still, put `role="alert"` on the element.
+- If a form is submitted with several errors, move focus to the first one that failed.
+- Never remove the message without removing `aria-invalid` at the same time.

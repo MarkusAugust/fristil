@@ -1,35 +1,37 @@
-@layer fristil {
-  .fs-divider {
-    /* <hr> har både ramme og høyde fra nettleseren. Begge må bort før
-       fargen under er den eneste som vises. */
+@layer lotek {
+  .lt-divider {
+    /* <hr> has both a border and a height from the browser. Both must go
+       before the colour below is the only thing shown. */
     border: 0;
     block-size: 1px;
-    /* Nettleseren gir også <hr> auto-marger til sidene. I en flex-kolonne
-       vinner de over stretch, og streken krymper til innholdet sitt, som er
-       ingenting. Den var 0 piksler bred og usynlig. Den strekker seg også
-       selv når forelderen sentrerer barna eller legger dem til start. */
-    margin-block: var(--fs-divider-space, var(--fs-spacing-4));
+    /* The browser also gives <hr> auto margins at the sides. In a flex
+       column they win over stretch, and the line shrinks to its content,
+       which is nothing. It was 0 pixels wide and invisible. It also
+       stretches when the parent centres its children or aligns them to the
+       start. */
+    margin-block: var(--lt-divider-space, var(--lt-spacing-4));
     margin-inline: 0;
     align-self: stretch;
     justify-self: stretch;
-    background: var(--fs-color-neutral-border-subtle);
+    background: var(--lt-color-neutral-border-subtle);
   }
 
-  .fs-divider[data-variant="strong"] {
-    background: var(--fs-color-neutral-border-strong);
+  .lt-divider[data-variant="strong"] {
+    background: var(--lt-color-neutral-border-strong);
   }
 
-  /* Flatefargen alene var så nær lerretet at streken nesten forsvant.
-     raised ligger mellom den og border-subtle i begge temaer. */
-  .fs-divider[data-variant="subtle"] {
-    background: var(--fs-color-neutral-raised);
+  /* The surface colour alone was so close to the canvas that the line almost
+     disappeared. raised sits between it and border-subtle in both themes. */
+  .lt-divider[data-variant="subtle"] {
+    background: var(--lt-color-neutral-raised);
   }
 
-  /* Høykontrast: bakgrunner tvinges til sideflatens farge, og streken var
-     bare en bakgrunn. Den ble usynlig. En systemfarge overlever. */
+  /* High contrast: backgrounds are forced to the page surface colour, and the
+     line was only a background. It became invisible. A system colour
+     survives. */
   @media (forced-colors: active) {
-    .fs-divider,
-    .fs-divider[data-variant] {
+    .lt-divider,
+    .lt-divider[data-variant] {
       background: CanvasText;
     }
   }

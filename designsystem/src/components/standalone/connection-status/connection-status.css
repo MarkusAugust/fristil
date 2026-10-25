@@ -1,0 +1,41 @@
+@layer lotek {
+  /* Both the element and the class. `lt.connectionStatus()` outputs
+     `lt-connection-status`, and a class a builder function advertises must do
+     something. Only the element selector was here, so the class was dead. */
+  lt-connection-status,
+  .lt-connection-status {
+    display: contents;
+  }
+
+  .lt-connection-status__bar {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: var(--lt-connection-status-layer, 1000);
+    padding: var(
+      --lt-connection-status-padding,
+      var(--lt-spacing-2) var(--lt-spacing-4)
+    );
+    font-size: var(--lt-font-size-s);
+    line-height: var(--lt-line-height-compact);
+    text-align: center;
+    color: var(--lt-color-danger-text);
+    background: var(--lt-color-danger-surface);
+    border-block-end: 1px solid var(--lt-color-danger-text);
+  }
+
+  .lt-connection-status__bar[data-state="online"] {
+    color: var(--lt-color-success-text);
+    background: var(--lt-color-success-surface);
+    border-block-end-color: var(--lt-color-success-text);
+  }
+
+  /* Forced colours mode removes custom colours and backgrounds. Without a
+     border the bar would be invisible, and it is the bar that says something
+     is wrong. */
+  @media (forced-colors: active) {
+    .lt-connection-status__bar {
+      border: 2px solid CanvasText;
+    }
+  }
+}

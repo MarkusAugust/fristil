@@ -1,26 +1,26 @@
-@layer fristil {
-  .fs-switch {
+@layer lotek {
+  .lt-switch {
     box-sizing: border-box;
     appearance: none;
     flex: none;
     display: inline-block;
-    inline-size: var(--fs-switch-width, var(--fs-spacing-10));
-    block-size: var(--fs-switch-height, var(--fs-spacing-6));
+    inline-size: var(--lt-switch-width, var(--lt-spacing-10));
+    block-size: var(--lt-switch-height, var(--lt-spacing-6));
     margin: 0;
-    border: 1px solid var(--fs-color-neutral-border);
-    border-radius: var(--fs-spacing-4);
-    background-color: var(--fs-color-neutral-surface);
-    /* Knappen er en gradient, ikke et pseudoelement: Firefox rendrer ikke
-       ::before og ::after på et <input>. */
+    border: 1px solid var(--lt-color-neutral-border);
+    border-radius: var(--lt-spacing-4);
+    background-color: var(--lt-color-neutral-surface);
+    /* The knob is a gradient, not a pseudo-element: Firefox does not render
+       ::before and ::after on an <input>. */
     background-image: radial-gradient(
       circle at center,
-      var(--fs-color-neutral-text-strong) 0 34%,
+      var(--lt-color-neutral-text-strong) 0 34%,
       transparent 36%
     );
     background-repeat: no-repeat;
-    background-size: var(--fs-switch-height, var(--fs-spacing-6)) 100%;
-    /* background-position har ingen logisk variant, så begge retningene
-       skrives for hånd. Av er på starten, på er på slutten. */
+    background-size: var(--lt-switch-height, var(--lt-spacing-6)) 100%;
+    /* background-position has no logical variant, so both directions are
+       written by hand. Off is at the start, on is at the end. */
     background-position: left center;
     cursor: pointer;
     transition:
@@ -28,72 +28,73 @@
       background-position 120ms ease;
   }
 
-  /* Uten `:not(:disabled)`. Den løftet spesifisiteten over tilstandene
-     under, så musa tok bort rammen på en bryter som var på. Reglene for
-     valgt og deaktivert står etter denne og vinner på rekkefølgen. */
-  .fs-switch:hover {
-    border-color: var(--fs-color-neutral-border-strong);
+  /* Without `:not(:disabled)`. It raised the specificity above the states
+     below, so the mouse removed the border of a switch that was on. The
+     rules for checked and disabled come after this one and win on order. */
+  .lt-switch:hover {
+    border-color: var(--lt-color-neutral-border-strong);
   }
 
-  .fs-switch:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-switch:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
   }
 
-  .fs-switch:dir(rtl) {
+  .lt-switch:dir(rtl) {
     background-position: right center;
   }
 
-  .fs-switch:checked {
-    background-color: var(--fs-color-accent-fill);
-    border-color: var(--fs-color-accent-fill);
+  .lt-switch:checked {
+    background-color: var(--lt-color-accent-fill);
+    border-color: var(--lt-color-accent-fill);
     background-position: right center;
     background-image: radial-gradient(
       circle at center,
-      var(--fs-color-accent-content) 0 34%,
+      var(--lt-color-accent-content) 0 34%,
       transparent 36%
     );
   }
 
-  .fs-switch:checked:dir(rtl) {
+  .lt-switch:checked:dir(rtl) {
     background-position: left center;
   }
 
-  .fs-switch:disabled {
-    background-color: var(--fs-color-disabled-surface);
-    border-color: var(--fs-color-disabled-surface);
+  .lt-switch:disabled {
+    background-color: var(--lt-color-disabled-surface);
+    border-color: var(--lt-color-disabled-surface);
     background-image: radial-gradient(
       circle at center,
-      var(--fs-color-disabled-text) 0 34%,
+      var(--lt-color-disabled-text) 0 34%,
       transparent 36%
     );
     cursor: not-allowed;
   }
 
-  /* Brukeren har bedt om mindre bevegelse. Bryteren skal fortsatt bytte
-     tilstand, den skal bare ikke gli. */
+  /* The user has asked for less motion. The switch should still change
+     state, it just should not slide. */
   @media (prefers-reduced-motion: reduce) {
-    .fs-switch {
+    .lt-switch {
       transition: none;
     }
   }
 
-  .fs-switch-row {
+  .lt-switch-row {
     display: flex;
     align-items: center;
-    gap: var(--fs-spacing-2);
-    line-height: var(--fs-line-height-default);
+    gap: var(--lt-spacing-2);
+    line-height: var(--lt-line-height-default);
   }
 
   /*
-   * Høykontrast: knappen er en gradient, og forsvinner i modusen. Uten den er
-   * av og på helt like. Her faller vi tilbake til en vanlig avkryssingsboks.
-   * Bryteren mister formen sin, men `role="switch"` står fortsatt, så den
-   * leses opp som på og av, og tilstanden er synlig igjen.
+   * High contrast: the knob is a gradient, and disappears in the mode.
+   * Without it on and off look exactly alike. Here we fall back to a plain
+   * checkbox. The switch loses its shape, but `role="switch"` is still
+   * there, so it is announced as on and off, and the state is visible
+   * again.
    */
   @media (forced-colors: active) {
-    .fs-switch,
-    .fs-switch:checked {
+    .lt-switch,
+    .lt-switch:checked {
       appearance: auto;
       inline-size: auto;
       block-size: auto;

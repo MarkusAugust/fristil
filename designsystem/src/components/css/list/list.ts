@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const LIST_CLASS = "fs-list" as const
+export const LIST_CLASS = "lt-list" as const
 
 export const listVariants = ["default", "plain", "divided"] as const
 
@@ -8,7 +8,7 @@ export type ListVariant = (typeof listVariants)[number]
 export type NonDefaultListVariant = Exclude<ListVariant, "default">
 
 export type ListOptions = {
-  /** Punkter, rene rader, eller rader med strek mellom. Standard: `default`. */
+  /** Bullets, plain rows, or rows with a line between them. Default: `default`. */
   variant?: ListVariant
 }
 
@@ -18,14 +18,14 @@ export type ListAttributes = {
 }
 
 /**
- * Attributtene for en liste.
+ * The attributes for a list.
  *
- * Klassen hører på `<ul>` eller `<ol>`. `plain` og `divided` fjerner punktene
- * visuelt, men listen blir værende en liste, så skjermleseren sier fortsatt
- * hvor mange elementer den har. Det er grunnen til at varianten finnes: uten
- * den ville folk brukt `<div>` for å bli kvitt punktene. Unntaket er Safari,
- * der en `<ul>` uten synlige punkter kan trenge `role="list"`. Se
- * komponentsiden.
+ * The class goes on `<ul>` or `<ol>`. `plain` and `divided` remove the
+ * bullets visually, but the list stays a list, so the screen reader still
+ * says how many items it has. That is why the variant exists: without it
+ * people would use `<div>` to get rid of the bullets. The exception is
+ * Safari, where a `<ul>` without visible bullets can need `role="list"`. See
+ * the component page.
  *
  * ```ts
  * <ul {...list({ variant: "divided" })}>…</ul>

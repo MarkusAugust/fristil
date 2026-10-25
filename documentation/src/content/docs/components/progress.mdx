@@ -1,140 +1,140 @@
 ---
 title: Progress
-description: Framdriftsstolpe for noe som har en ende. CSS-komponent med én klasse og ingen JavaScript.
+description: A progress bar for something that has an end. CSS component with one class and no JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
-Klassen settes på et ekte `<progress>`. Elementet har semantikken innebygd: nettleseren melder det som `role="progressbar"` og leser opp hvor langt det er kommet, så du skriver verken rolle, `aria-valuenow` eller `aria-valuemax`. Bygger du stolpen av `<div>`-er, må du skrive alt det selv, og holde det i takt med tallet.
+The class goes on a real `<progress>`. The element has the semantics built in: the browser reports it as `role="progressbar"` and announces how far it has got, so you write neither a role, `aria-valuenow` nor `aria-valuemax`. If you build the bar from `<div>` elements, you have to write all of that yourself, and keep it in step with the number.
 
-Vet du ikke hvor langt det er kommet, er [Spinner](../spinner/) riktigere.
+If you do not know how far it has got, [Spinner](../spinner/) is the better fit.
 
-## Slik tar du den i bruk
+## How to use it
 
-<Eksempel importer={["tokens.css", "progress.css"]}
-  stiler={["progress"]} layout="stabel" maxWidth="26rem" kode={`
-<progress class="fs-progress" value="3" max="7"
-          aria-label="Framdrift i søknaden" aria-valuetext="Steg 3 av 7"></progress>
+<Example imports={["tokens.css", "progress.css"]}
+  styles={["progress"]} layout="stack" maxWidth="26rem" code={`
+<progress class="lt-progress" value="3" max="7"
+          aria-label="Application progress" aria-valuetext="Step 3 of 7"></progress>
 
-<progress class="fs-progress" value="100" max="100" data-color="success"
-          aria-label="Opplastingen er ferdig"></progress>
+<progress class="lt-progress" value="100" max="100" data-color="success"
+          aria-label="Upload complete"></progress>
 
-<progress class="fs-progress" aria-label="Henter søknadene dine"></progress>
+<progress class="lt-progress" aria-label="Fetching your applications"></progress>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** you spread the attributes in. That is the route in React, Astro and anything else that renders:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<progress {...fs.progress({ value: 3, max: 7, label: "Framdrift i søknaden", valueText: "Steg 3 av 7" })} />
+<progress {...lt.progress({ value: 3, max: 7, label: "Application progress", valueText: "Step 3 of 7" })} />
 ```
 
-`valueText` blir `aria-valuetext`, og skjermleseren leser den i stedet for prosenten. `max` leses sjelden opp, så «43 prosent» er alt brukeren får uten den; «Steg 3 av 7» sier hvor mange steg som er igjen.
+`valueText` becomes `aria-valuetext`, and the screen reader reads it instead of the percentage. `max` is rarely announced, so "43 percent" is all the user gets without it; "Step 3 of 7" says how many steps are left.
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+The import goes to `/react` here, since the block is JSX. From there the keys are called `className` and `htmlFor`. In Astro and anything else without React you import `@lo-tek/interfaces` and get `class` and `for`.
 
-**Oppdaterer du tallet mens noe pågår,** setter du egenskapen på elementet. Det er nettleserens eget API, og det er raskere enn å bygge attributtene på nytt for hvert steg:
+**If you update the number while something is in progress,** you set the property on the element. That is the browser's own API, and it is faster than rebuilding the attributes for every step:
 
 ```ts
-const stolpe = document.querySelector<HTMLProgressElement>("#opplasting")
+const bar = document.querySelector<HTMLProgressElement>("#upload")
 
-if (stolpe) stolpe.value = 64
+if (bar) bar.value = 64
 ```
 
-Skal stolpen tilbake til ubestemt, fjerner du attributtet: `stolpe.removeAttribute("value")`. Bruker du `fs.setAttributes(stolpe, fs.progress({ … }))` i stedet, sender du alle valgene på nytt: `fs.progress()` forvalter `value`, `max`, `aria-label` og `aria-valuetext`, så et kall uten `label` tar navnet bort, og `max` settes til 100 når du ikke oppgir den.
+To make the bar indeterminate again, remove the attribute: `bar.removeAttribute("value")`. If you use `lt.setAttributes(bar, lt.progress({ … }))` instead, you pass all the options again: `lt.progress()` manages `value`, `max`, `aria-label` and `aria-valuetext`, so a call without `label` removes the name, and `max` is set to 100 when you do not give it.
 
-Se [Typesikker bruk](../../typesikker-bruk/).
+See [Type-safe use](../../type-safe-use/).
 
 </Fragment>
-</Eksempel>
+</Example>
 
-## `max` har standardverdien 100
+## `max` defaults to 100
 
-Byggefunksjonen skriver alltid ut `max`, i strid med regelen om at en standardverdi ikke gir noe attributt. Den regelen gjelder utseende, der CSS-en alt har svaret. `max` er semantikk, og HTMLs egen standard er `1`:
+The builder function always writes out `max`, contrary to the rule that a default value gives no attribute. That rule is about appearance, where the CSS already has the answer. `max` is semantics, and HTML's own default is `1`:
 
 ```html
 <progress value="40"></progress>
 ```
 
-Den stolpen er full, ikke 40 prosent, og ingenting sier fra. Skriver du markupen for hånd, oppgi begge.
+That bar is full, not 40 percent, and nothing tells you. If you write the markup by hand, give both.
 
-## Ubestemt framdrift
+## Indeterminate progress
 
-Utelater du `value`, blir stolpen ubestemt, og en stripe sveiper over den. Det sier «noe pågår» uten å love et tall:
+If you leave out `value`, the bar becomes indeterminate, and a stripe sweeps across it. It says "something is in progress" without promising a number:
 
 ```html
-<progress class="fs-progress" aria-label="Henter søknadene dine"></progress>
+<progress class="lt-progress" aria-label="Fetching your applications"></progress>
 ```
 
-Det er det samme [Spinner](../spinner/) sier. Velg én av dem på samme sted, ellers melder siden den samme ventingen to ganger.
+That is the same thing [Spinner](../spinner/) says. Choose one of them in a given place, otherwise the page reports the same wait twice.
 
-## Fargene betyr noe
+## The colours mean something
 
-<Eksempel stiler={["progress"]} layout="stabel" maxWidth="26rem" kode={`
-<progress class="fs-progress" value="72" max="100"
-          aria-label="Laster opp vedlegg"></progress>
+<Example styles={["progress"]} layout="stack" maxWidth="26rem" code={`
+<progress class="lt-progress" value="72" max="100"
+          aria-label="Uploading attachment"></progress>
 
-<progress class="fs-progress" value="100" max="100" data-color="success"
-          aria-label="Opplastingen er ferdig"></progress>
+<progress class="lt-progress" value="100" max="100" data-color="success"
+          aria-label="Upload complete"></progress>
 
-<progress class="fs-progress" value="88" max="100" data-color="warning"
-          aria-label="Lagringsplassen er nesten full"></progress>
+<progress class="lt-progress" value="88" max="100" data-color="warning"
+          aria-label="Storage is almost full"></progress>
 
-<progress class="fs-progress" value="18" max="100" data-color="danger"
-          aria-label="Opplastingen stoppet"></progress>
+<progress class="lt-progress" value="18" max="100" data-color="danger"
+          aria-label="Upload stopped"></progress>
 `} />
 
-| `data-color` | Brukes til |
+| `data-color` | Used for |
 | --- | --- |
-| *(utelatt)* | Noe pågår, og det går som det skal |
-| `success` | Det er ferdig |
-| `warning` | Det nærmer seg en grense |
-| `danger` | Det stoppet, eller gikk galt |
+| *(omitted)* | Something is in progress, and it is going as it should |
+| `success` | It is finished |
+| `warning` | It is approaching a limit |
+| `danger` | It stopped, or went wrong |
 
-Fargen alene sier ingenting. Den som ikke ser forskjell på grønt og rødt trenger teksten ved siden av, og den som hører siden får bare `aria-label`. Skriv derfor hva som skjedde, og la fargen være det som bekrefter det.
+The colour alone says nothing. Someone who cannot tell green from red needs the text next to it, and someone listening to the page only gets the `aria-label`. So write what happened, and let the colour confirm it.
 
-## Klasser du kan style
+## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.fs-progress` | Stolpen. Fargen kommer fra `data-color`. |
+| `.lt-progress` | The bar. The colour comes from `data-color`. |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
-| `--fs-progress-fill` | `var(--fs-color-accent-fill)`, og `data-color` endrer den |
-| `--fs-progress-track` | `var(--fs-color-neutral-surface)` |
-| `--fs-progress-border` | `var(--fs-color-neutral-border)`, kanten rundt sporet. Sett den til `transparent` for å fjerne den |
-| `--fs-progress-height` | `var(--fs-spacing-2)` |
-| `--fs-progress-radius` | `var(--fs-spacing-1)` |
+| `--lt-progress-fill` | `var(--lt-color-accent-fill)`, and `data-color` changes it |
+| `--lt-progress-track` | `var(--lt-color-neutral-surface)` |
+| `--lt-progress-border` | `var(--lt-color-neutral-border)`, the border around the track. Set it to `transparent` to remove it |
+| `--lt-progress-height` | `var(--lt-spacing-2)` |
+| `--lt-progress-radius` | `var(--lt-spacing-1)` |
 
-Fyllfargen bæres av `color` på selve stolpen, og den fylte delen leser `currentColor`. Grunnen er at den fylte delen har to navn, `::-webkit-progress-value` i Chromium og WebKit og `::-moz-progress-bar` i Gecko, og de kan ikke stå i samme selektorliste: et pseudoelement motoren ikke kjenner gjør hele regelen ugyldig. Fargen må derfor bestemmes ett sted og arves inn. `<progress>` har ingen tekst, så `color` er ledig til oppgaven, og `--fs-progress-fill` er det eneste du trenger å sette for å endre den.
+The fill colour is carried by `color` on the bar itself, and the filled part reads `currentColor`. The reason is that the filled part has two names, `::-webkit-progress-value` in Chromium and WebKit and `::-moz-progress-bar` in Gecko, and they cannot be in the same selector list: a pseudo-element the engine does not know makes the whole rule invalid. The colour therefore has to be decided in one place and inherited. `<progress>` has no text, so `color` is free for the job, and `--lt-progress-fill` is all you need to set to change it.
 
-Har brukeren bedt om mindre bevegelse, går den ubestemte stripa saktere, og den fylte delen hopper til det nye tallet framfor å gli dit. Stripa stopper ikke helt: en indikator som står stille sier ikke lenger at noe pågår.
+If the user has asked for reduced motion, the indeterminate stripe moves more slowly, and the filled part jumps to the new number instead of sliding there. The stripe does not stop completely: an indicator that stands still no longer says that something is in progress.
 
-Et eksempel. En stolpe som står under et felt skal ofte være tynnere og uten hjørner:
+An example. A bar under a field should often be thinner and without corners:
 
-<Eksempel stiler={["progress"]} layout="stabel" maxWidth="26rem" egenCss={`
-.tynn-stolpe {
-	--fs-progress-height: var(--fs-spacing-1);
-	--fs-progress-radius: 0;
+<Example styles={["progress"]} layout="stack" maxWidth="26rem" customCss={`
+.thin-bar {
+	--lt-progress-height: var(--lt-spacing-1);
+	--lt-progress-radius: 0;
 }
-`} kode={`
-<progress class="fs-progress" value="60" max="100"
-          aria-label="Standard"></progress>
+`} code={`
+<progress class="lt-progress" value="60" max="100"
+          aria-label="Default"></progress>
 
-<progress class="fs-progress tynn-stolpe" value="60" max="100"
-          aria-label="Laster opp vedlegg"></progress>
+<progress class="lt-progress thin-bar" value="60" max="100"
+          aria-label="Uploading attachment"></progress>
 `} />
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
-## Tilgjengelighet
+## Accessibility
 
-- Gi stolpen et navn med `aria-label`, eller knytt den til en synlig tekst med `aria-labelledby`. Uten navn melder skjermleseren et tall uten å si hva det gjelder.
-- Oppgi alltid `max` sammen med `value`. HTMLs standard er `1`, så en stolpe uten `max` er full ved alt over 1.
-- Ikke oppdater tallet oftere enn brukeren trenger. Hver endring kan bli en opplesning, og en stolpe som teller fra 0 til 100 i steg på én blir hundre meldinger.
-- Er framdriften over, si fra med noe mer enn fargen. Flytt fokus dit resultatet kom, eller meld det i et `role="status"`-felt.
+- Give the bar a name with `aria-label`, or tie it to a visible text with `aria-labelledby`. Without a name the screen reader reports a number without saying what it is about.
+- Always give `max` together with `value`. HTML's default is `1`, so a bar without `max` is full at anything above 1.
+- Do not update the number more often than the user needs. Every change can become an announcement, and a bar that counts from 0 to 100 in steps of one becomes a hundred messages.
+- When the progress is over, say so with more than the colour. Move focus to where the result appeared, or report it in a `role="status"` element.

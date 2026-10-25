@@ -13,22 +13,22 @@ import { accordion } from "./accordion"
 import "../../../tokens/tokens.css"
 import "./accordion.css"
 
-describe("fs-accordion", () => {
+describe("lt-accordion", () => {
   afterEach(() => {
     document.getElementById("oppskrift")?.remove()
   })
 
   beforeEach(() => {
     monter(`
-      <details class="fs-accordion" id="forste">
+      <details class="lt-accordion" id="forste">
         <summary>Hvem kan søke om bostøtte?</summary>
-        <div class="fs-accordion__content">
+        <div class="lt-accordion__content">
           <p>Alle som bor og er folkeregistrert i boligen.</p>
         </div>
       </details>
-      <details class="fs-accordion" id="andre" open>
+      <details class="lt-accordion" id="andre" open>
         <summary>Hvor lang er behandlingstiden?</summary>
-        <div class="fs-accordion__content">
+        <div class="lt-accordion__content">
           <p>Vi behandler søknaden innen tre uker.</p>
         </div>
       </details>
@@ -108,9 +108,9 @@ describe("fs-accordion", () => {
     "lar teksten i et lukket panel bli funnet av søk i siden",
     () => {
       monter(`
-        <details class="fs-accordion" id="lukket">
+        <details class="lt-accordion" id="lukket">
           <summary>Hvem kan søke om bostøtte?</summary>
-          <div class="fs-accordion__content"><p>Hybelkaninhabitat</p></div>
+          <div class="lt-accordion__content"><p>Hybelkaninhabitat</p></div>
         </details>
         <button type="button" aria-expanded="false">Hvem kan søke?</button>
         <div hidden><p>Kvistloftmotiv</p></div>
@@ -131,8 +131,8 @@ describe("fs-accordion", () => {
     // Dokumentasjonen viser `<summary><h3>`. Før fikk overskriften
     // nettleserens marg og størrelse.
     monter(`
-      <details class="fs-accordion"><summary id="uten">Spørsmål</summary></details>
-      <details class="fs-accordion"><summary><h3 id="med">Spørsmål</h3></summary></details>
+      <details class="lt-accordion"><summary id="uten">Spørsmål</summary></details>
+      <details class="lt-accordion"><summary><h3 id="med">Spørsmål</h3></summary></details>
     `)
     const overskrift = getComputedStyle(
       document.getElementById("med") as Element,
@@ -145,9 +145,9 @@ describe("fs-accordion", () => {
 
   it("gir overskriften og innholdet samme luft til sidene", () => {
     monter(`
-      <details class="fs-accordion" open style="--fs-accordion-padding-inline: 40px">
+      <details class="lt-accordion" open style="--lt-accordion-padding-inline: 40px">
         <summary id="topp">Spørsmål</summary>
-        <div class="fs-accordion__content" id="innhold"><p>Svar</p></div>
+        <div class="lt-accordion__content" id="innhold"><p>Svar</p></div>
       </details>
     `)
 
@@ -162,12 +162,12 @@ describe("fs-accordion", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(accordion()).toEqual({ class: "fs-accordion" })
+    expect(accordion()).toEqual({ class: "lt-accordion" })
     expect(accordion({ variant: "plain" })).toEqual({
-      class: "fs-accordion",
+      class: "lt-accordion",
       "data-variant": "plain",
     })
-    expect(accordion.content).toBe("fs-accordion__content")
+    expect(accordion.content).toBe("lt-accordion__content")
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {

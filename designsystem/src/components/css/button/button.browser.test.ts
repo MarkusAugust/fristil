@@ -6,7 +6,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/farge"
+import { farge } from "../../../testing/color"
 
 import "../../../tokens/tokens.css"
 import "./button.css"
@@ -20,31 +20,31 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("fs-button variants", () => {
+describe("lt-button variants", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <button id="primary" class="fs-button">Primary</button>
-      <button id="secondary" class="fs-button" data-variant="secondary">Secondary</button>
-      <button id="ghost" class="fs-button" data-variant="ghost">Ghost</button>
-      <button id="danger" class="fs-button" data-variant="danger">Danger</button>
-      <button id="disabled" class="fs-button" disabled>Disabled</button>
+      <button id="primary" class="lt-button">Primary</button>
+      <button id="secondary" class="lt-button" data-variant="secondary">Secondary</button>
+      <button id="ghost" class="lt-button" data-variant="ghost">Ghost</button>
+      <button id="danger" class="lt-button" data-variant="danger">Danger</button>
+      <button id="disabled" class="lt-button" disabled>Disabled</button>
     `
   })
 
   it("applies primary defaults", () => {
     const primary = css("primary")
 
-    expect(primary.backgroundColor).toBe(farge("--fs-color-accent-fill"))
-    expect(primary.borderTopColor).toBe(farge("--fs-color-accent-fill"))
-    expect(primary.color).toBe(farge("--fs-color-accent-content"))
+    expect(primary.backgroundColor).toBe(farge("--lt-color-accent-fill"))
+    expect(primary.borderTopColor).toBe(farge("--lt-color-accent-fill"))
+    expect(primary.color).toBe(farge("--lt-color-accent-content"))
   })
 
   it("applies secondary variant styles", () => {
     const secondary = css("secondary")
 
     expect(secondary.backgroundColor).toBe("rgba(0, 0, 0, 0)")
-    expect(secondary.borderTopColor).toBe(farge("--fs-color-accent-border"))
-    expect(secondary.color).toBe(farge("--fs-color-accent-text"))
+    expect(secondary.borderTopColor).toBe(farge("--lt-color-accent-border"))
+    expect(secondary.color).toBe(farge("--lt-color-accent-text"))
   })
 
   it("applies ghost variant styles", () => {
@@ -52,37 +52,37 @@ describe("fs-button variants", () => {
 
     expect(ghost.backgroundColor).toBe("rgba(0, 0, 0, 0)")
     expect(ghost.borderTopColor).toBe("rgba(0, 0, 0, 0)")
-    expect(ghost.color).toBe(farge("--fs-color-accent-text"))
+    expect(ghost.color).toBe(farge("--lt-color-accent-text"))
   })
 
   it("applies danger variant styles", () => {
     const danger = css("danger")
 
-    expect(danger.backgroundColor).toBe(farge("--fs-color-danger-surface"))
-    expect(danger.borderTopColor).toBe(farge("--fs-color-danger-text"))
-    expect(danger.color).toBe(farge("--fs-color-danger-text"))
+    expect(danger.backgroundColor).toBe(farge("--lt-color-danger-surface"))
+    expect(danger.borderTopColor).toBe(farge("--lt-color-danger-text"))
+    expect(danger.color).toBe(farge("--lt-color-danger-text"))
   })
 
   it("applies disabled styles", () => {
     const disabled = css("disabled")
 
-    expect(disabled.backgroundColor).toBe(farge("--fs-color-disabled-surface"))
-    expect(disabled.borderTopColor).toBe(farge("--fs-color-disabled-surface"))
-    expect(disabled.color).toBe(farge("--fs-color-disabled-text"))
+    expect(disabled.backgroundColor).toBe(farge("--lt-color-disabled-surface"))
+    expect(disabled.borderTopColor).toBe(farge("--lt-color-disabled-surface"))
+    expect(disabled.color).toBe(farge("--lt-color-disabled-text"))
     // Markøren vises bare hvis elementet treffes av pekeren
     expect(disabled.pointerEvents).toBe("auto")
   })
 })
 
-describe("fs-button tilgjengelighet", () => {
+describe("lt-button tilgjengelighet", () => {
   it("har nok kontrast i alle varianter", async () => {
     monter(`
-      <button class="fs-button">Send søknad</button>
-      <button class="fs-button" data-variant="secondary">Lagre utkast</button>
-      <button class="fs-button" data-variant="ghost">Legg til vedlegg</button>
-      <button class="fs-button" data-variant="danger">Slett søknad</button>
-      <button class="fs-button" disabled>Send søknad</button>
-      <a class="fs-button" href="/oversikt">Gå til oversikten</a>
+      <button class="lt-button">Send søknad</button>
+      <button class="lt-button" data-variant="secondary">Lagre utkast</button>
+      <button class="lt-button" data-variant="ghost">Legg til vedlegg</button>
+      <button class="lt-button" data-variant="danger">Slett søknad</button>
+      <button class="lt-button" disabled>Send søknad</button>
+      <a class="lt-button" href="/oversikt">Gå til oversikten</a>
     `)
 
     await ventPaTegning()
@@ -90,9 +90,9 @@ describe("fs-button tilgjengelighet", () => {
   })
 })
 
-describe("fs-button deaktivert", () => {
+describe("lt-button deaktivert", () => {
   it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
-    monter(`<button class="fs-button" disabled>Av</button>`)
+    monter(`<button class="lt-button" disabled>Av</button>`)
 
     const element = document.querySelector("button") as HTMLElement
     const ramme = element.getBoundingClientRect()

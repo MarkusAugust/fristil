@@ -6,7 +6,7 @@ import {
   monter,
   ventPaTegning,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/farge"
+import { farge } from "../../../testing/color"
 
 import "../../../tokens/tokens.css"
 import "./error-text.css"
@@ -22,34 +22,34 @@ function css(id: string) {
   return getComputedStyle(element)
 }
 
-describe("fs-error-text", () => {
+describe("lt-error-text", () => {
   beforeEach(() => {
     document.body.innerHTML = `
-      <p id="error" class="fs-error-text">Feilmelding</p>
-      <p id="warning" class="fs-error-text" data-variant="warning">Varsel</p>
+      <p id="error" class="lt-error-text">Feilmelding</p>
+      <p id="warning" class="lt-error-text" data-variant="warning">Varsel</p>
     `
   })
 
   it("applies error defaults", () => {
     const text = css("error")
 
-    expect(text.color).toBe(farge("--fs-color-danger-text"))
+    expect(text.color).toBe(farge("--lt-color-danger-text"))
     expect(text.fontWeight).toBe("500")
   })
 
   it("applies warning variant", () => {
     const text = css("warning")
 
-    expect(text.color).toBe(farge("--fs-color-warning-text"))
+    expect(text.color).toBe(farge("--lt-color-warning-text"))
   })
 })
 
-describe("fs-error-text tilgjengelighet", () => {
+describe("lt-error-text tilgjengelighet", () => {
   it("har nok kontrast og er koblet til feltet", async () => {
     monter(`
-      <label class="fs-label" for="a11y-feil-epost">E-postadresse</label>
+      <label class="lt-label" for="a11y-feil-epost">E-postadresse</label>
       <input
-        class="fs-input"
+        class="lt-input"
         id="a11y-feil-epost"
         type="email"
         data-state="invalid"
@@ -57,9 +57,9 @@ describe("fs-error-text tilgjengelighet", () => {
         aria-describedby="a11y-feil-epost-feil"
         value="ola@"
       />
-      <p class="fs-error-text" id="a11y-feil-epost-feil">Skriv en e-postadresse med krøllalfa.</p>
+      <p class="lt-error-text" id="a11y-feil-epost-feil">Skriv en e-postadresse med krøllalfa.</p>
 
-      <p class="fs-error-text" data-variant="warning">Adressen finnes ikke i folkeregisteret.</p>
+      <p class="lt-error-text" data-variant="warning">Adressen finnes ikke i folkeregisteret.</p>
     `)
 
     await ventPaTegning()

@@ -6,12 +6,12 @@ import {
   type NonDefaultFieldState,
 } from "../shared.js"
 
-export const RADIO_CLASS = "fs-radio" as const
-/** Raden som holder knappen og teksten ved siden av hverandre. */
-export const RADIO_ROW_CLASS = "fs-radio-row" as const
+export const RADIO_CLASS = "lt-radio" as const
+/** The row that holds the button and the text next to each other. */
+export const RADIO_ROW_CLASS = "lt-radio-row" as const
 
 export type RadioOptions = {
-  /** Valideringstilstand. Standard: `default`. */
+  /** Validation state. Default: `default`. */
   state?: FieldState
 }
 
@@ -23,14 +23,14 @@ export type RadioAttributes = {
 }
 
 /**
- * Attributtene for en radioknapp.
+ * The attributes for a radio button.
  *
- * Alle knappene i en gruppe må ha samme `name`. Det er den koblingen som gjør
- * at bare én kan være valgt, og at piltastene flytter mellom dem. `name`
- * setter du selv, siden bare du vet hva gruppen heter.
+ * All the buttons in a group must have the same `name`. That connection is
+ * what lets only one be selected, and lets the arrow keys move between them.
+ * You set `name` yourself, since only you know what the group is called.
  *
  * ```ts
- * <input {...radio()} name="leveringsmate" value="post" />
+ * <input {...radio()} name="delivery" value="post" />
  * ```
  */
 export const radio = Object.assign(
@@ -42,7 +42,7 @@ export const radio = Object.assign(
       "aria-invalid": state === "invalid" ? ("true" as const) : undefined,
     }),
   {
-    /** Klassen på raden rundt knappen og teksten. */
+    /** The class on the row around the button and the text. */
     row: RADIO_ROW_CLASS,
     states: fieldStates,
     isState: isFieldState,

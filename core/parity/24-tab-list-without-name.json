@@ -1,0 +1,42 @@
+{
+  "markup": [
+    {
+      "start": 13,
+      "end": 15,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/tabs/",
+      "message": "<lt-tabs> has a tab list without a name. Write aria-label on .lt-tabs__list, like aria-label=\"Case sections\", or aria-labelledby pointing at a heading. Without a name the screen reader only says \"tab list\".",
+      "fix": {
+        "title": "Give the tab list a name with aria-label",
+        "edits": [
+          {
+            "start": 15,
+            "end": 15,
+            "text": " aria-label=\"Case sections\""
+          }
+        ],
+        "preferred": true
+      }
+    }
+  ],
+  "page": [
+    {
+      "start": 13,
+      "end": 15,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/tabs/",
+      "message": "<lt-tabs> has a tab list without a name. Write aria-label on .lt-tabs__list, like aria-label=\"Case sections\", or aria-labelledby pointing at a heading. Without a name the screen reader only says \"tab list\".",
+      "fix": {
+        "title": "Give the tab list a name with aria-label",
+        "edits": [
+          {
+            "start": 15,
+            "end": 15,
+            "text": " aria-label=\"Case sections\""
+          }
+        ],
+        "preferred": true
+      }
+    }
+  ]
+}

@@ -8,16 +8,16 @@ plugins {
 
 group = "io.github.markusaugust"
 
-// Versjonen står i `gradle.properties`, og er den samme som npm-pakkens.
+// The version is in `gradle.properties`, and is the same as the npm package's.
 
 repositories {
     mavenCentral()
 }
 
 /*
- * Chicory kjører WebAssembly i ren Java. Ingen JNI, ingen JavaScript, ingen
- * runtime å installere: det er en Maven-avhengighet som virker der JVM-en
- * virker. Det er den eneste avhengigheten pakken har.
+ * Chicory runs WebAssembly in pure Java. No JNI, no JavaScript, no runtime
+ * to install: it is a Maven dependency that works wherever the JVM works. It
+ * is the only dependency the package has.
  */
 dependencies {
     implementation("com.dylibso.chicory:runtime:1.7.5")
@@ -29,171 +29,176 @@ kotlin {
     compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
 }
 
-// Java 17 som laveste nivå: det dekker LTS-versjonene de fleste team står på.
+// Java 17 as the minimum: it covers the LTS versions most teams are on.
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
 }
 
 /*
- * Alt pakken bygges av, kommer fra npm-pakken for samme versjon: kjernen,
- * manifestet og filene for nettleseren. Bygget trenger derfor verken Rust
- * eller Bun, og `io.github.markusaugust:fristil` er bygd av nøyaktig de
- * filene `@fristil/designsystem` med samme versjon består av.
+ * Everything the package is built from comes from the npm package for the
+ * same version: the core, the manifest and the files for the browser. The
+ * build therefore needs neither Rust nor Bun, and
+ * `io.github.markusaugust:lo-tek-interfaces` is built from exactly the files
+ * `@lo-tek/interfaces` with the same version consists of.
  *
- * Uten `-Pfristil.pakke` hentes versjonen fra npm. Mellom to utgivelser er
- * koden her nyere enn det som ligger der, og da pakkes tarballen fra repoet
- * og oppgis med `-Pfristil.pakke=<sti til .tgz>`, slik CI gjør.
+ * Without `-Plotek.package` the version is fetched from npm. Between two
+ * releases the code here is newer than what is there, and then the tarball
+ * is packed from the repository and passed with
+ * `-Plotek.package=<path to .tgz>`, as CI does.
  */
-val hentPakke = tasks.register<no.fristil.build.FetchPackage>("hentPakke") {
+val fetchPackage = tasks.register<no.lotek.build.FetchPackage>("fetchPackage") {
     packageVersion.set(version.toString())
-    tarball.set(layout.buildDirectory.file("npm/designsystem-$version.tgz"))
+    tarball.set(layout.buildDirectory.file("npm/interfaces-$version.tgz"))
 }
 
 /*
- * `fristil.pakke` er tarballen, eller mappa `npm pack` skrev den til. I en
- * mappe brukes fila med versjonen i navnet, så en gammel tarball ved siden
- * av blir ikke tatt med en feiltakelse. Valgt her og ikke med `orElse`, som
- * mister avhengigheten til `hentPakke`.
+ * `lotek.package` is the tarball, or the directory `npm pack` wrote it to. In
+ * a directory, the file with the version in its name is used, so an old
+ * tarball next to it is not picked up by mistake. Chosen here and not with
+ * `orElse`, which loses the dependency on `fetchPackage`.
  */
-val lokalPakke = providers.gradleProperty("fristil.pakke").orNull?.let { rootDir.resolve(it) }
-val pakkeTgz: Provider<RegularFile> =
-    if (lokalPakke != null) {
-        val tgz = if (lokalPakke.isDirectory) lokalPakke.resolve("fristil-designsystem-$version.tgz") else lokalPakke
-        check(tgz.isFile) { "Fant ikke npm-pakken $tgz. Pakk den med bun --filter @fristil/designsystem pakk." }
+val localPackage = providers.gradleProperty("lotek.package").orNull?.let { rootDir.resolve(it) }
+val packageTgz: Provider<RegularFile> =
+    if (localPackage != null) {
+        val tgz = if (localPackage.isDirectory) localPackage.resolve("lo-tek-interfaces-$version.tgz") else localPackage
+        check(tgz.isFile) { "Could not find the npm package $tgz. Pack it with bun --filter @lo-tek/interfaces pack." }
         provider { layout.projectDirectory.file(tgz.absolutePath) }
     } else {
-        hentPakke.flatMap { it.tarball }
+        fetchPackage.flatMap { it.tarball }
     }
 
-val pakkUt = tasks.register<Sync>("pakkUt") {
-    // npm legger alt under `package/` i tarballen.
-    from(tarTree(pakkeTgz)) {
+val unpackPackage = tasks.register<Sync>("unpackPackage") {
+    // npm puts everything under `package/` in the tarball.
+    from(tarTree(packageTgz)) {
         eachFile { relativePath = RelativePath(true, *relativePath.segments.drop(1).toTypedArray()) }
     }
     includeEmptyDirs = false
-    into(layout.buildDirectory.dir("fristil-pakke"))
-    val forventet = version.toString()
-    // Ellers står oppgaven som oppdatert når bare versjonen er endret, og kontrollen hoppes over.
-    inputs.property("versjon", forventet)
+    into(layout.buildDirectory.dir("lotek-package"))
+    val expected = version.toString()
+    // Otherwise the task counts as up to date when only the version changed, and the check is skipped.
+    inputs.property("version", expected)
     doLast {
-        val pakke = groovy.json.JsonSlurper().parse(destinationDir.resolve("package.json")) as Map<*, *>
-        check(pakke["name"] == "@fristil/designsystem" && pakke["version"] == forventet) {
-            "Tarballen er ${pakke["name"]}@${pakke["version"]}, men Kotlin-pakken er $forventet. " +
-                "Versjonen i kotlin/gradle.properties og designsystem/package.json skal være den samme."
+        val pkg = groovy.json.JsonSlurper().parse(destinationDir.resolve("package.json")) as Map<*, *>
+        check(pkg["name"] == "@lo-tek/interfaces" && pkg["version"] == expected) {
+            "The tarball is ${pkg["name"]}@${pkg["version"]}, but the Kotlin package is $expected. " +
+                "The version in kotlin/gradle.properties and designsystem/package.json must be the same."
         }
     }
 }
 
-val pakke = pakkUt.map { it.destinationDir }
-val manifestFil = pakke.map { layout.projectDirectory.file(it.resolve("manifest/manifest.json").absolutePath) }
-val kontraktFil = pakke.map { layout.projectDirectory.file(it.resolve("src/tokens/fargekontrakt.json").absolutePath) }
+val unpacked = unpackPackage.map { it.destinationDir }
+val manifestFile = unpacked.map { layout.projectDirectory.file(it.resolve("manifest/manifest.json").absolutePath) }
+val contractFile = unpacked.map { layout.projectDirectory.file(it.resolve("src/tokens/color-contract.json").absolutePath) }
 
-// Modulen gjøres om til JVM-bytekode her, ikke når den lastes. Se `buildSrc/`.
-val kompilerKjerne = tasks.register<no.fristil.build.CompileCore>("kompilerKjerne") {
-    wasm.set(pakke.map { layout.projectDirectory.file(it.resolve("kjerne/fristil-kjerne.wasm").absolutePath) })
+// The module is turned into JVM bytecode here, not when it is loaded. See `buildSrc/`.
+val compileCore = tasks.register<no.lotek.build.CompileCore>("compileCore") {
+    wasm.set(unpacked.map { layout.projectDirectory.file(it.resolve("core/lotek-core.wasm").absolutePath) })
     classes.set(layout.buildDirectory.dir("chicory/classes"))
     sources.set(layout.buildDirectory.dir("chicory/sources"))
 }
 
-// API-et genereres fra manifestet: verdiene som `enum`-er, og byggefunksjonene som har en tabell.
-val genererApi = tasks.register<no.fristil.build.GenerateApi>("genererApi") {
-    manifest.set(manifestFil)
-    output.set(layout.buildDirectory.dir("generated/fristil"))
+// The API is generated from the manifest: the values as `enum`s, and the builder functions that have a table.
+val generateApi = tasks.register<no.lotek.build.GenerateApi>("generateApi") {
+    manifest.set(manifestFile)
+    output.set(layout.buildDirectory.dir("generated/lotek"))
 }
 
 /*
- * WebJar-en: CSS-en og JavaScript-modulene for nettleseren, med de samme
- * stiene som i npm-pakken, under `META-INF/resources/webjars/fristil/<versjon>/`.
- * Spring Boot, Ktor og Servlet-containere serverer den mappa som den er, så
- * en Kotlin-app trenger verken npm eller et CDN. Det som bare er for Node
- * eller React, holdes utenfor.
+ * The WebJar: the CSS and the JavaScript modules for the browser, with the
+ * same paths as in the npm package, under
+ * `META-INF/resources/webjars/lo-tek/<version>/`. Spring Boot, Ktor and
+ * servlet containers serve that directory as it is, so a Kotlin app needs
+ * neither npm nor a CDN. What is only for Node or React is left out.
  */
 val webjar = tasks.register<Sync>("webjar") {
     into(layout.buildDirectory.dir("webjar"))
-    from(pakke) {
-        include("dist/**/*.js", "dist/fristil.css", "src/components/**/*.css", "src/tokens/**/*.css")
+    from(unpacked) {
+        include("dist/**/*.js", "dist/lotek.css", "src/components/**/*.css", "src/tokens/**/*.css")
         exclude(
             "dist/cli.js", "dist/wasi-host.js", "dist/react.js", "dist/diagnostics/**", "dist/jsx/**",
-            // Temaet leser kjernen fra disken, og er for Node, ikke nettleseren.
+            // The theme reads the core from disk, and is for Node, not the browser.
             "dist/tokens/theme.js", "dist/tokens/theme-check.js",
         )
-        into("META-INF/resources/webjars/fristil/$version")
+        into("META-INF/resources/webjars/lo-tek/$version")
     }
 }
 
-// Manifestet og fargekontrakten i pakken. `Fristil` gir kjernen manifestet
-// når en konsument ikke oppgir sitt eget, og kontrakten når temaet bygges.
+// The manifest and the colour contract in the package. `LO-TEK` gives the core
+// the manifest when a consumer does not pass its own, and the contract when
+// the theme is built.
 tasks.processResources {
-    from(manifestFil) { into("no/fristil") }
-    from(kontraktFil) { into("no/fristil") }
+    from(manifestFile) { into("no/lotek") }
+    from(contractFile) { into("no/lotek") }
 }
 
 sourceSets.main {
     resources.srcDir(webjar)
-    kotlin.srcDir(genererApi)
-    java.srcDir(kompilerKjerne.map { it.sources })
-    // Klassene for modulen er ferdig kompilert, så de legges i jar-en som de er.
-    resources.srcDir(kompilerKjerne.map { it.classes })
+    kotlin.srcDir(generateApi)
+    java.srcDir(compileCore.map { it.sources })
+    // The classes for the module are already compiled, so they go into the jar as they are.
+    resources.srcDir(compileCore.map { it.classes })
 }
 
 dependencies {
-    compileOnly(files(kompilerKjerne.map { it.classes }))
+    compileOnly(files(compileCore.map { it.classes }))
 }
 
 tasks.test {
     useJUnitPlatform()
     /*
-     * Fasiten for paritet og kontrakt er testdata i repoet, ikke en del av
-     * npm-pakken, og leses derfor herfra. CI pakker tarballen fra den samme
-     * commiten, så de to er alltid like gamle.
+     * The expected results for parity and the contract are test data in the
+     * repository, not part of the npm package, and are therefore read from
+     * here. CI packs the tarball from the same commit, so the two are always
+     * the same age.
      */
-    val kjerne = rootDir.resolve("../kjerne")
+    val core = rootDir.resolve("../core")
     val designsystem = rootDir.resolve("../designsystem")
-    systemProperty("paritet", kjerne.resolve("paritet").absolutePath)
-    systemProperty("tema", kjerne.resolve("tema").absolutePath)
-    // Fiksturene og byggetilfellene leses gjennom en sti, så Gradle ser dem
-    // ikke uten dette, og en ny fikstur ville latt testen stå som oppdatert.
-    inputs.dir(kjerne.resolve("paritet")).withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.dir(kjerne.resolve("tema")).withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file(designsystem.resolve("manifest/byggetilfeller.json")).withPathSensitivity(PathSensitivity.NONE)
-    inputs.file(manifestFil).withPathSensitivity(PathSensitivity.NONE)
-    val manifestSti = manifestFil.map { it.asFile.absolutePath }
-    jvmArgumentProviders.add(CommandLineArgumentProvider { listOf("-Dmanifest=${manifestSti.get()}") })
-    systemProperty("byggetilfeller", designsystem.resolve("manifest/byggetilfeller.json").absolutePath)
-    systemProperty("webjar", layout.buildDirectory.dir("webjar/META-INF/resources/webjars/fristil/$version").get().asFile.absolutePath)
+    systemProperty("parity", core.resolve("parity").absolutePath)
+    systemProperty("theme", core.resolve("theme").absolutePath)
+    // The fixtures and the build cases are read through a path, so Gradle
+    // does not see them without this, and a new fixture would leave the test
+    // counted as up to date.
+    inputs.dir(core.resolve("parity")).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir(core.resolve("theme")).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file(designsystem.resolve("manifest/build-cases.json")).withPathSensitivity(PathSensitivity.NONE)
+    inputs.file(manifestFile).withPathSensitivity(PathSensitivity.NONE)
+    val manifestPath = manifestFile.map { it.asFile.absolutePath }
+    jvmArgumentProviders.add(CommandLineArgumentProvider { listOf("-Dmanifest=${manifestPath.get()}") })
+    systemProperty("buildCases", designsystem.resolve("manifest/build-cases.json").absolutePath)
+    systemProperty("webjar", layout.buildDirectory.dir("webjar/META-INF/resources/webjars/lo-tek/$version").get().asFile.absolutePath)
     testLogging { events("failed") }
 }
 
 /*
- * Utgivelsen til Maven Central, for alle fire modulene med samme versjon.
- * `publish.yml` kjører den etter at npm-pakken er ute, og bygger da av den
- * publiserte tarballen. Brukernavnet og passordet til Central Portal og
- * signeringsnøkkelen kommer som `ORG_GRADLE_PROJECT_…` fra hemmelighetene.
+ * The release to Maven Central, for all four modules with the same version.
+ * `publish.yml` runs it after the npm package is out, and then builds from
+ * the published tarball. The username and password for the Central Portal
+ * and the signing key come as `ORG_GRADLE_PROJECT_…` from the secrets.
  *
- * Uten nøkkel signeres ingenting, så `publishToMavenLocal` virker på en
- * maskin uten den. Central avviser en usignert utgivelse uansett.
+ * Without a key nothing is signed, so `publishToMavenLocal` works on a
+ * machine without one. Central rejects an unsigned release anyway.
  */
-// En hemmelighet som mangler, kommer fra GitHub som en tom streng, ikke som ingenting.
+// A missing secret comes from GitHub as an empty string, not as nothing.
 val signeringsnokkel = providers.gradleProperty("signingInMemoryKey").orNull?.isNotBlank() == true
 allprojects {
     pluginManager.apply("com.vanniktech.maven.publish")
     extensions.configure<MavenPublishBaseExtension> {
         publishToMavenCentral()
         if (signeringsnokkel) signAllPublications()
-        val artefakt = if (project == rootProject) "fristil" else "fristil-${project.name}"
+        val artefakt = if (project == rootProject) "lo-tek-interfaces" else "lo-tek-${project.name}"
         coordinates(rootProject.group.toString(), artefakt, rootProject.version.toString())
         pom {
             name.set(artefakt)
             description.set(
                 when (project.name) {
-                    "kotlinx-html" -> "Fristil for kotlinx.html: Tag.fs(…) legger attributtene fra byggefunksjonene på en tagg."
-                    "kommandolinje" -> "Kommandolinja til Fristil på JVM-en, som Gradle-pluginen kjører."
-                    "gradle-plugin" -> "Gradle-pluginen som sjekker malene mot Fristil og bygger temaet."
-                    else -> "Fristil for Kotlin og Java: byggefunksjonene, diagnostikken og CSS-en og web-komponentene som WebJar."
+                    "kotlinx-html" -> "LO-TEK for kotlinx.html: Tag.lt(…) puts the attributes from the builder functions on a tag."
+                    "cli" -> "The LO-TEK CLI on the JVM, which the Gradle plugin runs."
+                    "gradle-plugin" -> "The Gradle plugin that checks templates against LO-TEK and builds the theme."
+                    else -> "LO-TEK for Kotlin and Java: the builder functions, the diagnostics, and the CSS and web components as a WebJar."
                 },
             )
-            url.set("https://fristil.sobernetics.no/kotlin/")
+            url.set("https://lo-tek.sobernetics.no/kotlin/")
             inceptionYear.set("2026")
             licenses {
                 license {
@@ -210,9 +215,9 @@ allprojects {
                 }
             }
             scm {
-                url.set("https://github.com/MarkusAugust/fristil")
-                connection.set("scm:git:https://github.com/MarkusAugust/fristil.git")
-                developerConnection.set("scm:git:ssh://git@github.com/MarkusAugust/fristil.git")
+                url.set("https://github.com/MarkusAugust/lo-tek")
+                connection.set("scm:git:https://github.com/MarkusAugust/lo-tek.git")
+                developerConnection.set("scm:git:ssh://git@github.com/MarkusAugust/lo-tek.git")
             }
         }
     }

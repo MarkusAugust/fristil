@@ -12,15 +12,15 @@ import { tag } from "./tag"
 import "../../../tokens/tokens.css"
 import "./tag.css"
 
-describe("fs-tag", () => {
+describe("lt-tag", () => {
   beforeEach(() => {
     monter(`
-      <span class="fs-tag" id="vanlig">Bostøtte</span>
-      <span class="fs-tag" data-variant="filled" id="fylt">Barnehage</span>
-      <button class="fs-tag" data-selectable aria-pressed="true" id="valgt" type="button">
+      <span class="lt-tag" id="vanlig">Bostøtte</span>
+      <span class="lt-tag" data-variant="filled" id="fylt">Barnehage</span>
+      <button class="lt-tag" data-selectable aria-pressed="true" id="valgt" type="button">
         Innvilget
       </button>
-      <button class="fs-tag" data-selectable aria-pressed="false" id="ikkevalgt" type="button">
+      <button class="lt-tag" data-selectable aria-pressed="false" id="ikkevalgt" type="button">
         Avslått
       </button>
     `)
@@ -44,9 +44,9 @@ describe("fs-tag", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(tag()).toEqual({ class: "fs-tag" })
+    expect(tag()).toEqual({ class: "lt-tag" })
     expect(tag({ variant: "filled", selectable: true })).toEqual({
-      class: "fs-tag",
+      class: "lt-tag",
       "data-variant": "filled",
       "data-selectable": "",
     })

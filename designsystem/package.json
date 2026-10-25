@@ -1,17 +1,17 @@
 {
-  "name": "@fristil/designsystem",
+  "name": "@lo-tek/interfaces",
   "version": "0.36.0",
   "description": "Rammeverksuavhengig designsystem: tokens, CSS-komponenter og web components.",
   "license": "MIT",
   "author": "August Søberg-Klyver",
-  "homepage": "https://fristil.sobernetics.no",
+  "homepage": "https://lo-tek.sobernetics.no",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MarkusAugust/fristil.git",
+    "url": "git+https://github.com/MarkusAugust/lo-tek.git",
     "directory": "designsystem"
   },
   "bugs": {
-    "url": "https://github.com/MarkusAugust/fristil/issues"
+    "url": "https://github.com/MarkusAugust/lo-tek/issues"
   },
   "keywords": [
     "designsystem",
@@ -34,7 +34,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "fristil": "dist/cli.js"
+    "lotek": "dist/cli.js"
   },
   "exports": {
     "./package.json": "./package.json",
@@ -43,18 +43,18 @@
       "import": "./dist/index.js"
     },
     "./manifest.json": "./manifest/manifest.json",
-    "./fargekontrakt.json": "./src/tokens/fargekontrakt.json",
-    "./kjerne.wasm": "./kjerne/fristil-kjerne.wasm",
+    "./color-contract.json": "./src/tokens/color-contract.json",
+    "./core.wasm": "./core/lotek-core.wasm",
     "./tokens.css": "./src/tokens/tokens.css",
     "./boundary.css": "./src/tokens/boundary.css",
-    "./fristil.css": "./dist/fristil.css",
+    "./lotek.css": "./dist/lotek.css",
     "./button.css": "./src/components/css/button/button.css",
     "./link.css": "./src/components/css/link/link.css",
     "./sr-only.css": "./src/components/css/sr-only/sr-only.css",
     "./file-upload.css": "./src/components/css/file-upload/file-upload.css",
-    "./popover.css": "./src/components/ramme/popover/popover.css",
-    "./toast.css": "./src/components/frittstaende/toast/toast.css",
-    "./suggestion.css": "./src/components/ramme/suggestion/suggestion.css",
+    "./popover.css": "./src/components/frame/popover/popover.css",
+    "./toast.css": "./src/components/standalone/toast/toast.css",
+    "./suggestion.css": "./src/components/frame/suggestion/suggestion.css",
     "./checkbox.css": "./src/components/css/checkbox/checkbox.css",
     "./radio.css": "./src/components/css/radio/radio.css",
     "./switch.css": "./src/components/css/switch/switch.css",
@@ -72,9 +72,9 @@
     "./help-text.css": "./src/components/css/help-text/help-text.css",
     "./icon.css": "./src/components/css/icon/icon.css",
     "./error-text.css": "./src/components/css/error-text/error-text.css",
-    "./field.css": "./src/components/ramme/field/field.css",
-    "./tabs.css": "./src/components/ramme/tabs/tabs.css",
-    "./error-summary.css": "./src/components/ramme/error-summary/error-summary.css",
+    "./field.css": "./src/components/frame/field/field.css",
+    "./tabs.css": "./src/components/frame/tabs/tabs.css",
+    "./error-summary.css": "./src/components/frame/error-summary/error-summary.css",
     "./label": {
       "types": "./dist/components/css/label/label.d.ts",
       "import": "./dist/components/css/label/label.js"
@@ -104,16 +104,16 @@
       "import": "./dist/components/css/error-text/error-text.js"
     },
     "./field": {
-      "types": "./dist/components/ramme/field/fs-field.d.ts",
-      "import": "./dist/components/ramme/field/fs-field.js"
+      "types": "./dist/components/frame/field/lt-field.d.ts",
+      "import": "./dist/components/frame/field/lt-field.js"
     },
     "./tabs": {
-      "types": "./dist/components/ramme/tabs/fs-tabs.d.ts",
-      "import": "./dist/components/ramme/tabs/fs-tabs.js"
+      "types": "./dist/components/frame/tabs/lt-tabs.d.ts",
+      "import": "./dist/components/frame/tabs/lt-tabs.js"
     },
     "./error-summary": {
-      "types": "./dist/components/ramme/error-summary/fs-error-summary.d.ts",
-      "import": "./dist/components/ramme/error-summary/fs-error-summary.js"
+      "types": "./dist/components/frame/error-summary/lt-error-summary.d.ts",
+      "import": "./dist/components/frame/error-summary/lt-error-summary.js"
     },
     "./button": {
       "types": "./dist/components/css/button/button.d.ts",
@@ -123,23 +123,23 @@
       "types": "./dist/tokens/tokens.d.ts",
       "import": "./dist/tokens/tokens.js"
     },
-    "./tema": {
+    "./theme": {
       "types": "./dist/tokens/theme.d.ts",
       "import": "./dist/tokens/theme.js"
     },
-    "./farge": {
+    "./color": {
       "types": "./dist/tokens/color.d.ts",
       "import": "./dist/tokens/color.js"
     },
-    "./kontrakt": {
+    "./contract": {
       "types": "./dist/tokens/contract.d.ts",
       "import": "./dist/tokens/contract.js"
     },
-    "./matrise": {
+    "./matrix": {
       "types": "./dist/tokens/matrix.d.ts",
       "import": "./dist/tokens/matrix.js"
     },
-    "./tema-sjekk": {
+    "./theme-check": {
       "types": "./dist/tokens/theme-check.d.ts",
       "import": "./dist/tokens/theme-check.js"
     },
@@ -161,16 +161,16 @@
       "import": "./dist/components/css/file-upload/file-upload.js"
     },
     "./popover": {
-      "types": "./dist/components/ramme/popover/fs-popover.d.ts",
-      "import": "./dist/components/ramme/popover/fs-popover.js"
+      "types": "./dist/components/frame/popover/lt-popover.d.ts",
+      "import": "./dist/components/frame/popover/lt-popover.js"
     },
     "./toast": {
-      "types": "./dist/components/frittstaende/toast/fs-toast.d.ts",
-      "import": "./dist/components/frittstaende/toast/fs-toast.js"
+      "types": "./dist/components/standalone/toast/lt-toast.d.ts",
+      "import": "./dist/components/standalone/toast/lt-toast.js"
     },
     "./suggestion": {
-      "types": "./dist/components/ramme/suggestion/fs-suggestion.d.ts",
-      "import": "./dist/components/ramme/suggestion/fs-suggestion.js"
+      "types": "./dist/components/frame/suggestion/lt-suggestion.d.ts",
+      "import": "./dist/components/frame/suggestion/lt-suggestion.js"
     },
     "./checkbox": {
       "types": "./dist/components/css/checkbox/checkbox.d.ts",
@@ -213,8 +213,8 @@
       "import": "./dist/components/css/shared.js"
     },
     "./field-core": {
-      "types": "./dist/components/ramme/field/field-core.d.ts",
-      "import": "./dist/components/ramme/field/field-core.js"
+      "types": "./dist/components/frame/field/field-core.d.ts",
+      "import": "./dist/components/frame/field/field-core.js"
     },
     "./react": {
       "types": "./dist/react.d.ts",
@@ -281,10 +281,10 @@
       "types": "./dist/components/css/accordion/accordion.d.ts",
       "import": "./dist/components/css/accordion/accordion.js"
     },
-    "./dialog.css": "./src/components/ramme/dialog/dialog.css",
+    "./dialog.css": "./src/components/frame/dialog/dialog.css",
     "./dialog": {
-      "types": "./dist/components/ramme/dialog/fs-dialog.d.ts",
-      "import": "./dist/components/ramme/dialog/fs-dialog.js"
+      "types": "./dist/components/frame/dialog/lt-dialog.d.ts",
+      "import": "./dist/components/frame/dialog/lt-dialog.js"
     },
     "./search.css": "./src/components/css/search/search.css",
     "./search": {
@@ -312,15 +312,15 @@
       "import": "./dist/components/css/paragraph/paragraph.js"
     },
     "./session-timeout": {
-      "types": "./dist/components/ramme/session-timeout/fs-session-timeout.d.ts",
-      "import": "./dist/components/ramme/session-timeout/fs-session-timeout.js"
+      "types": "./dist/components/frame/session-timeout/lt-session-timeout.d.ts",
+      "import": "./dist/components/frame/session-timeout/lt-session-timeout.js"
     },
-    "./session-timeout.css": "./src/components/ramme/session-timeout/session-timeout.css",
+    "./session-timeout.css": "./src/components/frame/session-timeout/session-timeout.css",
     "./connection-status": {
-      "types": "./dist/components/frittstaende/connection-status/fs-connection-status.d.ts",
-      "import": "./dist/components/frittstaende/connection-status/fs-connection-status.js"
+      "types": "./dist/components/standalone/connection-status/lt-connection-status.d.ts",
+      "import": "./dist/components/standalone/connection-status/lt-connection-status.js"
     },
-    "./connection-status.css": "./src/components/frittstaende/connection-status/connection-status.css",
+    "./connection-status.css": "./src/components/standalone/connection-status/connection-status.css",
     "./register": {
       "types": "./dist/register.d.ts",
       "import": "./dist/register.js"
@@ -336,9 +336,9 @@
     "web-types.json",
     "live-templates.xml",
     "manifest/manifest.json",
-    "manifest/filer.json",
-    "kjerne/fristil-kjerne.wasm",
-    "kjerne/fristil.wasm",
+    "manifest/files.json",
+    "core/lotek-core.wasm",
+    "core/lotek.wasm",
     "manifest/manifest.schema.json",
     "src/*.ts",
     "src/diagnostics",
@@ -356,37 +356,37 @@
     "access": "public"
   },
   "scripts": {
-    "generate": "bun scripts/generate-matrise.ts && bun scripts/generate-tokens.ts && bun scripts/generate-tailwind.ts && bun scripts/generate-ordforrad.ts && bun scripts/generate-agent.ts && bun scripts/generate-manifest.ts",
-    "bygg:css": "bun scripts/bygg-css.ts",
-    "pakk": "bun run kjerne && rm -rf dist && tsc -b --force && bun run bygg:css && npm pack --ignore-scripts",
-    "bygg:nettleser": "tsc -b && bun run bygg:css",
-    "ordforrad": "bun scripts/generate-ordforrad.ts",
-    "sjekk:ordforrad": "bun scripts/sjekk-ordforrad.ts",
-    "kjerne": "bun ../kjerne/scripts/bygg.ts && mkdir -p kjerne && cp ../kjerne/dist/fristil-kjerne.wasm ../kjerne/dist/fristil.wasm kjerne/",
-    "build": "bun run kjerne && bun run generate && rm -rf dist && tsc -b --force && bun run bygg:css && bun run sjekk:eksport && bun run sjekk:server && bun run sjekk:typer && bun run sjekk:skriving && bun run sjekk:testfiler && bun run sjekk:tekster && bun run sjekk:identifikatorer && bun run sjekk:agent && bun run sjekk:ordforrad && bun run sjekk:css-vitne && bun run sjekk:ordbruk && bun run sjekk:cli && bun run sjekk:versjon && bun run sjekk:pakke",
+    "generate": "bun scripts/generate-matrix.ts && bun scripts/generate-tokens.ts && bun scripts/generate-tailwind.ts && bun scripts/generate-vocabulary.ts && bun scripts/generate-agent.ts && bun scripts/generate-manifest.ts",
+    "build:css": "bun scripts/build-css.ts",
+    "pack": "bun run core && rm -rf dist && tsc -b --force && bun run build:css && npm pack --ignore-scripts",
+    "build:browser": "tsc -b && bun run build:css",
+    "vocabulary": "bun scripts/generate-vocabulary.ts",
+    "check:vocabulary": "bun scripts/check-vocabulary.ts",
+    "core": "bun ../core/scripts/build.ts && mkdir -p core && cp ../core/dist/lotek-core.wasm ../core/dist/lotek.wasm core/",
+    "build": "bun run core && bun run generate && rm -rf dist && tsc -b --force && bun run build:css && bun run check:exports && bun run check:server && bun run check:types && bun run check:writes && bun run check:test-files && bun run check:texts && bun run check:identifiers && bun run check:agent && bun run check:vocabulary && bun run check:css-witness && bun run check:wording && bun run check:cli && bun run check:version && bun run check:package",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test:browser": "vitest --config vitest.config.ts --run",
-    "sjekk:eksport": "bun scripts/sjekk-eksport.ts",
-    "sjekk:server": "bun scripts/sjekk-server-import.ts",
-    "sjekk:typer": "bun scripts/sjekk-typer.ts",
-    "sjekk:tailwind": "bun scripts/sjekk-tailwind.ts",
-    "nettlesere": "playwright install chromium firefox webkit",
+    "check:exports": "bun scripts/check-exports.ts",
+    "check:server": "bun scripts/check-server-import.ts",
+    "check:types": "bun scripts/check-types.ts",
+    "check:tailwind": "bun scripts/check-tailwind.ts",
+    "browsers": "playwright install chromium firefox webkit",
     "test:chromium": "vitest --config vitest.chromium.config.ts --run",
-    "tema": "bun src/cli.ts",
-    "sjekk:cli": "bun scripts/sjekk-cli.ts",
-    "sjekk:versjon": "bun scripts/sjekk-versjon.ts",
-    "sjekk:pakke": "publint",
+    "theme": "bun src/cli.ts",
+    "check:cli": "bun scripts/check-cli.ts",
+    "check:version": "bun scripts/check-version.ts",
+    "check:package": "publint",
     "prepublishOnly": "bun run build",
-    "sjekk:skriving": "bun scripts/sjekk-skriving.ts",
-    "sjekk:testfiler": "bun scripts/sjekk-testfiler.ts",
-    "sjekk:identifikatorer": "bun scripts/sjekk-identifikatorer.ts",
+    "check:writes": "bun scripts/check-writes.ts",
+    "check:test-files": "bun scripts/check-test-files.ts",
+    "check:identifiers": "bun scripts/check-identifiers.ts",
     "typecheck:scripts": "tsc --noEmit -p scripts/tsconfig.json",
-    "sjekk:ordbruk": "bun scripts/sjekk-ordbruk.ts",
-    "sjekk:agent": "bun scripts/sjekk-agent.ts",
-    "sjekk:css-vitne": "bun scripts/sjekk-css-vitne.ts",
-    "sjekk:tekster": "bun scripts/sjekk-tekster.ts",
-    "sjekk:uten-javascript": "bun scripts/sjekk-uten-javascript.ts"
+    "check:wording": "bun scripts/check-wording.ts",
+    "check:agent": "bun scripts/check-agent.ts",
+    "check:css-witness": "bun scripts/check-css-witness.ts",
+    "check:texts": "bun scripts/check-texts.ts",
+    "check:without-javascript": "bun scripts/check-without-javascript.ts"
   },
   "devDependencies": {
     "@types/node": "24.12.4",

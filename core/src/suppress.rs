@@ -1,0 +1,104 @@
+//! Suppressing findings with a comment in the markup.
+//!
+//! ```html
+//! <!-- lotek-ignore-next -->
+//! <lt-new-thing>…</lt-new-thing>
+//!
+//! <!-- lotek-ignore-next unknown-class invalid-class-value -->
+//! <div class="lt-experiment">…</div>
+//! ```
+//!
+//! The comment applies to the next tag: findings that start between its `<`
+//! and `>`. Without rule names it applies to every rule, with rule names only
+//! to those. Note that some template engines, like Go's `html/template`,
+//! strip comments from what they render. The comment then works in the
+//! template file but not on the page.
+
+use crate::diagnose::tag_end;
+use crate::text::*;
+use crate::types::Finding;
+
+const MARKER: &str = "lotek-ignore-next";
+
+struct Ignore {
+    start: usize,
+    end: usize,
+    rules: Vec<String>,
+}
+
+fn ignores(text: &[u16]) -> Vec<Ignore> {
+    let mut out = Vec::new();
+    let mut i = 0;
+    while let Some(open) = find_at(text, i, "<!--") {
+        let close = find_at(text, open + 4, "-->").unwrap_or(text.len());
+        i = (close + 3).min(text.len());
+        let inner = lossy(trimmed(&text[open + 4..close]));
+        let Some(rest) = inner.strip_prefix(MARKER) else {
+            continue;
+        };
+        if !rest.is_empty() && !rest.starts_with(char::is_whitespace) {
+            continue;
+        }
+        // The next tag: `<` followed by a letter.
+        let Some(lt) = (i..text.len())
+            .find(|&k| text[k] == LT && text.get(k + 1).is_some_and(|&c| is_ascii_letter(c)))
+        else {
+            continue;
+        };
+        out.push(Ignore {
+            start: lt,
+            end: tag_end(text, lt + 1).unwrap_or(text.len()),
+            rules: rest.split_whitespace().map(str::to_string).collect(),
+        });
+    }
+    out
+}
+
+/// The findings minus those a comment has suppressed.
+pub fn apply(text: &[u16], findings: Vec<Finding>) -> Vec<Finding> {
+    let ignores = ignores(text);
+    if ignores.is_empty() {
+        return findings;
+    }
+    findings
+        .into_iter()
+        .filter(|f| {
+            !ignores.iter().any(|ig| {
+                (ig.start..=ig.end).contains(&f.start)
+                    && (ig.rules.is_empty() || ig.rules.iter().any(|r| r == f.rule))
+            })
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{diagnose_page, manifest, text::utf16};
+
+    fn rules(html: &str) -> Vec<&'static str> {
+        diagnose_page(&utf16(html), &manifest::for_tests())
+            .iter()
+            .map(|f| f.rule)
+            .collect()
+    }
+
+    #[test]
+    fn suppresses_the_next_tag_only() {
+        let html = r#"<!-- lotek-ignore-next --><b class="lt-buton"></b><i class="lt-buton"></i>"#;
+        assert_eq!(rules(html), ["unknown-class"]);
+    }
+
+    #[test]
+    fn suppresses_only_the_named_rules() {
+        let tag = r#"<button class="lt-button lt-buton" data-variant="x"></button>"#;
+        assert_eq!(rules(tag), ["unknown-class", "invalid-class-value"]);
+        let html = format!("<!-- lotek-ignore-next invalid-class-value -->\n{tag}");
+        assert_eq!(rules(&html), ["unknown-class"]);
+    }
+
+    #[test]
+    fn ignores_other_comments() {
+        let html = r#"<!-- lotek-ignore-nextish --><b class="lt-buton"></b>"#;
+        assert_eq!(rules(html), ["unknown-class"]);
+    }
+}

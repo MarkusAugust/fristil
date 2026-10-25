@@ -1,5 +1,5 @@
-rootProject.name = "fristil-intellij"
+rootProject.name = "lo-tek-intellij"
 
-// Fristil for Kotlin, bygget fra kildekoden ved siden av. Feilmeldingene
-// kommer fra Rust-kjernen i den pakken.
+// LO-TEK for Kotlin, built from the source next to it. The diagnostics
+// come from the Rust core in that package.
 includeBuild("../kotlin")

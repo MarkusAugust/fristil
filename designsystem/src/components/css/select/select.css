@@ -1,36 +1,36 @@
-@layer fristil {
-  .fs-select {
-    /* Designsystemet kan ikke regne med at konsumenten har en CSS-reset.
-       Uten border-box legges padding og ramme utenpå width, og feltet
-       blir bredere enn boksen det ligger i. */
+@layer lotek {
+  .lt-select {
+    /* The design system cannot assume the consumer has a CSS reset. Without
+       border-box, padding and border are added outside the width, and the
+       field becomes wider than the box it sits in. */
     box-sizing: border-box;
 
     display: block;
-    width: var(--fs-select-width, 100%);
-    padding: var(--fs-select-padding, var(--fs-spacing-2) var(--fs-spacing-3));
-    /* Sluttsiden er plassen til pila, og den står fast: pila er tegnet et
-       fast stykke fra kanten, så en mindre plass ville lagt teksten oppå
-       den. Derfor gjelder `--fs-select-padding` alt utenom denne siden her.
-       Med `data-picker="styled"` tar pila ekte plass, og der gjelder
-       variabelen alle fire sidene. */
-    padding-inline-end: calc(var(--fs-spacing-4) + var(--fs-spacing-2));
+    width: var(--lt-select-width, 100%);
+    padding: var(--lt-select-padding, var(--lt-spacing-2) var(--lt-spacing-3));
+    /* The end side is the room for the arrow, and it is fixed: the arrow is
+       drawn a fixed distance from the edge, so less room would put the text
+       on top of it. So `--lt-select-padding` applies to everything except
+       this side here. With `data-picker="styled"` the arrow takes real
+       room, and there the variable applies to all four sides. */
+    padding-inline-end: calc(var(--lt-spacing-4) + var(--lt-spacing-2));
     font-family: inherit;
-    font-size: var(--fs-font-size-m);
-    line-height: var(--fs-line-height-default);
-    color: var(--fs-color-neutral-text-strong);
-    background-color: var(--fs-color-neutral-canvas);
-    border: 1px solid var(--fs-color-neutral-border);
-    border-radius: var(--fs-select-radius, var(--fs-spacing-1));
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
+    background-color: var(--lt-color-neutral-canvas);
+    border: 1px solid var(--lt-color-neutral-border);
+    border-radius: var(--lt-select-radius, var(--lt-spacing-1));
     appearance: none;
     background-image:
       linear-gradient(
         45deg,
         transparent 50%,
-        var(--fs-color-neutral-text-subtle) 50%
+        var(--lt-color-neutral-text-subtle) 50%
       ),
       linear-gradient(
         135deg,
-        var(--fs-color-neutral-text-subtle) 50%,
+        var(--lt-color-neutral-text-subtle) 50%,
         transparent 50%
       );
     background-position:
@@ -42,148 +42,151 @@
     background-repeat: no-repeat;
   }
 
-  /* Pila er to gradienter, og `background-position` har ingen logisk
-     variant. Speilvendingen er de samme to bitene, flyttet til venstre kant
-     og byttet om: den som lå ytterst ligger nå innerst. Fra venstre måles
-     posisjonen til bitens venstre kant, fra høyre med `calc(100% - …)` til
-     samme punkt på andre siden, så avstandene er de samme tallene. Med
-     0,35rem trukket fra sto pila 6 piksler fra kanten i stedet for 12. */
-  .fs-select:dir(rtl) {
+  /* The arrow is two gradients, and `background-position` has no logical
+     variant. The mirrored version is the same two pieces, moved to the left
+     edge and swapped: the one that was outermost is now innermost. From the
+     left the position is given to the piece's left edge, from the right with
+     `calc(100% - ...)` to the same point on the other side, so the distances
+     are the same numbers. With 0.35rem subtracted the arrow sat 6 pixels
+     from the edge instead of 12. */
+  .lt-select:dir(rtl) {
     background-position:
       0.75rem calc(50% - 0.1rem),
       1rem calc(50% - 0.1rem);
   }
 
-  .fs-select:hover {
-    border-color: var(--fs-color-neutral-border-strong);
+  .lt-select:hover {
+    border-color: var(--lt-color-neutral-border-strong);
   }
 
-  .fs-select:focus-visible {
-    outline: var(--fs-focus-ring);
+  .lt-select:focus-visible {
+    outline: var(--lt-focus-ring);
     outline-offset: 2px;
-    border-color: var(--fs-color-accent-border);
+    border-color: var(--lt-color-accent-border);
   }
 
-  .fs-select:disabled,
-  .fs-select[aria-disabled="true"] {
-    background-color: var(--fs-color-disabled-surface);
-    color: var(--fs-color-disabled-text);
-    border-color: var(--fs-color-disabled-surface);
-    /* Ingen pointer-events: none her. Nettleseren blokkerer allerede et
-       deaktivert felt, og pointer-events ville bare hindret markøren i å
-       vises. Elementet blir da ikke truffet av musa i det hele tatt. */
+  .lt-select:disabled,
+  .lt-select[aria-disabled="true"] {
+    background-color: var(--lt-color-disabled-surface);
+    color: var(--lt-color-disabled-text);
+    border-color: var(--lt-color-disabled-surface);
+    /* No pointer-events: none here. The browser already blocks a disabled
+       field, and pointer-events would only stop the cursor from showing. The
+       element is then not hit by the mouse at all. */
     cursor: not-allowed;
   }
 
-  /* aria-disabled er bare en opplysning til skjermlesere; elementet virker
-     fortsatt. Her stopper pointer-events musa, på bekostning av markøren.
-     Skal feltet faktisk være av, bruk `disabled` eller `readonly`. */
-  .fs-select[aria-disabled="true"] {
+  /* aria-disabled is only information for screen readers; the element still
+     works. Here pointer-events stops the mouse, at the cost of the cursor.
+     If the field should really be off, use `disabled` or `readonly`. */
+  .lt-select[aria-disabled="true"] {
     pointer-events: none;
   }
 
-  .fs-select[data-state="invalid"] {
-    border-color: var(--fs-color-danger-text);
-    background-color: var(--fs-color-danger-surface);
+  .lt-select[data-state="invalid"] {
+    border-color: var(--lt-color-danger-text);
+    background-color: var(--lt-color-danger-surface);
   }
 
-  .fs-select[data-state="invalid"]:focus-visible {
-    outline-color: var(--fs-color-danger-text);
+  .lt-select[data-state="invalid"]:focus-visible {
+    outline-color: var(--lt-color-danger-text);
   }
 
-  .fs-select[data-state="success"] {
-    border-color: var(--fs-color-success-text);
-    background-color: var(--fs-color-success-surface);
+  .lt-select[data-state="success"] {
+    border-color: var(--lt-color-success-text);
+    background-color: var(--lt-color-success-surface);
   }
 
-  .fs-select[data-state="success"]:focus-visible {
-    outline-color: var(--fs-color-success-text);
+  .lt-select[data-state="success"]:focus-visible {
+    outline-color: var(--lt-color-success-text);
   }
 
-  /* Avslått vinner over en tilstand. Før sto `[data-state]` etter
-     `:disabled` med samme spesifisitet, og et ugyldig felt i et skjema som
-     var slått av under innsending så rødt ut, ikke avslått. */
-  .fs-select:is(:disabled, [aria-disabled="true"])[data-state] {
-    background-color: var(--fs-color-disabled-surface);
-    color: var(--fs-color-disabled-text);
-    border-color: var(--fs-color-disabled-surface);
+  /* Disabled wins over a state. `[data-state]` used to come after
+     `:disabled` with the same specificity, and an invalid field in a form
+     that was disabled during submission looked red, not disabled. */
+  .lt-select:is(:disabled, [aria-disabled="true"])[data-state] {
+    background-color: var(--lt-color-disabled-surface);
+    color: var(--lt-color-disabled-text);
+    border-color: var(--lt-color-disabled-surface);
   }
 
   /*
-   * Nedtrekkslista er et vindu fra operativsystemet, og ingen CSS når inn i
-   * den. `appearance: base-select` ber nettleseren tegne den inne i siden i
-   * stedet: `::picker(select)` blir et vanlig element, og hvert `<option>`
-   * kan få systemets egne farger og avstander.
+   * The dropdown list is a window from the operating system, and no CSS
+   * reaches into it. `appearance: base-select` asks the browser to draw it
+   * inside the page instead: `::picker(select)` becomes a normal element,
+   * and each `<option>` can get the design system's colours and spacing.
    *
-   * Det er valgfritt, og slås på med `data-picker="styled"`. Firefox 150 har
-   * det ikke, og der beholder feltet nettleserens egen liste. Det er den
-   * samme komponenten med to utseender, ikke noe som går i stykker.
+   * It is optional, and turned on with `data-picker="styled"`. Firefox 150
+   * does not have it, and there the field keeps the browser's own list. It
+   * is the same component with two looks, not something that breaks.
    */
   @supports (appearance: base-select) {
-    .fs-select[data-picker="styled"],
-    .fs-select[data-picker="styled"]::picker(select) {
+    .lt-select[data-picker="styled"],
+    .lt-select[data-picker="styled"]::picker(select) {
       appearance: base-select;
     }
 
-    /* Knappen tegner nå sin egen pil med `::picker-icon`, så gradientene skal
-       bort. Pila tar ekte plass i oppsettet, og plassen vi holdt av til den
-       tegnede pila ville da blitt liggende dobbelt. */
-    .fs-select[data-picker="styled"] {
+    /* The button now draws its own arrow with `::picker-icon`, so the
+       gradients must go. The arrow takes real room in the layout, and the
+       room we kept for the drawn arrow would then be there twice. */
+    .lt-select[data-picker="styled"] {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: var(--fs-spacing-2);
+      gap: var(--lt-spacing-2);
       background-image: none;
       padding: var(
-        --fs-select-padding,
-        var(--fs-spacing-2) var(--fs-spacing-3)
+        --lt-select-padding,
+        var(--lt-spacing-2) var(--lt-spacing-3)
       );
     }
 
-    /* Teksten i knappen er valget som står nå. Lange valg skal klippes, ikke
-       skyve pila ut av feltet. Uten `min-inline-size: 0` krymper den ikke,
-       for flex gir den minstebredden til innholdet.
+    /* The text in the button is the current choice. Long choices should be
+       clipped, not push the arrow out of the field. Without
+       `min-inline-size: 0` it does not shrink, because flex gives it the
+       minimum width of its content.
 
-       Nettleseren lager ikke <selectedcontent> selv. Det finnes bare når
-       forfatteren skriver `<button><selectedcontent></selectedcontent></button>`
-       først i select-en. Uten det tegnes valget i nettleserens egen skygge-DOM,
-       som ingen regel når, og et langt valg brytes over flere linjer.
-       `white-space: nowrap` på select-en hjelper ikke: teksten krymper ikke
-       der, og pila blir skjøvet ut av feltet. */
-    /* biome-ignore lint/correctness/noUnknownTypeSelector: <selectedcontent> er
-       elementet som viser det valgte alternativet i en tilpassbar
-       nedtrekksliste. Biome kjenner det ennå ikke. */
-    .fs-select[data-picker="styled"] selectedcontent {
+       The browser does not create <selectedcontent> by itself. It only
+       exists when the author writes
+       `<button><selectedcontent></selectedcontent></button>` first in the
+       select. Without it the choice is drawn in the browser's own shadow
+       DOM, which no rule reaches, and a long choice wraps over several
+       lines. `white-space: nowrap` on the select does not help: the text
+       does not shrink there, and the arrow is pushed out of the field. */
+    /* biome-ignore lint/correctness/noUnknownTypeSelector: <selectedcontent> is
+       the element that shows the selected option in a customisable
+       dropdown list. Biome does not know it yet. */
+    .lt-select[data-picker="styled"] selectedcontent {
       min-inline-size: 0;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
     }
 
-    .fs-select[data-picker="styled"]::picker-icon {
-      color: var(--fs-color-neutral-text-subtle);
+    .lt-select[data-picker="styled"]::picker-icon {
+      color: var(--lt-color-neutral-text-subtle);
       transition: rotate 120ms ease;
     }
 
-    .fs-select[data-picker="styled"]:open::picker-icon {
+    .lt-select[data-picker="styled"]:open::picker-icon {
       rotate: 180deg;
     }
 
-    .fs-select[data-picker="styled"]::picker(select) {
+    .lt-select[data-picker="styled"]::picker(select) {
       box-sizing: border-box;
       min-inline-size: anchor-size(self-inline);
-      /* Lista skal fylle plassen som faktisk er igjen ned til kanten av
-         vinduet, ikke strekke seg utenfor den. `stretch` er nettopp den
-         plassen, og margen trekkes fra. */
+      /* The list should fill the room that is actually left down to the
+         edge of the window, not stretch beyond it. `stretch` is exactly
+         that room, and the margin is subtracted. */
       max-block-size: stretch;
-      margin-block: var(--fs-select-viewport-margin, var(--fs-spacing-2));
+      margin-block: var(--lt-select-viewport-margin, var(--lt-spacing-2));
       padding: 0;
       overflow-y: auto;
-      background: var(--fs-color-neutral-canvas);
-      border: 1px solid var(--fs-color-neutral-border);
-      border-radius: var(--fs-select-radius, var(--fs-spacing-1));
-      box-shadow: var(--fs-shadow-overlay);
-      /* Er det ikke plass under feltet, legges lista over det. */
+      background: var(--lt-color-neutral-canvas);
+      border: 1px solid var(--lt-color-neutral-border);
+      border-radius: var(--lt-select-radius, var(--lt-spacing-1));
+      box-shadow: var(--lt-shadow-overlay);
+      /* If there is no room below the field, the list goes above it. */
       position-try-fallbacks: flip-block;
       opacity: 0;
       transition:
@@ -192,21 +195,21 @@
         display 120ms allow-discrete;
     }
 
-    .fs-select[data-picker="styled"]:open::picker(select) {
+    .lt-select[data-picker="styled"]:open::picker(select) {
       opacity: 1;
     }
 
     @starting-style {
-      .fs-select[data-picker="styled"]:open::picker(select) {
+      .lt-select[data-picker="styled"]:open::picker(select) {
         opacity: 0;
       }
     }
 
-    /* Høyden kan bare animeres der `calc-size` finnes, siden `auto` ellers
-       ikke er en verdi det går an å gå til. Uten støtte står høyden på
-       `auto`, og bare gjennomsiktigheten tones. */
+    /* The height can only be animated where `calc-size` exists, since `auto`
+       is otherwise not a value that can be transitioned to. Without support
+       the height stays `auto`, and only the opacity fades. */
     @supports (block-size: calc-size(auto, size)) {
-      .fs-select[data-picker="styled"]::picker(select) {
+      .lt-select[data-picker="styled"]::picker(select) {
         block-size: 0;
         transition:
           opacity 120ms ease,
@@ -215,101 +218,103 @@
           display 120ms allow-discrete;
       }
 
-      .fs-select[data-picker="styled"]:open::picker(select) {
+      .lt-select[data-picker="styled"]:open::picker(select) {
         block-size: calc-size(auto, size);
       }
 
       @starting-style {
-        .fs-select[data-picker="styled"]:open::picker(select) {
+        .lt-select[data-picker="styled"]:open::picker(select) {
           block-size: 0;
         }
       }
     }
 
-    /* Gruppeoverskriften er ikke et element vi kan treffe når den kommer fra
-       `label=`, bare fra `<legend>`. Derfor settes den på gruppa, og arves
-       ned: størrelsen og fargen skiller den fra valgene, og `text-indent`
-       gir den samme venstrekant som teksten i et valg. Valgene setter de tre
-       tilbake til sine egne verdier. */
-    .fs-select[data-picker="styled"] optgroup {
-      padding-block: var(--fs-spacing-2) var(--fs-spacing-1);
-      font-size: var(--fs-font-size-s);
-      color: var(--fs-color-neutral-text-subtle);
-      text-indent: var(--fs-spacing-3);
+    /* The group heading is not an element we can target when it comes from
+       `label=`, only from `<legend>`. So it is set on the group, and
+       inherited down: the size and colour set it apart from the options,
+       and `text-indent` gives it the same left edge as the text in an
+       option. The options set those three back to their own values. */
+    .lt-select[data-picker="styled"] optgroup {
+      padding-block: var(--lt-spacing-2) var(--lt-spacing-1);
+      font-size: var(--lt-font-size-s);
+      color: var(--lt-color-neutral-text-subtle);
+      text-indent: var(--lt-spacing-3);
     }
 
-    .fs-select[data-picker="styled"] option {
+    .lt-select[data-picker="styled"] option {
       text-indent: 0;
       display: flex;
       align-items: center;
-      gap: var(--fs-spacing-2);
+      gap: var(--lt-spacing-2);
       padding: var(
-        --fs-select-option-padding,
-        var(--fs-spacing-2) var(--fs-spacing-3)
+        --lt-select-option-padding,
+        var(--lt-spacing-2) var(--lt-spacing-3)
       );
       font-family: inherit;
-      font-size: var(--fs-font-size-m);
-      line-height: var(--fs-line-height-default);
-      color: var(--fs-color-neutral-text-strong);
-      background: var(--fs-color-neutral-canvas);
+      font-size: var(--lt-font-size-m);
+      line-height: var(--lt-line-height-default);
+      color: var(--lt-color-neutral-text-strong);
+      background: var(--lt-color-neutral-canvas);
       cursor: pointer;
     }
 
-    /* Haken står etter teksten, ikke foran den, slik at alle valgene får
-       teksten på samme sted. */
-    .fs-select[data-picker="styled"] option::checkmark {
+    /* The tick comes after the text, not before it, so all the options get
+       the text in the same place. */
+    .lt-select[data-picker="styled"] option::checkmark {
       order: 1;
       margin-inline-start: auto;
     }
 
-    .fs-select[data-picker="styled"] option:hover {
-      background: var(--fs-color-accent-surface);
+    .lt-select[data-picker="styled"] option:hover {
+      background: var(--lt-color-accent-surface);
     }
 
-    .fs-select[data-picker="styled"] option:checked {
-      background: var(--fs-color-accent-fill);
-      color: var(--fs-color-accent-content);
+    .lt-select[data-picker="styled"] option:checked {
+      background: var(--lt-color-accent-fill);
+      color: var(--lt-color-accent-content);
     }
 
-    /* Fokus vises med en ramme, ikke med en flate. Piltastene flytter fokus
-       mellom valgene, og det valgte har allerede sin egen flate. En annen
-       bakgrunnsfarge ville derfor forsvunnet nettopp der brukeren står. */
-    .fs-select[data-picker="styled"] option:focus {
-      outline: var(--fs-focus-ring);
+    /* Focus is shown with a border, not with a surface. The arrow keys move
+       focus between the options, and the selected one already has its own
+       surface. A different background colour would therefore disappear
+       exactly where the user is. */
+    .lt-select[data-picker="styled"] option:focus {
+      outline: var(--lt-focus-ring);
       outline-offset: -2px;
     }
 
-    .fs-select[data-picker="styled"] option:checked:focus {
-      outline-color: var(--fs-color-accent-content);
+    .lt-select[data-picker="styled"] option:checked:focus {
+      outline-color: var(--lt-color-accent-content);
     }
 
-    .fs-select[data-picker="styled"] option:disabled {
-      color: var(--fs-color-disabled-text);
-      background: var(--fs-color-disabled-surface);
+    .lt-select[data-picker="styled"] option:disabled {
+      color: var(--lt-color-disabled-text);
+      background: var(--lt-color-disabled-surface);
       cursor: not-allowed;
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .fs-select[data-picker="styled"]::picker(select),
-      .fs-select[data-picker="styled"]::picker-icon {
+      .lt-select[data-picker="styled"]::picker(select),
+      .lt-select[data-picker="styled"]::picker-icon {
         transition: none;
       }
     }
   }
 
-  /* Høykontrast: pilen er to gradienter, og de fjernes i modusen. Da er
-     nettleserens egen pil bedre enn ingen. Lista som tegnes i siden
-     faller tilbake av samme grunn: nettleserens egen liste bruker systemfargene, og de er
-     de eneste som er garantert lesbare i modusen. */
+  /* High contrast: the arrow is two gradients, and they are removed in the
+     mode. The browser's own arrow is then better than none. The list drawn
+     in the page falls back for the same reason: the browser's own list uses
+     the system colours, and they are the only ones guaranteed to be
+     readable in the mode. */
   @media (forced-colors: active) {
-    .fs-select,
-    .fs-select[data-picker="styled"] {
+    .lt-select,
+    .lt-select[data-picker="styled"] {
       display: block;
       appearance: auto;
       background-image: none;
       padding: var(
-        --fs-select-padding,
-        var(--fs-spacing-2) var(--fs-spacing-3)
+        --lt-select-padding,
+        var(--lt-spacing-2) var(--lt-spacing-3)
       );
     }
   }

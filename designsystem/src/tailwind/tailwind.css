@@ -1,168 +1,169 @@
-/* Generert. Rediger tokens.ts eller generate-tailwind.ts, ikke denne fila. */
+/* Generated. Edit tokens.ts or generate-tailwind.ts, not this file. */
 
 /*
- * Fristils verdier som Tailwind-tema.
+ * LO-TEK's values as a Tailwind theme.
  *
- * Fila er ren CSS, og pakken har ingen avhengighet til Tailwind. Det er
- * Tailwind-versjonen i appen din som leser den, så to versjoner kan ikke
- * komme i konflikt: her finnes det ingen andre.
+ * The file is plain CSS, and the package has no dependency on Tailwind. It
+ * is the Tailwind version in your app that reads it, so two versions cannot
+ * conflict: there is no other one here.
  *
- * Krever Tailwind 4 og at `tokens.css` er lastet, siden verdiene peker dit.
+ * Requires Tailwind 4 and `tokens.css` to be loaded, since the values point there.
  *
  * ```css
- * @layer theme, base, fristil, fristil-tema, components, utilities;
+ * @layer theme, base, lotek, lotek-theme, components, utilities;
  *
  * @import "tailwindcss";
- * @import "@fristil/designsystem/tokens.css";
- * @import "@fristil/designsystem/tailwind.css";
+ * @import "@lo-tek/interfaces/tokens.css";
+ * @import "@lo-tek/interfaces/tailwind.css";
  * ```
  *
- * Rekkefølgen på den første linja er ikke pynt. Lagene teller i den
- * rekkefølgen de først blir nevnt, og vinneren er det siste laget, uansett
- * spesifisitet. Står `fristil` foran `base`, slår Tailwinds Preflight
- * komponentene våre og nullstiller for eksempel bakgrunnen på en knapp. Står
- * det etter `utilities`, slår komponentene våre `p-6` og resten av klassene
- * dine. Mellom `base` og `components` er det eneste stedet begge deler virker.
+ * The order of the first line matters. Layers count in the order they are
+ * first mentioned, and the winner is the last layer, whatever the
+ * specificity. With `lotek` before `base`, Tailwind's Preflight beats our
+ * components and resets, for example, the background of a button. With it
+ * after `utilities`, our components beat `p-6` and the rest of your
+ * classes. Between `base` and `components` is the only place both work.
  *
- * `fristil-tema` er laget et tema fra `fristil tema` ligger i. Det skal stå i
- * linja selv om du ikke har noe tema ennå: temaet erklærer bare `fristil,
- * fristil-tema`, og en `@layer`-setning flytter ikke lag som alt er erklært,
- * så uten plassen her havner temaet sist, etter `utilities`, og slår
- * klassene dine.
+ * `lotek-theme` is the layer a theme from `lotek theme` goes in. It must be
+ * in the line even if you have no theme yet: the theme declares only
+ * `lotek, lotek-theme`, and an `@layer` statement does not move layers that
+ * are already declared, so without the place here the theme ends up last,
+ * after `utilities`, and beats your classes.
  *
- * Alt vi legger til heter `fs-`, som klassene ellers i systemet. Da rører vi
- * ikke Tailwinds egne verdier: `bg-neutral-100` betyr fortsatt det samme.
+ * Everything we add is called `lt-`, like the other classes in the system.
+ * That way we leave Tailwind's own values alone: `bg-neutral-100` still
+ * means the same.
  */
 
 @theme inline {
   /*
-   * Avstandsenheten. Tailwind regner `p-4` som `calc(var(--spacing) * 4)`,
-   * så med `--fs-spacing-1` som enhet er `p-4` fire ganger enheten, altså
-   * `--fs-spacing-4` så lenge skalaen står som den er. Trinnene er egne
-   * verdier, ikke regnet av enheten: skriver du om skalaen, skriv om alle
-   * trinnene, ikke bare `--fs-spacing-1`, ellers holder ikke komponentene
-   * og klassene følge.
+   * The spacing unit. Tailwind computes `p-4` as `calc(var(--spacing) * 4)`,
+   * so with `--lt-spacing-1` as the unit, `p-4` is four times the unit, that
+   * is, `--lt-spacing-4` as long as the scale stays as it is. The steps are
+   * values of their own, not computed from the unit: if you rewrite the
+   * scale, rewrite every step, not only `--lt-spacing-1`, or the components
+   * and the classes drift apart.
    */
-  --spacing: var(--fs-spacing-1);
+  --spacing: var(--lt-spacing-1);
 
-  /* Fargene, én klasse per celle i matrisen */
-  --color-fs-accent-border: var(--fs-color-accent-border);
-  --color-fs-accent-border-strong: var(--fs-color-accent-border-strong);
-  --color-fs-accent-border-subtle: var(--fs-color-accent-border-subtle);
-  --color-fs-accent-content: var(--fs-color-accent-content);
-  --color-fs-accent-fill: var(--fs-color-accent-fill);
-  --color-fs-accent-surface: var(--fs-color-accent-surface);
-  --color-fs-accent-text: var(--fs-color-accent-text);
-  --color-fs-accent-text-strong: var(--fs-color-accent-text-strong);
-  --color-fs-accent-text-subtle: var(--fs-color-accent-text-subtle);
+  /* The colours, one class per cell in the matrix */
+  --color-lt-accent-border: var(--lt-color-accent-border);
+  --color-lt-accent-border-strong: var(--lt-color-accent-border-strong);
+  --color-lt-accent-border-subtle: var(--lt-color-accent-border-subtle);
+  --color-lt-accent-content: var(--lt-color-accent-content);
+  --color-lt-accent-fill: var(--lt-color-accent-fill);
+  --color-lt-accent-surface: var(--lt-color-accent-surface);
+  --color-lt-accent-text: var(--lt-color-accent-text);
+  --color-lt-accent-text-strong: var(--lt-color-accent-text-strong);
+  --color-lt-accent-text-subtle: var(--lt-color-accent-text-subtle);
 
-  --color-fs-brand1-border: var(--fs-color-brand1-border);
-  --color-fs-brand1-border-strong: var(--fs-color-brand1-border-strong);
-  --color-fs-brand1-border-subtle: var(--fs-color-brand1-border-subtle);
-  --color-fs-brand1-content: var(--fs-color-brand1-content);
-  --color-fs-brand1-fill: var(--fs-color-brand1-fill);
-  --color-fs-brand1-surface: var(--fs-color-brand1-surface);
-  --color-fs-brand1-text: var(--fs-color-brand1-text);
-  --color-fs-brand1-text-strong: var(--fs-color-brand1-text-strong);
-  --color-fs-brand1-text-subtle: var(--fs-color-brand1-text-subtle);
+  --color-lt-brand1-border: var(--lt-color-brand1-border);
+  --color-lt-brand1-border-strong: var(--lt-color-brand1-border-strong);
+  --color-lt-brand1-border-subtle: var(--lt-color-brand1-border-subtle);
+  --color-lt-brand1-content: var(--lt-color-brand1-content);
+  --color-lt-brand1-fill: var(--lt-color-brand1-fill);
+  --color-lt-brand1-surface: var(--lt-color-brand1-surface);
+  --color-lt-brand1-text: var(--lt-color-brand1-text);
+  --color-lt-brand1-text-strong: var(--lt-color-brand1-text-strong);
+  --color-lt-brand1-text-subtle: var(--lt-color-brand1-text-subtle);
 
-  --color-fs-brand2-border: var(--fs-color-brand2-border);
-  --color-fs-brand2-border-strong: var(--fs-color-brand2-border-strong);
-  --color-fs-brand2-border-subtle: var(--fs-color-brand2-border-subtle);
-  --color-fs-brand2-content: var(--fs-color-brand2-content);
-  --color-fs-brand2-fill: var(--fs-color-brand2-fill);
-  --color-fs-brand2-surface: var(--fs-color-brand2-surface);
-  --color-fs-brand2-text: var(--fs-color-brand2-text);
-  --color-fs-brand2-text-strong: var(--fs-color-brand2-text-strong);
-  --color-fs-brand2-text-subtle: var(--fs-color-brand2-text-subtle);
+  --color-lt-brand2-border: var(--lt-color-brand2-border);
+  --color-lt-brand2-border-strong: var(--lt-color-brand2-border-strong);
+  --color-lt-brand2-border-subtle: var(--lt-color-brand2-border-subtle);
+  --color-lt-brand2-content: var(--lt-color-brand2-content);
+  --color-lt-brand2-fill: var(--lt-color-brand2-fill);
+  --color-lt-brand2-surface: var(--lt-color-brand2-surface);
+  --color-lt-brand2-text: var(--lt-color-brand2-text);
+  --color-lt-brand2-text-strong: var(--lt-color-brand2-text-strong);
+  --color-lt-brand2-text-subtle: var(--lt-color-brand2-text-subtle);
 
-  --color-fs-brand3-border: var(--fs-color-brand3-border);
-  --color-fs-brand3-border-strong: var(--fs-color-brand3-border-strong);
-  --color-fs-brand3-border-subtle: var(--fs-color-brand3-border-subtle);
-  --color-fs-brand3-content: var(--fs-color-brand3-content);
-  --color-fs-brand3-fill: var(--fs-color-brand3-fill);
-  --color-fs-brand3-surface: var(--fs-color-brand3-surface);
-  --color-fs-brand3-text: var(--fs-color-brand3-text);
-  --color-fs-brand3-text-strong: var(--fs-color-brand3-text-strong);
-  --color-fs-brand3-text-subtle: var(--fs-color-brand3-text-subtle);
+  --color-lt-brand3-border: var(--lt-color-brand3-border);
+  --color-lt-brand3-border-strong: var(--lt-color-brand3-border-strong);
+  --color-lt-brand3-border-subtle: var(--lt-color-brand3-border-subtle);
+  --color-lt-brand3-content: var(--lt-color-brand3-content);
+  --color-lt-brand3-fill: var(--lt-color-brand3-fill);
+  --color-lt-brand3-surface: var(--lt-color-brand3-surface);
+  --color-lt-brand3-text: var(--lt-color-brand3-text);
+  --color-lt-brand3-text-strong: var(--lt-color-brand3-text-strong);
+  --color-lt-brand3-text-subtle: var(--lt-color-brand3-text-subtle);
 
-  --color-fs-danger-border: var(--fs-color-danger-border);
-  --color-fs-danger-border-strong: var(--fs-color-danger-border-strong);
-  --color-fs-danger-border-subtle: var(--fs-color-danger-border-subtle);
-  --color-fs-danger-content: var(--fs-color-danger-content);
-  --color-fs-danger-fill: var(--fs-color-danger-fill);
-  --color-fs-danger-surface: var(--fs-color-danger-surface);
-  --color-fs-danger-text: var(--fs-color-danger-text);
-  --color-fs-danger-text-strong: var(--fs-color-danger-text-strong);
-  --color-fs-danger-text-subtle: var(--fs-color-danger-text-subtle);
+  --color-lt-danger-border: var(--lt-color-danger-border);
+  --color-lt-danger-border-strong: var(--lt-color-danger-border-strong);
+  --color-lt-danger-border-subtle: var(--lt-color-danger-border-subtle);
+  --color-lt-danger-content: var(--lt-color-danger-content);
+  --color-lt-danger-fill: var(--lt-color-danger-fill);
+  --color-lt-danger-surface: var(--lt-color-danger-surface);
+  --color-lt-danger-text: var(--lt-color-danger-text);
+  --color-lt-danger-text-strong: var(--lt-color-danger-text-strong);
+  --color-lt-danger-text-subtle: var(--lt-color-danger-text-subtle);
 
-  --color-fs-disabled-surface: var(--fs-color-disabled-surface);
-  --color-fs-disabled-text: var(--fs-color-disabled-text);
+  --color-lt-disabled-surface: var(--lt-color-disabled-surface);
+  --color-lt-disabled-text: var(--lt-color-disabled-text);
 
-  --color-fs-neutral-border: var(--fs-color-neutral-border);
-  --color-fs-neutral-border-strong: var(--fs-color-neutral-border-strong);
-  --color-fs-neutral-border-subtle: var(--fs-color-neutral-border-subtle);
-  --color-fs-neutral-canvas: var(--fs-color-neutral-canvas);
-  --color-fs-neutral-content: var(--fs-color-neutral-content);
-  --color-fs-neutral-fill: var(--fs-color-neutral-fill);
-  --color-fs-neutral-raised: var(--fs-color-neutral-raised);
-  --color-fs-neutral-surface: var(--fs-color-neutral-surface);
-  --color-fs-neutral-text: var(--fs-color-neutral-text);
-  --color-fs-neutral-text-strong: var(--fs-color-neutral-text-strong);
-  --color-fs-neutral-text-subtle: var(--fs-color-neutral-text-subtle);
+  --color-lt-neutral-border: var(--lt-color-neutral-border);
+  --color-lt-neutral-border-strong: var(--lt-color-neutral-border-strong);
+  --color-lt-neutral-border-subtle: var(--lt-color-neutral-border-subtle);
+  --color-lt-neutral-canvas: var(--lt-color-neutral-canvas);
+  --color-lt-neutral-content: var(--lt-color-neutral-content);
+  --color-lt-neutral-fill: var(--lt-color-neutral-fill);
+  --color-lt-neutral-raised: var(--lt-color-neutral-raised);
+  --color-lt-neutral-surface: var(--lt-color-neutral-surface);
+  --color-lt-neutral-text: var(--lt-color-neutral-text);
+  --color-lt-neutral-text-strong: var(--lt-color-neutral-text-strong);
+  --color-lt-neutral-text-subtle: var(--lt-color-neutral-text-subtle);
 
-  --color-fs-overlay: var(--fs-color-overlay);
+  --color-lt-overlay: var(--lt-color-overlay);
 
-  --color-fs-success-border: var(--fs-color-success-border);
-  --color-fs-success-border-strong: var(--fs-color-success-border-strong);
-  --color-fs-success-border-subtle: var(--fs-color-success-border-subtle);
-  --color-fs-success-content: var(--fs-color-success-content);
-  --color-fs-success-fill: var(--fs-color-success-fill);
-  --color-fs-success-surface: var(--fs-color-success-surface);
-  --color-fs-success-text: var(--fs-color-success-text);
-  --color-fs-success-text-strong: var(--fs-color-success-text-strong);
-  --color-fs-success-text-subtle: var(--fs-color-success-text-subtle);
+  --color-lt-success-border: var(--lt-color-success-border);
+  --color-lt-success-border-strong: var(--lt-color-success-border-strong);
+  --color-lt-success-border-subtle: var(--lt-color-success-border-subtle);
+  --color-lt-success-content: var(--lt-color-success-content);
+  --color-lt-success-fill: var(--lt-color-success-fill);
+  --color-lt-success-surface: var(--lt-color-success-surface);
+  --color-lt-success-text: var(--lt-color-success-text);
+  --color-lt-success-text-strong: var(--lt-color-success-text-strong);
+  --color-lt-success-text-subtle: var(--lt-color-success-text-subtle);
 
-  --color-fs-visited-border: var(--fs-color-visited-border);
-  --color-fs-visited-border-strong: var(--fs-color-visited-border-strong);
-  --color-fs-visited-border-subtle: var(--fs-color-visited-border-subtle);
-  --color-fs-visited-content: var(--fs-color-visited-content);
-  --color-fs-visited-fill: var(--fs-color-visited-fill);
-  --color-fs-visited-surface: var(--fs-color-visited-surface);
-  --color-fs-visited-text: var(--fs-color-visited-text);
-  --color-fs-visited-text-strong: var(--fs-color-visited-text-strong);
-  --color-fs-visited-text-subtle: var(--fs-color-visited-text-subtle);
+  --color-lt-visited-border: var(--lt-color-visited-border);
+  --color-lt-visited-border-strong: var(--lt-color-visited-border-strong);
+  --color-lt-visited-border-subtle: var(--lt-color-visited-border-subtle);
+  --color-lt-visited-content: var(--lt-color-visited-content);
+  --color-lt-visited-fill: var(--lt-color-visited-fill);
+  --color-lt-visited-surface: var(--lt-color-visited-surface);
+  --color-lt-visited-text: var(--lt-color-visited-text);
+  --color-lt-visited-text-strong: var(--lt-color-visited-text-strong);
+  --color-lt-visited-text-subtle: var(--lt-color-visited-text-subtle);
 
-  --color-fs-warning-border: var(--fs-color-warning-border);
-  --color-fs-warning-border-strong: var(--fs-color-warning-border-strong);
-  --color-fs-warning-border-subtle: var(--fs-color-warning-border-subtle);
-  --color-fs-warning-content: var(--fs-color-warning-content);
-  --color-fs-warning-fill: var(--fs-color-warning-fill);
-  --color-fs-warning-surface: var(--fs-color-warning-surface);
-  --color-fs-warning-text: var(--fs-color-warning-text);
-  --color-fs-warning-text-strong: var(--fs-color-warning-text-strong);
-  --color-fs-warning-text-subtle: var(--fs-color-warning-text-subtle);
+  --color-lt-warning-border: var(--lt-color-warning-border);
+  --color-lt-warning-border-strong: var(--lt-color-warning-border-strong);
+  --color-lt-warning-border-subtle: var(--lt-color-warning-border-subtle);
+  --color-lt-warning-content: var(--lt-color-warning-content);
+  --color-lt-warning-fill: var(--lt-color-warning-fill);
+  --color-lt-warning-surface: var(--lt-color-warning-surface);
+  --color-lt-warning-text: var(--lt-color-warning-text);
+  --color-lt-warning-text-strong: var(--lt-color-warning-text-strong);
+  --color-lt-warning-text-subtle: var(--lt-color-warning-text-subtle);
 
-  /* Tekststørrelser */
-  --text-fs-xxs: var(--fs-font-size-xxs);
-  --text-fs-xs: var(--fs-font-size-xs);
-  --text-fs-s: var(--fs-font-size-s);
-  --text-fs-m: var(--fs-font-size-m);
-  --text-fs-l: var(--fs-font-size-l);
-  --text-fs-xl: var(--fs-font-size-xl);
-  --text-fs-xxl: var(--fs-font-size-xxl);
-  --text-fs-mega: var(--fs-font-size-mega);
+  /* Text sizes */
+  --text-lt-xxs: var(--lt-font-size-xxs);
+  --text-lt-xs: var(--lt-font-size-xs);
+  --text-lt-s: var(--lt-font-size-s);
+  --text-lt-m: var(--lt-font-size-m);
+  --text-lt-l: var(--lt-font-size-l);
+  --text-lt-xl: var(--lt-font-size-xl);
+  --text-lt-xxl: var(--lt-font-size-xxl);
+  --text-lt-mega: var(--lt-font-size-mega);
 
-  /* Bredder for sideoppsett */
-  --container-fs-xs: 100%;
-  --container-fs-sm: 576px;
-  --container-fs-md: 960px;
-  --container-fs-lg: 1152px;
-  --container-fs-xl: 1536px;
-  --container-fs-aside: 384px;
-  --container-fs-aside-narrow: 288px;
-  --container-fs-wide-content: 768px;
+  /* Widths for page layout */
+  --container-lt-xs: 100%;
+  --container-lt-sm: 576px;
+  --container-lt-md: 960px;
+  --container-lt-lg: 1152px;
+  --container-lt-xl: 1536px;
+  --container-lt-aside: 384px;
+  --container-lt-aside-narrow: 288px;
+  --container-lt-wide-content: 768px;
 
-  /* Skyggen under flater som ligger over siden */
-  --shadow-fs-overlay: var(--fs-shadow-overlay);
+  /* The shadow under surfaces that sit above the page */
+  --shadow-lt-overlay: var(--lt-shadow-overlay);
 }

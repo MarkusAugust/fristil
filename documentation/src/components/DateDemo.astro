@@ -1,0 +1,39 @@
+---
+import Preview from "./Preview.astro"
+---
+
+<Preview id="demo-date" styles={["field", "button", "paragraph"]} maxWidth="26rem" layout="column">
+	<lt-field>
+		<label class="lt-label" for="demo-date-born">Date of birth</label>
+		<input
+			class="lt-input"
+			data-variant="date"
+			id="demo-date-born"
+			name="fodselsdato"
+			type="date"
+			min="1900-01-01"
+			max="2026-12-31"
+		/>
+		<p class="lt-help-text">Type the date as 31/05/2026, or pick it in the calendar.</p>
+	</lt-field>
+
+	<p class="lt-paragraph" id="demo-date-answer">No date chosen yet.</p>
+</Preview>
+
+<script>
+	import { defineLtField } from "@lo-tek/interfaces/field"
+
+	defineLtField()
+
+	// The preview sits in a shadow root, so we go through the host element.
+	const surface = document.getElementById("demo-date")?.shadowRoot
+	const felt = surface?.getElementById("demo-date-born") as HTMLInputElement | null
+	const svar = surface?.getElementById("demo-date-answer")
+
+	felt?.addEventListener("change", () => {
+		if (!svar) return
+		svar.textContent = felt.value
+			? `The server receives ${felt.value}, whatever the date looks like in the field.`
+			: "No date chosen yet."
+	})
+</script>

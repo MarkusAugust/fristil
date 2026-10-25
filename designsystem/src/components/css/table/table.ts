@@ -1,8 +1,8 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const TABLE_CLASS = "fs-table" as const
-/** Beholderen som lar en bred tabell rulles sidelengs. */
-export const TABLE_SCROLL_CLASS = "fs-table-scroll" as const
+export const TABLE_CLASS = "lt-table" as const
+/** The container that lets a wide table scroll sideways. */
+export const TABLE_SCROLL_CLASS = "lt-table-scroll" as const
 
 export const tableVariants = ["default", "striped"] as const
 
@@ -10,9 +10,9 @@ export type TableVariant = (typeof tableVariants)[number]
 export type NonDefaultTableVariant = Exclude<TableVariant, "default">
 
 export type TableOptions = {
-  /** Annenhver rad i dempet flate. Standard: `default`. */
+  /** Every other row on a muted surface. Default: `default`. */
   variant?: TableVariant
-  /** Marker raden under musa. Bruk bare når rader kan trykkes på. */
+  /** Highlights the row under the mouse. Use only when rows can be pressed. */
   hoverable?: boolean
 }
 
@@ -23,12 +23,12 @@ export type TableAttributes = {
 }
 
 /**
- * Attributtene for en tabell.
+ * The attributes for a table.
  *
- * Klassen hører på et ekte `<table>` med `<thead>` og `<th>`. Det er
- * overskriftscellene som gjør at skjermlesere kan si «Beløp, 1 240 kroner»
- * når brukeren står i en celle. Bygger du tabellen av `<div>`-er, finnes ikke
- * den koblingen.
+ * The class goes on a real `<table>` with `<thead>` and `<th>`. The header
+ * cells are what let screen readers say "Amount, 1,240 kroner" when the user
+ * is in a cell. Build the table from `<div>` elements, and that connection
+ * does not exist.
  *
  * ```ts
  * <table {...table({ variant: "striped" })}>…</table>
@@ -42,15 +42,15 @@ export const table = Object.assign(
       "data-hoverable": hoverable ? ("" as const) : undefined,
     }),
   {
-    /** Klassen på beholderen rundt en bred tabell. */
+    /** The class on the container around a wide table. */
     scroll: TABLE_SCROLL_CLASS,
     variants: tableVariants,
     isVariant: createGuard(tableVariants),
   },
 )
 
-/** Klassen på knappen i en kolonneoverskrift som kan sorteres. */
-export const TABLE_SORT_CLASS = "fs-table__sort" as const
+/** The class on the button in a sortable column header. */
+export const TABLE_SORT_CLASS = "lt-table__sort" as const
 
 export const tableSortDirections = ["ascending", "descending"] as const
 
@@ -58,8 +58,8 @@ export type TableSortDirection = (typeof tableSortDirections)[number]
 
 export type TableSortOptions = {
   /**
-   * Retningen kolonnen er sortert i. Utelatt betyr at tabellen ikke er
-   * sortert etter denne kolonnen, og da får overskriften ikke `aria-sort`.
+   * The direction the column is sorted in. Left out, it means the table is
+   * not sorted by this column, and the header gets no `aria-sort`.
    */
   direction?: TableSortDirection
 }
@@ -75,19 +75,19 @@ export type TableSortAttributes = {
 }
 
 /**
- * Attributtene for en kolonneoverskrift som kan sorteres.
+ * The attributes for a sortable column header.
  *
- * `aria-sort` står på `<th>`, ikke på knappen, for det er cellen som
- * beskriver kolonnen. Bare den sorterte kolonnen har attributtet. Pila
- * tegnes fra det samme attributtet, så det skjermleseren sier og det som
- * vises kan ikke gli fra hverandre. Selve sorteringen er appens.
+ * `aria-sort` is on the `<th>`, not on the button, because the cell is what
+ * describes the column. Only the sorted column has the attribute. The arrow
+ * is drawn from the same attribute, so what the screen reader says and what
+ * is shown cannot drift apart. The sorting itself is the app's job.
  *
  * ```ts
- * const dato = fs.tableSort({ direction: "descending" })
+ * const date = lt.tableSort({ direction: "descending" })
  * ```
  * ```html
- * <th scope="col" {...dato.header}>
- *   <button {...dato.button}>Dato</button>
+ * <th scope="col" {...date.header}>
+ *   <button {...date.button}>Date</button>
  * </th>
  * ```
  */
@@ -97,10 +97,11 @@ export const tableSort = Object.assign(
     button: attributes({ class: TABLE_SORT_CLASS, type: "button" as const }),
   }),
   {
-    // Lista ligger ved siden av, som `tableSortDirections`, og ikke på
-    // funksjonen. Vaktposten for listene krever at attributtet og klassen
-    // står på samme element, og her står `aria-sort` på cellen og klassen på
-    // knappen. At hver retning gir sin egen pil, krever tabelltesten.
+    // The list sits next to it, as `tableSortDirections`, and not on the
+    // function. The guard for the lists requires the attribute and the class
+    // to be on the same element, and here `aria-sort` is on the cell and the
+    // class on the button. The table test requires each direction to give its
+    // own arrow.
     isDirection: createGuard(tableSortDirections),
   },
 )

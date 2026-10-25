@@ -1,0 +1,185 @@
+---
+title: Type-safe use
+description: One namespace, one shape. Autocompletion for the whole system, without tying you to a framework.
+---
+
+Classes and data attributes make the components framework-independent, but everything is strings:
+
+```html
+<button class="lt-button" data-variant="secundary">Save draft</button>
+```
+
+The button gets the primary style. No error message, just a variant that silently never took effect. That is why `lt` exists. If you write HTML without TypeScript, the [extension for VS Code](../the-editor/) catches the same mistake.
+
+## The `lt` namespace
+
+```ts
+import { lt } from "@lo-tek/interfaces"
+
+<button {...lt.button({ variant: "secondary" })}>Save draft</button>
+<input {...lt.input({ type: "email", state: "invalid" })} />
+<span {...lt.badge({ color: "success" })}>Approved</span>
+<a {...lt.link()} href="/receipt">View receipt</a>
+```
+
+Type `lt.` in the editor, and you see the whole system. Each component is a function that takes an object of options and returns the attributes you spread into the element. The shape is the same for all of them.
+
+The return values are plain objects. That is why the same API works in React, Astro, Datastar and plain HTML.
+
+:::note[Using React?]
+Import from `@lo-tek/interfaces/react` instead. The call sites are identical, but the return value uses `className` and `htmlFor`.
+
+`lt` returns `class` and `for`, as the attributes are actually called in HTML. React accepts them, and they end up correctly in the DOM, but the development build writes "Invalid DOM property `class`. Did you mean `className`?" to the console for every element. With a whole field that makes two warnings per field.
+
+Plain HTML, Astro and Datastar take `class` and `for` as they are, and use the main entry point.
+:::
+
+## In plain DOM
+
+In JSX you spread the object straight into the element. Without JSX, `lt.setAttributes` does the job:
+
+```ts
+const field = document.querySelector<HTMLInputElement>("#email")
+
+lt.setAttributes(field, lt.input({ type: "email", state: "invalid" }))
+```
+
+Call it again to change state. What the builder function manages and is not in the new set is removed. Otherwise the field would stay red after the error was fixed.
+
+A builder function manages the attributes it has an option for, and only those:
+
+| Call | On the element already | Afterwards |
+| --- | --- | --- |
+| `lt.button({ variant })` | `disabled`, `type="submit"` | Both stay. The button function has no option for them |
+| `lt.switch()` | `disabled` | Removed. The switch has the option `disabled`, and you did not pass it |
+| `lt.spinner()` | `role`, `aria-label` | Removed. The spinner has the option `label`, which writes both |
+
+So the rule is: if the builder function has an option for the attribute, you set it through the option, every time. If you write `aria-label` by hand on a spinner and call `lt.spinner({ size: "large" })`, the function removes it. `id` and `for` are never removed, and `data-testid`, `name` and your own classes are not touched.
+
+If two sets go on the same element, such as the field's appearance and the wiring from `lt.field()`, you pass them separately:
+
+```ts
+const wiring = lt.field({ id: "email", error: true, invalid: true })
+
+lt.setAttributes(field, lt.input({ type: "email" }), wiring.control)
+```
+
+Do not spread them together into one object. `{ ...lt.input(), ...wiring.control }` is a new object, and then the function does not know which builder functions it came from. The attributes are set, but only `data-*` is cleaned up on the next call. The function warns in the console the first time it gets such a set with an `lt-` class in it.
+
+## Default values
+
+```ts
+lt.button()
+// { class: "lt-button" }
+
+lt.button({ variant: "primary" })
+// { class: "lt-button" }, primary is the default in the CSS
+
+lt.button({ variant: "danger" })
+// { class: "lt-button", "data-variant": "danger" }
+```
+
+You always say which variant you want; the function knows when the attribute can be left out.
+
+## Allowed values and guards
+
+```ts
+lt.button.variants
+// readonly ["primary", "secondary", "ghost", "danger"]
+
+lt.button.isVariant("ghost")  // true
+lt.button.isVariant("gost")   // false
+```
+
+The same pattern everywhere: `lt.badge.colors` and `lt.badge.isColor`, `lt.input.types` and `lt.input.isType`.
+
+If the value comes from an API, a URL or `localStorage`, it is a `string` TypeScript cannot promise anything about. The guard gives a valid value or a safe fallback:
+
+```ts
+const response = await fetchButtonSettings()
+const variant = lt.button.isVariant(response.variant) ? response.variant : "primary"
+
+lt.button({ variant })
+```
+
+After the guard, TypeScript knows the value is a `ButtonVariant`.
+
+## One term, one meaning
+
+| Option | What it means | Where |
+| --- | --- | --- |
+| `variant` | Visual weight or meaning | `button`, `card`, `tag`, `helpText`, `errorText` and more |
+| `color` | What a status means | `badge`, `alert`, `dialog`, `progress` |
+| `state` | Validation state | `input`, `textarea`, `select`, `search`, `checkbox`, `radio`, `fileUpload`, `fieldset` |
+| `type` | The HTML type of the field | `input` |
+
+`state` is one type across the field components, so a value can be passed between them without conversion:
+
+```ts
+const state = lt.isState(fromServer) ? fromServer : "default"
+
+lt.input({ state })
+lt.textarea({ state })
+lt.select({ state })
+```
+
+## The web components
+
+TypeScript does not know `<lt-field>`, `<lt-session-timeout>` and `<lt-connection-status>` out of the box. Import the types once in a `.d.ts` file:
+
+```ts
+// src/lotek.d.ts
+import "@lo-tek/interfaces/react-jsx"
+```
+
+Then the attributes get autocompletion and checking:
+
+```tsx
+<lt-field described-by="terms" />      // ok
+<lt-field describedBy="terms" />       // error: the attribute is called described-by
+<lt-toast closeLabel="Close" />         // error: the attribute is called close-label
+<lt-connection-status offline="Down" /> // error: unknown attribute
+```
+
+Plain HTML, Astro and Datastar do not need this. There, `<lt-field>` is just an HTML tag.
+
+### The events
+
+The events the web components send, such as `dialog-toggle` and `tab-select`, have a typed `detail` in `addEventListener`. The types come with every entry point to the web components, including `@lo-tek/interfaces/register`, `/react` and `/react-jsx`, so what you already import is enough. The same goes for the tag names: `document.querySelector("lt-dialog")` gives `LtDialog | null`, not `Element | null`. The event types and the tag map extend the DOM types `HTMLElementEventMap`, `DocumentEventMap` and `HTMLElementTagNameMap`, and have nothing to do with React: the same applies in a TypeScript script in Astro or in a Datastar app, and in React through a `ref`. Since the events bubble, a listener on `document` is typed too.
+
+```ts
+import { defineLtDialog } from "@lo-tek/interfaces/dialog"
+
+defineLtDialog()
+
+document.querySelector("lt-dialog")?.addEventListener("dialog-toggle", (event) => {
+  event.detail.open         // boolean
+  event.detail.returnValue  // string, the value of the button that closed it
+})
+```
+
+Every event and the fields in `detail` are also available as `LtEventMap` in the main entry point. A prop such as `onDialogToggle` or `ondialog-toggle` gets no type. React 18 wires neither of them, and React 19 only the latter, so in React 18 the listener would never have been called, without anything saying so.
+
+## What the types do not catch
+
+**The attributes can be spread on the wrong element.** `<div {...lt.button({ variant: "danger" })} />` compiles, because the return value is just an object of HTML attributes.
+
+**The return type of `type` is wider than the value you passed in.** `lt.input({ type: "date" }).type` is the whole union, not `"date"`.
+
+## Without TypeScript
+
+`lt` is optional. Without TypeScript or a build step, this is just as valid:
+
+```html
+<button class="lt-button" data-variant="secondary">Save draft</button>
+```
+
+The result is identical. The difference is how early you find out that you wrote `secundary`.
+
+If you only want one component:
+
+```ts
+import { button } from "@lo-tek/interfaces/button"
+```
+
+The subpaths return `class` and `for`, like the main entry point. The React variant exists only as the combined `lt`.

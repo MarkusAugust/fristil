@@ -1,0 +1,103 @@
+---
+import { readFile } from "node:fs/promises"
+import { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
+import { Code, TabItem, Tabs } from "@astrojs/starlight/components"
+import { compile } from "tailwindcss"
+import Preview, { type Stilark } from "./Preview.astro"
+
+interface Props {
+  /** The LO-TEK stylesheets the example needs. */
+  styles?: Stilark[]
+  /** `rad` lays the content out side by side, `stabel` one below the other. */
+  layout?: "row" | "stack"
+  /** Optional maximum width. */
+  maxWidth?: string
+  /** The markup. Shown both live and as code. */
+  code: string
+}
+
+const { styles = [], layout = "row", maxWidth, code } = Astro.props
+
+/*
+ * The example is compiled by a real Tailwind at build time.
+ *
+ * The preview sits in a shadow root, and the documentation site's own utility
+ * classes do not reach in there. Copying them by hand would have made the
+ * example a drawing of something that might work. Here Tailwind itself
+ * generates the classes, from exactly the markup shown in the code tab.
+ */
+async function lastStilark(id: string, basedir: string) {
+  const url = id.startsWith(".")
+    ? new URL(id, `file://${basedir}/`)
+    : new URL(import.meta.resolve(id))
+  const sti = fileURLToPath(url)
+
+  return { path: sti, base: dirname(sti), content: await readFile(sti, "utf8") }
+}
+
+/** The class names in the markup, which are what Tailwind is to generate rules for. */
+const klasser = [...code.matchAll(/class="([^"]*)"/g)].flatMap((treff) =>
+  treff[1].split(/\s+/).filter(Boolean),
+)
+
+const compiler = await compile(
+  `
+	@import "tailwindcss/theme.css" layer(theme);
+	@import "tailwindcss/utilities.css" layer(utilities);
+	@import "@lo-tek/interfaces/tailwind.css";
+	`,
+  { base: process.cwd(), loadStylesheet: lastStilark },
+)
+
+/*
+ * A class from the LO-TEK namespace that does not exist must fail the build.
+ *
+ * Tailwind says nothing about a class it does not know: it simply generates no
+ * rule, and the example looks as if it works. The page carried twelve names
+ * from the colour system as it was named before the matrix, and nothing said
+ * so. Only the `-lt-` classes are checked, since they are ours; `p-4` and
+ * `rounded-xl` are Tailwind's own.
+ *
+ * The test is whether `build()` produced anything new, not whether a selector
+ * appears in the output. The selector would then have to be built from the
+ * class name, and Tailwind escapes `/`, `[`, `!` and half a dozen more
+ * characters, so `hover:bg-lt-accent-fill/50` would have been reported as
+ * unknown even though it exists. `build()` is also cumulative, so a name that
+ * is a prefix of another, such as `text-lt-accent` against
+ * `text-lt-accent-text`, does not slip through on a substring match.
+ */
+const ukjente: string[] = []
+let lengde = compiler.build([]).length
+
+for (const klasse of new Set(klasser)) {
+  if (!klasse.includes("-lt-")) continue
+  const ny = compiler.build([klasse]).length
+  if (ny <= lengde) ukjente.push(klasse)
+  lengde = Math.max(lengde, ny)
+}
+
+if (ukjente.length > 0) {
+  throw new Error(
+    `The Tailwind example uses classes that do not exist in the theme: ${ukjente.join(", ")}`,
+  )
+}
+
+const tailwindCss = compiler.build(klasser)
+---
+
+<Tabs>
+	<TabItem label="Example">
+		<Preview
+			styles={styles}
+			layout={layout}
+			maxWidth={maxWidth}
+			extraCss={tailwindCss}
+		>
+			<Fragment set:html={code} />
+		</Preview>
+	</TabItem>
+	<TabItem label="Code">
+		<Code code={code.trim()} lang="html" />
+	</TabItem>
+</Tabs>

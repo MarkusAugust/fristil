@@ -1,19 +1,20 @@
 #!/usr/bin/env node
 /// <reference types="node" />
 /**
- * Kommandolinja til Fristil, `npx @fristil/designsystem`.
+ * The LO-TEK command line, `npx @lo-tek/interfaces`.
  *
- * Kommandoene er skrevet i Rust og kjøres som WASI-modulen
- * `kjerne/fristil.wasm`. Verten, som åpner filsystemet og henter adresser,
- * står i `wasi-host.ts`. Pakken er denne: kommandolinja leser manifestet,
- * fargekontrakten, regelbøkene og komponentene herfra.
+ * The commands are written in Rust and run as the WASI module
+ * `core/lotek.wasm`. The host, which opens the file system and fetches
+ * addresses, is in `wasi-host.ts`. The package is this one: the command line
+ * reads the manifest, the colour contract, the rulebooks and the components
+ * from here.
  */
 
 import { runCommandLine } from "./wasi-host.js"
 
 process.exit(
   await runCommandLine(
-    new URL("../kjerne/fristil.wasm", import.meta.url),
+    new URL("../core/lotek.wasm", import.meta.url),
     process.argv.slice(2),
     new URL("..", import.meta.url),
   ),

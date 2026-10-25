@@ -1,0 +1,78 @@
+{
+  "markup": [
+    {
+      "start": 10,
+      "end": 18,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/link/",
+      "message": "The class \"lt-lenke\" does not exist in LO-TEK. Did you mean lt-link?",
+      "fix": {
+        "title": "Change to lt-link",
+        "edits": [
+          {
+            "start": 10,
+            "end": 18,
+            "text": "lt-link"
+          }
+        ],
+        "preferred": false
+      }
+    },
+    {
+      "start": 53,
+      "end": 61,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/button/",
+      "message": "The class \"lt-buton\" does not exist in LO-TEK. Did you mean lt-button?",
+      "fix": {
+        "title": "Change to lt-button",
+        "edits": [
+          {
+            "start": 53,
+            "end": 61,
+            "text": "lt-button"
+          }
+        ],
+        "preferred": false
+      }
+    }
+  ],
+  "page": [
+    {
+      "start": 10,
+      "end": 18,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/link/",
+      "message": "The class \"lt-lenke\" does not exist in LO-TEK. Did you mean lt-link?",
+      "fix": {
+        "title": "Change to lt-link",
+        "edits": [
+          {
+            "start": 10,
+            "end": 18,
+            "text": "lt-link"
+          }
+        ],
+        "preferred": false
+      }
+    },
+    {
+      "start": 53,
+      "end": 61,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/button/",
+      "message": "The class \"lt-buton\" does not exist in LO-TEK. Did you mean lt-button?",
+      "fix": {
+        "title": "Change to lt-button",
+        "edits": [
+          {
+            "start": 53,
+            "end": 61,
+            "text": "lt-button"
+          }
+        ],
+        "preferred": false
+      }
+    }
+  ]
+}

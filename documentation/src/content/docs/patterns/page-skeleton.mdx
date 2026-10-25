@@ -1,0 +1,106 @@
+---
+title: Page skeleton
+description: Skip link, landmarks and heading levels, the things the components cannot take responsibility for.
+---
+
+import FramedPage from "../../../components/FramedPage.astro"
+
+A component cannot know where it sits on the page. It does not know whether its heading is the first on the page or the twelfth, and it cannot add a skip link on your behalf. That is why this pattern is the only one that is not about a single component, but about the order they come in.
+
+<FramedPage src="/demo/page-skeleton/" title="The page skeleton" height="36rem" />
+
+## The order
+
+```html
+<body>
+  <a class="lt-skip-link" href="#main-content">Skip to main content</a>
+
+  <header>
+    <a class="lt-link" href="/" aria-label="Example Council, home page">
+      <strong>Example Council</strong>
+    </a>
+
+    <nav aria-label="Main menu">
+      <ul class="lt-list" data-variant="plain">
+        <li><a class="lt-link" href="/cases">My cases</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <nav aria-label="You are here">
+    <ol class="lt-breadcrumbs">
+      <li><a class="lt-link" href="/">Home</a></li>
+      <li><a class="lt-link" href="/cases" aria-current="page">My cases</a></li>
+    </ol>
+  </nav>
+
+  <main id="main-content" tabindex="-1">
+    <h1 class="lt-heading" data-size="xl">My cases</h1>
+    …
+  </main>
+
+  <footer>…</footer>
+</body>
+```
+
+| Element | Why it is there |
+| --- | --- |
+| The skip link first | It has to be the first thing that gets focus. If it comes after the menu, it helps nobody. |
+| `<header>`, `<main>`, `<footer>` | Screen readers can jump between landmarks. Without them the page is one long stream. |
+| `aria-label` on every `<nav>` | The page has two. Without a name, both are called "navigation". |
+| `tabindex="-1"` on `<main>` | Without it the browser moves the view but not focus: `document.activeElement` becomes `<body>`, and the screen reader is not told that the user has arrived. Tab continues from the target either way; it is the focus and the announcement that are missing. |
+| `<h1>` inside `<main>` | One per page, and it says what the page is about. |
+
+## Heading levels
+
+`lt.heading({ size })` only sets the size. The level is the structure of the page, and that is your responsibility:
+
+```html
+<h1 class="lt-heading" data-size="xl">My cases</h1>
+
+<section aria-labelledby="under-review">
+  <h2 class="lt-heading" data-size="m" id="under-review">Under review</h2>
+
+  <article class="lt-card">
+    <h3 class="lt-card__title">Housing benefit application</h3>
+  </article>
+</section>
+```
+
+The levels should follow each other without skipping. If an `<h2>` should look small, give it `data-size="s"` and leave the level alone. If you jump to `<h4>` because it was small enough, the outline the screen reader builds is wrong.
+
+`aria-labelledby` on `<section>` makes the section announce itself with its heading. Without it, `<section>` is just a box.
+
+## What you write yourself
+
+The layout belongs to the app. LO-TEK gives you the components and the tokens, while column width, space between the parts and the colour of the header and footer belong to the page:
+
+```css
+.page-width {
+	max-inline-size: 60rem;
+	margin-inline: auto;
+	padding-inline: var(--lt-spacing-4);
+}
+
+.top {
+	background: var(--lt-color-neutral-surface);
+	border-block-end: 1px solid var(--lt-color-neutral-border-subtle);
+}
+```
+
+Use tokens for the values, and the page follows the theme without you writing `dark:` anywhere.
+
+One more line is up to you: `color-scheme: light dark` on `<html>`. LO-TEK does not set it on bare `:root`, since the package may be a guest on someone else's page, and without it the browser draws scrollbars and dropdowns light on a dark page. The demo above writes it itself. If you use the [theme picker](../theme/), each option sets it instead.
+
+## When the page changes content
+
+In an app that does not reload the page, two things have to happen on every change:
+
+1. Move focus to `<main>`, or to the new `<h1>`.
+2. Update `<title>`, and preferably announce the new page in an element with `role="status"`.
+
+Without that, a screen reader user is left on the old page without knowing anything happened. It is the most common mistake in a single-page app, and it is invisible to anyone looking at the screen.
+
+## Try it
+
+Open the demo in a new tab, and press Tab as the very first thing. The skip link should appear. Press Enter and focus lands in the main content, a screen reader announces where you are, and the next Tab goes to the first link there.

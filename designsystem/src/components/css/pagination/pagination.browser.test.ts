@@ -12,15 +12,15 @@ import { pagination } from "./pagination"
 import "../../../tokens/tokens.css"
 import "./pagination.css"
 
-describe("fs-pagination", () => {
+describe("lt-pagination", () => {
   beforeEach(() => {
     monter(`
       <nav aria-label="Sidenavigering">
-        <ul class="fs-pagination">
+        <ul class="lt-pagination">
           <li><a href="#">Forrige</a></li>
           <li><a href="#" id="en">1</a></li>
           <li><a href="#" aria-current="page" id="to">2</a></li>
-          <li><span class="fs-pagination__gap">…</span></li>
+          <li><span class="lt-pagination__gap">…</span></li>
           <li><a href="#">9</a></li>
           <li><a href="#">Neste</a></li>
         </ul>
@@ -50,8 +50,8 @@ describe("fs-pagination", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(pagination()).toEqual({ class: "fs-pagination" })
-    expect(pagination.gap).toBe("fs-pagination__gap")
+    expect(pagination()).toEqual({ class: "lt-pagination" })
+    expect(pagination.gap).toBe("lt-pagination__gap")
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
@@ -60,10 +60,10 @@ describe("fs-pagination", () => {
   })
 })
 
-describe("fs-pagination med en deaktivert «Neste»", () => {
+describe("lt-pagination med en deaktivert «Neste»", () => {
   it("gir span-en samme boks som lenkene, og deaktivert farge", () => {
     monter(`
-      <nav class="fs-pagination" aria-label="Sider">
+      <nav class="lt-pagination" aria-label="Sider">
         <ul>
           <li><a href="#" id="lenke">2</a></li>
           <li><span aria-disabled="true" id="neste">3</span></li>

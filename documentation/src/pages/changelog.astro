@@ -1,0 +1,57 @@
+---
+import { createMarkdownProcessor } from "@astrojs/markdown-remark"
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro"
+import logg from "../../../designsystem/CHANGELOG.md?raw"
+import { rehypeTabellrull } from "../plugins/rehype-table-scroll.mjs"
+
+/*
+ * The changelog is rendered from `designsystem/CHANGELOG.md`, which is the
+ * single source. The file is loaded with `?raw` and not with `readFileSync`: a
+ * path computed from `import.meta.url` points the wrong way after the build
+ * has bundled the page. The heading in the file is replaced by the page's own
+ * title, or there would be two `<h1>` on the page. The unreleased section is in
+ * the file at all times, empty too right after a release, and is only included
+ * when there is something under it.
+ */
+const kilde = logg
+  .replace(/^# .*\n/, "")
+  .replace(/^## Unreleased\s*\n(?=## )/m, "")
+
+/*
+ * The page bypasses Starlight's own markdown, so what the other pages get has
+ * to be given here. GFM is on already. The table scroll container is
+ * included, so a table in the changelog scrolls as on the other pages.
+ * Highlighting is off: without Expressive Code, Shiki would have written a
+ * dark code block with inline colours even in the light theme, while a bare
+ * `<pre>` gets Starlight's own colours in both.
+ */
+const markdown = await createMarkdownProcessor({
+  rehypePlugins: [rehypeTabellrull],
+  syntaxHighlight: false,
+})
+const { code, metadata } = await markdown.render(kilde)
+const overskrifter = metadata.headings.filter((h) => h.depth === 2)
+---
+
+<StarlightPage
+  frontmatter={{
+    title: "Changelog",
+    description: "What has changed in each version of @lo-tek/interfaces.",
+  }}
+  headings={overskrifter}
+>
+  <Fragment set:html={code} />
+</StarlightPage>
+
+<style>
+  /*
+   * Without Expressive Code the code blocks do not scroll, and a line in the
+   * changelog is wider than 375 pixels. The lines wrap rather than the block
+   * scrolling: a scroll container would have needed `tabindex` to be reached
+   * with the keyboard. Words are only split when they alone are too long.
+   */
+  :global(.sl-markdown-content pre) {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+</style>

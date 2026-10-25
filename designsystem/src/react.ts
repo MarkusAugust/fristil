@@ -41,60 +41,61 @@ import { tag } from "./components/css/tag/tag.js"
 import { textarea } from "./components/css/textarea/textarea.js"
 import { toggleGroup } from "./components/css/toggle-group/toggle-group.js"
 import { tooltip } from "./components/css/tooltip/tooltip.js"
-import { connectionStatus } from "./components/frittstaende/connection-status/connection-status.js"
-import { toast } from "./components/frittstaende/toast/toast.js"
-import { dialog } from "./components/ramme/dialog/dialog.js"
-import { errorSummary } from "./components/ramme/error-summary/error-summary.js"
+import { dialog } from "./components/frame/dialog/dialog.js"
+import { errorSummary } from "./components/frame/error-summary/error-summary.js"
 import {
   computeFieldAttributes,
   createFieldId,
   type FieldOptions,
-} from "./components/ramme/field/field-core.js"
-import { popover } from "./components/ramme/popover/popover.js"
-import { sessionTimeout } from "./components/ramme/session-timeout/session-timeout.js"
-import { suggestion } from "./components/ramme/suggestion/suggestion.js"
+} from "./components/frame/field/field-core.js"
+import { popover } from "./components/frame/popover/popover.js"
+import { sessionTimeout } from "./components/frame/session-timeout/session-timeout.js"
+import { suggestion } from "./components/frame/suggestion/suggestion.js"
 import {
   type TabsWithStateOptions,
   tabsWithState,
-} from "./components/ramme/tabs/tabs.js"
+} from "./components/frame/tabs/tabs.js"
+import { connectionStatus } from "./components/standalone/connection-status/connection-status.js"
+import { toast } from "./components/standalone/toast/toast.js"
 import { type Attributes, setAttributes as setHtmlAttributes } from "./dom.js"
 
-// Typene til hendelsene, så `addEventListener` er typet også for den som
-// bare importerer denne inngangen. Uten linja forsvant importen fra
-// `.d.ts`-fila, og `HTMLElementEventMap` ble aldri utvidet.
-export type { FsEventMap } from "./components/events.js"
+// The types of the events, so `addEventListener` is typed also for someone
+// who only imports this entry point. Without the line the import disappeared
+// from the `.d.ts` file, and `HTMLElementEventMap` was never extended.
+export type { LtEventMap } from "./components/events.js"
 
 /**
- * Samme API som `fs`, men med `className` og `htmlFor`.
+ * The same API as `lt`, but with `className` and `htmlFor`.
  *
- * Resten av systemet returnerer `class` og `for`, slik attributtene faktisk
- * heter i HTML. React godtar dem, og de havner riktig i DOM-en, men
- * utviklingsbygget skriver «Invalid DOM property `class`. Did you mean
- * `className`?» i konsollen for hvert element. Med et helt felt blir det to
- * advarsler per felt, og det er ikke en utvikleropplevelse vi kan by på.
+ * The rest of the system returns `class` and `for`, as the attributes are
+ * actually named in HTML. React accepts them, and they end up correctly in
+ * the DOM, but the development build writes "Invalid DOM property `class`.
+ * Did you mean `className`?" to the console for every element. A whole field
+ * gives two warnings per field, which is too noisy to ship.
  *
  * ```ts
- * import { fs } from "@fristil/designsystem/react"
+ * import { lt } from "@lo-tek/interfaces/react"
  *
- * <button {...fs.button({ variant: "secondary" })}>Lagre utkast</button>
+ * <button {...lt.button({ variant: "secondary" })}>Save draft</button>
  * ```
  *
- * Kallstedene er identiske med resten av systemet; bare importstien er en
- * annen. Dette er ren omdøping av to nøkler, så pakken får ingen
- * avhengighet til React av det.
+ * The call sites are identical to the rest of the system; only the import
+ * path differs. This is a plain renaming of keys, so the package gets no
+ * dependency on React from it.
  *
- * Astro og ren HTML tar `class` og `for` som de er. Der bruker du
- * `@fristil/designsystem` direkte.
+ * Astro and plain HTML take `class` and `for` as they are. There you use
+ * `@lo-tek/interfaces` directly.
  */
 
 /**
- * Gir nøklene navnene React forventer, og verdiene typene React forventer.
+ * Gives the keys the names React expects, and the values the types React
+ * expects.
  *
- * `tabindex` er ikke bare et annet navn: i HTML er verdien en streng, og i
- * React er `tabIndex` et tall. Lot vi strengen stå, kom `fs.tabs()` ut med
- * `tabIndex: "0"`, og TypeScript avviste den i enhver React-app. Den virket
- * i nettleseren, siden React gjør om verdien selv, så feilen viste seg bare
- * som en typefeil hos konsumenten.
+ * `tabindex` is not only a different name: in HTML the value is a string, and
+ * in React `tabIndex` is a number. When we left the string, `lt.tabs()` came
+ * out with `tabIndex: "0"`, and TypeScript rejected it in every React app. It
+ * worked in the browser, since React converts the value itself, so the bug
+ * only showed up as a type error for the consumer.
  */
 export type ReactAttributes<T> = {
   [K in keyof T as K extends "class"
@@ -109,20 +110,21 @@ export type ReactAttributes<T> = {
 }
 
 /**
- * Attributtene som heter noe annet i React.
+ * The attributes that have another name in React.
  *
- * `tabindex` kom med de sammensatte byggefunksjonene, og `autocomplete` med
- * forslagsfeltet. Uten omdøpingen advarer React om hver eneste av dem.
+ * `tabindex` came with the compound builder functions, and `autocomplete`
+ * with the suggestion field. Without the renaming React warns about every
+ * one of them.
  *
- * `aria-*` og `data-*` skal derimot stå som de er. React sender dem videre
- * uendret, og en omdøping ville gitt ugyldige attributter.
+ * `aria-*` and `data-*`, on the other hand, stay as they are. React passes
+ * them on unchanged, and renaming them would give invalid attributes.
  *
- * `react.browser.test.ts` kaller hver byggefunksjon her med hver lovlige
- * verdi den selv oppgir, samler alle attributtnavn i svaret, også de som
- * ligger i lister og undernivåer, og avviser hvert navn React staver
- * annerledes. Lista der er Reacts egen og er lengre enn de fire vi døper om,
- * så en byggefunksjon som en dag sender ut `readonly` eller `maxlength`
- * stopper der og ikke i konsollen hos en konsument.
+ * `react.browser.test.ts` calls every builder function here with every
+ * allowed value it declares, collects all attribute names in the result,
+ * including those in lists and nested levels, and rejects every name React
+ * spells differently. The list there is React's and is longer than the four
+ * we rename, so a builder function that one day outputs `readonly` or
+ * `maxlength` stops there and not in a consumer's console.
  */
 const REACT_NAMES: Record<string, string> = {
   class: "className",
@@ -136,13 +138,13 @@ export function toReactAttributes<T extends Record<string, unknown>>(
 ): ReactAttributes<T> {
   const result: Record<string, unknown> = {}
   for (const [name, value] of Object.entries(attributes)) {
-    // `tabindex` er en streng i HTML og et tall i React. Alt annet går rett
-    // gjennom: det er navnene som er ulike, ikke verdiene.
+    // `tabindex` is a string in HTML and a number in React. Everything else
+    // passes straight through: it is the names that differ, not the values.
     result[REACT_NAMES[name] ?? name] =
       name === "tabindex" ? Number(value) : value
   }
-  // Det nye objektet forvalter det samme som det gamle, under de nye navnene,
-  // så `setAttributes` under kan rydde like mye som hovedinngangen.
+  // The new object manages the same as the old one, under the new names, so
+  // `setAttributes` below can clean up as much as the main entry point.
   const names = managedNames(attributes)
   if (names)
     rememberManaged(
@@ -152,24 +154,24 @@ export function toReactAttributes<T extends Record<string, unknown>>(
   return result as ReactAttributes<T>
 }
 
-/** Navnene tilbake til HTML, for `setAttributes`. */
+/** The names back to HTML, for `setAttributes`. */
 const HTML_NAMES: Record<string, string> = Object.fromEntries(
   Object.entries(REACT_NAMES).map(([html, react]) => [react, html]),
 )
 
 /**
- * Et sett slik byggefunksjonene her gir det, med `className`, `htmlFor` og
- * `tabIndex` som tall.
+ * A set as the builder functions here return it, with `className`,
+ * `htmlFor` and `tabIndex` as a number.
  */
 export type ReactSet = Record<string, string | number | boolean | undefined>
 
 /**
- * Skriver et sett fra denne inngangen tilbake til HTML-navnene.
+ * Writes a set from this entry point back to the HTML names.
  *
- * `setAttribute` skriver navnet slik det står, og i et HTML-dokument blir det
- * små bokstaver: `className` ble attributtet `classname`, og `htmlFor` ble
- * `htmlfor`. Det nye objektet forvalter det samme som settet det kom fra, så
- * det som er borte i neste kall blir ryddet.
+ * `setAttribute` writes the name as given, and in an HTML document it becomes
+ * lower case: `className` became the attribute `classname`, and `htmlFor`
+ * became `htmlfor`. The new object manages the same as the set it came from,
+ * so what is gone in the next call is cleaned up.
  */
 function toHtmlAttributes(set: ReactSet): Attributes {
   const result: Attributes = {}
@@ -187,12 +189,13 @@ function toHtmlAttributes(set: ReactSet): Attributes {
 }
 
 /**
- * Som `fs.setAttributes` i hovedinngangen, for settene herfra.
+ * Like `lt.setAttributes` in the main entry point, for the sets from here.
  *
- * En React-app når DOM-en gjennom en `ref`, og bruker da naturlig `fs` fra
- * denne inngangen. Sendt rett til hovedinngangens `setAttributes` ble
- * `className` til attributtet `classname`, og oppryddingen fant ikke
- * byggefunksjonen bak settet. Her oversettes navnene tilbake først.
+ * A React app reaches the DOM through a `ref`, and then naturally uses `lt`
+ * from this entry point. Passed straight to the main entry point's
+ * `setAttributes`, `className` became the attribute `classname`, and the
+ * cleanup did not find the builder function behind the set. Here the names
+ * are translated back first.
  */
 export function setAttributes(
   element: Element | null | undefined,
@@ -202,11 +205,11 @@ export function setAttributes(
 }
 
 /**
- * Pakker inn en byggefunksjon så returverdien får React-navnene.
+ * Wraps a builder function so the return value gets the React names.
  *
- * Signaturen er skrevet som en snitt-type for at TypeScript skal kunne utlede
- * både valgtypen og de ekstra feltene som henger på funksjonen, altså
- * `variants`, `isVariant` og de andre, i samme slengen.
+ * The signature is written as an intersection type so TypeScript can infer
+ * both the options type and the extra fields attached to the function, that
+ * is `variants`, `isVariant` and the others, in one go.
  */
 function forReact<Options, Result extends Record<string, unknown>, Extra>(
   fn: ((options?: Options) => Result) & Extra,
@@ -216,17 +219,17 @@ function forReact<Options, Result extends Record<string, unknown>, Extra>(
 }
 
 /**
- * Videreeksportert fra hovedinngangen.
+ * Re-exported from the main entry point.
  *
- * `field.mdx` peker på den i en seksjon som ber leseren importere fra
- * `@fristil/designsystem/react`, og uten dette får en React-konsument som
- * følger rådet «createFieldId is not exported». Den er trygg bare når
- * markupen rendres én gang; i en React-komponent er `useId()` svaret, også i
- * en app uten server.
+ * `field.mdx` points to it in a section that tells the reader to import from
+ * `@lo-tek/interfaces/react`, and without this a React consumer who follows
+ * the advice gets "createFieldId is not exported". It is safe only when the
+ * markup is rendered once; in a React component `useId()` is the answer,
+ * also in an app without a server.
  */
 export { createFieldId }
 
-export const fs = {
+export const lt = {
   accordion: forReact(accordion),
   alert: forReact(alert),
   avatar: forReact(avatar),
@@ -275,10 +278,10 @@ export const fs = {
   textarea: forReact(textarea),
 
   /**
-   * Kobler et helt felt, med `className` og `htmlFor` på ledeteksten.
+   * Wires a whole field, with `className` and `htmlFor` on the label.
    *
-   * `control`, `help` og `error` har ingen nøkler som må døpes om, og er
-   * derfor like i begge inngangene.
+   * `control`, `help` and `error` have no keys that need renaming, and are
+   * therefore the same in both entry points.
    */
   field: (options: FieldOptions) => {
     const field = computeFieldAttributes(options)
@@ -286,9 +289,9 @@ export const fs = {
   },
 
   /**
-   * De sammensatte byggefunksjonene gir ett attributtsett per element, og hvert sett
-   * må døpes om for seg. `host` har `tabindex`, og panelene i `fs.tabs()`
-   * har både `tabindex` og `class`.
+   * The compound builder functions return one attribute set per element,
+   * and each set must be renamed on its own. `host` has `tabindex`, and the
+   * panels in `lt.tabs()` have both `tabindex` and `class`.
    */
   errorSummary: (options: Parameters<typeof errorSummary>[0] = {}) => {
     const built = errorSummary(options)
@@ -336,8 +339,9 @@ export const fs = {
   ),
 
   /**
-   * Hele tilstanden, ikke bare lenkene: React melder avvik for hvert attributt
-   * komponenten skriver på et element React har rendret. Se `tabsWithState`.
+   * The whole state, not just the links: React reports a mismatch for every
+   * attribute the component writes on an element React has rendered. See
+   * `tabsWithState`.
    */
   tabs: (options: TabsWithStateOptions) => {
     const built = tabsWithState(options)
@@ -350,16 +354,16 @@ export const fs = {
   },
 
   suggestion: (options: Parameters<typeof suggestion>[0]) => {
-    const forslag = suggestion(options)
+    const built = suggestion(options)
     return {
-      ...forslag,
-      label: toReactAttributes(forslag.label),
-      control: toReactAttributes(forslag.control),
-      list: toReactAttributes(forslag.list),
-      options: forslag.options.map(toReactAttributes),
-      empty: toReactAttributes(forslag.empty),
-      status: toReactAttributes(forslag.status),
-      value: toReactAttributes(forslag.value),
+      ...built,
+      label: toReactAttributes(built.label),
+      control: toReactAttributes(built.control),
+      list: toReactAttributes(built.list),
+      options: built.options.map(toReactAttributes),
+      empty: toReactAttributes(built.empty),
+      status: toReactAttributes(built.status),
+      value: toReactAttributes(built.value),
     }
   },
 

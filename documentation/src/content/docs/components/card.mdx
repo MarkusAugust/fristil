@@ -1,114 +1,114 @@
 ---
 title: Card
-description: Boks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.
+description: A box that groups content that belongs together. A CSS component with two classes and no JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
-En ramme rundt innhold som hører sammen, som én sak i en liste over saker. Kortet er en beholder, ikke en komponent med oppførsel: det er innholdet som bestemmer hva brukeren kan gjøre.
+A frame around content that belongs together, such as one case in a list of cases. The card is a container, not a component with behaviour: the content decides what the user can do.
 
-## Slik tar du den i bruk
+## How to use it
 
-<Eksempel importer={["tokens.css", "card.css", "badge.css", "button.css"]}
-  stiler={["card", "badge", "button"]} layout="stabel" maxWidth="32rem" kode={`
-<div class="fs-card">
-  <h3 class="fs-card__title">Søknad om bostøtte</h3>
-  <p>Sendt 4. mars. Saksnummer 2026-0481.</p>
-  <span class="fs-badge" data-color="success">Innvilget</span>
+<Example imports={["tokens.css", "card.css", "badge.css", "button.css"]}
+  styles={["card", "badge", "button"]} layout="stack" maxWidth="32rem" code={`
+<div class="lt-card">
+  <h3 class="lt-card__title">Housing benefit application</h3>
+  <p>Sent 4 March. Case number 2026-0481.</p>
+  <span class="lt-badge" data-color="success">Approved</span>
 </div>
 
-<div class="fs-card" data-variant="filled">
-  <h3 class="fs-card__title">Søknad om barnehageplass</h3>
-  <p>Vi mangler fødselsattest før vi kan behandle søknaden.</p>
-  <button class="fs-button" data-variant="secondary">Last opp vedlegg</button>
+<div class="lt-card" data-variant="filled">
+  <h3 class="lt-card__title">Nursery place application</h3>
+  <p>We need a birth certificate before we can process the application.</p>
+  <button class="lt-button" data-variant="secondary">Upload attachment</button>
 </div>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<div {...fs.card({ variant: "outline" })}>
-  <h3 className={fs.card.title}>Søknad 2024/1187</h3>
-  <p>Under behandling.</p>
+<div {...lt.card({ variant: "outline" })}>
+  <h3 className={lt.card.title}>Application 2024/1187</h3>
+  <p>In progress.</p>
 </div>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
+**If you have the element in a variable,** set them on it with `setAttributes`. That is the way without JSX, whether you just created the element or found it in a page the server sent:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-const kort = document.createElement("a")
-kort.href = `/sak/${sak.id}`
+const card = document.createElement("a")
+card.href = `/case/${caseFile.id}`
 
-fs.setAttributes(kort, fs.card({ interactive: true }))
+lt.setAttributes(card, lt.card({ interactive: true }))
 ```
 
-`fs.card.title` gir klassen på overskriften. Se [Typesikker bruk](../../typesikker-bruk/).
+`lt.card.title` gives the class for the heading. See [Type-safe use](../../type-safe-use/).
 
 </Fragment>
-</Eksempel>
+</Example>
 
-| `data-variant` | Brukes til |
+| `data-variant` | Used for |
 | --- | --- |
-| *(utelatt)* | Omriss på sideflaten. Standardvalget. |
-| `filled` | Dempet flate, når kortet skal skille seg fra hvitt uten ramme |
+| *(omitted)* | Outline on the page surface. The default. |
+| `filled` | Muted surface, when the card should stand out from white without a border |
 
-## Hele kortet som lenke
+## The whole card as a link
 
-<Eksempel stiler={["card"]} layout="stabel" maxWidth="32rem" kode={`
-<a class="fs-card" data-interactive href="#">
-  <h3 class="fs-card__title">Se hele saken</h3>
-  <p>Alle dokumenter, meldinger og vedtak samlet.</p>
+<Example styles={["card"]} layout="stack" maxWidth="32rem" code={`
+<a class="lt-card" data-interactive href="#">
+  <h3 class="lt-card__title">See the whole case</h3>
+  <p>All documents, messages and decisions in one place.</p>
 </a>
 `} />
 
-`data-interactive` gir hover og fokusmarkering, men gjør ingenting klikkbart av seg selv. Elementet må være en `<a>` eller en `<button>`. Et `<div>` med en klikklytter kan hverken nås med tastatur eller meldes som noe å trykke på.
+`data-interactive` gives hover and a focus indicator, but makes nothing clickable on its own. The element has to be an `<a>` or a `<button>`. A `<div>` with a click listener can neither be reached with the keyboard nor be announced as something to press.
 
-Har kortet flere handlinger, skal ikke hele kortet være en lenke. Da havner knappene inni en lenke, og brukeren kan ikke trykke på dem uten å navigere. Lag heller én tydelig lenke i overskriften.
+If the card has several actions, the whole card should not be a link. The buttons then end up inside a link, and the user cannot press them without navigating. Make one clear link in the heading instead.
 
-## Klasser du kan style
+## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.fs-card` | Selve kortet. Varianten kommer fra `data-variant`. |
-| `.fs-card__title` | Overskriften inne i kortet |
+| `.lt-card` | The card itself. The variant comes from `data-variant`. |
+| `.lt-card__title` | The heading inside the card |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
-| `--fs-card-padding` | `var(--fs-spacing-4)` |
-| `--fs-card-radius` | `var(--fs-spacing-2)` |
+| `--lt-card-padding` | `var(--lt-spacing-4)` |
+| `--lt-card-radius` | `var(--lt-spacing-2)` |
 
-Et eksempel. Et kort som bærer en hel seksjon tåler mer luft enn et som står i en liste:
+An example. A card that carries a whole section can take more space than one in a list:
 
-<Eksempel stiler={["card", "heading", "paragraph"]} layout="rad" egenCss={`
-.luftig-kort {
-	--fs-card-padding: var(--fs-spacing-6);
+<Example styles={["card", "heading", "paragraph"]} layout="row" customCss={`
+.roomy-card {
+	--lt-card-padding: var(--lt-spacing-6);
 }
-`} kode={`
-<div class="fs-card">
-  <h3 class="fs-heading" data-size="s">Standard</h3>
-  <p class="fs-paragraph">Luften som følger med pakken.</p>
+`} code={`
+<div class="lt-card">
+  <h3 class="lt-heading" data-size="s">Default</h3>
+  <p class="lt-paragraph">The spacing that comes with the package.</p>
 </div>
 
-<div class="fs-card luftig-kort">
-  <h3 class="fs-heading" data-size="s">Luftig</h3>
-  <p class="fs-paragraph">Samme markup, én klasse mer.</p>
+<div class="lt-card roomy-card">
+  <h3 class="lt-heading" data-size="s">Roomy</h3>
+  <p class="lt-paragraph">Same markup, one more class.</p>
 </div>
 `} />
 
-Se [Tilpasning](../../tilpasning/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
-## Tilgjengelighet
+## Accessibility
 
-- Overskriften i kortet skal være et ekte overskriftselement, og på riktig nivå for siden. Klassen setter størrelsen, vekten og linjeavstanden, ikke nivået.
-- Er kortene en liste, marker dem som en liste med `<ul>` og `<li>`. Da sier skjermleseren hvor mange det er og hvor i rekken brukeren er.
-- Ikke skjul viktig informasjon bak hover. Den finnes ikke på berøringsskjerm.
-- Rekkefølgen i markupen er rekkefølgen tastaturet følger. Flytter du noe visuelt med CSS, flytter du ikke fokus.
+- The heading in the card should be a real heading element, at the right level for the page. The class sets the size, weight and line height, not the level.
+- If the cards are a list, mark them up as a list with `<ul>` and `<li>`. The screen reader then says how many there are and where in the list the user is.
+- Do not hide important information behind hover. It does not exist on a touch screen.
+- The order in the markup is the order the keyboard follows. Moving something visually with CSS does not move focus.

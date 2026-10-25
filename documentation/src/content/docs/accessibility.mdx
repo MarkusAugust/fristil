@@ -1,0 +1,111 @@
+---
+title: Accessibility
+description: What LO-TEK handles centrally, what is checked by tests, and what you have to do yourself.
+---
+
+LO-TEK promises that accessibility is solved in one place, so each app does not have to solve it again. This page says what the promise covers, and where it ends.
+
+## What is checked
+
+| What | How |
+| --- | --- |
+| Contrast | Every colour pair is checked against WCAG AA, in both the light and the dark theme |
+| The components | axe against WCAG 2.1 level A and AA, in Chromium, Firefox and WebKit |
+| The documentation | axe against every built page, in both themes |
+| The wiring in form fields | One implementation, shared by `lt.field()` and `<lt-field>` |
+| Target size | The site navigation keeps 24 pixels, and that is tested. The other components have no such test yet |
+
+The tests run in three browsers because the components build on the browser's own APIs, and those are exactly what behaves differently.
+
+## High contrast mode
+
+Windows high contrast replaces the colours on the page with the user's own set. We have tested what happens in the mode:
+
+| Survives | Disappears |
+| --- | --- |
+| System colours such as `Highlight` and `CanvasText` | Custom colours, which are overridden |
+| Borders, and their width | Gradients |
+| Masks and data URL images | `box-shadow` |
+
+That affects the controls that show their state with colour or a gradient. Without countermeasures, a checked box looks empty, and a switch looks the same in both positions.
+
+| Component | What the system does |
+| --- | --- |
+| [Checkbox](../components/checkbox/), [Radio](../components/radio/), [Switch](../components/switch/), [Select](../components/select/) | Falls back to the browser's own rendering, which is correct in every theme the user can pick |
+| [Toggle Group](../components/toggle-group/), [Tag](../components/tag/), [Pagination](../components/pagination/), [Suggestion](../components/suggestion/) | Shows the selection with `Highlight` and `HighlightText` |
+| [Tabs](../components/tabs/) | Marks the selected tab with `Highlight` on the edge and the text |
+| [Tooltip](../components/tooltip/) | Gets a border, so the bubble does not float over the content |
+| [Spinner](../components/spinner/) | Marks one edge with `Highlight`, so the ring still has a point |
+| [Progress](../components/progress/) | Fills with `Highlight` inside a border in `CanvasText`. The indeterminate stripe is drawn in `Highlight` on `Canvas`, with `forced-color-adjust: none`, since a gradient would otherwise disappear |
+| [Search](../components/search/) | Removes the icon, which has its colour painted into the image, and gives the space back |
+| [Input](../components/input/) with a date | Removes the icon and shows the browser's own calendar button instead |
+
+The switch loses its shape in the mode and becomes a plain checkbox. `role="switch"` is still there, so it is announced as on and off.
+
+**If you write your own CSS**, the same applies there: colours you set are overridden. If you need to show that something is selected, use the system colours, which get through:
+
+```css
+@media (forced-colors: active) {
+	.my-selected-row {
+		background-color: Highlight;
+		color: HighlightText;
+	}
+}
+```
+
+`forced-color-adjust: none` exists, but takes away the theme the user has chosen. Use it only when nothing else carries the meaning.
+
+## Reduced motion
+
+If the user asks for reduced motion in their system settings, the system tones itself down:
+
+| Component | What happens |
+| --- | --- |
+| [Switch](../components/switch/) | Changes state without sliding |
+| [Spinner](../components/spinner/) | Spins more slowly. It does not stop, because an indicator that stands still no longer says that something is going on. |
+| [Skeleton](../components/skeleton/) | Stands still, without shimmer |
+| [Skip Link](../components/skip-link/) | Appears without sliding |
+| [Tooltip](../components/tooltip/) | Appears without a transition |
+| [Progress](../components/progress/) | The fill does not slide forward, and the indeterminate stripe moves more slowly, for the same reason as the spinner |
+| [Select](../components/select/) with `data-picker="styled"` | The list opens and the arrow turns, without a transition |
+
+[Error Summary](../components/error-summary/) has no rule of its own. When the user follows a link in the box, Error Summary scrolls to the field without setting the speed itself, so the page's `scroll-behavior` decides. If the page has `scroll-behavior: smooth`, you should turn it off under `prefers-reduced-motion: reduce`.
+
+## Narrow screens
+
+A component should never become wider than the space it gets. If it does, the whole page can be dragged sideways, and content ends up beyond the edge.
+
+| Component | What happens on a narrow screen |
+| --- | --- |
+| [Button](../components/button/) | The text wraps rather than bursting the box |
+| [Pagination](../components/pagination/), [Breadcrumbs](../components/breadcrumbs/), [Toggle Group](../components/toggle-group/), [Tabs](../components/tabs/) | The rows wrap onto several lines |
+| [Table](../components/table/) | Scrolls sideways in `.lt-table-scroll`, which you put around it |
+| [Dialog](../components/dialog/), [Popover](../components/popover/), [Toast](../components/toast/), [Session Timeout](../components/session-timeout/) | The width is limited by the screen, not just by a fixed value |
+
+Two tests keep this in place. `narrow-screen.browser.test.ts` puts each component in a 320 pixel box and requires that nothing sticks out. `check-mobile.ts` opens every page of the documentation at 375 pixels and requires that the page cannot be dragged sideways.
+
+## Right to left
+
+The components use logical properties, such as `padding-inline-start` and `inset-inline-end`, and flip by themselves when the document runs from right to left:
+
+```html
+<html lang="ar" dir="rtl">
+```
+
+`background-position` has no logical variant. The four places that draw something in the background, namely the date field, the search field, the select's arrow and the knob in the switch, are therefore flipped by hand with `:dir(rtl)`. It is tested in all three browsers that the switch knob changes side and so means the same in both directions.
+
+The text content is yours. The system flips the layout, not the language.
+
+## What you have to do yourself
+
+The system cannot solve everything centrally. This is up to you:
+
+- **The order of the markup.** The keyboard follows the document. If you move something visually with CSS, you do not move focus.
+- **Heading levels.** `lt.heading({ size })` only sets the size. The level has to follow the structure of the page.
+- **The text.** An error message that says "Invalid value" is technically correct and practically useless.
+- **Focus after something happens.** If an error, a new panel or a new page appears, focus has to go there. [Error Summary](../components/error-summary/) does it for forms.
+- **Images and icons you add yourself.** They need text, or `aria-hidden="true"` if they are decoration.
+
+## When you find something
+
+axe catches contrast, missing labels and wrong use of `aria-*`. It does not catch focus handling, order or whether the text makes sense. If you find something that does not work with a keyboard or a screen reader, it is a bug in the system, not something you should work around.

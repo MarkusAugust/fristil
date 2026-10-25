@@ -1,0 +1,168 @@
+import { beforeAll, describe, expect, it } from "vitest"
+import { dialog } from "./components/frame/dialog/dialog"
+import { defineLtDialog } from "./components/frame/dialog/lt-dialog"
+import { defineLtField } from "./components/frame/field/lt-field"
+import { defineLtPopover } from "./components/frame/popover/lt-popover"
+import { popover } from "./components/frame/popover/popover"
+import { defineLtSuggestion } from "./components/frame/suggestion/lt-suggestion"
+import { suggestion } from "./components/frame/suggestion/suggestion"
+import { defineLtTabs } from "./components/frame/tabs/lt-tabs"
+import { tabs } from "./components/frame/tabs/tabs"
+import { monter, ventPaTegning } from "./testing/a11y"
+
+/**
+ * At en komponent ikke skriver i ring.
+ *
+ * Komponentene observerer de attributtene de selv setter, for å kunne sette
+ * dem tilbake etter en patch. Skriver en av dem en verdi som alt står der,
+ * teller det som en endring, observatøren kaller seg selv, og den skriver på
+ * nytt. Testkjøringen henger da uten feilmelding, og det er den verste måten
+ * å feile på: ingen stakksporing, ingen påstand, bare stillhet.
+ *
+ * Testen her gjør det brukeren gjør, lar det falle til ro, og teller så
+ * mutasjoner over noen tegninger. Står tallet på null, har komponenten
+ * sluttet å skrive.
+ *
+ * Den fanger en komponent som skriver litt for mye, men ikke en som skriver
+ * i ring: da henger kjøringen her også. Selve regelen håndheves derfor av
+ * `scripts/check-writes.ts`, som leser kilden og feiler på sekunder.
+ */
+
+const attr = (verdier: Record<string, unknown>) =>
+  Object.entries(verdier)
+    .map(([navn, verdi]) => (verdi === true ? navn : `${navn}="${verdi}"`))
+    .join(" ")
+
+/** Teller mutasjoner i et undertre over fire tegninger. */
+async function mutasjonerEtterRo(rot: Element): Promise<number> {
+  await ventPaTegning()
+  await ventPaTegning()
+
+  let antall = 0
+  const observatør = new MutationObserver((poster) => {
+    antall += poster.length
+  })
+  observatør.observe(rot, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    characterData: true,
+  })
+
+  for (let n = 0; n < 4; n += 1) await ventPaTegning()
+  observatør.disconnect()
+  return antall
+}
+
+describe("komponentene faller til ro", () => {
+  beforeAll(() => {
+    defineLtField()
+    defineLtTabs()
+    defineLtPopover()
+    defineLtSuggestion()
+    defineLtDialog()
+  })
+
+  it("feltet, etter at koblingen er satt", async () => {
+    const flate = monter(`
+      <lt-field>
+        <label class="lt-label" for="ro-epost" data-required="symbol">E-post</label>
+        <input class="lt-input" id="ro-epost" type="email" />
+        <p class="lt-help-text">Vi sender aldri spam.</p>
+        <p class="lt-error-text">Skriv en gyldig adresse.</p>
+      </lt-field>
+    `)
+
+    expect(await mutasjonerEtterRo(flate)).toBe(0)
+  })
+
+  it("fanene, etter at brukeren har valgt", async () => {
+    const FANER = tabs({
+      id: "sak",
+      keys: ["oversikt", "vedlegg"],
+      label: "Saken",
+    })
+    const flate = monter(`
+      <lt-tabs>
+        <ul ${attr(FANER.list)}>
+          <li><a ${attr(FANER.tabs[0])}>Oversikt</a></li>
+          <li><a ${attr(FANER.tabs[1])}>Vedlegg</a></li>
+        </ul>
+        <section ${attr(FANER.panels[0])}><h2 ${attr(FANER.headings[0])}>Oversikt</h2>Sammendrag</section>
+        <section ${attr(FANER.panels[1])}><h2 ${attr(FANER.headings[1])}>Vedlegg</h2>Filer</section>
+      </lt-tabs>
+    `)
+    await ventPaTegning()
+
+    const lenker = [...flate.querySelectorAll("[role='tab']")] as HTMLElement[]
+    lenker[1].click()
+
+    expect(await mutasjonerEtterRo(flate)).toBe(0)
+  })
+
+  it("sprettoppvinduet, etter at det er åpnet", async () => {
+    const SPRETT = popover({ id: "meny" })
+    const flate = monter(`
+      <lt-popover ${attr(SPRETT.host)}>
+        <button ${attr(SPRETT.trigger)} class="lt-button">Handlinger</button>
+        <ul ${attr(SPRETT.panel)}><li>Arkiver</li></ul>
+      </lt-popover>
+    `)
+    await ventPaTegning()
+
+    const vindu = flate.querySelector("lt-popover") as HTMLElement & {
+      show(): void
+    }
+    vindu.show()
+
+    expect(await mutasjonerEtterRo(flate)).toBe(0)
+  })
+
+  it("forslagsfeltet, etter at lista er åpnet og et alternativ markert", async () => {
+    const FORSLAG = suggestion({ id: "kommune", keys: ["a", "b"] })
+    const flate = monter(`
+      <lt-suggestion>
+        <label ${attr(FORSLAG.label)}>Kommune</label>
+        <div>
+          <input ${attr(FORSLAG.control)} name="kommune" />
+          <ul ${attr(FORSLAG.list)}>
+            <li ${attr(FORSLAG.options[0])}>Bergen</li>
+            <li ${attr(FORSLAG.options[1])}>Bodø</li>
+          </ul>
+          <p ${attr(FORSLAG.empty)}>Ingen treff</p>
+          <span ${attr(FORSLAG.status)}></span>
+        </div>
+      </lt-suggestion>
+    `)
+    await ventPaTegning()
+
+    const kontroll = flate.querySelector("input") as HTMLInputElement
+    kontroll.focus()
+    kontroll.dispatchEvent(new Event("input", { bubbles: true }))
+    kontroll.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+    )
+
+    expect(await mutasjonerEtterRo(flate)).toBe(0)
+  })
+
+  it("dialogen, etter at den er åpnet", async () => {
+    const BOKS = dialog({ titleId: "tittel", open: true })
+    const flate = monter(`
+      <lt-dialog ${attr(BOKS.host)}>
+        <dialog ${attr(BOKS.dialog)}>
+          <h2 ${attr(BOKS.title)}>Vedtaket er registrert</h2>
+          <div ${attr(BOKS.body)}><p>Saken er ferdigbehandlet.</p></div>
+          <form method="dialog" ${attr(BOKS.footer)}>
+            <button class="lt-button" value="lukk">Lukk</button>
+          </form>
+        </dialog>
+      </lt-dialog>
+    `)
+
+    expect(await mutasjonerEtterRo(flate)).toBe(0)
+
+    const boks = flate.querySelector("dialog") as HTMLDialogElement
+    boks.close("lukk")
+  })
+})

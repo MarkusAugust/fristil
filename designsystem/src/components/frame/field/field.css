@@ -1,0 +1,17 @@
+@import "../../css/label/label.css";
+@import "../../css/input/input.css";
+@import "../../css/textarea/textarea.css";
+@import "../../css/select/select.css";
+@import "../../css/help-text/help-text.css";
+@import "../../css/error-text/error-text.css";
+
+@layer lotek {
+  /* A web component is `display: inline` until something says otherwise,
+     and `<lt-field>` was the only one that wraps other elements without
+     saying so. The children are blocks, so it looked right until someone
+     gave the element a margin or put it in a grid. `<lt-suggestion>` has
+     always said the same about itself. */
+  lt-field {
+    display: block;
+  }
+}

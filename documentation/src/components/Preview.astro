@@ -1,48 +1,48 @@
 ---
-import accordion from "@fristil/designsystem/accordion.css?inline"
-import alert from "@fristil/designsystem/alert.css?inline"
-import avatar from "@fristil/designsystem/avatar.css?inline"
-import badge from "@fristil/designsystem/badge.css?inline"
-import breadcrumbs from "@fristil/designsystem/breadcrumbs.css?inline"
-import button from "@fristil/designsystem/button.css?inline"
-import card from "@fristil/designsystem/card.css?inline"
-import checkbox from "@fristil/designsystem/checkbox.css?inline"
-import connectionStatus from "@fristil/designsystem/connection-status.css?inline"
-import dialog from "@fristil/designsystem/dialog.css?inline"
-import divider from "@fristil/designsystem/divider.css?inline"
-import errorSummary from "@fristil/designsystem/error-summary.css?inline"
-import errorText from "@fristil/designsystem/error-text.css?inline"
-import field from "@fristil/designsystem/field.css?inline"
-import fieldset from "@fristil/designsystem/fieldset.css?inline"
-import fileUpload from "@fristil/designsystem/file-upload.css?inline"
-import heading from "@fristil/designsystem/heading.css?inline"
-import helpText from "@fristil/designsystem/help-text.css?inline"
-import icon from "@fristil/designsystem/icon.css?inline"
-import input from "@fristil/designsystem/input.css?inline"
-import label from "@fristil/designsystem/label.css?inline"
-import link from "@fristil/designsystem/link.css?inline"
-import list from "@fristil/designsystem/list.css?inline"
-import pagination from "@fristil/designsystem/pagination.css?inline"
-import paragraph from "@fristil/designsystem/paragraph.css?inline"
-import popover from "@fristil/designsystem/popover.css?inline"
-import progress from "@fristil/designsystem/progress.css?inline"
-import radio from "@fristil/designsystem/radio.css?inline"
-import search from "@fristil/designsystem/search.css?inline"
-import select from "@fristil/designsystem/select.css?inline"
-import sessionTimeout from "@fristil/designsystem/session-timeout.css?inline"
-import skeleton from "@fristil/designsystem/skeleton.css?inline"
-import skipLink from "@fristil/designsystem/skip-link.css?inline"
-import spinner from "@fristil/designsystem/spinner.css?inline"
-import srOnly from "@fristil/designsystem/sr-only.css?inline"
-import suggestion from "@fristil/designsystem/suggestion.css?inline"
-import switchCss from "@fristil/designsystem/switch.css?inline"
-import table from "@fristil/designsystem/table.css?inline"
-import tabs from "@fristil/designsystem/tabs.css?inline"
-import tag from "@fristil/designsystem/tag.css?inline"
-import textarea from "@fristil/designsystem/textarea.css?inline"
-import toast from "@fristil/designsystem/toast.css?inline"
-import toggleGroup from "@fristil/designsystem/toggle-group.css?inline"
-import tooltip from "@fristil/designsystem/tooltip.css?inline"
+import accordion from "@lo-tek/interfaces/accordion.css?inline"
+import alert from "@lo-tek/interfaces/alert.css?inline"
+import avatar from "@lo-tek/interfaces/avatar.css?inline"
+import badge from "@lo-tek/interfaces/badge.css?inline"
+import breadcrumbs from "@lo-tek/interfaces/breadcrumbs.css?inline"
+import button from "@lo-tek/interfaces/button.css?inline"
+import card from "@lo-tek/interfaces/card.css?inline"
+import checkbox from "@lo-tek/interfaces/checkbox.css?inline"
+import connectionStatus from "@lo-tek/interfaces/connection-status.css?inline"
+import dialog from "@lo-tek/interfaces/dialog.css?inline"
+import divider from "@lo-tek/interfaces/divider.css?inline"
+import errorSummary from "@lo-tek/interfaces/error-summary.css?inline"
+import errorText from "@lo-tek/interfaces/error-text.css?inline"
+import field from "@lo-tek/interfaces/field.css?inline"
+import fieldset from "@lo-tek/interfaces/fieldset.css?inline"
+import fileUpload from "@lo-tek/interfaces/file-upload.css?inline"
+import heading from "@lo-tek/interfaces/heading.css?inline"
+import helpText from "@lo-tek/interfaces/help-text.css?inline"
+import icon from "@lo-tek/interfaces/icon.css?inline"
+import input from "@lo-tek/interfaces/input.css?inline"
+import label from "@lo-tek/interfaces/label.css?inline"
+import link from "@lo-tek/interfaces/link.css?inline"
+import list from "@lo-tek/interfaces/list.css?inline"
+import pagination from "@lo-tek/interfaces/pagination.css?inline"
+import paragraph from "@lo-tek/interfaces/paragraph.css?inline"
+import popover from "@lo-tek/interfaces/popover.css?inline"
+import progress from "@lo-tek/interfaces/progress.css?inline"
+import radio from "@lo-tek/interfaces/radio.css?inline"
+import search from "@lo-tek/interfaces/search.css?inline"
+import select from "@lo-tek/interfaces/select.css?inline"
+import sessionTimeout from "@lo-tek/interfaces/session-timeout.css?inline"
+import skeleton from "@lo-tek/interfaces/skeleton.css?inline"
+import skipLink from "@lo-tek/interfaces/skip-link.css?inline"
+import spinner from "@lo-tek/interfaces/spinner.css?inline"
+import srOnly from "@lo-tek/interfaces/sr-only.css?inline"
+import suggestion from "@lo-tek/interfaces/suggestion.css?inline"
+import switchCss from "@lo-tek/interfaces/switch.css?inline"
+import table from "@lo-tek/interfaces/table.css?inline"
+import tabs from "@lo-tek/interfaces/tabs.css?inline"
+import tag from "@lo-tek/interfaces/tag.css?inline"
+import textarea from "@lo-tek/interfaces/textarea.css?inline"
+import toast from "@lo-tek/interfaces/toast.css?inline"
+import toggleGroup from "@lo-tek/interfaces/toggle-group.css?inline"
+import tooltip from "@lo-tek/interfaces/tooltip.css?inline"
 
 const STILARK = {
   alert,
@@ -94,71 +94,71 @@ const STILARK = {
 export type Stilark = keyof typeof STILARK
 
 interface Props {
-  /** Stilarkene eksempelet trenger, de samme du ville importert i en app. */
-  stiler?: Stilark[]
+  /** The stylesheets the example needs, the same ones you would import in an app. */
+  styles?: Stilark[]
   /**
-   * `rad` legger innholdet side om side, `stabel` under hverandre.
-   * `flyt` er vanlig blokkflyt, der margene slås sammen slik de gjør på en
-   * ekte side. I `stabel` er flaten en flex-kolonne, og der legges margene
-   * og mellomrommet oppå hverandre.
+   * `rad` lays the content out side by side, `stabel` one below the other.
+   * `flow` is ordinary block flow, where margins collapse as they do on a
+   * real page. In `stabel` the surface is a flex column, and there the
+   * margins and the gap add up.
    */
-  layout?: "rad" | "stabel" | "flyt"
-  /** Valgfri maksbredde, for eksempel "34rem". */
+  layout?: "row" | "stack" | "flow"
+  /** Optional maximum width, for example "34rem". */
   maxWidth?: string
-  /** Id på vertselementet, for demoer som trenger å finne fram med skript. */
+  /** Id of the host element, for demos that need to find their way in with script. */
   id?: string
   /**
-   * CSS som legges sist i skyggerota.
+   * CSS added last in the shadow root.
    *
-   * To bruk: utility-klasser kompilert av Tailwind, og tilpasning som bare
-   * gjelder visningen, som plass til en linje som legger seg øverst i boksen.
-   * Det siste er alternativet til et `style=`-attributt i eksempelet, og skal
-   * alltid ha en kommentar som sier at leseren ikke trenger det.
+   * Two uses: utility classes compiled by Tailwind, and customising that
+   * applies only to the preview, such as room for a bar that sits at the top
+   * of the box. The latter is the alternative to a `style=` attribute in the
+   * example, and must always have a comment saying the reader does not need it.
    */
-  ekstraCss?: string
+  extraCss?: string
   /**
-   * Hold `position: fixed` inne i boksen.
+   * Keep `position: fixed` inside the box.
    *
-   * Noen komponenter fester innholdet sitt til vinduet, som linja fra
-   * `<fs-connection-status>` øverst og meldingene fra `<fs-toast>` i hjørnet.
-   * I en app er det riktig. I dokumentasjonen var det ikke det: leseren
-   * trykket på knappen midt i siden, og linja dukket opp i toppen av vinduet,
-   * bak den faste toppen på dokumentasjonssiden. Det så ut som at ingenting
-   * skjedde.
+   * Some components fix their content to the window, such as the bar from
+   * `<lt-connection-status>` at the top and the messages from `<lt-toast>` in
+   * the corner. In an app that is right. In the documentation it was not: the
+   * reader pressed the button in the middle of the page, and the bar appeared
+   * at the top of the window, behind the documentation site's fixed header.
+   * It looked as if nothing happened.
    */
-  fastInni?: boolean
+  fixedInside?: boolean
 }
 
 const {
-  stiler = [],
-  layout = "rad",
+  styles = [],
+  layout = "row",
   maxWidth,
   id,
-  ekstraCss,
-  fastInni = false,
+  extraCss,
+  fixedInside = false,
 } = Astro.props
 
-for (const navn of stiler) {
+for (const navn of styles) {
   if (!(navn in STILARK)) {
     throw new Error(
-      `Preview: ukjent stilark «${navn}». Gyldige: ${Object.keys(STILARK).join(", ")}`,
+      `Preview: unknown stylesheet "${navn}". Valid: ${Object.keys(STILARK).join(", ")}`,
     )
   }
 }
 
 /*
- * Forhåndsvisningen ligger i en shadow root, opprettet deklarativt av
- * nettleseren. Det er ikke pynt: uten den treffer dokumentasjonssidens CSS
- * elementene i eksempelet, og en regel som treffer <p> direkte slår den
- * arvede tekstfargen uansett spesifisitet.
+ * The preview sits in a shadow root, created declaratively by the browser.
+ * That is not decoration: without it the documentation site's CSS hits the
+ * elements in the example, and a rule that targets <p> directly beats the
+ * inherited text colour regardless of specificity.
  *
- * Isolasjonen gjør også eksempelet ærlig: det viser nøyaktig det en konsument
- * får med stilarkene under, og ingenting dokumentasjonssiden tilfeldigvis
- * gjør.
+ * The isolation also keeps the example honest: it shows exactly what a
+ * consumer gets with the stylesheets below, and nothing the documentation
+ * site happens to do.
  *
- * Flaten følger temaet. CSS-variablene settes på :root av tokens.css og arves
- * inn gjennom skyggegrensen, så både lyst og mørkt tema slår gjennom uten at
- * noe gjentas her.
+ * The surface follows the theme. The CSS variables are set on :root by
+ * tokens.css and inherited through the shadow boundary, so both light and
+ * dark themes come through without anything being repeated here.
  */
 const stilark = [
   `
@@ -166,59 +166,60 @@ const stilark = [
 		display: block;
 	}
 
-	.flate {
+	.surface {
 		display: flex;
-		gap: var(--fs-spacing-3);
-		padding: var(--fs-spacing-6);
-		max-width: var(--fs-preview-max-width, none);
-		background: var(--fs-color-neutral-canvas);
-		color: var(--fs-color-neutral-text-strong);
-		border: 1px solid var(--fs-color-neutral-border-subtle);
-		border-radius: var(--fs-spacing-1);
+		gap: var(--lt-spacing-3);
+		padding: var(--lt-spacing-6);
+		max-width: var(--lt-preview-max-width, none);
+		background: var(--lt-color-neutral-canvas);
+		color: var(--lt-color-neutral-text-strong);
+		border: 1px solid var(--lt-color-neutral-border-subtle);
+		border-radius: var(--lt-spacing-1);
 		font-family: inherit;
-		font-size: var(--fs-font-size-m);
+		font-size: var(--lt-font-size-m);
 		line-height: 1.6;
 	}
 
-	/* Bare for visningen. Layout-inneslutning gjør boksen til utgangspunktet
-	   for et fastposisjonert barn, slik at leseren ser resultatet der hun
-	   trykket framfor i toppen av vinduet. En konsument trenger ikke dette,
-	   og skal ikke kopiere det. */
-	.flate[data-fast-inni] {
+	/* Only for the preview. Layout containment makes the box the containing
+	   block for a fixed-position child, so the reader sees the result where
+	   they pressed rather than at the top of the window. A consumer does not
+	   need this, and should not copy it. */
+	.surface[data-fast-inni] {
 		contain: layout;
 	}
 
-	.flate[data-layout="rad"] {
+	.surface[data-layout="row"] {
 		flex-wrap: wrap;
 		align-items: center;
 	}
 
-	.flate[data-layout="stabel"] {
+	.surface[data-layout="stack"] {
 		flex-direction: column;
 		align-items: stretch;
 	}
 
-	.flate[data-layout="flyt"] {
+	.surface[data-layout="flow"] {
 		display: block;
 	}
 
-	/* Bevisst ingen reset her. Flaten skal vise nøyaktig det en konsument får
-	   med stilarkene under og nettleserens egne standardverdier. Ser noe rart
-	   ut, er det komponenten som mangler noe, ikke forhåndsvisningen. */
+	/* Deliberately no reset here. The surface must show exactly what a
+	   consumer gets with the stylesheets below and the browser's own
+	   defaults. If something looks odd, it is the component that is missing
+	   something, not the preview. */
 	`,
-  ...stiler.map((navn) => STILARK[navn]),
-  ekstraCss ?? "",
+  ...styles.map((navn) => STILARK[navn]),
+  extraCss ?? "",
 ].join("\n")
 ---
 
-<div class="fs-preview not-content" id={id}>
+<div class="lt-preview not-content" id={id}>
 	<template shadowrootmode="open">
 		<style set:html={stilark}></style>
 		<div
-			class="flate"
+			class="surface"
 			data-layout={layout}
-			data-fast-inni={fastInni ? "" : undefined}
-			style={maxWidth ? `--fs-preview-max-width: ${maxWidth}` : undefined}
+			data-fast-inni={fixedInside ? "" : undefined}
+			style={maxWidth ? `--lt-preview-max-width: ${maxWidth}` : undefined}
 		>
 			<slot />
 		</div>

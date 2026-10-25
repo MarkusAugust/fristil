@@ -1,0 +1,284 @@
+---
+/**
+ * The page skeleton as a real page, not a drawing of one.
+ *
+ * The pattern is about landmarks, heading levels and the skip link, and it
+ * cannot be shown in a box inside a documentation page: the skip link must be
+ * the first thing in `<body>`, and `<main>` can only exist once per page. So
+ * the demo has its own address, shown in a frame on the pattern page and
+ * openable on its own.
+ *
+ * The page is built from LO-TEK's own components, without Tailwind, so what
+ * is here is the same as what a consumer would write.
+ */
+
+import { lt } from "@lo-tek/interfaces"
+
+import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/skip-link.css"
+import "@lo-tek/interfaces/breadcrumbs.css"
+import "@lo-tek/interfaces/heading.css"
+import "@lo-tek/interfaces/paragraph.css"
+import "@lo-tek/interfaces/link.css"
+import "@lo-tek/interfaces/button.css"
+import "@lo-tek/interfaces/card.css"
+import "@lo-tek/interfaces/badge.css"
+import "@lo-tek/interfaces/list.css"
+import "@lo-tek/interfaces/divider.css"
+
+/*
+ * The class from `lt.*` has to be pulled out and merged with the page's own
+ * by hand. If you write `{...lt.list()} class="my-class"`, Astro writes out
+ * both attributes, and the browser keeps the first. The page's own class is
+ * then lost without anything saying so, and for a long time the menu was
+ * stacked in a column for exactly that reason.
+ */
+const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<title>My cases | Example Council</title>
+		<meta
+			name="description"
+			content="Demo of the page skeleton in LO-TEK: skip link, landmarks and heading levels in a whole page."
+		/>
+	</head>
+	<body>
+		<a {...lt.skipLink()} href="#main-content">Skip to main content</a>
+
+		<header class="skeleton-top">
+			<div class="skeleton-width skeleton-top-content">
+				<a class="skeleton-mark" href="#" aria-label="Example Council, home page">
+					Example Council
+				</a>
+
+				<nav aria-label="Main menu">
+					<ul {...liste} class={`${listeKlasse} skjelett-meny`}>
+						<li><a href="#" aria-current="page">My cases</a></li>
+						<li><a href="#">Applications</a></li>
+						<li><a href="#">Contact us</a></li>
+					</ul>
+				</nav>
+			</div>
+		</header>
+
+		<div class="skeleton-width skeleton-path">
+			<nav aria-label="You are here">
+				<ol {...lt.breadcrumbs()}>
+					<li><a {...lt.link()} href="#">Home</a></li>
+					<li><a {...lt.link()} href="#">My page</a></li>
+					<li><a {...lt.link()} href="#" aria-current="page">My cases</a></li>
+				</ol>
+			</nav>
+		</div>
+
+		<main id="main-content" tabindex="-1" class="skeleton-width skeleton-main">
+			<h1 {...lt.heading({ size: "xl" })}>My cases</h1>
+
+			<p {...lt.paragraph({ variant: "lead" })}>
+				Here you find your cases, and what is happening with them.
+			</p>
+
+			<section aria-labelledby="under-review-status">
+				<h2 {...lt.heading({ size: "m" })} id="under-review-status">Under review</h2>
+
+				<ul {...liste} class={`${listeKlasse} skjelett-saker`}>
+					<li>
+						<article {...lt.card()}>
+							<h3 class={lt.card.title}>Housing benefit application</h3>
+							<p {...lt.paragraph({ size: "small" })}>
+								Sent 4 March 2026. Case number 2026-0481.
+							</p>
+							<p><span {...lt.badge({ color: "warning" })}>Attachments missing</span></p>
+							<p>
+								<a {...lt.link()} href="#">See what is missing</a>
+							</p>
+						</article>
+					</li>
+					<li>
+						<article {...lt.card()}>
+							<h3 class={lt.card.title}>Nursery place application</h3>
+							<p {...lt.paragraph({ size: "small" })}>
+								Sent 12 February 2026. Case number 2026-0377.
+							</p>
+							<p><span {...lt.badge({ color: "success" })}>Approved</span></p>
+							<p>
+								<a {...lt.link()} href="#">See the decision</a>
+							</p>
+						</article>
+					</li>
+				</ul>
+			</section>
+
+			<hr {...lt.divider()} />
+
+			<section aria-labelledby="new-application">
+				<h2 {...lt.heading({ size: "m" })} id="new-application">New application</h2>
+				<p {...lt.paragraph()}>
+					You can apply for housing benefit every month. The deadline is the 25th.
+				</p>
+				<p><button {...lt.button()} type="button">Start a new application</button></p>
+			</section>
+		</main>
+
+		<footer class="skeleton-bottom">
+			<div class="skeleton-width">
+				<p {...lt.paragraph({ size: "small" })}>
+					Example Council, PO Box 1, Exampletown 0000. Telephone 00 00 00 00.
+				</p>
+			</div>
+		</footer>
+
+		<style is:global>
+			/*
+			 * The layout is the app's, not the design system's.
+			 *
+			 * LO-TEK provides the components and the tokens. The column width,
+			 * the space between the parts and the colour of the header and
+			 * footer belong to the page, and are therefore here. Every value is
+			 * a token, so the page follows the theme.
+			 */
+			/* The page follows the system through the tokens, so scrollbars and
+			   form controls have to follow too. LO-TEK does not set this on
+			   `:root`, because a value there would apply to the whole document,
+			   also where the package is only a guest. It is on <html>, since the
+			   window's scrollbar follows the root element. */
+			html {
+				color-scheme: light dark;
+			}
+
+			body {
+				margin: 0;
+				background: var(--lt-color-neutral-canvas);
+				color: var(--lt-color-neutral-text-strong);
+				font-family:
+					system-ui,
+					-apple-system,
+					"Segoe UI",
+					sans-serif;
+			}
+
+			.skeleton-width {
+				box-sizing: border-box;
+				/* LO-TEK has no CSS token for column width. It is the app's choice. */
+				max-inline-size: 60rem;
+				margin-inline: auto;
+				padding-inline: var(--lt-spacing-4);
+			}
+
+			/*
+			 * The header bar is the app's brand, and is therefore written without
+			 * LO-TEK's link colour. That is possible because the system's CSS is
+			 * in @layer lotek: the rules here win without !important.
+			 */
+			.skeleton-top {
+				background: var(--lt-color-accent-fill);
+				color: var(--lt-color-accent-content);
+			}
+
+			.skeleton-top-content {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				justify-content: space-between;
+				gap: var(--lt-spacing-4);
+				padding-block: var(--lt-spacing-4);
+			}
+
+			/* The colour is set, not inherited: the menu is in an `.lt-list`, which
+			   sets the text colour itself, and `inherit` would have taken it from
+			   there and given dark text on the blue surface. */
+			.skeleton-top a {
+				color: var(--lt-color-accent-content);
+				text-decoration: none;
+			}
+
+			.skeleton-top a:hover {
+				text-decoration: underline;
+			}
+
+			.skeleton-top a:focus-visible {
+				outline: 2px solid var(--lt-color-accent-content);
+				outline-offset: 3px;
+			}
+
+			.skeleton-mark {
+				font-size: var(--lt-font-size-l);
+				font-weight: 700;
+				letter-spacing: -0.01em;
+			}
+
+			.skjelett-meny {
+				display: flex;
+				flex-wrap: wrap;
+				gap: var(--lt-spacing-5);
+			}
+
+			.skjelett-meny li + li {
+				margin-block-start: 0;
+			}
+
+			/* The current page is marked with an underline, not only with colour. */
+			.skjelett-meny [aria-current="page"] {
+				text-decoration: underline;
+				text-underline-offset: 0.35em;
+				text-decoration-thickness: 2px;
+			}
+
+			.skeleton-path {
+				padding-block: var(--lt-spacing-4) 0;
+			}
+
+			.skeleton-main {
+				display: flex;
+				flex-direction: column;
+				gap: var(--lt-spacing-5);
+				padding-block: var(--lt-spacing-5) var(--lt-spacing-7);
+			}
+
+			/* The heading and the lead paragraph belong together, and sit closer to
+			   each other than to the sections below. */
+			.skeleton-main > h1 {
+				margin-block-end: calc(var(--lt-spacing-5) * -1 + var(--lt-spacing-2));
+			}
+
+			.skeleton-main section {
+				display: flex;
+				flex-direction: column;
+				gap: var(--lt-spacing-3);
+			}
+
+			.skjelett-saker {
+				display: grid;
+				gap: var(--lt-spacing-3);
+			}
+
+			.skjelett-saker li + li {
+				margin-block-start: 0;
+			}
+
+			.skeleton-bottom {
+				margin-block-start: var(--lt-spacing-6);
+				padding-block: var(--lt-spacing-5);
+				background: var(--lt-color-neutral-surface);
+				border-block-start: 1px solid var(--lt-color-neutral-border-subtle);
+			}
+
+			/* The focus outline on the main content is for the skip link, and is
+			   not shown when the user just clicks somewhere on the page. */
+			main:focus {
+				outline: none;
+			}
+
+			main:focus-visible {
+				outline: 2px solid var(--lt-color-accent-fill);
+				outline-offset: 4px;
+			}
+		</style>
+	</body>
+</html>

@@ -1,25 +1,26 @@
 /**
- * Fargeregning: sRGB, OKLCH og kontrast, som `@fristil/designsystem/farge`.
+ * Colour arithmetic: sRGB, OKLCH and contrast, as `@lo-tek/interfaces/color`.
  *
- * Temaet regnes i kjernen, skrevet i Rust (`kjerne/src/theme/color.rs`). Disse
- * fem regnestykkene er de samme, for den som vil regne selv i JavaScript, også
- * i nettleseren. Testene som måler fargene en nettleser faktisk tegner, bruker
- * dem også, og måler da kjernen mot en uavhengig utgave av formelen.
+ * The theme is computed in the core, written in Rust (`core/src/theme/color.rs`).
+ * These five calculations are the same, for anyone who wants to compute colours
+ * in JavaScript, including in the browser. The tests that check the colours a
+ * browser actually paints use them too, and so check the core against an
+ * independent implementation of the formula.
  *
- * Regningen skjer i OKLCH og ikke i HSL. I HSL betyr lyshet noe annet for hver
- * kulør: `hsl(60 100% 50%)` er knallgul og `hsl(240 100% 50%)` er nesten sort,
- * med samme tall. I OKLCH er lysheten den samme opplevde lysheten uansett
- * kulør, så kontrakten kan sette én lyshet per rolle og la den gjelde for alle
- * farger.
+ * The arithmetic is done in OKLCH, not HSL. In HSL, lightness means something
+ * different for each hue: `hsl(60 100% 50%)` is bright yellow and
+ * `hsl(240 100% 50%)` is almost black, with the same numbers. In OKLCH the
+ * lightness is the same perceived lightness whatever the hue, so the contract
+ * can set one lightness per role and apply it to every colour.
  *
- * Kontrasten regnes med WCAG 2.1 sin formel, altså den samme som testene
- * bruker, slik at kontrakten og kontrollen er enige.
+ * Contrast is computed with the WCAG 2.1 formula, the same one the tests use,
+ * so the contract and the check agree.
  */
 
 export type Rgb = { r: number; g: number; b: number }
 export type Oklch = { l: number; c: number; h: number }
 
-/** Leser `#rrggbb` eller `#rgb`. */
+/** Reads `#rrggbb` or `#rgb`. */
 export function parseHex(hex: string): Rgb {
   const clean = hex.trim().replace(/^#/, "")
   const full =
@@ -31,7 +32,7 @@ export function parseHex(hex: string): Rgb {
       : clean
 
   if (!/^[0-9a-fA-F]{6}$/.test(full)) {
-    throw new Error(`«${hex}» er ikke en gyldig heksadesimal farge`)
+    throw new Error(`"${hex}" is not a valid hexadecimal colour`)
   }
 
   return {
@@ -115,11 +116,11 @@ function outside({ r, g, b }: Rgb): boolean {
 }
 
 /**
- * Gjør en OKLCH-farge om til rgb som finnes på en skjerm.
+ * Converts an OKLCH colour to an rgb colour a screen can show.
  *
- * Ikke alle kombinasjoner av lyshet og metning kan vises i sRGB. Havner
- * fargen utenfor, dempes metningen til den er innenfor, framfor å klippe
- * kanalene hver for seg. Det siste ville endret kuløren.
+ * Not every combination of lightness and chroma can be shown in sRGB. If the
+ * colour falls outside, the chroma is reduced until it is inside, instead of
+ * clipping each channel separately. Clipping would change the hue.
  */
 export function oklchToRgb(color: Oklch): Rgb {
   const attempt = oklchToRgbRaw(color)
@@ -141,7 +142,7 @@ function luminance({ r, g, b }: Rgb): number {
   return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b)
 }
 
-/** Kontrastforholdet mellom to farger, slik WCAG 2.1 regner det. */
+/** The contrast ratio between two colours, as WCAG 2.1 computes it. */
 export function contrastRatio(a: Rgb, b: Rgb): number {
   const la = luminance(a)
   const lb = luminance(b)

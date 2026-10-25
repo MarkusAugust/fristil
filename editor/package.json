@@ -1,18 +1,18 @@
 {
-  "name": "fristil-vscode",
-  "displayName": "Fristil",
-  "description": "Fullføring, forklaringer, snippets, feilmeldinger og hurtigrettelser for Fristil-designsystemet: <fs-*>-elementene, fs-klassene og variantene deres.",
+  "name": "interfaces",
+  "displayName": "LO-TEK Interfaces",
+  "description": "Completion, hover, snippets, diagnostics and quick fixes for the LO-TEK design system: the <lt-*> elements, the lt- classes and their variants.",
   "version": "0.9.0",
-  "publisher": "Fristil",
+  "publisher": "lo-tek",
   "license": "MIT",
-  "icon": "ikon.png",
+  "icon": "icon.png",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/MarkusAugust/fristil.git",
+    "url": "https://github.com/MarkusAugust/lo-tek.git",
     "directory": "editor"
   },
-  "homepage": "https://fristil.sobernetics.no/",
+  "homepage": "https://lo-tek.sobernetics.no/",
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -26,7 +26,7 @@
     "Other"
   ],
   "keywords": [
-    "fristil",
+    "lotek",
     "designsystem",
     "web-components",
     "html",
@@ -127,9 +127,9 @@
       }
     },
     "configuration": {
-      "title": "Fristil",
+      "title": "LO-TEK",
       "properties": {
-        "fristil.languages": {
+        "lotek.languages": {
           "type": "array",
           "items": {
             "type": "string"
@@ -156,18 +156,18 @@
             "nunjucks",
             "edge"
           ],
-          "description": "Språkene, som VS Code-språk-id-er, der utvidelsen sjekker markupen og fullfører klasser og verdier. Fullføringen av <fs-*>-elementene fra VS Codes egen HTML-tjeneste gjelder bare html."
+          "description": "The languages, as VS Code language ids, in which the extension checks the markup and completes classes and values. Completion of the <lt-*> elements from VS Code's own HTML service applies only to html."
         }
       }
     }
   },
   "scripts": {
-    "build": "bun build src/extension.ts --outfile dist/extension.js --target node --format cjs --external vscode && bun build src/server.ts --outfile dist/server.js --target node --format cjs && rm -f dist/fristil-kjerne.wasm && cp ../designsystem/kjerne/fristil.wasm dist/ && mkdir -p dist/manifest && cp ../designsystem/manifest/manifest.json dist/manifest/ && cp ../designsystem/html-data.json ../designsystem/snippets.json dist/",
-    "sjekk": "bun run build && vsce package --no-dependencies --out fristil.vsix",
+    "build": "bun build src/extension.ts --outfile dist/extension.js --target node --format cjs --external vscode && bun build src/server.ts --outfile dist/server.js --target node --format cjs && rm -f dist/lotek-core.wasm && cp ../designsystem/core/lotek.wasm dist/ && mkdir -p dist/manifest && cp ../designsystem/manifest/manifest.json dist/manifest/ && cp ../designsystem/html-data.json ../designsystem/snippets.json dist/",
+    "check": "bun run build && vsce package --no-dependencies --out lotek.vsix",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
-    "@fristil/designsystem": "workspace:*",
+    "@lo-tek/interfaces": "workspace:*",
     "@types/node": "24.12.4",
     "@types/vscode": "1.90.0",
     "@vscode/test-electron": "2.5.2",

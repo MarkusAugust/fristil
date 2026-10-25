@@ -1,6 +1,6 @@
 [build]
   base = "."
-  command = "bun install && bun --filter @fristil/designsystem build && cd documentation && npx astro build"
+  command = "bun install && bun --filter @lo-tek/interfaces build && cd documentation && npx astro build"
   publish = "documentation/dist"
 
 [build.environment]

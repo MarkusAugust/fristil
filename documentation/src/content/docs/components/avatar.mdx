@@ -1,117 +1,117 @@
 ---
 title: Avatar
-description: Profilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.
+description: Profile picture or initials. A CSS component with two classes and no JavaScript.
 ---
 
-import Eksempel from "../../../components/Eksempel.astro"
+import Example from "../../../components/Example.astro"
 
-En rund flate med et bilde eller initialer. Komponenten sier ingenting om hvem personen er: det gjør teksten ved siden av, eller en tekst du gir bildet.
+A round surface with a picture or initials. The component says nothing about who the person is: the text next to it does that, or a text you give the picture.
 
-## Slik tar du den i bruk
+## How to use it
 
-<Eksempel importer={["tokens.css", "avatar.css"]}
-  stiler={["avatar"]} kode={`
-<span class="fs-avatar" data-size="small" aria-hidden="true">ON</span>
-<span class="fs-avatar" aria-hidden="true">ON</span>
-<span class="fs-avatar" data-size="large" aria-hidden="true">ON</span>
-<span class="fs-avatar" data-variant="square" aria-hidden="true">KB</span>
+<Example imports={["tokens.css", "avatar.css"]}
+  styles={["avatar"]} code={`
+<span class="lt-avatar" data-size="small" aria-hidden="true">JS</span>
+<span class="lt-avatar" aria-hidden="true">JS</span>
+<span class="lt-avatar" data-size="large" aria-hidden="true">JS</span>
+<span class="lt-avatar" data-variant="square" aria-hidden="true">KB</span>
 `}>
 <Fragment slot="ts">
 
-`fs` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
-import { fs } from "@fristil/designsystem/react"
+import { lt } from "@lo-tek/interfaces/react"
 
-<span {...fs.avatar({ size: "small" })} aria-hidden="true">ON</span>
+<span {...lt.avatar({ size: "small" })} aria-hidden="true">JS</span>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@fristil/designsystem` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
-import { fs } from "@fristil/designsystem"
+import { lt } from "@lo-tek/interfaces"
 
-const bilde = document.querySelector<HTMLElement>("#profil")
+const picture = document.querySelector<HTMLElement>("#profile")
 
-fs.setAttributes(bilde, fs.avatar({ size: "large" }))
+lt.setAttributes(picture, lt.avatar({ size: "large" }))
 ```
 
-Lista som lar bildene overlappe har ingen attributter, bare en klasse, og den ligger på funksjonen:
+The list that lets the pictures overlap has no attributes, only a class, and it hangs on the function:
 
 ```tsx
-<ul className={fs.avatar.stack}>
-  <li><span {...fs.avatar({ size: "small" })} aria-hidden="true">ON</span></li>
+<ul className={lt.avatar.stack}>
+  <li><span {...lt.avatar({ size: "small" })} aria-hidden="true">JS</span></li>
 </ul>
 ```
 
 </Fragment>
-</Eksempel>
+</Example>
 
-| Attributt | Effekt |
+| Attribute | Effect |
 | --- | --- |
-| `data-size="small"` | Til en tabellrad eller en liste |
-| *(utelatt)* | Ved siden av et navn |
-| `data-size="large"` | På en profilside |
-| `data-variant="square"` | Avrundet firkant, for logoer og virksomheter |
+| `data-size="small"` | For a table row or a list |
+| *(omitted)* | Next to a name |
+| `data-size="large"` | On a profile page |
+| `data-variant="square"` | Rounded square, for logos and organisations |
 
-## Med navn ved siden av
+## With a name next to it
 
-<Eksempel stiler={["avatar"]} kode={`
-<span class="fs-avatar" data-size="small" aria-hidden="true">ON</span>
-<span>Ola Nordmann</span>
+<Example styles={["avatar"]} code={`
+<span class="lt-avatar" data-size="small" aria-hidden="true">JS</span>
+<span>Jane Smith</span>
 `} />
 
-Står navnet der allerede, er bildet pynt. `aria-hidden="true"` hindrer at initialene leses opp som «O N» foran navnet.
+When the name is already there, the picture is decoration. `aria-hidden="true"` stops the initials being read out as "J S" before the name.
 
-Bildet og navnet er to elementer ved siden av hverandre. Hvordan de stilles opp er appens oppsett, ikke komponentens: en flex-rad med `gap`, en tabellcelle, eller hva siden ellers bruker.
+The picture and the name are two elements side by side. How they are laid out is the app's layout, not the component's: a flex row with `gap`, a table cell, or whatever else the page uses.
 
-Står bildet alene, må det si hvem det er:
+When the picture stands alone, it has to say who it is:
 
 ```html
-<span class="fs-avatar">
-  <img src="/bilder/ola.jpg" alt="Ola Nordmann" />
+<span class="lt-avatar">
+  <img src="/images/jane.jpg" alt="Jane Smith" />
 </span>
 ```
 
-## Flere bilder som overlapper
+## Several overlapping pictures
 
-<Eksempel stiler={["avatar"]} layout="stabel" maxWidth="30rem" kode={`
-<ul class="fs-avatar-stack">
-  <li><span class="fs-avatar" data-size="small" aria-hidden="true">ON</span></li>
-  <li><span class="fs-avatar" data-size="small" aria-hidden="true">KB</span></li>
-  <li><span class="fs-avatar" data-size="small" aria-hidden="true">MH</span></li>
+<Example styles={["avatar"]} layout="stack" maxWidth="30rem" code={`
+<ul class="lt-avatar-stack">
+  <li><span class="lt-avatar" data-size="small" aria-hidden="true">JS</span></li>
+  <li><span class="lt-avatar" data-size="small" aria-hidden="true">KB</span></li>
+  <li><span class="lt-avatar" data-size="small" aria-hidden="true">MH</span></li>
 </ul>
-<p>Ola Nordmann, Kari Berg og Mats Hansen følger saken</p>
+<p>Jane Smith, Kate Brown and Mark Hill are following the case</p>
 `} />
 
-Rekkefølgen snus i CSS: det første elementet i markupen står lengst til høyre i stabelen. Navnene må stå et sted, som i teksten under: initialer er ingen identifikasjon.
+The order is reversed in CSS: the first element in the markup sits furthest to the right in the stack. The names have to be somewhere, as in the text below: initials are not identification.
 
-## Klasser du kan style
+## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.fs-avatar` | Flaten med bildet eller initialene |
+| `.lt-avatar` | The surface with the picture or the initials |
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.fs-avatar-stack` | Lista med bilder som overlapper |
+| `.lt-avatar-stack` | The list of overlapping pictures |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
-| `--fs-avatar-size` | `var(--fs-spacing-10)` |
-| `--fs-avatar-radius` | `var(--fs-spacing-1)` |
-| `--fs-avatar-stack-overlap` | `calc(var(--fs-spacing-2) * -1)` |
+| `--lt-avatar-size` | `var(--lt-spacing-10)` |
+| `--lt-avatar-radius` | `var(--lt-spacing-1)` |
+| `--lt-avatar-stack-overlap` | `calc(var(--lt-spacing-2) * -1)` |
 
-`--fs-avatar-size` gjelder standardstørrelsen. `data-size="small"` og `data-size="large"` setter sin egen.
+`--lt-avatar-size` applies to the default size. `data-size="small"` and `data-size="large"` set their own.
 
-`--fs-avatar-radius` gjelder bare firkantvarianten. Den runde er alltid rund. Se [Tilpasning](../../tilpasning/).
+`--lt-avatar-radius` applies only to the square variant. The round one is always round. See [Customising](../../customising/).
 
-## Tilgjengelighet
+## Accessibility
 
-- Initialer er ingen identifikasjon. To personer kan ha de samme, så navnet må stå et sted.
-- Et `<img>` uten `alt` leses opp som filnavnet. Er bildet pynt, skriv `alt=""`.
-- Ikke la fargen på flaten bety noe. Den er tilfeldig for den som ikke ser den.
+- Initials are not identification. Two people can have the same ones, so the name has to be somewhere.
+- An `<img>` without `alt` is read out as the file name. If the picture is decoration, write `alt=""`.
+- Do not let the colour of the surface mean anything. It is arbitrary to anyone who cannot see it.

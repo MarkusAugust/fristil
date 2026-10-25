@@ -5,16 +5,16 @@ import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "astro/config"
 import remarkGfm from "remark-gfm"
 import pakke from "../designsystem/package.json" with { type: "json" }
-import { DELINGSBILDE, metaAttributter } from "./src/delingsbilde.mjs"
-import { markdownsider } from "./src/plugins/markdownsider.mjs"
-import { rehypeTabellrull } from "./src/plugins/rehype-tabellrull.mjs"
-import { remarkVersjon } from "./src/plugins/remark-versjon.mjs"
+import { markdownsider } from "./src/plugins/markdown-pages.mjs"
+import { rehypeTabellrull } from "./src/plugins/rehype-table-scroll.mjs"
+import { remarkVersjon } from "./src/plugins/remark-version.mjs"
+import { DELINGSBILDE, metaAttributter } from "./src/share-image.mjs"
 
 /*
- * Sitemapen tar bare med HTML-sidene av seg selv. `llms.txt` og
- * regelbøkene er nettopp det en agent leter etter, så de føres opp her.
- * Regelbøkene leses av mappa, slik at en ny bok kommer med uten at noen
- * husker det.
+ * The sitemap only includes the HTML pages by itself. `llms.txt` and the
+ * rulebooks are exactly what an agent looks for, so they are listed here. The
+ * rulebooks are read from the folder, so a new one is included without anyone
+ * remembering it.
  */
 const BASE = pakke.homepage.replace(/\/$/, "")
 const AGENTFILER = [
@@ -27,17 +27,17 @@ const AGENTFILER = [
 // https://astro.build/config
 export default defineConfig({
   /*
-   * Adressen står i `homepage` i pakken, som `llms.txt` og `robots.txt` også
-   * leser. Med `site` satt lager Starlight sitemapen selv, og den er det
-   * søkemotorer og agenter finner sidene gjennom.
+   * The address is in `homepage` in the package, which `llms.txt` and
+   * `robots.txt` also read. With `site` set, Starlight makes the sitemap
+   * itself, and that is how search engines and agents find the pages.
    */
   site: pakke.homepage,
   /*
-   * `markdown.remarkPlugins` er merket som utfaset til fordel for
-   * `markdown.processor`. Den veien virker ikke her: sidene er `.mdx`, og
-   * MDX-pipelinen leser `remarkPlugins` herfra, mens `processor` bare gjelder
-   * `.md`. Målt ved å bytte: alle tabellene kom ut som rå tekst med
-   * skilletegn. Blir stående til MDX leser prosessoren.
+   * `markdown.remarkPlugins` is marked as deprecated in favour of
+   * `markdown.processor`. That route does not work here: the pages are
+   * `.mdx`, and the MDX pipeline reads `remarkPlugins` from here, while
+   * `processor` only applies to `.md`. Tested by switching: every table came
+   * out as raw text with pipes. It stays until MDX reads the processor.
    */
   markdown: {
     remarkPlugins: [remarkGfm, remarkVersjon],
@@ -47,11 +47,11 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   integrations: [
-    // Står foran Starlight, som da lar være å legge til sin egen.
+    // Comes before Starlight, which then does not add its own.
     sitemap({ customPages: AGENTFILER }),
     startlight({
-      title: "Fristil - Dokumentasjon",
-      // Pekeren til llms.txt på hver side, for en agent som leser sidehodet.
+      title: "LO-TEK",
+      // The pointer to llms.txt on every page, for an agent that reads the page head.
       head: [
         {
           tag: "link",
@@ -63,96 +63,99 @@ export default defineConfig({
           },
         },
         /*
-         * Bildet en lenke får når den deles. Starlight skriver tittel,
-         * beskrivelse og `twitter:card` selv, men ikke noe bilde, og uten det
-         * viser X lenken uten forhåndsvisning.
+         * The image a link gets when it is shared. Starlight writes the title,
+         * description and `twitter:card` itself, but no image, and without one
+         * X shows the link with no preview.
          */
         ...DELINGSBILDE.map((tagg) => ({
           tag: "meta",
           attrs: metaAttributter(tagg),
         })),
       ],
-      // Pekeren til hver sides Markdown-utgave, som `markdownsider` skriver.
-      routeMiddleware: "./src/rutedata.ts",
+      // The pointer to each page's Markdown version, which `markdownsider` writes.
+      routeMiddleware: "./src/route-data.ts",
       defaultLocale: "root",
       locales: {
-        root: { label: "Norsk", lang: "nb" },
+        root: { label: "English", lang: "en" },
       },
       components: {
         SiteTitle: "./src/components/SiteTitle.astro",
         MarkdownContent: "./src/components/MarkdownContent.astro",
       },
-      // Valgene for Expressive Code står i `ec.config.mjs`. `<Code>` krever at
-      // de kan gjøres om til JSON når de står her, og det kan ikke et tillegg.
+      // The Expressive Code options are in `ec.config.mjs`. `<Code>` requires
+      // them to be serialisable as JSON when they are here, and a plugin is not.
       /*
-       * Tre stilark, og det er ikke en innstramming for innstrammingens skyld:
-       * de 42 komponentstilarkene som sto her ble lastet på hver av de 62
-       * sidene, og ingen av dem ble brukt av vanlig DOM noe sted.
+       * Three stylesheets, and that is not trimming for its own sake: the 42
+       * component stylesheets that were here were loaded on every one of the 62
+       * pages, and none of them was used by the plain DOM anywhere.
        *
-       * Grunnen er `Preview.astro`. Hvert levende eksempel ligger i en shadow
-       * root, og forhåndsvisningen legger selv inn nøyaktig de stilarkene
-       * `stiler`-lista oppgir, med `?inline`. Et stilark i `customCss` nådde
-       * altså aldri eksemplene det var ment for: de har sine egne kopier.
-       * Utenfor forhåndsvisningene er det bare `.fs-preview` selv som står i
-       * vanlig DOM, og den er dokumentasjonens egen klasse fra `global.css`.
+       * The reason is `Preview.astro`. Every live example sits in a shadow
+       * root, and the preview itself adds exactly the stylesheets the `stiler`
+       * list names, with `?inline`. A stylesheet in `customCss` therefore never
+       * reached the examples it was meant for: they have their own copies.
+       * Outside the previews only `.lt-preview` itself is in the plain DOM, and
+       * that is the documentation's own class from `global.css`.
        *
-       * `tokens.css` må være global. Variablene settes på `:root` og arves inn
-       * gjennom shadow-grensen, så det er den som gir forhåndsvisningene farger
-       * og avstander.
+       * `tokens.css` has to be global. The variables are set on `:root` and
+       * inherited through the shadow boundary, so it is what gives the previews
+       * their colours and spacing.
        *
-       * `button.css` står igjen, og grunnen er Vite framfor smak. Tas det ut
-       * herfra, slutter Vite å skrive stilarket i det hele tatt:
-       * `src/pages/demo/sideskjelett.astro` importerer det selv, men med så få
-       * importører havnet det ikke i noen chunk, og demosiden kom ut med
-       * uformede knapper. `scripts/sjekk-stilark.ts` fant det, og er grunnen
-       * til at den finnes.
+       * `button.css` stays, and the reason is Vite rather than taste. Take it
+       * out of here, and Vite stops writing the stylesheet at all:
+       * `src/pages/demo/page-skeleton.astro` imports it itself, but with so few
+       * importers it ended up in no chunk, and the demo page came out with
+       * unstyled buttons. `scripts/check-stylesheets.ts` found it, and is the
+       * reason that check exists.
        */
       customCss: [
         "./src/styles/global.css",
-        "@fristil/designsystem/tokens.css",
-        "@fristil/designsystem/button.css",
+        "@lo-tek/interfaces/tokens.css",
+        "@lo-tek/interfaces/button.css",
       ],
       sidebar: [
         {
-          label: "Start her",
+          label: "Start here",
           items: [
-            { label: "Introduksjon", slug: "introduksjon" },
-            { label: "Kom i gang", slug: "kom-i-gang" },
-            { label: "Rammeverk", slug: "rammeverk" },
-            { label: "Markup og oppførsel", slug: "markup-og-oppforsel" },
+            { label: "Introduction", slug: "introduction" },
+            { label: "Getting started", slug: "getting-started" },
+            { label: "Frameworks", slug: "frameworks" },
+            { label: "Markup and behaviour", slug: "markup-and-behaviour" },
             { label: "Design tokens", slug: "design-tokens" },
-            { label: "Tilpasning", slug: "tilpasning" },
+            { label: "Customising", slug: "customising" },
             { label: "Tailwind", slug: "tailwind" },
-            { label: "Tilgjengelighet", slug: "tilgjengelighet" },
-            { label: "Oversettelse", slug: "oversettelse" },
-            { label: "Eget tema", slug: "eget-tema" },
-            { label: "Typesikker bruk", slug: "typesikker-bruk" },
-            { label: "Kotlin og Java", slug: "kotlin" },
-            { label: "Editoren", slug: "editoren" },
-            { label: "Kommandolinjen", slug: "kommandolinjen" },
-            { label: "Kodeagenter", slug: "kodeagenter" },
-            { label: "Lisens og pris", slug: "lisens" },
-            { label: "Veikart", slug: "veikart" },
-            { label: "Versjonslogg", link: "/versjonslogg/" },
+            { label: "Accessibility", slug: "accessibility" },
+            { label: "Translation", slug: "translation" },
+            { label: "Your own theme", slug: "your-own-theme" },
+            { label: "Type-safe use", slug: "type-safe-use" },
+            { label: "Kotlin and Java", slug: "kotlin" },
+            { label: "The editor", slug: "the-editor" },
+            { label: "The command line", slug: "command-line" },
+            { label: "Coding agents", slug: "coding-agents" },
+            { label: "Licence and price", slug: "licence" },
+            { label: "Roadmap", slug: "roadmap" },
+            { label: "Changelog", link: "/changelog/" },
           ],
         },
         {
-          label: "Mønstre",
+          label: "Patterns",
           items: [
-            { label: "Skjema med validering", slug: "monster/skjema" },
-            { label: "Liste med filtre", slug: "monster/liste" },
-            { label: "Sideskjelett", slug: "monster/sideskjelett" },
-            { label: "Bekreft en handling", slug: "monster/bekreftelse" },
-            { label: "Dato i et skjema", slug: "monster/dato" },
-            { label: "La brukeren velge tema", slug: "monster/tema" },
-          ],
-        },
-        {
-          label: "Komponenter",
-          items: [
-            { label: "Alle komponenter", slug: "components" },
+            { label: "Form with validation", slug: "patterns/form" },
+            { label: "List with filters", slug: "patterns/list" },
+            { label: "Page skeleton", slug: "patterns/page-skeleton" },
+            { label: "Confirming an action", slug: "patterns/confirmation" },
+            { label: "A date in a form", slug: "patterns/date" },
             {
-              label: "CSS-komponenter",
+              label: "Letting the user choose a theme",
+              slug: "patterns/theme",
+            },
+          ],
+        },
+        {
+          label: "Components",
+          items: [
+            { label: "All components", slug: "components" },
+            {
+              label: "CSS components",
               items: [
                 { label: "Accordion", slug: "components/accordion" },
                 { label: "Alert", slug: "components/alert" },
@@ -192,7 +195,7 @@ export default defineConfig({
               ],
             },
             {
-              label: "Ramme",
+              label: "Frame",
               items: [
                 { label: "Dialog", slug: "components/dialog" },
                 { label: "Error Summary", slug: "components/error-summary" },
@@ -207,7 +210,7 @@ export default defineConfig({
               ],
             },
             {
-              label: "Frittstående",
+              label: "Standalone",
               items: [
                 {
                   label: "Connection Status",
@@ -220,7 +223,7 @@ export default defineConfig({
         },
       ],
     }),
-    // Etter Starlight, så sidene den leser er ferdige.
+    // After Starlight, so the pages it reads are finished.
     markdownsider(),
   ],
 })

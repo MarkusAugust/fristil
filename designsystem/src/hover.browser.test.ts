@@ -3,7 +3,7 @@
 /*
  * Hver hover som bytter bakgrunn må holde kontrasten.
  *
- * Dette er den ene feilklassen enhetstestene ikke så. `.fs-button:hover` leste
+ * Dette er den ene feilklassen enhetstestene ikke så. `.lt-button:hover` leste
  * et token som ikke finnes, og pagineringens hover vant på spesifisitet over
  * `[aria-current="page"]`, så sidetallet brukeren sto på forsvant. I begge
  * tilfellene var hviletilstanden riktig, og hver annen vaktpost grønn.
@@ -25,10 +25,10 @@ import "./components/css/radio/radio.css"
 import "./components/css/switch/switch.css"
 import "./components/css/pagination/pagination.css"
 import "./components/css/table/table.css"
-import "./components/ramme/tabs/tabs.css"
+import "./components/frame/tabs/tabs.css"
 import "./components/css/toggle-group/toggle-group.css"
-import "./components/ramme/suggestion/suggestion.css"
-import "./components/frittstaende/toast/toast.css"
+import "./components/frame/suggestion/suggestion.css"
+import "./components/standalone/toast/toast.css"
 
 type Tilfelle = {
   /** Regelen tilfellet dekker, normalisert som i sjekken nederst. */
@@ -41,73 +41,73 @@ type Tilfelle = {
 
 const TILFELLER: Tilfelle[] = [
   {
-    regel: ".fs-accordion summary:hover",
-    markup: `<details class="fs-accordion"><summary>Vilkår</summary><div class="fs-accordion__content">Tekst</div></details>`,
-    velger: ".fs-accordion summary",
+    regel: ".lt-accordion summary:hover",
+    markup: `<details class="lt-accordion"><summary>Vilkår</summary><div class="lt-accordion__content">Tekst</div></details>`,
+    velger: ".lt-accordion summary",
   },
   {
-    regel: ".fs-button:hover",
-    markup: `<button class="fs-button">Send søknaden</button>`,
-    velger: ".fs-button",
-  },
-  {
-    regel:
-      '.fs-button[data-variant="secondary"]:hover:not( :disabled, [aria-disabled="true"] )',
-    markup: `<button class="fs-button" data-variant="secondary">Avbryt</button>`,
-    velger: ".fs-button",
+    regel: ".lt-button:hover",
+    markup: `<button class="lt-button">Send søknaden</button>`,
+    velger: ".lt-button",
   },
   {
     regel:
-      '.fs-button[data-variant="ghost"]:hover:not( :disabled, [aria-disabled="true"] )',
-    markup: `<button class="fs-button" data-variant="ghost">Lukk</button>`,
-    velger: ".fs-button",
+      '.lt-button[data-variant="secondary"]:hover:not( :disabled, [aria-disabled="true"] )',
+    markup: `<button class="lt-button" data-variant="secondary">Avbryt</button>`,
+    velger: ".lt-button",
   },
   {
     regel:
-      '.fs-button[data-variant="danger"]:hover:not( :disabled, [aria-disabled="true"] )',
-    markup: `<button class="fs-button" data-variant="danger">Slett</button>`,
-    velger: ".fs-button",
+      '.lt-button[data-variant="ghost"]:hover:not( :disabled, [aria-disabled="true"] )',
+    markup: `<button class="lt-button" data-variant="ghost">Lukk</button>`,
+    velger: ".lt-button",
   },
   {
     regel:
-      '.fs-pagination a:not([aria-current="page"]):hover, .fs-pagination button:hover:not(:disabled):not([aria-current="page"])',
-    markup: `<ul class="fs-pagination"><li><a href="#">1</a></li></ul>`,
-    velger: ".fs-pagination a",
+      '.lt-button[data-variant="danger"]:hover:not( :disabled, [aria-disabled="true"] )',
+    markup: `<button class="lt-button" data-variant="danger">Slett</button>`,
+    velger: ".lt-button",
   },
   {
-    regel: '.fs-pagination [aria-current="page"]:hover',
-    markup: `<ul class="fs-pagination"><li><a href="#" aria-current="page">2</a></li></ul>`,
-    velger: ".fs-pagination a",
+    regel:
+      '.lt-pagination a:not([aria-current="page"]):hover, .lt-pagination button:hover:not(:disabled):not([aria-current="page"])',
+    markup: `<ul class="lt-pagination"><li><a href="#">1</a></li></ul>`,
+    velger: ".lt-pagination a",
   },
   {
-    regel: ".fs-table[data-hoverable] tbody tr:hover",
-    markup: `<table class="fs-table" data-hoverable><tbody><tr><td>Rad</td></tr></tbody></table>`,
-    velger: ".fs-table td",
+    regel: '.lt-pagination [aria-current="page"]:hover',
+    markup: `<ul class="lt-pagination"><li><a href="#" aria-current="page">2</a></li></ul>`,
+    velger: ".lt-pagination a",
   },
   {
-    regel: ".fs-table__sort:hover",
-    markup: `<table class="fs-table"><thead><tr><th scope="col" aria-sort="ascending"><button type="button" class="fs-table__sort">Dato</button></th></tr></thead></table>`,
-    velger: ".fs-table__sort",
+    regel: ".lt-table[data-hoverable] tbody tr:hover",
+    markup: `<table class="lt-table" data-hoverable><tbody><tr><td>Rad</td></tr></tbody></table>`,
+    velger: ".lt-table td",
   },
   {
-    regel: ".fs-toggle-group__option:hover",
-    markup: `<fieldset class="fs-toggle-group"><label class="fs-toggle-group__option"><input type="radio" name="v" /> Kart</label></fieldset>`,
-    velger: ".fs-toggle-group__option",
+    regel: ".lt-table__sort:hover",
+    markup: `<table class="lt-table"><thead><tr><th scope="col" aria-sort="ascending"><button type="button" class="lt-table__sort">Dato</button></th></tr></thead></table>`,
+    velger: ".lt-table__sort",
   },
   {
-    regel: ".fs-tabs__list a:hover",
-    markup: `<ul class="fs-tabs__list"><li><a href="#oversikt">Oversikt</a></li></ul><section class="fs-tabs__panel" id="oversikt">Oversikt</section>`,
-    velger: ".fs-tabs__list a",
+    regel: ".lt-toggle-group__option:hover",
+    markup: `<fieldset class="lt-toggle-group"><label class="lt-toggle-group__option"><input type="radio" name="v" /> Kart</label></fieldset>`,
+    velger: ".lt-toggle-group__option",
   },
   {
-    regel: ".fs-suggestion__option:hover",
-    markup: `<div><input class="fs-input" /><ul class="fs-suggestion__list"><li class="fs-suggestion__option">Bergen</li></ul></div>`,
-    velger: ".fs-suggestion__option",
+    regel: ".lt-tabs__list a:hover",
+    markup: `<ul class="lt-tabs__list"><li><a href="#oversikt">Oversikt</a></li></ul><section class="lt-tabs__panel" id="oversikt">Oversikt</section>`,
+    velger: ".lt-tabs__list a",
   },
   {
-    regel: ".fs-toast__close:hover",
-    markup: `<div class="fs-toast__message"><p>Lagret</p><button class="fs-toast__close" type="button">Lukk</button></div>`,
-    velger: ".fs-toast__close",
+    regel: ".lt-suggestion__option:hover",
+    markup: `<div><input class="lt-input" /><ul class="lt-suggestion__list"><li class="lt-suggestion__option">Bergen</li></ul></div>`,
+    velger: ".lt-suggestion__option",
+  },
+  {
+    regel: ".lt-toast__close:hover",
+    markup: `<div class="lt-toast__message"><p>Lagret</p><button class="lt-toast__close" type="button">Lukk</button></div>`,
+    velger: ".lt-toast__close",
   },
 ]
 
@@ -123,16 +123,16 @@ const TILFELLER: Tilfelle[] = [
  *
  * De ble en gang kontrollert på et tokenpar skrevet inn her. Det er fjernet:
  * paret var skrevet av for hånd, så det sa ingenting om hva CSS-en faktisk
- * gjorde, og det ene av de to var ordrett løftet «text mot egen surface» som
+ * gjorde, og det ene av de to var ordrett løftet «text on its own surface» som
  * kontrakten alt kontrollerer for hver familie. En påstand som gjentar en
  * strengere vaktpost ser ut som dekning og er støy.
  */
 const UTEN_MUS = [
-  ".fs-file-upload::file-selector-button:hover",
-  '.fs-select[data-picker="styled"] option:hover',
+  ".lt-file-upload::file-selector-button:hover",
+  '.lt-select[data-picker="styled"] option:hover',
   // Høykontrast: holder `Highlight` også under musa. Det er ingen hover-farge,
-  // og den testes i `hoeykontrast.browser.test.ts`.
-  '.fs-pagination [aria-current="page"], .fs-pagination [aria-current="page"]:hover',
+  // og den testes i `high-contrast.browser.test.ts`.
+  '.lt-pagination [aria-current="page"], .lt-pagination [aria-current="page"]:hover',
 ]
 
 /**
@@ -190,7 +190,7 @@ function monter(markup: string) {
    * i begge kopiene og lagt seg oppå den andre.
    */
   document.body.innerHTML = `
-    <div id="flate" style="background: var(--fs-color-neutral-canvas)">
+    <div id="flate" style="background: var(--lt-color-neutral-canvas)">
       <div id="under-musa" style="position: relative">${markup}</div>
       <div id="i-ro" style="position: relative">${markup}</div>
     </div>`
@@ -320,19 +320,19 @@ describe("hover slår ikke tilstanden", () => {
   beforeEach(async () => {
     document.documentElement.removeAttribute("data-theme")
     document.body.innerHTML = `
-      <style>.fs-button, .fs-checkbox, .fs-radio, .fs-switch { transition: none; }</style>
+      <style>.lt-button, .lt-checkbox, .lt-radio, .lt-switch { transition: none; }</style>
       <div id="parkering" style="inline-size: 3rem; block-size: 3rem"></div>
       <div style="padding: 2rem; display: flex; gap: 2rem; flex-wrap: wrap">
-        <button class="fs-button" data-variant="secondary" id="secondary-av" disabled>Av</button>
-        <button class="fs-button" data-variant="ghost" id="ghost-av" disabled>Av</button>
-        <button class="fs-button" data-variant="danger" id="danger-av" disabled>Av</button>
-        <input type="checkbox" class="fs-checkbox" id="boks-vanlig" />
-        <input type="checkbox" class="fs-checkbox" id="boks-ugyldig" data-state="invalid" />
-        <input type="checkbox" class="fs-checkbox" id="boks-valgt" checked />
-        <input type="checkbox" class="fs-checkbox" id="boks-av" disabled />
-        <input type="radio" class="fs-radio" id="radio-ugyldig" data-state="invalid" />
-        <input type="radio" class="fs-radio" id="radio-valgt" checked />
-        <input type="checkbox" role="switch" class="fs-switch" id="bryter-valgt" checked />
+        <button class="lt-button" data-variant="secondary" id="secondary-av" disabled>Av</button>
+        <button class="lt-button" data-variant="ghost" id="ghost-av" disabled>Av</button>
+        <button class="lt-button" data-variant="danger" id="danger-av" disabled>Av</button>
+        <input type="checkbox" class="lt-checkbox" id="boks-vanlig" />
+        <input type="checkbox" class="lt-checkbox" id="boks-ugyldig" data-state="invalid" />
+        <input type="checkbox" class="lt-checkbox" id="boks-valgt" checked />
+        <input type="checkbox" class="lt-checkbox" id="boks-av" disabled />
+        <input type="radio" class="lt-radio" id="radio-ugyldig" data-state="invalid" />
+        <input type="radio" class="lt-radio" id="radio-valgt" checked />
+        <input type="checkbox" role="switch" class="lt-switch" id="bryter-valgt" checked />
       </div>`
     // Til et eget, tomt element. `unhover(body)` flytter musa til midten av
     // `body`, altså inn i markupen over, og kunne havne på en av kontrollene.

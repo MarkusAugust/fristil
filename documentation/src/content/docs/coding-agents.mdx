@@ -1,0 +1,159 @@
+---
+title: Coding agents
+description: LO-TEK for Claude Code, GitHub Copilot and other coding agents. The rulebook comes with the package, and nothing is written to your files.
+---
+
+A coding agent that does not know LO-TEK guesses, and it guesses at the same four
+things every time: it forgets the stylesheet and writes its own CSS to "fix" that
+the button looks unstyled, it invents `lt-modal` and `data-variant="outline"`
+because they exist in other design systems, it hardcodes `#0062ba` instead of
+using a token, and it writes `invalid="false"` and believes that turns it off.
+
+LO-TEK therefore has a rulebook written for agents, with exactly those four
+things at the top.
+
+## The rulebook is in the package
+
+```bash
+npx @lo-tek/interfaces agent
+```
+
+The command writes the rulebook for *this* project to standard output. It reads
+the environment from `package.json`, and reports on standard error what it chose and why,
+so the output can be piped cleanly:
+
+```bash
+npx @lo-tek/interfaces agent > lotek.md            # to a file of your choice
+npx @lo-tek/interfaces agent --framework=datastar   # choose yourself
+```
+
+Six rulebooks, one per environment:
+
+| Name | For |
+| --- | --- |
+| `html` | plain HTML without a build step |
+| `templates` | Go, Razor, PHP, Blade, Twig, Jinja, Django, ERB, Liquid, Handlebars, Nunjucks, Edge, and HTML built as strings in Kotlin, Java, C# or Python |
+| `bundles` | Vue, Svelte, Solid, Lit, and plain TypeScript with Vite, Rollup, esbuild or webpack |
+| `react` | React |
+| `astro` | Astro |
+| `datastar` | HTML with Datastar |
+
+Vue, Svelte, Solid and Lit share `bundles`, because they do the same with
+the stylesheets, the attribute names and the registration. `--framework=svelte` still
+works, and the command says the answer was `bundles`.
+
+If the package is installed, the same file is on disk:
+
+```
+node_modules/@lo-tek/interfaces/agent/datastar.md
+```
+
+The file follows the package version. When you upgrade LO-TEK, the rulebook is updated
+at the same time, and it can never say anything different from the code beside it.
+
+## Without installing anything
+
+The most important agent has no `node_modules`. When someone is asked to "make a
+form with LO-TEK" in an empty folder, the markup is written before `npm install` has
+run, and the file in the package is invisible. That is why the same files are here, at
+stable addresses:
+
+| Address | What |
+| --- | --- |
+| [`/llms.txt`](https://lo-tek.sobernetics.no/llms.txt) | The entry point: the four rules, the check command, and links to everything else |
+| [`/agent/react.md`](https://lo-tek.sobernetics.no/agent/react.md) | The rulebook, complete. Replace `react` with your environment |
+| [`/components/button.md`](https://lo-tek.sobernetics.no/components/button.md) | Every page of the documentation as Markdown. Replace the `/` at the end of the address with `.md` |
+
+The files are byte for byte the same as the ones the package ships. They are built from `agent/`
+in the package, and a guard fails if they differ. An agent with network access
+therefore does not need to install anything to know the rules, and `npx` also works without
+the package being in the project.
+
+:::note[LO-TEK writes nothing to your files]
+`AGENTS.md`, `CLAUDE.md` and `.github/copilot-instructions.md` are yours. A
+tool that writes to them has to guess where they are, merge its text in
+between lines it did not write, and keep the copy in step with the package. None
+of those three problems arise when the rulebook stays in the package, and
+`lotek agent` never writes to a file. If you still want the rulebook in a
+file, you save it yourself with `npx @lo-tek/interfaces agent > lotek.md`.
+Then you decide where it goes.
+:::
+
+## The line you paste in
+
+The agent does not find the rulebook by itself. One line in the instruction file you
+already have is enough. Replace `react` with your environment:
+
+```md
+The project uses LO-TEK (@lo-tek/interfaces). Read the rules before you write
+markup or CSS: node_modules/@lo-tek/interfaces/agent/react.md, or
+https://lo-tek.sobernetics.no/agent/react.md if the package is not installed. Run
+`npx @lo-tek/interfaces check <file>` on markup you have written, and
+`npx @lo-tek/interfaces check <address>` on every page you have changed, with
+the app running. You are done when both answer "The markup matches LO-TEK".
+```
+
+Where it belongs:
+
+| Agent | File |
+| --- | --- |
+| Claude Code | `CLAUDE.md`, or `AGENTS.md` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Cursor, Windsurf and others | `AGENTS.md` |
+
+If you paste in nothing, not all is lost: `npx @lo-tek/interfaces check`
+tells the agent what is wrong in the markup it wrote, with file, line and
+column. It is the same check the editor runs, and it knows every
+class, every element, every attribute and every allowed value.
+
+## What is in it
+
+A rulebook is complete for one environment, and only for that one. An agent that reads
+about `className` in a project with Go templates is an agent that writes `className` in
+a Go template. Each of them has the four rules at the top, and then:
+
+- **the stylesheet**, the way it comes in in exactly this environment;
+- **all the components**, with class or element, stylesheet, attributes and
+  allowed values, so nothing has to be guessed;
+- **the tokens**, as family times role, with the names written out;
+- **the three rules for web components**, which no compiler catches;
+- **the check**, with the command and how to run it in CI or in the tests.
+
+The files are generated by the package. The component list, the attribute values, the token names and
+the builder functions are read from the code, and a guard in `bun run check` fails if a
+component is missing from one of them, if a markup example does not pass LO-TEK's own
+check, or if an import path does not exist in `exports`. A rulebook therefore
+cannot say anything different from the code.
+
+## The check is the loop
+
+An agent corrects itself when something tells it what is wrong. That is why
+the rulebook ends with the check, and why the line above asks for it to be run:
+
+```bash
+npx @lo-tek/interfaces check templates/*.html
+```
+
+One finding gives an error code, so it belongs in CI. It is made for templates and leaves
+template syntax alone: `{{ }}`, `{% %}`, `<?= ?>`, `@variable` and `<%= %>` give
+no false findings.
+
+A template cannot show whether the wiring is right, because the label and the field can be in
+separate files. The wiring is exactly what an agent most often gets wrong. That is why
+the second half of the loop is to check the page as the server sends it:
+
+```bash
+npx @lo-tek/interfaces check http://localhost:8080/form
+```
+
+Then the check also requires every `for` and `aria-describedby` to point to an id that
+exists, and every field to have a label. This works the same in every language, since
+it is the HTML that is checked. Flags and examples for tests are on
+[Command line](../command-line/).
+
+In a typed project, the types are the first check: `lt.button({ variant })`
+turns a variant that does not exist into a compile error, and if you import
+`@lo-tek/interfaces/react-jsx`, the same applies to the attributes on
+the web components. A hand-written `className` or `data-variant` is seen by neither
+of them, nor by `lotek check`, which reads `class`, not `className`,
+so use the builder functions. See [Type-safe use](../type-safe-use/).

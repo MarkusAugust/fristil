@@ -12,16 +12,16 @@ import { paragraph } from "./paragraph"
 import "../../../tokens/tokens.css"
 import "./paragraph.css"
 
-describe("fs-paragraph", () => {
+describe("lt-paragraph", () => {
   beforeEach(() => {
     monter(`
-      <p class="fs-paragraph" data-variant="lead" id="ingress">
+      <p class="lt-paragraph" data-variant="lead" id="ingress">
         Bostøtte er en støtteordning for deg som har lave inntekter og høye boutgifter.
       </p>
-      <p class="fs-paragraph" id="brod">
+      <p class="lt-paragraph" id="brod">
         Du kan søke hver måned. Fristen er den 25., og svaret kommer rundt den 20. måneden etter.
       </p>
-      <p class="fs-paragraph" id="andre">Neste avsnitt.</p>
+      <p class="lt-paragraph" id="andre">Neste avsnitt.</p>
     `)
   })
 
@@ -49,9 +49,9 @@ describe("fs-paragraph", () => {
   })
 
   it("setter attributtene fra byggefunksjonen", () => {
-    expect(paragraph()).toEqual({ class: "fs-paragraph" })
+    expect(paragraph()).toEqual({ class: "lt-paragraph" })
     expect(paragraph({ size: "large", variant: "lead" })).toEqual({
-      class: "fs-paragraph",
+      class: "lt-paragraph",
       "data-size": "large",
       "data-variant": "lead",
     })

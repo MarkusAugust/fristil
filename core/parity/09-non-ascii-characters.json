@@ -1,0 +1,20 @@
+{
+  "markup": [
+    {
+      "start": 148,
+      "end": 171,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/button/",
+      "message": "data-variant cannot be \"sekundær\" on button. Valid values: secondary, ghost, danger, and primary without the attribute."
+    }
+  ],
+  "page": [
+    {
+      "start": 148,
+      "end": 171,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/components/button/",
+      "message": "data-variant cannot be \"sekundær\" on button. Valid values: secondary, ghost, danger, and primary without the attribute."
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+@import "../../css/label/label.css";
+@import "../../css/input/input.css";
+@import "../../css/help-text/help-text.css";
+@import "../../css/error-text/error-text.css";
+@import "../../css/sr-only/sr-only.css";
+
+@layer lotek {
+  lt-suggestion {
+    display: block;
+  }
+
+  .lt-suggestion__list {
+    box-sizing: border-box;
+    margin: var(--lt-spacing-1) 0 0;
+    padding: 0;
+    list-style: none;
+    max-block-size: var(
+      --lt-suggestion-max-height,
+      calc(var(--lt-spacing-10) * 4)
+    );
+    overflow-y: auto;
+    background: var(--lt-color-neutral-canvas);
+    border: 1px solid var(--lt-color-neutral-border);
+    border-radius: var(--lt-suggestion-radius, var(--lt-spacing-1));
+    box-shadow: var(--lt-shadow-overlay);
+  }
+
+  /* When open, the list sits in the top layer, `popover="manual"`, so a
+     parent with `overflow`, such as the body of a dialog, does not clip it.
+     The web component computes the position and width from the field.
+     Without the popover, as in a list no web component has handled, it sits
+     in the flow below the field. `--lt-suggestion-left` is the distance from
+     the left edge of the viewport; in a right-to-left document it is flipped
+     below, as in `<lt-popover>`. */
+  .lt-suggestion__list:popover-open {
+    position: fixed;
+    inset: auto;
+    inset-block-start: var(--lt-suggestion-top, 0);
+    inset-inline-start: var(--lt-suggestion-left, 0);
+    inline-size: var(--lt-suggestion-width, auto);
+    margin: 0;
+  }
+
+  .lt-suggestion__list:popover-open:dir(rtl) {
+    inset-inline-start: auto;
+    inset-inline-end: var(--lt-suggestion-left, 0);
+  }
+
+  .lt-suggestion__list[hidden] {
+    display: none;
+  }
+
+  /* Markup written without JavaScript arrives without `hidden` on the list,
+     and the web component only closes it once it is registered. Until then
+     it is hidden, so it does not stand open below a field nobody has
+     touched. */
+  lt-suggestion:not(:defined) .lt-suggestion__list {
+    display: none;
+  }
+
+  .lt-suggestion__option {
+    padding: var(
+      --lt-suggestion-option-padding,
+      var(--lt-spacing-2) var(--lt-spacing-3)
+    );
+    font-family: inherit;
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
+    cursor: pointer;
+  }
+
+  .lt-suggestion__option:hover {
+    background: var(--lt-color-accent-surface);
+  }
+
+  /* The highlight follows aria-selected, the same information the screen
+     reader reads. What is shown and what is announced cannot then drift
+     apart. */
+  .lt-suggestion__option[aria-selected="true"] {
+    background: var(--lt-color-accent-fill);
+    color: var(--lt-color-accent-content);
+  }
+
+  /* The hidden field for the code. A `type="hidden"` is never shown; the rule
+     is there so the class also works when someone gives the field another
+     type. */
+  .lt-suggestion__value {
+    display: none;
+  }
+
+  .lt-suggestion__empty {
+    padding: var(
+      --lt-suggestion-option-padding,
+      var(--lt-spacing-2) var(--lt-spacing-3)
+    );
+    font-size: var(--lt-font-size-m);
+    color: var(--lt-color-neutral-text-subtle);
+  }
+
+  /* The empty message follows the list: when the list is closed, it is not
+     shown. The rule is in the stylesheet and not in the web component,
+     because the app controls the empty message when it filters itself, and
+     does not know whether the list is open. It only knows whether the search
+     found anything. The empty message must come after the list, as a
+     sibling. */
+  .lt-suggestion__list[hidden] ~ .lt-suggestion__empty {
+    display: none;
+  }
+
+  /* While the answer to the search is on its way, the list says
+     `aria-busy`, and "No matches" would be untrue. */
+  .lt-suggestion__list[aria-busy="true"] ~ .lt-suggestion__empty {
+    display: none;
+  }
+
+  /* Before registration the list is hidden by the rule above, without
+     `hidden`. */
+  lt-suggestion:not(:defined) .lt-suggestion__empty {
+    display: none;
+  }
+
+  /* High contrast: the highlight is shown only with background and text
+     colour, which the mode replaces. The system colours bring the difference
+     back. */
+  @media (forced-colors: active) {
+    .lt-suggestion__option[aria-selected="true"] {
+      background-color: Highlight;
+      color: HighlightText;
+    }
+  }
+}

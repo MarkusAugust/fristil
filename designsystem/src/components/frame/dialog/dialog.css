@@ -1,0 +1,306 @@
+@layer lotek {
+  /* The host is not a box. Without this it is `inline` like every other
+     web component, and an empty `<lt-dialog>` in a layout with
+     `gap` moves its neighbour. */
+  lt-dialog {
+    display: contents;
+  }
+
+  .lt-dialog {
+    box-sizing: border-box;
+    /*
+     * `100%` and not only `100vw`: a real dialog in the top layer sizes itself
+     * against the viewport, but in a narrower box, as in the documentation,
+     * it stuck out. `min()` takes the smallest of the three.
+     */
+    inline-size: var(
+      --lt-dialog-width,
+      min(32rem, 100%, calc(100vw - var(--lt-spacing-8)))
+    );
+    max-block-size: calc(100vh - var(--lt-spacing-16));
+    padding: var(--lt-dialog-padding, var(--lt-spacing-5));
+    font-family: inherit;
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-strong);
+    background: var(--lt-color-neutral-canvas);
+    border: 1px solid var(--lt-color-neutral-border-subtle);
+    border-radius: var(--lt-dialog-radius, var(--lt-spacing-2));
+    box-shadow: var(--lt-shadow-overlay);
+  }
+
+  /*
+   * A column, but only when the body is where it should be.
+   *
+   * `.lt-dialog__body` has had `overflow-y: auto` since the component arrived,
+   * without being able to scroll: the dialog is a block, so the body's height
+   * is set by its content and is never clipped. What scrolled was the dialog
+   * itself, and only when it was modal, so the heading and the button row
+   * disappeared from view along with the text.
+   *
+   * The child combinator is not decoration. The column works only when the
+   * body is a direct child, and it also changes how everything else is laid
+   * out: margins between paragraphs stop collapsing, and text and buttons
+   * placed directly in the dialog become rows of their own in full width. If
+   * the body is wrapped in something, or does not exist, the block layout is
+   * still the right one, and then it stays.
+   */
+  .lt-dialog:has(> .lt-dialog__body) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /*
+   * And then back what the rule above took away.
+   *
+   * A `<dialog>` without `open` is hidden by the browser's own stylesheet,
+   * with `display: none`. An author rule beats the browser's whatever the
+   * layer and specificity, so the moment the class got a `display`, a closed
+   * dialog became visible: it lay as a card on top of the content around it,
+   * from page load and after every close. Tested in all three engines.
+   *
+   * The rule applies only to `<dialog>`. A `<div>` with the class, as in the
+   * preview in the documentation, has no hidden state to restore.
+   *
+   * The exception for popover is where the specification's own stylesheet has
+   * it. A popover never sets `open`, so without it a
+   * `<dialog class="lt-dialog" popover>` shown with `showPopover()` was
+   * invisible, in all three engines and without a word.
+   *
+   * The `:is()` around it is not decoration. `:not()` takes an unforgiving
+   * list, so in an engine that knows `:has()` but not `:popover-open`, and
+   * there is a window where both are true, the whole rule would have been
+   * invalid while the column above stayed. Then we are back to what the rule
+   * exists for: a closed dialog lying as a card over the content. `:is()` is
+   * forgiving, so an unknown pseudo-class inside it only makes that part
+   * false. Checked in all three engines with a pseudo-class none of them
+   * knows.
+   */
+  dialog.lt-dialog:not([open]):not(:is(:popover-open)) {
+    display: none;
+  }
+
+  /* The backdrop behind the dialog. It exists only when the dialog was
+     opened with showModal(); a plain show() gives no ::backdrop. */
+  .lt-dialog::backdrop {
+    background: var(--lt-color-overlay);
+  }
+
+  /*
+   * The dialog is in the right place before it has become a real modal.
+   *
+   * A dialog the server wants to show is sent with `open`, or the content
+   * does not exist without JavaScript. The browser then puts it in the normal
+   * flow, as a box somewhere on the page, and only when the component calls
+   * `showModal()` is it moved to the top layer and centred. Between those two
+   * moments it jumps, and on a slow connection the jump is clearly visible:
+   * tested in Chromium, it stood at top 0 and landed at top 128.
+   *
+   * Here it is placed like a modal already before it is one, so there is
+   * nothing to jump from. The backdrop is painted with a shadow, since
+   * `::backdrop` exists only in the top layer.
+   *
+   * The rule applies only inside `<lt-dialog>`. A `.lt-dialog` used without
+   * the component, and deliberately not modal, stays where it is.
+   */
+  lt-dialog .lt-dialog[open]:not(:modal) {
+    position: fixed;
+    z-index: var(--lt-dialog-layer, 40);
+
+    /*
+     * The same geometry as a modal, not only the same place.
+     *
+     * The values are the ones the HTML specification's suggested stylesheet
+     * gives a modal: `margin: auto` and the inline insets from the base rule
+     * for `dialog`, and the block insets, `overflow` and the maximum sizes
+     * from `dialog:modal`. The maximum
+     * width is written logically, since the project requires logical properties, and the
+     * two forms are the same in horizontal writing modes. Without it the
+     * width is ours, and when the dialog becomes modal the browser clips it:
+     * tested at 390 pixels, it went from 358 to 352 pixels wide and moved
+     * three pixels to the right. The vertical jump was gone, and a horizontal
+     * one came instead.
+     *
+     * `6px` and `2em` are the browser's own numbers, not our spacing scale.
+     * So they must not become tokens: being identical is the whole point.
+     *
+     * The maximum height is deliberately not here. `.lt-dialog` already has
+     * it, and an author rule beats the browser's `dialog:modal`, so the one
+     * value applies in both states. Had it been here too, this one would have
+     * won on specificity before the dialog became modal and dropped away
+     * afterwards, and a tall dialog would have jumped 13 pixels vertically
+     * instead. Tested in all three engines.
+     */
+    inset: 0;
+    margin: auto;
+    max-inline-size: calc(100% - 6px - 2em);
+    overflow: auto;
+
+    box-shadow:
+      var(--lt-shadow-overlay),
+      0 0 0 100vmax var(--lt-color-overlay);
+  }
+
+  .lt-dialog__title {
+    margin: 0 0 var(--lt-spacing-2);
+    font-size: var(--lt-font-size-l);
+    font-weight: var(--lt-font-weight-semibold);
+    line-height: var(--lt-line-height-compact);
+  }
+
+  /* The part that scrolls when the dialog is full. A flex item that does
+     not have `overflow: visible` has an automatic minimum size of zero, so
+     it shrinks by itself; no `min-block-size: 0` is needed, and that is
+     checked in all three engines. */
+  .lt-dialog__body {
+    margin: 0;
+    overflow-y: auto;
+  }
+
+  .lt-dialog__footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--lt-spacing-2);
+    margin-block-start: var(--lt-spacing-5);
+  }
+
+  /*
+   * A header, which can be coloured.
+   *
+   * With `.lt-dialog__header` as a direct child the padding moves from the
+   * dialog to the parts: the header, the body and the button row each get
+   * their `padding`, so a coloured band reaches all the way to the edges.
+   * Without the header everything is as before. The condition is in the
+   * selector, as for the column above: two dialogs in the demo rewrote the
+   * padding on three classes to get this, and that is a dependency on how
+   * the dialog distributes its spacing, which broke on an upgrade.
+   */
+  .lt-dialog:has(> .lt-dialog__header) {
+    padding: 0;
+  }
+
+  .lt-dialog__header {
+    flex: none;
+    padding: var(--lt-dialog-padding, var(--lt-spacing-5));
+    /* One pixel less than the dialog: the header sits inside the border,
+       and the inside of a corner is the radius minus the border width. */
+    border-start-start-radius: calc(
+      var(--lt-dialog-radius, var(--lt-spacing-2)) -
+      1px
+    );
+    border-start-end-radius: calc(
+      var(--lt-dialog-radius, var(--lt-spacing-2)) -
+      1px
+    );
+  }
+
+  /*
+   * Without a colour the header is no stripe. The bottom spacing is the
+   * heading's normal margin, and what follows counts from there: the body
+   * starts without top spacing of its own, so the distance down to the text
+   * is the same as without a header, and the button row gets the rest of the
+   * dialog's spacing, so the distance there is the same too. The first
+   * version set the bottom spacing to zero, and a dialog with only a heading
+   * and buttons then got zero pixels between them.
+   *
+   * The rules apply to anything that is not one of the five colours. Before,
+   * they matched only a dialog without the attribute, and `neutral`, which is
+   * the default and which the editor suggests, got 20 pixels below the
+   * heading instead of 8. So did an empty value from a template.
+   */
+  .lt-dialog:not(
+    [data-color="brand"],
+    [data-color="info"],
+    [data-color="success"],
+    [data-color="warning"],
+    [data-color="danger"]
+  )
+  > .lt-dialog__header {
+    padding-block-end: var(--lt-spacing-2);
+  }
+
+  .lt-dialog:not(
+      [data-color="brand"],
+      [data-color="info"],
+      [data-color="success"],
+      [data-color="warning"],
+      [data-color="danger"]
+    )
+    > .lt-dialog__header
+    + .lt-dialog__body {
+    padding-block-start: 0;
+  }
+
+  .lt-dialog:not(
+      [data-color="brand"],
+      [data-color="info"],
+      [data-color="success"],
+      [data-color="warning"],
+      [data-color="danger"]
+    )
+    > .lt-dialog__header
+    + .lt-dialog__footer {
+    padding-block-start: calc(
+      var(--lt-dialog-padding, var(--lt-spacing-5)) -
+      var(--lt-spacing-2)
+    );
+  }
+
+  .lt-dialog__header .lt-dialog__title {
+    margin: 0;
+  }
+
+  /* The same colour as the heading, without opacity: at 0.85 the text fell
+     below 4.5:1 on the success and warning bands. */
+  .lt-dialog__subtitle {
+    margin: var(--lt-spacing-1) 0 0;
+    font-size: var(--lt-font-size-s);
+    line-height: var(--lt-line-height-default);
+  }
+
+  .lt-dialog:has(> .lt-dialog__header) > .lt-dialog__body {
+    padding: var(--lt-dialog-padding, var(--lt-spacing-5));
+  }
+
+  .lt-dialog:has(> .lt-dialog__header) > .lt-dialog__footer {
+    margin-block-start: 0;
+    padding: 0 var(--lt-dialog-padding, var(--lt-spacing-5))
+      var(--lt-dialog-padding, var(--lt-spacing-5));
+  }
+
+  /* The colours are the alert's, plus the brand colour. The text follows,
+     so the contrast holds on every band. */
+  .lt-dialog[data-color="brand"] > .lt-dialog__header {
+    color: var(--lt-color-accent-content);
+    background: var(--lt-color-accent-fill);
+  }
+
+  .lt-dialog[data-color="info"] > .lt-dialog__header {
+    color: var(--lt-color-accent-text);
+    background: var(--lt-color-accent-surface);
+  }
+
+  .lt-dialog[data-color="success"] > .lt-dialog__header {
+    color: var(--lt-color-success-text);
+    background: var(--lt-color-success-surface);
+  }
+
+  .lt-dialog[data-color="warning"] > .lt-dialog__header {
+    color: var(--lt-color-warning-text);
+    background: var(--lt-color-warning-surface);
+  }
+
+  .lt-dialog[data-color="danger"] > .lt-dialog__header {
+    color: var(--lt-color-danger-text);
+    background: var(--lt-color-danger-surface);
+  }
+
+  /* High contrast removes the background colours. A line below the header
+     keeps the header and the body apart. */
+  @media (forced-colors: active) {
+    .lt-dialog__header {
+      border-block-end: 1px solid CanvasText;
+    }
+  }
+}

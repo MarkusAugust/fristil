@@ -1,6 +1,6 @@
 import { attributes, createGuard } from "../shared.js"
 
-export const BUTTON_CLASS = "fs-button" as const
+export const BUTTON_CLASS = "lt-button" as const
 
 export const buttonVariants = [
   "primary",
@@ -13,7 +13,7 @@ export type ButtonVariant = (typeof buttonVariants)[number]
 export type NonPrimaryButtonVariant = Exclude<ButtonVariant, "primary">
 
 export type ButtonOptions = {
-  /** Hvor tung handlingen er. Standard: `primary`. */
+  /** How weighty the action is. Default: `primary`. */
   variant?: ButtonVariant
 }
 
@@ -23,10 +23,10 @@ export type ButtonAttributes = {
 }
 
 /**
- * Attributtene for en knapp.
+ * The attributes for a button.
  *
  * ```ts
- * <button {...button({ variant: "secondary" })}>Lagre utkast</button>
+ * <button {...button({ variant: "secondary" })}>Save draft</button>
  * ```
  */
 export const button = Object.assign(
@@ -36,9 +36,9 @@ export const button = Object.assign(
       "data-variant": variant === "primary" ? undefined : variant,
     }),
   {
-    /** De lovlige variantene, for oppslag og forgrening. */
+    /** The valid variants, for lookup and branching. */
     variants: buttonVariants,
-    /** Sjekker om en streng utenfra er en gyldig variant. */
+    /** Checks whether a string from outside is a valid variant. */
     isVariant: createGuard(buttonVariants),
   },
 )

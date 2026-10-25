@@ -1,50 +1,51 @@
 /**
- * Felles byggeklosser for komponent-API-et.
+ * Shared building blocks for the component API.
  *
- * Hver komponent eksporterer én funksjon som tar et objekt med valg og returnerer
- * attributtene du sprer inn i elementet. Formen er lik for alle, slik at du
- * bare trenger å lære den én gang.
+ * Each component exports one function that takes an object of options and
+ * returns the attributes you spread onto the element. The shape is the same
+ * for all of them, so you only need to learn it once.
  */
 
 /**
- * Attributtene hvert sett forvalter, også dem som er av akkurat nå.
+ * The attributes each set manages, including those that are off right now.
  *
- * `attributes()` stryker nøklene uten verdi, og da er det borte hvilke
- * attributter byggefunksjonen har et ord om. `setAttributes` trenger nettopp
- * det: `fs.switch()` forvalter `disabled` og skal kunne fjerne det, mens
- * `fs.button()` aldri har skrevet det og skal la det stå. Lista ligger i et
- * kart ved siden av objektet, ikke på det, så spredning, JSON og React ser
- * det samme som før.
+ * `attributes()` drops the keys without a value, and with them the record of
+ * which attributes the builder function has a say in. `setAttributes` needs
+ * exactly that: `lt.switch()` manages `disabled` and must be able to remove
+ * it, while `lt.button()` has never written it and must leave it alone. The
+ * list is kept in a map beside the object, not on it, so spreading, JSON and
+ * React see the same as before.
  */
 const managed = new WeakMap<object, readonly string[]>()
 
-/** Navnene settet forvalter, eller `undefined` for et sett vi ikke har laget. */
+/** The names the set manages, or `undefined` for a set we did not create. */
 export function managedNames(set: object): readonly string[] | undefined {
   return managed.get(set)
 }
 
 /**
- * Gir et sett som er skrevet om fra et annet, de samme forvaltede navnene.
+ * Gives a set rewritten from another the same managed names.
  *
- * `/react` døper `class` om til `className` i et nytt objekt, og det nye
- * objektet sto ikke i kartet. `fs.setAttributes` derfra ryddet da bare
- * `data-*`, og `aria-invalid` ble stående etter at feltet var rettet.
- * Navnene gis slik de heter i det nye settet.
+ * `/react` renames `class` to `className` in a new object, and the new object
+ * was not in the map. `lt.setAttributes` from there then only cleaned up
+ * `data-*`, and `aria-invalid` stayed after the field was corrected. The
+ * names are given as they are spelled in the new set.
  *
- * For `/react` og andre innganger som skriver settene om, ikke for apper:
- * et sett fra `fs.*` er allerede forvaltet.
+ * For `/react` and other entry points that rewrite the sets, not for apps: a
+ * set from `lt.*` is already managed.
  */
 export function rememberManaged(set: object, names: readonly string[]): void {
   managed.set(set, names)
 }
 
 /**
- * Fjerner attributter uten verdi, så `{...spredning}` ikke setter tomme felt.
+ * Removes attributes without a value, so `{...spread}` does not set empty
+ * fields.
  *
- * Bygger settet på et annet, som `fs.search()` på `fs.input()`, sendes det
- * andre inn som `based`. Spredningen har alt mistet nøklene som var av, og
- * uten dette forvaltet søkefeltet `data-state` bare når den tilfeldigvis var
- * satt: den kunne settes, men ikke fjernes.
+ * When the set builds on another, as `lt.search()` does on `lt.input()`, the
+ * other is passed in as `based`. The spread has already lost the keys that
+ * were off, and without this the search field only managed `data-state` when
+ * it happened to be set: it could be set, but not removed.
  */
 export function attributes<T extends Record<string, unknown>>(
   values: T,
@@ -64,35 +65,35 @@ export function attributes<T extends Record<string, unknown>>(
   return result
 }
 
-/** Lager en typevakt for en liste av lovlige strenger. */
+/** Creates a type guard for a list of allowed strings. */
 export function createGuard<T extends string>(allowed: readonly T[]) {
   return (value: string): value is T =>
     (allowed as readonly string[]).includes(value)
 }
 
 /**
- * Valideringstilstand for skjemakontroller.
+ * Validation state for form controls.
  *
- * Input, textarea og select hadde hver sin identiske type. Nå er det én, så
- * en verdi kan sendes mellom dem uten konvertering.
+ * Input, textarea and select each had an identical type of their own. Now
+ * there is one, so a value can pass between them without conversion.
  */
 export const fieldStates = ["default", "invalid", "success"] as const
 export type FieldState = (typeof fieldStates)[number]
 export type NonDefaultFieldState = Exclude<FieldState, "default">
 export const isFieldState = createGuard(fieldStates)
 
-/** Hvordan et påkrevd felt markeres i ledeteksten. */
+/** How a required field is marked in its label. */
 export const requiredMarkers = ["symbol", "text"] as const
 export type RequiredMarker = (typeof requiredMarkers)[number]
 export const isRequiredMarker = createGuard(requiredMarkers)
 
 /**
- * Sier fra én gang per melding, i konsollen.
+ * Warns once per message, in the console.
  *
- * Byggefunksjonene er rene funksjoner uten et element å henge beskjeden på,
- * så de kan ikke bruke `warnAboutMarkup`. Dedupliseringen trengs like fullt:
- * en app som rendrer en liste med felt ville ellers sagt det samme per felt og
- * per rendring.
+ * The builder functions are pure functions without an element to attach the
+ * message to, so they cannot use `warnAboutMarkup`. The deduplication is
+ * needed all the same: an app that renders a list of fields would otherwise
+ * say the same thing per field and per render.
  */
 const said = new Set<string>()
 
@@ -105,57 +106,57 @@ export function warnOnce(message: string): void {
 let idCounter = 0
 
 /**
- * Lager en id som er unik innenfor dokumentet.
+ * Creates an id that is unique within the document.
  *
- * Trygg bare når markupen rendres én gang. Rendres det samme feltet både på en
- * server og i nettleseren, gir de to kjøringene to ulike id-er, og da er
- * koblingen brutt til rammeverket har rettet den opp.
+ * Safe only when the markup is rendered once. When the same field is rendered
+ * both on a server and in the browser, the two runs give two different ids,
+ * and the wiring is broken until the framework has corrected it.
  */
 export function createFieldId(): string {
   idCounter += 1
-  return `fs-field-${idCounter}-${Math.random().toString(36).slice(2, 8)}`
+  return `lt-field-${idCounter}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 /**
- * Nøklene en byggefunksjon lager id-er av, sjekket.
+ * The keys a builder function creates ids from, checked.
  *
- * En nøkkel er det samme som `key` i React: en fast verdi fra dataene, som
- * et kommunenummer. Id-en blir den samme ved hver rendring, og en
- * oppdatering fra serveren kjenner elementet igjen. En indeks er ingen
- * nøkkel: setter serveren inn en rad først, peker den samme indeksen på noe
- * annet.
+ * A key is the same as `key` in React: a fixed value from the data, such as
+ * a record id. The id is the same on every render, and a server update
+ * recognises the element. An index is not a key: if the server inserts a row
+ * first, the same index points to something else.
  *
- * Kaster, framfor å si fra og lage en reserve som `idOrFallback` gjør: en
- * tom nøkkel, en med mellomrom eller to like gir id-er som er tomme, ugyldige
- * eller like, og det finnes ingen reserve som er riktig. Mellomrom er det
- * JavaScript regner som mellomrom (`\s`), som Kotlin-utgaven skriver ut.
+ * Throws, instead of warning and creating a fallback as `idOrFallback` does:
+ * an empty key, one with whitespace or two identical ones give ids that are
+ * empty, invalid or identical, and there is no fallback that is right.
+ * Whitespace is what JavaScript counts as whitespace (`\s`), which the
+ * Kotlin version spells out.
  */
 export function checkedKeys(builder: string, keys: unknown): string[] {
   if (!Array.isArray(keys)) {
     throw new Error(
-      `${builder}: keys mangler. Gi en liste med én nøkkel per element, fra dataene, som et kommunenummer.`,
+      `${builder}: keys is missing. Pass a list with one key per element, taken from the data, such as a record id.`,
     )
   }
   const seen = new Set<string>()
   for (const key of keys) {
     if (typeof key !== "string") {
       throw new Error(
-        `${builder}: en nøkkel i keys er ikke tekst, men ${typeof key}. Nøklene blir id-er; gjør tall om til tekst, som String(kommunenummer).`,
+        `${builder}: a key in keys is not a string but ${typeof key}. The keys become ids; turn numbers into strings, as in String(recordId).`,
       )
     }
     if (key === "") {
       throw new Error(
-        `${builder}: en nøkkel i keys er tom. Nøklene blir id-er, og hver må være en fast verdi fra dataene.`,
+        `${builder}: a key in keys is empty. The keys become ids, and each must be a fixed value from the data.`,
       )
     }
     if (/\s/.test(key)) {
       throw new Error(
-        `${builder}: nøkkelen «${key}» har mellomrom. Nøklene blir id-er, og en id kan ikke ha mellomrom.`,
+        `${builder}: the key "${key}" contains whitespace. The keys become ids, and an id cannot contain whitespace.`,
       )
     }
     if (seen.has(key)) {
       throw new Error(
-        `${builder}: nøkkelen «${key}» står to ganger i keys. Nøklene blir id-er, og to like id-er peker på det samme elementet.`,
+        `${builder}: the key "${key}" appears twice in keys. The keys become ids, and two equal ids point to the same element.`,
       )
     }
     seen.add(key)
@@ -164,19 +165,21 @@ export function checkedKeys(builder: string, keys: unknown): string[] {
 }
 
 /**
- * Id-en byggefunksjonen fikk, eller en reserve med en beskjed.
+ * The id the builder function received, or a fallback with a warning.
  *
- * Hver byggefunksjon som tar en id krever den i typen. Det holder ikke alene: en
- * konsument uten TypeScript ser ingen type, og ren HTML med
- * `<script type="module">` er en førsteklasses måte å bruke Fristil på. Uten
- * reserven ble id-ene til strenger som `undefined-list`, `aria-controls` pekte
- * dit, og koblingen var brutt på en måte som så gyldig ut.
+ * Every builder function that takes an id requires it in the type. That is
+ * not enough on its own: a consumer without TypeScript sees no type, and
+ * plain HTML with `<script type="module">` is a first-class way to use
+ * LO-TEK. Without the fallback the ids became strings like `undefined-list`,
+ * `aria-controls` pointed there, and the wiring was broken in a way that
+ * looked valid.
  *
- * Den tomme strengen teller som ingen id. `fs.field({ id: "" })` ga `for=""`
- * og `help.id="-help"`, altså det samme problemet uten at noe sa fra.
+ * The empty string counts as no id. `lt.field({ id: "" })` gave `for=""` and
+ * `help.id="-help"`, the same problem without anything saying so.
  *
- * Navnet på byggefunksjonen står i meldingen. Uten det sa forslagsfeltet «fs.field()»
- * og sendte utvikleren til feil sted.
+ * The name of the builder function is in the message. Without it the
+ * suggestion field said "lt.field()" and sent the developer to the wrong
+ * place.
  */
 export function idOrFallback(
   builder: string,
@@ -186,11 +189,11 @@ export function idOrFallback(
   if (typeof id === "string" && id.trim() !== "") return id
 
   warnOnce(
-    `${builder}: ingen ${option} oppgitt, så det lages en tilfeldig. To kjøringer gir ` +
-      "da to ulike, og rendres markupen både på en server og i nettleseren, " +
-      "peker koblingen på noe som ikke finnes. Sender serveren området på " +
-      "nytt med en ny id, kjenner morfingen ikke elementene igjen og bytter " +
-      `dem ut, og det brukeren gjorde i dem er borte. Oppgi ${option}, i React fra useId().`,
+    `${builder}: no ${option} given, so a random one is created, and two runs ` +
+      "create two different ones. Rendered on a server and in the browser, the " +
+      "wiring points to something that does not exist, and a server that sends " +
+      "the region again with a new id makes the morph replace the elements and " +
+      `lose what the user did in them. Pass ${option}, in React from useId().`,
   )
   return createFieldId()
 }
