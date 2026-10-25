@@ -8,9 +8,13 @@
       "message": "Klassen «fs-lenke» finnes ikke i Fristil. Mente du fs-link?",
       "fix": {
         "title": "Bytt til fs-link",
-        "start": 10,
-        "end": 18,
-        "text": "fs-link",
+        "edits": [
+          {
+            "start": 10,
+            "end": 18,
+            "text": "fs-link"
+          }
+        ],
         "preferred": false
       }
     },
@@ -22,9 +26,13 @@
       "message": "Klassen «fs-buton» finnes ikke i Fristil. Mente du fs-button?",
       "fix": {
         "title": "Bytt til fs-button",
-        "start": 53,
-        "end": 61,
-        "text": "fs-button",
+        "edits": [
+          {
+            "start": 53,
+            "end": 61,
+            "text": "fs-button"
+          }
+        ],
         "preferred": false
       }
     }
@@ -38,9 +46,13 @@
       "message": "Klassen «fs-lenke» finnes ikke i Fristil. Mente du fs-link?",
       "fix": {
         "title": "Bytt til fs-link",
-        "start": 10,
-        "end": 18,
-        "text": "fs-link",
+        "edits": [
+          {
+            "start": 10,
+            "end": 18,
+            "text": "fs-link"
+          }
+        ],
         "preferred": false
       }
     },
@@ -52,9 +64,13 @@
       "message": "Klassen «fs-buton» finnes ikke i Fristil. Mente du fs-button?",
       "fix": {
         "title": "Bytt til fs-button",
-        "start": 53,
-        "end": 61,
-        "text": "fs-button",
+        "edits": [
+          {
+            "start": 53,
+            "end": 61,
+            "text": "fs-button"
+          }
+        ],
         "preferred": false
       }
     }

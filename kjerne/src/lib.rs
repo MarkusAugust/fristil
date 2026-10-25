@@ -162,12 +162,22 @@ pub fn to_json(findings: &[Finding], text: &[u16]) -> String {
             json_string(&f.message),
         ));
         if let Some(r) = &f.fix {
+            let edits: Vec<String> = r
+                .edits
+                .iter()
+                .map(|e| {
+                    format!(
+                        "{{\"start\":{},\"end\":{},\"text\":{}}}",
+                        e.start,
+                        e.end,
+                        json_string(&e.text)
+                    )
+                })
+                .collect();
             out.push_str(&format!(
-                ",\"fix\":{{\"title\":{},\"start\":{},\"end\":{},\"text\":{},\"preferred\":{}}}",
+                ",\"fix\":{{\"title\":{},\"edits\":[{}],\"preferred\":{}}}",
                 json_string(&r.title),
-                r.start,
-                r.end,
-                json_string(&r.text),
+                edits.join(","),
                 r.preferred
             ));
         }
@@ -518,7 +528,7 @@ mod tests {
             found[0].message
         );
         let fix = found[0].fix.as_ref().unwrap();
-        assert_eq!(fix.text, "");
+        assert_eq!(fix.edits[0].text, "");
     }
 
     #[test]
@@ -681,7 +691,7 @@ mod tests {
         );
         let wrong = found(r#"<button class="app-button__ikon">x</button>"#);
         assert_eq!(wrong[0].rule, "ukjent-klasse");
-        assert_eq!(wrong[0].fix.as_ref().unwrap().text, "app-button__icon");
+        assert_eq!(wrong[0].fix.as_ref().unwrap().edits[0].text, "app-button__icon");
         assert_eq!(
             found(r#"<button class="app-button" data-variant="secondary">x</button>"#).len(),
             1

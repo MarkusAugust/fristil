@@ -78,9 +78,11 @@ const kanonisk = (funn: Omit<Finding, "rule" | "line" | "column">[]) =>
       message: f.message,
       fix: f.fix && {
         title: f.fix.title,
-        start: f.fix.start,
-        end: f.fix.end,
-        text: f.fix.text,
+        edits: f.fix.edits.map((e) => ({
+          start: e.start,
+          end: e.end,
+          text: e.text,
+        })),
         preferred: f.fix.preferred ?? false,
       },
     })),
@@ -130,13 +132,16 @@ function holder(navn: string, html: string) {
           : !REGLER.has(f.rule)
             ? `ukjent regel ${f.rule}`
             : f.fix &&
-                !(
-                  0 <= f.fix.start &&
-                  f.fix.start <= f.fix.end &&
-                  f.fix.end <= html.length
+                !f.fix.edits.every(
+                  (e) => 0 <= e.start && e.start <= e.end && e.end <= html.length,
                 )
               ? "rettelsen er utenfor teksten"
-              : undefined
+              : f.fix &&
+                  f.fix.edits.some(
+                    (e, i) => i > 0 && e.start < (f.fix?.edits[i - 1]?.end ?? 0),
+                  )
+                ? "endringene i rettelsen overlapper eller står i feil rekkefølge"
+                : undefined
       if (galt) feil.push(`${navn} (${hva}): ${galt} i ${JSON.stringify(f)}`)
     }
   }

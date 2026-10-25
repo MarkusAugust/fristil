@@ -557,13 +557,13 @@ fn check_attribute(
                 "ukjent-attributt",
                 Severity::Warning,
                 format!("<{tag}> har ikke attributtet «{name}». Mente du {meant}?"),
-                Some(Fix {
-                    title: format!("Bytt til {meant}"),
-                    start: a.start,
-                    end: a.end,
-                    text: meant.clone(),
-                    preferred: true,
-                }),
+                Some(Fix::one(
+                    format!("Bytt til {meant}"),
+                    a.start,
+                    a.end,
+                    meant.clone(),
+                    true,
+                )),
             ));
         }
         if templated_tag || is_global(&a.name) {
@@ -609,13 +609,13 @@ fn check_attribute(
                     format!(
                         "{name} er et boolsk attributt: det står der eller ikke. {name}=\"{v}\" betyr det samme som {name}. Ta det bort for å slå det av."
                     ),
-                    Some(Fix {
-                        title: format!("Ta bort {name}"),
-                        start: a.space_start,
-                        end: a.value_end,
-                        text: String::new(),
-                        preferred: true,
-                    }),
+                    Some(Fix::one(
+format!("Ta bort {name}"),
+a.space_start,
+a.value_end,
+String::new(),
+true,
+)),
                 ));
             }
             None
@@ -839,19 +839,19 @@ fn check_field(
         format!(
             "<{tag}> fant ingen <label>. Feltet får da ingen ledetekst, og en skjermleser leser det opp uten navn."
         ),
-        Some(Fix {
-            title: "Sett inn en ledetekst".into(),
-            start: content_start + indent,
-            end: content_start + indent,
-            // Ledeteksten peker på kontrollens id: uten `for` har feltet ingen
+        Some(Fix::one(
+"Sett inn en ledetekst".into(),
+content_start + indent,
+content_start + indent,
+// Ledeteksten peker på kontrollens id: uten `for` har feltet ingen
             // ledetekst før JavaScript har kjørt.
-            text: format!(
+format!(
                 "<label for=\"{}\">Ledetekst</label>{}",
                 lossy(&id),
                 if newline { lossy(leading) } else { String::new() }
             ),
-            preferred: true,
-        }),
+true,
+)),
     )]
 }
 
@@ -982,12 +982,8 @@ fn check_classes(
                     None => format!("Klassen «{t}» finnes ikke {place}."),
                 }
             },
-            fix: meant.map(|(m, sure)| Fix {
-                title: format!("Bytt til {m}"),
-                start,
-                end: start + token.len(),
-                text: m,
-                preferred: sure,
+            fix: meant.map(|(m, sure)| {
+                Fix::one(format!("Bytt til {m}"), start, start + token.len(), m, sure)
             }),
             rule: "ukjent-klasse",
         });
@@ -1040,13 +1036,13 @@ fn check_classes(
                             "{name} er et flagg på {}: det står der eller ikke. {name}=\"{v}\" betyr det samme som {name}. Ta det bort for å slå det av.",
                             lossy(&lowercase(&utf16(&info.title)))
                         ),
-                        fix: Some(Fix {
-                            title: format!("Ta bort {name}"),
-                            start: a.space_start,
-                            end: a.value_end,
-                            text: String::new(),
-                            preferred: true,
-                        }),
+                        fix: Some(Fix::one(
+                            format!("Ta bort {name}"),
+                            a.space_start,
+                            a.value_end,
+                            String::new(),
+                            true,
+                        )),
                         rule: "boolsk-med-verdi",
                     });
                 }
@@ -1079,12 +1075,14 @@ fn check_classes(
                     lossy(&lowercase(&utf16(&info.title))),
                     list(takes.values.iter().map(String::as_str))
                 ),
-                fix: meant.map(|(m, sure)| Fix {
-                    title: format!("Bytt til {m}"),
-                    start: a.value_start,
-                    end: a.value_start + value.len(),
-                    text: m,
-                    preferred: sure,
+                fix: meant.map(|(m, sure)| {
+                    Fix::one(
+                        format!("Bytt til {m}"),
+                        a.value_start,
+                        a.value_start + value.len(),
+                        m,
+                        sure,
+                    )
                 }),
                 rule: "ugyldig-klasseverdi",
             });
@@ -1459,13 +1457,13 @@ fn check_icon_only(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
             message: format!(
                 "<{name}> har bare et ikon i seg og ikke noe navn: ingen tekst, og verken aria-label, aria-labelledby eller title. En skjermleser leser den opp som «{kind}» uten å si hva den gjør. Gi den aria-label, eller en tekst i et element med klassen fs-sr-only."
             ),
-            fix: Some(Fix {
-                title: "Gi den et navn med aria-label".into(),
-                start: name_end,
-                end: name_end,
-                text: " aria-label=\"Beskriv handlingen\"".into(),
-                preferred: true,
-            }),
+            fix: Some(Fix::one(
+"Gi den et navn med aria-label".into(),
+name_end,
+name_end,
+" aria-label=\"Beskriv handlingen\"".into(),
+true,
+)),
             rule: "ikon-uten-navn",
         });
     }

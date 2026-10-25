@@ -1102,14 +1102,19 @@ for (const c of cases) {
   if (!first.link.startsWith("https://fristil.sobernetics.no/"))
     fail(`lenken peker ikke på dokumentasjonen: ${first.link}`)
   if (c.noFix && first.fix)
-    fail(`funnet har en rettelse, «${first.fix.text}», og skulle ikke hatt det`)
+    fail(
+      `funnet har en rettelse, «${first.fix.edits.map((e) => e.text).join("», «")}», og skulle ikke hatt det`,
+    )
   if (c.fixed !== undefined || c.fixTitle || c.fixPreferred !== undefined) {
     if (!first.fix) fail("funnet har ingen rettelse")
     else {
-      const applied =
-        c.html.slice(0, first.fix.start) +
-        first.fix.text +
-        c.html.slice(first.fix.end)
+      // Bakfra, så posisjonene i de første endringene holder.
+      const applied = [...first.fix.edits]
+        .sort((a, b) => b.start - a.start)
+        .reduce(
+          (tekst, e) => tekst.slice(0, e.start) + e.text + tekst.slice(e.end),
+          c.html,
+        )
       if (c.fixed !== undefined && applied !== c.fixed)
         fail(`rettelsen ga «${applied}», ikke «${c.fixed}»`)
       if (c.fixTitle && first.fix.title !== c.fixTitle)

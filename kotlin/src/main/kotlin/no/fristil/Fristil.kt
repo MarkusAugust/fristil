@@ -241,9 +241,14 @@ object Fristil {
             fix = (f["fix"] as Map<*, *>?)?.let { fix ->
                 Fix(
                     title = fix["title"] as String,
-                    start = (fix["start"] as Double).toInt(),
-                    end = (fix["end"] as Double).toInt(),
-                    text = fix["text"] as String,
+                    edits = (fix["edits"] as List<*>).map { e ->
+                        e as Map<*, *>
+                        Edit(
+                            start = (e["start"] as Double).toInt(),
+                            end = (e["end"] as Double).toInt(),
+                            text = e["text"] as String,
+                        )
+                    },
                     preferred = fix["preferred"] as Boolean?,
                 )
             },
@@ -426,11 +431,19 @@ internal object ThemeRecipe {
         value.keys.filter { it !in allowed }.map { "$path.$it" }
 }
 
-/** En rettelse: bytt ut teksten fra `start` til `end` med `text`. */
-data class Fix(
-    val title: String,
+/** Én endring i en rettelse: bytt ut teksten fra `start` til `end` med `text`. */
+data class Edit(
     val start: Int,
     val end: Int,
     val text: String,
+)
+
+/**
+ * En rettelse: én eller flere endringer som hører sammen, i tekstens
+ * rekkefølge og uten overlapp. Bruk dem bakfra, så posisjonene holder.
+ */
+data class Fix(
+    val title: String,
+    val edits: List<Edit>,
     val preferred: Boolean? = null,
 )

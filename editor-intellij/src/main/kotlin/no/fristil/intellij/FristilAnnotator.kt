@@ -82,7 +82,9 @@ class FristilAnnotator : Annotator {
 }
 
 /**
- * Rettelsen kjernen foreslår: bytt ut teksten fra `start` til `end`.
+ * Rettelsen kjernen foreslår: én eller flere endringer, hver et bytte av
+ * teksten fra `start` til `end`. De brukes bakfra, så posisjonene i de
+ * første holder når de siste er gjort.
  *
  * Posisjonene gjelder teksten slik den var da funnet ble gjort. IntelliJ
  * kaster annotasjonene og kjører annotatoren på nytt når teksten endres, så
@@ -96,16 +98,20 @@ private class ReplaceFix(private val fix: Fix) : IntentionAction, PriorityAction
     override fun getPriority(): PriorityAction.Priority =
         if (fix.preferred == true) PriorityAction.Priority.TOP else PriorityAction.Priority.NORMAL
 
+    private val end: Int = fix.edits.maxOfOrNull { it.end } ?: 0
+
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean =
-        file != null && fix.end <= file.textLength
+        file != null && end <= file.textLength
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (file == null) return
         // For et injisert fragment er dette dokumentet til fragmentet, og
         // endringen havner på riktig sted i strengen i vertsfila.
         val document = PsiDocumentManager.getInstance(project).getDocument(file) ?: return
-        if (fix.end > document.textLength) return
-        document.replaceString(fix.start, fix.end, fix.text)
+        if (end > document.textLength) return
+        for (edit in fix.edits.sortedByDescending { it.start }) {
+            document.replaceString(edit.start, edit.end, edit.text)
+        }
         PsiDocumentManager.getInstance(project).commitDocument(document)
     }
 

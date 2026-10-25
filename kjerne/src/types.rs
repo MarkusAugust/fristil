@@ -68,14 +68,34 @@ pub enum Severity {
     Warning,
 }
 
-/// En rettelse editoren kan tilby: bytt ut teksten fra `start` til `end`.
+/// Én endring i en rettelse: bytt ut teksten fra `start` til `end` med `text`.
 #[derive(Clone, Debug)]
-pub struct Fix {
-    pub title: String,
+pub struct Edit {
     pub start: usize,
     pub end: usize,
     pub text: String,
+}
+
+/// En rettelse editoren kan tilby: én eller flere endringer som hører sammen,
+/// som `id` på feltet og `for` på ledeteksten. Endringene står i den
+/// rekkefølgen de har i teksten, og overlapper ikke; den som bruker dem,
+/// bruker dem bakfra, så posisjonene holder.
+#[derive(Clone, Debug)]
+pub struct Fix {
+    pub title: String,
+    pub edits: Vec<Edit>,
     pub preferred: bool,
+}
+
+impl Fix {
+    /// En rettelse med én endring.
+    pub fn one(title: String, start: usize, end: usize, text: String, preferred: bool) -> Fix {
+        Fix {
+            title,
+            edits: vec![Edit { start, end, text }],
+            preferred,
+        }
+    }
 }
 
 /// Ett funn. Posisjonene er UTF-16-indekser i den opprinnelige teksten.
