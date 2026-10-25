@@ -1364,8 +1364,8 @@ cases.push(
   },
   {
     name: "id-ene forslagsfeltet lager selv, kopiert inn i malen",
-    html: `<fs-suggestion><label class="fs-label" for="k">Kommune</label><input class="fs-input" id="k"><ul class="fs-suggestion__list" id="fs-suggestion-list-a1b2c3d"><li id="fs-suggestion-option-q9w8e7r">Bergen</li></ul></fs-suggestion>`,
-    count: 2,
+    html: `<fs-suggestion><label class="fs-label" for="k">Kommune</label><input class="fs-input" id="k"><ul class="fs-suggestion__list" id="fs-suggestion-list-a1b2c3d" aria-labelledby="fs-suggestion-label-z8y7x6w"><li id="fs-suggestion-option-q9w8e7r">Bergen</li></ul><span id="fs-suggestion-label-z8y7x6w"></span></fs-suggestion>`,
+    count: 3,
     mentions: ["kopiert fra DevTools"],
   },
   {

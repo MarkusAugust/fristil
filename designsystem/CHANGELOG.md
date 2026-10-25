@@ -25,6 +25,15 @@ egen overskrift «Brytende».
 
 ### Brytende
 
+- **Forslagslista står i det øverste laget.** Den var `position: absolute` i
+  `<fs-suggestion>`, og en forelder med `overflow`, som kroppen i en dialog,
+  klippet den. Nå er lista `popover="manual"`, og komponenten åpner og lukker
+  vinduet etter `hidden`, som fortsatt er det som sier om lista er åpen.
+  Komponenten legger den rett under feltet, like bred som det.
+  `--fs-suggestion-layer` er tatt ut, siden det øverste laget ligger over alt
+  uten `z-index`. **Slik oppdaterer du:** ta bort `--fs-suggestion-layer` fra
+  egen CSS. `fs.suggestion()` skriver `popover` selv; skriver du markupen for
+  hånd, gjør komponenten det.
 - **En rettelse fra `diagnoseMarkup` er en liste av endringer.** `Fix` har
   `edits`, hver med `start`, `end` og `text`, i tekstens rekkefølge og uten
   overlapp, i stedet for ett `start`, `end` og `text`. Det samme i Kotlin,
@@ -90,6 +99,12 @@ egen overskrift «Brytende».
 
 ### Nytt
 
+- **Forslagslista har et navn**, fra ledeteksten. `fs.suggestion()` gir
+  ledeteksten id `${id}-label` og lista `aria-labelledby` mot den. Kommer
+  markupen uten, gjør komponenten det samme, og står ledeteksten rundt
+  feltet, får lista teksten som `aria-label`, uten å skrive id på ledeteksten.
+- **`fs.suggestion({ pending: true })` skriver `aria-busy="true"` på lista**,
+  og stilarket skjuler «Ingen treff» mens det står.
 - **Ti regler i kjernen om det malen må skrive selv**, for at komponentene
   skal virke uten JavaScript og overleve en oppdatering fra serveren, i
   `fristil sjekk`, språkserveren, VS Code og IntelliJ: `kontroll-uten-kobling`
@@ -119,6 +134,9 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **Hvert alternativ i forslagslista har `aria-selected` fra starten.**
+  Komponenten skrev det først når lista ble lukket, så alternativene serveren
+  sendte, sto uten fram til da, mens resten av lista hadde det.
 - **`<fs-popover>` skriver aldri id på panelet.** Den lagde en når malen ikke
   hadde skrevet en, og Datastar og idiomorph byttet da ut panelet ved neste
   oppdatering, med fokus og det brukeren gjorde i det. Nå beholdes panelet.

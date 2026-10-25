@@ -29,9 +29,9 @@ export type SuggestionOptions = Omit<FieldOptions, "id"> & {
   /** Lista er åpen. Standard: lukket. */
   open?: boolean
   /**
-   * Svaret på søket er ikke kommet ennå. Tommeldingen holdes da skjult, så
-   * et asynkront søk ikke sier «Ingen treff» i oppholdet mellom tastetrykket
-   * og svaret.
+   * Svaret på søket er ikke kommet ennå. Lista får `aria-busy`, og
+   * tommeldingen holdes skjult, så et asynkront søk ikke sier «Ingen treff» i
+   * oppholdet mellom tastetrykket og svaret.
    */
   pending?: boolean
 }
@@ -65,6 +65,7 @@ export const suggestion = ({
   const count = keys.length
   const computed = computeFieldAttributes({ ...field, id })
   const listId = `${id}-list`
+  const labelId = `${id}-label`
   const statusId = `${id}-status`
   const optionId = (index: number) => `${id}-option-${keys[index]}`
   // Markeringen skrives bare når lista er åpen, begge halvdelene sammen.
@@ -77,7 +78,8 @@ export const suggestion = ({
     activeIndex < count
 
   return {
-    label: computed.label,
+    // Ledeteksten gir også lista navnet sitt, gjennom `aria-labelledby`.
+    label: attributes({ ...computed.label, id: labelId }, computed.label),
     control: attributes(
       {
         ...computed.control,
@@ -95,11 +97,19 @@ export const suggestion = ({
       },
       computed.control,
     ),
+    /**
+     * Lista. Den står i det øverste laget, `popover="manual"`, så en forelder
+     * med `overflow` ikke klipper den. `hidden` er fortsatt det som sier om den
+     * er åpen; komponenten åpner og lukker vinduet etter det.
+     */
     list: attributes({
       class: SUGGESTION_LIST_CLASS,
       id: listId,
       role: "listbox" as const,
+      "aria-labelledby": labelId,
+      popover: "manual" as const,
       hidden: open ? undefined : (true as const),
+      "aria-busy": pending ? ("true" as const) : undefined,
     }),
     options: keys.map((_, index) =>
       attributes({

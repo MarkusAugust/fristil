@@ -5,19 +5,12 @@
 @import "../../css/sr-only/sr-only.css";
 
 @layer fristil {
-  /* Lista legger seg under feltet, og det er verten som gir den plassen. */
   fs-suggestion {
-    position: relative;
     display: block;
   }
 
-  /* Lista står ute av flyten, men uten `inset-block-start`: da får den
-     sin statiske plass, altså rett under feltet den følger etter i markupen,
-     også når en hjelpetekst eller feilmelding kommer etter den i verten. */
   .fs-suggestion__list {
-    position: absolute;
-    inset-inline: 0;
-    z-index: var(--fs-suggestion-layer, 30);
+    box-sizing: border-box;
     margin: var(--fs-spacing-1) 0 0;
     padding: 0;
     list-style: none;
@@ -30,6 +23,26 @@
     border: 1px solid var(--fs-color-neutral-border);
     border-radius: var(--fs-suggestion-radius, var(--fs-spacing-1));
     box-shadow: var(--fs-shadow-overlay);
+  }
+
+  /* Åpen står lista i det øverste laget, `popover="manual"`, så en forelder
+     med `overflow`, som kroppen i en dialog, ikke klipper den. Posisjonen og
+     bredden regner komponenten ut mot feltet. Uten vinduet, som i en liste
+     ingen komponent har tatt seg av, står den i flyten under feltet.
+     `--fs-suggestion-left` er avstanden fra venstre vinduskant; i et dokument
+     som leses fra høyre snus den under, som i `<fs-popover>`. */
+  .fs-suggestion__list:popover-open {
+    position: fixed;
+    inset: auto;
+    inset-block-start: var(--fs-suggestion-top, 0);
+    inset-inline-start: var(--fs-suggestion-left, 0);
+    inline-size: var(--fs-suggestion-width, auto);
+    margin: 0;
+  }
+
+  .fs-suggestion__list:popover-open:dir(rtl) {
+    inset-inline-start: auto;
+    inset-inline-end: var(--fs-suggestion-left, 0);
   }
 
   .fs-suggestion__list[hidden] {
@@ -87,6 +100,12 @@
      filtrerer selv, og ikke vet om lista er åpen. Den vet bare om søket ga
      noe. Tommeldingen må stå etter lista, som søsken. */
   .fs-suggestion__list[hidden] ~ .fs-suggestion__empty {
+    display: none;
+  }
+
+  /* Mens svaret på søket er underveis, sier lista `aria-busy`, og «Ingen
+     treff» ville vært usant. */
+  .fs-suggestion__list[aria-busy="true"] ~ .fs-suggestion__empty {
     display: none;
   }
 

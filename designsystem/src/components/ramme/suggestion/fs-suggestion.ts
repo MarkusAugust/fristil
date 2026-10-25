@@ -148,6 +148,15 @@ export class FsSuggestion extends HostElement {
   /** `for` komponenten selv skrev på ledeteksten. */
   private readonly forByMe = new WeakMap<Element, string>()
   /**
+   * Navnet komponenten ga lista, per liste: `aria-labelledby` mot
+   * ledeteksten, eller `aria-label` med teksten i den. Står noe annet der,
+   * er det serverens, og det står.
+   */
+  private readonly listNameByMe = new WeakMap<
+    Element,
+    { name: "aria-labelledby" | "aria-label"; value: string }
+  >()
+  /**
    * Ledetekster der serveren skrev en `for` som pekte på en annen id. Sies
    * fra om én gang; minnet nullstilles ikke, siden den omskrevne `for` ikke
    * kan skilles fra en server som rettet seg.
@@ -221,9 +230,17 @@ export class FsSuggestion extends HostElement {
         "readonly",
         "disabled",
         "aria-disabled",
+        // Lista står i det øverste laget. En morfing som tar `popover`,
+        // lukker vinduet, og komponenten setter det tilbake.
+        "popover",
+        // Navnet på lista, fra ledeteksten.
+        "aria-labelledby",
+        "aria-label",
       ],
     })
     this.sync()
+    window.addEventListener("resize", this.reposition)
+    window.addEventListener("scroll", this.reposition, true)
     // Lista lukkes når fokus forlater komponenten, med Tab som med alt annet.
     // På verten og ikke på feltet: går fokus via en knapp inni komponenten og
     // så videre ut, skal lista lukkes da også. Uten dette ble den stående
@@ -257,6 +274,118 @@ export class FsSuggestion extends HostElement {
     this.bind()
     this.repair()
     this.announceFiltered()
+    this.mirrorPopover()
+  }
+
+  /**
+   * Åpner og lukker vinduet lista står i, etter `hidden`.
+   *
+   * `hidden` er fortsatt det som sier om lista er åpen, fra serveren som fra
+   * komponenten, og vinduet følger etter. Lista står i det øverste laget, så
+   * en forelder med `overflow`, som kroppen i en dialog, ikke klipper den.
+   */
+  private mirrorPopover(): void {
+    const list = this.listElement
+    if (!list?.isConnected || !list.hasAttribute("popover")) return
+    const shown = list.matches(":popover-open")
+    try {
+      if (!list.hidden && !shown) list.showPopover()
+      else if (list.hidden && shown) list.hidePopover()
+    } catch {
+      // Et element som er på vei ut av treet, kan ikke vises. Neste runde
+      // ser det igjen.
+      return
+    }
+    if (!list.hidden) this.reposition()
+  }
+
+  /**
+   * Legger lista rett under feltet, like bred som det. Er det ikke plass
+   * under, legges den over, og klemmes inn i vinduet uansett, som panelet i
+   * `<fs-popover>`. Posisjonen er fysisk, regnet ut fra feltets boks.
+   */
+  private reposition = (): void => {
+    const list = this.listElement
+    const control = this.querySelector<HTMLElement>(CONTROL_SELECTOR)
+    if (!list || !control || !list.matches(":popover-open")) return
+
+    const field = control.getBoundingClientRect()
+    const height = list.getBoundingClientRect().height
+    const space = 4
+
+    let top = field.bottom + space
+    if (top + height > window.innerHeight && field.top - height - space >= 0) {
+      top = field.top - height - space
+    }
+    top = Math.max(space, Math.min(top, window.innerHeight - height - space))
+
+    list.style.setProperty("--fs-suggestion-top", `${Math.round(top)}px`)
+    list.style.setProperty(
+      "--fs-suggestion-left",
+      `${Math.round(field.left)}px`,
+    )
+    list.style.setProperty(
+      "--fs-suggestion-width",
+      `${Math.round(field.width)}px`,
+    )
+  }
+
+  /**
+   * Gir lista et navn fra ledeteksten, når markupen kom uten.
+   *
+   * Med `aria-labelledby` når ledeteksten står ved siden av feltet; den får
+   * id av komponenten når den mangler, siden den ikke har noe brukeren kan
+   * miste. Står ledeteksten rundt feltet, får den ingen id: en morfing ville
+   * da byttet ut ledeteksten, og feltet med den. Da får lista teksten i
+   * ledeteksten som `aria-label`, uten verdien i feltet.
+   */
+  private nameList(list: HTMLElement, control: HTMLInputElement): void {
+    const mine = this.listNameByMe.get(list)
+    const labelledby = list.getAttribute("aria-labelledby")
+    const label = list.getAttribute("aria-label")
+    const fromServer =
+      (labelledby !== null &&
+        !(mine?.name === "aria-labelledby" && mine.value === labelledby)) ||
+      (label !== null && !(mine?.name === "aria-label" && mine.value === label))
+    if (fromServer) return
+
+    const labelElement =
+      control.labels?.[0] ?? this.querySelector<HTMLLabelElement>("label")
+    if (!labelElement) return
+
+    if (labelElement.contains(control)) {
+      let text = ""
+      for (const node of labelElement.childNodes)
+        if (
+          node !== control &&
+          !(node instanceof Element && node.contains(control))
+        )
+          text += node.textContent ?? ""
+      text = text.replace(/\s+/g, " ").trim()
+      if (labelledby !== null) setAttr(list, "aria-labelledby", null)
+      if (text === "") {
+        if (label !== null) setAttr(list, "aria-label", null)
+        this.listNameByMe.delete(list)
+        return
+      }
+      setAttr(list, "aria-label", text)
+      this.listNameByMe.set(list, { name: "aria-label", value: text })
+      return
+    }
+
+    if (!labelElement.id) {
+      setAttr(
+        labelElement,
+        "id",
+        this.rememberedId(labelElement, "fs-suggestion-label"),
+      )
+    }
+    if (label !== null) setAttr(list, "aria-label", null)
+    setAttr(list, "aria-labelledby", labelElement.id)
+    this.listNameByMe.set(list, {
+      name: "aria-labelledby",
+      value: labelElement.id,
+    })
   }
 
   /** Id-en et element skal ha: sin egen, ellers den komponenten laget sist. */
@@ -411,6 +540,8 @@ export class FsSuggestion extends HostElement {
       if (!control.hasAttribute("aria-controls")) {
         setAttr(control, "aria-controls", list.id)
       }
+      if (!list.hasAttribute("popover")) setAttr(list, "popover", "manual")
+      this.nameList(list, control)
       if (!control.hasAttribute("aria-expanded")) {
         if (!list.hasAttribute("hidden")) setFlag(list, "hidden", true)
         setAttr(control, "aria-expanded", "false")
@@ -425,6 +556,11 @@ export class FsSuggestion extends HostElement {
       }
       if (!option.id) {
         setAttr(option, "id", this.rememberedId(option, "fs-suggestion-option"))
+      }
+      // Fra starten, ikke først når lista lukkes: ellers sto alternativene
+      // serveren sendte, uten til da, mens resten av lista hadde det.
+      if (!option.hasAttribute("aria-selected")) {
+        setAttr(option, "aria-selected", "false")
       }
     }
   }
@@ -524,6 +660,8 @@ export class FsSuggestion extends HostElement {
   }
 
   disconnectedCallback(): void {
+    window.removeEventListener("resize", this.reposition)
+    window.removeEventListener("scroll", this.reposition, true)
     this.removeEventListener("focusout", this.handleFocusOut)
     this.observer?.disconnect()
     this.observer = undefined

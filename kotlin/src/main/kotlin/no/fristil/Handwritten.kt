@@ -198,6 +198,7 @@ fun Fs.suggestion(
     val active = activeIndex?.toDouble() ?: -1.0
     val isOpen = open == true
     val listId = "$id-list"
+    val labelId = "$id-label"
     val statusId = "$id-status"
     fun optionId(index: Int) = "$id-option-${optionKeys[index]}"
     // Markeringen skrives bare når lista er åpen, og bare på et heltall, som i TypeScript.
@@ -214,14 +215,22 @@ fun Fs.suggestion(
     control["aria-autocomplete"] = "list"
     if (marked) control["aria-activedescendant"] = optionId(active.toInt())
 
-    val list = linkedMapOf("class" to "fs-suggestion__list", "id" to listId, "role" to "listbox")
+    val list = linkedMapOf(
+        "class" to "fs-suggestion__list",
+        "id" to listId,
+        "role" to "listbox",
+        "aria-labelledby" to labelId,
+        "popover" to "manual",
+    )
     if (!isOpen) list["hidden"] = ""
+    if (pending == true) list["aria-busy"] = "true"
 
     val empty = linkedMapOf("class" to "fs-suggestion__empty")
     if (!(n == 0.0 && pending != true)) empty["hidden"] = ""
 
     return SuggestionParts(
-        label = field.label,
+        // Ledeteksten gir også lista navnet sitt, gjennom `aria-labelledby`.
+        label = field.label + mapOf("id" to labelId),
         control = Attributes(control),
         list = Attributes(list),
         options = optionKeys.indices.map { index ->
