@@ -67,7 +67,7 @@
             komponentsiden står der, med id-en som variabel. Fila genereres i
             designsystemet og kopieres inn av Gradle.
         -->
-        <defaultLiveTemplates file="/liveTemplates/LO-TEK" />
+        <defaultLiveTemplates file="/liveTemplates/Lotek" />
     </extensions>
 
     <applicationListeners>

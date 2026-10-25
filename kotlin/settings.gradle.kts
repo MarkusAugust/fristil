@@ -1,4 +1,4 @@
-rootProject.name = "lo-tek"
+rootProject.name = "lo-tek-interfaces"
 
 // Utvidelsene for kotlinx.html, som egen pakke: hovedpakken skal ikke ta med
 // kotlinx.html til den som ikke bruker det.
