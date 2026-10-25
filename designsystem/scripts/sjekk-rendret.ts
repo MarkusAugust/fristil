@@ -9,11 +9,13 @@
  * pakken ikke avhenger av Playwright. Det kjøres her også, og skal gi det
  * samme svaret.
  *
- * Til slutt går hver bygde side i dokumentasjonen gjennom `diagnoseMarkup`
- * og `diagnosePage`, og skal gi null funn. Det er vakten mot falske funn: en
- * regel som slår ut på våre egne oppskrifter, feller bygget her, før den når
- * en editor. Støyen fra Expressive Code og forhåndsvisningene i
- * `<template shadowrootmode>` blanker `pageSource` i kjernen alt.
+ * Til slutt går hver bygde side i dokumentasjonen gjennom `diagnosePage`, og
+ * skal gi null funn. Det er vakten mot falske funn: en regel som slår ut på
+ * våre egne oppskrifter, feller bygget her, før den når en editor. Sidemodus
+ * og ikke markupmodus: en bygd side er en side, og markupmodus leser
+ * kodeeksemplene i Expressive Code sitt `data-code` som markup, mens
+ * `pageSource` i kjernen blanker dem. Den ene klassen dokumentasjonen har
+ * selv, `fs-preview` på forhåndsvisningene, er unntatt ved navn.
  *
  * Kjør med: bun scripts/sjekk-rendret.ts (etter bun run build)
  */
@@ -23,7 +25,6 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { chromium } from "playwright"
 import {
-  diagnoseMarkup,
   diagnosePage,
   diagnoseRendered,
   READ_RENDERED_PAGE,
@@ -152,7 +153,7 @@ try {
 }
 
 /*
- * Dokumentasjonen gir null funn, i begge modusene.
+ * Dokumentasjonen gir null funn i sidemodus.
  *
  * Tell sidene sist i løkka, og krev at tallet er likt antallet filer og
  * større enn null: en glob som fant ingenting, skal ikke se ut som en
@@ -160,19 +161,14 @@ try {
  */
 const dist = join(pakke, "../documentation/dist")
 const filer = [...new Bun.Glob("**/*.html").scanSync({ cwd: dist })].sort()
+const egenKlasse = (f: { rule: string; message: string }) =>
+  f.rule === "ukjent-klasse" && f.message.includes("«fs-preview»")
 let antallSider = 0
 for (const fil of filer) {
   const html = readFileSync(join(dist, fil), "utf8")
-  for (const [modus, diagnose] of [
-    ["markup", diagnoseMarkup],
-    ["side", diagnosePage],
-  ] as const) {
-    const funn = await diagnose(html)
-    for (const f of funn)
-      feil.push(
-        `${fil} (${modus}) ${f.line}:${f.column} ${f.rule}: ${f.message}`,
-      )
-  }
+  for (const f of await diagnosePage(html))
+    if (!egenKlasse(f))
+      feil.push(`${fil} ${f.line}:${f.column} ${f.rule}: ${f.message}`)
   antallSider += 1
 }
 krev(
@@ -187,5 +183,5 @@ if (feil.length > 0) {
   process.exit(1)
 }
 console.log(
-  `diagnoseRendered sjekker siden slik nettleseren rendret den, med stilarkene, og ${antallSider} bygde sider i dokumentasjonen gir null funn.`,
+  `diagnoseRendered sjekker siden slik nettleseren rendret den, med stilarkene, og ${antallSider} bygde sider i dokumentasjonen gir null funn i sidemodus.`,
 )
