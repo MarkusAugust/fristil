@@ -151,8 +151,8 @@ export const lt = {
   /** On and off. Named `switchControl` when you import it directly. */
   switch: switchControl,
   /**
-   * A tab list with panels. The server writes the roles and hides the panels
-   * that are not selected, `<lt-tabs>` handles the arrow keys.
+   * A tab list with panels. The server writes the links, ids and classes;
+   * `<lt-tabs>` adds the roles, the selection and the arrow keys.
    */
   tabs,
   /**

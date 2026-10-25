@@ -3,8 +3,7 @@
  * tokens.
  *
  * No palette, no steps, no pins: the role *is* the colour. The names follow
- * the namespaces of Tailwind, daisyUI and Digdir: system prefix, kind and
- * path.
+ * the namespaces of Tailwind and daisyUI: system prefix, kind and path.
  *
  * The colours are computed by the core. Here are LO-TEK's colours, and the
  * names. A matrix for other brand colours is `light` and `dark` in the theme
