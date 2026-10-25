@@ -1,77 +1,77 @@
 ---
 title: Link
-description: Lenkestil for navigasjon i løpende tekst. CSS-komponent med én klasse og ingen JavaScript.
+description: Link style for navigation in running text. A CSS component with one class and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Lenkestil med tydelig understrek, hover og fokusmarkering. Skal lenken se ut som en knapp, bruk [Button](../button/) på `<a>`-elementet i stedet.
+A link style with a clear underline, hover and a focus indicator. If the link should look like a button, use [Button](../button/) on the `<a>` element instead.
 
 ## How to use it
 
 <Example importer={["tokens.css", "link.css"]}
   stiler={["link"]} layout="stabel" maxWidth="32rem" kode={`
 <p>
-  Søknaden er sendt. Du finner den igjen under
-  <a class="lt-link" href="#">Mine søknader</a>, og vi sender deg en
-  e-post når den er behandlet.
+  Your application has been sent. You will find it under
+  <a class="lt-link" href="#">My applications</a>, and we will send you an
+  email when it has been processed.
 </p>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
-<a {...lt.link()} href="/kvittering">Se kvittering</a>
+<a {...lt.link()} href="/receipt">See receipt</a>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const lenke = document.querySelector<HTMLAnchorElement>("#arsoppgave")
-const klar = await harArsoppgave() // appens egen sjekk
+const link = document.querySelector<HTMLAnchorElement>("#tax-statement")
+const ready = await hasTaxStatement() // the app's own check
 
-lt.setAttributes(lenke, lt.link({ disabled: !klar }))
-if (klar) lenke?.setAttribute("href", "/arsoppgave")
-else lenke?.removeAttribute("href")
+lt.setAttributes(link, lt.link({ disabled: !ready }))
+if (ready) link?.setAttribute("href", "/tax-statement")
+else link?.removeAttribute("href")
 ```
 
-`href` er appens, ikke byggefunksjonens, så den setter og fjerner du selv. Blir årsoppgaven klar senere, kjører du linjene på nytt. Da fjernes `aria-disabled`, `role` og `tabindex`, og lenken virker igjen. `lt.link()` forvalter alle tre, så en `role` eller `tabindex` du har satt selv på samme lenke, fjernes også. Trenger lenken dem, sett dem etter `setAttributes`.
+`href` belongs to the app, not the builder function, so you set and remove it yourself. If the tax statement becomes ready later, run the lines again. `aria-disabled`, `role` and `tabindex` are then removed, and the link works again. `lt.link()` manages all three, so a `role` or `tabindex` you set yourself on the same link is removed too. If the link needs them, set them after `setAttributes`.
 
 </Fragment>
 </Example>
 
-## Deaktivert lenke
+## Disabled link
 
 <Example stiler={["link"]} kode={`
-<a class="lt-link" href="#">Se kvittering</a>
-<a class="lt-link" role="link" tabindex="0" aria-disabled="true">Se årsoppgave</a>
+<a class="lt-link" href="#">See receipt</a>
+<a class="lt-link" role="link" tabindex="0" aria-disabled="true">See tax statement</a>
 `} />
 
-En deaktivert lenke har ingen `href`. `aria-disabled="true"` demper fargen og slår av musa med `pointer-events: none`, men tastaturet følger `href` med Enter uansett. Derfor må den bort.
+A disabled link has no `href`. `aria-disabled="true"` mutes the colour and turns off the mouse with `pointer-events: none`, but the keyboard follows `href` with Enter regardless. That is why it has to go.
 
-Uten `href` er en `<a>` ingen lenke for skjermleseren, og den står ikke i tabrekkefølgen. `role="link"` og `tabindex="0"` gir den begge tilbake, så skjermlesere finner den og kan si at den er utilgjengelig. `lt.link({ disabled: true })` gir alle tre.
+Without `href` an `<a>` is not a link to the screen reader, and it is not in the tab order. `role="link"` and `tabindex="0"` give it both back, so screen readers find it and can say that it is unavailable. `lt.link({ disabled: true })` gives all three.
 
-`lotek sjekk` melder en `lt-link` eller `lt-button` med både `aria-disabled="true"` og `href` (regelen `deaktivert-med-href`).
+`lotek check` reports an `lt-link` or `lt-button` with both `aria-disabled="true"` and `href` (the rule `disabled-with-href`).
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-link` | Lenken. Besøkt og deaktivert skiller seg med `:visited` og `aria-disabled`. |
+| `.lt-link` | The link. Visited and disabled are told apart by `:visited` and `aria-disabled`. |
 
-Se [Tilpasning](../../customising/) for hvordan laget virker.
+See [Customising](../../customising/) for how the layer works.
 
 ## Accessibility
 
-- Lenketeksten skal gi mening lest alene. Skjermlesere kan liste opp alle lenker på siden, og der hjelper «Se faktura for mars» der «Klikk her» ikke sier noe.
-- Ikke fjern `outline` på `:focus-visible`. Den er det eneste tastaturbrukere navigerer etter.
-- Åpner lenken i ny fane, si det i teksten eller med `aria-label`.
+- The link text should make sense read on its own. Screen readers can list every link on the page, and there "See the invoice for March" helps where "Click here" says nothing.
+- Do not remove `outline` on `:focus-visible`. It is the only thing keyboard users navigate by.
+- If the link opens in a new tab, say so in the text or with `aria-label`.

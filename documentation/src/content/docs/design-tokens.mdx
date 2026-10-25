@@ -1,69 +1,69 @@
 ---
 title: Design tokens
-description: Farger, størrelser og typografi som CSS-variabler, TypeScript-konstanter og Tailwind-forhåndsinnstilling.
+description: Colours, sizes and typography as CSS variables, TypeScript constants and a Tailwind theme.
 ---
 
 import Preview from "../../components/Preview.astro"
 import TokenSamples from "../../components/TokenSamples.astro"
 
-Alle verdier er CSS-variabler i `tokens.css`, både farger, avstander og skriftstørrelser.
+Every value is a CSS variable in `tokens.css`: colours, spacing and font sizes alike.
 
 ```js
 import "@lo-tek/interfaces/tokens.css"
 ```
 
 ```css
-.min-komponent {
+.my-component {
 	color: var(--lt-color-accent-fill);
 	padding: var(--lt-spacing-4);
 	font-size: var(--lt-font-size-m);
 }
 ```
 
-## Fargene er en matrise
+## Colours as a matrix
 
-Ett fargelag, ikke to. En farge er et punkt i en matrise av **familie**, altså hva den betyr, og **rolle**, altså hva den gjør. Navnet er `--lt-color-<familie>-<rolle>`.
+One colour layer, not two. A colour is a point in a matrix of **family**, what it means, and **role**, what it does. The name is `--lt-color-<family>-<role>`.
 
-Hver familie har de samme rollene. Det er strukturen som gjør at de matcher: et fareområde og et merkevareområde ser ut som søsken fordi de er bygd av de samme rollene på de samme lyshetene.
+Every family has the same roles. That structure is what makes them match: a danger area and a brand area look like siblings because they are built from the same roles at the same lightnesses.
 
-### Familiene
+### Families
 
-| Familie | Til |
+| Family | For |
 | --- | --- |
-| `accent` | Lenker, primærknapp, fokus, valgt tilstand |
-| `visited` | Besøkte lenker |
-| `brand1`, `brand2`, `brand3` | Flater, seksjoner og kategorier. De betyr ikke noe i seg selv |
-| `neutral` | Siden, brødteksten, kantene |
-| `danger` | Feil, sletting, avslag |
-| `warning` | Krever oppmerksomhet |
-| `success` | Fullført, godkjent |
+| `accent` | Links, primary button, focus, selected state |
+| `visited` | Visited links |
+| `brand1`, `brand2`, `brand3` | Surfaces, sections and categories. They mean nothing in themselves |
+| `neutral` | The page, body text, borders |
+| `danger` | Errors, deletion, rejection |
+| `warning` | Needs attention |
+| `success` | Completed, approved |
 
-### Rollene
+### Roles
 
-Ni roller, like for hver familie. Tekst og kant har tre trinn hver, som speiler hverandre.
+Nine roles, the same for every family. Text and border have three steps each, mirroring each other.
 
-| Rolle | Til | Løfte |
+| Role | For | Promise |
 | --- | --- | --- |
-| `surface` | Tonet flate: et merke, et varsel, en seksjon | ingen |
-| `border-subtle` | Dekorativ strek, som mellom to rader | ingen |
-| `border` | Rammen rundt et felt eller en flate | 3,1:1 mot siden, mot `raised` og mot egen `surface` |
-| `border-strong` | Feltrammen når musa er over, og en tabellstrek | følger av `border`, som den ligger utenfor |
-| `fill` | Fylt flate: en knapp, en avkryssingsboks som er huket av | 3,1:1 mot siden og mot `raised` |
-| `content` | Teksten oppå `fill`, og oppå `text` på en knapp ved hover | 4,6:1 mot `fill` og mot `text` |
-| `text-subtle` | Dempet tekst: hjelpetekst, plassholdere | 4,6:1 mot siden, mot `neutral-surface` og mot `raised` |
-| `text` | Familiens farge som tekst, og knappen ved hover | de samme tre, og mot egen `surface` |
-| `text-strong` | Brødtekst, overskrifter og lenka ved hover | de samme tre |
+| `surface` | Tinted surface: a badge, an alert, a section | none |
+| `border-subtle` | Decorative line, such as between two rows | none |
+| `border` | The border around a field or a surface | 3.1:1 against the page, against `raised` and against its own `surface` |
+| `border-strong` | The field border on hover, and a table rule | follows from `border`, which it lies outside |
+| `fill` | Filled surface: a button, a checked checkbox | 3.1:1 against the page and against `raised` |
+| `content` | The text on top of `fill`, and on top of `text` on a button on hover | 4.6:1 against `fill` and against `text` |
+| `text-subtle` | Muted text: help text, placeholders | 4.6:1 against the page, against `neutral-surface` and against `raised` |
+| `text` | The family's colour as text, and the button on hover | the same three, and against its own `surface` |
+| `text-strong` | Body text, headings and the link on hover | the same three |
 
-Den nøytrale familien har to roller i tillegg, fordi den bærer siden selv:
+The neutral family has two extra roles, because it carries the page itself:
 
-| Token | Til | Løfte |
+| Token | For | Promise |
 | --- | --- | --- |
-| `--lt-color-neutral-canvas` | Siden | hver tekstrolle i hver familie holder mot den |
-| `--lt-color-neutral-raised` | En flate som ligger over et kort | det samme |
+| `--lt-color-neutral-canvas` | The page | every text role in every family holds against it |
+| `--lt-color-neutral-raised` | A surface lying above a card | the same |
 
-Tekst må holde mot alle tre lagene, altså siden, `neutral-surface` og `neutral-raised`. Et vanlig kort har sidens bakgrunn (`canvas`), et fylt kort har `neutral-surface`, og en flate over et kort har `neutral-raised`. Holdt teksten bare mot siden, ville et kort på et kort blitt uleselig uten at noe sa fra.
+Text has to hold against all three layers: the page, `neutral-surface` and `neutral-raised`. A plain card has the page background (`canvas`), a filled card has `neutral-surface`, and a surface above a card has `neutral-raised`. If text only held against the page, a card on a card would become unreadable without anything saying so.
 
-Hver rad er en familie, hver rute en rolle, i rekkefølgen over:
+Each row is a family, each square a role, in the order above:
 
 <TokenSamples matrise={[
   "accent",
@@ -77,35 +77,35 @@ Hver rad er en familie, hver rute en rolle, i rekkefølgen over:
   "success",
 ]} />
 
-### Kontrasten er garantert av konstruksjonen
+### Contrast by construction
 
-Kuløren er din, lysheten er rollens. Lyshetene er ikke valgt, de er regnet fram mot et sveip rundt hele fargesirkelen på den høyeste metningen sRGB kan vise. Derfor holder løftene uansett hvilken merkefarge du gir, og det finnes ikke noe justeringspass som flytter fargen din etterpå.
+The hue is yours, the lightness is the role's. The lightnesses are not picked by hand: they are computed against a sweep around the whole colour wheel at the highest chroma sRGB can show. That is why the promises hold whatever brand colour you give, and there is no adjustment pass that moves your colour afterwards.
 
-Skriver du dine egne verdier, er løftene dine å holde. `lotek sjekk-tema theme.css` sier hvilken celle som ryker og hvorfor.
+If you write your own values, keeping the promises is up to you. `lotek check-theme theme.css` tells you which cell breaks and why.
 
-### Det som ikke er en celle
+### Tokens outside the matrix
 
-| Token | Til |
+| Token | For |
 | --- | --- |
-| `--lt-color-disabled-surface`, `--lt-color-disabled-text` | Kontroller som er slått av. Unntatt kontrastkravet i WCAG 1.4.3, og med vilje dempet: en kontroll som er av skal se av |
-| `--lt-color-overlay` | Flaten bak en modal |
-| `--lt-shadow-overlay` | Skyggen under et panel som ligger over siden |
-| `--lt-focus-ring` | Hele ringen rundt det som har fokus, som kortform til `outline`. Bredden og stilen gjelder overalt, fargen ikke, se under tabellen |
-| `--lt-icon-search`, `--lt-icon-check`, `--lt-icon-dash`, `--lt-icon-calendar`, `--lt-icon-clock` | Ikoner tegnet inn i en bakgrunn |
+| `--lt-color-disabled-surface`, `--lt-color-disabled-text` | Disabled controls. Exempt from the contrast requirement in WCAG 1.4.3, and muted on purpose: a control that is off should look off |
+| `--lt-color-overlay` | The surface behind a modal |
+| `--lt-shadow-overlay` | The shadow under a panel lying above the page |
+| `--lt-focus-ring` | The whole ring around whatever has focus, as an `outline` shorthand. The width and style apply everywhere, the colour does not (see below the table) |
+| `--lt-icon-search`, `--lt-icon-check`, `--lt-icon-dash`, `--lt-icon-calendar`, `--lt-icon-clock` | Icons drawn into a background |
 
-Fargen i `--lt-focus-ring` gjelder ikke overalt. Den byttes med vilje i ugyldig tilstand (Input, Textarea, Select, Checkbox, Radio), i vellykket tilstand (Input, Textarea, Select), i Skip Link og Error Summary, og på det valgte alternativet i Select med stylet liste og i Toggle Group, der ringen står oppå en farget flate. Endrer du fargen i tokenet, gjelder den ikke der.
+The colour in `--lt-focus-ring` does not apply everywhere. It is replaced on purpose in the invalid state (Input, Textarea, Select, Checkbox, Radio), in the success state (Input, Textarea, Select), in Skip Link and Error Summary, and on the selected option in Select with a styled list and in Toggle Group, where the ring sits on a coloured surface. If you change the colour in the token, it does not apply there.
 
-`--lt-color-disabled-surface`, `--lt-color-disabled-text` og `--lt-focus-ring` er bygget av andre tokens, og deklareres på nytt i hver temagrense, så de følger temaet til elementet. Overstyrer du en av dem på `:root`, gjelder ikke overstyringen inne i et `data-theme`. Skriv den også på `[data-theme="light"]` og `[data-theme="dark"]`, slik fargene skrives i [Tilpasning](../customising/).
+`--lt-color-disabled-surface`, `--lt-color-disabled-text` and `--lt-focus-ring` are built from other tokens and declared again at every theme boundary, so they follow the element's theme. If you override one of them on `:root`, the override does not apply inside a `data-theme`. Write it on `[data-theme="light"]` and `[data-theme="dark"]` as well, the way the colours are written in [Customising](../customising/).
 
-**Ikonene følger ikke matrisen.** Et ikon som er tegnet inn i en bakgrunn kan ikke lese en CSS-variabel: streken er malt inn i selve bildet. De har derfor en mørk og en lys utgave, og snur med temaet. Bruker du dem selv, sett dem som `background-image`.
+**The icons do not follow the matrix.** An icon drawn into a background cannot read a CSS variable: the stroke is painted into the image itself. They therefore have a dark and a light version, and switch with the theme. If you use them yourself, set them as `background-image`.
 
-**`disabled` eller `neutral`?** De ser like ut, men kravene er ulike. `disabled` er for kontroller som er slått av. `neutral` er for dempet informasjon brukeren skal lese eller trykke på, og holder løftet sitt. Er elementet slått av, bruk `disabled`.
+**`disabled` or `neutral`?** They look alike, but the requirements differ. `disabled` is for controls that are switched off. `neutral` is for muted information the user is meant to read or press, and keeps its promise. If the element is switched off, use `disabled`.
 
-## Størrelsesskalaen
+## Size scale
 
-Én skala, `--lt-spacing-*`, til alt spatialt: `padding`, `margin`, `gap`, `width`, `height`. Fire piksler som grunnenhet, som Tailwind, så `--lt-spacing-4` tilsvarer `p-4`.
+One scale, `--lt-spacing-*`, for everything spatial: `padding`, `margin`, `gap`, `width`, `height`. Four pixels as the base unit, as in Tailwind, so `--lt-spacing-4` matches `p-4`.
 
-| Variabel | Verdi | Tailwind |
+| Variable | Value | Tailwind |
 | --- | --- | --- |
 | `--lt-spacing-px` | 1px | `px` |
 | `--lt-spacing-0-5` | 0.125rem | `0.5` |
@@ -121,59 +121,59 @@ Fargen i `--lt-focus-ring` gjelder ikke overalt. Den byttes med vilje i ugyldig 
 | `--lt-spacing-12` | 3rem | `12` |
 | `--lt-spacing-16` | 4rem | `16` |
 
-## Typografi
+## Typography
 
-Egen rytme framfor numerisk skala, så navnet sier hvor stor teksten er i forhold til brødteksten.
+Its own rhythm rather than a numeric scale, so the name says how large the text is relative to body text.
 
 <Preview
   layout="stabel"
   maxWidth="34rem"
   ekstraCss={`
-    .prove { margin: 0; }
-    .prove-xxs { font-size: var(--lt-font-size-xxs); }
-    .prove-xs { font-size: var(--lt-font-size-xs); }
-    .prove-s { font-size: var(--lt-font-size-s); }
-    .prove-m { font-size: var(--lt-font-size-m); }
-    .prove-l { font-size: var(--lt-font-size-l); }
-    .prove-xl { font-size: var(--lt-font-size-xl); }
-    .prove-xxl { font-size: var(--lt-font-size-xxl); }
-    .prove-mega { font-size: var(--lt-font-size-mega); }
+    .sample { margin: 0; }
+    .sample-xxs { font-size: var(--lt-font-size-xxs); }
+    .sample-xs { font-size: var(--lt-font-size-xs); }
+    .sample-s { font-size: var(--lt-font-size-s); }
+    .sample-m { font-size: var(--lt-font-size-m); }
+    .sample-l { font-size: var(--lt-font-size-l); }
+    .sample-xl { font-size: var(--lt-font-size-xl); }
+    .sample-xxl { font-size: var(--lt-font-size-xxl); }
+    .sample-mega { font-size: var(--lt-font-size-mega); }
   `}
 >
-  <p class="prove prove-xxs">xxs, 0.625rem</p>
-  <p class="prove prove-xs">xs, 0.75rem</p>
-  <p class="prove prove-s">s, 0.875rem</p>
-  <p class="prove prove-m">m, 1rem, brødtekst</p>
-  <p class="prove prove-l">l, 1.125rem</p>
-  <p class="prove prove-xl">xl, 1.375rem</p>
-  <p class="prove prove-xxl">xxl, 1.875rem</p>
-  <p class="prove prove-mega">mega, 2.625rem</p>
+  <p class="sample sample-xxs">xxs, 0.625rem</p>
+  <p class="sample sample-xs">xs, 0.75rem</p>
+  <p class="sample sample-s">s, 0.875rem</p>
+  <p class="sample sample-m">m, 1rem, body text</p>
+  <p class="sample sample-l">l, 1.125rem</p>
+  <p class="sample sample-xl">xl, 1.375rem</p>
+  <p class="sample sample-xxl">xxl, 1.875rem</p>
+  <p class="sample sample-mega">mega, 2.625rem</p>
 </Preview>
 
-`--lt-font-size-m` er brødteksten. `--lt-font-size-reference` er `16px`, grunnstørrelsen rem-verdiene regnes fra.
+`--lt-font-size-m` is body text. `--lt-font-size-reference` is `16px`, the base size the rem values are computed from.
 
-### Vekt og linjeavstand
+### Weight and line height
 
-Verdiene er de komponentene hadde skrevet ut fra før. De ble tokens fordi en organisasjon som tar systemet i bruk gjerne har sin egen typografi, og da skal forskjellen settes ett sted framfor i tjue stilark.
+The values are the ones the components already had written out. They became tokens because an organisation adopting the system often has its own typography, and then the difference should be set in one place rather than in twenty stylesheets.
 
-| Token | Verdi | Brukt av |
+| Token | Value | Used by |
 | --- | --- | --- |
-| `--lt-font-weight-regular` | 400 | merkelappene «(påkrevd)» og «(valgfri)» på ledetekst og feltsett |
-| `--lt-font-weight-medium` | 500 | knapp, feilmelding |
-| `--lt-font-weight-semibold` | 600 | trekkspill, varsel, avatar, merke, brødsmule, kort, dialog, feiloppsummering, feltsett, ledetekst, paginering, økttidsvarsel, tabell, faner, valggruppe |
-| `--lt-font-weight-bold` | 700 | overskrift, og stjerna som merker et påkrevd felt |
-| `--lt-line-height-default` | 1.5 | 25 stilark: knapp, felt, tekstområde, nedtrekksliste, tabell, faner, dialog og resten av kontrollene |
-| `--lt-line-height-heading` | 1.2 | overskrift |
-| `--lt-line-height-article` | 1.6 | brødtekst, liste, korttekst |
-| `--lt-line-height-compact` | 1.4 | hjelpetekst, feilmelding, hjelpeboble, etikett, korttittel, dialogtittel, feiloppsummeringens tittel, sambandslinja |
+| `--lt-font-weight-regular` | 400 | the markers "(required)" and "(optional)" on label and fieldset |
+| `--lt-font-weight-medium` | 500 | button, error text |
+| `--lt-font-weight-semibold` | 600 | accordion, alert, avatar, badge, breadcrumbs, card, dialog, error summary, fieldset, label, pagination, session timeout, table, tabs, toggle group |
+| `--lt-font-weight-bold` | 700 | heading, and the asterisk marking a required field |
+| `--lt-line-height-default` | 1.5 | 25 stylesheets: button, input, textarea, select, table, tabs, dialog and the rest of the controls |
+| `--lt-line-height-heading` | 1.2 | heading |
+| `--lt-line-height-article` | 1.6 | paragraph, list, card text |
+| `--lt-line-height-compact` | 1.4 | help text, error text, tooltip, tag, card title, dialog title, the error summary's title, the connection status bar |
 
-Knappen, overskriften og avsnittet leser dem gjennom sin egen komponentvariabel, slik at et tema kan endre alle knapper uten å endre all tekst: `font-weight: var(--lt-button-font-weight, var(--lt-font-weight-medium))`. De andre leser tokenet direkte. Det er et bevisst skille: en egen variabel per komponent er verdt det der man vil kunne skille dem, og ren støy der man ikke vil.
+The button, the heading and the paragraph read them through their own component variable, so a theme can change every button without changing all text: `font-weight: var(--lt-button-font-weight, var(--lt-font-weight-medium))`. The others read the token directly. The split is deliberate: a separate variable per component is worth it where you want to tell them apart, and pure noise where you do not.
 
-Tre linjeavstander står fortsatt som tall i stilarkene. `1` i paginering, avatar og lukkeknappen på meldingen er ikke typografi, men en måte å få et tall eller et kryss til å stå midt i en sirkel. `1.3` og `1.55` står i én komponent hver.
+Three line heights are still plain numbers in the stylesheets. `1` in pagination, avatar and the close button on the toast is not typography but a way to centre a number or a cross in a circle. `1.3` and `1.55` appear in one component each.
 
 ## TypeScript
 
-Alle variabelnavn finnes som en typet oppslagstabell:
+Every variable name exists as a typed lookup table:
 
 ```ts
 import {
@@ -189,13 +189,13 @@ colorTokens["--lt-color-accent-fill"] // "#226dba"
 cssTokens["--lt-font-size-mega"]         // "2.625rem"
 ```
 
-Skriver du `--lt-color-accent-fil`, får du feil i editoren i stedet for en `var()` som stille faller tilbake til ingenting. Det samme gjelder en rolle som ikke finnes: `--lt-color-accent-fill-hover` er en typefeil, ikke en tom verdi.
+If you write `--lt-color-accent-fil`, you get an error in the editor instead of a `var()` that silently falls back to nothing. The same goes for a role that does not exist: `--lt-color-accent-fill-hover` is a type error, not an empty value.
 
-Fargene ligger i `colorTokens` og `darkColorTokens`, resten i `cssTokens`. Skillet er at fargene regnes av kontrakten og derfor ikke står skrevet i kilden. `CssToken` dekker begge, siden fargenavnene utledes av de to aksene.
+The colours are in `colorTokens` and `darkColorTokens`, the rest in `cssTokens`. The split exists because the colours are computed by the contract and are therefore not written in the source. `CssToken` covers both, since the colour names are derived from the two axes.
 
-## Brekkpunkter og containere
+## Breakpoints and containers
 
-Build-time-verdier, ikke CSS-variabler, og eksporteres derfor som konstanter:
+Build-time values, not CSS variables, and therefore exported as constants:
 
 ```ts
 import { Breakpoints, Containers } from "@lo-tek/interfaces/tokens"
@@ -204,11 +204,11 @@ Breakpoints.md   // "768px"
 Containers.aside // "384px"
 ```
 
-Brekkpunktene følger Tailwind: `sm` 640px, `md` 768px, `lg` 1024px, `xl` 1280px, `2xl` 1536px.
+The breakpoints follow Tailwind: `sm` 640px, `md` 768px, `lg` 1024px, `xl` 1280px, `2xl` 1536px.
 
 ## Tailwind
 
-Temaet er en CSS-fil, ikke en forhåndsinnstilling i JavaScript. Pakken har derfor ingen avhengighet til Tailwind i det hele tatt, og to Tailwind-versjoner kan ikke komme i konflikt: det er versjonen i appen din som leser fila.
+The theme is a CSS file, not a JavaScript preset. The package therefore has no dependency on Tailwind at all, and two Tailwind versions cannot conflict: the version in your app is the one that reads the file.
 
 ```css
 /* app.css */
@@ -219,13 +219,13 @@ Temaet er en CSS-fil, ikke en forhåndsinnstilling i JavaScript. Pakken har derf
 @import "@lo-tek/interfaces/tailwind.css";
 ```
 
-Den første linja er det viktigste. Se [Tilpasning](../customising/#tailwind-og-lagrekkefølgen) for hvorfor.
+The first line is the most important one. See [Customising](../customising/#tailwind-and-the-layer-order) for why.
 
-Alt temaet legger til heter `lt-`, som klassene ellers i systemet. Da er `bg-neutral-100` fortsatt Tailwinds egen farge:
+Everything the theme adds is named `lt-`, like the other classes in the system. That way `bg-neutral-100` is still Tailwind's own colour.
 
-Hver celle i matrisen blir en klasse, med samme navn: `bg-lt-accent-fill` leser `--lt-color-accent-fill`.
+Every cell in the matrix becomes a class with the same name: `bg-lt-accent-fill` reads `--lt-color-accent-fill`.
 
-| Klasse | Verdi |
+| Class | Value |
 | --- | --- |
 | `bg-lt-accent-fill` | `--lt-color-accent-fill` |
 | `text-lt-accent-text` | `--lt-color-accent-text` |
@@ -236,12 +236,12 @@ Hver celle i matrisen blir en klasse, med samme navn: `bg-lt-accent-fill` leser 
 | `max-w-lt-aside` | 384px |
 | `shadow-lt-overlay` | `--lt-shadow-overlay` |
 
-Avstandene er koblet til grunnenheten: Tailwind regner `p-4` som `calc(var(--spacing) * 4)`, og `--spacing` er satt til `--lt-spacing-1`. `p-4` er dermed fire ganger enheten, som er `--lt-spacing-4`. Trinnene er egne verdier og regnes ikke av enheten, så skal du endre skalaen, skriv om alle trinnene og ikke bare `--lt-spacing-1`. Ellers følger Tailwind-klassene og det i komponentene som bruker enheten direkte med, mens resten av komponentene står der de sto. [Tailwind](../tailwind/#avstandene-er-de-samme) viser hvordan.
+The spacing is tied to the base unit: Tailwind computes `p-4` as `calc(var(--spacing) * 4)`, and `--spacing` is set to `--lt-spacing-1`. `p-4` is thus four times the unit, which is `--lt-spacing-4`. The steps are separate values and are not computed from the unit, so if you change the scale, rewrite every step and not just `--lt-spacing-1`. Otherwise the Tailwind classes, and whatever in the components uses the unit directly, follow along, while the rest of the components stay where they were. [Tailwind](../tailwind/#the-spacing-is-the-same) shows how.
 
-Brekkpunktene er utelatt med vilje. LO-TEKs `sm` til `2xl` har de samme verdiene som Tailwind allerede bruker, så `md:` virker som før.
+The breakpoints are left out on purpose. LO-TEK's `sm` to `2xl` have the same values Tailwind already uses, so `md:` works as before.
 
-Klassene er ikke skrevet av hukommelsen: hver pull request kompilerer temaet med en ekte Tailwind og kontrollerer at hver farge i matrisen kommer ut som en klasse med tokenet sitt i seg.
+The classes are not written from memory: every pull request compiles the theme with a real Tailwind and checks that every colour in the matrix comes out as a class with its token in it.
 
-Hele oppsettet, med eksempler som blandes fritt med komponentene, står på [Tailwind](../tailwind/).
+The full setup, with examples mixed freely with the components, is on [Tailwind](../tailwind/).
 
-Vil du endre farger, form eller størrelse, se [Tilpasning](../customising/).
+To change colours, shape or size, see [Customising](../customising/).

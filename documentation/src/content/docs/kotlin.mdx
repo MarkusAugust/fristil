@@ -1,9 +1,9 @@
 ---
-title: Kotlin og Java
-description: Byggefunksjonene med enum-er, og LO-TEKs sjekk i vanlige tester, på JVM-en uten Node og uten JavaScript.
+title: Kotlin and Java
+description: The builder functions with enums, and LO-TEK's check in ordinary tests, on the JVM without Node and without JavaScript.
 ---
 
-LO-TEK for Kotlin gir deg tre ting: byggefunksjonene fra `lt`, der de lovlige verdiene er `enum`-er, den samme sjekken som `lotek sjekk` og editoren bruker, som en vanlig funksjon i testene dine, og CSS-en og web-komponentene som en WebJar. Alt kjører i JVM-en eller serveres av appen. Ingen Node, ingen npm, ingen prosess å starte og ingenting å installere ved siden av.
+LO-TEK for Kotlin gives you three things: the builder functions from `lt`, where the allowed values are `enum`s; the same check that `lotek check` and the editor use, as an ordinary function in your tests; and the CSS and the web components as a WebJar. Everything runs in the JVM or is served by the app. No Node, no npm, no process to start and nothing to install alongside.
 
 ```kotlin
 // build.gradle.kts
@@ -12,11 +12,11 @@ dependencies {
 }
 ```
 
-Versjonen er den samme som npm-pakkens, så et versjonsnummer betyr det samme LO-TEK i Maven og på npm. Men ikke hver npm-versjon går til Maven Central. Finnes ikke versjonen over [på Central](https://central.sonatype.com/artifact/io.github.markusaugust/lotek), bruk den nyeste som gjør det. Pakken har én avhengighet, `com.dylibso.chicory:runtime`, og krever Java 17 eller nyere.
+The version is the same as the npm package's, so a version number means the same LO-TEK in Maven and on npm. But not every npm version goes to Maven Central. If the version above is not [on Central](https://central.sonatype.com/artifact/io.github.markusaugust/lo-tek-interfaces), use the newest one that is. The package has one dependency, `com.dylibso.chicory:runtime`, and requires Java 17 or newer.
 
-## CSS-en og web-komponentene
+## The CSS and the web components
 
-Pakken er også en [WebJar](https://www.webjars.org): `lotek.css`, stilarket for hver komponent og JavaScript-modulene for nettleseren ligger under `META-INF/resources/webjars/lo-tek/VERSJON/`, med de samme stiene som i npm-pakken. Spring Boot og Servlet-containere serverer den mappa uten oppsett. I Ktor er det én linje:
+The package is also a [WebJar](https://www.webjars.org): `lotek.css`, the stylesheet for each component and the JavaScript modules for the browser are under `META-INF/resources/webjars/lo-tek/VERSJON/`, with the same paths as in the npm package. Spring Boot and Servlet containers serve that folder without setup. In Ktor it is one line:
 
 ```kotlin
 routing {
@@ -24,7 +24,7 @@ routing {
 }
 ```
 
-`LotekWebJar` har stiene, med versjonen i, så malen aldri peker på en annen versjon enn den pakken har:
+`LotekWebJar` has the paths, with the version in them, so the template never points to a different version than the one the package has:
 
 ```kotlin
 """
@@ -36,53 +36,53 @@ routing {
 """
 ```
 
-En adresse fra komponentsidene beholder stien og bytter bare begynnelsen. Denne:
+An address from the component pages keeps its path and only changes the beginning. This one:
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
 ```
 
-blir `${LotekWebJar.ROOT}/src/components/css/button/button.css`. Det som bare er for Node eller React, er ikke med.
+becomes `${LotekWebJar.ROOT}/src/components/css/button/button.css`. What is only for Node or React is not included.
 
-## Byggefunksjonene
+## The builder functions
 
-`Lt` har de samme byggefunksjonene og valgene som `lt` i TypeScript. Hver gir attributtene du legger på elementet:
+`Lt` has the same builder functions and options as `lt` in TypeScript. Each gives the attributes you put on the element:
 
 ```kotlin
 import no.lotek.*
 
-val lagre = Lt.button(variant = ButtonVariant.SECONDARY)
+val save = Lt.button(variant = ButtonVariant.SECONDARY)
 
-"""<button ${lagre.toHtml()}>Lagre utkast</button>"""
-// <button class="lt-button" data-variant="secondary">Lagre utkast</button>
+"""<button ${save.toHtml()}>Save draft</button>"""
+// <button class="lt-button" data-variant="secondary">Save draft</button>
 ```
 
-De lovlige verdiene er `enum`-er, så `ButtonVariant.SECUNDARY` er en kompileringsfeil, og IDE-en viser hva som finnes. Verdier som går igjen, har ett felles navn: `Size`, `FieldState` og `RequiredMarker` brukes av alle byggefunksjonene som har dem. Hver `enum` har `value`, teksten som havner i HTML-en, og `of(tekst)`, som gir verdien eller `null` for en tekst utenfra.
+The allowed values are `enum`s, so `ButtonVariant.SECUNDARY` is a compile error, and the IDE shows what exists. Values that recur have one shared name: `Size`, `FieldState` and `RequiredMarker` are used by every builder function that has them. Every `enum` has `value`, the text that ends up in the HTML, and `of(text)`, which gives the value, or `null` for a text from outside.
 
-Svaret er et `Attributes`, som er et vanlig `Map<String, String>`. Det kan gis til hvilken som helst malmotor. Uten malmotor skriver `toHtml()` det ut med verdiene escapet, og `+` legger to sett sammen.
+The result is an `Attributes`, which is an ordinary `Map<String, String>`. It can be given to any template engine. Without a template engine, `toHtml()` writes it out with the values escaped, and `+` combines two sets.
 
-Byggefunksjonene som gir flere sett, gir en dataklasse med ett felt per sett. `Lt.field` kobler ledetekst, kontroll, hjelpetekst og feilmelding:
+The builder functions that give several sets give a data class with one field per set. `Lt.field` wires the label, control, help text and error text:
 
 ```kotlin
-val felt = Lt.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
+val field = Lt.field(id = "email", required = RequiredMarker.TEXT, help = true, error = true, invalid = invalid)
 
 """
-<label ${felt.label.toHtml()}>E-postadresse</label>
-<input ${(Lt.input(type = InputType.EMAIL, state = felt.state) + felt.control).toHtml()}>
-<p ${(Lt.helpText() + felt.help).toHtml()}>Vi sender kvittering hit.</p>
-<p ${(Lt.errorText() + felt.error).toHtml()}>Skriv en gyldig adresse.</p>
+<label ${field.label.toHtml()}>Email address</label>
+<input ${(Lt.input(type = InputType.EMAIL, state = field.state) + field.control).toHtml()}>
+<p ${(Lt.helpText() + field.help).toHtml()}>We send the receipt here.</p>
+<p ${(Lt.errorText() + field.error).toHtml()}>Enter a valid address.</p>
 """
 ```
 
-Et flagg som `hidden` har den tomme teksten som verdi, og skrives som navnet alene.
+A flag such as `hidden` has the empty text as its value, and is written as the name alone.
 
-### At de svarer det samme som i TypeScript
+### Same answers as in TypeScript
 
-Byggefunksjonene genereres fra manifestet LO-TEK skriver fra TypeScript-koden, og de få der valgene virker sammen, som `field` og `tabs`, er skrevet for hånd. Alle testes mot over tusen byggetilfeller med svaret fra TypeScript. Svarer én byggefunksjon ett attributt annerledes, slippes ikke pakken.
+The builder functions are generated from the manifest LO-TEK writes from the TypeScript code, and the few where the options interact, such as `field` and `tabs`, are written by hand. All are tested against more than a thousand build cases with the answer from TypeScript. If one builder function gives one attribute differently, the package is not released.
 
 ## kotlinx.html
 
-`io.github.markusaugust:lo-tek-kotlinx-html` har én utvidelse, `lt(…)`, som legger attributtene fra byggefunksjonene på en tagg. Den er en egen pakke, så hovedpakken ikke tar med kotlinx.html til den som ikke bruker det.
+`io.github.markusaugust:lo-tek-kotlinx-html` has one extension, `lt(…)`, which puts the attributes from the builder functions on a tag. It is a separate package, so the main package does not bring kotlinx.html to those who do not use it.
 
 ```kotlin
 import kotlinx.html.*
@@ -90,28 +90,28 @@ import no.lotek.*
 import no.lotek.InputType
 import no.lotek.html.lt
 
-fun FlowContent.epost(ugyldig: Boolean) {
-    val felt = Lt.field(id = "epost", required = RequiredMarker.TEXT, help = true, error = true, invalid = ugyldig)
-    label { lt(felt.label); +"E-postadresse" }
-    input { lt(Lt.input(type = InputType.EMAIL, state = felt.state), felt.control); name = "epost" }
-    p { lt(Lt.helpText(), felt.help); +"Vi sender kvittering hit." }
-    p { lt(Lt.errorText(), felt.error); +"Skriv en gyldig adresse." }
+fun FlowContent.emailField(invalid: Boolean) {
+    val field = Lt.field(id = "email", required = RequiredMarker.TEXT, help = true, error = true, invalid = invalid)
+    label { lt(field.label); +"Email address" }
+    input { lt(Lt.input(type = InputType.EMAIL, state = field.state), field.control); name = "email" }
+    p { lt(Lt.helpText(), field.help); +"We send the receipt here." }
+    p { lt(Lt.errorText(), field.error); +"Enter a valid address." }
 }
 ```
 
-Flere sett legges på i rekkefølge, og et senere vinner, som `{...a} {...b}` i JSX. Klassene legges til dem taggen har, så `div(classes = "min-egen") { lt(Lt.card()) }` gir begge. `InputType` importeres for seg, siden kotlinx.html har en med samme navn.
+Several sets are applied in order, and a later one wins, like `{...a} {...b}` in JSX. The classes are added to those the tag has, so `div(classes = "my-own") { lt(Lt.card()) }` gives both. `InputType` is imported on its own, since kotlinx.html has one with the same name.
 
-### Med Ktor
+### With Ktor
 
 ```kotlin
 routing {
     staticResources("/webjars", "META-INF/resources/webjars")
-    get("/soknad") {
+    get("/application") {
         call.respondHtml {
             head { link(rel = "stylesheet", href = LotekWebJar.CSS) }
             body {
-                form(action = "/soknad", method = FormMethod.post) {
-                    epost(ugyldig = false)
+                form(action = "/application", method = FormMethod.post) {
+                    emailField(invalid = false)
                     button { lt(Lt.button()); +"Send" }
                 }
                 script(type = "module") { unsafe { +"import { defineLt } from \"${LotekWebJar.REGISTER}\"; defineLt()" } }
@@ -121,101 +121,101 @@ routing {
 }
 ```
 
-## Maler: JTE, Thymeleaf og de andre
+## Templates: JTE, Thymeleaf and the others
 
-En mal kan ikke kalle `Lt` for hver verdi, og da er det sjekken som passer på. Skriv markupen som på komponentsidene, og sjekk det malen gir i en test. Med [JTE](https://jte.gg):
+A template cannot call `Lt` for every value, and then the check is what keeps watch. Write the markup as on the component pages, and check what the template gives in a test. With [JTE](https://jte.gg):
 
 ```kotlin
 @Test
-fun `søknaden er riktig markup`() {
-    val ut = StringOutput()
-    templateEngine.render("soknad.kte", mapOf("ugyldig" to true), ut)
-    assertLotek(ut.toString())
+fun `the application is correct markup`() {
+    val out = StringOutput()
+    templateEngine.render("application.kte", mapOf("invalid" to true), out)
+    assertLotek(out.toString())
 }
 ```
 
-Det samme gjelder Thymeleaf, Freemarker og Pebble: render malen til en tekst, og gi den til `assertLotek`. Malsyntaksen i selve malfila, som `${…}`, `th:…` og `@if`, forstår sjekken også, så [editoren](../the-editor/) kan si fra mens du skriver.
+The same goes for Thymeleaf, Freemarker and Pebble: render the template to a text, and give it to `assertLotek`. The check also understands the template syntax in the template file itself, such as `${…}`, `th:…` and `@if`, so the [editor](../the-editor/) can tell you while you type.
 
-## Sjekken i testene
+## The check in tests
 
-`assertLotek` sjekker HTML-en serveren sender, og feiler med funnene som melding:
+`assertLotek` checks the HTML the server sends, and fails with the findings as its message:
 
 ```kotlin
 @Test
-fun `skjemaet er koblet riktig`() {
+fun `the form is wired correctly`() {
     assertLotek(app.render("/form"))
 }
 ```
 
 ```text
-LO-TEK fant 2 funn:
-12:30: feil: for="epost" peker på id-en «epost», som ikke finnes på siden. … [id-finnes-ikke]
-18:9: advarsel: Klassen «lt-buton» finnes ikke i LO-TEK. Mente du lt-button? [ukjent-klasse]
+LO-TEK found 2 findings:
+12:30: error: for="email" points to the id "email", which does not exist on the page. … [id-not-found]
+18:9: warning: The class "lt-buton" does not exist in LO-TEK. Did you mean lt-button? [unknown-class]
 ```
 
-Den kaster en `AssertionError`, som JUnit, Kotest og TestNG alle forstår. Som standard sjekkes en hel side: at hver id det pekes på finnes, og at hvert felt er koblet. Er HTML-en en bit av en side, som en komponent, sjekker `assertLotek(html, fragment = true)` bare ordforrådet.
+It throws an `AssertionError`, which JUnit, Kotest and TestNG all understand. By default a whole page is checked: that every id that is pointed to exists, and that every field is wired. If the HTML is a piece of a page, such as a component, `assertLotek(html, fragment = true)` checks only the vocabulary.
 
-Det virker likt for alt som lager HTML på JVM-en: strenger, kotlinx.html, Thymeleaf, JTE, Ktor og Spring. Sjekken leser HTML-en som kommer ut, ikke koden som lager den.
+It works the same for everything that makes HTML on the JVM: strings, kotlinx.html, Thymeleaf, JTE, Ktor and Spring. The check reads the HTML that comes out, not the code that makes it.
 
-Trenger du funnene selv, gir `Lotek.diagnosePage(html)` og `Lotek.diagnoseMarkup(html)` dem som en liste. Hvert funn har `start` og `end`, `line` og `column`, `severity`, `rule`, `message`, `link` og noen ganger en `fix`. Posisjonene er indekser i en Kotlin-`String`, så `html.substring(funn.start, funn.end)` gir nøyaktig teksten funnet gjelder, også med «æøå» og emoji foran.
+If you need the findings yourself, `Lotek.diagnosePage(html)` and `Lotek.diagnoseMarkup(html)` give them as a list. Each finding has `start` and `end`, `line` and `column`, `severity`, `rule`, `message`, `link` and sometimes a `fix`. The positions are indices in a Kotlin `String`, so `html.substring(finding.start, finding.end)` gives exactly the text the finding is about, also with "æøå" and emoji in front.
 
-Et funn du vil beholde, undertrykkes med en kommentar over taggen:
+A finding you want to keep is suppressed with a comment above the tag:
 
 ```html
-<!-- lotek-ignore-next ukjent-klasse -->
-<div class="lt-eksperiment">…</div>
+<!-- lotek-ignore-next unknown-class -->
+<div class="lt-experiment">…</div>
 ```
 
-Uten regelnavn gjelder kommentaren alle reglene for den neste taggen.
+Without a rule name, the comment applies to all the rules for the next tag.
 
-## Den rendrede siden
+## The rendered page
 
-Med Playwright for Java sjekkes siden slik nettleseren har rendret den, med
-markupen web-komponentene la til og stilarkene den lastet. Pakken avhenger
-ikke av Playwright: `assertLotekRendered` tar en funksjon som kjører et
-skript på siden.
+With Playwright for Java, the page is checked as the browser has rendered it, with
+the markup the web components added and the stylesheets it loaded. The package does
+not depend on Playwright: `assertLotekRendered` takes a function that runs a
+script on the page.
 
 ```kotlin
 @Test
-fun `skjemaet er riktig slik det vises`() {
+fun `the form is right as it is shown`() {
     page.navigate("http://localhost:8080/form")
     assertLotekRendered { script -> page.evaluate(script) }
 }
 ```
 
-Den feiler på det `assertLotek` feiler på, og i tillegg på en klasse ingen
-stilark styler og en verdi uten regel. Har du stilarkene som tekst, gir
-`assertLotek(html, css = listOf(stilark))` og
-`Lotek.diagnosePage(html, css)` den samme sjekken uten nettleser.
+It fails on what `assertLotek` fails on, and in addition on a class no
+stylesheet styles and a value without a rule. If you have the stylesheets as text,
+`assertLotek(html, css = listOf(stylesheet))` and
+`Lotek.diagnosePage(html, css)` give the same check without a browser.
 
-Har prosjektet overtatt komponenter, tar `diagnoseMarkup` og `diagnosePage`
-manifestet som tekst i `manifest`, og sjekker da mot det samme som
-Gradle-pluginen og editoren. Uten valget gjelder manifestet i pakken.
-`assertLotek` og `assertLotekRendered` tar det ikke ennå.
+If the project has taken over components, `diagnoseMarkup` and `diagnosePage` take
+the manifest as text in `manifest`, and then check against the same as
+the Gradle plugin and the editor. Without the option, the manifest in the package applies.
+`assertLotek` and `assertLotekRendered` do not take it yet.
 
 ```kotlin
 val manifest = File("build/lotek/manifest.json").readText()
 assertEquals(emptyList(), Lotek.diagnosePage(html, manifest = manifest))
 ```
 
-Fila skrives av `lotekManifest`, som kjøres av `assemble` og ikke av `test`.
-Skal testene lese den, må de vente på oppgaven:
+The file is written by `lotekManifest`, which is run by `assemble` and not by `test`.
+If the tests are to read it, they must wait for the task:
 `tasks.test { dependsOn("lotekManifest") }`.
 
-## Temaet
+## The theme
 
-`Lotek.buildTheme(oppskrift)` bygger det samme fargetemaet som [`lotek tema`](../command-line/#tema), fra JSON-teksten i en oppskriftsfil, og `Lotek.inspectTheme(css)` kontrollerer et tema du har skrevet selv, som `lotek sjekk-tema`. Oppskriften har de ni fargene med norske eller engelske nøkler, `typografi` og `form`:
+`Lotek.buildTheme(recipe)` builds the same colour theme as [`lotek theme`](../command-line/#theme), from the JSON text of a recipe file, and `Lotek.inspectTheme(css)` checks a theme you have written yourself, like `lotek check-theme`. The recipe has the nine colours, `typography` and `shape`:
 
 ```kotlin
-val tema = Lotek.buildTheme("""{"aksent": "#7c3aed", "fare": "#b3261e"}""")
+val theme = Lotek.buildTheme("""{"accent": "#7c3aed", "danger": "#b3261e"}""")
 File("build/lotek/theme.css").writeText(theme.css)
 ```
 
-Svaret har `light` og `dark`, hvert `--lt-color-*`-token med verdien sin, `violations` og `css`. Løftene holder av konstruksjon, så `violations` er tom for gyldige farger, men sjekk den før du skriver fila: `lotek tema` nekter å skrive når den ikke er tom, mens `buildTheme` gir temaet tilbake med lista, som i TypeScript. En nøkkel som ikke finnes, og en oppskrift kjernen avviser, kaster `IllegalArgumentException` med forklaringen. `inspectTheme` gir `problems` med selektor og melding, og tallene `blocks`, `declarations` og `promises`, som sier hvor mye som faktisk ble lest. Oppskriften leses som `lotek tema` leser den, og begge svarer det kjernen svarer i TypeScript, testet mot den samme fasiten.
+The result has `light` and `dark`, each `--lt-color-*` token with its value, `violations` and `css`. The promises hold by construction, so `violations` is empty for valid colours, but check it before you write the file: `lotek theme` refuses to write when it is not empty, while `buildTheme` returns the theme with the list, as in TypeScript. A key that does not exist, and a recipe the core rejects, throw `IllegalArgumentException` with the explanation. `inspectTheme` gives `problems` with selector and message, and the numbers `blocks`, `declarations` and `promises`, which say how much was actually read. The recipe is read the way `lotek theme` reads it, and both give the answer the core gives in TypeScript, tested against the same expected results.
 
-## Gradle-pluginen
+## The Gradle plugin
 
-Malfilene selv kan sjekkes som en del av bygget, uten en test som rendrer dem. Pluginen kjører den samme kommandolinja som `lotek sjekk` og `lotek tema`, i Gradle-prosessen:
+The template files themselves can be checked as part of the build, without a test that renders them. The plugin runs the same command line as `lotek check` and `lotek theme`, in the Gradle process:
 
 ```kotlin
 // build.gradle.kts
@@ -229,20 +229,20 @@ lotek {
 }
 ```
 
-| Oppgave | Gjør |
+| Task | Does |
 | --- | --- |
-| `lotekSjekk` | sjekker `templates` som `lotek sjekk`, og feiler med funnene. Kjøres av `check`. |
-| `lotekTema` | bygger temaet av `themeRecipe` til `themeOutput`, standard `build/lotek/theme.css` |
-| `lotekManifest` | skriver manifestet prosjektet sjekkes mot til `build/lotek/manifest.json` når `manifests` har fragmenter, og sletter fila når det ikke har det. Kjøres av `assemble`. |
+| `lotekCheck` | checks `templates` like `lotek check`, and fails with the findings. Run by `check`. |
+| `lotekTheme` | builds the theme from `themeRecipe` to `themeOutput`, by default `build/lotek/theme.css` |
+| `lotekManifest` | writes the manifest the project is checked against to `build/lotek/manifest.json` when `manifests` has fragments, and deletes the file when it has none. Run by `assemble`. |
 
 ```text
-> Task :lotekSjekk FAILED
-Markupen stemmer ikke med LO-TEK:
+> Task :lotekCheck FAILED
+The markup does not match LO-TEK:
 
-src/main/jte/soknad.jte:14:18: advarsel: Klassen «lt-buton» finnes ikke i LO-TEK. Mente du lt-button?
+src/main/jte/application.jte:14:18: warning: The class "lt-buton" does not exist in LO-TEK. Did you mean lt-button?
 ```
 
-`rendered = true` sjekker filene som hele sider, med koblingen, som `--rendret`. Har du overtatt en komponent med [`lotek overta`](../command-line/#overta), legger du fragmentet i `manifests`, så markupen for kopien sjekkes også, og kopien kommer med i `build/lotek/manifest.json`:
+`rendered = true` checks the files as whole pages, with the wiring, like `--rendered`. If you have taken over a component with [`lotek takeover`](../command-line/#takeover), you put the fragment in `manifests`, so the markup for the copy is checked too, and the copy is included in `build/lotek/manifest.json`:
 
 ```kotlin
 lotek {
@@ -251,12 +251,12 @@ lotek {
 }
 ```
 
-Pluginen ligger på Maven Central sammen med pakken, med samme versjon. Gradle finner den der uten en egen `pluginManagement`-blokk, siden Gradle Plugin Portal sender videre til Maven Central for det den ikke har selv. Oppgavene virker med konfigurasjonsbufferen, og står som oppdatert når verken malene eller fragmentene er endret.
+The plugin is on Maven Central together with the package, with the same version. Gradle finds it there without a separate `pluginManagement` block, since the Gradle Plugin Portal forwards to Maven Central for what it does not have itself. The tasks work with the configuration cache, and are up to date when neither the templates nor the fragments have changed.
 
-## Hvordan det virker
+## How it works
 
-Sjekken er skrevet i Rust og bygget til én WebAssembly-modul. Den samme modulen kjører i Node, i VS Code og her. På JVM-en kjøres den av [Chicory](https://chicory.dev), en WebAssembly-runtime skrevet i ren Java. Modulen er gjort om til JVM-bytekode da pakken ble bygget, så den kjører med JIT-en og starter på en brøkdel av et sekund. Et kall låner en instans fra en pool og gir den tilbake etterpå, så tester som kjører samtidig, venter ikke på hverandre.
+The check is written in Rust and built to one WebAssembly module. The same module runs in Node, in VS Code and here. On the JVM it is run by [Chicory](https://chicory.dev), a WebAssembly runtime written in pure Java. The module was compiled to JVM bytecode when the package was built, so it runs with the JIT and starts in a fraction of a second. A call borrows an instance from a pool and returns it afterwards, so tests that run at the same time do not wait for each other.
 
-## I IntelliJ
+## In IntelliJ
 
-Pluginen [LO-TEK](https://plugins.jetbrains.com/plugin/34764-lotek) kjører den samme sjekken mens du skriver, også i HTML i en Kotlin-streng merket med `@Language("HTML")` eller `// language=HTML`. Se [Editoren](../the-editor/#jetbrains).
+The plugin [LO-TEK Interfaces](https://plugins.jetbrains.com/plugin/34764-lotek) runs the same check while you type, also in HTML in a Kotlin string marked with `@Language("HTML")` or `// language=HTML`. See [The editor](../the-editor/#jetbrains).

@@ -1,17 +1,17 @@
 ---
 title: Tabs
-description: Fanerad av lenker til panelene sine. Rammekomponent.
+description: Tab list of links to their panels. Frame component.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import TabsDemo from "../../../components/TabsDemo.astro"
 
-Fanene er lenker til panelene sine. Uten JavaScript er raden en innholdsfortegnelse, og panelene står etter hverandre under den. Med JavaScript gjør komponenten lenkene til faner: Tab hopper forbi hele raden og inn i det valgte panelet, piltastene flytter mellom fanene, og skjermleseren sier «fane, 2 av 3, valgt» der den ellers hadde sagt «lenke».
+The tabs are links to their panels. Without JavaScript the row is a table of contents, and the panels follow one after another below it. With JavaScript the component turns the links into tabs: Tab skips past the whole row and into the selected panel, the arrow keys move between the tabs, and the screen reader says "tab, 2 of 3, selected" where it would otherwise have said "link".
 
-:::note[To veier til den samme markupen]
-Lages markupen med JavaScript, skriver `lt.tabs()` lenkene, id-ene på panelene og overskriftene, og klassene. Blir den til uten JavaScript, i en Go-mal eller ren HTML, skriver du det samme for hånd: en `.lt-tabs__list` med lenker og ett `.lt-tabs__panel` per lenke, med den id-en lenken peker på. Komponenten skriver resten i begge tilfeller: rollene, `aria-selected`, `aria-controls` fra `href`, tabbestoppene, `hidden="until-found"` på panelene som ikke er valgt, og panelets navn. Bare panelene trenger id, og den kommer fra `href`. Lenkene har ingen, og komponenten skriver aldri en: en oppdatering fra serveren kjenner dem derfor igjen, og valget står. Se [Markup og oppførsel](/markup-and-behaviour/#id-er-som-overlever-en-oppdatering).
+:::note[Two paths to the same markup]
+When the markup is produced with JavaScript, `lt.tabs()` writes the links, the ids on the panels and the headings, and the classes. When it is produced without JavaScript, in a Go template or plain HTML, you write the same by hand: a `.lt-tabs__list` with links and one `.lt-tabs__panel` per link, with the id the link points to. The component writes the rest in both cases: the roles, `aria-selected`, `aria-controls` from `href`, the tab stops, `hidden="until-found"` on the panels that are not selected, and the panel's name. Only the panels need an id, and it comes from `href`. The links have none, and the component never writes one: an update from the server therefore recognises them, and the selection stays. See [Markup and behaviour](/markup-and-behaviour/#ids-that-survive-an-update).
 
-Unntaket er React: der skriver `lt.tabs()` fra `@lo-tek/interfaces/react` hele tilstanden, se React-fanen under.
+The exception is React: there `lt.tabs()` from `@lo-tek/interfaces/react` writes the whole state, see the React tab below.
 :::
 
 ## How to use it
@@ -22,32 +22,32 @@ Unntaket er React: der skriver `lt.tabs()` fra `@lo-tek/interfaces/react` hele t
   </TabItem>
   <TabItem label="Plain HTML">
     ```html
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`,
+         not `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/tabs/tabs.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
-    <!-- Lenkene peker på panelene. Rollene, valget og `hidden` skriver
-         komponenten. Uten JavaScript er dette en innholdsfortegnelse. -->
-    <lt-tabs id="saksfaner">
-      <ul class="lt-tabs__list" aria-label="Deler av saken">
-        <li><a href="#soknaden">Søknaden</a></li>
-        <li><a href="#vedlegg">Vedlegg</a></li>
+    <!-- The links point to the panels. The component writes the roles, the
+         selection and `hidden`. Without JavaScript this is a table of contents. -->
+    <lt-tabs id="case-tabs">
+      <ul class="lt-tabs__list" aria-label="Parts of the case">
+        <li><a href="#application">Application</a></li>
+        <li><a href="#attachments">Attachments</a></li>
       </ul>
-      <section class="lt-tabs__panel" id="soknaden">
-        <h2>Søknaden</h2>
-        <p>Søknaden ble sendt 4. mars 2026.</p>
+      <section class="lt-tabs__panel" id="application">
+        <h2>Application</h2>
+        <p>The application was sent on 4 March 2026.</p>
       </section>
-      <section class="lt-tabs__panel" id="vedlegg">
-        <h2>Vedlegg</h2>
-        <p>Tre vedlegg er lastet opp.</p>
+      <section class="lt-tabs__panel" id="attachments">
+        <h2>Attachments</h2>
+        <p>Three attachments have been uploaded.</p>
       </section>
     </lt-tabs>
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtTabs } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/tabs/lt-tabs.js"
@@ -56,17 +56,17 @@ Unntaket er React: der skriver `lt.tabs()` fra `@lo-tek/interfaces/react` hele t
     </script>
 
     <script type="module">
-      document.getElementById("saksfaner").addEventListener("tab-select", (evt) => {
-        console.log("valgte fane", evt.detail.index)
+      document.getElementById("case-tabs").addEventListener("tab-select", (evt) => {
+        console.log("selected tab", evt.detail.index)
       })
     </script>
     ```
 
-    Overskriften i panelet gir panelet navnet sitt når den sier det samme som fanen. Sier den noe annet, får panelet fanens navn som `aria-label`.
+    The heading in the panel gives the panel its name when it says the same as the tab. If it says something else, the panel gets the tab's name as `aria-label`.
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/lotek.d.ts, gir <lt-tabs> typer i JSX
+    // src/lotek.d.ts, gives <lt-tabs> types in JSX
     import "@lo-tek/interfaces/react-jsx"
     ```
 
@@ -78,33 +78,33 @@ Unntaket er React: der skriver `lt.tabs()` fra `@lo-tek/interfaces/react` hele t
 
     defineLtTabs()
 
-    const DELER = [
-      { key: "soknaden", tittel: "Søknaden" },
-      { key: "vedlegg", tittel: "Vedlegg" },
-      { key: "meldinger", tittel: "Meldinger" },
+    const PARTS = [
+      { key: "application", title: "Application" },
+      { key: "attachments", title: "Attachments" },
+      { key: "messages", title: "Messages" },
     ]
 
-    export function Saksfaner({ valgt = 0 }: { valgt?: number }) {
-      const faner = lt.tabs({
-        id: "sak",
-        keys: DELER.map((del) => del.key),
-        label: "Deler av saken",
-        selected: valgt,
+    export function CaseTabs({ selected = 0 }: { selected?: number }) {
+      const tabs = lt.tabs({
+        id: "case",
+        keys: PARTS.map((part) => part.key),
+        label: "Parts of the case",
+        selected,
       })
 
       return (
         <lt-tabs>
-          <ul {...faner.list}>
-            {faner.tabs.map((fane, i) => (
-              <li key={fane.id} {...faner.item}>
-                <a {...fane}>{DELER[i].tittel}</a>
+          <ul {...tabs.list}>
+            {tabs.tabs.map((tab, i) => (
+              <li key={tab.id} {...tabs.item}>
+                <a {...tab}>{PARTS[i].title}</a>
               </li>
             ))}
           </ul>
-          {faner.panels.map((panel, i) => (
+          {tabs.panels.map((panel, i) => (
             <section key={panel.id} {...panel}>
-              <h2>{DELER[i].tittel}</h2>
-              <p>Innhold for {DELER[i].tittel.toLowerCase()}.</p>
+              <h2>{PARTS[i].title}</h2>
+              <p>Content for {PARTS[i].title.toLowerCase()}.</p>
             </section>
           ))}
         </lt-tabs>
@@ -112,13 +112,13 @@ Unntaket er React: der skriver `lt.tabs()` fra `@lo-tek/interfaces/react` hele t
     }
     ```
 
-    `lt.tabs()` fra `@lo-tek/interfaces/react` skriver hele tilstanden: rollene, `aria-selected`, `aria-controls`, tabbestoppene og `hidden`, og gir lenkene id så panelet kan peke på fanen sin med `aria-labelledby`. Da har komponenten ingenting å skrive når den registreres, og React hydrerer uten avvik. Importen gir også `className` og `tabIndex` i stedet for HTML-navnene, så React ikke advarer.
+    `lt.tabs()` from `@lo-tek/interfaces/react` writes the whole state: the roles, `aria-selected`, `aria-controls`, the tab stops and `hidden`, and gives the links ids so the panel can point to its tab with `aria-labelledby`. The component then has nothing to write when it is registered, and React hydrates without mismatches. The import also gives `className` and `tabIndex` instead of the HTML names, so React does not warn.
 
-    `selected` gjelder når siden lastes, og er indeksen i `keys`. Serveren ser ikke fragmentet i adressen, så en delt lenke til `#sak-vedlegg` åpner den første fanen i en React-app. Vil du følge adressen, les den selv etter at siden er lastet, og send indeksen inn som `selected`. Skal appen flytte valget etter at brukeren har klikket, sett `server-controlled` på `<lt-tabs>`, se [Når serveren bestemmer fanen](#når-serveren-bestemmer-fanen).
+    `selected` applies when the page loads, and is the index in `keys`. The server does not see the fragment in the address, so a shared link to `#case-attachments` opens the first tab in a React app. If you want to follow the address, read it yourself after the page has loaded, and pass the index as `selected`. If the app should move the selection after the user has clicked, set `server-controlled` on `<lt-tabs>`, see [When the server decides the tab](#when-the-server-decides-the-tab).
 
-    React 19 skriver `hidden="until-found"` som `hidden=""`. Søk i siden og lenker inn i et skjult panel åpner derfor ikke fanen i en React-app, før React støtter verdien.
+    React 19 writes `hidden="until-found"` as `hidden=""`. Find in page and links into a hidden panel therefore do not open the tab in a React app until React supports the value.
 
-    Skriver du fanene for hånd i JSX, uten `lt.tabs()`, skriver komponenten rollene før React hydrerer, og React melder et avvik per element. Sett da `suppressHydrationWarning` på raden, listepunktene, lenkene og panelene. Bruk heller `lt.tabs()`.
+    If you write the tabs by hand in JSX, without `lt.tabs()`, the component writes the roles before React hydrates, and React reports one mismatch per element. Then set `suppressHydrationWarning` on the row, the list items, the links and the panels. Use `lt.tabs()` instead.
   </TabItem>
   <TabItem label="Astro">
     ```astro
@@ -127,26 +127,26 @@ Unntaket er React: der skriver `lt.tabs()` fra `@lo-tek/interfaces/react` hele t
     import "@lo-tek/interfaces/tokens.css"
     import "@lo-tek/interfaces/tabs.css"
 
-    const deler = [
-      { key: "soknaden", tittel: "Søknaden" },
-      { key: "vedlegg", tittel: "Vedlegg" },
-      { key: "meldinger", tittel: "Meldinger" },
+    const parts = [
+      { key: "application", title: "Application" },
+      { key: "attachments", title: "Attachments" },
+      { key: "messages", title: "Messages" },
     ]
-    const faner = lt.tabs({
-      id: "sak",
-      keys: deler.map((del) => del.key),
-      label: "Deler av saken",
+    const tabs = lt.tabs({
+      id: "case",
+      keys: parts.map((part) => part.key),
+      label: "Parts of the case",
     })
     ---
 
     <lt-tabs>
-      <ul {...faner.list}>
-        {faner.tabs.map((fane, i) => <li><a {...fane}>{deler[i].tittel}</a></li>)}
+      <ul {...tabs.list}>
+        {tabs.tabs.map((tab, i) => <li><a {...tab}>{parts[i].title}</a></li>)}
       </ul>
-      {faner.panels.map((panel, i) => (
+      {tabs.panels.map((panel, i) => (
         <section {...panel}>
-          <h2 {...faner.headings[i]}>{deler[i].tittel}</h2>
-          <p>Innhold for {deler[i].tittel.toLowerCase()}.</p>
+          <h2 {...tabs.headings[i]}>{parts[i].title}</h2>
+          <p>Content for {parts[i].title.toLowerCase()}.</p>
         </section>
       ))}
     </lt-tabs>
@@ -157,21 +157,21 @@ Unntaket er React: der skriver `lt.tabs()` fra `@lo-tek/interfaces/react` hele t
     </script>
     ```
 
-    En Astro-side hydrerer ingenting, så her er det den vanlige `lt.tabs()` som gjelder, og komponenten skriver rollene når den registreres. `headings` gir overskriftene en fast id, så panelets navn peker på det samme etter en oppdatering.
+    An Astro page hydrates nothing, so here the plain `lt.tabs()` applies, and the component writes the roles when it is registered. `headings` gives the headings a stable id, so the panel's name points to the same thing after an update.
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <!-- Datastar selv. Uten den gjør `data-`-attributtene under ingenting. -->
+    <!-- Datastar itself. Without it the `data-` attributes below do nothing. -->
     <script type="module"
             src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"></script>
 
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`,
+         not `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/tabs/tabs.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtTabs } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/tabs/lt-tabs.js"
@@ -179,120 +179,120 @@ Unntaket er React: der skriver `lt.tabs()` fra `@lo-tek/interfaces/react` hele t
       defineLtTabs()
     </script>
 
-    <lt-tabs server-controlled data-signals__ifmissing="{valgtFane: 0}" data-on:tab-select="$valgtFane = evt.detail.index">
-      <ul class="lt-tabs__list" aria-label="Deler av saken">
-        <li><a href="#soknaden">Søknaden</a></li>
-        <li><a href="#vedlegg">Vedlegg</a></li>
+    <lt-tabs server-controlled data-signals__ifmissing="{selectedTab: 0}" data-on:tab-select="$selectedTab = evt.detail.index">
+      <ul class="lt-tabs__list" aria-label="Parts of the case">
+        <li><a href="#application">Application</a></li>
+        <li><a href="#attachments">Attachments</a></li>
       </ul>
-      <section class="lt-tabs__panel" id="soknaden">
-        <h2>Søknaden</h2>
-        <p>Søknaden ble sendt 4. mars 2026.</p>
+      <section class="lt-tabs__panel" id="application">
+        <h2>Application</h2>
+        <p>The application was sent on 4 March 2026.</p>
       </section>
-      <section class="lt-tabs__panel" id="vedlegg" hidden="until-found">
-        <h2>Vedlegg</h2>
-        <p>Tre vedlegg er lastet opp.</p>
+      <section class="lt-tabs__panel" id="attachments" hidden="until-found">
+        <h2>Attachments</h2>
+        <p>Three attachments have been uploaded.</p>
       </section>
     </lt-tabs>
     ```
 
-    Signalet `$valgtFane` sendes med neste handling Datastar gjør mot serveren, som `@get` eller `@post`, så serveren vet hvilken fane brukeren valgte og skriver `hidden` på panelene etter det. Da er det serveren som styrer fanen, og `server-controlled` hører med. Uten det kjemper de to om det samme: komponenten setter tilbake fanen brukeren valgte, mens serveren sender sin egen. Lar du signalet være, trengs ingenting, og komponenten holder valget selv.
+    The signal `$selectedTab` is sent with the next action Datastar makes against the server, like `@get` or `@post`, so the server knows which tab the user chose and writes `hidden` on the panels accordingly. Then it is the server that controls the tab, and `server-controlled` belongs with it. Without it the two fight over the same thing: the component puts back the tab the user chose, while the server sends its own. If you leave the signal out, nothing is needed, and the component keeps the selection itself.
 
-    Skjul panelene med `hidden="until-found"`, ikke bar `hidden`, så søk i siden kan finne teksten i dem. Komponenten skriver `hidden` tilbake i den formen serveren brukte.
+    Hide the panels with `hidden="until-found"`, not bare `hidden`, so find in page can find the text in them. The component writes `hidden` back in the form the server used.
   </TabItem>
 </Tabs>
 
-## Faner eller trekkspill
+## Tabs or accordion
 
-Faner passer når den første delen er viktigst for de fleste, og ingen trenger alt på én gang. Skal innholdet leses i rekkefølge, eller sammenlignes del mot del, bruk heller et [trekkspill](/components/accordion/): der kan flere paneler stå åpne, og `name` gir deg ett om gangen når det er poenget. Faner skjuler alt annet enn det valgte, også for den som skriver ut siden.
+Tabs fit when the first part matters most to most people, and nobody needs everything at once. If the content is to be read in order, or compared part by part, use an [accordion](/components/accordion/) instead: there several panels can be open, and `name` gives you one at a time when that is the point. Tabs hide everything except the selected one, also for someone printing the page.
 
-## Hvilken fane som er valgt
+## Which tab is selected
 
-Den første fanen er valgt når siden lastes, med to unntak: adressen peker på et panel eller noe inni det, eller serveren har skrevet valget i markupen. Komponenten leser i denne rekkefølgen:
+The first tab is selected when the page loads, with two exceptions: the address points to a panel or something inside it, or the server has written the selection in the markup. The component reads in this order:
 
-1. `aria-selected="true"` på en fane, slik `lt.tabs()` fra React-inngangen skriver det. Da velger adressen ingen fane, og peker den på en annen fane i raden, rettes den til den valgte.
-2. Adressen, når den peker på et panel eller noe inni det.
-3. Det første panelet uten `hidden`. Serveren kan altså velge en fane i markup uten roller ved å skrive `hidden="until-found"` på de andre panelene.
-4. Ellers den første.
+1. `aria-selected="true"` on a tab, as `lt.tabs()` from the React entry point writes it. The address then selects no tab, and if it points to another tab in the row, it is corrected to the selected one.
+2. The address, when it points to a panel or something inside it.
+3. The first panel without `hidden`. The server can therefore select a tab in markup without roles by writing `hidden="until-found"` on the other panels.
+4. Otherwise the first.
 
-Det komponenten selv har skrevet, teller ikke som markupens svar: bytter serveren fane ved bare å flytte `hidden`, følger markeringen med.
+What the component itself wrote does not count as the markup's answer: if the server switches tab by moving `hidden` alone, the highlight follows.
 
-Den vanlige `lt.tabs()` har ingen `selected`. Et annet utgangspunkt kommer fra adressen eller fra serverens `hidden`, og etterpå fra appen gjennom `selected` og `select()` på elementet:
+The plain `lt.tabs()` has no `selected`. A different starting point comes from the address or from the server's `hidden`, and afterwards from the app through `selected` and `select()` on the element:
 
 ```ts
-const faner = document.querySelector("lt-tabs")
-if (!faner) throw new Error("fant ikke elementet")
+const tabs = document.querySelector("lt-tabs")
+if (!tabs) throw new Error("element not found")
 
-faner.selected // 0
-faner.select(1) // velger «Vedlegg» og sender `tab-select`
-faner.selected = 2 // det samme som select(2)
+tabs.selected // 0
+tabs.select(1) // selects "Attachments" and sends `tab-select`
+tabs.selected = 2 // the same as select(2)
 ```
 
-Komponenten har ikke noe `selected`-attributt. Svaret står i markupen, som `aria-selected` på fanen, og leses derfra. To steder å holde i synk er ett for mye.
+The component has no `selected` attribute. The answer is in the markup, as `aria-selected` on the tab, and is read from there. Two places to keep in sync is one too many.
 
-Panelet finnes på id-en i `href`, og `aria-controls` skrives fra den. Panelene kan derfor stå i en annen rekkefølge enn fanene, og utenfor `<lt-tabs>`. Et panel utenfor ligger likevel ikke i det komponenten observerer, så river en oppdatering `hidden` av det, kommer det ikke tilbake av seg selv. Peker en lenke på en id som ikke finnes, kan fanen velges uten at noe vises, og komponenten sier fra i konsollen.
+The panel is found by the id in `href`, and `aria-controls` is written from it. The panels can therefore be in a different order than the tabs, and outside `<lt-tabs>`. A panel outside is still not in what the component observes, so if an update tears `hidden` off it, it does not come back by itself. If a link points to an id that does not exist, the tab can be selected without anything being shown, and the component warns in the console.
 
-`tab-select` sendes når brukeren eller komponenten endrer valget: klikk, piltaster, `select()`, adressen og søk i siden. Den sendes ikke når serveren flytter valget i en oppdatering, så appen ikke reagerer på sitt eget ekko, og ikke når fanen som velges alt er valgt.
+`tab-select` is sent when the user or the component changes the selection: click, arrow keys, `select()`, the address and find in page. It is not sent when the server moves the selection in an update, so the app does not react to its own echo, and not when the tab being selected is already selected.
 
-## Adressen og søk i siden
+## The address and find in page
 
-Hvert valg skrives i adressen, som `#sak-vedlegg`, uten ny oppføring i historikken. En delt lenke åpner derfor den fanen leseren sto på, og en lenke til noe inni et panel, som `#vedlegg-liste`, velger fanen og ruller dit. Den adressen skrives ikke om, så lenken inn til innholdet går ikke tapt. Endres adressen mens siden lever, velges fanen.
+Every selection is written to the address, like `#case-attachments`, without a new history entry. A shared link therefore opens the tab the reader was on, and a link to something inside a panel, like `#attachments-list`, selects the tab and scrolls there. That address is not rewritten, so the link into the content is not lost. If the address changes while the page is open, the tab is selected.
 
-Søk i siden finner tekst i panelene som er skjult, fordi de er skjult med `hidden="until-found"`. Treffer søket et skjult panel, velger komponenten den fanen, og bare det panelet vises. Søket endrer ikke adressen.
+Find in page finds text in the panels that are hidden, because they are hidden with `hidden="until-found"`. If the search hits a hidden panel, the component selects that tab, and only that panel is shown. The search does not change the address.
 
-Kan adressen ikke skrives, som i Safari etter mange raske valg eller i en `<iframe srcdoc>`, velges fanen likevel.
+If the address cannot be written, as in Safari after many quick selections or in an `<iframe srcdoc>`, the tab is selected anyway.
 
-To begrensninger følger av at adressen er én:
+Two limitations follow from there being only one address:
 
-- To fanerader på samme side deler den. Et valg i den ene skriver over adressen til den andre, og bare den siste kan gjenopprettes fra en delt lenke.
-- En app som ruter på fragmentet, som `#/sak/1`, får adressen skrevet over av fanene. Da hører `server-controlled` med, se under: der velger adressen ingen fane, og komponenten skriver den heller ikke.
+- Two tab lists on the same page share it. A selection in one overwrites the address of the other, and only the last can be restored from a shared link.
+- An app that routes on the fragment, like `#/case/1`, gets the address overwritten by the tabs. Then `server-controlled` belongs with it, see below: there the address selects no tab, and the component does not write it either.
 
-## Hvorfor panelene skjules med `hidden="until-found"`
+## Why the panels are hidden with `hidden="until-found"`
 
-HTML-standarden sier at `hidden` ikke skal brukes til å skjule panelene i en fanerad, og at et synlig element ikke skal lenke til et skjult. LO-TEK avviker fra det, med vilje. `until-found` er laget nettopp for at lenker til fragmenter og søk i siden skal kunne avdekke innhold som er lagt bort, og det er det en fanerad gjør: innholdet finnes, leseren har bare ikke bedt om det ennå. Med en klasse og `display: none` i stedet ville søk i siden ikke funnet teksten, og serveren kunne ikke lenger velge fane med `hidden`.
+The HTML standard says that `hidden` should not be used to hide the panels in a tab list, and that a visible element should not link to a hidden one. LO-TEK departs from that, on purpose. `until-found` was made precisely so that links to fragments and find in page can reveal content that has been put away, and that is what a tab list does: the content exists, the reader just has not asked for it yet. With a class and `display: none` instead, find in page would not find the text, and the server could no longer select a tab with `hidden`.
 
-Et panel skjult med `until-found` beholder boksen sin, så stilarket nuller luften rundt det. Innholdet i et skjult panel kan ikke få fokus, og panelet selv har ikke tabbestopp.
+A panel hidden with `until-found` keeps its box, so the stylesheet zeroes the space around it. The content of a hidden panel cannot get focus, and the panel itself has no tab stop.
 
-## Før komponenten er registrert
+## Before the component is registered
 
-Panelene står i siden før `defineLtTabs()` har kjørt. Den vanlige `lt.tabs()` skriver ikke `hidden`, så uten JavaScript vises alle panelene under hverandre, som en innholdsfortegnelse skal. Med JavaScript viser `tabs.css` bare ett panel til komponenten er registrert, det komponenten kommer til å velge, så innholdet ikke hopper:
+The panels are on the page before `defineLtTabs()` has run. The plain `lt.tabs()` does not write `hidden`, so without JavaScript all the panels are shown one below the other, as a table of contents should be. With JavaScript, `tabs.css` shows only one panel until the component is registered, the one the component is going to select, so the content does not jump:
 
-- Skrev serveren `hidden` selv, gjelder det.
-- Ellers panelet adressen peker på, eller panelet med det inni. Det er også det en lenke i raden fører til når komponenten aldri blir registrert.
-- Ellers det første.
+- If the server wrote `hidden` itself, that applies.
+- Otherwise the panel the address points to, or the panel with that inside it. That is also where a link in the row leads when the component is never registered.
+- Otherwise the first.
 
-Under `server-controlled` velger adressen ikke, og det første synlige panelet vises. Regelen rekker bare panelene inne i `<lt-tabs>`: et panel utenfor må ha `hidden` fra serveren. Og den kan ikke koble `aria-selected` på en fane til panelet dens, så markup med `aria-selected`, som fra React-inngangen, må også ha `hidden` på panelene som ikke er valgt. React-inngangen skriver begge.
+Under `server-controlled` the address does not select, and the first visible panel is shown. The rule only reaches the panels inside `<lt-tabs>`: a panel outside must have `hidden` from the server. And it cannot connect `aria-selected` on a tab to its panel, so markup with `aria-selected`, as from the React entry point, must also have `hidden` on the panels that are not selected. The React entry point writes both.
 
-Se [Markup og oppførsel](/markup-and-behaviour/#før-komponenten-er-registrert).
+See [Markup and behaviour](/markup-and-behaviour/#before-the-component-is-registered).
 
-## Når serveren bestemmer fanen
+## When the server decides the tab
 
-Med `server-controlled` på `<lt-tabs>` bestemmer serveren hvilken fane som er valgt. Komponenten setter ikke brukerens valg tilbake etter en oppdatering fra serveren, men den gjør fortsatt resten:
+With `server-controlled` on `<lt-tabs>` the server decides which tab is selected. The component does not put the user's choice back after an update from the server, but it still does the rest:
 
-- Den skriver ut det markupen sier: `aria-selected`, tabbestoppet og `hidden` i takt. Serveren kan altså flytte fanen ved å flytte `hidden` alene.
-- Et klikk velger fanen med en gang, sender `tab-select` og skriver fanen i adressen. Valget står til serveren svarer, og da gjelder svaret.
-- Søk i siden og en lenke til noe i et skjult panel velger fanen på samme måte som et klikk.
-- Adressen velger ingen fane, verken når siden lastes eller når adressen endres. Det er serveren som vet hvilken fane som gjelder.
-- Før komponenten er registrert, viser `tabs.css` det første panelet som ikke er skjult, og ikke det adressen peker på.
+- It writes out what the markup says: `aria-selected`, the tab stop and `hidden` in step. The server can therefore move the tab by moving `hidden` alone.
+- A click selects the tab at once, sends `tab-select` and writes the tab to the address. The selection stands until the server answers, and then the answer applies.
+- Find in page and a link to something in a hidden panel select the tab the same way as a click.
+- The address selects no tab, neither when the page loads nor when the address changes. It is the server that knows which tab applies.
+- Before the component is registered, `tabs.css` shows the first panel that is not hidden, and not the one the address points to.
 
-Settes attributtet mens siden lever, er det som står i markupen utgangspunktet, og et valg brukeren gjorde før, er glemt.
+If the attribute is set while the page is open, what is in the markup is the starting point, and a choice the user made before is forgotten.
 
-## Attributter
+## Attributes
 
-| Attributt | Type | Effekt |
+| Attribute | Type | Effect |
 | --- | --- | --- |
-| `activation` | `automatic` eller `manual` | Hva piltastene gjør. Med `automatic`, som er standard, velger de fanen med en gang. Med `manual` flytter de bare fokus, og Enter eller mellomrom velger. Det passer når innholdet i et panel tar tid å laste. |
-| `server-controlled` | boolsk | Serveren bestemmer hvilken fane som er valgt. Se [Når serveren bestemmer fanen](#når-serveren-bestemmer-fanen). |
+| `activation` | `automatic` or `manual` | What the arrow keys do. With `automatic`, the default, they select the tab at once. With `manual` they only move focus, and Enter or Space selects. That fits when the content of a panel takes time to load. |
+| `server-controlled` | boolean | The server decides which tab is selected. See [When the server decides the tab](#when-the-server-decides-the-tab). |
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-tabs__list` | Lista med lenker. Får `role="tablist"` av komponenten, eller av `lt.tabs()` i React-inngangen |
-| `.lt-tabs__panel` | Ett panel. De som ikke er valgt, har `hidden="until-found"` |
+| `.lt-tabs__list` | The list of links. Gets `role="tablist"` from the component, or from `lt.tabs()` in the React entry point |
+| `.lt-tabs__panel` | One panel. Those that are not selected have `hidden="until-found"` |
 
-Lenkene har ingen egen klasse, de styles som `.lt-tabs__list a`. Den valgte har `aria-selected="true"`, og en deaktivert fane har `aria-disabled="true"`.
+The links have no class of their own; they are styled as `.lt-tabs__list a`. The selected one has `aria-selected="true"`, and a disabled tab has `aria-disabled="true"`.
 
-| Variabel | Reserve |
+| Variable | Fallback |
 | --- | --- |
 | `--lt-tabs-gap` | `var(--lt-spacing-1)` |
 | `--lt-tabs-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
@@ -306,21 +306,21 @@ Lenkene har ingen egen klasse, de styles som `.lt-tabs__list a`. Den valgte har 
 
 ## Accessibility
 
-Fanene er `role="tab"` i en `role="tablist"`, listepunktene rundt dem er `role="presentation"` så skjermleseren ikke teller dem som liste, og panelene er `role="tabpanel"`. Skriver du dem med `lt.tabs()` fra React-inngangen, står rollene i HTML-en før skriptet har kjørt. Ellers setter komponenten dem i det den registreres, og setter dem tilbake om en oppdatering tar dem.
+The tabs are `role="tab"` in a `role="tablist"`, the list items around them are `role="presentation"` so the screen reader does not count them as a list, and the panels are `role="tabpanel"`. If you write them with `lt.tabs()` from the React entry point, the roles are in the HTML before the script has run. Otherwise the component sets them when it is registered, and puts them back if an update removes them.
 
-Panelet får navnet sitt fra overskriften i det, når den sier det samme som fanen. Sier den noe annet, eller finnes den ikke, får panelet fanens navn som `aria-label`. En kobling serveren selv skrev, `aria-label` eller `aria-labelledby`, rører komponenten aldri.
+The panel gets its name from the heading in it, when it says the same as the tab. If it says something else, or does not exist, the panel gets the tab's name as `aria-label`. A connection the server wrote itself, `aria-label` or `aria-labelledby`, the component never touches.
 
-Raden må ha et navn: `aria-label` på `.lt-tabs__list`, eller `aria-labelledby` mot en overskrift. `label` er derfor påkrevd i `lt.tabs()`, og komponenten sier fra i konsollen når navnet mangler. Uten det sier skjermleseren bare «faneliste».
+The row must have a name: `aria-label` on `.lt-tabs__list`, or `aria-labelledby` pointing at a heading. `label` is therefore required in `lt.tabs()`, and the component warns in the console when the name is missing. Without it the screen reader just says "tab list".
 
-| Tast | Gjør |
+| Key | Does |
 | --- | --- |
-| Piltastene | Flytter mellom fanene, og går rundt fra siste til første. Med `automatic` velger de fanen med en gang |
-| Home og End | Første og siste fane |
-| Enter og mellomrom | Velger fanen som har fokus, når `activation="manual"` |
-| Tab | Ut av raden og inn i det valgte panelet. Ingenting i et panel som ikke er valgt, kan nås med Tab |
+| Arrow keys | Move between the tabs, and wrap around from last to first. With `automatic` they select the tab at once |
+| Home and End | First and last tab |
+| Enter and Space | Select the tab that has focus, when `activation="manual"` |
+| Tab | Out of the row and into the selected panel. Nothing in a panel that is not selected can be reached with Tab |
 
-Høyre- og venstrepil flytter i en vannrett rad. Har lista `aria-orientation="vertical"`, er det opp- og nedpil, og i en vannrett rad ruller de siden som vanlig. I en side med `dir="rtl"` bytter venstre og høyre pil retning, slik at neste fane alltid er den som står ved siden av i leseretningen. En tast med Alt, Ctrl eller Cmd holdt nede er nettleserens: Cmd-klikk og midtklikk på en fane åpner panelet i en ny fane i nettleseren, som en lenke.
+Right and left arrow move in a horizontal row. If the list has `aria-orientation="vertical"`, it is up and down arrow, and in a horizontal row those scroll the page as usual. On a page with `dir="rtl"` left and right arrow swap direction, so the next tab is always the one next to it in the reading direction. A key with Alt, Ctrl or Cmd held down belongs to the browser: Cmd-click and middle-click on a tab open the panel in a new browser tab, like a link.
 
-En fane med `aria-disabled="true"` hoppes over, og kan ikke velges. Én fane har `tabindex="0"`, normalt den valgte. Er den valgte deaktivert, flyttes tabbestoppet til den neste aktive. Det valgte panelet har `tabindex="0"`, slik at det får fokus også når det ikke har noe fokuserbart i seg, ellers hopper Tab rett forbi innholdet som nettopp ble vist. De skjulte panelene har det ikke.
+A tab with `aria-disabled="true"` is skipped, and cannot be selected. One tab has `tabindex="0"`, normally the selected one. If the selected one is disabled, the tab stop moves to the next enabled one. The selected panel has `tabindex="0"`, so it gets focus also when it has nothing focusable inside, otherwise Tab skips straight past the content that was just shown. The hidden panels do not have it.
 
-Uten JavaScript er raden en vanlig liste med lenker, uten faneroller, og hver lenke kan nås med Tab. Stilarket gir dem minst 24 piksler trykkflate.
+Without JavaScript the row is a plain list of links, without tab roles, and every link can be reached with Tab. The stylesheet gives them a target size of at least 24 pixels.

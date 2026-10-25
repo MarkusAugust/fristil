@@ -1,17 +1,17 @@
 ---
 title: Tooltip
-description: Liten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.
+description: A small help text shown on hover and focus. CSS component with two classes and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-En boble med et tillegg til noe som allerede står på skjermen. Den må aldri bære informasjon brukeren trenger: på en berøringsskjerm finnes hverken hover eller fokus før noe trykkes.
+A bubble with an addition to something that is already on the screen. It must never carry information the user needs: on a touch screen there is neither hover nor focus until something is tapped.
 
-Er teksten nødvendig for å fylle ut et felt, hører den hjemme i [Help Text](../help-text/) under feltet.
+If the text is needed to fill in a field, it belongs in a [Help Text](../help-text/) under the field.
 
 ## How to use it
 
-Boblen er skjult til utløseren får musa eller fokus. Hold musa over knappen under, eller gå til den med Tab, så kommer den fram:
+The bubble is hidden until the trigger gets the mouse or focus. Hold the mouse over the button below, or move to it with Tab, and it appears:
 
 <Example
   importer={["tokens.css", "tooltip.css", "button.css"]}
@@ -19,93 +19,93 @@ Boblen er skjult til utløseren får musa eller fokus. Hold musa over knappen un
   layout="stabel"
   maxWidth="30rem"
   visningsCss={`
-    /* Boblen ligger over utløseren, og trenger litt luft i denne boksen for
-       å ikke bli klippet. I en ekte side er det plassen på siden som avgjør. */
+    /* The bubble sits above the trigger, and needs some space in this box
+       so it is not clipped. In a real page the space on the page decides. */
     .lt-tooltip { margin-block-start: var(--lt-spacing-8); }
   `}
   kode={`
 <span class="lt-tooltip">
-  <button class="lt-button" data-variant="ghost" type="button" aria-describedby="arkiv-hint">
-    Arkiver
+  <button class="lt-button" data-variant="ghost" type="button" aria-describedby="archive-hint">
+    Archive
   </button>
-  <span class="lt-tooltip__bubble" role="tooltip" id="arkiv-hint">
-    Saken flyttes til arkivet og kan hentes fram igjen
+  <span class="lt-tooltip__bubble" role="tooltip" id="archive-hint">
+    The case is moved to the archive and can be brought back
   </span>
 </span>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** you spread the attributes in. That is the route in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
 <span {...lt.tooltip()}>
-  <button {...lt.button({ variant: "ghost" })} type="button" aria-describedby="hjelp">?</button>
-  <span className={lt.tooltip.bubble} id="hjelp" role="tooltip">Vi sender aldri spam.</span>
+  <button {...lt.button({ variant: "ghost" })} type="button" aria-describedby="help">?</button>
+  <span className={lt.tooltip.bubble} id="help" role="tooltip">We never send spam.</span>
 </span>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import goes to `/react` here, since the block is JSX. From there the keys are called `className` and `htmlFor`. In Astro and anything else without React you import `@lo-tek/interfaces` and get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** you set them on it. That is the route when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const omslag = document.querySelector<HTMLElement>("#arkiv")
+const wrapper = document.querySelector<HTMLElement>("#archive")
 
-lt.setAttributes(omslag, lt.tooltip())
+lt.setAttributes(wrapper, lt.tooltip())
 ```
 
-`lt.tooltip.bubble` gir klassen på boblen. Se [Typesikker bruk](../../type-safe-use/).
+`lt.tooltip.bubble` gives the class for the bubble. See [Type-safe use](../../type-safe-use/).
 
 </Fragment>
 </Example>
 
-To ting må stemme:
+Two things must be right:
 
-| Hva | Hvorfor |
+| What | Why |
 | --- | --- |
-| `aria-describedby` fra utløseren til boblen | Uten den er boblen bare noe som dukker opp på skjermen, og leses aldri opp |
-| `role="tooltip"` på boblen | Sier hva slags tekst det er |
+| `aria-describedby` from the trigger to the bubble | Without it the bubble is just something that appears on the screen, and is never announced |
+| `role="tooltip"` on the bubble | Says what kind of text it is |
 
-Boblen vises på `:hover` og på `:focus-within`. Fokusdelen er ikke valgfri: en boble som bare kommer med musa finnes ikke for den som bruker tastatur.
+The bubble is shown on `:hover` and on `:focus-within`. The focus part is not optional: a bubble that only appears with the mouse does not exist for someone using the keyboard.
 
-## Ikonknapp med navn
+## Icon button with a name
 
-En knapp med bare et ikon trenger et navn, ikke en hjelpeboble. De to er forskjellige ting:
+A button with only an icon needs a name, not a help bubble. The two are different things:
 
 ```html
 <span class="lt-tooltip">
   <button class="lt-button" data-variant="ghost" type="button"
-    aria-label="Arkiver saken" aria-describedby="arkiv-hint">
+    aria-label="Archive the case" aria-describedby="archive-hint">
     <svg aria-hidden="true" width="20" height="20">…</svg>
   </button>
-  <span class="lt-tooltip__bubble" role="tooltip" id="arkiv-hint">
-    Saken kan hentes fram igjen senere
+  <span class="lt-tooltip__bubble" role="tooltip" id="archive-hint">
+    The case can be brought back later
   </span>
 </span>
 ```
 
-`aria-label` er navnet knappen leses opp med. Boblen er tillegget. Bruker du boblen som navn, har knappen ingen navn før den får fokus.
+`aria-label` is the name the button is announced with. The bubble is the addition. If you use the bubble as the name, the button has no name until it gets focus.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-tooltip` | Omslaget rundt utløseren og boblen |
-| `.lt-tooltip__bubble` | Boblen med teksten |
+| `.lt-tooltip` | The wrapper around the trigger and the bubble |
+| `.lt-tooltip__bubble` | The bubble with the text |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-tooltip-width` | `16rem` |
 | `--lt-tooltip-padding` | `var(--lt-spacing-1) var(--lt-spacing-2)` |
 | `--lt-tooltip-radius` | `var(--lt-spacing-1)` |
 
-Boblen ligger over utløseren. Står utløseren helt øverst på siden, må du flytte den ned selv:
+The bubble sits above the trigger. If the trigger is at the very top of the page, you have to move the bubble down yourself:
 
 ```css
 .lt-tooltip__bubble {
@@ -113,22 +113,22 @@ Boblen ligger over utløseren. Står utløseren helt øverst på siden, må du f
 	inset-block-start: calc(100% + var(--lt-spacing-2));
 }
 
-/* Broen over gapet må med ned, ellers forsvinner boblen på vei til den. */
+/* The bridge across the gap must move down too, otherwise the bubble disappears on the way to it. */
 .lt-tooltip:is(:hover, :focus-within)::before {
 	inset-block-end: auto;
 	inset-block-start: 100%;
 }
 ```
 
-Boblen er `display: none` når den er skjult, så den ikke tar plass, og tones inn med `opacity`. En skjult boble er ute av tilgjengelighetstreet, men `aria-describedby` leser teksten den peker på også når den er skjult, så beskrivelsen følger knappen før boblen vises.
+The bubble is `display: none` when hidden, so it takes no space, and fades in with `opacity`. A hidden bubble is out of the accessibility tree, but `aria-describedby` reads the text it points to even when it is hidden, so the description follows the button before the bubble is shown.
 
-Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
 
-- Ingenting som bare finnes i boblen kan være nødvendig. Regn med at halvparten av brukerne aldri ser den.
-- Hold teksten kort. Boblen kan ikke rulles. Musa kan flyttes fra knappen og opp på boblen uten at den forsvinner, men den lukkes når musa forlater begge.
-- Ikke legg lenker eller knapper inni. Boblen er en beskrivelse, ikke et panel.
-- **Boblen kan ikke lukkes med Escape.** WCAG 1.4.13 krever at innhold som kommer fram på hover og fokus kan avvises uten å flytte musa eller fokus. Det krever JavaScript, og Tooltip er bare CSS. Bruk den derfor bare der boblen ikke dekker noe brukeren trenger å se, eller bruk [Popover](../popover/), som lukkes med Escape.
-- **Boblen flyttes ikke inn fra kanten av skjermen.** Den står midt over knappen. Står knappen helt ved venstre eller høyre kant på en smal skjerm, havner en del av boblen utenfor. Å flytte den krever ankerplassering i CSS, som ikke finnes i alle nettlesere ennå, eller JavaScript. Legg derfor ikke en knapp med boble helt ute ved kanten.
-- En boble på et felt som allerede har hjelpetekst er dobbelt opp. Velg én.
+- Nothing that exists only in the bubble can be necessary. Assume half the users never see it.
+- Keep the text short. The bubble cannot scroll. The mouse can move from the button up onto the bubble without it disappearing, but it closes when the mouse leaves both.
+- Do not put links or buttons inside. The bubble is a description, not a panel.
+- **The bubble cannot be dismissed with Escape.** WCAG 1.4.13 requires that content appearing on hover and focus can be dismissed without moving the mouse or focus. That requires JavaScript, and Tooltip is only CSS. So use it only where the bubble does not cover anything the user needs to see, or use [Popover](../popover/), which closes with Escape.
+- **The bubble is not moved in from the edge of the screen.** It sits centred above the button. If the button is right at the left or right edge on a narrow screen, part of the bubble ends up outside. Moving it requires anchor positioning in CSS, which is not in all browsers yet, or JavaScript. So do not put a button with a bubble right at the edge.
+- A bubble on a field that already has help text is doubling up. Choose one.

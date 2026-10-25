@@ -1,37 +1,37 @@
 ---
-title: Tilpasning
-description: Endre farger, form og størrelse i LO-TEK uten at endringene forsvinner ved neste oppgradering.
+title: Customising
+description: Change colours, shape and size in LO-TEK without losing the changes on the next upgrade.
 ---
 
 import Example from "../../components/Example.astro"
 
-Du tilpasser LO-TEK ved å sette CSS-variabler i din egen CSS. Verdiene som følger med pakken er standardverdier, og dine egne vinner over dem.
+You customise LO-TEK by setting CSS variables in your own CSS. The values that ship with the package are defaults, and yours win over them.
 
-Tre veier, i den rekkefølgen du bør prøve dem:
+Three routes, in the order you should try them:
 
-| Vei | Til hva |
+| Route | For |
 | --- | --- |
-| [Tokens](#egne-farger) | Farger, på tvers av hele systemet |
-| [Komponentvariabler](#form-og-størrelse) | Form og størrelse på én komponent |
-| [Vanlige regler](#når-variabelen-ikke-rekker) | Alt annet |
+| [Tokens](#your-own-colours) | Colours, across the whole system |
+| [Component variables](#shape-and-size) | Shape and size of one component |
+| [Ordinary rules](#when-the-variable-is-not-enough) | Everything else |
 
-## Egne farger
+## Your own colours
 
-Det er én vei inn: **din egen CSS, lastet etter `tokens.css`.** Alt LO-TEK sender ut ligger i et cascade layer (`@layer lotek`), og CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du trenger verken `!important` eller lange selektorer.
+There is one way in: **your own CSS, loaded after `tokens.css`.** Everything LO-TEK ships is in a cascade layer (`@layer lotek`), and CSS outside a layer always wins over CSS in a layer, whatever the specificity. You need neither `!important` nor long selectors.
 
-Standarden er å la være: LO-TEKs egne farger er kontrollert mot WCAG AA i begge temaer, og du trenger ikke skrive noe. Skal du endre dem, velger du hvor grovt du tar i.
+The default is to leave it alone: LO-TEK's own colours are checked against WCAG AA in both themes, and you do not need to write anything. If you want to change them, you choose how coarse a change to make.
 
-| Du vil | Skriv |
+| You want to | Write |
 | --- | --- |
-| Endre én farge | Cella, `--lt-color-accent-fill` |
-| Endre en hel familie | De ni rollene, `--lt-color-accent-surface` til `--lt-color-accent-content` |
-| Gi hele systemet organisasjonens farger | Ingenting. [Lag et tema](../your-own-theme/), så skrives fila for deg |
+| Change one colour | The cell, `--lt-color-accent-fill` |
+| Change a whole family | The nine roles, `--lt-color-accent-surface` to `--lt-color-accent-content` |
+| Give the whole system your organisation's colours | Nothing. [Make a theme](../your-own-theme/), and the file is written for you |
 
-Generatoren er ikke en egen mekanisme. Den setter de samme variablene, for begge temaer. Fila den skriver legger seg i sitt eget lag, `lotek-theme`, erklært etter `lotek`, så din egen CSS uten lag vinner fortsatt over temaet. Bruker du Tailwind, må laget stå i [lagrekkefølgen](#tailwind-og-lagrekkefølgen), ellers havner det etter `utilities` og slår klassene dine.
+The generator is not a separate mechanism. It sets the same variables, for both themes. The file it writes goes in its own layer, `lotek-theme`, declared after `lotek`, so your own CSS outside a layer still wins over the theme. If you use Tailwind, the layer must be in the [layer order](#tailwind-and-the-layer-order), or it ends up after `utilities` and beats your classes.
 
-Skriver du celler selv, er kontrastløftene dine å holde. `lotek sjekk-tema theme.css` sier hvilken celle som ryker og hvorfor.
+If you write cells yourself, keeping the contrast promises is up to you. `lotek check-theme theme.css` tells you which cell fails and why.
 
-### Variablene
+### The variables
 
 ```css
 :root {
@@ -40,15 +40,15 @@ Skriver du celler selv, er kontrastløftene dine å holde. `lotek sjekk-tema the
 }
 ```
 
-:::caution[Overstyrer du, eier du kontrasten]
-Fargene i LO-TEK er kontrollert mot WCAG AA, i begge temaer. Bytter du en av dem, gjelder ikke den garantien lenger, og paret fargen inngår i må kontrolleres på nytt. `--lt-color-accent-fill` er for eksempel både knappebakgrunn under `--lt-color-accent-content` og rammefarge på en avkryssingsboks som er huket av.
+:::caution[Override a colour, and the contrast is yours to check]
+The colours in LO-TEK are checked against WCAG AA, in both themes. If you replace one of them, that guarantee no longer applies, and the pairs the colour is part of must be checked again. `--lt-color-accent-fill`, for example, is both the button background under `--lt-color-accent-content` and the border colour of a checked checkbox.
 
-Haken i en avkryssingsboks er et bilde, ikke en farge, og følger ikke `--lt-color-accent-content` av seg selv. Gjør du `--lt-color-accent-fill` lys og `--lt-color-accent-content` mørk, må du også sette `--lt-icon-check` og `--lt-icon-dash` med samme farge, ellers forsvinner haken. Et tema fra temageneratoren trenger det ikke: rollene har faste lysheter, så haken holder kontrasten der.
+The tick in a checkbox is an image, not a colour, and does not follow `--lt-color-accent-content` by itself. If you make `--lt-color-accent-fill` light and `--lt-color-accent-content` dark, you must also set `--lt-icon-check` and `--lt-icon-dash` in the same colour, or the tick disappears. A theme from the theme generator does not need this: the roles have fixed lightness, so the tick keeps its contrast there.
 :::
 
-## Lyst og mørkt
+## Light and dark
 
-Uten at du gjør noe, følger fargene maskinens innstilling. Selve siden er din å male: LO-TEK setter ingen bakgrunn på `<html>` eller `<body>`, siden pakken kan være gjest på en side den ikke eier. Gi `<body>` flaten og teksten, ellers får du lys tekst på en hvit side når maskinen står i mørkt:
+Without you doing anything, the colours follow the system setting. Painting the page itself is up to you: LO-TEK sets no background on `<html>` or `<body>`, since the package may be a guest on someone else's page. Give `<body>` the surface and the text colour, or you get light text on a white page when the system is in dark mode:
 
 ```css
 body {
@@ -57,85 +57,85 @@ body {
 }
 ```
 
-En side som vil bestemme temaet selv, setter `data-theme` på `<html>`:
+A page that wants to decide the theme itself sets `data-theme` on `<html>`:
 
 ```html
 <html data-theme="light">
 ```
 
-### Attributtet er en temagrense
+### The attribute is a theme boundary
 
-`data-theme` virker på et hvilket som helst element, ikke bare på roten. Elementet og alt under det får temaet, og resten av siden står urørt:
+`data-theme` works on any element, not just the root. The element and everything below it get the theme, and the rest of the page is left untouched:
 
 ```html
 <div data-theme="dark">
-	<button class="lt-button">Denne er mørk</button>
+	<button class="lt-button">This one is dark</button>
 </div>
 ```
 
-Et tema kan ligge inne i et annet, begge veier. En lys boks i en mørk seksjon er like gyldig som det motsatte.
+A theme can sit inside another, both ways. A light box in a dark section is as valid as the opposite.
 
-Elementet med `data-theme="light"` eller `data-theme="dark"` får også temaets flate og tekstfarge, så en mørk seksjon på en lys side ikke står gjennomsiktig med lys tekst på hvitt. Det gjelder ikke `<html>`, som er din, og ikke `lt-toast`. Regelen har spesifisitet null i `@layer lotek`, så en komponent som har `data-theme` på seg selv, som et kort, beholder sin egen bakgrunn, og det samme gjør din egen stil uten lag eller i et lag etter `lotek`. Står stilen din i et lag *foran* `lotek`, som `base` i Tailwind-oppsettet, vinner LO-TEKs flate.
+The element with `data-theme="light"` or `data-theme="dark"` also gets the theme's surface and text colour, so a dark section on a light page is not left transparent with light text on white. That does not apply to `<html>`, which is yours, or to `lt-toast`. The rule has zero specificity in `@layer lotek`, so a component that has `data-theme` on itself, like a card, keeps its own background, and so does your own style outside a layer or in a layer after `lotek`. If your style is in a layer *before* `lotek`, like `base` in the Tailwind setup, LO-TEK's surface wins.
 
-Fokusringen og fargene for avslått tilstand følger også grensen, fordi de deklareres på nytt i hver temablokk. Overstyrer du `--lt-focus-ring`, `--lt-color-disabled-surface` eller `--lt-color-disabled-text`, skriv overstyringen på `[data-theme="light"]` og `[data-theme="dark"]` også, ellers gjelder den bare utenfor temagrensene.
+The focus ring and the colours for the disabled state also follow the boundary, because they are declared again in each theme block. If you override `--lt-focus-ring`, `--lt-color-disabled-surface` or `--lt-color-disabled-text`, write the override on `[data-theme="light"]` and `[data-theme="dark"]` too, or it only applies outside the theme boundaries.
 
-### En innebygd komponent låser sitt eget tema
+### An embedded component locks its own theme
 
-Legger du LO-TEK inn i en side du ikke eier, er dette måten å gjøre det på. Sett attributtet på komponentens eget rotelement, så er den lys uansett hva maskinen står på, og verten røres ikke:
+If you put LO-TEK into someone else's page, this is how to do it. Set the attribute on the component's own root element, and it is light whatever the system is set to, and the host is not touched:
 
 ```html
 <div data-theme="light">
 	<table class="lt-table">
-		<caption class="lt-sr-only">Fakturaer</caption>
+		<caption class="lt-sr-only">Invoices</caption>
 	</table>
 </div>
 ```
 
-Du skal ikke sette `data-theme` på vertens `<html>`. Det er et globalt attributt som tilhører siden, ikke deg.
+Do not set `data-theme` on the host's `<html>`. It is a global attribute that belongs to the page, not to you.
 
-### Vertens CSS stopper ved grensen
+### The host's CSS stops at the boundary
 
-Verten har ofte regler uten lag, som `button { background: none; border: none }` eller en normalize. Regler uten lag slår `@layer lotek`, så inne i komponenten din mister `.lt-button` bakgrunnen og kanten. Sett `data-lt-boundary` på rotelementet, ved siden av `data-theme`:
+The host often has rules outside any layer, like `button { background: none; border: none }` or a normalize. Rules outside a layer beat `@layer lotek`, so inside your component `.lt-button` loses its background and border. Set `data-lt-boundary` on the root element, next to `data-theme`:
 
 ```html
 <div data-lt-boundary data-theme="light">
-	<button type="button" class="lt-button">Prøv igjen</button>
+	<button type="button" class="lt-button">Try again</button>
 </div>
 ```
 
-Grensen ligger i `lotek.css`, og som egen fil i `@lo-tek/interfaces/boundary.css` for deg som importerer stilarkene ett og ett. Det er den eneste regelen i pakken som står utenfor laget, og den gjør én ting: under rotelementet ser nettleseren bort fra CSS uten lag, innenfor spesifisiteten under, og LO-TEKs lag gjelder igjen. Der ingen lag sier noe, gjelder nettleserens egne regler.
+The boundary is in `lotek.css`, and as a separate file in `@lo-tek/interfaces/boundary.css` for those who import the stylesheets one by one. It is the only rule in the package outside the layer, and it does one thing: below the root element the browser ignores CSS outside a layer, within the specificity below, and LO-TEK's layers apply again. Where no layer says anything, the browser's own rules apply.
 
-Dette står igjen:
+This is kept:
 
-- **Skriften og alt annet som arves.** Arven kommer inn gjennom rotelementet, og grensen rører ikke det. LO-TEK arver skrift med vilje, så komponenten får vertens skrift.
-- **`--lt-*`-variablene,** både på rotelementet og på `:root`.
-- **Regler på selve rotelementet,** også dine egne uten lag.
+- **The font and everything else that is inherited.** Inheritance comes in through the root element, and the boundary does not touch it. LO-TEK inherits the font on purpose, so the component gets the host's font.
+- **The `--lt-*` variables,** both on the root element and on `:root`.
+- **Rules on the root element itself,** including your own outside a layer.
 
-Dette må du vite:
+What you need to know:
 
-- **Din egen CSS inne i grensen må ligge i et lag** etter `lotek`, for eksempel `components` eller `utilities` i [lagrekkefølgen](../tailwind/#lagrekkefølgen). CSS uten lag forsvinner der på samme måte som vertens. Tailwind-klassene ligger alt i et lag.
-- **Elementer uten LO-TEK-klasse mister vertens CSS uten lag.** En vanlig `<p>` mister vertens marger, og et `<button>` uten `lt-button` får nettleserens knapp, med mindre et lag sier noe annet.
-- **Grensen har spesifisiteten (0,2,0).** Den slår vertens nullstillinger, som `button:not(:disabled)`, `a:hover` og `input[type="text"]`. En regel fra verten med samme spesifisitet vinner hvis den lastes etter grensen, og en med mer, som `.app .innhold a`, vinner alltid. Det samme gjør `!important`.
-- **Vertens lag stoppes ikke.** Grensen tar bare CSS uten lag. Et lag verten har erklært etter `lotek` vinner over LO-TEK. Et lag erklært før, som Tailwinds Preflight i `base`, gjelder der LO-TEK ikke setter noe.
+- **Your own CSS inside the boundary must be in a layer** after `lotek`, for example `components` or `utilities` in the [layer order](../tailwind/#layer-order). CSS outside a layer disappears there just like the host's. Tailwind classes are already in a layer.
+- **Elements without a LO-TEK class lose the host's CSS outside a layer.** A plain `<p>` loses the host's margins, and a `<button>` without `lt-button` gets the browser's button, unless a layer says otherwise.
+- **The boundary has specificity (0,2,0).** It beats the host's resets, like `button:not(:disabled)`, `a:hover` and `input[type="text"]`. A rule from the host with the same specificity wins if it is loaded after the boundary, and one with more, like `.app .content a`, always wins. So does `!important`.
+- **The host's layers are not stopped.** The boundary only takes CSS outside a layer. A layer the host has declared after `lotek` wins over LO-TEK. A layer declared before, like Tailwind's Preflight in `base`, applies where LO-TEK sets nothing.
 
-### Brukeren kan få velge
+### Letting the user choose
 
-`lt-theme-control` på en radioknapp gjør `value` til et temavalg, i ren CSS:
+`lt-theme-control` on a radio button makes `value` a theme choice, in plain CSS:
 
 ```html
 <label class="lt-toggle-group__option">
-  <input class="lt-theme-control" type="radio" name="tema"
-         value="dark" /> Mørkt
+  <input class="lt-theme-control" type="radio" name="theme"
+         value="dark" /> Dark
 </label>
 ```
 
-Tre verdier betyr noe: `auto`, `light` og `dark`. `light` og `dark` vinner over `data-theme` på `<html>`, så serveren kan sende det lagrede valget mens et klikk slår igjennom med én gang. `auto` har ingen temablokk, så der står serverens `data-theme` igjen. Kontrollen lagrer ingenting selv. Se [La brukeren velge tema](../patterns/theme/) for hele mønsteret.
+Three values mean something: `auto`, `light` and `dark`. `light` and `dark` win over `data-theme` on `<html>`, so the server can send the stored choice while a click takes effect at once. `auto` has no theme block, so there the server's `data-theme` remains. The control stores nothing itself. See [Let the user choose the theme](../patterns/theme/) for the whole pattern.
 
-### Fargeskjemaet er ditt å velge
+### Colour scheme
 
-`color-scheme` avgjør hvordan nettleseren tegner sine egne flater: rullefelt, nedtrekkslista til en `<select>` og kalenderpanelet i et datofelt. LO-TEK setter den der noen har valgt et tema: på `[data-theme="light"]`, på `[data-theme="dark"]` og på de tre valgene til [temavelgeren](#brukeren-kan-få-velge). **Bar `:root` får den aldri.**
+`color-scheme` decides how the browser draws its own surfaces: scrollbars, the dropdown of a `<select>` and the calendar panel in a date field. LO-TEK sets it where someone has chosen a theme: on `[data-theme="light"]`, on `[data-theme="dark"]` and on the three options of the [theme picker](#letting-the-user-choose). **Bare `:root` never gets it.**
 
-Grunnen er at egenskapen arves nedover, så en verdi på roten gjelder hele dokumentet, også en vertsside som aldri ba om det. Et barn kan melde seg ut med `color-scheme: normal`, men det er en motregel verten ikke skal måtte skrive. Vil du at nettleserens flater skal følge systemet på hele siden, skriver du én linje selv:
+The reason is that the property is inherited, so a value on the root applies to the whole document, including a host page that never asked for it. A child can opt out with `color-scheme: normal`, but that is a counter-rule the host should not have to write. If you want the browser's surfaces to follow the system on the whole page, write one line yourself:
 
 ```css
 :root {
@@ -143,13 +143,13 @@ Grunnen er at egenskapen arves nedover, så en verdi på roten gjelder hele doku
 }
 ```
 
-Det er den samme avtalen som for [lagrekkefølgen](#tailwind-og-lagrekkefølgen): én linje hver, og begge er dine.
+It is the same arrangement as for the [layer order](#tailwind-and-the-layer-order): one line each, and both are yours.
 
-**Bruker du [temavelgeren](#brukeren-kan-få-velge), skal du ikke skrive den linja.** Hvert av de tre valgene setter `color-scheme` selv: `light` gir `light`, `dark` gir `dark`, og «Følg systemet» gir `light dark`, altså beskjeden om at siden fungerer i begge og at nettleseren kan velge etter systemet. Skriver du den likevel, utenfor et lag, slår regelen `@layer lotek`, og nettleserens flater blir låst til systemet mens brukeren har valgt noe annet. Å legge den i et lag foran `lotek` hjelper ikke: rekkefølgen er alt etablert av `tokens.css`, som lastes først, så en senere `@layer`-setning legger laget bak.
+**If you use the [theme picker](#letting-the-user-choose), do not write that line.** Each of the three options sets `color-scheme` itself: `light` gives `light`, `dark` gives `dark`, and "Follow the system" gives `light dark`, that is, the message that the page works in both and the browser may choose by the system. If you write it anyway, outside a layer, the rule beats `@layer lotek`, and the browser's surfaces are locked to the system while the user has chosen something else. Putting it in a layer before `lotek` does not help: the order is already established by `tokens.css`, which loads first, so a later `@layer` statement puts the layer last.
 
-### Per tema
+### Per theme
 
-Overstyringen under «Egne farger» gjelder begge temaer. Vil du ha ulike verdier, skriver du dine egne regler:
+The override under "Your own colours" applies to both themes. If you want different values, write your own rules:
 
 ```css
 :root {
@@ -171,7 +171,7 @@ Overstyringen under «Egne farger» gjelder begge temaer. Vil du ha ulike verdie
 }
 ```
 
-Bruker du [temavelgeren](#brukeren-kan-få-velge), må de to siste blokkene ha dens selektor ved siden av, slik LO-TEKs egne har:
+If you use the [theme picker](#letting-the-user-choose), the last two blocks need its selector next to them, as LO-TEK's own have:
 
 ```css
 [data-theme="light"],
@@ -185,13 +185,13 @@ Bruker du [temavelgeren](#brukeren-kan-få-velge), må de to siste blokkene ha d
 }
 ```
 
-Velgeren setter ikke `data-theme`, for CSS kan ikke skrive et attributt. Uten selektoren traff ingen av blokkene dine når brukeren valgte et tema, og LO-TEKs egen farge sto igjen.
+The picker does not set `data-theme`, because CSS cannot write an attribute. Without the selector, none of your blocks matched when the user chose a theme, and LO-TEK's own colour remained.
 
-Alle fire blokkene må være med. De to `data-theme`-blokkene deklarerer hver sin verdi rett på elementet som bærer attributtet, og en deklarasjon på elementet selv vinner over en verdi det arver, uansett hvilket lag arven kom fra. Utelater du `[data-theme="light"]`, står LO-TEKs egen farge inne i en lys temagrense mens din gjelder ellers på siden.
+All four blocks are needed. The two `data-theme` blocks each declare their value directly on the element that carries the attribute, and a declaration on the element itself wins over a value it inherits, whatever layer the inherited value came from. If you leave out `[data-theme="light"]`, LO-TEK's own colour applies inside a light theme boundary while yours applies elsewhere on the page.
 
-## Form og størrelse
+## Shape and size
 
-Farger er ikke det eneste du kan endre. Hver komponent har egne variabler for form og størrelse:
+Colours are not the only thing you can change. Each component has its own variables for shape and size:
 
 ```css
 :root {
@@ -200,45 +200,45 @@ Farger er ikke det eneste du kan endre. Hver komponent har egne variabler for fo
 }
 ```
 
-### Hvor du setter den avgjør hvor langt den rekker
+### Where you set it decides how far it reaches
 
-Variablene arves, som alle CSS-variabler. Stedet du skriver deklarasjonen er derfor det eneste som bestemmer rekkevidden, og du trenger ingen egen mekanisme for å begrense den.
+The variables are inherited, like all CSS variables. Where you write the declaration is therefore the only thing that decides its reach, and you need no separate mechanism to limit it.
 
-På `:root` gjelder den hele appen, som i eksempelet over. Skriver du den på din egen klasse i stedet, gjelder den det elementet og alt som ligger inni:
+On `:root` it applies to the whole app, as in the example above. If you write it on your own class instead, it applies to that element and everything inside it:
 
 <Example stiler={["card", "button", "heading", "paragraph"]} layout="rad" egenCss={`
-.tett-panel {
+.compact-panel {
 	--lt-card-padding: var(--lt-spacing-2);
 	--lt-card-radius: 0;
 	--lt-button-padding: var(--lt-spacing-1) var(--lt-spacing-3);
 }
 `} kode={`
 <div class="lt-card">
-  <h3 class="lt-heading" data-size="s">Standard</h3>
-  <p class="lt-paragraph">Verdiene som følger med pakken.</p>
-  <button class="lt-button">Åpne saken</button>
+  <h3 class="lt-heading" data-size="s">Default</h3>
+  <p class="lt-paragraph">The values that ship with the package.</p>
+  <button class="lt-button">Open the case</button>
 </div>
 
-<div class="lt-card tett-panel">
-  <h3 class="lt-heading" data-size="s">Tett panel</h3>
-  <p class="lt-paragraph">Samme markup, én klasse mer.</p>
-  <button class="lt-button">Åpne saken</button>
+<div class="lt-card compact-panel">
+  <h3 class="lt-heading" data-size="s">Compact panel</h3>
+  <p class="lt-paragraph">Same markup, one more class.</p>
+  <button class="lt-button">Open the case</button>
 </div>
 `} />
 
-Markupen er den samme i begge. Den eneste forskjellen er klassen `tett-panel`, og den er din, ikke vår. Knappen inni blir smalere uten at du rører knappen: den arver variabelen fra kortet.
+The markup is the same in both. The only difference is the class `compact-panel`, and it is yours, not ours. The button inside gets narrower without you touching the button: it inherits the variable from the card.
 
-Det gir deg tre rekkevidder med den samme mekanismen:
+That gives you three scopes with the same mechanism:
 
-| Hvor du skriver den | Hvor langt den rekker |
+| Where you write it | How far it reaches |
 | --- | --- |
-| `:root` | Hele appen |
-| Din egen klasse på en beholder | Alt inni den beholderen |
-| Din egen klasse på komponenten | Bare den ene |
+| `:root` | The whole app |
+| Your own class on a container | Everything inside that container |
+| Your own class on the component | Just that one |
 
-Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte gjør, og et eksempel som viser det, står på komponentens egen side.
+The table below is a reference of every variable there is. What each one does, and an example that shows it, is on the component's own page.
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-button-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
 | `--lt-button-radius` | `var(--lt-spacing-1)` |
@@ -259,27 +259,27 @@ Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte
 | `--lt-spinner-size` | `var(--lt-spacing-6)` |
 | `--lt-spinner-thickness` | `2px` |
 | `--lt-table-cell-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
-| `--lt-list-gap` | `var(--lt-spacing-1)`, men `var(--lt-spacing-2)` i `divided` |
+| `--lt-list-gap` | `var(--lt-spacing-1)`, but `var(--lt-spacing-2)` in `divided` |
 | `--lt-tag-padding` | `var(--lt-spacing-0-5) var(--lt-spacing-2)` |
 | `--lt-tag-radius` | `var(--lt-spacing-1)` |
 | `--lt-avatar-size` | `var(--lt-spacing-10)` |
 | `--lt-avatar-radius` | `var(--lt-spacing-1)` |
-| `--lt-skeleton-height` | `var(--lt-spacing-4)`, men `var(--lt-spacing-10)` i `circle` |
-| `--lt-skeleton-radius` | `var(--lt-spacing-1)`, men `var(--lt-spacing-0-5)` i `text` |
+| `--lt-skeleton-height` | `var(--lt-spacing-4)`, but `var(--lt-spacing-10)` in `circle` |
+| `--lt-skeleton-radius` | `var(--lt-spacing-1)`, but `var(--lt-spacing-0-5)` in `text` |
 | `--lt-breadcrumbs-gap` | `var(--lt-spacing-2)` |
 | `--lt-pagination-gap` | `var(--lt-spacing-1)` |
 | `--lt-pagination-size` | `var(--lt-spacing-10)` |
 | `--lt-pagination-radius` | `var(--lt-spacing-1)` |
-| `--lt-progress-fill` | `var(--lt-color-accent-fill)`, og `data-color` endrer den |
+| `--lt-progress-fill` | `var(--lt-color-accent-fill)`, and `data-color` changes it |
 | `--lt-progress-track` | `var(--lt-color-neutral-surface)` |
-| `--lt-progress-border` | `var(--lt-color-neutral-border)`, kanten rundt sporet. Sett den til `transparent` for å fjerne den |
+| `--lt-progress-border` | `var(--lt-color-neutral-border)`, the border around the track. Set it to `transparent` to remove it |
 | `--lt-progress-height` | `var(--lt-spacing-2)` |
 | `--lt-progress-radius` | `var(--lt-spacing-1)` |
 | `--lt-skip-link-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
 | `--lt-skip-link-radius` | `var(--lt-spacing-1)` |
 | `--lt-accordion-radius` | `var(--lt-spacing-1)` |
-| `--lt-accordion-padding` | `var(--lt-spacing-3) var(--lt-accordion-padding-inline)`, luften i overskriften |
-| `--lt-accordion-padding-inline` | `var(--lt-spacing-4)`, luften til sidene, i overskriften og innholdet |
+| `--lt-accordion-padding` | `var(--lt-spacing-3) var(--lt-accordion-padding-inline)`, the spacing in the heading |
+| `--lt-accordion-padding-inline` | `var(--lt-spacing-4)`, the spacing at the sides, in the heading and the content |
 | `--lt-dialog-width` | `min(32rem, 100%, calc(100vw - var(--lt-spacing-8)))` |
 | `--lt-dialog-padding` | `var(--lt-spacing-5)` |
 | `--lt-dialog-layer` | `40` |
@@ -300,8 +300,8 @@ Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte
 | `--lt-popover-width` | `min(20rem, calc(100vw - var(--lt-spacing-8)))` |
 | `--lt-popover-padding` | `var(--lt-spacing-3)` |
 | `--lt-popover-radius` | `var(--lt-spacing-1)` |
-| `--lt-popover-top` | settes av komponenten |
-| `--lt-popover-left` | settes av komponenten |
+| `--lt-popover-top` | set by the component |
+| `--lt-popover-left` | set by the component |
 | `--lt-toast-space` | `var(--lt-spacing-4)` |
 | `--lt-toast-width` | `min(24rem, calc(100vw - var(--lt-spacing-8)))` |
 | `--lt-toast-padding` | `var(--lt-spacing-3) var(--lt-spacing-4)` |
@@ -309,9 +309,9 @@ Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte
 | `--lt-toast-layer` | `60` |
 | `--lt-suggestion-max-height` | `calc(var(--lt-spacing-10) * 4)` |
 | `--lt-suggestion-radius` | `var(--lt-spacing-1)` |
-| `--lt-suggestion-top` | settes av komponenten |
-| `--lt-suggestion-left` | settes av komponenten |
-| `--lt-suggestion-width` | settes av komponenten |
+| `--lt-suggestion-top` | set by the component |
+| `--lt-suggestion-left` | set by the component |
+| `--lt-suggestion-width` | set by the component |
 | `--lt-suggestion-option-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
 | `--lt-input-width` | `100%` |
 | `--lt-input-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
@@ -331,8 +331,8 @@ Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte
 | `--lt-switch-height` | `var(--lt-spacing-6)` |
 | `--lt-fieldset-gap` | `var(--lt-spacing-2)` |
 | `--lt-label-required-symbol` | `" *"` |
-| `--lt-label-required-text` | `" (påkrevd)"` |
-| `--lt-label-optional-text` | `" (valgfri)"` |
+| `--lt-label-required-text` | `" (required)"` |
+| `--lt-label-optional-text` | `" (optional)"` |
 | `--lt-search-icon-space` | `var(--lt-spacing-10)` |
 | `--lt-search-icon-size` | `var(--lt-spacing-5)` |
 | `--lt-toggle-group-radius` | `var(--lt-spacing-1)` |
@@ -344,11 +344,11 @@ Tabellen under er et oppslagsverk over hver variabel som finnes. Hva den enkelte
 | `--lt-connection-status-layer` | `1000` |
 | `--lt-connection-status-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
 
-Standardverdiene peker på `--lt-spacing-*`-skalaen. Skriver du om skalaen, trinn for trinn, følger komponentene med. Setter du variabelen, gjelder din verdi bare for den komponenten.
+The defaults point at the `--lt-spacing-*` scale. If you rewrite the scale, step by step, the components follow. If you set the variable, your value applies only to that component.
 
-## Når variabelen ikke rekker
+## When the variable is not enough
 
-Tokens og komponent-CSS ligger i `@layer lotek`. CSS uten layer vinner alltid over CSS i et layer, uansett spesifisitet. Du kan derfor overstyre hva som helst med en enkel selektor:
+Tokens and component CSS are in `@layer lotek`. CSS outside a layer always wins over CSS in a layer, whatever the specificity. So you can override anything with a simple selector:
 
 ```css
 .lt-button {
@@ -356,17 +356,17 @@ Tokens og komponent-CSS ligger i `@layer lotek`. CSS uten layer vinner alltid ov
 }
 ```
 
-Uten layeret ville du måttet slå selektorer som `.lt-button[data-variant="danger"]:hover`, eller ty til `!important`.
+Without the layer you would have had to beat selectors like `.lt-button[data-variant="danger"]:hover`, or resort to `!important`.
 
-Under `data-lt-boundary` må regelen ligge i et lag, se [Vertens CSS stopper ved grensen](#vertens-css-stopper-ved-grensen).
+Under `data-lt-boundary` the rule must be in a layer, see [The host's CSS stops at the boundary](#the-hosts-css-stops-at-the-boundary).
 
-:::caution[`!important` snur rekkefølgen]
-For erklæringer med `!important` går kaskaden motsatt vei: da vinner CSS *inne i* et layer over CSS utenfor. Skriver du `!important` for å være sikker, oppnår du det motsatte. Du trenger det ikke, så la det være.
+:::caution[`!important` reverses the order]
+For declarations with `!important` the cascade goes the other way: then CSS *inside* a layer wins over CSS outside. If you write `!important` to be safe, you get the opposite. You do not need it, so leave it out.
 :::
 
-### `display` på dialogen
+### `display` on the dialog
 
-Ett unntak finnes, og det kommer av nettleseren og ikke av oss. En `<dialog>` uten `open` skjules av nettleserens eget stilark, og lagene sorterer bare innenfor ett opphav, så en hvilken som helst forfatterregel med `display` slår den skjulingen. Setter du `display` på `.lt-dialog`, blir en lukket dialog stående som et kort på siden. Ta da med regelen selv, minst like spesifikk som din egen:
+There is one exception, and it comes from the browser, not from us. A `<dialog>` without `open` is hidden by the browser's own stylesheet, and layers only sort within one origin, so any author rule with `display` beats that hiding. If you set `display` on `.lt-dialog`, a closed dialog stays on the page like a card. Then include the rule yourself, at least as specific as your own:
 
 ```css
 dialog.lt-dialog:not([open]):not(:is(:popover-open)) {
@@ -374,11 +374,11 @@ dialog.lt-dialog:not([open]):not(:is(:popover-open)) {
 }
 ```
 
-LO-TEK setter selv `display: flex` når `.lt-dialog__body` er et direkte barn, slik at kroppen kan rulle, og har den regelen ved siden av.
+LO-TEK itself sets `display: flex` when `.lt-dialog__body` is a direct child, so that the body can scroll, and has that rule next to it.
 
-### Tailwind og lagrekkefølgen
+### Tailwind and the layer order
 
-Bruker du Tailwind, må laget vårt plasseres. Lagene teller i den rekkefølgen de først blir nevnt, og det siste vinner uansett spesifisitet. Sett rekkefølgen på første linje i CSS-en din:
+If you use Tailwind, our layer has to be placed. Layers count in the order they are first mentioned, and the last one wins whatever the specificity. Set the order on the first line of your CSS:
 
 ```css
 @layer theme, base, lotek, lotek-theme, components, utilities;
@@ -388,64 +388,64 @@ Bruker du Tailwind, må laget vårt plasseres. Lagene teller i den rekkefølgen 
 @import "@lo-tek/interfaces/tailwind.css";
 ```
 
-Uten den linja får du ett av problemene i tabellen. De to første avhenger av hvilken import som kommer først, det tredje kommer den dagen du legger til et generert tema:
+Without that line you get one of the problems in the table. The first two depend on which import comes first, the third comes the day you add a generated theme:
 
-| Rekkefølge | Hva som skjer |
+| Order | What happens |
 | --- | --- |
-| `lotek` før `base` | Tailwinds Preflight nullstiller komponentene. Bakgrunnen forsvinner fra knappen. |
-| `lotek` etter `utilities` | Komponentene slår Tailwind-klassene dine. `p-6` på en `.lt-button` gjør ingenting. |
-| `lotek-theme` etter `utilities` | Et [generert tema](../your-own-theme/) slår Tailwind-klassene dine. Laget må stå i linja selv om du ikke har noe tema ennå. |
-| `base`, `lotek`, `lotek-theme`, `utilities` | Alt virker |
+| `lotek` before `base` | Tailwind's Preflight resets the components. The background disappears from the button. |
+| `lotek` after `utilities` | The components beat your Tailwind classes. `p-6` on an `.lt-button` does nothing. |
+| `lotek-theme` after `utilities` | A [generated theme](../your-own-theme/) beats your Tailwind classes. The layer must be in the line even if you have no theme yet. |
+| `base`, `lotek`, `lotek-theme`, `utilities` | Everything works |
 
-Feiltilfellene er testet, ikke antatt: `customising.browser.test.ts` bygger hvert av dem i sitt eget dokument og kontrollerer hva knappen og rotelementet faktisk får.
+The failure cases are tested, not assumed: `customising.browser.test.ts` builds each of them in its own document and checks what the button and the root element actually get.
 
-LO-TEKs eget tema for Tailwind ligger i `@lo-tek/interfaces/tailwind.css`. Det er en vanlig CSS-fil, så pakken har ingen avhengighet til Tailwind, og din versjon er den eneste som er i bruk. Se [Design tokens](../design-tokens/#tailwind).
+LO-TEK's own theme for Tailwind is in `@lo-tek/interfaces/tailwind.css`. It is an ordinary CSS file, so the package has no dependency on Tailwind, and your version is the only one in use. See [Design tokens](../design-tokens/#tailwind).
 
-### Ingen shadow DOM
+### No shadow DOM
 
-Ingen komponent i LO-TEK bruker shadow DOM lenger. `<lt-calendar>` var den eneste, og den er fjernet til fordel for nettleserens eget datopanel. Se [Dato i et skjema](../patterns/date/).
+No component in LO-TEK uses shadow DOM any more. `<lt-calendar>` was the only one, and it has been removed in favour of the browser's own date picker. See [Dates in a form](../patterns/date/).
 
-Det betyr at CSS-en din når fram overalt. Du trenger verken `::part()` eller å lete etter en vei inn i en skyggerot.
+That means your CSS reaches everywhere. You need neither `::part()` nor a way into a shadow root.
 
-## Når CSS ikke er nok
+## When CSS is not enough
 
-Variabler og laget dekker utseendet. De dekker ikke at komponenten skal gjøre noe annet enn den gjør. Da kan du overta kildekoden til den ene komponenten:
+Variables and the layer cover the appearance. They do not cover making the component do something other than what it does. Then you can take over the source code of that one component:
 
 ```bash
-npx @lo-tek/interfaces overta button --ut=src/ui
+npx @lo-tek/interfaces takeover button --out=src/ui
 ```
 
-Kommandoen kopierer komponentens filer inn i prosjektet ditt, gir kopien et eget navn, og skriver om henvisningene ut av mappa, slik at kopien virker der den havner:
+The command copies the component's files into your project, gives the copy its own name, and rewrites the references out of the folder, so that the copy works where it ends up:
 
 ```text
-Kopierte button til src/ui/button/
+Copied button to src/ui/button/
   button.css
   button.ts
   lotek-manifest.json
 
-Komponenten er nå din. Oppdateringer av @lo-tek/interfaces rører den ikke.
+The component is now yours. Updates to @lo-tek/interfaces do not touch it.
 
-Kopien heter app-button, og kan stå ved siden av originalen.
-Bytt til det nye navnet i markupen der kopien skal brukes. Variablene
-fra temaet (--lt-*) er de samme.
+The copy is called app-button, and can sit next to the original.
+Switch to the new name in the markup where the copy is to be used. The variables
+from the theme (--lt-*) are the same.
 
-Henvisninger ut av mappa peker nå på pakken:
+References out of the folder now point at the package:
   ../shared.js → @lo-tek/interfaces/shared
 
-Disse importene laster originalen, og kan fjernes når ingen bruker den:
+These imports load the original, and can be removed when nothing uses it:
   @lo-tek/interfaces/button
   @lo-tek/interfaces/button.css
 
-Sjekk markupen for kopien med:
-  lotek sjekk --manifest=src/ui/button/lotek-manifest.json <filer…>
+Check the markup for the copy with:
+  lotek check --manifest=src/ui/button/lotek-manifest.json <files…>
 ```
 
-Kopien heter `app-button` i klassene, taggene og selektorene, så den og originalen kan brukes side om side uten at rekkefølgen på stilarkene avgjør hvilken som vinner. Variablene fra temaet beholder navnet, så kopien følger temaet ditt.
+The copy is called `app-button` in the classes, the tags and the selectors, so it and the original can be used side by side without the order of the stylesheets deciding which one wins. The variables from the theme keep their names, so the copy follows your theme.
 
-`lotek-manifest.json` er klassene, elementene og de lovlige verdiene til kopien, under det nye navnet. Gir du det til `sjekk` med `--manifest`, sjekkes markupen for kopien like strengt som for resten av LO-TEK. Legger du til en variant i kopien, skriver du den inn i fragmentet også. Se [overta](../command-line/#overta).
+`lotek-manifest.json` holds the classes, the elements and the valid values of the copy, under the new name. If you give it to `check` with `--manifest`, the markup for the copy is checked as strictly as the rest of LO-TEK. If you add a variant to the copy, write it into the fragment too. See [takeover](../command-line/#takeover).
 
-Det du gir fra deg er oppdateringene. Rettelser og forbedringer i pakken treffer ikke kopien, og det er du som eier den derfra. Bruk kommandoen på den ene komponenten som trenger det, ikke på alle.
+What you give up is the updates. Fixes and improvements in the package do not reach the copy, and from then on maintaining it is up to you. Use the command on the one component that needs it, not on all of them.
 
-Tilgjengeligheten blir din. Testene våre kjører mot pakken, ikke mot kopien din, så en tilgjengelighetserklæring som viser til designsystemet dekker ikke en komponent du har overtatt og endret.
+Accessibility becomes your responsibility. Our tests run against the package, not against your copy, so an accessibility statement that refers to the design system does not cover a component you have taken over and changed.
 
-`npx @lo-tek/interfaces overta` uten navn lister komponentene. Kopien skrives ikke over hvis mappa finnes fra før, med mindre du legger til `--overskriv=ja`.
+`npx @lo-tek/interfaces takeover` without a name lists the components. The copy is not overwritten if the folder already exists, unless you add `--overwrite=yes`.

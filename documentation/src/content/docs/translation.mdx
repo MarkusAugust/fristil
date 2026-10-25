@@ -1,34 +1,34 @@
 ---
-title: Oversettelse
-description: LO-TEK har nesten ingen tekst. Du skriver den med det oversettelsesverktøyet appen alt bruker, og de få tekstene pakken har, kan byttes ut.
+title: Translation
+description: LO-TEK has almost no text. You write it with the translation tool your app already uses, and the few texts the package has can be replaced.
 ---
 
-LO-TEK har nesten ingen tekst. Den som rendrer, skriver teksten i markupen, på sitt eget språk og med det oversettelsesverktøyet appen alt bruker. De få tekstene pakken har innebygd, er standardverdier, og hver av dem kan byttes ut. De står i tabellen nederst.
+LO-TEK has almost no text. Whoever renders the markup writes the text in it, in their own language and with the translation tool the app already uses. The few texts built into the package are defaults, and each of them can be replaced. They are listed in the table at the bottom.
 
-## Teksten står i markupen din
+## The text is in your markup
 
-En knapp, en ledetekst og en dialog er markup du skriver selv, og teksten i dem er din. I React med i18next ser varselet om økten slik ut:
+A button, a label and a dialog are markup you write yourself, and the text in them is yours. In React with i18next, the session timeout looks like this:
 
 ```tsx
 import { useId } from "react"
 import { useTranslation } from "react-i18next"
 import { lt } from "@lo-tek/interfaces/react"
 
-export function Okt() {
+export function SessionWarning() {
   const { t } = useTranslation()
-  const okt = lt.sessionTimeout({ titleId: useId() })
+  const session = lt.sessionTimeout({ titleId: useId() })
 
   return (
-    <lt-session-timeout {...okt.host}>
-      <dialog {...okt.dialog}>
-        <h2 {...okt.title}>{t("okt.tittel")}</h2>
-        <p {...okt.text}>
-          {t("okt.forTallet")} <span {...okt.count} /> {t("okt.etterTallet")}
+    <lt-session-timeout {...session.host}>
+      <dialog {...session.dialog}>
+        <h2 {...session.title}>{t("session.title")}</h2>
+        <p {...session.text}>
+          {t("session.beforeCount")} <span {...session.count} /> {t("session.afterCount")}
         </p>
-        <span {...okt.live} />
-        <form {...okt.actions}>
-          <button {...okt.extend}>{t("okt.fortsett")}</button>
-          <button {...okt.logout}>{t("okt.loggUt")}</button>
+        <span {...session.live} />
+        <form {...session.actions}>
+          <button {...session.extend}>{t("session.continue")}</button>
+          <button {...session.logout}>{t("session.logOut")}</button>
         </form>
       </dialog>
     </lt-session-timeout>
@@ -36,67 +36,67 @@ export function Okt() {
 }
 ```
 
-På en server er det den samme markupen, med teksten fra serverens eget oppsett. I en Go-mal kan det være en funksjon appen selv har registrert:
+On a server it is the same markup, with the text coming from the server's own setup. In a Go template it can be a function the app has registered itself:
 
 ```html
-<h2 class="lt-session-timeout__title" id="okt-tittel">{{ T "okt.tittel" }}</h2>
+<h2 class="lt-session-timeout__title" id="session-title">{{ T "session.title" }}</h2>
 ```
 
-## Verktøyene
+## Tools
 
-LO-TEK bryr seg ikke om hvilket verktøy du bruker, så lenge det gir tekst. Noen vanlige valg:
+LO-TEK does not care which tool you use, as long as it produces text. Some common choices:
 
-| Der markupen lages | Vanlige verktøy |
+| Where the markup is made | Common tools |
 | --- | --- |
-| React | i18next med react-i18next, FormatJS (react-intl), Lingui |
-| Annen JavaScript | i18next, Paraglide, FormatJS |
-| Server | gettext, go-i18n i Go, ressursfiler i .NET, `ResourceBundle` i Kotlin og Java |
+| React | i18next with react-i18next, FormatJS (react-intl), Lingui |
+| Other JavaScript | i18next, Paraglide, FormatJS |
+| Server | gettext, go-i18n in Go, resource files in .NET, `ResourceBundle` in Kotlin and Java |
 
-## Hvorfor LO-TEK ikke har en integrasjon
+## Why LO-TEK has no integration
 
-- **Pakken har ingen avhengigheter, og skal ikke få noen.** En integrasjon med i18next ville gjort i18next til en del av hver app som bruker LO-TEK.
-- **De fleste verktøyene har en egen pakke per rammeverk,** som react-i18next. En integrasjon ville bundet LO-TEK til ett rammeverk igjen, og det er det hele systemet er bygget for å unngå.
-- **En server i Go eller Kotlin kan ikke bruke et JavaScript-bibliotek.** Teksten deres må komme fra serveren uansett.
-- **Teksten hører til markupen, og markupen kommer fra den som rendrer den.** Se [Markup og oppførsel](/markup-and-behaviour/).
+- **The package has no dependencies, and is not getting any.** An integration with i18next would make i18next part of every app that uses LO-TEK.
+- **Most of the tools have a separate package per framework,** such as react-i18next. An integration would tie LO-TEK to one framework again, which is what the whole system is built to avoid.
+- **A server in Go or Kotlin cannot use a JavaScript library.** Its text has to come from the server anyway.
+- **The text belongs to the markup, and the markup comes from whoever renders it.** See [Markup and behaviour](/markup-and-behaviour/).
 
-## Tall og varigheter
+## Numbers and durations
 
-Komponentene formaterer tall og varigheter med nettleserens eget `Intl`, etter `lang` på siden. Opplesningen i [Session Timeout](/components/session-timeout/) sier «1 minutt og 30 sekunder» på en norsk side og «1 minute and 30 seconds» på en engelsk, uten at noen har oversatt den. [Suggestion](/components/suggestion/) velger bøyningsform med `Intl.PluralRules`, så polsk får alle sine fire former.
+The components format numbers and durations with the browser's own `Intl`, following `lang` on the page. The announcement in [Session Timeout](/components/session-timeout/) says "1 minute and 30 seconds" on an English page and "1 minutt og 30 sekunder" on a Norwegian one, without anyone having translated it. [Suggestion](/components/suggestion/) picks the plural form with `Intl.PluralRules`, so Polish gets all four of its forms.
 
-Sett derfor `lang` på `<html>`, og på et element som har et annet språk enn resten av siden. Uten `lang` brukes nettleserens eget språk.
+Set `lang` on `<html>`, therefore, and on any element in a different language from the rest of the page. Without `lang`, the browser's own language is used.
 
-## Tekstene pakken har
+## The texts in the package
 
-Dette er hver tekst LO-TEK skriver inn i siden selv. En vaktpost i bygget feller en ny tekst som ikke står her, en tekst i CSS som ikke leses fra en variabel, og en tekst som er skrevet rett i en komponent.
+These are all the texts LO-TEK writes into the page itself. A guard in the build fails on a new text that is not listed here, on a text in CSS that is not read from a variable, and on a text written directly in a component.
 
-| Komponent | Standardtekst | Slik byttes den ut |
+| Component | Default text | How to replace it |
 | --- | --- | --- |
-| [Toast](/components/toast/), regionen | Varsler | `label` på `<lt-toast>`, eller `label` i `lt.toast()` |
-| [Toast](/components/toast/), lukkeknappen | Lukk melding | `close-label` på `<lt-toast>`, `closeLabel` i `lt.toast()`, eller `closeLabel` i `show()` for én melding |
-| [Connection Status](/components/connection-status/), uten forbindelse | Ingen forbindelse. Det du skriver blir ikke lagret. | `offline-text` |
-| [Connection Status](/components/connection-status/), tilbake | Forbindelsen er tilbake. | `online-text` |
-| [Suggestion](/components/suggestion/), null treff | Ingen treff | `count-none` |
-| [Suggestion](/components/suggestion/), ett treff | Ett treff | `count-one` |
-| [Suggestion](/components/suggestion/), flere treff | `{n} treff` | `count-other`, og `count-zero`, `count-two`, `count-few` og `count-many` for språk som har dem |
-| [Label](/components/label/) og [Fieldset](/components/fieldset/), påkrevd med tegn | * | `--lt-label-required-symbol` |
-| [Label](/components/label/) og [Fieldset](/components/fieldset/), påkrevd med tekst | (påkrevd) | `--lt-label-required-text` |
-| [Label](/components/label/) og [Fieldset](/components/fieldset/), valgfri | (valgfri) | `--lt-label-optional-text` |
+| [Toast](/components/toast/), the region | Notifications | `label` on `<lt-toast>`, or `label` in `lt.toast()` |
+| [Toast](/components/toast/), the close button | Close message | `close-label` on `<lt-toast>`, `closeLabel` in `lt.toast()`, or `closeLabel` in `show()` for a single message |
+| [Connection Status](/components/connection-status/), no connection | No connection. What you type is not being saved. | `offline-text` |
+| [Connection Status](/components/connection-status/), back | Connection restored. | `online-text` |
+| [Suggestion](/components/suggestion/), no matches | No matches | `count-none` |
+| [Suggestion](/components/suggestion/), one match | One match | `count-one` |
+| [Suggestion](/components/suggestion/), several matches | `{n} matches` | `count-other`, and `count-zero`, `count-two`, `count-few` and `count-many` for languages that have them |
+| [Label](/components/label/) and [Fieldset](/components/fieldset/), required with a symbol | * | `--lt-label-required-symbol` |
+| [Label](/components/label/) and [Fieldset](/components/fieldset/), required with text | (required) | `--lt-label-required-text` |
+| [Label](/components/label/) and [Fieldset](/components/fieldset/), optional | (optional) | `--lt-label-optional-text` |
 
-[Session Timeout](/components/session-timeout/) står ikke i tabellen. Den har ingen tekst: du skriver dialogen selv.
+[Session Timeout](/components/session-timeout/) is not in the table. It has no text: you write the dialog yourself.
 
-Tekstene i stilarkene byttes med en variabel, for eksempel etter språket på siden:
+The texts in the stylesheets are replaced with a variable, for example by the language of the page. This example translates them into Norwegian on purpose, to show a language other than the defaults:
 
 ```css
-:root:lang(en) {
-  --lt-label-required-text: " (required)";
-  --lt-label-optional-text: " (optional)";
+:root:lang(nb) {
+  --lt-label-required-text: " (påkrevd)";
+  --lt-label-optional-text: " (valgfri)";
 }
 ```
 
-I forslagsfeltet står `{n}` for antallet. Skriv det i alle formene unntatt `count-none`, også i `count-one`: på fransk gjelder den formen også 0 treff, og på russisk også 21.
+In the suggestion field, `{n}` stands for the count. Write it in every form except `count-none`, including `count-one`: in French that form also covers 0 matches, and in Russian also 21. The Norwegian example is on purpose too:
 
 ```html
-<lt-suggestion count-none="No results" count-one="{n} result" count-other="{n} results">
+<lt-suggestion lang="nb" count-none="Ingen treff" count-one="{n} treff" count-other="{n} treff">
 ```
 
-Bruker du i18next, kan du sende oversettelsen rett inn, som `count-other={t("treff.flere")}`. i18next lar `{n}` med enkle klammer stå, så den kan stå i oversettelsesfila.
+If you use i18next, you can pass the translation straight in, as `count-other={t("matches.other")}`. i18next leaves `{n}` with single braces alone, so it can stay in the translation file.

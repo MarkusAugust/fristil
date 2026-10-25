@@ -1,85 +1,85 @@
 ---
 title: List
-description: Punktliste, nummerert liste og lister uten punkter. CSS-komponent med én klasse og ingen JavaScript.
+description: Bulleted lists, numbered lists and lists without bullets. A CSS component with one class and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Klassen settes på `<ul>` eller `<ol>` og gir listen riktig luft og innrykk. Variantene fjerner punktene visuelt uten å fjerne selve listen. Unntaket er Safari, der VoiceOver kan la være å lese en `<ul>` uten synlige punkter som en liste. En `<ol>` og en liste i `<nav>` beholder den. Er antallet viktig for den som hører siden, sett `role="list"` på `<ul>`.
+The class goes on `<ul>` or `<ol>` and gives the list the right spacing and indentation. The variants remove the bullets visually without removing the list itself. The exception is Safari, where VoiceOver may not read a `<ul>` without visible bullets as a list. An `<ol>` and a list inside `<nav>` keep it. If the count matters to someone listening to the page, set `role="list"` on the `<ul>`.
 
 ## How to use it
 
 <Example importer={["tokens.css", "list.css"]}
   stiler={["list"]} layout="stabel" maxWidth="32rem" kode={`
 <ul class="lt-list">
-  <li>Fødselsattest</li>
-  <li>Bekreftelse fra arbeidsgiver</li>
-  <li>Kopi av leiekontrakt</li>
+  <li>Birth certificate</li>
+  <li>Confirmation from your employer</li>
+  <li>Copy of the tenancy agreement</li>
 </ul>
 
 <ol class="lt-list">
-  <li>Fyll ut skjemaet</li>
-  <li>Last opp vedlegg</li>
-  <li>Send søknaden</li>
+  <li>Fill in the form</li>
+  <li>Upload attachments</li>
+  <li>Send the application</li>
 </ol>
 
 <ul class="lt-list" data-variant="divided">
-  <li>Faktura 2026-0481, forfaller 4. mars</li>
-  <li>Faktura 2026-0482, forfaller 4. april</li>
+  <li>Invoice 2026-0481, due 4 March</li>
+  <li>Invoice 2026-0482, due 4 April</li>
 </ul>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
 <ul {...lt.list({ variant: "divided" })}>
-  <li>Søknad om bostøtte</li>
-  <li>Søknad om startlån</li>
+  <li>Housing benefit application</li>
+  <li>Home loan application</li>
 </ul>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const liste = document.querySelector<HTMLUListElement>("#vedlegg")
+const list = document.querySelector<HTMLUListElement>("#attachments")
 
-lt.setAttributes(liste, lt.list({ variant: "divided" }))
+lt.setAttributes(list, lt.list({ variant: "divided" }))
 ```
 
 </Fragment>
 </Example>
 
-| `data-variant` | Brukes til |
+| `data-variant` | Used for |
 | --- | --- |
-| *(utelatt)* | Punkter eller tall, med innrykk |
-| `plain` | Uten punkter, for lister som bærer sin egen struktur |
-| `divided` | Uten punkter, med strek mellom radene |
+| *(omitted)* | Bullets or numbers, with indentation |
+| `plain` | No bullets, for lists that carry their own structure |
+| `divided` | No bullets, with a line between the rows |
 
-## Hvorfor varianten finnes
+## Why the variant exists
 
-Uten `plain` ville folk skrevet `<div>` for å bli kvitt punktene, og da forsvinner opplysningen om at dette er en liste med fire elementer. Varianten fjerner utseendet, ikke betydningen, med unntaket for Safari over.
+Without `plain`, people would write `<div>` to get rid of the bullets, and the information that this is a list of four items is lost. The variant removes the look, not the meaning, with the Safari exception above.
 
 <Example stiler={["list", "card"]} layout="stabel" maxWidth="32rem" kode={`
 <ul class="lt-list" data-variant="plain">
   <li>
     <div class="lt-card">
-      <h3 class="lt-card__title">Søknad om bostøtte</h3>
-      <p>Sendt 4. mars.</p>
+      <h3 class="lt-card__title">Housing benefit application</h3>
+      <p>Sent 4 March.</p>
     </div>
   </li>
   <li>
     <div class="lt-card">
-      <h3 class="lt-card__title">Søknad om barnehageplass</h3>
-      <p>Under behandling.</p>
+      <h3 class="lt-card__title">Nursery place application</h3>
+      <p>In progress.</p>
     </div>
   </li>
 </ul>
@@ -87,18 +87,18 @@ Uten `plain` ville folk skrevet `<div>` for å bli kvitt punktene, og da forsvin
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-list` | Listen. Varianten kommer fra `data-variant`. |
+| `.lt-list` | The list. The variant comes from `data-variant`. |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
-| `--lt-list-gap` | `var(--lt-spacing-1)`, og `var(--lt-spacing-2)` i `divided` |
+| `--lt-list-gap` | `var(--lt-spacing-1)`, and `var(--lt-spacing-2)` in `divided` |
 
-`--lt-list-gap` er avstanden mellom elementene, og blir til luft over og under hver rad i `divided`. De to har ulik standardverdi, så setter du variabelen gjelder tallet ditt begge steder. Se [Tilpasning](../../customising/).
+`--lt-list-gap` is the space between the items, and becomes the space above and below each row in `divided`. The two have different defaults, so if you set the variable, your value applies in both places. See [Customising](../../customising/).
 
 ## Accessibility
 
-- Bruk `<ol>` når rekkefølgen betyr noe, som i en oppskrift eller en saksgang. Bruk `<ul>` ellers.
-- Ikke legg annet enn `<li>` rett inni listen. Et `<div>` mellom bryter koblingen mellom listen og elementene.
-- Lister av lenker bør ligge i en liste også når de ser ut som en meny. Da sier skjermleseren hvor mange valg det er.
+- Use `<ol>` when the order matters, as in a recipe or a sequence of steps in a case. Use `<ul>` otherwise.
+- Put nothing but `<li>` directly inside the list. A `<div>` in between breaks the link between the list and its items.
+- Lists of links should be in a list even when they look like a menu. The screen reader then says how many choices there are.

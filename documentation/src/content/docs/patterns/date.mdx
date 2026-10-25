@@ -1,75 +1,75 @@
 ---
-title: Dato i et skjema
-description: Hvorfor LO-TEK ikke har en datovelger, og hvordan du ber om en dato som virker overalt.
+title: Dates in a form
+description: Why LO-TEK has no date picker, and how to ask for a date that works everywhere.
 ---
 
 import DateDemo from "../../../components/DateDemo.astro"
 
-LO-TEK har ingen datovelger. Nettleseren har en, og den er bedre enn vår var.
+LO-TEK has no date picker. The browser has one, and it is better than ours was.
 
 <DateDemo />
 
-## Markupen
+## The markup
 
 ```html
 <lt-field>
-  <label class="lt-label" for="fodselsdato">Fødselsdato</label>
-  <input class="lt-input" data-variant="date" id="fodselsdato"
-         name="fodselsdato" type="date"
+  <label class="lt-label" for="date-of-birth">Date of birth</label>
+  <input class="lt-input" data-variant="date" id="date-of-birth"
+         name="date-of-birth" type="date"
          min="1900-01-01" max="2026-12-31">
-  <p class="lt-help-text">Skriv datoen som 31.05.2026, eller velg den i kalenderen.</p>
+  <p class="lt-help-text">Type the date as 31/05/2026, or pick it in the calendar.</p>
 </lt-field>
 ```
 
-Kjører serveren din JavaScript, skriver den attributtene selv og trenger ikke `<lt-field>`:
+If your server runs JavaScript, it writes the attributes itself and does not need `<lt-field>`:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const felt = lt.field({ id: "fodselsdato", help: true, invalid })
-const kontroll = lt.input({ type: "date", state: felt.state })
+const field = lt.field({ id: "date-of-birth", help: true, invalid })
+const control = lt.input({ type: "date", state: field.state })
 ```
 
-## Hvorfor ingen komponent
+## Why there is no component
 
-Vi hadde en, `<lt-calendar>`, og fjernet den. Regnestykket gikk ikke opp:
+We had one, `<lt-calendar>`, and removed it. The sums did not add up:
 
-| Oppgave | Hvem gjør den |
+| Task | Who does it |
 | --- | --- |
-| Åpne kalenderpanel | nettleseren |
-| Tastaturnavigasjon i panelet | nettleseren |
-| Oversettelse og ukestart | nettleseren, etter brukerens eget oppsett |
-| Gyldig intervall | `min` og `max` |
-| ISO-verdi til serveren | nettleseren |
-| Koble ledetekst, hjelpetekst og feilmelding | `lt.field()` |
+| Opening the calendar panel | the browser |
+| Keyboard navigation in the panel | the browser |
+| Translation and first day of the week | the browser, following the user's own settings |
+| Valid range | `min` and `max` |
+| ISO value to the server | the browser |
+| Wiring the label, help text and error text | `lt.field()` |
 
-Det som var igjen til en egen komponent var ingenting, bortsett fra at panelet ville sett likt ut i alle nettlesere. Det er den samme avveiningen vi allerede har tatt for `<select>`: nedtrekkslista tegnes av operativsystemet, og ingen savner at den ikke gjør det.
+What was left for a separate component was nothing, apart from the panel looking the same in every browser. That is the same trade-off we have already made for `<select>`: the dropdown is drawn by the operating system, and nobody misses it looking the same in every browser.
 
-Panelet er dessuten forbigående. Det står ikke i siden, det åpner seg og lukker seg igjen.
+The panel is also transient. It is not part of the page; it opens and closes again.
 
-## To forskjeller mellom nettleserne du må kjenne
+## Two browser differences you need to know
 
-Dette er testet i Chromium, Firefox og WebKit, ikke lest i en spesifikasjon.
+This is tested in Chromium, Firefox and WebKit, not read in a specification. The tests used a Norwegian locale (`nb`), where the browser shows the date as 31.05.2026, so the examples below keep that format on purpose.
 
-**WebKit krever skilletegnene.** Skriver brukeren `31052026` uten punktum, blir feltet stående tomt med `validity.badInput`, og skjemaet sender ingenting. `31.05.2026` virker. Derfor bør hjelpeteksten si hvordan datoen skrives, med et eksempel: «Skriv datoen som 31.05.2026, eller velg den i kalenderen.»
+**WebKit requires the separators.** If the user types `31052026` without full stops, the field stays empty with `validity.badInput`, and the form sends nothing. `31.05.2026` works. So the help text should say how to write the date, with an example in the page's format, such as "Type the date as 31/05/2026, or pick it in the calendar."
 
-**Chromium tar imot feil rekkefølge som gyldig.** `20260531` ble til år 60531, og `validity.valid` var fortsatt `true`. Derfor skal `min` og `max` alltid settes. Uten dem slipper en feiltasting gjennom som en stille gal dato.
+**Chromium accepts the wrong order as valid.** `20260531` became the year 60531, and `validity.valid` was still `true`. So `min` and `max` should always be set. Without them a typo gets through as a silently wrong date.
 
-## Valider på serveren
+## Validating on the server
 
 ```ts
-const dato = formData.get("fodselsdato")
+const date = formData.get("date-of-birth")
 
-if (typeof dato !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dato)) {
-  return feil("Skriv datoen som dag, måned og år.")
+if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+  return error("Enter the date as day, month and year.")
 }
 ```
 
-Feltet sender alltid ISO når nettleseren godtok datoen. Men `badInput` betyr at serveren får en tom streng fra noen som mente å skrive noe, og den forskjellen må appen din si fra om.
+The field always sends ISO when the browser accepted the date. But `badInput` means the server gets an empty string from someone who meant to type something, and your app has to point out that difference.
 
-## Det systemet ikke gjør
+## What the system does not do
 
-- **Vi validerer ikke datoen.** `min` og `max` er nettleserens sjekk, og den kan omgås. Serveren må gjøre den om igjen.
-- **Vi oversetter ikke feilmeldingene.** Nettleserens egne bobler («Please enter a valid value») kommer på nettleserens språk. Vil du ha norsk, må du slå dem av med `novalidate` og vise `<p class="lt-error-text">` selv.
-- **Vi håndterer ikke datointervaller.** Fra og til er to felt, og at det ene må komme før det andre er appens regel.
-- **Vi har ingen datovelger du kan style.** Trenger du en kalender som ser lik ut i alle nettlesere, er det et eget prosjekt i appen din, ikke noe som ligger her.
+- **We do not validate the date.** `min` and `max` are the browser's check, and it can be bypassed. The server has to do it again.
+- **We do not translate the error messages.** The browser's own bubbles ("Please enter a valid value") come in the browser's language. If you want them in the page's language, you have to turn them off with `novalidate` and show `<p class="lt-error-text">` yourself.
+- **We do not handle date ranges.** From and to are two fields, and that one has to come before the other is your app's rule.
+- **We have no date picker you can style.** If you need a calendar that looks the same in every browser, that is a separate project in your app, not something that lives here.

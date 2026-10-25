@@ -1,140 +1,140 @@
 ---
-title: La brukeren velge tema
-description: Temavelger i ren CSS, og de to måtene å få valget til å vare.
+title: Letting the user choose a theme
+description: A theme picker in plain CSS, and the two ways to make the choice last.
 ---
 
 import FramedPage from "../../../components/FramedPage.astro"
 
-Fargene følger maskinens innstilling uten at du gjør noe. Vil brukeren overstyre den, er selve byttet ren CSS: `lt-theme-control` på en radioknapp gjør `value` til et temavalg. Å få valget til å **vare** er noe annet, og det er appens oppgave.
+The colours follow the device setting without you doing anything. If the user wants to override it, the switch itself is plain CSS: `lt-theme-control` on a radio button turns its `value` into a theme choice. Making the choice **last** is something else, and that is the app's job.
 
-<FramedPage src="/demo/theme/" tittel="Temavelgeren" hoyde="34rem" />
+<FramedPage src="/demo/theme/" tittel="The theme picker" hoyde="34rem" />
 
-## Markupen
+## The markup
 
-Gruppa er et vanlig `<fieldset>` med radioknapper, altså [toggle-gruppa](../../components/toggle-group/). Klassen står på hver knapp, ikke på gruppa.
+The group is a plain `<fieldset>` with radio buttons, that is, the [toggle group](../../components/toggle-group/). The class goes on each button, not on the group.
 
 ```html
 <fieldset class="lt-toggle-group">
-  <legend class="lt-sr-only">Tema</legend>
+  <legend class="lt-sr-only">Theme</legend>
   <label class="lt-toggle-group__option">
-    <input class="lt-theme-control" type="radio" name="tema"
-           value="auto" checked /> Følg systemet
+    <input class="lt-theme-control" type="radio" name="theme"
+           value="auto" checked /> Follow the system
   </label>
   <label class="lt-toggle-group__option">
-    <input class="lt-theme-control" type="radio" name="tema"
-           value="light" /> Lyst
+    <input class="lt-theme-control" type="radio" name="theme"
+           value="light" /> Light
   </label>
   <label class="lt-toggle-group__option">
-    <input class="lt-theme-control" type="radio" name="tema"
-           value="dark" /> Mørkt
+    <input class="lt-theme-control" type="radio" name="theme"
+           value="dark" /> Dark
   </label>
 </fieldset>
 ```
 
-Tre verdier betyr noe: `auto`, `light` og `dark`. «Følg systemet» har ingen temablokk, og det er med vilje: en verdi uten blokk treffer ingenting, så maskinens innstilling gjelder igjen.
+Three values mean something: `auto`, `light` and `dark`. "Follow the system" has no theme block, and that is on purpose: a value without a block matches nothing, so the device setting applies again.
 
-`light` og `dark` vinner over `data-theme` på `<html>`. Serveren kan altså sende det valget den har lagret, mens et klikk likevel slår igjennom før svaret er tilbake.
+`light` and `dark` beat `data-theme` on `<html>`. So the server can send the choice it has stored, while a click still takes effect before the response is back.
 
-`auto` gjør det ikke: regelen for den melder seg eksplisitt ut når `<html>` bærer et tema, slik at serverens verdi står. Uten det ville `:has()` slått attributtet på spesifisitet. Skal «Følg systemet» virke med én gang, må det som lagrer valget også fjerne attributtet. Begge oppskriftene under gjør det.
+`auto` does not: its rule explicitly opts out when `<html>` carries a theme, so the server's value stands. Without that, `:has()` would beat the attribute on specificity. For "Follow the system" to work immediately, whatever stores the choice also has to remove the attribute. Both recipes below do.
 
-## Hva hvert valg gjør
+## What each option does
 
-Valget styrer to ting, og de er ikke det samme. LO-TEKs farger kommer fra tokenene. Nettleserens **egne** flater, altså rullefelt, nedtrekkslista i en `<select>` og kalenderpanelet i et datofelt, styres av CSS-egenskapen `color-scheme`.
+The choice controls two things, and they are not the same. LO-TEK's colours come from the tokens. The browser's **own** surfaces, that is, scrollbars, the dropdown of a `<select>` and the calendar panel in a date field, are controlled by the CSS property `color-scheme`.
 
-| `value` | LO-TEKs farger | `color-scheme` |
+| `value` | LO-TEK's colours | `color-scheme` |
 | --- | --- | --- |
-| `auto` | ingen overstyring: mediespørringen, eller `data-theme` hvis det står der | `light dark`, eller `data-theme` sitt |
-| `light` | lyse tokens | `light` |
-| `dark` | mørke tokens | `dark` |
+| `auto` | no override: the media query, or `data-theme` if it is there | `light dark`, or that of `data-theme` |
+| `light` | light tokens | `light` |
+| `dark` | dark tokens | `dark` |
 
-`light dark` er ikke et tema. Det er en beskjed til nettleseren om at siden fungerer i begge, så den kan tegne sine egne flater etter systeminnstillingen. `light` og `dark` låser den til ett.
+`light dark` is not a theme. It tells the browser that the page works in both, so it can draw its own surfaces according to the system setting. `light` and `dark` lock it to one.
 
-Du skal ikke sette `color-scheme` selv når du bruker velgeren. Se siste punkt nederst.
+You should not set `color-scheme` yourself when you use the picker. See the last point at the bottom.
 
-## Varigheten
+## Making it last
 
-CSS kan bytte tema, men ikke huske det. Tre veier, med ulike krav:
+CSS can switch the theme, but not remember it. Three ways, with different requirements:
 
-| Vei | Krever | Varer over sidelasting |
+| Way | Requires | Survives a page load |
 | --- | --- | --- |
-| Bare kontrollen | ingenting | nei |
-| Cookie, lest på serveren | en server som rendrer HTML | ja |
-| `localStorage` | JavaScript | ja |
+| The control alone | nothing | no |
+| Cookie, read on the server | a server that renders HTML | yes |
+| `localStorage` | JavaScript | yes |
 
-Ingen av dem krever et rammeverk.
+None of them requires a framework.
 
-### Cookie lest på serveren
+### Cookie read on the server
 
-Dette er veien for en app som rendrer HTML på en server, uansett hvilket språk serveren er skrevet i. Gruppa står i et vanlig skjema, og hele rundturen er tre steg uten en linje JavaScript:
+This is the way for an app that renders HTML on a server, whatever language the server is written in. The group sits in a plain form, and the whole round trip is three steps without a line of JavaScript:
 
 ```http
-POST /theme          tema=dark
-→ Set-Cookie: tema=dark; Path=/; Max-Age=31536000; SameSite=Lax
+POST /theme          theme=dark
+→ Set-Cookie: theme=dark; Path=/; Max-Age=31536000; SameSite=Lax
 → 303 See Other
 
-GET /soknad         Cookie: tema=dark
+GET /application    Cookie: theme=dark
 → <html data-theme="dark">
 ```
 
-Serveren leser headeren og skriver attributtet. I Astro:
+The server reads the header and writes the attribute. In Astro:
 
 ```astro
 ---
-const lagret = Astro.cookies.get("tema")?.value
-const tema = lagret === "light" || lagret === "dark" ? lagret : undefined
+const stored = Astro.cookies.get("theme")?.value
+const theme = stored === "light" || stored === "dark" ? stored : undefined
 ---
 
-<html lang="nb" data-theme={tema}>
+<html lang="en" data-theme={theme}>
 ```
 
-Hvitelist de to verdiene. En cookie kommer fra klienten, så den kan inneholde hva som helst: en gammel verdi, eller en noen har skrevet selv. Kopierer du den rett inn, får `<html>` en `data-theme` uten blokk, og siden faller til systemtemaet uten at noen av knappene er markert.
+Allow-list the two values. A cookie comes from the client, so it can contain anything: an old value, or one someone wrote themselves. If you copy it straight in, `<html>` gets a `data-theme` without a block, and the page falls back to the system theme without any of the buttons being checked.
 
-`auto` skal derfor gi **ingen** `data-theme`. Skriver du `data-theme="auto"`, treffer ingen temablokk, og du har en verdi i markupen som ikke betyr noe.
+`auto` should therefore give **no** `data-theme`. If you write `data-theme="auto"`, no theme block matches, and you have a value in the markup that means nothing.
 
-Sett samtidig `checked` på den knappen som svarer til cookien, slik at gruppa viser det lagrede valget.
+At the same time, set `checked` on the button that matches the cookie, so the group shows the stored choice.
 
-### localStorage på en statisk side
+### localStorage on a static site
 
-En helt statisk side har ingen server som kan lese cookien. Da er `localStorage` den eneste som varer, og skriptet må stå **blokkerende i `<head>`**, før siden tegnes:
+A fully static site has no server that can read the cookie. Then `localStorage` is the only thing that lasts, and the script has to be **blocking in `<head>`**, before the page is drawn:
 
 ```html
-<!-- I <head>, uten defer, før siden tegnes -->
+<!-- In <head>, without defer, before the page is drawn -->
 <script>
-  const lagret = localStorage.getItem("tema")
-  if (lagret === "light" || lagret === "dark") {
-    document.documentElement.dataset.theme = lagret
+  const stored = localStorage.getItem("theme")
+  if (stored === "light" || stored === "dark") {
+    document.documentElement.dataset.theme = stored
   }
 </script>
 ```
 
-Sjekk mot de to verdiene framfor mot «ikke `auto`». `localStorage` deles mellom alt på samme opphav, så nøkkelen kan inneholde noe annet enn det du skrev: en gammel verdi, eller en annen app sin. Skriver du den rett inn, får `<html>` en `data-theme` uten blokk, og siden faller til systemtemaet uten at noen av knappene er markert.
+Check against the two values rather than against "not `auto`". `localStorage` is shared by everything on the same origin, so the key can contain something other than what you wrote: an old value, or another app's. If you write it straight in, `<html>` gets a `data-theme` without a block, and the page falls back to the system theme without any of the buttons being checked.
 
-Står skriptet nederst i `<body>`, eller har det `defer`, rekker siden å tegne seg i feil tema først.
+If the script is at the bottom of `<body>`, or has `defer`, the page gets drawn in the wrong theme first.
 
-Noe må også lagre valget. Dette kan stå hvor som helst etter gruppa:
+Something also has to store the choice. This can go anywhere after the group:
 
 ```html
 <script type="module">
-  const lagret = localStorage.getItem("tema")
-  const valgt = lagret === "light" || lagret === "dark" ? lagret : "auto"
+  const stored = localStorage.getItem("theme")
+  const chosen = stored === "light" || stored === "dark" ? stored : "auto"
 
-  for (const knapp of document.querySelectorAll(".lt-theme-control")) {
-    knapp.checked = knapp.value === valgt
+  for (const button of document.querySelectorAll(".lt-theme-control")) {
+    button.checked = button.value === chosen
 
-    knapp.addEventListener("change", () => {
-      localStorage.setItem("tema", knapp.value)
-      // Attributtet fra skriptet i <head> må bort, ellers står det foran
-      // «Følg systemet», som ikke har noen temablokk å vinne med.
+    button.addEventListener("change", () => {
+      localStorage.setItem("theme", button.value)
+      // The attribute from the script in <head> has to go, or it stands in
+      // front of "Follow the system", which has no theme block to win with.
       delete document.documentElement.dataset.theme
     })
   }
 </script>
 ```
 
-## Det systemet ikke gjør
+## What the system does not do
 
-- **Å lagre valget.** Kontrollen bytter tema og husker ingenting. Varigheten er appens, gjennom en cookie eller `localStorage`.
-- **Å virke inne i en skyggerot.** `:has()` ser ikke ut av sitt eget tre, så en kontroll i en skyggerot setter ikke tema på siden. Den må stå i det samme treet som `<html>`.
-- **Å avgjøre mellom to velgere.** Står det to grupper på siden, altså to ulike `name` eller to skjemaer, er én knapp avkrysset i hver. Sier de ulike ting, kan ikke CSS vite hvilken som gjelder, og tokenene og `color-scheme` kan ende på hver sin. Bruk én gruppe per side.
-- **Å gi en del av siden sitt eget tema.** Kontrollen gjelder hele dokumentet. Skal bare et utsnitt ha sitt eget tema, er det `data-theme` på det utsnittet, og det er en [temagrense](../../customising/#lyst-og-mørkt).
-- **Å trenge `color-scheme` fra deg.** Hvert valg setter den selv, «Følg systemet» medregnet. Skriver du den på `<html>` utenfor et lag, slår regelen `@layer lotek`, og nettleserens egne flater blir låst til systemet mens brukeren har valgt noe annet.
+- **Storing the choice.** The control switches the theme and remembers nothing. Making it last is the app's job, through a cookie or `localStorage`.
+- **Working inside a shadow root.** `:has()` does not see out of its own tree, so a control in a shadow root does not set the theme on the page. It has to be in the same tree as `<html>`.
+- **Deciding between two pickers.** If there are two groups on the page, that is, two different `name`s or two forms, one button is checked in each. If they say different things, CSS cannot know which applies, and the tokens and `color-scheme` can end up following different ones. Use one group per page.
+- **Giving part of the page its own theme.** The control applies to the whole document. If only a section should have its own theme, that is `data-theme` on that section, and it is a [theme boundary](../../customising/#light-and-dark).
+- **Needing `color-scheme` from you.** Each option sets it itself, "Follow the system" included. If you write it on `<html>` outside a layer, the rule beats `@layer lotek`, and the browser's own surfaces stay locked to the system while the user has chosen something else.

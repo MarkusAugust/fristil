@@ -1,19 +1,19 @@
 ---
 title: Error Summary
-description: Samler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.
+description: Collects the errors in a form and takes the user to the field that failed. Frame component.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import ErrorSummaryDemo from "../../../components/ErrorSummaryDemo.astro"
 
-Når en innsending stopper, skal brukeren få vite hvorfor, og komme til feltet med ett klikk. Serveren skriver overskriften og lista. Komponenten gjør de to tingene nettleseren ikke gjør selv: flytter fokus hit når boksen kommer til syne, og gir fokus til selve kontrollen når en lenke følges.
+When a submission stops, the user should learn why, and reach the field in one click. The server writes the heading and the list. The component does the two things the browser does not do by itself: it moves focus here when the box becomes visible, and it gives focus to the control itself when a link is followed.
 
-:::note[To veier til den samme markupen]
-Lages markupen med JavaScript, gir `lt.errorSummary()` boksen klassen, `role="alert"` og `tabindex="-1"`, ferdig i HTML-en. Blir den til uten JavaScript, holder det med `<lt-error-summary>` rundt en overskrift og en liste: komponenten setter de tre, og klassen på overskriften. Fokus hit, og videre til feltet, kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-and-behaviour/#byggefunksjon-eller-web-component).
+:::note[Two routes to the same markup]
+When the markup is made with JavaScript, `lt.errorSummary()` gives the box the class, `role="alert"` and `tabindex="-1"`, already in the HTML. When it is made without JavaScript, `<lt-error-summary>` around a heading and a list is enough: the component sets those three, and the class on the heading. Focus moving here, and on to the field, comes from the component in both cases. See [Markup and behaviour](/markup-and-behaviour/#builder-function-or-web-component).
 :::
 
 ```ts
-// main.ts, kjøres én gang når appen starter
+// main.ts, runs once when the app starts
 import { defineLtErrorSummary } from "@lo-tek/interfaces/error-summary"
 import "@lo-tek/interfaces/tokens.css"
 import "@lo-tek/interfaces/error-summary.css"
@@ -28,30 +28,30 @@ defineLtErrorSummary()
   </TabItem>
   <TabItem label="Plain HTML">
     ```html
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`, not
+         `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/error-summary/error-summary.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/label/label.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/input/input.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
     <form novalidate>
-      <!-- Klassen, role="alert" og tabindex="-1" setter komponenten. -->
-      <lt-error-summary id="feil" hidden>
+      <!-- The component sets the class, role="alert" and tabindex="-1". -->
+      <lt-error-summary id="errors" hidden>
         <h2></h2>
         <ul class="lt-list"></ul>
       </lt-error-summary>
 
-      <label class="lt-label" for="epost">E-postadresse</label>
-      <input class="lt-input" id="epost" type="email" />
-      <button class="lt-button">Send søknad</button>
+      <label class="lt-label" for="email">Email address</label>
+      <input class="lt-input" id="email" type="email" />
+      <button class="lt-button">Send application</button>
     </form>
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtErrorSummary } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/error-summary/lt-error-summary.js"
@@ -60,43 +60,43 @@ defineLtErrorSummary()
     </script>
 
     <script type="module">
-      const boks = document.getElementById("feil")
+      const box = document.getElementById("errors")
 
-      function visFeil(feilene) {
-        boks.querySelector("ul").innerHTML = feilene
-          .map((f) => `<li><a href="#${f.id}">${f.melding}</a></li>`)
+      function showErrors(errors) {
+        box.querySelector("ul").innerHTML = errors
+          .map((e) => `<li><a href="#${e.id}">${e.message}</a></li>`)
           .join("")
 
-        // Overskriften og hidden skrives her, slik en server ville gjort det.
-        if (feilene.length > 0) {
-          boks.querySelector("h2").textContent =
-            feilene.length === 1 ? "Skjemaet har én feil" : `Skjemaet har ${feilene.length} feil`
+        // The heading and hidden are written here, as a server would.
+        if (errors.length > 0) {
+          box.querySelector("h2").textContent =
+            errors.length === 1 ? "The form has one error" : `The form has ${errors.length} errors`
         }
-        // Skjult og vist igjen, så fokus flyttes også når skjemaet feiler en
-        // gang til mens boksen alt står synlig.
-        boks.hidden = true
-        boks.hidden = feilene.length === 0
+        // Hidden and shown again, so focus also moves when the form fails
+        // again while the box is already visible.
+        box.hidden = true
+        box.hidden = errors.length === 0
       }
 
-      const epost = document.getElementById("epost")
+      const email = document.getElementById("email")
 
-      document.querySelector("form").addEventListener("submit", (hendelse) => {
-        hendelse.preventDefault()
+      document.querySelector("form").addEventListener("submit", (event) => {
+        event.preventDefault()
 
-        const feilene = epost.value.includes("@")
+        const errors = email.value.includes("@")
           ? []
-          : [{ id: "epost", melding: "Skriv en e-postadresse med krøllalfa" }]
+          : [{ id: "email", message: "Enter an email address with an @" }]
 
-        visFeil(feilene)
+        showErrors(errors)
       })
     </script>
     ```
 
-    Komponenten flytter fokus hit i det `hidden` tas bort. Meldingene her er skrevet i skriptet. Kommer de fra en server eller fra brukeren, sett dem med `textContent`, ikke gjennom `innerHTML`.
+    The component moves focus here as soon as `hidden` is removed. The messages here are written in the script. If they come from a server or from the user, set them with `textContent`, not through `innerHTML`.
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/lotek.d.ts, gir <lt-error-summary> typer i JSX
+    // src/lotek.d.ts, gives <lt-error-summary> types in JSX
     import "@lo-tek/interfaces/react-jsx"
     ```
 
@@ -109,19 +109,19 @@ defineLtErrorSummary()
 
     defineLtErrorSummary()
 
-    type Feil = { id: string; melding: string }
+    type FormError = { id: string; message: string }
 
-    export function Feiloppsummering({ feilene }: { feilene: Feil[] }) {
-      const boks = lt.errorSummary({ count: feilene.length, id: "feil" })
+    export function ErrorSummary({ errors }: { errors: FormError[] }) {
+      const box = lt.errorSummary({ count: errors.length, id: "errors" })
 
       return (
-        <lt-error-summary {...boks.host}>
-          <h2 {...boks.title}>
-            {feilene.length === 1 ? "Skjemaet har én feil" : `Skjemaet har ${feilene.length} feil`}
+        <lt-error-summary {...box.host}>
+          <h2 {...box.title}>
+            {errors.length === 1 ? "The form has one error" : `The form has ${errors.length} errors`}
           </h2>
           <ul {...lt.list()}>
-            {feilene.map((f) => (
-              <li key={f.id}><a href={`#${f.id}`}>{f.melding}</a></li>
+            {errors.map((e) => (
+              <li key={e.id}><a href={`#${e.id}`}>{e.message}</a></li>
             ))}
           </ul>
         </lt-error-summary>
@@ -137,14 +137,14 @@ defineLtErrorSummary()
     import "@lo-tek/interfaces/tokens.css"
     import "@lo-tek/interfaces/error-summary.css"
 
-    const { feilene } = Astro.props
-    const boks = lt.errorSummary({ count: feilene.length, id: "feil" })
+    const { errors } = Astro.props
+    const box = lt.errorSummary({ count: errors.length, id: "errors" })
     ---
 
-    <lt-error-summary {...boks.host}>
-      <h2 {...boks.title}>Skjemaet har {feilene.length} feil</h2>
+    <lt-error-summary {...box.host}>
+      <h2 {...box.title}>The form has {errors.length} errors</h2>
       <ul {...lt.list()}>
-        {feilene.map((f) => <li><a href={`#${f.id}`}>{f.melding}</a></li>)}
+        {errors.map((e) => <li><a href={`#${e.id}`}>{e.message}</a></li>)}
       </ul>
     </lt-error-summary>
 
@@ -156,13 +156,13 @@ defineLtErrorSummary()
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`, not
+         `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/error-summary/error-summary.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtErrorSummary } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/error-summary/lt-error-summary.js"
@@ -170,57 +170,57 @@ defineLtErrorSummary()
       defineLtErrorSummary()
     </script>
 
-    <lt-error-summary id="feil" hidden>
+    <lt-error-summary id="errors" hidden>
       <h2></h2>
       <ul class="lt-list"></ul>
     </lt-error-summary>
     ```
 
-    Serveren sender hele boksen på nytt når skjemaet valideres, med overskriften og lista ferdig utfylt, og uten `hidden` når det finnes feil. Komponenten oppdager at boksen ble synlig og flytter fokus dit.
+    The server sends the whole box again when the form is validated, with the heading and the list filled in, and without `hidden` when there are errors. The component notices that the box became visible and moves focus there.
 
-    Feiler skjemaet igjen mens boksen alt står synlig, flyttes ikke fokus, for signalet er at `hidden` tas bort. Send da to patcher i samme svar: først boksen med `hidden`, så boksen uten. Komponenten ser at den ble skjult og synlig igjen, og flytter fokus. Se [Markupen](#markupen).
+    If the form fails again while the box is already visible, focus does not move, because the signal is that `hidden` is removed. Send two patches in the same response then: first the box with `hidden`, then the box without. The component sees that it was hidden and shown again, and moves focus. See [The markup](#the-markup).
   </TabItem>
 </Tabs>
 
-## Markupen
+## The markup
 
 ```ts
-const feil = lt.errorSummary({ count: feilene.length, id: "feil" })
+const box = lt.errorSummary({ count: errors.length, id: "errors" })
 ```
 
 ```html
-<lt-error-summary class="lt-error-summary" role="alert" tabindex="-1" id="feil">
-  <h2 class="lt-error-summary__title">Skjemaet har to feil</h2>
+<lt-error-summary class="lt-error-summary" role="alert" tabindex="-1" id="errors">
+  <h2 class="lt-error-summary__title">The form has two errors</h2>
   <ul class="lt-list">
-    <li><a href="#epost">Skriv en e-postadresse med krøllalfa</a></li>
-    <li><a href="#fodselsdato">Skriv datoen som dag, måned og år</a></li>
+    <li><a href="#email">Enter an email address with an @</a></li>
+    <li><a href="#birth-date">Enter the date as day, month and year</a></li>
   </ul>
 </lt-error-summary>
 ```
 
-Overskriften og lista skriver serveren. Komponenten lagde overskriften tidligere selv, og da forsvant den ved første oppdatering fra serveren, uten å komme tilbake. Klassen, `role="alert"` og `tabindex="-1"` skriver `lt.errorSummary()` når markupen lages med JavaScript; ellers setter komponenten dem, og klassen på overskriften, og setter dem tilbake om en patch tar dem. Har serveren skrevet en annen rolle, står den. Se [Markup og oppførsel](/markup-and-behaviour/).
+The server writes the heading and the list. The component used to create the heading itself, and then it disappeared at the first update from the server and never came back. `lt.errorSummary()` writes the class, `role="alert"` and `tabindex="-1"` when the markup is made with JavaScript; otherwise the component sets them, and the class on the heading, and puts them back if a patch removes them. If the server has written a different role, it stays. See [Markup and behaviour](/markup-and-behaviour/).
 
-Er det ingen feil, setter byggefunksjonen `hidden` på boksen. En tom oppsummering med overskriften «Skjemaet har 0 feil» er verre enn ingen.
+When there are no errors, the builder function sets `hidden` on the box. An empty summary with the heading "The form has 0 errors" is worse than none.
 
-## Lenkene peker på feltets id
+## Links point to the field's id
 
-Hver lenke i lista skal peke på `id`-en til kontrollen som feilet. Peker den på en `<label>`, følger komponenten ledeteksten videre til kontrollen, enten den peker med `for` eller omslutter den.
+Each link in the list should point to the `id` of the control that failed. If it points to a `<label>`, the component follows the label on to the control, whether the label points with `for` or wraps the control.
 
 ```html
-<li><a href="#fodselsdato">Skriv datoen som dag, måned og år</a></li>
+<li><a href="#birth-date">Enter the date as day, month and year</a></li>
 ...
-<label class="lt-label" for="fodselsdato">Fødselsdato</label>
-<input class="lt-input" id="fodselsdato" type="date">
+<label class="lt-label" for="birth-date">Date of birth</label>
+<input class="lt-input" id="birth-date" type="date">
 ```
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-error-summary` | Selve boksen. Ligger på `<lt-error-summary>` |
-| `.lt-error-summary__title` | Overskriften over lista |
+| `.lt-error-summary` | The box itself. Sits on `<lt-error-summary>` |
+| `.lt-error-summary__title` | The heading above the list |
 
-| Variabel | Reserve |
+| Variable | Fallback |
 | --- | --- |
 | `--lt-error-summary-padding` | `var(--lt-spacing-4)` |
 | `--lt-error-summary-radius` | `var(--lt-spacing-1)` |
@@ -232,12 +232,12 @@ Hver lenke i lista skal peke på `id`-en til kontrollen som feilet. Peker den p�
 ```
 ## Accessibility
 
-Boksen er `role="alert"`, så den leses opp når den kommer til syne. Den har `tabindex="-1"` for å kunne få fokus uten å bli en tabbestopp.
+The box is `role="alert"`, so it is announced when it becomes visible. It has `tabindex="-1"` so it can receive focus without becoming a tab stop.
 
-To ting er lette å glemme, og begge er grunnen til at komponenten finnes:
+Two things are easy to forget, and both are the reason the component exists:
 
-- **Fokus flyttes til boksen** når den blir synlig. Uten det vet ikke den som hører siden at innsendingen stoppet. Sett `data-autofocus="false"` hvis du ikke vil ha det. Attributtet heter ikke `autofocus`, fordi det er en boolsk egenskap på elementet, og React 19 setter egenskapen i stedet for attributtet. Da ville avslaget ikke virket. Signalet er at `hidden` tas bort. Står boksen synlig fra før når skjemaet feiler på nytt, må appen slå `hidden` på og av, eller kalle `focus()` selv. Komponenten flytter ikke fokus av at lista endrer seg, for da ville en oppsummering som krymper mens brukeren retter, rykket fokus ut av feltet. Ett unntak: landet ikke fokus første gang, fordi boksen sto i et skjult panel, prøver den igjen ved neste endring i lista, men bare når ingen står i et felt. Mangler `tabindex` på boksen, setter komponenten den.
-- **Fokus går til selve kontrollen** når en lenke følges. En vanlig ankerlenke gir bare fokus til et mål som kan få det. Peker den på en ledetekst eller en overskrift, flytter nettleseren visningen, men `document.activeElement` blir `<body>`, og skjermleseren får ikke beskjed om hvor brukeren er. Tab fortsetter fra målet uansett; det er fokuset og opplesningen som mangler. Komponenten følger en ledetekst til kontrollen, og gir et mål som ikke kan få fokus `tabindex="-1"` for hoppet.
+- **Focus moves to the box** when it becomes visible. Without that, someone listening to the page does not know the submission stopped. Set `data-autofocus="false"` if you do not want it. The attribute is not called `autofocus`, because that is a boolean property on the element, and React 19 sets the property instead of the attribute. Opting out would then not work. The signal is that `hidden` is removed. If the box is already visible when the form fails again, the app has to toggle `hidden` on and off, or call `focus()` itself. The component does not move focus because the list changes, since a summary that shrinks while the user corrects would then pull focus out of the field. One exception: if focus did not land the first time, because the box was in a hidden panel, it tries again at the next change to the list, but only when nobody is in a field. If the box has no `tabindex`, the component sets it.
+- **Focus goes to the control itself** when a link is followed. A plain anchor link only gives focus to a target that can take it. If it points to a label or a heading, the browser scrolls the view, but `document.activeElement` becomes `<body>`, and the screen reader is not told where the user is. Tab continues from the target regardless; it is the focus and the announcement that are missing. The component follows a label to its control, and gives a target that cannot take focus `tabindex="-1"` for the jump.
 
-Komponenten kobler seg også på lenker serveren sender inn senere, så en oppsummering som oppdateres mens brukeren retter, fortsetter å virke.
+The component also attaches to links the server sends in later, so a summary that is updated while the user corrects keeps working.
 

@@ -1,111 +1,111 @@
 ---
 title: Select
-description: Nedtrekksliste. CSS-komponent med én klasse og ingen JavaScript.
+description: A dropdown list. CSS component with one class and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Samme utseende og tilstander som [Input](../input/), på et ekte `<select>`. Da brukes nettleserens egen liste, den som allerede virker med tastatur, skjermleser og mobilens innebygde velger.
+The same appearance and states as [Input](../input/), on a real `<select>`. The browser's own list is then used, the one that already works with the keyboard, screen readers and the phone's built-in picker.
 
 ## How to use it
 
 <Example importer={["tokens.css", "select.css", "label.css"]}
   stiler={["select", "label"]} layout="stabel" maxWidth="26rem" kode={`
-<label class="lt-label" for="fylke">Fylke</label>
-<select class="lt-select" id="fylke" name="fylke">
-  <option value="">Velg fylke</option>
-  <option>Innlandet</option>
-  <option selected>Vestland</option>
-  <option>Troms</option>
+<label class="lt-label" for="country">Country</label>
+<select class="lt-select" id="country" name="country">
+  <option value="">Choose a country</option>
+  <option>Canada</option>
+  <option selected>Ireland</option>
+  <option>United Kingdom</option>
 </select>
 
-<label class="lt-label" for="kommune">Kommune</label>
-<select class="lt-select" id="kommune" data-state="invalid" aria-invalid="true">
-  <option value="" selected>Velg kommune</option>
+<label class="lt-label" for="city">City</label>
+<select class="lt-select" id="city" data-state="invalid" aria-invalid="true">
+  <option value="" selected>Choose a city</option>
 </select>
 
-<label class="lt-label" for="registrert">Registrert fylke</label>
-<select class="lt-select" id="registrert" disabled>
-  <option selected>Vestland</option>
+<label class="lt-label" for="registered">Registered country</label>
+<select class="lt-select" id="registered" disabled>
+  <option selected>Ireland</option>
 </select>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** you spread the attributes in. That is the route in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
-<select {...lt.select({ picker: "styled" })} id="fylke" name="fylke">
-  <option value="">Velg fylke</option>
-  <option value="vestland">Vestland</option>
+<select {...lt.select({ picker: "styled" })} id="country" name="country">
+  <option value="">Choose a country</option>
+  <option value="ireland">Ireland</option>
 </select>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import goes to `/react` here, since the block is JSX. From there the keys are called `className` and `htmlFor`. In Astro and anything else without React you import `@lo-tek/interfaces` and get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** you set them on it. That is the route when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt, type FieldState } from "@lo-tek/interfaces"
 
-const felt = document.querySelector<HTMLSelectElement>("#fylke")
-if (!felt) throw new Error("fant ikke elementet")
+const field = document.querySelector<HTMLSelectElement>("#country")
+if (!field) throw new Error("element not found")
 
-felt.addEventListener("change", () => {
-  const tilstand: FieldState = felt.value === "" ? "invalid" : "default"
+field.addEventListener("change", () => {
+  const state: FieldState = field.value === "" ? "invalid" : "default"
 
-  lt.setAttributes(felt, lt.select({ state: tilstand, picker: "styled" }))
+  lt.setAttributes(field, lt.select({ state, picker: "styled" }))
 })
 ```
 
-`state` er samme type som i [Input](../input/) og [Textarea](../textarea/). Går feltet tilbake til `"default"`, fjerner `lt.setAttributes` både `data-state` og `aria-invalid`.
+`state` is the same type as in [Input](../input/) and [Textarea](../textarea/). When the field goes back to `"default"`, `lt.setAttributes` removes both `data-state` and `aria-invalid`.
 
-Hvert kall setter hele tilstanden. Utelater du `picker`, fjernes `data-picker` på samme måte som `data-state`, så send med de valgene feltet skal beholde.
+Every call sets the whole state. If you leave out `picker`, `data-picker` is removed in the same way as `data-state`, so pass the options the field should keep.
 
 </Fragment>
 </Example>
 
-| `data-state` | Brukes til |
+| `data-state` | Used for |
 | --- | --- |
-| *(utelatt)* | Normaltilstand |
-| `invalid` | Valideringen har feilet |
-| `success` | Valget er bekreftet gyldig. Bruk sparsomt. |
+| *(omitted)* | Normal state |
+| `invalid` | Validation has failed |
+| `success` | The choice is confirmed valid. Use sparingly. |
 
-Den første `<option>` bør ha tom `value` når feltet er påkrevd. Da stopper `required` faktisk innsending til brukeren har valgt noe.
+The first `<option>` should have an empty `value` when the field is required. Then `required` actually stops the submission until the user has chosen something.
 
-## Listen tegnet i siden
+## The list drawn in the page
 
-Selve listen som spretter opp er normalt et vindu fra operativsystemet, og ingen CSS når inn i den. Med `data-picker="styled"` ber feltet nettleseren tegne listen inne i siden i stedet, slik at den får systemets farger, avstander og skygge.
+The list that pops up is normally a window from the operating system, and no CSS reaches into it. With `data-picker="styled"` the field asks the browser to draw the list inside the page instead, so it gets the system's colours, spacing and shadow.
 
 <Example stiler={["select", "label"]} layout="stabel" maxWidth="26rem" kode={`
-<label class="lt-label" for="sak">Sakstype</label>
-<select class="lt-select" data-picker="styled" id="sak" name="sak">
-  <option value="">Velg sakstype</option>
-  <option value="byggesak" selected>Byggesak</option>
-  <option value="deling">Deling av eiendom</option>
-  <option value="utslipp">Utslippstillatelse</option>
+<label class="lt-label" for="case">Application type</label>
+<select class="lt-select" data-picker="styled" id="case" name="case">
+  <option value="">Choose an application type</option>
+  <option value="building" selected>Building permit</option>
+  <option value="subdivision">Subdivision of property</option>
+  <option value="discharge">Discharge permit</option>
 </select>
 `} />
 
-Dette er den samme `<select>`-en som før. Den sendes inn med skjemaet, leses av skjermlesere og virker med tastatur på nøyaktig samme måte, og markupen er uendret bortsett fra attributtet.
+This is the same `<select>` as before. It is submitted with the form, read by screen readers and works with the keyboard in exactly the same way, and the markup is unchanged apart from the attribute.
 
-Et valg som er lengre enn feltet, brytes da over flere linjer, og feltet blir høyere. Skal det heller klippes med «…», legg `<button><selectedcontent></selectedcontent></button>` først i `<select>`-en. Nettleseren lager ikke `<selectedcontent>` selv, men fyller det med det valgte alternativet når det står der, og LO-TEK klipper det. Nettlesere uten støtte hopper over knappen.
+An option longer than the field then wraps over several lines, and the field gets taller. If it should be clipped with "…" instead, put `<button><selectedcontent></selectedcontent></button>` first in the `<select>`. The browser does not create `<selectedcontent>` by itself, but fills it with the selected option when it is there, and LO-TEK clips it. Browsers without support skip the button.
 
-Grupper laget med `<optgroup label="…">` får overskriften i mindre og dempet tekst, så den skiller seg fra valgene.
+Groups made with `<optgroup label="…">` get their heading in smaller, muted text, so it stands apart from the options.
 
-Støtten er ulik mellom nettleserne, og det er grunnen til at dette må slås på:
+Support differs between browsers, which is why this has to be switched on:
 
-| Nettleser | Hva brukeren ser |
+| Browser | What the user sees |
 | --- | --- |
-| Chromium og Safari som støtter `appearance: base-select` | Listen tegnes i siden, med LO-TEKs farger |
-| Firefox | Nettleserens egen liste, som uten attributtet |
+| Chromium and Safari that support `appearance: base-select` | The list is drawn in the page, with LO-TEK's colours |
+| Firefox | The browser's own list, as without the attribute |
 
-Det er den ene betingelsen stilarket spør om, så hver versjon som har `appearance: base-select` tegner listen i siden. LO-TEK er testet i Chromium 148 og WebKit 26.4. Firefox får altså ingen ny funksjonalitet, men heller ingenting som ser ødelagt ut. Skal alle brukere se det samme, la attributtet være.
+That is the one condition the stylesheet asks about, so every version that has `appearance: base-select` draws the list in the page. LO-TEK is tested in Chromium 148 and WebKit 26.4. Firefox gets no new functionality, but nothing that looks broken either. If all users should see the same thing, leave the attribute out.
 
-I høykontrastmodus faller feltet tilbake til nettleserens egen liste i alle nettlesere. Systemfargene er de eneste som er garantert lesbare der.
+In high contrast mode the field falls back to the browser's own list in all browsers. The system colours are the only ones guaranteed to be readable there.
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
@@ -116,29 +116,29 @@ lt.select({ picker: "styled" })
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-select` | Nedtrekkslisten. Tilstanden kommer fra `data-state`, listen fra `data-picker`. |
+| `.lt-select` | The dropdown list. The state comes from `data-state`, the list from `data-picker`. |
 
-| Variabel | Standard | Gjelder |
+| Variable | Default | Applies to |
 | --- | --- | --- |
-| `--lt-select-width` | `100%` | Bredden på feltet |
-| `--lt-select-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` | Luften i feltet |
-| `--lt-select-radius` | `var(--lt-spacing-1)` | Feltet, og listen som tegnes i siden |
-| `--lt-select-option-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` | Ett valg i listen som tegnes i siden |
-| `--lt-select-viewport-margin` | `var(--lt-spacing-2)` | Luft mellom listen og kanten av vinduet |
+| `--lt-select-width` | `100%` | The width of the field |
+| `--lt-select-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` | The space inside the field |
+| `--lt-select-radius` | `var(--lt-spacing-1)` | The field, and the list drawn in the page |
+| `--lt-select-option-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` | One option in the list drawn in the page |
+| `--lt-select-viewport-margin` | `var(--lt-spacing-2)` | Space between the list and the edge of the window |
 
-Pilen er to gradienter i bakgrunnen, tegnet i `--lt-color-neutral-text-subtle`, så den snur med temaet. Skal den bort, sett `background-image: none`. Med `data-picker="styled"` tegner nettleseren pilen selv, og den styles med `::picker-icon`.
+The arrow is two gradients in the background, drawn in `--lt-color-neutral-text-subtle`, so it follows the theme. To remove it, set `background-image: none`. With `data-picker="styled"` the browser draws the arrow itself, and it is styled with `::picker-icon`.
 
-I standardutseendet står plassen til pilen ved enden av feltet fast, siden pilen er tegnet et fast stykke fra kanten, og `--lt-select-padding` gjelder de tre andre sidene. Med `data-picker="styled"` tar pilen sin egen plass, og variabelen gjelder alle fire.
+In the default appearance the space for the arrow at the end of the field is fixed, since the arrow is drawn a fixed distance from the edge, and `--lt-select-padding` applies to the other three sides. With `data-picker="styled"` the arrow takes its own space, and the variable applies to all four.
 
-Et kompakt felt, som «Antall per side», blir så bredt som innholdet med `--lt-select-width: auto`. Skal ledeteksten stå ved siden av feltet, er det oppsettet rundt dem som avgjør det, ikke LO-TEK. `.lt-label` er en blokk, og en rad med `display: flex` rundt de to legger dem på linje.
+A compact field, such as "Items per page", becomes as wide as its content with `--lt-select-width: auto`. If the label should sit beside the field, the layout around them decides that, not LO-TEK. `.lt-label` is a block, and a row with `display: flex` around the two puts them on one line.
 
-Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
 
-- En `<option>` som sier «Velg fylke» er en ledetekst i forkledning, ikke en erstatning for `<label>`.
-- Har listen flere enn rundt sju valg som hører logisk sammen, grupper dem med `<optgroup label="…">`.
-- Ikke send skjemaet automatisk ved endring. Tastaturbrukere blar gjennom valgene med piltastene og ville sendt skjemaet på det første de passerer.
-- Trenger du søk, flervalg eller ikoner i listen, er `<select>` feil verktøy. Bygg det som en frittstående komponent framfor å style om dette elementet.
+- An `<option>` that says "Choose a country" is a label in disguise, not a replacement for `<label>`.
+- If the list has more than about seven options that belong together logically, group them with `<optgroup label="…">`.
+- Do not submit the form automatically on change. Keyboard users move through the options with the arrow keys and would submit the form on the first one they pass.
+- If you need search, multiple selection or icons in the list, `<select>` is the wrong tool. Build it as a standalone component instead of restyling this element.

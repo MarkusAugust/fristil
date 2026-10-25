@@ -1,78 +1,78 @@
 ---
 title: Sr Only
-description: Tekst som bare skjermlesere får. CSS-komponent med én klasse og ingen JavaScript.
+description: Text only screen readers get. A CSS component with one class and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Innhold som skal leses opp, men ikke vises. Klassen krymper elementet bort visuelt og lar det bli stående i dokumentet, så skjermlesere fortsatt finner det.
+Content that should be read out, but not shown. The class shrinks the element away visually and leaves it in the document, so screen readers still find it.
 
 ## How to use it
 
-En rad med «Slett»-knapper gir mening for den som ser tabellen. Den som hører den, får fire like knapper. Tillegget i `.lt-sr-only` sier hvilken rad knappen hører til, uten å gjenta det for øyet.
+A row of "Delete" buttons makes sense to someone looking at the table. Someone listening to it gets four identical buttons. The addition in `.lt-sr-only` says which row the button belongs to, without repeating it for the eye.
 
 <Example importer={["tokens.css", "sr-only.css", "button.css"]}
   stiler={["button", "sr-only"]} layout="stabel" maxWidth="26rem" kode={`
 <button class="lt-button" data-variant="danger">
-  Slett<span class="lt-sr-only"> søknaden fra 4. mars</span>
+  Delete<span class="lt-sr-only"> the application from 4 March</span>
 </button>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
 <button {...lt.button({ variant: "ghost" })} type="button">
-  Slett{" "}
-  <span {...lt.srOnly()}>søknad 2024/1187</span>
+  Delete{" "}
+  <span {...lt.srOnly()}>application 2024/1187</span>
 </button>
 ```
 
-`{" "}` er mellomrommet mellom de to ordene. JSX stryker et linjeskift mellom tekst og element, og uten det leses knappen som «Slettsøknad».
+`{" "}` is the space between the two words. JSX strips a line break between text and an element, and without it the button is read as "Deleteapplication".
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
+**If you have the element in a variable,** set them on it with `setAttributes`. That is the way without JSX, whether you just created the element or found it in a page the server sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const tillegg = document.createElement("span")
-tillegg.textContent = " søknaden fra 4. mars"
+const addition = document.createElement("span")
+addition.textContent = " the application from 4 March"
 
-lt.setAttributes(tillegg, lt.srOnly())
+lt.setAttributes(addition, lt.srOnly())
 ```
 
 </Fragment>
 </Example>
 
-Knappen leses opp som «Slett søknaden fra 4. mars», mens den står som «Slett» på skjermen.
+The button is read out as "Delete the application from 4 March", while it shows "Delete" on screen.
 
-## Skjult ledetekst
+## Hidden label
 
-Er ledeteksten åpenbar av oppsettet, kan den skjules visuelt. Den skal ikke fjernes.
+If the label is obvious from the layout, it can be hidden visually. It should not be removed.
 
 <Example stiler={["input", "label", "sr-only", "button"]} layout="stabel" maxWidth="26rem" kode={`
-<label class="lt-label lt-sr-only" for="sok">Søk i saker</label>
-<input class="lt-input" id="sok" type="search" placeholder="Søk i saker" />
+<label class="lt-label lt-sr-only" for="search">Search cases</label>
+<input class="lt-input" id="search" type="search" placeholder="Search cases" />
 `} />
 
-`placeholder` er ingen erstatning for en ledetekst: den forsvinner idet brukeren skriver, og flere skjermlesere leser den ikke opp i det hele tatt.
+`placeholder` is no replacement for a label: it disappears as soon as the user types, and several screen readers do not read it out at all.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-sr-only` | Elementet som skal høres, men ikke ses |
+| `.lt-sr-only` | The element that should be heard, but not seen |
 
-Klassen har ingen variabler. Den har én oppgave, og verdiene i den er de som faktisk virker på tvers av nettlesere.
+The class has no variables. It has one job, and the values in it are the ones that actually work across browsers.
 
 ## Accessibility
 
-- Bruk den bare på tekst som gir mening lest alene. En forklaring som bare henger sammen med noe du ser, blir forvirrende når den leses opp i en lenkeliste.
-- Skal innholdet bort for alle, bruk `hidden`. `display: none` og `visibility: hidden` fjerner elementet også for skjermlesere, og det er nettopp det denne klassen unngår.
-- Et element med klassen kan fortsatt få fokus. Legger du en lenke der, hopper fokus til noe brukeren ikke ser. Skal den vises når den får fokus, må du sette stilene tilbake i `:focus`.
+- Use it only on text that makes sense read on its own. An explanation that only fits with something you can see becomes confusing when it is read out in a list of links.
+- If the content should go for everyone, use `hidden`. `display: none` and `visibility: hidden` remove the element for screen readers too, and that is exactly what this class avoids.
+- An element with the class can still get focus. If you put a link there, focus jumps to something the user cannot see. If it should be shown when it gets focus, you have to restore the styles in `:focus`.

@@ -1,44 +1,44 @@
 ---
-title: Kom i gang
-description: Installer LO-TEK, importer det du trenger, og få den første komponenten på skjermen.
+title: Getting started
+description: Install LO-TEK, import what you need, and get the first component on screen.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import CssSize from "../../components/CssSize.astro"
 import Preview from "../../components/Preview.astro"
 
-## Installer
+## Install
 
 ```bash
 npm install @lo-tek/interfaces
 ```
 
-Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasser, og ingenting registreres ved import alene, så en side som bare bruker CSS-komponentene tar ikke med noe JavaScript fra pakken. Tailwind-temaet er ren CSS, så pakken krever ingenting av Tailwind.
+The package has no dependencies. The web components are ordinary `HTMLElement` classes, and nothing is registered by import alone, so a page that only uses the CSS components takes no JavaScript from the package. The Tailwind theme is plain CSS, so the package requires nothing from Tailwind.
 
-## Importer stilarkene
+## Import the stylesheets
 
-`tokens.css` definerer alle CSS-variablene, og alle andre stilark bygger på den. Den må lastes, og står først i eksemplene av vane: rekkefølgen mellom den og de andre har ikke noe å si.
+`tokens.css` defines all the CSS variables, and every other stylesheet builds on it. It must be loaded, and comes first in the examples out of habit: the order between it and the others does not matter.
 
 <Tabs>
-  <TabItem label="Med byggverktøy">
-    Ett stilark per komponent, med `tokens.css` først:
+  <TabItem label="With build tools">
+    One stylesheet per component, with `tokens.css` first:
 
     ```js
-    // main.js eller main.ts, øverst
+    // main.js or main.ts, at the top
     import "@lo-tek/interfaces/tokens.css"
     import "@lo-tek/interfaces/button.css"
     ```
 
-    Eller alt i én import, uten å velge:
+    Or everything in one import, without choosing:
 
     ```js
     import "@lo-tek/interfaces/lotek.css"
     ```
 
-    `lotek.css` har `tokens.css` og alle komponentstilarkene i seg, så den erstatter hele lista. Tailwind-temaet står utenfor, og hører ikke i en JavaScript-import i det hele tatt: `tailwind.css` er en `@theme`-blokk Tailwinds egen kompilator må lese, og settes opp som en `@import` i din egen CSS. Se [Tailwind](../tailwind/).
+    `lotek.css` contains `tokens.css` and all the component stylesheets, so it replaces the whole list. The Tailwind theme is not included, and does not belong in a JavaScript import at all: `tailwind.css` is a `@theme` block Tailwind's own compiler must read, and is set up as an `@import` in your own CSS. See [Tailwind](../tailwind/).
   </TabItem>
-  <TabItem label="Uten byggverktøy">
-    Én fil med alt, én rundtur:
+  <TabItem label="Without build tools">
+    One file with everything, one round trip:
 
     ```html
     <head>
@@ -46,7 +46,7 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
     </head>
     ```
 
-    Eller bare det du bruker:
+    Or just what you use:
 
     ```html
     <head>
@@ -55,39 +55,39 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
     </head>
     ```
 
-    Uten et byggesteg henter noen av stilarkene delene sine med `@import`, som nettleseren først ser når fila er lastet. `dist/lotek.css` har alt flatet ut, uten `@import`, og er derfor det raskeste valget når du lenker. Fra en CDN skriver du den virkelige stien i pakken, altså `@lo-tek/interfaces@VERSJON/src/tokens/tokens.css`. Korte navn som `@lo-tek/interfaces/tokens.css` er oppføringer i `exports`, og dem er det bare et byggesteg som leser.
+    Without a build step, some of the stylesheets fetch their parts with `@import`, which the browser only sees once the file has loaded. `dist/lotek.css` has everything flattened, without `@import`, and is therefore the fastest choice when you link. From a CDN, write the real path in the package, that is `@lo-tek/interfaces@VERSJON/src/tokens/tokens.css`. Short names like `@lo-tek/interfaces/tokens.css` are entries in `exports`, and only a build step reads those.
   </TabItem>
 </Tabs>
 
-**Lenker du uten byggesteg, bruk `lotek.css`.** Én rundtur på <CssSize />, og ingen `@import` nettleseren må laste fila for å oppdage. Lista med ett stilark per komponent er for den som har et byggesteg: der laster en side med bare knapper ikke CSS for en dialog. «Plain HTML»-fanen på hver komponentside oppgir lenkene til de enkelte stilarkene, siden lista samtidig sier hva komponenten krever, og `lotek.css` dekker hver av dem.
+**If you link without a build step, use `lotek.css`.** One round trip of <CssSize />, and no `@import` the browser has to load the file to discover. The list with one stylesheet per component is for those with a build step: there, a page with only buttons does not load CSS for a dialog. The "Plain HTML" tab on each component page lists the links to the individual stylesheets, since the list also says what the component requires, and `lotek.css` covers each of them.
 
-## Første komponent
+## Add the first component
 
-Med `tokens.css` og `button.css` importert:
+With `tokens.css` and `button.css` imported:
 
 <Tabs>
   <TabItem label="Example">
     <Preview stiler={["button"]}>
-      <button class="lt-button">Send søknad</button>
-      <button class="lt-button" data-variant="secondary">Lagre utkast</button>
+      <button class="lt-button">Submit application</button>
+      <button class="lt-button" data-variant="secondary">Save draft</button>
     </Preview>
   </TabItem>
-  <TabItem label="Kode">
+  <TabItem label="Code">
     ```html
-    <button class="lt-button">Send søknad</button>
-    <button class="lt-button" data-variant="secondary">Lagre utkast</button>
+    <button class="lt-button">Submit application</button>
+    <button class="lt-button" data-variant="secondary">Save draft</button>
     ```
   </TabItem>
 </Tabs>
 
-Ingen registrering, ingen oppstartskode. CSS-komponentene er bare klasser.
+No registration, no start-up code. The CSS components are just classes.
 
-## Registrer web components
+## Register the web components
 
-Ramme- og frittstående komponenter er web components, og må registreres én gang når appen starter. `defineLt()` registrerer alle ni:
+Frame and standalone components are web components, and must be registered once when the app starts. `defineLt()` registers all nine:
 
 ```ts
-// main.ts, kjøres én gang, ved import og ikke i en effekt
+// main.ts, runs once, on import and not in an effect
 import "@lo-tek/interfaces/tokens.css"
 import "@lo-tek/interfaces/field.css"
 import { defineLt } from "@lo-tek/interfaces/register"
@@ -95,7 +95,7 @@ import { defineLt } from "@lo-tek/interfaces/register"
 defineLt()
 ```
 
-Uten byggverktøy peker du på den bygde fila:
+Without build tools, point at the built file:
 
 ```html
 <script type="module">
@@ -104,41 +104,41 @@ Uten byggverktøy peker du på den bygde fila:
 </script>
 ```
 
-Kallet skal skje så tidlig som mulig, før noe rendres og aldri i en `useEffect`. Et element som står i siden før registreringen er et vanlig `HTMLElement` uten oppførsel, og et metodekall på det i det gapet feiler. Hjelperne `showToast`, `reportFailure`, `reportSuccess`, `extendSession` og `resetSession` venter i stedet på registreringen og utfører kallet når den kommer. Registreringen drar koden til alle ni med seg. Bruker du én av dem, kall dens egen funksjon i stedet, som `defineLtField()` fra `@lo-tek/interfaces/field`.
+The call should happen as early as possible, before anything renders and never in a `useEffect`. An element that is in the page before registration is a plain `HTMLElement` with no behaviour, and a method call on it in that gap fails. The helpers `showToast`, `reportFailure`, `reportSuccess`, `extendSession` and `resetSession` instead wait for the registration and make the call when it arrives. The registration pulls in the code for all nine. If you use one of them, call its own function instead, like `defineLtField()` from `@lo-tek/interfaces/field`.
 
-Flere kall er ufarlige, for funksjonene sjekker selv om elementet er registrert. De gjør heller ingenting på en server, der det ikke finnes noen `customElements` å registrere i, så de kan stå i en fil som kjøres begge steder.
+Calling them more than once is harmless, because the functions check themselves whether the element is registered. They also do nothing on a server, where there is no `customElements` to register in, so they can sit in a file that runs in both places.
 
 ```html
 <lt-field>
-  <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
-  <input class="lt-input" id="navn" type="text" name="navn" required />
-  <p class="lt-help-text">Slik det står i passet.</p>
+  <label class="lt-label" for="name" data-required="symbol">Full name</label>
+  <input class="lt-input" id="name" type="text" name="name" required />
+  <p class="lt-help-text">As it appears in your passport.</p>
 </lt-field>
 ```
 
-Står ledeteksten, feltet og hjelpeteksten der, men hjelpeteksten er ikke koblet til feltet med `aria-describedby`, har `define`-funksjonen ikke kjørt. Markupen i en `ramme`-komponent er din og vises uansett, med to unntak: [Tabs](../components/tabs/) viser bare det første panelet, og [Suggestion](../components/suggestion/) skjuler lista, til de er registrert, siden de ellers hopper når skriptet kommer. Feiler skriptet, når brukeren ikke de andre fanene. Det er bare de to frittstående, `<lt-toast>` og `<lt-connection-status>`, som er tomme til de er registrert. Et `<lt-session-timeout>` viser ingenting før varselet skal komme, og uten registrering kommer det aldri.
+If the label, the field and the help text are there, but the help text is not connected to the field with `aria-describedby`, the `define` function has not run. The markup in a `frame` component is yours and is shown regardless, with two exceptions: [Tabs](../components/tabs/) shows only the first panel, and [Suggestion](../components/suggestion/) hides the list, until they are registered, since they would otherwise jump when the script arrives. If the script fails, the user cannot reach the other tabs. Only the two standalone ones, `<lt-toast>` and `<lt-connection-status>`, are empty until they are registered. An `<lt-session-timeout>` shows nothing until the warning is due, and without registration it never comes.
 
-## Inngangspunkter
+## Use the entry points
 
-**Stilark**
+**Stylesheets**
 
-Hver komponent har sitt eget stilark, oppkalt etter siden sin: `@lo-tek/interfaces/button.css`, `/checkbox.css`, `/table.css` og så videre. Importer dem du bruker.
+Each component has its own stylesheet, named after its page: `@lo-tek/interfaces/button.css`, `/checkbox.css`, `/table.css` and so on. Import the ones you use.
 
-| Import | Innhold |
+| Import | Contents |
 | --- | --- |
-| `@lo-tek/interfaces/lotek.css` | Alt i én fil: tokens og hver komponent, uten `@import`. Ikke Tailwind-temaet |
-| `@lo-tek/interfaces/tokens.css` | Alle CSS-variabler. Kreves av alt annet. |
-| `@lo-tek/interfaces/<komponent>.css` | Én komponent, med samme navn som siden dens |
-| `@lo-tek/interfaces/sr-only.css` | `.lt-sr-only`, tekst bare skjermlesere får |
-| `@lo-tek/interfaces/tailwind.css` | LO-TEKs verdier som Tailwind-tema. Valgfri, se [Tailwind](../tailwind/). |
+| `@lo-tek/interfaces/lotek.css` | Everything in one file: tokens and every component, without `@import`. Not the Tailwind theme |
+| `@lo-tek/interfaces/tokens.css` | All CSS variables. Required by everything else. |
+| `@lo-tek/interfaces/<component>.css` | One component, with the same name as its page |
+| `@lo-tek/interfaces/sr-only.css` | `.lt-sr-only`, text only screen readers get |
+| `@lo-tek/interfaces/tailwind.css` | LO-TEK's values as a Tailwind theme. Optional, see [Tailwind](../tailwind/). |
 
-Noen stilark samler det de trenger, så du slipper å importere delene hver for seg: `field.css`, `error-summary.css`, `fieldset.css`, `search.css`, `session-timeout.css` og `suggestion.css`.
+Some stylesheets bundle what they need, so you do not have to import the parts separately: `field.css`, `error-summary.css`, `fieldset.css`, `search.css`, `session-timeout.css` and `suggestion.css`.
 
-Alle web-komponentene trenger et stilark. Ingen av dem bruker shadow DOM, så elementene er alminnelige elementer med systemets klasser, og klassene må lastes på siden.
+All the web components need a stylesheet. None of them uses shadow DOM, so the elements are ordinary elements with the system's classes, and the classes must be loaded on the page.
 
-**JavaScript og TypeScript**
+**JavaScript and TypeScript**
 
-Hele komponent-API-et ligger i ett navnerom:
+The whole component API is in one namespace:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
@@ -148,50 +148,50 @@ lt.input({ type: "email", state: "invalid" })
 lt.badge({ color: "success" })
 ```
 
-Skriv `lt.` i editoren, så ser du hva som finnes. Bruker du React, importer fra `@lo-tek/interfaces/react`. Kallene er de samme, men returverdien bruker `className` og `htmlFor`. Se [Typesikker bruk](../type-safe-use/).
+Type `lt.` in the editor to see what there is. If you use React, import from `@lo-tek/interfaces/react`. The calls are the same, but the return value uses `className` and `htmlFor`. See [Type-safe use](../type-safe-use/).
 
-| Import | Innhold |
+| Import | Contents |
 | --- | --- |
-| `@lo-tek/interfaces` | `lt` med alle komponentene, alle typene, og web component-registreringene |
-| `@lo-tek/interfaces/react` | Samme `lt`, men med `className` og `htmlFor` |
-| `@lo-tek/interfaces/react-jsx` | Typer for web components i JSX |
-| `@lo-tek/interfaces/dom` | `setAttributes`: bruker et attributtsett på et element uten JSX |
-| `@lo-tek/interfaces/register` | `defineLt`: registrerer alle web-komponentene i ett kall |
-| `@lo-tek/interfaces/diagnostics` | `diagnoseMarkup`: sjekker HTML mot elementene og klassene, som editoren gjør. Se [Editoren](../the-editor/) |
-| `@lo-tek/interfaces/field` | `defineLtField`, klassen `LtField` |
-| `@lo-tek/interfaces/session-timeout` | `defineLtSessionTimeout`, klassen `LtSessionTimeout`, `extendSession` og `resetSession` |
-| `@lo-tek/interfaces/connection-status` | `defineLtConnectionStatus`, klassen `LtConnectionStatus`, `reportFailure` og `reportSuccess` |
-| `@lo-tek/interfaces/tabs` | `defineLtTabs`, klassen `LtTabs` |
-| `@lo-tek/interfaces/error-summary` | `defineLtErrorSummary`, klassen `LtErrorSummary` |
-| `@lo-tek/interfaces/popover` | `defineLtPopover`, klassen `LtPopover` |
-| `@lo-tek/interfaces/toast` | `defineLtToast`, klassen `LtToast`, `showToast` |
-| `@lo-tek/interfaces/suggestion` | `defineLtSuggestion`, klassen `LtSuggestion` |
-| `@lo-tek/interfaces/dialog` | `defineLtDialog`, klassen `LtDialog` |
-| `@lo-tek/interfaces/field-core` | `computeFieldAttributes`: det `lt.field` og `<lt-field>` deler |
-| `@lo-tek/interfaces/host-element` | `HostElement` og `defineElement`: grunnlaget web-komponentene arver fra |
-| `@lo-tek/interfaces/tokens` | `cssTokens`, `colorTokens`, `darkColorTokens`, `darkTokens`, typene `CssToken`, `ColorToken`, `Breakpoint` og `Container`, `Breakpoints`, `Containers`, og hva fargefamiliene, rollene og lagene er til |
+| `@lo-tek/interfaces` | `lt` with all the components, all the types, and the web component registrations |
+| `@lo-tek/interfaces/react` | The same `lt`, but with `className` and `htmlFor` |
+| `@lo-tek/interfaces/react-jsx` | Types for web components in JSX |
+| `@lo-tek/interfaces/dom` | `setAttributes`: applies an attribute set to an element without JSX |
+| `@lo-tek/interfaces/register` | `defineLt`: registers all the web components in one call |
+| `@lo-tek/interfaces/diagnostics` | `diagnoseMarkup`: checks HTML against the elements and classes, as the editor does. See [The editor](../the-editor/) |
+| `@lo-tek/interfaces/field` | `defineLtField`, the class `LtField` |
+| `@lo-tek/interfaces/session-timeout` | `defineLtSessionTimeout`, the class `LtSessionTimeout`, `extendSession` and `resetSession` |
+| `@lo-tek/interfaces/connection-status` | `defineLtConnectionStatus`, the class `LtConnectionStatus`, `reportFailure` and `reportSuccess` |
+| `@lo-tek/interfaces/tabs` | `defineLtTabs`, the class `LtTabs` |
+| `@lo-tek/interfaces/error-summary` | `defineLtErrorSummary`, the class `LtErrorSummary` |
+| `@lo-tek/interfaces/popover` | `defineLtPopover`, the class `LtPopover` |
+| `@lo-tek/interfaces/toast` | `defineLtToast`, the class `LtToast`, `showToast` |
+| `@lo-tek/interfaces/suggestion` | `defineLtSuggestion`, the class `LtSuggestion` |
+| `@lo-tek/interfaces/dialog` | `defineLtDialog`, the class `LtDialog` |
+| `@lo-tek/interfaces/field-core` | `computeFieldAttributes`: what `lt.field` and `<lt-field>` share |
+| `@lo-tek/interfaces/host-element` | `HostElement` and `defineElement`: the base the web components inherit from |
+| `@lo-tek/interfaces/tokens` | `cssTokens`, `colorTokens`, `darkColorTokens`, `darkTokens`, the types `CssToken`, `ColorToken`, `Breakpoint` and `Container`, `Breakpoints`, `Containers`, and what the colour families, roles and layers are for |
 
-Hver CSS-komponent finnes også som eget inngangspunkt (`@lo-tek/interfaces/button`, `/badge`, `/link` og så videre) med en funksjon som heter det samme som komponenten. Unntaket er `/switch`, der funksjonen heter `switchControl`, siden `switch` er et reservert ord. Byggefunksjonene for web-komponentene, som `lt.tabs()` og `lt.dialog()`, har ikke eget inngangspunkt: de ligger i `lt` og i hovedinngangen. `/tabs`, `/dialog` og de andre har klassen og `define`-funksjonen.
+Each CSS component also exists as its own entry point (`@lo-tek/interfaces/button`, `/badge`, `/link` and so on) with a function named the same as the component. The exception is `/switch`, where the function is called `switchControl`, since `switch` is a reserved word. The builder functions for the web components, like `lt.tabs()` and `lt.dialog()`, have no entry point of their own: they are in `lt` and in the main entry point. `/tabs`, `/dialog` and the others have the class and the `define` function.
 
-`lt` er valgfritt. `class="lt-button" data-variant="secondary"` for hånd gir samme resultat; funksjonene finnes for å fange skrivefeil.
+`lt` is optional. `class="lt-button" data-variant="secondary"` by hand gives the same result; the functions exist to catch typos.
 
-## Versjoner
+## Understand versioning
 
-Pakken følger [semantisk versjonering](https://semver.org/lang/no/). Det offentlige API-et er større enn funksjonene: klassenavnene, attributtene byggefunksjonene skriver (`data-*` og `aria-*` medregnet), tokennavnene, `--lt-*`-variablene og oppføringene i `exports` er alle noe du kan bygge på.
+The package follows [semantic versioning](https://semver.org/). The public API is larger than the functions: the class names, the attributes the builder functions write (`data-*` and `aria-*` included), the token names, the `--lt-*` variables and the entries in `exports` are all things you can build on.
 
-Før 1.0 kan et nytt undertall, som et skifte fra 0.x til 0.(x+1), ha brytende endringer. De står da under overskriften «Brytende» i versjonsloggen, med hva du må endre. Fra 1.0 endres ingen av disse uten en ny hovedversjon.
+Before 1.0, a new minor version, such as a move from 0.x to 0.(x+1), can have breaking changes. They are then listed under the heading "Breaking" in the changelog, with what you need to change. From 1.0, none of these change without a new major version.
 
-`npm install` skriver versjonen med `^` foran. Under 1.0 godtar `^` bare nye rettelser i det samme undertallet, så et nytt undertall får du først når du ber om det, ved å skrive det nye nummeret i `package.json` eller installere pakken på nytt.
+`npm install` writes the version with `^` in front. Below 1.0, `^` only accepts new patches within the same minor version, so you get a new minor version only when you ask for it, by writing the new number in `package.json` or installing the package again.
 
-Pakken er ren ESM, uten CommonJS-utgave. Bruk `import`.
+The package is pure ESM, with no CommonJS build. Use `import`.
 
-Hva som er endret i hver versjon står i [CHANGELOG.md](https://github.com/MarkusAugust/lo-tek/blob/master/designsystem/CHANGELOG.md), som også følger med i pakken.
+What has changed in each version is in [CHANGELOG.md](https://github.com/MarkusAugust/lo-tek/blob/master/designsystem/CHANGELOG.md), which also ships with the package.
 
-## Videre
+## Go further
 
-- [Rammeverk](../frameworks/): konkret oppsett for ren HTML, React, Astro og Datastar
-- [Editoren](../the-editor/): fullføring og feilmeldinger i VS Code og JetBrains, også uten TypeScript
-- [Design tokens](../design-tokens/): hvilke variabler som finnes, og hva de heter
-- [Tailwind](../tailwind/): oppsett og LO-TEKs verdier som utility-klasser
-- [Button](../components/button/): den enkleste komponenten å begynne med
-- [Mønstre](../patterns/form/): hele skjemaer, lister og sider satt sammen
+- [Frameworks](../frameworks/): concrete setup for plain HTML, React, Astro and Datastar
+- [The editor](../the-editor/): completion and error messages in VS Code and JetBrains, also without TypeScript
+- [Design tokens](../design-tokens/): which variables exist, and what they are called
+- [Tailwind](../tailwind/): setup and LO-TEK's values as utility classes
+- [Button](../components/button/): the simplest component to start with
+- [Patterns](../patterns/form/): whole forms, lists and pages put together

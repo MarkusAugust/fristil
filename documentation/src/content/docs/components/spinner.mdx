@@ -1,11 +1,11 @@
 ---
 title: Spinner
-description: Venteindikator for noe som pågår. CSS-komponent med én klasse og ingen JavaScript.
+description: A wait indicator for something in progress. CSS component with one class and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-En ring som snurrer mens noe lastes. Vet du hvor lenge det tar, eller hvor langt det er kommet, er [Progress](../progress/) bedre. Denne sier bare at noe pågår.
+A ring that spins while something loads. If you know how long it takes, or how far it has got, [Progress](../progress/) is better. This one only says that something is in progress.
 
 ## How to use it
 
@@ -17,9 +17,9 @@ En ring som snurrer mens noe lastes. Vet du hvor lenge det tar, eller hvor langt
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** you spread the attributes in. That is the route in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
@@ -27,84 +27,84 @@ import { lt } from "@lo-tek/interfaces/react"
 <span {...lt.spinner({ size: "small" })} aria-hidden="true" />
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import goes to `/react` here, since the block is JSX. From there the keys are called `className` and `htmlFor`. In Astro and anything else without React you import `@lo-tek/interfaces` and get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** you set them on it. That is the route when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const ring = document.querySelector<HTMLElement>("#venter")
+const ring = document.querySelector<HTMLElement>("#waiting")
 
-lt.setAttributes(ring, lt.spinner({ size: "small", label: "Laster søknader" }))
+lt.setAttributes(ring, lt.spinner({ size: "small", label: "Loading applications" }))
 ```
 
-`label` gir både `role="status"` og `aria-label`, siden ringen ikke har noe navn uten begge. Utelater du den, er ringen bare en form. Se [Typesikker bruk](../../type-safe-use/).
+`label` gives both `role="status"` and `aria-label`, since the ring has no name without both. If you leave it out, the ring is just a shape. See [Type-safe use](../../type-safe-use/).
 
 </Fragment>
 </Example>
 
-| `data-size` | Brukes til |
+| `data-size` | Used for |
 | --- | --- |
-| `small` | Inne i en knapp eller en tabellrad |
-| *(utelatt)* | Ved siden av en tekst |
-| `large` | Midt på en side eller i et panel som lastes |
+| `small` | Inside a button or a table row |
+| *(omitted)* | Next to a text |
+| `large` | In the middle of a page or in a panel that is loading |
 
-## Med tekst ved siden av
+## With text beside it
 
-Den som hører siden får ingenting av en ring. La en synlig tekst bære beskjeden. Ringen kan få et navn med `aria-label`, men det er ikke sikkert at den leses opp av seg selv, se under.
+Someone listening to the page gets nothing from a ring. Let a visible text carry the message. The ring can get a name with `aria-label`, but it is not certain to be announced by itself; see below.
 
 <Example stiler={["spinner"]} kode={`
 <p role="status">
   <span class="lt-spinner" data-size="small" aria-hidden="true"></span>
-  Henter søknadene dine
+  Fetching your applications
 </p>
 `} />
 
-Er teksten synlig, sett `aria-hidden="true"` på ringen. Har ringen også et navn, leses ventingen ellers opp to ganger.
+If the text is visible, set `aria-hidden="true"` on the ring. If the ring also has a name, the wait is otherwise announced twice.
 
-Avsnittet leses opp når teksten kommer inn i det. La derfor `<p role="status">` stå tomt i siden fra før, og skriv ringen og teksten inn i det når ventingen begynner.
+The paragraph is announced when the text is inserted into it. So leave `<p role="status">` empty in the page beforehand, and write the ring and the text into it when the wait begins.
 
-Ringen er `inline-block`, så den står på linje med teksten av seg selv. Vil du ha dem på samme grunnlinje med en fast avstand, er det appens oppsett: `display: flex`, `align-items: center` og `gap` på avsnittet.
+The ring is `inline-block`, so it sits in line with the text by itself. If you want them on the same baseline with a fixed gap, that is the app's layout: `display: flex`, `align-items: center` and `gap` on the paragraph.
 
-Står ringen alene, får den rollen og navnet selv:
+If the ring stands alone, it gets the role and the name itself:
 
 ```html
-<span class="lt-spinner" role="status" aria-label="Laster søknader"></span>
+<span class="lt-spinner" role="status" aria-label="Loading applications"></span>
 ```
 
-Det gir ringen et navn når noen leter den opp, men det er ikke sikkert at den leses opp av seg selv. En region med `role="status"` leser opp endringer i innholdet sitt, og ringen har ikke noe innhold. Er det viktig at ventingen meldes, bruk avsnittet med tekst over, i et statusfelt som står i siden før ventingen starter.
+That gives the ring a name when someone looks for it, but it is not certain to be announced by itself. A region with `role="status"` announces changes to its content, and the ring has no content. If it matters that the wait is reported, use the paragraph with text above, in a status element that is in the page before the wait starts.
 
-## Inne i en knapp
+## Inside a button
 
 ```html
 <button class="lt-button" disabled>
   <span class="lt-spinner" data-size="small" aria-hidden="true"></span>
-  Sender søknad
+  Sending application
 </button>
 ```
 
-La knappeteksten endre seg fra «Send søknad» til «Sender søknad». Da sier knappen hva som skjer, også for den som ikke ser ringen.
+Let the button text change from "Send application" to "Sending application". Then the button says what is happening, also for someone who does not see the ring.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-spinner` | Ringen. Størrelsen kommer fra `data-size`. |
+| `.lt-spinner` | The ring. The size comes from `data-size`. |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-spinner-size` | `var(--lt-spacing-6)` |
 | `--lt-spinner-thickness` | `2px` |
 
-Variablene gjelder standardstørrelsen. `data-size="small"` og `data-size="large"` setter sin egen størrelse, og `large` også sin egen tykkelse.
+The variables apply to the default size. `data-size="small"` and `data-size="large"` set their own size, and `large` its own thickness as well.
 
-Har brukeren bedt om mindre bevegelse i systemet sitt, snurrer ringen saktere. Den stopper ikke helt: en indikator som står stille sier ikke lenger at noe pågår.
+If the user has asked for reduced motion in their system, the ring spins more slowly. It does not stop completely: an indicator that stands still no longer says that something is in progress.
 
-Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
 
-- Vent litt før du viser den. En ring som blinker forbi på 100 millisekunder er mer forstyrrende enn ingenting.
-- Si hva som lastes, ikke bare at noe lastes. «Henter søknadene dine» er mer verdt enn «Laster».
-- Er ventingen over, flytt fokus dit resultatet kom, eller meld fra i et `role="status"`-felt. Ellers står brukeren igjen uten å vite at noe skjedde.
+- Wait a little before you show it. A ring that flashes past in 100 milliseconds is more disturbing than nothing.
+- Say what is loading, not just that something is loading. "Fetching your applications" is worth more than "Loading".
+- When the wait is over, move focus to where the result appeared, or report it in a `role="status"` element. Otherwise the user is left without knowing that anything happened.

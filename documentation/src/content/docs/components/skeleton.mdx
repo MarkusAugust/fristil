@@ -1,11 +1,11 @@
 ---
 title: Skeleton
-description: Plassholder som viser formen på innhold som lastes. CSS-komponent med én klasse og ingen JavaScript.
+description: A placeholder that shows the shape of content being loaded. A CSS component with one class and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Grå former som viser hvor innholdet kommer. De er alltid skjult for skjermlesere, så ventingen må meldes ett sted i tillegg. Er det ingen form å vise, eller tar ventingen kort tid, er [Spinner](../spinner/) enklere.
+Grey shapes that show where the content will appear. They are always hidden from screen readers, so the wait has to be announced somewhere as well. If there is no shape to show, or the wait is short, [Spinner](../spinner/) is simpler.
 
 ## How to use it
 
@@ -15,26 +15,26 @@ Grå former som viser hvor innholdet kommer. De er alltid skjult for skjermleser
   layout="stabel"
   maxWidth="26rem"
   egenCss={`
-/* Dine egne klasser. De to reglene er alt som skal til. */
-.sak-siste-linje {
+/* Your own classes. These two rules are all it takes. */
+.case-last-line {
   inline-size: 70%;
 }
 
-.sak-bilde {
+.case-image {
   --lt-skeleton-height: var(--lt-spacing-12);
 }
   `}
   kode={`
 <div class="lt-skeleton" data-variant="circle" aria-hidden="true"></div>
 <div class="lt-skeleton" data-variant="text" aria-hidden="true"></div>
-<div class="lt-skeleton sak-siste-linje" data-variant="text" aria-hidden="true"></div>
-<div class="lt-skeleton sak-bilde" aria-hidden="true"></div>
+<div class="lt-skeleton case-last-line" data-variant="text" aria-hidden="true"></div>
+<div class="lt-skeleton case-image" aria-hidden="true"></div>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
@@ -42,62 +42,62 @@ import { lt } from "@lo-tek/interfaces/react"
 <div {...lt.skeleton({ variant: "circle" })} />
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
+**If you have the element in a variable,** set them on it with `setAttributes`. That is the way without JSX, whether you just created the element or found it in a page the server sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const linje = document.createElement("div")
+const line = document.createElement("div")
 
-lt.setAttributes(linje, lt.skeleton({ variant: "text" }))
+lt.setAttributes(line, lt.skeleton({ variant: "text" }))
 ```
 
 </Fragment>
 </Example>
 
-| `data-variant` | Brukes til |
+| `data-variant` | Used for |
 | --- | --- |
-| *(utelatt)* | Blokk, for bilder og kort |
-| `text` | Én tekstlinje |
-| `circle` | Profilbilde |
+| *(omitted)* | A block, for images and cards |
+| `text` | One line of text |
+| `circle` | A profile picture |
 
-Blokken og tekstlinjene fyller bredden de får, mens `circle` er like bred som den er høy. `sak-siste-linje` og `sak-bilde` er dine egne klasser, ikke LO-TEKs, og de står i «Plain HTML»-fanen over sammen med markupen.
+The block and the text lines fill the width they are given, while `circle` is as wide as it is high. `case-last-line` and `case-image` are your own classes, not LO-TEK's, and they are in the "Plain HTML" tab above together with the markup.
 
-Sett bredden på den siste linjen til under 100 prosent. Et avsnitt der alle linjene er like lange ser ikke ut som tekst.
+Set the width of the last line to less than 100 per cent. A paragraph where every line is the same length does not look like text.
 
-## Ventingen må meldes ett sted
+## The wait has to be announced somewhere
 
 ```html
-<div id="innhold" aria-busy="true">
-  <p class="lt-sr-only" role="status">Henter søknadene dine</p>
+<div id="content" aria-busy="true">
+  <p class="lt-sr-only" role="status">Fetching your applications</p>
   <div class="lt-skeleton" data-variant="text" aria-hidden="true"></div>
   <div class="lt-skeleton" data-variant="text" aria-hidden="true"></div>
 </div>
 ```
 
-En rekke tomme bokser som leses opp er verre enn stillhet. Derfor setter `lt.skeleton()` alltid `aria-hidden="true"`, og beskjeden legges i et eget felt med `role="status"`.
+A row of empty boxes being read out is worse than silence. That is why `lt.skeleton()` always sets `aria-hidden="true"`, and the message goes in a separate element with `role="status"`.
 
-Når innholdet kommer, fjern `aria-busy` og tøm statusfeltet.
+When the content arrives, remove `aria-busy` and empty the status element.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-skeleton` | Plassholderen. Formen kommer fra `data-variant`. |
+| `.lt-skeleton` | The placeholder. The shape comes from `data-variant`. |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
-| `--lt-skeleton-height` | `var(--lt-spacing-4)`, og `var(--lt-spacing-10)` i `circle`, der den også gir bredden. `text` leser den ikke: der kommer høyden fra `--lt-font-size-m` |
-| `--lt-skeleton-radius` | `var(--lt-spacing-1)`, og `var(--lt-spacing-0-5)` i `text` |
+| `--lt-skeleton-height` | `var(--lt-spacing-4)`, and `var(--lt-spacing-10)` in `circle`, where it also gives the width. `text` does not read it: there the height comes from `--lt-font-size-m` |
+| `--lt-skeleton-radius` | `var(--lt-spacing-1)`, and `var(--lt-spacing-0-5)` in `text` |
 
-Skimmeret er en gradient som beveger seg over flaten, ikke en gjennomsiktighet som pulserer, så kontrasten mot sideflaten er den samme hele veien. Har brukeren bedt om mindre bevegelse, står flaten stille.
+The shimmer is a gradient moving across the surface, not a pulsing transparency, so the contrast against the page surface is the same throughout. If the user has asked for reduced motion, the surface stays still.
 
-Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
 
-- Formene skal ligne på det som kommer. En plassholder som er tre linjer der resultatet er tjue, gjør siden urolig når innholdet lander.
-- Vent litt før du viser dem, som med en venteindikator. Et glimt av grå bokser er mer forstyrrende enn en kort pause.
-- Ikke la dem bli stående hvis noe feiler. Da venter brukeren på noe som aldri kommer. Bytt til en [Alert](../alert/) med hva som gikk galt.
+- The shapes should resemble what is coming. A placeholder of three lines where the result is twenty makes the page jumpy when the content lands.
+- Wait a little before showing them, as with a loading indicator. A flash of grey boxes is more disruptive than a short pause.
+- Do not leave them in place if something fails. The user is then waiting for something that never comes. Replace them with an [Alert](../alert/) saying what went wrong.

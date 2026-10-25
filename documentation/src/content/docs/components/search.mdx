@@ -1,105 +1,105 @@
 ---
 title: Search
-description: Søkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.
+description: A search field with a magnifying glass. A CSS component with two classes and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Et `lt-input` med plass til et forstørrelsesglass. Begge klassene settes, så alle tilstandene og variablene fra [Input](../input/) gjelder her også.
+An `lt-input` with room for a magnifying glass. Both classes are set, so every state and variable from [Input](../input/) applies here too.
 
 ## How to use it
 
 <Example importer={["tokens.css", "search.css", "button.css", "label.css", "sr-only.css"]}
   stiler={["search", "button", "label", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
 <form class="lt-search-row" role="search">
-  <label class="lt-label lt-sr-only" for="sok">Søk i saker</label>
-  <input class="lt-input lt-search" type="search" id="sok" name="q" placeholder="Søk i saker" />
-  <button class="lt-button" type="submit">Søk</button>
+  <label class="lt-label lt-sr-only" for="search">Search cases</label>
+  <input class="lt-input lt-search" type="search" id="search" name="q" placeholder="Search cases" />
+  <button class="lt-button" type="submit">Search</button>
 </form>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
 <form className={lt.search.row} role="search">
-  <label {...lt.label()} htmlFor="sok">Søk i saker</label>
-  <input {...lt.search()} id="sok" />
+  <label {...lt.label()} htmlFor="search">Search cases</label>
+  <input {...lt.search()} id="search" />
 </form>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const felt = document.querySelector<HTMLInputElement>("#sok")
+const field = document.querySelector<HTMLInputElement>("#search")
 
-lt.setAttributes(felt, lt.search())
+lt.setAttributes(field, lt.search())
 ```
 
-`lt.search()` setter både `lt-input` og `lt-search`, og `type="search"`. `lt.search.row` gir klassen på raden med feltet og knappen.
+`lt.search()` sets both `lt-input` and `lt-search`, and `type="search"`. `lt.search.row` gives the class for the row with the field and the button.
 
 </Fragment>
 </Example>
 
-`type="search"` gir nettleserens eget kryss for å tømme feltet, og «Søk» i stedet for «Enter» på mobiltastaturet. Safari og Chrome tegner krysset ulikt, Firefox tegner det ikke i det hele tatt, og om Escape tømmer feltet varierer.
+`type="search"` gives the browser's own cross for clearing the field, and "Search" instead of "Enter" on the mobile keyboard. Safari and Chrome draw the cross differently, Firefox does not draw it at all, and whether Escape clears the field varies.
 
-`role="search"` på skjemaet gjør at skjermlesere kan hoppe rett til søket på siden.
+`role="search"` on the form lets screen readers jump straight to the search on the page.
 
-## Ledeteksten kan ikke droppes
+## The label cannot be dropped
 
-Plassholderen forsvinner idet brukeren skriver, og flere skjermlesere leser den ikke opp. Ser feltet så åpenbart ut som et søk at en synlig ledetekst blir støy, skjul den med [`.lt-sr-only`](../sr-only/) framfor å la den være.
+The placeholder disappears as soon as the user types, and several screen readers do not read it out. If the field is so obviously a search that a visible label becomes noise, hide it with [`.lt-sr-only`](../sr-only/) rather than leaving it out.
 
-## Søk mens brukeren skriver
+## Searching as the user types
 
 ```html
-<label class="lt-label lt-sr-only" for="sok">Søk i sakene</label>
-<input class="lt-input lt-search" type="search" id="sok" name="q" />
-<p class="lt-sr-only" role="status" id="treff"></p>
+<label class="lt-label lt-sr-only" for="search">Search the cases</label>
+<input class="lt-input lt-search" type="search" id="search" name="q" />
+<p class="lt-sr-only" role="status" id="matches"></p>
 
 <script type="module">
-  const felt = document.getElementById("sok")
-  const status = document.getElementById("treff")
-  let tidsavbrudd
+  const field = document.getElementById("search")
+  const status = document.getElementById("matches")
+  let timeout
 
-  felt.addEventListener("input", () => {
-    clearTimeout(tidsavbrudd)
-    tidsavbrudd = setTimeout(async () => {
-      const svar = await fetch(`/api/sok?q=${encodeURIComponent(felt.value)}`)
-      const saker = await svar.json()
+  field.addEventListener("input", () => {
+    clearTimeout(timeout)
+    timeout = setTimeout(async () => {
+      const response = await fetch(`/api/search?q=${encodeURIComponent(field.value)}`)
+      const cases = await response.json()
 
-      tegnResultater(saker)
-      status.textContent = `${saker.length} treff`
+      renderResults(cases)
+      status.textContent = `${cases.length} matches`
     }, 300)
   })
 </script>
 ```
 
-Ventetiden på 300 millisekunder er ikke bare for serveren. Uten den leses antall treff opp for hvert tastetrykk.
+The 300 millisecond delay is not only for the server. Without it the number of matches is read out on every keystroke.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-search` | Søkefeltet. Brukes sammen med `.lt-input`. |
-| `.lt-search-row` | Raden med feltet og knappen |
+| `.lt-search` | The search field. Used together with `.lt-input`. |
+| `.lt-search-row` | The row with the field and the button |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-search-icon-space` | `var(--lt-spacing-10)` |
 | `--lt-search-icon-size` | `var(--lt-spacing-5)` |
 
-Ikonet kommer fra `--lt-icon-search` og snur med temaet. Se [Tilpasning](../../customising/).
+The icon comes from `--lt-icon-search` and follows the theme. See [Customising](../../customising/).
 
 ## Accessibility
 
-- Meld antall treff i et felt med `role="status"`. Uten det vet ikke den som hører siden om søket ga noe.
-- Ikke fjern nettleserens kryss uten å gi noe annet. Å tømme feltet for hånd er tungvint på mobil.
-- Er søket hovedfunksjonen på siden, la feltet ha fokus fra start. Er det ett av flere verktøy, la være: fokus som hopper er forvirrende.
+- Announce the number of matches in an element with `role="status"`. Without it, someone listening to the page does not know whether the search found anything.
+- Do not remove the browser's cross without offering something else. Clearing the field by hand is awkward on a phone.
+- If search is the main function of the page, let the field have focus from the start. If it is one of several tools, do not: focus that jumps is confusing.

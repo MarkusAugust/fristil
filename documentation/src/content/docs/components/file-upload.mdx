@@ -1,133 +1,133 @@
 ---
 title: File Upload
-description: Felt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.
+description: A field for uploading files. A CSS component with two classes and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Klassen settes på et vanlig `<input type="file">`. Knappen inni er nettleserens egen, og teksten på den kommer fra operativsystemets språk. Den kan ikke oversettes, så ledeteksten over feltet må si hva som skal lastes opp.
+The class goes on a plain `<input type="file">`. The button inside is the browser's own, and its text comes from the operating system's language. It cannot be translated, so the label above the field has to say what to upload.
 
 ## How to use it
 
 <Example importer={["tokens.css", "file-upload.css", "label.css", "help-text.css"]}
   stiler={["file-upload", "label", "help-text"]} layout="stabel" maxWidth="32rem" kode={`
-<label class="lt-label" for="vedlegg">Last opp vedlegg</label>
-<input class="lt-file-upload" type="file" id="vedlegg" multiple accept=".pdf,.jpg" aria-describedby="vedlegg-hjelp" />
-<p class="lt-help-text" id="vedlegg-hjelp">PDF eller bilde, opptil 10 MB per fil.</p>
+<label class="lt-label" for="attachments">Upload attachments</label>
+<input class="lt-file-upload" type="file" id="attachments" multiple accept=".pdf,.jpg" aria-describedby="attachments-help" />
+<p class="lt-help-text" id="attachments-help">PDF or image, up to 10 MB per file.</p>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
-<input {...lt.fileUpload()} id="vedlegg" accept=".pdf,.jpg" />
+<input {...lt.fileUpload()} id="attachments" accept=".pdf,.jpg" />
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const felt = document.querySelector<HTMLInputElement>("#vedlegg")
+const field = document.querySelector<HTMLInputElement>("#attachments")
 
-lt.setAttributes(felt, lt.fileUpload({ multiple: true, accept: ".pdf" }))
+lt.setAttributes(field, lt.fileUpload({ multiple: true, accept: ".pdf" }))
 ```
 
-`lt.fileUpload.list` gir klassen på lista. Se [Typesikker bruk](../../type-safe-use/).
+`lt.fileUpload.list` gives the class for the list. See [Type-safe use](../../type-safe-use/).
 
 </Fragment>
 </Example>
 
-| Attributt | Effekt |
+| Attribute | Effect |
 | --- | --- |
-| `multiple` | Flere filer kan velges |
-| `accept` | Filtypene filvelgeren foreslår |
-| `data-state="invalid"` | Rød ramme. Sett `aria-invalid="true"` i tillegg. |
-| `data-state="success"` | Grønn ramme |
+| `multiple` | Several files can be chosen |
+| `accept` | The file types the file picker suggests |
+| `data-state="invalid"` | Red border. Set `aria-invalid="true"` as well. |
+| `data-state="success"` | Green border |
 
-`accept` er en hjelp i filvelgeren, ikke en sperre. Brukeren kan velge «alle filer», så typen må sjekkes på serveren uansett.
+`accept` is a hint in the file picker, not a restriction. The user can choose "all files", so the type has to be checked on the server anyway.
 
-## Lista over valgte filer
+## The list of chosen files
 
-Lista skriver du selv, siden bare du vet hva som skal skje når en fil fjernes.
+You write the list yourself, since only you know what should happen when a file is removed.
 
 <Example stiler={["file-upload", "button", "label"]} layout="stabel" maxWidth="32rem" kode={`
-<label class="lt-label" for="vedlegg-2">Last opp vedlegg</label>
-<input class="lt-file-upload" type="file" id="vedlegg-2" multiple />
+<label class="lt-label" for="attachments-2">Upload attachments</label>
+<input class="lt-file-upload" type="file" id="attachments-2" multiple />
 
 <ul class="lt-file-upload-list">
   <li>
-    fodselsattest.pdf
-    <button class="lt-button" data-variant="ghost" type="button">Fjern fodselsattest.pdf</button>
+    birth-certificate.pdf
+    <button class="lt-button" data-variant="ghost" type="button">Remove birth-certificate.pdf</button>
   </li>
   <li>
-    leiekontrakt.pdf
-    <button class="lt-button" data-variant="ghost" type="button">Fjern leiekontrakt.pdf</button>
+    tenancy-agreement.pdf
+    <button class="lt-button" data-variant="ghost" type="button">Remove tenancy-agreement.pdf</button>
   </li>
 </ul>
 `} />
 
-Knappeteksten skal si hvilken fil som fjernes. «Fjern» alene gir like knapper for den som hører siden.
+The button text should say which file is removed. "Remove" alone gives identical buttons to someone listening to the page.
 
-Feltet husker bare det siste utvalget: velger brukeren to filer til, erstatter de forrige. Skal filene samles opp, og kunne fjernes én og én, må du holde lista selv, og sende den selv:
+The field only remembers the latest selection: if the user picks two more files, they replace the previous ones. If the files should accumulate, and be removable one at a time, you have to keep the list yourself, and send it yourself:
 
 ```html
-<form action="/soknad/vedlegg">
-  <label class="lt-label" for="vedlegg">Last opp vedlegg</label>
-  <input class="lt-file-upload" type="file" id="vedlegg" name="vedlegg" multiple />
+<form action="/application/attachments">
+  <label class="lt-label" for="attachments">Upload attachments</label>
+  <input class="lt-file-upload" type="file" id="attachments" name="attachments" multiple />
   <ul class="lt-file-upload-list"></ul>
   <button class="lt-button" type="submit">Send</button>
 </form>
 ```
 
 ```js
-const felt = document.getElementById("vedlegg")
-const skjema = felt.form
-let filer = []
+const field = document.getElementById("attachments")
+const form = field.form
+let files = []
 
-felt.addEventListener("change", () => {
-  filer = [...filer, ...felt.files]
-  // Tegn lista over filene her, med en «Fjern»-knapp per fil.
-  felt.value = ""
+field.addEventListener("change", () => {
+  files = [...files, ...field.files]
+  // Draw the list of files here, with a "Remove" button per file.
+  field.value = ""
 })
 
-skjema.addEventListener("submit", async (hendelse) => {
-  hendelse.preventDefault()
-  const data = new FormData(skjema)
-  // Det tomme feltet ville ellers sendt en tom fil under sitt eget navn.
-  data.delete(felt.name)
-  for (const fil of filer) data.append(felt.name, fil)
-  await fetch(skjema.action, { method: "POST", body: data })
+form.addEventListener("submit", async (event) => {
+  event.preventDefault()
+  const data = new FormData(form)
+  // The empty field would otherwise send an empty file under its own name.
+  data.delete(field.name)
+  for (const file of files) data.append(field.name, file)
+  await fetch(form.action, { method: "POST", body: data })
 })
 ```
 
-Feltet må stå i et `<form>` og ha et `name`. Det er tømt etter hvert valg, så en vanlig innsending tar ikke med noen av filene. Derfor sendes skjemaet med `fetch`, med filene lagt til i `FormData`.
+The field has to be inside a `<form>` and have a `name`. It is cleared after every selection, so an ordinary submission includes none of the files. That is why the form is sent with `fetch`, with the files added to `FormData`.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-file-upload` | Feltet. Tilstanden kommer fra `data-state`. |
-| `.lt-file-upload-list` | Lista over filene som er valgt |
+| `.lt-file-upload` | The field. The state comes from `data-state`. |
+| `.lt-file-upload-list` | The list of chosen files |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-file-upload-padding` | `var(--lt-spacing-2)` |
 | `--lt-file-upload-radius` | `var(--lt-spacing-1)` |
 
-Knappen inne i feltet styles gjennom `::file-selector-button`, som er den eneste veien inn til den.
+The button inside the field is styled through `::file-selector-button`, which is the only way in to it.
 
-Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
 
-- Si hvilke filtyper og hvilken største størrelse som godtas, før brukeren prøver. En feilmelding etterpå er et dårligere alternativ.
-- Meld fra når en fil er lagt til eller fjernet, i et felt med `role="status"`.
-- Dra-og-slipp kan komme i tillegg, aldri i stedet. Det finnes ikke for tastatur.
-- Under opplasting: vis fremdrift per fil, og la brukeren avbryte.
+- Say which file types and which maximum size are accepted before the user tries. An error message afterwards is a worse alternative.
+- Announce when a file is added or removed, in an element with `role="status"`.
+- Drag and drop can come in addition, never instead. It does not exist for the keyboard.
+- During upload: show progress per file, and let the user cancel.

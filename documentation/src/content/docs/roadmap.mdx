@@ -1,69 +1,69 @@
 ---
-title: Veikart
-description: Det som står igjen å lage i LO-TEK, og hva som alt er levert av den opprinnelige planen.
+title: Roadmap
+description: What is left to build in LO-TEK, and what has already been delivered from the original plan.
 ---
 
-LO-TEK er før 1.0. Denne siden viser hva som står igjen, og hva som alt er
-levert av den opprinnelige planen. Endringer en konsument merker, står som før i
-[versjonsloggen](/changelog/), med brytende endringer under «Brytende».
+LO-TEK is before 1.0. This page shows what is left, and what has already been
+delivered from the original plan. Changes a consumer notices are, as before, in
+the [changelog](/changelog/), with breaking changes under "Breaking".
 
-## Retningen
+## The direction
 
-> Én kontrakt, skrevet av LO-TEK. Lukkede typer der språket har dem. Én sjekk
-> overalt ellers. Det du overtar, eier du.
+> One contract, written by LO-TEK. Closed types where the language has them. One check
+> everywhere else. What you take over is yours.
 
-Stavekontrollen, det som leser markupen din og sier fra om klasser som ikke
-finnes, felt uten ledetekst og id-er som ikke peker på noe, er én kjerne
-skrevet i Rust og bygget til WebAssembly. Den samme fila kjører i Node, på
-JVM-en og i hvert språk som har en kjøretid for WebAssembly, og gir det samme
-svaret overalt.
+The spell checker, the part that reads your markup and tells you about classes that do not
+exist, fields without a label and ids that point to nothing, is one core
+written in Rust and built to WebAssembly. The same file runs in Node, on
+the JVM and in every language that has a runtime for WebAssembly, and gives the same
+answer everywhere.
 
-Alt leveres gjennom kanalene språket ditt allerede bruker: npm og Maven
-Central, og kildekoden for `cargo install`. Utvidelsene ligger på
-editorenes egne markedsplasser, og `lotek.jar` og `lotek.wasm` ved hver
-utgivelse på GitHub. Ingenting krever at du stoler på en
-tredjeparts pakkekilde, og ingenting du laster ned, krever et sertifikat for å
-kjøre.
+Everything is delivered through the channels your language already uses: npm and Maven
+Central, and the source code for `cargo install`. The extensions are on
+the editors' own marketplaces, and `lotek.jar` and `lotek.wasm` are attached to every
+release on GitHub. Nothing requires you to trust a
+third-party package source, and nothing you download needs a certificate to
+run.
 
-## Det som står igjen
+## What is left
 
-- **Fullføring og forklaring i språkserveren.** `lotek lsp` gir i dag funn
-  og rettelser. Fullføringen og forklaringen kommer fortsatt fra utvidelsen
-  for VS Code og fra `web-types.json` i JetBrains, og flyttes til serveren, så
-  de andre editorene får det samme.
-- **En utvidelse for Zed.** Zed starter bare språkservere en Zed-utvidelse har
-  meldt inn.
-- **Kommandolinja på crates.io.** I dag installeres den med
+- **Completion and hover help in the language server.** `lotek lsp` gives findings
+  and fixes today. Completion and hover help still come from the extension
+  for VS Code and from `web-types.json` in JetBrains, and are moving to the server, so
+  the other editors get the same.
+- **An extension for Zed.** Zed starts only language servers a Zed extension has
+  registered.
+- **The command line on crates.io.** Today it is installed with
   `cargo install --git`.
-- **Stegindikator.** En flerstegs søknad trenger å vise hvor brukeren er. Det
-  er `aria-current="step"` og ren CSS, og det hører sammen med
-  framdriftsstolpen.
+- **Step indicator.** A multi-step application needs to show where the user is. It
+  is `aria-current="step"` and plain CSS, and it belongs with
+  the progress bar.
 
-## Det som er levert
+## What has been delivered
 
-Det meste ble gitt ut i 0.32.0, og resten i 0.34.0, på npm og på Maven
-Central, og i IntelliJ-pluginen 0.3.0:
+Most of it was released in 0.32.0, and the rest in 0.34.0, on npm and on Maven
+Central, and in the IntelliJ plugin 0.3.0:
 
-- **Kontrakten** er én fil, `manifest.json`, skrevet av LO-TEK fra koden:
-  klassene og elementene, de lovlige verdiene og hva hver byggefunksjon
-  svarer, og fra 0.34.0 hva hver klasse tar som innhold, hvilke deler den
-  består av, og tokenene. Alle verktøyene leser den.
-- **LO-TEK for Kotlin** på Maven Central fra 0.33.0, med byggefunksjonene som
-  `enum`-er, `assertLotek(html)` i vanlige tester, manifestet med typer,
-  utvidelser for kotlinx.html og CSS-en som WebJar, og fra 0.34.0 temaet som
-  funksjoner og byggefunksjonene i manifestet. Se [Kotlin og Java](../kotlin/).
-- **Én stavekontroll** i Rust for `lotek sjekk`,
-  `@lo-tek/interfaces/diagnostics`, VS Code og IntelliJ-pluginen fra 0.3.0,
-  med linje, kolonne, regelnavn og undertrykking med en kommentar. Regelen
-  for en del som står to ganger kom i 0.34.0.
-- **Temaene** bygges og sjekkes av den samme kjernen, fra npm og fra en
-  Gradle-oppgave, og fra 0.34.0 fra Maven-pakken.
-- **Kommandolinja** kjører med `npx`, `java -jar lotek.jar`, wasmtime og
-  `cargo install`. `lotek overta` gir kopien et eget navn, og
-  Gradle-pluginen sjekker maler som en del av bygget. Se
-  [Kommandolinjen](../command-line/).
-- **Språkserveren**, `lotek lsp`, for VS Code, Neovim og Helix. Se
-  [Editoren](../the-editor/#språkserveren).
-- **Sjekk av den ferdige siden:** `--css` sammenligner stilarkene med
-  kontrakten, og `diagnoseRendered(page)` og `assertLotekRendered` sjekker
-  siden slik nettleseren har rendret den.
+- **The contract** is one file, `manifest.json`, written by LO-TEK from the code:
+  the classes and elements, the allowed values and what each builder function
+  returns, and from 0.34.0 what each class takes as content, which parts it
+  consists of, and the tokens. All the tools read it.
+- **LO-TEK for Kotlin** on Maven Central from 0.33.0, with the builder functions as
+  `enum`s, `assertLotek(html)` in ordinary tests, the manifest with types,
+  extensions for kotlinx.html and the CSS as a WebJar, and from 0.34.0 the theme as
+  functions and the builder functions in the manifest. See [Kotlin and Java](../kotlin/).
+- **One spell checker** in Rust for `lotek check`,
+  `@lo-tek/interfaces/diagnostics`, VS Code and the IntelliJ plugin from 0.3.0,
+  with line, column, rule name and suppression with a comment. The rule
+  for a part that appears twice came in 0.34.0.
+- **The themes** are built and checked by the same core, from npm and from a
+  Gradle task, and from 0.34.0 from the Maven package.
+- **The command line** runs with `npx`, `java -jar lotek.jar`, wasmtime and
+  `cargo install`. `lotek takeover` gives the copy its own name, and
+  the Gradle plugin checks templates as part of the build. See
+  [Command line](../command-line/).
+- **The language server**, `lotek lsp`, for VS Code, Neovim and Helix. See
+  [The editor](../the-editor/#the-language-server).
+- **Checking the finished page:** `--css` compares the stylesheets with
+  the contract, and `diagnoseRendered(page)` and `assertLotekRendered` check
+  the page as the browser has rendered it.

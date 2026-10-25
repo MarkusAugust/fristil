@@ -1,93 +1,93 @@
 ---
 title: Textarea
-description: Flerlinjet tekstfelt. CSS-komponent med én klasse og ingen JavaScript.
+description: A multi-line text field. A CSS component with one class and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Samme utseende og tilstander som [Input](../input/), for svar som blir lengre enn én linje.
+The same look and states as [Input](../input/), for answers longer than one line.
 
 ## How to use it
 
 <Example importer={["tokens.css", "textarea.css", "label.css"]}
   stiler={["textarea", "label"]} layout="stabel" maxWidth="26rem" kode={`
-<label class="lt-label" for="begrunnelse">Begrunnelse</label>
-<textarea class="lt-textarea" id="begrunnelse" rows="3"
-  placeholder="Skriv en kort begrunnelse"></textarea>
+<label class="lt-label" for="reason">Reason</label>
+<textarea class="lt-textarea" id="reason" rows="3"
+  placeholder="Write a short reason"></textarea>
 
-<label class="lt-label" for="melding">Melding til saksbehandler</label>
-<textarea class="lt-textarea" id="melding"
-  data-state="success">Jeg flytter til ny adresse 1. juni.</textarea>
+<label class="lt-label" for="message">Message to the caseworker</label>
+<textarea class="lt-textarea" id="message"
+  data-state="success">I am moving to a new address on 1 June.</textarea>
 
-<label class="lt-label" for="svar">Utfyllende svar</label>
-<textarea class="lt-textarea" id="svar"
-  data-state="invalid" aria-invalid="true">For kort</textarea>
+<label class="lt-label" for="answer">Detailed answer</label>
+<textarea class="lt-textarea" id="answer"
+  data-state="invalid" aria-invalid="true">Too short</textarea>
 
-<label class="lt-label" for="merknad">Merknad</label>
-<textarea class="lt-textarea" id="merknad"
-  disabled>Saken er avsluttet og kan ikke endres.</textarea>
+<label class="lt-label" for="note">Note</label>
+<textarea class="lt-textarea" id="note"
+  disabled>The case is closed and cannot be changed.</textarea>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
-<textarea {...lt.textarea({ state: "invalid" })} id="begrunnelse" rows={3} />
+<textarea {...lt.textarea({ state: "invalid" })} id="reason" rows={3} />
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt, type FieldState } from "@lo-tek/interfaces"
 
-const felt = document.querySelector<HTMLTextAreaElement>("#begrunnelse")
-if (!felt) throw new Error("fant ikke elementet")
+const field = document.querySelector<HTMLTextAreaElement>("#reason")
+if (!field) throw new Error("element not found")
 
-felt.addEventListener("blur", () => {
-  const tilstand: FieldState = felt.value.trim().length >= 20 ? "success" : "invalid"
+field.addEventListener("blur", () => {
+  const state: FieldState = field.value.trim().length >= 20 ? "success" : "invalid"
 
-  lt.setAttributes(felt, lt.textarea({ state: tilstand }))
+  lt.setAttributes(field, lt.textarea({ state }))
 })
 ```
 
-`state` er samme type som i [Input](../input/) og [Select](../select/), så verdien kan sendes mellom dem. `lt.setAttributes` rydder bort tilstanden fra forrige kall, så feltet ikke blir stående rødt etter at feilen er rettet.
+`state` is the same type as in [Input](../input/) and [Select](../select/), so the value can be passed between them. `lt.setAttributes` clears the state from the previous call, so the field does not stay red after the error is fixed.
 
 </Fragment>
 </Example>
 
-| `data-state` | Brukes til |
+| `data-state` | Used for |
 | --- | --- |
-| *(utelatt)* | Normaltilstand |
-| `invalid` | Valideringen har feilet |
-| `success` | Innholdet er bekreftet gyldig |
+| *(omitted)* | Normal state |
+| `invalid` | Validation has failed |
+| `success` | The content is confirmed valid |
 
-`data-state` er farge. Skjermlesere trenger `aria-invalid="true"` i tillegg, eller [Field](../field/), som setter begge.
+`data-state` is colour. Screen readers need `aria-invalid="true"` as well, or [Field](../field/), which sets both.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-textarea` | Feltet. Tilstanden kommer fra `data-state`. |
+| `.lt-textarea` | The field. The state comes from `data-state`. |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-textarea-min-height` | `calc(var(--lt-spacing-4) * 5)` |
 | `--lt-textarea-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
 | `--lt-textarea-radius` | `var(--lt-spacing-1)` |
 
-`--lt-textarea-min-height` er en minstehøyde, ikke en fast høyde. `rows` virker over den, og brukeren kan fortsatt dra feltet høyere. Med standard skrift og luft er minstehøyden litt under tre rader, så `rows="1"` og `rows="2"` gir det samme feltet, og først `rows="3"` blir høyere. Skal `rows` bestemme høyden alene, sett `--lt-textarea-min-height: 0`. Bredden er låst, siden klassen setter `resize: vertical`.
+`--lt-textarea-min-height` is a minimum height, not a fixed height. `rows` works above it, and the user can still drag the field taller. With the default font and padding the minimum height is a little under three rows, so `rows="1"` and `rows="2"` give the same field, and only `rows="3"` is taller. If `rows` alone should decide the height, set `--lt-textarea-min-height: 0`. The width is locked, since the class sets `resize: vertical`.
 
-Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
 
-- Hvert felt trenger en synlig `<label>` med `for` som peker på `id`-en.
-- Har feltet en øvre grense, si det i hjelpeteksten før brukeren skriver. `maxlength` alene hindrer innskriving uten å forklare hvorfor.
-- Bruker du en tegnteller, legg den i et element med `aria-live="polite"` og la den melde fra bare når grensen nærmer seg. Ellers avbryter den opplesingen for hvert tastetrykk.
-- Ikke slå av `resize`. Det er ofte eneste måten brukeren får oversikt over lang tekst.
+- Every field needs a visible `<label>` with `for` pointing to the `id`.
+- If the field has an upper limit, say so in the help text before the user types. `maxlength` alone blocks typing without explaining why.
+- If you use a character counter, put it in an element with `aria-live="polite"` and let it announce only when the limit is near. Otherwise it interrupts the reading on every keystroke.
+- Do not turn off `resize`. It is often the only way the user gets an overview of a long text.

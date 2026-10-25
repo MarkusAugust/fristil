@@ -1,35 +1,35 @@
 ---
-title: Bekreft en handling
-description: Dialog, ordlyd og hva som skjer etterpå, når handlingen ikke kan angres.
+title: Confirming an action
+description: Dialog, wording and what happens afterwards, when the action cannot be undone.
 ---
 
 import ConfirmationDemo from "../../../components/ConfirmationDemo.astro"
 
-En bekreftelse er et avbrudd. Den er verdt det når handlingen ikke kan angres, og bare da.
+A confirmation is an interruption. It is worth it when the action cannot be undone, and only then.
 
 <ConfirmationDemo />
 
-## Markupen
+## The markup
 
 ```html
-<button class="lt-button" data-variant="danger" id="slett" type="button">
-  Slett søknaden
+<button class="lt-button" data-variant="danger" id="delete" type="button">
+  Delete the application
 </button>
 
-<dialog class="lt-dialog" id="bekreft" aria-labelledby="bekreft-tittel">
-  <h2 class="lt-dialog__title" id="bekreft-tittel">Slette søknaden?</h2>
+<dialog class="lt-dialog" id="confirm" aria-labelledby="confirm-title">
+  <h2 class="lt-dialog__title" id="confirm-title">Delete the application?</h2>
 
   <div class="lt-dialog__body">
-    <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+    <p>The application and its attachments will be gone. This cannot be undone.</p>
   </div>
 
   <form method="dialog" class="lt-dialog__footer">
-    <button class="lt-button" data-variant="secondary" value="avbryt">Avbryt</button>
-    <button class="lt-button" data-variant="danger" value="slett">Slett søknaden</button>
+    <button class="lt-button" data-variant="secondary" value="cancel">Cancel</button>
+    <button class="lt-button" data-variant="danger" value="delete">Delete the application</button>
   </form>
 </dialog>
 
-<lt-toast id="meldinger" label="Meldinger"></lt-toast>
+<lt-toast id="messages" label="Notifications"></lt-toast>
 
 <script type="module">
   import { defineLtToast } from
@@ -37,66 +37,66 @@ En bekreftelse er et avbrudd. Den er verdt det når handlingen ikke kan angres, 
 
   defineLtToast()
 
-  const dialog = document.getElementById("bekreft")
-  const meldinger = document.getElementById("meldinger")
+  const dialog = document.getElementById("confirm")
+  const messages = document.getElementById("messages")
 
-  document.getElementById("slett").addEventListener("click", () => {
-    // Escape og close() uten verdi lar forrige verdi stå.
+  document.getElementById("delete").addEventListener("click", () => {
+    // Escape and close() without a value leave the previous value in place.
     dialog.returnValue = ""
     dialog.showModal()
   })
 
   dialog.addEventListener("close", async () => {
-    if (dialog.returnValue !== "slett") return
+    if (dialog.returnValue !== "delete") return
 
-    await slett()
-    meldinger.show("Søknaden er slettet", { color: "success" })
+    await deleteApplication()
+    messages.show("The application has been deleted", { color: "success" })
   })
 </script>
 ```
 
-`showModal()`, ikke `open`. Bare den flytter fokus inn, holder fokus i dialogen, lukker på Escape og gjør resten av siden utilgjengelig.
+`showModal()`, not `open`. Only that moves focus in, keeps focus in the dialog, closes on Escape and makes the rest of the page unreachable.
 
-`<form method="dialog">` lukker dialogen når en knapp trykkes, og legger knappens `value` i `dialog.returnValue`. Du slipper lyttere på knappene, og Enter virker som forventet.
+`<form method="dialog">` closes the dialog when a button is pressed, and puts the button's `value` in `dialog.returnValue`. You need no listeners on the buttons, and Enter works as expected.
 
-## Ordlyden
+## Wording
 
-| Sted | Skriv | Ikke skriv |
+| Where | Write | Do not write |
 | --- | --- | --- |
-| Overskriften | Spørsmålet: «Slette søknaden?» | «Er du sikker?», «Bekreft» |
-| Brødteksten | Hva som skjer: «Søknaden og vedleggene blir borte.» | «Denne handlingen kan ikke angres.» alene |
-| Knappen | Handlingen: «Slett søknaden» | «OK», «Ja» |
+| The heading | The question: "Delete the application?" | "Are you sure?", "Confirm" |
+| The body text | What happens: "The application and its attachments will be gone." | "This action cannot be undone." on its own |
+| The button | The action: "Delete the application" | "OK", "Yes" |
 
-Knappeteksten er den viktigste. Den som hører dialogen uten å se overskriften, hører bare knappene. «OK» sier ingenting om hva som er i ferd med å skje.
+The button text matters most. Someone who hears the dialog without seeing the heading hears only the buttons. "OK" says nothing about what is about to happen.
 
-## Etterpå
+## Afterwards
 
-Handlingen er utført, og brukeren trenger å vite det. En melding i hjørnet er nok for noe som gikk bra:
+The action is done, and the user needs to know. A toast in the corner is enough for something that went well:
 
 ```js
-meldinger.show("Søknaden er slettet", { color: "success" })
+messages.show("The application has been deleted", { color: "success" })
 ```
 
-Men meldingen forsvinner. Derfor:
+But the toast disappears. So:
 
-- **Angreknappen hører ikke der.** Skal handlingen kunne angres, hører knappen i siden, og da var det kanskje ikke en bekreftelse du trengte.
-- **En feil hører ikke der heller.** Gikk slettingen galt, er det en [Alert](../../components/alert/) i siden, eller en melding med `duration: 0` som blir stående.
-- **Fokus må et sted.** Nettleseren gir fokus tilbake til knappen som åpnet dialogen. Er den knappen borte, fordi raden den sto i er slettet, må du flytte fokus selv, for eksempel til overskriften på lista.
+- **The undo button does not belong there.** If the action should be undoable, the button belongs in the page, and then perhaps a confirmation was not what you needed.
+- **Nor does an error.** If the deletion failed, that is an [Alert](../../components/alert/) in the page, or a toast with `duration: 0` that stays.
+- **Focus has to go somewhere.** The browser returns focus to the button that opened the dialog. If that button is gone, because the row it was in has been deleted, you have to move focus yourself, for example to the heading of the list.
 
-## Når du ikke skal bekrefte
+## When not to confirm
 
-Kan handlingen angres, er angring bedre enn bekreftelse. Et ekstra klikk hver gang er dyrere enn en angreknapp de få gangene noen bommer.
+If the action can be undone, undo is better than confirmation. An extra click every time costs more than an undo button for the few times someone gets it wrong.
 
-Bekreftelse er riktig når:
+Confirmation is right when:
 
-- noe forsvinner for godt
-- noe sendes til andre, som en søknad eller en melding
-- noe koster penger
+- something disappears for good
+- something is sent to others, such as an application or a message
+- something costs money
 
-Bekreftelse er feil når handlingen bare er upraktisk å gjøre om igjen. Da lager du en dialog som alle klikker bort uten å lese, og neste gang det gjelder noe alvorlig, gjør de det samme.
+Confirmation is wrong when the action is merely inconvenient to redo. Then you create a dialog everyone clicks away without reading, and the next time it matters, they do the same.
 
-## Det systemet ikke gjør
+## What the system does not do
 
-- **Å hindre dobbeltklikk.** Avvis et nytt trykk mens handlingen pågår, og vis det med `aria-disabled="true"`. Slår du av knappen med `disabled`, mister den fokuset nettleseren nettopp ga den tilbake da dialogen lukket seg, og fokus havner på `<body>`.
-- **Å huske valget.** «Ikke spør meg igjen» er en innstilling du eier.
-- **Å avgjøre hva som er farlig.** `data-variant="danger"` er en farge. Hva som fortjener den, er en vurdering.
+- **Preventing double clicks.** Reject a new press while the action is in progress, and show it with `aria-disabled="true"`. If you switch the button off with `disabled`, it loses the focus the browser just gave back to it when the dialog closed, and focus ends up on `<body>`.
+- **Remembering the choice.** "Don't ask me again" is a setting your app has to keep.
+- **Deciding what is dangerous.** `data-variant="danger"` is a colour. What deserves it is a judgement.

@@ -1,26 +1,26 @@
 ---
 title: Dialog
-description: Modal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().
+description: Modal dialog built on the native dialog element. Six classes and no JavaScript, with an optional component for servers that cannot call showModal().
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import DialogDemo from "../../../components/DialogDemo.astro"
 import Example from "../../../components/Example.astro"
 
-Klassen settes på et `<dialog>`, og resten er nettleserens eget element. Har appen din JavaScript i nettleseren, trenger du ingenting fra LO-TEK: åpne dialogen med `showModal()`, lukk den med `close()`.
+The class goes on a `<dialog>`, and the rest is the browser's own element. If your app runs JavaScript in the browser, you need nothing from LO-TEK: open the dialog with `showModal()` and close it with `close()`.
 
 ```js
 import "@lo-tek/interfaces/tokens.css"
 import "@lo-tek/interfaces/dialog.css"
 ```
 
-Å åpne den **må** være et kall. `showModal()` flytter fokus inn, holder fokus inne i dialogen, lukker på Escape og gjør resten av siden utilgjengelig. Et `<dialog open>` i markupen gjør ingen av delene, og er bare en boks på siden. Det finnes ingen deklarativ måte å åpne en modal dialog på, verken i LO-TEK eller i HTML.
+Opening it **must** be a call. `showModal()` moves focus inside, keeps focus within the dialog, closes on Escape and makes the rest of the page inert. A `<dialog open>` in the markup does none of this, and is just a box on the page. There is no declarative way to open a modal dialog, neither in LO-TEK nor in HTML.
 
-Det er et problem bare for én slags app: den som ikke har noe sted å kalle fra, fordi all markup blir til på serveren. Til den finnes `<lt-dialog>`, [lenger ned på siden](#når-serveren-åpner-dialogen). Den er valgfri, på samme måte som `<lt-field>` er valgfri ved siden av `lt.field()`.
+That is a problem for only one kind of app: one with nowhere to make the call from, because all markup is produced on the server. For that there is `<lt-dialog>`, [further down the page](#when-the-server-opens-the-dialog). It is optional, in the same way that `<lt-field>` is optional next to `lt.field()`.
 
 ## How to use it
 
-Fanen «Try it» er dialogen i drift. De fire andre er dialogen skrevet for hvert sitt miljø, og hver av dem er hele oppskriften. De tre første gjør kallet selv; Datastar-utgaven lar `<lt-dialog>` gjøre det, fordi en server som bare sender HTML ikke har noe sted å kalle fra. Stilarkene er de samme i alle fire, og står i hver fane.
+The "Try it" tab is the dialog in action. The other four are the dialog written for one environment each, and each of them is the complete recipe. The first three make the call themselves; the Datastar version lets `<lt-dialog>` do it, because a server that only sends HTML has nowhere to call from. The stylesheets are the same in all four, and are listed in each tab.
 
 <Tabs>
   <TabItem label="Try it">
@@ -28,42 +28,42 @@ Fanen «Try it» er dialogen i drift. De fire andre er dialogen skrevet for hver
   </TabItem>
   <TabItem label="Plain HTML">
     ```html
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`,
+         not `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/dialog/dialog.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
-    <button class="lt-button" data-variant="danger" id="apne" type="button">
-      Slett søknaden
+    <button class="lt-button" data-variant="danger" id="open-confirm" type="button">
+      Delete the application
     </button>
 
-    <dialog class="lt-dialog" id="bekreft" aria-labelledby="bekreft-tittel">
-      <h2 class="lt-dialog__title" id="bekreft-tittel">Slette søknaden?</h2>
+    <dialog class="lt-dialog" id="confirm" aria-labelledby="confirm-title">
+      <h2 class="lt-dialog__title" id="confirm-title">Delete the application?</h2>
       <div class="lt-dialog__body">
-        <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+        <p>The application and its attachments will be gone. This cannot be undone.</p>
       </div>
       <form method="dialog" class="lt-dialog__footer">
-        <button class="lt-button" data-variant="secondary" value="avbryt">Avbryt</button>
-        <button class="lt-button" data-variant="danger" value="slett">Slett søknaden</button>
+        <button class="lt-button" data-variant="secondary" value="cancel">Cancel</button>
+        <button class="lt-button" data-variant="danger" value="delete">Delete the application</button>
       </form>
     </dialog>
 
     <script type="module">
-      const dialog = document.getElementById("bekreft")
+      const dialog = document.getElementById("confirm")
 
-      document.getElementById("apne").addEventListener("click", () => {
-        // Escape og close() uten verdi lar forrige verdi stå.
+      document.getElementById("open-confirm").addEventListener("click", () => {
+        // Escape and close() without a value leave the previous value in place.
         dialog.returnValue = ""
         dialog.showModal()
       })
 
       dialog.addEventListener("close", () => {
-        if (dialog.returnValue === "slett") {
-          // Slett søknaden her
+        if (dialog.returnValue === "delete") {
+          // Delete the application here
         }
       })
     </script>
@@ -79,9 +79,9 @@ Fanen «Try it» er dialogen i drift. De fire andre er dialogen skrevet for hver
     import "@lo-tek/interfaces/dialog.css"
     import "@lo-tek/interfaces/button.css"
 
-    export function SlettSøknaden({ slett }: { slett: () => void }) {
+    export function DeleteApplication({ remove }: { remove: () => void }) {
       const dialog = useRef<HTMLDialogElement>(null)
-      const boks = lt.dialog({ titleId: "bekreft-tittel" })
+      const box = lt.dialog({ titleId: "confirm-title" })
 
       return (
         <>
@@ -90,28 +90,28 @@ Fanen «Try it» er dialogen i drift. De fire andre er dialogen skrevet for hver
             type="button"
             onClick={() => {
               if (!dialog.current) return
-              // Escape og close() uten verdi lar forrige verdi stå.
+              // Escape and close() without a value leave the previous value in place.
               dialog.current.returnValue = ""
               dialog.current.showModal()
             }}
           >
-            Slett søknaden
+            Delete the application
           </button>
 
           <dialog
-            {...boks.dialog}
+            {...box.dialog}
             ref={dialog}
             onClose={(e) => {
-              if (e.currentTarget.returnValue === "slett") slett()
+              if (e.currentTarget.returnValue === "delete") remove()
             }}
           >
-            <h2 {...boks.title}>Slette søknaden?</h2>
-            <div {...boks.body}>
-              <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+            <h2 {...box.title}>Delete the application?</h2>
+            <div {...box.body}>
+              <p>The application and its attachments will be gone. This cannot be undone.</p>
             </div>
-            <form method="dialog" {...boks.footer}>
-              <button {...lt.button({ variant: "secondary" })} value="avbryt">Avbryt</button>
-              <button {...lt.button({ variant: "danger" })} value="slett">Slett søknaden</button>
+            <form method="dialog" {...box.footer}>
+              <button {...lt.button({ variant: "secondary" })} value="cancel">Cancel</button>
+              <button {...lt.button({ variant: "danger" })} value="delete">Delete the application</button>
             </form>
           </dialog>
         </>
@@ -130,36 +130,36 @@ Fanen «Try it» er dialogen i drift. De fire andre er dialogen skrevet for hver
     import "@lo-tek/interfaces/dialog.css"
     import "@lo-tek/interfaces/button.css"
 
-    const boks = lt.dialog({ titleId: "bekreft-tittel" })
+    const box = lt.dialog({ titleId: "confirm-title" })
     ---
 
-    <button {...lt.button({ variant: "danger" })} type="button" id="apne">
-      Slett søknaden
+    <button {...lt.button({ variant: "danger" })} type="button" id="open-confirm">
+      Delete the application
     </button>
 
-    <dialog {...boks.dialog} id="bekreft">
-      <h2 {...boks.title}>Slette søknaden?</h2>
-      <div {...boks.body}>
-        <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+    <dialog {...box.dialog} id="confirm">
+      <h2 {...box.title}>Delete the application?</h2>
+      <div {...box.body}>
+        <p>The application and its attachments will be gone. This cannot be undone.</p>
       </div>
-      <form method="dialog" {...boks.footer}>
-        <button {...lt.button({ variant: "secondary" })} value="avbryt">Avbryt</button>
-        <button {...lt.button({ variant: "danger" })} value="slett">Slett søknaden</button>
+      <form method="dialog" {...box.footer}>
+        <button {...lt.button({ variant: "secondary" })} value="cancel">Cancel</button>
+        <button {...lt.button({ variant: "danger" })} value="delete">Delete the application</button>
       </form>
     </dialog>
 
     <script>
-      const dialog = document.getElementById("bekreft") as HTMLDialogElement
+      const dialog = document.getElementById("confirm") as HTMLDialogElement
 
-      document.getElementById("apne")?.addEventListener("click", () => {
-        // Escape og close() uten verdi lar forrige verdi stå.
+      document.getElementById("open-confirm")?.addEventListener("click", () => {
+        // Escape and close() without a value leave the previous value in place.
         dialog.returnValue = ""
         dialog.showModal()
       })
 
       dialog.addEventListener("close", () => {
-        if (dialog.returnValue === "slett") {
-          // Slett søknaden her
+        if (dialog.returnValue === "delete") {
+          // Delete the application here
         }
       })
     </script>
@@ -169,25 +169,25 @@ Fanen «Try it» er dialogen i drift. De fire andre er dialogen skrevet for hver
   <TabItem label="Datastar">
 
     ```html
-    <!-- Datastar selv. Uten den gjør `data-`-attributtene under ingenting. -->
+    <!-- Datastar itself. Without it the `data-` attributes below do nothing. -->
     <script type="module"
             src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"></script>
 
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`,
+         not `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/dialog/dialog.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
 
-    <!-- I sidemalen, én gang. Registreringen skjer ved oppstart, ikke ved hver
-         patch, og den må stå utenfor området serveren sender på nytt.
+    <!-- In the page template, once. Registration happens at startup, not on
+         every patch, and it must sit outside the region the server sends again.
 
-         Adressen er en URL og ikke "@lo-tek/interfaces/dialog", fordi dette
-         er sporet uten byggverktøy: en nettleser kan ikke slå opp et pakkenavn
-         uten en importmap eller et byggesteg. -->
+         The address is a URL and not "@lo-tek/interfaces/dialog", because this
+         is the path without build tools: a browser cannot resolve a package
+         name without an import map or a build step. -->
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtDialog } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/dialog/lt-dialog.js"
@@ -195,20 +195,20 @@ Fanen «Try it» er dialogen i drift. De fire andre er dialogen skrevet for hver
       defineLtDialog()
     </script>
 
-    <!-- Området serveren sender, og sender på nytt ved hver patch. Står
-         `open` på verten, kaller komponenten showModal(). Ingen klientkode
-         åpner noe. -->
-    <lt-dialog id="bekreft" open>
+    <!-- The region the server sends, and sends again on every patch. When
+         `open` is on the host, the component calls showModal(). No client code
+         opens anything. -->
+    <lt-dialog id="confirm" open>
       <dialog class="lt-dialog" open>
-        <h2>Slette søknaden?</h2>
+        <h2>Delete the application?</h2>
         <div class="lt-dialog__body">
-          <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+          <p>The application and its attachments will be gone. This cannot be undone.</p>
         </div>
         <form method="dialog" class="lt-dialog__footer">
-          <button class="lt-button" data-variant="secondary" value="avbryt"
-                  data-on:click="@post('/avbryt')">Avbryt</button>
-          <button class="lt-button" data-variant="danger" value="slett"
-                  data-on:click="@post('/slett')">Slett søknaden</button>
+          <button class="lt-button" data-variant="secondary" value="cancel"
+                  data-on:click="@post('/cancel')">Cancel</button>
+          <button class="lt-button" data-variant="danger" value="delete"
+                  data-on:click="@post('/delete')">Delete the application</button>
         </form>
       </dialog>
     </lt-dialog>
@@ -217,48 +217,48 @@ Fanen «Try it» er dialogen i drift. De fire andre er dialogen skrevet for hver
   </TabItem>
 </Tabs>
 
-Knappen i «Try it» gjør det en server ellers ville gjort: setter `open` på `<lt-dialog>`, slik Datastar-oppskriften gjør. Dialogen i «Try it» har i tillegg en farget topp med undertekst, som står under [Farget topp](#farget-topp).
+The button in "Try it" does what a server would otherwise do: it sets `open` on `<lt-dialog>`, as the Datastar recipe does. The dialog in "Try it" also has a coloured header with a subtitle, described under [Coloured header](#coloured-header).
 
-## Det som er felles for alle fire
+## What all four have in common
 
-Å åpne dialogen **må** være et kall. `showModal()` flytter fokus inn, holder det der, lukker på Escape og gjør resten av siden utilgjengelig. `<dialog open>` alene gjør ingen av delene, og er bare en boks på siden. De tre første oppskriftene gjør kallet selv; Datastar-oppskriften lar `<lt-dialog>` gjøre det, fordi en server som bare sender HTML ikke har noe sted å kalle fra. Velg én av delene: inne i `<lt-dialog>` er det `open` på verten som åpner. Et eget `showModal()`-kall der ser komponenten ikke: den melder ikke fra om det, og lukker dialogen neste gang `open` eller `server-controlled` på verten endres, siden verten ikke sier `open`. En patch som bare rører innholdet lar den stå.
+Opening the dialog **must** be a call. `showModal()` moves focus inside, keeps it there, closes on Escape and makes the rest of the page inert. `<dialog open>` alone does none of this, and is just a box on the page. The first three recipes make the call themselves; the Datastar recipe lets `<lt-dialog>` do it, because a server that only sends HTML has nowhere to call from. Pick one of the two: inside `<lt-dialog>` it is `open` on the host that opens the dialog. A `showModal()` call of your own there is not seen by the component: it does not warn about it, and it closes the dialog the next time `open` or `server-controlled` on the host changes, since the host does not say `open`. A patch that only touches the content leaves it open.
 
-`<form method="dialog">` lukker dialogen når en knapp trykkes, og legger knappens `value` i `dialog.returnValue`. Da trenger du ingen lyttere på knappene, og Enter virker som forventet.
+`<form method="dialog">` closes the dialog when a button is pressed, and puts the button's `value` in `dialog.returnValue`. Then you need no listeners on the buttons, and Enter works as expected.
 
-Escape lukker dialogen av seg selv. Skal du hindre det, for eksempel midt i en lagring, avbryt `cancel`-hendelsen. Gjør det sjelden: en dialog som ikke kan lukkes er en felle.
+Escape closes the dialog on its own. To prevent that, for example in the middle of a save, cancel the `cancel` event. Do it rarely: a dialog that cannot be closed is a trap.
 
-## Uten showModal()
+## Without showModal()
 
-Uten `showModal()` er markupen en boks på siden. Det er tilstanden serveren sender, og den du ser hvis JavaScript aldri kjører.
+Without `showModal()` the markup is a box on the page. That is the state the server sends, and the one you see if JavaScript never runs.
 
 <Example
   stiler={["dialog", "button"]}
   layout="stabel"
   maxWidth="34rem"
   visningsCss={`
-    /* Bare for å vise dialogen i boksen. En åpen <dialog> er
-       position: absolute og ville falt ut av forhåndsvisningen. I en ekte
-       side trengs ingenting av dette. */
+    /* Only to show the dialog in the box. An open <dialog> is
+       position: absolute and would fall out of the preview. A real
+       page needs none of this. */
     .lt-dialog { position: static; }
   `}
   kode={`
-<dialog class="lt-dialog" aria-labelledby="slette-tittel" open>
-  <h2 class="lt-dialog__title" id="slette-tittel">Slette søknaden?</h2>
+<dialog class="lt-dialog" aria-labelledby="delete-title" open>
+  <h2 class="lt-dialog__title" id="delete-title">Delete the application?</h2>
   <div class="lt-dialog__body">
-    <p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+    <p>The application and its attachments will be gone. This cannot be undone.</p>
   </div>
   <div class="lt-dialog__footer">
-    <button class="lt-button" data-variant="secondary" type="button">Avbryt</button>
-    <button class="lt-button" data-variant="danger" type="button">Slett søknaden</button>
+    <button class="lt-button" data-variant="secondary" type="button">Cancel</button>
+    <button class="lt-button" data-variant="danger" type="button">Delete the application</button>
   </div>
 </dialog>
 `} />
 
-## Når serveren åpner dialogen
+## When the server opens the dialog
 
-Dette avsnittet gjelder bare apper uten egen kode i nettleseren. Har du JavaScript der, hopp over det: `showModal()` er ett kall, og en komponent i mellom gir deg ingenting.
+This section only applies to apps without code of their own in the browser. If you have JavaScript there, skip it: `showModal()` is one call, and a component in between gives you nothing.
 
-En app i Datastar, htmx, en Go-mal eller en Razor-visning har ikke det stedet. Den sender `open` på `<lt-dialog>`, og komponenten gjør kallet.
+An app in Datastar, htmx, a Go template or a Razor view has no such place. It sends `open` on `<lt-dialog>`, and the component makes the call.
 
 ```js
 import { defineLtDialog } from "@lo-tek/interfaces/dialog"
@@ -269,157 +269,157 @@ defineLtDialog()
 ```html
 <lt-dialog open>
   <dialog class="lt-dialog" open>
-    <h2>Vedtaket er registrert</h2>
+    <h2>The decision is registered</h2>
     <div class="lt-dialog__body">
-      <p>Saken er ferdigbehandlet og sendt til arkiv.</p>
+      <p>The case is closed and has been sent to the archive.</p>
     </div>
     <form method="dialog" class="lt-dialog__footer">
-      <button class="lt-button" value="lukk">Lukk</button>
+      <button class="lt-button" value="close">Close</button>
     </form>
   </dialog>
 </lt-dialog>
 ```
 
-Inne i `<lt-dialog>` gir komponenten dialogen navnet sitt fra den første overskriften som står utenfor kroppen: `aria-labelledby` mot overskriftens id, som den lager om den mangler, og klassen `lt-dialog__title` på overskriften. En overskrift inne i `lt-dialog__body` er innholdets, ikke dialogens, og blir aldri tittel. Har serveren skrevet `aria-labelledby` eller `aria-label`, står det. Har dialogen ingen av delene og heller ingen overskrift utenfor kroppen, sier komponenten fra i konsollen. Lages markupen med JavaScript, skriver `lt.dialog({ titleId })` det samme.
+Inside `<lt-dialog>` the component names the dialog from the first heading outside the body: `aria-labelledby` pointing at the heading's id, which it creates if it is missing, and the class `lt-dialog__title` on the heading. A heading inside `lt-dialog__body` belongs to the content, not to the dialog, and never becomes the title. If the server wrote `aria-labelledby` or `aria-label`, that stays. If the dialog has neither and no heading outside the body either, the component warns in the console. When the markup is produced with JavaScript, `lt.dialog({ titleId })` writes the same.
 
-**Gi knappen som lukker dialogen en `value`.** Uten JavaScript er dialogen en boks på siden, og `<form method="dialog">` lukker den før noe skript har kjørt. Komponenten kjenner igjen det som alt har skjedd på `returnValue`, som nettleseren setter til verdien på knappen. Er den tom, ser komponenten en vert som sier «åpen» og en lukket dialog, og åpner den igjen.
+**Give the button that closes the dialog a `value`.** Without JavaScript the dialog is a box on the page, and `<form method="dialog">` closes it before any script has run. The component recognises what has already happened from `returnValue`, which the browser sets to the button's value. If it is empty, the component sees a host that says "open" and a closed dialog, and opens it again.
 
-Lukker brukeren dialogen, med Escape eller med en knapp i `<form method="dialog">`, fjerner komponenten `open` fra `<lt-dialog>` igjen, slik at markupen sier det samme som skjermen. Et klikk på flaten bak lukker den ikke; det gjør heller ikke en vanlig `<dialog>`. Komponenten melder fra med hendelsen `dialog-toggle`, som har `detail.open` og `detail.returnValue`, altså verdien på knappen som lukket den. Det er den du skiller «Avbryt» fra «Slett» med. Komponenten tømmer verdien hver gang den åpner dialogen, så en dialog som lukkes uten knapp, med Escape eller fra serveren, melder en tom verdi og ikke den fra forrige gang.
+When the user closes the dialog, with Escape or with a button in `<form method="dialog">`, the component removes `open` from `<lt-dialog>` again, so the markup says the same as the screen. A click on the backdrop does not close it; neither does it on a plain `<dialog>`. The component reports with the `dialog-toggle` event, which has `detail.open` and `detail.returnValue`, the value of the button that closed it. That is how you tell "Cancel" from "Delete". The component clears the value every time it opens the dialog, so a dialog closed without a button, with Escape or from the server, reports an empty value and not the one from last time.
 
-De to `open`-ene i eksempelet er ikke det samme:
+The two `open` attributes in the example are not the same:
 
-| Hvor | Hvem setter den | Hva som skjer i en oppdatering |
+| Where | Set by | What happens in an update |
 | --- | --- | --- |
-| På `<lt-dialog>` | Serveren, når dialogen skal vises | Serveren bestemmer. Sender den `open` på nytt, åpnes dialogen igjen |
-| På `<dialog>` | Serveren når dialogen skal vises, og nettleseren i `showModal()` | Komponenten setter det tilbake så lenge dialogen står i topplaget |
+| On `<lt-dialog>` | The server, when the dialog is to be shown | The server decides. If it sends `open` again, the dialog opens again |
+| On `<dialog>` | The server when the dialog is to be shown, and the browser in `showModal()` | The component puts it back as long as the dialog is in the top layer |
 
-`server-controlled` på `<lt-dialog>` slår av den siste. Da bestemmer hver oppdatering om dialogen vises, også når den står i topplaget.
+`server-controlled` on `<lt-dialog>` turns off the latter. Then every update decides whether the dialog is shown, also while it is in the top layer.
 
-At verten følger serveren er et valg og ikke en forglemmelse. Sender serveren området på nytt med `open` fortsatt satt, åpnes dialogen altså igjen; skal en avvisning vare, må appen si fra til serveren, som for all annen tilstand serveren bestemmer.
+That the host follows the server is a choice and not an oversight. If the server sends the region again with `open` still set, the dialog opens again; for a dismissal to last, the app has to tell the server, as for any other state the server decides.
 
-Attributtet på selve `<dialog>` er noe annet: nettleseren setter det i `showModal()`, og serveren sendte det ikke, så en oppdatering river det bort og skjuler dialogen i det øyeblikket den åpnet den. Komponenten setter det tilbake når dialogen fortsatt står i topplaget, så malen din trenger ingenting ekstra.
+The attribute on the `<dialog>` itself is something else: the browser sets it in `showModal()`, and the server did not send it, so an update tears it off and hides the dialog the moment the component opened it. The component puts it back while the dialog is still in the top layer, so your template needs nothing extra.
 
-Serveren skriver det likevel når dialogen skal vises, og `lt.dialog({ titleId, open: true })` gir det på begge elementene. Grunnen er at en `<dialog>` uten `open` er skjult: uten JavaScript fantes ikke innholdet serveren ville vise, i det hele tatt.
+The server still writes it when the dialog is to be shown, and `lt.dialog({ titleId, open: true })` puts it on both elements. The reason is that a `<dialog>` without `open` is hidden: without JavaScript, the content the server meant to show would not be there at all.
 
-Inne i `<lt-dialog>` er en slik dialog stylet som en modal allerede før den er det: midt i vinduet, med flaten bak malt av en skygge, siden `::backdrop` bare finnes i topplaget. Den har også det samme maksmålet på bredden som nettleseren gir en modal. Da er geometrien den samme i begge tilstandene, og dialogen står stille i det komponenten kaller `showModal()`, også på en side som bruker tid på å laste. Laget kan settes med `--lt-dialog-layer`.
+Inside `<lt-dialog>` such a dialog is styled as a modal before it is one: centred in the window, with the area behind it painted by a shadow, since `::backdrop` only exists in the top layer. It also has the same maximum width the browser gives a modal. The geometry is then the same in both states, and the dialog stays still when the component calls `showModal()`, also on a page that takes time to load. The layer can be set with `--lt-dialog-layer`.
 
-Ett forbehold: dialogen er fastposisjonert før den blir modal, mens en ekte modal ligger i topplaget. Står den inne i et element med `transform`, `filter` eller `contain: layout`, er det elementet som blir utgangspunktet for den første, og vinduet for den andre. Da hopper den likevel, og hvor langt kommer an på hvor det elementet står. La dialogen stå utenfor slike elementer.
+One caveat: the dialog is fixed-positioned before it becomes modal, while a real modal sits in the top layer. If it is inside an element with `transform`, `filter` or `contain: layout`, that element becomes the containing block for the first, and the window for the second. Then it jumps after all, and how far depends on where that element is. Keep the dialog outside such elements.
 
-Utenfor verten gjelder dette ikke. En `.lt-dialog` med `open`, uten `<lt-dialog>` rundt, står der den står i flyten, slik nettleserens egen stil gjør det.
+None of this applies outside the host. A `.lt-dialog` with `open` and no `<lt-dialog>` around it stays where it is in the flow, as the browser's own style places it.
 
-## Typene
+## Types
 
 ```ts
-// src/lotek.d.ts, gir <lt-dialog> typer i JSX
+// src/lotek.d.ts, gives <lt-dialog> types in JSX
 import "@lo-tek/interfaces/react-jsx"
 ```
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
-const boks = lt.dialog({ titleId: "kvittering-tittel", open: true })
+const box = lt.dialog({ titleId: "receipt-title", open: true })
 
-<lt-dialog {...boks.host}>
-  <dialog {...boks.dialog}>
-    <h2 {...boks.title}>Vedtaket er registrert</h2>
-    <div {...boks.body}>Saken er ferdigbehandlet og sendt til arkiv.</div>
-    <form method="dialog" {...boks.footer}>
-      <button {...lt.button()} value="lukk">Lukk</button>
+<lt-dialog {...box.host}>
+  <dialog {...box.dialog}>
+    <h2 {...box.title}>The decision is registered</h2>
+    <div {...box.body}>The case is closed and has been sent to the archive.</div>
+    <form method="dialog" {...box.footer}>
+      <button {...lt.button()} value="close">Close</button>
     </form>
   </dialog>
 </lt-dialog>
 ```
 
-Importen går til `/react` her, siden eksempelet er JSX. Derfra heter nøklene `className` og `htmlFor`. Skriver du markupen i noe annet, importer `@lo-tek/interfaces` og få `class` og `for`.
+The import goes to `/react` here, since the example is JSX. From there the keys are `className` and `htmlFor`. If you write the markup in something else, import `@lo-tek/interfaces` and get `class` and `for`.
 
-`lt.dialog.title`, `lt.dialog.body` og `lt.dialog.footer` gir klassenavnene alene. Se [Typesikker bruk](../../type-safe-use/).
+`lt.dialog.title`, `lt.dialog.body` and `lt.dialog.footer` give the class names alone. See [Type-safe use](../../type-safe-use/).
 
-Lager du markupen med JavaScript og styrer alt i nettleseren, trenger du ingen komponent: kall `showModal()` selv, som i «Plain HTML»-oppskriften over. Da skal du ikke sende `open` inn i `lt.dialog()`. Attributtet er serverens beskjed til `<lt-dialog>`, og `showModal()` kaster `InvalidStateError` på en dialog som alt står åpen.
+If you produce the markup with JavaScript and control everything in the browser, you need no component: call `showModal()` yourself, as in the "Plain HTML" recipe above. Then do not pass `open` to `lt.dialog()`. The attribute is the server's message to `<lt-dialog>`, and `showModal()` throws `InvalidStateError` on a dialog that is already open.
 
-I React er attributtet dessuten det eneste som stemmer når serveren rendrer dialogen åpen. Komponenten setter `open` på `<dialog>` før React hydrerer, så sto det ikke i serverens HTML, meldte React avvik ved hvert eneste oppslag.
+In React the attribute is also the only thing that matches when the server renders the dialog open. The component sets `open` on `<dialog>` before React hydrates, so if it was not in the server's HTML, React reported a mismatch on every single page load.
 
-## Farget topp
+## Coloured header
 
-Skal dialogen si hvordan det gikk før leseren har lest et ord, får den en topp med farge. `lt.dialog({ titleId, color })` gir `data-color` på dialogen og en `header`-del som pakker overskriften. Fargene er de samme som [varsleren](../alert/) bruker, med `brand` i tillegg for merkefargen.
+When the dialog should say how things went before the reader has read a word, it gets a coloured header. `lt.dialog({ titleId, color })` gives `data-color` on the dialog and a `header` part that wraps the heading. The colours are the same as the [alert](../alert/) uses, with `brand` in addition for the brand colour.
 
-| `color` | Betyr |
+| `color` | Means |
 | --- | --- |
-| `neutral` | Ingen farge. Standard |
-| `brand` | Merkefargen, for en topp som sier hvem som snakker |
-| `info` | Til orientering |
-| `success` | Det gikk bra |
-| `warning` | Se på dette |
-| `danger` | Noe er galt, eller kan ikke angres |
+| `neutral` | No colour. Default |
+| `brand` | The brand colour, for a header that says who is speaking |
+| `info` | For information |
+| `success` | It went well |
+| `warning` | Look at this |
+| `danger` | Something is wrong, or cannot be undone |
 
 ```astro
 ---
-const boks = lt.dialog({ titleId: "resultat-tittel", color: "success" })
+const box = lt.dialog({ titleId: "result-title", color: "success" })
 ---
-<dialog {...boks.dialog}>
-  <div {...boks.header}>
-    <h2 {...boks.title}>Full pott</h2>
-    <p {...boks.subtitle}>25 av 25 poeng</p>
+<dialog {...box.dialog}>
+  <div {...box.header}>
+    <h2 {...box.title}>Full marks</h2>
+    <p {...box.subtitle}>25 of 25 points</p>
   </div>
-  <div {...boks.body}>…</div>
-  <form method="dialog" {...boks.footer}>…</form>
+  <div {...box.body}>…</div>
+  <form method="dialog" {...box.footer}>…</form>
 </dialog>
 ```
 
-Uten byggefunksjonen er det de samme klassene, skrevet ut:
+Without the builder function it is the same classes, written out:
 
 ```html
-<dialog class="lt-dialog" data-color="success" aria-labelledby="resultat-tittel">
+<dialog class="lt-dialog" data-color="success" aria-labelledby="result-title">
   <div class="lt-dialog__header">
-    <h2 class="lt-dialog__title" id="resultat-tittel">Full pott</h2>
-    <p class="lt-dialog__subtitle">25 av 25 poeng</p>
+    <h2 class="lt-dialog__title" id="result-title">Full marks</h2>
+    <p class="lt-dialog__subtitle">25 of 25 points</p>
   </div>
   <div class="lt-dialog__body">…</div>
   <form method="dialog" class="lt-dialog__footer">…</form>
 </dialog>
 ```
 
-Toppen er valgfri, og uten den står dialogen som før. Fargen gjelder toppen, så uten `header` i markupen har den ingenting å farge. En topp uten farge er heller ingen stripe: da slipper den bunnluften, og avstanden ned til teksten er den samme som ellers.
+The header is optional, and without it the dialog looks as before. The colour applies to the header, so without `header` in the markup it has nothing to colour. A header without colour is not a stripe either: it then drops its bottom padding, and the distance down to the text is the same as otherwise.
 
-## Attributter
+## Attributes
 
-| Attributt | Type | Effekt |
+| Attribute | Type | Effect |
 | --- | --- | --- |
-| `open` | boolsk | Om dialogen vises. Serveren setter det når dialogen skal vises, og komponenten fjerner det når brukeren lukker den. Skal serveren vise dialogen, må `open` også stå på `<dialog>`. |
-| `server-controlled` | boolsk | Fjerner en oppdatering fra serveren `open` fra `<dialog>` mens dialogen er åpen, lukker komponenten den og sender `dialog-toggle`. Uten attributtet setter den `open` tilbake. Se [Når serveren åpner dialogen](#når-serveren-åpner-dialogen). |
+| `open` | boolean | Whether the dialog is shown. The server sets it when the dialog is to be shown, and the component removes it when the user closes it. For the server to show the dialog, `open` must also be on `<dialog>`. |
+| `server-controlled` | boolean | If an update from the server removes `open` from `<dialog>` while the dialog is open, the component closes it and sends `dialog-toggle`. Without the attribute it puts `open` back. See [When the server opens the dialog](#when-the-server-opens-the-dialog). |
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-dialog` | Selve dialogen. `data-color` farger toppen |
-| `.lt-dialog__header` | Toppen, med overskriften og en eventuell undertekst i. Valgfri: med den flyttes luften fra dialogen til delene, så et farget bånd går helt ut i kantene |
-| `.lt-dialog__title` | Overskriften |
-| `.lt-dialog__subtitle` | En linje under overskriften, inne i toppen |
-| `.lt-dialog__body` | Innholdet, som ruller når dialogen blir for høy. Må være et direkte barn av `.lt-dialog`, ellers ruller dialogen i stedet, og overskriften og knapperaden forsvinner ut av syne sammen med teksten |
-| `.lt-dialog__footer` | Raden med knapper nederst |
+| `.lt-dialog` | The dialog itself. `data-color` colours the header |
+| `.lt-dialog__header` | The header, with the heading and an optional subtitle inside. Optional: with it, the padding moves from the dialog to the parts, so a coloured band reaches all the way to the edges |
+| `.lt-dialog__title` | The heading |
+| `.lt-dialog__subtitle` | A line below the heading, inside the header |
+| `.lt-dialog__body` | The content, which scrolls when the dialog gets too tall. Must be a direct child of `.lt-dialog`, otherwise the dialog scrolls instead, and the heading and the button row scroll out of view with the text |
+| `.lt-dialog__footer` | The row of buttons at the bottom |
 
-`display` er den ene egenskapen du ikke kan sette fritt på `.lt-dialog`. En `<dialog>` uten `open` skjules av nettleserens eget stilark, og en forfatterregel med `display` slår den uansett lag og spesifisitet, så en lukket dialog blir stående som et kort på siden. Trenger du et annet oppsett, ta med `dialog.lt-dialog:not([open]):not(:is(:popover-open)) { display: none }` selv, og gjør den minst like spesifikk som din egen regel. Systemet setter `display: flex` bare når `.lt-dialog__body` er et direkte barn, og gjør nettopp dette ved siden av.
+`display` is the one property you cannot set freely on `.lt-dialog`. A `<dialog>` without `open` is hidden by the browser's own stylesheet, and an author rule with `display` beats it regardless of layer and specificity, so a closed dialog stays on the page as a card. If you need a different layout, add `dialog.lt-dialog:not([open]):not(:is(:popover-open)) { display: none }` yourself, and make it at least as specific as your own rule. The system sets `display: flex` only when `.lt-dialog__body` is a direct child, and does exactly this alongside it.
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-dialog-width` | `min(32rem, 100%, calc(100vw - var(--lt-spacing-8)))` |
 | `--lt-dialog-padding` | `var(--lt-spacing-5)` |
 | `--lt-dialog-radius` | `var(--lt-spacing-2)` |
 | `--lt-dialog-layer` | `40` |
 
-`--lt-dialog-layer` gjelder bare i det korte øyeblikket dialogen er åpen uten å være modal, altså før komponenten har kalt `showModal()`. Da ligger den ikke i topplaget ennå, og må stables som alt annet. Er dialogen først modal, ligger den over alt uansett.
+`--lt-dialog-layer` only applies in the brief moment the dialog is open without being modal, before the component has called `showModal()`. It is not in the top layer yet then, and must be stacked like everything else. Once the dialog is modal, it is above everything regardless.
 
-`100%` i bredden gjelder når dialogen ikke ligger i topplaget. En `<dialog>` åpnet med `showModal()` forholder seg til vindusruten uansett, men lager du en boks på siden av den, som i forhåndsvisningen over, ville `100vw` gjort den bredere enn boksen.
+`100%` in the width applies when the dialog is not in the top layer. A `<dialog>` opened with `showModal()` relates to the viewport regardless, but if you make a box on the page of it, as in the preview above, `100vw` would make it wider than the box.
 
-Flaten bak dialogen er `::backdrop`, og finnes bare når dialogen er åpnet med `showModal()`. Fargen kommer fra `--lt-color-overlay` og er kraftigere i mørkt tema, der en sort flate ellers ville vært usynlig.
+The area behind the dialog is `::backdrop`, and only exists when the dialog was opened with `showModal()`. The colour comes from `--lt-color-overlay` and is stronger in the dark theme, where a black overlay would otherwise be invisible.
 
-Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
 
-- Dialogen trenger et navn. `lt.dialog({ titleId })` skriver `aria-labelledby` mot overskriften, og inne i `<lt-dialog>` setter komponenten det fra den første overskriften utenfor kroppen når det mangler. Har du ingen overskrift, bruk `aria-label`.
-- Overskriften skal stille spørsmålet: «Slette søknaden?», ikke «Bekreft».
-- Knappeteksten skal si hva som skjer. «Slett søknaden» er tydeligere enn «OK», særlig for den som hører knappen uten å se overskriften.
-- Etter at dialogen lukkes, gir nettleseren fokus tilbake til knappen som åpnet den. Flytter du fokus selv i mellomtiden, må du sette det tilbake.
-- Ikke bruk en dialog til noe som kunne stått på siden. Den tar over hele skjermen for den som bruker forstørrelse.
-- `<lt-dialog>` åpner alltid modalt. Et `show()` ville gitt en boks som ser lik ut, men som ikke fanger fokus og ikke lukker på Escape. Forskjellen er `:modal`, og den er testet i alle tre nettlesermotorene.
+- The dialog needs a name. `lt.dialog({ titleId })` writes `aria-labelledby` pointing at the heading, and inside `<lt-dialog>` the component sets it from the first heading outside the body when it is missing. If you have no heading, use `aria-label`.
+- The heading should ask the question: "Delete the application?", not "Confirm".
+- The button text should say what happens. "Delete the application" is clearer than "OK", especially for someone who hears the button without seeing the heading.
+- After the dialog closes, the browser returns focus to the button that opened it. If you move focus yourself in the meantime, you have to put it back.
+- Do not use a dialog for something that could have been on the page. It takes over the whole screen for someone using magnification.
+- `<lt-dialog>` always opens modally. A `show()` would give a box that looks the same, but does not trap focus and does not close on Escape. The difference is `:modal`, and it is tested in all three browser engines.

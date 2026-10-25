@@ -1,134 +1,134 @@
 ---
 title: Fieldset
-description: Gruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.
+description: A group of controls with a shared label. CSS component with two classes and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-`<fieldset>` med `<legend>` er den ene måten å gi et sett radioknapper eller avkryssingsbokser en felles ledetekst som skjermlesere leser opp før hvert alternativ. En overskrift over gruppen ser likedan ut, men høres ikke.
+`<fieldset>` with `<legend>` is the one way to give a set of radio buttons or checkboxes a shared label that screen readers announce before each option. A heading above the group looks the same, but is not heard.
 
-Komponenten er i praksis to ting: en nullstilling av nettleserens ramme fra 1996, og samme markering av påkrevd og valgfritt som på en vanlig [Label](../label/).
+In practice the component is two things: a reset of the browser's border from 1996, and the same required and optional markers as on an ordinary [Label](../label/).
 
 ## How to use it
 
 <Example importer={["tokens.css", "fieldset.css", "radio.css"]}
   stiler={["fieldset", "radio", "label"]} layout="stabel" maxWidth="28rem" kode={`
 <fieldset class="lt-fieldset">
-  <legend class="lt-legend" data-required="symbol">Hvem søker du på vegne av?</legend>
+  <legend class="lt-legend" data-required="symbol">Who are you applying on behalf of?</legend>
 
   <div class="lt-radio-row">
-    <input class="lt-radio" type="radio" id="selv" name="soker" value="selv" checked />
-    <label class="lt-label" for="selv">Meg selv</label>
+    <input class="lt-radio" type="radio" id="self" name="applicant" value="self" checked />
+    <label class="lt-label" for="self">Myself</label>
   </div>
 
   <div class="lt-radio-row">
-    <input class="lt-radio" type="radio" id="annen" name="soker" value="annen" />
-    <label class="lt-label" for="annen">En annen person</label>
+    <input class="lt-radio" type="radio" id="other" name="applicant" value="other" />
+    <label class="lt-label" for="other">Another person</label>
   </div>
 </fieldset>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** you spread the attributes in. That is the route in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
 <fieldset {...lt.fieldset({ state: "invalid" })}>
-  <legend {...lt.legend()}>Hvordan vil du ha svar?</legend>
+  <legend {...lt.legend()}>How would you like a reply?</legend>
 </fieldset>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import goes to `/react` here, since the block is JSX. From there the keys are called `className` and `htmlFor`. In Astro and anything else without React you import `@lo-tek/interfaces` and get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** you set them on it. That is the route when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const gruppe = document.querySelector<HTMLFieldSetElement>("#levering")
-const tittel = document.querySelector<HTMLLegendElement>("#levering-tittel")
+const group = document.querySelector<HTMLFieldSetElement>("#delivery")
+const title = document.querySelector<HTMLLegendElement>("#delivery-title")
 
-lt.setAttributes(gruppe, lt.fieldset({ state: "invalid" }))
-lt.setAttributes(tittel, lt.legend({ required: "symbol" }))
+lt.setAttributes(group, lt.fieldset({ state: "invalid" }))
+lt.setAttributes(title, lt.legend({ required: "symbol" }))
 ```
 
-Gruppen og ledeteksten er to funksjoner, fordi de settes på to elementer. Se [Typesikker bruk](../../type-safe-use/).
+The group and the label are two functions, because they are set on two elements. See [Type-safe use](../../type-safe-use/).
 
 </Fragment>
 </Example>
 
-| Attributt på `.lt-legend` | Effekt |
+| Attribute on `.lt-legend` | Effect |
 | --- | --- |
-| *(utelatt)* | Vanlig ledetekst |
-| `data-required="symbol"` | ` *` i farefargen |
-| `data-required="text"` | ` (påkrevd)` i farefargen |
-| `data-optional=""` | ` (valgfri)` i dempet farge |
+| *(omitted)* | An ordinary label |
+| `data-required="symbol"` | ` *` in the danger colour |
+| `data-required="text"` | ` (required)` in the danger colour |
+| `data-optional=""` | ` (optional)` in a muted colour |
 
-Velg én av `data-required` og `data-optional`, og hold deg til den gjennom skjemaet.
+Choose one of `data-required` and `data-optional`, and stick to it throughout the form.
 
-## Hjelpetekst og feilmelding
+## Help text and error text
 
-Gruppen kan ha hjelpetekst og feilmelding som feltene ellers. Koblingen til skjermlesere går via `aria-describedby` på `<fieldset>`, ikke på hver knapp.
+The group can have help text and an error text like the fields otherwise. The connection for screen readers goes through `aria-describedby` on the `<fieldset>`, not on each button.
 
 <Example stiler={["fieldset", "radio", "label", "help-text", "error-text"]} layout="stabel" maxWidth="28rem" kode={`
-<fieldset class="lt-fieldset" data-state="invalid" aria-describedby="levering-hjelp levering-feil">
-  <legend class="lt-legend" data-required="symbol">Leveringsmåte</legend>
-  <p class="lt-help-text" id="levering-hjelp">Vi sender innen tre virkedager.</p>
+<fieldset class="lt-fieldset" data-state="invalid" aria-describedby="delivery-help delivery-error">
+  <legend class="lt-legend" data-required="symbol">Delivery method</legend>
+  <p class="lt-help-text" id="delivery-help">We dispatch within three working days.</p>
 
   <div class="lt-radio-row">
-    <input class="lt-radio" type="radio" id="lev-post" name="levering" value="post" data-state="invalid" aria-invalid="true" />
-    <label class="lt-label" for="lev-post">Vanlig post</label>
+    <input class="lt-radio" type="radio" id="delivery-post" name="delivery" value="post" data-state="invalid" aria-invalid="true" />
+    <label class="lt-label" for="delivery-post">Standard post</label>
   </div>
 
   <div class="lt-radio-row">
-    <input class="lt-radio" type="radio" id="lev-hentes" name="levering" value="hentes" data-state="invalid" aria-invalid="true" />
-    <label class="lt-label" for="lev-hentes">Hentes på kontoret</label>
+    <input class="lt-radio" type="radio" id="delivery-collect" name="delivery" value="collect" data-state="invalid" aria-invalid="true" />
+    <label class="lt-label" for="delivery-collect">Collect from the office</label>
   </div>
 
-  <p class="lt-error-text" id="levering-feil">Velg hvordan du vil ha varen levert.</p>
+  <p class="lt-error-text" id="delivery-error">Choose how you want the item delivered.</p>
 </fieldset>
 `} />
 
-`data-state="invalid"` på gruppen farger ledeteksten. Selve knappene må få den samme tilstanden hver for seg, siden det er de som har rammen brukeren ser. De trenger også `aria-invalid` for skjermleseren, og `lt.radio({ state: "invalid" })` gir begge.
+`data-state="invalid"` on the group colours the label. The buttons themselves must get the same state one by one, since they are the ones with the border the user sees. They also need `aria-invalid` for the screen reader, and `lt.radio({ state: "invalid" })` gives both.
 
-`data-state="success"` farger ledeteksten grønn på samme måte, og brukes når gruppen er ferdig utfylt og godkjent. Fargen er det eneste som skiller de to, så den kan ikke stå alene: si i teksten hva som er galt eller hva som er i orden.
+`data-state="success"` colours the label green in the same way, and is used when the group is filled in and accepted. The colour is the only difference between the two, so it cannot stand alone: say in the text what is wrong or what is in order.
 
-## Slå av hele gruppen
+## Disabling the whole group
 
-`disabled` på `<fieldset>` slår av alt inni, også felt som legges til senere:
+`disabled` on the `<fieldset>` disables everything inside, including fields added later:
 
 ```html
 <fieldset class="lt-fieldset" disabled>
-  <legend class="lt-legend" aria-disabled="true">Leveringsmåte</legend>
+  <legend class="lt-legend" aria-disabled="true">Delivery method</legend>
 </fieldset>
 ```
 
-Merk at `disabled` på gruppen ikke setter `disabled` på hver kontroll. Egenskapen `knapp.disabled` står fortsatt til `false`, mens `knapp.matches(":disabled")` er sann. Sjekker du i JavaScript, bruk den siste.
+Note that `disabled` on the group does not set `disabled` on each control. The property `button.disabled` is still `false`, while `button.matches(":disabled")` is true. If you check in JavaScript, use the latter.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-fieldset` | Gruppen. Tilstanden kommer fra `data-state`. |
-| `.lt-legend` | Ledeteksten på gruppen |
+| `.lt-fieldset` | The group. The state comes from `data-state`. |
+| `.lt-legend` | The label of the group |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-fieldset-gap` | `var(--lt-spacing-2)` |
 | `--lt-label-required-symbol` | `" *"` |
-| `--lt-label-required-text` | `" (påkrevd)"` |
-| `--lt-label-optional-text` | `" (valgfri)"` |
+| `--lt-label-required-text` | `" (required)"` |
+| `--lt-label-optional-text` | `" (optional)"` |
 
-De tre siste er teksten i markeringen bak `data-required` og `data-optional` på `.lt-legend`. De er de samme som på [Label](../label/), så én innstilling gjelder begge. Se [Oversettelse](../../translation/).
+The last three are the text of the marker behind `data-required` and `data-optional` on `.lt-legend`. They are the same as on [Label](../label/), so one setting applies to both. See [Translation](../../translation/).
 
-Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
 
-- `<legend>` skal være det første elementet inne i `<fieldset>`. HTML krever det, og markupen er ellers ugyldig. Nettleserne kobler som regel den første `<legend>`-en til gruppen uansett hvor den står, men det er ikke noe å lene seg på: utenfor innholdsmodellen kan nettlesere og hjelpemidler oppføre seg ulikt.
-- Bruk gruppen der alternativene hører til samme spørsmål. Et enkelt avkryssingsfelt for «Jeg godtar vilkårene» trenger den ikke.
-- Ikke legg hele skjemaet i én gruppe. Da leses ledeteksten opp foran hvert eneste felt.
-- Gruppens feilmelding skal peke på hva brukeren skal gjøre: «Velg hvordan du vil ha varen levert», ikke «Feltet er påkrevd».
+- `<legend>` should be the first element inside the `<fieldset>`. HTML requires it, and the markup is otherwise invalid. Browsers usually connect the first `<legend>` to the group wherever it is, but that is nothing to rely on: outside the content model, browsers and assistive technology can behave differently.
+- Use the group where the options belong to the same question. A single checkbox for "I accept the terms" does not need it.
+- Do not put the whole form in one group. The label is then announced before every single field.
+- The group's error message should say what the user has to do: "Choose how you want the item delivered", not "This field is required".

@@ -1,140 +1,140 @@
 ---
 title: Input
-description: Tekstfelt for skjema, med tilstander for gyldig og ugyldig. CSS-komponent.
+description: A text field for forms, with states for valid and invalid. CSS component.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Ren CSS på et vanlig `<input>`, så nettleserens egen validering, autofyll og tastaturhåndtering virker som før.
+Plain CSS on an ordinary `<input>`, so the browser's own validation, autofill and keyboard handling work as before.
 
 ## How to use it
 
 <Example importer={["tokens.css", "input.css", "label.css"]}
   stiler={["input", "label"]} layout="stabel" maxWidth="26rem" kode={`
-<label class="lt-label" for="epost">E-postadresse</label>
-<input class="lt-input" id="epost" type="email" placeholder="ola&#64;eksempel.no" />
+<label class="lt-label" for="email">Email address</label>
+<input class="lt-input" id="email" type="email" placeholder="alex&#64;example.com" />
 
-<label class="lt-label" for="bekreft">Bekreft e-postadresse</label>
-<input class="lt-input" id="bekreft" type="email" data-state="success" value="ola&#64;eksempel.no" />
+<label class="lt-label" for="confirm">Confirm email address</label>
+<input class="lt-input" id="confirm" type="email" data-state="success" value="alex&#64;example.com" />
 
-<label class="lt-label" for="reserve">Reserve-e-post</label>
-<input class="lt-input" id="reserve" type="email" data-state="invalid" aria-invalid="true" value="ola&#64;" />
+<label class="lt-label" for="backup">Backup email</label>
+<input class="lt-input" id="backup" type="email" data-state="invalid" aria-invalid="true" value="alex&#64;" />
 
-<label class="lt-label" for="registrert">Registrert e-postadresse</label>
-<input class="lt-input" id="registrert" type="email" value="ola&#64;eksempel.no" disabled />
+<label class="lt-label" for="registered">Registered email address</label>
+<input class="lt-input" id="registered" type="email" value="alex&#64;example.com" disabled />
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** you spread the attributes in. That is the route in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
-<input {...lt.input({ type: "email", state: "invalid" })} id="epost" />
+<input {...lt.input({ type: "email", state: "invalid" })} id="email" />
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import goes to `/react` here, since the block is JSX. From there the keys are called `className` and `htmlFor`. In Astro and anything else without React you import `@lo-tek/interfaces` and get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** you set them on it. That is the route when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt, type FieldState } from "@lo-tek/interfaces"
 
-const felt = document.querySelector<HTMLInputElement>("#epost")
-if (!felt) throw new Error("fant ikke feltet")
+const field = document.querySelector<HTMLInputElement>("#email")
+if (!field) throw new Error("field not found")
 
-lt.setAttributes(felt, lt.input({ type: "email" }))
+lt.setAttributes(field, lt.input({ type: "email" }))
 ```
 
-`type` setter både HTML-typen og ikonvarianten, så de kan ikke komme i utakt. Med `lt.input()` er den fella ikke mulig å gå i: en verdi som ikke finnes, er en typefeil.
+`type` sets both the HTML type and the icon variant, so they cannot get out of step. With `lt.input()` that trap cannot be walked into: a value that does not exist is a type error.
 
-Ved validering kaller du den på nytt med ny tilstand:
+On validation you call it again with the new state:
 
 ```ts
-felt.addEventListener("blur", () => {
-  const tilstand: FieldState = felt.validity.valid ? "default" : "invalid"
+field.addEventListener("blur", () => {
+  const state: FieldState = field.validity.valid ? "default" : "invalid"
 
-  lt.setAttributes(felt, lt.input({ type: "email", state: tilstand }))
+  lt.setAttributes(field, lt.input({ type: "email", state }))
 })
 ```
 
-`state: "invalid"` setter både `data-state` for fargen og `aria-invalid` for skjermleseren. Går feltet tilbake til `"default"`, fjerner `lt.setAttributes` begge. Uten det ville feltet blitt stående rødt etter at feilen var rettet.
+`state: "invalid"` sets both `data-state` for the colour and `aria-invalid` for the screen reader. When the field goes back to `"default"`, `lt.setAttributes` removes both. Without that, the field would stay red after the error was corrected.
 
-Verdier utenfra: `lt.input.isType(x)` og `lt.input.isState(x)`. Se [Typesikker bruk](../../type-safe-use/).
+Values from outside: `lt.input.isType(x)` and `lt.input.isState(x)`. See [Type-safe use](../../type-safe-use/).
 
 </Fragment>
 </Example>
 
-| `data-state` | Brukes til |
+| `data-state` | Used for |
 | --- | --- |
-| *(utelatt)* | Normaltilstand |
-| `invalid` | Valideringen har feilet |
-| `success` | Verdien er bekreftet gyldig |
+| *(omitted)* | Normal state |
+| `invalid` | Validation has failed |
+| `success` | The value is confirmed valid |
 
-`data-state` er farge. Skjermlesere trenger `aria-invalid="true"` i tillegg, eller [Field](../field/), som setter begge.
+`data-state` is colour. Screen readers also need `aria-invalid="true"`, or [Field](../field/), which sets both.
 
-## Dato og klokkeslett
+## Date and time
 
 <Example stiler={["input", "label"]} layout="stabel" maxWidth="26rem" kode={`
-<label class="lt-label" for="dato">Reisedato</label>
-<input class="lt-input" id="dato" data-variant="date" type="date" value="2026-05-31" />
+<label class="lt-label" for="date">Travel date</label>
+<input class="lt-input" id="date" data-variant="date" type="date" value="2026-05-31" />
 
-<label class="lt-label" for="tid">Avreisetidspunkt</label>
-<input class="lt-input" id="tid" data-variant="time" type="time" value="14:30" />
+<label class="lt-label" for="time">Departure time</label>
+<input class="lt-input" id="time" data-variant="time" type="time" value="14:30" />
 `} />
 
-:::caution[`data-variant` og `type` må være like]
-Ikonet styres av `data-variant`, velgeren av `type`. Setter du bare `data-variant`, får du et felt som ser ut som et datofelt, men der ingenting skjer når brukeren trykker på ikonet. Setter du bare `type`, står nettleserens egen knapp igjen, og den virker.
+:::caution[`data-variant` and `type` must match]
+The icon is controlled by `data-variant`, the picker by `type`. If you set only `data-variant`, you get a field that looks like a date field, but where nothing happens when the user presses the icon. If you set only `type`, the browser's own button remains, and it works.
 
-`lt.input({ type: "date" })` setter begge, og fjerner feilen helt.
+`lt.input({ type: "date" })` sets both, and removes the mistake entirely.
 :::
 
-Bare `date`, `time` og `datetime-local` påvirker utseendet. De øvrige typene finnes for at TypeScript-hjelperen skal kunne sette `type` for deg.
+Only `date`, `time` and `datetime-local` affect the appearance. The other types exist so that the TypeScript helper can set `type` for you.
 
-## Hvilken datokomponent?
+## Which date component?
 
-| Situasjon | Komponent |
+| Situation | Component |
 | --- | --- |
-| Nettleserens egen datovelger holder | **Input** med `type="date"` |
-| Du skal be om en dato | [Dato i et skjema](../../patterns/date/) |
+| The browser's own date picker is enough | **Input** with `type="date"` |
+| You need to ask for a date | [Dates in a form](../../patterns/date/) |
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-input` | Feltet. Tilstanden kommer fra `data-state`, ikonet fra `data-variant`. |
+| `.lt-input` | The field. The state comes from `data-state`, the icon from `data-variant`. |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-input-width` | `100%` |
 | `--lt-input-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
 | `--lt-input-radius` | `var(--lt-spacing-1)` |
 
-Et eksempel. Et skjema som skal fylles ut på mobil tåler større treffflater, og huset ditt vil kanskje ha rette hjørner:
+An example. A form to be filled in on a phone can take larger touch targets, and your organisation may want square corners:
 
 <Example stiler={["input", "label"]} layout="stabel" maxWidth="26rem" egenCss={`
-.romslig-skjema {
+.roomy-form {
 	--lt-input-padding: var(--lt-spacing-3) var(--lt-spacing-4);
 	--lt-input-radius: 0;
 }
 `} kode={`
-<label class="lt-label" for="standard">Fødselsnummer</label>
-<input class="lt-input" id="standard" type="text" />
+<label class="lt-label" for="default">Customer number</label>
+<input class="lt-input" id="default" type="text" />
 
-<div class="romslig-skjema">
-  <label class="lt-label" for="romslig">Fødselsnummer</label>
-  <input class="lt-input" id="romslig" type="text" />
+<div class="roomy-form">
+  <label class="lt-label" for="roomy">Customer number</label>
+  <input class="lt-input" id="roomy" type="text" />
 </div>
 `} />
 
-Variabelen står på beholderen, ikke på feltet, så den gjelder hvert felt i skjemaet uten at du rører noen av dem.
+The variable is on the container, not on the field, so it applies to every field in the form without you touching any of them.
 
-Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
 
-- Hvert felt trenger en synlig `<label>` med `for`. `placeholder` er ingen erstatning, siden den forsvinner idet brukeren skriver.
-- Bruk riktig `type`. Det bestemmer mobiltastaturet og hva nettleseren tilbyr av autofyll.
-- Sett `autocomplete` på felt som spør om personopplysninger, for eksempel `autocomplete="email"`.
+- Every field needs a visible `<label>` with `for`. `placeholder` is no replacement, since it disappears as soon as the user types.
+- Use the right `type`. It decides the phone keyboard and what autofill the browser offers.
+- Set `autocomplete` on fields that ask for personal details, for example `autocomplete="email"`.

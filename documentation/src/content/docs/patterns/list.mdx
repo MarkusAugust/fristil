@@ -1,118 +1,118 @@
 ---
-title: Liste med filtre
-description: "Søk, filtre og de fire tilstandene en liste har: laster, treff, tomt og feilet."
+title: List with filters
+description: "Search, filters and the four states a list has: loading, results, empty and failed."
 ---
 
 import ListDemo from "../../../components/ListDemo.astro"
 
-En liste er ikke én ting. Den er fire tilstander, og de tre andre enn «her er resultatet» er de som blir glemt.
+A list is not one thing. It is four states, and the three other than "here is the result" are the ones that get forgotten.
 
-Prøv å søke etter noe som ikke finnes, og trykk «Last listen på nytt» noen ganger. Hver tredje lasting feiler med vilje:
+Try searching for something that does not exist, and press "Reload the list" a few times. Every third load fails on purpose:
 
 <ListDemo />
 
-## De fire tilstandene
+## The four states
 
-| Tilstand | Hva brukeren skal se |
+| State | What the user should see |
 | --- | --- |
-| Laster | Plassholdere i formen innholdet får, og en beskjed i et `role="status"`-felt |
-| Treff | Resultatet. Antallet leses opp, og trenger ikke stå synlig |
-| Tomt | Hvorfor det er tomt, og en vei videre |
-| Feilet | Hva som gikk galt, og en måte å prøve igjen |
+| Loading | Placeholders in the shape the content will take, and a message in a `role="status"` element |
+| Results | The result. The count is announced, and does not need to be visible |
+| Empty | Why it is empty, and a way forward |
+| Failed | What went wrong, and a way to try again |
 
-Den tomme tilstanden er den viktigste å skrive godt. «Ingen treff» alene etterlater brukeren uten noe å gjøre. Si hva som ble søkt etter, og gi en knapp som nullstiller.
+The empty state is the most important one to write well. "No matches" on its own leaves the user with nothing to do. Say what was searched for, and give a button that resets.
 
-## Meld antall treff
+## Announcing the number of matches
 
 ```html
-<p class="lt-sr-only" role="status" id="treff"></p>
+<p class="lt-sr-only" role="status" id="matches"></p>
 ```
 
-Den som ser skjermen ser at lista endret seg. Den som hører siden gjør det ikke, med mindre du sier fra. Skriv antallet inn i et felt med `role="status"`, så leses det opp uten å avbryte.
+Someone looking at the screen sees that the list changed. Someone listening to the page does not, unless you tell them. Write the count into an element with `role="status"`, and it is announced without interrupting.
 
-Vent litt før du søker mens brukeren skriver. Demoen venter 300 millisekunder. Uten pausen leses antall treff opp ved hvert tastetrykk.
+Wait a little before searching while the user types. The demo waits 300 milliseconds. Without the pause, the number of matches is announced on every keystroke.
 
-## Filtre
+## Filters
 
-Filtrene er knapper med `aria-pressed`, samlet i en gruppe med en ledetekst:
+The filters are buttons with `aria-pressed`, collected in a group with a label:
 
 ```html
-<div role="group" aria-labelledby="filtre">
-  <h3 class="lt-heading" data-size="xs" id="filtre">Status</h3>
+<div role="group" aria-labelledby="filters">
+  <h3 class="lt-heading" data-size="xs" id="filters">Status</h3>
 
-  <button class="lt-tag" data-selectable aria-pressed="true" type="button">Innvilget</button>
-  <button class="lt-tag" data-selectable aria-pressed="false" type="button">Avslått</button>
+  <button class="lt-tag" data-selectable aria-pressed="true" type="button">Approved</button>
+  <button class="lt-tag" data-selectable aria-pressed="false" type="button">Rejected</button>
 </div>
 ```
 
-`aria-pressed` er det som gjør at skjermleseren sier «valgt». Fargen alene sier ingenting. Se [Tag](../../components/tag/).
+`aria-pressed` is what makes the screen reader say "selected". Colour alone says nothing. See [Tag](../../components/tag/).
 
-## Tabellen
+## The table
 
-En tabell med flere enn to kolonner blir bredere enn en telefon. Legg den i rullefeltet sitt, og gi området en tekst:
+A table with more than two columns becomes wider than a phone. Put it in its scroll container, and give the region a name:
 
 ```html
-<div class="lt-table-scroll" tabindex="0" role="region" aria-label="Saker">
+<div class="lt-table-scroll" tabindex="0" role="region" aria-label="Cases">
   <table class="lt-table" data-variant="striped">…</table>
 </div>
 ```
 
-`tabindex="0"` er ikke valgfritt. Uten den kommer ingen som navigerer med tastatur til kolonnene utenfor kanten.
+`tabindex="0"` is not optional. Without it, nobody navigating by keyboard reaches the columns beyond the edge.
 
-### Sortering
+### Sorting
 
-Kolonnene «Saksnummer» og «Sendt» i demoen kan sorteres. Knappen i overskriften og pila er [LO-TEKs](../../components/table/#kolonner-som-kan-sorteres), mens rekkefølgen er demoens: den holder kolonnen og retningen, og skriver `aria-sort` på én overskrift. Et klikk henter ingenting på nytt, men tabellen tegnes på nytt, så demoen setter fokus tilbake på knappen.
+The "Case number" and "Sent" columns in the demo can be sorted. The button in the header and the arrow are [LO-TEK's](../../components/table/#sortable-columns), while the order is the demo's: it keeps track of the column and direction, and writes `aria-sort` on one header. A click fetches nothing again, but the table is redrawn, so the demo puts focus back on the button.
 
-### Raden under tabellen
+### The row below the table
 
-Antall treff, hvor mange som vises per side og sidene står gjerne på én rad under tabellen. Raden er oppsett, og oppsettet er ditt:
+The number of matches, how many are shown per page and the pages often sit in one row below the table. The row is layout, and the layout is yours:
 
 ```html
-<div class="tabellfot">
-  <p class="lt-paragraph">Viser 1 til 10 av 137</p>
-  <div class="tabellfot__antall">
-    <label class="lt-label" for="per-side">Antall per side</label>
-    <select class="lt-select" id="per-side"><option>10</option><option>50</option></select>
+<div class="table-footer">
+  <p class="lt-paragraph">Showing 1 to 10 of 137</p>
+  <div class="table-footer__count">
+    <label class="lt-label" for="per-page">Per page</label>
+    <select class="lt-select" id="per-page"><option>10</option><option>50</option></select>
   </div>
-  <nav aria-label="Sider"><ul class="lt-pagination">…</ul></nav>
+  <nav aria-label="Pages"><ul class="lt-pagination">…</ul></nav>
 </div>
 ```
 
 ```css
-.tabellfot,
-.tabellfot__antall {
+.table-footer,
+.table-footer__count {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--lt-spacing-2) var(--lt-spacing-6);
 }
 
-.tabellfot__antall {
+.table-footer__count {
   --lt-select-width: auto;
   gap: var(--lt-spacing-2);
 }
 ```
 
-`--lt-select-width: auto` gjør nedtrekkslista så bred som innholdet. `.lt-label` er en blokk, og raden rundt legger den ved siden av feltet.
+`--lt-select-width: auto` makes the select as wide as its content. `.lt-label` is a block, and the row around it puts it next to the field.
 
-Er innholdet per rad mer enn noen få felt, er [kort](../../components/card/) i en [liste](../../components/list/) ofte bedre enn en tabell på liten skjerm.
+If the content per row is more than a few fields, [cards](../../components/card/) in a [list](../../components/list/) are often better than a table on a small screen.
 
-## Feilet, ikke tomt
+## Failed, not empty
 
-De to er forskjellige, og skal se forskjellige ut. En tom liste er et svar. En feilet liste er ingen svar, og trenger `role="alert"`. Veien videre, altså knappen som prøver på nytt, hører utenfor resultatområdet, slik at den står der uansett tilstand:
+The two are different, and should look different. An empty list is an answer. A failed list is no answer, and needs `role="alert"`. The way forward, the button that tries again, belongs outside the results area, so it is there whatever the state:
 
 ```html
 <div class="lt-alert" data-color="danger" role="alert">
-  <p class="lt-alert__title">Klarte ikke å hente sakene</p>
-  <p>Nettverket svarte ikke. Prøv igjen.</p>
+  <p class="lt-alert__title">Could not fetch the cases</p>
+  <p>The network did not respond. Try again.</p>
 </div>
 ```
 
-La aldri plassholderne bli stående når noe feiler. Da venter brukeren på noe som ikke kommer.
+Never leave the placeholders in place when something fails. The user then waits for something that is not coming.
 
-## Det systemet ikke gjør
+## What the system does not do
 
-- **Henting av data, og hvor lenge du venter før du viser plassholdere.** Under rundt 300 millisekunder er det bedre å vise ingenting enn et glimt av grått.
-- **Sidenavigering eller «vis flere».** [Pagination](../../components/pagination/) gir utseendet; hvilken side du er på hører til adressen.
-- **Selve sorteringen.** LO-TEK tegner knappen og pila ut fra `aria-sort`. Hvilken kolonne som er sortert, og rekkefølgen radene står i, er appens.
-- **Hva som er en rimelig standardsortering.** Det avhenger av hva lista er.
+- **Fetching data, and how long you wait before showing placeholders.** Below roughly 300 milliseconds it is better to show nothing than a flash of grey.
+- **Paging or "show more".** [Pagination](../../components/pagination/) gives the appearance; which page you are on belongs in the URL.
+- **The sorting itself.** LO-TEK draws the button and the arrow from `aria-sort`. Which column is sorted, and the order of the rows, are up to the app.
+- **What a reasonable default sort is.** That depends on what the list is.

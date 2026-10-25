@@ -1,15 +1,15 @@
 ---
 title: Connection Status
-description: Sier fra når forbindelsen til serveren er borte. Frittstående komponent.
+description: Tells the user when the connection to the server is gone. Standalone component.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import ConnectionStatusDemo from "../../../components/ConnectionStatusDemo.astro"
 
-En side som mister forbindelsen ser helt normal ut, men er frosset. Fyller brukeren ut et skjema inn i en død forbindelse, er alt borte når hun trykker send.
+A page that loses its connection looks completely normal, but is frozen. If the user fills in a form over a dead connection, everything is gone when she presses send.
 
 ```ts
-// main.ts, kjøres én gang når appen starter
+// main.ts, runs once when the app starts
 import { defineLtConnectionStatus } from "@lo-tek/interfaces/connection-status"
 import "@lo-tek/interfaces/tokens.css"
 import "@lo-tek/interfaces/connection-status.css"
@@ -24,17 +24,17 @@ defineLtConnectionStatus()
   </TabItem>
   <TabItem label="Plain HTML">
     ```html
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`, not
+         `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/standalone/connection-status/connection-status.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
     <lt-connection-status class="lt-connection-status" data-ignore-morph></lt-connection-status>
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtConnectionStatus } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/connection-status/lt-connection-status.js"
@@ -43,16 +43,16 @@ defineLtConnectionStatus()
     </script>
 
     <script type="module">
-      const samband = document.querySelector("lt-connection-status")
-      if (!samband) throw new Error("fant ikke elementet")
+      const connection = document.querySelector("lt-connection-status")
+      if (!connection) throw new Error("element not found")
 
-      async function lagre(body) {
+      async function save(body) {
         try {
-          const svar = await fetch("/api/lagre", { method: "POST", body })
-          if (!svar.ok) throw new Error(svar.statusText)
-          samband.reportSuccess()
+          const response = await fetch("/api/save", { method: "POST", body })
+          if (!response.ok) throw new Error(response.statusText)
+          connection.reportSuccess()
         } catch {
-          samband.reportFailure()
+          connection.reportFailure()
         }
       }
     </script>
@@ -60,7 +60,7 @@ defineLtConnectionStatus()
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/lotek.d.ts, gir <lt-connection-status> typer i JSX
+    // src/lotek.d.ts, gives <lt-connection-status> types in JSX
     import "@lo-tek/interfaces/react-jsx"
     ```
 
@@ -76,38 +76,38 @@ defineLtConnectionStatus()
 
     defineLtConnectionStatus()
 
-    export function Samband() {
+    export function Connection() {
       return <lt-connection-status {...lt.connectionStatus()} />
     }
 
-    export async function lagre(body: BodyInit) {
-      const samband = document.querySelector("lt-connection-status")
-      if (!samband) throw new Error("fant ikke elementet")
+    export async function save(body: BodyInit) {
+      const connection = document.querySelector("lt-connection-status")
+      if (!connection) throw new Error("element not found")
       try {
-        const svar = await fetch("/api/lagre", { method: "POST", body })
-        if (!svar.ok) throw new Error(svar.statusText)
-        await reportSuccess(samband)
+        const response = await fetch("/api/save", { method: "POST", body })
+        if (!response.ok) throw new Error(response.statusText)
+        await reportSuccess(connection)
       } catch {
-        await reportFailure(samband)
+        await reportFailure(connection)
       }
     }
     ```
 
-    `reportFailure(element)` og `reportSuccess(element)` venter på at registreringen har kjørt før de kaller metoden. Et kall som kommer før `defineLtConnectionStatus()`, som den første meldingen fra en hendelsesstrøm, blir da gjort i det elementet er klart, i stedet for å feile.
+    `reportFailure(element)` and `reportSuccess(element)` wait until registration has run before they call the method. A call that comes before `defineLtConnectionStatus()`, such as the first message from an event stream, is then carried out as soon as the element is ready, instead of failing.
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <!-- Datastar selv. Uten den gjør `data-`-attributtene under ingenting. -->
+    <!-- Datastar itself. Without it the `data-` attributes below do nothing. -->
     <script type="module"
             src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"></script>
 
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`, not
+         `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/standalone/connection-status/connection-status.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtConnectionStatus } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/connection-status/lt-connection-status.js"
@@ -121,78 +121,78 @@ defineLtConnectionStatus()
       import { reportFailure, reportSuccess } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/connection-status/lt-connection-status.js"
 
-      const linje = document.querySelector("lt-connection-status")
+      const bar = document.querySelector("lt-connection-status")
 
-      // Datastar sier fra om hvert kall med hendelsen `datastar-fetch`.
-      document.addEventListener("datastar-fetch", (hendelse) => {
-        const type = hendelse.detail.type
+      // Datastar reports every request with the `datastar-fetch` event.
+      document.addEventListener("datastar-fetch", (event) => {
+        const type = event.detail.type
 
-        // `retrying`: forbindelsen røk. `error`: serveren svarte med en feil.
-        if (type === "retrying" || type === "error") reportFailure(linje)
+        // `retrying`: the connection dropped. `error`: the server answered with an error.
+        if (type === "retrying" || type === "error") reportFailure(bar)
 
-        // En patch kom fram, så strømmen lever. `finished` duger ikke som
-        // tegn: den kommer også etter en feil.
-        if (type.startsWith("datastar-patch")) reportSuccess(linje)
+        // A patch arrived, so the stream is alive. `finished` is no good as a
+        // sign: it also comes after an error.
+        if (type.startsWith("datastar-patch")) reportSuccess(bar)
       })
     </script>
     ```
 
-    Datastar holder en langlevende strøm mot serveren. Ryker den, ser siden riktig ut, men slutter å oppdatere seg. Nettleseren melder bare fra når maskinen mister nettet, ikke når serveren slutter å svare, så det er skriptet nederst som gjør at linja kommer også da.
+    Datastar keeps a long-lived stream open to the server. If it drops, the page looks right but stops updating. The browser only reports when the machine loses the network, not when the server stops answering, so the script at the bottom is what makes the bar appear in that case too.
   </TabItem>
 </Tabs>
 
-## Hvorfor den lager sitt eget innhold
+## Why it creates the content itself
 
-Serveren kan per definisjon ikke fortelle deg at den er utilgjengelig. Er den nede, kommer det ingenting derfra å rendre. Derfor lager komponenten innholdet selv, og byggefunksjonen setter `data-ignore-morph` så en senere patch ikke river linja bort i det øyeblikket forbindelsen er tilbake. Se [Markup og oppførsel](/markup-and-behaviour/).
+The server by definition cannot tell you that it is unavailable. If it is down, nothing comes from it to render. So the component creates the content itself, and the builder function sets `data-ignore-morph` so that a later patch does not tear the bar away the moment the connection is back. See [Markup and behaviour](/markup-and-behaviour/).
 
-## `navigator.onLine` er ikke nok
+## `navigator.onLine` is not enough
 
-Nettleseren vet bare om maskinen har et nettverk, ikke om serveren svarer. Et kontornett uten utgang til internett, en server som er nede, eller en strøm som har røket teller alle som «online».
+The browser only knows whether the machine has a network, not whether the server answers. An office network with no route to the internet, a server that is down, or a stream that has dropped all count as "online".
 
-Derfor melder appen selv fra:
+So the app reports it itself:
 
 ```ts
-const samband = document.querySelector("lt-connection-status")
-if (!samband) throw new Error("fant ikke elementet")
+const connection = document.querySelector("lt-connection-status")
+if (!connection) throw new Error("element not found")
 
 try {
-  const svar = await fetch("/api/lagre", { method: "POST", body })
-  if (!svar.ok) throw new Error(svar.statusText)
-  samband.reportSuccess()
+  const response = await fetch("/api/save", { method: "POST", body })
+  if (!response.ok) throw new Error(response.statusText)
+  connection.reportSuccess()
 } catch {
-  samband.reportFailure()
+  connection.reportFailure()
 }
 ```
 
-| Metode | Når du kaller den |
+| Method | When you call it |
 | --- | --- |
-| `reportFailure()` | Et kall til serveren feilet |
-| `reportSuccess()` | Et kall lyktes igjen |
+| `reportFailure()` | A request to the server failed |
+| `reportSuccess()` | A request succeeded again |
 
-`reportFailure(element)` og `reportSuccess(element)` fra `@lo-tek/interfaces/connection-status` gjør det samme, men venter først på at elementet er registrert.
+`reportFailure(element)` and `reportSuccess(element)` from `@lo-tek/interfaces/connection-status` do the same, but first wait until the element is registered.
 
-Komponenten lytter i tillegg på nettleserens `offline` og `online`, så et nettverk som forsvinner fanges uten at du gjør noe.
+The component also listens to the browser's `offline` and `online`, so a network that disappears is caught without you doing anything.
 
-## Attributter og hendelser
+## Attributes and events
 
-| Attributt | Standard |
+| Attribute | Default |
 | --- | --- |
-| `offline-text` | «Ingen forbindelse. Det du skriver blir ikke lagret.» |
-| `online-text` | «Forbindelsen er tilbake.» |
+| `offline-text` | "No connection. What you type is not being saved." |
+| `online-text` | "Connection restored." |
 
-| Hendelse | Når |
+| Event | When |
 | --- | --- |
-| `connection-lost` | Linja kommer til syne. Én gang per utfall, uansett hvor mange `offline`-hendelser nettleseren sender |
-| `connection-restored` | Forbindelsen er tilbake |
+| `connection-lost` | The bar appears. Once per outage, however many `offline` events the browser sends |
+| `connection-restored` | The connection is back |
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-connection-status` | Vertselementet. Ligger som `display: contents` og tar ingen plass |
-| `.lt-connection-status__bar` | Selve linja. Har `data-state="offline"` eller `data-state="online"` |
+| `.lt-connection-status` | The host element. It is `display: contents` and takes up no space |
+| `.lt-connection-status__bar` | The bar itself. Has `data-state="offline"` or `data-state="online"` |
 
-| Variabel | Reserve |
+| Variable | Fallback |
 | --- | --- |
 | `--lt-connection-status-layer` | `1000` |
 | `--lt-connection-status-padding` | `var(--lt-spacing-2) var(--lt-spacing-4)` |
@@ -204,9 +204,9 @@ Komponenten lytter i tillegg på nettleserens `offline` og `online`, så et nett
 ```
 ## Accessibility
 
-Linja er `role="status"` med `aria-live="polite"`, ikke `alert`. Beskjeden er viktig, men skal ikke avbryte midt i et ord. Den blir stående til forbindelsen er tilbake, så den som leser sakte rekker den.
+The bar is `role="status"` with `aria-live="polite"`, not `alert`. The message is important, but should not interrupt in the middle of a word. It stays until the connection is back, so someone who reads slowly has time to read it.
 
-Mens en modal dialog står åpen, er linja inert og ligger under bakteppet, som alt annet utenfor dialogen. Brytes forbindelsen da, får brukeren vite det først når dialogen lukkes.
+While a modal dialog is open, the bar is inert and sits under the backdrop, like everything else outside the dialog. If the connection drops then, the user learns about it only when the dialog closes.
 
-Fargen alene bærer ikke beskjeden: teksten sier hva som er galt. I Windows' høykontrastmodus fjernes egne farger og bakgrunner, og linja får derfor en ramme i `CanvasText`, ellers ville den vært usynlig.
+Colour alone does not carry the message: the text says what is wrong. In Windows high contrast mode, custom colours and backgrounds are removed, so the bar gets a border in `CanvasText`; otherwise it would be invisible.
 

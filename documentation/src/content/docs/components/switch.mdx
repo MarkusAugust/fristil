@@ -1,70 +1,70 @@
 ---
 title: Switch
-description: Bryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.
+description: A switch for a setting that takes effect immediately. CSS component with two classes and no JavaScript.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import Example from "../../../components/Example.astro"
 
-En avkryssingsboks med `role="switch"`. Skjermlesere sier da «på» og «av» framfor «avkrysset», mens tastaturet og `FormData` virker som for en vanlig boks.
+A checkbox with `role="switch"`. Screen readers then say "on" and "off" instead of "checked", while the keyboard and `FormData` work as for an ordinary checkbox.
 
-**Velg Switch** når innstillingen trer i kraft med det samme. Skal valget først gjelde når skjemaet sendes inn, er [Checkbox](../checkbox/) riktig: en bryter som ikke gjør noe før du trykker «Lagre» lover mer enn den holder.
+**Choose Switch** when the setting takes effect at once. If the choice should only apply when the form is submitted, [Checkbox](../checkbox/) is right: a switch that does nothing until you press "Save" promises more than it delivers.
 
 ## How to use it
 
 <Example importer={["tokens.css", "switch.css", "label.css", "help-text.css"]}
   stiler={["switch", "label"]} layout="stabel" maxWidth="28rem" kode={`
 <div class="lt-switch-row">
-  <input class="lt-switch" type="checkbox" role="switch" id="epost" checked />
-  <label class="lt-label" for="epost">Varsle meg på e-post</label>
+  <input class="lt-switch" type="checkbox" role="switch" id="email" checked />
+  <label class="lt-label" for="email">Notify me by email</label>
 </div>
 
 <div class="lt-switch-row">
   <input class="lt-switch" type="checkbox" role="switch" id="sms" />
-  <label class="lt-label" for="sms">Varsle meg på SMS</label>
+  <label class="lt-label" for="sms">Notify me by text message</label>
 </div>
 
 <div class="lt-switch-row">
-  <input class="lt-switch" type="checkbox" role="switch" id="brev" disabled />
-  <label class="lt-label" for="brev">Varsle meg i posten</label>
+  <input class="lt-switch" type="checkbox" role="switch" id="post" disabled />
+  <label class="lt-label" for="post">Notify me by post</label>
 </div>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** you spread the attributes in. That is the route in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
 <div className={lt.switch.row}>
-  <input {...lt.switch()} id="varsler" />
-  <label {...lt.label()} htmlFor="varsler">Varsle meg på e-post</label>
+  <input {...lt.switch()} id="notifications" />
+  <label {...lt.label()} htmlFor="notifications">Notify me by email</label>
 </div>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import goes to `/react` here, since the block is JSX. From there the keys are called `className` and `htmlFor`. In Astro and anything else without React you import `@lo-tek/interfaces` and get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** you set them on it. That is the route when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const bryter = document.querySelector<HTMLInputElement>("#varsler")
+const toggle = document.querySelector<HTMLInputElement>("#notifications")
 
-// Serveren sendte en avkryssingsboks. Nå er den en bryter.
-lt.setAttributes(bryter, lt.switch())
+// The server sent a checkbox. Now it is a switch.
+lt.setAttributes(toggle, lt.switch())
 
-// En innstilling brukeren ikke får endre.
-lt.setAttributes(bryter, lt.switch({ disabled: true }))
+// A setting the user is not allowed to change.
+lt.setAttributes(toggle, lt.switch({ disabled: true }))
 ```
 
-Funksjonen setter både `type` og `role`, som er de to tingene som må stå sammen for at bryteren skal leses opp riktig. `lt.switch.row` gir klassen på raden rundt.
+The function sets both `type` and `role`, which are the two things that must go together for the switch to be announced correctly. `lt.switch.row` gives the class for the row around it.
 
-Ikke slå av bryteren for å hindre et nytt trykk mens en lagring pågår. `disabled` tar fokuset fra en bryter som har det, fokuset kommer ikke tilbake når den slås på igjen, og et nytt mellomromstrykk gjør ingenting. Se [Lagring med en gang](#lagring-med-en-gang) for hvordan et nytt trykk sperres uten.
+Do not disable the switch to prevent another press while a save is in progress. `disabled` takes focus away from a switch that has it, focus does not come back when it is enabled again, and another press of the space bar does nothing. See [Saving immediately](#saving-immediately) for how to block another press without it.
 
-Importerer du den direkte i stedet for gjennom `lt`, heter den `switchControl`, siden `switch` er et reservert ord i JavaScript:
+If you import it directly instead of through `lt`, it is called `switchControl`, since `switch` is a reserved word in JavaScript:
 
 ```ts
 import { switchControl } from "@lo-tek/interfaces"
@@ -73,47 +73,47 @@ import { switchControl } from "@lo-tek/interfaces"
 </Fragment>
 </Example>
 
-## Lagring med en gang
+## Saving immediately
 
-Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feiler, og gå tilbake. `fetch` avviser bare når nettet svikter, så et svar med feilkode må sjekkes selv, ellers lander et avslag fra serveren i grenen som melder at det gikk bra. I «Plain HTML», Astro og React sperres et nytt trykk mens lagringen pågår uten `disabled`, som ville tatt fokuset fra bryteren; i Datastar sender et nytt trykk en ny `@put`, og serveren avgjør. Markupen er den samme i «Plain HTML» og Astro; React bruker byggefunksjonene, og Datastar sine egne attributter. Astro bruker det samme skriptet som «Plain HTML».
+The switch promises that the change applies. So it also has to say when saving fails, and go back. `fetch` only rejects when the network fails, so a response with an error status has to be checked by you, otherwise a refusal from the server ends up in the branch that reports success. In "Plain HTML", Astro and React, another press is blocked while the save is in progress without `disabled`, which would take focus from the switch; in Datastar another press sends another `@put`, and the server decides. The markup is the same in "Plain HTML" and Astro; React uses the builder functions, and Datastar its own attributes. Astro uses the same script as "Plain HTML".
 
 <Tabs>
   <TabItem label="Plain HTML">
     ```html
     <div class="lt-switch-row">
-      <input class="lt-switch" type="checkbox" role="switch" id="varsler" />
-      <label class="lt-label" for="varsler">Varsle meg på e-post</label>
+      <input class="lt-switch" type="checkbox" role="switch" id="notifications" />
+      <label class="lt-label" for="notifications">Notify me by email</label>
     </div>
-    <p class="lt-help-text" id="varsler-status" role="status"></p>
+    <p class="lt-help-text" id="notifications-status" role="status"></p>
 
     <script type="module">
-      const bryter = document.getElementById("varsler")
-      const status = document.getElementById("varsler-status")
-      let lagrer = false
+      const toggle = document.getElementById("notifications")
+      const status = document.getElementById("notifications-status")
+      let saving = false
 
-      // Et nytt trykk mens lagringen pågår skal ikke slå bryteren. `disabled`
-      // ville sperret på samme måte, men tatt fokuset fra den.
-      bryter.addEventListener("click", (hendelse) => {
-        if (lagrer) hendelse.preventDefault()
+      // Another press while saving should not flip the switch. `disabled`
+      // would block it the same way, but take focus from it.
+      toggle.addEventListener("click", (event) => {
+        if (saving) event.preventDefault()
       })
 
-      bryter.addEventListener("change", async () => {
-        const pa = bryter.checked
-        lagrer = true
+      toggle.addEventListener("change", async () => {
+        const on = toggle.checked
+        saving = true
 
         try {
-          const svar = await fetch("/api/varsler", {
+          const response = await fetch("/api/notifications", {
             method: "PUT",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ epost: pa }),
+            body: JSON.stringify({ email: on }),
           })
-          if (!svar.ok) throw new Error(svar.statusText)
-          status.textContent = pa ? "Varsler er på." : "Varsler er av."
+          if (!response.ok) throw new Error(response.statusText)
+          status.textContent = on ? "Notifications are on." : "Notifications are off."
         } catch {
-          bryter.checked = !pa
-          status.textContent = "Klarte ikke å lagre. Prøv igjen."
+          toggle.checked = !on
+          status.textContent = "Could not save. Try again."
         } finally {
-          lagrer = false
+          saving = false
         }
       })
     </script>
@@ -124,35 +124,35 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
     import { useState } from "react"
     import { lt } from "@lo-tek/interfaces/react"
 
-    export function Varslingsbryter({ start }: { start: boolean }) {
-      const [pa, settPa] = useState(start)
-      const [lagrer, settLagrer] = useState(false)
-      const [status, settStatus] = useState("")
+    export function NotificationSwitch({ initial }: { initial: boolean }) {
+      const [on, setOn] = useState(initial)
+      const [saving, setSaving] = useState(false)
+      const [status, setStatus] = useState("")
 
-      async function endret(nyVerdi: boolean) {
-        // Pågår en lagring, blir bryteren stående der tilstanden sier.
-        // `disabled` ville sperret på samme måte, men tatt fokuset fra den.
-        if (lagrer) return
+      async function changed(value: boolean) {
+        // While a save is in progress, the switch stays where the state says.
+        // `disabled` would block it the same way, but take focus from it.
+        if (saving) return
 
-        // Slå om med en gang, så bryteren ikke henger etter fingeren.
-        settPa(nyVerdi)
-        settLagrer(true)
-        settStatus("")
+        // Flip at once, so the switch does not lag behind the finger.
+        setOn(value)
+        setSaving(true)
+        setStatus("")
 
         try {
-          const svar = await fetch("/api/varsler", {
+          const response = await fetch("/api/notifications", {
             method: "PUT",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ epost: nyVerdi }),
+            body: JSON.stringify({ email: value }),
           })
-          if (!svar.ok) throw new Error(svar.statusText)
-          settStatus(nyVerdi ? "Varsler er på." : "Varsler er av.")
+          if (!response.ok) throw new Error(response.statusText)
+          setStatus(value ? "Notifications are on." : "Notifications are off.")
         } catch {
-          // Tilbake dit den var. Bryteren lovet noe den ikke holdt.
-          settPa(!nyVerdi)
-          settStatus("Klarte ikke å lagre. Prøv igjen.")
+          // Back to where it was. The switch promised something it did not keep.
+          setOn(!value)
+          setStatus("Could not save. Try again.")
         } finally {
-          settLagrer(false)
+          setSaving(false)
         }
       }
 
@@ -161,11 +161,11 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
           <div className={lt.switch.row}>
             <input
               {...lt.switch()}
-              id="varsler"
-              checked={pa}
-              onChange={(e) => endret(e.currentTarget.checked)}
+              id="notifications"
+              checked={on}
+              onChange={(e) => changed(e.currentTarget.checked)}
             />
-            <label {...lt.label()} htmlFor="varsler">Varsle meg på e-post</label>
+            <label {...lt.label()} htmlFor="notifications">Notify me by email</label>
           </div>
           <p {...lt.helpText()} role="status">{status}</p>
         </>
@@ -173,49 +173,49 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
     }
     ```
 
-    `checked` og `onChange` sammen gjør feltet kontrollert, og det er nettopp det som gjør tilbakerullingen mulig: React tegner bryteren etter tilstanden din, ikke etter det brukeren klikket. Det er også det som holder bryteren på plass under lagringen: når `endret` ikke endrer tilstanden, tegner React den tilbake.
+    `checked` and `onChange` together make the field controlled, and that is exactly what makes the rollback possible: React draws the switch from your state, not from what the user clicked. It is also what keeps the switch in place during the save: when `changed` does not change the state, React draws it back.
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <!-- Datastar selv. Uten den gjør `data-`-attributtene under ingenting. -->
+    <!-- Datastar itself. Without it the `data-` attributes below do nothing. -->
     <script type="module"
             src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"></script>
 
     <div class="lt-switch-row"
-         data-signals="{varsler: false, status: ''}">
-      <input class="lt-switch" type="checkbox" role="switch" id="varsler"
-             data-bind:varsler
-             data-on:change="@put('/api/varsler')" />
-      <label class="lt-label" for="varsler">Varsle meg på e-post</label>
+         data-signals="{notifications: false, status: ''}">
+      <input class="lt-switch" type="checkbox" role="switch" id="notifications"
+             data-bind:notifications
+             data-on:change="@put('/api/notifications')" />
+      <label class="lt-label" for="notifications">Notify me by email</label>
     </div>
     <p class="lt-help-text" role="status" data-text="$status"></p>
     ```
 
-    Serveren bestemmer utfallet her. `@put` sender signalene, og svaret setter `status` og, når lagringen feilet, `varsler` tilbake dit den var. Tilbakerullingen står altså i serveren og ikke i siden, som for all annen tilstand serveren bestemmer. Et nytt trykk mens lagringen pågår sender en ny `@put`, og serveren avgjør den også; en `disabled`-vakt i siden ville tatt fokuset fra bryteren.
+    The server decides the outcome here. `@put` sends the signals, and the response sets `status` and, when the save failed, `notifications` back to where it was. The rollback is therefore in the server and not in the page, as for all other state the server decides. Another press while the save is in progress sends another `@put`, and the server decides that one too; a `disabled` guard in the page would take focus from the switch.
   </TabItem>
 </Tabs>
 
-`role="status"` gjør at skjermlesere leser opp resultatet uten å avbryte det brukeren holder på med.
+`role="status"` makes screen readers announce the result without interrupting what the user is doing.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-switch` | Selve bryteren |
-| `.lt-switch-row` | Raden som holder bryteren og teksten ved siden av hverandre |
+| `.lt-switch` | The switch itself |
+| `.lt-switch-row` | The row that holds the switch and the text side by side |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-switch-width` | `var(--lt-spacing-10)` |
 | `--lt-switch-height` | `var(--lt-spacing-6)` |
 
-Knappen inni er en gradient og ikke et pseudoelement, fordi Firefox ikke rendrer `::before` og `::after` på et `<input>`. Den følger derfor høyden på bryteren av seg selv. Se [Tilpasning](../../customising/).
+The knob inside is a gradient and not a pseudo-element, because Firefox does not render `::before` and `::after` on an `<input>`. It therefore follows the height of the switch by itself. See [Customising](../../customising/).
 
-Bryteren glir mellom av og på. Har brukeren bedt om mindre bevegelse i systemet sitt, bytter den i stedet tilstand uten overgang.
+The switch slides between off and on. If the user has asked for reduced motion in their system, it changes state without a transition instead.
 
 ## Accessibility
 
-- Ledeteksten skal si hva bryteren styrer, ikke hvilken tilstand den er i. «Varsle meg på e-post», ikke «E-postvarsler på».
-- Ikke skriv «Av» og «På» som tekst ved siden av. Skjermleseren sier det allerede, og teksten blir motsatt av seg selv når brukeren slår den om.
-- Bryteren har ingen ugyldig tilstand. Er det påkrevd å slå den på, for eksempel for å godta vilkår, hører det hjemme i en [Checkbox](../checkbox/) med `required`.
-- Trenger endringen bekreftelse eller kan den ikke angres, bruk en knapp i stedet. En bryter som åpner en dialog er ikke en bryter.
+- The label should say what the switch controls, not which state it is in. "Notify me by email", not "Email notifications on".
+- Do not write "Off" and "On" as text next to it. The screen reader already says it, and the text contradicts itself when the user flips the switch.
+- The switch has no invalid state. If switching it on is required, for example to accept terms, that belongs in a [Checkbox](../checkbox/) with `required`.
+- If the change needs confirmation or cannot be undone, use a button instead. A switch that opens a dialog is not a switch.

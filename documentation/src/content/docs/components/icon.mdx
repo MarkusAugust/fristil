@@ -1,11 +1,11 @@
 ---
 title: Icon
-description: Ikon fra appens eget sett, like stort som teksten rundt. CSS-komponent med én klasse og ingen JavaScript.
+description: An icon from the app's own set, as large as the text around it. A CSS component with one class and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Klassen går på en `<svg>`. LO-TEK sender ingen ikoner, så svg-en kommer fra settet appen alt bruker. Klassen gjør ikonet like stort som teksten rundt og midt på linja med den, og `lt.icon()` skjuler det for skjermlesere når det bare er pynt.
+The class goes on an `<svg>`. LO-TEK ships no icons, so the svg comes from the set the app already uses. The class makes the icon as large as the surrounding text and centres it on the line, and `lt.icon()` hides it from screen readers when it is only decoration.
 
 ## How to use it
 
@@ -16,10 +16,10 @@ Klassen går på en `<svg>`. LO-TEK sender ingen ikoner, så svg-en kommer fra s
        stroke="currentColor" stroke-width="2">
     <path d="M12 5v14M5 12h14" />
   </svg>
-  Ny søknad
+  New application
 </button>
 
-<button class="lt-button" data-variant="ghost" type="button" aria-label="Slett søknaden">
+<button class="lt-button" data-variant="ghost" type="button" aria-label="Delete the application">
   <svg class="lt-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"
        stroke="currentColor" stroke-width="2">
     <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
@@ -28,62 +28,62 @@ Klassen går på en `<svg>`. LO-TEK sender ingen ikoner, så svg-en kommer fra s
 `}>
 <Fragment slot="ts">
 
-**Lager du markupen,** sprer du attributtene inn:
+**If you create the markup,** spread the attributes in:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
-<button {...lt.button({ variant: "ghost" })} type="button" aria-label="Slett søknaden">
+<button {...lt.button({ variant: "ghost" })} type="button" aria-label="Delete the application">
   <svg {...lt.icon()} viewBox="0 0 24 24">…</svg>
 </button>
 ```
 
-**Står elementet der fra før,** setter du dem på det:
+**If the element is already there,** set them on it:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const ikon = document.querySelector<SVGSVGElement>("#varsel-ikon")
+const icon = document.querySelector<SVGSVGElement>("#warning-icon")
 
-lt.setAttributes(ikon, lt.icon({ label: "Advarsel" }))
+lt.setAttributes(icon, lt.icon({ label: "Warning" }))
 ```
 
-Uten `label` gir `lt.icon()` `aria-hidden="true"`. Med `label` gir den `role="img"` og `aria-label` i stedet. Se [Typesikker bruk](../../type-safe-use/).
+Without `label`, `lt.icon()` gives `aria-hidden="true"`. With `label` it gives `role="img"` and `aria-label` instead. See [Type-safe use](../../type-safe-use/).
 
 </Fragment>
 </Example>
 
-Den første knappen har tekst, og ikonet er pynt ved siden av den. Den andre har bare ikonet, og får navnet sitt fra `aria-label` på knappen.
+The first button has text, and the icon is decoration next to it. The second has only the icon, and gets its name from `aria-label` on the button.
 
-## Størrelse og farge
+## Size and colour
 
-Ikonet er `1em` bredt og høyt, så det følger skriftstørrelsen der det står. Vil du ha det større eller mindre enn teksten, setter du `font-size` på ikonet.
+The icon is `1em` wide and high, so it follows the font size where it stands. If you want it larger or smaller than the text, set `font-size` on the icon.
 
-Fargen kommer fra svg-en. Skriv `currentColor` i `fill` eller `stroke`, slik ikonsettene gjør, så får ikonet fargen til teksten rundt. Det følger også teksten i høykontrastmodus. Stilarket setter ikke `fill` selv: et ikon tegnet med strek har `fill="none"`, og en regel i stilarket ville fylt det.
+The colour comes from the svg. Write `currentColor` in `fill` or `stroke`, as icon sets do, and the icon gets the colour of the surrounding text. It also follows the text in forced colours mode. The stylesheet does not set `fill` itself: an icon drawn with strokes has `fill="none"`, and a rule in the stylesheet would fill it.
 
-## Et ikon som betyr noe
+## An icon that means something
 
-Står ikonet alene og sier noe leseren trenger, som et varseltegn uten tekst ved siden av, får det et navn:
+If the icon stands alone and says something the reader needs, such as a warning sign with no text next to it, it gets a name:
 
 ```html
-<svg class="lt-icon" role="img" aria-label="Advarsel" viewBox="0 0 24 24"
+<svg class="lt-icon" role="img" aria-label="Warning" viewBox="0 0 24 24"
      fill="none" stroke="currentColor" stroke-width="2">
   <path d="M12 3l9 16H3zM12 10v4M12 17v.01" />
 </svg>
 ```
 
-Er det tekst ved siden av som sier det samme, er ikonet pynt, og skal ha `aria-hidden="true"`. Ellers leses det samme opp to ganger.
+If text next to it says the same thing, the icon is decoration and should have `aria-hidden="true"`. Otherwise the same thing is read out twice.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-icon` | Ikonet, på en `<svg>`. |
+| `.lt-icon` | The icon, on an `<svg>`. |
 
-Se [Tilpasning](../../customising/) for hvordan laget virker.
+See [Customising](../../customising/) for how the layer works.
 
 ## Accessibility
 
-- En knapp eller lenke med bare et ikon i seg må få et navn: `aria-label` på knappen, eller en tekst i et element med klassen `lt-sr-only`. `lotek sjekk` og editorene melder `ikon-uten-navn` når det mangler.
-- Skriv hva knappen gjør, ikke hva ikonet forestiller. «Slett søknaden» er bedre enn «Søppelkasse».
-- Et ikon alene er vanskelig å forstå for mange, også for dem som ser det. Har du plass, er tekst ved siden av bedre enn bare et navn for skjermleseren.
+- A button or link with only an icon in it needs a name: `aria-label` on the button, or a text in an element with the class `lt-sr-only`. `lotek check` and the editors report `icon-without-name` when it is missing.
+- Write what the button does, not what the icon depicts. "Delete the application" is better than "Rubbish bin".
+- An icon alone is hard for many people to understand, including those who can see it. If you have room, text next to it is better than only a name for the screen reader.

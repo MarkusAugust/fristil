@@ -1,114 +1,114 @@
 ---
-title: Introduksjon
-description: Hva LO-TEK er, hvordan komponentene er delt inn, og hvorfor de er delt inn slik.
+title: Introduction
+description: What LO-TEK is, how the components are divided, and why they are divided that way.
 ---
 
-LO-TEK er et designsystem som ikke krever et bestemt rammeverk. Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår. Bruker teamet ditt React, Astro, Datastar eller ingenting i det hele tatt, er det samme system og samme API.
+LO-TEK is a design system that does not require a particular framework. The components are CSS classes and web components, that is, things the browser already understands. Whether your team uses React, Astro, Datastar or nothing at all, it is the same system and the same API.
 
-Et designsystem bundet til ett rammeverk må skrives om når rammeverket byttes ut. Nettleserens egne API-er byttes ikke ut.
+A design system tied to one framework has to be rewritten when the framework is replaced. The browser's own APIs are not replaced.
 
-## Tre kategorier
+## Three categories
 
-Komponentene er delt i tre: de som bare er CSS, de som fester oppførsel på HTML du skriver, og de som lager innholdet sitt selv.
+The components are divided in three: those that are only CSS, those that attach behaviour to HTML you write, and those that create their content themselves.
 
 ### css
 
-En CSS-klasse på et vanlig HTML-element. Ingen JavaScript lastes.
+A CSS class on an ordinary HTML element. No JavaScript is loaded.
 
 ```html
-<button class="lt-button" data-variant="secondary">Lagre utkast</button>
+<button class="lt-button" data-variant="secondary">Save draft</button>
 ```
 
-Varianter styres med `data-`-attributter. Dette er den største gruppen, og dekker knapper, lenker, merker, skjemafelt, tabeller, kort, varsler og typografi. Felles for dem er at utfordringen er hvordan de ser ut, ikke hva de gjør.
+Variants are controlled with `data-` attributes. This is the largest group, and covers buttons, links, badges, form fields, tables, cards, alerts and typography. What they have in common is that the challenge is how they look, not what they do.
 
-### ramme
+### frame
 
-En web component du legger dine egne HTML-elementer inn i. Den lager ingen markup selv, men setter attributtene som kobler dem sammen.
+A web component you put your own HTML elements into. It creates no markup itself, but sets the attributes that wire them together.
 
 ```html
 <lt-field>
-  <label class="lt-label" for="epost" data-required="symbol">E-postadresse</label>
-  <input class="lt-input" id="epost" type="email" value="ola@" />
-  <p class="lt-help-text">Vi sender kvittering til denne adressen.</p>
-  <p class="lt-error-text">Skriv en e-postadresse med krøllalfa.</p>
+  <label class="lt-label" for="email" data-required="symbol">Email address</label>
+  <input class="lt-input" id="email" type="email" value="sam@" />
+  <p class="lt-help-text">We send the receipt to this address.</p>
+  <p class="lt-error-text">Enter an email address with an @.</p>
 </lt-field>
 ```
 
-`for` og `id` står i markupen, som HTML krever for at feltet skal ha et navn uten JavaScript. Resten av koblingen, `aria-describedby` og `aria-invalid`, skriver serveren med `lt.field()`. Komponenten finnes for servere som ikke kan kalle den, og regner feltet som ugyldig fordi feilmeldingen synes. Elementene blir liggende i vanlig DOM, så `FormData`, testverktøy og skjemabiblioteker finner dem som før.
+`for` and `id` are in the markup, as HTML requires for the field to have a name without JavaScript. The rest of the wiring, `aria-describedby` and `aria-invalid`, the server writes with `lt.field()`. The component exists for servers that cannot call it, and treats the field as invalid because the error message is visible. The elements stay in plain DOM, so `FormData`, testing tools and form libraries find them as before.
 
-### frittstående
+### standalone
 
-En web component som lager alt innholdet sitt selv, fordi det ikke finnes noe for serveren å sende.
+A web component that creates all its content itself, because there is nothing for the server to send.
 
 ```html
 <lt-connection-status class="lt-connection-status" data-ignore-morph></lt-connection-status>
 ```
 
-Kategorien er et unntak med et vilkår, ikke en tredje likeverdig vei. Den gjelder bare flater som oppstår som følge av noe på klienten, og som ikke bærer en verdi inn i en innsending. Det er én av dem: [`<lt-connection-status>`](../components/connection-status/), der serveren per definisjon ikke kan melde fra om at den er utilgjengelig. I tillegg står [`<lt-toast>`](../components/toast/), som er et imperativt API du kaller framfor å skrive.
+The category is an exception with a condition, not a third equal route. It applies only to surfaces that arise from something on the client, and that carry no value into a submission. There is one of them: [`<lt-connection-status>`](../components/connection-status/), where the server by definition cannot report that it is unreachable. In addition there is [`<lt-toast>`](../components/toast/), which is an imperative API you call rather than markup you write.
 
-## Hvorfor tre kategorier
+## Why three categories
 
-Fordi problemene er ulike. En knapp trenger bare en stil. Et skjemafelt trenger at fire elementer peker på hverandre, og markupen må stå i HTML-en serveren sender, ellers finnes ikke feltet før skriptet har kjørt. En beskjed om at forbindelsen er borte, kan derimot ikke komme fra serveren som er borte.
+Because the problems are different. A button only needs a style. A form field needs four elements to point at each other, and the markup has to be in the HTML the server sends, or the field does not exist until the script has run. A message that the connection is gone, on the other hand, cannot come from the server that is gone.
 
-Vilkåret som avgjør hvor en komponent hører hjemme:
+The condition that decides where a component belongs:
 
-> Bærer den en verdi inn i en innsending, eller har den innhold serveren må sende, kan den ikke lage sin egen markup.
+> If it carries a value into a submission, or has content the server must send, it cannot create its own markup.
 
-Delingen gjør også at du laster det komponenten trenger og ikke mer: en knapp er null JavaScript.
+The split also means you load what the component needs and no more: a button is zero JavaScript.
 
-## To lag: markup og oppførsel
+## Two layers: markup and behaviour
 
-Ingen `ramme`-komponent lager sitt eget innhold i DOM-en. Den som lager markupen beholder den, og komponenten fester bare oppførsel oppå. Det gjelder like mye i en React-app som rendrer alt i nettleseren, i en server-rendret app med hydrering, og i en Datastar-app der serveren sender HTML hele veien. Hele begrunnelsen, og svaret på når du bruker byggefunksjonen framfor elementet, står i [Markup og oppførsel](../markup-and-behaviour/).
+No `frame` component creates its own content in the DOM. The markup comes from whoever creates it and stays as it is, and the component only attaches behaviour on top. This holds as much in a React app that renders everything in the browser as in a server-rendered app with hydration, and in a Datastar app where the server sends HTML all the way. The full reasoning, and the answer to when you use the builder function rather than the element, is in [Markup and behaviour](../markup-and-behaviour/).
 
-Ingen komponent bruker shadow DOM. Alle elementene står i vanlig DOM, og CSS-en din når fram overalt.
+No component uses shadow DOM. All the elements are in plain DOM, and your CSS reaches everywhere.
 
-| Komponent | Kategori | Stilark |
+| Component | Category | Stylesheet |
 | --- | --- | --- |
-| `<lt-field>` | ramme | `field.css` |
-| `<lt-tabs>` | ramme | `tabs.css` |
-| `<lt-error-summary>` | ramme | `error-summary.css` |
-| `<lt-popover>` | ramme | `popover.css` |
-| `<lt-suggestion>` | ramme | `suggestion.css` |
-| `<lt-dialog>` | ramme | `dialog.css` |
-| `<lt-toast>` | frittstående | `toast.css` |
-| `<lt-session-timeout>` | ramme | `session-timeout.css` |
-| `<lt-connection-status>` | frittstående | `connection-status.css` |
+| `<lt-field>` | frame | `field.css` |
+| `<lt-tabs>` | frame | `tabs.css` |
+| `<lt-error-summary>` | frame | `error-summary.css` |
+| `<lt-popover>` | frame | `popover.css` |
+| `<lt-suggestion>` | frame | `suggestion.css` |
+| `<lt-dialog>` | frame | `dialog.css` |
+| `<lt-toast>` | standalone | `toast.css` |
+| `<lt-session-timeout>` | frame | `session-timeout.css` |
+| `<lt-connection-status>` | standalone | `connection-status.css` |
 
 ## Design tokens
 
-Alle farger, størrelser og skriftstørrelser er CSS-variabler i `tokens.css`, og fungerer i all CSS:
+All colours, sizes and font sizes are CSS variables in `tokens.css`, and work in any CSS:
 
 ```css
-.min-komponent {
+.my-component {
 	color: var(--lt-color-accent-fill);
 	padding: var(--lt-spacing-4);
 	font-size: var(--lt-font-size-m);
 }
 ```
 
-De samme verdiene finnes som TypeScript-konstanter og som et Tailwind-tema. Se [Design tokens](../design-tokens/).
+The same values exist as TypeScript constants and as a Tailwind theme. See [Design tokens](../design-tokens/).
 
 ## Tailwind
 
-LO-TEK forutsetter ikke Tailwind, men står ikke i veien. La Tailwind styre oppsettet og LO-TEK styre komponentene:
+LO-TEK does not assume Tailwind, but does not get in its way. Let Tailwind handle the layout and LO-TEK the components:
 
 ```html
 <section class="mx-auto max-w-3xl p-6">
-  <h2 class="mb-4 text-2xl font-bold">Handlinger</h2>
+  <h2 class="mb-4 text-2xl font-bold">Actions</h2>
   <div class="flex flex-wrap gap-3">
-    <button class="lt-button">Send søknad</button>
-    <button class="lt-button" data-variant="secondary">Lagre utkast</button>
+    <button class="lt-button">Submit application</button>
+    <button class="lt-button" data-variant="secondary">Save draft</button>
   </div>
 </section>
 ```
 
-Skal Tailwind-klassene bruke LO-TEKs verdier, importer `@lo-tek/interfaces/tailwind.css`. Det er en vanlig CSS-fil, så pakken har ingen avhengighet til Tailwind, og din versjon er den eneste i bildet. Se [Tailwind](../tailwind/).
+If the Tailwind classes should use LO-TEK's values, import `@lo-tek/interfaces/tailwind.css`. It is an ordinary CSS file, so the package has no dependency on Tailwind, and your version is the only one involved. See [Tailwind](../tailwind/).
 
-## Videre
+## Next steps
 
-- [Kom i gang](../getting-started/): installasjon og oppsett, med og uten byggverktøy
-- [Rammeverk](../frameworks/): oppsett for ren HTML, React, Astro og Datastar
-- [Design tokens](../design-tokens/): farger, størrelser og typografi
-- [Typesikker bruk](../type-safe-use/): mønsteret som gir autofullføring på varianter
-- [Skjema med validering](../patterns/form/): komponentene satt sammen, med avgjørelsene rundt dem
-- [Tailwind](../tailwind/): oppsett, lagrekkefølge og LO-TEKs verdier som utility-klasser
+- [Getting started](../getting-started/): installation and setup, with and without build tools
+- [Frameworks](../frameworks/): setup for plain HTML, React, Astro and Datastar
+- [Design tokens](../design-tokens/): colours, sizes and typography
+- [Type-safe use](../type-safe-use/): the pattern that gives autocompletion on variants
+- [Form with validation](../patterns/form/): the components put together, with the decisions around them
+- [Tailwind](../tailwind/): setup, layer order and LO-TEK's values as utility classes

@@ -1,29 +1,29 @@
 ---
 title: Divider
-description: Skillelinje mellom deler av innholdet. CSS-komponent med én klasse og ingen JavaScript.
+description: A line between parts of the content. A CSS component with one class and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Klassen settes på et vanlig `<hr>`. Nettleserens egen strek har både ramme og høyde, og begge må nullstilles før fargen fra tokenene er den eneste som vises. Den har også auto-marger til sidene, som i en flex-kolonne gjør streken 0 piksler bred. Klassen nullstiller dem, så streken fyller bredden.
+The class goes on a plain `<hr>`. The browser's own rule has both a border and a height, and both have to be reset before the colour from the tokens is the only one shown. It also has auto margins at the sides, which in a flex column make the line 0 pixels wide. The class resets them, so the line fills the width.
 
 ## How to use it
 
 <Example importer={["tokens.css", "divider.css"]}
   stiler={["divider"]} layout="flyt" maxWidth="32rem" kode={`
-<p>Saken er registrert.</p>
+<p>The case has been registered.</p>
 <hr class="lt-divider" />
-<p>Du får svar innen tre uker.</p>
+<p>You will get an answer within three weeks.</p>
 <hr class="lt-divider" data-variant="strong" />
-<p>Kontakt oss hvis noe er uklart.</p>
+<p>Contact us if anything is unclear.</p>
 <hr class="lt-divider" data-variant="subtle" />
-<p>Saksnummer 2026-0481.</p>
+<p>Case number 2026-0481.</p>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
@@ -31,50 +31,50 @@ import { lt } from "@lo-tek/interfaces/react"
 <hr {...lt.divider({ variant: "subtle" })} />
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Har du elementet som en variabel,** setter du dem på det med `setAttributes`. Det er veien uten JSX, enten du nettopp lagde elementet eller fant det i en side serveren sendte:
+**If you have the element in a variable,** set them on it with `setAttributes`. That is the way without JSX, whether you just created the element or found it in a page the server sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const strek = document.createElement("hr")
+const rule = document.createElement("hr")
 
-lt.setAttributes(strek, lt.divider({ variant: "subtle" }))
+lt.setAttributes(rule, lt.divider({ variant: "subtle" }))
 ```
 
 </Fragment>
 </Example>
 
-| `data-variant` | Brukes til |
+| `data-variant` | Used for |
 | --- | --- |
-| *(utelatt)* | Vanlig skille mellom to deler |
-| `strong` | Tydelig skille, for eksempel før en oppsummering |
-| `subtle` | Svakt skille mellom rader i en liste |
+| *(omitted)* | An ordinary break between two parts |
+| `strong` | A clear break, for example before a summary |
+| `subtle` | A faint break between rows in a list |
 
-## Når streken ikke skal leses opp
+## When the line should not be read out
 
-`<hr>` melder seg som et skille i innholdet. Er streken bare pynt mellom to bokser som allerede er atskilt visuelt, si fra at den ikke betyr noe:
+`<hr>` is announced as a break in the content. If the line is only decoration between two boxes that are already visually separate, say that it means nothing:
 
 ```html
 <hr class="lt-divider" data-variant="subtle" aria-hidden="true" />
 ```
 
-Skiller den derimot to virkelige deler av siden, skal den bli stående i tilgjengelighetstreet. Den er da den eneste måten skjermleseren får vite at et emne er slutt.
+If it separates two real parts of the page, it should stay in the accessibility tree. It is then the only way the screen reader learns that a topic has ended.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-divider` | Streken. Styrken kommer fra `data-variant`. |
+| `.lt-divider` | The line. The strength comes from `data-variant`. |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-divider-space` | `var(--lt-spacing-4)` |
 
-`--lt-divider-space` er luften over og under streken. Se [Tilpasning](../../customising/).
+`--lt-divider-space` is the space above and below the line. See [Customising](../../customising/).
 
 ## Accessibility
 
-- Ikke bruk en strek der en overskrift hører hjemme. En overskrift sier hva som kommer; en strek sier bare at noe er slutt.
-- En strek mellom hvert element i en liste er støy for den som hører siden. Bruk heller `aria-hidden="true"`, eller la være.
+- Do not use a line where a heading belongs. A heading says what is coming; a line only says that something has ended.
+- A line between every item in a list is noise to someone listening to the page. Use `aria-hidden="true"`, or leave it out.

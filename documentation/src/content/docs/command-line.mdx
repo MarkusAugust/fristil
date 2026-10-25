@@ -1,393 +1,393 @@
 ---
-title: Kommandolinjen
-description: Kommandoene i @lo-tek/interfaces, med flagg, utdata og exit-koder. Sjekk markup og hele sider, hent regelboka for kodeagenter, ta over en komponent og lag et tema.
+title: Command line
+description: The commands in @lo-tek/interfaces, with flags, output and exit codes. Check markup and whole pages, get the rulebook for coding agents, take over a component and make a theme.
 ---
 
-Pakken har en kommandolinje med sju kommandoer. Den har ingen avhengigheter, og
-du trenger ikke installere noe ekstra:
+The package has a command line with seven commands. It has no dependencies, and
+you do not need to install anything extra:
 
 ```bash
-npx @lo-tek/interfaces <kommando>
+npx @lo-tek/interfaces <command>
 ```
 
-Står pakken i `package.json`, heter kommandoen `lotek`, så `npx lotek sjekk`
-og et skript med `lotek sjekk` gjør det samme. `npx @lo-tek/interfaces`
-uten kommando, eller med `--hjelp`, viser hele oversikten.
+When the package is in `package.json`, the command is called `lotek`, so `npx lotek check`
+and a script with `lotek check` do the same thing. `npx @lo-tek/interfaces`
+without a command, or with `--help`, shows the full overview.
 
-| Kommando | Gjør |
+| Command | Does |
 | --- | --- |
-| `sjekk` | sjekker markup mot LO-TEK, i filer, fra standard inn eller fra en adresse |
-| `agent` | skriver regelboka for kodeagenter for miljøet ditt |
-| `overta` | kopierer kildekoden til én komponent inn i prosjektet |
-| `tema` | lager et fargetema av merkefargene dine |
-| `sjekk-tema` | kontrollerer at et tema holder kontrastkravene |
-| `manifest` | skriver manifestet sjekken bruker, med fragmentene fra `overta` |
-| `lsp` | språkserveren for editorer, se [Editoren](../the-editor/#språkserveren) |
+| `check` | checks markup against LO-TEK, in files, from standard input or from an address |
+| `agent` | writes the rulebook for coding agents for your environment |
+| `takeover` | copies the source code of one component into the project |
+| `theme` | makes a colour theme from your brand colours |
+| `check-theme` | checks that a theme meets the contrast requirements |
+| `manifest` | writes the manifest the check uses, with the fragments from `takeover` |
+| `lsp` | the language server for editors, see [The editor](../the-editor/#the-language-server) |
 
-## Uten Node
+## Without Node
 
-Kommandoene er skrevet én gang, i Rust, og bygget som en WebAssembly-modul
-for WASI. `npx` kjører den med Node, men den samme modulen kjører også uten,
-og svarer det samme, byte for byte. Velg det som allerede finnes på maskinen:
+The commands are written once, in Rust, and built as a WebAssembly module
+for WASI. `npx` runs it with Node, but the same module also runs without it,
+and gives the same answer, byte for byte. Pick what is already on the machine:
 
-| Har du | Kjør |
+| If you have | Run |
 | --- | --- |
-| Java 17 eller nyere | `java -jar lotek.jar sjekk form.html` |
-| [wasmtime](https://wasmtime.dev) | `wasmtime run --dir=. --env LOTEK_PACKAGE=package lotek.wasm sjekk form.html` |
-| Rust | `cargo install --git https://github.com/MarkusAugust/lo-tek lotek`, og så `lotek sjekk form.html` |
+| Java 17 or newer | `java -jar lotek.jar check form.html` |
+| [wasmtime](https://wasmtime.dev) | `wasmtime run --dir=. --env LOTEK_PACKAGE=package lotek.wasm check form.html` |
+| Rust | `cargo install --git https://github.com/MarkusAugust/lo-tek lotek`, then `lotek check form.html` |
 
-`lotek.jar` og `lotek.wasm` ligger ved hver
-[utgivelse på GitHub](https://github.com/MarkusAugust/lo-tek/releases/latest),
-med samme versjon som npm-pakken. Ingen av dem er signert med et sertifikat.
-GitHub attesterer i stedet hvilken commit og hvilken arbeidsflyt hver fil ble
-bygd av, og det kan du kontrollere selv:
+`lotek.jar` and `lotek.wasm` are attached to every
+[release on GitHub](https://github.com/MarkusAugust/lo-tek/releases/latest),
+with the same version as the npm package. Neither is signed with a certificate.
+Instead, GitHub attests which commit and which workflow each file was
+built from, and you can check that yourself:
 
 ```bash
 gh attestation verify lotek.jar --repo MarkusAugust/lo-tek
 ```
 
-Jar-en har alt i seg og trenger ingen avhengigheter. Den kjørbare fila og
-`lotek.wasm` har ingen data: de leser manifestet, fargekontrakten,
-regelbøkene og komponentene fra `@lo-tek/interfaces` i `node_modules`,
-eller fra mappa `LOTEK_PACKAGE` peker på. Uten Node henter du pakken fra
-npm-registeret og pakker den ut, så ligger den i `package/`:
+The jar contains everything and needs no dependencies. The executable and
+`lotek.wasm` carry no data: they read the manifest, the colour contract,
+the rulebooks and the components from `@lo-tek/interfaces` in `node_modules`,
+or from the folder `LOTEK_PACKAGE` points to. Without Node, you fetch the package from
+the npm registry and unpack it, and it ends up in `package/`:
 
 ```bash
 curl -sL https://registry.npmjs.org/@lo-tek/interfaces/-/designsystem-VERSJON.tgz | tar xz
-LOTEK_PACKAGE=package lotek sjekk form.html
+LOTEK_PACKAGE=package lotek check form.html
 ```
 
-Bytt ut versjonen med den du vil sjekke mot. Uten pakken stopper kommandoen
-og sier hva den mangler.
+Replace the version with the one you want to check against. Without the package, the command stops
+and says what it is missing.
 
-En adresse hentes av verten, siden WASI ikke har nettverk. `npx` og `java -jar`
-henter både `http://` og `https://`. Den kjørbare fila fra `cargo install`
-henter `http://`, som er det en lokal server svarer på. For `https://` fra
-`cargo install` sender du siden inn selv:
-`curl -s https://… | lotek sjekk --rendret`.
+An address is fetched by the host, since WASI has no network. `npx` and `java -jar`
+fetch both `http://` and `https://`. The executable from `cargo install`
+fetches `http://`, which is what a local server answers on. For `https://` with
+`cargo install`, you send the page in yourself:
+`curl -s https://… | lotek check --rendered`.
 
-### Ulempene med wasmtime
+### The drawbacks of wasmtime
 
-wasmtime er med for den som har det fra før, eller ikke har Node, Java eller
-Rust. Det er den svakeste av vertene, og det bør du vite før du velger den:
+wasmtime is there for those who already have it, or who do not have Node, Java or
+Rust. It is the weakest of the hosts, and you should know why before you choose it:
 
-- **Du må stole på en tredjepart.** wasmtime installeres fra
-  [wasmtime.dev](https://wasmtime.dev), utenfor npm, Maven og cargo, og er
-  laget av Bytecode Alliance, ikke av LO-TEK.
-- **Ingen adresser.** wasmtime har ikke nettverk, og ingen vert henter siden
-  for modulen. `lotek sjekk http://…` sier at den ikke fikk kontakt. Send
-  siden inn selv: `curl -s http://localhost:8080/form | wasmtime run
-  --dir=. --env LOTEK_PACKAGE=package lotek.wasm sjekk --rendret`.
-- **Bare mappene du åpner.** wasmtime ser bare det du gir den med `--dir`.
-  Med `--dir=.` virker stier under arbeidsmappa, og en fil utenfor gir «Fant
-  ikke fila», selv om den finnes. Pakken må også ligge under en mappe du
-  åpner, og `LOTEK_PACKAGE` gis med `--env`, siden wasmtime ikke gir
-  modulen miljøet ditt. Språkserveren trenger `--dir=/::/`, som gir den hele
-  filsystemet.
-- **Ingen beskjed om standard inn.** De andre vertene sier «Leser markup fra
-  standard inn» når du kjører `sjekk` uten filer i en terminal. wasmtime kan
-  ikke se det, så kommandoen venter stille til du avslutter med Ctrl-D.
-- **Windows er ikke prøvd.** De andre vertene oversetter `C:\…` til det
-  modulen forstår. I wasmtime må du åpne stasjonen selv med `--dir`.
-- **Ikke prøvd i CI.** `npx`, `java -jar` og den kjørbare fila prøves på
-  hver endring, med de samme kjøringene. wasmtime er prøvd for hånd.
+- **You have to trust a third party.** wasmtime is installed from
+  [wasmtime.dev](https://wasmtime.dev), outside npm, Maven and cargo, and is
+  made by the Bytecode Alliance, not by LO-TEK.
+- **No addresses.** wasmtime has no network, and no host fetches the page
+  for the module. `lotek check http://…` says it could not connect. Send
+  the page in yourself: `curl -s http://localhost:8080/form | wasmtime run
+  --dir=. --env LOTEK_PACKAGE=package lotek.wasm check --rendered`.
+- **Only the folders you open.** wasmtime sees only what you give it with `--dir`.
+  With `--dir=.`, paths under the working folder work, and a file outside gives "File
+  not found", even though it exists. The package must also be under a folder you
+  open, and `LOTEK_PACKAGE` is given with `--env`, since wasmtime does not pass
+  your environment to the module. The language server needs `--dir=/::/`, which gives it the whole
+  file system.
+- **No notice about standard input.** The other hosts say "Reading markup from
+  standard input" when you run `check` without files in a terminal. wasmtime cannot
+  tell, so the command waits silently until you end it with Ctrl-D.
+- **Windows is not tested.** The other hosts translate `C:\…` into what
+  the module understands. In wasmtime you have to open the drive yourself with `--dir`.
+- **Not tested in CI.** `npx`, `java -jar` and the executable are tested on
+  every change, with the same runs. wasmtime has been tested by hand.
 
-## sjekk
+## check
 
-`sjekk` er den samme kontrollen som [editoren](../the-editor/) kjører mens du
-skriver. Den kjenner hver klasse, hvert element, hvert attributt og hver
-lovlige verdi i pakken du har installert.
+`check` is the same check the [editor](../the-editor/) runs while you
+type. It knows every class, every element, every attribute and every
+allowed value in the package you have installed.
 
 ```bash
-npx @lo-tek/interfaces sjekk templates/*.html
-npx @lo-tek/interfaces sjekk http://localhost:8080/form
-curl -s http://localhost:8080/form | npx @lo-tek/interfaces sjekk --rendret
+npx @lo-tek/interfaces check templates/*.html
+npx @lo-tek/interfaces check http://localhost:8080/form
+curl -s http://localhost:8080/form | npx @lo-tek/interfaces check --rendered
 ```
 
-Den leser tre slags inndata:
+It reads three kinds of input:
 
-- **filer**, oppgitt som argumenter;
-- **standard inn**, når ingen filer er oppgitt;
-- **en adresse** som begynner med `http://` eller `https://`. Den hentes av
-  kommandolinja, se [Uten Node](#uten-node). En side som svarer noe annet enn 2xx, eller med noe annet enn HTML,
-  gir feilkode i stedet for å bli sjekket.
+- **files**, given as arguments;
+- **standard input**, when no files are given;
+- **an address** starting with `http://` or `https://`. It is fetched by
+  the command line, see [Without Node](#without-node). A page that answers with anything other than 2xx, or with anything other than HTML,
+  gives an error code instead of being checked.
 
-Hvert funn skrives som en kompilator skriver det, med fil, linje og kolonne:
+Each finding is written the way a compiler writes it, with file, line and column:
 
 ```text
-form.html:4:27: advarsel: data-variant kan ikke være «outline» på button. Lovlige verdier: secondary, ghost, danger, og primary uten attributt.
-form.html:5:13: advarsel: Klassen «lt-modal» finnes ikke i LO-TEK.
+form.html:4:27: warning: data-variant cannot be "outline" on button. Allowed values: secondary, ghost, danger, and primary without the attribute.
+form.html:5:13: warning: The class "lt-modal" does not exist in LO-TEK.
 
-2 funn i 1 fil.
+2 findings in 1 file.
 ```
 
-| Flagg | Betydning |
+| Flag | Meaning |
 | --- | --- |
-| `--rendret` | sjekk filer og standard inn som hele sider, med koblingen |
-| `--css=<fil>` | sjekk også at stilarkene styler markupen. Se [Med stilarkene](#med-stilarkene) |
-| `--manifest=<fil>` | sjekk også en komponent du har tatt over. Se [overta](#overta) |
+| `--rendered` | check files and standard input as whole pages, with the wiring |
+| `--css=<file>` | also check that the stylesheets style the markup. See [With the stylesheets](#with-the-stylesheets) |
+| `--manifest=<file>` | also check a component you have taken over. See [takeover](#takeover) |
 
-Exit-koden er 0 når det ikke er noen funn, og 1 ellers, også når alle funnene er
-advarsler. En advarsel i en mal er en feil ingen kompilator ser. Tom standard
-inn, filer som alle er tomme, en fil som ikke finnes, og en adresse som ikke
-svarer eller svarer med en tom side, gir også 1. Én tom fil blant flere, som en
-tom partial i et glob, er ikke en feil.
+The exit code is 0 when there are no findings, and 1 otherwise, also when all the findings are
+warnings. A warning in a template is an error no compiler sees. Empty standard
+input, files that are all empty, a file that does not exist, and an address that does not
+answer or answers with an empty page also give 1. One empty file among several, such as an
+empty partial in a glob, is not an error.
 
-### Maler og hele sider
+### Templates and whole pages
 
-En mal er ofte delt i biter. En ledetekst kan stå i én fil og feltet i en
-annen, og malsyntaks som `{{ }}`, `{% %}`, `<?= ?>`, `@variabel` og `<%= %>`
-står der verdien kommer senere. Uten flagg sjekker `sjekk` derfor bare det som
-kan avgjøres i én fil: elementer, klasser, attributter, verdier, at hvert
-`<lt-field>` har en ledetekst, og at en del som skal stå én gang, ikke står
-flere ganger. Et `<lt-field>` med to kontroller kobler bare den første, og
-en `lt-table` med to `<caption>` får navnet sitt fra den første. Hvilke
-deler det gjelder, står i manifestet som `unique`. Andre deler kan stå
-flere ganger, som knappene i panelet til `<lt-popover>`. Står det
-malsyntaks i komponenten, også `v-if` eller et uttrykk i `{…}`, sier
-regelen ingenting, siden et vilkår kan gi to deler i malen og én på siden.
+A template is often split into pieces. A label can be in one file and the field in
+another, and template syntax such as `{{ }}`, `{% %}`, `<?= ?>`, `@variable` and `<%= %>`
+stands where the value comes later. Without flags, `check` therefore checks only what
+can be decided in one file: elements, classes, attributes, values, that every
+`<lt-field>` has a label, and that a part that should appear once does not appear
+more than once. An `<lt-field>` with two controls wires only the first, and
+an `lt-table` with two `<caption>` elements gets its name from the first. Which
+parts this applies to is in the manifest as `unique`. Other parts can appear
+several times, such as the buttons in the panel of `<lt-popover>`. If there is
+template syntax in the component, including `v-if` or an expression in `{…}`, the
+rule says nothing, since a condition can give two parts in the template and one on the page.
 
-En side slik serveren sender den, er hel. Da kan `sjekk` også kreve at
-koblingen stemmer:
+A page as the server sends it is whole. Then `check` can also require that
+the wiring is right:
 
-- hver id i `for`, `aria-describedby`, `aria-labelledby` og `aria-controls`
-  finnes på siden, og `for` peker på et felt eller en knapp;
-- ingen id står mer enn én gang;
-- hvert felt med en `lt-`-klasse har en ledetekst: en `<label for>`, en
-  `<label>` rundt, `aria-label` eller `aria-labelledby`;
-- hver synlige hjelpetekst og feilmelding er pekt på fra `aria-describedby`.
-  En tekst er ikke synlig når den selv eller en forelder har `hidden`, eller
-  står i en lukket `<dialog>` eller `<details>`. Et statusfelt, med
-  `role="status"`, `role="alert"` eller `aria-live`, leses opp av seg selv og
-  trenger ingen kobling;
-- hver lenke i `<lt-error-summary>` går til en id som finnes.
+- every id in `for`, `aria-describedby`, `aria-labelledby` and `aria-controls`
+  exists on the page, and `for` points to a field or a button;
+- no id appears more than once;
+- every field with an `lt-` class has a label: a `<label for>`, a
+  `<label>` around it, `aria-label` or `aria-labelledby`;
+- every visible help text and error text is pointed to from `aria-describedby`.
+  A text is not visible when it or a parent has `hidden`, or
+  is in a closed `<dialog>` or `<details>`. A status element, with
+  `role="status"`, `role="alert"` or `aria-live`, is announced on its own and
+  needs no wiring;
+- every link in `<lt-error-summary>` goes to an id that exists.
 
-En adresse sjekkes alltid slik. Filer og standard inn sjekkes slik med
-`--rendret`. Bar markup inni `<lt-field>` gir ingen funn, siden web-komponenten
-setter koblingen i nettleseren. Det samme gjelder et felt inni
-`<lt-suggestion>`. En id som er skrevet og peker feil, meldes uansett hvor den
-står.
+An address is always checked this way. Files and standard input are checked this way with
+`--rendered`. Bare markup inside `<lt-field>` gives no findings, since the web component
+sets the wiring in the browser. The same applies to a field inside
+`<lt-suggestion>`. An id that is written and points to the wrong place is reported wherever it
+appears.
 
-To ting leses ikke som en del av siden. Innholdet i en `<template>` er ikke i
-dokumentet, og i en shadow root, `<template shadowrootmode>`, har id-ene sitt
-eget rom. Markup som står i en attributtverdi, som et kodeeksempel bak en
-kopieringsknapp, eller inni en `<textarea>`, er tekst. Ingen av dem sjekkes.
+Two things are not read as part of the page. The content of a `<template>` is not in
+the document, and in a shadow root, `<template shadowrootmode>`, the ids have their
+own scope. Markup in an attribute value, such as a code example behind a
+copy button, or inside a `<textarea>`, is text. None of them are checked.
 
 ```text
-http://localhost:8080/form:12:30: feil: for="epost" peker på id-en «epost», som ikke finnes på siden. Skjermleseren mister ledeteksten. Skriv for på ledeteksten og id på feltet i malen, eller legg ledeteksten rundt feltet. Lages markupen med JavaScript, gjør lt.field({ id }) det.
+http://localhost:8080/form:12:30: error: for="email" points to the id "email", which does not exist on the page. The screen reader loses the label. Write for on the label and id on the field in the template, or put the label around the field. If the markup is made with JavaScript, lt.field({ id }) does this.
 ```
 
-Det er denne sjekken som virker likt i alle språk. HTML-en serveren sender, ser
-lik ut enten den kommer fra Kotlin, Go, PHP eller Node, og det er den som
-sjekkes, ikke koden som lager den.
+This is the check that works the same in every language. The HTML the server sends
+looks the same whether it comes from Kotlin, Go, PHP or Node, and that is what
+is checked, not the code that makes it.
 
-### Med stilarkene
+### With the stylesheets
 
-Markupen kan være riktig og likevel se feil ut: stilarket til komponenten er
-ikke lastet, eller en variant har ingen regel. Med `--css` leser `sjekk`
-stilarkene siden laster, med det de importerer, og sier fra om begge deler:
+The markup can be right and still look wrong: the component's stylesheet is
+not loaded, or a variant has no rule. With `--css`, `check` reads the
+stylesheets the page loads, with what they import, and reports both:
 
 ```bash
-npx @lo-tek/interfaces sjekk --css=public/app.css --manifest=src/ui/button/lotek-manifest.json templates/*.html
+npx @lo-tek/interfaces check --css=public/app.css --manifest=src/ui/button/lotek-manifest.json templates/*.html
 ```
 
 ```text
-templates/knapp.html:1:28: advarsel: data-variant="glass" på button har ingen regel i stilarkene, så den gjør ingenting synlig. Style verdien, eller ta den bort.
-templates/kort.html:1:13: advarsel: Klassen «lt-card» står i markupen, men ingen av stilarkene styler den. Er lotek.css, eller stilarket til card, lastet?
+templates/button.html:1:28: warning: data-variant="glass" on button has no rule in the stylesheets, so it does nothing visible. Style the value, or remove it.
+templates/card.html:1:13: warning: The class "lt-card" is in the markup, but none of the stylesheets style it. Is lotek.css, or the stylesheet for card, loaded?
 
-2 funn i 2 filer.
+2 findings in 2 files.
 ```
 
-Den første meldingen kommer for en verdi manifestet kjenner, men som ingen av
-stilarkene styler. En verdi LO-TEK ikke har, som `data-variant="glass"` på
-`lt-button`, avvises før stilarkene leses, med beskjed om de lovlige
-verdiene. Meldingen er nyttigst for en komponent du har [tatt over](#overta):
-legger du til en variant i fragmentet, men ikke i CSS-en, er markupen gyldig
-og ser ut som standard. Utdataene over er fra en slik kopi: `knapp.html` er
-`<button class="app-button" data-variant="glass">`, med `glass` lagt til i
-fragmentet. `@import` følges til filer ved siden av og til pakker i
-`node_modules`, som `@lo-tek/interfaces/lotek.css`. `--css` kan gis flere
-ganger. Stilarkene leses med en ekte CSS-leser, så nesting, `:is()`,
-`:where()`, `@layer` og `@media` forstås som nettleseren forstår dem.
+The first message comes for a value the manifest knows, but which none of the
+stylesheets style. A value LO-TEK does not have, such as `data-variant="glass"` on
+`lt-button`, is rejected before the stylesheets are read, with a message listing the allowed
+values. The message is most useful for a component you have [taken over](#takeover):
+if you add a variant to the fragment, but not to the CSS, the markup is valid
+and looks like the default. The output above is from such a copy: `button.html` is
+`<button class="app-button" data-variant="glass">`, with `glass` added to
+the fragment. `@import` is followed to neighbouring files and to packages in
+`node_modules`, such as `@lo-tek/interfaces/lotek.css`. `--css` can be given several
+times. The stylesheets are read with a real CSS parser, so nesting, `:is()`,
+`:where()`, `@layer` and `@media` are understood the way the browser understands them.
 
-### Den rendrede siden
+### The rendered page
 
-Det serveren sender, er ikke alltid det brukeren ser. Web-komponentene legger
-til markup, et skript kan sette en klasse, og stilarkene er de nettleseren
-faktisk lastet. `diagnoseRendered` sjekker siden slik nettleseren har rendret
-den, med Playwright:
+What the server sends is not always what the user sees. The web components add
+markup, a script can set a class, and the stylesheets are the ones the browser
+actually loaded. `diagnoseRendered` checks the page as the browser has rendered
+it, with Playwright:
 
 ```ts
 import { diagnoseRendered } from "@lo-tek/interfaces/diagnostics"
 
-test("skjemaet er riktig slik det vises", async ({ page }) => {
+test("the form is right as it is shown", async ({ page }) => {
   await page.goto("http://localhost:8080/form")
   expect(await diagnoseRendered(page)).toEqual([])
 })
 ```
 
-Den gir det `diagnosePage` gir, og det stilarkene ikke styler. Et stilark fra
-et CDN leses også, når det svarer med `Access-Control-Allow-Origin`, som
-jsDelivr og unpkg gjør. Med [LO-TEK for Kotlin](../kotlin/#den-rendrede-siden)
-heter det `assertLotekRendered`.
+It gives what `diagnosePage` gives, and what the stylesheets do not style. A stylesheet from
+a CDN is also read when it answers with `Access-Control-Allow-Origin`, as
+jsDelivr and unpkg do. With [LO-TEK for Kotlin](../kotlin/#the-rendered-page)
+it is called `assertLotekRendered`.
 
-### I testene og i CI
+### In tests and in CI
 
-Med en server som kjører, er én linje nok:
+With a running server, one line is enough:
 
 ```bash
-npx @lo-tek/interfaces sjekk http://localhost:8080/ http://localhost:8080/form
+npx @lo-tek/interfaces check http://localhost:8080/ http://localhost:8080/form
 ```
 
-Den samme sjekken finnes som funksjoner, for tester skrevet i JavaScript eller
+The same check exists as functions, for tests written in JavaScript or
 TypeScript:
 
 ```ts
 import { diagnoseMarkup, diagnosePage } from "@lo-tek/interfaces/diagnostics"
 
-expect(diagnoseMarkup(mal)).toEqual([]) // en mal eller en bit av en side
-expect(diagnosePage(html)).toEqual([]) // en hel side, med koblingen
+expect(diagnoseMarkup(template)).toEqual([]) // a template or a piece of a page
+expect(diagnosePage(html)).toEqual([]) // a whole page, with the wiring
 ```
 
-Hvert funn har `start`, `end`, `line`, `column`, `severity`, `rule` og
-`message`, og noen har en `fix` editoren kan tilby. Sjekken er den samme
-Rust-kjernen som editorene bruker, bygget til WebAssembly og med i pakken.
+Each finding has `start`, `end`, `line`, `column`, `severity`, `rule` and
+`message`, and some have a `fix` the editor can offer. The check is the same
+Rust core the editors use, built to WebAssembly and included in the package.
 
-Er appen skrevet i et annet språk, kjører testen kommandoen over HTML-en den
-rendrer. I Kotlin:
+If the app is written in another language, the test runs the command over the HTML it
+renders. In Kotlin:
 
 ```kotlin
 @Test
-fun `skjemaet er koblet riktig`() {
+fun `the form is wired correctly`() {
     val html = app.render("/form")
-    val sjekk = ProcessBuilder("npx", "@lo-tek/interfaces", "sjekk", "--rendret")
+    val check = ProcessBuilder("npx", "@lo-tek/interfaces", "check", "--rendered")
         .redirectErrorStream(true)
         .start()
-    sjekk.outputStream.use { it.write(html.toByteArray()) }
-    val utdata = sjekk.inputStream.bufferedReader().readText()
-    assertEquals(0, sjekk.waitFor(), utdata)
+    check.outputStream.use { it.write(html.toByteArray()) }
+    val output = check.inputStream.bufferedReader().readText()
+    assertEquals(0, check.waitFor(), output)
 }
 ```
 
-Testen feiler med funnene som melding, og det er meldingen en kodeagent leser
-og retter etter.
+The test fails with the findings as its message, and that is the message a coding agent reads
+and fixes from.
 
-Uten Node i CI bytter du `npx @lo-tek/interfaces` med `java -jar lotek.jar`.
-Med [LO-TEK for Kotlin](../kotlin/) blir det `assertLotek(html)`, med den
-samme sjekken kjørt i JVM-en.
+Without Node in CI, you replace `npx @lo-tek/interfaces` with `java -jar lotek.jar`.
+With [LO-TEK for Kotlin](../kotlin/) it becomes `assertLotek(html)`, with the
+same check run in the JVM.
 
 ## agent
 
-Skriver regelboka for kodeagenter til standard ut. Ingen fil skrives noe sted.
+Writes the rulebook for coding agents to standard output. No file is written anywhere.
 
 ```bash
 npx @lo-tek/interfaces agent
-npx @lo-tek/interfaces agent --rammeverk=datastar
+npx @lo-tek/interfaces agent --framework=datastar
 ```
 
-Uten flagg leses miljøet av avhengighetene i `package.json`: Astro, React,
-Datastar, eller et byggesteg som Vite. Finnes det ingen `package.json`, som i en Kotlin- eller Go-app, er
-det regelboka for maler. Hvilken det ble, og hvorfor, står på standard feil.
+Without flags, the environment is read from the dependencies in `package.json`: Astro, React,
+Datastar, or a build step such as Vite. If there is no `package.json`, as in a Kotlin or Go app,
+it is the rulebook for templates. Which one it chose, and why, is written to standard error.
 
-| `--rammeverk` | Regelboka for |
+| `--framework` | The rulebook for |
 | --- | --- |
-| `html` | håndskrevet HTML uten byggesteg, der nettleseren laster filene direkte |
-| `maler` | serverskrevet HTML: Go-maler, Razor, PHP, Jinja, ERB og andre, og HTML skrevet i kode |
-| `bundles` | et byggesteg der markupen er vanlig HTML: Vue, Svelte, Solid, Lit og Vite |
+| `html` | hand-written HTML without a build step, where the browser loads the files directly |
+| `templates` | server-written HTML: Go templates, Razor, PHP, Jinja, ERB and others, and HTML written in code |
+| `bundles` | a build step where the markup is plain HTML: Vue, Svelte, Solid, Lit and Vite |
 | `react` | React |
 | `astro` | Astro |
-| `datastar` | HTML med Datastar |
+| `datastar` | HTML with Datastar |
 
-Hvordan agenten finner regelboka, står på [Kodeagenter](../coding-agents/).
+How the agent finds the rulebook is described on [Coding agents](../coding-agents/).
 
-## overta
+## takeover
 
-Kopierer kildekoden til én komponent inn i prosjektet: TypeScript-fila og
-stilarket. Kopien er din fra det øyeblikket den er skrevet, og kommandoen gjør
-tre ting for at den skal kunne være det:
+Copies the source code of one component into the project: the TypeScript file and
+the stylesheet. The copy is yours from the moment it is written, and the command does
+three things so that it can be:
 
-- **Kopien får nytt navn.** `lt-button` blir `app-button` i klassene,
-  taggene, `customElements.define` og selektorene. Kopien kan dermed stå ved
-  siden av originalen, og du bytter navnet i markupen der kopien skal brukes.
-  Variablene fra temaet, `--lt-*`, er de samme, så kopien følger temaet ditt
-  som før.
-- **Henvisningene ut av komponenten skrives om** til pakken, så resten av
-  systemet fortsatt kommer fra `@lo-tek/interfaces` og kan oppgraderes.
-- **Et fragment av manifestet skrives ved siden av**, `lotek-manifest.json`,
-  med klassene, elementene og verdiene til kopien under det nye navnet. Med
-  det sjekker `sjekk` markupen for kopien også:
+- **The copy gets a new name.** `lt-button` becomes `app-button` in the classes,
+  the tags, `customElements.define` and the selectors. The copy can therefore stand
+  beside the original, and you change the name in the markup where the copy is to be used.
+  The variables from the theme, `--lt-*`, are the same, so the copy follows your theme
+  as before.
+- **The references out of the component are rewritten** to the package, so the rest of
+  the system still comes from `@lo-tek/interfaces` and can be upgraded.
+- **A fragment of the manifest is written next to it**, `lotek-manifest.json`,
+  with the classes, elements and values of the copy under the new name. With
+  it, `check` checks the markup for the copy too:
 
 ```bash
-npx @lo-tek/interfaces overta button --ut=src/ui
-npx @lo-tek/interfaces sjekk --manifest=src/ui/button/lotek-manifest.json templates/*.html
+npx @lo-tek/interfaces takeover button --out=src/ui
+npx @lo-tek/interfaces check --manifest=src/ui/button/lotek-manifest.json templates/*.html
 ```
 
-Uten `--manifest` lar `sjekk` alt som ikke begynner med `lt-` være. Med det
-sjekkes bare kopiens egne navn, `app-button` med varianter og elementer, ikke
-resten av prosjektets klasser. Endrer du kopien, for eksempel med en ny
-variant, skriver du den inn i fragmentet også. `--manifest` kan gis flere
-ganger, én gang for hver kopi.
+Without `--manifest`, `check` leaves alone everything that does not start with `lt-`. With it,
+only the copy's own names are checked, `app-button` with its variants and elements, not
+the rest of the project's classes. If you change the copy, for example with a new
+variant, you write it into the fragment too. `--manifest` can be given several
+times, once for each copy.
 
-| Flagg | Betydning |
+| Flag | Meaning |
 | --- | --- |
-| `--ut=<mappe>` | hvor kopien skal ligge. Standard: `src/lotek` |
-| `--overskriv=ja` | skriv over en kopi som finnes fra før |
+| `--out=<folder>` | where the copy goes. Default: `src/lotek` |
+| `--overwrite=yes` | overwrite a copy that already exists |
 
-Uten navn lister kommandoen komponentene. Når du bør ta over en komponent, og
-hva du bør prøve først, står på [Tilpasning](../customising/#når-css-ikke-er-nok).
+Without a name, the command lists the components. When you should take over a component, and
+what you should try first, is described on [Customising](../customising/#when-css-is-not-enough).
 
 ## manifest
 
-Skriver manifestet `sjekk` bruker: LO-TEKs klasser, elementer og lovlige
-verdier, med fragmentene fra `overta` lagt til. Det er det en editor eller et
-annet verktøy trenger for å kjenne ordforrådet prosjektet faktisk har.
+Writes the manifest `check` uses: LO-TEK's classes, elements and allowed
+values, with the fragments from `takeover` added. That is what an editor or another
+tool needs to know the vocabulary the project actually has.
 
 ```bash
-npx @lo-tek/interfaces manifest --manifest=src/ui/button/lotek-manifest.json --ut=build/lotek/manifest.json
+npx @lo-tek/interfaces manifest --manifest=src/ui/button/lotek-manifest.json --out=build/lotek/manifest.json
 ```
 
-| Flagg | Betydning |
+| Flag | Meaning |
 | --- | --- |
-| `--manifest=<fil>` | et fragment fra `overta`. Kan gis flere ganger |
-| `--ut=<fil>` | skriv til fil i stedet for til standard ut |
+| `--manifest=<file>` | a fragment from `takeover`. Can be given several times |
+| `--out=<file>` | write to a file instead of to standard output |
 
-[Gradle-pluginen](../kotlin/#gradle-pluginen) skriver den samme fila til
-`build/lotek/manifest.json` når `manifests` har fragmenter.
+The [Gradle plugin](../kotlin/#the-gradle-plugin) writes the same file to
+`build/lotek/manifest.json` when `manifests` has fragments.
 
-## tema
+## theme
 
-Lager et fargetema av merkefargene dine, med lyst og mørkt utseende og
-kontrastkravene oppfylt. Temaet skrives til standard ut, eller til en fil.
+Makes a colour theme from your brand colours, with a light and a dark appearance and
+the contrast requirements met. The theme is written to standard output, or to a file.
 
 ```bash
-npx @lo-tek/interfaces tema --aksent=#7c3aed --fare=#b3261e \
-  --suksess=#2b6940 --advarsel=#8a5a00 --ut=theme.css
-npx @lo-tek/interfaces tema lotek.theme.json --ut=theme.css
+npx @lo-tek/interfaces theme --accent=#7c3aed --danger=#b3261e \
+  --success=#2b6940 --warning=#8a5a00 --out=theme.css
+npx @lo-tek/interfaces theme lotek.theme.json --out=theme.css
 ```
 
-| Flagg | Betydning |
+| Flag | Meaning |
 | --- | --- |
-| `--aksent`, `--fare`, `--suksess`, `--advarsel`, `--noytral`, `--besokt` | fargene for rollene, heksadesimalt |
-| `--merke1`, `--merke2`, `--merke3` | merkefarger for flater og kategorier |
-| `--skrift` | skriftstakken temaet skal bruke |
-| `--knapp-hjorner`, `--felt-hjorner`, `--flate-hjorner` | hjørnene på knapper, felt og flater |
-| `--knapp-ramme`, `--knapp-vekt` | rammetykkelsen og vekten på knappeteksten |
-| `--ut=<fil>` | skriv til fil i stedet for til standard ut |
+| `--accent`, `--danger`, `--success`, `--warning`, `--neutral`, `--visited` | the colours for the roles, in hexadecimal |
+| `--brand1`, `--brand2`, `--brand3` | brand colours for surfaces and categories |
+| `--font` | the font stack the theme uses |
+| `--button-radius`, `--field-radius`, `--surface-radius` | the corners of buttons, fields and surfaces |
+| `--button-border`, `--button-weight` | the border width and the weight of the button text |
+| `--out=<file>` | write to a file instead of to standard output |
 
-Hva hver rolle styrer, og hvordan temaet tas i bruk, står på
-[Eget tema](../your-own-theme/).
+What each role controls, and how the theme is put to use, is described on
+[Your own theme](../your-own-theme/).
 
-## sjekk-tema
+## check-theme
 
-Kontrollerer et tema du har skrevet selv. Kommandoen leser
-`--lt-color-*`-verdiene i hver blokk og sier hvilken celle som ryker, og hvorfor.
+Checks a theme you have written yourself. The command reads the
+`--lt-color-*` values in each block and says which cell fails, and why.
 
 ```bash
-npx @lo-tek/interfaces sjekk-tema theme.css
+npx @lo-tek/interfaces check-theme theme.css
 ```
 
-Ett brudd gir feilkode. Et tema laget med `tema` holder kravene fra før.
+One violation gives an error code. A theme made with `theme` already meets the requirements.
 
-Et tema uten farger, med bare skrift og form, har ingen kontrast å
-kontrollere. Kommandoen sier det og avslutter uten feilkode. En fil uten
-noen `--lt-*`-verdier gir feilkode, for da har sjekken ikke sett på noe.
+A theme without colours, with only font and shape, has no contrast to
+check. The command says so and exits without an error code. A file without
+any `--lt-*` values gives an error code, because then the check has not looked at anything.

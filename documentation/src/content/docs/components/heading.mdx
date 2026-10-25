@@ -1,48 +1,48 @@
 ---
 title: Heading
-description: Overskrifter i seks størrelser, uavhengig av nivå. CSS-komponent med én klasse og ingen JavaScript.
+description: Headings in six sizes, independent of level. A CSS component with one class and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Størrelsen og nivået er to forskjellige ting. Nivået er `<h1>` til `<h6>` og bestemmer strukturen skjermlesere navigerer etter. `data-size` bestemmer bare hvor stor teksten ser ut.
+Size and level are two different things. The level is `<h1>` to `<h6>` and decides the structure screen readers navigate by. `data-size` only decides how large the text looks.
 
 ## How to use it
 
 <Example importer={["tokens.css", "heading.css"]}
   stiler={["heading"]} layout="stabel" maxWidth="32rem" kode={`
-<h1 class="lt-heading" data-size="mega">Søknad om bostøtte</h1>
-<h2 class="lt-heading" data-size="xl">Om søkeren</h2>
-<h2 class="lt-heading">Boforhold</h2>
-<h3 class="lt-heading" data-size="m">Vedlegg</h3>
-<h4 class="lt-heading" data-size="s">Fødselsattest</h4>
-<h5 class="lt-heading" data-size="xs">Sist endret</h5>
+<h1 class="lt-heading" data-size="mega">Housing benefit application</h1>
+<h2 class="lt-heading" data-size="xl">About the applicant</h2>
+<h2 class="lt-heading">Living situation</h2>
+<h3 class="lt-heading" data-size="m">Attachments</h3>
+<h4 class="lt-heading" data-size="s">Birth certificate</h4>
+<h5 class="lt-heading" data-size="xs">Last changed</h5>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
-<h1 {...lt.heading({ size: "mega" })}>Søknad om bostøtte</h1>
+<h1 {...lt.heading({ size: "mega" })}>Housing benefit application</h1>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const tittel = document.querySelector<HTMLHeadingElement>("#seksjon")
+const title = document.querySelector<HTMLHeadingElement>("#section")
 
-lt.setAttributes(tittel, lt.heading({ size: "m" }))
+lt.setAttributes(title, lt.heading({ size: "m" }))
 ```
 
-Kommer størrelsen fra innhold utenfra, valider den med `lt.heading.isSize(x)`. Se [Typesikker bruk](../../type-safe-use/).
+If the size comes from outside content, validate it with `lt.heading.isSize(x)`. See [Type-safe use](../../type-safe-use/).
 
 </Fragment>
 </Example>
@@ -51,40 +51,40 @@ Kommer størrelsen fra innhold utenfra, valider den med `lt.heading.isSize(x)`. 
 | --- | --- |
 | `mega` | `--lt-font-size-mega` |
 | `xl` | `--lt-font-size-xxl` |
-| *(utelatt)* | `--lt-font-size-xl` |
+| *(omitted)* | `--lt-font-size-xl` |
 | `m` | `--lt-font-size-l` |
 | `s` | `--lt-font-size-m` |
-| `xs` | `--lt-font-size-s`, i versaler |
+| `xs` | `--lt-font-size-s`, in capitals |
 
-## Nivå følger strukturen, ikke utseendet
+## Level follows the structure, not the look
 
-En `<h2>` som skal se liten ut er riktig. En `<h4>` valgt fordi den var liten nok, hopper over et nivå, og da blir innholdsfortegnelsen skjermleseren bygger feil:
+An `<h2>` that should look small is correct. An `<h4>` chosen because it was small enough skips a level, and the table of contents the screen reader builds is then wrong:
 
 ```html
-<h2 class="lt-heading" data-size="s">Vedlegg</h2>
+<h2 class="lt-heading" data-size="s">Attachments</h2>
 ```
 
-Siden skal ha én `<h1>`, og nivåene under skal følge hverandre uten hopp.
+The page should have one `<h1>`, and the levels below should follow each other without skipping.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-heading` | Overskriften. Størrelsen kommer fra `data-size`. |
+| `.lt-heading` | The heading. The size comes from `data-size`. |
 
-Størrelsene er `--lt-font-size`-tokenene direkte, så en endring i skalaen slår gjennom overalt på én gang. Vekten og linjeavstanden er egne variabler, fordi en organisasjon som tar systemet i bruk gjerne har sin egen typografi:
+The sizes are the `--lt-font-size` tokens directly, so a change to the scale applies everywhere at once. Weight and line height are separate variables, because an organisation adopting the system often has its own typography:
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-heading-font-weight` | `var(--lt-font-weight-bold)` |
 | `--lt-heading-line-height` | `var(--lt-line-height-heading)` |
 
-Overskriftene bruker `text-wrap: balance`, så en overskrift over to linjer ikke ender med ett ord alene på den siste.
+The headings use `text-wrap: balance`, so a heading over two lines does not end with a single word on the last one.
 
-Se [Tilpasning](../../customising/) for hvordan laget virker.
+See [Customising](../../customising/) for how the layer works.
 
 ## Accessibility
 
-- Skjermlesere kan liste opp alle overskrifter og hoppe mellom dem. Det er den vanligste måten å finne fram på en lang side.
-- Ikke bruk en overskrift for å gjøre tekst stor. Bruk [Paragraph](../paragraph/) med `data-size="large"`.
-- En overskrift uten innhold under seg er ikke en overskrift.
+- Screen readers can list every heading and jump between them. That is the most common way to find your way around a long page.
+- Do not use a heading to make text large. Use [Paragraph](../paragraph/) with `data-size="large"`.
+- A heading with no content below it is not a heading.

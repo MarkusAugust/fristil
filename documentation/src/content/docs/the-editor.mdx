@@ -1,65 +1,65 @@
 ---
-title: Editoren
-description: Fullføring, forklaring og feilmeldinger for LO-TEK i VS Code, JetBrains, Neovim, Helix og andre editorer med LSP, også der ingen kompilator ser på markupen.
+title: The editor
+description: Completion, hover help and error messages for LO-TEK in VS Code, JetBrains, Neovim, Helix and other editors with LSP, also where no compiler looks at the markup.
 ---
 
-Skriver du TypeScript eller JSX, får du hjelp fra typene: `lt.` viser hele systemet, og en variant som ikke finnes stopper bygget. Se [Typesikker bruk](../type-safe-use/). Skriver du markup uten JavaScript, i en Go-mal, en Razor-visning, PHP eller håndskrevet HTML, ser ingen kompilator på attributtene. Da er det editoren som må si fra, og det gjør den.
+If you write TypeScript or JSX, the types help you: `lt.` shows the whole system, and a variant that does not exist stops the build. See [Type-safe use](../type-safe-use/). If you write markup without JavaScript, in a Go template, a Razor view, PHP or hand-written HTML, no compiler looks at the attributes. Then the editor has to tell you, and it does.
 
 ## VS Code
 
-Utvidelsen [LO-TEK](https://marketplace.visualstudio.com/items?itemName=lo-tek.interfaces) finnes på Marketplace. Søk etter «LO-TEK» under Extensions, eller kjør:
+The extension [LO-TEK Interfaces](https://marketplace.visualstudio.com/items?itemName=lo-tek.interfaces) is on the Marketplace. Search for "LO-TEK" under Extensions, or run:
 
 ```bash
 code --install-extension lo-tek.interfaces
 ```
 
-Det du får, i HTML-filer og i malspråkene:
+What you get, in HTML files and in the template languages:
 
-- **Fullføring** av `<lt-field>`, `<lt-popover>` og de andre elementene, med attributtene og de lovlige verdiene. Inne i `class="…"` fullføres `lt-`-klassene, og inne i et attributt en klasse tar, som `data-variant` på `lt-button`, verdiene byggefunksjonen kjenner.
-- **Forklaring** når du holder musa over en `lt-`-klasse, og i HTML-filer også over et element, med lenke til komponentsiden, eller over et attributt.
-- **Feilmeldinger**, som røde og gule streker: et element som ikke finnes, et attributt elementet ikke har, en verdi utenfor lista, en klasse som `lt-buton`, og `data-variant="secundary"` på en knapp. `<lt-field>` uten kontroll eller uten ledetekst får samme beskjed som komponenten gir i nettleseren. Og det malen må skrive selv for at komponentene skal virke uten JavaScript og overleve en oppdatering fra serveren: en ledetekst som verken har `for` mot feltet eller står rundt det, et panel i `<lt-popover>` uten id, en fane som peker på et panel som ikke finnes, en fanerad uten navn, `role="tab"` på noe som ikke er en lenke, hjelpetekst inni `<label>`, `data-value` uten `.lt-suggestion__value`, en skjult feilmelding ved siden av `aria-invalid="true"`, de utgåtte `invalid`, `required-marker` og `control-id` på `<lt-field>`, og en id komponenten lagde selv, kopiert inn fra DevTools.
-- **Hurtigrettelser** der det finnes ett riktig svar: lyspæra bytter `lt-buton` til `lt-button`, tar bort `invalid="false"` og de utgåtte attributtene, setter inn en ledetekst, gir raden et navn, og gir feltet id og ledeteksten `for` i ett grep, fra feltets `name`.
-- **Snippets**: skriv `lt-popover` og velg snippeten, og markupen fra komponentsiden står der. Id-en er et tabbestopp: skriv den én gang, så følger `for` på ledeteksten og `href` på fanene med.
+- **Completion** of `<lt-field>`, `<lt-popover>` and the other elements, with their attributes and allowed values. Inside `class="…"` the `lt-` classes are completed, and inside an attribute a class takes, such as `data-variant` on `lt-button`, the values the builder function knows.
+- **Hover help** when you hold the mouse over an `lt-` class, and in HTML files also over an element, with a link to the component page, or over an attribute.
+- **Error messages**, as red and yellow squiggles: an element that does not exist, an attribute the element does not have, a value outside the list, a class such as `lt-buton`, and `data-variant="secundary"` on a button. `<lt-field>` without a control or without a label gets the same message the component gives in the browser. And what the template must write itself for the components to work without JavaScript and survive an update from the server: a label that neither has `for` pointing to the field nor stands around it, a panel in `<lt-popover>` without an id, a tab that points to a panel that does not exist, a tab list without a name, `role="tab"` on something that is not a link, help text inside `<label>`, `data-value` without `.lt-suggestion__value`, a hidden error text next to `aria-invalid="true"`, the removed `invalid`, `required-marker` and `control-id` on `<lt-field>`, and an id the component made itself, copied in from DevTools.
+- **Quick fixes** where there is one right answer: the light bulb changes `lt-buton` to `lt-button`, removes `invalid="false"` and the removed attributes, inserts a label, gives the tab list a name, and gives the field an id and the label `for` in one go, from the field's `name`.
+- **Snippets**: type `lt-popover` and pick the snippet, and the markup from the component page is there. The id is a tab stop: type it once, and `for` on the label and `href` on the tabs follow along.
 
-Malspråkene den virker i uten innstillinger: PHP, Razor, Astro, Svelte, Vue, Twig, Blade, Jinja, Django, Handlebars, ERB, Go-maler, EJS, Liquid, Nunjucks og Edge. Der det står malsyntaks, holder den seg unna: en mal er ikke hel, og kontrollen kan stå i en partial. Lista er innstillingen `lotek.languages`.
+The template languages it works in without settings: PHP, Razor, Astro, Svelte, Vue, Twig, Blade, Jinja, Django, Handlebars, ERB, Go templates, EJS, Liquid, Nunjucks and Edge. Where there is template syntax, it stays out of the way: a template is not whole, and the control can be in a partial. The list is the setting `lotek.languages`.
 
-Feilmeldingene og hurtigrettelsene kommer fra språkserveren, `lotek lsp`, den samme som Neovim og Helix bruker. Den sjekker mot LO-TEK-versjonen prosjektet har installert, og mot komponenter du har [tatt over](../command-line/#overta), se [Språkserveren](#språkserveren). Fullføringen genereres fra komponentene i repoet. Utvidelsen har sitt eget versjonsnummer, og følger ikke pakken, siden den bare endrer seg når et element, en klasse eller et attributt gjør det.
+The error messages and quick fixes come from the language server, `lotek lsp`, the same one Neovim and Helix use. It checks against the LO-TEK version the project has installed, and against components you have [taken over](../command-line/#takeover), see [The language server](#the-language-server). Completion is generated from the components in the repository. The extension has its own version number and does not follow the package, since it only changes when an element, a class or an attribute does.
 
 ## JetBrains
 
-IntelliJ IDEA Ultimate og WebStorm trenger ingen utvidelse. Fra `@lo-tek/interfaces` 0.15.0 har npm-pakken med `web-types.json`, JetBrains sitt eget format, og IDE-en tar den i bruk så snart pakken står i `package.json` i prosjektet. Du får fullføring av elementene, attributtene, verdiene og `lt-`-klassene, og forklaring med lenke til komponentsiden. Etterprøvd i IntelliJ IDEA Ultimate 2026.2.
+IntelliJ IDEA Ultimate and WebStorm need no extension. From `@lo-tek/interfaces` 0.15.0 the npm package includes `web-types.json`, JetBrains' own format, and the IDE picks it up as soon as the package is in the project's `package.json`. You get completion of the elements, attributes, values and `lt-` classes, and hover help with a link to the component page. Checked in IntelliJ IDEA Ultimate 2026.2.
 
-`web-types.json` leses bare for filer. Står markupen i en streng, som en HTML-mal i Kotlin eller TypeScript, får du ingen forslag fra den. Det dekker pluginen [LO-TEK](https://plugins.jetbrains.com/plugin/34764-lotek): søk etter «LO-TEK» under *Settings → Plugins → Marketplace*. Den gir fullføring av `lt-`-klassene inne i `class="…"` i en streng som er merket som HTML:
+`web-types.json` is read only for files. If the markup is in a string, such as an HTML template in Kotlin or TypeScript, you get no suggestions from it. The plugin [LO-TEK Interfaces](https://plugins.jetbrains.com/plugin/34764-lotek) covers that: search for "LO-TEK" under *Settings → Plugins → Marketplace*. It completes the `lt-` classes inside `class="…"` in a string marked as HTML:
 
 ```kotlin
 // language=HTML
-fun lagreknapp() = """
-    <button class="lt-button" type="submit">Lagre</button>
+fun saveButton() = """
+    <button class="lt-button" type="submit">Save</button>
 """
 ```
 
-`// language=HTML` og `@Language("HTML")` er IntelliJs egne merker, og krever ingen avhengighet. Uten et slikt merke er strengen bare tekst for IDE-en, og da er det ingenting for pluginen å feste seg i. Fullføringen gir bare klassene, ikke elementene eller attributtene. Etterprøvd i Kotlin og TypeScript i IntelliJ IDEA Ultimate 2026.2.3.
+`// language=HTML` and `@Language("HTML")` are IntelliJ's own markers, and need no dependency. Without such a marker the string is just text to the IDE, and then there is nothing for the plugin to attach to. Completion gives only the classes, not the elements or attributes. Checked in Kotlin and TypeScript in IntelliJ IDEA Ultimate 2026.2.3.
 
-Fra versjon 0.4.0 har pluginen **live templates**: skriv `lt-field` og trykk Tab, og markupen fra komponentsiden står der, med id-en som variabel og `for` som følger med. De lages fra de samme oppskriftene som snippetene i VS Code.
+From version 0.4.0 the plugin has **live templates**: type `lt-field` and press Tab, and the markup from the component page is there, with the id as a variable and `for` following along. They are made from the same recipes as the snippets in VS Code.
 
-Fra versjon 0.3.0 gir pluginen også **feilmeldingene**, i HTML-filer og i merkede strenger: et element, en klasse, et attributt eller en verdi som ikke finnes, med hurtigrettelse der det finnes ett riktig svar. Sjekken er den samme Rust-kjernen som `lotek sjekk` og VS Code bruker, kjørt i IDE-ens egen JVM. Den trenger ikke Node eller JavaScript-støtten i IDE-en, og leter etter manifestet slik [språkserveren](#språkserveren) gjør, fra fila og oppover til prosjektmappa, så komponenter du har overtatt er kjent. Fullføringen leser klassene fra det samme manifestet, så den foreslår de overtatte komponentene og aldri en klasse sjekken avviser. Et funn du vil beholde, undertrykkes med `<!-- lotek-ignore-next regelnavn -->` over taggen.
+From version 0.3.0 the plugin also gives the **error messages**, in HTML files and in marked strings: an element, a class, an attribute or a value that does not exist, with a quick fix where there is one right answer. The check is the same Rust core that `lotek check` and VS Code use, run in the IDE's own JVM. It needs neither Node nor the IDE's JavaScript support, and looks for the manifest the way the [language server](#the-language-server) does, from the file upwards to the project folder, so components you have taken over are known. Completion reads the classes from the same manifest, so it suggests the components you have taken over and never a class the check rejects. A finding you want to keep is suppressed with `<!-- lotek-ignore-next rule-name -->` above the tag.
 
-## Språkserveren
+## The language server
 
-Feilmeldingene og hurtigrettelsene finnes som en språkserver, `lotek lsp`, for hver editor som snakker LSP. Den er skrevet i Rust, er den samme sjekken som `lotek sjekk`, og startes på den måten som passer prosjektet:
+The error messages and quick fixes are available as a language server, `lotek lsp`, for every editor that speaks LSP. It is written in Rust, is the same check as `lotek check`, and is started in whichever way suits the project:
 
-| Har du | Kommandoen |
+| If you have | The command |
 | --- | --- |
 | Node | `npx @lo-tek/interfaces lsp` |
-| Java 17 eller nyere | `java -jar lotek.jar lsp` |
-| wasmtime | `wasmtime run --dir=/::/ --env LOTEK_PACKAGE=/sti/til/package lotek.wasm lsp` |
+| Java 17 or newer | `java -jar lotek.jar lsp` |
+| wasmtime | `wasmtime run --dir=/::/ --env LOTEK_PACKAGE=/path/to/package lotek.wasm lsp` |
 | `cargo install` | `lotek lsp` |
 
-Hvor du får `lotek.jar`, `lotek.wasm` og den kjørbare fila, står på [Kommandolinjen](../command-line/#uten-node). wasmtime ser bare mappene den får, og `--dir=/::/` gir den hele filsystemet, med de samme stiene som editoren bruker. Det er den svakeste av vertene. Se [Ulempene med wasmtime](../command-line/#ulempene-med-wasmtime).
+Where you get `lotek.jar`, `lotek.wasm` and the executable is described on [Command line](../command-line/#without-node). wasmtime sees only the folders it is given, and `--dir=/::/` gives it the whole file system, with the same paths the editor uses. It is the weakest of the hosts. See [The drawbacks of wasmtime](../command-line/#the-drawbacks-of-wasmtime).
 
-Serveren sjekker mot det prosjektet faktisk har. Den går fra mappa til fila og oppover, slik Node finner en pakke, og ser i hver mappe etter `build/lotek/manifest.json`, som [Gradle-pluginen](../kotlin/#gradle-pluginen) skriver, og så etter `node_modules/@lo-tek/interfaces/manifest/manifest.json`, den installerte pakken. Den nærmeste mappa med en av dem vinner, og den leter ikke over rota av arbeidsområdet. I et monorepo sjekkes derfor en side i `apps/web` mot pakken `apps/web` har installert. Ligger fila utenfor arbeidsområdet, som en kladdefil, eller har editoren ikke gitt noe arbeidsområde, leter den ikke fra fila i det hele tatt: da gjelder manifestet ved rota av arbeidsområdet, om det har et. Finnes ingen av dem, sjekker `npx`, `java -jar` og VS Code mot pakken de selv har med. Den kjørbare fila og wasmtime sjekker mot pakken `LOTEK_PACKAGE` peker på, og uten den sjekker de ingenting og sier fra. Fila leses på nytt når den endres, så et nytt bygg eller en oppgradering når editoren uten omstart.
+The server checks against what the project actually has. It goes from the file's folder upwards, the way Node finds a package, and looks in each folder for `build/lotek/manifest.json`, which the [Gradle plugin](../kotlin/#the-gradle-plugin) writes, and then for `node_modules/@lo-tek/interfaces/manifest/manifest.json`, the installed package. The nearest folder with one of them wins, and it does not look above the root of the workspace. In a monorepo, a page in `apps/web` is therefore checked against the package `apps/web` has installed. If the file is outside the workspace, such as a scratch file, or the editor has not given a workspace, it does not search from the file at all: then the manifest at the root of the workspace applies, if there is one. If none of them exist, `npx`, `java -jar` and VS Code check against the package they bring with them. The executable and wasmtime check against the package `LOTEK_PACKAGE` points to, and without it they check nothing and say so. The file is read again when it changes, so a new build or an upgrade reaches the editor without a restart.
 
-I **Neovim** 0.11 eller nyere:
+In **Neovim** 0.11 or newer:
 
 ```lua
 vim.lsp.config("lotek", {
@@ -70,7 +70,7 @@ vim.lsp.config("lotek", {
 vim.lsp.enable("lotek")
 ```
 
-I **Helix**, i `languages.toml`, ved siden av HTML-serveren:
+In **Helix**, in `languages.toml`, next to the HTML server:
 
 ```toml
 [language-server.lotek]
@@ -82,21 +82,21 @@ name = "html"
 language-servers = ["vscode-html-language-server", "lotek"]
 ```
 
-**Zed** starter bare språkservere som en Zed-utvidelse har meldt inn, og en slik utvidelse for LO-TEK finnes ikke ennå.
+**Zed** starts only language servers that a Zed extension has registered, and no such extension for LO-TEK exists yet.
 
-Serveren gir funn og rettelser. Fullføring og forklaring gjør den ikke ennå, så de kommer fortsatt fra utvidelsen i VS Code, og i JetBrains fra `web-types.json` for filer og fra pluginen for HTML i strenger. `initializationOptions` kan ha `manifest`, en sti til et manifest som går foran de andre, og `rendered: true`, som sjekker hver fil som en hel side, med koblingen.
+The server gives findings and fixes. It does not do completion or hover help yet, so those still come from the extension in VS Code, and in JetBrains from `web-types.json` for files and from the plugin for HTML in strings. `initializationOptions` can have `manifest`, a path to a manifest that takes precedence over the others, and `rendered: true`, which checks every file as a whole page, with the wiring.
 
-## Kommandolinjen og testene
+## The command line and the tests
 
-Den samme sjekken finnes uten editor. `lotek sjekk` leser filer, standard inn eller en adresse, og skriver hvert funn som `fil:linje:kolonne: feil: melding`, eller `advarsel:` der det er en advarsel. Ett funn gir feilkode, så den kan stå i CI:
+The same check exists without an editor. `lotek check` reads files, standard input or an address, and writes each finding as `file:line:column: error: message`, or `warning:` where it is a warning. One finding gives an error code, so it can run in CI:
 
 ```bash
-npx @lo-tek/interfaces sjekk templates/*.html
-npx @lo-tek/interfaces sjekk http://localhost:8080/form
+npx @lo-tek/interfaces check templates/*.html
+npx @lo-tek/interfaces check http://localhost:8080/form
 ```
 
-Lager serveren HTML-en i kode, som strenger i en Kotlin-app, finnes det ingen malfil å sjekke. Da sjekker du siden serveren sender, med adressen eller med `--rendret` i appens egne tester. Flagg, utdata og eksempler for tester i JavaScript og Kotlin står på [Kommandolinjen](../command-line/).
+If the server makes the HTML in code, as strings in a Kotlin app, there is no template file to check. Then you check the page the server sends, with the address or with `--rendered` in the app's own tests. Flags, output and examples for tests in JavaScript and Kotlin are on [Command line](../command-line/).
 
-## Det ingen av dem ser
+## What none of them see
 
-Editoren ser én fil om gangen. En ledetekst i én partial og et felt i en annen henger sammen først når siden er satt sammen. Det ser `sjekk` på en hel side, der den krever at hver id det pekes på finnes og at hvert felt er koblet. Se [Kommandolinjen](../command-line/#maler-og-hele-sider). I nettleseren sier web-komponenten fra hvis koblingen mangler. Se [Markup og oppførsel](../markup-and-behaviour/).
+The editor sees one file at a time. A label in one partial and a field in another only fit together once the page is assembled. `check` sees that on a whole page, where it requires every id that is pointed to to exist and every field to be wired. See [Command line](../command-line/#templates-and-whole-pages). In the browser, the web component reports it if the wiring is missing. See [Markup and behaviour](../markup-and-behaviour/).

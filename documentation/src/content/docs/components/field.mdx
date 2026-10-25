@@ -1,29 +1,29 @@
 ---
 title: Field
-description: Rammekomponent som kobler ledetekst, felt, hjelpetekst og feilmelding sammen for deg.
+description: Frame component that wires the label, field, help text and error text together for you.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import FieldDemo from "../../../components/FieldDemo.astro"
 
-Et skjemafelt er tilgjengelig når hjelpeteksten og feilmeldingen er koblet til selve feltet. LO-TEK gir deg den koblingen på to måter, og **du skal bruke den ene, ikke begge**.
+A form field is accessible when the help text and the error text are wired to the field itself. LO-TEK gives you that wiring in two ways, and **you use one of them, not both**.
 
-| Lager du markupen med JavaScript? | Bruk |
+| Do you produce the markup with JavaScript? | Use |
 | --- | --- |
-| **Ja.** React, Astro, en Node-server, eller en app helt uten server | [`lt.field()`](#som-funksjon). Da trenger du ikke web componenten |
-| **Nei.** En Go-mal, en PHP-fil, en Razor-visning eller håndskrevet HTML | [`<lt-field>`](#som-element) |
+| **Yes.** React, Astro, a Node server, or an app with no server at all | [`lt.field()`](#as-a-function). Then you do not need the web component |
+| **No.** A Go template, a PHP file, a Razor view or handwritten HTML | [`<lt-field>`](#as-an-element) |
 
-Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverandre. Forskjellen er bare om koden som lager HTML-en kan kalle en TypeScript-funksjon.
+Both use the same function underneath, so the contract cannot drift apart. The only difference is whether the code that produces the HTML can call a TypeScript function.
 
-`<lt-field>` lager ingen markup selv og bruker ikke Shadow DOM, så `FormData`, skjemabiblioteker og testverktøy finner elementene som før.
+`<lt-field>` creates no markup itself and does not use Shadow DOM, so `FormData`, form libraries and test tools find the elements as before.
 
-:::note[Andre komponenter er ikke enten eller]
-`<lt-field>` kan erstattes helt av byggefunksjonen, fordi koblingen er markup og ikke oppførsel. Det samme gjelder [Dialog](../dialog/), når appen selv kaller `showModal()`. [Tabs](../tabs/), [Popover](../popover/), [Suggestion](../suggestion/) og [Error Summary](../error-summary/) gjør noe en funksjon ikke kan, som piltaster og fokus, så der bruker du byggefunksjonen **og** komponenten. Se [Markup og oppførsel](/markup-and-behaviour/#byggefunksjon-eller-web-component).
+:::note[Other components are not either-or]
+`<lt-field>` can be replaced entirely by the builder function, because the wiring is markup and not behaviour. The same goes for [Dialog](../dialog/), when the app calls `showModal()` itself. [Tabs](../tabs/), [Popover](../popover/), [Suggestion](../suggestion/) and [Error Summary](../error-summary/) do something a function cannot, like arrow keys and focus, so there you use the builder function **and** the component. See [Markup and behaviour](/markup-and-behaviour/#builder-function-or-web-component).
 :::
 
 ## How to use it
 
-`defineLtField()` registrerer web componenten i nettleseren, og kalles én gang ved oppstart. Flere kall er ufarlige. Stilarket må importeres fordi barna er dine egne elementer med klassene `lt-label`, `lt-input` og så videre, og de klassene må ligge på siden. `field.css` samler dem.
+`defineLtField()` registers the web component in the browser, and is called once at startup. More calls are harmless. The stylesheet must be imported because the children are elements you write, with the classes `lt-label`, `lt-input` and so on, and those classes must be on the page. `field.css` collects them.
 
 <Tabs>
   <TabItem label="Try it">
@@ -31,28 +31,28 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
   </TabItem>
   <TabItem label="Plain HTML">
     ```html
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`,
+         not `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/field/field.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
-    <!-- novalidate: ellers stopper nettleseren et tomt påkrevd felt før
-         submit-hendelsen, og feilmeldingen under blir aldri vist. -->
-    <form id="kontaktskjema" novalidate>
+    <!-- novalidate: otherwise the browser stops an empty required field before
+         the submit event, and the error text below is never shown. -->
+    <form id="contact-form" novalidate>
       <lt-field>
-        <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
-        <input class="lt-input" id="navn" type="text" name="navn" required />
-        <p class="lt-error-text" hidden>Fyll inn navnet ditt.</p>
+        <label class="lt-label" for="name" data-required="symbol">Full name</label>
+        <input class="lt-input" id="name" type="text" name="name" required />
+        <p class="lt-error-text" hidden>Enter your name.</p>
       </lt-field>
 
       <button class="lt-button" type="submit">Send</button>
     </form>
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtField } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/field/lt-field.js"
@@ -61,54 +61,54 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     </script>
 
     <script type="module">
-      const skjema = document.getElementById("kontaktskjema")
-      const navnInput = document.getElementById("navn")
-      const feil = navnInput.closest("lt-field").querySelector(".lt-error-text")
+      const form = document.getElementById("contact-form")
+      const nameInput = document.getElementById("name")
+      const error = nameInput.closest("lt-field").querySelector(".lt-error-text")
 
-      skjema.addEventListener("submit", (hendelse) => {
-        hendelse.preventDefault()
+      form.addEventListener("submit", (event) => {
+        event.preventDefault()
 
-        const tomt = navnInput.value.trim() === ""
-        feil.hidden = !tomt
+        const empty = nameInput.value.trim() === ""
+        error.hidden = !empty
 
-        if (tomt) {
-          navnInput.focus()
+        if (empty) {
+          nameInput.focus()
           return
         }
 
-        const data = new FormData(skjema)
+        const data = new FormData(form)
         console.log(Object.fromEntries(data))
       })
     </script>
     ```
 
-    `for` og `id` skriver du selv, som HTML krever for at feltet skal ha et navn før skriptet har kjørt. Feltet er ugyldig når feilmeldingen synes: skriptet slår `hidden` av og på, og komponenten kobler feilmeldingen til feltet og setter `aria-invalid`. `new FormData(skjema)` plukker opp feltet av seg selv. Det er hele poenget med at komponenten holder seg i vanlig DOM.
+    You write `for` and `id` yourself, as HTML requires for the field to have a name before the script has run. The field is invalid when the error text is visible: the script toggles `hidden`, and the component wires the error text to the field and sets `aria-invalid`. `new FormData(form)` picks up the field by itself. That is the whole point of the component staying in plain DOM.
   </TabItem>
   <TabItem label="React">
-    I React kaller du `lt.field()`. Da står koblingen i markupen React selv rendrer, på serveren som i nettleseren, og du trenger ikke registrere noe.
+    In React you call `lt.field()`. Then the wiring is in the markup React renders itself, on the server as in the browser, and you do not need to register anything.
 
     ```tsx
-    // main.tsx, kjøres én gang når appen starter
+    // main.tsx, runs once when the app starts
     import "@lo-tek/interfaces/tokens.css"
     import "@lo-tek/interfaces/field.css"
     import "@lo-tek/interfaces/button.css"
     ```
 
     ```tsx
-    // Kontaktskjema.tsx
+    // ContactForm.tsx
     import { lt } from "@lo-tek/interfaces/react"
     import { useId, useState } from "react"
 
-    export function Kontaktskjema() {
-      const [navn, setNavn] = useState("")
-      const [berørt, setBerørt] = useState(false)
+    export function ContactForm() {
+      const [name, setName] = useState("")
+      const [touched, setTouched] = useState(false)
 
-      const ugyldig = berørt && navn.trim() === ""
-      const felt = lt.field({
+      const invalid = touched && name.trim() === ""
+      const field = lt.field({
         id: useId(),
         required: "symbol",
         error: true,
-        invalid: ugyldig,
+        invalid,
       })
 
       return (
@@ -116,20 +116,20 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
           noValidate
           onSubmit={(e) => {
             e.preventDefault()
-            setBerørt(true)
+            setTouched(true)
           }}
         >
-          <label {...felt.label}>Fullt navn</label>
+          <label {...field.label}>Full name</label>
           <input
             {...lt.input({ type: "text" })}
-            {...felt.control}
-            name="navn"
+            {...field.control}
+            name="name"
             required
-            value={navn}
-            onChange={(e) => setNavn(e.target.value)}
-            onBlur={() => setBerørt(true)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={() => setTouched(true)}
           />
-          <p {...lt.errorText()} {...felt.error}>Fyll inn navnet ditt.</p>
+          <p {...lt.errorText()} {...field.error}>Enter your name.</p>
 
           <button {...lt.button()} type="submit">Send</button>
         </form>
@@ -137,20 +137,20 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     }
     ```
 
-    `required: "symbol"` gir stjernen på ledeteksten. At feltet må fylles ut, sier `required` på selve feltet.
+    `required: "symbol"` gives the asterisk on the label. That the field must be filled in is said by `required` on the field itself.
 
-    :::caution[I React kommer id-en fra `useId()`]
-    En id som lages av seg selv blir ikke den samme på serveren og i nettleseren, og React melder da avvik ved hydreringen på ledeteksten, feltet og feilmeldingen. Advarselen sier selv at avviket ikke blir rettet opp. `createFieldId()` duger heller ikke i en komponentkropp: den gir en ny id ved hver rendring.
+    :::caution[In React the id comes from `useId()`]
+    An id that is generated on its own is not the same on the server and in the browser, and React then reports a hydration mismatch on the label, the field and the error text. The warning itself says the mismatch will not be patched up. `createFieldId()` will not do in a component body either: it gives a new id on every render.
     :::
 
-    :::caution[Web componenten gir hydreringsfeil i React med server-rendring]
-    Komponenten skriver `aria-describedby`, id-er og klassen på elementene i det den registreres, altså før React hydrerer. React finner da attributter den ikke rendret, og utviklingsbygget i React 19 melder «A tree hydrated but some attributes of the server rendered HTML didn't match the client properties». Feltet virker, men feilen står i konsollen på hver side med et felt. Bruk `lt.field()`.
+    :::caution[The web component gives hydration errors in React with server rendering]
+    The component writes `aria-describedby`, ids and the class on the elements when it is registered, before React hydrates. React then finds attributes it did not render, and the React 19 development build reports "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties". The field works, but the error is in the console on every page with a field. Use `lt.field()`.
 
-    Rendrer appen bare i nettleseren, uten server, virker `<lt-field>` også i React. Ugyldig styres da med `hidden={!ugyldig}` på feilmeldingen, et vanlig HTML-attributt React skriver likt i alle versjoner.
+    If the app renders only in the browser, without a server, `<lt-field>` also works in React. Invalid is then controlled with `hidden={!invalid}` on the error text, a plain HTML attribute React writes the same way in all versions.
     :::
   </TabItem>
   <TabItem label="Astro">
-    Trenger feltet bare å vises i én tilstand, gjør `lt.field()` koblingen ved bygging. Da sendes ingen JavaScript for feltet i det hele tatt:
+    If the field only needs to be shown in one state, `lt.field()` does the wiring at build time. Then no JavaScript is sent for the field at all:
 
     ```astro
     ---
@@ -158,15 +158,15 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     import "@lo-tek/interfaces/tokens.css"
     import "@lo-tek/interfaces/field.css"
 
-    const navn = lt.field({ id: "navn", required: "symbol", error: true })
+    const name = lt.field({ id: "name", required: "symbol", error: true })
     ---
 
-    <label {...navn.label}>Fullt navn</label>
-    <input {...lt.input({ type: "text" })} {...navn.control} name="navn" required />
-    <p {...lt.errorText()} {...navn.error}>Fyll inn navnet ditt.</p>
+    <label {...name.label}>Full name</label>
+    <input {...lt.input({ type: "text" })} {...name.control} name="name" required />
+    <p {...lt.errorText()} {...name.error}>Enter your name.</p>
     ```
 
-    Skal feltet kunne bli ugyldig mens brukeren står i det, bruker du `<lt-field>` og registrerer den i en `<script>`-tagg. Astro pakker den og kjører den på klienten:
+    If the field should be able to become invalid while the user is in it, use `<lt-field>` and register it in a `<script>` tag. Astro bundles it and runs it on the client:
 
     ```astro
     ---
@@ -175,13 +175,13 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     import "@lo-tek/interfaces/tokens.css"
     import "@lo-tek/interfaces/field.css"
 
-    const navn = lt.field({ id: "navn", required: "symbol", error: true })
+    const name = lt.field({ id: "name", required: "symbol", error: true })
     ---
 
     <lt-field>
-      <label {...navn.label}>Fullt navn</label>
-      <input {...lt.input({ type: "text" })} {...navn.control} name="navn" required />
-      <p {...lt.errorText()} {...navn.error}>Fyll inn navnet ditt.</p>
+      <label {...name.label}>Full name</label>
+      <input {...lt.input({ type: "text" })} {...name.control} name="name" required />
+      <p {...lt.errorText()} {...name.error}>Enter your name.</p>
     </lt-field>
 
     <script>
@@ -191,7 +191,7 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     ```
   </TabItem>
   <TabItem label="Datastar">
-    [Datastar](https://data-star.dev) legger reaktivitet på vanlig HTML med `data-*`-attributter. Ett skript, ingen byggesteg.
+    [Datastar](https://data-star.dev) adds reactivity to plain HTML with `data-*` attributes. One script, no build step.
 
     ```html
     <script
@@ -201,41 +201,41 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     ```
 
     ```html
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`,
+         not `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/field/field.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/input/input.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/error-text/error-text.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
     <form
       novalidate
-      data-signals="{navn: '', beroert: false}"
-      data-computed:ugyldig="$beroert && $navn.trim() === ''"
-      data-on:submit__prevent="$beroert = true; !$ugyldig && @post('/kontakt')"
+      data-signals="{name: '', touched: false}"
+      data-computed:invalid="$touched && $name.trim() === ''"
+      data-on:submit__prevent="$touched = true; !$invalid && @post('/contact')"
     >
       <lt-field>
-        <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
+        <label class="lt-label" for="name" data-required="symbol">Full name</label>
         <input
           class="lt-input"
-          id="navn"
+          id="name"
           type="text"
-          name="navn"
+          name="name"
           required
-          data-bind:navn
-          data-on:blur="$beroert = true"
+          data-bind:name
+          data-on:blur="$touched = true"
         />
-        <p class="lt-error-text" hidden data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
+        <p class="lt-error-text" hidden data-attr:hidden="!$invalid">Enter your name.</p>
       </lt-field>
 
       <button class="lt-button" type="submit">Send</button>
     </form>
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtField } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/field/lt-field.js"
@@ -244,104 +244,104 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
     </script>
     ```
 
-    `data-attr:hidden` skjuler feilmeldingen når feltet er gyldig og viser den når det er ugyldig. `<lt-field>` ser at feilmeldingen synes, og setter `aria-invalid` og `aria-describedby` på feltet. Feltet har ingen id komponenten har laget, så en patch fra serveren kjenner det igjen, og det brukeren har skrevet står.
+    `data-attr:hidden` hides the error text when the field is valid and shows it when it is invalid. `<lt-field>` sees that the error text is visible, and sets `aria-invalid` and `aria-describedby` on the field. The field has no id the component created, so a patch from the server recognises it, and what the user has typed stays.
   </TabItem>
 </Tabs>
 
-**`lt.input()` skal bare få `type`.** Tilstanden ligger i `felt.control`, og de to overlapper med vilje ikke. Sendte du `state` til begge, ville `aria-invalid` blitt skrevet ut to ganger i maler som gjengir attributtene bokstavelig, som Astro og ren HTML. `felt.state` finnes fortsatt hvis du vil drive noe annet med den.
+**`lt.input()` should only get `type`.** The state is in `field.control`, and the two deliberately do not overlap. If you passed `state` to both, `aria-invalid` would be written out twice in templates that render the attributes literally, like Astro and plain HTML. `field.state` still exists if you want to drive something else with it.
 
-### Merkingen
+### The required marker
 
-`data-required` på ledeteksten velger hvordan et påkrevd felt merkes, `symbol` eller `text`, og står i markupen, så merket synes også før skriptet har kjørt. `optional` på `<lt-field>` snur det om: merk det valgfrie framfor det påkrevde, når nesten alt i skjemaet må fylles ut. `optional` har ingen plass i oppskriften over, siden den viser ett felt og ikke et skjema.
+`data-required` on the label chooses how a required field is marked, `symbol` or `text`, and is in the markup, so the marker is visible also before the script has run. `optional` on `<lt-field>` turns it around: mark the optional field instead of the required one, when almost everything in the form must be filled in. `optional` has no place in the recipe above, since it shows one field and not a form.
 
 ```html
 <lt-field>
-  <label class="lt-label" for="epost" data-required="text">E-postadresse</label>
-  <input class="lt-input" id="epost" type="email" required />
+  <label class="lt-label" for="email" data-required="text">Email address</label>
+  <input class="lt-input" id="email" type="email" required />
 </lt-field>
 
 <lt-field optional>
-  <label for="melding">Melding til saksbehandler</label>
-  <textarea class="lt-textarea" id="melding" rows="3"></textarea>
+  <label for="message">Message to the case officer</label>
+  <textarea class="lt-textarea" id="message" rows="3"></textarea>
 </lt-field>
 ```
 
-## Hvorfor koblingen er vanskelig
+## Why the wiring is hard
 
-Et felt med hjelpetekst og feilmelding krever fem koblinger som må stemme samtidig:
+A field with help text and an error text needs five connections that must all be right at once:
 
 ```html
-<label for="epost">E-postadresse</label>
-<input id="epost" aria-invalid="true" aria-describedby="epost-hjelp epost-feil" />
-<p id="epost-hjelp">Vi sender kvittering hit.</p>
-<p id="epost-feil">Skriv en gyldig e-postadresse.</p>
+<label for="email">Email address</label>
+<input id="email" aria-invalid="true" aria-describedby="email-help email-error" />
+<p id="email-help">We send the receipt here.</p>
+<p id="email-error">Enter a valid email address.</p>
 ```
 
-Hver `id` må være unik, `aria-describedby` må peke på begge tekstene, og `aria-invalid` må følge valideringen. Fem steder å gjøre feil per felt, ganget med antall felt. Og det synes ikke på skjermen når en av dem mangler.
+Every `id` must be unique, `aria-describedby` must point to both texts, and `aria-invalid` must follow the validation. Five places to get it wrong per field, multiplied by the number of fields. And nothing shows on the screen when one of them is missing.
 
-## Som funksjon
+## As a function
 
-`lt.field()` regner ut attributtene der du rendrer, enten ved bygging i Astro, på hver render i React, eller på serveren. Nettleseren trenger ingen registrert komponent, og koblingen står ferdig i HTML-en før noe skript har kjørt:
+`lt.field()` computes the attributes where you render, whether at build time in Astro, on every render in React, or on the server. The browser needs no registered component, and the wiring is ready in the HTML before any script has run:
 
 ```tsx
-const felt = lt.field({ id: "epost", required: "symbol", help: true, error: true, invalid })
+const field = lt.field({ id: "email", required: "symbol", help: true, error: true, invalid })
 
-<label {...felt.label}>E-postadresse</label>
-<input {...lt.input({ type: "email" })} {...felt.control} />
-<p {...lt.helpText()} {...felt.help}>Vi sender kvittering hit.</p>
-<p {...lt.errorText()} {...felt.error}>Skriv en gyldig adresse.</p>
+<label {...field.label}>Email address</label>
+<input {...lt.input({ type: "email" })} {...field.control} />
+<p {...lt.helpText()} {...field.help}>We send the receipt here.</p>
+<p {...lt.errorText()} {...field.error}>Enter a valid address.</p>
 ```
 
-Bruker du React, importer fra `@lo-tek/interfaces/react`, som gir `className` og `htmlFor` i stedet for HTML-navnene.
+If you use React, import from `@lo-tek/interfaces/react`, which gives `className` and `htmlFor` instead of the HTML names.
 
-**`id` er påkrevd.** I React kommer den fra `useId()`. Ellers er feltets eget navn som regel det opplagte valget. Vet du sikkert at markupen rendres én gang, som på en Astro-side, kan du kalle `createFieldId()`, som du får fra både `@lo-tek/interfaces` og `@lo-tek/interfaces/react`.
+**`id` is required.** In React it comes from `useId()`. Otherwise the field's own name is usually the obvious choice. If you know for certain that the markup is rendered once, as on an Astro page, you can call `createFieldId()`, which you get from both `@lo-tek/interfaces` and `@lo-tek/interfaces/react`.
 
-Grunnen er at en id som lages av seg selv er tilfeldig: to kjøringer gir to ulike. Rendres det samme feltet på en server og så i nettleseren, peker `for` og `aria-describedby` på noe annet enn det som står der, og React melder avvik ved hydreringen.
+The reason is that an id generated on its own is random: two runs give two different ones. If the same field is rendered on a server and then in the browser, `for` and `aria-describedby` point to something other than what is there, and React reports a hydration mismatch.
 
-Skriver du JavaScript uten typer, ser du ingen type. Da lager funksjonen en id likevel, og sier fra i konsollen, så feltet virker mens du retter det.
+If you write JavaScript without types, you see no type. Then the function creates an id anyway, and warns in the console, so the field works while you fix it.
 
-## Som element
+## As an element
 
-Kan ikke koden som lager HTML-en kalle en TypeScript-funksjon, gjør `<lt-field>` den samme koblingen i nettleseren. Du skriver elementene dine som vanlig, med `for` på ledeteksten og `id` på feltet, eller med ledeteksten rundt feltet. Det er det HTML krever for at feltet skal ha et navn før skriptet har kjørt, og for at stemmestyring skal finne det. Komponenten setter `aria-describedby` og `aria-invalid` på feltet og gir hjelpeteksten og feilmeldingen id.
+If the code that produces the HTML cannot call a TypeScript function, `<lt-field>` does the same wiring in the browser. You write your elements as usual, with `for` on the label and `id` on the field, or with the label around the field. That is what HTML requires for the field to have a name before the script has run, and for voice control to find it. The component sets `aria-describedby` and `aria-invalid` on the field and gives the help text and the error text ids.
 
-Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. Uten en id fra komponenten blir feltet stående.
+The component never writes an id on the field. Datastar and idiomorph recognise an element by its id, and a field with an id the server did not send would be replaced on the next update, along with focus and what the user has typed. Without an id from the component the field stays.
 
-Sender serveren det samme området på nytt mens brukeren holder på, som i en Datastar-app, river morfingen koblingen bort: ingenting av den sto i HTML-en serveren sendte. Komponenten ser det og setter den tilbake, så malen din trenger ingen `data-preserve-attr`. Begrunnelsen står i [Markup og oppførsel](/markup-and-behaviour/#når-markupen-ikke-lages-med-javascript).
+If the server sends the same region again while the user is working, as in a Datastar app, the morph tears the wiring away: none of it was in the HTML the server sent. The component sees that and puts it back, so your template needs no `data-preserve-attr`. The reasoning is in [Markup and behaviour](/markup-and-behaviour/#when-the-markup-is-not-produced-with-javascript).
 
-I en løkke lager du id-en av en nøkkel i dataene, som `merknad-{{.Kode}}`, aldri av indeksen eller en teller. En id som følger plassen, flytter det brukeren skrev til feil rad når serveren setter inn en ny. Lager malen id-en av noe som skifter mellom rendringene, sier komponenten fra i konsollen når en oppdatering byttet ut feltet av den grunn.
+In a loop you make the id from a key in the data, like `note-{{.Code}}`, never from the index or a counter. An id that follows the position moves what the user typed to the wrong row when the server inserts a new one. If the template makes the id from something that changes between renders, the component warns in the console when an update replaced the field for that reason.
 
-Finner komponenten ikke delene sine, sier den fra i konsollen. Et `<lt-field>` uten en kontroll gir en advarsel med navnet på det som mangler, framfor et felt som stilltiende står uten kobling. Det samme gjelder et felt uten ledetekst, men bare når det heller ikke har et navn på annet vis: en `<label for>` utenfor elementet, `aria-label` eller `aria-labelledby` på kontrollen teller, som i et søkefelt med bare et ikon. Og et felt med mer enn én kontroll gir en advarsel, siden bare den første får koblingen.
+If the component cannot find its parts, it warns in the console. An `<lt-field>` without a control gives a warning naming what is missing, instead of a field that silently has no wiring. The same goes for a field without a label, but only when it has no name in any other way either: a `<label for>` outside the element, `aria-label` or `aria-labelledby` on the control counts, as in a search field with only an icon. And a field with more than one control gives a warning, since only the first gets the wiring.
 
-## Automatisk kobling
+## Automatic wiring
 
-Hver gang innholdet eller attributtene endrer seg, finner den `<label>` og første kontroll blant sine egne deler og:
+Every time the content or the attributes change, it finds the `<label>` and the first control among its own parts and:
 
-1. Setter `label[for]` til kontrollens `id` når kontrollen har en, og ledeteksten ikke står rundt kontrollen. Kontrollen får aldri en id fra komponenten.
-2. Gir hjelpetekst og feilmelding `id` ved behov.
-3. Setter `aria-describedby` på kontrollen: hjelpeteksten alltid, og feilmeldingen i tillegg når den synes. En skjult feilmelding skal ikke leses opp.
-4. Setter `aria-invalid="true"` på kontrollen når feilmeldingen synes, altså har tekst og står uten `hidden` og uten `display: none`. `data-show` i Datastar og `data-text` i en beholder som står tom, virker derfor også.
-5. Setter `data-optional` på ledeteksten når `<lt-field>` har `optional`.
+1. Sets `label[for]` to the control's `id` when the control has one, and the label is not around the control. The control never gets an id from the component.
+2. Gives the help text and the error text an `id` when needed.
+3. Sets `aria-describedby` on the control: the help text always, and the error text as well when it is visible. A hidden error text should not be announced.
+4. Sets `aria-invalid="true"` on the control when the error text is visible, meaning it has text and is without `hidden` and without `display: none`. `data-show` in Datastar and `data-text` in a container that is empty therefore also work.
+5. Sets `data-optional` on the label when `<lt-field>` has `optional`.
 
-Feilmeldingen kan ligge i markupen hele tiden med `hidden`, eller rendres av malen bare når feltet er ugyldig. Komponenten rører aldri `hidden` på den.
+The error text can be in the markup all the time with `hidden`, or be rendered by the template only when the field is invalid. The component never touches `hidden` on it.
 
-Komponenten krever to klassenavn av deg: `lt-help-text` på hjelpeteksten og `lt-error-text` på feilmeldingen. Kontrollen finner den på tagnavnet, altså `<input>`, `<textarea>` eller `<select>`, og et `type="hidden"` teller ikke som kontroll. Ledeteksten finner den på en `<label>` inni elementet, eller på en `<label for>` utenfor som peker på kontrollens `id`. Har kontrollen ingen `id`, og ledeteksten står ikke rundt den, sier komponenten fra: feltet har da ikke noe navn uten JavaScript. Har kontrollen `id`, skriver komponenten `for` fra den, og sier fra i konsollen når ledeteksten pekte på en annen id: uten JavaScript hadde feltet da ingen ledetekst. Skriv `for` i malen også; det er den som gir feltet et navn før skriptet kjører.
+The component requires two class names from you: `lt-help-text` on the help text and `lt-error-text` on the error text. It finds the control by tag name, `<input>`, `<textarea>` or `<select>`, and a `type="hidden"` does not count as a control. It finds the label as a `<label>` inside the element, or as a `<label for>` outside that points to the control's `id`. If the control has no `id`, and the label is not around it, the component warns: the field then has no name without JavaScript. If the control has an `id`, the component writes `for` from it, and warns in the console when the label pointed to a different id: without JavaScript the field would then have had no label. Write `for` in the template too; that is what gives the field a name before the script runs.
 
-Delene er bare dem som hører til dette feltet. Står et `<lt-field>` inni et annet, som et søkefelt i et sprettoppvindu inni feltet, ser det ytre feltet bare sin egen kontroll, ledetekst, hjelpetekst og feilmelding, og det indre sine.
+The parts are only those that belong to this field. If one `<lt-field>` is inside another, like a search field in a popover inside the field, the outer field sees only the control, label, help text and error text that belong to it, and the inner field likewise.
 
-## Attributter
+## Attributes
 
-| Attributt | Type | Hva det gjør |
+| Attribute | Type | What it does |
 | --- | --- | --- |
-| `disabled` | boolsk | Setter `disabled` på kontrollen og demper ledeteksten |
-| `optional` | boolsk | Setter `data-optional` på ledeteksten |
-| `described-by` | streng | Legger til ekstra `id`-er i `aria-describedby`, i tillegg til hjelp og feil |
+| `disabled` | boolean | Sets `disabled` on the control and dims the label |
+| `optional` | boolean | Sets `data-optional` on the label |
+| `described-by` | string | Adds extra `id`s to `aria-describedby`, in addition to help and error |
 
-Det finnes ikke noe `invalid`-attributt. Feltet er ugyldig når feilmeldingen synes, eller når serveren har skrevet `aria-invalid` på kontrollen. Påkrevd-merket står som `data-required` på ledeteksten, og er bare visuelt: `required` må stå på selve `<input>`.
+There is no `invalid` attribute. The field is invalid when the error text is visible, or when the server has written `aria-invalid` on the control. The required marker is `data-required` on the label, and is only visual: `required` must be on the `<input>` itself.
 
 ## Accessibility
 
-- Komponenten gjør koblingen, ikke innholdet. Ledeteksten og feilmeldingen må du fortsatt skrive godt.
-- Skriv `for` på ledeteksten og `id` på feltet, eller legg ledeteksten rundt feltet. Uten det har feltet ikke noe navn før skriptet har kjørt. Uten id får feltet ikke fokus tilbake etter en `innerHTML`-oppdatering med htmx, som finner det igjen på id, og stemmestyring på Windows er ikke etterprøvd med ledeteksten rundt feltet.
-- Sett `required` på `<input>` i tillegg til `data-required` på ledeteksten.
-- Vis feilmeldingen når brukeren har forlatt feltet, ikke for hvert tastetrykk. Meldingen leses opp hver gang den dukker opp.
-- Én kontroll per `<lt-field>`. Komponenten kobler seg til den første den finner. Grupper hører hjemme i en `<fieldset>` med `<legend>`.
+- The component does the wiring, not the content. You still have to write the label and the error message well.
+- Write `for` on the label and `id` on the field, or put the label around the field. Without that the field has no name before the script has run. Without an id the field does not get focus back after an `innerHTML` update with htmx, which finds it again by id, and voice control on Windows has not been checked with the label around the field.
+- Set `required` on the `<input>` in addition to `data-required` on the label.
+- Show the error message when the user has left the field, not on every keystroke. The message is announced every time it appears.
+- One control per `<lt-field>`. The component wires itself to the first one it finds. Groups belong in a `<fieldset>` with `<legend>`.

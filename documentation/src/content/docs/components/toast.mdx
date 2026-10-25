@@ -1,17 +1,17 @@
 ---
 title: Toast
-description: Kø av korte meldinger i hjørnet av skjermen. Frittstående komponent.
+description: A queue of short messages in the corner of the screen. Standalone component.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import ToastDemo from "../../../components/ToastDemo.astro"
 
-Elementet er beholderen, ikke meldingen. Du legger det inn én gang i appen og kaller `show()` når noe skal meldes.
+The element is the container, not the message. You add it once in the app and call `show()` when there is something to report.
 
-Beholderen er en `role="status"`-region, ikke `role="alert"`. En melding som dukker opp i hjørnet skal ikke avbryte det skjermleseren holder på med. Er beskjeden så viktig at den må avbryte, hører den hjemme i en [Alert](../alert/) i selve siden.
+The container is a `role="status"` region, not `role="alert"`. A message that appears in the corner should not interrupt what the screen reader is doing. If the message is important enough to interrupt, it belongs in an [Alert](../alert/) in the page itself.
 
 ```ts
-// main.ts, kjøres én gang når appen starter
+// main.ts, runs once when the app starts
 import { defineLtToast } from "@lo-tek/interfaces/toast"
 import "@lo-tek/interfaces/tokens.css"
 import "@lo-tek/interfaces/toast.css"
@@ -21,7 +21,7 @@ defineLtToast()
 
 ## How to use it
 
-Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjellen fra de andre komponentene: her kaller du en metode framfor å sette et attributt.
+The container is added once, and the messages come from your code. That is the difference from the other components: here you call a method instead of setting an attribute.
 
 <Tabs>
   <TabItem label="Try it">
@@ -29,22 +29,22 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
   </TabItem>
   <TabItem label="Plain HTML">
     ```html
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`, not
+         `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/standalone/toast/toast.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
-    <lt-toast id="meldinger" class="lt-toast" role="status" aria-live="polite"
+    <lt-toast id="messages" class="lt-toast" role="status" aria-live="polite"
               aria-atomic="false"
-              aria-label="Meldinger" data-ignore-morph></lt-toast>
+              aria-label="Messages" data-ignore-morph></lt-toast>
 
-    <button class="lt-button" id="lagre" type="button">Lagre søknaden</button>
+    <button class="lt-button" id="save" type="button">Save application</button>
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtToast } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/toast/lt-toast.js"
@@ -53,29 +53,29 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     </script>
 
     <script type="module">
-      const meldinger = document.getElementById("meldinger")
+      const messages = document.getElementById("messages")
 
-      document.getElementById("lagre").addEventListener("click", async () => {
+      document.getElementById("save").addEventListener("click", async () => {
         try {
-          await lagre()
-          meldinger.show("Søknaden er lagret", { color: "success" })
+          await save()
+          messages.show("Your application has been saved", { color: "success" })
         } catch {
-          meldinger.show("Klarte ikke å lagre. Prøv igjen.", { color: "danger", duration: 0 })
+          messages.show("Could not save. Try again.", { color: "danger", duration: 0 })
         }
       })
     </script>
     ```
 
-    En feilmelding står til brukeren lukker den, derfor `duration: 0`.
+    An error message stays until the user closes it, hence `duration: 0`.
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/lotek.d.ts, gir <lt-toast> typer i JSX
+    // src/lotek.d.ts, gives <lt-toast> types in JSX
     import "@lo-tek/interfaces/react-jsx"
     ```
 
     ```tsx
-    // main.tsx, kjøres én gang når appen starter
+    // main.tsx, runs once when the app starts
     import { defineLtToast } from "@lo-tek/interfaces/toast"
     import "@lo-tek/interfaces/toast.css"
     import "@lo-tek/interfaces/button.css"
@@ -83,7 +83,7 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     defineLtToast()
     ```
 
-    Legg beholderen i rotkomponenten, og del referansen med en context:
+    Put the container in the root component, and share the reference through a context:
 
     ```tsx
     import { createContext, useContext, useRef } from "react"
@@ -91,40 +91,40 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     import { type LtToast, showToast } from "@lo-tek/interfaces/toast"
     import "@lo-tek/interfaces/tokens.css"
 
-    const varsler = lt.toast({ label: "Meldinger" })
+    const toasts = lt.toast({ label: "Messages" })
 
-    const Meldinger = createContext<(tekst: string, farge?: "success" | "danger") => void>(
+    const Messages = createContext<(text: string, color?: "success" | "danger") => void>(
       () => {},
     )
 
-    export function MeldingerProvider({ children }: { children: React.ReactNode }) {
-      const kø = useRef<LtToast>(null)
+    export function MessagesProvider({ children }: { children: React.ReactNode }) {
+      const queue = useRef<LtToast>(null)
 
-      const meld = (tekst: string, farge?: "success" | "danger") => {
-        if (!kø.current) return
-        showToast(kø.current, tekst, { color: farge, duration: farge === "danger" ? 0 : undefined })
+      const notify = (text: string, color?: "success" | "danger") => {
+        if (!queue.current) return
+        showToast(queue.current, text, { color, duration: color === "danger" ? 0 : undefined })
       }
 
       return (
-        <Meldinger.Provider value={meld}>
+        <Messages.Provider value={notify}>
           {children}
-          <lt-toast ref={kø} {...varsler.host} />
-        </Meldinger.Provider>
+          <lt-toast ref={queue} {...toasts.host} />
+        </Messages.Provider>
       )
     }
 
-    export const useMeldinger = () => useContext(Meldinger)
+    export const useMessages = () => useContext(Messages)
     ```
 
     ```tsx
-    const meld = useMeldinger()
+    const notify = useMessages()
 
-    <button {...lt.button()} onClick={() => meld("Søknaden er lagret", "success")}>
-      Lagre søknaden
+    <button {...lt.button()} onClick={() => notify("Your application has been saved", "success")}>
+      Save application
     </button>
     ```
 
-    Meldingene lever i DOM-en, ikke i Reacts tilstand. Det er med vilje: de skal ikke forsvinne fordi en komponent ble rendret på nytt. `showToast()` venter på at `defineLtToast()` har kjørt, så et kall før registreringen blir gjort i det den er der, i stedet for å feile.
+    The messages live in the DOM, not in React state. That is deliberate: they should not disappear because a component re-rendered. `showToast()` waits until `defineLtToast()` has run, so a call made before registration is carried out as soon as the element is registered, instead of failing.
   </TabItem>
   <TabItem label="Astro">
     ```astro
@@ -133,54 +133,54 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     import "@lo-tek/interfaces/tokens.css"
     import "@lo-tek/interfaces/toast.css"
 
-    // Legg beholderen i sideoppsettet, så finnes den på hver side
+    // Put the container in the page layout, so it exists on every page
 
-    const varsler = lt.toast({ label: "Meldinger" })
+    const toasts = lt.toast({ label: "Messages" })
 
     ---
 
     <slot />
 
-    <lt-toast id="meldinger" {...varsler.host}></lt-toast>
+    <lt-toast id="messages" {...toasts.host}></lt-toast>
 
     <script>
       import { defineLtToast } from "@lo-tek/interfaces/toast"
       defineLtToast()
 
-      // Gjør køen tilgjengelig for øyene på siden
-      window.meld = (tekst, valg) =>
-        document.getElementById("meldinger").show(tekst, valg)
+      // Make the queue available to the islands on the page
+      window.notify = (text, options) =>
+        document.getElementById("messages").show(text, options)
     </script>
     ```
 
-    Beholderen er tom fra serveren, og fylles bare av kode som kjører i nettleseren. Den koster derfor ingenting på en side som ikke bruker den.
+    The container is empty from the server, and is filled only by code running in the browser. It therefore costs nothing on a page that does not use it.
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <!-- Datastar selv. Uten den gjør `data-`-attributtene under ingenting. -->
+    <!-- Datastar itself. Without it the `data-` attributes below do nothing. -->
     <script type="module"
             src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"></script>
 
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`, not
+         `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/standalone/toast/toast.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/button/button.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
 
-    <lt-toast id="meldinger" class="lt-toast" role="status" aria-live="polite"
+    <lt-toast id="messages" class="lt-toast" role="status" aria-live="polite"
               aria-atomic="false"
-              aria-label="Meldinger" data-ignore-morph></lt-toast>
+              aria-label="Messages" data-ignore-morph></lt-toast>
 
     <button
       class="lt-button"
       type="button"
-      data-on:click="document.getElementById('meldinger').show('Søknaden er lagret', { color: 'success' })"
+      data-on:click="document.getElementById('messages').show('Your application has been saved', { color: 'success' })"
     >
-      Lagre søknaden
+      Save application
     </button>
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtToast } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/standalone/toast/lt-toast.js"
@@ -189,87 +189,87 @@ Beholderen legges inn én gang, og meldingene kommer fra koden. Det er forskjell
     </script>
     ```
 
-    Meldingene er ikke en tilstand som skal speiles i et signal. De er noe som skjer, og derfor kaller `data-on:click` metoden direkte.
+    The messages are not state to be mirrored in a signal. They are something that happens, which is why `data-on:click` calls the method directly.
   </TabItem>
 </Tabs>
 
-## Markupen
+## The markup
 
-En toast har tre deler, og `lt.toast()` gir ett attributtsett til hver. Det er den samme `varsler` som står i React- og Astro-oppskriftene over:
+A toast has three parts, and `lt.toast()` gives one attribute set for each. It is the same `toasts` as in the React and Astro recipes above:
 
 ```ts
-const varsler = lt.toast({ label: "Meldinger" })
+const toasts = lt.toast({ label: "Messages" })
 ```
 
-| Sett | Hvilken del | Hvem skriver den |
+| Set | Which part | Who writes it |
 | --- | --- | --- |
-| `varsler.host` | Beholderen, altså `<lt-toast>` | **Du**, én gang i appen |
-| `varsler.message` | Selve meldingen | Komponenten, når du kaller `show()` |
-| `varsler.close` | Lukkeknappen i meldingen | Komponenten |
+| `toasts.host` | The container, that is `<lt-toast>` | **You**, once in the app |
+| `toasts.message` | The message itself | The component, when you call `show()` |
+| `toasts.close` | The close button in the message | The component |
 
-Derfor sprer du `host` og ikke hele objektet. Beholderen er det eneste elementet du skriver:
+That is why you spread `host` and not the whole object. The container is the only element you write:
 
 ```tsx
-<lt-toast {...varsler.host} />
+<lt-toast {...toasts.host} />
 ```
 
-Sprer du hele `varsler`, setter du tre attributter som heter `host`, `message` og `close`, og ingen av dem er noe nettleseren kjenner. Beholderen står da uten `role="status"` til `defineLtToast()` har kjørt, for komponenten fyller inn rollen når den mangler. Fram til da leser ingen skjermleser opp det som kommer i den, og `data-ignore-morph` kommer aldri, siden det er det ene komponenten ikke setter selv.
+If you spread the whole of `toasts`, you set three attributes called `host`, `message` and `close`, none of which the browser knows. The container then has no `role="status"` until `defineLtToast()` has run, because the component fills in the role when it is missing. Until then no screen reader announces what appears in it, and `data-ignore-morph` never arrives, since that is the one thing the component does not set itself.
 
-De to andre settene er **navn, ikke markup**. Komponenten kjenner dem og bruker dem på det den lager selv. Du trenger dem bare når noen andre skriver meldingen: en Datastar-app der serveren patcher en melding rett inn i regionen, må skrive `lt-toast__message` og `lt-toast__close` selv, og da skal de hete det samme som komponentens egne.
+The other two sets are **names, not markup**. The component knows them and uses them on what it creates itself. You need them only when someone else writes the message: a Datastar app where the server patches a message straight into the region has to write `lt-toast__message` and `lt-toast__close` itself, and then they should have the same names as the ones the component uses.
 
-Har du ikke noe byggesteg, skriver du det samme settet ut som vanlige attributter, slik oppskriftene «Plain HTML» og «Datastar» gjør:
+Without a build step, you write the same set out as plain attributes, as the "Plain HTML" and "Datastar" recipes do:
 
 ```html
-<lt-toast id="meldinger" class="lt-toast" role="status" aria-live="polite"
+<lt-toast id="messages" class="lt-toast" role="status" aria-live="polite"
           aria-atomic="false"
-          aria-label="Meldinger" data-ignore-morph></lt-toast>
+          aria-label="Messages" data-ignore-morph></lt-toast>
 ```
 
-`data-ignore-morph` er den viktigste av dem, og den eneste komponenten ikke setter selv.
+`data-ignore-morph` is the most important of them, and the only one the component does not set itself.
 
-`data-ignore-morph` er ikke valgfri. Komponenten lager og fjerner sine egne meldinger inne i regionen, og uten attributtet river en oppdatering fra serveren dem bort, fordi serverens utgave av regionen er tom. Se [Markup og oppførsel](/markup-and-behaviour/#de-frittstående-komponentene).
+`data-ignore-morph` is not optional. The component creates and removes the messages inside the region itself, and without the attribute an update from the server tears them away, because the server's version of the region is empty. See [Markup and behaviour](/markup-and-behaviour/#the-standalone-components).
 
-## Attributter og metoder
+## Attributes and methods
 
-| Navn | Hva det er |
+| Name | What it is |
 | --- | --- |
-| `duration` | Standard levetid i millisekunder. Uten attributtet er den 6000. `0` lar meldingene bli stående. |
-| `label` | Tekst som sier hva regionen er. Blir `aria-label`. Standard: «Varsler» |
-| `close-label` | Hva lukkeknappen i hver melding heter for skjermleseren. Standard: «Lukk melding». `lt.toast({ closeLabel })` skriver det |
-| `show(tekst, valg)` | Viser en melding og returnerer elementet |
-| `dismiss(melding)` | Fjerner én melding, og sender `toast-dismiss`. Hadde meldingen fokus, går fokus til meldingen ved siden av |
-| `clear()` | Fjerner alle, uten å sende noe |
+| `duration` | Default lifetime in milliseconds. Without the attribute it is 6000. `0` leaves the messages in place. |
+| `label` | Text that says what the region is. Becomes `aria-label`. Default: "Notifications" |
+| `close-label` | What the close button in each message is called for the screen reader. Default: "Close message". `lt.toast({ closeLabel })` writes it |
+| `show(text, options)` | Shows a message and returns the element |
+| `dismiss(message)` | Removes one message, and dispatches `toast-dismiss`. If the message had focus, focus moves to the message next to it |
+| `clear()` | Removes all of them, without dispatching anything |
 
-`showToast(element, tekst, valg)` fra `@lo-tek/interfaces/toast` gjør det samme som `show()`, men venter først på at elementet er registrert. Bruk den der kallet kan komme før `defineLtToast()`, som i en modul som lastes ved siden av registreringen.
+`showToast(element, text, options)` from `@lo-tek/interfaces/toast` does the same as `show()`, but first waits until the element is registered. Use it where the call can come before `defineLtToast()`, as in a module loaded alongside the registration.
 
-Valgene til `show()`:
+The options for `show()`:
 
-| Valg | Standard | Effekt |
+| Option | Default | Effect |
 | --- | --- | --- |
-| `color` | `neutral` | `success`, `warning` eller `danger` gir en farget kant |
-| `duration` | fra elementet | Millisekunder før meldingen forsvinner |
-| `closeLabel` | fra `close-label` | Hva lukkeknappen heter for skjermleseren, for denne ene meldingen |
+| `color` | `neutral` | `success`, `warning` or `danger` gives a coloured border |
+| `duration` | from the element | Milliseconds before the message disappears |
+| `closeLabel` | from `close-label` | What the close button is called for the screen reader, for this one message |
 
-Begge tekstene kan oversettes. Se [Oversettelse](/translation/).
+Both texts can be translated. See [Translation](/translation/).
 
-## Meldinger som forsvinner
+## Messages that disappear
 
-En melding som forsvinner av seg selv er en tilgjengelighetsfelle: den som leser sakte, bruker forstørrelse eller skjermleser rekker ikke å lese den. Komponenten gjør to ting med det:
+A message that disappears by itself is an accessibility trap: someone who reads slowly, uses magnification or a screen reader may not have time to read it. The component does two things about that:
 
-- Lukkeknappen er alltid der.
-- Tiden stopper mens musa er over meldingen eller fokus er inne i den, og går først når begge er ute.
+- The close button is always there.
+- The timer stops while the mouse is over the message or focus is inside it, and only runs again when both are outside.
 
-Skal beskjeden kunne leses igjen senere, hører den ikke hjemme her. En kvittering skal stå i siden.
+If the message needs to be readable later, it does not belong here. A receipt belongs in the page.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-toast` | Regionen meldingene ligger i, altså verten. Den bærer plasseringen i hjørnet |
-| `.lt-toast__message` | Én melding. Fargen kommer fra `data-color`. |
-| `.lt-toast__close` | Lukkeknappen |
+| `.lt-toast` | The region the messages are in, that is the host. It carries the placement in the corner |
+| `.lt-toast__message` | One message. The colour comes from `data-color`. |
+| `.lt-toast__close` | The close button |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-toast-space` | `var(--lt-spacing-4)` |
 | `--lt-toast-width` | `min(24rem, calc(100vw - var(--lt-spacing-8)))` |
@@ -277,14 +277,14 @@ Skal beskjeden kunne leses igjen senere, hører den ikke hjemme her. En kvitteri
 | `--lt-toast-radius` | `var(--lt-spacing-1)` |
 | `--lt-toast-layer` | `60` |
 
-Beholderen slipper klikk gjennom når den er tom, så den ikke stenger for knapper under seg.
+The container lets clicks through when it is empty, so it does not block buttons underneath it.
 
-Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
+See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
 
-- Én ting om gangen. Fem meldinger oppå hverandre leses opp etter hverandre, og ingen av dem får oppmerksomhet.
-- Ikke legg viktige handlinger i en melding som forsvinner. Angre-knappen bør stå i siden.
-- Feil som stopper brukeren hører i en [Alert](../alert/) eller en [Error Summary](../error-summary/), ikke i hjørnet.
-- Teksten skal si hva som skjedde, ikke bare «Ferdig».
-- **Ikke mens en modal dialog står åpen.** Alt utenfor en modal dialog er inert: meldingen ligger under bakteppet, lukkeknappen kan ikke trykkes, og skjermleseren leser den trolig ikke opp. Gjelder meldingen noe brukeren gjør i dialogen, vis den i dialogen, for eksempel med en [Alert](../alert/), eller vent til dialogen er lukket.
+- One thing at a time. Five messages on top of each other are read out one after another, and none of them gets attention.
+- Do not put important actions in a message that disappears. The undo button belongs in the page.
+- Errors that stop the user belong in an [Alert](../alert/) or an [Error Summary](../error-summary/), not in the corner.
+- The text should say what happened, not just "Done".
+- **Not while a modal dialog is open.** Everything outside a modal dialog is inert: the message sits under the backdrop, the close button cannot be pressed, and the screen reader probably does not announce it. If the message concerns something the user is doing in the dialog, show it in the dialog, for example with an [Alert](../alert/), or wait until the dialog is closed.

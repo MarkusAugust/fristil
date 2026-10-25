@@ -1,158 +1,158 @@
 ---
-title: Skjema med validering
-description: Fra felt til feilmelding til oppsummering, med fokus der brukeren trenger det.
+title: Form with validation
+description: From field to error message to summary, with focus where the user needs it.
 ---
 
 import FormDemo from "../../../components/FormDemo.astro"
 
-Komponentene finnes hver for seg. Det som avgjør om et skjema er brukbart er avgjørelsene rundt dem: når du validerer, hvor fokus går, og hva feilmeldingen sier.
+The components exist separately. What decides whether a form is usable is the decisions around them: when you validate, where focus goes, and what the error message says.
 
-Prøv å sende skjemaet tomt, og deretter med en ufullstendig e-postadresse:
+Try submitting the form empty, and then with an incomplete email address:
 
 <FormDemo />
 
-## Når du validerer
+## When to validate
 
-| Tidspunkt | Hva som skjer |
+| When | What happens |
 | --- | --- |
-| Mens brukeren skriver | Ingen nye feil. En feilmelding som alt står der, forsvinner i det feltet blir riktig. |
-| Når feltet forlates | Valider feltet, hvis brukeren har skrevet i det. Da er han ferdig med det, og meldingen avbryter ingen. |
-| Når skjemaet sendes | Valider alt. Det er her alle feilene finnes samtidig. |
+| While the user types | No new errors. An error message that is already there disappears as soon as the field becomes valid. |
+| When the field is left | Validate the field, if the user has typed in it. They are done with it then, and the message interrupts nobody. |
+| When the form is submitted | Validate everything. This is where all the errors exist at once. |
 
-Et felt brukeren ikke har rørt, sier vi ingenting om før innsending. «Skriv e-postadressen din» før du har begynt, er å kjefte på noen som ikke har gjort noe ennå.
+We say nothing about a field the user has not touched until submission. "Enter your email address" before you have started is scolding someone who has not done anything yet.
 
-Oppsummeringen leses ut av feltene og følger med når noe valideres. Retter du én av to feil, står den gjenværende igjen alene, og overskriften teller ned. En oppsummering som blir stående på det første tallet er verre enn ingen.
+The summary is read from the fields and keeps up when something is validated. If you fix one of two errors, the remaining one stays on its own, and the heading counts down. A summary stuck on the first number is worse than none.
 
-Underveis skriver du den bare når innholdet endres, og du viser den ikke. Boksen er `role="alert"`, og hver endring i den leses opp med en gang: skrevet på nytt ved hvert tastetrykk eller hver Tab, avbryter den ledeteksten til neste felt hver gang.
+Along the way you write it only when its content changes, and you do not show it. The box is `role="alert"`, and every change in it is announced immediately: rewritten on every keystroke or every Tab, it interrupts the label of the next field every time.
 
-## De tre tingene som må stemme per felt
+## The three things that must match per field
 
 ```html
-<label class="lt-label" data-required="symbol" for="epost">E-postadresse</label>
+<label class="lt-label" data-required="symbol" for="email">Email address</label>
 <input
   class="lt-input"
-  id="epost"
+  id="email"
   type="email"
   required
   data-state="invalid"
   aria-invalid="true"
-  aria-describedby="epost-hjelp epost-feil"
+  aria-describedby="email-help email-error"
 />
-<p class="lt-help-text" id="epost-hjelp">Vi sender kvittering hit.</p>
-<p class="lt-error-text" id="epost-feil">Skriv en e-postadresse med krøllalfa.</p>
+<p class="lt-help-text" id="email-help">We send the receipt here.</p>
+<p class="lt-error-text" id="email-error">Enter an email address with an @ sign.</p>
 ```
 
-`data-state` gir fargen, `aria-invalid` sier fra til skjermleseren, og `aria-describedby` peker på teksten. Mangler den siste, finnes feilmeldingen bare for den som ser den.
+`data-state` gives the colour, `aria-invalid` tells the screen reader, and `aria-describedby` points to the text. Without the last one, the error message exists only for those who can see it.
 
-Feilmeldingen skal ut av `aria-describedby` igjen når feltet blir gyldig. Ellers peker feltet på en skjult tekst, og skjermlesere melder enten ingenting eller noe som ikke står på skjermen.
+The error text has to come out of `aria-describedby` again when the field becomes valid. Otherwise the field points to hidden text, and screen readers announce either nothing or something that is not on the screen.
 
-Slipper du å holde styr på dette selv, bruk [Field](../../components/field/), enten som `<lt-field>` eller som `lt.field()`. De regner ut alle tre fra én tilstand.
+To avoid keeping track of this yourself, use [Field](../../components/field/), either as `<lt-field>` or as `lt.field()`. Both compute all three from one state.
 
-## Oppsummeringen
+## The summary
 
-[Error Summary](../../components/error-summary/) står øverst i skjemaet og samler feilene. Du skriver boksen, overskriften og lista med `lt.errorSummary()`. Komponenten gjør de to tingene du ellers måtte huske: flytter fokus til seg selv når den kommer til syne, og sender fokus til riktig felt når en lenke følges. Fokusflyttingen kan slås av med `data-autofocus="false"`, og i dette mønsteret må den det: oppsummeringen bygges også når et felt forlates, og da ville boksen tatt fokus fra feltet brukeren nettopp tabbet til. Demoen over slår den av, og flytter fokus til boksen selv når innsendingen feiler.
+[Error Summary](../../components/error-summary/) sits at the top of the form and collects the errors. You write the box, the heading and the list with `lt.errorSummary()`. The web component does the two things you would otherwise have to remember: it moves focus to itself when it appears, and sends focus to the right field when a link is followed. Moving focus can be turned off with `data-autofocus="false"`, and in this pattern it has to be: the summary is also built when a field is left, and then the box would take focus from the field the user just tabbed to. The demo above turns it off, and moves focus to the box itself when submission fails.
 
 ```html
-<lt-error-summary class="lt-error-summary" role="alert" tabindex="-1" data-autofocus="false" id="skjemafeil">
-  <h2 class="lt-error-summary__title">Skjemaet har to feil</h2>
+<lt-error-summary class="lt-error-summary" role="alert" tabindex="-1" data-autofocus="false" id="form-errors">
+  <h2 class="lt-error-summary__title">The form has two errors</h2>
   <ul class="lt-list">
-    <li><a href="#epost">Skriv en e-postadresse med krøllalfa</a></li>
-    <li><a href="#fodselsdato">Skriv en dato som finnes</a></li>
+    <li><a href="#email">Enter an email address with an @ sign</a></li>
+    <li><a href="#date-of-birth">Enter a date that exists</a></li>
   </ul>
 </lt-error-summary>
 ```
 
-Overskriften og `hidden` skrives av den som rendrer skjemaet, ikke av komponenten. Er lista tom, setter `lt.errorSummary({ count: 0 })` `hidden` på boksen, og overskriften blir stående urørt: «Skjemaet har 0 feil» er det siste brukeren skal få lest opp.
+The heading and `hidden` are written by whoever renders the form, not by the web component. If the list is empty, `lt.errorSummary({ count: 0 })` sets `hidden` on the box, and the heading is left untouched: "The form has 0 errors" is the last thing the user should hear.
 
-Lenketeksten er feilmeldingen, ikke navnet på feltet. Den som hører lista skal forstå hva som er galt uten å hoppe til feltet først.
+The link text is the error message, not the name of the field. Someone hearing the list should understand what is wrong without jumping to the field first.
 
-Ved innsending bygger du lista på nytt, også når de samme feilene står igjen. Da leses den opp på nytt, og brukeren vet at forsøket ble avvist.
+On submission you rebuild the list, even when the same errors remain. Then it is announced again, and the user knows the attempt was rejected.
 
-## Nettleseren fanger ikke alt
+## What the browser misses
 
-`type="email"` godtar `ola@eksempel`, uten punktum og toppdomene. Det er en gyldig adresse på et internt nett, og derfor riktig av nettleseren, men i et skjema som sender kvittering på e-post er det nesten alltid en skrivefeil. Demoen legger derfor på én regel til:
+`type="email"` accepts `jo@example`, without a dot and top-level domain. That is a valid address on an internal network, and so correct of the browser, but in a form that sends a receipt by email it is almost always a typo. The demo therefore adds one more rule:
 
 ```js
-const ADRESSE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/
+const ADDRESS = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/
 
-const gyldig = felt.checkValidity() && ADRESSE.test(felt.value)
+const valid = field.checkValidity() && ADDRESS.test(field.value)
 ```
 
-Strengere enn dette er ikke verdt det. En adresse er først bekreftet når noen har klikket på lenken i e-posten du sendte.
+Anything stricter is not worth it. An address is only confirmed once someone has clicked the link in the email you sent.
 
-## Feil fra serveren
+## Errors from the server
 
-Nettleserens validering fanger format. Serveren fanger alt det andre: at adressen ikke finnes i registeret, at fristen er gått ut, at noen andre har søkt på det samme. De to må ende opp på samme sted.
+The browser's validation catches format. The server catches everything else: that the address is not in the register, that the deadline has passed, that someone else has applied for the same thing. The two have to end up in the same place.
 
 ```js
-const skjema = document.getElementById("soknad")
+const form = document.getElementById("application")
 
-skjema.addEventListener("submit", async (hendelse) => {
-  hendelse.preventDefault()
+form.addEventListener("submit", async (event) => {
+  event.preventDefault()
 
-  const svar = await fetch("/api/soknad", {
+  const response = await fetch("/api/application", {
     method: "POST",
-    body: new FormData(skjema),
+    body: new FormData(form),
   })
 
-  if (svar.ok) return
+  if (response.ok) return
 
-  const { feil } = await svar.json() // [{ felt: "epost", melding: "…" }]
+  const { errors } = await response.json() // [{ field: "email", message: "…" }]
 
-  for (const { felt: navn, melding } of feil) {
-    const felt = skjema.elements[navn]
-    const feiltekst = document.getElementById(`${felt.id}-feil`)
+  for (const { field: name, message } of errors) {
+    const field = form.elements[name]
+    const errorText = document.getElementById(`${field.id}-error`)
 
-    feiltekst.textContent = melding
-    feiltekst.hidden = false
+    errorText.textContent = message
+    errorText.hidden = false
 
-    felt.setAttribute("aria-invalid", "true")
-    felt.dataset.state = "invalid"
+    field.setAttribute("aria-invalid", "true")
+    field.dataset.state = "invalid"
 
-    // De tre tingene fra avsnittet over: uten id-en her finnes meldingen
-    // bare for den som ser den.
-    const beskrevetAv = new Set(
-      (felt.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean),
+    // The three things from the section above: without the id here, the
+    // message exists only for those who can see it.
+    const describedBy = new Set(
+      (field.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean),
     )
-    beskrevetAv.add(feiltekst.id)
-    felt.setAttribute("aria-describedby", [...beskrevetAv].join(" "))
+    describedBy.add(errorText.id)
+    field.setAttribute("aria-describedby", [...describedBy].join(" "))
   }
 
-  // Den samme oppsummeringen som over, bygget av feilene serveren sendte.
-  // `textContent` og ikke `innerHTML`: meldingen kommer utenfra.
-  const boks = document.getElementById("skjemafeil")
+  // The same summary as above, built from the errors the server sent.
+  // `textContent` and not `innerHTML`: the message comes from outside.
+  const box = document.getElementById("form-errors")
 
-  boks.querySelector("ul").replaceChildren(
-    ...feil.map(({ felt: navn, melding }) => {
-      const punkt = document.createElement("li")
-      const lenke = document.createElement("a")
-      lenke.href = `#${skjema.elements[navn].id}`
-      lenke.textContent = melding
-      punkt.append(lenke)
-      return punkt
+  box.querySelector("ul").replaceChildren(
+    ...errors.map(({ field: name, message }) => {
+      const item = document.createElement("li")
+      const link = document.createElement("a")
+      link.href = `#${form.elements[name].id}`
+      link.textContent = message
+      item.append(link)
+      return item
     }),
   )
 
-  // Overskriften skrives her, slik serveren ellers ville gjort det.
-  boks.querySelector("h2").textContent =
-    feil.length === 1 ? "Skjemaet har én feil" : `Skjemaet har ${feil.length} feil`
+  // The heading is written here, as the server would otherwise do.
+  box.querySelector("h2").textContent =
+    errors.length === 1 ? "The form has one error" : `The form has ${errors.length} errors`
 
-  boks.hidden = false
-  boks.focus()
+  box.hidden = false
+  box.focus()
 })
 ```
 
-Har feilen ikke noe felt, for eksempel «tjenesten er nede», hører den i en [Alert](../../components/alert/) over skjemaet, ikke i oppsummeringen. Oppsummeringen er en liste over ting brukeren kan rette.
+If the error has no field, such as "the service is down", it belongs in an [Alert](../../components/alert/) above the form, not in the summary. The summary is a list of things the user can fix.
 
-## Ordlyden
+## Wording
 
-- Si hva brukeren skal gjøre: «Skriv en dato som finnes», ikke «Ugyldig verdi».
-- Ta med et eksempel når formatet er uvanlig: «for eksempel ola@eksempel.no».
-- Skriv på norsk. Nettleserens egne meldinger følger nettleserspråket, ikke sidens, så `validationMessage` kan dukke opp på engelsk midt i et norsk skjema. Demoen over bruker derfor egne tekster.
-- Dropp utropstegnet, og ikke legg skylden på brukeren.
+- Say what the user should do: "Enter a date that exists", not "Invalid value".
+- Include an example when the format is unusual: "for example jo@example.com".
+- Write in the page's language. The browser's own messages follow the browser language, not the page's, so `validationMessage` can turn up in another language in the middle of an English form. The demo above therefore uses its own texts.
+- Drop the exclamation mark, and do not blame the user.
 
-## Det systemet ikke gjør
+## What the system does not do
 
-- **Rekkefølgen på feltene.** Tastaturet følger markupen.
-- **Hva som er påkrevd.** `data-required` er bare visuelt, og `required` på feltet er det som stopper innsendingen.
-- **Lagring av utkast.** Et langt skjema bør tåle at nettet forsvinner, men det er appens ansvar.
+- **The order of the fields.** The keyboard follows the markup.
+- **What is required.** `data-required` is only visual, and `required` on the field is what stops the submission.
+- **Saving drafts.** A long form should survive the network going away, but that is the app's responsibility.

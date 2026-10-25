@@ -1,21 +1,21 @@
 ---
 title: Suggestion
-description: Felt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.
+description: Field with a suggestion list that narrows as the user types. Frame component.
 ---
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import SuggestionDemo from "../../../components/SuggestionDemo.astro"
 
-Serveren skriver feltet og lista. Komponenten filtrerer mens brukeren skriver, tar piltastene, og melder antall treff til skjermlesere.
+The server writes the field and the list. The component filters as the user types, handles the arrow keys, and announces the number of matches to screen readers.
 
-Nettleserens egen `<datalist>` gjør noe av det samme, men kan ikke styles, oppfører seg ulikt i hver nettleser, og sier ingenting om hvor mange treff det ble.
+The browser's own `<datalist>` does some of the same, but cannot be styled, behaves differently in every browser, and says nothing about how many matches there were.
 
-:::note[To veier til den samme markupen]
-Lages markupen med JavaScript, gir `lt.suggestion()` rollene, id-ene og koblingen mellom ledetekst, felt og liste, ferdig i HTML-en. Blir den til uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, som HTML krever for at feltet skal ha et navn før skriptet har kjørt. Resten holder det med: en `.lt-suggestion__list` med `<li>` og et statuselement. Komponenten setter rollene, gir lista og alternativene id, kobler lista til feltet og holder den lukket til brukeren rører feltet. Filtreringen, piltastene og antall treff kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-and-behaviour/#byggefunksjon-eller-web-component).
+:::note[Two paths to the same markup]
+When the markup is produced with JavaScript, `lt.suggestion()` gives the roles, the ids and the wiring between label, field and list, ready in the HTML. When it is produced without JavaScript, the template writes `for` on the label and `id` on the field, which HTML requires for the field to have a name before the script has run. Beyond that, it is enough to have a `.lt-suggestion__list` with `<li>` elements and a status element. The component sets the roles, gives the list and the options ids, wires the list to the field and keeps it closed until the user touches the field. The filtering, the arrow keys and the number of matches come from the component in both cases. See [Markup and behaviour](/markup-and-behaviour/#builder-function-or-web-component).
 :::
 
 ```ts
-// main.ts, kjøres én gang når appen starter
+// main.ts, runs once when the app starts
 import { defineLtSuggestion } from "@lo-tek/interfaces/suggestion"
 import "@lo-tek/interfaces/tokens.css"
 import "@lo-tek/interfaces/suggestion.css"
@@ -30,30 +30,30 @@ defineLtSuggestion()
   </TabItem>
   <TabItem label="Plain HTML">
     ```html
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`,
+         not `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/suggestion/suggestion.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/label/label.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
     ```
 
     ```html
-    <!-- for og id skriver du, så feltet har et navn uten JavaScript. Rollene
-         og koblingen til lista setter komponenten. Statuselementet skriver
-         du: det er der antall treff leses opp. -->
-    <lt-suggestion id="kommunesok">
-      <label class="lt-label" for="kommune">Kommune</label>
-      <input class="lt-input" id="kommune" name="kommune" type="text">
+    <!-- You write for and id, so the field has a name without JavaScript. The
+         component sets the roles and the wiring to the list. You write the
+         status element: that is where the number of matches is announced. -->
+    <lt-suggestion id="airport-search">
+      <label class="lt-label" for="airport">Airport</label>
+      <input class="lt-input" id="airport" name="airport" type="text">
       <ul class="lt-suggestion__list">
         <li>Bergen</li>
-        <li>Bodø</li>
+        <li>Malmö</li>
       </ul>
-      <p class="lt-suggestion__empty">Ingen treff</p>
+      <p class="lt-suggestion__empty">No matches</p>
       <span class="lt-sr-only" role="status"></span>
     </lt-suggestion>
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtSuggestion } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/suggestion/lt-suggestion.js"
@@ -62,15 +62,15 @@ defineLtSuggestion()
     </script>
 
     <script type="module">
-      document.getElementById("kommunesok").addEventListener("suggestion-select", (evt) => {
-        console.log("valgte", evt.detail.label, evt.detail.value)
+      document.getElementById("airport-search").addEventListener("suggestion-select", (evt) => {
+        console.log("selected", evt.detail.label, evt.detail.value)
       })
     </script>
     ```
   </TabItem>
   <TabItem label="React">
     ```ts
-    // src/lotek.d.ts, gir <lt-suggestion> typer i JSX
+    // src/lotek.d.ts, gives <lt-suggestion> types in JSX
     import "@lo-tek/interfaces/react-jsx"
     ```
 
@@ -82,34 +82,34 @@ defineLtSuggestion()
 
     defineLtSuggestion()
 
-    // Nøkkelen er kommunenummeret: den gir alternativet en fast id.
-    const KOMMUNER = [
-      { nr: "4601", navn: "Bergen" },
-      { nr: "1804", navn: "Bodø" },
-      { nr: "0301", navn: "Oslo" },
-      { nr: "5501", navn: "Tromsø" },
+    // The key is the airport code: it gives the option a stable id.
+    const AIRPORTS = [
+      { code: "BGO", name: "Bergen" },
+      { code: "MMX", name: "Malmö" },
+      { code: "OSL", name: "Oslo" },
+      { code: "ZRH", name: "Zürich" },
     ]
 
-    export function Kommunesok() {
-      const forslag = lt.suggestion({ id: "kommune", keys: KOMMUNER.map((k) => k.nr) })
+    export function AirportSearch() {
+      const suggestion = lt.suggestion({ id: "airport", keys: AIRPORTS.map((a) => a.code) })
 
       return (
         <lt-suggestion>
-          <label {...forslag.label}>Kommune</label>
-          <input {...forslag.control} name="kommune" />
-          <ul {...forslag.list}>
-            {forslag.options.map((valg, i) => (
-              <li key={valg.id} {...valg}>{KOMMUNER[i].navn}</li>
+          <label {...suggestion.label}>Airport</label>
+          <input {...suggestion.control} name="airport" />
+          <ul {...suggestion.list}>
+            {suggestion.options.map((option, i) => (
+              <li key={option.id} {...option}>{AIRPORTS[i].name}</li>
             ))}
           </ul>
-          <p {...forslag.empty}>Ingen treff</p>
-          <span {...forslag.status} />
+          <p {...suggestion.empty}>No matches</p>
+          <span {...suggestion.status} />
         </lt-suggestion>
       )
     }
     ```
 
-    Her rendres hele lista, og komponenten filtrerer. Filtrerer du i React i stedet, og filteret ditt er et annet enn «teksten inneholder søkeordet», settes `prefiltered`. Se [Når noen andre filtrerer](#når-noen-andre-filtrerer).
+    Here the whole list is rendered, and the component filters. If you filter in React instead, and your filter is something other than "the text contains the search term", set `prefiltered`. See [When someone else filters](#when-someone-else-filters).
   </TabItem>
   <TabItem label="Astro">
     ```astro
@@ -118,24 +118,24 @@ defineLtSuggestion()
     import "@lo-tek/interfaces/tokens.css"
     import "@lo-tek/interfaces/suggestion.css"
 
-    const kommuner = [
-      { nr: "4601", navn: "Bergen" },
-      { nr: "1804", navn: "Bodø" },
-      { nr: "0301", navn: "Oslo" },
-      { nr: "5501", navn: "Tromsø" },
+    const airports = [
+      { code: "BGO", name: "Bergen" },
+      { code: "MMX", name: "Malmö" },
+      { code: "OSL", name: "Oslo" },
+      { code: "ZRH", name: "Zürich" },
     ]
-    const forslag = lt.suggestion({ id: "kommune", keys: kommuner.map((k) => k.nr) })
+    const suggestion = lt.suggestion({ id: "airport", keys: airports.map((a) => a.code) })
 
     ---
 
     <lt-suggestion>
-      <label {...forslag.label}>Kommune</label>
-      <input {...forslag.control} name="kommune" />
-      <ul {...forslag.list}>
-        {forslag.options.map((valg, i) => <li {...valg}>{kommuner[i].navn}</li>)}
+      <label {...suggestion.label}>Airport</label>
+      <input {...suggestion.control} name="airport" />
+      <ul {...suggestion.list}>
+        {suggestion.options.map((option, i) => <li {...option}>{airports[i].name}</li>)}
       </ul>
-      <p {...forslag.empty}>Ingen treff</p>
-      <span {...forslag.status}></span>
+      <p {...suggestion.empty}>No matches</p>
+      <span {...suggestion.status}></span>
     </lt-suggestion>
 
     <script>
@@ -146,20 +146,20 @@ defineLtSuggestion()
   </TabItem>
   <TabItem label="Datastar">
     ```html
-    <!-- Datastar selv. Uten den gjør `data-`-attributtene under ingenting. -->
+    <!-- Datastar itself. Without it the `data-` attributes below do nothing. -->
     <script type="module"
             src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"></script>
 
-    <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
-         `import`: en nettleser slår ikke opp et pakkenavn. -->
+    <!-- The stylesheets the page needs. Without a build step it is `<link>`,
+         not `import`: a browser does not resolve a package name. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/tokens/tokens.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/frame/suggestion/suggestion.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/label/label.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/input/input.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/src/components/css/sr-only/sr-only.css">
-    <!-- Eller alt i én fil: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
+    <!-- Or everything in one file: https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/lotek.css -->
 
-    <!-- Én gang for hele appen, i sidemalen. Ikke én gang per komponent. -->
+    <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
       import { defineLtSuggestion } from
         "https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@VERSJON/dist/components/frame/suggestion/lt-suggestion.js"
@@ -168,166 +168,166 @@ defineLtSuggestion()
     </script>
 
     <lt-suggestion prefiltered
-                   data-on:input__debounce.300ms="@get('/kommuner?q=' + evt.target.value)"
-                   data-on:suggestion-select="$kommune = evt.detail.value">
-      <label class="lt-label" for="kommune">Kommune</label>
-      <input class="lt-input" id="kommune" name="kommune" type="text">
-      <ul class="lt-suggestion__list" id="kommuner"></ul>
+                   data-on:input__debounce.300ms="@get('/airports?q=' + evt.target.value)"
+                   data-on:suggestion-select="$airport = evt.detail.value">
+      <label class="lt-label" for="airport">Airport</label>
+      <input class="lt-input" id="airport" name="airport" type="text">
+      <ul class="lt-suggestion__list" id="airports"></ul>
       <span class="lt-sr-only" role="status"></span>
     </lt-suggestion>
     ```
 
-    Serveren svarer med lista, `<ul class="lt-suggestion__list" id="kommuner">` med de nye `<li>`-ene, og Datastar morfer den på id-en. Id-en er serverens, og komponenten lar den stå. Her er det serveren som bestemmer hvilke alternativer som vises, derfor `prefiltered`. Komponenten kobler seg på alternativene serveren sender inn, så valg med mus virker også etter en oppdatering.
+    The server answers with the list, `<ul class="lt-suggestion__list" id="airports">` with the new `<li>` elements, and Datastar morphs it by its id. The id comes from the server, and the component leaves it alone. Here the server decides which options are shown, hence `prefiltered`. The component wires itself to the options the server sends, so choosing with the mouse also works after an update.
   </TabItem>
 </Tabs>
 
-## Markupen
+## The markup
 
 ```ts
-const forslag = lt.suggestion({ id: "kommune", keys: ["4601", "1804"], help: true })
+const suggestion = lt.suggestion({ id: "airport", keys: ["BGO", "MMX"], help: true })
 ```
 
 ```html
 <lt-suggestion>
-  <label class="lt-label" for="kommune" id="kommune-label">Kommune</label>
-  <input class="lt-input" id="kommune" name="kommune" type="text" role="combobox"
-         autocomplete="off" aria-expanded="false" aria-controls="kommune-list"
-         aria-autocomplete="list" aria-describedby="kommune-help kommune-status">
+  <label class="lt-label" for="airport" id="airport-label">Airport</label>
+  <input class="lt-input" id="airport" name="airport" type="text" role="combobox"
+         autocomplete="off" aria-expanded="false" aria-controls="airport-list"
+         aria-autocomplete="list" aria-describedby="airport-help airport-status">
 
-  <ul class="lt-suggestion__list" id="kommune-list" role="listbox"
-      aria-labelledby="kommune-label" popover="manual" hidden>
-    <li class="lt-suggestion__option" id="kommune-option-4601" role="option"
+  <ul class="lt-suggestion__list" id="airport-list" role="listbox"
+      aria-labelledby="airport-label" popover="manual" hidden>
+    <li class="lt-suggestion__option" id="airport-option-BGO" role="option"
         aria-selected="false">Bergen</li>
-    <li class="lt-suggestion__option" id="kommune-option-1804" role="option"
-        aria-selected="false">Bodø</li>
+    <li class="lt-suggestion__option" id="airport-option-MMX" role="option"
+        aria-selected="false">Malmö</li>
   </ul>
 
-  <p class="lt-suggestion__empty" hidden>Ingen treff</p>
-  <span class="lt-sr-only" id="kommune-status" role="status"></span>
-  <p class="lt-help-text" id="kommune-help">Vi fyller ut resten av adressen for deg.</p>
+  <p class="lt-suggestion__empty" hidden>No matches</p>
+  <span class="lt-sr-only" id="airport-status" role="status"></span>
+  <p class="lt-help-text" id="airport-help">We show the departures from the airport you choose.</p>
 </lt-suggestion>
 ```
 
-Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skriptet har kjørt. Komponenten lagde tidligere hele feltet selv, og da fantes det verken ledetekst eller inndatafelt for en bruker som ventet på JavaScript. Se [Markup og oppførsel](/markup-and-behaviour/).
+The field is a real `<input>` with `name`, so it is included in the submission before the script has run. The component used to create the whole field itself, and then there was neither a label nor an input field for a user waiting for JavaScript. See [Markup and behaviour](/markup-and-behaviour/).
 
-Kommer markupen fra en mal uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, slik «Plain HTML»-oppskriften viser, eller legger ledeteksten rundt feltet. Komponenten setter rollene, gir lista og alternativene id, skriver `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Hver `<li>` i lista blir et alternativ; en overskrift i lista trenger `role="presentation"` for å bli latt i fred. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
+When the markup comes from a template without JavaScript, the template writes `for` on the label and `id` on the field, as the "Plain HTML" recipe shows, or puts the label around the field. The component sets the roles, gives the list and the options ids, writes `aria-controls` on the field, and keeps the list closed until the user touches the field. Every `<li>` in the list becomes an option; a heading in the list needs `role="presentation"` to be left alone. What the server wrote stays, and what the component filled in is put back if an update removes it. The status element must be in the markup: it is content the server sends, and without it the number of matches is not announced.
 
-Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. `for` på ledeteksten skriver komponenten fra feltets id når ledeteksten ikke står rundt feltet, som `<lt-field>` gjør; skriv den i malen også, siden det er den som gir feltet et navn uten JavaScript. Alternativene får id fra nøkkelen i `keys`, som kommunenummeret, så en oppdatering kjenner dem igjen. En nøkkel som er tom, har mellomrom eller står to ganger, kaster, i TypeScript som i Kotlin. Mangler id-ene, som i en mal uten byggefunksjon, gir komponenten lista og alternativene id. Sender serveren hele lista på nytt, byttes de ut, og det koster ingenting: komponenten kobler dem på nytt og finner det markerte alternativet igjen på teksten.
+The component never writes an id on the field. Datastar and idiomorph recognise an element by its id, and a field with an id the server did not send would be replaced on the next update, along with focus and what the user has typed. The component writes `for` on the label from the field's id when the label is not around the field, as `<lt-field>` does; write it in the template too, since that is what gives the field a name without JavaScript. The options get ids from the key in `keys`, like the airport code, so an update recognises them. A key that is empty, contains whitespace or appears twice throws, in TypeScript as in Kotlin. If the ids are missing, as in a template without a builder function, the component gives the list and the options ids. If the server sends the whole list again, they are replaced, and that costs nothing: the component wires them again and finds the highlighted option again by its text.
 
-### Tekst og kode
+### Text and code
 
-Feltet viser alltid teksten til alternativet brukeren valgte. Skal skjemaet sende en kode, som kommunenummeret, gir du alternativene `data-value` og skriver et skjult felt for koden:
+The field always shows the text of the option the user chose. If the form should submit a code, like the airport code, give the options `data-value` and write a hidden field for the code:
 
 ```html
 <lt-suggestion>
-  <label class="lt-label" for="kommune">Kommune</label>
-  <input class="lt-input" id="kommune" name="kommune-tekst" type="text">
-  <input class="lt-suggestion__value" type="hidden" name="kommune">
+  <label class="lt-label" for="airport">Airport</label>
+  <input class="lt-input" id="airport" name="airport-text" type="text">
+  <input class="lt-suggestion__value" type="hidden" name="airport">
   <ul class="lt-suggestion__list">
-    <li data-value="4601">Bergen</li>
-    <li data-value="1804">Bodø</li>
+    <li data-value="BGO">Bergen</li>
+    <li data-value="MMX">Malmö</li>
   </ul>
   <span class="lt-sr-only" role="status"></span>
 </lt-suggestion>
 ```
 
-Komponenten skriver koden i det skjulte feltet når brukeren velger, og tømmer det igjen når brukeren endrer teksten, så skjemaet aldri sender koden for Bergen med «Bodø» i feltet. Tilbakestilles skjemaet, går teksten tilbake til det serveren sendte, og koden følger teksten: koden serveren sendte når teksten er serverens, ellers det valgte, ellers alternativet med den teksten, ellers ingen. Feltet får `input` og `change` når koden skrives, så `data-bind` ser den; hendelsene bobler ikke, så en `data-on:input` på `<lt-suggestion>` som henter forslag, utløses ikke av dem. En oppdatering fra serveren som tømmer det skjulte feltet, får koden tilbake så lenge teksten er den valgte. `suggestion-select` har begge: `evt.detail.label` er teksten og `evt.detail.value` koden.
+The component writes the code in the hidden field when the user chooses, and clears it again when the user changes the text, so the form never submits the code for Bergen with "Malmö" in the field. When the form is reset, the text goes back to what the server sent, and the code follows the text: the code the server sent when the text is the server's, otherwise the chosen one, otherwise the option with that text, otherwise none. The field gets `input` and `change` when the code is written, so `data-bind` sees it; the events do not bubble, so a `data-on:input` on `<lt-suggestion>` that fetches suggestions is not triggered by them. An update from the server that clears the hidden field gets the code back as long as the text is the chosen one. `suggestion-select` has both: `evt.detail.label` is the text and `evt.detail.value` the code.
 
-Uten JavaScript sendes teksten med et tomt felt for koden, og serveren slår opp koden selv. Er teksten tvetydig, som Våler og Herøy, som finnes i to fylker, svarer serveren med en side der brukeren velger. Koden står da to steder, i `data-value` og i det skjulte feltet, og det er et bevisst valg: HTML har ikke noe element som viser én tekst og sender en annen verdi når brukeren også kan skrive fritt. `lt.suggestion()` gir det skjulte feltet som `forslag.value`; `name` skriver du selv.
+Without JavaScript the text is submitted with an empty field for the code, and the server looks up the code itself. If the text is ambiguous, like Portland, which has an airport in both Oregon and Maine, the server answers with a page where the user chooses. The code is then in two places, in `data-value` and in the hidden field, and that is a deliberate choice: HTML has no element that shows one text and submits another value when the user can also type freely. `lt.suggestion()` gives the hidden field as `suggestion.value`; you write `name` yourself.
 
-## Når noen andre filtrerer
+## When someone else filters
 
-Komponenten skjuler et alternativ når teksten ikke inneholder det som står i feltet. Filtrerer du selv, og filteret ditt er et annet, blir de to uenige, og da er det ditt som skal gjelde. Det sier du med `prefiltered`.
+The component hides an option when its text does not contain what is in the field. If you filter yourself, and your filter is a different one, the two disagree, and then yours should apply. You say so with `prefiltered`.
 
 ```html
 <lt-suggestion prefiltered>…</lt-suggestion>
 ```
 
-Filtrerer du på nøyaktig det samme, altså at teksten inneholder søkeordet, trenger du ingenting: de to er enige, og komponenten skjuler ikke noe du ville vist. Attributtet er for de gangene dere ikke er det:
+If you filter on exactly the same thing, that the text contains the search term, you need nothing: the two agree, and the component hides nothing you would show. The attribute is for the times you do not agree:
 
-| Ditt filter | Hva som skjer uten `prefiltered` |
+| Your filter | What happens without `prefiltered` |
 | --- | --- |
-| Søk uten diakritikk, `bodo` finner `Bodø` | Komponenten skjuler Bodø, og lista ser tom ut |
-| Søk på en kode som ikke vises, `4601` | Det samme |
-| Uskarpt søk, `oslo` finner `Osloveien` | Treffene komponenten ikke kjenner igjen blir borte |
-| Asynkront søk | Lista blinker mens svaret er underveis |
+| Search without diacritics, `malmo` finds `Malmö` | The component hides Malmö, and the list looks empty |
+| Search on a code that is not shown, `BGO` | The same |
+| Fuzzy search, `zurik` finds `Zürich` | The matches the component does not recognise disappear |
+| Asynchronous search | The list flickers while the answer is on its way |
 
-Rendrer du bare treffene, og filteret ditt er smalere enn komponentens, som `startsWith`, er det derimot trygt: alt du beholder inneholder også søkeordet, så komponenten skjuler ingenting av det. Da er `prefiltered` likevel riktig for tommeldingen, som forklart under.
+If you render only the matches, and your filter is narrower than the component's, like `startsWith`, it is safe on the other hand: everything you keep also contains the search term, so the component hides none of it. `prefiltered` is still right for the empty message, as explained below.
 
-Det gjelder like mye i React som i Datastar. I React er det lett å overse, for der er ingen server involvert:
+This applies as much in React as in Datastar. In React it is easy to miss, because no server is involved:
 
 ```tsx
-// Søk uten diakritikk. Komponentens eget filter ville skjult Bodø igjen.
-const treff = kommuner.filter((k) => utenTegn(k.navn).includes(utenTegn(sok)))
-const forslag = lt.suggestion({ id: "kommune", keys: treff.map((k) => k.nr) })
+// Search without diacritics. The component's own filter would hide Malmö again.
+const matches = airports.filter((a) => withoutDiacritics(a.name).includes(withoutDiacritics(query)))
+const suggestion = lt.suggestion({ id: "airport", keys: matches.map((a) => a.code) })
 
 <lt-suggestion prefiltered>
   …
-  <ul {...forslag.list}>
-    {treff.map((k, i) => <li {...forslag.options[i]} key={k.nr}>{k.navn}</li>)}
+  <ul {...suggestion.list}>
+    {matches.map((a, i) => <li {...suggestion.options[i]} key={a.code}>{a.name}</li>)}
   </ul>
 </lt-suggestion>
 ```
 
-Bygg da med nøklene til treffene, ikke til hele lista. Antall nøkler avgjør om «Ingen treff» har `hidden`: den har det så lenge du har treff.
+Then build with the keys of the matches, not of the whole list. The number of keys decides whether "No matches" has `hidden`: it does as long as you have matches.
 
-### Hvem viser «Ingen treff»
+### Who shows "No matches"
 
-Du gjør det. Tommeldingen er en del av det lista viser, og med `prefiltered` er det du som bestemmer hva den viser. `lt.suggestion({ id, keys, pending })` skriver `hidden` på den så lenge du har treff eller venter på svar, så rendrer du feltet på nytt for hvert søk, er det gjort. At lista er lukket trenger du ikke vite: stilarket skjuler tommeldingen når lista foran den har `hidden`, så den må stå etter lista. En tom liste under et tomt felt åpnes ikke, så meldingen kommer ikke før brukeren har skrevet noe. Venter du på et svar, sender du `pending: true`, og meldingen holdes skjult til svaret er kommet. I en mal uten byggefunksjon skriver du `hidden` på den selv. Komponenten rører den ikke, og det er med vilje: den kan ikke se forskjell på «søket ga ingenting» og «svaret er ikke kommet ennå», og et asynkront søk sa derfor «Ingen treff» i hvert opphold mellom tastetrykket og svaret.
+You do. The empty message is part of what the list shows, and with `prefiltered` you decide what it shows. `lt.suggestion({ id, keys, pending })` writes `hidden` on it as long as you have matches or are waiting for an answer, so if you render the field again for each search, it is done. You do not need to know that the list is closed: the stylesheet hides the empty message when the list before it has `hidden`, so it must come after the list. An empty list under an empty field does not open, so the message does not appear before the user has typed something. When you are waiting for an answer, pass `pending: true`, and the message stays hidden until the answer has arrived. In a template without a builder function you write `hidden` on it yourself. The component does not touch it, and that is deliberate: it cannot tell "the search found nothing" from "the answer has not arrived yet", and an asynchronous search therefore said "No matches" in every pause between the keystroke and the answer.
 
-**Antall treff leses opp uansett hvem som filtrerte.** Det er ikke markup, men en beskjed i `[role="status"]` til den som ikke ser skjermen, og den kommer bare når antallet er et annet enn sist. Med `prefiltered` kommer den når du har rendret lista på nytt, ikke ved tastetrykket, og det første antallet leses ikke opp, siden det er utgangspunktet. Uten `prefiltered` filtrerer komponenten selv ved hvert tastetrykk, når feltet får fokus, og når en oppdatering endrer en åpen liste, og antallet leses opp da.
+**The number of matches is announced no matter who filtered.** It is not markup, but a message in `[role="status"]` for someone who cannot see the screen, and it comes only when the number differs from last time. With `prefiltered` it comes when you have rendered the list again, not on the keystroke, and the first number is not announced, since it is the starting point. Without `prefiltered` the component filters itself on every keystroke, when the field gets focus, and when an update changes an open list, and the number is announced then.
 
-Komponenten tar fortsatt piltastene, markeringen og `aria-activedescendant`, altså det verken React eller serveren gjør.
+The component still handles the arrow keys, the highlight and `aria-activedescendant`, which neither React nor the server does.
 
-`prefiltered` handler om hva som vises. Skal serveren i tillegg bestemme om lista er utvidet og hvilket alternativ som er markert, setter du `server-controlled` ved siden av. Det trenger du sjelden i React: komponenten må få sette `aria-selected` tilbake, siden en ny rendring nullstiller den.
+`prefiltered` is about what is shown. If the server should also decide whether the list is expanded and which option is highlighted, set `server-controlled` next to it. You rarely need that in React: the component must be allowed to put `aria-selected` back, since a new render resets it.
 
-## Antall treff på andre språk
+## Number of matches in other languages
 
-Komponenten leser opp «Ingen treff», «Ett treff» og `{n} treff` når ingenting annet er sagt. Teksten byttes med attributter på `<lt-suggestion>`, der `{n}` står for antallet:
+The component announces "No matches", "One match" and `{n} matches` when nothing else is specified. The text is replaced with attributes on `<lt-suggestion>`, where `{n}` stands for the number:
 
 ```html
-<lt-suggestion count-none="No results" count-one="{n} result" count-other="{n} results">
+<lt-suggestion count-none="Aucun résultat" count-one="{n} résultat" count-other="{n} résultats">
 ```
 
-| Attributt | Gjelder |
+| Attribute | Applies to |
 | --- | --- |
-| `count-none` | Null treff. En egen setning, ikke en bøyning |
-| `count-one` | Formen `one`. Skriv `{n}` i teksten: på fransk gjelder formen også 0, og på russisk også 21 |
-| `count-other` | Alle andre antall, og reserven når en form mangler. Setter du noen av attributtene, må denne stå, ellers leses antall som mangler en form, opp på norsk |
-| `count-zero`, `count-two`, `count-few`, `count-many` | Formene noen språk har i tillegg, som polsk `few` og `many` |
+| `count-none` | Zero matches. A separate sentence, not an inflection |
+| `count-one` | The `one` form. Write `{n}` in the text: in French the form also covers 0, and in Russian also 21 |
+| `count-other` | All other numbers, and the fallback when a form is missing. If you set any of the attributes, this one must be there, otherwise numbers whose form is missing are announced in English |
+| `count-zero`, `count-two`, `count-few`, `count-many` | The forms some languages have in addition, like Polish `few` and `many` |
 
-Hvilken form et antall har, avgjøres av `Intl.PluralRules` etter `lang` på siden. Se [Oversettelse](/translation/).
+Which form a number takes is decided by `Intl.PluralRules` from the `lang` of the page. See [Translation](/translation/).
 
-## Før komponenten er registrert
+## Before the component is registered
 
-`lt.suggestion()` skriver `hidden` på lista når den er lukket, så markupen er riktig fra første tegning. Er lista skrevet bar, holder `lt-suggestion:not(:defined) .lt-suggestion__list` i `suggestion.css` den skjult til `defineLtSuggestion()` har kjørt.
+`lt.suggestion()` writes `hidden` on the list when it is closed, so the markup is right from the first paint. If the list is written bare, `lt-suggestion:not(:defined) .lt-suggestion__list` in `suggestion.css` keeps it hidden until `defineLtSuggestion()` has run.
 
-Se [Markup og oppførsel](../../markup-and-behaviour/#før-komponenten-er-registrert).
+See [Markup and behaviour](../../markup-and-behaviour/#before-the-component-is-registered).
 
-## Attributter
+## Attributes
 
-| Attributt | Type | Effekt |
+| Attribute | Type | Effect |
 | --- | --- | --- |
-| `prefiltered` | boolsk | Appen har alt filtrert lista, og komponenten lar den stå. Se [Når noen andre filtrerer](#når-noen-andre-filtrerer). |
-| `server-controlled` | boolsk | Serveren bestemmer om lista er utvidet og hvilket alternativ som er markert. Komponenten setter dem ikke tilbake etter en oppdatering fra serveren, slik den gjør uten attributtet. |
-| `count-none`, `count-zero`, `count-one`, `count-two`, `count-few`, `count-many`, `count-other` | tekst | Opplesningen av antall treff. Se [Antall treff på andre språk](#antall-treff-på-andre-språk). |
+| `prefiltered` | boolean | The app has already filtered the list, and the component leaves it alone. See [When someone else filters](#when-someone-else-filters). |
+| `server-controlled` | boolean | The server decides whether the list is expanded and which option is highlighted. The component does not put them back after an update from the server, as it does without the attribute. |
+| `count-none`, `count-zero`, `count-one`, `count-two`, `count-few`, `count-many`, `count-other` | text | The announcement of the number of matches. See [Number of matches in other languages](#number-of-matches-in-other-languages). |
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-suggestion__list` | Selve lista. `hidden` når den er lukket |
-| `.lt-suggestion__option` | Ett alternativ. Det markerte har `aria-selected="true"` |
-| `.lt-suggestion__empty` | Teksten som vises når ingenting passer |
-| `.lt-suggestion__value` | Det skjulte feltet som får koden til alternativet brukeren valgte |
+| `.lt-suggestion__list` | The list itself. `hidden` when it is closed |
+| `.lt-suggestion__option` | One option. The highlighted one has `aria-selected="true"` |
+| `.lt-suggestion__empty` | The text shown when nothing matches |
+| `.lt-suggestion__value` | The hidden field that gets the code of the option the user chose |
 
-| Variabel | Reserve |
+| Variable | Fallback |
 | --- | --- |
-| `--lt-suggestion-max-height` | `calc(var(--lt-spacing-10) * 4)`, altså 10rem |
+| `--lt-suggestion-max-height` | `calc(var(--lt-spacing-10) * 4)`, which is 10rem |
 | `--lt-suggestion-option-padding` | `var(--lt-spacing-2) var(--lt-spacing-3)` |
 | `--lt-suggestion-radius` | `var(--lt-spacing-1)` |
 
-Lista står i det øverste laget når den er åpen, så den legger seg over alt annet uten `z-index`, og en forelder med `overflow`, som kroppen i en dialog, klipper den ikke. Komponenten legger den rett under feltet, like bred som det, og over feltet når det ikke er plass under.
+The list is in the top layer when it is open, so it sits above everything else without `z-index`, and a parent with `overflow`, like the body of a dialog, does not clip it. The component places it right below the field, as wide as the field, and above the field when there is no room below.
 
 ```css
 .lt-suggestion__list {
@@ -336,26 +336,26 @@ Lista står i det øverste laget når den er åpen, så den legger seg over alt 
 ```
 ## Accessibility
 
-Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role="listbox"` med `role="option"` i seg. Skriver serveren dem med `lt.suggestion()`, står de i HTML-en før skriptet kjører. Kommer markupen uten, setter komponenten dem i det den registreres.
+The field is a `role="combobox"` with `aria-autocomplete="list"`, and the list a `role="listbox"` with `role="option"` inside. If the server writes them with `lt.suggestion()`, they are in the HTML before the script runs. If the markup comes without them, the component sets them when it is registered.
 
-- **Lista har et navn**, ledeteksten. `lt.suggestion()` gir ledeteksten id og lista `aria-labelledby` mot den. Kommer markupen uten, gjør komponenten det samme, men står ledeteksten rundt feltet, får den ingen id, siden en oppdatering da ville byttet ut ledeteksten og feltet i den. Lista får da teksten i ledeteksten som `aria-label`. Et navn serveren har skrevet, står.
-- **Hvert alternativ sier om det er valgt**, med `aria-selected`, fra starten.
-- **Mens svaret er underveis** sier lista `aria-busy="true"`, som `lt.suggestion({ id, pending: true })` skriver, og «Ingen treff» holdes skjult.
-- **Fokus blir i feltet.** Markeringen flyttes med `aria-activedescendant`, ikke ved å flytte fokus, slik at brukeren kan fortsette å skrive.
-- **Antall treff leses opp.** Uten det får den som ikke ser skjermen ingen beskjed om at lista snevret seg inn. Teksten skrives av komponenten, og tømmer en oppdatering fra serveren elementet, skriver komponenten den på nytt.
-- **Escape lukker lista** uten å tømme feltet, og et klikk utenfor gjør det samme.
-- **Et alternativ med `aria-disabled="true"`** vises, men hoppes over av piltastene og kan ikke velges.
-- **Et felt med `readonly` eller `disabled`** åpner ikke lista.
-- **Valget skjer på `click`**, som hjelpemidler også sender når de aktiverer et element.
-- **Under en IME-komposisjon** hører tastene til komposisjonen, og Enter velger ikke noe.
+- **The list has a name**, the label. `lt.suggestion()` gives the label an id and the list `aria-labelledby` pointing at it. If the markup comes without them, the component does the same, but if the label is around the field, it gets no id, since an update would then replace the label and the field inside it. The list then gets the label's text as `aria-label`. A name the server wrote stays.
+- **Every option says whether it is selected**, with `aria-selected`, from the start.
+- **While the answer is on its way** the list says `aria-busy="true"`, which `lt.suggestion({ id, pending: true })` writes, and "No matches" stays hidden.
+- **Focus stays in the field.** The highlight moves with `aria-activedescendant`, not by moving focus, so the user can keep typing.
+- **The number of matches is announced.** Without it, someone who cannot see the screen gets no message that the list narrowed. The component writes the text, and if an update from the server clears the element, the component writes it again.
+- **Escape closes the list** without clearing the field, and a click outside does the same.
+- **An option with `aria-disabled="true"`** is shown, but skipped by the arrow keys and cannot be chosen.
+- **A field with `readonly` or `disabled`** does not open the list.
+- **The choice happens on `click`**, which assistive technologies also send when they activate an element.
+- **During an IME composition** the keys belong to the composition, and Enter does not choose anything.
 
-| Tast | Gjør |
+| Key | Does |
 | --- | --- |
-| Pil ned | Åpner lista, eller flytter til neste alternativ |
-| Pil opp | Åpner lista på det siste alternativet, eller flytter til forrige |
-| PgUp, PgDn | Flytter til første eller siste alternativ |
-| Enter | Velger det markerte |
-| Escape | Lukker lista |
+| Down arrow | Opens the list, or moves to the next option |
+| Up arrow | Opens the list on the last option, or moves to the previous one |
+| PgUp, PgDn | Moves to the first or last option |
+| Enter | Chooses the highlighted one |
+| Escape | Closes the list |
 
-Home og End flytter markøren i teksten, som i et vanlig felt.
+Home and End move the cursor in the text, as in a plain field.
 

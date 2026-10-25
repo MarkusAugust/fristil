@@ -1,108 +1,108 @@
 ---
 title: Radio
-description: Radioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.
+description: Radio buttons for one choice among several. A CSS component with two classes and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
 
-Ren CSS på et vanlig `<input type="radio">`. Knappene i en gruppe kobles sammen av `name`, og det er den koblingen som gjør at bare én kan være valgt, og at piltastene flytter mellom dem.
+Plain CSS on an ordinary `<input type="radio">`. The buttons in a group are tied together by `name`, and that is what lets only one be selected, and lets the arrow keys move between them.
 
-Kan brukeren velge flere, bruk [Checkbox](../checkbox/). Er alternativene mange, er [Select](../select/) kortere på skjermen.
+If the user can choose several, use [Checkbox](../checkbox/). If there are many options, [Select](../select/) takes less room on the screen.
 
 ## How to use it
 
 <Example importer={["tokens.css", "radio.css", "fieldset.css", "label.css"]}
   stiler={["radio", "label", "fieldset"]} layout="stabel" maxWidth="28rem" kode={`
 <fieldset class="lt-fieldset">
-  <legend class="lt-legend" data-required="symbol">Hvordan vil du ha svaret?</legend>
+  <legend class="lt-legend" data-required="symbol">How do you want to receive the answer?</legend>
 
   <div class="lt-radio-row">
-    <input class="lt-radio" type="radio" id="svar-digital" name="svar" value="digital" checked />
-    <label class="lt-label" for="svar-digital">I digital postkasse</label>
+    <input class="lt-radio" type="radio" id="reply-digital" name="reply" value="digital" checked />
+    <label class="lt-label" for="reply-digital">In your digital mailbox</label>
   </div>
 
   <div class="lt-radio-row">
-    <input class="lt-radio" type="radio" id="svar-post" name="svar" value="post" />
-    <label class="lt-label" for="svar-post">Som brev i posten</label>
+    <input class="lt-radio" type="radio" id="reply-post" name="reply" value="post" />
+    <label class="lt-label" for="reply-post">As a letter in the post</label>
   </div>
 
   <div class="lt-radio-row">
-    <input class="lt-radio" type="radio" id="svar-hentes" name="svar" value="hentes" disabled />
-    <label class="lt-label" for="svar-hentes">Hentes på kontoret</label>
+    <input class="lt-radio" type="radio" id="reply-collect" name="reply" value="collect" disabled />
+    <label class="lt-label" for="reply-collect">Collect at the office</label>
   </div>
 </fieldset>
 `}>
 <Fragment slot="ts">
 
-`lt` brukes på to måter, og hvilken avhenger av om du lager elementet eller finner det.
+`lt` is used in two ways, and which one depends on whether you create the element or find it.
 
-**Lager du markupen,** sprer du attributtene inn. Det er veien i React, Astro og alt annet som rendrer:
+**If you create the markup,** spread the attributes in. That is the way in React, Astro and anything else that renders:
 
 ```tsx
 import { lt } from "@lo-tek/interfaces/react"
 
 <div className={lt.radio.row}>
-  <input {...lt.radio()} id="svar-digital" name="svar" value="digital" />
-  <label {...lt.label()} htmlFor="svar-digital">Digitalt</label>
+  <input {...lt.radio()} id="reply-digital" name="reply" value="digital" />
+  <label {...lt.label()} htmlFor="reply-digital">Digitally</label>
 </div>
 ```
 
-Importen går til `/react` her, siden blokka er JSX. Derfra heter nøklene `className` og `htmlFor`. I Astro og alt annet uten React importerer du `@lo-tek/interfaces` og får `class` og `for`.
+The import is from `/react` here, since the block is JSX. From there the keys are `className` and `htmlFor`. In Astro and anything else without React, import `@lo-tek/interfaces` and you get `class` and `for`.
 
-**Står elementet der fra før,** setter du dem på det. Det er veien når du forbedrer HTML en server eller en mal har sendt:
+**If the element is already there,** set them on it. That is the way when you enhance HTML a server or a template has sent:
 
 ```ts
 import { lt } from "@lo-tek/interfaces"
 
-const knapper = document.querySelectorAll<HTMLInputElement>("[name='svar']")
+const buttons = document.querySelectorAll<HTMLInputElement>("[name='reply']")
 
-function marker(ugyldig: boolean) {
-  for (const knapp of knapper) {
-    lt.setAttributes(knapp, lt.radio({ state: ugyldig ? "invalid" : "default" }))
+function mark(invalid: boolean) {
+  for (const button of buttons) {
+    lt.setAttributes(button, lt.radio({ state: invalid ? "invalid" : "default" }))
   }
 }
 ```
 
-`name` setter du selv, siden bare du vet hva gruppen heter. `lt.radio.row` gir klassen på raden rundt. Se [Typesikker bruk](../../type-safe-use/).
+You set `name` yourself, since only you know what the group is called. `lt.radio.row` gives the class for the row around it. See [Type-safe use](../../type-safe-use/).
 
 </Fragment>
 </Example>
 
-Gruppen hører alltid hjemme i en [Fieldset](../fieldset/). Uten den leses bare alternativet opp, ikke spørsmålet det svarer på.
+The group always belongs in a [Fieldset](../fieldset/). Without it only the option is read out, not the question it answers.
 
-## Tilstander
+## States
 
 <Example stiler={["radio", "label"]} layout="stabel" maxWidth="28rem" kode={`
 <div class="lt-radio-row">
-  <input class="lt-radio" type="radio" id="ugyldig" name="eksempel" data-state="invalid" aria-invalid="true" />
-  <label class="lt-label" for="ugyldig">Du må velge ett alternativ</label>
+  <input class="lt-radio" type="radio" id="invalid-choice" name="example" data-state="invalid" aria-invalid="true" />
+  <label class="lt-label" for="invalid-choice">You have to choose one option</label>
 </div>
 `} />
 
-| `data-state` | Brukes til |
+| `data-state` | Used for |
 | --- | --- |
-| *(utelatt)* | Normaltilstand |
-| `invalid` | Valideringen har feilet |
-| `success` | Valget er bekreftet gyldig. Bruk sparsomt. |
+| *(omitted)* | Normal state |
+| `invalid` | Validation has failed |
+| `success` | The choice is confirmed valid. Use sparingly. |
 
-Feiler valideringen, sett tilstanden på alle knappene i gruppen. Det er gruppen som er ugyldig, ikke én av knappene.
+If validation fails, set the state on every button in the group. It is the group that is invalid, not one of the buttons.
 
 ## Classes you can style
 
-| Klasse | Hva det er |
+| Class | What it is |
 | --- | --- |
-| `.lt-radio` | Selve knappen |
-| `.lt-radio-row` | Raden som holder knappen og teksten ved siden av hverandre |
+| `.lt-radio` | The button itself |
+| `.lt-radio-row` | The row that holds the button and the text side by side |
 
-| Variabel | Standard |
+| Variable | Default |
 | --- | --- |
 | `--lt-radio-size` | `var(--lt-spacing-5)` |
 
-Prikken er en gradient tegnet i `--lt-color-accent-content`, så den følger temaet uten et eget bilde. Se [Tilpasning](../../customising/).
+The dot is a gradient drawn in `--lt-color-accent-content`, so it follows the theme without a separate image. See [Customising](../../customising/).
 
 ## Accessibility
 
-- Alle knappene i gruppen må dele `name`. Uten det blir hver knapp sin egen gruppe, og brukeren kan velge flere.
-- Piltastene flytter mellom knappene og velger samtidig. Tab hopper ut av hele gruppen. Det er nettleserens egen oppførsel, og den skal ikke overstyres.
-- Ikke forhåndsvelg et alternativ når valget har en konsekvens. Da blir standardverdien et svar brukeren aldri tok stilling til.
-- Har du bare to alternativer som er hverandres motsetning, vurder [Checkbox](../checkbox/) eller [Switch](../switch/) i stedet.
+- Every button in the group has to share `name`. Without it each button becomes its own group, and the user can choose several.
+- The arrow keys move between the buttons and select at the same time. Tab leaves the whole group. That is the browser's own behaviour, and it should not be overridden.
+- Do not preselect an option when the choice has a consequence. The default then becomes an answer the user never considered.
+- If you only have two options that are each other's opposite, consider [Checkbox](../checkbox/) or [Switch](../switch/) instead.
