@@ -200,8 +200,8 @@ describe("lt-popover positions the panel", () => {
   function markup(id: string, host = "", panel = 'popover="manual"') {
     return `
       <lt-popover ${host}>
-        <button aria-controls="${id}" aria-expanded="false" class="lt-button" id="${id}-button">Actions</button>
-        <ul class="lt-popover" id="${id}" ${panel}><li>Archive the case</li><li>Delete the case</li></ul>
+        <button aria-controls="${id}" aria-expanded="false" class="lt-button" id="${id}-button">Case actions</button>
+        <ul class="lt-popover" id="${id}" ${panel}><li>Archive case</li><li>Delete case</li></ul>
       </lt-popover>
     `
   }
