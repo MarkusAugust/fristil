@@ -89,8 +89,22 @@ fn parts(value: &Json, path: &str) -> Result<Vec<Part>, String> {
                     .to_string(),
                 multiple: matches!(part.get("multiple"), Some(Json::Bool(true))),
                 unique: matches!(part.get("unique"), Some(Json::Bool(true))),
+                stable_id: matches!(part.get("stableId"), Some(Json::Bool(true))),
             })
         })
+        .collect()
+}
+
+/// Attributtene i `removed`, når de står der: navnet og beskjeden om hva som
+/// gjelder i stedet.
+fn removed(value: &Json, path: &str) -> Result<Vec<(String, String)>, String> {
+    let Some(removed) = value.get("removed") else {
+        return Ok(Vec::new());
+    };
+    let path = format!("{path}.removed");
+    entries(removed, &path)?
+        .iter()
+        .map(|(name, note)| Ok((name.clone(), text(note, &format!("{path}.{name}"))?)))
         .collect()
 }
 
@@ -183,6 +197,7 @@ fn from_value(root: &Json) -> Result<Vocabulary, String> {
             link: text(field(element, "link", &path)?, &path)?,
             attributes,
             parts: parts(element, &path)?,
+            removed: removed(element, &path)?,
         });
     }
 
@@ -254,6 +269,30 @@ mod tests {
         let v = for_tests();
         assert!(v.elements.iter().any(|e| e.tag == "fs-field"));
         assert!(v.classes.iter().any(|c| c.name == "fs-button"));
+    }
+
+    #[test]
+    fn reads_stable_id_and_removed() {
+        let v = from_json(
+            r#"{"schemaVersion": 1, "version": "0", "elements": {"fs-x": {"link": "", "attributes": {}, "parts": {"control": {"selector": "input", "stableId": true}, "help": {"selector": "p"}}, "removed": {"invalid": "Bruk en synlig feilmelding."}}}, "classes": {}}"#,
+        )
+        .unwrap();
+        let element = &v.elements[0];
+        assert!(element.parts[0].stable_id);
+        assert!(!element.parts[1].stable_id);
+        assert_eq!(
+            element.removed,
+            vec![(
+                "invalid".to_string(),
+                "Bruk en synlig feilmelding.".to_string()
+            )]
+        );
+
+        let error = from_json(
+            r#"{"schemaVersion": 1, "version": "0", "elements": {"fs-x": {"link": "", "attributes": {}, "removed": {"invalid": 1}}}, "classes": {}}"#,
+        )
+        .unwrap_err();
+        assert!(error.contains("elements.fs-x.removed.invalid"), "{error}");
     }
 
     #[test]

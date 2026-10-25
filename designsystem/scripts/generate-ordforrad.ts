@@ -255,6 +255,7 @@ export function diagnosticsData(): Elements {
       description: element.description,
       attributes,
       parts: element.parts,
+      ...(element.removed ? { removed: element.removed } : {}),
       ...(Object.keys(element.events).length
         ? {
             events: Object.fromEntries(

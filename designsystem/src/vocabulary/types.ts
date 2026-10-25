@@ -30,6 +30,8 @@ export type Part = {
   /** En del til av samme slag er en feil, ikke vanlig innhold. */
   unique?: true
   optional?: true
+  /** Delen må ha en id fra serveren; komponenten skriver aldri en. */
+  stableId?: true
 }
 
 /**
@@ -47,6 +49,8 @@ export type Element = {
   /** Tom for elementene som lager alt innholdet sitt selv. */
   parts?: Record<string, Part>
   events?: Record<string, ElementEvent>
+  /** Attributter som er tatt ut, med hva som gjelder i stedet. */
+  removed?: Record<string, string>
 }
 
 /** Innholdet i `elements.ts`: tagg til element. */

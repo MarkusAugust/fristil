@@ -669,6 +669,7 @@ mod tests {
             link: String::new(),
             attributes: vec![("sone".into(), types::Attribute::Text)],
             parts: Vec::new(),
+            removed: Vec::new(),
         });
         assert!(diagnose_markup(&html, &vocabulary).is_empty());
     }
@@ -691,7 +692,10 @@ mod tests {
         );
         let wrong = found(r#"<button class="app-button__ikon">x</button>"#);
         assert_eq!(wrong[0].rule, "ukjent-klasse");
-        assert_eq!(wrong[0].fix.as_ref().unwrap().edits[0].text, "app-button__icon");
+        assert_eq!(
+            wrong[0].fix.as_ref().unwrap().edits[0].text,
+            "app-button__icon"
+        );
         assert_eq!(
             found(r#"<button class="app-button" data-variant="secondary">x</button>"#).len(),
             1
