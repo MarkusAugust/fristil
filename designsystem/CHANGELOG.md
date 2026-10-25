@@ -50,9 +50,10 @@ egen overskrift «Brytende».
   `fs.tabs({ id, keys: ["soknaden", "vedlegg", "meldinger"], label })`.
 - **`fs.tabs()` og `Fs.tabs` skriver bare lenker, id-er og klasser.** `list`
   har klassen og `aria-label`, `tabs` har `href`, `panels` har `id` og
-  klassen, og `headings` har `id`. Ingen roller, `aria-*`, `tabindex` eller
-  `hidden`, og `item` er borte: uten JavaScript skal raden være en liste med
-  lenker, og en `<section>` med navn ville blitt et landemerke. Komponenten
+  klassen, og det nye `headings` har `id` til overskriften i hvert panel.
+  Ingen roller, `aria-*`, `tabindex` eller `hidden`: uten JavaScript skal
+  raden være en liste med lenker, og en `<section>` med navn ville blitt et
+  landemerke. Komponenten
   skriver resten når den registreres. **Slik oppdaterer du:** spre
   `faner.tabs[i]` på en `<a>` i en `<li>`, og `faner.headings[i]` på
   overskriften i panelet.
