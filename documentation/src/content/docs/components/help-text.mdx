@@ -9,8 +9,8 @@ The small text below a field that explains what the system expects. If the text 
 
 ## How to use it
 
-<Example importer={["tokens.css", "help-text.css"]}
-  stiler={["help-text"]} layout="stabel" maxWidth="30rem" kode={`
+<Example imports={["tokens.css", "help-text.css"]}
+  styles={["help-text"]} layout="stack" maxWidth="30rem" code={`
 <p class="lt-help-text">You will find the number at the top right of the invoice.</p>
 <p class="lt-help-text" data-variant="strong">The change applies from the start of next month.</p>
 <p class="lt-help-text" data-variant="success">The attachment has been uploaded.</p>
@@ -68,7 +68,7 @@ lt.setAttributes(helpText, lt.helpText({ variant: "warning" }))
 
 Without `aria-describedby` the help text is not read out when the field gets focus.
 
-<Example stiler={["help-text", "label", "input"]} layout="stabel" maxWidth="30rem" kode={`
+<Example styles={["help-text", "label", "input"]} layout="stack" maxWidth="30rem" code={`
 <label class="lt-label" for="reference">Payment reference</label>
 <input class="lt-input" id="reference" inputmode="numeric" aria-describedby="reference-help" />
 <p class="lt-help-text" id="reference-help">You will find the number at the top of the invoice.</p>

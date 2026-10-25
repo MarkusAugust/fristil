@@ -7,7 +7,7 @@ import Preview from "./Preview.astro"
 const boks = lt.dialog({ titleId: "demo-dialog-tittel", color: "danger" })
 ---
 
-<Preview id="demo-dialog" stiler={["dialog", "button"]} maxWidth="30rem">
+<Preview id="demo-dialog" styles={["dialog", "button"]} maxWidth="30rem">
 	<button {...lt.button({ variant: "danger" })} type="button" data-apne>
 		Delete the application
 	</button>

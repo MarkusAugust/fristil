@@ -19,7 +19,7 @@ const innhold = [
 ]
 ---
 
-<Preview id="demo-tabs" stiler={["tabs", "paragraph"]} maxWidth="34rem">
+<Preview id="demo-tabs" styles={["tabs", "paragraph"]} maxWidth="34rem">
 	<lt-tabs>
 		<ul {...faner.list}>
 			{faner.tabs.map((fane, i) => <li><a {...fane}>{titler[i]}</a></li>)}

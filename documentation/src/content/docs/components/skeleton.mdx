@@ -10,11 +10,11 @@ Grey shapes that show where the content will appear. They are always hidden from
 ## How to use it
 
 <Example
-  importer={["tokens.css", "skeleton.css"]}
-  stiler={["skeleton"]}
-  layout="stabel"
+  imports={["tokens.css", "skeleton.css"]}
+  styles={["skeleton"]}
+  layout="stack"
   maxWidth="26rem"
-  egenCss={`
+  customCss={`
 /* Your own classes. These two rules are all it takes. */
 .case-last-line {
   inline-size: 70%;
@@ -24,7 +24,7 @@ Grey shapes that show where the content will appear. They are always hidden from
   --lt-skeleton-height: var(--lt-spacing-12);
 }
   `}
-  kode={`
+  code={`
 <div class="lt-skeleton" data-variant="circle" aria-hidden="true"></div>
 <div class="lt-skeleton" data-variant="text" aria-hidden="true"></div>
 <div class="lt-skeleton case-last-line" data-variant="text" aria-hidden="true"></div>

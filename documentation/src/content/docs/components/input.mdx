@@ -9,8 +9,8 @@ Plain CSS on an ordinary `<input>`, so the browser's own validation, autofill an
 
 ## How to use it
 
-<Example importer={["tokens.css", "input.css", "label.css"]}
-  stiler={["input", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<Example imports={["tokens.css", "input.css", "label.css"]}
+  styles={["input", "label"]} layout="stack" maxWidth="26rem" code={`
 <label class="lt-label" for="email">Email address</label>
 <input class="lt-input" id="email" type="email" placeholder="alex&#64;example.com" />
 
@@ -77,7 +77,7 @@ Values from outside: `lt.input.isType(x)` and `lt.input.isState(x)`. See [Type-s
 
 ## Date and time
 
-<Example stiler={["input", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<Example styles={["input", "label"]} layout="stack" maxWidth="26rem" code={`
 <label class="lt-label" for="date">Travel date</label>
 <input class="lt-input" id="date" data-variant="date" type="date" value="2026-05-31" />
 
@@ -114,12 +114,12 @@ Only `date`, `time` and `datetime-local` affect the appearance. The other types 
 
 An example. A form to be filled in on a phone can take larger touch targets, and your organisation may want square corners:
 
-<Example stiler={["input", "label"]} layout="stabel" maxWidth="26rem" egenCss={`
+<Example styles={["input", "label"]} layout="stack" maxWidth="26rem" customCss={`
 .roomy-form {
 	--lt-input-padding: var(--lt-spacing-3) var(--lt-spacing-4);
 	--lt-input-radius: 0;
 }
-`} kode={`
+`} code={`
 <label class="lt-label" for="default">Customer number</label>
 <input class="lt-input" id="default" type="text" />
 

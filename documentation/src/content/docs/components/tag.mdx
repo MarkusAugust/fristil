@@ -9,8 +9,8 @@ A tag labels content: topics on an article, chosen filters above a list. If the 
 
 ## How to use it
 
-<Example importer={["tokens.css", "tag.css"]}
-  stiler={["tag"]} kode={`
+<Example imports={["tokens.css", "tag.css"]}
+  styles={["tag"]} code={`
 <span class="lt-tag">Housing benefit</span>
 <span class="lt-tag" data-variant="filled">Nursery</span>
 <span class="lt-tag" aria-disabled="true">Archived</span>
@@ -53,7 +53,7 @@ tag.setAttribute("aria-pressed", "false")
 
 Three filters above a list of cases. "Approved" is selected, the other two are not, and `aria-pressed` says which is which:
 
-<Example stiler={["tag", "heading"]} layout="stabel" maxWidth="30rem" kode={`
+<Example styles={["tag", "heading"]} layout="stack" maxWidth="30rem" code={`
 <h3 class="lt-heading" data-size="xs" id="filters">Show cases with status</h3>
 
 <div role="group" aria-labelledby="filters">

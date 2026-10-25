@@ -11,8 +11,8 @@ If the user can choose several, use [Checkbox](../checkbox/). If there are many 
 
 ## How to use it
 
-<Example importer={["tokens.css", "radio.css", "fieldset.css", "label.css"]}
-  stiler={["radio", "label", "fieldset"]} layout="stabel" maxWidth="28rem" kode={`
+<Example imports={["tokens.css", "radio.css", "fieldset.css", "label.css"]}
+  styles={["radio", "label", "fieldset"]} layout="stack" maxWidth="28rem" code={`
 <fieldset class="lt-fieldset">
   <legend class="lt-legend" data-required="symbol">How do you want to receive the answer?</legend>
 
@@ -72,7 +72,7 @@ The group always belongs in a [Fieldset](../fieldset/). Without it only the opti
 
 ## States
 
-<Example stiler={["radio", "label"]} layout="stabel" maxWidth="28rem" kode={`
+<Example styles={["radio", "label"]} layout="stack" maxWidth="28rem" code={`
 <div class="lt-radio-row">
   <input class="lt-radio" type="radio" id="invalid-choice" name="example" data-state="invalid" aria-invalid="true" />
   <label class="lt-label" for="invalid-choice">You have to choose one option</label>

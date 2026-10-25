@@ -9,8 +9,8 @@ The message shown when a field cannot be submitted as it stands. It belongs righ
 
 ## How to use it
 
-<Example importer={["tokens.css", "error-text.css"]}
-  stiler={["error-text"]} layout="stabel" maxWidth="30rem" kode={`
+<Example imports={["tokens.css", "error-text.css"]}
+  styles={["error-text"]} layout="stack" maxWidth="30rem" code={`
 <p class="lt-error-text">Enter an email address with an at sign, for example jane&#64;example.com.</p>
 <p class="lt-error-text" data-variant="warning">We cannot find this address in the population register. Check that it is correct.</p>
 `}>
@@ -58,7 +58,7 @@ function update(isValid: boolean) {
 
 Three things have to agree at the same time: `data-state` for the colour, `aria-invalid` for the screen reader, and `aria-describedby` for the text itself.
 
-<Example stiler={["error-text", "label", "input"]} layout="stabel" maxWidth="30rem" kode={`
+<Example styles={["error-text", "label", "input"]} layout="stack" maxWidth="30rem" code={`
 <label class="lt-label" for="email">Email address</label>
 <input
   class="lt-input"

@@ -11,8 +11,8 @@ If you do not know how far it has got, [Spinner](../spinner/) is the better fit.
 
 ## How to use it
 
-<Example importer={["tokens.css", "progress.css"]}
-  stiler={["progress"]} layout="stabel" maxWidth="26rem" kode={`
+<Example imports={["tokens.css", "progress.css"]}
+  styles={["progress"]} layout="stack" maxWidth="26rem" code={`
 <progress class="lt-progress" value="3" max="7"
           aria-label="Application progress" aria-valuetext="Step 3 of 7"></progress>
 
@@ -74,7 +74,7 @@ That is the same thing [Spinner](../spinner/) says. Choose one of them in a give
 
 ## The colours mean something
 
-<Example stiler={["progress"]} layout="stabel" maxWidth="26rem" kode={`
+<Example styles={["progress"]} layout="stack" maxWidth="26rem" code={`
 <progress class="lt-progress" value="72" max="100"
           aria-label="Uploading attachment"></progress>
 
@@ -117,12 +117,12 @@ If the user has asked for reduced motion, the indeterminate stripe moves more sl
 
 An example. A bar under a field should often be thinner and without corners:
 
-<Example stiler={["progress"]} layout="stabel" maxWidth="26rem" egenCss={`
+<Example styles={["progress"]} layout="stack" maxWidth="26rem" customCss={`
 .thin-bar {
 	--lt-progress-height: var(--lt-spacing-1);
 	--lt-progress-radius: 0;
 }
-`} kode={`
+`} code={`
 <progress class="lt-progress" value="60" max="100"
           aria-label="Default"></progress>
 

@@ -4,7 +4,7 @@ import Preview from "./Preview.astro"
 
 <Preview
 	id="demo-liste"
-	stiler={[
+	styles={[
 		"search",
 		"tag",
 		"table",
@@ -16,9 +16,9 @@ import Preview from "./Preview.astro"
 		"heading",
 		"paragraph",
 	]}
-	layout="stabel"
+	layout="stack"
 	maxWidth="34rem"
-	ekstraCss={`
+	extraCss={`
 		/* The layout is the app's, not the system's: LO-TEK provides the
 		   search field, the tags and the table, while the space between them
 		   belongs to the page that puts them together. */

@@ -11,8 +11,8 @@ Content that should be read out, but not shown. The class shrinks the element aw
 
 A row of "Delete" buttons makes sense to someone looking at the table. Someone listening to it gets four identical buttons. The addition in `.lt-sr-only` says which row the button belongs to, without repeating it for the eye.
 
-<Example importer={["tokens.css", "sr-only.css", "button.css"]}
-  stiler={["button", "sr-only"]} layout="stabel" maxWidth="26rem" kode={`
+<Example imports={["tokens.css", "sr-only.css", "button.css"]}
+  styles={["button", "sr-only"]} layout="stack" maxWidth="26rem" code={`
 <button class="lt-button" data-variant="danger">
   Delete<span class="lt-sr-only"> the application from 4 March</span>
 </button>
@@ -56,7 +56,7 @@ The button is read out as "Delete the application from 4 March", while it shows 
 
 If the label is obvious from the layout, it can be hidden visually. It should not be removed.
 
-<Example stiler={["input", "label", "sr-only", "button"]} layout="stabel" maxWidth="26rem" kode={`
+<Example styles={["input", "label", "sr-only", "button"]} layout="stack" maxWidth="26rem" code={`
 <label class="lt-label lt-sr-only" for="search">Search cases</label>
 <input class="lt-input" id="search" type="search" placeholder="Search cases" />
 `} />

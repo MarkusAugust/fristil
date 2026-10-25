@@ -14,18 +14,18 @@ const CDN = `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@${pakke.version}`
 
 interface Props {
   /** The stylesheets the example needs, the same ones you would import in an app. */
-  stiler?: Stilark[]
+  styles?: Stilark[]
   /**
    * `rad` lays the content out side by side, `stabel` one below the other.
-   * `flyt` is ordinary block flow, where margins collapse as they do on a
+   * `flow` is ordinary block flow, where margins collapse as they do on a
    * real page. In `stabel` the surface is a flex column, and there the
    * margins and the gap add up.
    */
-  layout?: "rad" | "stabel" | "flyt"
+  layout?: "row" | "stack" | "flow"
   /** Optional maximum width, for example "34rem". */
   maxWidth?: string
   /** The markup. Shown both live and as code. */
-  kode: string
+  code: string
   /**
    * CSS that applies only to the preview.
    *
@@ -34,7 +34,7 @@ interface Props {
    * are forced into view here rather than with `style=` in the markup. What
    * the reader copies must be what works on a real page.
    */
-  visningsCss?: string
+  previewCss?: string
   /**
    * The stylesheets to show in the code tab, as they are imported in an app.
    *
@@ -42,26 +42,26 @@ interface Props {
    * further up the page for what must be imported to make it look like this.
    * With them the tab is the whole recipe.
    */
-  importer?: string[]
+  imports?: string[]
   /**
    * CSS that belongs to the example, and that the reader should take along.
    *
-   * The difference from `visningsCss` is who it is for. `visningsCss` forces
+   * The difference from `previewCss` is who it is for. `previewCss` forces
    * something into view that cannot otherwise be shown in a box, and is not
    * to be copied. This one is part of the recipe: the consumer's own classes,
    * such as `.sak-siste-linje` on the skeleton page. That is why it is shown
    * in the code tab.
    *
-   * Without the distinction, such CSS ended up in `visningsCss`, and the code
+   * Without the distinction, such CSS ended up in `previewCss`, and the code
    * tab then had classes that were not defined anywhere the reader could see.
    */
-  egenCss?: string
+  customCss?: string
 }
 
-const { stiler, layout, maxWidth, kode, visningsCss, importer, egenCss } =
+const { styles, layout, maxWidth, code, previewCss, imports, customCss } =
   Astro.props
 
-const forhaandsvisningsCss = [egenCss, visningsCss].filter(Boolean).join("\n")
+const forhaandsvisningsCss = [customCss, previewCss].filter(Boolean).join("\n")
 
 /*
  * The tab for the builder function, when the page has something to say there.
@@ -82,9 +82,9 @@ const harTypeScript = Astro.slots.has("ts")
  * lines belong in the TypeScript tab, where there is a build step.
  */
 const lenker =
-  importer &&
+  imports &&
   [
-    ...importer.map(
+    ...imports.map(
       (fil) =>
         `<link rel="stylesheet" href="${CDN}/${STILARK[fil] ?? `src/${fil}`}">`,
     ),
@@ -95,13 +95,13 @@ const lenker =
      * the component requires. But "Getting started" recommends `lotek.css` to
      * anyone linking without a build step, and without this line the two
      * pages recommended different things. No page lists `tailwind.css` in
-     * `importer`, which is the only stylesheet the combined file does not
+     * `imports`, which is the only stylesheet the combined file does not
      * cover, so the line is true everywhere.
      */
     `<!-- Or everything in one file: ${CDN}/${STILARK["lotek.css"]} -->`,
   ].join("\n")
 
-const importlinjer = importer
+const importlinjer = imports
   ?.map((fil) => `import "@lo-tek/interfaces/${fil}"`)
   .join("\n")
 
@@ -117,14 +117,14 @@ const importlinjer = importer
 
 <Tabs>
 	<TabItem label="Example">
-		<Preview stiler={stiler} layout={layout} maxWidth={maxWidth} ekstraCss={forhaandsvisningsCss}>
-			<Fragment set:html={kode} />
+		<Preview styles={styles} layout={layout} maxWidth={maxWidth} extraCss={forhaandsvisningsCss}>
+			<Fragment set:html={code} />
 		</Preview>
 	</TabItem>
 	<TabItem label="Plain HTML">
 		{lenker && <Code code={lenker} lang="html" />}
-		<Code code={kode.trim()} lang="html" />
-		{egenCss && <Code code={egenCss.trim()} lang="css" />}
+		<Code code={code.trim()} lang="html" />
+		{customCss && <Code code={customCss.trim()} lang="css" />}
 	</TabItem>
 	{
 		harTypeScript && (

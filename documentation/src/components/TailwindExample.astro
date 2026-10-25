@@ -8,16 +8,16 @@ import Preview, { type Stilark } from "./Preview.astro"
 
 interface Props {
   /** The LO-TEK stylesheets the example needs. */
-  stiler?: Stilark[]
+  styles?: Stilark[]
   /** `rad` lays the content out side by side, `stabel` one below the other. */
-  layout?: "rad" | "stabel"
+  layout?: "row" | "stack"
   /** Optional maximum width. */
   maxWidth?: string
   /** The markup. Shown both live and as code. */
-  kode: string
+  code: string
 }
 
-const { stiler = [], layout = "rad", maxWidth, kode } = Astro.props
+const { styles = [], layout = "row", maxWidth, code } = Astro.props
 
 /*
  * The example is compiled by a real Tailwind at build time.
@@ -37,7 +37,7 @@ async function lastStilark(id: string, basedir: string) {
 }
 
 /** The class names in the markup, which are what Tailwind is to generate rules for. */
-const klasser = [...kode.matchAll(/class="([^"]*)"/g)].flatMap((treff) =>
+const klasser = [...code.matchAll(/class="([^"]*)"/g)].flatMap((treff) =>
   treff[1].split(/\s+/).filter(Boolean),
 )
 
@@ -89,15 +89,15 @@ const tailwindCss = compiler.build(klasser)
 <Tabs>
 	<TabItem label="Example">
 		<Preview
-			stiler={stiler}
+			styles={styles}
 			layout={layout}
 			maxWidth={maxWidth}
-			ekstraCss={tailwindCss}
+			extraCss={tailwindCss}
 		>
-			<Fragment set:html={kode} />
+			<Fragment set:html={code} />
 		</Preview>
 	</TabItem>
 	<TabItem label="Code">
-		<Code code={kode.trim()} lang="html" />
+		<Code code={code.trim()} lang="html" />
 	</TabItem>
 </Tabs>

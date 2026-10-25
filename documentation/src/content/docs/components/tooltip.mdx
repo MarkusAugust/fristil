@@ -14,16 +14,16 @@ If the text is needed to fill in a field, it belongs in a [Help Text](../help-te
 The bubble is hidden until the trigger gets the mouse or focus. Hold the mouse over the button below, or move to it with Tab, and it appears:
 
 <Example
-  importer={["tokens.css", "tooltip.css", "button.css"]}
-  stiler={["tooltip", "button"]}
-  layout="stabel"
+  imports={["tokens.css", "tooltip.css", "button.css"]}
+  styles={["tooltip", "button"]}
+  layout="stack"
   maxWidth="30rem"
-  visningsCss={`
+  previewCss={`
     /* The bubble sits above the trigger, and needs some space in this box
        so it is not clipped. In a real page the space on the page decides. */
     .lt-tooltip { margin-block-start: var(--lt-spacing-8); }
   `}
-  kode={`
+  code={`
 <span class="lt-tooltip">
   <button class="lt-button" data-variant="ghost" type="button" aria-describedby="archive-hint">
     Archive

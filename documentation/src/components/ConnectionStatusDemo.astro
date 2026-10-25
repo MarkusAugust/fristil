@@ -4,11 +4,11 @@ import Preview from "./Preview.astro"
 
 <Preview
 	id="demo-samband"
-	stiler={["connection-status", "button"]}
+	styles={["connection-status", "button"]}
 	maxWidth="34rem"
-	layout="stabel"
+	layout="stack"
 	fastInni
-	ekstraCss={`
+	extraCss={`
 		/* Only for the preview: the bar sits at the top of the box, as it sits
 		   at the top of the window in an app. The space here keeps it from
 		   covering the buttons. A consumer needs none of this. */

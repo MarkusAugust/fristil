@@ -9,8 +9,8 @@ A link style with a clear underline, hover and a focus indicator. If the link sh
 
 ## How to use it
 
-<Example importer={["tokens.css", "link.css"]}
-  stiler={["link"]} layout="stabel" maxWidth="32rem" kode={`
+<Example imports={["tokens.css", "link.css"]}
+  styles={["link"]} layout="stack" maxWidth="32rem" code={`
 <p>
   Your application has been sent. You will find it under
   <a class="lt-link" href="#">My applications</a>, and we will send you an
@@ -51,7 +51,7 @@ else link?.removeAttribute("href")
 
 ## Disabled link
 
-<Example stiler={["link"]} kode={`
+<Example styles={["link"]} code={`
 <a class="lt-link" href="#">See receipt</a>
 <a class="lt-link" role="link" tabindex="0" aria-disabled="true">See tax statement</a>
 `} />

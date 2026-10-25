@@ -9,8 +9,8 @@ The same appearance and states as [Input](../input/), on a real `<select>`. The 
 
 ## How to use it
 
-<Example importer={["tokens.css", "select.css", "label.css"]}
-  stiler={["select", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<Example imports={["tokens.css", "select.css", "label.css"]}
+  styles={["select", "label"]} layout="stack" maxWidth="26rem" code={`
 <label class="lt-label" for="country">Country</label>
 <select class="lt-select" id="country" name="country">
   <option value="">Choose a country</option>
@@ -80,7 +80,7 @@ The first `<option>` should have an empty `value` when the field is required. Th
 
 The list that pops up is normally a window from the operating system, and no CSS reaches into it. With `data-picker="styled"` the field asks the browser to draw the list inside the page instead, so it gets the system's colours, spacing and shadow.
 
-<Example stiler={["select", "label"]} layout="stabel" maxWidth="26rem" kode={`
+<Example styles={["select", "label"]} layout="stack" maxWidth="26rem" code={`
 <label class="lt-label" for="case">Application type</label>
 <select class="lt-select" data-picker="styled" id="case" name="case">
   <option value="">Choose an application type</option>

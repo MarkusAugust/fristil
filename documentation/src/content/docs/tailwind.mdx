@@ -48,7 +48,7 @@ The theme with the `lt-` classes, `tailwind.css`, is a `@theme` block Tailwind's
 
 The components are in `@layer lotek`, and the utility classes come after. A Tailwind class therefore wins over the component's own value, without `!important` and without beating specificity:
 
-<TailwindExample stiler={["button"]} layout="stabel" maxWidth="26rem" kode={`
+<TailwindExample styles={["button"]} layout="stack" maxWidth="26rem" code={`
 <button class="lt-button">Submit application</button>
 <button class="lt-button w-full justify-center rounded-full">Submit application</button>
 <button class="lt-button" data-variant="secondary">Save draft</button>
@@ -61,7 +61,7 @@ The button keeps its colours, focus indicator and disabled state. You change onl
 
 Everything the theme adds is called `lt-`, like the other classes in the system. That way you always know which values are LO-TEK's, and Tailwind's own are untouched: `bg-neutral-100` still means the same.
 
-<TailwindExample stiler={["badge", "link"]} layout="stabel" maxWidth="30rem" kode={`
+<TailwindExample styles={["badge", "link"]} layout="stack" maxWidth="30rem" code={`
 <article class="rounded-xl border border-lt-neutral-border-subtle bg-lt-neutral-canvas p-4 shadow-lt-overlay">
   <div class="mb-2 flex items-center justify-between gap-2">
     <h3 class="text-lt-l font-semibold text-lt-neutral-text-strong">Housing benefit application</h3>

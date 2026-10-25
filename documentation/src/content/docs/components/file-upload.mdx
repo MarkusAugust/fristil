@@ -9,8 +9,8 @@ The class goes on a plain `<input type="file">`. The button inside is the browse
 
 ## How to use it
 
-<Example importer={["tokens.css", "file-upload.css", "label.css", "help-text.css"]}
-  stiler={["file-upload", "label", "help-text"]} layout="stabel" maxWidth="32rem" kode={`
+<Example imports={["tokens.css", "file-upload.css", "label.css", "help-text.css"]}
+  styles={["file-upload", "label", "help-text"]} layout="stack" maxWidth="32rem" code={`
 <label class="lt-label" for="attachments">Upload attachments</label>
 <input class="lt-file-upload" type="file" id="attachments" multiple accept=".pdf,.jpg" aria-describedby="attachments-help" />
 <p class="lt-help-text" id="attachments-help">PDF or image, up to 10 MB per file.</p>
@@ -57,7 +57,7 @@ lt.setAttributes(field, lt.fileUpload({ multiple: true, accept: ".pdf" }))
 
 You write the list yourself, since only you know what should happen when a file is removed.
 
-<Example stiler={["file-upload", "button", "label"]} layout="stabel" maxWidth="32rem" kode={`
+<Example styles={["file-upload", "button", "label"]} layout="stack" maxWidth="32rem" code={`
 <label class="lt-label" for="attachments-2">Upload attachments</label>
 <input class="lt-file-upload" type="file" id="attachments-2" multiple />
 

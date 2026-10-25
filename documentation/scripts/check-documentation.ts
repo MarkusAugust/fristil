@@ -141,7 +141,7 @@ for (const fil of new Bun.Glob("**/*.mdx").scanSync(
   const tekst = les(`${ROT}documentation/src/content/docs/${fil}`)
 
   // `visningsCss` er CSS, og kan inneholde ordet uten at det er markup.
-  const utenVisningsCss = tekst.replace(/visningsCss=\{`[\s\S]*?`\}/g, " ")
+  const utenVisningsCss = tekst.replace(/previewCss=\{`[\s\S]*?`\}/g, " ")
 
   // `style = '…'` og `style='…'` er like gyldige som `style="…"`.
   if (/\bstyle\s*=/.test(utenVisningsCss)) {
@@ -389,7 +389,7 @@ for (const { navn, sti } of komponentmapper()) {
 
   if (oppskriftStart === -1) {
     avvik.push({ hvor, hva: "mangler seksjonen «How to use it»" })
-  } else if (!/\.css/.test(oppskrift) && !/importer=\{/.test(oppskrift)) {
+  } else if (!/\.css/.test(oppskrift) && !/imports=\{/.test(oppskrift)) {
     /*
      * Et stilark, ikke bare pakkenavnet.
      *

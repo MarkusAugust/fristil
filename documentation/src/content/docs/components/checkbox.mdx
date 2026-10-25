@@ -9,8 +9,8 @@ Plain CSS on an ordinary `<input type="checkbox">`, so the keyboard, `FormData` 
 
 ## How to use it
 
-<Example importer={["tokens.css", "checkbox.css", "label.css"]}
-  stiler={["checkbox", "label"]} layout="stabel" maxWidth="28rem" kode={`
+<Example imports={["tokens.css", "checkbox.css", "label.css"]}
+  styles={["checkbox", "label"]} layout="stack" maxWidth="28rem" code={`
 <div class="lt-checkbox-row">
   <input class="lt-checkbox" type="checkbox" id="terms" />
   <label class="lt-label" for="terms">I accept the terms</label>
@@ -121,7 +121,7 @@ Screen readers announce the state as "partially checked" by themselves. You do n
 
 If the boxes belong to the same question, group them in a [Fieldset](../fieldset/). The question is then announced before each option.
 
-<Example stiler={["checkbox", "label", "fieldset"]} layout="stabel" maxWidth="28rem" kode={`
+<Example styles={["checkbox", "label", "fieldset"]} layout="stack" maxWidth="28rem" code={`
 <fieldset class="lt-fieldset">
   <legend class="lt-legend">How would you like to be notified?</legend>
 

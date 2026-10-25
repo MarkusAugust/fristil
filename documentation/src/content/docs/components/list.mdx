@@ -9,8 +9,8 @@ The class goes on `<ul>` or `<ol>` and gives the list the right spacing and inde
 
 ## How to use it
 
-<Example importer={["tokens.css", "list.css"]}
-  stiler={["list"]} layout="stabel" maxWidth="32rem" kode={`
+<Example imports={["tokens.css", "list.css"]}
+  styles={["list"]} layout="stack" maxWidth="32rem" code={`
 <ul class="lt-list">
   <li>Birth certificate</li>
   <li>Confirmation from your employer</li>
@@ -68,7 +68,7 @@ lt.setAttributes(list, lt.list({ variant: "divided" }))
 
 Without `plain`, people would write `<div>` to get rid of the bullets, and the information that this is a list of four items is lost. The variant removes the look, not the meaning, with the Safari exception above.
 
-<Example stiler={["list", "card"]} layout="stabel" maxWidth="32rem" kode={`
+<Example styles={["list", "card"]} layout="stack" maxWidth="32rem" code={`
 <ul class="lt-list" data-variant="plain">
   <li>
     <div class="lt-card">

@@ -21,7 +21,7 @@ const forslag = lt.suggestion({
 })
 ---
 
-<Preview id="demo-suggestion" stiler={["suggestion", "label", "input", "help-text", "sr-only"]} maxWidth="30rem">
+<Preview id="demo-suggestion" styles={["suggestion", "label", "input", "help-text", "sr-only"]} maxWidth="30rem">
 	<lt-suggestion>
 		<label {...forslag.label}>City</label>
 		<input {...forslag.control} name="city" placeholder="Start typing" />

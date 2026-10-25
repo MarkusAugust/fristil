@@ -12,16 +12,16 @@ Otherwise someone navigating by keyboard has to go through the whole menu on eve
 The link sits off screen until it gets focus. The preview below forces it into view, so you can see how it looks when it is visible. The markup is the same as in a real page:
 
 <Example
-  importer={["tokens.css", "skip-link.css"]}
-  stiler={["skip-link"]}
-  layout="stabel"
+  imports={["tokens.css", "skip-link.css"]}
+  styles={["skip-link"]}
+  layout="stack"
   maxWidth="32rem"
-  visningsCss={`
+  previewCss={`
     /* Only to show the link. In a real page it appears on its own
        when it gets focus, and needs nothing here. */
     .lt-skip-link { position: static; transform: none; }
   `}
-  kode={`
+  code={`
 <a class="lt-skip-link" href="#main-content">Skip to main content</a>
 `}>
 <Fragment slot="ts">

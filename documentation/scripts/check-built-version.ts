@@ -41,7 +41,7 @@ const funn: string[] = []
  *
  * Nå samles adressene plassholderen står i, og hver av dem må finnes i det
  * bygde med versjonen satt inn. Det dekker samtidig de nodetypene plugin-en
- * ikke når: står plassholderen i en JSX-attributt som `kode={…}`, blir den ikke
+ * ikke når: står plassholderen i en JSX-attributt som `code={…}`, blir den ikke
  * byttet, og da mangler adressen her.
  */
 const iKilden = new Set<string>()

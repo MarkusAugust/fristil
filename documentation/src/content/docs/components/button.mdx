@@ -9,8 +9,8 @@ The class goes on an ordinary `<button>`. No JavaScript is loaded, and it works 
 
 ## How to use it
 
-<Example importer={["tokens.css", "button.css"]}
-  stiler={["button"]} kode={`
+<Example imports={["tokens.css", "button.css"]}
+  styles={["button"]} code={`
 <button class="lt-button">Send application</button>
 <button class="lt-button" data-variant="secondary">Save draft</button>
 <button class="lt-button" data-variant="ghost">Add attachment</button>
@@ -97,7 +97,7 @@ If the team changes framework, it is this one component that is rewritten, not t
 
 ## Disabled
 
-<Example stiler={["button"]} kode={`
+<Example styles={["button"]} code={`
 <button class="lt-button" disabled>Send application</button>
 <button class="lt-button" data-variant="secondary" disabled>Save draft</button>
 <a class="lt-button" role="link" tabindex="0" aria-disabled="true">Go to the overview</a>
@@ -107,7 +107,7 @@ If the team changes framework, it is this one component that is rewritten, not t
 
 ## A link that looks like a button
 
-<Example stiler={["button"]} kode={`
+<Example styles={["button"]} code={`
 <a class="lt-button" href="#">Go to the overview</a>
 <a class="lt-button" data-variant="secondary" href="#">Read the terms</a>
 `} />
@@ -148,12 +148,12 @@ If you need a full-width button, that is the app's layout:
 
 An example. A button in a table row needs less space than one standing on its own:
 
-<Example stiler={["button"]} layout="rad" egenCss={`
+<Example styles={["button"]} layout="row" customCss={`
 .row-button {
 	--lt-button-padding: var(--lt-spacing-1) var(--lt-spacing-3);
 	--lt-button-radius: var(--lt-spacing-4);
 }
-`} kode={`
+`} code={`
 <button class="lt-button">Open the case</button>
 <button class="lt-button row-button" data-variant="secondary">Open</button>
 `} />

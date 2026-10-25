@@ -4,7 +4,7 @@ import Preview from "./Preview.astro"
 
 <Preview
 	id="demo-skjema"
-	stiler={[
+	styles={[
 		"error-summary",
 		"list",
 		"label",
@@ -14,9 +14,9 @@ import Preview from "./Preview.astro"
 		"button",
 		"sr-only",
 	]}
-	layout="stabel"
+	layout="stack"
 	maxWidth="34rem"
-	ekstraCss={`
+	extraCss={`
 		/* The layout is the app's choice, not the system's. LO-TEK provides
 		   the fields, while the spacing between them belongs to the form that
 		   puts them together. Two fields stuck together read as one. */
@@ -190,7 +190,7 @@ import Preview from "./Preview.astro"
 		// The heading and hidden are written here, as a server would do it.
 		// The component creates no markup: if it did, a Datastar morph would
 		// remove it again. See "Markup and behaviour".
-		const tittel = oppsummering?.querySelector(".lt-error-summary__title")
+		const title = oppsummering?.querySelector(".lt-error-summary__title")
 
 		// Only a submit shows the box. In between it can only disappear, when
 		// the last error has been fixed.
@@ -204,8 +204,8 @@ import Preview from "./Preview.astro"
 			feil.length === 1
 				? "The form has one error"
 				: `The form has ${feil.length} errors`
-		if (feil.length > 0 && tittel && tittel.textContent !== overskrift) {
-			tittel.textContent = overskrift
+		if (feil.length > 0 && title && title.textContent !== overskrift) {
+			title.textContent = overskrift
 		}
 
 		return feil.length

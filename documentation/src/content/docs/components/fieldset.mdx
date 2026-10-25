@@ -11,8 +11,8 @@ In practice the component is two things: a reset of the browser's border from 19
 
 ## How to use it
 
-<Example importer={["tokens.css", "fieldset.css", "radio.css"]}
-  stiler={["fieldset", "radio", "label"]} layout="stabel" maxWidth="28rem" kode={`
+<Example imports={["tokens.css", "fieldset.css", "radio.css"]}
+  styles={["fieldset", "radio", "label"]} layout="stack" maxWidth="28rem" code={`
 <fieldset class="lt-fieldset">
   <legend class="lt-legend" data-required="symbol">Who are you applying on behalf of?</legend>
 
@@ -73,7 +73,7 @@ Choose one of `data-required` and `data-optional`, and stick to it throughout th
 
 The group can have help text and an error text like the fields otherwise. The connection for screen readers goes through `aria-describedby` on the `<fieldset>`, not on each button.
 
-<Example stiler={["fieldset", "radio", "label", "help-text", "error-text"]} layout="stabel" maxWidth="28rem" kode={`
+<Example styles={["fieldset", "radio", "label", "help-text", "error-text"]} layout="stack" maxWidth="28rem" code={`
 <fieldset class="lt-fieldset" data-state="invalid" aria-describedby="delivery-help delivery-error">
   <legend class="lt-legend" data-required="symbol">Delivery method</legend>
   <p class="lt-help-text" id="delivery-help">We dispatch within three working days.</p>

@@ -9,8 +9,8 @@ A frame around content that belongs together, such as one case in a list of case
 
 ## How to use it
 
-<Example importer={["tokens.css", "card.css", "badge.css", "button.css"]}
-  stiler={["card", "badge", "button"]} layout="stabel" maxWidth="32rem" kode={`
+<Example imports={["tokens.css", "card.css", "badge.css", "button.css"]}
+  styles={["card", "badge", "button"]} layout="stack" maxWidth="32rem" code={`
 <div class="lt-card">
   <h3 class="lt-card__title">Housing benefit application</h3>
   <p>Sent 4 March. Case number 2026-0481.</p>
@@ -63,7 +63,7 @@ lt.setAttributes(card, lt.card({ interactive: true }))
 
 ## The whole card as a link
 
-<Example stiler={["card"]} layout="stabel" maxWidth="32rem" kode={`
+<Example styles={["card"]} layout="stack" maxWidth="32rem" code={`
 <a class="lt-card" data-interactive href="#">
   <h3 class="lt-card__title">See the whole case</h3>
   <p>All documents, messages and decisions in one place.</p>
@@ -88,11 +88,11 @@ If the card has several actions, the whole card should not be a link. The button
 
 An example. A card that carries a whole section can take more space than one in a list:
 
-<Example stiler={["card", "heading", "paragraph"]} layout="rad" egenCss={`
+<Example styles={["card", "heading", "paragraph"]} layout="row" customCss={`
 .roomy-card {
 	--lt-card-padding: var(--lt-spacing-6);
 }
-`} kode={`
+`} code={`
 <div class="lt-card">
   <h3 class="lt-heading" data-size="s">Default</h3>
   <p class="lt-paragraph">The spacing that comes with the package.</p>

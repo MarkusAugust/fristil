@@ -9,8 +9,8 @@ A ring that spins while something loads. If you know how long it takes, or how f
 
 ## How to use it
 
-<Example importer={["tokens.css", "spinner.css"]}
-  stiler={["spinner"]} kode={`
+<Example imports={["tokens.css", "spinner.css"]}
+  styles={["spinner"]} code={`
 <span class="lt-spinner" data-size="small" aria-hidden="true"></span>
 <span class="lt-spinner" aria-hidden="true"></span>
 <span class="lt-spinner" data-size="large" aria-hidden="true"></span>
@@ -54,7 +54,7 @@ lt.setAttributes(ring, lt.spinner({ size: "small", label: "Loading applications"
 
 Someone listening to the page gets nothing from a ring. Let a visible text carry the message. The ring can get a name with `aria-label`, but it is not certain to be announced by itself; see below.
 
-<Example stiler={["spinner"]} kode={`
+<Example styles={["spinner"]} code={`
 <p role="status">
   <span class="lt-spinner" data-size="small" aria-hidden="true"></span>
   Fetching your applications

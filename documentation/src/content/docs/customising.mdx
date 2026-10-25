@@ -206,13 +206,13 @@ The variables are inherited, like all CSS variables. Where you write the declara
 
 On `:root` it applies to the whole app, as in the example above. If you write it on your own class instead, it applies to that element and everything inside it:
 
-<Example stiler={["card", "button", "heading", "paragraph"]} layout="rad" egenCss={`
+<Example styles={["card", "button", "heading", "paragraph"]} layout="row" customCss={`
 .compact-panel {
 	--lt-card-padding: var(--lt-spacing-2);
 	--lt-card-radius: 0;
 	--lt-button-padding: var(--lt-spacing-1) var(--lt-spacing-3);
 }
-`} kode={`
+`} code={`
 <div class="lt-card">
   <h3 class="lt-heading" data-size="s">Default</h3>
   <p class="lt-paragraph">The values that ship with the package.</p>

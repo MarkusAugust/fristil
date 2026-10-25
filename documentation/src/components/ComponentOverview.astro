@@ -34,22 +34,22 @@ for (const sti of Object.keys(KILDER)) {
   if (mappe && kategori) kategoriFor.set(mappe, kategori)
 }
 
-const GRUPPER: { kategori: Kategori; tittel: string; forklaring: string }[] = [
+const GRUPPER: { kategori: Kategori; title: string; forklaring: string }[] = [
   {
     kategori: "css",
-    tittel: "CSS components",
+    title: "CSS components",
     forklaring:
       "A class and a few data attributes on a plain HTML element. No JavaScript is loaded.",
   },
   {
     kategori: "frame",
-    tittel: "Frame components",
+    title: "Frame components",
     forklaring:
       "You write the markup, and the web component adds keyboard handling, focus and the wiring on top. The elements stay in the plain DOM.",
   },
   {
     kategori: "standalone",
-    tittel: "Standalone components",
+    title: "Standalone components",
     forklaring:
       "The component creates its own content, because there is nothing for the server to send. You call a method.",
   },
@@ -59,7 +59,7 @@ const sider = (await getCollection("docs"))
   .filter((side) => side.id.startsWith("components/"))
   .map((side) => ({
     navn: side.id.slice("components/".length),
-    tittel: side.data.title,
+    title: side.data.title,
     beskrivelse: side.data.description ?? "",
     adresse: `/${side.id}/`,
   }))
@@ -69,7 +69,7 @@ const grupper = GRUPPER.map((gruppe) => ({
   ...gruppe,
   sider: sider
     .filter((side) => kategoriFor.get(side.navn) === gruppe.kategori)
-    .sort((a, b) => a.tittel.localeCompare(b.tittel, "en")),
+    .sort((a, b) => a.title.localeCompare(b.title, "en")),
 })).filter((gruppe) => gruppe.sider.length > 0)
 
 /*
@@ -89,12 +89,12 @@ if (plassert !== sider.length) {
 {
   grupper.map((gruppe) => (
     <section class="oversikt">
-      <h2 id={gruppe.kategori}>{gruppe.tittel}</h2>
+      <h2 id={gruppe.kategori}>{gruppe.title}</h2>
       <p>{gruppe.forklaring}</p>
       <ul class="oversikt__liste">
         {gruppe.sider.map((side) => (
           <li class="oversikt__kort">
-            <a href={side.adresse}>{side.tittel}</a>
+            <a href={side.adresse}>{side.title}</a>
             <span>{side.beskrivelse}</span>
           </li>
         ))}

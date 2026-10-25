@@ -232,16 +232,16 @@ Escape closes the dialog on its own. To prevent that, for example in the middle 
 Without `showModal()` the markup is a box on the page. That is the state the server sends, and the one you see if JavaScript never runs.
 
 <Example
-  stiler={["dialog", "button"]}
-  layout="stabel"
+  styles={["dialog", "button"]}
+  layout="stack"
   maxWidth="34rem"
-  visningsCss={`
+  previewCss={`
     /* Only to show the dialog in the box. An open <dialog> is
        position: absolute and would fall out of the preview. A real
        page needs none of this. */
     .lt-dialog { position: static; }
   `}
-  kode={`
+  code={`
 <dialog class="lt-dialog" aria-labelledby="delete-title" open>
   <h2 class="lt-dialog__title" id="delete-title">Delete the application?</h2>
   <div class="lt-dialog__body">

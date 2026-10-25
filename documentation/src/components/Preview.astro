@@ -95,14 +95,14 @@ export type Stilark = keyof typeof STILARK
 
 interface Props {
   /** The stylesheets the example needs, the same ones you would import in an app. */
-  stiler?: Stilark[]
+  styles?: Stilark[]
   /**
    * `rad` lays the content out side by side, `stabel` one below the other.
-   * `flyt` is ordinary block flow, where margins collapse as they do on a
+   * `flow` is ordinary block flow, where margins collapse as they do on a
    * real page. In `stabel` the surface is a flex column, and there the
    * margins and the gap add up.
    */
-  layout?: "rad" | "stabel" | "flyt"
+  layout?: "row" | "stack" | "flow"
   /** Optional maximum width, for example "34rem". */
   maxWidth?: string
   /** Id of the host element, for demos that need to find their way in with script. */
@@ -115,7 +115,7 @@ interface Props {
    * of the box. The latter is the alternative to a `style=` attribute in the
    * example, and must always have a comment saying the reader does not need it.
    */
-  ekstraCss?: string
+  extraCss?: string
   /**
    * Keep `position: fixed` inside the box.
    *
@@ -126,19 +126,19 @@ interface Props {
    * at the top of the window, behind the documentation site's fixed header.
    * It looked as if nothing happened.
    */
-  fastInni?: boolean
+  fixedInside?: boolean
 }
 
 const {
-  stiler = [],
-  layout = "rad",
+  styles = [],
+  layout = "row",
   maxWidth,
   id,
-  ekstraCss,
-  fastInni = false,
+  extraCss,
+  fixedInside = false,
 } = Astro.props
 
-for (const navn of stiler) {
+for (const navn of styles) {
   if (!(navn in STILARK)) {
     throw new Error(
       `Preview: unknown stylesheet "${navn}". Valid: ${Object.keys(STILARK).join(", ")}`,
@@ -188,17 +188,17 @@ const stilark = [
 		contain: layout;
 	}
 
-	.flate[data-layout="rad"] {
+	.flate[data-layout="row"] {
 		flex-wrap: wrap;
 		align-items: center;
 	}
 
-	.flate[data-layout="stabel"] {
+	.flate[data-layout="stack"] {
 		flex-direction: column;
 		align-items: stretch;
 	}
 
-	.flate[data-layout="flyt"] {
+	.flate[data-layout="flow"] {
 		display: block;
 	}
 
@@ -207,8 +207,8 @@ const stilark = [
 	   defaults. If something looks odd, it is the component that is missing
 	   something, not the preview. */
 	`,
-  ...stiler.map((navn) => STILARK[navn]),
-  ekstraCss ?? "",
+  ...styles.map((navn) => STILARK[navn]),
+  extraCss ?? "",
 ].join("\n")
 ---
 
@@ -218,7 +218,7 @@ const stilark = [
 		<div
 			class="flate"
 			data-layout={layout}
-			data-fast-inni={fastInni ? "" : undefined}
+			data-fast-inni={fixedInside ? "" : undefined}
 			style={maxWidth ? `--lt-preview-max-width: ${maxWidth}` : undefined}
 		>
 			<slot />

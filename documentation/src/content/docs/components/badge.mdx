@@ -9,8 +9,8 @@ A small badge that shows what state something is in. The colour is set with `dat
 
 ## How to use it
 
-<Example importer={["tokens.css", "badge.css"]}
-  stiler={["badge"]} kode={`
+<Example imports={["tokens.css", "badge.css"]}
+  styles={["badge"]} code={`
 <span class="lt-badge">In progress</span>
 <span class="lt-badge" data-color="success">Approved</span>
 <span class="lt-badge" data-color="warning">Attachment missing</span>
@@ -67,7 +67,7 @@ lt.setAttributes(badge, lt.badge({ color }))
 
 The badge usually sits next to what it describes. Here in a [List](../list/) with dividers between the rows:
 
-<Example stiler={["badge", "list"]} layout="stabel" maxWidth="26rem" kode={`
+<Example styles={["badge", "list"]} layout="stack" maxWidth="26rem" code={`
 <ul class="lt-list" data-variant="divided">
   <li>Invoice 2026-0481 <span class="lt-badge" data-color="success">Paid</span></li>
   <li>Invoice 2026-0482 <span class="lt-badge" data-color="danger">Overdue</span></li>

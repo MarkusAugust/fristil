@@ -218,7 +218,7 @@ function pageMarkup(component: string): string {
   if (markup === undefined) {
     const page = readFileSync(path, "utf8")
     markup = [
-      ...[...page.matchAll(/kode=\{`([\s\S]*?)`\}/g)].map((m) => m[1]),
+      ...[...page.matchAll(/code=\{`([\s\S]*?)`\}/g)].map((m) => m[1]),
       ...[...page.matchAll(/```html\n([\s\S]*?)```/g)].map((m) => m[1]),
     ].join("\n")
     markupByPage.set(path, markup)

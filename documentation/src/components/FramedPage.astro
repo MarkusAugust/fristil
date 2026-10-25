@@ -16,21 +16,21 @@ interface Props {
   /** The address of the demo page. */
   src: string
   /** What the frame contains. Becomes `title`, which screen readers announce. */
-  tittel: string
+  title: string
   /** The height of the frame. */
-  hoyde?: string
+  height?: string
 }
 
-const { src, tittel, hoyde = "34rem" } = Astro.props
+const { src, title, height = "34rem" } = Astro.props
 ---
 
 <figure class="rammeside not-content">
-	<iframe src={src} title={tittel} loading="lazy" style={`height: ${hoyde}`}
+	<iframe src={src} title={title} loading="lazy" style={`height: ${height}`}
 	></iframe>
 
 	<figcaption>
 		<a href={src} target="_blank" rel="noreferrer">
-			Open {tittel.toLowerCase()} in a new tab
+			Open {title.toLowerCase()} in a new tab
 		</a>
 		<span> (there, Tab and the skip link work as on a real page)</span>
 	</figcaption>

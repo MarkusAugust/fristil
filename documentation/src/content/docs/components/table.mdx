@@ -9,8 +9,8 @@ The class goes on a real `<table>`. It is `<th>` with `scope` that lets screen r
 
 ## How to use it
 
-<Example importer={["tokens.css", "table.css"]}
-  stiler={["table"]} layout="stabel" maxWidth="34rem" kode={`
+<Example imports={["tokens.css", "table.css"]}
+  styles={["table"]} layout="stack" maxWidth="34rem" code={`
 <table class="lt-table" data-variant="striped">
   <caption>Invoices in 2026</caption>
   <thead>
@@ -81,7 +81,7 @@ Numbers are set in `tabular-nums`, so the digits have equal width and the column
 
 A column that can be sorted has a button in its header, and the direction it is sorted in is in `aria-sort` on the `<th>`. The arrow is drawn from the same attribute, so what the screen reader says and what the reader sees are the same. The button fills the cell, so the header has the same height and indent as the cells below. Without `aria-sort` the button shows both arrows, muted.
 
-<Example stiler={["table", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
+<Example styles={["table", "sr-only"]} layout="stack" maxWidth="30rem" code={`
 <table class="lt-table">
   <caption>Invoices in 2026<span class="lt-sr-only">, columns with a button can be sorted</span></caption>
   <thead>
@@ -162,11 +162,11 @@ See [Customising](../../customising/) for how the variables and the layer work.
 
 If you need more rows on screen, it is the space in the cells that should go down. That is one variable, and there is no `data-size` for it:
 
-<Example stiler={["table"]} layout="stabel" maxWidth="30rem" egenCss={`
+<Example styles={["table"]} layout="stack" maxWidth="30rem" customCss={`
 .compact {
 	--lt-table-cell-padding: var(--lt-spacing-1) var(--lt-spacing-2);
 }
-`} kode={`
+`} code={`
 <table class="lt-table compact">
   <caption>Invoices in 2026</caption>
   <thead>

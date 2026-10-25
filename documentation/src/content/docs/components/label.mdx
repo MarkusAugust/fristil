@@ -9,8 +9,8 @@ The right typography on `<label>`, and one consistent way to mark required and o
 
 ## How to use it
 
-<Example importer={["tokens.css", "label.css", "input.css"]}
-  stiler={["label", "input"]} layout="stabel" maxWidth="26rem" kode={`
+<Example imports={["tokens.css", "label.css", "input.css"]}
+  styles={["label", "input"]} layout="stack" maxWidth="26rem" code={`
 <label class="lt-label" for="name">Full name</label>
 <input class="lt-input" id="name" type="text" />
 
@@ -86,7 +86,7 @@ Choose one of `data-required` and `data-optional` and stick to it throughout the
 
 `for` has to match the `id` of the field. Without the wiring the label is not read out when the field gets focus, and a click on the text does not move focus there.
 
-<Example stiler={["label", "input", "help-text"]} layout="stabel" maxWidth="26rem" kode={`
+<Example styles={["label", "input", "help-text"]} layout="stack" maxWidth="26rem" code={`
 <label class="lt-label" data-required="symbol" for="email">Email address</label>
 <input class="lt-input" id="email" type="email" required aria-describedby="email-help" />
 <p class="lt-help-text" id="email-help">We use the address to send you a receipt.</p>

@@ -9,8 +9,8 @@ A round surface with a picture or initials. The component says nothing about who
 
 ## How to use it
 
-<Example importer={["tokens.css", "avatar.css"]}
-  stiler={["avatar"]} kode={`
+<Example imports={["tokens.css", "avatar.css"]}
+  styles={["avatar"]} code={`
 <span class="lt-avatar" data-size="small" aria-hidden="true">JS</span>
 <span class="lt-avatar" aria-hidden="true">JS</span>
 <span class="lt-avatar" data-size="large" aria-hidden="true">JS</span>
@@ -60,7 +60,7 @@ The list that lets the pictures overlap has no attributes, only a class, and it 
 
 ## With a name next to it
 
-<Example stiler={["avatar"]} kode={`
+<Example styles={["avatar"]} code={`
 <span class="lt-avatar" data-size="small" aria-hidden="true">JS</span>
 <span>Jane Smith</span>
 `} />
@@ -79,7 +79,7 @@ When the picture stands alone, it has to say who it is:
 
 ## Several overlapping pictures
 
-<Example stiler={["avatar"]} layout="stabel" maxWidth="30rem" kode={`
+<Example styles={["avatar"]} layout="stack" maxWidth="30rem" code={`
 <ul class="lt-avatar-stack">
   <li><span class="lt-avatar" data-size="small" aria-hidden="true">JS</span></li>
   <li><span class="lt-avatar" data-size="small" aria-hidden="true">KB</span></li>

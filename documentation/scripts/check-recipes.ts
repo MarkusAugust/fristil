@@ -199,7 +199,7 @@ function gjerder(tekst: string): string[] {
 }
 
 /**
- * Markupen i `<Example kode={`…`}>`, som ikke står i et kodegjerde.
+ * Markupen i `<Example code={`…`}>`, som ikke står i et kodegjerde.
  *
  * Tre regler leste bare gjerder, og på de 32 css-sidene er `<Example>` den
  * eneste markupen som finnes. Registreringen, vertsattributtene og
@@ -401,7 +401,7 @@ for (const fil of readdirSync(SIDER).filter(
     })
     // `importer` hører til begge halvdelene: den sier hvilke stilark
     // eksempelet trenger, uansett hvilken fane de vises i.
-    const erklaering = m.match(/importer=\{\[[^\]]*\]\}/)?.[0] ?? ""
+    const erklaering = m.match(/imports=\{\[[^\]]*\]\}/)?.[0] ?? ""
     if (ts)
       faner.push({
         navn: "TypeScript",
@@ -570,7 +570,7 @@ for (const fil of readdirSync(SIDER).filter(
      * `import "@lo-tek/interfaces/x.css"`. Hvor de står er likegyldig.
      */
     const oppgitt = new Set<string>()
-    const fraImporter = fane.kode.match(/importer=\{\[([^\]]*)\]\}/)
+    const fraImporter = fane.kode.match(/imports=\{\[([^\]]*)\]\}/)
     if (fraImporter)
       for (const m of fraImporter[1].matchAll(/"([^"]+)"/g)) oppgitt.add(m[1])
     for (const m of fane.kode.matchAll(/href="[^"]*\/([a-z-]+\.css)"/g))
@@ -624,7 +624,7 @@ for (const fil of readdirSync(SIDER).filter(
      * Og at arkene oppskriften reklamerer med, finnes.
      *
      * Bare retningen «kreves, altså oppgitt» ble sjekket, aldri «oppgitt,
-     * altså finnes». `importer={["knapp.css"]}` ga en 404-lenke og en
+     * altså finnes». `imports={["knapp.css"]}` ga en 404-lenke og en
      * byggefeil hos leseren, uten et ord. `exports` har svaret.
      */
     for (const ark of oppgitt)
