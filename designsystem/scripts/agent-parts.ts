@@ -1,15 +1,16 @@
 /**
- * Delene av regelbøkene som leses av koden, ikke skrives for hånd.
+ * The parts of the rulebooks that are read from the code, not written by hand.
  *
- * Komponentlista, attributtverdiene, tokennavnene og byggefunksjonene er data. Skrevet
- * av for hånd ville de glidd fra koden i stillhet, og en agent-instruksjon som
- * nevner en variant som ikke finnes er verre enn ingen instruksjon: den ser
- * autoritativ ut, og agenten skriver den inn i konsumentens app.
+ * The component list, the attribute values, the token names and the builder
+ * functions are data. Copied by hand they would drift from the code in
+ * silence, and an agent instruction that mentions a variant that does not
+ * exist is worse than no instruction: it looks authoritative, and the agent
+ * writes it into the consumer's app.
  *
- * Kildene er de samme som editorfilene bruker: `classes.ts` og `elements.ts`
- * genereres fra komponentene, og `lt` leses ved å kalle byggefunksjonene, ikke ved å
- * lese kildekoden. Tokennavnene leses ut av `tokens.css`, som selv er generert
- * fra `tokens.ts`.
+ * The sources are the same ones the editor files use: `classes.ts` and
+ * `elements.ts` are generated from the components, and `lt` is read by calling
+ * the builder functions, not by reading the source code. The token names are
+ * read out of `tokens.css`, which is itself generated from `tokens.ts`.
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs"
@@ -23,7 +24,7 @@ import { byggSamletCss, samletStørrelse } from "./css-bundle.js"
 
 export const PAKKE = fileURLToPath(new URL("../", import.meta.url))
 
-/** Rollenavnene slik de står i CSS, i rekkefølgen kontrakten gir dem. */
+/** The role names as they appear in CSS, in the order the contract gives them. */
 const ROLE_NAMES = Object.keys(ROLES).map((rolle) => roleToCss(rolle))
 
 type Pakke = {
@@ -39,20 +40,21 @@ export const VERSJON = pakke.version
 export const CDN = `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@${VERSJON}`
 
 /**
- * Størrelsen på `lotek.css`, slik regelbøkene oppgir den.
+ * The size of `lotek.css`, as the rulebooks state it.
  *
- * Tallet sto hardkodet som «rundt 75 kB, under 10 kB komprimert» på tre
- * linjer i `generate-agent.ts` mens fila var 90 kB og 11 kB komprimert. Fila
- * bygges derfor i minnet her, av `css-bundle.ts`, som leser de samme
- * `exports`-oppføringene `bygg:css` skriver den av. Den kan ikke leses fra
- * `dist/lotek.css`, siden `generate` kjører før `bygg:css` i pakkens bygg.
+ * The number was hard-coded as "about 75 kB, under 10 kB compressed" on three
+ * lines in `generate-agent.ts` while the file was 90 kB and 11 kB compressed.
+ * The file is therefore built in memory here, by `css-bundle.ts`, which reads
+ * the same `exports` entries the CSS build writes it from. It cannot be read
+ * from `dist/lotek.css`, since `generate` runs before the CSS build in the
+ * package build.
  */
 const SAMLET = samletStørrelse(byggSamletCss().css)
 
-/** «N kB, M kB komprimert», slik html, maler og datastar oppgir den, regnet ut når de skrives. */
-export const SAMLET_STØRRELSE = `${SAMLET.kb} kB, ${SAMLET.gzipKb} kB komprimert`
+/** "N kB, M kB compressed", as html, templates and datastar state it, worked out when they are written. */
+export const SAMLET_STØRRELSE = `${SAMLET.kb} kB, ${SAMLET.gzipKb} kB compressed`
 
-/** Mappa hver komponent ligger i, som avgjør hvem som lager markupen. */
+/** The folder each component is in, which decides who creates the markup. */
 function kategorier(): Map<string, string> {
   const kart = new Map<string, string>()
 
@@ -68,42 +70,42 @@ function kategorier(): Map<string, string> {
 
 export const KATEGORI = kategorier()
 
-/** Stilarket en komponent har i `exports`, eller null når den ikke har noe. */
+/** The stylesheet a component has in `exports`, or null when it has none. */
 export function stilark(komponent: string): string | null {
   return `./${komponent}.css` in pakke.exports ? `${komponent}.css` : null
 }
 
-/** Modulen `defineLt*` ligger i, slik `exports` peker på den. */
+/** The module `defineLt*` is in, as `exports` points to it. */
 export function modul(komponent: string): string {
   const oppføring = pakke.exports[`./${komponent}`]
   if (!oppføring || typeof oppføring === "string") {
-    throw new Error(`${komponent} har ingen JS-inngang i exports`)
+    throw new Error(`${komponent} has no JS entry in exports`)
   }
   const sti = oppføring.import
-  if (!sti) throw new Error(`${komponent} mangler «import» i exports`)
+  if (!sti) throw new Error(`${komponent} is missing "import" in exports`)
   return sti.replace(/^\.\//, "")
 }
 
 /**
- * Hele CDN-adressen til noe `exports` peker på.
+ * The full CDN URL of something `exports` points to.
  *
- * Eksemplene skrev stien for hånd. Flyttes `lt-field.ts`, oppdateres tabellen
- * av seg selv mens de kopierbare eksemplene blir stående og peke på 404, og det
- * er nettopp den delen konsumenten limer inn.
+ * The examples wrote the path by hand. When `lt-field.ts` moves, the table
+ * updates itself while the copyable examples are left pointing at a 404, and
+ * that is exactly the part the consumer pastes in.
  */
 export function cdnTil(inngang: string): string {
   const oppføring = pakke.exports[`./${inngang}`]
   const sti =
     typeof oppføring === "string" ? oppføring : (oppføring?.import ?? "")
 
-  if (!sti) throw new Error(`${inngang} finnes ikke i exports`)
+  if (!sti) throw new Error(`${inngang} does not exist in exports`)
 
   return `${CDN}/${sti.replace(/^\.\//, "")}`
 }
 
 const stor = (del: string) => del[0].toUpperCase() + del.slice(1)
 
-/** `defineLtSessionTimeout` av `session-timeout`, som navnekonvensjonen sier. */
+/** `defineLtSessionTimeout` from `session-timeout`, as the naming convention says. */
 export function registrering(komponent: string): string {
   return `defineLt${komponent.split("-").map(stor).join("")}`
 }
@@ -113,7 +115,7 @@ type Klasse = {
   attributter: string[]
 }
 
-/** Komponentene som bare er CSS, med klassene og attributtene sine. */
+/** The components that are only CSS, with their classes and attributes. */
 function cssKomponenter(): Map<string, Klasse> {
   const kart = new Map<string, Klasse>()
 
@@ -134,31 +136,32 @@ function cssKomponenter(): Map<string, Klasse> {
 }
 
 /**
- * Tabellen over CSS-komponentene, sortert på komponentnavn.
+ * The table of CSS components, sorted by component name.
  *
- * `stilark` er adressen leseren skal skrive, og den er ikke den samme overalt:
- * uten byggesteg er det en hel URL, med byggesteg er det pakkenavnet. Kolonna
- * sto lenge med bare filnavnet, og da måtte leseren gjette stien. En agent som
- * generaliserte fra knappe-eksempelet skrev `src/components/css/field/field.css`
- * for `<lt-field>`, som ligger under `frame/`, og fikk 404.
+ * `stilark` is the address the reader should write, and it is not the same
+ * everywhere: without a build step it is a full URL, with one it is the
+ * package name. For a long time the column held only the file name, and the
+ * reader had to guess the path. An agent that generalised from the button
+ * example wrote `src/components/css/field/field.css` for `<lt-field>`, which
+ * is under `frame/`, and got a 404.
  */
 export function cssTabell(stilark: (komponent: string) => string): string {
   const rader = [...cssKomponenter()].sort(([a], [b]) => a.localeCompare(b))
 
   return [
-    "| Klasse | Stilark | Attributter |",
+    "| Class | Stylesheet | Attributes |",
     "| --- | --- | --- |",
     ...rader.map(([navn, rad]) => {
       const klasser = rad.klasser.map((klasse) => `\`${klasse}\``).join("<br>")
-      const attributter = rad.attributter.join("<br>") || "ingen"
+      const attributter = rad.attributter.join("<br>") || "none"
       return `| ${klasser} | \`${stilark(navn)}\` | ${attributter} |`
     }),
   ].join("\n")
 }
 
 /**
- * Et klasseattributt slik tabellene skriver det: verdiene, eller `(flag)` for
- * et attributt som virker ved å stå der, slik elementtabellen skriver det.
+ * A class attribute as the tables write it: the values, or `(flag)` for an
+ * attribute that works by being present, as the element table writes it.
  */
 function attributt(
   navn: string,
@@ -172,9 +175,9 @@ function attributt(
 }
 
 /**
- * Klassene som hører til et element, som `lt-tabs__list` under `<lt-tabs>`,
- * med attributtene sine. `data-color` på `.lt-dialog` sto før ingen steder i
- * regelbøkene, siden dialogen ikke er en CSS-komponent.
+ * The classes that belong to an element, such as `lt-tabs__list` under
+ * `<lt-tabs>`, with their attributes. `data-color` on `.lt-dialog` used to be
+ * nowhere in the rulebooks, since the dialog is not a CSS component.
  */
 function klasserUnder(komponent: string): string {
   const treff = Object.entries(classes)
@@ -188,15 +191,15 @@ function klasserUnder(komponent: string): string {
         : `\`${klasse}\``
     })
 
-  return treff.join("<br>") || "ingen"
+  return treff.join("<br>") || "none"
 }
 
 /**
- * Tabellen over web components.
+ * The table of web components.
  *
- * `adresse` er stien konsumenten skriver i importen, og den er ikke den samme
- * overalt: en nettleser uten bundles slår ikke opp pakkenavnet, så der må det
- * være en URL. Derfor bestemmer hvert rammeverk sin egen.
+ * `adresse` is the path the consumer writes in the import, and it is not the
+ * same everywhere: a browser without a bundler does not resolve the package
+ * name, so there it has to be a URL. That is why each framework decides its own.
  */
 export function webTabell(
   adresse: (komponent: string, modul: string) => string,
@@ -212,13 +215,13 @@ export function webTabell(
             ? `\`${navn}\`: ${attributt.values.join(", ")}`
             : `\`${navn}\` (${attributt.type})`,
         )
-        .join("<br>") || "ingen"
+        .join("<br>") || "none"
 
     const kall = `\`${registrering(komponent)}()\``
     const fra = `\`${adresse(komponent, modul(komponent))}\``
 
-    // Hendelsene, med feltene i `detail`. En agent som skulle lytte på
-    // dialogen, måtte før lese komponentkoden for å finne navnet.
+    // The events, with the fields in `detail`. An agent that needed to listen
+    // to the dialog used to have to read the component code to find the name.
     const hendelser =
       Object.entries(elements[tagg].events ?? {})
         .map(([navn, hendelse]) =>
@@ -226,37 +229,38 @@ export function webTabell(
             ? `\`${navn}\` (${Object.keys(hendelse.detail).join(", ")})`
             : `\`${navn}\``,
         )
-        .join("<br>") || "ingen"
+        .join("<br>") || "none"
 
-    return `| \`<${tagg}>\` | ${KATEGORI.get(komponent)} | \`${stilark(komponent)}\` | ${kall} fra ${fra} | ${attributter} | ${hendelser} | ${klasserUnder(komponent)} |`
+    return `| \`<${tagg}>\` | ${KATEGORI.get(komponent)} | \`${stilark(komponent)}\` | ${kall} from ${fra} | ${attributter} | ${hendelser} | ${klasserUnder(komponent)} |`
   })
 
   return [
-    "| Element | Kategori | Stilark | Registrering | Attributter | Hendelser | Klasser inni |",
+    "| Element | Category | Stylesheet | Registration | Attributes | Events | Classes inside |",
     "| --- | --- | --- | --- | --- | --- | --- |",
     ...rader,
   ].join("\n")
 }
 
-/** Tokennavnene, lest ut av det genererte stilarket. */
+/** The token names, read out of the generated stylesheet. */
 function tokennavn(mønster: RegExp): string[] {
   const css = readFileSync(join(PAKKE, "src/tokens/tokens.css"), "utf8")
   return [...new Set(css.match(mønster) ?? [])].sort()
 }
 
 /**
- * Fargematrisen, som to akser framfor 93 navn.
+ * The colour matrix, as two axes rather than 93 names.
  *
- * Aksene skrives ut fullt ut, og navnet er `--lt-color-<familie>-<rolle>`, så
- * hver celle kan utledes uten å gjettes. En liste som slutter med «og så
- * videre» er en invitasjon til å finne opp det siste, og oppfunne navn er
- * nettopp det denne regelboka finnes for å hindre. To akser er ikke en slik
- * liste: de er komplette, og cellene følger av dem.
+ * The axes are written out in full, and the name is
+ * `--lt-color-<family>-<role>`, so every cell can be derived without guessing.
+ * A list that ends with "and so on" is an invitation to invent the rest, and
+ * invented names are exactly what this rulebook exists to prevent. Two axes
+ * are not such a list: they are complete, and the cells follow from them.
  *
- * Aksene leses fra `FAMILIES` og `ROLES`, ikke ut av navnene i `tokens.css`.
- * Å utlede dem fra navnene gikk galt: `--lt-color-disabled-text` ga
- * `disabled` som en tiende familie, og den har bare to av de ni rollene.
- * Alt i det genererte stilarket som ikke er en celle, listes for seg.
+ * The axes are read from `FAMILIES` and `ROLES`, not out of the names in
+ * `tokens.css`. Deriving them from the names went wrong:
+ * `--lt-color-disabled-text` gave `disabled` as a tenth family, and it has
+ * only two of the nine roles. Everything in the generated stylesheet that is
+ * not a cell is listed separately.
  */
 export function tokenListe(): string {
   const celler = new Set(
@@ -273,31 +277,32 @@ export function tokenListe(): string {
     navn.map((n) => `\`${n}\``).join(", ")
 
   return [
-    `Familier: ${liste(FAMILIES)}.`,
+    `Families: ${liste(FAMILIES)}.`,
     "",
-    `Roller: ${liste(ROLE_NAMES)}.`,
+    `Roles: ${liste(ROLE_NAMES)}.`,
     "",
-    `Utenfor matrisen: ${liste(utenfor)}.`,
+    `Outside the matrix: ${liste(utenfor)}.`,
   ].join("\n")
 }
 
-/** Mål, skrift og linjehøyde, som én setning framfor en liste. */
+/** Spacing, font and line height, as one sentence rather than a list. */
 export function malOgSkrift(): string {
   const liste = (navn: string[]) =>
     navn.map((token) => `\`${token}\``).join(", ")
 
   return [
-    `Mål: ${liste(tokennavn(/--lt-spacing-[a-z0-9-]+/g))}.`,
+    `Spacing: ${liste(tokennavn(/--lt-spacing-[a-z0-9-]+/g))}.`,
     "",
-    `Skrift: ${liste(tokennavn(/--lt-font-[a-z0-9-]+/g))}.`,
+    `Font: ${liste(tokennavn(/--lt-font-[a-z0-9-]+/g))}.`,
     "",
-    `Linjehøyde: ${liste(tokennavn(/--lt-line-height-[a-z0-9-]+/g))}.`,
+    `Line height: ${liste(tokennavn(/--lt-line-height-[a-z0-9-]+/g))}.`,
   ].join("\n")
 }
 
 /*
- * Nøklene i `lt` som ikke bygger attributter. De hører til typesikkerheten, og
- * ville ellers stått i lista som byggefunksjoner som ikke finnes.
+ * The keys in `lt` that do not build attributes. They belong to the type
+ * safety, and would otherwise be in the list as builder functions that do not
+ * exist.
  */
 const HJELPERE = new Set([
   "isMarker",
@@ -307,7 +312,7 @@ const HJELPERE = new Set([
   "states",
 ])
 
-/** Byggefunksjonene i `lt`, som er dem et prosjekt med typer kan bruke. */
+/** The builder functions in `lt`, which are the ones a project with types can use. */
 export function byggefunksjoner(): string {
   const navn = Object.keys(lt)
     .filter((nøkkel) => !HJELPERE.has(nøkkel))
@@ -325,11 +330,12 @@ export function antallKomponenter(): number {
 }
 
 /**
- * Radene i CSS-tabellen.
+ * The rows in the CSS table.
  *
- * `antallKomponenter()` teller komponenter som har minst én klasse, og `field`
- * har ingen. Tallet passet derfor verken CSS-tabellen, summen av de to
- * tabellene, eller lesningen «så mange komponenter og så mange elementer».
+ * `antallKomponenter()` counts components that have at least one class, and
+ * `field` has none. The number therefore matched neither the CSS table, the
+ * sum of the two tables, nor the reading "so many components and so many
+ * elements".
  */
 export function antallCssKomponenter(): number {
   return new Set(
@@ -344,12 +350,13 @@ export function antallElementer(): number {
 }
 
 /**
- * Flyter om avsnittene til 78 tegn, og lar det som ikke er prosa stå.
+ * Reflows the paragraphs to 78 characters, and leaves what is not prose alone.
  *
- * Prosaen i oppskriftene står i template-literaler, der indenteringen følger
- * koden framfor teksten. Uten dette måtte hver oppskrift brytes for hånd, og en
- * setning som ble endret ville etterlatt en ujevn kant. Kodeblokker, tabeller
- * og tokenlista står urørt: der betyr hver linje noe.
+ * The prose in the recipes is in template literals, where the indentation
+ * follows the code rather than the text. Without this every recipe would have
+ * to be wrapped by hand, and a sentence that changed would leave a ragged
+ * edge. Code blocks, tables and the token list are left untouched: there every
+ * line means something.
  */
 export function ombrekk(markdown: string): string {
   const BREDDE = 78
@@ -359,7 +366,7 @@ export function ombrekk(markdown: string): string {
   let iKode = false
   let innrykk = ""
 
-  /** Punktlister henger under sitt eget merke, så teksten står i kolonne. */
+  /** List items hang under their own marker, so the text lines up in a column. */
   function tøm(): void {
     if (avsnitt.length === 0) return
 
@@ -367,11 +374,12 @@ export function ombrekk(markdown: string): string {
     const merke = /^(\d+\.\s+|[-*]\s+)/.exec(tekst)
     const heng = innrykk + (merke ? " ".repeat(merke[1].length) : "")
     /*
-     * Et ord er tegn og kodespenn i ett, mellomrommene inne i spennet
-     * medregnet. Uten dette ble `npx @lo-tek/interfaces sjekk side.html`
-     * delt etter «sjekk», og en agent som kopierte kommandoen fikk et
-     * linjeskift midt i den. Tegnene rundt må være med i samme ord, ellers
-     * havner kommaet etter et kodespenn alene på neste linje.
+     * A word is characters and code spans together, the spaces inside the
+     * span included. Without this, `npx @lo-tek/interfaces check page.html`
+     * was split after "check", and an agent that copied the command got a
+     * line break in the middle of it. The characters around it must be part
+     * of the same word, or the comma after a code span ends up alone on the
+     * next line.
      */
     const ord = tekst.match(/(?:`[^`]*`|\S)+/g) ?? []
     let linje = ""
@@ -393,11 +401,11 @@ export function ombrekk(markdown: string): string {
 
   for (const linje of linjer) {
     /*
-     * Innrykk teller ikke. Et gjerde under et nummerert punkt står med tre
-     * mellomrom foran, og uten dette så ombrekkeren det ikke: hele kodeblokka
-     * ble flytt om som prosa, og `check-agent` fant den ikke igjen, siden
-     * mønsteret krever at gjerdet står på egen linje. Samme for en innrykket
-     * tabellrad.
+     * Indentation does not count. A fence under a numbered item has three
+     * spaces in front, and without this the reflow did not see it: the whole
+     * code block was reflowed as prose, and `check-agent` did not find it
+     * again, since the pattern requires the fence to be on a line of its own.
+     * The same goes for an indented table row.
      */
     const rent = linje.trimStart()
 
@@ -408,7 +416,7 @@ export function ombrekk(markdown: string): string {
       continue
     }
 
-    // Blokksitat er linjestyrt: flyter det om, blir `> a` og `> b` til `> a > b`.
+    // A block quote is line-based: reflowed, `> a` and `> b` become `> a > b`.
     if (
       iKode ||
       rent.startsWith("|") ||
@@ -426,13 +434,13 @@ export function ombrekk(markdown: string): string {
       continue
     }
 
-    // Et nytt punkt begynner et nytt avsnitt, ellers ville hele lista blitt én.
+    // A new item starts a new paragraph, or the whole list would become one.
     if (/^(\d+\.\s|[-*]\s)/.test(rent) && avsnitt.length > 0) tøm()
 
     /*
-     * Innrykket på det første punktet i avsnittet beholdes, så en nøstet liste
-     * ikke flates ut til én nivå. Uten det ble «- topp / ␣␣- nivå to» til to
-     * punkter på samme nivå.
+     * The indentation of the first item in the paragraph is kept, so a nested
+     * list is not flattened to one level. Without it, "- top / ␣␣- level two"
+     * became two items on the same level.
      */
     if (avsnitt.length === 0)
       innrykk = linje.slice(0, linje.length - rent.length)
@@ -442,7 +450,7 @@ export function ombrekk(markdown: string): string {
 
   tøm()
 
-  // Aldri to blanke linjer etter hverandre, og aldri en til slutt.
+  // Never two blank lines in a row, and never one at the end.
   return `${ut
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")

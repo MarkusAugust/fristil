@@ -1,28 +1,28 @@
 /**
- * Skriver manifestet: det LO-TEK lover, som data alle verktøy leser.
+ * Writes the manifest: what LO-TEK promises, as data every tool reads.
  *
- * Tre filer, alle generert og sjekket inn:
+ * Three files, all generated and checked in:
  *
- *   - `manifest/manifest.json`: ordforrådet (elementene og klassene, de samme
- *     som `classes.ts` og `elements.ts`) og hver byggefunksjon i `lt` med
- *     valgene og formen på svaret. Den er liten, og hver vert gir den til
- *     Rust-kjernen.
- *   - `manifest/build-cases.json`: hver byggefunksjon kalt med mange
- *     kombinasjoner av valgene, med svaret TypeScript gir. En utgave i et annet
- *     språk skal svare nøyaktig det samme på hvert tilfelle.
- *   - `manifest/files.json`: regelbøkene og komponentfilene kommandolinja
- *     leser fra pakken.
+ *   - `manifest/manifest.json`: the vocabulary (the elements and the classes,
+ *     the same as `classes.ts` and `elements.ts`) and every builder function
+ *     in `lt` with its options and the shape of its result. It is small, and
+ *     every host hands it to the Rust core.
+ *   - `manifest/build-cases.json`: every builder function called with many
+ *     combinations of its options, with the result TypeScript gives. A port
+ *     in another language must give exactly the same result for every case.
+ *   - `manifest/files.json`: the rulebooks and the component files the
+ *     command line reads from the package.
  *
- * Ingenting her er skrevet for hånd. Valgene og typene deres leses av
- * TypeScript-kompilatoren fra signaturene i `src/lt.ts`, i
- * `builder-functions.ts`, og svarene kommer fra å kalle funksjonene. En ny
- * byggefunksjon, et nytt valg eller en ny variant havner i manifestet ved
- * neste bygg. `bun run build` skriver filene på nytt før det sjekker noe, så
- * en utdatert fil på disk stopper ikke bygget; det er steget «Ingenting er
- * ugenerert» i CI som feller en endring der filene ikke er regenerert og
- * committet.
+ * Nothing here is written by hand. The options and their types are read by
+ * the TypeScript compiler from the signatures in `src/lt.ts`, in
+ * `builder-functions.ts`, and the results come from calling the functions. A
+ * new builder function, option or variant ends up in the manifest on the
+ * next build. `bun run build` rewrites the files before it checks anything,
+ * so an out-of-date file on disk does not stop the build; it is the CI step
+ * that checks nothing is ungenerated that fails a change where the files
+ * have not been regenerated and committed.
  *
- * Kjør med: bun scripts/generate-manifest.ts, eller som en del av `generate`.
+ * Run with: bun scripts/generate-manifest.ts, or as part of `generate`.
  */
 
 import {
@@ -66,19 +66,20 @@ type Byggefunksjon = Lest & { table?: Tabeller }
 const byggefunksjoner: Byggefunksjon[] = lesByggefunksjoner()
 
 /*
- * Tilfellene. Hvert valg prøves alene, og så alle kombinasjonene når de er
- * få nok. Er de for mange, trekkes et fast utvalg med et fast frø, så fila er
- * lik fra bygg til bygg. Tekstverdiene har med mellomrom som JavaScript regner
- * som mellomrom og Java ikke gjør som standard, hardt mellomrom og BOM: uten
- * dem ville en utgave som deler på ASCII-mellomrom alene, bestått.
+ * The cases. Each option is tried alone, and then all combinations when there
+ * are few enough. When there are too many, a fixed sample is drawn with a
+ * fixed seed, so the file is the same from build to build. The text values
+ * include whitespace that JavaScript counts as whitespace and Java by default
+ * does not, a no-break space and a BOM: without them, a port that splits on
+ * ASCII whitespace alone would have passed.
  */
 const PRØVER: Record<Valgtype["kind"], unknown[]> = {
   values: [],
   flag: [false, true],
   text: ["x", "a b", ""],
   number: [0, 1, 3],
-  // `["x", "y"]` er den eneste gyldige med flere: uten den ble fanene og
-  // alternativene aldri prøvd med mer enn én nøkkel.
+  // `["x", "y"]` is the only valid one with several: without it, the tabs and
+  // the options were never tried with more than one key.
   textList: [
     [],
     ["x"],
@@ -92,13 +93,13 @@ const PRØVER: Record<Valgtype["kind"], unknown[]> = {
 }
 const prøver = (v: Valg) => {
   const verdier = v.type.kind === "values" ? v.type.values : PRØVER[v.type.kind]
-  // En påkrevd id som er tom, får TypeScript til å lage en tilfeldig id og
-  // si fra i konsollen. Svaret er da ulikt fra kjøring til kjøring, og et
-  // språk med typer stopper det før det kjører. Den prøves ikke.
+  // An empty required id makes TypeScript create a random id and warn in the
+  // console. The result then differs from run to run, and a typed language
+  // stops it before it runs. It is not tried.
   if (v.required && v.type.kind === "text" && /^id$|Id$/.test(v.name))
     return verdier.filter((x) => x !== "")
-  // En annen påkrevd tekst, som `label` i `tabs`, kaster når den er tom, og
-  // prøves også med bare mellomrom, slik JavaScript regner dem.
+  // Another required text, such as `label` in `tabs`, throws when empty, and
+  // is also tried with only whitespace, as JavaScript counts it.
   if (v.required && v.type.kind === "text") return [...verdier, " \u00a0\ufeff"]
   if (v.required) return verdier
   return [undefined, ...verdier]
@@ -145,8 +146,8 @@ function kombinasjoner(valg: Valg[]): Record<string, unknown>[] {
         ),
       )
   }
-  // `undefined` betyr utelatt, og to tilfeller som bare skiller seg der, er
-  // det samme tilfellet.
+  // `undefined` means left out, and two cases that differ only there are the
+  // same case.
   const sett = new Map<string, Record<string, unknown>>()
   for (const o of ut) {
     const renset = Object.fromEntries(
@@ -158,8 +159,8 @@ function kombinasjoner(valg: Valg[]): Record<string, unknown>[] {
 }
 
 const tilfeller: Tilfelle[] = []
-// Byggefunksjonene advarer i konsollen om bruk de ikke liker. Det er en del
-// av hva de gjør i nettleseren, ikke av svaret, og her er det støy.
+// The builder functions warn in the console about use they do not like. That
+// is part of what they do in the browser, not of the result, and here it is noise.
 const advar = console.warn
 console.warn = () => {}
 try {
@@ -184,21 +185,22 @@ try {
 }
 
 /*
- * Tabellen: en byggefunksjon der hvert valg legger til faste attributter,
- * uavhengig av de andre valgene, kan beskrives som en grunnmengde og det hvert
- * valg bidrar med. Da kan et annet språk lage den fra manifestet alene, uten
- * at noen skriver den for hånd.
+ * The table: a builder function where each option adds fixed attributes,
+ * independent of the other options, can be described as a base set and what
+ * each option contributes. Another language can then build it from the
+ * manifest alone, without anyone writing it by hand.
  *
- * Tabellen er utledet av svarene, ikke av koden, og den tas bare med når den
- * gir nøyaktig det TypeScript svarte på hvert eneste tilfelle. En byggefunksjon
- * der valgene virker sammen, som `label`, der `optional` ikke gjelder når
- * `required` er satt, får ingen tabell og skrives for hånd.
+ * The table is derived from the results, not from the code, and it is only
+ * included when it gives exactly what TypeScript returned for every single
+ * case. A builder function where the options interact, such as `label`, where
+ * `optional` does not apply when `required` is set, gets no table and is
+ * written by hand.
  *
- * Verdiene er tekst. Et boolsk attributt som er på, er den tomme strengen, og
- * `null` betyr at valget fjerner et attributt grunnmengden har. En verdi som
- * er nøyaktig `{navn}`, er verdien av valget med det navnet, slik
- * `{ "aria-labelledby": "{titleId}" }` i `dialog`. En byggefunksjon som svarer
- * med flere sett, som `dialog` og `popover`, får én tabell per sett.
+ * The values are text. A boolean attribute that is on is the empty string,
+ * and `null` means the option removes an attribute the base set has. A value
+ * that is exactly `{name}` is the value of the option with that name, as in
+ * `{ "aria-labelledby": "{titleId}" }` in `dialog`. A builder function that
+ * returns several sets, such as `dialog` and `popover`, gets one table per set.
  */
 type Attributter = Record<string, string | null>
 type Tabellvalg = {
@@ -227,11 +229,11 @@ function forskjell(
 }
 
 const likt = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
-// Rekkefølgen på attributtene betyr ikke noe for svaret.
+// The order of the attributes does not matter for the result.
 const sortert = (x: Record<string, string>) =>
   Object.fromEntries(Object.entries(x).sort(([a], [c]) => (a < c ? -1 : 1)))
 
-/** Bytter verdier som er nøyaktig verdien av et påkrevd valg, med `{navn}`. */
+/** Replaces values that are exactly the value of a required option with `{name}`. */
 function medPlassholdere(
   a: Attributter,
   påkrevde: [string, string][],
@@ -244,7 +246,7 @@ function medPlassholdere(
   )
 }
 
-/** Tabellen for ett sett, der `sett` plukker settet ut av svaret. */
+/** The table for one set, where `sett` picks the set out of the result. */
 function tabellFor(
   b: Byggefunksjon,
   egne: Tilfelle[],
@@ -279,7 +281,7 @@ function tabellFor(
         continue
       }
       if (v.type.kind === "textList") return undefined
-      // Tekst og tall: der verdien står, står plassholderen.
+      // Text and numbers: where the value is, the placeholder goes.
       const s = String(verdi)
       if (s === "") {
         valg.empty = d
@@ -305,7 +307,7 @@ function tabellFor(
 function tabeller(b: Byggefunksjon): Tabeller | undefined {
   const egne = tilfeller.filter((t) => t.builder === b.name)
   if (egne.length === 0 || egne.some((t) => t.throws)) return undefined
-  // Grunnen er de påkrevde valgene med sin første prøveverdi, og ingen andre.
+  // The base is the required options with their first trial value, and no others.
   const grunnValg = Object.fromEntries(
     b.options.filter((v) => v.required).map((v) => [v.name, prøver(v)[0]]),
   )
@@ -334,7 +336,7 @@ function tabeller(b: Byggefunksjon): Tabeller | undefined {
   return { kind: "group", fields }
 }
 
-/** Svaret tabellen gir for valgene. Brukes til å etterprøve den. */
+/** The result the table gives for the options. Used to check it. */
 function anvend(
   t: Tabell,
   b: Byggefunksjon,
@@ -358,7 +360,7 @@ function anvend(
         : String(verdi) === "" && tv.empty
           ? tv.empty
           : tv.template
-    if (!bidrag) return { "\u0000": "mangler" }
+    if (!bidrag) return { "\u0000": "missing" }
     Object.assign(svar, fyll(bidrag))
   }
   const ut: Record<string, string> = {}
@@ -372,12 +374,13 @@ for (const b of byggefunksjoner) {
 }
 
 /*
- * Beskrivelsen av et klasseattributt er beskrivelsen av valget med samme
- * navn, `variant` for `data-variant`, og klassen finnes som flaggene over:
- * et tilfelle med valget mot det samme uten. Et valg med et annet navn kan
- * også endre attributtet, som `type` gjør med `data-variant` i `lt.input()`,
- * men da beskriver det noe annet. Skriver flere byggefunksjoner det samme
- * attributtet, vinner den første i alfabetet.
+ * The description of a class attribute is the description of the option with
+ * the same name, `variant` for `data-variant`, and the class is found as for
+ * the flags above: a case with the option against the same case without it.
+ * An option with a different name can also change the attribute, as `type`
+ * does with `data-variant` in `lt.input()`, but then it describes something
+ * else. When several builder functions write the same attribute, the first
+ * in alphabetical order wins.
  */
 const descriptions = new Map<string, string>()
 for (const builder of byggefunksjoner) {
@@ -422,11 +425,12 @@ const klasser = Object.fromEntries(
       ...klasse,
       attributes: withDescriptions(
         navn,
-        // Flaggene, som `data-interactive` på `lt-card`, står i `classes.ts`
-        // med en tom verdiliste, siden editorene leser den fila. Her har et
-        // flagg ingen verdier, se `types.ts`. De utledes av byggefunksjonen
-        // hver gang ordforrådet skrives, se `flaggFor` i builder-functions.ts,
-        // så et flagg som er borte fra funksjonen er borte her også.
+        // The flags, such as `data-interactive` on `lt-card`, are in
+        // `classes.ts` with an empty value list, since the editors read that
+        // file. Here a flag has no values, see `types.ts`. They are derived
+        // from the builder function each time the vocabulary is written, see
+        // `flaggFor` in builder-functions.ts, so a flag that is gone from the
+        // function is gone here too.
         Object.fromEntries(
           Object.entries(klasse.attributes).map(([attributt, verdi]) => [
             attributt,
@@ -439,19 +443,20 @@ const klasser = Object.fromEntries(
 )
 
 /*
- * Tokenene: det et stilark utenfor pakken kan bygge på uten å finne på egne
- * verdier. Avstandsskalaen, brekkpunktene og containerbreddene leses fra
- * `tokens.ts`, der brekkpunktene og breddene ellers bare finnes i TypeScript.
- * Fargene står som akser med hva de er til, ikke som hex: kuløren er
- * konsumentens, og et tema kan ha andre verdier enn LO-TEKs egne.
+ * The tokens: what a stylesheet outside the package can build on without
+ * inventing values of its own. The spacing scale, the breakpoints and the
+ * container widths are read from `tokens.ts`, where the breakpoints and the
+ * widths otherwise exist only in TypeScript. The colours are listed as axes
+ * with what they are for, not as hex: the hue is the consumer's, and a theme
+ * can have other values than LO-TEK's own.
  *
- * Komponentvariablene leses fra stilarkene. En variabel er det første leddet
- * i `var(--lt-<komponent>-…, <reserve>)`, og reserven er standardverdien
- * konsumenten overstyrer. Står den samme variabelen med to reserver, som
- * `--lt-list-gap` i en delt liste, er det den første i stilarket som gjelder.
- * Hver hører til komponenten navnet begynner med, ikke til stilarket den
- * leses i: `fieldset.css` leser `--lt-label-required-symbol`, og den er
- * ledetekstens.
+ * The component variables are read from the stylesheets. A variable is the
+ * first argument of `var(--lt-<component>-…, <fallback>)`, and the fallback is
+ * the default the consumer overrides. When the same variable appears with two
+ * fallbacks, such as `--lt-list-gap` in a shared list, the first one in the
+ * stylesheet applies. Each belongs to the component its name starts with,
+ * not to the stylesheet it is read in: `fieldset.css` reads
+ * `--lt-label-required-symbol`, and it belongs to the label.
  */
 const roleToCss = (role: string) =>
   role.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
@@ -467,7 +472,7 @@ const COMPONENT_DIRS = ["css", "frame", "standalone"].flatMap((kategori) =>
     })),
 )
 const componentNames = COMPONENT_DIRS.map((d) => d.navn)
-/** Komponenten en variabel hører til: det lengste navnet den begynner med. */
+/** The component a variable belongs to: the longest name it starts with. */
 const ownerOf = (variable: string, fallback: string) =>
   componentNames
     .filter((navn) => variable.startsWith(`--lt-${navn}-`))
@@ -478,10 +483,10 @@ const TOKEN_KINDS = new Set(
   ),
 )
 /*
- * Variablene en web-komponent skriver selv, som `--lt-popover-top`, er ikke
- * noe konsumenten overstyrer: inline-stilen slår et stilark. De leses med
- * reserve i CSS-en som alle andre, og kjennes igjen på `setProperty` i
- * komponentens egen kilde.
+ * The variables a web component writes itself, such as `--lt-popover-top`,
+ * are not something the consumer overrides: the inline style beats a
+ * stylesheet. They are read with a fallback in the CSS like all the others,
+ * and are recognised by `setProperty` in the component's own source.
  */
 const setByComponent = new Set<string>()
 for (const { sti } of COMPONENT_DIRS)
@@ -503,8 +508,8 @@ for (const { navn, sti } of COMPONENT_DIRS) {
     )
     const lesing = /var\(\s*(--lt-[a-z0-9-]+)\s*,/g
     for (let m = lesing.exec(css); m; m = lesing.exec(css)) {
-      // Reserven går til parentesen som lukker `var(`, også når den har
-      // `calc()` eller en annen `var()` i seg.
+      // The fallback runs to the parenthesis that closes `var(`, also when it
+      // has `calc()` or another `var()` in it.
       let dybde = 1
       let i = lesing.lastIndex
       for (; i < css.length && dybde > 0; i++) {
@@ -512,9 +517,9 @@ for (const { navn, sti } of COMPONENT_DIRS) {
         else if (css[i] === ")") dybde--
       }
       const variabel = m[1]
-      // Et token hører på tokensiden, ikke her. I dag leser ingen komponent
-      // et token med reserve, men gjorde en det, ville det sett ut som en
-      // komponentvariabel uten dette.
+      // A token belongs on the token side, not here. Today no component reads
+      // a token with a fallback, but if one did, it would look like a
+      // component variable without this.
       if (TOKEN_KINDS.has(variabel.split("-")[3])) continue
       if (setByComponent.has(variabel)) continue
       const reserve = css
@@ -577,10 +582,11 @@ writeFileSync(
 )
 
 /*
- * Filene kommandolinja leser fra pakken: regelbøkene for `lotek agent` og
- * kildekoden til hver komponent for `lotek overta`, uten testene. Den leser
- * lista framfor mappene, fordi en mappe ikke lot seg lese gjennom Nodes WASI
- * på Windows: `overta` fant ingen komponenter der.
+ * The files the command line reads from the package: the rulebooks for
+ * `lotek agent` and the source of each component for `lotek takeover`,
+ * without the tests. It reads the list rather than the folders, because a
+ * folder could not be read through Node's WASI on Windows: `takeover` found
+ * no components there.
  */
 const ls = (mappe: string) => readdirSync(`${PAKKE}${mappe}`).sort()
 const filer = {
@@ -604,5 +610,5 @@ const filer = {
 writeFileSync(`${UT}files.json`, `${JSON.stringify(filer, null, 2)}\n`)
 
 console.log(
-  `✓ Manifestet: ${byggefunksjoner.length} byggefunksjoner, ${Object.keys(elements).length} elementer, ${Object.keys(classes).length} klasser, ${tilfeller.length} byggetilfeller, ${Object.values(componentVariables).reduce((n, v) => n + Object.keys(v).length, 0)} komponentvariabler.`,
+  `✓ The manifest: ${byggefunksjoner.length} builder functions, ${Object.keys(elements).length} elements, ${Object.keys(classes).length} classes, ${tilfeller.length} build cases, ${Object.values(componentVariables).reduce((n, v) => n + Object.keys(v).length, 0)} component variables.`,
 )

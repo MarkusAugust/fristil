@@ -47,11 +47,11 @@ for (const [path, expected] of Object.entries(generated)) {
   }
   if (actual === null)
     findings.push(
-      `${path} finnes ikke. Kjør bun --filter @lo-tek/interfaces vocabulary.`,
+      `${path} does not exist. Run bun --filter @lo-tek/interfaces vocabulary.`,
     )
   else if (actual !== expected)
     findings.push(
-      `${path} er utdatert. Kjør bun --filter @lo-tek/interfaces vocabulary.`,
+      `${path} is out of date. Run bun --filter @lo-tek/interfaces vocabulary.`,
     )
 }
 
@@ -95,7 +95,7 @@ for (const target of Object.values(
     name.endsWith("_PARTS"),
   )
   if (parts.length > 1)
-    findings.push(`<${tags[0]}> eksporterer mer enn ett sett deler`)
+    findings.push(`<${tags[0]}> exports more than one set of parts`)
   if (parts.length === 1)
     exportedParts.set(tags[0], parts[0][1] as Record<string, string>)
 }
@@ -104,7 +104,9 @@ const documented = new Map(elements.map((e) => [e.tag, e]))
 for (const [tag, attributes] of registered) {
   const doc = documented.get(tag)
   if (!doc) {
-    findings.push(`<${tag}> er registrert i pakken, men mangler i metadata.ts`)
+    findings.push(
+      `<${tag}> is registered in the package, but is missing in metadata.ts`,
+    )
     continue
   }
   const missing = attributes.filter((a) => !(a in doc.attributes))
@@ -112,10 +114,10 @@ for (const [tag, attributes] of registered) {
     (a) => !attributes.includes(a),
   )
   if (missing.length)
-    findings.push(`<${tag}> mangler attributter i metadata.ts: ${missing}`)
+    findings.push(`<${tag}> is missing attributes in metadata.ts: ${missing}`)
   if (extra.length)
     findings.push(
-      `<${tag}> har attributter i metadata.ts som ikke finnes: ${extra}`,
+      `<${tag}> has attributes in metadata.ts that do not exist: ${extra}`,
     )
 }
 // En tagg som bare finnes i en modul med flere elementer, som hovedinngangen,
@@ -123,12 +125,12 @@ for (const [tag, attributes] of registered) {
 for (const tag of allTags)
   if (!registered.has(tag))
     findings.push(
-      `<${tag}> eksporteres, men ikke fra et inngangspunkt med ett element`,
+      `<${tag}> is exported, but not from an entry point with one element`,
     )
 for (const tag of documented.keys())
   if (!registered.has(tag))
     findings.push(
-      `<${tag}> står i metadata.ts, men pakken registrerer det ikke`,
+      `<${tag}> is in metadata.ts, but the package does not register it`,
     )
 
 // 2a. Hver del komponenten eksporterer har en beskrivelse i metadata.ts, med
@@ -138,15 +140,17 @@ for (const [tag, parts] of exportedParts) {
   const doc = documented.get(tag)?.parts ?? {}
   for (const [name, selector] of Object.entries(parts))
     if (!doc[name])
-      findings.push(`<${tag}> har delen «${name}», som mangler i metadata.ts`)
+      findings.push(
+        `<${tag}> has the part "${name}", which is missing in metadata.ts`,
+      )
     else if (doc[name].selector !== selector)
       findings.push(
-        `<${tag}> har en annen selektor for «${name}» i dist enn i kilden. Bygg pakken.`,
+        `<${tag}> has a different selector for "${name}" in dist than in the source. Build the package.`,
       )
   for (const name of Object.keys(doc))
     if (!(name in parts))
       findings.push(
-        `<${tag}> har delen «${name}» i metadata.ts, men eksporterer den ikke`,
+        `<${tag}> has the part "${name}" in metadata.ts, but does not export it`,
       )
 }
 
@@ -170,7 +174,7 @@ const kilde = (tag: string): string | null => {
 for (const element of elements) {
   const tekst = kilde(element.tag)
   if (tekst === null) {
-    findings.push(`Fant ikke kildekoden til <${element.tag}>`)
+    findings.push(`Could not find the source code of <${element.tag}>`)
     continue
   }
   const sendt = new Set(
@@ -182,12 +186,12 @@ for (const element of elements) {
   for (const navn of sendt)
     if (!beskrevet.has(navn))
       findings.push(
-        `<${element.tag}> sender «${navn}», som mangler i metadata.ts`,
+        `<${element.tag}> dispatches "${navn}", which is missing in metadata.ts`,
       )
   for (const navn of beskrevet)
     if (!sendt.has(navn))
       findings.push(
-        `<${element.tag}> har «${navn}» i metadata.ts, men sender den ikke`,
+        `<${element.tag}> has "${navn}" in metadata.ts, but does not dispatch it`,
       )
 }
 
@@ -207,7 +211,7 @@ function pageMarkup(component: string): string {
     join(PAGES, `${component}.mdx`),
   ].find((p) => existsSync(p))
   if (!path) {
-    findings.push(`Fant ingen side for komponenten «${component}»`)
+    findings.push(`Found no page for the component "${component}"`)
     return ""
   }
   let markup = markupByPage.get(path)
@@ -256,9 +260,7 @@ for (const [name, info] of Object.entries(classes)) {
   if (info.partOf !== undefined) {
     const parent = classes[info.partOf]
     if (!parent)
-      findings.push(
-        `${name} har partOf «${info.partOf}», som ikke er en klasse`,
-      )
+      findings.push(`${name} has partOf "${info.partOf}", which is not a class`)
     else if (
       !Object.values(parent.parts ?? {}).some((part) =>
         // Hele navnet: `.lt-dialog` skal ikke telle som `.lt-dialog__title`.
@@ -266,7 +268,7 @@ for (const [name, info] of Object.entries(classes)) {
       )
     )
       findings.push(
-        `${name} har partOf «${info.partOf}», men ${info.partOf} har ingen del som treffer .${name}`,
+        `${name} has partOf "${info.partOf}", but ${info.partOf} has no part that matches .${name}`,
       )
   }
   if (!info.parts) continue
@@ -278,7 +280,7 @@ for (const [name, info] of Object.entries(classes)) {
       .join(", ")
     if ((await matches(absolute, markup)) === 0)
       findings.push(
-        `${name}: delen «${part}» (${selector}) treffer ikke markupen på siden til ${info.component}`,
+        `${name}: the part "${part}" (${selector}) does not match the markup on the page for ${info.component}`,
       )
   }
 }
@@ -292,20 +294,22 @@ const snippets = JSON.parse(generated["designsystem/snippets.json"]) as Record<
 for (const element of elements) {
   const body = snippets[element.tag]?.body ?? []
   if (!body.some((line) => line.includes(`<${element.tag}`)))
-    findings.push(`Snippeten for <${element.tag}> inneholder ikke elementet`)
+    findings.push(
+      `The snippet for <${element.tag}> does not contain the element`,
+    )
   // Hver id er et tabbestopp, og hvert tabbestopp er definert én gang:
   // id-en skrives én gang, og `for` og `href` følger med.
   const text = body.join("\n")
   for (const m of text.matchAll(/\bid="([^"]*)"/g))
     if (!/^\$\{\d+:[^}]+\}$/.test(m[1]))
       findings.push(
-        `Snippeten for <${element.tag}> har id="${m[1]}" uten tabbestopp`,
+        `The snippet for <${element.tag}> has id="${m[1]}" without a tab stop`,
       )
   const defined = new Set([...text.matchAll(/\$\{(\d+):/g)].map((m) => m[1]))
   for (const m of text.matchAll(/(?<!\\)\$(\d+)\b/g))
     if (!defined.has(m[1]))
       findings.push(
-        `Snippeten for <${element.tag}> speiler $${m[1]}, som ikke er definert`,
+        `The snippet for <${element.tag}> mirrors $${m[1]}, which is not defined`,
       )
 }
 
@@ -313,22 +317,25 @@ for (const element of elements) {
 const liveTemplates = generated["designsystem/live-templates.xml"] ?? ""
 for (const element of elements) {
   if (!liveTemplates.includes(`<template name="${element.tag}"`))
-    findings.push(`Live templates mangler <${element.tag}>`)
+    findings.push(`Live templates are missing <${element.tag}>`)
 }
 for (const m of liveTemplates.matchAll(/id=&quot;([^&]*)&quot;/g))
   if (!/^\$[A-Za-z0-9_]+\$$/.test(m[1]))
-    findings.push(`Live templates har id=&quot;${m[1]}&quot; uten variabel`)
+    findings.push(
+      `Live templates have id=&quot;${m[1]}&quot; without a variable`,
+    )
 
 // 4. Tell, sist. Både likt det forventede og større enn null.
 const counted = registered.size
 console.log(
-  `Sjekket ${counted} elementer i pakken mot ${documented.size} i metadata.ts, ${exportedParts.size} med deler, ${Object.keys(classes).length} klasser med ${classParts} deler, ${Object.keys(snippets).length} snippets og ${Object.keys(generated).length} filer`,
+  `Checked ${counted} elements in the package against ${documented.size} in metadata.ts, ${exportedParts.size} with parts, ${Object.keys(classes).length} classes with ${classParts} parts, ${Object.keys(snippets).length} snippets and ${Object.keys(generated).length} files`,
 )
-if (counted === 0) findings.push("Fant ingen elementer i pakken. Er dist bygd?")
+if (counted === 0)
+  findings.push("Found no elements in the package. Is dist built?")
 if (exportedParts.size === 0)
-  findings.push("Fant ingen deler i pakken. Er dist bygd?")
+  findings.push("Found no parts in the package. Is dist built?")
 if (classParts === 0)
-  findings.push("Ingen klasse hadde deler, så ingen selektor ble prøvd.")
+  findings.push("No class had parts, so no selector was tried.")
 
 if (findings.length) {
   console.error(findings.map((f) => `  - ${f}`).join("\n"))

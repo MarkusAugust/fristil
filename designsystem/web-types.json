@@ -8,26 +8,26 @@
       "elements": [
         {
           "name": "lt-field",
-          "description": "Kobler ledetekst, felt, hjelpetekst og feilmelding sammen: setter `aria-describedby` og `aria-invalid` på kontrollen og id på hjelpeteksten og feilmeldingen. Skriver aldri id på kontrollen: malen skriver `for` og `id`, eller legger ledeteksten rundt feltet. Feltet er ugyldig når feilmeldingen står uten `hidden`. Finnes for markup som blir til uten JavaScript. Lages markupen med JavaScript, bruk `lt.field()` i stedet.",
+          "description": "Wires label, field, help text and error text together: sets `aria-describedby` and `aria-invalid` on the control and an id on the help text and the error text. Never writes an id on the control: the template writes `for` and `id`, or wraps the field in the label. The field is invalid when the error text is there without `hidden`. Exists for markup produced without JavaScript. When the markup is produced with JavaScript, use `lt.field()` instead.",
           "doc-url": "https://lo-tek.sobernetics.no/components/field/",
           "attributes": [
             {
               "name": "disabled",
-              "description": "Kontrollen er slått av.",
+              "description": "The control is disabled.",
               "value": {
                 "kind": "no-value"
               }
             },
             {
               "name": "optional",
-              "description": "Feltet er valgfritt, og ledeteksten sier det.",
+              "description": "The field is optional, and the label says so.",
               "value": {
                 "kind": "no-value"
               }
             },
             {
               "name": "described-by",
-              "description": "Ekstra id-er som skal med i `aria-describedby`, adskilt med mellomrom.",
+              "description": "Extra ids to include in `aria-describedby`, separated by spaces.",
               "value": {
                 "kind": "plain",
                 "type": "text"
@@ -37,19 +37,19 @@
         },
         {
           "name": "lt-tabs",
-          "description": "Fanerad. Fanene er lenker til panelene i en `.lt-tabs__list`, så raden er en innholdsfortegnelse uten JavaScript; `role=\"tab\"` på noe annet enn en lenke er ikke en fane. Komponenten gir tastatur og fokus, setter roller og kobling, gir panelet fanens navn, gjør bare det valgte panelet til en tabbestopp, og skjuler resten med `hidden=\"until-found\"`, så søk i siden og lenker inn i et panel finner dem. Hvert valg skrives i adressen. Den skriver aldri id på en fane eller et panel. Når siden lastes, er den valgte fanen den med `aria-selected` fra serveren, ellers den adressen peker på, ellers den første som ikke er skjult med `hidden`. Under `server-controlled` velger adressen aldri.",
+          "description": "Tab list. The tabs are links to the panels in an `.lt-tabs__list`, so without JavaScript the list is a table of contents; `role=\"tab\"` on anything other than a link is not a tab. The component adds keyboard and focus handling, sets roles and wiring, gives each panel its tab's name, makes only the selected panel a tab stop, and hides the rest with `hidden=\"until-found\"`, so find in page and links into a panel reach them. Each selection is written to the URL. It never writes an id on a tab or a panel. When the page loads, the selected tab is the one with `aria-selected` from the server, otherwise the one the URL points to, otherwise the first one not hidden with `hidden`. Under `server-controlled` the URL never selects.",
           "doc-url": "https://lo-tek.sobernetics.no/components/tabs/",
           "attributes": [
             {
               "name": "server-controlled",
-              "description": "Serveren bestemmer hvilken fane som er valgt. Komponenten setter ikke brukerens valg tilbake etter en oppdatering fra serveren, og adressen velger ingen fane. Et klikk og søk i siden velger fanen til serveren svarer.",
+              "description": "The server decides which tab is selected. The component does not put the user's selection back after an update from the server, and the URL selects no tab. A click and find in page select the tab until the server responds.",
               "value": {
                 "kind": "no-value"
               }
             },
             {
               "name": "activation",
-              "description": "Hva piltastene gjør. Standard er at de velger fanen med en gang.",
+              "description": "What the arrow keys do. By default they select the tab at once.",
               "value": {
                 "kind": "plain",
                 "type": "enum"
@@ -57,11 +57,11 @@
               "values": [
                 {
                   "name": "manual",
-                  "description": "Piltastene flytter bare fokus, og Enter eller mellomrom velger. Når innholdet i et panel tar tid å laste."
+                  "description": "The arrow keys only move focus, and Enter or Space selects. For when a panel's content takes time to load."
                 },
                 {
                   "name": "automatic",
-                  "description": "Piltastene velger fanen, det samme som uten attributtet."
+                  "description": "The arrow keys select the tab, the same as without the attribute."
                 }
               ]
             }
@@ -70,19 +70,19 @@
             "events": [
               {
                 "name": "tab-select",
-                "description": "Brukeren valgte en fane. `index` teller fra 0.\n\n`detail`: `{ index: number }`"
+                "description": "The user selected a tab. `index` counts from 0.\n\n`detail`: `{ index: number }`"
               }
             ]
           }
         },
         {
           "name": "lt-error-summary",
-          "description": "Feiloppsummering. Flytter fokus til boksen når den kommer til syne, og til kontrollen når en lenke i lista følges.",
+          "description": "Error summary. Moves focus to the box when it appears, and to the control when a link in the list is followed.",
           "doc-url": "https://lo-tek.sobernetics.no/components/error-summary/",
           "attributes": [
             {
               "name": "data-autofocus",
-              "description": "Om fokus flyttes til boksen når den kommer til syne. Standard er på.",
+              "description": "Whether focus moves to the box when it appears. On by default.",
               "value": {
                 "kind": "plain",
                 "type": "enum"
@@ -90,17 +90,17 @@
               "values": [
                 {
                   "name": "false",
-                  "description": "La fokus stå der det er."
+                  "description": "Leave focus where it is."
                 },
                 {
                   "name": "true",
-                  "description": "Flytt fokus, det samme som uten attributtet. Alt annet enn «false» flytter fokus."
+                  "description": "Move focus, the same as without the attribute. Anything other than \"false\" moves focus."
                 }
               ]
             },
             {
               "name": "hidden",
-              "description": "Boksen er skjult. Serveren tar attributtet bort når skjemaet feiler, og komponenten flytter fokus da.",
+              "description": "The box is hidden. The server removes the attribute when the form fails, and the component then moves focus.",
               "value": {
                 "kind": "no-value"
               }
@@ -109,19 +109,19 @@
         },
         {
           "name": "lt-popover",
-          "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `lt-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en.",
+          "description": "A panel that hangs from a button and closes itself. A button and a panel with the class `lt-popover` and an id from the template; the component sets `popover` and `aria-controls` where the markup came without them, but never the id.",
           "doc-url": "https://lo-tek.sobernetics.no/components/popover/",
           "attributes": [
             {
               "name": "open",
-              "description": "Panelet er åpent. Serveren kan sende attributtet for å åpne panelet.",
+              "description": "The panel is open. The server can send the attribute to open the panel.",
               "value": {
                 "kind": "no-value"
               }
             },
             {
               "name": "placement",
-              "description": "Hvilken kant av knappen panelet henger fra.",
+              "description": "Which edge of the button the panel hangs from.",
               "value": {
                 "kind": "plain",
                 "type": "enum"
@@ -129,25 +129,25 @@
               "values": [
                 {
                   "name": "bottom-start",
-                  "description": "Under knappen, langs startkanten. Standard."
+                  "description": "Below the button, along the start edge. The default."
                 },
                 {
                   "name": "bottom-end",
-                  "description": "Under knappen, langs sluttkanten."
+                  "description": "Below the button, along the end edge."
                 },
                 {
                   "name": "top-start",
-                  "description": "Over knappen, langs startkanten."
+                  "description": "Above the button, along the start edge."
                 },
                 {
                   "name": "top-end",
-                  "description": "Over knappen, langs sluttkanten."
+                  "description": "Above the button, along the end edge."
                 }
               ]
             },
             {
               "name": "server-controlled",
-              "description": "Serveren bestemmer om panelet er åpent. Komponenten setter ikke `open` tilbake når en oppdatering fra serveren fjerner det.",
+              "description": "The server decides whether the panel is open. The component does not put `open` back when an update from the server removes it.",
               "value": {
                 "kind": "no-value"
               }
@@ -157,26 +157,26 @@
             "events": [
               {
                 "name": "popover-toggle",
-                "description": "Brukeren åpnet eller lukket panelet, eller `show()`, `hide()` eller `toggle()` ble kalt. Settes `open` som egenskap eller attributt, kommer ingen hendelse.\n\n`detail`: `{ open: boolean }`"
+                "description": "The user opened or closed the panel, or `show()`, `hide()` or `toggle()` was called. Setting `open` as a property or attribute dispatches no event.\n\n`detail`: `{ open: boolean }`"
               }
             ]
           }
         },
         {
           "name": "lt-suggestion",
-          "description": "Felt med forslagsliste. En `<label for>`, et `<input id>`, en `.lt-suggestion__list` med `<li>` og et `[role=status]` er nok; komponenten setter rollene og koblingen der markupen kom uten, og gir lista og alternativene id. Feltet får aldri id av komponenten. Filtrerer mens brukeren skriver, flytter markeringen med piltastene og leser opp antall treff.",
+          "description": "Field with a suggestion list. A `<label for>`, an `<input id>`, an `.lt-suggestion__list` with `<li>` items and a `[role=status]` are enough; the component sets the roles and the wiring where the markup came without them, and gives the list and the options ids. The field never gets an id from the component. Filters as the user types, moves the highlight with the arrow keys and announces the number of matches.",
           "doc-url": "https://lo-tek.sobernetics.no/components/suggestion/",
           "attributes": [
             {
               "name": "prefiltered",
-              "description": "Appen har alt filtrert lista, så komponenten lar den stå. Trengs når appens filter er et annet enn «teksten inneholder søkeordet».",
+              "description": "The app has already filtered the list, so the component leaves it as it is. Needed when the app's filter is something other than \"the text contains the search term\".",
               "value": {
                 "kind": "no-value"
               }
             },
             {
               "name": "count-none",
-              "description": "Opplesningen ved null treff. Standard er «Ingen treff».",
+              "description": "The announcement for no matches. The default is \"No matches\".",
               "value": {
                 "kind": "plain",
                 "type": "text"
@@ -184,7 +184,7 @@
             },
             {
               "name": "count-zero",
-              "description": "Opplesningen i bøyningsformen `zero`, for språk som har den. `{n}` er tallet.",
+              "description": "The announcement in the plural form `zero`, for languages that have it. `{n}` is the number.",
               "value": {
                 "kind": "plain",
                 "type": "text"
@@ -192,7 +192,7 @@
             },
             {
               "name": "count-one",
-              "description": "Opplesningen for ett treff. `{n}` er tallet.",
+              "description": "The announcement for one match. `{n}` is the number.",
               "value": {
                 "kind": "plain",
                 "type": "text"
@@ -200,7 +200,7 @@
             },
             {
               "name": "count-two",
-              "description": "Opplesningen i bøyningsformen `two`, for språk som har den. `{n}` er tallet.",
+              "description": "The announcement in the plural form `two`, for languages that have it. `{n}` is the number.",
               "value": {
                 "kind": "plain",
                 "type": "text"
@@ -208,7 +208,7 @@
             },
             {
               "name": "count-few",
-              "description": "Opplesningen i bøyningsformen `few`, for språk som har den. `{n}` er tallet.",
+              "description": "The announcement in the plural form `few`, for languages that have it. `{n}` is the number.",
               "value": {
                 "kind": "plain",
                 "type": "text"
@@ -216,7 +216,7 @@
             },
             {
               "name": "count-many",
-              "description": "Opplesningen i bøyningsformen `many`, for språk som har den. `{n}` er tallet.",
+              "description": "The announcement in the plural form `many`, for languages that have it. `{n}` is the number.",
               "value": {
                 "kind": "plain",
                 "type": "text"
@@ -224,7 +224,7 @@
             },
             {
               "name": "count-other",
-              "description": "Opplesningen for alle andre antall, og reserven når en form mangler. `{n}` er tallet.",
+              "description": "The announcement for every other count, and the fallback when a form is missing. `{n}` is the number.",
               "value": {
                 "kind": "plain",
                 "type": "text"
@@ -232,7 +232,7 @@
             },
             {
               "name": "server-controlled",
-              "description": "Serveren bestemmer om lista er utvidet og hvilket alternativ som er markert. Komponenten setter dem ikke tilbake etter en oppdatering fra serveren.",
+              "description": "The server decides whether the list is expanded and which option is highlighted. The component does not put them back after an update from the server.",
               "value": {
                 "kind": "no-value"
               }
@@ -242,26 +242,26 @@
             "events": [
               {
                 "name": "suggestion-select",
-                "description": "Brukeren valgte et forslag. `label` er teksten, `value` koden fra `data-value`, eller teksten når alternativet ikke har noen. Feltet får også `input` og `change`, som om brukeren hadde skrevet det.\n\n`detail`: `{ value: string, label: string }`"
+                "description": "The user chose a suggestion. `label` is the text, `value` the code from `data-value`, or the text when the option has none. The field also gets `input` and `change`, as if the user had typed it.\n\n`detail`: `{ value: string, label: string }`"
               }
             ]
           }
         },
         {
           "name": "lt-dialog",
-          "description": "Gjør en `<dialog class=\"lt-dialog\">` modal med `showModal()`, for servere som ikke kan kalle den selv. Verten rundt dialogen. Gir dialogen navnet sitt fra den første overskriften utenfor `lt-dialog__body` når verken `aria-labelledby` eller `aria-label` står der.",
+          "description": "Makes a `<dialog class=\"lt-dialog\">` modal with `showModal()`, for servers that cannot call it themselves. The host around the dialog. Gives the dialog its name from the first heading outside `lt-dialog__body` when neither `aria-labelledby` nor `aria-label` is there.",
           "doc-url": "https://lo-tek.sobernetics.no/components/dialog/",
           "attributes": [
             {
               "name": "open",
-              "description": "Dialogen er åpen. Skal serveren vise den, må `open` også stå på `<dialog>`.",
+              "description": "The dialog is open. For the server to show it, `open` must be on `<dialog>` too.",
               "value": {
                 "kind": "no-value"
               }
             },
             {
               "name": "server-controlled",
-              "description": "Fjerner en oppdatering fra serveren `open` fra `<dialog>` mens dialogen er åpen, lukker komponenten den og sender `dialog-toggle`, i stedet for å sette `open` tilbake.",
+              "description": "When an update from the server removes `open` from `<dialog>` while the dialog is open, the component closes it and dispatches `dialog-toggle`, instead of putting `open` back.",
               "value": {
                 "kind": "no-value"
               }
@@ -271,19 +271,19 @@
             "events": [
               {
                 "name": "dialog-toggle",
-                "description": "Dialogen åpnet eller lukket seg. `returnValue` er verdien til knappen som lukket den, eller en tom streng.\n\n`detail`: `{ open: boolean, returnValue: string }`"
+                "description": "The dialog opened or closed. `returnValue` is the value of the button that closed it, or an empty string.\n\n`detail`: `{ open: boolean, returnValue: string }`"
               }
             ]
           }
         },
         {
           "name": "lt-toast",
-          "description": "Kø av korte meldinger i hjørnet av skjermen. Meldingene lages fra skript med `show(tekst, { color, duration })`.",
+          "description": "A queue of short messages in the corner of the screen. The messages are created from script with `show(text, { color, duration })`.",
           "doc-url": "https://lo-tek.sobernetics.no/components/toast/",
           "attributes": [
             {
               "name": "duration",
-              "description": "Millisekunder før en melding forsvinner. Standard er 6000, og 0 lar meldingene stå.",
+              "description": "Milliseconds before a message disappears. The default is 6000, and 0 keeps the messages.",
               "value": {
                 "kind": "plain",
                 "type": "number"
@@ -291,7 +291,7 @@
             },
             {
               "name": "label",
-              "description": "Tekst som sier hva regionen er for skjermlesere.",
+              "description": "Text that tells screen readers what the region is for.",
               "value": {
                 "kind": "plain",
                 "type": "text"
@@ -299,7 +299,7 @@
             },
             {
               "name": "close-label",
-              "description": "Hva lukkeknappen i hver melding heter for skjermlesere. Standard er «Lukk melding».",
+              "description": "What the close button in each message is called for screen readers. The default is \"Close message\".",
               "value": {
                 "kind": "plain",
                 "type": "text"
@@ -310,19 +310,19 @@
             "events": [
               {
                 "name": "toast-dismiss",
-                "description": "En melding ble lukket, av brukeren, fordi tiden gikk ut, eller med `dismiss()`. `clear()` sender ingen."
+                "description": "A message was closed, by the user, because its time ran out, or with `dismiss()`. `clear()` dispatches none."
               }
             ]
           }
         },
         {
           "name": "lt-session-timeout",
-          "description": "Varsler før en innlogget økt går ut, og teller ned. Den som rendrer skriver dialogen og teksten inni elementet: en `<dialog>` med `.lt-session-timeout__count` for tallet, `[role=status]` for opplesningen og knappene i et `<form method=\"dialog\">`. Sender `session-warn` når dialogen åpner, `session-extend` når brukeren vil fortsette, `session-logout` når brukeren logger ut, `session-expired` når tiden er ute, og `session-activity` høyst én gang per `activity-interval` mens brukeren er aktiv, så appen kan holde serverøkten i live.",
+          "description": "Warns before a signed-in session expires, and counts down. The renderer writes the dialog and the text inside the element: a `<dialog>` with `.lt-session-timeout__count` for the number, `[role=status]` for the announcement and the buttons in a `<form method=\"dialog\">`. Dispatches `session-warn` when the dialog opens, `session-extend` when the user wants to continue, `session-logout` when the user logs out, `session-expired` when time is up, and `session-activity` at most once per `activity-interval` while the user is active, so the app can keep the server session alive.",
           "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/",
           "attributes": [
             {
               "name": "warn-at",
-              "description": "Sekunder uten aktivitet før varselet kommer.",
+              "description": "Seconds without activity before the warning appears.",
               "value": {
                 "kind": "plain",
                 "type": "number"
@@ -330,7 +330,7 @@
             },
             {
               "name": "expires-at",
-              "description": "Sekunder uten aktivitet før økten er ute.",
+              "description": "Seconds without activity before the session expires.",
               "value": {
                 "kind": "plain",
                 "type": "number"
@@ -338,7 +338,7 @@
             },
             {
               "name": "activity-interval",
-              "description": "Sekunder mellom hver `session-activity` mens brukeren er aktiv. Standard 60.",
+              "description": "Seconds between each `session-activity` while the user is active. Default 60.",
               "value": {
                 "kind": "plain",
                 "type": "number"
@@ -349,35 +349,35 @@
             "events": [
               {
                 "name": "session-warn",
-                "description": "Varselet åpnet seg."
+                "description": "The warning opened."
               },
               {
                 "name": "session-extend",
-                "description": "Økten fortsetter: brukeren lukket varselet med en annen knapp enn utlogging eller med Escape, eller appen kalte `extend()`."
+                "description": "The session continues: the user closed the warning with a button other than log out or with Escape, or the app called `extend()`."
               },
               {
                 "name": "session-logout",
-                "description": "Brukeren valgte å logge ut."
+                "description": "The user chose to log out."
               },
               {
                 "name": "session-expired",
-                "description": "Tiden er ute."
+                "description": "Time is up."
               },
               {
                 "name": "session-activity",
-                "description": "Brukeren er aktiv. Kommer høyst én gang per `activity-interval`, så appen kan holde serverøkten i live."
+                "description": "The user is active. Dispatched at most once per `activity-interval`, so the app can keep the server session alive."
               }
             ]
           }
         },
         {
           "name": "lt-connection-status",
-          "description": "Sier fra når forbindelsen til serveren er borte. Appen melder fra med `reportFailure()` og `reportSuccess()`.",
+          "description": "Tells the user when the connection to the server is lost. The app reports with `reportFailure()` and `reportSuccess()`.",
           "doc-url": "https://lo-tek.sobernetics.no/components/connection-status/",
           "attributes": [
             {
               "name": "offline-text",
-              "description": "Teksten når forbindelsen er borte.",
+              "description": "The text when the connection is lost.",
               "value": {
                 "kind": "plain",
                 "type": "text"
@@ -385,7 +385,7 @@
             },
             {
               "name": "online-text",
-              "description": "Teksten når den kommer tilbake.",
+              "description": "The text when it comes back.",
               "value": {
                 "kind": "plain",
                 "type": "text"
@@ -396,11 +396,11 @@
             "events": [
               {
                 "name": "connection-lost",
-                "description": "Forbindelsen er borte."
+                "description": "The connection is lost."
               },
               {
                 "name": "connection-restored",
-                "description": "Forbindelsen er tilbake."
+                "description": "The connection is back."
               }
             ]
           }
@@ -411,387 +411,387 @@
       "classes": [
         {
           "name": "lt-accordion",
-          "description": "**Accordion**\n\nPanel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Accordion**\n\nA panel that can be expanded, built on details and summary. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/accordion/"
         },
         {
           "name": "lt-accordion__content",
-          "description": "**Accordion**\n\nPanel som kan foldes ut, bygget på details og summary. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Accordion**\n\nA panel that can be expanded, built on details and summary. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/accordion/"
         },
         {
           "name": "lt-alert",
-          "description": "**Alert**\n\nMelding som gjelder hele siden eller hele skjemaet. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Alert**\n\nA message about the whole page or the whole form. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/alert/"
         },
         {
           "name": "lt-alert__title",
-          "description": "**Alert**\n\nMelding som gjelder hele siden eller hele skjemaet. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Alert**\n\nA message about the whole page or the whole form. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/alert/"
         },
         {
           "name": "lt-avatar",
-          "description": "**Avatar**\n\nProfilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Avatar**\n\nProfile picture or initials. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/avatar/"
         },
         {
           "name": "lt-avatar-stack",
-          "description": "**Avatar**\n\nProfilbilde eller initialer. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Avatar**\n\nProfile picture or initials. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/avatar/"
         },
         {
           "name": "lt-badge",
-          "description": "**Badge**\n\nKompakt statusmerke. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Badge**\n\nCompact status badge. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/badge/"
         },
         {
           "name": "lt-breadcrumbs",
-          "description": "**Breadcrumbs**\n\nBrødsmulesti som viser hvor på siden brukeren er. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Breadcrumbs**\n\nA breadcrumb trail that shows where on the site the user is. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/breadcrumbs/"
         },
         {
           "name": "lt-button",
-          "description": "**Button**\n\nKnapp for handlinger. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Button**\n\nA button for actions. CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/button/"
         },
         {
           "name": "lt-card",
-          "description": "**Card**\n\nBoks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Card**\n\nA box that groups content that belongs together. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/card/"
         },
         {
           "name": "lt-card__title",
-          "description": "**Card**\n\nBoks som samler innhold som hører sammen. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Card**\n\nA box that groups content that belongs together. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/card/"
         },
         {
           "name": "lt-checkbox",
-          "description": "**Checkbox**\n\nAvkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Checkbox**\n\nA checkbox for a choice that stands on its own. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/checkbox/"
         },
         {
           "name": "lt-checkbox-row",
-          "description": "**Checkbox**\n\nAvkryssingsboks for valg som står for seg selv. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Checkbox**\n\nA checkbox for a choice that stands on its own. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/checkbox/"
         },
         {
           "name": "lt-divider",
-          "description": "**Divider**\n\nSkillelinje mellom deler av innholdet. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Divider**\n\nA line between parts of the content. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/divider/"
         },
         {
           "name": "lt-error-text",
-          "description": "**Error Text**\n\nFeilmelding under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Error Text**\n\nError message below a form field. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/error-text/"
         },
         {
           "name": "lt-fieldset",
-          "description": "**Fieldset**\n\nGruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Fieldset**\n\nA group of controls with a shared label. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/fieldset/"
         },
         {
           "name": "lt-legend",
-          "description": "**Fieldset**\n\nGruppe av kontroller med en felles ledetekst. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Fieldset**\n\nA group of controls with a shared label. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/fieldset/"
         },
         {
           "name": "lt-file-upload",
-          "description": "**File Upload**\n\nFelt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**File Upload**\n\nA field for uploading files. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/file-upload/"
         },
         {
           "name": "lt-file-upload-list",
-          "description": "**File Upload**\n\nFelt for opplasting av filer. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**File Upload**\n\nA field for uploading files. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/file-upload/"
         },
         {
           "name": "lt-heading",
-          "description": "**Heading**\n\nOverskrifter i seks størrelser, uavhengig av nivå. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Heading**\n\nHeadings in six sizes, independent of level. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/heading/"
         },
         {
           "name": "lt-help-text",
-          "description": "**Help Text**\n\nForklarende tekst under et skjemafelt. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Help Text**\n\nExplanatory text below a form field. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/help-text/"
         },
         {
           "name": "lt-icon",
-          "description": "**Icon**\n\nIkon fra appens eget sett, like stort som teksten rundt. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Icon**\n\nAn icon from the app's own set, as large as the text around it. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/icon/"
         },
         {
           "name": "lt-input",
-          "description": "**Input**\n\nTekstfelt for skjema, med tilstander for gyldig og ugyldig. CSS-komponent.",
+          "description": "**Input**\n\nA text field for forms, with states for valid and invalid. CSS component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/input/"
         },
         {
           "name": "lt-label",
-          "description": "**Label**\n\nLedetekst for skjemafelt, med markering av påkrevd og valgfritt. CSS-komponent.",
+          "description": "**Label**\n\nA label for form fields, with marking of required and optional. A CSS component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/label/"
         },
         {
           "name": "lt-link",
-          "description": "**Link**\n\nLenkestil for navigasjon i løpende tekst. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Link**\n\nLink style for navigation in running text. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/link/"
         },
         {
           "name": "lt-list",
-          "description": "**List**\n\nPunktliste, nummerert liste og lister uten punkter. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**List**\n\nBulleted lists, numbered lists and lists without bullets. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/list/"
         },
         {
           "name": "lt-pagination",
-          "description": "**Pagination**\n\nSidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Pagination**\n\nPage navigation for long lists. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/pagination/"
         },
         {
           "name": "lt-pagination__gap",
-          "description": "**Pagination**\n\nSidenavigering for lange lister. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Pagination**\n\nPage navigation for long lists. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/pagination/"
         },
         {
           "name": "lt-paragraph",
-          "description": "**Paragraph**\n\nBrødtekst og ingress med begrenset linjelengde. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Paragraph**\n\nBody text and lead paragraphs with a limited line length. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/paragraph/"
         },
         {
           "name": "lt-progress",
-          "description": "**Progress**\n\nFramdriftsstolpe for noe som har en ende. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Progress**\n\nA progress bar for something that has an end. CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/progress/"
         },
         {
           "name": "lt-radio",
-          "description": "**Radio**\n\nRadioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Radio**\n\nRadio buttons for one choice among several. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/radio/"
         },
         {
           "name": "lt-radio-row",
-          "description": "**Radio**\n\nRadioknapper for ett valg blant flere. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Radio**\n\nRadio buttons for one choice among several. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/radio/"
         },
         {
           "name": "lt-search",
-          "description": "**Search**\n\nSøkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Search**\n\nA search field with a magnifying glass. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/search/"
         },
         {
           "name": "lt-search-row",
-          "description": "**Search**\n\nSøkefelt med forstørrelsesglass. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Search**\n\nA search field with a magnifying glass. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/search/"
         },
         {
           "name": "lt-select",
-          "description": "**Select**\n\nNedtrekksliste. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Select**\n\nA dropdown list. CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/select/"
         },
         {
           "name": "lt-skeleton",
-          "description": "**Skeleton**\n\nPlassholder som viser formen på innhold som lastes. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Skeleton**\n\nA placeholder that shows the shape of content being loaded. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/skeleton/"
         },
         {
           "name": "lt-skip-link",
-          "description": "**Skip Link**\n\nLenke som hopper forbi menyen til hovedinnholdet. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Skip Link**\n\nA link that skips past the menu to the main content. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/skip-link/"
         },
         {
           "name": "lt-spinner",
-          "description": "**Spinner**\n\nVenteindikator for noe som pågår. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Spinner**\n\nA wait indicator for something in progress. CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/spinner/"
         },
         {
           "name": "lt-sr-only",
-          "description": "**Sr Only**\n\nTekst som bare skjermlesere får. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Sr Only**\n\nText only screen readers get. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/sr-only/"
         },
         {
           "name": "lt-switch",
-          "description": "**Switch**\n\nBryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Switch**\n\nA switch for a setting that takes effect immediately. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/switch/"
         },
         {
           "name": "lt-switch-row",
-          "description": "**Switch**\n\nBryter for en innstilling som slår inn med en gang. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Switch**\n\nA switch for a setting that takes effect immediately. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/switch/"
         },
         {
           "name": "lt-table",
-          "description": "**Table**\n\nTabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Table**\n\nA table for data in rows and columns. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/table/"
         },
         {
           "name": "lt-table__sort",
-          "description": "**Table**\n\nTabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Table**\n\nA table for data in rows and columns. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/table/"
         },
         {
           "name": "lt-table-scroll",
-          "description": "**Table**\n\nTabell for data i rader og kolonner. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Table**\n\nA table for data in rows and columns. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/table/"
         },
         {
           "name": "lt-tag",
-          "description": "**Tag**\n\nMerkelapp for emneord og filtre. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Tag**\n\nA tag for topics and filters. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/tag/"
         },
         {
           "name": "lt-textarea",
-          "description": "**Textarea**\n\nFlerlinjet tekstfelt. CSS-komponent med én klasse og ingen JavaScript.",
+          "description": "**Textarea**\n\nA multi-line text field. A CSS component with one class and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/textarea/"
         },
         {
           "name": "lt-toggle-group",
-          "description": "**Toggle Group**\n\nGruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Toggle Group**\n\nA group where one option is selected at a time. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/toggle-group/"
         },
         {
           "name": "lt-toggle-group__option",
-          "description": "**Toggle Group**\n\nGruppe der ett alternativ er valgt om gangen. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Toggle Group**\n\nA group where one option is selected at a time. A CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/toggle-group/"
         },
         {
           "name": "lt-tooltip",
-          "description": "**Tooltip**\n\nLiten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Tooltip**\n\nA small help text shown on hover and focus. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/tooltip/"
         },
         {
           "name": "lt-tooltip__bubble",
-          "description": "**Tooltip**\n\nLiten hjelpetekst som vises på hover og fokus. CSS-komponent med to klasser og ingen JavaScript.",
+          "description": "**Tooltip**\n\nA small help text shown on hover and focus. CSS component with two classes and no JavaScript.",
           "doc-url": "https://lo-tek.sobernetics.no/components/tooltip/"
         },
         {
           "name": "lt-dialog",
-          "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
+          "description": "**Dialog**\n\nModal dialog built on the native dialog element. Six classes and no JavaScript, with an optional component for servers that cannot call showModal().",
           "doc-url": "https://lo-tek.sobernetics.no/components/dialog/"
         },
         {
           "name": "lt-dialog__body",
-          "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
+          "description": "**Dialog**\n\nModal dialog built on the native dialog element. Six classes and no JavaScript, with an optional component for servers that cannot call showModal().",
           "doc-url": "https://lo-tek.sobernetics.no/components/dialog/"
         },
         {
           "name": "lt-dialog__title",
-          "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
+          "description": "**Dialog**\n\nModal dialog built on the native dialog element. Six classes and no JavaScript, with an optional component for servers that cannot call showModal().",
           "doc-url": "https://lo-tek.sobernetics.no/components/dialog/"
         },
         {
           "name": "lt-dialog__footer",
-          "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
+          "description": "**Dialog**\n\nModal dialog built on the native dialog element. Six classes and no JavaScript, with an optional component for servers that cannot call showModal().",
           "doc-url": "https://lo-tek.sobernetics.no/components/dialog/"
         },
         {
           "name": "lt-dialog__header",
-          "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
+          "description": "**Dialog**\n\nModal dialog built on the native dialog element. Six classes and no JavaScript, with an optional component for servers that cannot call showModal().",
           "doc-url": "https://lo-tek.sobernetics.no/components/dialog/"
         },
         {
           "name": "lt-dialog__subtitle",
-          "description": "**Dialog**\n\nModal dialog bygget på det native dialog-elementet. Seks klasser og ingen JavaScript, med en valgfri komponent for servere som ikke kan kalle showModal().",
+          "description": "**Dialog**\n\nModal dialog built on the native dialog element. Six classes and no JavaScript, with an optional component for servers that cannot call showModal().",
           "doc-url": "https://lo-tek.sobernetics.no/components/dialog/"
         },
         {
           "name": "lt-error-summary",
-          "description": "**Error Summary**\n\nSamler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.",
+          "description": "**Error Summary**\n\nCollects the errors in a form and takes the user to the field that failed. Frame component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/error-summary/"
         },
         {
           "name": "lt-error-summary__title",
-          "description": "**Error Summary**\n\nSamler feilene i et skjema og sender brukeren til feltet som feilet. Rammekomponent.",
+          "description": "**Error Summary**\n\nCollects the errors in a form and takes the user to the field that failed. Frame component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/error-summary/"
         },
         {
           "name": "lt-popover",
-          "description": "**Popover**\n\nPanel som henger under en knapp og lukker seg selv. Rammekomponent.",
+          "description": "**Popover**\n\nPanel that hangs below a button and closes itself. Frame component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/popover/"
         },
         {
           "name": "lt-session-timeout",
-          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+          "description": "**Session Timeout**\n\nWarns before a logged-in session expires, and counts down. You write the dialog, the component keeps the time.",
           "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "lt-session-timeout__dialog",
-          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+          "description": "**Session Timeout**\n\nWarns before a logged-in session expires, and counts down. You write the dialog, the component keeps the time.",
           "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "lt-session-timeout__title",
-          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+          "description": "**Session Timeout**\n\nWarns before a logged-in session expires, and counts down. You write the dialog, the component keeps the time.",
           "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "lt-session-timeout__text",
-          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+          "description": "**Session Timeout**\n\nWarns before a logged-in session expires, and counts down. You write the dialog, the component keeps the time.",
           "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "lt-session-timeout__count",
-          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+          "description": "**Session Timeout**\n\nWarns before a logged-in session expires, and counts down. You write the dialog, the component keeps the time.",
           "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "lt-session-timeout__actions",
-          "description": "**Session Timeout**\n\nVarsler før en innlogget økt går ut, og teller ned. Du skriver dialogen, komponenten tar tiden.",
+          "description": "**Session Timeout**\n\nWarns before a logged-in session expires, and counts down. You write the dialog, the component keeps the time.",
           "doc-url": "https://lo-tek.sobernetics.no/components/session-timeout/"
         },
         {
           "name": "lt-suggestion__list",
-          "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
+          "description": "**Suggestion**\n\nField with a suggestion list that narrows as the user types. Frame component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/suggestion/"
         },
         {
           "name": "lt-suggestion__option",
-          "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
+          "description": "**Suggestion**\n\nField with a suggestion list that narrows as the user types. Frame component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/suggestion/"
         },
         {
           "name": "lt-suggestion__value",
-          "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
+          "description": "**Suggestion**\n\nField with a suggestion list that narrows as the user types. Frame component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/suggestion/"
         },
         {
           "name": "lt-suggestion__empty",
-          "description": "**Suggestion**\n\nFelt med forslagsliste som snevrer seg inn mens brukeren skriver. Rammekomponent.",
+          "description": "**Suggestion**\n\nField with a suggestion list that narrows as the user types. Frame component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/suggestion/"
         },
         {
           "name": "lt-tabs__list",
-          "description": "**Tabs**\n\nFanerad av lenker til panelene sine. Rammekomponent.",
+          "description": "**Tabs**\n\nTab list of links to their panels. Frame component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/tabs/"
         },
         {
           "name": "lt-tabs__panel",
-          "description": "**Tabs**\n\nFanerad av lenker til panelene sine. Rammekomponent.",
+          "description": "**Tabs**\n\nTab list of links to their panels. Frame component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/tabs/"
         },
         {
           "name": "lt-connection-status",
-          "description": "**Connection Status**\n\nSier fra når forbindelsen til serveren er borte. Frittstående komponent.",
+          "description": "**Connection Status**\n\nTells the user when the connection to the server is gone. Standalone component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/connection-status/"
         },
         {
           "name": "lt-connection-status__bar",
-          "description": "**Connection Status**\n\nSier fra når forbindelsen til serveren er borte. Frittstående komponent.",
+          "description": "**Connection Status**\n\nTells the user when the connection to the server is gone. Standalone component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/connection-status/"
         },
         {
           "name": "lt-toast",
-          "description": "**Toast**\n\nKø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
+          "description": "**Toast**\n\nA queue of short messages in the corner of the screen. Standalone component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/toast/"
         },
         {
           "name": "lt-toast__message",
-          "description": "**Toast**\n\nKø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
+          "description": "**Toast**\n\nA queue of short messages in the corner of the screen. Standalone component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/toast/"
         },
         {
           "name": "lt-toast__close",
-          "description": "**Toast**\n\nKø av korte meldinger i hjørnet av skjermen. Frittstående komponent.",
+          "description": "**Toast**\n\nA queue of short messages in the corner of the screen. Standalone component.",
           "doc-url": "https://lo-tek.sobernetics.no/components/toast/"
         },
         {
           "name": "lt-theme-control",
-          "description": "**Tilpasning**\n\nEndre farger, form og størrelse i LO-TEK uten at endringene forsvinner ved neste oppgradering.",
+          "description": "**Customising**\n\nChange colours, shape and size in LO-TEK without losing the changes on the next upgrade.",
           "doc-url": "https://lo-tek.sobernetics.no/customising/"
         }
       ]

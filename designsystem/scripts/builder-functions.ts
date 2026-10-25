@@ -1,21 +1,23 @@
 /**
- * Leser byggefunksjonene i `lt` slik TypeScript ser dem: navnet, hvert valg
- * med typen sin, og formen på svaret.
+ * Reads the builder functions in `lt` as TypeScript sees them: the name,
+ * each option with its type, and the shape of the result.
  *
- * Valgene og typene deres leses av TypeScript-kompilatoren fra signaturene i
- * `src/lt.ts`, ikke fra kildekoden som tekst, så et valg som er lagt til i
- * en komponent er med uten at noe må skrives et annet sted.
+ * The options and their types are read by the TypeScript compiler from the
+ * signatures in `src/lt.ts`, not from the source code as text, so an option
+ * added to a component is included without anything having to be written
+ * anywhere else.
  *
- * Både `generate-vocabulary.ts` og `generate-manifest.ts` leser herfra. Før
- * leste ordforrådet flaggene fra `manifest.json` på disk, mens manifestet
- * utledet dem på nytt fra byggetilfellene og leste resten fra `classes.ts`.
- * De to pekte på hverandre: et nytt flagg kom inn i manifestet ved første
- * bygg, men i `classes.ts` først ved det neste, og `check:vocabulary` felte
- * bygget i mellomtiden. Nå utledes flaggene ett sted, av byggefunksjonen
- * selv, og manifestet tar dem fra `classes.ts` som alt annet der.
+ * Both `generate-vocabulary.ts` and `generate-manifest.ts` read from here.
+ * The vocabulary used to read the flags from `manifest.json` on disk, while
+ * the manifest derived them again from the build cases and read the rest
+ * from `classes.ts`. The two pointed at each other: a new flag reached the
+ * manifest on the first build, but `classes.ts` only on the next, and
+ * `check:vocabulary` failed the build in between. Now the flags are derived
+ * in one place, from the builder function itself, and the manifest takes
+ * them from `classes.ts` like everything else there.
  *
- * Programmet bygges når `lesByggefunksjoner()` kalles, ikke når modulen
- * lastes, så det koster bare den som faktisk spør.
+ * The program is built when `lesByggefunksjoner()` is called, not when the
+ * module loads, so it costs only whoever actually asks.
  */
 
 import { fileURLToPath } from "node:url"
@@ -35,7 +37,7 @@ export type Valg = {
   name: string
   required: boolean
   type: Valgtype
-  /** JSDoc-en til valget i byggefunksjonens type, når den har en. */
+  /** The JSDoc of the option in the builder function's type, when it has one. */
   description?: string
 }
 
@@ -53,10 +55,11 @@ export type Byggefunksjon = {
 }
 
 /*
- * Rekkefølgen på lovlige verdier. TypeScript gir en union i den rekkefølgen
- * typene ble laget, ikke den de står i, så rekkefølgen hentes fra listene
- * byggefunksjonene selv reklamerer med (`lt.button.variants` og slike) når
- * en av dem har nøyaktig de samme verdiene.
+ * The order of allowed values. TypeScript gives a union in the order the
+ * types were created, not the order they are written in, so the order is
+ * taken from the lists the builder functions themselves advertise
+ * (`lt.button.variants` and the like) when one of them has exactly the same
+ * values.
  */
 const lister: string[][] = []
 for (const verdi of Object.values(lt)) {
@@ -73,7 +76,7 @@ function ordnet(verdier: string[]): string[] {
 
 let lest: Byggefunksjon[] | undefined
 
-/** Byggefunksjonene i `lt`, sortert på navn. Leses én gang per prosess. */
+/** The builder functions in `lt`, sorted by name. Read once per process. */
 export function lesByggefunksjoner(): Byggefunksjon[] {
   if (lest) return lest
 
@@ -82,11 +85,11 @@ export function lesByggefunksjoner(): Byggefunksjon[] {
     {},
     { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => {} },
   )
-  if (!konfig) throw new Error("Fant ikke tsconfig.json")
+  if (!konfig) throw new Error("Could not find tsconfig.json")
   const program = ts.createProgram(konfig.fileNames, konfig.options)
   const typer = program.getTypeChecker()
   const kilde = program.getSourceFile(`${PAKKE}src/lt.ts`)
-  if (!kilde) throw new Error("Fant ikke src/lt.ts i programmet")
+  if (!kilde) throw new Error("Could not find src/lt.ts in the program")
 
   let ltNavn: ts.Identifier | undefined
   kilde.forEachChild((node) => {
@@ -94,7 +97,7 @@ export function lesByggefunksjoner(): Byggefunksjon[] {
     for (const d of node.declarationList.declarations)
       if (ts.isIdentifier(d.name) && d.name.text === "lt") ltNavn = d.name
   })
-  if (!ltNavn) throw new Error("Fant ikke `export const lt` i src/lt.ts")
+  if (!ltNavn) throw new Error("Could not find `export const lt` in src/lt.ts")
 
   const vis = (t: ts.Type) => typer.typeToString(t)
   const deler = (t: ts.Type) =>
@@ -123,11 +126,11 @@ export function lesByggefunksjoner(): Byggefunksjon[] {
     )
       return { kind: "textList" }
     throw new Error(
-      `${hvor} har en type manifestet ikke kjenner: ${vis(t)}. Legg den til i valgtype().`,
+      `${hvor} has a type the manifest does not know: ${vis(t)}. Add it to valgtype().`,
     )
   }
 
-  /** Om typen er et attributtsett: hver verdi er tekst, eller `true` for et flagg. */
+  /** Whether the type is an attribute set: every value is text, or `true` for a flag. */
   function erAttributter(t: ts.Type): boolean {
     const props = t.getProperties()
     return (
@@ -169,16 +172,16 @@ export function lesByggefunksjoner(): Byggefunksjon[] {
       return { kind: "group", fields }
     }
     throw new Error(
-      `${hvor} returnerer en form manifestet ikke kjenner: ${vis(t)}`,
+      `${hvor} returns a shape the manifest does not know: ${vis(t)}`,
     )
   }
 
   const byggefunksjoner: Byggefunksjon[] = []
   for (const p of typer.getTypeAtLocation(ltNavn).getProperties()) {
     const signatur = typer.getTypeOfSymbol(p).getCallSignatures()[0]
-    // Lister som `lt.states` og vakter som `lt.isState` er ikke byggefunksjoner.
-    // `setAttributes` legger et sett på et DOM-element og har ingen motpart
-    // utenfor nettleseren.
+    // Lists like `lt.states` and guards like `lt.isState` are not builder
+    // functions. `setAttributes` puts a set on a DOM element and has no
+    // counterpart outside the browser.
     if (!signatur || p.name.startsWith("is") || p.name === "setAttributes")
       continue
     const parameter = signatur.getParameters()[0]
@@ -188,8 +191,8 @@ export function lesByggefunksjoner(): Byggefunksjon[] {
         typer.getTypeOfSymbol(parameter),
       )
       for (const v of valgType.getProperties()) {
-        // Bare første avsnitt: resten er notater til den som vedlikeholder
-        // typen, med React-råd og historikk, og hører ikke i kontrakten.
+        // Only the first paragraph: the rest is notes for whoever maintains
+        // the type, with React advice and history, and does not belong in the contract.
         const description = ts
           .displayPartsToString(v.getDocumentationComment(typer))
           .trim()
@@ -217,7 +220,7 @@ export function lesByggefunksjoner(): Byggefunksjon[] {
   return lest
 }
 
-/** Settene et svar består av: ett for `button`, ett per del for `dialog`. */
+/** The sets a result consists of: one for `button`, one per part for `dialog`. */
 export function settene(svar: unknown): [string, Record<string, unknown>][] {
   if (typeof svar !== "object" || svar === null) return []
   const verdier = Object.entries(svar as Record<string, unknown>)
@@ -229,16 +232,16 @@ export function settene(svar: unknown): [string, Record<string, unknown>][] {
 }
 
 /**
- * Flaggene en byggefunksjon gir: `data-interactive` på `lt-card` når
- * `interactive` er på, `data-optional` på `lt-label` når `optional` er på.
- * Et flagg er på når det står der, og stilarket spør bare om det finnes, så
- * det har ingen liste over verdier.
+ * The flags a builder function gives: `data-interactive` on `lt-card` when
+ * `interactive` is on, `data-optional` on `lt-label` when `optional` is on.
+ * A flag is on when it is present, and the stylesheet only asks whether it
+ * exists, so it has no list of values.
  *
- * Det leses ved å kalle funksjonen: står et `data-*`-attributt som flagg i
- * svaret med det boolske valget på, men ikke uten, hører det til klassene i
- * det samme settet. `grunn` er valgene som må med for at kallet skal gå, som
- * en id. Bare klasser i `kjente` telles, så et navn som ikke står i CSS-en
- * ikke får en oppføring av seg selv.
+ * It is read by calling the function: when a `data-*` attribute is a flag in
+ * the result with the boolean option on, but not without, it belongs to the
+ * classes in the same set. `grunn` is the options the call needs in order to
+ * work, such as an id. Only classes in `kjente` are counted, so a name that
+ * is not in the CSS does not get an entry by itself.
  */
 export function flaggFor(
   b: Byggefunksjon,

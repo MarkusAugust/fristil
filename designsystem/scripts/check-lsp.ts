@@ -197,7 +197,7 @@ try {
     edit: { changes: Record<string, { newText: string }[]> }
   }[]
   krev(
-    rettelser[0]?.title === "Bytt til lt-button",
+    rettelser[0]?.title === "Change to lt-button",
     `feil rettelse: ${rettelser[0]?.title}`,
   )
   krev(

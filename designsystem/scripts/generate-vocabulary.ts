@@ -1,30 +1,33 @@
 /**
- * Skriver ordforrådet og editorfilene fra `metadata.ts` og komponentsidene.
+ * Writes the vocabulary and the editor files from `metadata.ts` and the
+ * component pages.
  *
- * Filene kommer ut i pakken, og ingen av dem skrives for hånd. Editorene
- * leser dem: VS Code-utvidelsen kopierer de to første når den bygges, og
- * IntelliJ-pluginen leser klassene fra prosjektets manifest, med manifestet
- * i Kotlin-pakken som reserve.
+ * The files ship in the package, and none of them is written by hand. The
+ * editors read them: the VS Code extension copies the first two when it is
+ * built, and the IntelliJ plugin reads the classes from the project's
+ * manifest, with the manifest in the Kotlin package as the fallback.
  *
- *   - `html-data.json`: VS Codes eget format for tagger og
- *     attributter. HTML-språktjenesten bruker den til fullføring og hover.
- *   - `snippets.json`: én snippet per element, med markupen som viser
- *     elementet på komponentsiden. Kodeblokkene der er alt etterprøvd av
- *     `check-recipes.ts`, så klassene og elementene i snippeten finnes.
- *   - `designsystem/src/vocabulary/elements.ts`: elementene og attributtene,
- *     tagg for tagg, som manifestet skrives fra.
- *   - `designsystem/src/vocabulary/classes.ts`: hver `lt-`-klasse i pakkens CSS, med komponenten
- *     den hører til, og for hver byggefunksjon i `lt` hvilket attributt en
- *     variant, størrelse, farge eller tilstand blir til. Det leses ved å
- *     kalle funksjonene, ikke ved å lese kildekoden, så det er det pakken
- *     faktisk gir. `html-data` skiller ikke et tall fra en tekst, og har ingen
- *     plass til det, så diagnostikken får sin egen fil fra samme kilde.
- *   - `designsystem/web-types.json`: JetBrains sitt format. Den følger
- *     npm-pakken, og WebStorm finner den selv fra `node_modules`.
+ *   - `html-data.json`: VS Code's own format for tags and attributes. The
+ *     HTML language service uses it for completion and hover.
+ *   - `snippets.json`: one snippet per element, with the markup that shows
+ *     the element on the component page. The code blocks there are already
+ *     checked by `check-recipes.ts`, so the classes and elements in the
+ *     snippet exist.
+ *   - `designsystem/src/vocabulary/elements.ts`: the elements and the
+ *     attributes, tag by tag, which the manifest is written from.
+ *   - `designsystem/src/vocabulary/classes.ts`: every `lt-` class in the
+ *     package's CSS, with the component it belongs to, and for each builder
+ *     function in `lt` which attribute a variant, size, colour or state
+ *     becomes. It is read by calling the functions, not by reading the source
+ *     code, so it is what the package actually returns. `html-data` does not
+ *     tell a number from a text, and has no room for it, so the diagnostics
+ *     get their own file from the same source.
+ *   - `designsystem/web-types.json`: the JetBrains format. It ships with the
+ *     npm package, and WebStorm finds it in `node_modules` on its own.
  *
- * Kjør med: bun --filter @lo-tek/interfaces vocabulary
- * `check-vocabulary.ts` kjører det samme i minnet og feiler hvis filene på
- * disk er utdaterte.
+ * Run with: bun --filter @lo-tek/interfaces vocabulary
+ * `check-vocabulary.ts` does the same in memory and fails if the files on
+ * disk are out of date.
  */
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs"
@@ -56,8 +59,8 @@ const docsUrl = (element: ElementDoc) => `${DOCS}${element.slug}/`
  * VS Code: https://github.com/microsoft/vscode-html-languageservice
  *          /blob/main/docs/customData.md
  *
- * `valueSet: "v"` er det innebygde settet for boolske attributter, det samme
- * `hidden` og `disabled` bruker. Editoren foreslår da attributtet uten `=""`.
+ * `valueSet: "v"` is the built-in set for boolean attributes, the same one
+ * `hidden` and `disabled` use. The editor then suggests the attribute without `=""`.
  */
 function htmlDataAttribute(name: string, doc: AttributeDoc) {
   const base = {
@@ -85,7 +88,7 @@ export function htmlData() {
       attributes: Object.entries(element.attributes).map(([name, doc]) =>
         htmlDataAttribute(name, doc),
       ),
-      references: [{ name: "Dokumentasjon", url: docsUrl(element) }],
+      references: [{ name: "Documentation", url: docsUrl(element) }],
     })),
   }
 }
@@ -93,9 +96,9 @@ export function htmlData() {
 /*
  * JetBrains: https://github.com/JetBrains/web-types
  *
- * Skjemaet er skrevet etter beskrivelsen der, og etterprøvd i IntelliJ IDEA
- * Ultimate 2026.2: fullføring av elementer, attributter og verdier, og
- * forklaring med lenke, uten annet oppsett enn at pakken står i
+ * The schema is written from the description there, and checked in IntelliJ
+ * IDEA Ultimate 2026.2: completion of elements, attributes and values, and
+ * documentation with a link, with no setup other than the package being in
  * `package.json`.
  */
 function webTypesAttribute(name: string, doc: AttributeDoc) {
@@ -129,8 +132,8 @@ export function webTypes(version: string) {
           attributes: Object.entries(element.attributes).map(([name, doc]) =>
             webTypesAttribute(name, doc),
           ),
-          // Hendelsene, så `addEventListener("dialog-toggle", …)` og
-          // `@dialog-toggle` i et rammeverk får fullføring.
+          // The events, so `addEventListener("dialog-toggle", …)` and
+          // `@dialog-toggle` in a framework get completion.
           ...(Object.keys(element.events).length
             ? {
                 js: {
@@ -150,15 +153,16 @@ export function webTypes(version: string) {
         })),
       },
       /*
-       * Klassene, slik at `class="lt-…"` får fullføring i JetBrains-IDE-ene.
+       * The classes, so `class="lt-…"` gets completion in the JetBrains IDEs.
        *
-       * Før sto bare de ni elementene her, så en utvikler fikk forslag på
-       * `<lt-field>` men ingenting på `lt-button`, enda klassene er den
-       * største delen av systemet og den eneste delen en CSS-komponent har.
+       * Only the nine elements used to be here, so a developer got
+       * suggestions for `<lt-field>` but nothing for `lt-button`, although the
+       * classes are the largest part of the system and the only part a CSS
+       * component has.
        *
-       * Lista er den samme `classesData()` som skriver `classes.ts`, altså
-       * den diagnostikken feller på. Da kan ikke editoren foreslå en klasse
-       * sjekken avviser, eller avvise en den foreslår.
+       * The list is the same `classesData()` that writes `classes.ts`, that
+       * is, the one the diagnostics fail on. The editor therefore cannot
+       * suggest a class the check rejects, or reject one it suggests.
        */
       css: {
         classes: Object.entries(classesData()).map(([name, info]) => ({
@@ -172,17 +176,18 @@ export function webTypes(version: string) {
 }
 
 /**
- * Markupen som viser elementet, fra komponentsiden.
+ * The markup that shows the element, from the component page.
  *
- * Den første kodeblokken med HTML på siden som faktisk inneholder `<lt-…>`,
- * uten stilark og uten Datastar. Som regel er det «Plain HTML»-fanen. På
- * dialogsiden er det ikke: der åpner «Plain HTML»-oppskriften dialogen med
- * `showModal()` fra skript, uten web-komponenten, og en snippet for
- * `<lt-dialog>` uten `<lt-dialog>` i seg var det første reviewfunnet.
+ * The first code block with HTML on the page that actually contains `<lt-…>`,
+ * without stylesheets and without Datastar. Usually that is the "Plain HTML"
+ * tab. On the dialog page it is not: there the "Plain HTML" recipe opens the
+ * dialog with `showModal()` from script, without the web component, and a
+ * snippet for `<lt-dialog>` without `<lt-dialog>` in it was the first review
+ * finding.
  *
- * Snippeten er markupen fram til det første skriptet: stilarkene og
- * registreringen hører i sidemalen, én gang for hele appen, ikke der
- * markøren står.
+ * The snippet is the markup up to the first script: the stylesheets and the
+ * registration belong in the page template, once for the whole app, not
+ * where the cursor is.
  */
 export function recipe(element: ElementDoc): string {
   const page = readFileSync(join(PAGES, `${element.slug}.mdx`), "utf8")
@@ -195,11 +200,11 @@ export function recipe(element: ElementDoc): string {
   )
   if (!markup)
     throw new Error(
-      `${element.slug}.mdx har ingen HTML-blokk med <${element.tag}> i`,
+      `${element.slug}.mdx has no HTML block with <${element.tag}> in it`,
     )
 
-  // Kommentaren rett før skriptet kan gå over flere linjer, men aldri forbi
-  // sin egen `-->`: ellers ville den slukt markupen mellom to kommentarer.
+  // The comment right before the script can span several lines, but never
+  // past its own `-->`: otherwise it would swallow the markup between two comments.
   const body = markup.split(
     /\n[ \t]*(?:<!--(?:(?!-->)[\s\S])*-->\n[ \t]*)?<script\b/,
   )[0]
@@ -213,8 +218,8 @@ export function recipe(element: ElementDoc): string {
 }
 
 /*
- * Et snippet-body er et malspråk: `$1` er en tabbstopp og `\` er
- * rømningstegnet. Markupen skal komme ut ordrett, så begge rømmes.
+ * A snippet body is a template language: `$1` is a tab stop and `\` is the
+ * escape character. The markup should come out verbatim, so both are escaped.
  */
 const escapeSnippet = (line: string) =>
   line.replace(/\\/g, "\\\\").replace(/\$/g, "\\$")
@@ -223,19 +228,20 @@ const escapeRegex = (text: string) =>
   text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
 /**
- * Id-ene i en oppskrift, i rekkefølge, og alt som peker på hver av dem.
+ * The ids in a recipe, in order, and everything that points to each of them.
  *
- * Id-en er det malen skriver selv etter v6: `for` på ledeteksten og `id` på
- * feltet, `href` på fanen og `id` på panelet. I en snippet blir hver id et
- * tabbestopp, og pekerne speil av det, så den skrives én gang.
+ * Since v6 the id is what the template writes itself: `for` on the label and
+ * `id` on the field, `href` on the tab and `id` on the panel. In a snippet
+ * each id becomes a tab stop, and the pointers mirror it, so it is typed once.
  */
 function idsIn(body: string): string[] {
   return [...new Set([...body.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]))]
 }
 
 /**
- * Pekerne på en id: `for`, `aria-labelledby`, `aria-controls` og `href="#…"`.
- * `write(name, value)` skriver attributtet på nytt der verdien er id-en.
+ * The pointers to an id: `for`, `aria-labelledby`, `aria-controls` and
+ * `href="#…"`. `write(name, value)` rewrites the attribute where the value is
+ * the id.
  */
 function mirror(
   body: string,
@@ -251,7 +257,7 @@ function mirror(
     .replace(new RegExp(`\\bhref="#${esc}"`, "g"), () => write("href", "#"))
 }
 
-/** Snippeten med tabbestopp: `${1:navn}` der id-en står, `$1` der den pekes på. */
+/** The snippet with tab stops: `${1:name}` where the id is, `$1` where it is pointed to. */
 function withTabstops(body: string): string {
   let out = body
   idsIn(body).forEach((id, i) => {
@@ -275,7 +281,7 @@ export function snippets() {
     { prefix: string; body: string[]; description: string }
   > = {}
   for (const element of elements) {
-    // Tabbestoppene settes inn etter rømmingen, ellers rømmes de også.
+    // The tab stops are inserted after escaping, or they would be escaped too.
     const body = recipe(element).split("\n").map(escapeSnippet).join("\n")
     out[element.tag] = {
       prefix: element.tag,
@@ -287,11 +293,11 @@ export function snippets() {
 }
 
 /**
- * Live templates for IntelliJ, fra de samme oppskriftene som snippetene.
+ * Live templates for IntelliJ, from the same recipes as the snippets.
  *
- * Formatet er IntelliJs eget: `$navn$` er en variabel, `$$` et dollartegn,
- * og variabelnavnet må være en identifikator, så `okt-tittel` blir
- * `okt_tittel`. Pluginen kopierer fila inn som `liveTemplates/Lotek.xml`.
+ * The format is IntelliJ's own: `$name$` is a variable, `$$` a dollar sign,
+ * and the variable name must be an identifier, so `session-title` becomes
+ * `session_title`. The plugin copies the file in as `liveTemplates/Lotek.xml`.
  */
 export function liveTemplates(): string {
   const xml = (text: string) =>
@@ -325,12 +331,12 @@ export function liveTemplates(): string {
       "  </template>",
     ].join("\n")
   })
-  return `<!-- Generert av designsystem/scripts/generate-vocabulary.ts. Ikke rediger. -->\n<templateSet group="LO-TEK">\n${templates.join("\n")}\n</templateSet>\n`
+  return `<!-- Generated by designsystem/scripts/generate-vocabulary.ts. Do not edit. -->\n<templateSet group="LO-TEK">\n${templates.join("\n")}\n</templateSet>\n`
 }
 
 /*
- * Diagnostikken: hva hvert attributt tar, i den formen `src/diagnostics.ts`
- * leser. Lenken er komponentsiden, som blir lenke i meldingen.
+ * The diagnostics: what each attribute takes, in the form `src/diagnostics.ts`
+ * reads. The link is the component page, which becomes a link in the message.
  */
 export function diagnosticsData(): Elements {
   const out: Elements = {}
@@ -366,24 +372,26 @@ export function diagnosticsData(): Elements {
 }
 
 /*
- * Klassene. Lista kommer fra CSS-filene, én mappe per komponent, og navnet
- * på mappa er adressen til komponentsiden. Tittel og beskrivelse er sidens
- * egen frontmatter. Attributtene kommer fra byggefunksjonene i `lt`: hver
- * funksjon med `variants`, `sizes`, `colors`, `states`, `types` eller
- * `pickers` kalles én gang per verdi, og attributtet den skriver ut er det
- * som noteres, med verdien som ikke gir noe attributt som standard.
+ * The classes. The list comes from the CSS files, one folder per component,
+ * and the folder name is the path of the component page. Title and
+ * description are the page's own frontmatter. The attributes come from the
+ * builder functions in `lt`: each function with `variants`, `sizes`,
+ * `colors`, `states`, `types` or `pickers` is called once per value, and the
+ * attribute it writes out is what is recorded, with the value that gives no
+ * attribute as the default.
  */
 const COMPONENT_DIRS = ["css", "frame", "standalone"].map((d) =>
   join(ROOT, "designsystem/src/components", d),
 )
 
 /*
- * `tokens.css` har klasser som ikke hører til en komponent.
+ * `tokens.css` has classes that do not belong to a component.
  *
- * `.lt-theme-control` er den første: den bytter tema, så selektoren bor der
- * tokenverdiene bor framfor i en komponentmappe. Uten denne kilden meldte
- * `diagnoseMarkup` «Klassen finnes ikke i LO-TEK» på riktig markup, og
- * verken VS Code, IntelliJ eller `lotek sjekk` foreslo den.
+ * `.lt-theme-control` is the first: it switches the theme, so the selector
+ * lives where the token values live rather than in a component folder.
+ * Without this source, `diagnoseMarkup` reported that the class does not
+ * exist in LO-TEK on correct markup, and neither VS Code, IntelliJ nor
+ * `lotek check` suggested it.
  */
 const TOKEN_CSS = join(ROOT, "designsystem/src/tokens/tokens.css")
 
@@ -394,7 +402,7 @@ const OPTION_LISTS: Record<string, string> = {
   states: "state",
   types: "type",
   pickers: "picker",
-  // `lt.label({ required: "text" })`: lista heter markers, opsjonen required.
+  // `lt.label({ required: "text" })`: the list is called markers, the option required.
   markers: "required",
 }
 
@@ -404,10 +412,10 @@ const frontmatter = (slug: string, key: string) => {
 }
 
 const TOKEN_PAGE = {
-  component: "tilpasning",
-  // Leses fra siden, som for komponentene. Skrevet av for hånd drev den fra
-  // frontmatteren uten at noe sa fra, og hoverboksen i VS Code og JetBrains
-  // siterte en beskrivelse som ikke sto noe sted i dokumentasjonen.
+  component: "customising",
+  // Read from the page, as for the components. Copied by hand it drifted from
+  // the frontmatter without anything saying so, and the hover in VS Code and
+  // JetBrains quoted a description that was nowhere in the documentation.
   title: frontmatter("../customising", "title"),
   description: frontmatter("../customising", "description"),
   link: "https://lo-tek.sobernetics.no/customising/",
@@ -418,7 +426,7 @@ function classesInCss(css: string): string[] {
   return [...new Set(clean.match(/\.lt-[\w-]+/g) ?? [])].map((c) => c.slice(1))
 }
 
-/** Klassene i det en byggefunksjon gir, også når svaret er nøstet. */
+/** The classes in what a builder function returns, also when the result is nested. */
 function classesIn(value: unknown): string[] {
   if (!value || typeof value !== "object") return []
   const out: string[] = []
@@ -431,17 +439,18 @@ function classesIn(value: unknown): string[] {
 
 export function classesData(): Classes {
   /*
-   * Klassene fra CSS-en, før innholdet og delene fra `classDocs` legges på.
-   * De to settes sammen til slutt, så en klasse som mangler i tabellen kan
-   * meldes med navn framfor å få et innhold ingen har skrevet.
+   * The classes from the CSS, before the content and the parts from
+   * `classDocs` are added. The two are joined at the end, so a class missing
+   * from the table can be reported by name rather than get content nobody
+   * has written.
    */
   const found: Record<string, Omit<ClassInfo, keyof ClassDoc>> = {}
   for (const dir of COMPONENT_DIRS) {
     for (const slug of readdirSync(dir, { withFileTypes: true })
       .filter((d) => d.isDirectory())
       .map((d) => d.name)
-      // Sortert: Linux leverer mappene i en annen rekkefølge enn macOS, og
-      // fila skal være den samme uansett hvor den genereres.
+      // Sorted: Linux returns the folders in a different order from macOS, and
+      // the file must be the same wherever it is generated.
       .sort()) {
       const files = readdirSync(join(dir, slug))
         .filter((f) => f.endsWith(".css"))
@@ -472,18 +481,18 @@ export function classesData(): Classes {
     const build = builder as (options?: Record<string, unknown>) => unknown
     let base: unknown
     try {
-      // En id, så byggefunksjonene som ellers lager en tilfeldig ikke sier fra.
-      // Dialogen kaller sin titleId, siden id-en sitter på overskriften. Og
-      // et navn, som fanene krever på raden.
+      // An id, so the builder functions that would otherwise create a random
+      // one do not warn. The dialog calls its own titleId, since the id is on
+      // the heading. And a name, which the tabs require on the list.
       base = build({ id: "x", titleId: "x", keys: [], label: "x" })
     } catch {
       continue
     }
     /*
-     * Settene svaret består av. En byggefunksjon som `button` gir ett, og
-     * `dialog` gir ett per del, `host`, `dialog`, `header` og så videre.
-     * Hvert sett sjekkes for seg, så `data-color` havner på `lt-dialog`, som
-     * står i det samme settet, og ikke på overskriften.
+     * The sets the result consists of. A builder function like `button`
+     * returns one, and `dialog` returns one per part, `host`, `dialog`,
+     * `header` and so on. Each set is checked on its own, so `data-color`
+     * ends up on `lt-dialog`, which is in the same set, and not on the heading.
      */
     const parts = (result: unknown): [string, Record<string, unknown>][] => {
       if (typeof result !== "object" || result === null) return []
@@ -501,9 +510,9 @@ export function classesData(): Classes {
       for (const [list, option] of Object.entries(OPTION_LISTS)) {
         const values = (builder as unknown as Record<string, unknown>)[list]
         if (!Array.isArray(values)) continue
-        // Hvert attributt en verdi blir til: `lt.input({ type: "date" })` gir både
-        // `type` og `data-variant`. `type` er HTML sitt eget, og CSS-en leser det
-        // ikke, så det noteres ikke: `type="color"` er lovlig HTML på et lt-input.
+        // Every attribute a value becomes: `lt.input({ type: "date" })` gives
+        // both `type` and `data-variant`. `type` is HTML's own, and the CSS does
+        // not read it, so it is not recorded: `type="color"` is valid HTML on an lt-input.
         const emitted = new Map<string, string[]>()
         const silent: string[] = []
         for (const value of values as string[]) {
@@ -533,9 +542,9 @@ export function classesData(): Classes {
           for (const target of targets)
             found[target].attributes[attribute] = {
               values: list,
-              // Standardverdien er den ene verdien som ikke gir noe attributt,
-              // som `primary` for `data-variant`. Gir flere ingenting, som de
-              // fleste typene på et input, betyr fraværet ikke én av dem.
+              // The default is the one value that gives no attribute, such as
+              // `primary` for `data-variant`. When several give nothing, as most
+              // types on an input do, the absence does not mean one of them.
               ...(silent.length === 1 && emitted.size === 1
                 ? { default: silent[0] }
                 : {}),
@@ -545,23 +554,24 @@ export function classesData(): Classes {
   }
 
   /*
-   * Flaggene, som `data-interactive` på `lt-card` og `data-optional` på
-   * `lt-label`: et `data-*`-attributt som kommer når et boolsk valg slås på.
-   * Uten dem manglet de i editoren og i regelbøkene, mens `lotek sjekk`
-   * kjente dem.
+   * The flags, such as `data-interactive` on `lt-card` and `data-optional` on
+   * `lt-label`: a `data-*` attribute that appears when a boolean option is
+   * turned on. Without this they were missing in the editor and in the
+   * rulebooks, while `lotek check` knew them.
    *
-   * De leses av byggefunksjonen selv, med valgene TypeScript ser i
-   * `src/lt.ts`, ikke fra `manifest.json` på disk. Lest derfra lå de en runde
-   * bak: `generate` skriver denne fila før manifestet, så et nytt flagg kom
-   * inn i manifestet ved første bygg, men hit først ved det neste, og
-   * `check:vocabulary` felte bygget i mellomtiden.
+   * They are read from the builder function itself, with the options
+   * TypeScript sees in `src/lt.ts`, not from `manifest.json` on disk. Read
+   * from there they were one round behind: `generate` writes this file before
+   * the manifest, so a new flag reached the manifest on the first build but
+   * arrived here only on the next, and `check:vocabulary` failed the build in
+   * between.
    */
   const flags = new Map<string, Set<string>>()
   for (const builder of lesByggefunksjoner()) {
     const build = (lt as Record<string, unknown>)[builder.name]
     if (typeof build !== "function") continue
-    // Kaster byggefunksjonen, skal generate stoppe. Et flagg som stille
-    // forsvant fra classes.ts, forsvant fra editorene og diagnostikken med.
+    // If the builder function throws, generate must stop. A flag that quietly
+    // vanished from classes.ts vanished from the editors and the diagnostics too.
     const flagged = flaggFor(
       builder,
       build as (options: Record<string, unknown>) => unknown,
@@ -577,10 +587,11 @@ export function classesData(): Classes {
       found[name].attributes[attribute] ??= { values: [], flag: true }
 
   /*
-   * Innholdet og delene, fra tabellen i `metadata.ts`. Hver klasse i CSS-en
-   * skal stå der, og ingen andre: en ny klasse uten en rad stopper
-   * generatoren med navnet, og en rad for en klasse som er borte fra CSS-en
-   * stopper den også, ellers ble den stående og love noe som ikke finnes.
+   * The content and the parts, from the table in `metadata.ts`. Every class
+   * in the CSS must be there, and no others: a new class without a row stops
+   * the generator with its name, and a row for a class that is gone from the
+   * CSS stops it too, or it would stay and promise something that does not
+   * exist.
    */
   const missing = Object.keys(found).filter((name) => !(name in classDocs))
   const stale = Object.keys(classDocs).filter((name) => !(name in found))
@@ -588,9 +599,9 @@ export function classesData(): Classes {
     throw new Error(
       [
         missing.length &&
-          `classDocs i metadata.ts mangler ${missing.join(", ")}.`,
+          `classDocs in metadata.ts is missing ${missing.join(", ")}.`,
         stale.length &&
-          `classDocs i metadata.ts har klasser som ikke finnes i CSS-en: ${stale.join(", ")}.`,
+          `classDocs in metadata.ts has classes that do not exist in the CSS: ${stale.join(", ")}.`,
       ]
         .filter(Boolean)
         .join(" "),
@@ -618,12 +629,13 @@ export function files(): Record<string, string> {
   ).version
   const json = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`
   /*
-   * Ordforrådet skrives som TypeScript-moduler inn i pakken, ikke som JSON: Node krever `with { type: "json" }` for å importere JSON i
-   * ESM, og `tsc` skriver ikke attributtet. Biome hopper over filene, siden
-   * `JSON.stringify` ikke setter avsluttende komma.
+   * The vocabulary is written into the package as TypeScript modules, not as
+   * JSON: Node requires `with { type: "json" }` to import JSON in ESM, and
+   * `tsc` does not write the attribute. Biome skips the files, since
+   * `JSON.stringify` does not add trailing commas.
    */
   const module = (name: string, type: string, value: unknown) =>
-    `// Generert av designsystem/scripts/generate-vocabulary.ts. Ikke rediger.\n` +
+    `// Generated by designsystem/scripts/generate-vocabulary.ts. Do not edit.\n` +
     `import type { ${type} } from "./types.js"\n\n` +
     `export const ${name}: ${type} = ${JSON.stringify(value, null, 2)}\n`
   return {
@@ -646,24 +658,25 @@ export function files(): Record<string, string> {
 }
 
 /**
- * Typene til hendelsene web-komponentene sender, for `addEventListener`.
+ * The types of the events the web components dispatch, for `addEventListener`.
  *
- * `LtEventMap` har hver hendelse som `CustomEvent` med `detail` slik
- * metadataen beskriver den, og `HTMLElementEventMap` utvides med den. Det er
- * DOM-typen TypeScript selv har, så det samme gjelder i ren TypeScript, i et
- * skript i Astro eller Datastar, og i React gjennom en `ref`. Ingenting her
- * importerer React.
+ * `LtEventMap` has each event as a `CustomEvent` with `detail` as the
+ * metadata describes it, and `HTMLElementEventMap` is extended with it. That
+ * is TypeScript's own DOM type, so the same applies in plain TypeScript, in a
+ * script in Astro or Datastar, and in React through a `ref`. Nothing here
+ * imports React.
  *
- * Sender to elementer en hendelse med samme navn, må `detail` være den
- * samme, ellers kunne bare én av dem få en type. Da stopper generatoren.
+ * When two elements dispatch an event with the same name, `detail` must be
+ * the same, or only one of them could get a type. The generator then stops.
  *
- * Fila utvider også `HTMLElementTagNameMap`, så `querySelector("lt-dialog")`
- * gir `LtDialog` og ikke `Element`. Kartet sto i hver `lt-*.ts`, men en
- * inngang som `/register` importerer dem bare i koden, og i `.d.ts`-fila
- * forsvinner importen. Da var `querySelector("lt-dialog")` et `Element`, og
- * `addEventListener` på det ga `Event` uten `detail`, mens siden lovet det
- * motsatte. Hver inngang til web-komponentene tar med denne fila, gjennom
- * `host-element.ts` eller en egen re-eksport, så kartet følger med dem alle.
+ * The file also extends `HTMLElementTagNameMap`, so `querySelector("lt-dialog")`
+ * gives `LtDialog` and not `Element`. The map used to be in each `lt-*.ts`,
+ * but an entry like `/register` imports them only in the code, and in the
+ * `.d.ts` file the import disappears. Then `querySelector("lt-dialog")` was
+ * an `Element`, and `addEventListener` on it gave `Event` without `detail`,
+ * while the page promised the opposite. Every entry to the web components
+ * brings this file along, through `host-element.ts` or a re-export of its
+ * own, so the map comes with all of them.
  */
 function eventTypes(): string {
   const seen = new Map<string, { type: string; tag: string }>()
@@ -679,7 +692,7 @@ function eventTypes(): string {
       const earlier = seen.get(name)
       if (earlier && earlier.type !== type)
         throw new Error(
-          `${name} har ulik detail på <${earlier.tag}> og <${element.tag}>: ${earlier.type} og ${type}`,
+          `${name} has a different detail on <${earlier.tag}> and <${element.tag}>: ${earlier.type} and ${type}`,
         )
       if (earlier) continue
       seen.set(name, { type, tag: element.tag })
@@ -694,7 +707,7 @@ function eventTypes(): string {
       const host = hosts.get(element.tag)
       if (!host)
         throw new Error(
-          `Fant ingen klasse for <${element.tag}> under src/components`,
+          `Found no class for <${element.tag}> under src/components`,
         )
       return host
     })
@@ -702,22 +715,23 @@ function eventTypes(): string {
   const tags = elements
     .map((element) => `    "${element.tag}": ${hosts.get(element.tag)?.name}`)
     .sort()
-  return `// Generert av designsystem/scripts/generate-vocabulary.ts fra metadata.ts. Ikke rediger.
+  return `// Generated by designsystem/scripts/generate-vocabulary.ts from metadata.ts. Do not edit.
 
 ${imports.map((host) => `import type { ${host.name} } from "./${host.module}.js"`).join("\n")}
 
 /**
- * Hendelsene web-komponentene sender, med \`detail\` slik komponenten sender
- * den. Alle bobler, og kommer ut av en skyggerot. \`HTMLElementEventMap\` og
- * \`DocumentEventMap\` utvides med dem, så \`addEventListener("dialog-toggle",
- * …)\` gir \`event.detail.open\` som \`boolean\` på ethvert element og på
- * \`document\`.
+ * The events the web components dispatch, with \`detail\` as the component
+ * sends it. All of them bubble, and come out of a shadow root.
+ * \`HTMLElementEventMap\` and \`DocumentEventMap\` are extended with them, so
+ * \`addEventListener("dialog-toggle", …)\` gives \`event.detail.open\` as
+ * \`boolean\` on any element and on \`document\`.
  *
- * \`HTMLElementTagNameMap\` utvides med elementene, så
- * \`querySelector("lt-dialog")\` gir \`LtDialog | null\`. Kartet står her, og
- * ikke i hver komponent, fordi hver inngang til web-komponentene tar med
- * denne fila: fra \`/register\` alene var \`querySelector("lt-dialog")\` ellers
- * et \`Element\`, og lytteren på det fikk \`Event\` uten \`detail\`.
+ * \`HTMLElementTagNameMap\` is extended with the elements, so
+ * \`querySelector("lt-dialog")\` gives \`LtDialog | null\`. The map is here,
+ * and not in each component, because every entry to the web components
+ * brings this file along: from \`/register\` alone,
+ * \`querySelector("lt-dialog")\` was otherwise an \`Element\`, and the listener
+ * on it got \`Event\` without \`detail\`.
  */
 export interface LtEventMap {
 ${lines.join("\n")}
@@ -734,12 +748,12 @@ ${tags.join("\n")}
 }
 
 /**
- * Klassen bak hvert element, lest fra kilden.
+ * The class behind each element, read from the source.
  *
- * Fila heter det samme som taggen, som `frame/dialog/lt-dialog.ts` for
- * `<lt-dialog>`, og klassen står som `export class LtDialog`. Navnet leses
- * derfra, ikke fra en liste her, så et element som bytter mappe eller navn
- * stopper generatoren i stedet for å gi et kart som peker feil.
+ * The file has the same name as the tag, such as `frame/dialog/lt-dialog.ts`
+ * for `<lt-dialog>`, and the class is `export class LtDialog`. The name is
+ * read from there, not from a list here, so an element that changes folder or
+ * name stops the generator instead of producing a map that points wrong.
  */
 function hostClasses(): Map<string, { name: string; module: string }> {
   const components = join(ROOT, "designsystem/src/components")
@@ -748,13 +762,13 @@ function hostClasses(): Map<string, { name: string; module: string }> {
     const file = [...new Bun.Glob(`**/${element.tag}.ts`).scanSync(components)]
     if (file.length !== 1)
       throw new Error(
-        `Ventet én fil ${element.tag}.ts under src/components, fant ${file.length}`,
+        `Expected one file ${element.tag}.ts under src/components, found ${file.length}`,
       )
     const module = (file[0] as string).replace(/\.ts$/, "")
     const source = readFileSync(join(components, file[0] as string), "utf8")
     const name = /^export class (Lt\w+) extends /m.exec(source)?.[1]
     if (!name)
-      throw new Error(`Fant ingen «export class Lt… extends» i ${file[0]}`)
+      throw new Error(`Found no "export class Lt… extends" in ${file[0]}`)
     hosts.set(element.tag, { name, module })
   }
   return hosts
@@ -763,6 +777,6 @@ function hostClasses(): Map<string, { name: string; module: string }> {
 if (import.meta.main) {
   for (const [path, content] of Object.entries(files())) {
     writeFileSync(join(ROOT, path), content)
-    console.log(`Skrev ${path}`)
+    console.log(`Wrote ${path}`)
   }
 }

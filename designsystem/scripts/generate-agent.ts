@@ -1,20 +1,20 @@
 /**
- * Skriver regelbøkene i `agent/`, én per miljø.
+ * Writes the rulebooks in `agent/`, one per environment.
  *
- * Hver fil er komplett for sitt miljø. En agent som
- * leser om `className` i et prosjekt med Go-maler er en agent som skriver
- * `className` i en Go-mal, og støy fra et rammeverk du ikke bruker er nettopp
- * det som får den til å gjette. Duplisering mellom filene koster ingenting,
- * siden alle seks skrives herfra.
+ * Each file is complete for its environment. An agent that reads about
+ * `className` in a project with Go templates is an agent that writes
+ * `className` in a Go template, and noise from a framework you do not use is
+ * exactly what makes it guess. Duplication between the files costs nothing,
+ * since all six are written from here.
  *
- * Rekkefølgen i hver fil følger feilene agenter faktisk gjør, dyreste først:
- * glemt stilark, oppfunne komponenter og varianter, hardkodede farger, og
- * bommet registrering av web components. Sjekken står sist, fordi den er
- * løkka agenten retter seg selv i.
+ * The order in each file follows the mistakes agents actually make, most
+ * expensive first: a forgotten stylesheet, invented components and variants,
+ * hard-coded colours, and botched registration of web components. The check
+ * comes last, because it is the loop in which the agent corrects itself.
  *
- * Kjør med: bun run generate
- * `scripts/check-agent.ts` kjører det samme i minnet og feller hvis filene på
- * disk er utdaterte.
+ * Run with: bun run generate
+ * `scripts/check-agent.ts` does the same in memory and fails if the files on
+ * disk are out of date.
  */
 
 import { writeFileSync } from "node:fs"
@@ -36,107 +36,107 @@ import {
   webTabell,
 } from "./agent-parts.js"
 
-/** Pakkenavnet, som bundles slår opp. */
+/** The package name, which bundlers resolve. */
 const PAKKENAVN = (komponent: string) => `@lo-tek/interfaces/${komponent}`
 
-/** Stilarket, slik det skrives der det finnes et byggesteg. */
+/** The stylesheet, as it is written where there is a build step. */
 const STILARK_PAKKE = (komponent: string) =>
   `@lo-tek/interfaces/${komponent}.css`
 
 /**
- * Stilarket uten byggesteg: hele adressen.
+ * The stylesheet without a build step: the full URL.
  *
- * Kolonna sto med bare filnavnet, og da måtte leseren gjette stien. `field.css`
- * ligger under `frame/`, ikke under `css/`, så en agent som generaliserte fra
- * knappe-eksempelet fikk 404 på ni av komponentene.
+ * The column used to hold only the file name, and the reader had to guess the
+ * path. `field.css` is under `frame/`, not under `css/`, so an agent that
+ * generalised from the button example got a 404 on nine of the components.
  */
 const STILARK_URL = (komponent: string) => cdnTil(`${komponent}.css`)
 
 /**
- * Adressen uten bundles: en URL.
+ * The address without a bundler: a URL.
  *
- * Et pakkenavn i en `<script type="module">` uten bundles eller importmap slår
- * ikke opp i nettleseren, og importen feiler stille. Sporene uten byggesteg må
- * derfor ha hele adressen.
+ * A package name in a `<script type="module">` without a bundler or an import
+ * map does not resolve in the browser, and the import fails silently. The
+ * tracks without a build step therefore need the full URL.
  */
 const URL_TIL = (_komponent: string, modul: string) => `${CDN}/${modul}`
 
 type Oppskrift = {
-  /** Navnet kommandoen tar, og filnavnet. */
+  /** The name the command takes, and the file name. */
   navn: string
   tittel: string
-  /** Hvem fila er for, og hva som er særegent ved miljøet. */
+  /** Who the file is for, and what is particular about the environment. */
   innledning: string
-  /** Punkt 1 i kortversjonen: hvordan stilarket kommer inn. */
+  /** Item 1 of the short version: how the stylesheet gets in. */
   stilarkRegel: string
-  /** Punkt 4 i kortversjonen: registrering og boolske attributter. */
+  /** Item 4 of the short version: registration and boolean attributes. */
   punktFire: string
-  /** Første av de tre reglene, altså hvor registreringen hører. */
+  /** The first of the three rules, that is, where registration belongs. */
   registreringRegel: string
-  /** Seksjon 1, med eksempel. */
+  /** Section 1, with an example. */
   stilark: string
-  /** Adressen importen skal ha i dette miljøet. */
+  /** The address the import should have in this environment. */
   adresse: (komponent: string, modul: string) => string
-  /** Adressen stilarket skal ha i dette miljøet. */
+  /** The address the stylesheet should have in this environment. */
   stilarkAdresse: (komponent: string) => string
-  /** Seksjon 5: alt satt sammen, slik det faktisk skrives her. */
+  /** Section 5: everything put together, as it is actually written here. */
   markup: string
-  /** Det bare dette miljøet har. Står mellom markupen og fallgruvene. */
+  /** What only this environment has. Goes between the markup and the pitfalls. */
   ekstra?: string
-  /** Kommandoen som sjekker markupen her. */
+  /** The command that checks the markup here. */
   sjekk: string
-  /** Punkt 5, når sjekken ikke er hovedsikringen i dette miljøet. */
+  /** Item 5, when the check is not the main safeguard in this environment. */
   punktFem?: string
-  /** Radene i fallgruvetabellen som gjelder her. */
+  /** The rows of the pitfall table that apply here. */
   fallgruver: [string, string][]
 }
 
-const kortversjon = (oppskrift: Oppskrift) => `## Kortversjon
+const kortversjon = (oppskrift: Oppskrift) => `## Short version
 
 1. ${oppskrift.stilarkRegel}
-2. **Bruk bare klassene og elementene i tabellene under.** \`lt-modal\`,
-   \`lt-datepicker\` og \`data-variant="outlined"\` finnes i andre
-   designsystemer, ikke i LO-TEK. Er du usikker på om noe finnes, står det her
-   eller så gjør det ikke det.
-3. **Ingen hardkodede farger eller piksler.** \`var(--lt-color-…)\` og
+2. **Use only the classes and elements in the tables below.** \`lt-modal\`,
+   \`lt-datepicker\` and \`data-variant="outlined"\` exist in other design
+   systems, not in LO-TEK. If you are unsure whether something exists, it is
+   listed here or it does not exist.
+3. **No hard-coded colours or pixels.** \`var(--lt-color-…)\` and
    \`var(--lt-spacing-…)\`.
 4. ${oppskrift.punktFire}
 5. ${
   oppskrift.punktFem ??
-  `**Kjør sjekken på det du har skrevet:** \`${oppskrift.sjekk}\`. Den kjenner
-   hver klasse, hvert element, hvert attributt og hver lovlige verdi, skriver
-   \`fil:linje:kolonne: feil: melding\`, eller \`advarsel:\`, og avslutter med feilkode hvis den finner
-   noe. Med appen i gang, sjekk også hver side du har endret:
-   \`npx @lo-tek/interfaces sjekk http://localhost:8080/side\`. Da kreves
-   det i tillegg at hver \`for\` og \`aria-describedby\` peker på en id som
-   finnes, og at hvert felt har en ledetekst. Du er ferdig når begge svarer
-   «Markupen stemmer med LO-TEK».`
+  `**Run the check on what you have written:** \`${oppskrift.sjekk}\`. It knows
+   every class, every element, every attribute and every allowed value, prints
+   \`file:line:column: error: message\`, or \`warning:\`, and exits with an error code if it finds
+   anything. With the app running, also check every page you have changed:
+   \`npx @lo-tek/interfaces check http://localhost:8080/page\`. That also
+   requires every \`for\` and \`aria-describedby\` to point to an id that
+   exists, and every field to have a label. You are done when both answer
+   "The markup matches LO-TEK".`
 }`
 
-const hvaSomFinnes = (oppskrift: Oppskrift) => `## 2. Hva som finnes
+const hvaSomFinnes = (oppskrift: Oppskrift) => `## 2. What exists
 
-${antallCssKomponenter()} CSS-komponenter og ${antallElementer()} web components, og dette er
-hele lista. Klassene er \`lt-\` + kebab-case. Varianter er alltid
-\`data-*\`-attributter, aldri egne klasser: \`data-variant="secondary"\`, ikke
-\`lt-button--secondary\`. Standardvarianten har ingen attributt.
+${antallCssKomponenter()} CSS components and ${antallElementer()} web components, and this is
+the whole list. The classes are \`lt-\` + kebab-case. Variants are always
+\`data-*\` attributes, never classes of their own: \`data-variant="secondary"\`,
+not \`lt-button--secondary\`. The default variant has no attribute.
 
-### CSS-komponenter (ingen JavaScript)
+### CSS components (no JavaScript)
 
 ${cssTabell(oppskrift.stilarkAdresse)}
 
-I tillegg finnes \`lt-theme-control\`, en klasse på en radioknapp som lar
-brukeren velge tema. Den står i \`tokens.css\`, og er beskrevet under Tokens.`
+There is also \`lt-theme-control\`, a class on a radio button that lets the
+user choose a theme. It is in \`tokens.css\`, and is described under Tokens.`
 
 const TOKENS = `## 3. Tokens
 
-Ett lag. En farge er en celle i en matrise av **familie**, altså hva den
-betyr, og **rolle**, altså hva den gjør, og navnet er
-\`--lt-color-<familie>-<rolle>\`. Hver familie har hver rolle, så
-\`--lt-color-danger-border\` og \`--lt-color-success-border\` finnes begge.
-Rollene er de samme uansett familie: \`surface\` er en tonet flate,
-\`fill\` en fylt, \`content\` teksten oppå \`fill\`, \`border\` en
-ramme, og \`text\` familiens farge som tekst. Kant og tekst har et svakere og
-et sterkere trinn ved siden av.
+One layer. A colour is a cell in a matrix of **family**, that is, what it
+means, and **role**, that is, what it does, and the name is
+\`--lt-color-<family>-<role>\`. Every family has every role, so
+\`--lt-color-danger-border\` and \`--lt-color-success-border\` both exist.
+The roles are the same whatever the family: \`surface\` is a tinted surface,
+\`fill\` a filled one, \`content\` the text on top of \`fill\`, \`border\` a
+border, and \`text\` the family's colour as text. Border and text each have a
+weaker and a stronger step next to them.
 
 \`\`\`
 ${tokenListe()}
@@ -144,27 +144,28 @@ ${tokenListe()}
 
 ${malOgSkrift()}
 
-\`disabled\` og \`neutral\` er ikke det samme. \`disabled\` er for kontroller
-som er slått av, og er unntatt kontrastkravet i WCAG 1.4.3. \`neutral\` er for
-dempet informasjon brukeren faktisk skal lese eller trykke på, og holder 4,5:1.
-Bruk aldri \`disabled\`-fargene for å dempe noe som skal leses.`
+\`disabled\` and \`neutral\` are not the same. \`disabled\` is for controls
+that are turned off, and is exempt from the contrast requirement in WCAG
+1.4.3. \`neutral\` is for subdued information the user actually has to read or
+press, and holds 4.5:1. Never use the \`disabled\` colours to subdue
+something that is meant to be read.`
 
 /*
- * Eksempelet skrives i regelbokas eget språk.
+ * The example is written in the rulebook's own language.
  *
- * Én delt HTML-blokk ville lært React-agenten å skrive `class=`, og det er
- * nettopp den feilen `/react` finnes for å hindre.
+ * One shared HTML block would have taught the React agent to write `class=`,
+ * and that is exactly the mistake `/react` exists to prevent.
  */
 const temaEksempel = (oppskrift: Oppskrift) =>
   oppskrift.navn === "react"
     ? `\`\`\`tsx
 <div data-theme="light">
-  <button {...lt.button()}>Lagre</button>
+  <button {...lt.button()}>Save</button>
 </div>
 \`\`\``
     : `\`\`\`html
 <div data-theme="light">
-  <button class="lt-button">Lagre</button>
+  <button class="lt-button">Save</button>
 </div>
 \`\`\``
 
@@ -172,259 +173,267 @@ const grenseEksempel = (oppskrift: Oppskrift) =>
   oppskrift.navn === "react"
     ? `\`\`\`tsx
 <div data-lt-boundary data-theme="light">
-  <button {...lt.button()}>Lagre</button>
+  <button {...lt.button()}>Save</button>
 </div>
 \`\`\``
     : `\`\`\`html
 <div data-lt-boundary data-theme="light">
-  <button class="lt-button">Lagre</button>
+  <button class="lt-button">Save</button>
 </div>
 \`\`\``
 
 /*
- * Velgeren skrives i regelbokas eget språk, av samme grunn som temaEksempel.
+ * The picker is written in the rulebook's own language, for the same reason
+ * as temaEksempel.
  *
- * Klassen står på hver radioknapp og ikke på gruppa: `:has()` ser etter den
- * som er avkrysset, og det er knappen som er avkrysset.
+ * The class is on each radio button and not on the group: `:has()` looks for
+ * the checked one, and it is the button that is checked.
  */
 const velgerEksempel = (oppskrift: Oppskrift) => {
   const react = oppskrift.navn === "react"
   const attr = react ? "className" : "class"
   const linje = (verdi: string, tekst: string, valgt = false) =>
     `  <label ${attr}="lt-toggle-group__option">
-    <input ${attr}="lt-theme-control" type="radio" name="tema"
+    <input ${attr}="lt-theme-control" type="radio" name="theme"
            value="${verdi}"${valgt ? (react ? " defaultChecked" : " checked") : ""} /> ${tekst}
   </label>`
 
   return `\`\`\`${react ? "tsx" : "html"}
 <fieldset ${attr}="lt-toggle-group">
-  <legend ${attr}="lt-sr-only">Tema</legend>
-${linje("auto", "Følg systemet", true)}
-${linje("light", "Lyst")}
-${linje("dark", "Mørkt")}
+  <legend ${attr}="lt-sr-only">Theme</legend>
+${linje("auto", "Follow the system", true)}
+${linje("light", "Light")}
+${linje("dark", "Dark")}
 </fieldset>
 \`\`\``
 }
 
-const TEMA = (oppskrift: Oppskrift) => `### Lyst og mørkt
+const TEMA = (oppskrift: Oppskrift) => `### Light and dark
 
-Uten at du gjør noe, følger fargene maskinens innstilling. En side som vil
-bestemme selv setter \`data-theme="light"\` eller \`data-theme="dark"\` på
-\`<html>\`.
+Without you doing anything, the colours follow the device's setting. A page
+that wants to decide for itself sets \`data-theme="light"\` or
+\`data-theme="dark"\` on \`<html>\`.
 
-Attributtet er en **temagrense** og virker på et hvilket som helst element,
-ikke bare på roten. Et tema kan ligge inne i et annet, begge veier.
+The attribute is a **theme boundary** and works on any element, not only on
+the root. One theme can sit inside another, both ways.
 
-Det er dette en innebygd komponent skal bruke. Legger du LO-TEK inn i en side
-du ikke eier, setter du attributtet på komponentens eget rotelement:
+This is what an embedded component should use. When you put LO-TEK into a
+page you do not control, set the attribute on the component's own root
+element:
 
 ${temaEksempel(oppskrift)}
 
-Da er komponenten lys uansett hva maskinen står på, og verten røres ikke.
+The component is then light whatever the device is set to, and the host is
+left alone.
 
-**Vertens CSS stopper ved grensen.** Verten har ofte regler uten lag, som
-\`button { background: none; border: none }\` eller en normalize, og de slår
-\`@layer lotek\`. Sett da \`data-lt-boundary\` på det samme rotelementet:
+**The host's CSS stops at the boundary.** The host often has rules without a
+layer, such as \`button { background: none; border: none }\` or a normalize,
+and they beat \`@layer lotek\`. In that case, set \`data-lt-boundary\` on the
+same root element:
 
 ${grenseEksempel(oppskrift)}
 
-Under rotelementet ser nettleseren bort fra CSS uten lag, innenfor
-spesifisiteten under, og LO-TEKs lag gjelder igjen. Regelen ligger i \`lotek.css\` og i
-\`@lo-tek/interfaces/boundary.css\`. Skrift og annet som arves kommer
-fortsatt fra verten, og \`--lt-*\`-variablene virker. Tre ting følger av den:
+Below the root element the browser ignores CSS without a layer, within the
+specificity below, and LO-TEK's layer applies again. The rule is in
+\`lotek.css\` and in \`@lo-tek/interfaces/boundary.css\`. Fonts and other
+inherited properties still come from the host, and the \`--lt-*\` variables
+work. Three things follow from it:
 
-- Egen CSS inne i grensen skal ligge i et lag etter \`lotek\`. CSS uten lag
-  forsvinner der på samme måte som vertens.
-- Elementer uten LO-TEK-klasse mister vertens CSS uten lag. Et lag verten
-  har erklært før \`lotek\`, som Tailwinds Preflight i \`base\`, gjelder
-  fortsatt der LO-TEK ikke setter noe.
-- Grensen har spesifisiteten (0,2,0). En regel fra verten med samme
-  spesifisitet vinner hvis den lastes etter grensen, og en med mer vinner
-  alltid. Det samme gjør \`!important\` og lag verten har erklært etter
+- Your own CSS inside the boundary must be in a layer after \`lotek\`. CSS
+  without a layer disappears there in the same way as the host's.
+- Elements without a LO-TEK class lose the host's CSS without a layer. A layer
+  the host has declared before \`lotek\`, such as Tailwind's Preflight in
+  \`base\`, still applies where LO-TEK sets nothing.
+- The boundary has the specificity (0,2,0). A rule from the host with the
+  same specificity wins if it is loaded after the boundary, and one with more
+  always wins. So do \`!important\` and layers the host has declared after
   \`lotek\`.
 
-LO-TEK setter **ikke** \`color-scheme\` på \`:root\`. Egenskapen styrer
-nettleserens egne flater, altså rullefelt, nedtrekkslister og kalenderpanel,
-og den arves nedover. Et barn kan melde seg ut med \`color-scheme: normal\`,
-men det er en motregel verten aldri ba om å måtte skrive: sto verdien på
-roten, gjaldt den hele dokumentet, også der pakken bare er en gjest. Vil hele
-siden følge systemet, skriver du \`color-scheme: light dark\` på \`<html>\`
-selv, på samme måte som du selv setter lagrekkefølgen. Unntaket er
-temavelgeren under: bruker du den, setter hvert valg \`color-scheme\` selv.
+LO-TEK does **not** set \`color-scheme\` on \`:root\`. The property controls
+the browser's own surfaces, that is, scrollbars, dropdowns and calendar
+panels, and it is inherited. A child can opt out with \`color-scheme: normal\`,
+but that is a counter-rule the host never asked to have to write: with the
+value on the root, it applied to the whole document, including where the
+package is only a guest. If the whole page should follow the system, write
+\`color-scheme: light dark\` on \`<html>\` yourself, in the same way as you set
+the layer order yourself. The exception is the theme picker below: when you
+use it, each option sets \`color-scheme\` itself.
 
-### La brukeren velge tema
+### Letting the user choose a theme
 
-\`lt-theme-control\` på en radioknapp gjør \`value\` til et temavalg. Det er
-ren CSS, uten en linje JavaScript:
+\`lt-theme-control\` on a radio button makes \`value\` a theme choice. It is
+plain CSS, without a line of JavaScript:
 
 ${velgerEksempel(oppskrift)}
 
-Valget styrer to ting. LO-TEKs farger kommer fra tokenene, og nettleserens
-**egne** flater fra \`color-scheme\`: \`light\` gir \`light\`, \`dark\` gir \`dark\`, og
-\`auto\` gir \`light dark\`. \`light dark\` er ikke et tema, men beskjeden om at
-siden fungerer i begge, så nettleseren kan velge etter systemet.
+The choice controls two things. LO-TEK's colours come from the tokens, and
+the browser's **own** surfaces from \`color-scheme\`: \`light\` gives \`light\`,
+\`dark\` gives \`dark\`, and \`auto\` gives \`light dark\`. \`light dark\` is not
+a theme, but the statement that the page works in both, so the browser can
+choose by the system.
 
-«Følg systemet» har ingen temablokk, og det er med vilje: en verdi uten
-blokk treffer ingenting, og da gjelder mediespørringen igjen.
+"Follow the system" has no theme block, and that is on purpose: a value
+without a block matches nothing, and then the media query applies again.
 
-Du skal ikke skrive \`color-scheme\` selv når velgeren er i bruk. En slik
-regel utenfor et lag slår \`@layer lotek\` og låser nettleserens flater til
-systemet mens brukeren har valgt noe annet.
+Do not write \`color-scheme\` yourself when the picker is in use. Such a rule
+outside a layer beats \`@layer lotek\` and locks the browser's surfaces to
+the system while the user has chosen something else.
 
-\`light\` og \`dark\` vinner over \`data-theme\` på \`<html>\`, slik at serveren kan
-sende det lagrede valget mens et klikk likevel slår igjennom før svaret er
-tilbake. \`auto\` gjør det ikke: den betyr «ingen overstyring fra meg», så har
-serveren skrevet \`data-theme\`, er det serverens verdi som står. Skal
-«følg systemet» virke med én gang, må det som lagrer valget også fjerne
-attributtet.
+\`light\` and \`dark\` win over \`data-theme\` on \`<html>\`, so the server can
+send the stored choice while a click still takes effect before the response
+is back. \`auto\` does not: it means "no override from me", so if the server
+has written \`data-theme\`, the server's value stands. For "follow the system"
+to work at once, whatever stores the choice must also remove the attribute.
 
-To ting den ikke gjør. Den **lagrer ingenting**: send gruppa i et skjema og
-lagre valget i en cookie serveren leser, eller i \`localStorage\`. Og den må
-stå i det **samme treet som \`<html>\`**, siden \`:has()\` ikke ser ut av sitt
-eget tre; en kontroll inne i en skyggerot setter ikke tema på siden.`
+Two things it does not do. It **stores nothing**: submit the group in a form
+and store the choice in a cookie the server reads, or in \`localStorage\`. And
+it must be in the **same tree as \`<html>\`**, since \`:has()\` does not see out
+of its own tree; a control inside a shadow root does not set the theme on the
+page.`
 
 const webComponents = (oppskrift: Oppskrift) => `## 4. Web components
 
-Tre regler gjelder alle sammen:
+Three rules apply to all of them:
 
-1. ${oppskrift.registreringRegel} Importen har ingen bivirkning alene; det er
-   \`define\`-kallet som registrerer elementet.
-2. **Boolske attributter er sanne så lenge de finnes.** \`hidden="false"\`,
-   \`disabled="false"\` og \`open="false"\` slår *på*. Skal noe av det bort, må
-   attributtet fjernes helt.
-3. **Du skriver markupen, komponenten fester oppførselen.** \`<lt-field>\`
-   lager ikke ledeteksten eller kontrollen din. Du skriver \`for\` på
-   ledeteksten og \`id\` på kontrollen, eller legger \`<label>\` rundt den, så
-   feltet har navn også uten JavaScript. Komponenten kobler hjelpeteksten og
-   feilmeldingen med \`aria-describedby\` og \`aria-invalid\`, og skriver aldri
-   id på kontrollen: en id serveren ikke sendte, gjør at en oppdatering fra
-   serveren bytter ut feltet, med fokus og det brukeren har skrevet. Feltet er
-   ugyldig når feilmeldingen står uten \`hidden\`.
+1. ${oppskrift.registreringRegel} The import has no side effect on its own;
+   it is the \`define\` call that registers the element.
+2. **Boolean attributes are true as long as they are present.**
+   \`hidden="false"\`, \`disabled="false"\` and \`open="false"\` turn it *on*.
+   To turn any of them off, remove the attribute entirely.
+3. **You write the markup, the component adds the behaviour.** \`<lt-field>\`
+   does not create your label or your control. You write \`for\` on the label
+   and \`id\` on the control, or wrap the control in a \`<label>\`, so the field
+   has a name without JavaScript too. The component wires the help text and
+   the error text with \`aria-describedby\` and \`aria-invalid\`, and never
+   writes an id on the control: an id the server did not send makes an update
+   from the server replace the field, with the focus and what the user has
+   typed. The field is invalid when the error text is there without
+   \`hidden\`.
 
 ${webTabell(oppskrift.adresse, oppskrift.stilarkAdresse)}
 
-Ingen av dem bruker shadow DOM. Innholdet står i vanlig DOM, så
-\`querySelector\`, \`FormData\` og vanlig CSS virker rett inn i det.`
+None of them uses shadow DOM. The content is in plain DOM, so
+\`querySelector\`, \`FormData\` and ordinary CSS work straight into it.`
 
-const fallgruver = (rader: [string, string][]) => `## Kjente fallgruver
+const fallgruver = (rader: [string, string][]) => `## Known pitfalls
 
-| Symptom | Årsak |
+| Symptom | Cause |
 | --- | --- |
 ${rader.map(([symptom, årsak]) => `| ${symptom} | ${årsak} |`).join("\n")}`
 
-const AVSLUTNING = `## Når CSS ikke strekker til
+const AVSLUTNING = `## When CSS is not enough
 
-Komponentene tilpasses med tokens og \`--lt-\`-variabler. Holder ikke det,
-kopierer \`npx @lo-tek/interfaces overta <komponent>\` kildekoden til én
-komponent inn i prosjektet, så du eier den. Et helt fargetema av merkefargene
-dine lages med \`npx @lo-tek/interfaces tema\`.
+The components are customised with tokens and \`--lt-\` variables. If that is
+not enough, \`npx @lo-tek/interfaces takeover <component>\` copies the source
+code of one component into the project, so the code is yours to change. A
+complete colour theme from your brand colours is made with
+\`npx @lo-tek/interfaces theme\`.
 
-Alt dette, med levende eksempler: https://lo-tek.sobernetics.no/`
+All of this, with live examples: https://lo-tek.sobernetics.no/`
 
-// Fallgruvene, samlet her fordi flere miljøer deler dem.
+// The pitfalls, collected here because several environments share them.
 const STILER_MANGLER: [string, string] = [
-  "Stilene mangler",
-  "`tokens.css` er ikke lastet. Rekkefølgen mellom den og komponentens stilark betyr ikke noe",
+  "The styles are missing",
+  "`tokens.css` is not loaded. The order between it and the component's stylesheet does not matter",
 ]
 const INGEN_DEFINE: [string, string] = [
-  "En `<lt-toast>` eller `<lt-connection-status>` viser ingenting, et `<lt-session-timeout>` varsler aldri, eller en annen komponent gjør ingenting",
-  "`define`-funksjonen har ikke kjørt. `<lt-toast>` og `<lt-connection-status>` lager innholdet sitt selv og er tomme uten den, og `<lt-session-timeout>` teller ikke tiden. Markupen i de andre er din og står der uansett, bortsett fra at `<lt-tabs>` bare viser ett panel, det adressen peker på eller det første, og `<lt-suggestion>` skjuler lista til de er registrert",
+  "An `<lt-toast>` or `<lt-connection-status>` shows nothing, an `<lt-session-timeout>` never warns, or another component does nothing",
+  "The `define` function has not run. `<lt-toast>` and `<lt-connection-status>` create their content themselves and are empty without it, and `<lt-session-timeout>` does not count the time. The markup in the others comes from you and is there regardless, except that `<lt-tabs>` shows only one panel, the one the URL points to or the first, and `<lt-suggestion>` hides the list until they are registered",
 ]
 const NORSK_TEKST: [string, string] = [
-  "En komponent snakker norsk på en side på et annet språk",
-  "Teksten i markupen er din, og skrives med appens eget oppsett for oversettelse. De få standardtekstene pakken har byttes med `label` og `close-label` på `<lt-toast>`, `offline-text` og `online-text` på `<lt-connection-status>`, `count-none`, `count-one` og `count-other` på `<lt-suggestion>`, og `--lt-label-required-text`, `--lt-label-optional-text` og `--lt-label-required-symbol` i CSS. Tall og varigheter følger `lang` på `<html>`. Se https://lo-tek.sobernetics.no/translation/",
+  "A component speaks English on a page in another language",
+  "The text in the markup comes from you, and is written with the app's own translation setup. The few default texts the package has are replaced with `label` and `close-label` on `<lt-toast>`, `offline-text` and `online-text` on `<lt-connection-status>`, `count-none`, `count-one` and `count-other` on `<lt-suggestion>`, and `--lt-label-required-text`, `--lt-label-optional-text` and `--lt-label-required-symbol` in CSS. Numbers and durations follow `lang` on `<html>`. See https://lo-tek.sobernetics.no/translation/",
 ]
 const ALDRI_UGYLDIG: [string, string] = [
-  "Feilmeldingen vises aldri, og feltet regnes som gyldig",
-  '`hidden="false"` er satt på feilmeldingen, og det skjuler den like fullt. Attributtet må fjernes, ikke settes til `false`',
+  "The error text never shows, and the field counts as valid",
+  '`hidden="false"` is set on the error text, and it hides it all the same. The attribute must be removed, not set to `false`',
 ]
 const SERVERRENDERING: [string, string] = [
-  "Komponenten gjør ingenting, og ingenting sier fra",
-  "Registreringen kjøres bare på serveren, der den ikke gjør noe. Den må også kjøre i nettleseren",
+  "The component does nothing, and nothing says so",
+  "The registration runs only on the server, where it does nothing. It must also run in the browser",
 ]
 const TYPESCRIPT_I_SKRIPT: [string, string] = [
-  "`SyntaxError` i nettleseren",
-  'TypeScript-syntaks i en `<script type="module">` uten byggesteg',
+  "`SyntaxError` in the browser",
+  'TypeScript syntax in a `<script type="module">` without a build step',
 ]
 
-const TOKENS_FØRST = `\`tokens.css\` definerer alle variablene, og alle de andre
-stilarkene bygger på den. Den må lastes, og står først av vane: rekkefølgen
-mellom den og de andre har ikke noe å si.`
+const TOKENS_FØRST = `\`tokens.css\` defines all the variables, and all the other
+stylesheets build on it. It must be loaded, and comes first out of habit: the
+order between it and the others does not matter.`
 
-const SJEKK_I_TESTER = `Lager koden HTML-en som strenger, finnes det ingen fil å
-sjekke. Sjekk da siden slik serveren sender den, som en hel side, med
-koblingen medregnet:
+const SJEKK_I_TESTER = `When the code produces the HTML as strings, there is no
+file to check. Then check the page as the server sends it, as a whole page,
+with the wiring included:
 
 \`\`\`bash
-npx @lo-tek/interfaces sjekk http://localhost:8080/form
-curl -s http://localhost:8080/form | npx @lo-tek/interfaces sjekk --rendret
+npx @lo-tek/interfaces check http://localhost:8080/form
+curl -s http://localhost:8080/form | npx @lo-tek/interfaces check --rendered
 \`\`\`
 
-I en test skrevet i JavaScript gjør \`diagnosePage\` det samme:
+In a test written in JavaScript, \`diagnosePage\` does the same:
 
 \`\`\`js
 import { diagnosePage } from "@lo-tek/interfaces/diagnostics"
 
-const funn = diagnosePage(html)
-// funn er tom når siden stemmer
+const findings = diagnosePage(html)
+// findings is empty when the page is correct
 \`\`\``
 
 const OPPSKRIFTER: Oppskrift[] = [
   {
     navn: "html",
     stilarkAdresse: STILARK_URL,
-    tittel: "LO-TEK i ren HTML",
-    innledning: `Regelboka for LO-TEK i et prosjekt uten byggesteg:
-håndskrevet HTML, der nettleseren laster filene direkte. Bruker du bundles,
-React, Astro eller Datastar, eller lager serveren markupen, er det en annen fil
-i denne mappa som gjelder.`,
-    stilarkRegel: `**Én \`<link>\` til \`lotek.css\`, før alt annet.**
-   Mangler den, ser komponentene ustilte ut. Svaret er da å legge inn lenka,
-   aldri å skrive egen CSS for å få dem til å se riktige ut.`,
-    punktFire: `**Web components registreres én gang med \`defineLt*()\`** i en
-   \`<script type="module">\`, og et boolsk attributt er sant så lenge det står
-   der: \`hidden="false"\` skjuler feilmeldingen likevel.`,
-    registreringRegel: `**\`defineLt*()\` kjøres én gang** i en
-   \`<script type="module">\` i sidemalen, før elementet brukes, ikke én gang
-   per komponent.`,
+    tittel: "LO-TEK in plain HTML",
+    innledning: `The rulebook for LO-TEK in a project without a build step:
+hand-written HTML, where the browser loads the files directly. If you use a
+bundler, React, Astro or Datastar, or the server produces the markup, another
+file in this folder applies.`,
+    stilarkRegel: `**One \`<link>\` to \`lotek.css\`, before everything else.**
+   Without it, the components look unstyled. The answer is then to add the
+   link, never to write your own CSS to make them look right.`,
+    punktFire: `**Web components are registered once with \`defineLt*()\`** in a
+   \`<script type="module">\`, and a boolean attribute is true as long as it is
+   there: \`hidden="false"\` still hides the error text.`,
+    registreringRegel: `**\`defineLt*()\` runs once** in a
+   \`<script type="module">\` in the page template, before the element is used,
+   not once per component.`,
     adresse: URL_TIL,
-    sjekk: "npx @lo-tek/interfaces sjekk side.html",
-    stilark: `## 1. Stilarket
+    sjekk: "npx @lo-tek/interfaces check page.html",
+    stilark: `## 1. The stylesheet
 
-Én fil med alt, og det enkleste og raskeste uten bundles:
+One file with everything, the simplest and fastest option without a bundler:
 
 \`\`\`html
 <link rel="stylesheet" href="${cdnTil("lotek.css")}">
 \`\`\`
 
-Eller fra \`node_modules\`, hvis du serverer mappa:
+Or from \`node_modules\`, if you serve the folder:
 
 \`\`\`html
 <link rel="stylesheet" href="/node_modules/@lo-tek/interfaces/dist/lotek.css">
 \`\`\`
 
-\`lotek.css\` er ${SAMLET_STØRRELSE}, og har alle
-komponentene. Velg den. Alternativet er ett stilark per komponent, og da gjelder
-at ${TOKENS_FØRST}
+\`lotek.css\` is ${SAMLET_STØRRELSE}, and has all the components. Choose it.
+The alternative is one stylesheet per component, and then ${TOKENS_FØRST}
 
 \`\`\`html
 <link rel="stylesheet" href="${cdnTil("tokens.css")}">
 <link rel="stylesheet" href="${cdnTil("button.css")}">
 \`\`\`
 
-De enkelte stilarkene henter delene sine med \`@import\`, som nettleseren først
-ser når fila er lastet. \`dist/lotek.css\` har alt flatet ut, uten
-\`@import\`, og er derfor raskere når du lenker.`,
-    markup: `## 5. Et helt skjema
+The individual stylesheets fetch their parts with \`@import\`, which the
+browser only sees once the file has loaded. \`dist/lotek.css\` has everything
+flattened, without \`@import\`, and is therefore faster when you link.`,
+    markup: `## 5. A whole form
 
 \`\`\`html
 <link rel="stylesheet" href="${cdnTil("lotek.css")}">
 
-<form id="kontaktskjema" novalidate>
+<form id="contact-form" novalidate>
   <lt-field>
-    <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
-    <input class="lt-input" id="navn" type="text" name="navn" required />
-    <p class="lt-error-text" hidden>Fyll inn navnet ditt.</p>
+    <label class="lt-label" for="name" data-required="symbol">Full name</label>
+    <input class="lt-input" id="name" type="text" name="name" required />
+    <p class="lt-error-text" hidden>Enter your name.</p>
   </lt-field>
 
   <button class="lt-button" type="submit">Send</button>
@@ -438,29 +447,30 @@ ser når fila er lastet. \`dist/lotek.css\` har alt flatet ut, uten
 </script>
 \`\`\`
 
-Feltet blir ugyldig når feilmeldingen vises, ikke ved å bytte klasse:
+The field becomes invalid when the error text shows, not by switching a class:
 
 \`\`\`js
-const navn = document.getElementById("navn")
-const feil = navn.closest("lt-field").querySelector(".lt-error-text")
+const name = document.getElementById("name")
+const error = name.closest("lt-field").querySelector(".lt-error-text")
 
-feil.hidden = navn.value.trim() !== ""
+error.hidden = name.value.trim() !== ""
 \`\`\`
 
-TypeScript hører ikke hjemme i en \`<script type="module">\`. Taggen kjøres av
-nettleseren som vanlig JavaScript, og \`hendelse as CustomEvent<…>\` gir
-\`SyntaxError\` som stopper hele skriptet.`,
-    ekstra: `## 6. Sjekk det du har skrevet
+TypeScript does not belong in a \`<script type="module">\`. The browser runs
+the tag as plain JavaScript, and \`event as CustomEvent<…>\` gives a
+\`SyntaxError\` that stops the whole script.`,
+    ekstra: `## 6. Check what you have written
 
 \`\`\`bash
-npx @lo-tek/interfaces sjekk side.html
+npx @lo-tek/interfaces check page.html
 \`\`\`
 
-Mønsteret utvides av skallet, så det skal ikke stå i hermetegn: kommandoen
-leser hvert argument som en filsti og utvider ingenting selv. Ett funn gir
-feilkode, så den kan stå i CI. Den fanger et element som ikke
-finnes, et attributt elementet ikke har, en verdi utenfor lista, \`lt-buton\`,
-\`data-variant="secundary"\`, og \`<lt-field>\` uten kontroll eller ledetekst.
+The shell expands the pattern, so it must not be in quotes: the command reads
+each argument as a file path and expands nothing itself. One finding gives an
+error code, so it can run in CI. It catches an element that does not exist,
+an attribute the element does not have, a value outside the list,
+\`lt-buton\`, \`data-variant="secundary"\`, and \`<lt-field>\` without a
+control or a label.
 
 ${SJEKK_I_TESTER}`,
     fallgruver: [
@@ -474,73 +484,76 @@ ${SJEKK_I_TESTER}`,
   {
     navn: "templates",
     stilarkAdresse: STILARK_URL,
-    tittel: "LO-TEK i maler og serverskrevet HTML",
-    innledning: `Regelboka for LO-TEK der serveren lager markupen: Go-maler,
-Razor, PHP, Blade, Twig, Jinja, Django, ERB, Liquid, Handlebars, Nunjucks og
-Edge, og HTML bygget som strenger i Kotlin, Java, C# eller Python.
+    tittel: "LO-TEK in templates and server-written HTML",
+    innledning: `The rulebook for LO-TEK where the server produces the markup:
+Go templates, Razor, PHP, Blade, Twig, Jinja, Django, ERB, Liquid, Handlebars,
+Nunjucks and Edge, and HTML built as strings in Kotlin, Java, C# or Python.
 
-Dette er miljøet LO-TEK er laget for. Komponentene er CSS-klasser og web
-components, altså ting nettleseren forstår direkte, så en Go-mal får de samme
-komponentene som en React-app uten å ta inn noe JavaScript-rammeverk.
+This is the environment LO-TEK is made for. The components are CSS classes
+and web components, that is, things the browser understands directly, so a
+Go template gets the same components as a React app without taking in any
+JavaScript framework.
 
-Det er også miljøet med minst sikkerhetsnett. Ingen kompilator ser på
-attributtene i en mal, og ingen type stopper \`data-variant="outlined"\`. Derfor
-gjelder punkt 5 strengere her enn noe annet sted: sjekken er det eneste som
-leser markupen din.`,
-    stilarkRegel: `**Én \`<link>\` til \`lotek.css\` i sidemalen,** én gang
-   for hele appen. Mangler den, ser komponentene ustilte ut. Svaret er da å
-   legge inn lenka, aldri å skrive egen CSS for å få dem til å se riktige ut.`,
-    punktFire: `**Web components registreres én gang med \`defineLt*()\`** i
-   sidemalen, og et boolsk attributt er sant så lenge det står der. I en mal
-   betyr det en betingelse rundt hele attributtet,
-   \`{{if .Laast}}disabled{{end}}\`, ikke \`disabled="{{.Laast}}"\`.`,
-    registreringRegel: `**\`defineLt*()\` kjøres én gang** i sidemalen, ikke én
-   gang per komponent.`,
+It is also the environment with the smallest safety net. No compiler looks at
+the attributes in a template, and no type stops \`data-variant="outlined"\`.
+That is why item 5 applies more strictly here than anywhere else: the check is
+the only thing that reads your markup.`,
+    stilarkRegel: `**One \`<link>\` to \`lotek.css\` in the page template,** once
+   for the whole app. Without it, the components look unstyled. The answer is
+   then to add the link, never to write your own CSS to make them look right.`,
+    punktFire: `**Web components are registered once with \`defineLt*()\`** in
+   the page template, and a boolean attribute is true as long as it is there.
+   In a template that means a condition around the whole attribute,
+   \`{{if .Locked}}disabled{{end}}\`, not \`disabled="{{.Locked}}"\`.`,
+    registreringRegel: `**\`defineLt*()\` runs once** in the page template, not
+   once per component.`,
     adresse: URL_TIL,
-    sjekk: "npx @lo-tek/interfaces sjekk templates/*.html",
-    stilark: `## 1. Stilarket
+    sjekk: "npx @lo-tek/interfaces check templates/*.html",
+    stilark: `## 1. The stylesheet
 
-Én lenke i sidemalen, med alle komponentene:
+One link in the page template, with all the components:
 
 \`\`\`html
 <link rel="stylesheet" href="${cdnTil("lotek.css")}">
 \`\`\`
 
-Eller fra egen server, hvis du kopierer fila inn i de statiske ressursene dine.
-\`lotek.css\` er ${SAMLET_STØRRELSE}, og har alt flatet ut
-uten \`@import\`, og er det raskeste valget når du lenker.
+Or from your own server, if you copy the file into your static assets.
+\`lotek.css\` is ${SAMLET_STØRRELSE}, has everything flattened without
+\`@import\`, and is the fastest option when you link.
 
-Vil du bare ha stilarkene sidene faktisk bruker, gjelder at ${TOKENS_FØRST}
-Deretter ett stilark per komponent, fra tabellene under. Uten bundles er det
-flere rundturer, og én glemt lenke er nok til at noe ser ustilt ut. For en mal
-er én fil nesten alltid riktig valg.`,
-    markup: `## 5. Et felt i en mal
+If you want only the stylesheets the pages actually use, ${TOKENS_FØRST}
+After that, one stylesheet per component, from the tables below. Without a
+bundler that means more round trips, and one forgotten link is enough for
+something to look unstyled. For a template, one file is nearly always the
+right choice.`,
+    markup: `## 5. A field in a template
 
 \`\`\`html
 <lt-field>
-  <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
-  <input class="lt-input" id="navn" type="text" name="navn" value="{{.Navn}}" required />
-  {{if .Feil}}<p class="lt-error-text">{{.Feil}}</p>{{end}}
+  <label class="lt-label" for="name" data-required="symbol">Full name</label>
+  <input class="lt-input" id="name" type="text" name="name" value="{{.Name}}" required />
+  {{if .Error}}<p class="lt-error-text">{{.Error}}</p>{{end}}
 </lt-field>
 \`\`\`
 
-Feilmeldingen rendres bare når feltet er ugyldig, og det er nok: komponenten
-regner feltet som ugyldig når feilmeldingen synes. \`value\` skrives alltid,
-så det brukeren skrev står igjen når serveren sender skjemaet tilbake.
+The error text is rendered only when the field is invalid, and that is
+enough: the component counts the field as invalid when the error text is
+visible. \`value\` is always written, so what the user typed is still there
+when the server sends the form back.
 
-I en løkke kommer id-en fra en nøkkel i dataene, aldri fra indeksen eller en
-teller:
+In a loop the id comes from a key in the data, never from the index or a
+counter:
 
 \`\`\`html
-{{range .Kommuner}}
+{{range .Municipalities}}
 <lt-field>
-  <label for="merknad-{{.Kode}}">{{.Navn}}</label>
-  <input class="lt-input" id="merknad-{{.Kode}}" name="merknad-{{.Kode}}" value="{{.Merknad}}" />
+  <label for="note-{{.Code}}">{{.Name}}</label>
+  <input class="lt-input" id="note-{{.Code}}" name="note-{{.Code}}" value="{{.Note}}" />
 </lt-field>
 {{end}}
 \`\`\`
 
-Registreringen, én gang i sidemalen:
+The registration, once in the page template:
 
 \`\`\`html
 <script type="module">
@@ -550,70 +563,74 @@ Registreringen, én gang i sidemalen:
   defineLtField()
 </script>
 \`\`\``,
-    ekstra: `## 6. Når serveren sender ny HTML
+    ekstra: `## 6. When the server sends new HTML
 
-Patcher du siden underveis, med htmx, Turbo, Datastar eller en egen
-\`innerHTML\`-oppdatering, er spørsmålet hvem som bestemmer tilstanden. Som
-standard gjør web-komponenten det: \`<lt-tabs>\` husker fanen brukeren valgte, og setter den
-tilbake når en patch river markeringen bort. Malen trenger ingenting for det.
+If you patch the page as it runs, with htmx, Turbo, Datastar or your own
+\`innerHTML\` update, the question is what decides the state. By default the
+web component does: \`<lt-tabs>\` remembers the tab the user selected, and puts
+it back when a patch tears the selection away. The template needs nothing
+for that.
 
-Det forutsetter at patchen beholder elementene og bare endrer attributtene,
-slik en morfing gjør: Datastars \`outer\`, htmx med idiomorph-utvidelsen og
-Turbo 8 med morfing. Valget er knyttet til selve lenken. Bytter patchen ut
-nodene, som \`innerHTML\`, htmx' vanlige \`innerHTML\`- og \`outerHTML\`-bytte og
-Turbo uten morfing gjør, er fanen en annen, og komponenten velger den adressen
-peker på, ellers den serveren skjulte de andre panelene for, ellers den første.
-Vil serveren bestemme, skriver den \`hidden="until-found"\` på de andre
-panelene, eller bestemmer tilstanden alene med \`server-controlled\`.
+This assumes the patch keeps the elements and only changes the attributes,
+as a morph does: Datastar's \`outer\`, htmx with the idiomorph extension and
+Turbo 8 with morphing. The selection is tied to the link itself. If the patch
+replaces the nodes, as \`innerHTML\`, htmx's ordinary \`innerHTML\` and
+\`outerHTML\` swaps and Turbo without morphing do, the tab is a different one,
+and the component selects the one the URL points to, otherwise the one the
+server hid the other panels for, otherwise the first. If the server wants to
+decide, it writes \`hidden="until-found"\` on the other panels, or decides the
+state alone with \`server-controlled\`.
 
-En morfing beholder et element bare når id-en stemmer: Datastar og idiomorph
-morfer ikke et element med id inn i et uten, de bytter det ut. Komponentene
-skriver derfor aldri id på det brukeren rører: feltet i \`<lt-field>\` og
-\`<lt-suggestion>\`, og fanene i \`<lt-tabs>\`. Skriv \`for\` på ledeteksten og
-\`id\` på feltet, eller legg ledeteksten rundt feltet. Fanene er lenker uten
-id, og panelene har den id-en lenken peker på, den samme ved hver rendring.
-Panelet i \`<lt-popover>\` trenger id på samme måte, for \`aria-controls\` på
-knappen; komponenten lager ingen. Lista og alternativene i \`<lt-suggestion>\` kan byttes ut;
-komponenten kobler dem på nytt og finner det markerte alternativet igjen på
-teksten. Komponenten sier fra i konsollen første gang en patch bytter ut noe
-brukeren hadde rørt.
+A morph keeps an element only when the id matches: Datastar and idiomorph do
+not morph an element with an id into one without, they replace it. The
+components therefore never write an id on what the user touches: the field in
+\`<lt-field>\` and \`<lt-suggestion>\`, and the tabs in \`<lt-tabs>\`. Write
+\`for\` on the label and \`id\` on the field, or wrap the field in the label.
+The tabs are links without an id, and the panels have the id the link points
+to, the same on every render. The panel in \`<lt-popover>\` needs an id in the
+same way, for \`aria-controls\` on the button; the component creates none. The
+list and the options in \`<lt-suggestion>\` can be replaced; the component
+wires them again and finds the highlighted option again by its text. The
+component warns in the console the first time a patch replaces something the
+user had touched.
 
-Skal serveren kunne flytte tilstanden, som i «gå videre til steg 2», sier du det
-med \`server-controlled\`. Da bestemmer hver patch, og komponenten slutter å
-sette brukerens valg tilbake:
+If the server should be able to move the state, as in "go on to step 2", say
+so with \`server-controlled\`. Then every patch decides, and the component
+stops putting the user's choice back:
 
 \`\`\`html
 <lt-tabs server-controlled>
-  <ul class="lt-tabs__list" aria-label="Deler av saken">
-    <li><a href="#soknaden">Søknaden</a></li>
-    <li><a href="#vedlegg">Vedlegg</a></li>
+  <ul class="lt-tabs__list" aria-label="Parts of the case">
+    <li><a href="#application">Application</a></li>
+    <li><a href="#attachments">Attachments</a></li>
   </ul>
-  <section class="lt-tabs__panel" id="soknaden">…</section>
-  <section class="lt-tabs__panel" id="vedlegg" hidden="until-found">…</section>
+  <section class="lt-tabs__panel" id="application">…</section>
+  <section class="lt-tabs__panel" id="attachments" hidden="until-found">…</section>
 </lt-tabs>
 \`\`\`
 
-Attributtet finnes på \`<lt-tabs>\`, \`<lt-popover>\`, \`<lt-dialog>\` og
-\`<lt-suggestion>\`. Uten det ville serveren og komponenten kjempet om samme
-tilstand. Merk at tilstanden alltid står i markupen serveren sendte, altså
-\`aria-selected\` på fanen, \`hidden\` på panelet, ikke i et eget attributt.
+The attribute exists on \`<lt-tabs>\`, \`<lt-popover>\`, \`<lt-dialog>\` and
+\`<lt-suggestion>\`. Without it the server and the component would fight over
+the same state. Note that the state is always in the markup the server sent,
+that is, \`aria-selected\` on the tab and \`hidden\` on the panel, not in an
+attribute of its own.
 
-## 7. Sjekken er det eneste som leser markupen din
+## 7. The check is the only thing that reads your markup
 
 \`\`\`bash
-npx @lo-tek/interfaces sjekk templates/*.html
+npx @lo-tek/interfaces check templates/*.html
 \`\`\`
 
-Ett funn gir feilkode, så den hører i CI ved siden av testene. Den fanger
-\`lt-buton\`, \`data-variant="secundary"\`, \`<lt-modal>\` og \`<lt-field>\`
-uten kontroll eller ledetekst.
+One finding gives an error code, so it belongs in CI next to the tests. It
+catches \`lt-buton\`, \`data-variant="secundary"\`, \`<lt-modal>\` and
+\`<lt-field>\` without a control or a label.
 
-Den er laget for maler. Kommentarer, \`<script>\` og \`<style>\` hoppes over, og
-\`<?…?>\` og \`<%…%>\` inne i en tagg avslutter den ikke før tiden. Disse er
-etterprøvde og gir ingen falske funn:
+It is made for templates. Comments, \`<script>\` and \`<style>\` are skipped,
+and \`<?…?>\` and \`<%…%>\` inside a tag do not end it early. These are
+tested and give no false findings:
 
 \`\`\`html
-<button class="lt-button {{.Ekstra}}">Send</button>
+<button class="lt-button {{.Extra}}">Send</button>
 <button class="lt-button" data-variant="{{.Variant}}">Send</button>
 <span class="lt-badge" data-color="{% if x %}danger{% endif %}">1</span>
 <button class="lt-button" data-variant="<?= $variant ?>">Send</button>
@@ -623,21 +640,21 @@ etterprøvde og gir ingen falske funn:
 
 ${SJEKK_I_TESTER}
 
-Sjekken finnes også i editoren mens du skriver. VS Code-utvidelsen «LO-TEK»
-gir fullføring, forklaring, feilmeldinger og hurtigrettelser i seksten
-malspråk. WebStorm og IntelliJ IDEA Ultimate leser \`web-types.json\` fra
-pakken uten noen utvidelse, og pluginen «LO-TEK» fra JetBrains Marketplace
-legger til feilmeldingene og fullføring i HTML i en streng merket med
-\`@Language("HTML")\` eller \`// language=HTML\`.
+The check is also in the editor as you type. The VS Code extension "LO-TEK"
+gives completion, explanations, error messages and quick fixes in sixteen
+template languages. WebStorm and IntelliJ IDEA Ultimate read
+\`web-types.json\` from the package without any extension, and the plugin
+"LO-TEK" from JetBrains Marketplace adds the error messages and completion in
+HTML in a string marked with \`@Language("HTML")\` or \`// language=HTML\`.
 
-På JVM-en uten Node finnes LO-TEK for Kotlin
-(https://lo-tek.sobernetics.no/kotlin/). \`lotek.jar\` er kommandolinja
-som \`java -jar lotek.jar sjekk\`, og ligger ved hver utgivelse på
-GitHub: https://github.com/MarkusAugust/lo-tek/releases/latest. Maven-pakken
-\`io.github.markusaugust:lo-tek-interfaces\` med \`assertLotek(html)\` og Gradle-pluginen
-\`io.github.markusaugust.lo-tek\` ligger på Maven Central, med samme versjon
-som npm-pakken. Ikke hver npm-versjon finnes på Maven: bruk den nyeste som
-finnes der, og skriv aldri en \`version\` du ikke har sett på Central.`,
+On the JVM without Node there is LO-TEK for Kotlin
+(https://lo-tek.sobernetics.no/kotlin/). \`lotek.jar\` is the command line as
+\`java -jar lotek.jar check\`, and is attached to every release on GitHub:
+https://github.com/MarkusAugust/lo-tek/releases/latest. The Maven package
+\`io.github.markusaugust:lo-tek-interfaces\` with \`assertLotek(html)\` and the
+Gradle plugin \`io.github.markusaugust.lo-tek\` are on Maven Central, with the
+same version as the npm package. Not every npm version is on Maven: use the
+newest one there, and never write a \`version\` you have not seen on Central.`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
@@ -650,50 +667,51 @@ finnes der, og skriv aldri en \`version\` du ikke har sett på Central.`,
   {
     navn: "bundles",
     stilarkAdresse: STILARK_PAKKE,
-    tittel: "LO-TEK med bundles",
-    innledning: `Regelboka for LO-TEK i et prosjekt med et byggesteg, der
-markupen er vanlig HTML: Vue, Svelte, Solid, Lit, og vanlig TypeScript med Vite,
-Rollup, esbuild eller webpack.
+    tittel: "LO-TEK with a bundler",
+    innledning: `The rulebook for LO-TEK in a project with a build step, where
+the markup is ordinary HTML: Vue, Svelte, Solid, Lit, and plain TypeScript
+with Vite, Rollup, esbuild or webpack.
 
-Det disse har til felles er de tre tingene som betyr noe her: stilarkene
-importeres i inngangsmodulen, attributtene heter det de heter i HTML, og
-\`defineLt*()\` kjøres øverst i \`main.ts\`. Skriver du React, er attributtnavnene
-annerledes og \`react.md\` gjelder i stedet. Skriver du Astro, importeres
-stilarkene i frontmatteret og \`astro.md\` gjelder.`,
-    stilarkRegel: `**Importer stilarkene i inngangsmodulen**, \`tokens.css\`
-   først. Mangler de, ser komponentene ustilte ut. Svaret er da å legge inn
-   importen, aldri å skrive egen CSS for å få dem til å se riktige ut.`,
-    punktFire: `**\`defineLt*()\` kjøres øverst i \`main.ts\`,** ikke i en
-   livsløpskrok, og et boolsk attributt er sant så lenge det står der. Sjekk at
-   det som havner i DOM-en ikke er \`hidden="false"\`: attributtet må fjernes,
-   ikke settes til \`false\`.`,
-    registreringRegel: `**\`defineLt*()\` kjøres én gang** øverst i
-   inngangsmodulen, før appen monteres.`,
+What these have in common are the three things that matter here: the
+stylesheets are imported in the entry module, the attributes have their HTML
+names, and \`defineLt*()\` runs at the top of \`main.ts\`. If you write React,
+the attribute names differ and \`react.md\` applies instead. If you write
+Astro, the stylesheets are imported in the frontmatter and \`astro.md\`
+applies.`,
+    stilarkRegel: `**Import the stylesheets in the entry module**, \`tokens.css\`
+   first. Without them, the components look unstyled. The answer is then to
+   add the import, never to write your own CSS to make them look right.`,
+    punktFire: `**\`defineLt*()\` runs at the top of \`main.ts\`,** not in a
+   lifecycle hook, and a boolean attribute is true as long as it is there.
+   Check that what ends up in the DOM is not \`hidden="false"\`: the attribute
+   must be removed, not set to \`false\`.`,
+    registreringRegel: `**\`defineLt*()\` runs once** at the top of the entry
+   module, before the app is mounted.`,
     adresse: PAKKENAVN,
-    sjekk: "npx @lo-tek/interfaces sjekk src/komponenter/*.vue",
-    stilark: `## 1. Stilarkene
+    sjekk: "npx @lo-tek/interfaces check src/components/*.vue",
+    stilark: `## 1. The stylesheets
 
-${TOKENS_FØRST} Deretter ett per komponent du bruker, så en side med bare knapper
-ikke laster CSS for en dialog:
+${TOKENS_FØRST} After that, one per component you use, so a page with only
+buttons does not load CSS for a dialog:
 
 \`\`\`ts
-// main.ts, øverst
+// main.ts, at the top
 import "@lo-tek/interfaces/tokens.css"
 import "@lo-tek/interfaces/button.css"
 import "@lo-tek/interfaces/field.css"
 \`\`\`
 
-Navnet på hvert stilark står i tabellene under. Pakken har ingen avhengigheter,
-og ingenting registreres ved import alene, så en side som bare bruker
-CSS-komponentene tar ikke med JavaScript fra pakken.
+The name of each stylesheet is in the tables below. The package has no
+dependencies, and nothing is registered by import alone, so a page that only
+uses the CSS components takes no JavaScript from the package.
 
-Trenger du alt i én fil, finnes \`@lo-tek/interfaces/lotek.css\`, men med
-bundles er det sjelden riktig: da laster du CSS for komponenter siden ikke
-bruker.`,
-    markup: `## 5. Registrering og markup
+If you need everything in one file, there is
+\`@lo-tek/interfaces/lotek.css\`, but with a bundler it is rarely right: you
+then load CSS for components the page does not use.`,
+    markup: `## 5. Registration and markup
 
 \`\`\`ts
-// main.ts, øverst, ikke i en livsløpskrok
+// main.ts, at the top, not in a lifecycle hook
 import "@lo-tek/interfaces/tokens.css"
 import "@lo-tek/interfaces/field.css"
 import { defineLtField } from "@lo-tek/interfaces/field"
@@ -701,29 +719,30 @@ import { defineLtField } from "@lo-tek/interfaces/field"
 defineLtField()
 \`\`\`
 
-Kallet står i modulen, ikke i \`mounted\`, \`onMount\` eller en effekt. En krok
-kjører etter første tegning, og elementene i markupen er da vanlige
-\`HTMLElement\` i det rammeverket tegner dem, og et kall på \`show()\` eller
-\`reportFailure()\` før kroken feiler med «is not a function».
+The call is in the module, not in \`mounted\`, \`onMount\` or an effect. A hook
+runs after the first paint, so the elements in the markup are plain
+\`HTMLElement\`s when the framework renders them, and a call to \`show()\` or
+\`reportFailure()\` before the hook fails with "is not a function".
 
-Markupen er vanlig HTML, i malen rammeverket ditt bruker:
+The markup is ordinary HTML, in whatever template your framework uses:
 
 \`\`\`html
 <lt-field>
-  <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
-  <input class="lt-input" id="navn" type="text" name="navn" required />
-  <p class="lt-error-text" hidden>Fyll inn navnet ditt.</p>
+  <label class="lt-label" for="name" data-required="symbol">Full name</label>
+  <input class="lt-input" id="name" type="text" name="name" required />
+  <p class="lt-error-text" hidden>Enter your name.</p>
 </lt-field>
 
 <button class="lt-button" type="submit">Send</button>
 \`\`\`
 
-\`class\` og \`for\`, ikke \`className\` og \`htmlFor\`. Det er React som skriver
-om attributtnavnene, og det gjelder ikke her.`,
-    ekstra: `## 6. Typede byggefunksjoner
+\`class\` and \`for\`, not \`className\` and \`htmlFor\`. It is React that
+rewrites the attribute names, and that does not apply here.`,
+    ekstra: `## 6. Typed builder functions
 
-Har prosjektet TypeScript, kan klassene komme fra \`lt\` i stedet for å skrives
-som strenger. Da blir en variant som ikke finnes en kompileringsfeil:
+If the project has TypeScript, the classes can come from \`lt\` instead of
+being written as strings. A variant that does not exist then becomes a
+compile error:
 
 \`\`\`ts
 import { lt } from "@lo-tek/interfaces"
@@ -732,44 +751,45 @@ lt.button({ variant: "secondary" })
 // { class: "lt-button", "data-variant": "secondary" }
 \`\`\`
 
-Byggefunksjonene gir et objekt med HTML-attributtnavn, som spres inn der malspråket
-støtter spredning, eller leses ut felt for felt. De ${antallByggefunksjoner()}
-byggefunksjonene:
+The builder functions return an object with HTML attribute names, which is
+spread in where the template language supports spreading, or read out field
+by field. The ${antallByggefunksjoner()} builder functions:
 
 ${byggefunksjoner()}
 
-Der malspråket ikke kan spre et objekt, setter \`lt.setAttributes()\`
-attributtene på et element i vanlig DOM:
+Where the template language cannot spread an object, \`lt.setAttributes()\`
+sets the attributes on an element in plain DOM:
 
 \`\`\`ts
-const felt = document.querySelector<HTMLInputElement>("#epost")
-const kobling = lt.field({ id: "epost", error: true, invalid: true })
+const field = document.querySelector<HTMLInputElement>("#email")
+const wiring = lt.field({ id: "email", error: true, invalid: true })
 
-lt.setAttributes(felt, lt.input({ type: "email" }), kobling.control)
+lt.setAttributes(field, lt.input({ type: "email" }), wiring.control)
 \`\`\`
 
-Kall den på nytt for å endre tilstand. Tre regler:
+Call it again to change state. Three rules:
 
-- **Har byggefunksjonen et valg for et attributt, tar et kall uten valget
-  attributtet bort.** Send derfor valgene på nytt hver gang.
-  \`lt.spinner()\` uten \`label\` fjerner \`role\` og \`aria-label\`.
-- **Det byggefunksjonen ikke har et valg for, står.** \`lt.button()\` rører
-  ikke \`disabled\` eller \`type\`. \`id\` og \`for\` fjernes aldri.
-- **To sett på samme element sendes hver for seg**, som over. Spres de sammen
-  til ett objekt, \`{ ...lt.input(), ...kobling.control }\`, settes
-  attributtene, men bare \`data-*\` ryddes ved neste kall.
+- **When the builder function has an option for an attribute, a call without
+  the option removes the attribute.** So pass the options again every time.
+  \`lt.spinner()\` without \`label\` removes \`role\` and \`aria-label\`.
+- **What the builder function has no option for stays.** \`lt.button()\`
+  does not touch \`disabled\` or \`type\`. \`id\` and \`for\` are never removed.
+- **Two sets on the same element are passed separately**, as above. If they
+  are spread together into one object, \`{ ...lt.input(), ...wiring.control }\`,
+  the attributes are set, but only \`data-*\` is cleaned up on the next call.
 
-## 7. Sjekk markupen
+## 7. Check the markup
 
 \`\`\`bash
-npx @lo-tek/interfaces sjekk src/komponenter/*.vue
+npx @lo-tek/interfaces check src/components/*.vue
 \`\`\`
 
-Sjekken leser filer som tekst, så den virker på \`.vue\`, \`.svelte\`, \`.html\`
-og hva malen din nå ligger i. Ett funn gir feilkode, så den hører i CI. Den
-fanger \`lt-buton\`, \`data-variant="secundary"\`, \`<lt-modal>\` og
-\`<lt-field>\` uten kontroll eller ledetekst, altså alt det typene ikke ser, fordi
-markupen din er en streng for kompilatoren.
+The check reads files as text, so it works on \`.vue\`, \`.svelte\`, \`.html\`
+and whatever your templates happen to live in. One finding gives an error
+code, so it belongs in CI. It catches \`lt-buton\`,
+\`data-variant="secundary"\`, \`<lt-modal>\` and \`<lt-field>\` without a
+control or a label, that is, everything the types do not see, because your
+markup is a string to the compiler.
 
 ${SJEKK_I_TESTER}`,
     fallgruver: [
@@ -783,50 +803,49 @@ ${SJEKK_I_TESTER}`,
   {
     navn: "react",
     stilarkAdresse: STILARK_PAKKE,
-    tittel: "LO-TEK i React",
-    innledning: `Regelboka for LO-TEK i en React-app.
+    tittel: "LO-TEK in React",
+    innledning: `The rulebook for LO-TEK in a React app.
 
-React skiller seg fra alle de andre miljøene på én ting, og den er viktig nok
-til å ha sin egen fil: React skriver om attributtnavnene. \`class\` heter
-\`className\` og \`for\` heter \`htmlFor\`, og bruker du byggefunksjonene fra
-hovedinngangen skriver React «Invalid DOM property» i konsollen for hvert
-element. Derfor har pakken en egen React-inngang.`,
-    stilarkRegel: `**Importer stilarkene i \`main.tsx\`**, \`tokens.css\`
-   først. Mangler de, ser komponentene ustilte ut. Svaret er da å legge inn
-   importen, aldri å skrive egen CSS for å få dem til å se riktige ut.`,
-    punktFire: `**\`defineLt*()\` kjøres øverst i \`main.tsx\`,** ikke i en
-   \`useEffect\`, og et boolsk attributt på en web component settes som
-   \`open={åpen || undefined}\`. De to andre skrivemåtene er feil i én av
-   React-versjonene hver.`,
-    registreringRegel: `**\`defineLt*()\` kjøres én gang** øverst i modulen, før
-   \`createRoot\`, ikke i en \`useEffect\`.`,
+React differs from all the other environments in one thing, and it matters
+enough to have its own file: React rewrites the attribute names. \`class\` is
+\`className\` and \`for\` is \`htmlFor\`, and if you use the builder functions
+from the main entry, React prints "Invalid DOM property" in the console for
+every element. That is why the package has a React entry of its own.`,
+    stilarkRegel: `**Import the stylesheets in \`main.tsx\`**, \`tokens.css\`
+   first. Without them, the components look unstyled. The answer is then to
+   add the import, never to write your own CSS to make them look right.`,
+    punktFire: `**\`defineLt*()\` runs at the top of \`main.tsx\`,** not in a
+   \`useEffect\`, and a boolean attribute on a web component is set as
+   \`open={isOpen || undefined}\`. The two other ways of writing it are each
+   wrong in one of the React versions.`,
+    registreringRegel: `**\`defineLt*()\` runs once** at the top of the module,
+   before \`createRoot\`, not in a \`useEffect\`.`,
     adresse: PAKKENAVN,
-    sjekk: "npx @lo-tek/interfaces sjekk src/*.tsx",
-    punktFem: `**Typene er sjekken din.** \`lt.button({ variant })\` fra
-   \`@lo-tek/interfaces/react\` gjør en variant som ikke finnes til en
-   kompileringsfeil, og \`@lo-tek/interfaces/react-jsx\`, importert én
-   gang i en \`.d.ts\`-fil, gjør det samme for attributtene på
-   web-komponentene. Kjør \`tsc\`. En håndskrevet \`className\` eller
-   \`data-variant\` ser ingen av dem, og heller ikke
-   \`npx @lo-tek/interfaces sjekk\`, som leser \`class\`, ikke
-   \`className\`, så bruk byggefunksjonene. HTML og maler sjekkes med
-   \`npx @lo-tek/interfaces sjekk <fil>\`.`,
-    stilark: `## 1. Stilarkene
+    sjekk: "npx @lo-tek/interfaces check src/*.tsx",
+    punktFem: `**The types are your check.** \`lt.button({ variant })\` from
+   \`@lo-tek/interfaces/react\` turns a variant that does not exist into a
+   compile error, and \`@lo-tek/interfaces/react-jsx\`, imported once in a
+   \`.d.ts\` file, does the same for the attributes on the web components.
+   Run \`tsc\`. A hand-written \`className\` or \`data-variant\` is seen by
+   neither of them, nor by \`npx @lo-tek/interfaces check\`, which reads
+   \`class\`, not \`className\`, so use the builder functions. HTML and
+   templates are checked with \`npx @lo-tek/interfaces check <file>\`.`,
+    stilark: `## 1. The stylesheets
 
-${TOKENS_FØRST} Deretter ett per komponent du bruker:
+${TOKENS_FØRST} After that, one per component you use:
 
 \`\`\`tsx
-// main.tsx, øverst
+// main.tsx, at the top
 import "@lo-tek/interfaces/tokens.css"
 import "@lo-tek/interfaces/field.css"
 import "@lo-tek/interfaces/button.css"
 \`\`\`
 
-Navnet på hvert stilark står i tabellene under.`,
-    markup: `## 5. Registrering, typer og bruk
+The name of each stylesheet is in the tables below.`,
+    markup: `## 5. Registration, types and use
 
 \`\`\`tsx
-// main.tsx, kjøres én gang når appen starter
+// main.tsx, runs once when the app starts
 import "@lo-tek/interfaces/tokens.css"
 import "@lo-tek/interfaces/field.css"
 import "@lo-tek/interfaces/button.css"
@@ -835,54 +854,55 @@ import { defineLt } from "@lo-tek/interfaces/register"
 defineLt()
 \`\`\`
 
-Kallet står øverst i modulen, ikke i en \`useEffect\`. En effekt kjører etter
-første tegning, så elementene er vanlige \`HTMLElement\` i det React tegner dem,
-og et kall på \`show()\` eller \`reportFailure()\` før effekten feiler med «is not
-a function». Funksjonen gjør ingenting på en server, så den kan stå i en
-rotmodul som kjøres begge steder. Brukes bare én komponent, har den sin egen
-funksjon, som \`defineLtTabs()\` i \`@lo-tek/interfaces/tabs\`.
+The call is at the top of the module, not in a \`useEffect\`. An effect runs
+after the first paint, so the elements are plain \`HTMLElement\`s when React
+renders them, and a call to \`show()\` or \`reportFailure()\` before the effect
+fails with "is not a function". The function does nothing on a server, so it
+can sit in a root module that runs in both places. If you use only one
+component, it has its own function, such as \`defineLtTabs()\` in
+\`@lo-tek/interfaces/tabs\`.
 
 \`\`\`ts
-// src/lotek.d.ts, gir web-komponentene typer i JSX
+// src/lotek.d.ts, gives the web components types in JSX
 import "@lo-tek/interfaces/react-jsx"
 \`\`\`
 
-Et felt skrives med \`lt.field()\`. Koblingen står da i markupen React selv
-rendrer, på serveren som i nettleseren. \`<lt-field>\` skriver koblingen på
-elementene før React hydrerer, og med server-rendring melder React avvik på
-ledeteksten, feltet og feilmeldingen. Uten server virker den, men
-\`lt.field()\` er veien i begge.
+A field is written with \`lt.field()\`. The wiring is then in the markup React
+renders itself, on the server as in the browser. \`<lt-field>\` writes the
+wiring on the elements before React hydrates, and with server rendering React
+reports mismatches on the label, the field and the error text. Without a
+server it works, but \`lt.field()\` is the way in both.
 
 \`\`\`tsx
-// Kontaktskjema.tsx
+// ContactForm.tsx
 import { lt } from "@lo-tek/interfaces/react"
 import { useId, useState } from "react"
 
-export function Kontaktskjema() {
-  const [navn, setNavn] = useState("")
-  const [berørt, setBerørt] = useState(false)
+export function ContactForm() {
+  const [name, setName] = useState("")
+  const [touched, setTouched] = useState(false)
 
-  const ugyldig = berørt && navn.trim() === ""
-  const felt = lt.field({
+  const invalid = touched && name.trim() === ""
+  const field = lt.field({
     id: useId(),
     required: "symbol",
     error: true,
-    invalid: ugyldig,
+    invalid,
   })
 
   return (
     <form onSubmit={(e) => e.preventDefault()}>
-      <label {...felt.label}>Fullt navn</label>
+      <label {...field.label}>Full name</label>
       <input
         {...lt.input({ type: "text" })}
-        {...felt.control}
-        name="navn"
+        {...field.control}
+        name="name"
         required
-        value={navn}
-        onChange={(e) => setNavn(e.target.value)}
-        onBlur={() => setBerørt(true)}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onBlur={() => setTouched(true)}
       />
-      <p {...lt.errorText()} {...felt.error}>Fyll inn navnet ditt.</p>
+      <p {...lt.errorText()} {...field.error}>Enter your name.</p>
 
       <button {...lt.button()} type="submit">Send</button>
     </form>
@@ -890,51 +910,54 @@ export function Kontaktskjema() {
 }
 \`\`\`
 
-Id-en kommer fra \`useId()\`, så serveren og nettleseren lager den samme.
+The id comes from \`useId()\`, so the server and the browser create the same
+one.
 
-\`lt\` importeres fra \`@lo-tek/interfaces/react\`, aldri fra hovedinngangen:
-React-inngangen gir \`className\` og \`htmlFor\`, hovedinngangen gir \`class\`
-og \`for\`. De ${antallByggefunksjoner()} byggefunksjonene finnes i begge:
+\`lt\` is imported from \`@lo-tek/interfaces/react\`, never from the main
+entry: the React entry gives \`className\` and \`htmlFor\`, the main entry
+gives \`class\` and \`for\`. The ${antallByggefunksjoner()} builder functions
+are in both:
 
 ${byggefunksjoner()}`,
-    ekstra: `## 6. Bare \`open={åpen || undefined}\` virker
+    ekstra: `## 6. Only \`open={isOpen || undefined}\` works
 
-Det gjelder hvert boolske attributt på en web component, som \`open\` på
-\`<lt-dialog>\` og \`<lt-popover>\`. React behandler web components ulikt
-mellom versjoner, og bare dette mønsteret er riktig i begge:
+This applies to every boolean attribute on a web component, such as \`open\`
+on \`<lt-dialog>\` and \`<lt-popover>\`. React treats web components
+differently between versions, and only this pattern is right in both:
 
-| Skrivemåte | React 18 (setter attributt) | React 19 (setter egenskap) |
+| How it is written | React 18 (sets attribute) | React 19 (sets property) |
 | --- | --- | --- |
-| \`open=""\` | virker | aldri åpen |
-| \`open={åpen}\` | alltid åpen | virker |
-| \`open={åpen \\|\\| undefined}\` | virker | virker |
+| \`open=""\` | works | never open |
+| \`open={isOpen}\` | always open | works |
+| \`open={isOpen \\|\\| undefined}\` | works | works |
 
-React 18 stringifiserer \`false\` til attributtet \`open="false"\`.
-Attributtet finnes da, og er dermed sant. React 19 setter egenskapen til
-\`""\`, og komponenten leser den tomme strengen som usann.
+React 18 stringifies \`false\` to the attribute \`open="false"\`. The
+attribute is then present, and so it is true. React 19 sets the property to
+\`""\`, and the component reads the empty string as false.
 
-Importerer du \`@lo-tek/interfaces/react-jsx\`, blir de to første
-variantene kompileringsfeil.
+If you import \`@lo-tek/interfaces/react-jsx\`, the first two forms become
+compile errors.
 
-Byggefunksjonene sender \`true\` eller ingenting, så \`{...lt.dialog({ titleId,
-open: åpen }).host}\` er alt riktig.
+The builder functions pass \`true\` or nothing, so
+\`{...lt.dialog({ titleId, open: isOpen }).host}\` is already right.
 
-## 7. Typene
+## 7. The types
 
-Uten \`@lo-tek/interfaces/react-jsx\` kjenner ikke TypeScript \`<lt-field>\` i
-det hele tatt, og du får \`Property 'lt-field' does not exist on type
-'JSX.IntrinsicElements'\`. Med den får du autofullføring og feil på attributtene:
+Without \`@lo-tek/interfaces/react-jsx\` TypeScript does not know
+\`<lt-field>\` at all, and you get \`Property 'lt-field' does not exist on type
+'JSX.IntrinsicElements'\`. With it you get autocompletion and errors on the
+attributes:
 
 \`\`\`tsx
-<lt-field describedBy="vilkar" />       // feil: attributtet heter described-by
-<lt-toast closeLabel="Lukk" />           // feil: attributtet heter close-label
-<lt-connection-status offline="Nede" />  // feil: ukjent attributt
+<lt-field describedBy="terms" />         // error: the attribute is described-by
+<lt-toast closeLabel="Close" />          // error: the attribute is close-label
+<lt-connection-status offline="Down" />  // error: unknown attribute
 \`\`\`
 
-Typene virker ved at pakken utvider Reacts \`JSX.IntrinsicElements\`. Har
-prosjektet to installasjoner av \`@types/react\`, noe som lett skjer i et
-monorepo, utvider pakken den ene mens koden din bruker den andre, og elementene
-forblir ukjente. Kjør \`npm ls @types/react\` hvis noe ser rart ut.`,
+The types work by the package extending React's \`JSX.IntrinsicElements\`. If
+the project has two installations of \`@types/react\`, which easily happens in
+a monorepo, the package extends one while your code uses the other, and the
+elements stay unknown. Run \`npm ls @types/react\` if something looks odd.`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
@@ -942,39 +965,40 @@ forblir ukjente. Kjør \`npm ls @types/react\` hvis noe ser rart ut.`,
       ALDRI_UGYLDIG,
       SERVERRENDERING,
       [
-        "«Invalid DOM property `class`»",
-        "`lt` er importert fra hovedinngangen. Bruk `@lo-tek/interfaces/react`",
+        '"Invalid DOM property `class`"',
+        "`lt` is imported from the main entry. Use `@lo-tek/interfaces/react`",
       ],
       [
         "`Property 'lt-field' does not exist`",
-        "`@lo-tek/interfaces/react-jsx` er ikke importert i en `.d.ts`-fil",
+        "`@lo-tek/interfaces/react-jsx` is not imported in a `.d.ts` file",
       ],
     ],
   },
   {
     navn: "astro",
     stilarkAdresse: STILARK_PAKKE,
-    tittel: "LO-TEK i Astro",
-    innledning: `Regelboka for LO-TEK i et Astro-prosjekt.
+    tittel: "LO-TEK in Astro",
+    innledning: `The rulebook for LO-TEK in an Astro project.
 
-En \`.astro\`-fil er HTML med frontmatter over. Stilarkene importeres der, og
-byggefunksjonene brukes rett i malen, siden Astro støtter spredning som JSX. Det
-særegne er at alt dette kjøres ved bygging: ut kommer ren HTML, og \`lt\` er
-borte når siden er bygd. Null JavaScript sendt til nettleseren.`,
-    stilarkRegel: `**Importer stilarkene i frontmatteret**, \`tokens.css\`
-   først. Mangler de, ser komponentene ustilte ut. Svaret er da å legge inn
-   importen, aldri å skrive egen CSS for å få dem til å se riktige ut.`,
-    punktFire: `**\`defineLt*()\` hører i en \`<script>\` i malen, aldri i
-   frontmatteret:** frontmatteret kjøres på serveren, der
-   \`customElements\` ikke finnes. Og et boolsk attributt er sant så lenge det
-   står der.`,
-    registreringRegel: `**\`defineLt*()\` kjøres én gang** i en \`<script>\` i
-   malen. Astro pakker \`<script>\`-tagger og kjører dem på klienten.`,
+An \`.astro\` file is HTML with frontmatter above it. The stylesheets are
+imported there, and the builder functions are used directly in the template,
+since Astro supports spreading like JSX. What is particular is that all of
+this runs at build time: out comes plain HTML, and \`lt\` is gone once the
+page is built. Zero JavaScript sent to the browser.`,
+    stilarkRegel: `**Import the stylesheets in the frontmatter**, \`tokens.css\`
+   first. Without them, the components look unstyled. The answer is then to
+   add the import, never to write your own CSS to make them look right.`,
+    punktFire: `**\`defineLt*()\` belongs in a \`<script>\` in the template, never
+   in the frontmatter:** the frontmatter runs on the server, where
+   \`customElements\` does not exist. And a boolean attribute is true as long
+   as it is there.`,
+    registreringRegel: `**\`defineLt*()\` runs once** in a \`<script>\` in the
+   template. Astro bundles \`<script>\` tags and runs them on the client.`,
     adresse: PAKKENAVN,
-    sjekk: "npx @lo-tek/interfaces sjekk src/pages/*.astro",
-    stilark: `## 1. Stilarkene
+    sjekk: "npx @lo-tek/interfaces check src/pages/*.astro",
+    stilark: `## 1. The stylesheets
 
-${TOKENS_FØRST} Importene står i frontmatteret:
+${TOKENS_FØRST} The imports go in the frontmatter:
 
 \`\`\`astro
 ---
@@ -984,9 +1008,9 @@ import "@lo-tek/interfaces/badge.css"
 ---
 \`\`\`
 
-Navnet på hvert stilark står i tabellene under. Har du et layoutkomponent, hører
-\`tokens.css\` der, én gang for hele siden.`,
-    markup: `## 5. Byggefunksjonene i malen
+The name of each stylesheet is in the tables below. If you have a layout
+component, \`tokens.css\` belongs there, once for the whole page.`,
+    markup: `## 5. The builder functions in the template
 
 \`\`\`astro
 ---
@@ -996,25 +1020,25 @@ import "@lo-tek/interfaces/button.css"
 import "@lo-tek/interfaces/badge.css"
 ---
 
-<button {...lt.button({ variant: "secondary" })}>Lagre utkast</button>
-<span {...lt.badge({ color: "success" })}>Innvilget</span>
+<button {...lt.button({ variant: "secondary" })}>Save draft</button>
+<span {...lt.badge({ color: "success" })}>Approved</span>
 \`\`\`
 
-Kjøres ved bygging. Ut kommer ren HTML:
+Runs at build time. Out comes plain HTML:
 
 \`\`\`html
-<button class="lt-button" data-variant="secondary">Lagre utkast</button>
-<span class="lt-badge" data-color="success">Innvilget</span>
+<button class="lt-button" data-variant="secondary">Save draft</button>
+<span class="lt-badge" data-color="success">Approved</span>
 \`\`\`
 
-\`lt\` importeres fra hovedinngangen, som gir \`class\` og \`for\`. De
-${antallByggefunksjoner()} byggefunksjonene:
+\`lt\` is imported from the main entry, which gives \`class\` and \`for\`. The
+${antallByggefunksjoner()} builder functions:
 
 ${byggefunksjoner()}`,
-    ekstra: `## 6. Felt uten JavaScript
+    ekstra: `## 6. Fields without JavaScript
 
-\`lt.field()\` regner ut koblingen mellom ledetekst, kontroll, hjelpetekst og
-feilmelding i frontmatteret, så også den blir statisk HTML:
+\`lt.field()\` works out the wiring between label, control, help text and
+error text in the frontmatter, so that too becomes static HTML:
 
 \`\`\`astro
 ---
@@ -1022,21 +1046,22 @@ import { lt } from "@lo-tek/interfaces"
 import "@lo-tek/interfaces/tokens.css"
 import "@lo-tek/interfaces/field.css"
 
-const epost = lt.field({ id: "epost", required: "symbol", help: true, error: true })
+const email = lt.field({ id: "email", required: "symbol", help: true, error: true })
 ---
 
-<label {...epost.label}>E-postadresse</label>
-<input {...lt.input({ type: "email" })} {...epost.control} name="epost" required />
-<p {...lt.helpText()} {...epost.help}>Vi sender kvittering hit.</p>
-<p {...lt.errorText()} {...epost.error}>Skriv en gyldig adresse.</p>
+<label {...email.label}>Email address</label>
+<input {...lt.input({ type: "email" })} {...email.control} name="email" required />
+<p {...lt.helpText()} {...email.help}>We will send the receipt here.</p>
+<p {...lt.errorText()} {...email.error}>Enter a valid address.</p>
 \`\`\`
 
-Ingen \`<lt-field>\`, ingen kjøretid.
+No \`<lt-field>\`, no runtime.
 
-## 7. Web components i Astro
+## 7. Web components in Astro
 
-Skal feltet kunne bli ugyldig mens brukeren står i det, må komponenten
-registreres. Den kobler feilmeldingen til feltet når den vises:
+If the field should be able to become invalid while the user is in it, the
+component has to be registered. It wires the error text to the field when it
+shows:
 
 \`\`\`astro
 ---
@@ -1045,9 +1070,9 @@ import "@lo-tek/interfaces/field.css"
 ---
 
 <lt-field>
-  <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
-  <input class="lt-input" id="navn" type="text" name="navn" required />
-  <p class="lt-error-text" hidden>Fyll inn navnet ditt.</p>
+  <label class="lt-label" for="name" data-required="symbol">Full name</label>
+  <input class="lt-input" id="name" type="text" name="name" required />
+  <p class="lt-error-text" hidden>Enter your name.</p>
 </lt-field>
 
 <script>
@@ -1056,43 +1081,45 @@ import "@lo-tek/interfaces/field.css"
 </script>
 \`\`\`
 
-\`customElements\` finnes bare i nettleseren, så registreringen kan ikke stå i
-frontmatteret. En \`<script>\` i malen er alt som skal til: komponentene er
-vanlige web components, og trenger verken en Astro-integrasjon eller et
-\`client:\`-direktiv.`,
+\`customElements\` exists only in the browser, so the registration cannot be
+in the frontmatter. A \`<script>\` in the template is all it takes: the
+components are ordinary web components, and need neither an Astro
+integration nor a \`client:\` directive.`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
       NORSK_TEKST,
       ALDRI_UGYLDIG,
       [
-        "Komponenten gjør ingenting, og ingenting sier fra",
-        "Registreringen står i frontmatteret, som bare kjører på serveren. Den hører i en `<script>` i malen",
+        "The component does nothing, and nothing says so",
+        "The registration is in the frontmatter, which runs only on the server. It belongs in a `<script>` in the template",
       ],
     ],
   },
   {
     navn: "datastar",
     stilarkAdresse: STILARK_URL,
-    tittel: "LO-TEK med Datastar",
-    innledning: `Regelboka for LO-TEK sammen med
-[Datastar](https://data-star.dev), som legger reaktivitet på vanlig HTML med
-\`data-*\`-attributter. Ett skript, ingen byggesteg, altså samme premiss som LO-TEK.
+    tittel: "LO-TEK with Datastar",
+    innledning: `The rulebook for LO-TEK together with
+[Datastar](https://data-star.dev), which adds reactivity to ordinary HTML with
+\`data-*\` attributes. One script, no build step, the same premise as LO-TEK.
 
-Det betyr to ting for denne fila: adressene er URL-er, siden en nettleser uten
-bundles ikke slår opp et pakkenavn, og tilstanden styres med attributter, som er
-nøyaktig det \`ramme\`-komponentene forventer.`,
-    stilarkRegel: `**Én \`<link>\` til \`lotek.css\`, før alt annet.** Mangler
-   den, ser komponentene ustilte ut. Svaret er da å legge inn lenka, aldri å
-   skrive egen CSS for å få dem til å se riktige ut.`,
-    punktFire: `**\`defineLt*()\` kjøres én gang i en \`<script type="module">\`
-   med hele URL-en,** og tilstanden settes med \`data-attr:\`, som legger på og
-   fjerner attributtet. \`hidden="false"\` ville skjult feilmeldingen likevel.`,
-    registreringRegel: `**\`defineLt*()\` kjøres én gang** i en
-   \`<script type="module">\` i sidemalen.`,
+That means two things for this file: the addresses are URLs, since a browser
+without a bundler does not resolve a package name, and the state is
+controlled with attributes, which is exactly what the \`frame\` components
+expect.`,
+    stilarkRegel: `**One \`<link>\` to \`lotek.css\`, before everything else.**
+   Without it, the components look unstyled. The answer is then to add the
+   link, never to write your own CSS to make them look right.`,
+    punktFire: `**\`defineLt*()\` runs once in a \`<script type="module">\` with
+   the full URL,** and the state is set with \`data-attr:\`, which adds and
+   removes the attribute. \`hidden="false"\` would hide the error text all
+   the same.`,
+    registreringRegel: `**\`defineLt*()\` runs once** in a
+   \`<script type="module">\` in the page template.`,
     adresse: URL_TIL,
-    sjekk: "npx @lo-tek/interfaces sjekk side.html",
-    stilark: `## 1. Stilarket og Datastar
+    sjekk: "npx @lo-tek/interfaces check page.html",
+    stilark: `## 1. The stylesheet and Datastar
 
 \`\`\`html
 <link rel="stylesheet" href="${cdnTil("lotek.css")}">
@@ -1102,26 +1129,26 @@ nøyaktig det \`ramme\`-komponentene forventer.`,
 ></script>
 \`\`\`
 
-\`lotek.css\` er ${SAMLET_STØRRELSE}, og har alle
-komponentene. Vil du bare ha det du bruker, gjelder at ${TOKENS_FØRST}`,
-    markup: `## 5. Et skjema med Datastar
+\`lotek.css\` is ${SAMLET_STØRRELSE}, and has all the components. If you want
+only what you use, ${TOKENS_FØRST}`,
+    markup: `## 5. A form with Datastar
 
 \`\`\`html
 <form
-  data-signals="{navn: '', beroert: false}"
-  data-computed:ugyldig="$beroert && $navn.trim() === ''"
+  data-signals="{name: '', touched: false}"
+  data-computed:invalid="$touched && $name.trim() === ''"
 >
   <lt-field>
-    <label class="lt-label" for="navn" data-required="symbol">Fullt navn</label>
+    <label class="lt-label" for="name" data-required="symbol">Full name</label>
     <input
       class="lt-input"
-      id="navn"
+      id="name"
       type="text"
-      name="navn"
-      data-bind:navn
-      data-on:blur="$beroert = true"
+      name="name"
+      data-bind:name
+      data-on:blur="$touched = true"
     />
-    <p class="lt-error-text" hidden data-attr:hidden="!$ugyldig">Fyll inn navnet ditt.</p>
+    <p class="lt-error-text" hidden data-attr:hidden="!$invalid">Enter your name.</p>
   </lt-field>
 
   <button class="lt-button" type="submit">Send</button>
@@ -1135,70 +1162,73 @@ komponentene. Vil du bare ha det du bruker, gjelder at ${TOKENS_FØRST}`,
 </script>
 \`\`\`
 
-\`data-signals\` oppretter tilstanden, \`data-computed:ugyldig\` utleder
-valideringen av den, \`data-bind:navn\` binder feltet begge veier, og
-\`data-on:blur\` markerer at brukeren har forlatt det.
+\`data-signals\` creates the state, \`data-computed:invalid\` derives the
+validation from it, \`data-bind:name\` binds the field both ways, and
+\`data-on:blur\` records that the user has left it.
 
-\`data-attr:hidden\` på feilmeldingen er koblingen til komponenten: den setter
-\`hidden\` når feltet er gyldig og fjerner det når det er ugyldig, og
-\`<lt-field>\` regner feltet som ugyldig når feilmeldingen synes. Ingen av React-fellene finnes her. Datastar jobber direkte på
-attributtene.`,
-    ekstra: `## 6. HTML fra serveren
+\`data-attr:hidden\` on the error text is the link to the component: it sets
+\`hidden\` when the field is valid and removes it when it is invalid, and
+\`<lt-field>\` counts the field as invalid when the error text is visible.
+None of the React pitfalls exist here. Datastar works directly on the
+attributes.`,
+    ekstra: `## 6. HTML from the server
 
-Datastar kan la serveren sende HTML underveis, over Server-Sent Events. En web
-component oppgraderer seg selv når den settes inn i dokumentet, så
-lenge \`defineLtField()\` har kjørt én gang. Serveren kan derfor sende dette som
-ren HTML:
+Datastar can let the server send HTML as the page runs, over Server-Sent
+Events. A web component upgrades itself when it is inserted into the
+document, as long as \`defineLtField()\` has run once. The server can
+therefore send this as plain HTML:
 
 \`\`\`html
 <lt-field>
-  <label class="lt-label" for="epost" data-required="text">E-postadresse</label>
-  <input class="lt-input" id="epost" type="email" value="ola@" />
-  <p class="lt-help-text">Vi sender kvittering hit.</p>
-  <p class="lt-error-text">Skriv en gyldig adresse.</p>
+  <label class="lt-label" for="email" data-required="text">Email address</label>
+  <input class="lt-input" id="email" type="email" value="alex@" />
+  <p class="lt-help-text">We will send the receipt here.</p>
+  <p class="lt-error-text">Enter a valid address.</p>
 </lt-field>
 \`\`\`
 
-Komponenten setter da \`lt-label\`, gir hjelpeteksten og feilmeldingen id,
-legger på \`aria-invalid\` fordi feilmeldingen synes, og bygger
-\`aria-describedby\`, uten at det sendes JavaScript
-med for akkurat dette feltet. Det er poenget med at \`ramme\`-komponentene bor i
-vanlig DOM: markupen er dataen, og tilgjengeligheten kobles der den lander.
+The component then sets \`lt-label\`, gives the help text and the error text
+ids, adds \`aria-invalid\` because the error text is visible, and builds
+\`aria-describedby\`, without any JavaScript being sent for this particular
+field. That is the point of the \`frame\` components living in plain DOM: the
+markup is the data, and the accessibility is wired where it lands.
 
-Patcher serveren en komponent som holder tilstand, er spørsmålet hvem som
-bestemmer den. Som standard gjør web-komponenten det: \`<lt-tabs>\` husker fanen brukeren
-valgte, og setter den tilbake når en patch med \`outer\` river den bort: \`outer\`
-morfer, og valget er knyttet til selve lenken. \`inner\` og \`replace\` bytter
-ut nodene, og da velger komponenten fanen adressen peker på, ellers den
-serveren skjulte de andre panelene for med \`hidden="until-found"\`, ellers
-den første. Og \`outer\` morfer bare når id-ene stemmer: et element med en id
-serveren ikke sendte byttes ut. Komponentene skriver derfor aldri id på det
-brukeren rører. Fanene er lenker uten id, og panelene har den id-en lenken
-peker på, den samme ved hver rendring, som \`lt.tabs()\` skriver den. Panelet i
-\`<lt-popover>\` trenger id på samme måte; komponenten lager ingen. Kontrollen i \`<lt-field>\` og
-feltet i \`<lt-suggestion>\` får aldri id fra komponenten: \`for\` og \`id\`
-skriver malen, som HTML krever for at feltet skal ha navn uten JavaScript, eller
-så står ledeteksten rundt feltet og ingen id trengs. Komponenten sier fra i
-konsollen første gang en patch bytter ut noe brukeren hadde rørt. Skal
-serveren kunne flytte fanen, sier du det med \`server-controlled\`:
+If the server patches a component that holds state, the question is what
+decides it. By default the web component does: \`<lt-tabs>\` remembers the
+tab the user selected, and puts it back when a patch with \`outer\` tears it
+away: \`outer\` morphs, and the selection is tied to the link itself.
+\`inner\` and \`replace\` replace the nodes, and then the component selects the
+tab the URL points to, otherwise the one the server hid the other panels for
+with \`hidden="until-found"\`, otherwise the first. And \`outer\` morphs only
+when the ids match: an element with an id the server did not send is
+replaced. The components therefore never write an id on what the user
+touches. The tabs are links without an id, and the panels have the id the
+link points to, the same on every render, as \`lt.tabs()\` writes it. The
+panel in \`<lt-popover>\` needs an id in the same way; the component creates
+none. The control in \`<lt-field>\` and the field in \`<lt-suggestion>\` never
+get an id from the component: the template writes \`for\` and \`id\`, which
+HTML requires for the field to have a name without JavaScript, or the label
+wraps the field and no id is needed. The component warns in the console the
+first time a patch replaces something the user had touched. If the server
+should be able to move the tab, say so with \`server-controlled\`:
 
 \`\`\`html
-<lt-tabs server-controlled data-on:tab-select="$fane = evt.detail.index">
-  <ul class="lt-tabs__list" aria-label="Deler av saken">
-    <li><a href="#soknaden">Søknaden</a></li>
-    <li><a href="#vedlegg">Vedlegg</a></li>
+<lt-tabs server-controlled data-on:tab-select="$tab = evt.detail.index">
+  <ul class="lt-tabs__list" aria-label="Parts of the case">
+    <li><a href="#application">Application</a></li>
+    <li><a href="#attachments">Attachments</a></li>
   </ul>
-  <section class="lt-tabs__panel" id="soknaden">…</section>
-  <section class="lt-tabs__panel" id="vedlegg" hidden="until-found">…</section>
+  <section class="lt-tabs__panel" id="application">…</section>
+  <section class="lt-tabs__panel" id="attachments" hidden="until-found">…</section>
 </lt-tabs>
 \`\`\`
 
-Attributtet finnes på \`<lt-tabs>\`, \`<lt-popover>\`, \`<lt-dialog>\` og
-\`<lt-suggestion>\`. Uten det ville serveren og komponenten kjempet om samme
-tilstand.
+The attribute exists on \`<lt-tabs>\`, \`<lt-popover>\`, \`<lt-dialog>\` and
+\`<lt-suggestion>\`. Without it the server and the component would fight over
+the same state.
 
-\`lt\` kan brukes på serveren eller i et byggesteg. Datastar trenger den ikke i
-nettleseren.`,
+\`lt\` can be used on the server or in a build step. Datastar does not need it
+in the browser.`,
     fallgruver: [
       STILER_MANGLER,
       INGEN_DEFINE,
@@ -1209,7 +1239,7 @@ nettleseren.`,
   },
 ]
 
-/** Filene generatoren skriver, med innholdet de skal ha. */
+/** The files the generator writes, with the content they should have. */
 export function filer(): Record<string, string> {
   const ut: Record<string, string> = {}
 
@@ -1225,7 +1255,7 @@ function sammensett(oppskrift: Oppskrift): string {
     `${[
       `# ${oppskrift.tittel}`,
       oppskrift.innledning,
-      `Dette er @lo-tek/interfaces ${VERSJON}. Fila er generert av pakken og følger versjonen, så den kan aldri stå og si noe annet enn koden ved siden av.`,
+      `This is @lo-tek/interfaces ${VERSJON}. The file is generated by the package and follows its version, so it can never say anything other than the code next to it.`,
       kortversjon(oppskrift),
       oppskrift.stilark,
       hvaSomFinnes(oppskrift),
@@ -1240,7 +1270,7 @@ function sammensett(oppskrift: Oppskrift): string {
   )
 }
 
-/** Navnene kommandoen kjenner, lest av oppskriftene. */
+/** The names the command knows, read from the recipes. */
 export const NAVN = OPPSKRIFTER.map((oppskrift) => oppskrift.navn)
 
 if (import.meta.main) {
@@ -1249,6 +1279,6 @@ if (import.meta.main) {
     writeFileSync(join(PAKKE, sti), innhold)
   }
   console.log(
-    `✓ ${Object.keys(skrevet).length} regelbøker: ${NAVN.join(", ")} (${antallCssKomponenter()} CSS-komponenter, ${antallElementer()} elementer, ${byggefunksjoner().split(", ").length} byggefunksjoner)`,
+    `✓ ${Object.keys(skrevet).length} rulebooks: ${NAVN.join(", ")} (${antallCssKomponenter()} CSS components, ${antallElementer()} elements, ${byggefunksjoner().split(", ").length} builder functions)`,
   )
 }

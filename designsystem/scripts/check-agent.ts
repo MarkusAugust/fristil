@@ -105,10 +105,13 @@ if (påDisk.join(",") !== skalFinnes.join(",")) {
   if (tilOvers.length > 0)
     krev(
       false,
-      `agent/ har filer generatoren ikke skriver: ${tilOvers.join(", ")}. Slett dem.`,
+      `agent/ has files the generator does not write: ${tilOvers.join(", ")}. Delete them.`,
     )
   if (mangler.length > 0)
-    krev(false, `agent/ mangler ${mangler.join(", ")}. Kjør bun run generate.`)
+    krev(
+      false,
+      `agent/ is missing ${mangler.join(", ")}. Run bun run generate.`,
+    )
 }
 
 // 1. Filene på disk er ferske.
@@ -124,9 +127,9 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   }
 
   if (faktisk === null)
-    krev(false, `${sti} finnes ikke. Kjør bun run generate.`)
+    krev(false, `${sti} does not exist. Run bun run generate.`)
   else if (faktisk !== innhold)
-    krev(false, `${sti} er utdatert. Kjør bun run generate.`)
+    krev(false, `${sti} is out of date. Run bun run generate.`)
 }
 
 for (const [sti, innhold] of Object.entries(forventet)) {
@@ -141,14 +144,14 @@ for (const [sti, innhold] of Object.entries(forventet)) {
     // på begge sider er formen tabellene faktisk skriver dem i.
     krev(
       innhold.includes(`\`${klasse}\``),
-      `${sti} nevner ikke klassen ${klasse}`,
+      `${sti} does not mention the class ${klasse}`,
     )
     sjekkedeKlasser += 1
   }
   for (const tagg of Object.keys(elements)) {
     krev(
       innhold.includes(`<${tagg}>`),
-      `${sti} nevner ikke elementet <${tagg}>`,
+      `${sti} does not mention the element <${tagg}>`,
     )
     sjekkedeElementer += 1
   }
@@ -167,7 +170,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
 
   for (const [nummer, blokk] of blokker.entries()) {
     for (const funn of diagnoseMarkup(blokk[1])) {
-      krev(false, `${sti}, markupblokk ${nummer + 1}: ${funn.message}`)
+      krev(false, `${sti}, markup block ${nummer + 1}: ${funn.message}`)
     }
     sjekkedeBlokker += 1
   }
@@ -186,7 +189,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
     const inngang = `./${treff[2]}`
     krev(
       inngang in pakke.exports,
-      `${sti} viser til ${treff[0]}, som ikke står i exports`,
+      `${sti} refers to ${treff[0]}, which is not in exports`,
     )
   }
 
@@ -195,12 +198,18 @@ for (const [sti, innhold] of Object.entries(forventet)) {
     const tagg = `lt-${treff[1]
       .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
       .toLowerCase()}`
-    krev(tagg in elements, `${sti} kaller ${treff[0]}, men ${tagg} finnes ikke`)
+    krev(
+      tagg in elements,
+      `${sti} calls ${treff[0]}, but ${tagg} does not exist`,
+    )
   }
 
   // 6. Hver byggefunksjon finnes i `lt`.
   for (const treff of innhold.matchAll(/\blt\.([a-zA-Z]+)\(/g)) {
-    krev(treff[1] in lt, `${sti} bruker lt.${treff[1]}(), som ikke finnes i lt`)
+    krev(
+      treff[1] in lt,
+      `${sti} uses lt.${treff[1]}(), which does not exist in lt`,
+    )
   }
 
   /*
@@ -224,7 +233,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
   for (const familie of FAMILIES) {
     krev(
       gjerder.includes(`\`${familie}\``),
-      `${sti} nevner ikke familien ${familie} i et kodegjerde`,
+      `${sti} does not mention the family ${familie} in a code fence`,
     )
     sjekkedeAkser += 1
   }
@@ -233,7 +242,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
     const navn = roleToCss(rolle)
     krev(
       gjerder.includes(`\`${navn}\``),
-      `${sti} nevner ikke rollen ${navn} i et kodegjerde`,
+      `${sti} does not mention the role ${navn} in a code fence`,
     )
     sjekkedeAkser += 1
   }
@@ -267,7 +276,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
 
     krev(
       heleNavnet.test(tokens) || heleNavnet.test(stilark),
-      `${sti} nevner ${treff[0]}, som verken finnes i tokens.css eller i et komponentstilark`,
+      `${sti} mentions ${treff[0]}, which exists neither in tokens.css nor in a component stylesheet`,
     )
     sjekkedeTokens += 1
     for (const slag of SLAG)
@@ -286,7 +295,7 @@ for (const [sti, innhold] of Object.entries(forventet)) {
     ]) {
       krev(
         !innhold.includes(reactisme),
-        `${sti} viser til ${reactisme}, som bare hører i react.md`,
+        `${sti} refers to ${reactisme}, which belongs only in react.md`,
       )
     }
   }
@@ -317,14 +326,14 @@ for (const [sti, innhold] of Object.entries(forventet)) {
     )
     krev(
       !naken,
-      `${sti}, markupblokk ${nummer + 1} importerer et pakkenavn i nettleseren. Bruk hele URL-en.`,
+      `${sti}, markup block ${nummer + 1} imports a package name in the browser. Use the full URL.`,
     )
   }
 }
 
 if (avvik.length > 0) {
   console.error(
-    `Regelbøkene stemmer ikke med pakken:\n\n${avvik
+    `The rulebooks do not match the package:\n\n${avvik
       .map((linje) => `  ${linje}`)
       .join("\n")}\n`,
   )
@@ -349,27 +358,27 @@ const ventet = {
 const utilstrekkelig: string[] = []
 
 if (sjekkedeFiler !== ventet.filer || sjekkedeFiler === 0)
-  utilstrekkelig.push(`${sjekkedeFiler} filer, ventet ${ventet.filer}`)
+  utilstrekkelig.push(`${sjekkedeFiler} files, expected ${ventet.filer}`)
 if (sjekkedeKlasser !== ventet.klasser || sjekkedeKlasser === 0)
-  utilstrekkelig.push(`${sjekkedeKlasser} klasser, ventet ${ventet.klasser}`)
+  utilstrekkelig.push(`${sjekkedeKlasser} classes, expected ${ventet.klasser}`)
 if (sjekkedeElementer !== ventet.elementer || sjekkedeElementer === 0)
   utilstrekkelig.push(
-    `${sjekkedeElementer} elementer, ventet ${ventet.elementer}`,
+    `${sjekkedeElementer} elements, expected ${ventet.elementer}`,
   )
-if (sjekkedeTokens === 0) utilstrekkelig.push("ingen tokennavn")
+if (sjekkedeTokens === 0) utilstrekkelig.push("no token names")
 
 const ventedeAkser = NAVN.length * (FAMILIES.length + Object.keys(ROLES).length)
 if (sjekkedeAkser !== ventedeAkser || sjekkedeAkser === 0)
-  utilstrekkelig.push(`${sjekkedeAkser} akser, ventet ${ventedeAkser}`)
+  utilstrekkelig.push(`${sjekkedeAkser} axes, expected ${ventedeAkser}`)
 
 for (const slag of SLAG) {
   const filer = lesteSlag.get(slag)?.size ?? 0
   if (filer !== NAVN.length)
     utilstrekkelig.push(
-      `${slag} lest i ${filer} regelbøker, ventet ${NAVN.length}`,
+      `${slag} read in ${filer} rulebooks, expected ${NAVN.length}`,
     )
 }
-if (sjekkedeBlokker === 0) utilstrekkelig.push("ingen markupblokker")
+if (sjekkedeBlokker === 0) utilstrekkelig.push("no markup blocks")
 
 /*
  * Hver regelbok skal ha minst én markupblokk som ble lest, med ett unntak som
@@ -388,21 +397,21 @@ for (const [sti, antall] of blokkerPerFil) {
   const navn = sti.replace(/^agent\/|\.md$/g, "")
 
   if (antall === 0 && !UTEN_MARKUPSJEKK.has(navn))
-    utilstrekkelig.push(`${sti} har ingen markupblokk som ble lest`)
+    utilstrekkelig.push(`${sti} has no markup block that was read`)
 
   if (antall > 0 && UTEN_MARKUPSJEKK.has(navn))
     utilstrekkelig.push(
-      `${sti} har nå markup som kan leses, så den hører ikke i UTEN_MARKUPSJEKK`,
+      `${sti} now has markup that can be read, so it does not belong in UTEN_MARKUPSJEKK`,
     )
 }
 
 if (utilstrekkelig.length > 0) {
   console.error(
-    `Vakten så ikke på det den skulle: ${utilstrekkelig.join("; ")}\n`,
+    `The guard did not look at what it should have: ${utilstrekkelig.join("; ")}\n`,
   )
   process.exit(1)
 }
 
 console.log(
-  `Regelbøkene stemmer: ${sjekkedeFiler} filer, ${sjekkedeKlasser} klassepåstander, ${sjekkedeElementer} elementpåstander, ${sjekkedeTokens} tokennavn, ${sjekkedeAkser} akser og ${sjekkedeBlokker} markupblokker.`,
+  `The rulebooks match: ${sjekkedeFiler} files, ${sjekkedeKlasser} class claims, ${sjekkedeElementer} element claims, ${sjekkedeTokens} token names, ${sjekkedeAkser} axes and ${sjekkedeBlokker} markup blocks.`,
 )
