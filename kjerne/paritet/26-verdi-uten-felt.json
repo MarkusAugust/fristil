@@ -1,0 +1,34 @@
+{
+  "markup": [
+    {
+      "start": 167,
+      "end": 169,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "message": "<fs-suggestion> har alternativer med data-value, men ikke noe .fs-suggestion__value. Koden brukeren velger, sendes da ikke med skjemaet, bare teksten i feltet. Skriv <input type=\"hidden\" class=\"fs-suggestion__value\" name=\"…\"> i feltet, så komponenten fyller det."
+    },
+    {
+      "start": 432,
+      "end": 437,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "message": "<fs-suggestion> har et .fs-suggestion__value, men ingen alternativer med data-value. Feltet blir stående tomt. Gi hvert alternativ data-value med koden det står for."
+    }
+  ],
+  "side": [
+    {
+      "start": 167,
+      "end": 169,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "message": "<fs-suggestion> har alternativer med data-value, men ikke noe .fs-suggestion__value. Koden brukeren velger, sendes da ikke med skjemaet, bare teksten i feltet. Skriv <input type=\"hidden\" class=\"fs-suggestion__value\" name=\"…\"> i feltet, så komponenten fyller det."
+    },
+    {
+      "start": 432,
+      "end": 437,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "message": "<fs-suggestion> har et .fs-suggestion__value, men ingen alternativer med data-value. Feltet blir stående tomt. Gi hvert alternativ data-value med koden det står for."
+    }
+  ]
+}

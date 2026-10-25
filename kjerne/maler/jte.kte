@@ -2,7 +2,7 @@
 @param ugyldig: Boolean
 <!-- JTE med Kotlin. Skrivefeilen med vilje er data-variant="secundary". -->
 <form action="/soknad" method="post" novalidate>
-  <fs-field invalid="${ugyldig}">
+  <fs-field>
     <label class="fs-label" data-required="text">E-postadresse</label>
     <input class="fs-input" type="email" name="epost" value="${soknad.epost}">
     @if(ugyldig)

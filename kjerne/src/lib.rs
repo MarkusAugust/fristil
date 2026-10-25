@@ -34,6 +34,7 @@ pub mod suppress;
 pub mod text;
 pub mod theme;
 pub mod types;
+pub mod wiring;
 
 /// En fil i pakken, til testene: fra `designsystem/` ved siden av. Bygget
 /// leser den aldri.
@@ -52,13 +53,13 @@ use types::{Finding, Severity, Vocabulary};
 
 /// Det `diagnoseMarkup` finner: ordforrådet, for en mal eller et fragment.
 pub fn diagnose_markup(html: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
-    suppress::apply(html, diagnose::diagnose(html, vocabulary))
+    suppress::apply(html, diagnose::diagnose(html, vocabulary, false))
 }
 
 /// Det `diagnosePage` finner: ordforrådet og koblingen på en hel side.
 pub fn diagnose_page(html: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
     let page: Utf16 = references::page_source(html);
-    let mut findings = diagnose::diagnose(&page, vocabulary);
+    let mut findings = diagnose::diagnose(&page, vocabulary, true);
     findings.extend(references::check_references(&page));
     findings.sort_by_key(|f| f.start);
     suppress::apply(&references::page_source_with_comments(html), findings)
@@ -83,7 +84,7 @@ pub fn diagnose_styled(
     };
     let visible = diagnose::without_hidden(&source);
     let mut findings = diagnose::check_styles_visible(&visible, vocabulary, styles);
-    findings.extend(diagnose::diagnose_visible(visible, vocabulary));
+    findings.extend(diagnose::diagnose_visible(visible, vocabulary, page));
     if page {
         findings.extend(references::check_references(&source));
     }

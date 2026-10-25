@@ -1,0 +1,19 @@
+{
+  "markup": [
+    {
+      "start": 106,
+      "end": 123,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "id=\"fs-field-3-k2x9qa\" er en id komponenten lagde selv i nettleseren, og ser ut som kopiert fra DevTools. Komponenten lager en ny ved hver sidelasting, så ingenting kan peke på denne. Skriv din egen id, fra det elementet står for, eller la den stå tom."
+    },
+    {
+      "start": 169,
+      "end": 190,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "id=\"fs-field-help-a1b2c3d\" er en id komponenten lagde selv i nettleseren, og ser ut som kopiert fra DevTools. Komponenten lager en ny ved hver sidelasting, så ingenting kan peke på denne. Skriv din egen id, fra det elementet står for, eller la den stå tom."
+    }
+  ],
+  "side": []
+}

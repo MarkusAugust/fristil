@@ -13,7 +13,7 @@ Resten gjør komponenten. Panelet åpnes i `manual`-modus, ikke `auto`, siden ne
 Plasseringen er også vår. `position-anchor` finnes ennå ikke i alle nettlesere, så komponenten regner ut posisjonen mot knappen og setter den som to variabler på panelet.
 
 :::note[To veier til den samme markupen]
-Lages markupen med JavaScript, gir `fs.popover()` koblingen mellom knapp og panel, id-en og `popover`-attributtet, ferdig i HTML-en. Blir den til uten JavaScript, holder det med en knapp og et panel med klassen `fs-popover`: komponenten setter `popover="manual"`, lager id-en og skriver `aria-controls` på knappen. Posisjonen, Escape og klikk utenfor kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
+Lages markupen med JavaScript, gir `fs.popover()` koblingen mellom knapp og panel, id-en og `popover`-attributtet, ferdig i HTML-en. Blir den til uten JavaScript, holder det med en knapp og et panel med klassen `fs-popover` og en id: komponenten setter `popover="manual"` og skriver `aria-controls` på knappen. Id-en skriver malen, siden `popovertarget` og `aria-controls` peker på den, og et panel med en id komponenten lagde selv, ble byttet ut ved neste oppdatering fra serveren, med fokus. Posisjonen, Escape og klikk utenfor kommer fra komponenten i begge tilfeller. Se [Markup og oppførsel](/markup-og-oppforsel/#byggefunksjon-eller-web-component).
 :::
 
 ```ts
@@ -41,11 +41,12 @@ defineFsPopover()
     ```
 
     ```html
-    <!-- `popover`, id-en og `aria-controls` setter komponenten. -->
+    <!-- `popover` og `aria-controls` setter komponenten. Id-en på panelet
+         skriver du: det er den knappen peker på. -->
     <fs-popover id="meny" placement="bottom-end">
       <button class="fs-button" data-variant="secondary" type="button">Handlinger</button>
 
-      <ul class="fs-popover">
+      <ul class="fs-popover" id="handlinger">
         <li><button class="fs-button" data-variant="ghost" type="button">Arkiver saken</button></li>
         <li><button class="fs-button" data-variant="ghost" type="button">Last ned som PDF</button></li>
       </ul>
@@ -171,7 +172,7 @@ defineFsPopover()
       >
         <button class="fs-button" data-variant="secondary" type="button">Handlinger</button>
 
-        <ul class="fs-popover">
+        <ul class="fs-popover" id="handlinger">
           <li>
             <button class="fs-button" data-variant="ghost" type="button" data-on:click="$apen = false">
               Arkiver saken

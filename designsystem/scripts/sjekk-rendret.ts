@@ -9,6 +9,12 @@
  * pakken ikke avhenger av Playwright. Det kjøres her også, og skal gi det
  * samme svaret.
  *
+ * Til slutt går hver bygde side i dokumentasjonen gjennom `diagnoseMarkup`
+ * og `diagnosePage`, og skal gi null funn. Det er vakten mot falske funn: en
+ * regel som slår ut på våre egne oppskrifter, feller bygget her, før den når
+ * en editor. Støyen fra Expressive Code og forhåndsvisningene i
+ * `<template shadowrootmode>` blanker `pageSource` i kjernen alt.
+ *
  * Kjør med: bun scripts/sjekk-rendret.ts (etter bun run build)
  */
 
@@ -17,6 +23,8 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { chromium } from "playwright"
 import {
+  diagnoseMarkup,
+  diagnosePage,
   diagnoseRendered,
   READ_RENDERED_PAGE,
 } from "../src/diagnostics/index.js"
@@ -143,6 +151,35 @@ try {
   cdn.stop()
 }
 
+/*
+ * Dokumentasjonen gir null funn, i begge modusene.
+ *
+ * Tell sidene sist i løkka, og krev at tallet er likt antallet filer og
+ * større enn null: en glob som fant ingenting, skal ikke se ut som en
+ * dokumentasjon uten feil.
+ */
+const dist = join(pakke, "../documentation/dist")
+const filer = [...new Bun.Glob("**/*.html").scanSync({ cwd: dist })].sort()
+let antallSider = 0
+for (const fil of filer) {
+  const html = readFileSync(join(dist, fil), "utf8")
+  for (const [modus, diagnose] of [
+    ["markup", diagnoseMarkup],
+    ["side", diagnosePage],
+  ] as const) {
+    const funn = await diagnose(html)
+    for (const f of funn)
+      feil.push(
+        `${fil} (${modus}) ${f.line}:${f.column} ${f.rule}: ${f.message}`,
+      )
+  }
+  antallSider += 1
+}
+krev(
+  antallSider === filer.length && antallSider > 0,
+  `sjekket ${antallSider} sider i dokumentasjonen, ventet ${filer.length} og minst én`,
+)
+
 if (feil.length > 0) {
   console.error(
     `✗ diagnoseRendered:\n\n${feil.map((f) => `  ${f}`).join("\n")}\n`,
@@ -150,5 +187,5 @@ if (feil.length > 0) {
   process.exit(1)
 }
 console.log(
-  "diagnoseRendered sjekker siden slik nettleseren rendret den, med stilarkene.",
+  `diagnoseRendered sjekker siden slik nettleseren rendret den, med stilarkene, og ${antallSider} bygde sider i dokumentasjonen gir null funn.`,
 )

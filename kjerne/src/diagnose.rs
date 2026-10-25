@@ -1155,7 +1155,10 @@ const NO_CONTENT: &[&str] = &[
 /// `x-bind:aria-label`, `data-attr:aria-label`, `[attr.aria-label]` og
 /// `th:title` blir det samme attributtet i siden, og store og små bokstaver
 /// er like.
-fn attribute<'a>(attributes: &'a [ReadAttribute], name: &str) -> Option<&'a ReadAttribute> {
+pub(crate) fn attribute<'a>(
+    attributes: &'a [ReadAttribute],
+    name: &str,
+) -> Option<&'a ReadAttribute> {
     attributes.iter().find(|a| {
         let full = lossy(&lowercase(&a.name));
         let n = full.strip_suffix(']').unwrap_or(&full);
@@ -1512,12 +1515,14 @@ fn closing_tag(t: &[u16], from: usize, name: &str) -> Option<usize> {
 }
 
 /// Alle funn i teksten, i den rekkefølgen de står.
-pub fn diagnose(text: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
-    diagnose_visible(without_hidden(text), vocabulary)
+pub fn diagnose(text: &[u16], vocabulary: &Vocabulary, page: bool) -> Vec<Finding> {
+    diagnose_visible(without_hidden(text), vocabulary, page)
 }
 
 /// Som [`diagnose`], på tekst som alt er lest med [`without_hidden`].
-pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> {
+/// `page` er sant for en hel side, der id-ene komponentene lager selv er
+/// riktige, og usant for en mal, der de er kopiert inn fra DevTools.
+pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> Vec<Finding> {
     let mut findings = Vec::new();
     let mut labels: Option<Vec<Utf16>> = None;
     let mut cache = Cache::new();
@@ -1589,6 +1594,28 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> 
         let attributes = read_attributes(b, name_end);
         let conditional = has_condition(b, name_end, &attributes);
         for a in &attributes {
+            // Et attributt som er tatt ut, med beskjed om hva som gjelder i
+            // stedet, fra `removed` i manifestet. Foran `ukjent-attributt`,
+            // som ellers ville foreslått det nærmeste navnet.
+            let lower = lossy(&lowercase(&a.name));
+            if let Some((_, note)) = element.removed.iter().find(|(n, _)| *n == lower) {
+                findings.push(Finding {
+                    start: a.start,
+                    end: a.end,
+                    severity: Severity::Warning,
+                    link: element.link.clone(),
+                    message: format!("{lower} er tatt ut av <{tag}>. {note}"),
+                    fix: Some(Fix::one(
+                        format!("Ta bort {lower}"),
+                        a.space_start,
+                        a.value_end,
+                        String::new(),
+                        true,
+                    )),
+                    rule: "utgatt-attributt",
+                });
+                continue;
+            }
             findings.extend(check_attribute(
                 &tag,
                 element,
@@ -1626,7 +1653,21 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary) -> Vec<Finding> 
         }
     }
     findings.extend(check_icon_only(&source, vocabulary));
-    findings.extend(crate::parts::check_parts(&source, vocabulary));
+    // Treet bygges én gang og deles av reglene som trenger det. Bare når
+    // det står noe fra Fristil i teksten: på en side med tusenvis av tagger
+    // uten en eneste komponent kostet treet mer enn resten av sjekken.
+    if contains_str(&source, "fs-")
+        || vocabulary
+            .elements
+            .iter()
+            .any(|e| contains_str(&source, &e.tag))
+    {
+        let nodes = crate::references::tree(&source);
+        findings.extend(crate::parts::check_parts(&source, vocabulary, &nodes));
+        findings.extend(crate::wiring::check_wiring(
+            &source, vocabulary, &nodes, page,
+        ));
+    }
     findings.sort_by_key(|f| f.start);
     findings
 }

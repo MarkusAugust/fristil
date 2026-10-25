@@ -185,7 +185,13 @@ function kildefiler(rot: string, unntatt: string[]): string[] {
  */
 function utenRustTegn(fil: string, innhold: string): string {
   if (!fil.endsWith(".rs")) return innhold
+  // Også råstrenger, `r#"…"#`: anførselstegnene inni dem parer skanneren
+  // under feil, og ordene i en JSON-tekst i en test ble lest som
+  // identifikatorer.
+  const blank = (treff: string) => treff.replace(/[^\n]/g, " ")
   return innhold
+    .replace(/\br(#+)"[\s\S]*?"\1/g, blank)
+    .replace(/\br"[^"\n]*"/g, blank)
     .replace(/b?'(\\.|[^'\\\n])'/g, (treff) => " ".repeat(treff.length))
     .replace(/'[a-z_]+\b(?!')/g, (treff) => " ".repeat(treff.length))
 }

@@ -1,0 +1,114 @@
+{
+  "markup": [
+    {
+      "start": 10,
+      "end": 17,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "invalid er tatt ut av <fs-field>. Feltet er ugyldig når feilmeldingen, `.fs-error-text`, står synlig, eller når serveren har skrevet `aria-invalid` på kontrollen. I Datastar: `data-attr:hidden=\"!$ugyldig\"` på feilmeldingen.",
+      "fix": {
+        "title": "Ta bort invalid",
+        "edits": [
+          {
+            "start": 9,
+            "end": 17,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 18,
+      "end": 33,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "required-marker er tatt ut av <fs-field>. Påkrevd-merket står som `data-required` på `<label>`, og vises da også uten JavaScript.",
+      "fix": {
+        "title": "Ta bort required-marker",
+        "edits": [
+          {
+            "start": 17,
+            "end": 37,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 38,
+      "end": 48,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "control-id er tatt ut av <fs-field>. Skriv `id` på kontrollen og `for` på ledeteksten i malen. Komponenten skriver aldri id på kontrollen.",
+      "fix": {
+        "title": "Ta bort control-id",
+        "edits": [
+          {
+            "start": 37,
+            "end": 54,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    }
+  ],
+  "side": [
+    {
+      "start": 10,
+      "end": 17,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "invalid er tatt ut av <fs-field>. Feltet er ugyldig når feilmeldingen, `.fs-error-text`, står synlig, eller når serveren har skrevet `aria-invalid` på kontrollen. I Datastar: `data-attr:hidden=\"!$ugyldig\"` på feilmeldingen.",
+      "fix": {
+        "title": "Ta bort invalid",
+        "edits": [
+          {
+            "start": 9,
+            "end": 17,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 18,
+      "end": 33,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "required-marker er tatt ut av <fs-field>. Påkrevd-merket står som `data-required` på `<label>`, og vises da også uten JavaScript.",
+      "fix": {
+        "title": "Ta bort required-marker",
+        "edits": [
+          {
+            "start": 17,
+            "end": 37,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 38,
+      "end": 48,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "control-id er tatt ut av <fs-field>. Skriv `id` på kontrollen og `for` på ledeteksten i malen. Komponenten skriver aldri id på kontrollen.",
+      "fix": {
+        "title": "Ta bort control-id",
+        "edits": [
+          {
+            "start": 37,
+            "end": 54,
+            "text": ""
+          }
+        ],
+        "preferred": true
+      }
+    }
+  ]
+}

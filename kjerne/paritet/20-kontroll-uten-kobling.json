@@ -1,0 +1,66 @@
+{
+  "markup": [
+    {
+      "start": 56,
+      "end": 61,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "Ledeteksten er ikke koblet til <input>. Uten kobling har feltet ikke noe navn uten JavaScript, og klikk på ledeteksten flytter ikke fokus dit. Gi feltet en fast id fra det feltet står for, for eksempel id=\"kommune\", og skriv den samme i for på ledeteksten, eller legg ledeteksten rundt feltet.",
+      "fix": {
+        "title": "Gi feltet id «kommune»",
+        "edits": [
+          {
+            "start": 19,
+            "end": 19,
+            "text": " for=\"kommune\""
+          },
+          {
+            "start": 61,
+            "end": 61,
+            "text": " id=\"kommune\""
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 228,
+      "end": 233,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "message": "Ledeteksten er ikke koblet til <input>. Uten kobling har feltet ikke noe navn uten JavaScript, og klikk på ledeteksten flytter ikke fokus dit. Gi feltet en fast id fra det feltet står for, for eksempel id=\"kommune\", og skriv den samme i for på ledeteksten, eller legg ledeteksten rundt feltet."
+    }
+  ],
+  "side": [
+    {
+      "start": 56,
+      "end": 61,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/field/",
+      "message": "Ledeteksten er ikke koblet til <input>. Uten kobling har feltet ikke noe navn uten JavaScript, og klikk på ledeteksten flytter ikke fokus dit. Gi feltet en fast id fra det feltet står for, for eksempel id=\"kommune\", og skriv den samme i for på ledeteksten, eller legg ledeteksten rundt feltet.",
+      "fix": {
+        "title": "Gi feltet id «kommune»",
+        "edits": [
+          {
+            "start": 19,
+            "end": 19,
+            "text": " for=\"kommune\""
+          },
+          {
+            "start": 61,
+            "end": 61,
+            "text": " id=\"kommune\""
+          }
+        ],
+        "preferred": true
+      }
+    },
+    {
+      "start": 228,
+      "end": 233,
+      "severity": "warning",
+      "link": "https://fristil.sobernetics.no/components/suggestion/",
+      "message": "Ledeteksten er ikke koblet til <input>. Uten kobling har feltet ikke noe navn uten JavaScript, og klikk på ledeteksten flytter ikke fokus dit. Gi feltet en fast id fra det feltet står for, for eksempel id=\"kommune\", og skriv den samme i for på ledeteksten, eller legg ledeteksten rundt feltet."
+    }
+  ]
+}
