@@ -14,6 +14,8 @@ import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiLanguageInjectionHost
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.xml.XmlDocument
 import no.fristil.Finding
 import no.fristil.Fix
@@ -114,14 +116,28 @@ private class ReplaceFix(private val fix: Fix) : IntentionAction, PriorityAction
             // Et injisert fragment: dokumentet er fragmentets, med teksten
             // slik den er uten rømming. En endring skrevet rett i det havner
             // urømt i vertsfila, og `aria-label="…"` i en "…"-streng i Kotlin
-            // brøt literalen. Derfor skrives hele det nye innholdet gjennom
-            // vertsstrengens egen manipulator, som rømmer det den må.
-            val host = injected.getInjectionHost(file) ?: return
-            val text = StringBuilder(document.text)
-            for (edit in fix.edits.sortedByDescending { it.start }) {
-                text.replace(edit.start, edit.end, edit.text)
+            // brøt literalen. Hver endring regnes derfor om til vertsfila og
+            // skrives gjennom vertsstrengens manipulator, som rømmer den.
+            // Hele fragmentet på én gang holdt ikke: en mal som `$navn` deler
+            // fragmentet i flere deler av strengen, og plassholderen ble
+            // skrevet inn i stedet for `$navn`.
+            val hostFile = injected.getTopLevelFile(file)
+            val hostDocument = PsiDocumentManager.getInstance(project).getDocument(hostFile) ?: return
+            // Alle omregnet før noe endres, og brukt bakfra i vertsfila.
+            val targets =
+                fix.edits
+                    .map { injected.injectedToHost(file, TextRange(it.start, it.end)) to it.text }
+                    .sortedByDescending { it.first.startOffset }
+            for ((range, text) in targets) {
+                PsiDocumentManager.getInstance(project).commitDocument(hostDocument)
+                val at = hostFile.findElementAt(range.startOffset) ?: return
+                val host =
+                    PsiTreeUtil.getParentOfType(at, PsiLanguageInjectionHost::class.java, false) ?: return
+                val inHost = ElementManipulators.getValueTextRange(host).shiftRight(host.textRange.startOffset)
+                // En endring som ikke står inni én del av strengen, rører ikke vi.
+                if (!inHost.contains(range)) return
+                ElementManipulators.handleContentChange(host, range.shiftLeft(host.textRange.startOffset), text)
             }
-            ElementManipulators.handleContentChange(host, text.toString())
             return
         }
         for (edit in fix.edits.sortedByDescending { it.start }) {

@@ -5,7 +5,7 @@
       "end": 75,
       "severity": "warning",
       "link": "https://fristil.sobernetics.no/components/popover/",
-      "message": "<fs-popover> har delen «panel» uten id. Panelet som åpnes: elementet med `popover`, eller klassen. Det må ha en id fra serveren, som `popovertarget` og `aria-controls` peker på; uten den går fokus tapt etter en oppdatering."
+      "message": "<fs-popover> har delen «panel» uten id. Panelet som åpnes: elementet med popover, eller klassen. Det må ha en id fra serveren, som popovertarget og aria-controls peker på; uten den går fokus tapt etter en oppdatering."
     }
   ],
   "side": [
@@ -14,7 +14,7 @@
       "end": 75,
       "severity": "warning",
       "link": "https://fristil.sobernetics.no/components/popover/",
-      "message": "<fs-popover> har delen «panel» uten id. Panelet som åpnes: elementet med `popover`, eller klassen. Det må ha en id fra serveren, som `popovertarget` og `aria-controls` peker på; uten den går fokus tapt etter en oppdatering."
+      "message": "<fs-popover> har delen «panel» uten id. Panelet som åpnes: elementet med popover, eller klassen. Det må ha en id fra serveren, som popovertarget og aria-controls peker på; uten den går fokus tapt etter en oppdatering."
     }
   ]
 }

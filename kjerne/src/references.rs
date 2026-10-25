@@ -243,7 +243,7 @@ fn decode_uri_component(t: &[u16]) -> Option<Utf16> {
 }
 
 /// Id-en en lenke som `href="#f%C3%B8dselsdato"` går til.
-fn fragment(href: &[u16]) -> Utf16 {
+pub(crate) fn fragment(href: &[u16]) -> Utf16 {
     match decode_uri_component(href) {
         Some(d) => decode(&d),
         None => decode(href),

@@ -1341,6 +1341,50 @@ cases.push(
     count: 0,
   },
   {
+    name: "et kodet fragment finner panelet sitt, som i nettleseren",
+    html: TABS(
+      `<ul class="fs-tabs__list" aria-label="Deler"><li><a href="#s%C3%B8knaden">Søknaden</a></li></ul>`,
+      `<section class="fs-tabs__panel" id="søknaden"></section>`,
+    ),
+    count: 0,
+  },
+  {
+    name: "invalid bundet i Datastar, slik den gamle oppskriften skrev det",
+    html: `<fs-field data-attr:invalid="$ugyldig"><label class="fs-label" for="e">E-post</label><input class="fs-input" id="e"></fs-field>`,
+    count: 1,
+    mentions: ["invalid er tatt ut av <fs-field>"],
+    fixTitle: "Ta bort data-attr:invalid",
+    fixed: `<fs-field><label class="fs-label" for="e">E-post</label><input class="fs-input" id="e"></fs-field>`,
+  },
+  {
+    name: "invalid bundet i Vue",
+    html: `<fs-field :invalid="ugyldig"><label class="fs-label" for="e">E-post</label><input class="fs-input" id="e"></fs-field>`,
+    count: 1,
+    mentions: ["invalid er tatt ut av <fs-field>"],
+  },
+  {
+    name: "id-ene forslagsfeltet lager selv, kopiert inn i malen",
+    html: `<fs-suggestion><label class="fs-label" for="k">Kommune</label><input class="fs-input" id="k"><ul class="fs-suggestion__list" id="fs-suggestion-list-a1b2c3d"><li id="fs-suggestion-option-q9w8e7r">Bergen</li></ul></fs-suggestion>`,
+    count: 2,
+    mentions: ["kopiert fra DevTools"],
+  },
+  {
+    name: "en bundet for på ledeteksten er serverens sak",
+    html: `<fs-suggestion><label class="fs-label" :for="'k'">Kommune</label><input class="fs-input" id="k"><ul class="fs-suggestion__list"><li>Bergen</li></ul></fs-suggestion>`,
+    count: 0,
+  },
+  {
+    name: "[attr.id] og [attr.for] i Angular er serverens sak",
+    html: `<fs-field><label class="fs-label" [attr.for]="id">Kommune</label><input class="fs-input" [attr.id]="id" name="kommune"></fs-field>`,
+    count: 0,
+  },
+  {
+    name: "meldingen om et panel uten id er ren tekst",
+    html: `<fs-popover><button class="fs-button" type="button">Meny</button><div class="fs-popover" popover>Innhold</div></fs-popover>`,
+    count: 1,
+    notMentions: ["`"],
+  },
+  {
     name: "en vert i en løkke i malen er serverens sak",
     html: `{{ range .Felt }}<fs-field><label class="fs-label">{{ .Navn }}</label><input class="fs-input" name="{{ .Navn }}"></fs-field>{{ end }}`,
     count: 0,

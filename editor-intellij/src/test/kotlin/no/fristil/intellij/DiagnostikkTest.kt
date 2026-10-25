@@ -158,6 +158,38 @@ class DiagnostikkTest : BasePlatformTestCase() {
         assertTrue("aria-label skal stå rømt i strengen: $tekst", tekst.contains("""<ul aria-label=\"Deler av saken\" class='fs-tabs__list'>"""))
     }
 
+    fun `test en rettelse i en streng med en mal i lar resten av strengen stå`() {
+        // `$navn` deler fragmentet i to deler av vertsstrengen. Rettelsen skal
+        // havne i den riktige delen, og ingenting annet i strengen endres.
+        myFixture.configureByText(
+            "Visning.kt",
+            """
+            val navn = "x"
+            // language=HTML
+            val rad = "<p>${'$'}navn</p><fs-tabs><u<caret>l class='fs-tabs__list'><li><a href='#a'>A</a></li></ul><section class='fs-tabs__panel' id='a'></section></fs-tabs>"
+            """.trimIndent(),
+        )
+        val vert = com.intellij.lang.injection.InjectedLanguageManager.getInstance(project).getTopLevelFile(myFixture.file)
+        val funn = myFixture.doHighlighting().firstOrNull { it.description?.contains("fanerad uten navn") == true }
+        assertNotNull("kjernen skal melde raden uten navn, fikk ${myFixture.doHighlighting().mapNotNull { it.description }}", funn)
+        var rettelse: com.intellij.codeInsight.intention.IntentionAction? = null
+        funn!!.findRegisteredQuickFix { descriptor, _ ->
+            if (descriptor.action.familyName == "Fristil") rettelse = descriptor.action
+            null
+        }
+        assertNotNull("funnet skal ha en rettelse", rettelse)
+        myFixture.launchAction(rettelse!!)
+        val tekst = vert.viewProvider.document!!.text
+        assertEquals(
+            """
+            val navn = "x"
+            // language=HTML
+            val rad = "<p>${'$'}navn</p><fs-tabs><ul aria-label=\"Deler av saken\" class='fs-tabs__list'><li><a href='#a'>A</a></li></ul><section class='fs-tabs__panel' id='a'></section></fs-tabs>"
+            """.trimIndent(),
+            tekst,
+        )
+    }
+
     fun `test rettelsen bytter ut teksten`() {
         myFixture.configureByText("test.html", """<button class="fs-buton<caret>">Lagre</button>""")
         val rettelser = myFixture.availableIntentions.filter { it.familyName == "Fristil" }

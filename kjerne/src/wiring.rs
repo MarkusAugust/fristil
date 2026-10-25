@@ -23,7 +23,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::diagnose::{attribute, is_templated, is_templated_value};
 use crate::parts::{host_content, matches, parse, templated_host};
-use crate::references::{decode, has_class, non_empty, value, within, Node};
+use crate::references::{decode, fragment, has_class, non_empty, value, within, Node};
 use crate::text::*;
 use crate::types::*;
 
@@ -38,6 +38,8 @@ const GENERATED_PREFIXES: &[&str] = &[
     "fs-dialog-title-",
     "fs-session-timeout-title-",
     "fs-tabs-heading-",
+    "fs-suggestion-list-",
+    "fs-suggestion-option-",
 ];
 
 /// Hva noden sier om id-en sin.
@@ -50,13 +52,22 @@ enum Id {
     Given(Utf16),
 }
 
+/// Om attributtet står bundet av et rammeverk, som `:for`, `v-bind:id`,
+/// `data-attr:id`, `[id]`, `[attr.for]` eller `th:id`. Da gir bindingen
+/// verdien på siden, og bare serveren vet hva den blir.
+fn bound(node: &Node, name: &str) -> bool {
+    node.attributes.iter().any(|a| {
+        let full = lossy(&lowercase(&a.name));
+        let n = full.trim_end_matches(']');
+        n != name
+            && n.strip_suffix(name)
+                .is_some_and(|p| p.ends_with([':', '.', '[']))
+    })
+}
+
 fn id_of(node: &Node) -> Id {
-    let bound = node.attributes.iter().any(|a| {
-        let n = lossy(&lowercase(&a.name));
-        n == "asp-for"
-            || (n != "id" && (n.ends_with(":id") || n.ends_with("[id]") || n.ends_with(".id")))
-    });
-    if bound {
+    // `asp-for` i Razor gir både `id` og `name`, uten at navnet sier det.
+    if bound(node, "id") || value(node, "asp-for").is_some() {
         return Id::Unknown;
     }
     match value(node, "id").and_then(|a| a.value.clone()) {
@@ -276,7 +287,8 @@ impl Host<'_> {
                         "<{}> har delen «{}» uten id. {}",
                         self.tag(),
                         part.name,
-                        part.description
+                        // Meldingen er ren tekst; kodeskriften er for hoverboksen.
+                        part.description.replace('`', "")
                     ),
                     None,
                 ));
@@ -297,6 +309,14 @@ impl Host<'_> {
             return None;
         }
         let labels = self.own_named("label");
+        // En ledetekst med bundet `for`, som `:for` eller `asp-for`, peker
+        // på noe bare serveren vet.
+        if labels
+            .iter()
+            .any(|&l| bound(&nodes[l], "for") || value(&nodes[l], "asp-for").is_some())
+        {
+            return None;
+        }
         // Uten en ledetekst i det hele tatt sier `felt-uten-ledetekst` fra
         // om <fs-field>. Forslagsfeltet har ingen slik regel, så der meldes
         // det her.
@@ -390,8 +410,13 @@ impl Host<'_> {
             if is_templated_value(href) {
                 continue;
             }
+            // Som nettleseren: fragmentet slik det står, og ellers dekodet,
+            // så `#s%C3%B8knaden` finner `id="søknaden"`.
             let target = &href[1..];
-            if target.is_empty() || self.page.has_id(target) {
+            if target.is_empty()
+                || self.page.has_id(target)
+                || self.page.ids.contains_key(&fragment(target))
+            {
                 continue;
             }
             out.push(finding(

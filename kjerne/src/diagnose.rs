@@ -1598,16 +1598,22 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
             // Et attributt som er tatt ut, med beskjed om hva som gjelder i
             // stedet, fra `removed` i manifestet. Foran `ukjent-attributt`,
             // som ellers ville foreslått det nærmeste navnet.
-            let lower = lossy(&lowercase(&a.name));
-            if let Some((_, note)) = element.removed.iter().find(|(n, _)| *n == lower) {
+            // Også bundet, som `data-attr:invalid` i Datastar eller `:invalid`
+            // i Vue: det var slik den gamle oppskriften skrev det.
+            let removed = element
+                .removed
+                .iter()
+                .find(|(n, _)| attribute(std::slice::from_ref(a), n).is_some());
+            if let Some((name, note)) = removed {
+                let written = lossy(&a.name);
                 findings.push(Finding {
                     start: a.start,
                     end: a.end,
                     severity: Severity::Warning,
                     link: element.link.clone(),
-                    message: format!("{lower} er tatt ut av <{tag}>. {note}"),
+                    message: format!("{name} er tatt ut av <{tag}>. {}", note.replace('`', "")),
                     fix: Some(Fix::one(
-                        format!("Ta bort {lower}"),
+                        format!("Ta bort {written}"),
                         a.space_start,
                         a.value_end,
                         String::new(),
