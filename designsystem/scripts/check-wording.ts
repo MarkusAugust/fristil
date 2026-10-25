@@ -1,102 +1,105 @@
 /**
- * At ordene vi har bestemt oss for, er de som står i repoet.
+ * That the words we decided on are the ones in the repository.
  *
- * Terminologi glir. Den norske bøyningen av «bundle» sto 26 steder i ni filer,
- * i kommentarer, i versjonsloggen, i en konstant og i brødteksten på fire
- * dokumentasjonssider, og hver ny tekst kopierte ordbruken fra den forrige. En
- * beslutning uten vaktpost er en beslutning som må tas på nytt hver gang noen
- * skriver et avsnitt.
+ * Terminology drifts. The Norwegian inflection of "bundle" stood in 26 places
+ * in nine files, in comments, in the changelog, in a constant and in the body
+ * text of four documentation pages, and each new text copied the wording of
+ * the one before. A decision without a guard is a decision that has to be
+ * made again every time someone writes a paragraph.
  *
- * Lista er ment å vokse. Ett ord per rad, med det vi sier i stedet, og en
- * setning om hvorfor der det ikke er åpenbart.
+ * The list is meant to grow. One word per row, with what we say instead, and
+ * a sentence on why where it is not obvious.
  *
- * Kjør med: bun scripts/check-wording.ts, eller som en del av `bun run build`.
+ * Run with: bun scripts/check-wording.ts, or as part of `bun run build`.
  */
 
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { Glob } from "bun"
 
-const ROT = fileURLToPath(new URL("../../", import.meta.url))
+const ROOT = fileURLToPath(new URL("../../", import.meta.url))
 
-/** Ord vi ikke bruker, og hva vi sier i stedet. */
-const FORBUDT: { mønster: RegExp; i_stedet: string; unntatt?: RegExp }[] = [
+/** Words we do not use, and what we say instead. */
+const FORBIDDEN: { pattern: RegExp; instead: string; except?: RegExp }[] = [
   {
     /*
-     * Vi sier bundle eller bundles, aldri en norsk bøyning av det.
+     * We say bundle or bundles, never a Norwegian inflection of it.
      *
-     * Første forsøk var en liste over bøyninger, og den bommet: den hadde
-     * «ene» to ganger og manglet «en», så «bunten» sto i sporet kode mens
-     * vakten meldte grønt. En liste over bøyninger er nettopp det som glipper.
+     * The first attempt was a list of inflections, and it missed: it had
+     * "ene" twice and lacked "en", so "bunten" stood in tracked code while
+     * the guard reported green. A list of inflections is exactly what slips.
      *
-     * Mønsteret tar derfor stammen med hva som helst rundt, så `MED_BUNTER` og
-     * `medBunter` også felles: en konstant var en av grunnene til at regelen
-     * kom, og `\b` slår ikke til mot understrek eller en stor bokstav inni et
-     * navn. Det gir ett falskt treff, `ubuntu-latest` i CI-oppsettet, og det
-     * står i unntaket.
+     * The pattern therefore takes the stem with anything around it, so
+     * `MED_BUNTER` and `medBunter` fail too: a constant was one of the
+     * reasons the rule came, and `\b` does not match against an underscore
+     * or a capital letter inside a name. That gives one false match,
+     * `ubuntu-latest` in the CI setup, and it is in the exception.
      *
-     * `bundel` er med fordi den kom inn som erstatning for «bunten» og er
-     * nøyaktig samme slags fornorsking. `bun[dt]` var for vidt: «bundet»,
-     * «bundne» og «prosessorbundet» er vanlige norske ord av å binde, og har
-     * ingenting med dette å gjøre.
+     * `bundel` is included because it came in as a replacement for "bunten"
+     * and is exactly the same kind of Norwegianising. `bun[dt]` was too
+     * broad: "bundet", "bundne" and "prosessorbundet" are ordinary Norwegian
+     * words from the verb to bind, and have nothing to do with this.
      */
-    mønster: /[\p{L}_]*(?:bunt|bundel)[\p{L}]*/giu,
-    i_stedet: "bundle eller bundles",
-    unntatt: /^ubuntu/i,
+    pattern: /[\p{L}_]*(?:bunt|bundel)[\p{L}]*/giu,
+    instead: "bundle or bundles",
+    except: /^ubuntu/i,
   },
   {
     /*
-     * Det heter byggefunksjon. Regelbøkene for kodeagenter og
-     * dokumentasjonssidene sier det samme om det samme systemet, og en agent
-     * som får begge i konteksten skal ikke møte to navn på én ting.
+     * It is called byggefunksjon (builder function). The rulebooks for coding
+     * agents and the documentation pages say the same thing about the same
+     * system, and an agent that gets both in its context should not meet two
+     * names for one thing.
      *
-     * Bare de bøyde formene står i mønsteret. Verbet å bygge får aldri dem,
-     * så «stilarkene bygger på den» og «generatoren bygger skalaene» går fri
-     * uten en eneste unntaksrad. Et mønster på stammen ville felt dem, og
-     * 0.22.0 loggførte nettopp den feilen: «generatoren byggefunksjon
-     * skalaene». Formen «en bygger» i entall ubestemt kan derfor ikke voktes,
-     * siden den er skrevet likt som verbet.
+     * Only the inflected forms are in the pattern. The verb "bygge" (to
+     * build) never takes them, so "stilarkene bygger på den" and
+     * "generatoren bygger skalaene" pass without a single exception row. A
+     * pattern on the stem would have failed them, and 0.22.0 logged exactly
+     * that mistake: "generatoren byggefunksjon skalaene". The indefinite
+     * singular "en bygger" therefore cannot be guarded, since it is spelled
+     * like the verb.
      *
-     * `i`-flagget er ikke pynt: «Byggerne» med stor forbokstav sto i to
-     * overskrifter i regelbøkene og slapp gjennom uten det.
+     * The `i` flag is not decoration: "Byggerne" with a capital letter stood
+     * in two headings in the rulebooks and slipped through without it.
      */
-    mønster: /bygger(?:e|en|ne)\b/giu,
-    i_stedet: "byggefunksjon",
+    pattern: /bygger(?:e|en|ne)\b/giu,
+    instead: "byggefunksjon (builder function)",
   },
   {
     /*
-     * Det heter web component. Ordet er engelsk, men det er navnet på
-     * standarden, som «Shadow DOM», og leseren finner det igjen på MDN.
+     * It is called web component. That is the name of the standard, like
+     * "Shadow DOM", and the reader finds it again on MDN.
      *
-     * Mellomrommet tåler linjeskift og kommentartegn, fordi kommentarene her
-     * brekkes på 80 og uttrykket er på to ord. Tre forekomster sto delt over
-     * to linjer og var usynlige for et mønster med bare mellomrom i.
+     * The space tolerates line breaks and comment characters, because the
+     * comments here wrap at 80 and the phrase is two words. Three occurrences
+     * were split over two lines and invisible to a pattern with only a space
+     * in it.
      */
-    mønster: /egendefiner\p{L}*[\s*/]{1,16}element\p{L}*/giu,
-    i_stedet: "web component",
+    pattern: /egendefiner\p{L}*[\s*/]{1,16}element\p{L}*/giu,
+    instead: "web component",
   },
   {
     /*
-     * Tankestrek er et engelsk skrivemønster, og lite vanlig i norsk sakprosa.
-     * Den kom inn over hundre steder på én dag, fordi den er lett å skrive og
-     * aldri ser feil ut i en enkelt setning. Del setningen i to, eller bruk
-     * komma, kolon eller parentes.
+     * The dash came in in over a hundred places in one day, because it is
+     * easy to write and never looks wrong in a single sentence. Split the
+     * sentence in two, or use a comma, a colon or parentheses.
      */
-    mønster: /[—–]/gu,
-    i_stedet: "komma, kolon, parentes eller to setninger",
+    pattern: /[—–]/gu,
+    instead: "a comma, a colon, parentheses or two sentences",
   },
 ]
 
 /*
- * Filtypene teksten vår står i.
+ * The file types our text is in.
  *
- * Genererte filer leses ikke: retter du ordet i kilden, følger de etter, og en
- * feil på begge steder er samme feil to ganger. `.json` er ute av samme grunn,
- * siden de tre norske json-filene i repoet genereres av
- * `generate-vocabulary.ts` fra `metadata.ts`, som leses. `.yml` og `.toml` er ikke med, og
- * det er et bevisst hull: der står det fire linjer norsk i alt.
+ * Generated files are not read: correct the word in the source and they
+ * follow, and a mistake in both places is the same mistake twice. `.json` is
+ * out for the same reason, since the three json files with prose in the
+ * repository are generated by `generate-vocabulary.ts` from `metadata.ts`,
+ * which is read. `.yml` and `.toml` are not included, and that is a
+ * deliberate gap: they held four lines of Norwegian in all.
  */
-const MØNSTRE = [
+const PATTERNS = [
   "designsystem/**/*.ts",
   "designsystem/**/*.css",
   "documentation/**/*.ts",
@@ -110,93 +113,147 @@ const MØNSTRE = [
   "presentation/**/*.html",
   "presentation/**/*.md",
   "*.md",
-  // npm-forsiden. Den står ikke i rota, og var derfor den ene utsendte teksten
-  // ingen leste. Versjonsloggen ved siden av er med vilje ute: den beskriver
-  // hva som skjedde i en utgivelse, og skal ikke skrives om i ettertid.
+  // The npm front page. It is not in the root, and so was the one shipped
+  // text nobody read. The changelog next to it is left out on purpose: it
+  // describes what happened in a release, and is not rewritten afterwards.
   "designsystem/README.md",
 ]
 
-const HOPP_OVER = [
+const SKIP = [
   "node_modules/",
   "/dist/",
   "dist/",
   ".astro/",
-  // Fila du leser nå, som må kunne skrive ordene for å lete etter dem.
+  // The file you are reading, which has to spell the words to look for them.
   "scripts/check-wording.ts",
-  // Ordlista over norske ord, av samme grunn: den må stave dem for å kjenne dem.
+  // The list of Norwegian words, for the same reason: it has to spell them to
+  // recognise them.
   "scripts/check-identifiers.ts",
-  // Gitignorert arbeidsnotat, ikke tekst vi sender ut.
+  // A gitignored working note, not text we ship.
   "PLAN.md",
-  // Generert av generate-agent.ts; kilden er oppskriftene der.
+  // Generated by generate-agent.ts; the source is the recipes there.
   "designsystem/agent/",
-  // Generert fra tokens.ts.
+  // Generated from tokens.ts.
   "designsystem/src/tokens/tokens.css",
-  // Generert av generate-vocabulary.ts fra metadata.ts, som leses.
+  // Generated by generate-vocabulary.ts from metadata.ts, which is read.
   "designsystem/src/vocabulary/classes.ts",
   "designsystem/src/vocabulary/elements.ts",
 ]
 
-const funn: string[] = []
+const findings: string[] = []
 
 /*
- * Telles per mønster, sist i løkka, og hvert av dem må ha lest noe.
+ * Counted per pattern, last in the loop, and each of them must have read
+ * something.
  *
- * Én sum over alle mønstrene skjulte det som betyr noe: en skrivefeil i ett av
- * dem, eller en flyttet dokumentasjonsmappe, ville tatt bort mesteparten av den
- * norske brødteksten mens tallet fortsatt var stort og kjøringen grønn.
+ * One sum over all the patterns hid what matters: a typo in one of them, or a
+ * moved documentation folder, would have taken away most of the body text
+ * while the number was still large and the run green.
  *
- * Derfor står det ett mønster per filtype, ikke flere endelser i samme klamme.
- * Etterprøvd: med `{ts,mjs,mdx,md,astro,css}` i ett mønster gikk `mdx` til
- * `mxd` uten at noe ble rødt, siden de andre endelsene fortsatt traff. Da leste
- * vakten 58 mdx-filer færre, altså mesteparten av brødteksten, og meldte grønt.
+ * That is why there is one pattern per file type, not several extensions in
+ * the same braces. Checked: with `{ts,mjs,mdx,md,astro,css}` in one pattern,
+ * `mdx` became `mxd` without anything turning red, since the other extensions
+ * still matched. The guard then read 58 fewer mdx files, most of the body
+ * text, and reported green.
  */
-const lest = new Map<string, number>()
+const read = new Map<string, number>()
 
-for (const mønster of MØNSTRE) {
-  let antall = 0
+for (const pattern of PATTERNS) {
+  let count = 0
 
-  for (const rel of new Glob(mønster).scanSync(ROT)) {
-    if (HOPP_OVER.some((del) => rel.includes(del))) continue
+  for (const rel of new Glob(pattern).scanSync(ROOT)) {
+    if (SKIP.some((part) => rel.includes(part))) continue
 
-    const tekst = readFileSync(ROT + rel, "utf8")
+    const text = readFileSync(ROOT + rel, "utf8")
 
-    for (const { mønster: ord, i_stedet, unntatt } of FORBUDT) {
-      for (const treff of tekst.matchAll(ord)) {
-        if (unntatt?.test(treff[0])) continue
+    for (const { pattern: word, instead, except } of FORBIDDEN) {
+      for (const match of text.matchAll(word)) {
+        if (except?.test(match[0])) continue
 
-        const linje = tekst.slice(0, treff.index).split("\n").length
-        funn.push(`${rel}:${linje} skriver «${treff[0]}». Vi sier ${i_stedet}.`)
+        const line = text.slice(0, match.index).split("\n").length
+        findings.push(`${rel}:${line} writes "${match[0]}". We say ${instead}.`)
       }
     }
 
-    antall += 1
+    count += 1
   }
 
-  lest.set(mønster, antall)
+  read.set(pattern, count)
 }
 
-const tomme = [...lest].filter(([, antall]) => antall === 0)
+/*
+ * The old name, everywhere and not just in the patterns above.
+ *
+ * The project was renamed to LO-TEK, and the old name can be left behind in
+ * any file type, not only those the patterns cover. So this rule reads every
+ * file git knows about, tracked or new but not ignored. The two changelogs
+ * are the exception, since they describe releases that went out under the old
+ * name and are not rewritten afterwards. This file is skipped because it has
+ * to spell the word.
+ */
+const OLD_NAME = /\bfristil\b/giu
+const OLD_NAME_ALLOWED = new Set([
+  "designsystem/CHANGELOG.md",
+  "editor/CHANGELOG.md",
+  "designsystem/scripts/check-wording.ts",
+])
 
-if (tomme.length > 0) {
+const listed = Bun.spawnSync(
+  ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+  { cwd: ROOT },
+)
+if (listed.exitCode !== 0) {
+  console.error(`git ls-files failed:\n${listed.stderr.toString()}`)
+  process.exit(1)
+}
+
+let searched = 0
+for (const rel of new Set(listed.stdout.toString().split("\0"))) {
+  if (rel === "" || OLD_NAME_ALLOWED.has(rel)) continue
+
+  let text: string
+  try {
+    text = readFileSync(ROOT + rel, "utf8")
+  } catch {
+    // Listed by git but deleted in the working tree.
+    continue
+  }
+  // A binary file: a NUL byte never stands in text.
+  if (text.includes("\0")) continue
+
+  for (const match of text.matchAll(OLD_NAME)) {
+    const line = text.slice(0, match.index).split("\n").length
+    findings.push(
+      `${rel}:${line} writes "${match[0]}". The name is LO-TEK; the old name stands only in the changelogs.`,
+    )
+  }
+
+  searched += 1
+}
+
+const empty = [...read].filter(([, count]) => count === 0)
+if (searched === 0) empty.push(["every file git lists (the old name)", 0])
+
+if (empty.length > 0) {
   console.error(
-    `Disse mønstrene leste ingen filer, så de vokter ingenting:\n${tomme
-      .map(([mønster]) => `  ${mønster}`)
+    `These patterns read no files, so they guard nothing:\n${empty
+      .map(([pattern]) => `  ${pattern}`)
       .join("\n")}\n`,
   )
   process.exit(1)
 }
 
-if (funn.length > 0) {
+if (findings.length > 0) {
   console.error(
-    `Ordbruken er ikke den vi har bestemt:\n\n${funn
-      .map((linje) => `  ${linje}`)
+    `The wording is not the one we decided on:\n\n${findings
+      .map((line) => `  ${line}`)
       .join("\n")}\n`,
   )
   process.exit(1)
 }
 
-const ialt = [...lest.values()].reduce((sum, antall) => sum + antall, 0)
+const total = [...read.values()].reduce((sum, count) => sum + count, 0)
 
 console.log(
-  `Ordbruken stemmer: ${FORBUDT.length} ord voktet i ${ialt} filer over ${lest.size} mønstre.`,
+  `Wording is correct: ${FORBIDDEN.length} words guarded in ${total} files over ${read.size} patterns, and the old name in ${searched} files.`,
 )

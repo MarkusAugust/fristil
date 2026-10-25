@@ -1,16 +1,16 @@
 /**
- * Kontrollerer at de levende forhåndsvisningene på komponentsidene virker.
+ * Checks that the live previews on the component pages work.
  *
- * `check-documentation.ts` leser mdx-filene som tekst og kontrollerer at hver
- * klasse og variabel er nevnt. Den sier ingenting om at eksempelet virker.
- * Da API-et la om til at serveren skriver markupen, sto tre demoer igjen med
- * `heading=`, `label=` og `<option>`-barn, og begge sjekkene meldte grønt
- * mens de publiserte eksemplene ikke gjorde noe i det hele tatt.
+ * `check-documentation.ts` reads the mdx files as text and checks that every
+ * class and variable is mentioned. It says nothing about whether the example
+ * works. When the API changed so that the server writes the markup, three
+ * demos were left with `heading=`, `label=` and `<option>` children, and both
+ * checks reported green while the published examples did nothing at all.
  *
- * Denne gjør det leseren gjør, i den bygde siden. Alle forhåndsvisningene
- * ligger i en skyggerot, så oppslagene går via vertselementet.
+ * This one does what the reader does, in the built site. All the previews
+ * live in a shadow root, so the lookups go through the host element.
  *
- * Kjør med: bun run test:docs (bygg først)
+ * Run with: bun run test:docs (build first)
  */
 
 import { join } from "node:path"
@@ -20,7 +20,7 @@ import { chromium, type Page } from "playwright"
 const DIST = fileURLToPath(new URL("../dist/", import.meta.url))
 const PORT = 4184
 
-const MEDIETYPER: Record<string, string> = {
+const MEDIA_TYPES: Record<string, string> = {
   html: "text/html; charset=utf-8",
   css: "text/css; charset=utf-8",
   js: "text/javascript; charset=utf-8",
@@ -32,339 +32,353 @@ const MEDIETYPER: Record<string, string> = {
 }
 
 /*
- * Tjeneren binder 127.0.0.1, og sjekken kobler til den samme adressen.
+ * The server binds 127.0.0.1, and the check connects to the same address.
  *
- * `Bun.serve` uten vertsnavn binder IPv4-jokeren, og en fremmed prosess på
- * IPv6-loopback tar da porten uten at noe kaster: to tjenere, samme
- * portnummer, ingen feilmelding. `localhost` slår opp IPv6 først på macOS, så
- * sjekken snakket med den andre prosessen. Det skjedde: en helt annen nettside
- * lå på 4173, og sjekken leste tilgjengelighetsbrudd på den. Den kunne like
- * gjerne meldt grønt uten å ha sett en eneste av våre sider.
+ * `Bun.serve` without a hostname binds the IPv4 wildcard, and a foreign
+ * process on IPv6 loopback then takes the port without anything throwing: two
+ * servers, same port number, no error message. `localhost` resolves IPv6
+ * first on macOS, so the check talked to the other process. It happened: a
+ * completely different website was on 4173, and the check read accessibility
+ * violations on it. It could just as well have reported green without having
+ * seen a single one of our pages.
  *
- * Med vertsnavnet satt kaster en andre binding på samme adresse, og det er
- * det vi vil: en port som er opptatt skal stoppe kjøringen, ikke stilltiende
- * sende den et annet sted. Bytt derfor aldri dette tilbake til `localhost`.
+ * With the hostname set, a second binding to the same address throws, and
+ * that is what we want: a port that is taken should stop the run, not
+ * silently send it somewhere else. So never change this back to `localhost`.
  */
-const tjener = Bun.serve({
+const server = Bun.serve({
   hostname: "127.0.0.1",
   port: PORT,
   fetch(request) {
-    const sti = decodeURIComponent(new URL(request.url).pathname)
-    const filsti = sti.endsWith("/")
-      ? join(DIST, sti, "index.html")
-      : join(DIST, sti)
-    const fil = Bun.file(filsti)
-    const endelse = filsti.split(".").pop() ?? ""
-    return fil.exists().then((finnes) =>
-      finnes
-        ? new Response(fil, {
+    const path = decodeURIComponent(new URL(request.url).pathname)
+    const filePath = path.endsWith("/")
+      ? join(DIST, path, "index.html")
+      : join(DIST, path)
+    const file = Bun.file(filePath)
+    const extension = filePath.split(".").pop() ?? ""
+    return file.exists().then((exists) =>
+      exists
+        ? new Response(file, {
             headers: {
-              "content-type": MEDIETYPER[endelse] ?? "application/octet-stream",
+              "content-type":
+                MEDIA_TYPES[extension] ?? "application/octet-stream",
             },
           })
-        : new Response("Ikke funnet", { status: 404 }),
+        : new Response("Not found", { status: 404 }),
     )
   },
 })
 
-const feil: string[] = []
-let gjeldende = ""
+const errors: string[] = []
+let current = ""
 
-function krev(påstand: boolean, beskrivelse: string): void {
-  if (!påstand) feil.push(`${gjeldende}: ${beskrivelse}`)
+function expect(claim: boolean, description: string): void {
+  if (!claim) errors.push(`${current}: ${description}`)
 }
 
-const nettleser = await chromium.launch()
-const kontekst = await nettleser.newContext()
-const side = await kontekst.newPage()
+const browser = await chromium.launch()
+const context = await browser.newContext()
+const page = await context.newPage()
 
-side.on("pageerror", (e) => {
-  feil.push(`${gjeldende}: skriptfeil «${e.message}»`)
+page.on("pageerror", (e) => {
+  errors.push(`${current}: script error "${e.message}"`)
 })
-side.on("console", (melding) => {
-  if (melding.type() === "error") {
-    feil.push(`${gjeldende}: konsollfeil «${melding.text()}»`)
+page.on("console", (message) => {
+  if (message.type() === "error") {
+    errors.push(`${current}: console error "${message.text()}"`)
   }
   /*
-   * Advarsler teller også.
+   * Warnings count too.
    *
-   * Komponentene sier fra med `console.warn` når markupen de fikk ikke
-   * henger sammen. Kom en slik advarsel på en av komponentsidene, ville det
-   * enten betydd at et eksempel er galt, eller at advarselen slår ut på
-   * markup som er i orden. Begge deler må fanges, for en advarsel som også
-   * kommer på riktig markup blir slått av, og da er den verdiløs.
+   * The components speak up with `console.warn` when the markup they got
+   * does not hang together. If such a warning appeared on one of the
+   * component pages, it would mean either that an example is wrong, or that
+   * the warning fires on markup that is fine. Both must be caught, because a
+   * warning that also appears on correct markup gets switched off, and then
+   * it is worthless.
    *
-   * Dette skriptet går bare gjennom komponentsidene. Resten av siden,
-   * mønstersidene og forsiden medregnet, dekkes av `check-accessibility.ts`,
-   * som besøker hver eneste bygde side.
+   * This script only goes through the component pages. The rest of the
+   * site, the pattern pages and the front page included, is covered by
+   * `check-accessibility.ts`, which visits every single built page.
    */
-  if (melding.type() === "warning") {
-    feil.push(`${gjeldende}: konsolladvarsel «${melding.text()}»`)
+  if (message.type() === "warning") {
+    errors.push(`${current}: console warning "${message.text()}"`)
   }
 })
 
 /**
- * Åpner en komponentside og kontrollerer det som gjelder alle demoer.
+ * Opens a component page and checks what applies to every demo.
  *
- * Deretter kjøres den komponentens egen test. Den generelle delen alene er
- * ikke nok: fanedemoen rendret knapper og paneler helt fint, den hadde bare
- * sluttet å få roller.
+ * Then that component's own test runs. The general part alone is not
+ * enough: the tabs demo rendered buttons and panels just fine, it had only
+ * stopped getting roles.
  */
-async function pa(
-  komponent: string,
-  vertsId: string,
-  tagg: string,
-  prove: (side: Page, id: string) => Promise<void>,
+async function on(
+  component: string,
+  hostId: string,
+  tag: string,
+  test: (page: Page, id: string) => Promise<void>,
 ) {
-  gjeldende = komponent
-  await side.goto(`http://127.0.0.1:${PORT}/components/${komponent}/`, {
+  current = component
+  await page.goto(`http://127.0.0.1:${PORT}/components/${component}/`, {
     waitUntil: "networkidle",
   })
 
-  const generelt = await side.evaluate(
-    ([id, tagg]) => ({
-      finnesVert: Boolean(document.getElementById(id)),
-      harSkyggerot: Boolean(document.getElementById(id)?.shadowRoot),
-      registrert: Boolean(customElements.get(tagg)),
-      harInnhold:
+  const general = await page.evaluate(
+    ([id, tag]) => ({
+      hostExists: Boolean(document.getElementById(id)),
+      hasShadowRoot: Boolean(document.getElementById(id)?.shadowRoot),
+      registered: Boolean(customElements.get(tag)),
+      hasContent:
         (document.getElementById(id)?.shadowRoot?.textContent ?? "").trim()
           .length > 0,
     }),
-    [vertsId, tagg] as const,
+    [hostId, tag] as const,
   )
 
-  krev(generelt.finnesVert, `fant ikke forhåndsvisningen «${vertsId}»`)
-  krev(generelt.harSkyggerot, "forhåndsvisningen har ingen skyggerot")
-  krev(generelt.registrert, `elementet <${tagg}> er ikke registrert`)
-  krev(generelt.harInnhold, "forhåndsvisningen er tom")
+  expect(general.hostExists, `could not find the preview "${hostId}"`)
+  expect(general.hasShadowRoot, "the preview has no shadow root")
+  expect(general.registered, `the element <${tag}> is not registered`)
+  expect(general.hasContent, "the preview is empty")
 
-  if (generelt.harSkyggerot) await prove(side, vertsId)
+  if (general.hasShadowRoot) await test(page, hostId)
 }
 
 /**
- * Krever at noe demoen lagde faktisk står å se inne i forhåndsvisningen.
+ * Requires that something the demo created can actually be seen inside the
+ * preview.
  *
- * Komponenter som fester innholdet sitt til vinduet fant vi ikke her før.
- * `<lt-connection-status>` skriver linja si med `position: fixed` øverst,
- * og i dokumentasjonen la den seg i toppen av vinduet, bak den faste toppen
- * på siden. Leseren trykket på knappen midt i siden, og det så ut som at
- * ingenting skjedde, mens denne sjekken meldte grønt fordi elementet fantes
- * i DOM-en.
+ * We did not catch components that attach their content to the viewport
+ * here before. `<lt-connection-status>` writes its bar with
+ * `position: fixed` at the top, and in the documentation it landed at the
+ * top of the window, behind the page's fixed header. The reader pressed the
+ * button in the middle of the page and it looked as if nothing happened,
+ * while this check reported green because the element existed in the DOM.
  */
-async function synligIBoksen(
-  side: Page,
+async function visibleInBox(
+  page: Page,
   id: string,
-  selektor: string,
+  selector: string,
 ): Promise<void> {
-  const svar = await side.evaluate(
-    ([id, selektor]) => {
-      const vert = document.getElementById(id)
-      const el = vert?.shadowRoot?.querySelector(selektor)
-      // Flaten og ikke verten: det er den bordede firkanten leseren ser, og
-      // med `maxWidth` er den smalere enn vertselementet. Ingen reserve til
-      // verten: døper noen om klassen, skal sjekken si fra framfor å bli
-      // mildere i stillhet.
-      const flate = vert?.shadowRoot?.querySelector(".flate")
-      if (!vert || !el || !flate)
+  const result = await page.evaluate(
+    ([id, selector]) => {
+      const host = document.getElementById(id)
+      const el = host?.shadowRoot?.querySelector(selector)
+      // The surface and not the host: that is the bordered box the reader
+      // sees, and with `maxWidth` it is narrower than the host element. No
+      // fallback to the host: if someone renames the class, the check should
+      // say so rather than silently get more lenient.
+      const surface = host?.shadowRoot?.querySelector(".flate")
+      if (!host || !el || !surface)
         return {
-          funnet: Boolean(el),
-          synlig: false,
-          inni: false,
-          flate: Boolean(flate),
+          found: Boolean(el),
+          visible: false,
+          inside: false,
+          surface: Boolean(surface),
         }
 
       const r = el.getBoundingClientRect()
-      const b = flate.getBoundingClientRect()
+      const b = surface.getBoundingClientRect()
       return {
-        funnet: true,
-        flate: true,
-        synlig: r.width > 0 && r.height > 0,
-        inni:
+        found: true,
+        surface: true,
+        visible: r.width > 0 && r.height > 0,
+        inside:
           r.top >= b.top - 1 &&
           r.bottom <= b.bottom + 1 &&
           r.left >= b.left - 1 &&
           r.right <= b.right + 1,
       }
     },
-    [id, selektor] as const,
+    [id, selector] as const,
   )
 
-  krev(svar.funnet, `fant ikke «${selektor}» i forhåndsvisningen`)
-  krev(svar.flate, "fant ingen .flate i forhåndsvisningen å måle mot")
-  krev(svar.synlig, `«${selektor}» har ingen utstrekning`)
-  krev(
-    svar.inni,
-    `«${selektor}» står utenfor forhåndsvisningen, så leseren ser den ikke der hun trykket`,
+  expect(result.found, `could not find "${selector}" in the preview`)
+  expect(result.surface, "found no .flate in the preview to compare against")
+  expect(result.visible, `"${selector}" has no extent`)
+  expect(
+    result.inside,
+    `"${selector}" is outside the preview, so the reader does not see it where they pressed`,
   )
 }
 
-await pa("tabs", "demo-tabs", "lt-tabs", async (side, id) => {
-  const svar = await side.evaluate((id) => {
-    const rot = document.getElementById(id)?.shadowRoot
-    const faner = [...(rot?.querySelectorAll("[role='tab']") ?? [])]
-    const paneler = [...(rot?.querySelectorAll("[role='tabpanel']") ?? [])]
-    ;(faner[1] as HTMLElement | undefined)?.click()
+await on("tabs", "demo-tabs", "lt-tabs", async (page, id) => {
+  const result = await page.evaluate((id) => {
+    const root = document.getElementById(id)?.shadowRoot
+    const tabs = [...(root?.querySelectorAll("[role='tab']") ?? [])]
+    const panels = [...(root?.querySelectorAll("[role='tabpanel']") ?? [])]
+    ;(tabs[1] as HTMLElement | undefined)?.click()
     return {
-      antall: faner.length,
-      valgt: faner[1]?.getAttribute("aria-selected"),
-      synlige: paneler.filter((p) => !(p as HTMLElement).hidden).length,
-      tabbestopp: faner.filter((f) => (f as HTMLElement).tabIndex === 0).length,
+      count: tabs.length,
+      selected: tabs[1]?.getAttribute("aria-selected"),
+      visible: panels.filter((p) => !(p as HTMLElement).hidden).length,
+      tabStops: tabs.filter((t) => (t as HTMLElement).tabIndex === 0).length,
     }
   }, id)
 
-  krev(svar.antall >= 2, `fant ${svar.antall} faner`)
-  krev(svar.valgt === "true", "et klikk velger ikke fanen")
-  krev(svar.synlige === 1, `${svar.synlige} paneler er synlige, ventet 1`)
-  krev(svar.tabbestopp === 1, "flere enn én fane er en tabbestopp")
+  expect(result.count >= 2, `found ${result.count} tabs`)
+  expect(result.selected === "true", "a click does not select the tab")
+  expect(
+    result.visible === 1,
+    `${result.visible} panels are visible, expected 1`,
+  )
+  expect(result.tabStops === 1, "more than one tab is a tab stop")
 })
 
-await pa(
+await on(
   "error-summary",
   "demo-error-summary",
   "lt-error-summary",
-  async (side, id) => {
-    const svar = await side.evaluate((id) => {
-      const rot = document.getElementById(id)?.shadowRoot
-      const boks = rot?.querySelector("lt-error-summary")
-      ;(rot?.querySelector("li a") as HTMLElement | undefined)?.click()
+  async (page, id) => {
+    const result = await page.evaluate((id) => {
+      const root = document.getElementById(id)?.shadowRoot
+      const box = root?.querySelector("lt-error-summary")
+      ;(root?.querySelector("li a") as HTMLElement | undefined)?.click()
       return {
-        klasse: boks?.classList.contains("lt-error-summary") ?? false,
-        rolle: boks?.getAttribute("role") ?? "",
-        tittel: (
-          rot?.querySelector(".lt-error-summary__title")?.textContent ?? ""
+        hasClass: box?.classList.contains("lt-error-summary") ?? false,
+        role: box?.getAttribute("role") ?? "",
+        title: (
+          root?.querySelector(".lt-error-summary__title")?.textContent ?? ""
         ).trim(),
-        fokus: (rot?.activeElement as HTMLElement | null)?.id ?? "",
+        focus: (root?.activeElement as HTMLElement | null)?.id ?? "",
       }
     }, id)
 
-    krev(svar.klasse, "boksen mangler klassen fra serveren")
-    krev(svar.rolle === "alert", "boksen er ikke en varsling")
-    krev(svar.tittel.length > 0, "overskriften er tom")
-    krev(
-      svar.fokus === "demo-epost",
-      `en lenke ga fokus til «${svar.fokus}», ventet feltet`,
+    expect(result.hasClass, "the box lacks the class from the server")
+    expect(result.role === "alert", "the box is not an alert")
+    expect(result.title.length > 0, "the heading is empty")
+    expect(
+      result.focus === "demo-epost",
+      `a link gave focus to "${result.focus}", expected the field`,
     )
   },
 )
 
-await pa("suggestion", "demo-suggestion", "lt-suggestion", async (side, id) => {
-  const svar = await side.evaluate((id) => {
-    const rot = document.getElementById(id)?.shadowRoot
-    const felt = rot?.querySelector("input") as HTMLInputElement | null
-    if (felt) {
-      felt.value = "bo"
-      felt.dispatchEvent(new Event("input", { bubbles: true }))
+await on("suggestion", "demo-suggestion", "lt-suggestion", async (page, id) => {
+  const result = await page.evaluate((id) => {
+    const root = document.getElementById(id)?.shadowRoot
+    const field = root?.querySelector("input") as HTMLInputElement | null
+    if (field) {
+      field.value = "bo"
+      field.dispatchEvent(new Event("input", { bubbles: true }))
     }
-    const alternativer = [...(rot?.querySelectorAll("[role='option']") ?? [])]
+    const options = [...(root?.querySelectorAll("[role='option']") ?? [])]
     return {
-      harFelt: Boolean(felt),
-      navn: felt?.name ?? "",
-      apen: felt?.getAttribute("aria-expanded") ?? "",
-      treff: alternativer.filter((o) => !(o as HTMLElement).hidden).length,
-      alle: alternativer.length,
-      status: (rot?.querySelector("[role='status']")?.textContent ?? "").trim(),
+      hasField: Boolean(field),
+      name: field?.name ?? "",
+      open: field?.getAttribute("aria-expanded") ?? "",
+      matches: options.filter((o) => !(o as HTMLElement).hidden).length,
+      all: options.length,
+      status: (
+        root?.querySelector("[role='status']")?.textContent ?? ""
+      ).trim(),
     }
   }, id)
 
-  // Et ekte felt med navn er hele poenget: uten det blir ingenting med i
-  // innsendingen før skriptet har kjørt.
-  krev(svar.harFelt, "demoen har ikke noe inndatafelt")
-  krev(svar.navn.length > 0, "feltet mangler name og blir ikke sendt inn")
-  krev(svar.alle > 1, "lista har ingen alternativer fra serveren")
-  krev(svar.apen === "true", "lista åpner seg ikke når brukeren skriver")
-  krev(svar.treff < svar.alle, "filtreringen snevrer ikke inn lista")
-  krev(svar.status.length > 0, "antall treff meldes ikke til skjermlesere")
+  // A real field with a name is the whole point: without it nothing is
+  // included in the submission before the script has run.
+  expect(result.hasField, "the demo has no input field")
+  expect(result.name.length > 0, "the field lacks name and is not submitted")
+  expect(result.all > 1, "the list has no options from the server")
+  expect(result.open === "true", "the list does not open when the user types")
+  expect(result.matches < result.all, "the filtering does not narrow the list")
+  expect(
+    result.status.length > 0,
+    "the number of matches is not announced to screen readers",
+  )
 })
 
-await pa("popover", "demo-popover", "lt-popover", async (side, id) => {
-  const svar = await side.evaluate((id) => {
-    const rot = document.getElementById(id)?.shadowRoot
-    // Delene slås opp slik komponenten selv gjør det: panelet er det som
-    // har `popover`, og knappen er den som peker på panelet.
-    const panel = rot?.querySelector("[popover]") as HTMLElement | null
-    const utloser = panel?.id
-      ? (rot?.querySelector(
+await on("popover", "demo-popover", "lt-popover", async (page, id) => {
+  const result = await page.evaluate((id) => {
+    const root = document.getElementById(id)?.shadowRoot
+    // The parts are looked up the way the component itself does it: the
+    // panel is the one with `popover`, and the button is the one that points
+    // to the panel.
+    const panel = root?.querySelector("[popover]") as HTMLElement | null
+    const trigger = panel?.id
+      ? (root?.querySelector(
           `[aria-controls="${panel.id}"]`,
         ) as HTMLElement | null)
       : null
-    utloser?.click()
+    trigger?.click()
     return {
-      apen: utloser?.getAttribute("aria-expanded") ?? "",
-      synlig: panel?.matches(":popover-open") ?? false,
-      koblet: Boolean(utloser?.getAttribute("aria-controls")),
+      open: trigger?.getAttribute("aria-expanded") ?? "",
+      visible: panel?.matches(":popover-open") ?? false,
+      wired: Boolean(trigger?.getAttribute("aria-controls")),
     }
   }, id)
 
-  krev(svar.koblet, "knappen er ikke koblet til panelet")
-  krev(svar.apen === "true", "et klikk åpner ikke panelet")
-  krev(svar.synlig, "panelet havner ikke i topplaget")
+  expect(result.wired, "the button is not wired to the panel")
+  expect(result.open === "true", "a click does not open the panel")
+  expect(result.visible, "the panel does not end up in the top layer")
 })
 
-await pa("dialog", "demo-dialog", "lt-dialog", async (side, id) => {
-  const svar = await side.evaluate((id) => {
-    const rot = document.getElementById(id)?.shadowRoot
-    const knapp = rot?.querySelector("[data-apne]") as HTMLElement | null
-    const dialog = rot?.querySelector("dialog") as HTMLDialogElement | null
-    knapp?.click()
+await on("dialog", "demo-dialog", "lt-dialog", async (page, id) => {
+  const result = await page.evaluate((id) => {
+    const root = document.getElementById(id)?.shadowRoot
+    const button = root?.querySelector("[data-apne]") as HTMLElement | null
+    const dialog = root?.querySelector("dialog") as HTMLDialogElement | null
+    button?.click()
     return {
-      // `:modal` og ikke `open`: et `<dialog open>` ser likt ut, men fanger
-      // ikke fokus og lukker ikke på Escape.
+      // `:modal` and not `open`: a `<dialog open>` looks the same, but does
+      // not trap focus and does not close on Escape.
       modal: dialog?.matches(":modal") ?? false,
-      fokusInne: dialog?.contains(rot?.activeElement ?? null) ?? false,
+      focusInside: dialog?.contains(root?.activeElement ?? null) ?? false,
     }
   }, id)
 
-  krev(svar.modal, "et klikk åpner ikke dialogen modalt")
-  krev(svar.fokusInne, "fokus havner ikke inne i dialogen")
+  expect(result.modal, "a click does not open the dialog as a modal")
+  expect(result.focusInside, "focus does not end up inside the dialog")
 })
 
-await pa("field", "demo-field", "lt-field", async (side, id) => {
-  const svar = await side.evaluate((id) => {
-    const rot = document.getElementById(id)?.shadowRoot
-    const felt = rot?.querySelector("input") as HTMLInputElement | null
-    const ledetekst = rot?.querySelector("label") as HTMLLabelElement | null
+await on("field", "demo-field", "lt-field", async (page, id) => {
+  const result = await page.evaluate((id) => {
+    const root = document.getElementById(id)?.shadowRoot
+    const field = root?.querySelector("input") as HTMLInputElement | null
+    const label = root?.querySelector("label") as HTMLLabelElement | null
     return {
-      koblet: Boolean(ledetekst?.htmlFor) && ledetekst?.htmlFor === felt?.id,
-      beskrevet: Boolean(felt?.getAttribute("aria-describedby")),
-      klasse: ledetekst?.classList.contains("lt-label") ?? false,
+      wired: Boolean(label?.htmlFor) && label?.htmlFor === field?.id,
+      described: Boolean(field?.getAttribute("aria-describedby")),
+      hasClass: label?.classList.contains("lt-label") ?? false,
     }
   }, id)
 
-  krev(svar.koblet, "ledeteksten peker ikke på feltet")
-  krev(svar.beskrevet, "hjelpeteksten er ikke koblet til feltet")
-  krev(svar.klasse, "ledeteksten mangler lt-label")
+  expect(result.wired, "the label does not point to the field")
+  expect(result.described, "the help text is not wired to the field")
+  expect(result.hasClass, "the label lacks lt-label")
 })
 
-await pa("toast", "demo-toast", "lt-toast", async (side, id) => {
-  const svar = await side.evaluate((id) => {
-    const rot = document.getElementById(id)?.shadowRoot
-    ;(rot?.getElementById("demo-toast-knapp") as HTMLElement | null)?.click()
-    const ko = rot?.querySelector("lt-toast")
+await on("toast", "demo-toast", "lt-toast", async (page, id) => {
+  const result = await page.evaluate((id) => {
+    const root = document.getElementById(id)?.shadowRoot
+    ;(root?.getElementById("demo-toast-knapp") as HTMLElement | null)?.click()
+    const region = root?.querySelector("lt-toast")
     return {
-      rolle: ko?.getAttribute("role") ?? "",
-      meldinger: rot?.querySelectorAll(".lt-toast__message").length ?? 0,
-      lukkeknapp: rot?.querySelectorAll(".lt-toast__close").length ?? 0,
+      role: region?.getAttribute("role") ?? "",
+      messages: root?.querySelectorAll(".lt-toast__message").length ?? 0,
+      closeButtons: root?.querySelectorAll(".lt-toast__close").length ?? 0,
     }
   }, id)
 
-  krev(svar.rolle === "status", "regionen er ikke en status-region")
-  krev(svar.meldinger === 1, `et klikk ga ${svar.meldinger} meldinger`)
-  krev(svar.lukkeknapp === 1, "meldingen har ingen lukkeknapp")
-  await synligIBoksen(side, id, ".lt-toast__message")
+  expect(result.role === "status", "the region is not a status region")
+  expect(result.messages === 1, `a click gave ${result.messages} messages`)
+  expect(result.closeButtons === 1, "the message has no close button")
+  await visibleInBox(page, id, ".lt-toast__message")
 })
 
-await pa(
+await on(
   "connection-status",
   "demo-samband",
   "lt-connection-status",
-  async (side, id) => {
-    await side.evaluate((id) => {
-      const rot = document.getElementById(id)?.shadowRoot
-      ;(rot?.getElementById("demo-samband-av") as HTMLElement | null)?.click()
+  async (page, id) => {
+    await page.evaluate((id) => {
+      const root = document.getElementById(id)?.shadowRoot
+      ;(root?.getElementById("demo-samband-av") as HTMLElement | null)?.click()
     }, id)
-    // Linja settes inn tom og fylles i neste tegning, så live-området finnes
-    // før innholdet kommer. Vent på teksten, ikke på klokka.
-    await side.waitForFunction(
+    // The bar is inserted empty and filled on the next frame, so the live
+    // region exists before the content arrives. Wait for the text, not the
+    // clock.
+    await page.waitForFunction(
       (id) =>
         (
           document
@@ -375,32 +389,35 @@ await pa(
       id,
       { timeout: 2000 },
     )
-    const svar = await side.evaluate((id) => {
-      const rot = document.getElementById(id)?.shadowRoot
-      const linje = rot?.querySelector(".lt-connection-status__bar")
+    const result = await page.evaluate((id) => {
+      const root = document.getElementById(id)?.shadowRoot
+      const bar = root?.querySelector(".lt-connection-status__bar")
       return {
-        tekst: (linje?.textContent ?? "").trim(),
-        tilstand: (linje as HTMLElement | null)?.dataset.state ?? "",
-        rolle: linje?.getAttribute("role") ?? "",
+        text: (bar?.textContent ?? "").trim(),
+        state: (bar as HTMLElement | null)?.dataset.state ?? "",
+        role: bar?.getAttribute("role") ?? "",
       }
     }, id)
 
-    krev(svar.tekst.length > 0, "linja sier ingenting")
-    krev(svar.tilstand === "offline", "linja melder ikke at sambandet er nede")
-    krev(svar.rolle === "status", "linja er ikke en status-region")
-    await synligIBoksen(side, id, ".lt-connection-status__bar")
+    expect(result.text.length > 0, "the bar says nothing")
+    expect(
+      result.state === "offline",
+      "the bar does not report that the connection is down",
+    )
+    expect(result.role === "status", "the bar is not a status region")
+    await visibleInBox(page, id, ".lt-connection-status__bar")
   },
 )
 
-await pa(
+await on(
   "session-timeout",
   "demo-okt",
   "lt-session-timeout",
-  async (side, id) => {
-    // Demoen varsler etter fem sekunder. Her ventes det på at dialogen
-    // faktisk åpner seg, ikke på klokka: en fast pause ville feilet
-    // tilfeldig, og en port som feiler tilfeldig blir ignorert.
-    await side.waitForFunction(
+  async (page, id) => {
+    // The demo warns after five seconds. Here we wait for the dialog to
+    // actually open, not for the clock: a fixed pause would fail at random,
+    // and a gate that fails at random gets ignored.
+    await page.waitForFunction(
       (id) =>
         (
           document
@@ -411,103 +428,115 @@ await pa(
       { timeout: 15000 },
     )
 
-    const svar = await side.evaluate((id) => {
-      const rot = document.getElementById(id)?.shadowRoot
-      const dialog = rot?.querySelector("dialog")
+    const result = await page.evaluate((id) => {
+      const root = document.getElementById(id)?.shadowRoot
+      const dialog = root?.querySelector("dialog")
       return {
-        rolle: dialog?.getAttribute("role") ?? "",
-        nedtelling: (
-          rot?.querySelector(".lt-session-timeout__count")?.textContent ?? ""
+        role: dialog?.getAttribute("role") ?? "",
+        countdown: (
+          root?.querySelector(".lt-session-timeout__count")?.textContent ?? ""
         ).trim(),
-        skjultForSkjermleser:
-          rot
+        hiddenFromScreenReader:
+          root
             ?.querySelector(".lt-session-timeout__count")
             ?.getAttribute("aria-hidden") ?? "",
-        knapper: rot?.querySelectorAll(".lt-session-timeout__actions button")
+        buttons: root?.querySelectorAll(".lt-session-timeout__actions button")
           .length,
       }
     }, id)
 
-    krev(svar.rolle === "alertdialog", "dialogen er ikke en alertdialog")
-    krev(/^\d+:\d\d$/.test(svar.nedtelling), "nedtellingen viser ikke tid")
-    krev(svar.skjultForSkjermleser === "true", "tallet leses opp hvert sekund")
-    krev(svar.knapper === 2, `dialogen har ${svar.knapper} knapper, ventet 2`)
+    expect(result.role === "alertdialog", "the dialog is not an alertdialog")
+    expect(
+      /^\d+:\d\d$/.test(result.countdown),
+      "the countdown does not show a time",
+    )
+    expect(
+      result.hiddenFromScreenReader === "true",
+      "the number is read out every second",
+    )
+    expect(
+      result.buttons === 2,
+      `the dialog has ${result.buttons} buttons, expected 2`,
+    )
   },
 )
 
 /*
- * Nedtrekkslista er en CSS-komponent, og har verken skyggerot eller
- * web component å slå opp. Den har likevel noe som kan slutte å
- * virke: `data-picker="styled"` ber nettleseren tegne lista inne i siden, og
- * den tegnes i topplaget, ikke inne i forhåndsvisningen. Uten denne testen
- * ville en demo som åpner seg uten farger meldt grønt.
+ * The select is a CSS component, and has neither a shadow root nor a web
+ * component to look up. It still has something that can stop working:
+ * `data-picker="styled"` asks the browser to draw the list inside the page,
+ * and it is drawn in the top layer, not inside the preview. Without this
+ * test, a demo that opens without colours would have reported green.
  */
-gjeldende = "select"
-await side.goto(`http://127.0.0.1:${PORT}/components/select/`, {
+current = "select"
+await page.goto(`http://127.0.0.1:${PORT}/components/select/`, {
   waitUntil: "networkidle",
 })
 
-const stylet = await side.evaluate(async () => {
-  const vert = [...document.querySelectorAll("*")].find((element) =>
+const styled = await page.evaluate(async () => {
+  const host = [...document.querySelectorAll("*")].find((element) =>
     element.shadowRoot?.querySelector('select[data-picker="styled"]'),
   )
-  const felt = vert?.shadowRoot?.querySelector(
+  const field = host?.shadowRoot?.querySelector(
     'select[data-picker="styled"]',
   ) as HTMLSelectElement | undefined
 
-  if (!felt) return { finnes: false }
+  if (!field) return { exists: false }
 
-  felt.focus()
-  felt.showPicker()
+  field.focus()
+  field.showPicker()
 
-  // Vent på at lista faktisk er tonet inn, ikke på klokka. Overgangen varer
-  // 120 millisekunder, og en fast pause ville feilet tilfeldig på en treg
-  // kjøring.
-  for (let forsok = 0; forsok < 90; forsok++) {
-    if (getComputedStyle(felt, "::picker(select)").opacity === "1") break
-    await new Promise((ferdig) => requestAnimationFrame(ferdig))
+  // Wait for the list to actually fade in, not for the clock. The transition
+  // lasts 120 milliseconds, and a fixed pause would fail at random on a slow
+  // run.
+  for (let attempt = 0; attempt < 90; attempt++) {
+    if (getComputedStyle(field, "::picker(select)").opacity === "1") break
+    await new Promise((done) => requestAnimationFrame(done))
   }
 
-  const liste = getComputedStyle(felt, "::picker(select)")
-  const valg = felt.querySelector("option")
+  const list = getComputedStyle(field, "::picker(select)")
+  const option = field.querySelector("option")
 
   return {
-    finnes: true,
-    utseende: getComputedStyle(felt).appearance,
-    apen: felt.matches(":open"),
-    flate: liste.backgroundColor,
-    hoyde: Number.parseFloat(liste.blockSize),
-    valgPadding: valg ? getComputedStyle(valg).padding : "",
+    exists: true,
+    appearance: getComputedStyle(field).appearance,
+    open: field.matches(":open"),
+    surface: list.backgroundColor,
+    height: Number.parseFloat(list.blockSize),
+    optionPadding: option ? getComputedStyle(option).padding : "",
   }
 })
 
-krev(stylet.finnes, 'fant ingen demo med data-picker="styled"')
+expect(styled.exists, 'found no demo with data-picker="styled"')
 
-// Resten sier bare «undefined» om igjen når demoen ikke finnes.
-if (stylet.finnes) {
-  krev(
-    stylet.utseende === "base-select",
-    `feltet tegnes som ${stylet.utseende}`,
+// The rest only repeats "undefined" when the demo does not exist.
+if (styled.exists) {
+  expect(
+    styled.appearance === "base-select",
+    `the field is drawn as ${styled.appearance}`,
   )
-  krev(stylet.apen === true, "lista åpnet seg ikke")
-  krev(
-    stylet.flate === "rgb(255, 255, 255)",
-    `lista har flaten ${stylet.flate}`,
+  expect(styled.open === true, "the list did not open")
+  expect(
+    styled.surface === "rgb(255, 255, 255)",
+    `the list has the surface ${styled.surface}`,
   )
-  krev((stylet.hoyde ?? 0) > 40, `lista er ${stylet.hoyde} piksler høy`)
-  krev(stylet.valgPadding === "8px 12px", `et valg har ${stylet.valgPadding}`)
+  expect((styled.height ?? 0) > 40, `the list is ${styled.height} pixels high`)
+  expect(
+    styled.optionPadding === "8px 12px",
+    `an option has ${styled.optionPadding}`,
+  )
 }
 
-await nettleser.close()
-tjener.stop()
+await browser.close()
+server.stop()
 
-if (feil.length > 0) {
+if (errors.length > 0) {
   console.error(
-    `Forhåndsvisningene på komponentsidene virker ikke som de skal:\n\n${feil
-      .map((linje) => `  ${linje}`)
+    `The previews on the component pages do not work as they should:\n\n${errors
+      .map((line) => `  ${line}`)
       .join("\n")}\n`,
   )
   process.exit(1)
 }
 
-console.log("Forhåndsvisningene på komponentsidene gjør det de sier.")
+console.log("The previews on the component pages do what they say.")

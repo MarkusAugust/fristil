@@ -1,26 +1,27 @@
 /**
- * Prøver `diagnoseRendered` mot en ekte nettleser: siden slik Chromium har
- * rendret den, med stilarkene den har lastet.
+ * Tests `diagnoseRendered` against a real browser: the page as Chromium has
+ * rendered it, with the stylesheets it has loaded.
  *
- * Sidene serveres fra én port og stilarket fra en annen, som et CDN, så både
- * et stilark CSSOM kan lese og et som må hentes på nytt blir prøvd.
+ * The pages are served from one port and the stylesheet from another, like a
+ * CDN, so both a stylesheet the CSSOM can read and one that has to be fetched
+ * again are tested.
  *
- * Skriptet som leser siden finnes også i LO-TEK for Kotlin, som tekst, siden
- * pakken ikke avhenger av Playwright. Det kjøres her også, og skal gi det
- * samme svaret.
+ * The script that reads the page also exists in LO-TEK for Kotlin, as text,
+ * since that package does not depend on Playwright. It runs here too, and has
+ * to give the same answer.
  *
- * Til slutt går hver bygde side i dokumentasjonen gjennom `diagnosePage`, og
- * hver forhåndsvisning på den gjennom `diagnoseMarkup`, og alt skal gi null
- * funn. Det er vakten mot falske funn: en regel som slår ut på våre egne
- * oppskrifter, feller bygget her, før den når en editor. Siden i sidemodus
- * og ikke markupmodus: markupmodus leser kodeeksemplene i Expressive Code
- * sitt `data-code` som markup, mens `pageSource` i kjernen blanker dem.
- * Men `pageSource` blanker også `<template shadowrootmode>`, der
- * forhåndsvisningene ligger, så de leses for seg, som den markupen de er.
- * Den ene klassen dokumentasjonen har selv, `lt-preview`, er unntatt ved
- * navn.
+ * Finally every built page of the documentation goes through `diagnosePage`,
+ * and every preview on it through `diagnoseMarkup`, and all of it has to give
+ * zero findings. That is the guard against false findings: a rule that fires
+ * on our own recipes fails the build here, before it reaches an editor. The
+ * page in page mode and not markup mode: markup mode reads the code examples
+ * in Expressive Code's `data-code` as markup, while `pageSource` in the core
+ * blanks them. But `pageSource` also blanks `<template shadowrootmode>`,
+ * where the previews are, so those are read on their own, as the markup they
+ * are. The one class of the documentation's own, `lt-preview`, is exempt by
+ * name.
  *
- * Kjør med: bun scripts/check-rendered.ts (etter bun run build)
+ * Run with: bun scripts/check-rendered.ts (after bun run build)
  */
 
 import { readFileSync } from "node:fs"
@@ -34,8 +35,8 @@ import {
   READ_RENDERED_PAGE,
 } from "../src/diagnostics/index.js"
 
-const pakke = fileURLToPath(new URL("..", import.meta.url))
-const lotekCss = readFileSync(join(pakke, "dist/lotek.css"), "utf8")
+const pkg = fileURLToPath(new URL("..", import.meta.url))
+const lotekCss = readFileSync(join(pkg, "dist/lotek.css"), "utf8")
 
 const cdn = Bun.serve({
   port: 0,
@@ -48,159 +49,168 @@ const cdn = Bun.serve({
     }),
 })
 
-const side = (head: string, body: string) =>
-  `<!doctype html><html lang="nb"><head><meta charset="utf-8"><title>Prøve</title>${head}</head><body>${body}</body></html>`
+const page = (head: string, body: string) =>
+  `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Test</title>${head}</head><body>${body}</body></html>`
 
-const knapper =
-  '<button class="lt-button" type="button" data-variant="ghost">Lagre</button><div class="lt-card">Kort</div>'
+const buttons =
+  '<button class="lt-button" type="button" data-variant="ghost">Save</button><div class="lt-card">Card</div>'
 
-const sider: Record<string, string> = {
-  "/med-stilark": side('<link rel="stylesheet" href="/lotek.css">', knapper),
-  "/uten-stilark": side("", knapper),
-  // Fra en annen opprinnelse, uten crossorigin: CSSOM kan ikke lese det.
-  "/fra-cdn": side(
-    `<link rel="stylesheet" href="${cdn.url}lotek.css">`,
-    knapper,
-  ),
-  // En klasse satt av skript, etter at serveren sendte siden.
-  "/skript": side(
+const pages: Record<string, string> = {
+  "/with-stylesheet": page(
     '<link rel="stylesheet" href="/lotek.css">',
-    '<div id="x">Kort</div><script>document.getElementById("x").className = "lt-kort"</script>',
+    buttons,
+  ),
+  "/without-stylesheet": page("", buttons),
+  // From another origin, without crossorigin: the CSSOM cannot read it.
+  "/from-cdn": page(
+    `<link rel="stylesheet" href="${cdn.url}lotek.css">`,
+    buttons,
+  ),
+  // A class set by a script, after the server sent the page.
+  "/script": page(
+    '<link rel="stylesheet" href="/lotek.css">',
+    '<div id="x">Card</div><script>document.getElementById("x").className = "lt-not-a-class"</script>',
   ),
 }
 
 const server = Bun.serve({
   port: 0,
   fetch(request) {
-    const sti = new URL(request.url).pathname
-    if (sti === "/lotek.css")
+    const path = new URL(request.url).pathname
+    if (path === "/lotek.css")
       return new Response(lotekCss, {
         headers: { "content-type": "text/css" },
       })
-    const html = sider[sti]
+    const html = pages[path]
     return html
       ? new Response(html, {
           headers: { "content-type": "text/html; charset=utf-8" },
         })
-      : new Response("Finnes ikke", { status: 404 })
+      : new Response("Not found", { status: 404 })
   },
 })
 
-const feil: string[] = []
-const krev = (påstand: boolean, beskrivelse: string) => {
-  if (!påstand) feil.push(beskrivelse)
+const errors: string[] = []
+const expect = (claim: boolean, description: string) => {
+  if (!claim) errors.push(description)
 }
 
-const nettleser = await chromium.launch()
+const browser = await chromium.launch()
 try {
-  const page = await nettleser.newPage()
-  const funn = async (sti: string) => {
-    await page.goto(`${server.url}${sti.slice(1)}`)
-    return diagnoseRendered(page)
+  const tab = await browser.newPage()
+  const findings = async (path: string) => {
+    await tab.goto(`${server.url}${path.slice(1)}`)
+    return diagnoseRendered(tab)
   }
 
-  const med = await funn("/med-stilark")
-  krev(med.length === 0, `siden med stilarket ga funn: ${JSON.stringify(med)}`)
-
-  const uten = await funn("/uten-stilark")
-  krev(
-    uten.filter((f) => f.rule === "unstyled-class").length === 2,
-    `siden uten stilark skulle gitt to ustylede klasser: ${JSON.stringify(uten.map((f) => f.message))}`,
+  const withSheet = await findings("/with-stylesheet")
+  expect(
+    withSheet.length === 0,
+    `the page with the stylesheet gave findings: ${JSON.stringify(withSheet)}`,
   )
 
-  const fraCdn = await funn("/fra-cdn")
-  krev(
-    fraCdn.length === 0,
-    `stilarket fra en annen opprinnelse ble ikke lest: ${JSON.stringify(fraCdn.map((f) => f.message))}`,
+  const withoutSheet = await findings("/without-stylesheet")
+  expect(
+    withoutSheet.filter((f) => f.rule === "unstyled-class").length === 2,
+    `the page without a stylesheet should have given two unstyled classes: ${JSON.stringify(withoutSheet.map((f) => f.message))}`,
   )
 
-  const skript = await funn("/skript")
-  krev(
-    skript.some(
-      (f) => f.rule === "unknown-class" && f.message.includes("lt-kort"),
+  const fromCdn = await findings("/from-cdn")
+  expect(
+    fromCdn.length === 0,
+    `the stylesheet from another origin was not read: ${JSON.stringify(fromCdn.map((f) => f.message))}`,
+  )
+
+  const script = await findings("/script")
+  expect(
+    script.some(
+      (f) => f.rule === "unknown-class" && f.message.includes("lt-not-a-class"),
     ),
-    `klassen skriptet satte, ble ikke sjekket: ${JSON.stringify(skript.map((f) => f.message))}`,
+    `the class the script set was not checked: ${JSON.stringify(script.map((f) => f.message))}`,
   )
 
-  // Kotlin-utgaven av skriptet gir det samme som TypeScript-utgaven.
+  // The Kotlin version of the script gives the same as the TypeScript one.
   const kotlin = readFileSync(
-    join(pakke, "../kotlin/src/main/kotlin/no/lotek/Lotek.kt"),
+    join(pkg, "../kotlin/src/main/kotlin/no/lotek/Lotek.kt"),
     "utf8",
   )
-  const kotlinSkript = /READ_RENDERED_PAGE: String = """([\s\S]*?)"""/
+  const kotlinScript = /READ_RENDERED_PAGE: String = """([\s\S]*?)"""/
     .exec(kotlin)?.[1]
-    // `${'$'}` er et dollartegn i en Kotlin-streng.
+    // `${'$'}` is a dollar sign in a Kotlin string.
     ?.replaceAll("$" + "{'$'}", "$")
-  krev(kotlinSkript !== undefined, "fant ikke READ_RENDERED_PAGE i Lotek.kt")
-  krev(
-    kotlinSkript?.startsWith("async () => {") === true &&
-      kotlinSkript.endsWith("}") &&
-      !/^\s*\/\//m.test(kotlinSkript),
-    "READ_RENDERED_PAGE i Lotek.kt skal være bare funksjonen, uten blanke tegn eller kommentarer rundt",
+  expect(
+    kotlinScript !== undefined,
+    "could not find READ_RENDERED_PAGE in Lotek.kt",
   )
-  for (const sti of ["/med-stilark", "/fra-cdn"]) {
-    await page.goto(`${server.url}${sti.slice(1)}`)
-    const fraTs = await page.evaluate(READ_RENDERED_PAGE)
-    // Playwright for Java sender teksten, og Playwright pakker den inn i
-    // parenteser og kaller den. En kommentar på siste linje ville da slukt
-    // parentesen, så teksten må være bare funksjonen.
-    const fraKotlin = await page.evaluate(`(${kotlinSkript})()`)
-    krev(
-      JSON.stringify(fraTs) === JSON.stringify(fraKotlin),
-      `skriptet i Lotek.kt leser ${sti} annerledes enn det i TypeScript`,
+  expect(
+    kotlinScript?.startsWith("async () => {") === true &&
+      kotlinScript.endsWith("}") &&
+      !/^\s*\/\//m.test(kotlinScript),
+    "READ_RENDERED_PAGE in Lotek.kt must be just the function, with no whitespace or comments around it",
+  )
+  for (const path of ["/with-stylesheet", "/from-cdn"]) {
+    await tab.goto(`${server.url}${path.slice(1)}`)
+    const fromTs = await tab.evaluate(READ_RENDERED_PAGE)
+    // Playwright for Java sends the text, and Playwright wraps it in
+    // parentheses and calls it. A comment on the last line would then
+    // swallow the parenthesis, so the text must be just the function.
+    const fromKotlin = await tab.evaluate(`(${kotlinScript})()`)
+    expect(
+      JSON.stringify(fromTs) === JSON.stringify(fromKotlin),
+      `the script in Lotek.kt reads ${path} differently from the one in TypeScript`,
     )
   }
 } finally {
-  await nettleser.close()
+  await browser.close()
   server.stop()
   cdn.stop()
 }
 
 /*
- * Dokumentasjonen gir null funn i sidemodus.
+ * The documentation gives zero findings in page mode.
  *
- * Tell sidene sist i løkka, og krev at tallet er likt antallet filer og
- * større enn null: en glob som fant ingenting, skal ikke se ut som en
- * dokumentasjon uten feil.
+ * Count the pages last in the loop, and require the number to equal the
+ * number of files and be greater than zero: a glob that found nothing must
+ * not look like documentation without errors.
  */
-const dist = join(pakke, "../documentation/dist")
-const filer = [...new Bun.Glob("**/*.html").scanSync({ cwd: dist })].sort()
-const egenKlasse = (f: { rule: string; message: string }) =>
-  f.rule === "unknown-class" && f.message.includes("«lt-preview»")
-let antallSider = 0
-let antallForhandsvisninger = 0
-for (const fil of filer) {
-  const html = readFileSync(join(dist, fil), "utf8")
+const dist = join(pkg, "../documentation/dist")
+const files = [...new Bun.Glob("**/*.html").scanSync({ cwd: dist })].sort()
+const ownClass = (f: { rule: string; message: string }) =>
+  f.rule === "unknown-class" && f.message.includes('"lt-preview"')
+let pageCount = 0
+let previewCount = 0
+for (const file of files) {
+  const html = readFileSync(join(dist, file), "utf8")
   for (const f of await diagnosePage(html))
-    if (!egenKlasse(f))
-      feil.push(`${fil} ${f.line}:${f.column} ${f.rule}: ${f.message}`)
+    if (!ownClass(f))
+      errors.push(`${file} ${f.line}:${f.column} ${f.rule}: ${f.message}`)
   for (const [, markup] of html.matchAll(
     /<template shadowrootmode="open">([\s\S]*?)<\/template>/g,
   )) {
     for (const f of await diagnoseMarkup(markup))
-      if (!egenKlasse(f))
-        feil.push(
-          `${fil} (forhåndsvisning) ${f.line}:${f.column} ${f.rule}: ${f.message}`,
+      if (!ownClass(f))
+        errors.push(
+          `${file} (preview) ${f.line}:${f.column} ${f.rule}: ${f.message}`,
         )
-    antallForhandsvisninger += 1
+    previewCount += 1
   }
-  antallSider += 1
+  pageCount += 1
 }
-krev(
-  antallSider === filer.length && antallSider > 0,
-  `sjekket ${antallSider} sider i dokumentasjonen, ventet ${filer.length} og minst én`,
+expect(
+  pageCount === files.length && pageCount > 0,
+  `checked ${pageCount} pages of the documentation, expected ${files.length} and at least one`,
 )
-krev(
-  antallForhandsvisninger > 0,
-  "fant ingen forhåndsvisninger i dokumentasjonen, så oppskriftene ble ikke lest",
+expect(
+  previewCount > 0,
+  "found no previews in the documentation, so the recipes were not read",
 )
 
-if (feil.length > 0) {
+if (errors.length > 0) {
   console.error(
-    `✗ diagnoseRendered:\n\n${feil.map((f) => `  ${f}`).join("\n")}\n`,
+    `✗ diagnoseRendered:\n\n${errors.map((f) => `  ${f}`).join("\n")}\n`,
   )
   process.exit(1)
 }
 console.log(
-  `diagnoseRendered sjekker siden slik nettleseren rendret den, med stilarkene, og ${antallSider} bygde sider i dokumentasjonen gir null funn, med ${antallForhandsvisninger} forhåndsvisninger lest som markup.`,
+  `diagnoseRendered checks the page as the browser rendered it, with the stylesheets, and ${pageCount} built pages of the documentation give zero findings, with ${previewCount} previews read as markup.`,
 )

@@ -33,7 +33,7 @@
       "message": "data-color cannot be \"lilla\" on badge. Valid values: success, warning, danger, neutral, and info without the attribute."
     }
   ],
-  "side": [
+  "page": [
     {
       "start": 26,
       "end": 46,

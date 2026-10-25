@@ -1,105 +1,105 @@
 /**
- * At hvert inngangspunkt lar seg importere på en server, uten DOM, og at
- * registreringen ikke gjør noe der.
+ * Checks that every entry point can be imported on a server, without a DOM,
+ * and that registration does nothing there.
  *
- * `HTMLElement` og `customElements` finnes bare i nettleseren, og en
- * `class X extends HTMLElement` blir evaluert i det modulen lastes. Ni av
- * inngangspunktene stoppet derfor med «HTMLElement is not defined» på en
- * server som bare ville hente `lt.button()`. Hovedinngangen var ett av dem,
- * altså nøyaktig den linja «Kom i gang» ber leseren skrive.
+ * `HTMLElement` and `customElements` exist only in the browser, and a
+ * `class X extends HTMLElement` is evaluated when the module loads. Nine of
+ * the entry points therefore stopped with "HTMLElement is not defined" on a
+ * server that only wanted `lt.button()`. The main entry point was one of
+ * them, which is exactly the line "Getting started" tells the reader to write.
  *
- * Ingen nettlesertest kunne se det: der finnes `HTMLElement`. Denne kjører i
- * Bun, uten DOM, som en SSR-server gjør.
+ * No browser test could see it: `HTMLElement` exists there. This one runs in
+ * Bun, without a DOM, as an SSR server does.
  *
- * Kjøres av `bun run build`, etter at `dist` er bygd.
+ * Run by `bun run build`, after `dist` is built.
  */
 
-const pakke = new URL("../", import.meta.url)
-const manifest = await Bun.file(new URL("package.json", pakke)).json()
+const packageRoot = new URL("../", import.meta.url)
+const manifest = await Bun.file(new URL("package.json", packageRoot)).json()
 
 if (typeof globalThis.HTMLElement !== "undefined") {
   console.error(
-    "Denne sjekken skal kjøre uten DOM. Her fantes HTMLElement, så den beviser ingenting.",
+    "This check must run without a DOM. HTMLElement exists here, so it proves nothing.",
   )
   process.exit(1)
 }
 
-type Oppforing = string | { import?: string }
+type ExportEntry = string | { import?: string }
 
-const inngangspunkter = Object.entries(
-  manifest.exports as Record<string, Oppforing>,
+const entryPoints = Object.entries(
+  manifest.exports as Record<string, ExportEntry>,
 )
-  .filter(([navn]) => !navn.endsWith(".css") && navn !== "./package.json")
-  .map(([navn, verdi]) => [
-    navn,
-    typeof verdi === "string" ? verdi : verdi.import,
+  .filter(([name]) => !name.endsWith(".css") && name !== "./package.json")
+  .map(([name, value]) => [
+    name,
+    typeof value === "string" ? value : value.import,
   ])
-  .filter((par): par is [string, string] => typeof par[1] === "string")
+  .filter((pair): pair is [string, string] => typeof pair[1] === "string")
 
-if (inngangspunkter.length < 20) {
+if (entryPoints.length < 20) {
   console.error(
-    `Fant bare ${inngangspunkter.length} inngangspunkter å prøve. Sjekk formatet på exports.`,
+    `Found only ${entryPoints.length} entry points to try. Check the format of exports.`,
   )
   process.exit(1)
 }
 
-const feil: string[] = []
-const registreringer: Array<[string, () => void]> = []
+const failures: string[] = []
+const registrations: Array<[string, () => void]> = []
 
-for (const [navn, fil] of inngangspunkter) {
+for (const [name, file] of entryPoints) {
   try {
-    // Stien gjøres om til en URL. `import()` med en ren filsti er ikke
-    // portabel: på Windows leser ESM `C:\…` som et `c:`-skjema, og da ville
-    // sjekken meldt hvert eneste inngangspunkt som feilende.
-    const modul = await import(new URL(fil, pakke).href)
+    // The path is turned into a URL. `import()` with a bare file path is not
+    // portable: on Windows, ESM reads `C:\…` as a `c:` scheme, and the check
+    // would then have reported every single entry point as failing.
+    const module = await import(new URL(file, packageRoot).href)
 
-    for (const [eksportnavn, verdi] of Object.entries(modul)) {
-      if (eksportnavn.startsWith("defineLt") && typeof verdi === "function") {
-        registreringer.push([`${navn} → ${eksportnavn}`, verdi as () => void])
+    for (const [exportName, value] of Object.entries(module)) {
+      if (exportName.startsWith("defineLt") && typeof value === "function") {
+        registrations.push([`${name} → ${exportName}`, value as () => void])
       }
     }
   } catch (error) {
-    feil.push(`  ${navn}: ${String(error).split("\n")[0]}`)
+    failures.push(`  ${name}: ${String(error).split("\n")[0]}`)
   }
 }
 
-if (feil.length > 0) {
+if (failures.length > 0) {
   console.error(
-    `Disse inngangspunktene lar seg ikke importere på en server:\n\n${feil.join("\n")}\n`,
+    `These entry points cannot be imported on a server:\n\n${failures.join("\n")}\n`,
   )
   process.exit(1)
 }
 
 /*
- * Å importere holder ikke. `defineLt*` kalles fra filer som i TanStack Start
- * kjøres både på serveren og i nettleseren, og der finnes det ingen
- * `customElements` å registrere i. Uten dette kunne `customElements`-vakten i
- * `defineElement` forsvinne uten at noe sa fra.
+ * Importing is not enough. `defineLt*` is called from files that in TanStack
+ * Start run both on the server and in the browser, and on the server there
+ * is no `customElements` to register in. Without this, the `customElements`
+ * guard in `defineElement` could disappear without anything saying so.
  */
-const registreringsfeil: string[] = []
+const registrationFailures: string[] = []
 
-for (const [navn, registrer] of registreringer) {
+for (const [name, register] of registrations) {
   try {
-    registrer()
+    register()
   } catch (error) {
-    registreringsfeil.push(`  ${navn}: ${String(error).split("\n")[0]}`)
+    registrationFailures.push(`  ${name}: ${String(error).split("\n")[0]}`)
   }
 }
 
-if (registreringer.length < 8) {
+if (registrations.length < 8) {
   console.error(
-    `Fant bare ${registreringer.length} registreringsfunksjoner. Ventet én per web component.`,
+    `Found only ${registrations.length} registration functions. Expected one per web component.`,
   )
   process.exit(1)
 }
 
-if (registreringsfeil.length > 0) {
+if (registrationFailures.length > 0) {
   console.error(
-    `Disse registreringene stopper på en server:\n\n${registreringsfeil.join("\n")}\n`,
+    `These registrations stop on a server:\n\n${registrationFailures.join("\n")}\n`,
   )
   process.exit(1)
 }
 
 console.log(
-  `Alle ${inngangspunkter.length} inngangspunktene lar seg importere uten DOM, og alle ${registreringer.length} registreringene er stille der.`,
+  `All ${entryPoints.length} entry points can be imported without a DOM, and all ${registrations.length} registrations are silent there.`,
 )

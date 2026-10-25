@@ -1,19 +1,19 @@
 /**
- * At hver side i dokumentasjonen også finnes som Markdown, og at Markdown-
- * utgaven har med det siden har.
+ * That every page in the documentation also exists as Markdown, and that the
+ * Markdown version has what the page has.
  *
- * Filene skrives av `src/plugins/markdown-pages.mjs` etter bygget, av den
- * ferdige HTML-en. Det som kan gå galt, går galt i stillhet: en Starlight-
- * oppgradering som gir kodeblokkene en ny klasse, gir Markdown uten kode, og en
- * ny komponent i en side kan legge igjen rå HTML. Ingen ser på filene, så det
- * er denne sjekken som ser.
+ * The files are written by `src/plugins/markdown-pages.mjs` after the build,
+ * from the finished HTML. What can go wrong goes wrong silently: a Starlight
+ * upgrade that gives the code blocks a new class gives Markdown without code,
+ * and a new component in a page can leave raw HTML behind. Nobody looks at
+ * the files, so this check is what does.
  *
- * Kontrollene er gjort med andre midler enn omskriveren bruker: regulære
- * uttrykk på HTML-en og en enkel linjeleser på Markdown-en, ikke hast og mdast.
- * En feil i den ene tolkningen gjentas da ikke i den andre.
+ * The checks use other means than the rewriter does: regular expressions on
+ * the HTML and a simple line reader on the Markdown, not hast and mdast. A
+ * bug in one interpretation is then not repeated in the other.
  *
- * Kjør med: bun documentation/scripts/check-markdown-pages.ts
- * Krever at `documentation/dist` er bygd.
+ * Run with: bun documentation/scripts/check-markdown-pages.ts
+ * Requires `documentation/dist` to be built.
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs"
@@ -21,124 +21,124 @@ import { fileURLToPath } from "node:url"
 
 const DIST = fileURLToPath(new URL("../dist/", import.meta.url))
 
-const avvik: string[] = []
+const problems: string[] = []
 
-function htmlsider(mappe: string): string[] {
-  return readdirSync(mappe, { withFileTypes: true }).flatMap((oppf) => {
-    const sti = `${mappe}${oppf.name}`
-    if (oppf.isDirectory()) return htmlsider(`${sti}/`)
-    return oppf.name === "index.html" ? [sti] : []
+function htmlPages(folder: string): string[] {
+  return readdirSync(folder, { withFileTypes: true }).flatMap((entry) => {
+    const path = `${folder}${entry.name}`
+    if (entry.isDirectory()) return htmlPages(`${path}/`)
+    return entry.name === "index.html" ? [path] : []
   })
 }
 
-/** Antall kodeblokker i Markdown, med gjerder av ``` eller ~~~. */
-function kodeblokker(markdown: string): number {
-  let antall = 0
-  let gjerde: string | null = null
+/** The number of code blocks in Markdown, fenced with ``` or ~~~. */
+function codeBlocks(markdown: string): number {
+  let count = 0
+  let fence: string | null = null
 
-  for (const linje of markdown.split("\n")) {
-    const treff = /^\s*(`{3,}|~{3,})/.exec(linje)
-    if (!treff) continue
+  for (const line of markdown.split("\n")) {
+    const match = /^\s*(`{3,}|~{3,})/.exec(line)
+    if (!match) continue
 
-    if (gjerde === null) {
-      gjerde = treff[1]
-      antall += 1
+    if (fence === null) {
+      fence = match[1]
+      count += 1
     } else if (
-      treff[1][0] === gjerde[0] &&
-      treff[1].length >= gjerde.length &&
-      linje.trim() === treff[1]
+      match[1][0] === fence[0] &&
+      match[1].length >= fence.length &&
+      line.trim() === match[1]
     ) {
-      gjerde = null
+      fence = null
     }
   }
 
-  return antall
+  return count
 }
 
-/** Markdown uten kodeblokker og kode i linja, der HTML er lov. */
-function utenKode(markdown: string): string {
+/** Markdown without code blocks and inline code, where HTML is allowed. */
+function withoutCode(markdown: string): string {
   return markdown
     .replace(/^\s*(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\s*\1\s*$/gm, "")
     .replace(/(`+)[\s\S]*?\1/g, "")
 }
 
 const headers = readFileSync(`${DIST}_headers`, "utf8")
-let sider = 0
+let pages = 0
 
-for (const fil of htmlsider(DIST)) {
-  const html = readFileSync(fil, "utf8")
-  const side = fil.slice(DIST.length - 1).replace(/index\.html$/, "")
+for (const file of htmlPages(DIST)) {
+  const html = readFileSync(file, "utf8")
+  const page = file.slice(DIST.length - 1).replace(/index\.html$/, "")
 
-  if (!html.includes('class="sl-markdown-content"') || side === "/404/")
+  if (!html.includes('class="sl-markdown-content"') || page === "/404/")
     continue
 
-  const lenke =
+  const link =
     /<link rel="alternate" type="text\/markdown" href="([^"]+)"/.exec(html)
-  if (!lenke) {
-    avvik.push(`${side} har ingen Markdown-lenke i sidehodet`)
+  if (!link) {
+    problems.push(`${page} has no Markdown link in the page head`)
     continue
   }
 
-  const adresse = lenke[1]
+  const address = link[1]
   let markdown: string
 
   try {
-    markdown = readFileSync(`${DIST}${adresse.slice(1)}`, "utf8")
+    markdown = readFileSync(`${DIST}${address.slice(1)}`, "utf8")
   } catch {
-    avvik.push(`${side} lenker til ${adresse}, som ikke ble skrevet`)
+    problems.push(`${page} links to ${address}, which was not written`)
     continue
   }
 
-  sider += 1
+  pages += 1
 
-  // Skrevet i samme bygg som siden, ikke liggende igjen fra et eldre.
-  if (statSync(`${DIST}${adresse.slice(1)}`).mtimeMs < statSync(fil).mtimeMs)
-    avvik.push(`${adresse} er eldre enn ${side}`)
+  // Written in the same build as the page, not left over from an older one.
+  if (statSync(`${DIST}${address.slice(1)}`).mtimeMs < statSync(file).mtimeMs)
+    problems.push(`${address} is older than ${page}`)
 
-  const tittel = /<h1 id="_top"[^>]*>([^<]*)<\/h1>/.exec(html)?.[1]
-  if (tittel && !markdown.startsWith(`# ${tittel}\n`))
-    avvik.push(`${adresse} begynner ikke med «# ${tittel}»`)
+  const title = /<h1 id="_top"[^>]*>([^<]*)<\/h1>/.exec(html)?.[1]
+  if (title && !markdown.startsWith(`# ${title}\n`))
+    problems.push(`${address} does not start with "# ${title}"`)
 
   /*
-   * Hver kodeblokk på siden skal stå i Markdown, verken mer eller mindre.
-   * Forhåndsvisningene i `<template>` telles ikke: markupen der står i
-   * «Plain HTML»-fanen, som er en kodeblokk.
+   * Every code block on the page must be in the Markdown, no more and no
+   * fewer. The previews in `<template>` are not counted: their markup is in
+   * the "Plain HTML" tab, which is a code block.
    */
-  const innhold = html
+  const content = html
     .slice(html.indexOf('class="sl-markdown-content"'))
     .replace(/<template[\s\S]*?<\/template>/g, "")
-  const iSiden = (innhold.match(/<pre[\s>]/g) ?? []).length
-  const iMarkdown = kodeblokker(markdown)
-  if (iSiden !== iMarkdown)
-    avvik.push(
-      `${adresse} har ${iMarkdown} kodeblokker, mens siden har ${iSiden}`,
+  const inPage = (content.match(/<pre[\s>]/g) ?? []).length
+  const inMarkdown = codeBlocks(markdown)
+  if (inPage !== inMarkdown)
+    problems.push(
+      `${address} has ${inMarkdown} code blocks, while the page has ${inPage}`,
     )
 
   /*
-   * Rå HTML utenfor kode er en komponent omskriveren ikke kjenner. `<x@y>` og
-   * `<https://…>` er Markdowns egne lenker, og `\<` er en vinkel som er
-   * skrevet som tekst.
+   * Raw HTML outside code is a component the rewriter does not know. `<x@y>`
+   * and `<https://…>` are Markdown's own links, and `\<` is an angle bracket
+   * written as text.
    */
-  const rest = utenKode(markdown).match(
+  const rest = withoutCode(markdown).match(
     /(?<!\\)<(?![a-z][\w.+-]*@|https?:)[a-zA-Z][^>\n]{0,40}/g,
   )
-  if (rest) avvik.push(`${adresse} har rå HTML igjen: ${rest.slice(0, 3)}`)
+  if (rest) problems.push(`${address} has raw HTML left: ${rest.slice(0, 3)}`)
 
-  if (!headers.includes(`${adresse}\n  Content-Type: text/markdown`))
-    avvik.push(`${adresse} mangler innholdstype i _headers`)
+  if (!headers.includes(`${address}\n  Content-Type: text/markdown`))
+    problems.push(`${address} has no content type in _headers`)
 }
 
-if (sider === 0) avvik.push("Ingen sider med Markdown-utgave ble funnet")
+if (pages === 0) problems.push("No pages with a Markdown version were found")
 
-if (avvik.length > 0) {
+if (problems.length > 0) {
   console.error(
-    `Markdown-utgavene stemmer ikke med sidene:\n\n${avvik
-      .map((linje) => `  ${linje}`)
+    `The Markdown versions do not match the pages:\n\n${problems
+      .map((line) => `  ${line}`)
       .join("\n")}\n`,
   )
   process.exit(1)
 }
 
 console.log(
-  `Alle ${sider} sider finnes som Markdown, med kodeblokkene og uten rå HTML.`,
+  `All ${pages} pages exist as Markdown, with the code blocks and without raw HTML.`,
 )

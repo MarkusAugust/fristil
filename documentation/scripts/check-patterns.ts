@@ -1,14 +1,14 @@
 /**
- * Kontrollerer at demoene på mønstersidene faktisk virker.
+ * Checks that the demos on the pattern pages actually work.
  *
- * Mønstersidene rører mange komponenter samtidig, og råtner derfor fortere
- * enn komponentsidene. En demo som har sluttet å virke er verre enn ingen
- * demo: leseren tror mønsteret er slik, og kopierer noe som ikke gjør det den
- * sier.
+ * The pattern pages touch many components at once, and therefore rot faster
+ * than the component pages. A demo that has stopped working is worse than no
+ * demo: the reader believes that is what the pattern looks like, and copies
+ * something that does not do what it says.
  *
- * Sjekken kjører de samme stegene en bruker gjør, i den bygde siden.
+ * The check runs the same steps a user takes, in the built site.
  *
- * Kjør med: bun run test:docs (bygg først)
+ * Run with: bun run test:docs (build first)
  */
 
 import { join } from "node:path"
@@ -18,7 +18,7 @@ import { chromium } from "playwright"
 const DIST = fileURLToPath(new URL("../dist/", import.meta.url))
 const PORT = 4183
 
-const MEDIETYPER: Record<string, string> = {
+const MEDIA_TYPES: Record<string, string> = {
   html: "text/html; charset=utf-8",
   css: "text/css; charset=utf-8",
   js: "text/javascript; charset=utf-8",
@@ -30,382 +30,386 @@ const MEDIETYPER: Record<string, string> = {
 }
 
 /*
- * Tjeneren binder 127.0.0.1, og sjekken kobler til den samme adressen.
+ * The server binds 127.0.0.1, and the check connects to the same address.
  *
- * `Bun.serve` uten vertsnavn binder IPv4-jokeren, og en fremmed prosess på
- * IPv6-loopback tar da porten uten at noe kaster: to tjenere, samme
- * portnummer, ingen feilmelding. `localhost` slår opp IPv6 først på macOS, så
- * sjekken snakket med den andre prosessen. Det skjedde: en helt annen nettside
- * lå på 4173, og sjekken leste tilgjengelighetsbrudd på den. Den kunne like
- * gjerne meldt grønt uten å ha sett en eneste av våre sider.
+ * `Bun.serve` without a hostname binds the IPv4 wildcard, and a foreign
+ * process on IPv6 loopback then takes the port without anything throwing: two
+ * servers, same port number, no error message. `localhost` resolves IPv6
+ * first on macOS, so the check talked to the other process. It happened: a
+ * completely different website was on 4173, and the check read accessibility
+ * violations on it. It could just as well have reported green without having
+ * seen a single one of our pages.
  *
- * Med vertsnavnet satt kaster en andre binding på samme adresse, og det er
- * det vi vil: en port som er opptatt skal stoppe kjøringen, ikke stilltiende
- * sende den et annet sted. Bytt derfor aldri dette tilbake til `localhost`.
+ * With the hostname set, a second binding to the same address throws, and
+ * that is what we want: a port that is taken should stop the run, not
+ * silently send it somewhere else. So never change this back to `localhost`.
  */
-const tjener = Bun.serve({
+const server = Bun.serve({
   hostname: "127.0.0.1",
   port: PORT,
   fetch(request) {
-    const sti = decodeURIComponent(new URL(request.url).pathname)
-    const filsti = sti.endsWith("/")
-      ? join(DIST, sti, "index.html")
-      : join(DIST, sti)
-    const fil = Bun.file(filsti)
-    const endelse = filsti.split(".").pop() ?? ""
-    return fil.exists().then((finnes) =>
-      finnes
-        ? new Response(fil, {
+    const path = decodeURIComponent(new URL(request.url).pathname)
+    const filePath = path.endsWith("/")
+      ? join(DIST, path, "index.html")
+      : join(DIST, path)
+    const file = Bun.file(filePath)
+    const extension = filePath.split(".").pop() ?? ""
+    return file.exists().then((exists) =>
+      exists
+        ? new Response(file, {
             headers: {
-              "content-type": MEDIETYPER[endelse] ?? "application/octet-stream",
+              "content-type":
+                MEDIA_TYPES[extension] ?? "application/octet-stream",
             },
           })
-        : new Response("Ikke funnet", { status: 404 }),
+        : new Response("Not found", { status: 404 }),
     )
   },
 })
 
-const nettleser = await chromium.launch()
-const side = await (await nettleser.newContext()).newPage()
-const feil: string[] = []
+const browser = await chromium.launch()
+const page = await (await browser.newContext()).newPage()
+const errors: string[] = []
 
-function krev(påstand: boolean, beskrivelse: string): void {
-  if (!påstand) feil.push(beskrivelse)
+function expect(claim: boolean, description: string): void {
+  if (!claim) errors.push(description)
 }
 
-async function apne(sti: string) {
-  await side.goto(`http://127.0.0.1:${PORT}${sti}`, {
+async function open(path: string) {
+  await page.goto(`http://127.0.0.1:${PORT}${path}`, {
     waitUntil: "networkidle",
   })
 }
 
-/** Skriver i et felt i skjemademoen, og forlater det etterpå. */
-async function skrivIFelt(id: string, verdi: string) {
-  await side.evaluate(
-    ([id, verdi]) => {
-      const rot = document.getElementById("demo-skjema")?.shadowRoot
-      const felt = rot?.getElementById(id) as HTMLInputElement
-      felt.focus()
-      felt.value = verdi
-      felt.dispatchEvent(new Event("input", { bubbles: true }))
-      felt.blur()
+/** Types into a field in the form demo, and leaves it afterwards. */
+async function typeInField(id: string, value: string) {
+  await page.evaluate(
+    ([id, value]) => {
+      const root = document.getElementById("demo-skjema")?.shadowRoot
+      const field = root?.getElementById(id) as HTMLInputElement
+      field.focus()
+      field.value = value
+      field.dispatchEvent(new Event("input", { bubbles: true }))
+      field.blur()
     },
-    [id, verdi],
+    [id, value],
   )
 }
 
-function lesSkjema() {
-  return side.evaluate(() => {
-    const rot = document.getElementById("demo-skjema")?.shadowRoot
+function readForm() {
+  return page.evaluate(() => {
+    const root = document.getElementById("demo-skjema")?.shadowRoot
     return {
-      lenker: rot?.querySelectorAll("lt-error-summary li a").length ?? 0,
-      markerte: rot?.querySelectorAll("[aria-invalid='true']").length ?? 0,
-      overskrift:
-        rot?.querySelector(".lt-error-summary__title")?.textContent ?? "",
+      links: root?.querySelectorAll("lt-error-summary li a").length ?? 0,
+      marked: root?.querySelectorAll("[aria-invalid='true']").length ?? 0,
+      heading:
+        root?.querySelector(".lt-error-summary__title")?.textContent ?? "",
     }
   })
 }
 
-// Skjemaet: et tomt skjema skal gi feil i alle feltene og i oppsummeringen
+// The form: an empty form should give errors in every field and in the summary
 {
-  await apne("/patterns/form/")
+  await open("/patterns/form/")
 
-  await side.evaluate(() => {
-    const rot = document.getElementById("demo-skjema")?.shadowRoot
-    const knapp = rot?.querySelector("button[type=submit]") as HTMLElement
-    knapp.click()
+  await page.evaluate(() => {
+    const root = document.getElementById("demo-skjema")?.shadowRoot
+    const button = root?.querySelector("button[type=submit]") as HTMLElement
+    button.click()
   })
-  await side.waitForTimeout(300)
+  await page.waitForTimeout(300)
 
-  const resultat = await side.evaluate(() => {
-    const rot = document.getElementById("demo-skjema")?.shadowRoot
+  const result = await page.evaluate(() => {
+    const root = document.getElementById("demo-skjema")?.shadowRoot
     return {
-      lenker: rot?.querySelectorAll("lt-error-summary li a").length ?? 0,
-      markerte: rot?.querySelectorAll("[aria-invalid='true']").length ?? 0,
-      overskrift:
-        rot?.querySelector(".lt-error-summary__title")?.textContent ?? "",
-      pekerPaFeil:
-        rot
+      links: root?.querySelectorAll("lt-error-summary li a").length ?? 0,
+      marked: root?.querySelectorAll("[aria-invalid='true']").length ?? 0,
+      heading:
+        root?.querySelector(".lt-error-summary__title")?.textContent ?? "",
+      pointsToError:
+        root
           ?.getElementById("demo-epost")
           ?.getAttribute("aria-describedby")
           ?.includes("demo-epost-feil") ?? false,
     }
   })
 
-  krev(
-    resultat.lenker === 2,
-    `oppsummeringen har ${resultat.lenker} feil, ventet 2`,
+  expect(
+    result.links === 2,
+    `the summary has ${result.links} errors, expected 2`,
   )
-  krev(
-    resultat.markerte === 2,
-    `${resultat.markerte} felt er markert, ventet 2`,
+  expect(result.marked === 2, `${result.marked} fields are marked, expected 2`)
+  expect(
+    result.heading.includes("2"),
+    `the heading does not say how many errors: "${result.heading}"`,
   )
-  krev(
-    resultat.overskrift.includes("2"),
-    `overskriften sier ikke hvor mange feil: «${resultat.overskrift}»`,
-  )
-  krev(
-    resultat.pekerPaFeil,
-    "feltet peker ikke på feilmeldingen med aria-describedby",
+  expect(
+    result.pointsToError,
+    "the field does not point to the error text with aria-describedby",
   )
 
-  // Retter brukeren én av to feil, skal den andre stå igjen alene.
-  await skrivIFelt("demo-epost", "jo@example.com")
-  await side.waitForTimeout(200)
+  // If the user fixes one of two errors, the other should remain on its own.
+  await typeInField("demo-epost", "jo@example.com")
+  await page.waitForTimeout(200)
 
-  const etterRetting = await lesSkjema()
+  const afterFix = await readForm()
 
-  krev(
-    etterRetting.lenker === 1,
-    `oppsummeringen har ${etterRetting.lenker} feil etter at én er rettet, ventet 1`,
+  expect(
+    afterFix.links === 1,
+    `the summary has ${afterFix.links} errors after one is fixed, expected 1`,
   )
-  krev(
-    etterRetting.overskrift.includes("one"),
-    `overskriften teller ikke ned: «${etterRetting.overskrift}»`,
+  expect(
+    afterFix.heading.includes("one"),
+    `the heading does not count down: "${afterFix.heading}"`,
   )
 
-  // En adresse uten toppdomene godtas av nettleseren, men ikke av skjemaet.
-  await skrivIFelt("demo-epost", "jo@example")
-  await side.waitForTimeout(200)
+  // An address without a top-level domain is accepted by the browser, but
+  // not by the form.
+  await typeInField("demo-epost", "jo@example")
+  await page.waitForTimeout(200)
 
-  krev(
-    (await lesSkjema()).lenker === 2,
-    "«jo@example» ble godtatt som e-postadresse",
+  expect(
+    (await readForm()).links === 2,
+    '"jo@example" was accepted as an email address',
   )
 }
 
-// Skjemaet: en feil skal komme når feltet forlates, uten innsending først
+// The form: an error should appear when the field is left, without a
+// submission first
 {
-  await apne("/patterns/form/")
+  await open("/patterns/form/")
 
-  await skrivIFelt("demo-epost", "jo")
-  await side.waitForTimeout(200)
+  await typeInField("demo-epost", "jo")
+  await page.waitForTimeout(200)
 
-  const etterBlur = await lesSkjema()
+  const afterBlur = await readForm()
 
-  krev(
-    etterBlur.markerte === 1,
-    `${etterBlur.markerte} felt er markert etter at ett ble forlatt, ventet 1`,
+  expect(
+    afterBlur.marked === 1,
+    `${afterBlur.marked} fields are marked after one was left, expected 1`,
   )
-  krev(
-    etterBlur.lenker === 1,
-    `oppsummeringen viser ${etterBlur.lenker} feil etter blur, ventet 1`,
+  expect(
+    afterBlur.links === 1,
+    `the summary shows ${afterBlur.links} errors after blur, expected 1`,
   )
 }
 
-// Lista: fire tilstander, og her kontrolleres treff og tomt
+// The list: four states, and here matches and empty are checked
 {
-  await apne("/patterns/list/")
-  await side.waitForTimeout(700)
+  await open("/patterns/list/")
+  await page.waitForTimeout(700)
 
-  const forst = await side.evaluate(() => {
-    const rot = document.getElementById("demo-liste")?.shadowRoot
+  const initial = await page.evaluate(() => {
+    const root = document.getElementById("demo-liste")?.shadowRoot
     return {
-      rader: rot?.querySelectorAll("tbody tr").length ?? 0,
-      status: rot?.getElementById("demo-treff")?.textContent ?? "",
+      rows: root?.querySelectorAll("tbody tr").length ?? 0,
+      status: root?.getElementById("demo-treff")?.textContent ?? "",
     }
   })
 
-  krev(forst.rader === 4, `lista viser ${forst.rader} rader, ventet 4`)
-  krev(
-    forst.status.includes("4"),
-    `antall treff meldes ikke: «${forst.status}»`,
+  expect(initial.rows === 4, `the list shows ${initial.rows} rows, expected 4`)
+  expect(
+    initial.status.includes("4"),
+    `the number of matches is not announced: "${initial.status}"`,
   )
 
-  // Sorteringen: et klikk på «Case number» snur rekkefølgen, flytter
-  // `aria-sort` og lar fokus bli på knappen, selv om tabellen tegnes på nytt.
-  await side
+  // Sorting: a click on "Case number" reverses the order, moves `aria-sort`
+  // and leaves focus on the button, even though the table is redrawn.
+  await page
     .locator("#demo-liste .lt-table__sort", { hasText: "Case number" })
     .click()
-  const sortert = await side.evaluate(() => {
-    const rot = document.getElementById("demo-liste")?.shadowRoot
+  const sorted = await page.evaluate(() => {
+    const root = document.getElementById("demo-liste")?.shadowRoot
     return {
-      forste: rot?.querySelector("tbody th")?.textContent?.trim() ?? "",
-      sortert: [...(rot?.querySelectorAll("th[aria-sort]") ?? [])].map(
+      first: root?.querySelector("tbody th")?.textContent?.trim() ?? "",
+      sorted: [...(root?.querySelectorAll("th[aria-sort]") ?? [])].map(
         (th) => `${th.textContent?.trim()}=${th.getAttribute("aria-sort")}`,
       ),
-      fokus: rot?.activeElement?.textContent?.trim() ?? "",
+      focus: root?.activeElement?.textContent?.trim() ?? "",
     }
   })
 
-  krev(
-    sortert.forste === "2025-0988",
-    `første rad etter sortering er «${sortert.forste}», ventet 2025-0988`,
+  expect(
+    sorted.first === "2025-0988",
+    `the first row after sorting is "${sorted.first}", expected 2025-0988`,
   )
-  krev(
-    sortert.sortert.join() === "Case number=ascending",
-    `aria-sort står på ${sortert.sortert.join() || "ingen"}, ventet Case number=ascending`,
+  expect(
+    sorted.sorted.join() === "Case number=ascending",
+    `aria-sort is on ${sorted.sorted.join() || "nothing"}, expected Case number=ascending`,
   )
-  krev(
-    sortert.fokus === "Case number",
-    `fokus er på «${sortert.fokus}» etter sorteringen, ventet knappen`,
+  expect(
+    sorted.focus === "Case number",
+    `focus is on "${sorted.focus}" after sorting, expected the button`,
   )
 
-  await side.evaluate(() => {
-    const rot = document.getElementById("demo-liste")?.shadowRoot
-    const felt = rot?.getElementById("demo-sok") as HTMLInputElement
-    felt.value = "does not exist"
-    felt.dispatchEvent(new Event("input", { bubbles: true }))
+  await page.evaluate(() => {
+    const root = document.getElementById("demo-liste")?.shadowRoot
+    const field = root?.getElementById("demo-sok") as HTMLInputElement
+    field.value = "does not exist"
+    field.dispatchEvent(new Event("input", { bubbles: true }))
   })
-  await side.waitForTimeout(1100)
+  await page.waitForTimeout(1100)
 
-  const tomt = await side.evaluate(() => {
-    const rot = document.getElementById("demo-liste")?.shadowRoot
+  const empty = await page.evaluate(() => {
+    const root = document.getElementById("demo-liste")?.shadowRoot
     return {
-      tekst: rot?.getElementById("demo-resultat")?.textContent ?? "",
-      status: rot?.getElementById("demo-treff")?.textContent ?? "",
-      harNullstill: Boolean(rot?.getElementById("demo-nullstill")),
+      text: root?.getElementById("demo-resultat")?.textContent ?? "",
+      status: root?.getElementById("demo-treff")?.textContent ?? "",
+      hasReset: Boolean(root?.getElementById("demo-nullstill")),
     }
   })
 
-  krev(
-    tomt.tekst.includes("does not exist"),
-    "den tomme tilstanden sier ikke hva som ble søkt etter",
+  expect(
+    empty.text.includes("does not exist"),
+    "the empty state does not say what was searched for",
   )
-  krev(tomt.harNullstill, "den tomme tilstanden mangler en vei videre")
-  krev(
-    tomt.status.includes("No matches"),
-    `tomt resultat meldes ikke: «${tomt.status}»`,
+  expect(empty.hasReset, "the empty state lacks a way forward")
+  expect(
+    empty.status.includes("No matches"),
+    `an empty result is not announced: "${empty.status}"`,
   )
 }
 
-// Bekreftelsen: dialogen tar fokus, og meldingen kommer etterpå
+// The confirmation: the dialog takes focus, and the message comes afterwards
 {
-  await apne("/patterns/confirmation/")
+  await open("/patterns/confirmation/")
 
-  await side.evaluate(() => {
-    const rot = document.getElementById("demo-bekreft")?.shadowRoot
-    ;(rot?.getElementById("demo-slett") as HTMLElement).click()
+  await page.evaluate(() => {
+    const root = document.getElementById("demo-bekreft")?.shadowRoot
+    ;(root?.getElementById("demo-slett") as HTMLElement).click()
   })
-  await side.waitForTimeout(200)
+  await page.waitForTimeout(200)
 
-  const apen = await side.evaluate(() => {
-    const rot = document.getElementById("demo-bekreft")?.shadowRoot
-    const dialog = rot?.getElementById("demo-dialog") as HTMLDialogElement
+  const opened = await page.evaluate(() => {
+    const root = document.getElementById("demo-bekreft")?.shadowRoot
+    const dialog = root?.getElementById("demo-dialog") as HTMLDialogElement
     return {
       open: dialog.open,
-      fokusInne: dialog.contains(rot?.activeElement ?? null),
+      focusInside: dialog.contains(root?.activeElement ?? null),
     }
   })
 
-  krev(apen.open, "dialogen åpnet seg ikke")
-  krev(apen.fokusInne, "fokus havnet ikke inne i dialogen")
+  expect(opened.open, "the dialog did not open")
+  expect(opened.focusInside, "focus did not end up inside the dialog")
 
-  await side.evaluate(() => {
-    const rot = document.getElementById("demo-bekreft")?.shadowRoot
-    const dialog = rot?.getElementById("demo-dialog") as HTMLDialogElement
+  await page.evaluate(() => {
+    const root = document.getElementById("demo-bekreft")?.shadowRoot
+    const dialog = root?.getElementById("demo-dialog") as HTMLDialogElement
     dialog.close("delete")
   })
-  await side.waitForTimeout(200)
+  await page.waitForTimeout(200)
 
-  const melding = await side.evaluate(() => {
-    const rot = document.getElementById("demo-bekreft")?.shadowRoot
-    return rot?.querySelector(".lt-toast__message")?.textContent ?? ""
+  const message = await page.evaluate(() => {
+    const root = document.getElementById("demo-bekreft")?.shadowRoot
+    return root?.querySelector(".lt-toast__message")?.textContent ?? ""
   })
 
-  krev(
-    melding.includes("deleted"),
-    `meldingen kom ikke etter handlingen: «${melding}»`,
+  expect(
+    message.includes("deleted"),
+    `the message did not come after the action: "${message}"`,
   )
 }
 
-// Temavelgeren: bytter tema uten JavaScript, og setter color-scheme
+// The theme picker: switches theme without JavaScript, and sets color-scheme
 {
-  await apne("/demo/theme/")
+  await open("/demo/theme/")
 
   /*
-   * Klikket må gå på ledeteksten og ikke på inputen.
+   * The click must go to the label and not to the input.
    *
-   * I en toggle-gruppe ligger radioknappen skjult under ledeteksten, så et
-   * klikk rett på den avvises av at ledeteksten tar pekeren. Første utgave av
-   * denne sjekken ventet tretti sekunder og brøt av på tid av nettopp det.
+   * In a toggle group the radio button lies hidden under the label, so a
+   * click straight on it is rejected because the label takes the pointer.
+   * The first version of this check waited thirty seconds and timed out for
+   * exactly that reason.
    */
-  const velg = async (verdi: string) => {
-    await side.click(`label:has(input[value="${verdi}"])`)
-    return side.evaluate(() => {
-      const rot = document.documentElement
+  const choose = async (value: string) => {
+    await page.click(`label:has(input[value="${value}"])`)
+    return page.evaluate(() => {
+      const root = document.documentElement
       return {
-        tekst: getComputedStyle(rot)
+        text: getComputedStyle(root)
           .getPropertyValue("--lt-color-neutral-text-strong")
           .trim(),
-        skjema: getComputedStyle(rot).colorScheme,
+        scheme: getComputedStyle(root).colorScheme,
       }
     })
   }
 
-  const antallKontroller = await side.evaluate(
+  const controlCount = await page.evaluate(
     () => document.querySelectorAll("input.lt-theme-control").length,
   )
-  krev(
-    antallKontroller === 3,
-    `fant ${antallKontroller} temakontroller, ventet 3`,
+  expect(controlCount === 3, `found ${controlCount} theme controls, expected 3`)
+
+  const light = await choose("light")
+  const dark = await choose("dark")
+  const auto = await choose("auto")
+
+  // An empty value would otherwise be "equal" for two choices without
+  // anything switching.
+  expect(light.text !== "", "found no token value, is tokens.css loaded?")
+  expect(
+    light.text !== dark.text,
+    `light and dark gave the same text colour: ${light.text}`,
   )
 
-  const lys = await velg("light")
-  const mork = await velg("dark")
-  const auto = await velg("auto")
-
-  // Tom verdi ville ellers vært «lik» for to valg uten at noe byttet.
-  krev(lys.tekst !== "", "fant ingen tokenverdi, laster tokens.css?")
-  krev(
-    lys.tekst !== mork.tekst,
-    `lyst og mørkt ga samme tekstfarge: ${lys.tekst}`,
+  // The browser's own surfaces should follow the choice, and "follow the
+  // system" should ask for both. Without this, scrollbars and selects were
+  // left in the wrong theme.
+  expect(light.scheme === "light", `light gave color-scheme ${light.scheme}`)
+  expect(dark.scheme === "dark", `dark gave color-scheme ${dark.scheme}`)
+  expect(
+    auto.scheme === "light dark",
+    `follow the system gave color-scheme ${auto.scheme}`,
   )
-
-  // Nettleserens egne flater skal følge valget, og «følg systemet» skal be
-  // om begge. Uten dette sto rullefelt og nedtrekkslister igjen i feil tema.
-  krev(lys.skjema === "light", `lyst ga color-scheme ${lys.skjema}`)
-  krev(mork.skjema === "dark", `mørkt ga color-scheme ${mork.skjema}`)
-  krev(
-    auto.skjema === "light dark",
-    `følg systemet ga color-scheme ${auto.skjema}`,
-  )
-  // Siden har ingen `data-theme`, så «følg systemet» skal gi maskinens eget
-  // svar. Playwright kjører lyst som standard, og det er den vi påstår; en
-  // `|| mork` her gjorde leddet umulig å felle.
-  krev(
-    auto.tekst === lys.tekst,
-    `følg systemet ga ${auto.tekst}, ventet maskinens lyse ${lys.tekst}`,
+  // The page has no `data-theme`, so "follow the system" should give the
+  // machine's own answer. Playwright runs light by default, and that is what
+  // we claim; a `|| dark` here made the clause impossible to fail.
+  expect(
+    auto.text === light.text,
+    `follow the system gave ${auto.text}, expected the machine's light ${light.text}`,
   )
 }
 
-// Sideskjelettet: landemerkene og hopplenken
+// The page skeleton: the landmarks and the skip link
 {
-  await apne("/demo/page-skeleton/")
+  await open("/demo/page-skeleton/")
 
-  const struktur = await side.evaluate(() => ({
-    hopplenke: document.body.firstElementChild?.className ?? "",
-    hoved: Boolean(document.querySelector("main#hovedinnhold[tabindex='-1']")),
-    navMedNavn: document.querySelectorAll("nav[aria-label]").length,
+  const structure = await page.evaluate(() => ({
+    skipLink: document.body.firstElementChild?.className ?? "",
+    main: Boolean(document.querySelector("main#hovedinnhold[tabindex='-1']")),
+    namedNavs: document.querySelectorAll("nav[aria-label]").length,
     h1: document.querySelectorAll("h1").length,
-    landemerker: ["header", "main", "footer"].filter((t) =>
+    landmarks: ["header", "main", "footer"].filter((t) =>
       document.querySelector(t),
     ).length,
   }))
 
-  krev(
-    struktur.hopplenke.includes("lt-skip-link"),
-    "hopplenken er ikke det første i body",
+  expect(
+    structure.skipLink.includes("lt-skip-link"),
+    "the skip link is not the first thing in body",
   )
-  krev(struktur.hoved, "hovedinnholdet mangler id eller tabindex")
-  krev(
-    struktur.navMedNavn === 2,
-    `${struktur.navMedNavn} navigasjoner har navn, ventet 2`,
+  expect(structure.main, "the main content lacks id or tabindex")
+  expect(
+    structure.namedNavs === 2,
+    `${structure.namedNavs} navigations have names, expected 2`,
   )
-  krev(struktur.h1 === 1, `siden har ${struktur.h1} h1-elementer, ventet 1`)
-  krev(struktur.landemerker === 3, "siden mangler et landemerke")
+  expect(
+    structure.h1 === 1,
+    `the page has ${structure.h1} h1 elements, expected 1`,
+  )
+  expect(structure.landmarks === 3, "the page lacks a landmark")
 }
 
-await nettleser.close()
-tjener.stop()
+await browser.close()
+server.stop()
 
-if (feil.length > 0) {
+if (errors.length > 0) {
   console.error(
-    `Mønsterdemoene virker ikke som de skal:\n\n${feil
-      .map((linje) => `  ${linje}`)
+    `The pattern demos do not work as they should:\n\n${errors
+      .map((line) => `  ${line}`)
       .join("\n")}\n`,
   )
   process.exit(1)
 }
 
-console.log("Demoene på mønstersidene gjør det de sier.")
+console.log("The demos on the pattern pages do what they say.")

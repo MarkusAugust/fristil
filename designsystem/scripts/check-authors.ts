@@ -1,54 +1,55 @@
 /**
- * At ingen commit i historikken har en kodeagent som forfatter.
+ * Checks that no commit in the history has a coding agent as its author.
  *
- * Commitene i dette repoet skrives i eierens navn, også når en kodeagent har
- * skrevet koden. Det er en regel, og den står i CONTRIBUTING.md, men en regel som
- * bare står skrevet, ble brutt: et miljø der git var satt opp med agentens
- * navn, ga 33 commits med Claude som forfatter før noen så det.
+ * The commits in this repository are written in the owner's name, also when
+ * a coding agent wrote the code. That is a rule, and it is in CONTRIBUTING.md,
+ * but a rule that is only written down was broken: an environment where git
+ * was set up with the agent's name gave 33 commits with Claude as author
+ * before anyone noticed.
  *
- * Sjekken går gjennom hele historikken fra HEAD, og feiler på:
+ * The check walks the whole history from HEAD, and fails on:
  *
- *   - en forfatter eller committer med en adresse hos anthropic.com, eller
- *     som heter Claude;
- *   - en linje i meldingen som gir en agent æren: `Co-Authored-By` med
- *     Claude eller Anthropic, `Claude-Session` og «Generated with Claude
- *     Code».
+ *   - an author or committer with an address at anthropic.com, or named
+ *     Claude;
+ *   - a line in the message that gives an agent the credit: `Co-Authored-By`
+ *     with Claude or Anthropic, `Claude-Session` and "Generated with Claude
+ *     Code".
  *
- * Kjør med: bun designsystem/scripts/check-authors.ts. CI trenger hele
- * historikken (`fetch-depth: 0`).
+ * Run with: bun designsystem/scripts/check-authors.ts. CI needs the whole
+ * history (`fetch-depth: 0`).
  */
 
-const SKILLE = "\u0001"
-const FELT = "\u0000"
+const RECORD_SEPARATOR = "\u0001"
+const FIELD_SEPARATOR = "\u0000"
 
-const logg = Bun.spawnSync([
+const log = Bun.spawnSync([
   "git",
   "log",
-  // git setter inn skilletegnene selv: et argument kan ikke ha en nullbyte.
+  // git inserts the separators itself: an argument cannot contain a null byte.
   "--format=%h%x00%an%x00%ae%x00%cn%x00%ce%x00%B%x01",
 ])
-if (logg.exitCode !== 0) {
-  console.error(`git log feilet: ${logg.stderr.toString()}`)
+if (log.exitCode !== 0) {
+  console.error(`git log failed: ${log.stderr.toString()}`)
   process.exit(1)
 }
 
-const agent = (navn: string, adresse: string) =>
-  /@anthropic\.com$/i.test(adresse) || /^claude$/i.test(navn.trim())
+const isAgent = (name: string, address: string) =>
+  /@anthropic\.com$/i.test(address) || /^claude$/i.test(name.trim())
 
 /*
- * Hakeparentesene er valgfrie. Mønsteret krevde markdown-lenken
- * «[Claude Code](…)», slik verktøyet skriver den i en PR-beskrivelse, og
- * slapp den rene teksten CONTRIBUTING.md forbyr forbi.
+ * The square brackets are optional. The pattern used to require the markdown
+ * link "[Claude Code](…)", as the tool writes it in a PR description, and let
+ * the plain text CONTRIBUTING.md forbids through.
  */
-const ÆRESLINJE =
+const CREDIT_LINE =
   /^(co-authored-by:.*(claude|anthropic)|claude-session:|.*generated with \[?claude code\]?)/im
 
 /*
- * Mønsteret prøves mot seg selv før historikken, så en innstramming eller en
- * ny skrivemåte ikke blir stående uprøvd. Meldingene under finnes ikke i
- * historikken; de er det sjekken skal felle, og det den skal la gå.
+ * The pattern is tested against itself before the history, so a tightening
+ * or a new spelling is not left untested. The messages below are not in the
+ * history; they are what the check must fail, and what it must let through.
  */
-const SKAL_FELLES = [
+const MUST_FAIL = [
   "Co-Authored-By: Claude <noreply@anthropic.com>",
   "Co-authored-by: Claude Opus <claude@anthropic.com>",
   "Claude-Session: https://claude.ai/code/session_x",
@@ -56,50 +57,52 @@ const SKAL_FELLES = [
   "Generated with Claude Code",
   "🤖 Generated with Claude Code (https://claude.com/claude-code)",
 ]
-const SKAL_SLIPPE = [
-  "Rett fokus i feiloppsummeringen",
-  "Co-Authored-By: Kari Nordmann <kari@example.com>",
-  "Regelboka sier at agenten skal lese manifestet, ikke gjette",
-  "Sjekken ble generert med en mal, ikke skrevet for hånd",
+const MUST_PASS = [
+  "Fix focus in the error summary",
+  "Co-Authored-By: Jane Smith <jane@example.com>",
+  "The rulebook says the agent reads the manifest, not guesses",
+  "The check was generated from a template, not written by hand",
 ]
-const selvtest = [
-  ...SKAL_FELLES.filter((m) => !ÆRESLINJE.test(`Tittel\n\n${m}`)).map(
-    (m) => `slipper «${m}» gjennom`,
+const selfTest = [
+  ...MUST_FAIL.filter((m) => !CREDIT_LINE.test(`Title\n\n${m}`)).map(
+    (m) => `lets "${m}" through`,
   ),
-  ...SKAL_SLIPPE.filter((m) => ÆRESLINJE.test(`Tittel\n\n${m}`)).map(
-    (m) => `feller «${m}»`,
+  ...MUST_PASS.filter((m) => CREDIT_LINE.test(`Title\n\n${m}`)).map(
+    (m) => `fails "${m}"`,
   ),
 ]
-if (selvtest.length > 0) {
+if (selfTest.length > 0) {
   console.error(
-    `✗ Mønsteret i check-authors.ts ${selvtest.join(", og ")}. Rett mønsteret før historikken sjekkes.`,
+    `✗ The pattern in check-authors.ts ${selfTest.join(", and ")}. Fix the pattern before the history is checked.`,
   )
   process.exit(1)
 }
 
-const funn: string[] = []
-let antall = 0
-for (const post of logg.stdout.toString().split(SKILLE)) {
-  const [hash, an, ae, cn, ce, melding = ""] = post.trim().split(FELT)
+const findings: string[] = []
+let count = 0
+for (const entry of log.stdout.toString().split(RECORD_SEPARATOR)) {
+  const [hash, an, ae, cn, ce, message = ""] = entry
+    .trim()
+    .split(FIELD_SEPARATOR)
   if (!hash) continue
-  antall += 1
-  const tittel = melding.split("\n")[0]
-  if (agent(an, ae))
-    funn.push(`${hash} har ${an} <${ae}> som forfatter: ${tittel}`)
-  if (agent(cn, ce))
-    funn.push(`${hash} har ${cn} <${ce}> som committer: ${tittel}`)
-  const linje = ÆRESLINJE.exec(melding)
-  if (linje)
-    funn.push(
-      `${hash} gir en agent æren i meldingen («${linje[0].trim()}»): ${tittel}`,
+  count += 1
+  const title = message.split("\n")[0]
+  if (isAgent(an, ae))
+    findings.push(`${hash} has ${an} <${ae}> as author: ${title}`)
+  if (isAgent(cn, ce))
+    findings.push(`${hash} has ${cn} <${ce}> as committer: ${title}`)
+  const line = CREDIT_LINE.exec(message)
+  if (line)
+    findings.push(
+      `${hash} gives an agent the credit in the message ("${line[0].trim()}"): ${title}`,
     )
 }
 
-if (funn.length > 0) {
+if (findings.length > 0) {
   console.error(
-    `✗ ${new Set(funn.map((f) => f.split(" ")[0])).size} commits bryter regelen om forfatter i CONTRIBUTING.md:\n\n${funn.map((f) => `  ${f}`).join("\n")}\n\n` +
-      "Sett git config user.name og user.email til eierens, og skriv commitene om før de flettes inn.\n",
+    `✗ ${new Set(findings.map((f) => f.split(" ")[0])).size} commits break the authorship rule in CONTRIBUTING.md:\n\n${findings.map((f) => `  ${f}`).join("\n")}\n\n` +
+      "Set git config user.name and user.email to the owner's, and rewrite the commits before they are merged.\n",
   )
   process.exit(1)
 }
-console.log(`Ingen av de ${antall} commitene har en agent som forfatter.`)
+console.log(`None of the ${count} commits has an agent as author.`)

@@ -15,5 +15,5 @@
       "message": "id=\"lt-field-help-a1b2c3d\" is an id the component created itself in the browser, and looks copied from DevTools. The component creates a new one on every page load, so nothing can point at this one. Write your own id, based on what the element is for, or leave it empty."
     }
   ],
-  "side": []
+  "page": []
 }

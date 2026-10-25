@@ -40,7 +40,7 @@ import type {
   ClassInfo,
   Elements,
 } from "../src/vocabulary/types.js"
-import { flaggFor, lesByggefunksjoner } from "./builder-functions.js"
+import { flagsFor, readBuilderFunctions } from "./builder-functions.js"
 import {
   type AttributeDoc,
   type ClassDoc,
@@ -567,12 +567,12 @@ export function classesData(): Classes {
    * between.
    */
   const flags = new Map<string, Set<string>>()
-  for (const builder of lesByggefunksjoner()) {
+  for (const builder of readBuilderFunctions()) {
     const build = (lt as Record<string, unknown>)[builder.name]
     if (typeof build !== "function") continue
     // If the builder function throws, generate must stop. A flag that quietly
     // vanished from classes.ts vanished from the editors and the diagnostics too.
-    const flagged = flaggFor(
+    const flagged = flagsFor(
       builder,
       build as (options: Record<string, unknown>) => unknown,
       { id: "x", titleId: "x", keys: [], label: "x" },

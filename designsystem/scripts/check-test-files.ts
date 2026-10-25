@@ -1,12 +1,13 @@
 /**
- * At hver komponentmappe har minst én nettlesertest.
+ * Checks that every component folder has at least one browser test.
  *
- * Progress fikk sin første test i revisjonen etter 0.32.1, og ingenting hadde
- * sagt fra om at den manglet. Mappene listes direkte, ikke gjennom filene i
- * dem: en sjekk som fant mappene gjennom `*.ts`, ville talt testfila selv, og
- * en mappe med bare CSS ville aldri blitt sett.
+ * Progress got its first test in the audit after 0.32.1, and nothing had
+ * reported that it was missing. The folders are listed directly, not through
+ * the files in them: a check that found the folders through `*.ts` would
+ * have counted the test file itself, and a folder with only CSS would never
+ * have been seen.
  *
- * Kjør med: bun designsystem/scripts/check-test-files.ts
+ * Run with: bun designsystem/scripts/check-test-files.ts
  */
 
 import { readdirSync, statSync } from "node:fs"
@@ -17,7 +18,7 @@ const COMPONENTS = fileURLToPath(new URL("../src/components", import.meta.url))
 
 const missing: string[] = []
 let checked = 0
-// Kategoriene leses fra mappa, så en ny kategori ikke kan bli oversett.
+// The categories are read from the folder, so a new category cannot be missed.
 const categories = readdirSync(COMPONENTS).filter((name) =>
   statSync(join(COMPONENTS, name)).isDirectory(),
 )
@@ -31,15 +32,15 @@ for (const category of categories) {
   }
 }
 
-// Vakten står til slutt, etter rapporten, og krever at noe ble sett.
+// The guard comes last, after the report, and requires that something was seen.
 if (missing.length > 0) {
   console.error(
-    `✗ ${missing.length} av ${checked} komponentmapper har ingen *.browser.test.ts:\n\n${missing.map((m) => `  ${m}`).join("\n")}\n`,
+    `✗ ${missing.length} of ${checked} component folders have no *.browser.test.ts:\n\n${missing.map((m) => `  ${m}`).join("\n")}\n`,
   )
   process.exit(1)
 }
 if (checked === 0) {
-  console.error(`✗ fant ingen komponentmapper i ${COMPONENTS}`)
+  console.error(`✗ found no component folders in ${COMPONENTS}`)
   process.exit(1)
 }
-console.log(`Alle ${checked} komponentmappene har en nettlesertest.`)
+console.log(`All ${checked} component folders have a browser test.`)

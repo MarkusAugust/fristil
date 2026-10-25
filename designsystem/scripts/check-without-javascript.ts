@@ -1,20 +1,22 @@
 /**
- * Fanene på en side uten JavaScript, i Chromium, Firefox og WebKit.
+ * The tabs on a page without JavaScript, in Chromium, Firefox and WebKit.
  *
- * Vitest kan ikke prøve dette: testene kjører selv som skript i siden. Her
- * lastes markupen i en Playwright-kontekst med `javaScriptEnabled: false`,
- * med stilarkene som eneste kode, slik en leser uten JavaScript får den.
+ * Vitest cannot test this: the tests themselves run as scripts in the page.
+ * Here the markup is loaded in a Playwright context with
+ * `javaScriptEnabled: false`, with the stylesheets as the only code, as a
+ * reader without JavaScript gets it.
  *
- * Markupen kommer fra to kilder: en mal skrevet for hånd, og `lt.tabs()`.
- * Kotlin-utgaven, `Lt.tabs`, er dekket gjennom `ContractTest`, som krever
- * at den gir det samme som `lt.tabs()` for hvert tilfelle i
+ * The markup comes from two sources: a template written by hand, and
+ * `lt.tabs()`. The Kotlin version, `Lt.tabs`, is covered by `ContractTest`,
+ * which requires it to give the same as `lt.tabs()` for every case in
  * `manifest/build-cases.json`.
  *
- * Kravene er de i `krav-faner.md` (utredningen): A1 alle panelene vises, A2
- * raden er en vanlig liste med lenker som alle kan nås med Tab, A3 axe finner
- * ingen brudd, A8 ingen av panelene blir et landemerke.
+ * The requirements are those in `krav-faner.md` (the investigation): A1 all
+ * the panels are shown, A2 the tab list is a plain list of links that can
+ * all be reached with Tab, A3 axe finds no violations, A8 none of the panels
+ * becomes a landmark.
  *
- * Kjør med: bun run check:without-javascript
+ * Run with: bun run check:without-javascript
  */
 
 import { createRequire } from "node:module"
@@ -26,139 +28,145 @@ import { attr } from "../src/testing/markup.js"
 const SRC = fileURLToPath(new URL("../src/", import.meta.url))
 const css = (
   await Promise.all(
-    ["tokens/tokens.css", "components/frame/tabs/tabs.css"].map((fil) =>
-      Bun.file(`${SRC}${fil}`).text(),
+    ["tokens/tokens.css", "components/frame/tabs/tabs.css"].map((file) =>
+      Bun.file(`${SRC}${file}`).text(),
     ),
   )
 ).join("\n")
-const axeKilde = await Bun.file(
+const axeSource = await Bun.file(
   createRequire(import.meta.url).resolve("axe-core/axe.min.js"),
 ).text()
 
-const NAVN = ["Søknaden", "Vedlegg", "Meldinger"]
-const NOKLER = ["soknaden", "vedlegg", "meldinger"]
+const NAMES = ["Application", "Attachments", "Messages"]
+const KEYS = ["application", "attachments", "messages"]
 
-const HANDSKREVET = `
+const HANDWRITTEN = `
   <lt-tabs>
-    <ul class="lt-tabs__list" aria-label="Deler av saken">
-      ${NAVN.map((n, i) => `<li><a href="#${NOKLER[i]}">${n}</a></li>`).join("")}
+    <ul class="lt-tabs__list" aria-label="Parts of the case">
+      ${NAMES.map((n, i) => `<li><a href="#${KEYS[i]}">${n}</a></li>`).join("")}
     </ul>
-    ${NAVN.map((n, i) => `<section class="lt-tabs__panel" id="${NOKLER[i]}"><h2>${n}</h2><p>Innholdet i ${n.toLowerCase()}.</p></section>`).join("")}
+    ${NAMES.map((n, i) => `<section class="lt-tabs__panel" id="${KEYS[i]}"><h2>${n}</h2><p>The contents of ${n.toLowerCase()}.</p></section>`).join("")}
   </lt-tabs>`
 
-const faner = tabs({ id: "sak", keys: NOKLER, label: "Deler av saken" })
-const fraByggefunksjonen = faner as unknown as {
+const tabSet = tabs({ id: "case", keys: KEYS, label: "Parts of the case" })
+const fromBuilder = tabSet as unknown as {
   list: Record<string, unknown>
   item?: Record<string, unknown>
   tabs: Record<string, unknown>[]
   panels: Record<string, unknown>[]
   headings: Record<string, unknown>[]
 }
-const BYGGEFUNKSJONEN = `
+const FROM_BUILDER = `
   <lt-tabs>
-    <ul ${attr(fraByggefunksjonen.list)}>
-      ${fraByggefunksjonen.tabs.map((t, i) => `<li ${attr(fraByggefunksjonen.item ?? {})}><a ${attr(t)}>${NAVN[i]}</a></li>`).join("")}
+    <ul ${attr(fromBuilder.list)}>
+      ${fromBuilder.tabs.map((t, i) => `<li ${attr(fromBuilder.item ?? {})}><a ${attr(t)}>${NAMES[i]}</a></li>`).join("")}
     </ul>
-    ${fraByggefunksjonen.panels.map((p, i) => `<section ${attr(p)}><h2 ${attr(fraByggefunksjonen.headings[i])}>${NAVN[i]}</h2><p>Innholdet i ${NAVN[i].toLowerCase()}.</p></section>`).join("")}
+    ${fromBuilder.panels.map((p, i) => `<section ${attr(p)}><h2 ${attr(fromBuilder.headings[i])}>${NAMES[i]}</h2><p>The contents of ${NAMES[i].toLowerCase()}.</p></section>`).join("")}
   </lt-tabs>`
 
-const KILDER = { "skrevet for hånd": HANDSKREVET, "lt.tabs()": BYGGEFUNKSJONEN }
+const SOURCES = { "written by hand": HANDWRITTEN, "lt.tabs()": FROM_BUILDER }
 
-function side(markup: string, stil = css): string {
-  return `<!doctype html><html lang="nb"><head><meta charset="utf-8"><title>Uten JavaScript</title>
-<style>${stil}</style></head><body><main><h1>Saken</h1>${markup}</main></body></html>`
+function pageFor(markup: string, style = css): string {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Without JavaScript</title>
+<style>${style}</style></head><body><main><h1>The case</h1>${markup}</main></body></html>`
 }
 
-function markupFor(kilde: string): string {
-  return KILDER[kilde as keyof typeof KILDER]
+function markupFor(source: string): string {
+  return SOURCES[source as keyof typeof SOURCES]
 }
 
-const feil: string[] = []
+const failures: string[] = []
 
-async function sjekk(motor: string, page: Page, kilde: string) {
-  const si = (krav: string, tekst: string) =>
-    feil.push(`${motor}, ${kilde}: ${krav} ${tekst}`)
+async function check(engine: string, page: Page, source: string) {
+  const report = (requirement: string, text: string) =>
+    failures.push(`${engine}, ${source}: ${requirement} ${text}`)
 
-  // Uten dette kunne alt under gått grønt på en side der skriptene kjørte.
-  const forutsetning = await page.evaluate(() => ({
-    utenSkript: matchMedia("(scripting: none)").matches,
-    definert: customElements.get("lt-tabs") !== undefined,
+  // Without this, everything below could pass on a page where the scripts ran.
+  const precondition = await page.evaluate(() => ({
+    withoutScripts: matchMedia("(scripting: none)").matches,
+    defined: customElements.get("lt-tabs") !== undefined,
   }))
-  if (!forutsetning.utenSkript || forutsetning.definert) {
-    si("forutsetning", "siden kjørte med JavaScript, så ingenting er prøvd.")
+  if (!precondition.withoutScripts || precondition.defined) {
+    report(
+      "precondition",
+      "the page ran with JavaScript, so nothing has been tested.",
+    )
     return
   }
 
-  // A1: hvert panel vises, med overskrift og innhold.
-  const paneler = await page.evaluate(() =>
+  // A1: every panel is shown, with heading and content.
+  const panels = await page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>(".lt-tabs__panel")].map((p) => ({
       id: p.id,
-      vises: p.checkVisibility(),
-      topp: p.getBoundingClientRect().top,
-      hoyde: p.getBoundingClientRect().height,
-      tekst: (p.querySelector("p") as HTMLElement).checkVisibility(),
+      visible: p.checkVisibility(),
+      top: p.getBoundingClientRect().top,
+      height: p.getBoundingClientRect().height,
+      text: (p.querySelector("p") as HTMLElement).checkVisibility(),
     })),
   )
-  if (paneler.length !== NAVN.length)
-    si("A1", `fant ${paneler.length} paneler, ventet ${NAVN.length}.`)
-  for (const p of paneler)
-    if (!p.vises || p.hoyde === 0 || !p.tekst)
-      si("A1", `panelet «${p.id}» vises ikke uten JavaScript.`)
-  // I rekkefølge: hvert panel under det forrige, i den rekkefølgen lenkene har.
-  const rekkefolge = paneler.map((p) => p.id.replace(/^sak-/, "")).join(" ")
-  if (rekkefolge !== NOKLER.join(" "))
-    si(
+  if (panels.length !== NAMES.length)
+    report("A1", `found ${panels.length} panels, expected ${NAMES.length}.`)
+  for (const p of panels)
+    if (!p.visible || p.height === 0 || !p.text)
+      report("A1", `the panel "${p.id}" is not shown without JavaScript.`)
+  // In order: every panel below the previous one, in the order of the links.
+  const order = panels.map((p) => p.id.replace(/^case-/, "")).join(" ")
+  if (order !== KEYS.join(" "))
+    report(
       "A1",
-      `panelene står i rekkefølgen ${rekkefolge}, ventet ${NOKLER.join(" ")}.`,
+      `the panels are in the order ${order}, expected ${KEYS.join(" ")}.`,
     )
-  for (let i = 1; i < paneler.length; i++)
-    if (paneler[i].topp <= paneler[i - 1].topp)
-      si(
+  for (let i = 1; i < panels.length; i++)
+    if (panels[i].top <= panels[i - 1].top)
+      report(
         "A1",
-        `panelet «${paneler[i].id}» står ikke under «${paneler[i - 1].id}».`,
+        `the panel "${panels[i].id}" is not below "${panels[i - 1].id}".`,
       )
 
-  // A2: en vanlig liste med lenker, uten fanerolle og uten noe som tar
-  // lenkene ut av Tab-rekkefølgen.
-  const raden = await page.evaluate(() =>
+  // A2: a plain list of links, without the tab role and without anything
+  // that takes the links out of the Tab order.
+  const tabList = await page.evaluate(() =>
     [
       ...document.querySelectorAll(
         "lt-tabs [role], lt-tabs [aria-selected], lt-tabs [tabindex], lt-tabs [aria-controls]",
       ),
     ].map((e) => e.outerHTML.slice(0, 80)),
   )
-  for (const e of raden)
-    si("A2", `markupen sier noe den ikke gjør uten JavaScript: ${e}`)
+  for (const e of tabList)
+    report(
+      "A2",
+      `the markup says something it does not do without JavaScript: ${e}`,
+    )
 
-  // WebKit på macOS hopper som Safari over lenker med Tab. Alt+Tab er tasten
-  // som går til lenker der.
-  const tast = motor === "webkit" ? "Alt+Tab" : "Tab"
+  // WebKit on macOS skips links on Tab, as Safari does. Alt+Tab is the key
+  // that goes to links there.
+  const key = engine === "webkit" ? "Alt+Tab" : "Tab"
   await page.evaluate(() =>
     (document.activeElement as HTMLElement | null)?.blur(),
   )
-  const besokt: string[] = []
-  // Like mange trykk som lenker. Et trykk til tar fokus ut av siden og inn i
-  // nettleseren, og da er det ikke lenger siden som svarer.
-  for (let i = 0; i < NAVN.length; i++) {
-    await page.keyboard.press(tast)
+  const visited: string[] = []
+  // As many presses as there are links. One more takes focus out of the page
+  // and into the browser, and then it is no longer the page that answers.
+  for (let i = 0; i < NAMES.length; i++) {
+    await page.keyboard.press(key)
     const href = await page.evaluate(() =>
       document.activeElement?.closest(".lt-tabs__list")
         ? document.activeElement.getAttribute("href")
         : null,
     )
-    if (href) besokt.push(href)
+    if (href) visited.push(href)
   }
-  const ventet = NOKLER.map((n) =>
-    kilde === "lt.tabs()" ? `#sak-${n}` : `#${n}`,
+  const expected = KEYS.map((n) =>
+    source === "lt.tabs()" ? `#case-${n}` : `#${n}`,
   )
-  if (besokt.join(" ") !== ventet.join(" "))
-    si(
+  if (visited.join(" ") !== expected.join(" "))
+    report(
       "A2",
-      `Tab nådde ${besokt.join(", ") || "ingen lenker"}, ventet ${ventet.join(", ")}.`,
+      `Tab reached ${visited.join(", ") || "no links"}, expected ${expected.join(", ")}.`,
     )
 
-  // A8: ingen av panelene blir et landemerke.
-  const landemerker = await page.evaluate(() =>
+  // A8: none of the panels becomes a landmark.
+  const landmarks = await page.evaluate(() =>
     [...document.querySelectorAll(".lt-tabs__panel")]
       .filter(
         (p) =>
@@ -168,30 +176,33 @@ async function sjekk(motor: string, page: Page, kilde: string) {
       )
       .map((p) => p.id),
   )
-  for (const id of landemerker)
-    si(
+  for (const id of landmarks)
+    report(
       "A8",
-      `panelet «${id}» har navn eller rolle, og blir et landemerke uten JavaScript.`,
+      `the panel "${id}" has a name or a role, and becomes a landmark without JavaScript.`,
     )
 }
 
 /*
- * A3: axe, med kontrast. `axe.run` venter på tidtakere og løfter, og de kjører
- * ikke i en side uten JavaScript. Siden har ingen skript, så den eneste
- * forskjellen på de to kontekstene er medieregelen `scripting`. Den skrives
- * om i stilarket, så axe ser den samme stilen som leseren uten JavaScript.
+ * A3: axe, with contrast. `axe.run` waits on timers and promises, and they
+ * do not run in a page without JavaScript. The page has no scripts, so the
+ * only difference between the two contexts is the `scripting` media
+ * feature. It is rewritten in the stylesheet, so axe sees the same style as
+ * the reader without JavaScript.
  */
-const cssUtenSkript = css
+const cssWithoutScripts = css
   .replaceAll("(scripting: enabled)", "not all")
   .replaceAll("(scripting: none)", "all")
-if (cssUtenSkript === css || !css.includes("(scripting: enabled)"))
-  throw new Error("Fant ikke `scripting` i stilarket. Rett omskrivingen over.")
+if (cssWithoutScripts === css || !css.includes("(scripting: enabled)"))
+  throw new Error(
+    "Did not find `scripting` in the stylesheet. Fix the rewrite above.",
+  )
 
-async function axe(motor: string, page: Page, kilde: string) {
-  await page.setContent(side(markupFor(kilde), cssUtenSkript))
-  await page.evaluate(axeKilde)
-  const brudd = (await page.evaluate(async () => {
-    const svar = await (
+async function axe(engine: string, page: Page, source: string) {
+  await page.setContent(pageFor(markupFor(source), cssWithoutScripts))
+  await page.evaluate(axeSource)
+  const violations = (await page.evaluate(async () => {
+    const result = await (
       window as unknown as {
         axe: {
           run: (
@@ -208,38 +219,39 @@ async function axe(motor: string, page: Page, kilde: string) {
         values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"],
       },
     })
-    return svar.violations.map(
+    return result.violations.map(
       (v) => `${v.id} (${v.nodes.map((n) => n.target.join(" ")).join(", ")})`,
     )
   })) as string[]
-  for (const b of brudd) feil.push(`${motor}, ${kilde}: A3 axe: ${b}`)
+  for (const v of violations)
+    failures.push(`${engine}, ${source}: A3 axe: ${v}`)
 }
 
-for (const [motor, type] of Object.entries({ chromium, firefox, webkit })) {
-  let nettleser: Browser | undefined
+for (const [engine, type] of Object.entries({ chromium, firefox, webkit })) {
+  let browser: Browser | undefined
   try {
-    nettleser = await type.launch()
-    for (const [kilde, markup] of Object.entries(KILDER)) {
-      const kontekst = await nettleser.newContext({ javaScriptEnabled: false })
-      const page = await kontekst.newPage()
-      await page.setContent(side(markup))
-      await sjekk(motor, page, kilde)
-      await kontekst.close()
+    browser = await type.launch()
+    for (const [source, markup] of Object.entries(SOURCES)) {
+      const context = await browser.newContext({ javaScriptEnabled: false })
+      const page = await context.newPage()
+      await page.setContent(pageFor(markup))
+      await check(engine, page, source)
+      await context.close()
 
-      const medSkript = await nettleser.newContext()
-      await axe(motor, await medSkript.newPage(), kilde)
-      await medSkript.close()
+      const withScripts = await browser.newContext()
+      await axe(engine, await withScripts.newPage(), source)
+      await withScripts.close()
     }
   } finally {
-    await nettleser?.close()
+    await browser?.close()
   }
 }
 
-if (feil.length > 0) {
-  console.error(`✗ Fanene uten JavaScript, ${feil.length} feil:`)
-  for (const f of feil) console.error(`  ${f}`)
+if (failures.length > 0) {
+  console.error(`✗ The tabs without JavaScript, ${failures.length} failures:`)
+  for (const f of failures) console.error(`  ${f}`)
   process.exit(1)
 }
 console.log(
-  `✓ Fanene uten JavaScript: ${Object.keys(KILDER).length} kilder i tre motorer, krav A1, A2, A3 og A8.`,
+  `✓ The tabs without JavaScript: ${Object.keys(SOURCES).length} sources in three engines, requirements A1, A2, A3 and A8.`,
 )

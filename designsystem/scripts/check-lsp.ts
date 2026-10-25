@@ -1,13 +1,14 @@
 /**
- * Prøver språkserveren, `lotek lsp`, over ekte standard inn og ut, slik en
- * editor snakker med den.
+ * Tests the language server, `lotek lsp`, over real standard input and
+ * output, the way an editor talks to it.
  *
- * Standard er den bygde kommandolinja i pakken, kjørt med Node. `LOTEK_CLI`
- * peker på en annen, som den kjørbare fila fra `core/cli` eller
- * `["java", "-jar", "lotek.jar"]`, så de samme påstandene prøves mot hver
- * vert. VS Code-utvidelsen prøves med `["node", "editor/dist/server.js"]`.
+ * The default is the built CLI in the package, run with Node. `LOTEK_CLI`
+ * points at another one, like the executable from `core/cli` or
+ * `["java", "-jar", "lotek.jar"]`, so the same assertions are tested against
+ * every host. The VS Code extension is tested with
+ * `["node", "editor/dist/server.js"]`.
  *
- * Kjør med: bun scripts/check-lsp.ts
+ * Run with: bun scripts/check-lsp.ts
  */
 
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises"
@@ -15,21 +16,21 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
 
-const pakke = fileURLToPath(new URL("..", import.meta.url))
+const packageRoot = fileURLToPath(new URL("..", import.meta.url))
 
-// Pakken for den kjørbare fila, som ikke har noen vert som setter den.
-// Eksplisitt, siden `Bun.spawn` ikke arver endringer i `process.env`.
+// The package for the executable, which has no host to set it.
+// Explicit, since `Bun.spawn` does not inherit changes to `process.env`.
 const ENVIRONMENT = {
   ...process.env,
-  LOTEK_PACKAGE: process.env.LOTEK_PACKAGE ?? pakke,
+  LOTEK_PACKAGE: process.env.LOTEK_PACKAGE ?? packageRoot,
 }
-const KOMMANDO: string[] = process.env.LOTEK_CLI
+const COMMAND: string[] = process.env.LOTEK_CLI
   ? process.env.LOTEK_CLI.startsWith("[")
     ? JSON.parse(process.env.LOTEK_CLI)
     : [process.env.LOTEK_CLI]
-  : ["node", join(pakke, "dist/cli.js")]
+  : ["node", join(packageRoot, "dist/cli.js")]
 
-type Melding = {
+type Message = {
   id?: number
   method?: string
   params?: Record<string, unknown>
@@ -37,116 +38,117 @@ type Melding = {
   error?: { code: number; message: string }
 }
 
-const feil: string[] = []
-function krev(påstand: boolean, beskrivelse: string): void {
-  if (!påstand) feil.push(beskrivelse)
+const failures: string[] = []
+function expect(assertion: boolean, description: string): void {
+  if (!assertion) failures.push(description)
 }
 
-/** Én økt med serveren: send meldinger, og vent på det den svarer. */
-async function økt(arbeidsmappe: string) {
-  const prosess = Bun.spawn([...KOMMANDO, "lsp"], {
+/** One session with the server: send messages, and wait for what it answers. */
+async function session(workingDirectory: string) {
+  const child = Bun.spawn([...COMMAND, "lsp"], {
     env: ENVIRONMENT,
     stdin: "pipe",
     stdout: "pipe",
     stderr: "pipe",
-    cwd: arbeidsmappe,
+    cwd: workingDirectory,
   })
-  const mottatt: Melding[] = []
-  const ventende: {
-    hvis: (m: Melding) => boolean
-    svar: (m: Melding) => void
+  const received: Message[] = []
+  const pending: {
+    matches: (m: Message) => boolean
+    resolve: (m: Message) => void
   }[] = []
 
-  // Leser rammene: hodene, en tom linje og så `Content-Length` byte JSON.
+  // Reads the frames: the headers, an empty line and then `Content-Length` bytes of JSON.
   void (async () => {
     let buffer = new Uint8Array(0)
-    const dekoder = new TextDecoder()
-    for await (const bit of prosess.stdout) {
-      const samlet = new Uint8Array(buffer.length + bit.length)
-      samlet.set(buffer)
-      samlet.set(bit, buffer.length)
-      buffer = samlet
+    const decoder = new TextDecoder()
+    for await (const chunk of child.stdout) {
+      const joined = new Uint8Array(buffer.length + chunk.length)
+      joined.set(buffer)
+      joined.set(chunk, buffer.length)
+      buffer = joined
       for (;;) {
-        const tekst = dekoder.decode(buffer)
-        const slutt = tekst.indexOf("\r\n\r\n")
-        if (slutt < 0) break
-        const lengde = Number(
-          /Content-Length:\s*(\d+)/i.exec(tekst.slice(0, slutt))?.[1],
+        const text = decoder.decode(buffer)
+        const end = text.indexOf("\r\n\r\n")
+        if (end < 0) break
+        const length = Number(
+          /Content-Length:\s*(\d+)/i.exec(text.slice(0, end))?.[1],
         )
-        const start = new TextEncoder().encode(tekst.slice(0, slutt + 4)).length
-        if (buffer.length < start + lengde) break
-        const melding = JSON.parse(
-          dekoder.decode(buffer.slice(start, start + lengde)),
-        ) as Melding
-        buffer = buffer.slice(start + lengde)
-        mottatt.push(melding)
-        const treff = ventende.findIndex((v) => v.hvis(melding))
-        if (treff >= 0) ventende.splice(treff, 1)[0].svar(melding)
+        const start = new TextEncoder().encode(text.slice(0, end + 4)).length
+        if (buffer.length < start + length) break
+        const message = JSON.parse(
+          decoder.decode(buffer.slice(start, start + length)),
+        ) as Message
+        buffer = buffer.slice(start + length)
+        received.push(message)
+        const hit = pending.findIndex((v) => v.matches(message))
+        if (hit >= 0) pending.splice(hit, 1)[0].resolve(message)
       }
     }
   })()
 
-  const send = (melding: Record<string, unknown>) => {
-    const tekst = JSON.stringify({ jsonrpc: "2.0", ...melding })
-    prosess.stdin.write(
-      `Content-Length: ${new TextEncoder().encode(tekst).length}\r\n\r\n${tekst}`,
+  const send = (message: Record<string, unknown>) => {
+    const text = JSON.stringify({ jsonrpc: "2.0", ...message })
+    child.stdin.write(
+      `Content-Length: ${new TextEncoder().encode(text).length}\r\n\r\n${text}`,
     )
-    prosess.stdin.flush()
+    child.stdin.flush()
   }
-  const vent = (hvis: (m: Melding) => boolean, hva: string) =>
-    new Promise<Melding>((svar, avvis) => {
-      const funnet = mottatt.find(hvis)
-      if (funnet) return svar(funnet)
-      const tid = setTimeout(
-        () => avvis(new Error(`ventet forgjeves på ${hva}`)),
+  const waitFor = (matches: (m: Message) => boolean, what: string) =>
+    new Promise<Message>((resolve, reject) => {
+      const found = received.find(matches)
+      if (found) return resolve(found)
+      const timer = setTimeout(
+        () => reject(new Error(`waited in vain for ${what}`)),
         20000,
       )
-      ventende.push({
-        hvis,
-        svar: (m) => {
-          clearTimeout(tid)
-          svar(m)
+      pending.push({
+        matches,
+        resolve: (m) => {
+          clearTimeout(timer)
+          resolve(m)
         },
       })
     })
-  const diagnostikk = (uri: string, versjon: number) =>
-    vent(
+  const diagnostics = (uri: string, version: number) =>
+    waitFor(
       (m) =>
         m.method === "textDocument/publishDiagnostics" &&
         m.params?.uri === uri &&
-        mottatt.filter((n) => n.params?.uri === uri).length >= versjon,
-      `diagnostikk nummer ${versjon} for ${uri}`,
+        received.filter((n) => n.params?.uri === uri).length >= version,
+      `diagnostics number ${version} for ${uri}`,
     )
-  return { prosess, send, vent, diagnostikk, mottatt }
+  return { child, send, waitFor, diagnostics, received }
 }
 
-const rot = await mkdtemp(join(tmpdir(), "lotek-lsp-"))
+const root = await mkdtemp(join(tmpdir(), "lotek-lsp-"))
 try {
-  const s = await økt(rot)
+  const s = await session(root)
   s.send({
     id: 1,
     method: "initialize",
     params: {
       processId: null,
-      rootUri: pathToFileURL(rot).href,
+      rootUri: pathToFileURL(root).href,
       capabilities: {},
     },
   })
-  const start = await s.vent((m) => m.id === 1, "svar på initialize")
-  const kan = (start.result as { capabilities: Record<string, unknown> })
-    .capabilities
-  krev(
-    kan.positionEncoding === "utf-16",
-    "serveren sier ikke at posisjonene er UTF-16",
+  const start = await s.waitFor((m) => m.id === 1, "the answer to initialize")
+  const capabilities = (
+    start.result as { capabilities: Record<string, unknown> }
+  ).capabilities
+  expect(
+    capabilities.positionEncoding === "utf-16",
+    "the server does not say the positions are UTF-16",
   )
-  krev(
-    kan.codeActionProvider !== undefined,
-    "serveren tilbyr ikke hurtigrettelser",
+  expect(
+    capabilities.codeActionProvider !== undefined,
+    "the server does not offer quick fixes",
   )
   s.send({ method: "initialized", params: {} })
 
-  // Et dokument med en skrivefeil, etter tegn som er to UTF-16-enheter.
-  const uri = pathToFileURL(join(rot, "form.html")).href
+  // A document with a typo, after characters that are two UTF-16 units each.
+  const uri = pathToFileURL(join(root, "form.html")).href
   s.send({
     method: "textDocument/didOpen",
     params: {
@@ -158,25 +160,25 @@ try {
       },
     },
   })
-  const første = (await s.diagnostikk(uri, 1)).params as {
+  const first = (await s.diagnostics(uri, 1)).params as {
     diagnostics: {
       range: { start: { line: number; character: number } }
       code: string
       message: string
     }[]
   }
-  krev(
-    første.diagnostics.length === 1,
-    `ventet ett funn, fikk ${første.diagnostics.length}`,
+  expect(
+    first.diagnostics.length === 1,
+    `expected one finding, got ${first.diagnostics.length}`,
   )
-  krev(
-    første.diagnostics[0]?.code === "unknown-class",
-    "funnet har ikke regelnavnet som kode",
+  expect(
+    first.diagnostics[0]?.code === "unknown-class",
+    "the finding does not have the rule id as its code",
   )
-  krev(
-    første.diagnostics[0]?.range.start.line === 1 &&
-      første.diagnostics[0]?.range.start.character === 15,
-    `funnet står på feil sted: ${JSON.stringify(første.diagnostics[0]?.range)}`,
+  expect(
+    first.diagnostics[0]?.range.start.line === 1 &&
+      first.diagnostics[0]?.range.start.character === 15,
+    `the finding is in the wrong place: ${JSON.stringify(first.diagnostics[0]?.range)}`,
   )
 
   s.send({
@@ -188,21 +190,21 @@ try {
         start: { line: 1, character: 17 },
         end: { line: 1, character: 17 },
       },
-      context: { diagnostics: første.diagnostics },
+      context: { diagnostics: first.diagnostics },
     },
   })
-  const rettelser = (await s.vent((m) => m.id === 2, "hurtigrettelsene"))
+  const fixes = (await s.waitFor((m) => m.id === 2, "the quick fixes"))
     .result as {
     title: string
     edit: { changes: Record<string, { newText: string }[]> }
   }[]
-  krev(
-    rettelser[0]?.title === "Change to lt-button",
-    `feil rettelse: ${rettelser[0]?.title}`,
+  expect(
+    fixes[0]?.title === "Change to lt-button",
+    `wrong fix: ${fixes[0]?.title}`,
   )
-  krev(
-    rettelser[0]?.edit.changes[uri]?.[0]?.newText === "lt-button",
-    "rettelsen bytter ikke til lt-button",
+  expect(
+    fixes[0]?.edit.changes[uri]?.[0]?.newText === "lt-button",
+    "the fix does not change it to lt-button",
   )
 
   s.send({
@@ -212,32 +214,32 @@ try {
       contentChanges: [{ text: '<button class="lt-button">Send</button>' }],
     },
   })
-  const andre = (await s.diagnostikk(uri, 2)).params as {
+  const second = (await s.diagnostics(uri, 2)).params as {
     diagnostics: unknown[]
   }
-  krev(
-    andre.diagnostics.length === 0,
-    "funnet ble stående etter at det var rettet",
+  expect(
+    second.diagnostics.length === 0,
+    "the finding remained after it was fixed",
   )
 
-  // Et manifest i arbeidsområdet gjelder fra neste sjekk, uten omstart.
-  await mkdir(join(rot, "build/lotek"), { recursive: true })
+  // A manifest in the workspace applies from the next check, without a restart.
+  await mkdir(join(root, "build/lotek"), { recursive: true })
   const manifest = Bun.spawnSync(
-    ["node", join(pakke, "dist/cli.js"), "manifest"],
+    ["node", join(packageRoot, "dist/cli.js"), "manifest"],
     {
-      cwd: rot,
+      cwd: root,
     },
   ).stdout.toString()
-  const medKopi = JSON.parse(manifest)
-  medKopi.classes["app-button"] = {
+  const withCopy = JSON.parse(manifest)
+  withCopy.classes["app-button"] = {
     component: "button",
     title: "Button",
     link: "",
     attributes: {},
   }
   await writeFile(
-    join(rot, "build/lotek/manifest.json"),
-    JSON.stringify(medKopi),
+    join(root, "build/lotek/manifest.json"),
+    JSON.stringify(withCopy),
   )
   s.send({
     method: "textDocument/didChange",
@@ -248,13 +250,13 @@ try {
       ],
     },
   })
-  const tredje = (await s.diagnostikk(uri, 3)).params as {
+  const third = (await s.diagnostics(uri, 3)).params as {
     diagnostics: { message: string }[]
   }
-  krev(
-    tredje.diagnostics.length === 1 &&
-      tredje.diagnostics[0].message.includes("app-button--x"),
-    `manifestet i build/lotek ble ikke lest: ${JSON.stringify(tredje.diagnostics)}`,
+  expect(
+    third.diagnostics.length === 1 &&
+      third.diagnostics[0].message.includes("app-button--x"),
+    `the manifest in build/lotek was not read: ${JSON.stringify(third.diagnostics)}`,
   )
 
   s.send({
@@ -262,33 +264,33 @@ try {
     method: "textDocument/hover",
     params: { textDocument: { uri }, position: { line: 0, character: 0 } },
   })
-  const ukjent = await s.vent(
+  const unknown = await s.waitFor(
     (m) => m.id === 3,
-    "svar på en forespørsel serveren ikke kan",
+    "the answer to a request the server does not support",
   )
-  krev(
-    ukjent.error?.code === -32601,
-    "en ukjent forespørsel fikk ikke feilkoden for en ukjent metode",
+  expect(
+    unknown.error?.code === -32601,
+    "an unknown request did not get the error code for an unknown method",
   )
 
   s.send({ id: 4, method: "shutdown" })
-  await s.vent((m) => m.id === 4, "svar på shutdown")
+  await s.waitFor((m) => m.id === 4, "the answer to shutdown")
   s.send({ method: "exit" })
-  const kode = await Promise.race([
-    s.prosess.exited,
-    Bun.sleep(20000).then(() => "tidsavbrudd"),
+  const code = await Promise.race([
+    s.child.exited,
+    Bun.sleep(20000).then(() => "timeout"),
   ])
-  krev(kode === 0, `serveren avsluttet med ${kode} etter shutdown og exit`)
+  expect(code === 0, `the server exited with ${code} after shutdown and exit`)
 } catch (error) {
-  feil.push(String(error))
+  failures.push(String(error))
 } finally {
-  await rm(rot, { recursive: true, force: true })
+  await rm(root, { recursive: true, force: true })
 }
 
-if (feil.length > 0) {
+if (failures.length > 0) {
   console.error(
-    `✗ Språkserveren (${KOMMANDO.join(" ")}):\n\n${feil.map((f) => `  ${f}`).join("\n")}\n`,
+    `✗ The language server (${COMMAND.join(" ")}):\n\n${failures.map((f) => `  ${f}`).join("\n")}\n`,
   )
   process.exit(1)
 }
-console.log(`Språkserveren svarer som den skal (${KOMMANDO.join(" ")}).`)
+console.log(`The language server answers as it should (${COMMAND.join(" ")}).`)

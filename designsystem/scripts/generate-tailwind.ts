@@ -10,7 +10,7 @@ import { Containers, colorTokens } from "../src/tokens/tokens"
  * our name.
  */
 
-const linjer: string[] = [
+const lines: string[] = [
   "/* Generated. Edit tokens.ts or generate-tailwind.ts, not this file. */",
   "",
   "/*",
@@ -69,28 +69,28 @@ const linjer: string[] = [
  * `bg-lt-danger-fill` and `text-lt-danger-fill`. Shadow and focus ring are not
  * colours and belong in their own namespaces.
  */
-let forrigeFamilie = ""
-for (const navn of Object.keys(colorTokens).sort()) {
-  if (!navn.startsWith("--lt-color-")) continue
-  const familie = navn.slice(11).split("-")[0]
-  if (familie !== forrigeFamilie) {
-    if (forrigeFamilie) linjer.push("")
-    forrigeFamilie = familie
+let previousFamily = ""
+for (const name of Object.keys(colorTokens).sort()) {
+  if (!name.startsWith("--lt-color-")) continue
+  const family = name.slice(11).split("-")[0]
+  if (family !== previousFamily) {
+    if (previousFamily) lines.push("")
+    previousFamily = family
   }
-  linjer.push(`  --color-lt-${navn.slice(11)}: var(${navn});`)
+  lines.push(`  --color-lt-${name.slice(11)}: var(${name});`)
 }
 
-linjer.push(
+lines.push(
   "",
   "  /* Text sizes */",
   ...["xxs", "xs", "s", "m", "l", "xl", "xxl", "mega"].map(
-    (navn) => `  --text-lt-${navn}: var(--lt-font-size-${navn});`,
+    (name) => `  --text-lt-${name}: var(--lt-font-size-${name});`,
   ),
   "",
   "  /* Widths for page layout */",
-  ...Object.entries(Containers).map(([navn, verdi]) => {
-    const kebab = navn.replace(/[A-Z]/g, (b) => `-${b.toLowerCase()}`)
-    return `  --container-lt-${kebab}: ${verdi};`
+  ...Object.entries(Containers).map(([name, value]) => {
+    const kebab = name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
+    return `  --container-lt-${kebab}: ${value};`
   }),
   "",
   "  /* The shadow under surfaces that sit above the page */",
@@ -100,8 +100,8 @@ linjer.push(
 
 await Bun.write(
   new URL("../src/tailwind/tailwind.css", import.meta.url),
-  `${linjer.join("\n")}\n`,
+  `${lines.join("\n")}\n`,
 )
 
-const antall = linjer.filter((l) => l.trim().startsWith("--")).length
-console.log(`✓ tailwind.css generated: ${antall} entries`)
+const count = lines.filter((l) => l.trim().startsWith("--")).length
+console.log(`✓ tailwind.css generated: ${count} entries`)

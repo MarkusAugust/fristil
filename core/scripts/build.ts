@@ -1,47 +1,44 @@
 /**
- * Bygger WebAssembly-modulene til `core/dist/`.
+ * Builds the WebAssembly modules into `core/dist/`.
  *
- * Kjernen bærer ingen data, så bygget leser ingenting utenfor `core/`.
- * Manifestet og fargekontrakten gis den av verten når den kjører.
+ * The core carries no data, so the build reads nothing outside `core/`.
+ * The host gives it the manifest and the colour contract when it runs.
  *
- * To moduler: `lotek-core.wasm`, sjekken og temaet, og `lotek.wasm`,
- * kommandolinja (`cli/`) som WASI-modul. Pakken henter dem derfra med
- * `bun run core` i `designsystem/`. Ingen av dem sjekkes inn.
+ * Two modules: `lotek-core.wasm`, the check and the theme, and `lotek.wasm`,
+ * the command line (`cli/`) as a WASI module. The package fetches them from
+ * there with `bun run core` in `designsystem/`. Neither is checked in.
  *
- * Kjør med: bun core/scripts/build.ts. Krever Rust. `rust-toolchain.toml`
- * henter versjonen og målene.
+ * Run with: bun core/scripts/build.ts. Requires Rust. `rust-toolchain.toml`
+ * fetches the version and the targets.
  */
 
 import { copyFileSync, mkdirSync, statSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-const KJERNE = fileURLToPath(new URL("..", import.meta.url))
-const WASM = join(
-  KJERNE,
-  "target/wasm32-unknown-unknown/release/lotek_core.wasm",
-)
-export const MODUL = join(KJERNE, "dist/lotek-core.wasm")
-const CLI = join(KJERNE, "target/wasm32-wasip1/release/lotek.wasm")
-export const KOMMANDOLINJE = join(KJERNE, "dist/lotek.wasm")
+const CORE = fileURLToPath(new URL("..", import.meta.url))
+const WASM = join(CORE, "target/wasm32-unknown-unknown/release/lotek_core.wasm")
+export const MODULE = join(CORE, "dist/lotek-core.wasm")
+const CLI = join(CORE, "target/wasm32-wasip1/release/lotek.wasm")
+export const COMMAND_LINE = join(CORE, "dist/lotek.wasm")
 
 if (import.meta.main) {
   const cargo = Bun.spawnSync(
     ["cargo", "build", "--release", "--target", "wasm32-unknown-unknown"],
-    { cwd: KJERNE, stdout: "inherit", stderr: "inherit" },
+    { cwd: CORE, stdout: "inherit", stderr: "inherit" },
   )
   if (cargo.exitCode !== 0) process.exit(cargo.exitCode ?? 1)
   const wasi = Bun.spawnSync(
     ["cargo", "build", "--release", "-p", "lotek", "--target", "wasm32-wasip1"],
-    { cwd: KJERNE, stdout: "inherit", stderr: "inherit" },
+    { cwd: CORE, stdout: "inherit", stderr: "inherit" },
   )
   if (wasi.exitCode !== 0) process.exit(wasi.exitCode ?? 1)
-  mkdirSync(join(KJERNE, "dist"), { recursive: true })
-  copyFileSync(WASM, MODUL)
-  copyFileSync(CLI, KOMMANDOLINJE)
+  mkdirSync(join(CORE, "dist"), { recursive: true })
+  copyFileSync(WASM, MODULE)
+  copyFileSync(CLI, COMMAND_LINE)
 
-  const kb = (sti: string) => (statSync(sti).size / 1024).toFixed(0)
+  const kb = (path: string) => (statSync(path).size / 1024).toFixed(0)
   console.log(
-    `Skrev ${MODUL} (${kb(MODUL)} kB) og ${KOMMANDOLINJE} (${kb(KOMMANDOLINJE)} kB).`,
+    `Wrote ${MODULE} (${kb(MODULE)} kB) and ${COMMAND_LINE} (${kb(COMMAND_LINE)} kB).`,
   )
 }

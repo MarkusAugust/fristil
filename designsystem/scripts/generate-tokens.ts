@@ -6,7 +6,7 @@ import {
 } from "../src/tokens/tokens"
 import { elements } from "../src/vocabulary/elements"
 
-const ELEMENTER = Object.keys(elements)
+const ELEMENTS = Object.keys(elements)
 
 /*
  * Every `lt-` class the component stylesheets style, read from the
@@ -14,14 +14,14 @@ const ELEMENTER = Object.keys(elements)
  * also matched an unrelated `lt-1`, and missed a class with a tab or a line
  * break in front.
  */
-const KLASSER = new Set<string>()
-for await (const fil of new Bun.Glob("src/components/**/*.css").scan({
+const CLASSES = new Set<string>()
+for await (const file of new Bun.Glob("src/components/**/*.css").scan({
   cwd: `${import.meta.dir}/..`,
   absolute: true,
 })) {
-  const kilde = (await Bun.file(fil).text()).replace(/\/\*[\s\S]*?\*\//g, "")
-  for (const [, navn] of kilde.matchAll(/\.(lt-[a-z0-9_-]+)/g))
-    KLASSER.add(navn)
+  const source = (await Bun.file(file).text()).replace(/\/\*[\s\S]*?\*\//g, "")
+  for (const [, name] of source.matchAll(/\.(lt-[a-z0-9_-]+)/g))
+    CLASSES.add(name)
 }
 
 /*
@@ -29,7 +29,7 @@ for await (const fil of new Bun.Glob("src/components/**/*.css").scan({
  * rule. `hidden.browser.test.ts` looks for such rules in the stylesheets
  * itself, so a new child missing here fails there.
  */
-const BARN = [
+const CHILDREN = [
   ".lt-accordion summary",
   ".lt-breadcrumbs li",
   ".lt-file-upload-list li",
@@ -46,18 +46,18 @@ const sections: Record<string, string[]> = {}
  * The system's own colours are the contract applied to the system's own
  * hues, so there is no hand-written copy that can drift from the promises.
  */
-const alle: Record<string, string> = { ...cssTokens, ...colorTokens }
+const all: Record<string, string> = { ...cssTokens, ...colorTokens }
 
-for (const key of Object.keys(alle)) {
+for (const key of Object.keys(all)) {
   // The colours are grouped by family, the rest by kind: `--lt-color-danger-*`
   // becomes "lt-color-danger", `--lt-spacing-4` becomes "lt-spacing".
-  const deler = key.replace(/^--/, "").split("-")
-  const section = deler
+  const parts = key.replace(/^--/, "").split("-")
+  const section = parts
     .slice(0, key.startsWith("--lt-color-") ? 3 : 2)
     .join("-")
 
   if (!sections[section]) sections[section] = []
-  sections[section].push(`  ${key}: ${alle[key]};`)
+  sections[section].push(`  ${key}: ${all[key]};`)
 }
 
 /*
@@ -110,9 +110,9 @@ for (const [index, [section, props]] of Object.entries(sections).entries()) {
 }
 lines.push("  }")
 
-const morkeNavn = Object.keys({ ...darkTokens, ...darkColorTokens })
+const darkNames = Object.keys({ ...darkTokens, ...darkColorTokens })
 
-const darkLines = morkeNavn.map(
+const darkLines = darkNames.map(
   (name) => `      ${name}: ${{ ...darkTokens, ...darkColorTokens }[name]};`,
 )
 
@@ -130,13 +130,13 @@ const darkLines = morkeNavn.map(
  * two blocks cannot drift apart. A token without a light value would be an
  * error in `tokens.ts`, and stops the generation here.
  */
-const lightLines = morkeNavn.map((name) => {
-  const verdi = alle[name]
-  if (verdi === undefined)
+const lightLines = darkNames.map((name) => {
+  const value = all[name]
+  if (value === undefined)
     throw new Error(
       `${name} is overridden in the dark theme, but has no light value in tokens.ts.`,
     )
-  return `      ${name}: ${verdi};`
+  return `      ${name}: ${value};`
 })
 
 /*
@@ -157,15 +157,15 @@ const lightLines = morkeNavn.map((name) => {
  * `var(--lt-font-family-base)` does not end up here without someone deciding
  * it.
  */
-const AVLEDET = [
+const DERIVED = [
   "--lt-color-disabled-surface",
   "--lt-color-disabled-text",
   "--lt-focus-ring",
 ]
-const avledetLines = AVLEDET.map((name) => {
-  if (alle[name] === undefined)
+const derivedLines = DERIVED.map((name) => {
+  if (all[name] === undefined)
     throw new Error(`${name} does not exist in tokens.ts.`)
-  return `      ${name}: ${alle[name]};`
+  return `      ${name}: ${all[name]};`
 })
 
 /*
@@ -208,15 +208,15 @@ const avledetLines = AVLEDET.map((name) => {
  * the response is back. The order is tested in all three engines in
  * `theme.browser.test.ts`, not worked out here.
  */
-const control = (tema: string) =>
-  `:root:has(.lt-theme-control[value="${tema}"]:checked)`
+const control = (theme: string) =>
+  `:root:has(.lt-theme-control[value="${theme}"]:checked)`
 
 lines.push(
   "",
   "  @media (prefers-color-scheme: dark) {",
   '    :root:not([data-theme="light"]) {',
   ...darkLines,
-  ...avledetLines,
+  ...derivedLines,
   "    }",
   "  }",
   "",
@@ -228,7 +228,7 @@ lines.push(
   "    color-scheme: light;",
   "",
   ...lightLines.map((l) => l.slice(2)),
-  ...avledetLines.map((l) => l.slice(2)),
+  ...derivedLines.map((l) => l.slice(2)),
   "  }",
   "",
   '  [data-theme="dark"],',
@@ -236,7 +236,7 @@ lines.push(
   "    color-scheme: dark;",
   "",
   ...darkLines.map((l) => l.slice(2)),
-  ...avledetLines.map((l) => l.slice(2)),
+  ...derivedLines.map((l) => l.slice(2)),
   "  }",
   "",
   /*
@@ -298,15 +298,17 @@ lines.push(
    * overridden here.
    *
    * The elements are listed separately, since a web component needs no
-   * class, and the children in `BARN` have none. `until-found` must not be
+   * class, and the children in `CHILDREN` have none. `until-found` must not be
    * hidden completely: the browser searches in it.
    */
   "  :is(",
   ...[
-    ...[...KLASSER].sort().map((navn) => `.${navn}`),
-    ...ELEMENTER,
-    ...BARN,
-  ].map((velger, i, alle) => `    ${velger}${i < alle.length - 1 ? "," : ""}`),
+    ...[...CLASSES].sort().map((name) => `.${name}`),
+    ...ELEMENTS,
+    ...CHILDREN,
+  ].map(
+    (selector, i, list) => `    ${selector}${i < list.length - 1 ? "," : ""}`,
+  ),
   '  )[hidden]:not([hidden="until-found" i]) {',
   "    /* biome-ignore lint/complexity/noImportantStyles: `hidden` must win over the component's `display`, as the browser itself does */",
   "    display: none !important;",
@@ -320,5 +322,5 @@ await Bun.write(
 )
 
 console.log(
-  `✓ tokens.css generated: ${Object.keys(alle).length} values, ${darkLines.length} overridden in the dark theme`,
+  `✓ tokens.css generated: ${Object.keys(all).length} values, ${darkLines.length} overridden in the dark theme`,
 )

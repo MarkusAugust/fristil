@@ -1,25 +1,27 @@
 /**
- * Kontrollerer hva pakken faktisk inneholder.
+ * Checks what the package actually contains.
  *
- * To ting går galt stille her.
+ * Two things go wrong silently here.
  *
- * Et inkrementelt `tsc -b` går ut fra at `tsconfig.tsbuildinfo` forteller
- * sannheten om hva som allerede er skrevet. Blir `dist` slettet uten at
- * buildinfo-fila følger med, hopper bygget over filer det tror finnes, og
- * pakken kan komme ut med JavaScript men uten `.d.ts`. Da forsvinner
- * typesikkerheten stille hos konsumenten, som er det siste vi vil.
+ * An incremental `tsc -b` assumes that `tsconfig.tsbuildinfo` tells the
+ * truth about what has already been written. If `dist` is deleted without
+ * the buildinfo file going with it, the build skips files it thinks exist,
+ * and the package can come out with JavaScript but without `.d.ts`. Type
+ * safety then disappears silently for the consumer, which is the last thing
+ * we want.
  *
- * Og `files` i package.json tar med hele mapper. Testfilene lå ved siden av
- * komponentene og ble med i tarballen, 43 av dem.
+ * And `files` in package.json takes whole folders. The test files sat next to
+ * the components and went into the tarball, 43 of them.
  *
- * Kartene har samme problem andre veien. `tsconfig.json` skriver kildekart og
- * deklarasjonskart, og hvert kart peker på en kildefil i `src`. `files` tok
- * med `src/components`, så kartene til komponentene traff, men ikke
- * `src/index.ts`, `react.ts` eller `register.ts`: «gå til definisjon» på `lt`
- * og et stakkspor fra `/diagnostics` landet i en fil som ikke var med. Hver
- * kilde et medsendt kart peker på, må derfor også være med.
+ * The maps have the same problem the other way round. `tsconfig.json` writes
+ * source maps and declaration maps, and each map points at a source file in
+ * `src`. `files` included `src/components`, so the components' maps landed,
+ * but not `src/index.ts`, `react.ts` or `register.ts`: "go to definition" on
+ * `lt` and a stack trace from `/diagnostics` landed in a file that was not
+ * included. Every source a shipped map points at must therefore be included
+ * too.
  *
- * Kjør med: bun scripts/check-exports.ts, eller som en del av `bun run build`.
+ * Run with: bun scripts/check-exports.ts, or as part of `bun run build`.
  */
 
 import { existsSync, readFileSync } from "node:fs"
@@ -27,126 +29,129 @@ import { join } from "node:path"
 import { dirname, join as joinPosix, normalize } from "node:path/posix"
 import { fileURLToPath } from "node:url"
 
-const pakke = fileURLToPath(new URL("../", import.meta.url))
+const pkg = fileURLToPath(new URL("../", import.meta.url))
 
 type Exports = Record<string, string | Record<string, string>>
 
-const manifest = (await Bun.file(join(pakke, "package.json")).json()) as {
+const manifest = (await Bun.file(join(pkg, "package.json")).json()) as {
   exports: Exports
 }
 
-const feil: string[] = []
+const errors: string[] = []
 
-/** Filene npm ville lagt i tarballen. */
-async function pakkefiler(): Promise<string[]> {
-  // `--ignore-scripts` fordi `npm pack` ellers kjører livssyklusskriptene til
-  // pakken. Et byggeskritt som pakker for å kontrollere seg selv, ville da
-  // kalle seg selv på nytt uten å stoppe.
-  const kjøring = Bun.spawn(
+/** The files npm would put in the tarball. */
+async function packageFiles(): Promise<string[]> {
+  // `--ignore-scripts` because `npm pack` otherwise runs the package's
+  // lifecycle scripts. A build step that packs to check itself would then
+  // call itself again without stopping.
+  const run = Bun.spawn(
     ["npm", "pack", "--dry-run", "--json", "--ignore-scripts"],
     {
-      cwd: pakke,
+      cwd: pkg,
       stdout: "pipe",
       stderr: "pipe",
     },
   )
 
-  const [utdata, feilutdata] = await Promise.all([
-    new Response(kjøring.stdout).text(),
-    new Response(kjøring.stderr).text(),
+  const [output, errorOutput] = await Promise.all([
+    new Response(run.stdout).text(),
+    new Response(run.stderr).text(),
   ])
-  const kode = await kjøring.exited
+  const code = await run.exited
 
-  if (kode !== 0) {
-    throw new Error(`npm pack svarte med kode ${kode}:\n${feilutdata.trim()}`)
+  if (code !== 0) {
+    throw new Error(`npm pack exited with code ${code}:\n${errorOutput.trim()}`)
   }
 
-  return førstePakke(JSON.parse(utdata)).files.map((fil) => fil.path)
+  return firstPackage(JSON.parse(output)).files.map((file) => file.path)
 }
 
-type Pakkeresultat = { files: { path: string }[] }
+type PackResult = { files: { path: string }[] }
 
 /**
- * npm 11 svarer med en liste som har ett resultat i seg. npm 12 svarer med et
- * objekt der pakkenavnet er nøkkelen. Arbeidsflyten som publiserer henter
- * alltid nyeste npm, så skriptet må tåle begge formene. Da den bare tålte den
- * første, stoppet utgivelsen på «{} is not iterable», og feilen pekte på vår
- * egen kode framfor på npm.
+ * npm 11 answers with a list holding one result. npm 12 answers with an
+ * object keyed by the package name. The publishing workflow always fetches
+ * the latest npm, so the script has to accept both forms. When it only
+ * accepted the first, the release stopped on "{} is not iterable", and the
+ * error pointed at our own code rather than at npm.
  */
-function førstePakke(utdata: unknown): Pakkeresultat {
-  const resultater = Array.isArray(utdata)
-    ? utdata
-    : Object.values(utdata as Record<string, unknown>)
-  const [første] = resultater as Pakkeresultat[]
+function firstPackage(output: unknown): PackResult {
+  const results = Array.isArray(output)
+    ? output
+    : Object.values(output as Record<string, unknown>)
+  const [first] = results as PackResult[]
 
-  if (!Array.isArray(første?.files)) {
+  if (!Array.isArray(first?.files)) {
     throw new Error(
-      `Forsto ikke svaret fra npm pack: ${JSON.stringify(utdata).slice(0, 200)}`,
+      `Could not read the answer from npm pack: ${JSON.stringify(output).slice(0, 200)}`,
     )
   }
 
-  return første
+  return first
 }
 
-const filer = new Set(await pakkefiler())
+const files = new Set(await packageFiles())
 
-for (const [navn, verdi] of Object.entries(manifest.exports)) {
-  const stier = typeof verdi === "string" ? [verdi] : Object.values(verdi)
+for (const [name, value] of Object.entries(manifest.exports)) {
+  const paths = typeof value === "string" ? [value] : Object.values(value)
 
-  for (const sti of stier) {
-    const relativ = sti.replace(/^\.\//, "")
+  for (const path of paths) {
+    const relative = path.replace(/^\.\//, "")
 
-    if (!existsSync(join(pakke, sti))) {
-      feil.push(`${navn} → ${sti} finnes ikke`)
-    } else if (!filer.has(relativ)) {
-      feil.push(`${navn} → ${sti} finnes, men blir ikke med i pakken`)
+    if (!existsSync(join(pkg, path))) {
+      errors.push(`${name} → ${path} does not exist`)
+    } else if (!files.has(relative)) {
+      errors.push(
+        `${name} → ${path} exists, but is not included in the package`,
+      )
     }
   }
 }
 
 /**
- * Kildene kartene peker på, som ikke er med. Stiene fra `npm pack` har
- * skråstrek, også på Windows, så de løses som POSIX-stier.
+ * The sources the maps point at that are not included. The paths from
+ * `npm pack` use forward slashes, also on Windows, so they are resolved as
+ * POSIX paths.
  */
-const kilderUtenfor = new Map<string, string>()
-for (const sti of filer) {
-  if (!sti.endsWith(".map")) continue
-  const kart = JSON.parse(readFileSync(join(pakke, sti), "utf8")) as {
+const sourcesOutside = new Map<string, string>()
+for (const path of files) {
+  if (!path.endsWith(".map")) continue
+  const map = JSON.parse(readFileSync(join(pkg, path), "utf8")) as {
     sources?: string[]
   }
-  for (const kilde of kart.sources ?? []) {
-    const relativ = normalize(joinPosix(dirname(sti), kilde))
-    if (!filer.has(relativ) && !kilderUtenfor.has(relativ))
-      kilderUtenfor.set(relativ, sti)
+  for (const source of map.sources ?? []) {
+    const relative = normalize(joinPosix(dirname(path), source))
+    if (!files.has(relative) && !sourcesOutside.has(relative))
+      sourcesOutside.set(relative, path)
   }
 }
 
-if (kilderUtenfor.size > 0) {
-  const [kilde, kart] = [...kilderUtenfor][0] as [string, string]
-  feil.push(
-    `${kilderUtenfor.size} kildefiler som kartene i pakken peker på, er ikke med, blant annet ${kilde} fra ${kart}. Legg mappa inn i «files» i package.json.`,
+if (sourcesOutside.size > 0) {
+  const [source, map] = [...sourcesOutside][0] as [string, string]
+  errors.push(
+    `${sourcesOutside.size} source files the maps in the package point at are not included, among them ${source} from ${map}. Add the folder to "files" in package.json.`,
   )
 }
 
-const testfiler = [...filer].filter((sti) => sti.includes(".test."))
+const testFiles = [...files].filter((path) => path.includes(".test."))
 
-if (testfiler.length > 0) {
-  feil.push(
-    `${testfiler.length} testfiler er med i pakken, blant annet ${testfiler[0]}`,
+if (testFiles.length > 0) {
+  errors.push(
+    `${testFiles.length} test files are included in the package, among them ${testFiles[0]}`,
   )
 }
 
-if (feil.length > 0) {
+if (errors.length > 0) {
   console.error(
-    `Pakken stemmer ikke med det den lover:\n\n` +
-      feil.map((linje) => `  ${linje}`).join("\n") +
-      "\n\nKjør `bun run build` på nytt. Holder ikke det, slett" +
-      " designsystem/tsconfig.tsbuildinfo og prøv igjen.\n",
+    `The package does not match what it promises:\n\n` +
+      errors.map((line) => `  ${line}`).join("\n") +
+      "\n\nRun `bun run build` again. If that is not enough, delete" +
+      " designsystem/tsconfig.tsbuildinfo and try again.\n",
   )
   process.exit(1)
 }
 
 console.log(
-  `Pakken leverer alle ${Object.keys(manifest.exports).length} inngangspunktene,` +
-    ` i ${filer.size} filer, uten tester, og hvert kart peker på en fil som er med.`,
+  `The package ships all ${Object.keys(manifest.exports).length} entry points,` +
+    ` in ${files.size} files, without tests, and every map points at an included file.`,
 )

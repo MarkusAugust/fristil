@@ -1,32 +1,32 @@
 /**
- * Skriver `dist/lotek.css`, alle stilarkene i én fil.
+ * Writes `dist/lotek.css`, every stylesheet in one file.
  *
- * Regnestykket, og hvorfor fila finnes, står i `css-bundle.ts`. Her er bare
- * skrivingen og utskriften, siden `agent-parts.ts` trenger det samme
- * regnestykket uten å skrive noe.
+ * The calculation, and why the file exists, is in `css-bundle.ts`. Only the
+ * writing and the output are here, since `agent-parts.ts` needs the same
+ * calculation without writing anything.
  */
 import { mkdirSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { byggSamletCss, samletStørrelse } from "./css-bundle.js"
+import { buildBundledCss, bundledSize } from "./css-bundle.js"
 
-const PAKKE = fileURLToPath(new URL("../", import.meta.url))
-const UT = join(PAKKE, "dist", "lotek.css")
+const PACKAGE = fileURLToPath(new URL("../", import.meta.url))
+const OUT = join(PACKAGE, "dist", "lotek.css")
 
-let samlet: ReturnType<typeof byggSamletCss>
+let bundled: ReturnType<typeof buildBundledCss>
 try {
-  samlet = byggSamletCss()
-} catch (feil) {
-  console.error(`✗ build-css: ${(feil as Error).message}.`)
+  bundled = buildBundledCss()
+} catch (error) {
+  console.error(`✗ build-css: ${(error as Error).message}.`)
   process.exit(1)
 }
 
-mkdirSync(dirname(UT), { recursive: true })
-writeFileSync(UT, samlet.css)
+mkdirSync(dirname(OUT), { recursive: true })
+writeFileSync(OUT, bundled.css)
 
-const { kb, gzipKb } = samletStørrelse(samlet.css)
+const { kb, gzipKb } = bundledSize(bundled.css)
 
 console.log(
-  `lotek.css: ${samlet.oppføringer} oppføringer og ${samlet.filer} filer, ` +
-    `${samlet.importer} @import flatet ut, ${kb} kB (${gzipKb} kB med gzip).`,
+  `lotek.css: ${bundled.entries} entries and ${bundled.files} files, ` +
+    `${bundled.imports} @import flattened, ${kb} kB (${gzipKb} kB with gzip).`,
 )

@@ -8,7 +8,7 @@
       "message": "data-variant cannot be \"feil\" on tag. Valid values: filled, and outline without the attribute."
     }
   ],
-  "side": [
+  "page": [
     {
       "start": 195,
       "end": 214,

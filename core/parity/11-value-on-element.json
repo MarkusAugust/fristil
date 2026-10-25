@@ -15,7 +15,7 @@
       "message": "data-autofocus cannot be \"kanskje\". Valid values: false, true."
     }
   ],
-  "side": [
+  "page": [
     {
       "start": 12,
       "end": 21,

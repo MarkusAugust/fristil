@@ -20,23 +20,23 @@ import { lt } from "../src/index.js"
 import { classes } from "../src/vocabulary/classes.js"
 import { elements } from "../src/vocabulary/elements.js"
 import { FAMILIES, ROLES, roleToCss } from "./color-contract.js"
-import { byggSamletCss, samletStørrelse } from "./css-bundle.js"
+import { buildBundledCss, bundledSize } from "./css-bundle.js"
 
-export const PAKKE = fileURLToPath(new URL("../", import.meta.url))
+export const PACKAGE = fileURLToPath(new URL("../", import.meta.url))
 
 /** The role names as they appear in CSS, in the order the contract gives them. */
-const ROLE_NAMES = Object.keys(ROLES).map((rolle) => roleToCss(rolle))
+const ROLE_NAMES = Object.keys(ROLES).map((role) => roleToCss(role))
 
-type Pakke = {
+type PackageJson = {
   version: string
   exports: Record<string, string | { import?: string }>
 }
 
-export const pakke = JSON.parse(
-  readFileSync(join(PAKKE, "package.json"), "utf8"),
-) as Pakke
+export const packageJson = JSON.parse(
+  readFileSync(join(PACKAGE, "package.json"), "utf8"),
+) as PackageJson
 
-export const VERSION = pakke.version
+export const VERSION = packageJson.version
 export const CDN = `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@${VERSION}`
 
 /**
@@ -49,41 +49,41 @@ export const CDN = `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@${VERSION}`
  * from `dist/lotek.css`, since `generate` runs before the CSS build in the
  * package build.
  */
-const SAMLET = samletStørrelse(byggSamletCss().css)
+const BUNDLED = bundledSize(buildBundledCss().css)
 
 /** "N kB, M kB compressed", as html, templates and datastar state it, worked out when they are written. */
-export const SAMLET_STØRRELSE = `${SAMLET.kb} kB, ${SAMLET.gzipKb} kB compressed`
+export const BUNDLED_SIZE = `${BUNDLED.kb} kB, ${BUNDLED.gzipKb} kB compressed`
 
 /** The folder each component is in, which decides who creates the markup. */
-function kategorier(): Map<string, string> {
-  const kart = new Map<string, string>()
+function categories(): Map<string, string> {
+  const map = new Map<string, string>()
 
-  for (const kategori of ["css", "frame", "standalone"]) {
-    const mappe = join(PAKKE, "src/components", kategori)
-    for (const navn of readdirSync(mappe)) {
-      if (statSync(join(mappe, navn)).isDirectory()) kart.set(navn, kategori)
+  for (const category of ["css", "frame", "standalone"]) {
+    const folder = join(PACKAGE, "src/components", category)
+    for (const name of readdirSync(folder)) {
+      if (statSync(join(folder, name)).isDirectory()) map.set(name, category)
     }
   }
 
-  return kart
+  return map
 }
 
-export const KATEGORI = kategorier()
+export const CATEGORY = categories()
 
 /** The stylesheet a component has in `exports`, or null when it has none. */
-export function stilark(komponent: string): string | null {
-  return `./${komponent}.css` in pakke.exports ? `${komponent}.css` : null
+export function stylesheet(component: string): string | null {
+  return `./${component}.css` in packageJson.exports ? `${component}.css` : null
 }
 
 /** The module `defineLt*` is in, as `exports` points to it. */
-export function modul(komponent: string): string {
-  const oppføring = pakke.exports[`./${komponent}`]
-  if (!oppføring || typeof oppføring === "string") {
-    throw new Error(`${komponent} has no JS entry in exports`)
+export function moduleOf(component: string): string {
+  const entry = packageJson.exports[`./${component}`]
+  if (!entry || typeof entry === "string") {
+    throw new Error(`${component} has no JS entry in exports`)
   }
-  const sti = oppføring.import
-  if (!sti) throw new Error(`${komponent} is missing "import" in exports`)
-  return sti.replace(/^\.\//, "")
+  const path = entry.import
+  if (!path) throw new Error(`${component} is missing "import" in exports`)
+  return path.replace(/^\.\//, "")
 }
 
 /**
@@ -93,68 +93,69 @@ export function modul(komponent: string): string {
  * updates itself while the copyable examples are left pointing at a 404, and
  * that is exactly the part the consumer pastes in.
  */
-export function cdnTil(inngang: string): string {
-  const oppføring = pakke.exports[`./${inngang}`]
-  const sti =
-    typeof oppføring === "string" ? oppføring : (oppføring?.import ?? "")
+export function cdnUrl(entryName: string): string {
+  const entry = packageJson.exports[`./${entryName}`]
+  const path = typeof entry === "string" ? entry : (entry?.import ?? "")
 
-  if (!sti) throw new Error(`${inngang} does not exist in exports`)
+  if (!path) throw new Error(`${entryName} does not exist in exports`)
 
-  return `${CDN}/${sti.replace(/^\.\//, "")}`
+  return `${CDN}/${path.replace(/^\.\//, "")}`
 }
 
-const stor = (del: string) => del[0].toUpperCase() + del.slice(1)
+const capitalise = (part: string) => part[0].toUpperCase() + part.slice(1)
 
 /** `defineLtSessionTimeout` from `session-timeout`, as the naming convention says. */
-export function registrering(komponent: string): string {
-  return `defineLt${komponent.split("-").map(stor).join("")}`
+export function registration(component: string): string {
+  return `defineLt${component.split("-").map(capitalise).join("")}`
 }
 
-type Klasse = {
-  klasser: string[]
-  attributter: string[]
+type ClassRow = {
+  classNames: string[]
+  attributes: string[]
 }
 
 /** The components that are only CSS, with their classes and attributes. */
-function cssKomponenter(): Map<string, Klasse> {
-  const kart = new Map<string, Klasse>()
+function cssComponents(): Map<string, ClassRow> {
+  const map = new Map<string, ClassRow>()
 
-  for (const [klasse, info] of Object.entries(classes)) {
-    if (KATEGORI.get(info.component) !== "css") continue
+  for (const [className, info] of Object.entries(classes)) {
+    if (CATEGORY.get(info.component) !== "css") continue
 
-    const rad = kart.get(info.component) ?? { klasser: [], attributter: [] }
-    rad.klasser.push(klasse)
+    const row = map.get(info.component) ?? { classNames: [], attributes: [] }
+    row.classNames.push(className)
 
-    for (const [navn, a] of Object.entries(info.attributes ?? {})) {
-      rad.attributter.push(attributt(navn, a))
+    for (const [name, a] of Object.entries(info.attributes ?? {})) {
+      row.attributes.push(attributeLabel(name, a))
     }
 
-    kart.set(info.component, rad)
+    map.set(info.component, row)
   }
 
-  return kart
+  return map
 }
 
 /**
  * The table of CSS components, sorted by component name.
  *
- * `stilark` is the address the reader should write, and it is not the same
+ * `stylesheet` is the address the reader should write, and it is not the same
  * everywhere: without a build step it is a full URL, with one it is the
  * package name. For a long time the column held only the file name, and the
  * reader had to guess the path. An agent that generalised from the button
  * example wrote `src/components/css/field/field.css` for `<lt-field>`, which
  * is under `frame/`, and got a 404.
  */
-export function cssTabell(stilark: (komponent: string) => string): string {
-  const rader = [...cssKomponenter()].sort(([a], [b]) => a.localeCompare(b))
+export function cssTable(stylesheet: (component: string) => string): string {
+  const rows = [...cssComponents()].sort(([a], [b]) => a.localeCompare(b))
 
   return [
     "| Class | Stylesheet | Attributes |",
     "| --- | --- | --- |",
-    ...rader.map(([navn, rad]) => {
-      const klasser = rad.klasser.map((klasse) => `\`${klasse}\``).join("<br>")
-      const attributter = rad.attributter.join("<br>") || "none"
-      return `| ${klasser} | \`${stilark(navn)}\` | ${attributter} |`
+    ...rows.map(([name, row]) => {
+      const classNames = row.classNames
+        .map((className) => `\`${className}\``)
+        .join("<br>")
+      const attributes = row.attributes.join("<br>") || "none"
+      return `| ${classNames} | \`${stylesheet(name)}\` | ${attributes} |`
     }),
   ].join("\n")
 }
@@ -163,15 +164,13 @@ export function cssTabell(stilark: (komponent: string) => string): string {
  * A class attribute as the tables write it: the values, or `(flag)` for an
  * attribute that works by being present, as the element table writes it.
  */
-function attributt(
-  navn: string,
+function attributeLabel(
+  name: string,
   a: { values?: readonly string[]; flag?: true },
 ): string {
-  const verdier = a.values ?? []
-  if (a.flag) return `\`${navn}\` (flag)`
-  return verdier.length > 0
-    ? `\`${navn}\`: ${verdier.join(", ")}`
-    : `\`${navn}\``
+  const values = a.values ?? []
+  if (a.flag) return `\`${name}\` (flag)`
+  return values.length > 0 ? `\`${name}\`: ${values.join(", ")}` : `\`${name}\``
 }
 
 /**
@@ -179,72 +178,72 @@ function attributt(
  * `<lt-tabs>`, with their attributes. `data-color` on `.lt-dialog` used to be
  * nowhere in the rulebooks, since the dialog is not a CSS component.
  */
-function klasserUnder(komponent: string): string {
-  const treff = Object.entries(classes)
-    .filter(([, info]) => info.component === komponent)
-    .map(([klasse, info]) => {
-      const attributter = Object.entries(info.attributes ?? {}).map(
-        ([navn, a]) => attributt(navn, a),
+function classesUnder(component: string): string {
+  const found = Object.entries(classes)
+    .filter(([, info]) => info.component === component)
+    .map(([className, info]) => {
+      const attributes = Object.entries(info.attributes ?? {}).map(
+        ([name, a]) => attributeLabel(name, a),
       )
-      return attributter.length > 0
-        ? `\`${klasse}\` (${attributter.join("; ")})`
-        : `\`${klasse}\``
+      return attributes.length > 0
+        ? `\`${className}\` (${attributes.join("; ")})`
+        : `\`${className}\``
     })
 
-  return treff.join("<br>") || "none"
+  return found.join("<br>") || "none"
 }
 
 /**
  * The table of web components.
  *
- * `adresse` is the path the consumer writes in the import, and it is not the
+ * `address` is the path the consumer writes in the import, and it is not the
  * same everywhere: a browser without a bundler does not resolve the package
  * name, so there it has to be a URL. That is why each framework decides its own.
  */
-export function webTabell(
-  adresse: (komponent: string, modul: string) => string,
-  stilark: (komponent: string) => string,
+export function webTable(
+  address: (component: string, modulePath: string) => string,
+  stylesheet: (component: string) => string,
 ): string {
-  const rader = Object.keys(elements).map((tagg) => {
-    const komponent = tagg.replace(/^lt-/, "")
+  const rows = Object.keys(elements).map((tag) => {
+    const component = tag.replace(/^lt-/, "")
 
-    const attributter =
-      Object.entries(elements[tagg].attributes ?? {})
-        .map(([navn, attributt]) =>
-          attributt.type === "values"
-            ? `\`${navn}\`: ${attributt.values.join(", ")}`
-            : `\`${navn}\` (${attributt.type})`,
+    const attributes =
+      Object.entries(elements[tag].attributes ?? {})
+        .map(([name, attribute]) =>
+          attribute.type === "values"
+            ? `\`${name}\`: ${attribute.values.join(", ")}`
+            : `\`${name}\` (${attribute.type})`,
         )
         .join("<br>") || "none"
 
-    const kall = `\`${registrering(komponent)}()\``
-    const fra = `\`${adresse(komponent, modul(komponent))}\``
+    const call = `\`${registration(component)}()\``
+    const from = `\`${address(component, moduleOf(component))}\``
 
     // The events, with the fields in `detail`. An agent that needed to listen
     // to the dialog used to have to read the component code to find the name.
-    const hendelser =
-      Object.entries(elements[tagg].events ?? {})
-        .map(([navn, hendelse]) =>
-          hendelse.detail
-            ? `\`${navn}\` (${Object.keys(hendelse.detail).join(", ")})`
-            : `\`${navn}\``,
+    const events =
+      Object.entries(elements[tag].events ?? {})
+        .map(([name, event]) =>
+          event.detail
+            ? `\`${name}\` (${Object.keys(event.detail).join(", ")})`
+            : `\`${name}\``,
         )
         .join("<br>") || "none"
 
-    return `| \`<${tagg}>\` | ${KATEGORI.get(komponent)} | \`${stilark(komponent)}\` | ${kall} from ${fra} | ${attributter} | ${hendelser} | ${klasserUnder(komponent)} |`
+    return `| \`<${tag}>\` | ${CATEGORY.get(component)} | \`${stylesheet(component)}\` | ${call} from ${from} | ${attributes} | ${events} | ${classesUnder(component)} |`
   })
 
   return [
     "| Element | Category | Stylesheet | Registration | Attributes | Events | Classes inside |",
     "| --- | --- | --- | --- | --- | --- | --- |",
-    ...rader,
+    ...rows,
   ].join("\n")
 }
 
 /** The token names, read out of the generated stylesheet. */
-function tokennavn(mønster: RegExp): string[] {
-  const css = readFileSync(join(PAKKE, "src/tokens/tokens.css"), "utf8")
-  return [...new Set(css.match(mønster) ?? [])].sort()
+function tokenNames(pattern: RegExp): string[] {
+  const css = readFileSync(join(PACKAGE, "src/tokens/tokens.css"), "utf8")
+  return [...new Set(css.match(pattern) ?? [])].sort()
 }
 
 /**
@@ -262,40 +261,40 @@ function tokennavn(mønster: RegExp): string[] {
  * only two of the nine roles. Everything in the generated stylesheet that is
  * not a cell is listed separately.
  */
-export function tokenListe(): string {
-  const celler = new Set(
-    FAMILIES.flatMap((familie) =>
-      ROLE_NAMES.map((rolle) => `--lt-color-${familie}-${rolle}`),
+export function tokenList(): string {
+  const cells = new Set(
+    FAMILIES.flatMap((family) =>
+      ROLE_NAMES.map((role) => `--lt-color-${family}-${role}`),
     ),
   )
 
-  const utenfor = tokennavn(/--lt-(?:color|shadow|focus|icon)-[a-z0-9-]+/g)
-    .filter((navn) => !celler.has(navn))
+  const outside = tokenNames(/--lt-(?:color|shadow|focus|icon)-[a-z0-9-]+/g)
+    .filter((name) => !cells.has(name))
     .sort()
 
-  const liste = (navn: readonly string[]) =>
-    navn.map((n) => `\`${n}\``).join(", ")
+  const list = (names: readonly string[]) =>
+    names.map((n) => `\`${n}\``).join(", ")
 
   return [
-    `Families: ${liste(FAMILIES)}.`,
+    `Families: ${list(FAMILIES)}.`,
     "",
-    `Roles: ${liste(ROLE_NAMES)}.`,
+    `Roles: ${list(ROLE_NAMES)}.`,
     "",
-    `Outside the matrix: ${liste(utenfor)}.`,
+    `Outside the matrix: ${list(outside)}.`,
   ].join("\n")
 }
 
 /** Spacing, font and line height, as one sentence rather than a list. */
-export function malOgSkrift(): string {
-  const liste = (navn: string[]) =>
-    navn.map((token) => `\`${token}\``).join(", ")
+export function spacingAndFont(): string {
+  const list = (names: string[]) =>
+    names.map((token) => `\`${token}\``).join(", ")
 
   return [
-    `Spacing: ${liste(tokennavn(/--lt-spacing-[a-z0-9-]+/g))}.`,
+    `Spacing: ${list(tokenNames(/--lt-spacing-[a-z0-9-]+/g))}.`,
     "",
-    `Font: ${liste(tokennavn(/--lt-font-[a-z0-9-]+/g))}.`,
+    `Font: ${list(tokenNames(/--lt-font-[a-z0-9-]+/g))}.`,
     "",
-    `Line height: ${liste(tokennavn(/--lt-line-height-[a-z0-9-]+/g))}.`,
+    `Line height: ${list(tokenNames(/--lt-line-height-[a-z0-9-]+/g))}.`,
   ].join("\n")
 }
 
@@ -304,7 +303,7 @@ export function malOgSkrift(): string {
  * safety, and would otherwise be in the list as builder functions that do not
  * exist.
  */
-const HJELPERE = new Set([
+const HELPERS = new Set([
   "isMarker",
   "isState",
   "markers",
@@ -313,39 +312,39 @@ const HJELPERE = new Set([
 ])
 
 /** The builder functions in `lt`, which are the ones a project with types can use. */
-export function byggefunksjoner(): string {
-  const navn = Object.keys(lt)
-    .filter((nøkkel) => !HJELPERE.has(nøkkel))
+export function builderFunctions(): string {
+  const name = Object.keys(lt)
+    .filter((key) => !HELPERS.has(key))
     .sort()
 
-  return navn.map((byggefunksjon) => `\`lt.${byggefunksjon}()\``).join(", ")
+  return name.map((builderFunction) => `\`lt.${builderFunction}()\``).join(", ")
 }
 
-export function antallByggefunksjoner(): number {
-  return Object.keys(lt).filter((nøkkel) => !HJELPERE.has(nøkkel)).length
+export function countBuilderFunctions(): number {
+  return Object.keys(lt).filter((key) => !HELPERS.has(key)).length
 }
 
-export function antallKomponenter(): number {
+export function countComponents(): number {
   return new Set(Object.values(classes).map((info) => info.component)).size
 }
 
 /**
  * The rows in the CSS table.
  *
- * `antallKomponenter()` counts components that have at least one class, and
+ * `countComponents()` counts components that have at least one class, and
  * `field` has none. The number therefore matched neither the CSS table, the
  * sum of the two tables, nor the reading "so many components and so many
  * elements".
  */
-export function antallCssKomponenter(): number {
+export function countCssComponents(): number {
   return new Set(
     Object.values(classes)
-      .filter((info) => KATEGORI.get(info.component) === "css")
+      .filter((info) => CATEGORY.get(info.component) === "css")
       .map((info) => info.component),
   ).size
 }
 
-export function antallElementer(): number {
+export function countElements(): number {
   return Object.keys(elements).length
 }
 
@@ -358,21 +357,21 @@ export function antallElementer(): number {
  * edge. Code blocks, tables and the token list are left untouched: there every
  * line means something.
  */
-export function ombrekk(markdown: string): string {
-  const BREDDE = 78
-  const linjer = markdown.split("\n")
-  const ut: string[] = []
-  let avsnitt: string[] = []
-  let iKode = false
-  let innrykk = ""
+export function reflow(markdown: string): string {
+  const WIDTH = 78
+  const lines = markdown.split("\n")
+  const out: string[] = []
+  let paragraph: string[] = []
+  let inCode = false
+  let indent = ""
 
   /** List items hang under their own marker, so the text lines up in a column. */
-  function tøm(): void {
-    if (avsnitt.length === 0) return
+  function flush(): void {
+    if (paragraph.length === 0) return
 
-    const tekst = avsnitt.join(" ").replace(/\s+/g, " ").trim()
-    const merke = /^(\d+\.\s+|[-*]\s+)/.exec(tekst)
-    const heng = innrykk + (merke ? " ".repeat(merke[1].length) : "")
+    const text = paragraph.join(" ").replace(/\s+/g, " ").trim()
+    const marker = /^(\d+\.\s+|[-*]\s+)/.exec(text)
+    const hang = indent + (marker ? " ".repeat(marker[1].length) : "")
     /*
      * A word is characters and code spans together, the spaces inside the
      * span included. Without this, `npx @lo-tek/interfaces check page.html`
@@ -381,25 +380,25 @@ export function ombrekk(markdown: string): string {
      * of the same word, or the comma after a code span ends up alone on the
      * next line.
      */
-    const ord = tekst.match(/(?:`[^`]*`|\S)+/g) ?? []
-    let linje = ""
+    const words = text.match(/(?:`[^`]*`|\S)+/g) ?? []
+    let line = ""
 
-    for (const del of ord) {
-      const kandidat = linje === "" ? `${innrykk}${del}` : `${linje} ${del}`
-      if (linje !== "" && kandidat.length > BREDDE) {
-        ut.push(linje)
-        linje = heng + del
+    for (const word of words) {
+      const candidate = line === "" ? `${indent}${word}` : `${line} ${word}`
+      if (line !== "" && candidate.length > WIDTH) {
+        out.push(line)
+        line = hang + word
       } else {
-        linje = kandidat
+        line = candidate
       }
     }
 
-    if (linje !== "") ut.push(linje)
-    avsnitt = []
-    innrykk = ""
+    if (line !== "") out.push(line)
+    paragraph = []
+    indent = ""
   }
 
-  for (const linje of linjer) {
+  for (const line of lines) {
     /*
      * Indentation does not count. A fence under a numbered item has three
      * spaces in front, and without this the reflow did not see it: the whole
@@ -407,51 +406,51 @@ export function ombrekk(markdown: string): string {
      * again, since the pattern requires the fence to be on a line of its own.
      * The same goes for an indented table row.
      */
-    const rent = linje.trimStart()
+    const trimmed = line.trimStart()
 
-    if (rent.startsWith("```")) {
-      tøm()
-      iKode = !iKode
-      ut.push(linje)
+    if (trimmed.startsWith("```")) {
+      flush()
+      inCode = !inCode
+      out.push(line)
       continue
     }
 
     // A block quote is line-based: reflowed, `> a` and `> b` become `> a > b`.
     if (
-      iKode ||
-      rent.startsWith("|") ||
-      rent.startsWith("#") ||
-      rent.startsWith(">")
+      inCode ||
+      trimmed.startsWith("|") ||
+      trimmed.startsWith("#") ||
+      trimmed.startsWith(">")
     ) {
-      tøm()
-      ut.push(linje)
+      flush()
+      out.push(line)
       continue
     }
 
-    if (linje.trim() === "") {
-      tøm()
-      ut.push("")
+    if (line.trim() === "") {
+      flush()
+      out.push("")
       continue
     }
 
     // A new item starts a new paragraph, or the whole list would become one.
-    if (/^(\d+\.\s|[-*]\s)/.test(rent) && avsnitt.length > 0) tøm()
+    if (/^(\d+\.\s|[-*]\s)/.test(trimmed) && paragraph.length > 0) flush()
 
     /*
      * The indentation of the first item in the paragraph is kept, so a nested
      * list is not flattened to one level. Without it, "- top / ␣␣- level two"
      * became two items on the same level.
      */
-    if (avsnitt.length === 0)
-      innrykk = linje.slice(0, linje.length - rent.length)
+    if (paragraph.length === 0)
+      indent = line.slice(0, line.length - trimmed.length)
 
-    avsnitt.push(rent)
+    paragraph.push(trimmed)
   }
 
-  tøm()
+  flush()
 
   // Never two blank lines in a row, and never one at the end.
-  return `${ut
+  return `${out
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
     .trimEnd()}\n`

@@ -15,7 +15,7 @@
       "message": "lt-table has the part \"caption\" more than once. It must appear once. The name of the table."
     }
   ],
-  "side": [
+  "page": [
     {
       "start": 125,
       "end": 130,

@@ -15,7 +15,7 @@
       "message": "warn-at must be a number, not \"10 min\"."
     }
   ],
-  "side": [
+  "page": [
     {
       "start": 10,
       "end": 18,

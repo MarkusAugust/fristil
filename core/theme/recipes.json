@@ -1,6 +1,6 @@
 {
   "accent-only": {
-    "oppskrift": {
+    "recipe": {
       "accent": "#7c3aed"
     },
     "theme": {
@@ -179,7 +179,7 @@
     }
   },
   "all-families": {
-    "oppskrift": {
+    "recipe": {
       "accent": "#ff0000",
       "visited": "#ff8800",
       "brand1": "#ffd600",
@@ -366,7 +366,7 @@
     }
   },
   "short-hex": {
-    "oppskrift": {
+    "recipe": {
       "accent": "#f0a",
       "neutral": "#333"
     },
@@ -546,7 +546,7 @@
     }
   },
   "font-and-shape": {
-    "oppskrift": {
+    "recipe": {
       "typography": {
         "fontFamily": "\"Segoe UI\", Arial, sans-serif",
         "weights": {
@@ -574,7 +574,7 @@
     }
   },
   "colours-and-font": {
-    "oppskrift": {
+    "recipe": {
       "accent": "#0b6e4f",
       "danger": "#b3261e",
       "typography": {
@@ -757,45 +757,45 @@
     }
   },
   "empty": {
-    "oppskrift": {},
-    "feil": "The theme is empty. Give either brand colours, or typography and shape."
+    "recipe": {},
+    "error": "The theme is empty. Give either brand colours, or typography and shape."
   },
   "invalid-colour": {
-    "oppskrift": {
+    "recipe": {
       "accent": "rød"
     },
-    "feil": "\"rød\" is not a valid hexadecimal colour"
+    "error": "\"rød\" is not a valid hexadecimal colour"
   },
   "dangerous-radius": {
-    "oppskrift": {
+    "recipe": {
       "shape": {
         "buttonRadius": "4px; } html { display: none }"
       }
     },
-    "feil": "The value of buttonRadius cannot contain \";\", \"{\", \"}\", \"<\", \">\", \"\\\", \"/*\" or control characters. It is written straight into a CSS rule. Got: 4px; } html { display: none }"
+    "error": "The value of buttonRadius cannot contain \";\", \"{\", \"}\", \"<\", \">\", \"\\\", \"/*\" or control characters. It is written straight into a CSS rule. Got: 4px; } html { display: none }"
   },
   "unclosed-parenthesis": {
-    "oppskrift": {
+    "recipe": {
       "typography": {
         "fontFamily": "Arial ("
       }
     },
-    "feil": "The value of fontFamily has an unbalanced parenthesis or quote. A parenthesis that is not closed swallows the rest of the style sheet. Got: Arial ("
+    "error": "The value of fontFamily has an unbalanced parenthesis or quote. A parenthesis that is not closed swallows the rest of the style sheet. Got: Arial ("
   },
   "backslash": {
-    "oppskrift": {
+    "recipe": {
       "typography": {
         "fontFamily": "Arial\\"
       }
     },
-    "feil": "The value of fontFamily cannot contain \";\", \"{\", \"}\", \"<\", \">\", \"\\\", \"/*\" or control characters. It is written straight into a CSS rule. Got: Arial\\"
+    "error": "The value of fontFamily cannot contain \";\", \"{\", \"}\", \"<\", \">\", \"\\\", \"/*\" or control characters. It is written straight into a CSS rule. Got: Arial\\"
   },
   "script": {
-    "oppskrift": {
+    "recipe": {
       "shape": {
         "surfaceRadius": "1px</style><script>"
       }
     },
-    "feil": "The value of surfaceRadius cannot contain \";\", \"{\", \"}\", \"<\", \">\", \"\\\", \"/*\" or control characters. It is written straight into a CSS rule. Got: 1px</style><script>"
+    "error": "The value of surfaceRadius cannot contain \";\", \"{\", \"}\", \"<\", \">\", \"\\\", \"/*\" or control characters. It is written straight into a CSS rule. Got: 1px</style><script>"
   }
 }

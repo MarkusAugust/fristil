@@ -1,23 +1,23 @@
 /**
- * At regelbøkene i `agent/` stemmer med pakken.
+ * That the rulebooks in `agent/` match the package.
  *
- * En agent-instruksjon med en feil i er verre enn ingen instruksjon: den ser
- * autoritativ ut, og agenten skriver feilen inn i konsumentens app uten å
- * spørre. Derfor etterprøves hver påstand i hver regelbok mot det pakken
- * faktisk sender ut, på samme måte som `check-recipes.ts` gjør for
- * komponentsidene.
+ * An agent instruction with a mistake in it is worse than no instruction: it
+ * looks authoritative, and the agent writes the mistake into the consumer's
+ * app without asking. Every claim in every rulebook is therefore checked
+ * against what the package actually ships, in the same way
+ * `check-recipes.ts` does for the component pages.
  *
- *   - filene på disk er de generatoren ville skrevet nå;
- *   - hver klasse og hvert element pakken har, står i hver regelbok;
- *   - hver markupblokk går gjennom LO-TEKs egen sjekk uten funn;
- *   - hvert `@lo-tek/interfaces/…` finnes i `exports`;
- *   - hver `defineLtX` svarer til et element som finnes;
- *   - hver `lt.x()` er en byggefunksjon som finnes;
- *   - hvert tokennavn står i `tokens.css`;
- *   - bare React-regelboka viser React-inngangen, `useEffect` og `createRoot`;
- *   - ingen markup for nettleseren importerer et pakkenavn.
+ *   - the files on disk are the ones the generator would write now;
+ *   - every class and every element the package has is in every rulebook;
+ *   - every markup block passes LO-TEK's own check without findings;
+ *   - every `@lo-tek/interfaces/…` exists in `exports`;
+ *   - every `defineLtX` matches an element that exists;
+ *   - every `lt.x()` is a builder function that exists;
+ *   - every token name is in `tokens.css`;
+ *   - only the React rulebook shows the React entry, `useEffect` and `createRoot`;
+ *   - no markup for the browser imports a package name.
  *
- * Kjør med: bun scripts/check-agent.ts, eller som en del av `bun run build`.
+ * Run with: bun scripts/check-agent.ts, or as part of `bun run build`.
  */
 
 import { readdirSync, readFileSync } from "node:fs"
@@ -26,392 +26,414 @@ import { diagnoseMarkup } from "../src/diagnostics/index.js"
 import { lt } from "../src/index.js"
 import { classes } from "../src/vocabulary/classes.js"
 import { elements } from "../src/vocabulary/elements.js"
-import { PAKKE, pakke } from "./agent-parts.js"
+import { PACKAGE, packageJson } from "./agent-parts.js"
 import { FAMILIES, ROLES, roleToCss } from "./color-contract.js"
-import { filer, NAVN } from "./generate-agent.js"
+import { files, NAMES } from "./generate-agent.js"
 
-const avvik: string[] = []
+const problems: string[] = []
 
-/** Alle komponentenes stilark i én streng, for oppslag på variabelnavn. */
-function komponentstilark(mappe = join(PAKKE, "src/components")): string {
-  return readdirSync(mappe, { withFileTypes: true })
-    .map((oppføring) => {
-      const sti = join(mappe, oppføring.name)
-      if (oppføring.isDirectory()) return komponentstilark(sti)
-      return oppføring.name.endsWith(".css") ? readFileSync(sti, "utf8") : ""
+/** Every component stylesheet in one string, for looking up variable names. */
+function componentStylesheets(
+  folder = join(PACKAGE, "src/components"),
+): string {
+  return readdirSync(folder, { withFileTypes: true })
+    .map((entry) => {
+      const path = join(folder, entry.name)
+      if (entry.isDirectory()) return componentStylesheets(path)
+      return entry.name.endsWith(".css") ? readFileSync(path, "utf8") : ""
     })
     .join("\n")
 }
 
 /*
- * Tellerne er ikke pynt. En vakt som går gjennom en liste skal telle hva den
- * faktisk gjorde, sist i løkka, og kreve at tallet er både likt det forventede
- * og større enn null. Uten det skrev oppsummeringen her antallet klasser og
- * elementer den hadde *hentet inn*, ikke antallet den hadde sett på, og en tom
- * liste ville sett ut som en full kjøring.
+ * The counters are not decoration. A guard that goes through a list must
+ * count what it actually did, last in the loop, and require the number to be
+ * both equal to the expected one and greater than zero. Without that, the
+ * summary here printed the number of classes and elements it had *fetched*,
+ * not the number it had looked at, and an empty list would have looked like
+ * a full run.
  */
-let sjekkedeFiler = 0
-let sjekkedeKlasser = 0
-let sjekkedeElementer = 0
-let sjekkedeTokens = 0
-let sjekkedeAkser = 0
+let checkedFiles = 0
+let checkedClasses = 0
+let checkedElements = 0
+let checkedTokens = 0
+let checkedAxes = 0
 
 /*
- * Tokennavnene telles per slag, ikke bare i sum.
+ * The token names are counted per kind, not only in total.
  *
- * Én sum skjulte at et helt slag kunne mangle: da fargene ble en matrise,
- * sluttet generatoren å skrive et eneste fargenavn, og summen var likevel stor
- * fordi «Skrift:»-linja fortsatt listet tretten `--font-*`-navn.
+ * A single total hid that a whole kind could be missing: when the colours
+ * became a matrix, the generator stopped writing a single colour name, and
+ * the total was still large because the "Font:" line still listed thirteen
+ * `--font-*` names.
  *
- * Denne vakten fanger ikke akkurat det tilfellet i dag, og det skal stå her
- * framfor å bli trodd: malen i `generate-agent.ts` har to fargenavn skrevet
- * inn i prosaen, så `--lt-color-` blir lest i hver bok selv om `tokenListe()`
- * ga tom streng. Det er aksesjekken under som feller et tomt kodegjerde. Denne
- * feller et slag som forsvinner helt, som `--lt-spacing-` eller
- * `--lt-line-height-`.
+ * This guard does not catch exactly that case today, and that should be
+ * written here rather than believed: the template in `generate-agent.ts` has
+ * two colour names written into the prose, so `--lt-color-` is read in every
+ * book even if `tokenList()` returned an empty string. It is the axis check
+ * below that fails an empty code fence. This one fails a kind that
+ * disappears entirely, such as `--lt-spacing-` or `--lt-line-height-`.
  */
-const SLAG = ["--lt-color-", "--lt-spacing-", "--lt-line-height-", "--lt-font-"]
-const lesteSlag = new Map<string, Set<string>>()
-let sjekkedeBlokker = 0
-const blokkerPerFil = new Map<string, number>()
+const KINDS = [
+  "--lt-color-",
+  "--lt-spacing-",
+  "--lt-line-height-",
+  "--lt-font-",
+]
+const kindsRead = new Map<string, Set<string>>()
+let checkedBlocks = 0
+const blocksPerFile = new Map<string, number>()
 
-function krev(påstand: boolean, beskrivelse: string): void {
-  if (!påstand) avvik.push(beskrivelse)
+function demand(condition: boolean, description: string): void {
+  if (!condition) problems.push(description)
 }
 
 /*
- * Mappa på disk er den uavhengige kilden.
+ * The folder on disk is the independent source.
  *
- * Alt annet i denne vakten kommer fra `OPPSKRIFTER`: køen, det forventede
- * antallet, og innholdet det sammenlignes med. Den spør altså generatoren om
- * generatoren, og CONTRIBUTING.md er kategorisk om at det forventede ikke skal
- * komme fra samme kilde som køen.
+ * Everything else in this guard comes from `RECIPES`: the queue, the
+ * expected count, and the content it is compared with. It therefore asks the
+ * generator about the generator, and CONTRIBUTING.md is categorical that the
+ * expected count must not come from the same source as the queue.
  *
- * Feilsituasjonen er konkret: døp om en oppskrift, og generatoren skriver den
- * nye fila uten å slette den gamle. Den gamle blir liggende, foreldet, og den
- * følger med i tarballen fordi `files` tar hele mappa, og serveres på
- * `/agent/<navn>.md` fordi ruten leser mappa. `lotek agent` kan ikke skrive
- * den ut, og ingenting sier fra.
+ * The failure is concrete: rename a recipe, and the generator writes the new
+ * file without deleting the old one. The old one stays behind, out of date,
+ * and it goes into the tarball because `files` takes the whole folder, and is
+ * served at `/agent/<name>.md` because the route reads the folder.
+ * `lotek agent` cannot print it, and nothing says so.
  */
-const påDisk = readdirSync(join(PAKKE, "agent"))
-  .filter((navn) => navn.endsWith(".md"))
+const onDisk = readdirSync(join(PACKAGE, "agent"))
+  .filter((name) => name.endsWith(".md"))
   .sort()
-const skalFinnes = NAVN.map((navn) => `${navn}.md`).sort()
+const shouldExist = NAMES.map((name) => `${name}.md`).sort()
 
-if (påDisk.join(",") !== skalFinnes.join(",")) {
-  const tilOvers = påDisk.filter((navn) => !skalFinnes.includes(navn))
-  const mangler = skalFinnes.filter((navn) => !påDisk.includes(navn))
+if (onDisk.join(",") !== shouldExist.join(",")) {
+  const extraFiles = onDisk.filter((name) => !shouldExist.includes(name))
+  const missing = shouldExist.filter((name) => !onDisk.includes(name))
 
-  if (tilOvers.length > 0)
-    krev(
+  if (extraFiles.length > 0)
+    demand(
       false,
-      `agent/ has files the generator does not write: ${tilOvers.join(", ")}. Delete them.`,
+      `agent/ has files the generator does not write: ${extraFiles.join(", ")}. Delete them.`,
     )
-  if (mangler.length > 0)
-    krev(
+  if (missing.length > 0)
+    demand(
       false,
-      `agent/ is missing ${mangler.join(", ")}. Run bun run generate.`,
+      `agent/ is missing ${missing.join(", ")}. Run bun run generate.`,
     )
 }
 
-// 1. Filene på disk er ferske.
-const forventet = filer()
+// 1. The files on disk are up to date.
+const expected = files()
 
-for (const [sti, innhold] of Object.entries(forventet)) {
-  let faktisk: string | null = null
+for (const [path, content] of Object.entries(expected)) {
+  let actual: string | null = null
 
   try {
-    faktisk = readFileSync(join(PAKKE, sti), "utf8")
+    actual = readFileSync(join(PACKAGE, path), "utf8")
   } catch {
-    // Mangler: meldes under.
+    // Missing: reported below.
   }
 
-  if (faktisk === null)
-    krev(false, `${sti} does not exist. Run bun run generate.`)
-  else if (faktisk !== innhold)
-    krev(false, `${sti} is out of date. Run bun run generate.`)
+  if (actual === null)
+    demand(false, `${path} does not exist. Run bun run generate.`)
+  else if (actual !== content)
+    demand(false, `${path} is out of date. Run bun run generate.`)
 }
 
-for (const [sti, innhold] of Object.entries(forventet)) {
-  const navn = sti.replace(/^agent\/|\.md$/g, "")
-  sjekkedeFiler += 1
+for (const [path, content] of Object.entries(expected)) {
+  const name = path.replace(/^agent\/|\.md$/g, "")
+  checkedFiles += 1
 
-  // 2. Hver klasse og hvert element pakken har, er nevnt. En komponent som
-  // mangler er en komponent agenten finner opp et alternativ til.
-  for (const klasse of Object.keys(classes)) {
-    // Med `includes(klasse)` ble `lt-avatar` oppfylt av `lt-avatar-stack`, og
-    // 19 av basisklassene hadde en lengre søsterklasse i samme tabell. Backtick
-    // på begge sider er formen tabellene faktisk skriver dem i.
-    krev(
-      innhold.includes(`\`${klasse}\``),
-      `${sti} does not mention the class ${klasse}`,
+  // 2. Every class and every element the package has is mentioned. A
+  // component that is missing is a component the agent invents an
+  // alternative to.
+  for (const className of Object.keys(classes)) {
+    // With `includes(className)`, `lt-avatar` was satisfied by
+    // `lt-avatar-stack`, and 19 of the base classes had a longer sibling
+    // class in the same table. A backtick on both sides is the form the
+    // tables actually write them in.
+    demand(
+      content.includes(`\`${className}\``),
+      `${path} does not mention the class ${className}`,
     )
-    sjekkedeKlasser += 1
+    checkedClasses += 1
   }
-  for (const tagg of Object.keys(elements)) {
-    krev(
-      innhold.includes(`<${tagg}>`),
-      `${sti} does not mention the element <${tagg}>`,
+  for (const tag of Object.keys(elements)) {
+    demand(
+      content.includes(`<${tag}>`),
+      `${path} does not mention the element <${tag}>`,
     )
-    sjekkedeElementer += 1
+    checkedElements += 1
   }
 
   /*
-   * 3. Markupen tåler LO-TEKs egen sjekk.
+   * 3. The markup passes LO-TEK's own check.
    *
-   * `astro` er med fordi en `.astro`-fil er HTML med frontmatter over, og
-   * blokkene der bærer ekte markup: hele `## 7` i astro-regelboka er et
-   * `<lt-field>`. `tsx` er ikke med, og det er et bevisst hull: markupen der er
-   * JSX, med `invalid={ugyldig || undefined}` og andre former diagnostikken
-   * ikke leser, og `## 7` i react-regelboka viser med vilje ugyldig markup som
-   * eksempler på kompileringsfeil.
+   * `astro` is included because an `.astro` file is HTML with frontmatter on
+   * top, and the blocks there carry real markup: all of `## 7` in the astro
+   * rulebook is an `<lt-field>`. `tsx` is not included, and that is a
+   * deliberate gap: the markup there is JSX, with `invalid={invalid ||
+   * undefined}` and other forms the diagnostics do not read, and `## 7` in
+   * the react rulebook deliberately shows invalid markup as examples of
+   * compile errors.
    */
-  const blokker = [...innhold.matchAll(/```(?:html|astro)\n([\s\S]*?)```/g)]
+  const blocks = [...content.matchAll(/```(?:html|astro)\n([\s\S]*?)```/g)]
 
-  for (const [nummer, blokk] of blokker.entries()) {
-    for (const funn of diagnoseMarkup(blokk[1])) {
-      krev(false, `${sti}, markup block ${nummer + 1}: ${funn.message}`)
+  for (const [index, block] of blocks.entries()) {
+    for (const finding of diagnoseMarkup(block[1])) {
+      demand(false, `${path}, markup block ${index + 1}: ${finding.message}`)
     }
-    sjekkedeBlokker += 1
+    checkedBlocks += 1
   }
 
-  blokkerPerFil.set(sti, blokker.length)
+  blocksPerFile.set(path, blocks.length)
 
-  // 4. Hver import peker på noe pakken lover. En sti som ikke finnes er kode
-  // som ser riktig ut og feiler hos konsumenten.
-  for (const treff of innhold.matchAll(
+  // 4. Every import points to something the package promises. A path that
+  // does not exist is code that looks right and fails for the consumer.
+  for (const match of content.matchAll(
     /(node_modules\/)?@lo-tek\/interfaces\/([a-z0-9-]+(?:\.css)?)/g,
   )) {
-    // En sti under node_modules er en filsti inn i pakken, ikke et pakkenavn
-    // `exports` svarer for. `dist/lotek.css` finnes, men `./dist` gjør ikke.
-    if (treff[1]) continue
+    // A path under node_modules is a file path into the package, not a
+    // package name `exports` answers for. `dist/lotek.css` exists, but
+    // `./dist` does not.
+    if (match[1]) continue
 
-    const inngang = `./${treff[2]}`
-    krev(
-      inngang in pakke.exports,
-      `${sti} refers to ${treff[0]}, which is not in exports`,
+    const entryName = `./${match[2]}`
+    demand(
+      entryName in packageJson.exports,
+      `${path} refers to ${match[0]}, which is not in exports`,
     )
   }
 
-  // 5. Hver registreringsfunksjon svarer til et element som finnes.
-  for (const treff of innhold.matchAll(/\bdefineLt([A-Z][A-Za-z]*)\b/g)) {
-    const tagg = `lt-${treff[1]
+  // 5. Every registration function matches an element that exists.
+  for (const match of content.matchAll(/\bdefineLt([A-Z][A-Za-z]*)\b/g)) {
+    const tag = `lt-${match[1]
       .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
       .toLowerCase()}`
-    krev(
-      tagg in elements,
-      `${sti} calls ${treff[0]}, but ${tagg} does not exist`,
+    demand(
+      tag in elements,
+      `${path} calls ${match[0]}, but ${tag} does not exist`,
     )
   }
 
-  // 6. Hver byggefunksjon finnes i `lt`.
-  for (const treff of innhold.matchAll(/\blt\.([a-zA-Z]+)\(/g)) {
-    krev(
-      treff[1] in lt,
-      `${sti} uses lt.${treff[1]}(), which does not exist in lt`,
+  // 6. Every builder function exists in `lt`.
+  for (const match of content.matchAll(/\blt\.([a-zA-Z]+)\(/g)) {
+    demand(
+      match[1] in lt,
+      `${path} uses lt.${match[1]}(), which does not exist in lt`,
     )
   }
 
   /*
-   * 8. Begge aksene i fargematrisen står i kodegjerdet.
+   * 8. Both axes of the colour matrix are in the code fence.
    *
-   * Tokensjekken over teller navn, og aksene er ikke navn: en familie heter
-   * `accent`, ikke `--lt-color-accent`. Da fargene ble en matrise, sluttet
-   * generatoren å skrive et eneste fargenavn, kodegjerdet sto tomt, og
-   * navnetellingen var likevel stor nok til å melde grønt.
+   * The token check above counts names, and the axes are not names: a family
+   * is called `accent`, not `--lt-color-accent`. When the colours became a
+   * matrix, the generator stopped writing a single colour name, the code
+   * fence was empty, and the name count was still large enough to report
+   * green.
    *
-   * Sjekken leser bare kodegjerdene, ikke prosaen rundt. Prosaen i malen
-   * nevner `surface`, `fill`, `content`, `border`, `text` og `neutral` for å
-   * forklare hva en rolle er, så en sjekk på hele fila ville vært oppfylt av
-   * malen alene for seks av de atten påstandene. Da kunne en akse falt ut uten
-   * at noe sa fra.
+   * The check reads only the code fences, not the prose around them. The
+   * prose in the template mentions `surface`, `fill`, `content`, `border`,
+   * `text` and `neutral` to explain what a role is, so a check on the whole
+   * file would be satisfied by the template alone for six of the eighteen
+   * claims. An axis could then drop out without anything saying so.
    */
-  const gjerder = [...innhold.matchAll(/```[\s\S]*?```/g)]
-    .map((treff) => treff[0])
+  const fences = [...content.matchAll(/```[\s\S]*?```/g)]
+    .map((match) => match[0])
     .join("\n")
 
-  for (const familie of FAMILIES) {
-    krev(
-      gjerder.includes(`\`${familie}\``),
-      `${sti} does not mention the family ${familie} in a code fence`,
+  for (const family of FAMILIES) {
+    demand(
+      fences.includes(`\`${family}\``),
+      `${path} does not mention the family ${family} in a code fence`,
     )
-    sjekkedeAkser += 1
+    checkedAxes += 1
   }
 
-  for (const rolle of Object.keys(ROLES)) {
-    const navn = roleToCss(rolle)
-    krev(
-      gjerder.includes(`\`${navn}\``),
-      `${sti} does not mention the role ${navn} in a code fence`,
+  for (const role of Object.keys(ROLES)) {
+    const name = roleToCss(role)
+    demand(
+      fences.includes(`\`${name}\``),
+      `${path} does not mention the role ${name} in a code fence`,
     )
-    sjekkedeAkser += 1
+    checkedAxes += 1
   }
 
-  // 7. Hvert tokennavn finnes. Ellipsen er med i prosaen som mønster, og
-  // hopper derfor over.
-  const tokens = readFileSync(join(PAKKE, "src/tokens/tokens.css"), "utf8")
+  // 7. Every token name exists. The ellipsis is in the prose as a pattern,
+  // and is therefore skipped.
+  const tokens = readFileSync(join(PACKAGE, "src/tokens/tokens.css"), "utf8")
   /*
-   * En komponentvariabel, som `--lt-label-required-text`, er ikke et token,
-   * men den finnes i stilarket til komponenten. Navnet må stå i det ene eller
-   * det andre, så en regelbok kan ikke nevne en variabel pakken ikke har.
+   * A component variable, such as `--lt-label-required-text`, is not a
+   * token, but it exists in the component's stylesheet. The name must be in
+   * one or the other, so a rulebook cannot mention a variable the package
+   * does not have.
    */
-  const stilark = komponentstilark()
+  const stylesheets = componentStylesheets()
 
   /*
-   * Mønsteret må slutte på et bokstav- eller talltegn, og ikke ha et til etter
-   * seg. Uten det første traff `var(--lt-color-…)` i prosaen som
-   * `--lt-color-`, siden slaget nå står i navnet og bindestreken er med i
-   * tegnklassen. Det gikk fri før bare fordi `--semantic-` ikke hadde noe slag
-   * å klippe i.
+   * The pattern must end on a letter or digit, and not have another one
+   * after it. Without the first part, `var(--lt-color-…)` in the prose
+   * matched as `--lt-color-`, since the kind is now in the name and the
+   * hyphen is in the character class. It only got through before because
+   * `--semantic-` had no kind to cut at.
    */
-  for (const treff of innhold.matchAll(
+  for (const match of content.matchAll(
     /--lt-[a-zA-Z0-9-]*[a-zA-Z0-9](?![a-zA-Z0-9\-…])/g,
   )) {
     /*
-     * Navnet må stå helt ut i `tokens.css`, ikke bare som en begynnelse:
-     * `--lt-color-danger` finnes ikke, men ville passert på
+     * The name must appear in full in `tokens.css`, not just as a prefix:
+     * `--lt-color-danger` does not exist, but would have passed on
      * `--lt-color-danger-fill`.
      */
-    const heleNavnet = new RegExp(`${treff[0]}(?![a-zA-Z0-9-])`)
+    const wholeName = new RegExp(`${match[0]}(?![a-zA-Z0-9-])`)
 
-    krev(
-      heleNavnet.test(tokens) || heleNavnet.test(stilark),
-      `${sti} mentions ${treff[0]}, which exists neither in tokens.css nor in a component stylesheet`,
+    demand(
+      wholeName.test(tokens) || wholeName.test(stylesheets),
+      `${path} mentions ${match[0]}, which exists neither in tokens.css nor in a component stylesheet`,
     )
-    sjekkedeTokens += 1
-    for (const slag of SLAG)
-      if (treff[0].startsWith(slag))
-        lesteSlag.set(slag, (lesteSlag.get(slag) ?? new Set()).add(sti))
+    checkedTokens += 1
+    for (const kind of KINDS)
+      if (match[0].startsWith(kind))
+        kindsRead.set(kind, (kindsRead.get(kind) ?? new Set()).add(path))
   }
 
-  // 8. Ingen krysskontaminering. Å advare mot `className` er nyttig i de andre
-  // filene, så ordet alene er greit; det som ikke skal stå, er oppskriften på
-  // å bruke React-inngangen eller en effekt.
-  if (navn !== "react") {
-    for (const reactisme of [
+  // 8. No cross-contamination. Warning against `className` is useful in the
+  // other files, so the word alone is fine; what must not be there is the
+  // recipe for using the React entry or an effect.
+  if (name !== "react") {
+    for (const reactism of [
       '"@lo-tek/interfaces/react"',
       "useEffect",
       "createRoot",
     ]) {
-      krev(
-        !innhold.includes(reactisme),
-        `${sti} refers to ${reactisme}, which belongs only in react.md`,
+      demand(
+        !content.includes(reactism),
+        `${path} refers to ${reactism}, which belongs only in react.md`,
       )
     }
   }
 
   /*
-   * 9. Ingen markup for nettleseren importerer et pakkenavn.
+   * 9. No markup for the browser imports a package name.
    *
-   * `import … from "@lo-tek/interfaces/field"` i en `<script type="module">`
-   * slår ikke opp uten bundles eller importmap: pakkenavnet finnes ikke i
-   * nettleseren, og importen feiler stille. Sporene uten byggesteg må derfor
-   * ha hele URL-en. Sjekken står her framfor per miljø, siden en `html`-blokk
-   * er markup for nettleseren uansett hvilken regelbok den står i.
+   * `import … from "@lo-tek/interfaces/field"` in a `<script type="module">`
+   * does not resolve without a bundler or an import map: the package name
+   * does not exist in the browser, and the import fails silently. The tracks
+   * without a build step therefore need the full URL. The check is here
+   * rather than per environment, since an `html` block is markup for the
+   * browser whichever rulebook it is in.
    */
   /*
-   * Bare `html`-blokkene, ikke `astro`.
+   * Only the `html` blocks, not `astro`.
    *
-   * I en `.astro`-fil er pakkenavnet riktig: frontmatteret kjøres ved bygging,
-   * og Astro tar `<script>`-taggene i malen gjennom byggesteget. Regelen
-   * rett til nettleseren.
+   * In an `.astro` file the package name is correct: the frontmatter runs at
+   * build time, and Astro takes the `<script>` tags in the template through
+   * the build step. The rule is for markup that goes straight to the browser.
    */
-  for (const [nummer, blokk] of [
-    ...innhold.matchAll(/```html\n([\s\S]*?)```/g),
+  for (const [index, block] of [
+    ...content.matchAll(/```html\n([\s\S]*?)```/g),
   ].entries()) {
-    // Bivirkningsimport uten `from`, dynamisk import og enkeltfnutter feiler
-    // like stille i en nettleser som den ene formen som sto her før.
-    const naken = /(?:from|import)\s*\(?\s*\n?\s*["']@lo-tek\/interfaces/.test(
-      blokk[1],
+    // A side-effect import without `from`, a dynamic import and single quotes
+    // fail just as silently in a browser as the one form that was here before.
+    const bare = /(?:from|import)\s*\(?\s*\n?\s*["']@lo-tek\/interfaces/.test(
+      block[1],
     )
-    krev(
-      !naken,
-      `${sti}, markup block ${nummer + 1} imports a package name in the browser. Use the full URL.`,
+    demand(
+      !bare,
+      `${path}, markup block ${index + 1} imports a package name in the browser. Use the full URL.`,
     )
   }
 }
 
-if (avvik.length > 0) {
+if (problems.length > 0) {
   console.error(
-    `The rulebooks do not match the package:\n\n${avvik
-      .map((linje) => `  ${linje}`)
+    `The rulebooks do not match the package:\n\n${problems
+      .map((line) => `  ${line}`)
       .join("\n")}\n`,
   )
   process.exit(1)
 }
 
 /*
- * Vakten står etter rapporten, aldri i stedet for den, så en ufullstendig
- * kjøring ikke skjuler de avvikene den faktisk rakk å finne.
+ * The guard comes after the report, never instead of it, so an incomplete
+ * run does not hide the problems it did manage to find.
  *
- * Det forventede kommer fra `NAVN`, `classes` og `elements`, altså fra de samme
- * kildene generatoren bygger av. Vakten etterprøver derfor ikke at innholdet er
- * riktig, bare at hver fil faktisk ble gått gjennom. Den uavhengige
- * etterprøvingen ligger i `diagnoseMarkup`, i `exports` og i `tokens.css`.
+ * The expected counts come from `NAMES`, `classes` and `elements`, that is,
+ * from the same sources the generator builds from. The guard therefore does
+ * not check that the content is right, only that every file was actually
+ * gone through. The independent checks are in `diagnoseMarkup`, in `exports`
+ * and in `tokens.css`.
  */
-const ventet = {
-  filer: NAVN.length,
-  klasser: NAVN.length * Object.keys(classes).length,
-  elementer: NAVN.length * Object.keys(elements).length,
+const expectedCounts = {
+  files: NAMES.length,
+  classes: NAMES.length * Object.keys(classes).length,
+  elements: NAMES.length * Object.keys(elements).length,
 }
 
-const utilstrekkelig: string[] = []
+const shortfalls: string[] = []
 
-if (sjekkedeFiler !== ventet.filer || sjekkedeFiler === 0)
-  utilstrekkelig.push(`${sjekkedeFiler} files, expected ${ventet.filer}`)
-if (sjekkedeKlasser !== ventet.klasser || sjekkedeKlasser === 0)
-  utilstrekkelig.push(`${sjekkedeKlasser} classes, expected ${ventet.klasser}`)
-if (sjekkedeElementer !== ventet.elementer || sjekkedeElementer === 0)
-  utilstrekkelig.push(
-    `${sjekkedeElementer} elements, expected ${ventet.elementer}`,
+if (checkedFiles !== expectedCounts.files || checkedFiles === 0)
+  shortfalls.push(`${checkedFiles} files, expected ${expectedCounts.files}`)
+if (checkedClasses !== expectedCounts.classes || checkedClasses === 0)
+  shortfalls.push(
+    `${checkedClasses} classes, expected ${expectedCounts.classes}`,
   )
-if (sjekkedeTokens === 0) utilstrekkelig.push("no token names")
+if (checkedElements !== expectedCounts.elements || checkedElements === 0)
+  shortfalls.push(
+    `${checkedElements} elements, expected ${expectedCounts.elements}`,
+  )
+if (checkedTokens === 0) shortfalls.push("no token names")
 
-const ventedeAkser = NAVN.length * (FAMILIES.length + Object.keys(ROLES).length)
-if (sjekkedeAkser !== ventedeAkser || sjekkedeAkser === 0)
-  utilstrekkelig.push(`${sjekkedeAkser} axes, expected ${ventedeAkser}`)
+const expectedAxes =
+  NAMES.length * (FAMILIES.length + Object.keys(ROLES).length)
+if (checkedAxes !== expectedAxes || checkedAxes === 0)
+  shortfalls.push(`${checkedAxes} axes, expected ${expectedAxes}`)
 
-for (const slag of SLAG) {
-  const filer = lesteSlag.get(slag)?.size ?? 0
-  if (filer !== NAVN.length)
-    utilstrekkelig.push(
-      `${slag} read in ${filer} rulebooks, expected ${NAVN.length}`,
+for (const kind of KINDS) {
+  const fileCount = kindsRead.get(kind)?.size ?? 0
+  if (fileCount !== NAMES.length)
+    shortfalls.push(
+      `${kind} read in ${fileCount} rulebooks, expected ${NAMES.length}`,
     )
 }
-if (sjekkedeBlokker === 0) utilstrekkelig.push("no markup blocks")
+if (checkedBlocks === 0) shortfalls.push("no markup blocks")
 
 /*
- * Hver regelbok skal ha minst én markupblokk som ble lest, med ett unntak som
- * står skrevet her framfor å være stille: react-regelboka har ingen. Markupen
- * der er JSX, og den leses ikke av diagnostikken. Den er dekket av klasse-,
- * element-, sti- og tokensjekkene som de andre, men ikke av denne.
+ * Every rulebook must have at least one markup block that was read, with one
+ * exception that is written here rather than kept silent: the react rulebook
+ * has none. The markup there is JSX, and the diagnostics do not read it. It
+ * is covered by the class, element, path and token checks like the others,
+ * but not by this one.
  *
- * Vakten har bevist at den virker begge veier. Da temaseksjonen kom med en
- * delt HTML-blokk, fikk react.md markup den ikke skulle hatt, og vakten sa
- * fra at fila ikke lenger hørte her. Eksempelet skrives nå i hvert miljøs
- * eget språk, og React fikk sin tsx tilbake.
+ * The guard has proved that it works both ways. When the theme section came
+ * with a shared HTML block, react.md got markup it should not have had, and
+ * the guard reported that the file no longer belonged here. The example is
+ * now written in each environment's own language, and React got its tsx
+ * back.
  */
-const UTEN_MARKUPSJEKK = new Set(["react"])
+const WITHOUT_MARKUP_CHECK = new Set(["react"])
 
-for (const [sti, antall] of blokkerPerFil) {
-  const navn = sti.replace(/^agent\/|\.md$/g, "")
+for (const [path, count] of blocksPerFile) {
+  const name = path.replace(/^agent\/|\.md$/g, "")
 
-  if (antall === 0 && !UTEN_MARKUPSJEKK.has(navn))
-    utilstrekkelig.push(`${sti} has no markup block that was read`)
+  if (count === 0 && !WITHOUT_MARKUP_CHECK.has(name))
+    shortfalls.push(`${path} has no markup block that was read`)
 
-  if (antall > 0 && UTEN_MARKUPSJEKK.has(navn))
-    utilstrekkelig.push(
-      `${sti} now has markup that can be read, so it does not belong in UTEN_MARKUPSJEKK`,
+  if (count > 0 && WITHOUT_MARKUP_CHECK.has(name))
+    shortfalls.push(
+      `${path} now has markup that can be read, so it does not belong in WITHOUT_MARKUP_CHECK`,
     )
 }
 
-if (utilstrekkelig.length > 0) {
+if (shortfalls.length > 0) {
   console.error(
-    `The guard did not look at what it should have: ${utilstrekkelig.join("; ")}\n`,
+    `The guard did not look at what it should have: ${shortfalls.join("; ")}\n`,
   )
   process.exit(1)
 }
 
 console.log(
-  `The rulebooks match: ${sjekkedeFiler} files, ${sjekkedeKlasser} class claims, ${sjekkedeElementer} element claims, ${sjekkedeTokens} token names, ${sjekkedeAkser} axes and ${sjekkedeBlokker} markup blocks.`,
+  `The rulebooks match: ${checkedFiles} files, ${checkedClasses} class claims, ${checkedElements} element claims, ${checkedTokens} token names, ${checkedAxes} axes and ${checkedBlocks} markup blocks.`,
 )

@@ -31,7 +31,7 @@
       "message": "The label is not wired to <input>. Without the wiring the field has no name without JavaScript, and a click on the label does not move focus to it. Give the field a fixed id based on what the field is for, for example id=\"country\", and write the same in for on the label, or put the label around the field."
     }
   ],
-  "side": [
+  "page": [
     {
       "start": 56,
       "end": 61,

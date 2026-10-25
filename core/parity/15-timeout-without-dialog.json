@@ -15,7 +15,7 @@
       "message": "<lt-session-timeout> found no <dialog>. The warning cannot be shown, and the session times out without warning."
     }
   ],
-  "side": [
+  "page": [
     {
       "start": 1,
       "end": 19,

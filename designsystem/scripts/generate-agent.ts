@@ -20,28 +20,28 @@
 import { writeFileSync } from "node:fs"
 import { join } from "node:path"
 import {
-  antallByggefunksjoner,
-  antallCssKomponenter,
-  antallElementer,
-  byggefunksjoner,
+  BUNDLED_SIZE,
+  builderFunctions,
   CDN,
-  cdnTil,
-  cssTabell,
-  malOgSkrift,
-  ombrekk,
-  PAKKE,
-  SAMLET_STØRRELSE,
-  tokenListe,
+  cdnUrl,
+  countBuilderFunctions,
+  countCssComponents,
+  countElements,
+  cssTable,
+  PACKAGE,
+  reflow,
+  spacingAndFont,
+  tokenList,
   VERSION,
-  webTabell,
+  webTable,
 } from "./agent-parts.js"
 
 /** The package name, which bundlers resolve. */
-const PAKKENAVN = (komponent: string) => `@lo-tek/interfaces/${komponent}`
+const PACKAGE_NAME = (component: string) => `@lo-tek/interfaces/${component}`
 
 /** The stylesheet, as it is written where there is a build step. */
-const STILARK_PAKKE = (komponent: string) =>
-  `@lo-tek/interfaces/${komponent}.css`
+const STYLESHEET_PACKAGE = (component: string) =>
+  `@lo-tek/interfaces/${component}.css`
 
 /**
  * The stylesheet without a build step: the full URL.
@@ -50,7 +50,7 @@ const STILARK_PAKKE = (komponent: string) =>
  * path. `field.css` is under `frame/`, not under `css/`, so an agent that
  * generalised from the button example got a 404 on nine of the components.
  */
-const STILARK_URL = (komponent: string) => cdnTil(`${komponent}.css`)
+const STYLESHEET_URL = (component: string) => cdnUrl(`${component}.css`)
 
 /**
  * The address without a bundler: a URL.
@@ -59,51 +59,52 @@ const STILARK_URL = (komponent: string) => cdnTil(`${komponent}.css`)
  * map does not resolve in the browser, and the import fails silently. The
  * tracks without a build step therefore need the full URL.
  */
-const URL_TIL = (_komponent: string, modul: string) => `${CDN}/${modul}`
+const URL_FOR = (_component: string, modulePath: string) =>
+  `${CDN}/${modulePath}`
 
-type Oppskrift = {
+type Recipe = {
   /** The name the command takes, and the file name. */
-  navn: string
-  tittel: string
+  name: string
+  title: string
   /** Who the file is for, and what is particular about the environment. */
-  innledning: string
+  intro: string
   /** Item 1 of the short version: how the stylesheet gets in. */
-  stilarkRegel: string
+  stylesheetRule: string
   /** Item 4 of the short version: registration and boolean attributes. */
-  punktFire: string
+  pointFour: string
   /** The first of the three rules, that is, where registration belongs. */
-  registreringRegel: string
+  registrationRule: string
   /** Section 1, with an example. */
-  stilark: string
+  stylesheet: string
   /** The address the import should have in this environment. */
-  adresse: (komponent: string, modul: string) => string
+  address: (component: string, modulePath: string) => string
   /** The address the stylesheet should have in this environment. */
-  stilarkAdresse: (komponent: string) => string
+  stylesheetAddress: (component: string) => string
   /** Section 5: everything put together, as it is actually written here. */
   markup: string
   /** What only this environment has. Goes between the markup and the pitfalls. */
-  ekstra?: string
+  extra?: string
   /** The command that checks the markup here. */
-  sjekk: string
+  check: string
   /** Item 5, when the check is not the main safeguard in this environment. */
-  punktFem?: string
+  pointFive?: string
   /** The rows of the pitfall table that apply here. */
-  fallgruver: [string, string][]
+  pitfalls: [string, string][]
 }
 
-const kortversjon = (oppskrift: Oppskrift) => `## Short version
+const shortVersion = (recipe: Recipe) => `## Short version
 
-1. ${oppskrift.stilarkRegel}
+1. ${recipe.stylesheetRule}
 2. **Use only the classes and elements in the tables below.** \`lt-modal\`,
    \`lt-datepicker\` and \`data-variant="outlined"\` exist in other design
    systems, not in LO-TEK. If you are unsure whether something exists, it is
    listed here or it does not exist.
 3. **No hard-coded colours or pixels.** \`var(--lt-color-…)\` and
    \`var(--lt-spacing-…)\`.
-4. ${oppskrift.punktFire}
+4. ${recipe.pointFour}
 5. ${
-  oppskrift.punktFem ??
-  `**Run the check on what you have written:** \`${oppskrift.sjekk}\`. It knows
+  recipe.pointFive ??
+  `**Run the check on what you have written:** \`${recipe.check}\`. It knows
    every class, every element, every attribute and every allowed value, prints
    \`file:line:column: error: message\`, or \`warning:\`, and exits with an error code if it finds
    anything. With the app running, also check every page you have changed:
@@ -113,16 +114,16 @@ const kortversjon = (oppskrift: Oppskrift) => `## Short version
    "The markup matches LO-TEK".`
 }`
 
-const hvaSomFinnes = (oppskrift: Oppskrift) => `## 2. What exists
+const whatExists = (recipe: Recipe) => `## 2. What exists
 
-${antallCssKomponenter()} CSS components and ${antallElementer()} web components, and this is
+${countCssComponents()} CSS components and ${countElements()} web components, and this is
 the whole list. The classes are \`lt-\` + kebab-case. Variants are always
 \`data-*\` attributes, never classes of their own: \`data-variant="secondary"\`,
 not \`lt-button--secondary\`. The default variant has no attribute.
 
 ### CSS components (no JavaScript)
 
-${cssTabell(oppskrift.stilarkAdresse)}
+${cssTable(recipe.stylesheetAddress)}
 
 There is also \`lt-theme-control\`, a class on a radio button that lets the
 user choose a theme. It is in \`tokens.css\`, and is described under Tokens.`
@@ -139,10 +140,10 @@ border, and \`text\` the family's colour as text. Border and text each have a
 weaker and a stronger step next to them.
 
 \`\`\`
-${tokenListe()}
+${tokenList()}
 \`\`\`
 
-${malOgSkrift()}
+${spacingAndFont()}
 
 \`disabled\` and \`neutral\` are not the same. \`disabled\` is for controls
 that are turned off, and is exempt from the contrast requirement in WCAG
@@ -156,8 +157,8 @@ something that is meant to be read.`
  * One shared HTML block would have taught the React agent to write `class=`,
  * and that is exactly the mistake `/react` exists to prevent.
  */
-const temaEksempel = (oppskrift: Oppskrift) =>
-  oppskrift.navn === "react"
+const themeExample = (recipe: Recipe) =>
+  recipe.name === "react"
     ? `\`\`\`tsx
 <div data-theme="light">
   <button {...lt.button()}>Save</button>
@@ -169,8 +170,8 @@ const temaEksempel = (oppskrift: Oppskrift) =>
 </div>
 \`\`\``
 
-const grenseEksempel = (oppskrift: Oppskrift) =>
-  oppskrift.navn === "react"
+const boundaryExample = (recipe: Recipe) =>
+  recipe.name === "react"
     ? `\`\`\`tsx
 <div data-lt-boundary data-theme="light">
   <button {...lt.button()}>Save</button>
@@ -184,31 +185,31 @@ const grenseEksempel = (oppskrift: Oppskrift) =>
 
 /*
  * The picker is written in the rulebook's own language, for the same reason
- * as temaEksempel.
+ * as themeExample.
  *
  * The class is on each radio button and not on the group: `:has()` looks for
  * the checked one, and it is the button that is checked.
  */
-const velgerEksempel = (oppskrift: Oppskrift) => {
-  const react = oppskrift.navn === "react"
+const pickerExample = (recipe: Recipe) => {
+  const react = recipe.name === "react"
   const attr = react ? "className" : "class"
-  const linje = (verdi: string, tekst: string, valgt = false) =>
+  const line = (value: string, text: string, checked = false) =>
     `  <label ${attr}="lt-toggle-group__option">
     <input ${attr}="lt-theme-control" type="radio" name="theme"
-           value="${verdi}"${valgt ? (react ? " defaultChecked" : " checked") : ""} /> ${tekst}
+           value="${value}"${checked ? (react ? " defaultChecked" : " checked") : ""} /> ${text}
   </label>`
 
   return `\`\`\`${react ? "tsx" : "html"}
 <fieldset ${attr}="lt-toggle-group">
   <legend ${attr}="lt-sr-only">Theme</legend>
-${linje("auto", "Follow the system", true)}
-${linje("light", "Light")}
-${linje("dark", "Dark")}
+${line("auto", "Follow the system", true)}
+${line("light", "Light")}
+${line("dark", "Dark")}
 </fieldset>
 \`\`\``
 }
 
-const TEMA = (oppskrift: Oppskrift) => `### Light and dark
+const THEME = (recipe: Recipe) => `### Light and dark
 
 Without you doing anything, the colours follow the device's setting. A page
 that wants to decide for itself sets \`data-theme="light"\` or
@@ -221,7 +222,7 @@ This is what an embedded component should use. When you put LO-TEK into a
 page you do not control, set the attribute on the component's own root
 element:
 
-${temaEksempel(oppskrift)}
+${themeExample(recipe)}
 
 The component is then light whatever the device is set to, and the host is
 left alone.
@@ -231,7 +232,7 @@ layer, such as \`button { background: none; border: none }\` or a normalize,
 and they beat \`@layer lotek\`. In that case, set \`data-lt-boundary\` on the
 same root element:
 
-${grenseEksempel(oppskrift)}
+${boundaryExample(recipe)}
 
 Below the root element the browser ignores CSS without a layer, within the
 specificity below, and LO-TEK's layer applies again. The rule is in
@@ -264,7 +265,7 @@ use it, each option sets \`color-scheme\` itself.
 \`lt-theme-control\` on a radio button makes \`value\` a theme choice. It is
 plain CSS, without a line of JavaScript:
 
-${velgerEksempel(oppskrift)}
+${pickerExample(recipe)}
 
 The choice controls two things. LO-TEK's colours come from the tokens, and
 the browser's **own** surfaces from \`color-scheme\`: \`light\` gives \`light\`,
@@ -291,11 +292,11 @@ it must be in the **same tree as \`<html>\`**, since \`:has()\` does not see out
 of its own tree; a control inside a shadow root does not set the theme on the
 page.`
 
-const webComponents = (oppskrift: Oppskrift) => `## 4. Web components
+const webComponents = (recipe: Recipe) => `## 4. Web components
 
 Three rules apply to all of them:
 
-1. ${oppskrift.registreringRegel} The import has no side effect on its own;
+1. ${recipe.registrationRule} The import has no side effect on its own;
    it is the \`define\` call that registers the element.
 2. **Boolean attributes are true as long as they are present.**
    \`hidden="false"\`, \`disabled="false"\` and \`open="false"\` turn it *on*.
@@ -310,18 +311,18 @@ Three rules apply to all of them:
    typed. The field is invalid when the error text is there without
    \`hidden\`.
 
-${webTabell(oppskrift.adresse, oppskrift.stilarkAdresse)}
+${webTable(recipe.address, recipe.stylesheetAddress)}
 
 None of them uses shadow DOM. The content is in plain DOM, so
 \`querySelector\`, \`FormData\` and ordinary CSS work straight into it.`
 
-const fallgruver = (rader: [string, string][]) => `## Known pitfalls
+const pitfalls = (rows: [string, string][]) => `## Known pitfalls
 
 | Symptom | Cause |
 | --- | --- |
-${rader.map(([symptom, årsak]) => `| ${symptom} | ${årsak} |`).join("\n")}`
+${rows.map(([symptom, cause]) => `| ${symptom} | ${cause} |`).join("\n")}`
 
-const AVSLUTNING = `## When CSS is not enough
+const CLOSING = `## When CSS is not enough
 
 The components are customised with tokens and \`--lt-\` variables. If that is
 not enough, \`npx @lo-tek/interfaces takeover <component>\` copies the source
@@ -332,36 +333,36 @@ complete colour theme from your brand colours is made with
 All of this, with live examples: https://lo-tek.sobernetics.no/`
 
 // The pitfalls, collected here because several environments share them.
-const STILER_MANGLER: [string, string] = [
+const STYLES_MISSING: [string, string] = [
   "The styles are missing",
   "`tokens.css` is not loaded. The order between it and the component's stylesheet does not matter",
 ]
-const INGEN_DEFINE: [string, string] = [
+const NO_DEFINE: [string, string] = [
   "An `<lt-toast>` or `<lt-connection-status>` shows nothing, an `<lt-session-timeout>` never warns, or another component does nothing",
   "The `define` function has not run. `<lt-toast>` and `<lt-connection-status>` create their content themselves and are empty without it, and `<lt-session-timeout>` does not count the time. The markup in the others comes from you and is there regardless, except that `<lt-tabs>` shows only one panel, the one the URL points to or the first, and `<lt-suggestion>` hides the list until they are registered",
 ]
-const NORSK_TEKST: [string, string] = [
+const FOREIGN_TEXT: [string, string] = [
   "A component speaks English on a page in another language",
   "The text in the markup comes from you, and is written with the app's own translation setup. The few default texts the package has are replaced with `label` and `close-label` on `<lt-toast>`, `offline-text` and `online-text` on `<lt-connection-status>`, `count-none`, `count-one` and `count-other` on `<lt-suggestion>`, and `--lt-label-required-text`, `--lt-label-optional-text` and `--lt-label-required-symbol` in CSS. Numbers and durations follow `lang` on `<html>`. See https://lo-tek.sobernetics.no/translation/",
 ]
-const ALDRI_UGYLDIG: [string, string] = [
+const NEVER_INVALID: [string, string] = [
   "The error text never shows, and the field counts as valid",
   '`hidden="false"` is set on the error text, and it hides it all the same. The attribute must be removed, not set to `false`',
 ]
-const SERVERRENDERING: [string, string] = [
+const SERVER_RENDERING: [string, string] = [
   "The component does nothing, and nothing says so",
   "The registration runs only on the server, where it does nothing. It must also run in the browser",
 ]
-const TYPESCRIPT_I_SKRIPT: [string, string] = [
+const TYPESCRIPT_IN_SCRIPT: [string, string] = [
   "`SyntaxError` in the browser",
   'TypeScript syntax in a `<script type="module">` without a build step',
 ]
 
-const TOKENS_FØRST = `\`tokens.css\` defines all the variables, and all the other
+const TOKENS_FIRST = `\`tokens.css\` defines all the variables, and all the other
 stylesheets build on it. It must be loaded, and comes first out of habit: the
 order between it and the others does not matter.`
 
-const SJEKK_I_TESTER = `When the code produces the HTML as strings, there is no
+const CHECK_IN_TESTS = `When the code produces the HTML as strings, there is no
 file to check. Then check the page as the server sends it, as a whole page,
 with the wiring included:
 
@@ -379,32 +380,32 @@ const findings = diagnosePage(html)
 // findings is empty when the page is correct
 \`\`\``
 
-const OPPSKRIFTER: Oppskrift[] = [
+const RECIPES: Recipe[] = [
   {
-    navn: "html",
-    stilarkAdresse: STILARK_URL,
-    tittel: "LO-TEK in plain HTML",
-    innledning: `The rulebook for LO-TEK in a project without a build step:
+    name: "html",
+    stylesheetAddress: STYLESHEET_URL,
+    title: "LO-TEK in plain HTML",
+    intro: `The rulebook for LO-TEK in a project without a build step:
 hand-written HTML, where the browser loads the files directly. If you use a
 bundler, React, Astro or Datastar, or the server produces the markup, another
 file in this folder applies.`,
-    stilarkRegel: `**One \`<link>\` to \`lotek.css\`, before everything else.**
+    stylesheetRule: `**One \`<link>\` to \`lotek.css\`, before everything else.**
    Without it, the components look unstyled. The answer is then to add the
    link, never to write your own CSS to make them look right.`,
-    punktFire: `**Web components are registered once with \`defineLt*()\`** in a
+    pointFour: `**Web components are registered once with \`defineLt*()\`** in a
    \`<script type="module">\`, and a boolean attribute is true as long as it is
    there: \`hidden="false"\` still hides the error text.`,
-    registreringRegel: `**\`defineLt*()\` runs once** in a
+    registrationRule: `**\`defineLt*()\` runs once** in a
    \`<script type="module">\` in the page template, before the element is used,
    not once per component.`,
-    adresse: URL_TIL,
-    sjekk: "npx @lo-tek/interfaces check page.html",
-    stilark: `## 1. The stylesheet
+    address: URL_FOR,
+    check: "npx @lo-tek/interfaces check page.html",
+    stylesheet: `## 1. The stylesheet
 
 One file with everything, the simplest and fastest option without a bundler:
 
 \`\`\`html
-<link rel="stylesheet" href="${cdnTil("lotek.css")}">
+<link rel="stylesheet" href="${cdnUrl("lotek.css")}">
 \`\`\`
 
 Or from \`node_modules\`, if you serve the folder:
@@ -413,12 +414,12 @@ Or from \`node_modules\`, if you serve the folder:
 <link rel="stylesheet" href="/node_modules/@lo-tek/interfaces/dist/lotek.css">
 \`\`\`
 
-\`lotek.css\` is ${SAMLET_STØRRELSE}, and has all the components. Choose it.
-The alternative is one stylesheet per component, and then ${TOKENS_FØRST}
+\`lotek.css\` is ${BUNDLED_SIZE}, and has all the components. Choose it.
+The alternative is one stylesheet per component, and then ${TOKENS_FIRST}
 
 \`\`\`html
-<link rel="stylesheet" href="${cdnTil("tokens.css")}">
-<link rel="stylesheet" href="${cdnTil("button.css")}">
+<link rel="stylesheet" href="${cdnUrl("tokens.css")}">
+<link rel="stylesheet" href="${cdnUrl("button.css")}">
 \`\`\`
 
 The individual stylesheets fetch their parts with \`@import\`, which the
@@ -427,7 +428,7 @@ flattened, without \`@import\`, and is therefore faster when you link.`,
     markup: `## 5. A whole form
 
 \`\`\`html
-<link rel="stylesheet" href="${cdnTil("lotek.css")}">
+<link rel="stylesheet" href="${cdnUrl("lotek.css")}">
 
 <form id="contact-form" novalidate>
   <lt-field>
@@ -441,7 +442,7 @@ flattened, without \`@import\`, and is therefore faster when you link.`,
 
 <script type="module">
   import { defineLtField } from
-    "${cdnTil("field")}"
+    "${cdnUrl("field")}"
 
   defineLtField()
 </script>
@@ -459,7 +460,7 @@ error.hidden = name.value.trim() !== ""
 TypeScript does not belong in a \`<script type="module">\`. The browser runs
 the tag as plain JavaScript, and \`event as CustomEvent<…>\` gives a
 \`SyntaxError\` that stops the whole script.`,
-    ekstra: `## 6. Check what you have written
+    extra: `## 6. Check what you have written
 
 \`\`\`bash
 npx @lo-tek/interfaces check page.html
@@ -472,20 +473,20 @@ an attribute the element does not have, a value outside the list,
 \`lt-buton\`, \`data-variant="secundary"\`, and \`<lt-field>\` without a
 control or a label.
 
-${SJEKK_I_TESTER}`,
-    fallgruver: [
-      STILER_MANGLER,
-      INGEN_DEFINE,
-      NORSK_TEKST,
-      ALDRI_UGYLDIG,
-      TYPESCRIPT_I_SKRIPT,
+${CHECK_IN_TESTS}`,
+    pitfalls: [
+      STYLES_MISSING,
+      NO_DEFINE,
+      FOREIGN_TEXT,
+      NEVER_INVALID,
+      TYPESCRIPT_IN_SCRIPT,
     ],
   },
   {
-    navn: "templates",
-    stilarkAdresse: STILARK_URL,
-    tittel: "LO-TEK in templates and server-written HTML",
-    innledning: `The rulebook for LO-TEK where the server produces the markup:
+    name: "templates",
+    stylesheetAddress: STYLESHEET_URL,
+    title: "LO-TEK in templates and server-written HTML",
+    intro: `The rulebook for LO-TEK where the server produces the markup:
 Go templates, Razor, PHP, Blade, Twig, Jinja, Django, ERB, Liquid, Handlebars,
 Nunjucks and Edge, and HTML built as strings in Kotlin, Java, C# or Python.
 
@@ -498,30 +499,30 @@ It is also the environment with the smallest safety net. No compiler looks at
 the attributes in a template, and no type stops \`data-variant="outlined"\`.
 That is why item 5 applies more strictly here than anywhere else: the check is
 the only thing that reads your markup.`,
-    stilarkRegel: `**One \`<link>\` to \`lotek.css\` in the page template,** once
+    stylesheetRule: `**One \`<link>\` to \`lotek.css\` in the page template,** once
    for the whole app. Without it, the components look unstyled. The answer is
    then to add the link, never to write your own CSS to make them look right.`,
-    punktFire: `**Web components are registered once with \`defineLt*()\`** in
+    pointFour: `**Web components are registered once with \`defineLt*()\`** in
    the page template, and a boolean attribute is true as long as it is there.
    In a template that means a condition around the whole attribute,
    \`{{if .Locked}}disabled{{end}}\`, not \`disabled="{{.Locked}}"\`.`,
-    registreringRegel: `**\`defineLt*()\` runs once** in the page template, not
+    registrationRule: `**\`defineLt*()\` runs once** in the page template, not
    once per component.`,
-    adresse: URL_TIL,
-    sjekk: "npx @lo-tek/interfaces check templates/*.html",
-    stilark: `## 1. The stylesheet
+    address: URL_FOR,
+    check: "npx @lo-tek/interfaces check templates/*.html",
+    stylesheet: `## 1. The stylesheet
 
 One link in the page template, with all the components:
 
 \`\`\`html
-<link rel="stylesheet" href="${cdnTil("lotek.css")}">
+<link rel="stylesheet" href="${cdnUrl("lotek.css")}">
 \`\`\`
 
 Or from your own server, if you copy the file into your static assets.
-\`lotek.css\` is ${SAMLET_STØRRELSE}, has everything flattened without
+\`lotek.css\` is ${BUNDLED_SIZE}, has everything flattened without
 \`@import\`, and is the fastest option when you link.
 
-If you want only the stylesheets the pages actually use, ${TOKENS_FØRST}
+If you want only the stylesheets the pages actually use, ${TOKENS_FIRST}
 After that, one stylesheet per component, from the tables below. Without a
 bundler that means more round trips, and one forgotten link is enough for
 something to look unstyled. For a template, one file is nearly always the
@@ -558,12 +559,12 @@ The registration, once in the page template:
 \`\`\`html
 <script type="module">
   import { defineLtField } from
-    "${cdnTil("field")}"
+    "${cdnUrl("field")}"
 
   defineLtField()
 </script>
 \`\`\``,
-    ekstra: `## 6. When the server sends new HTML
+    extra: `## 6. When the server sends new HTML
 
 If you patch the page as it runs, with htmx, Turbo, Datastar or your own
 \`innerHTML\` update, the question is what decides the state. By default the
@@ -638,7 +639,7 @@ tested and give no false findings:
 <button class="lt-button" data-variant="<%= variant %>">Send</button>
 \`\`\`
 
-${SJEKK_I_TESTER}
+${CHECK_IN_TESTS}
 
 The check is also in the editor as you type. The VS Code extension "LO-TEK"
 gives completion, explanations, error messages and quick fixes in sixteen
@@ -655,20 +656,20 @@ https://github.com/MarkusAugust/lo-tek/releases/latest. The Maven package
 Gradle plugin \`io.github.markusaugust.lo-tek\` are on Maven Central, with the
 same version as the npm package. Not every npm version is on Maven: use the
 newest one there, and never write a \`version\` you have not seen on Central.`,
-    fallgruver: [
-      STILER_MANGLER,
-      INGEN_DEFINE,
-      NORSK_TEKST,
-      ALDRI_UGYLDIG,
-      SERVERRENDERING,
-      TYPESCRIPT_I_SKRIPT,
+    pitfalls: [
+      STYLES_MISSING,
+      NO_DEFINE,
+      FOREIGN_TEXT,
+      NEVER_INVALID,
+      SERVER_RENDERING,
+      TYPESCRIPT_IN_SCRIPT,
     ],
   },
   {
-    navn: "bundles",
-    stilarkAdresse: STILARK_PAKKE,
-    tittel: "LO-TEK with a bundler",
-    innledning: `The rulebook for LO-TEK in a project with a build step, where
+    name: "bundles",
+    stylesheetAddress: STYLESHEET_PACKAGE,
+    title: "LO-TEK with a bundler",
+    intro: `The rulebook for LO-TEK in a project with a build step, where
 the markup is ordinary HTML: Vue, Svelte, Solid, Lit, and plain TypeScript
 with Vite, Rollup, esbuild or webpack.
 
@@ -678,20 +679,20 @@ names, and \`defineLt*()\` runs at the top of \`main.ts\`. If you write React,
 the attribute names differ and \`react.md\` applies instead. If you write
 Astro, the stylesheets are imported in the frontmatter and \`astro.md\`
 applies.`,
-    stilarkRegel: `**Import the stylesheets in the entry module**, \`tokens.css\`
+    stylesheetRule: `**Import the stylesheets in the entry module**, \`tokens.css\`
    first. Without them, the components look unstyled. The answer is then to
    add the import, never to write your own CSS to make them look right.`,
-    punktFire: `**\`defineLt*()\` runs at the top of \`main.ts\`,** not in a
+    pointFour: `**\`defineLt*()\` runs at the top of \`main.ts\`,** not in a
    lifecycle hook, and a boolean attribute is true as long as it is there.
    Check that what ends up in the DOM is not \`hidden="false"\`: the attribute
    must be removed, not set to \`false\`.`,
-    registreringRegel: `**\`defineLt*()\` runs once** at the top of the entry
+    registrationRule: `**\`defineLt*()\` runs once** at the top of the entry
    module, before the app is mounted.`,
-    adresse: PAKKENAVN,
-    sjekk: "npx @lo-tek/interfaces check src/components/*.vue",
-    stilark: `## 1. The stylesheets
+    address: PACKAGE_NAME,
+    check: "npx @lo-tek/interfaces check src/components/*.vue",
+    stylesheet: `## 1. The stylesheets
 
-${TOKENS_FØRST} After that, one per component you use, so a page with only
+${TOKENS_FIRST} After that, one per component you use, so a page with only
 buttons does not load CSS for a dialog:
 
 \`\`\`ts
@@ -738,7 +739,7 @@ The markup is ordinary HTML, in whatever template your framework uses:
 
 \`class\` and \`for\`, not \`className\` and \`htmlFor\`. It is React that
 rewrites the attribute names, and that does not apply here.`,
-    ekstra: `## 6. Typed builder functions
+    extra: `## 6. Typed builder functions
 
 If the project has TypeScript, the classes can come from \`lt\` instead of
 being written as strings. A variant that does not exist then becomes a
@@ -753,9 +754,9 @@ lt.button({ variant: "secondary" })
 
 The builder functions return an object with HTML attribute names, which is
 spread in where the template language supports spreading, or read out field
-by field. The ${antallByggefunksjoner()} builder functions:
+by field. The ${countBuilderFunctions()} builder functions:
 
-${byggefunksjoner()}
+${builderFunctions()}
 
 Where the template language cannot spread an object, \`lt.setAttributes()\`
 sets the attributes on an element in plain DOM:
@@ -791,38 +792,38 @@ code, so it belongs in CI. It catches \`lt-buton\`,
 control or a label, that is, everything the types do not see, because your
 markup is a string to the compiler.
 
-${SJEKK_I_TESTER}`,
-    fallgruver: [
-      STILER_MANGLER,
-      INGEN_DEFINE,
-      NORSK_TEKST,
-      ALDRI_UGYLDIG,
-      SERVERRENDERING,
+${CHECK_IN_TESTS}`,
+    pitfalls: [
+      STYLES_MISSING,
+      NO_DEFINE,
+      FOREIGN_TEXT,
+      NEVER_INVALID,
+      SERVER_RENDERING,
     ],
   },
   {
-    navn: "react",
-    stilarkAdresse: STILARK_PAKKE,
-    tittel: "LO-TEK in React",
-    innledning: `The rulebook for LO-TEK in a React app.
+    name: "react",
+    stylesheetAddress: STYLESHEET_PACKAGE,
+    title: "LO-TEK in React",
+    intro: `The rulebook for LO-TEK in a React app.
 
 React differs from all the other environments in one thing, and it matters
 enough to have its own file: React rewrites the attribute names. \`class\` is
 \`className\` and \`for\` is \`htmlFor\`, and if you use the builder functions
 from the main entry, React prints "Invalid DOM property" in the console for
 every element. That is why the package has a React entry of its own.`,
-    stilarkRegel: `**Import the stylesheets in \`main.tsx\`**, \`tokens.css\`
+    stylesheetRule: `**Import the stylesheets in \`main.tsx\`**, \`tokens.css\`
    first. Without them, the components look unstyled. The answer is then to
    add the import, never to write your own CSS to make them look right.`,
-    punktFire: `**\`defineLt*()\` runs at the top of \`main.tsx\`,** not in a
+    pointFour: `**\`defineLt*()\` runs at the top of \`main.tsx\`,** not in a
    \`useEffect\`, and a boolean attribute on a web component is set as
    \`open={isOpen || undefined}\`. The two other ways of writing it are each
    wrong in one of the React versions.`,
-    registreringRegel: `**\`defineLt*()\` runs once** at the top of the module,
+    registrationRule: `**\`defineLt*()\` runs once** at the top of the module,
    before \`createRoot\`, not in a \`useEffect\`.`,
-    adresse: PAKKENAVN,
-    sjekk: "npx @lo-tek/interfaces check src/*.tsx",
-    punktFem: `**The types are your check.** \`lt.button({ variant })\` from
+    address: PACKAGE_NAME,
+    check: "npx @lo-tek/interfaces check src/*.tsx",
+    pointFive: `**The types are your check.** \`lt.button({ variant })\` from
    \`@lo-tek/interfaces/react\` turns a variant that does not exist into a
    compile error, and \`@lo-tek/interfaces/react-jsx\`, imported once in a
    \`.d.ts\` file, does the same for the attributes on the web components.
@@ -830,9 +831,9 @@ every element. That is why the package has a React entry of its own.`,
    neither of them, nor by \`npx @lo-tek/interfaces check\`, which reads
    \`class\`, not \`className\`, so use the builder functions. HTML and
    templates are checked with \`npx @lo-tek/interfaces check <file>\`.`,
-    stilark: `## 1. The stylesheets
+    stylesheet: `## 1. The stylesheets
 
-${TOKENS_FØRST} After that, one per component you use:
+${TOKENS_FIRST} After that, one per component you use:
 
 \`\`\`tsx
 // main.tsx, at the top
@@ -915,11 +916,11 @@ one.
 
 \`lt\` is imported from \`@lo-tek/interfaces/react\`, never from the main
 entry: the React entry gives \`className\` and \`htmlFor\`, the main entry
-gives \`class\` and \`for\`. The ${antallByggefunksjoner()} builder functions
+gives \`class\` and \`for\`. The ${countBuilderFunctions()} builder functions
 are in both:
 
-${byggefunksjoner()}`,
-    ekstra: `## 6. Only \`open={isOpen || undefined}\` works
+${builderFunctions()}`,
+    extra: `## 6. Only \`open={isOpen || undefined}\` works
 
 This applies to every boolean attribute on a web component, such as \`open\`
 on \`<lt-dialog>\` and \`<lt-popover>\`. React treats web components
@@ -958,12 +959,12 @@ The types work by the package extending React's \`JSX.IntrinsicElements\`. If
 the project has two installations of \`@types/react\`, which easily happens in
 a monorepo, the package extends one while your code uses the other, and the
 elements stay unknown. Run \`npm ls @types/react\` if something looks odd.`,
-    fallgruver: [
-      STILER_MANGLER,
-      INGEN_DEFINE,
-      NORSK_TEKST,
-      ALDRI_UGYLDIG,
-      SERVERRENDERING,
+    pitfalls: [
+      STYLES_MISSING,
+      NO_DEFINE,
+      FOREIGN_TEXT,
+      NEVER_INVALID,
+      SERVER_RENDERING,
       [
         '"Invalid DOM property `class`"',
         "`lt` is imported from the main entry. Use `@lo-tek/interfaces/react`",
@@ -975,30 +976,30 @@ elements stay unknown. Run \`npm ls @types/react\` if something looks odd.`,
     ],
   },
   {
-    navn: "astro",
-    stilarkAdresse: STILARK_PAKKE,
-    tittel: "LO-TEK in Astro",
-    innledning: `The rulebook for LO-TEK in an Astro project.
+    name: "astro",
+    stylesheetAddress: STYLESHEET_PACKAGE,
+    title: "LO-TEK in Astro",
+    intro: `The rulebook for LO-TEK in an Astro project.
 
 An \`.astro\` file is HTML with frontmatter above it. The stylesheets are
 imported there, and the builder functions are used directly in the template,
 since Astro supports spreading like JSX. What is particular is that all of
 this runs at build time: out comes plain HTML, and \`lt\` is gone once the
 page is built. Zero JavaScript sent to the browser.`,
-    stilarkRegel: `**Import the stylesheets in the frontmatter**, \`tokens.css\`
+    stylesheetRule: `**Import the stylesheets in the frontmatter**, \`tokens.css\`
    first. Without them, the components look unstyled. The answer is then to
    add the import, never to write your own CSS to make them look right.`,
-    punktFire: `**\`defineLt*()\` belongs in a \`<script>\` in the template, never
+    pointFour: `**\`defineLt*()\` belongs in a \`<script>\` in the template, never
    in the frontmatter:** the frontmatter runs on the server, where
    \`customElements\` does not exist. And a boolean attribute is true as long
    as it is there.`,
-    registreringRegel: `**\`defineLt*()\` runs once** in a \`<script>\` in the
+    registrationRule: `**\`defineLt*()\` runs once** in a \`<script>\` in the
    template. Astro bundles \`<script>\` tags and runs them on the client.`,
-    adresse: PAKKENAVN,
-    sjekk: "npx @lo-tek/interfaces check src/pages/*.astro",
-    stilark: `## 1. The stylesheets
+    address: PACKAGE_NAME,
+    check: "npx @lo-tek/interfaces check src/pages/*.astro",
+    stylesheet: `## 1. The stylesheets
 
-${TOKENS_FØRST} The imports go in the frontmatter:
+${TOKENS_FIRST} The imports go in the frontmatter:
 
 \`\`\`astro
 ---
@@ -1032,10 +1033,10 @@ Runs at build time. Out comes plain HTML:
 \`\`\`
 
 \`lt\` is imported from the main entry, which gives \`class\` and \`for\`. The
-${antallByggefunksjoner()} builder functions:
+${countBuilderFunctions()} builder functions:
 
-${byggefunksjoner()}`,
-    ekstra: `## 6. Fields without JavaScript
+${builderFunctions()}`,
+    extra: `## 6. Fields without JavaScript
 
 \`lt.field()\` works out the wiring between label, control, help text and
 error text in the frontmatter, so that too becomes static HTML:
@@ -1085,11 +1086,11 @@ import "@lo-tek/interfaces/field.css"
 in the frontmatter. A \`<script>\` in the template is all it takes: the
 components are ordinary web components, and need neither an Astro
 integration nor a \`client:\` directive.`,
-    fallgruver: [
-      STILER_MANGLER,
-      INGEN_DEFINE,
-      NORSK_TEKST,
-      ALDRI_UGYLDIG,
+    pitfalls: [
+      STYLES_MISSING,
+      NO_DEFINE,
+      FOREIGN_TEXT,
+      NEVER_INVALID,
       [
         "The component does nothing, and nothing says so",
         "The registration is in the frontmatter, which runs only on the server. It belongs in a `<script>` in the template",
@@ -1097,10 +1098,10 @@ integration nor a \`client:\` directive.`,
     ],
   },
   {
-    navn: "datastar",
-    stilarkAdresse: STILARK_URL,
-    tittel: "LO-TEK with Datastar",
-    innledning: `The rulebook for LO-TEK together with
+    name: "datastar",
+    stylesheetAddress: STYLESHEET_URL,
+    title: "LO-TEK with Datastar",
+    intro: `The rulebook for LO-TEK together with
 [Datastar](https://data-star.dev), which adds reactivity to ordinary HTML with
 \`data-*\` attributes. One script, no build step, the same premise as LO-TEK.
 
@@ -1108,29 +1109,29 @@ That means two things for this file: the addresses are URLs, since a browser
 without a bundler does not resolve a package name, and the state is
 controlled with attributes, which is exactly what the \`frame\` components
 expect.`,
-    stilarkRegel: `**One \`<link>\` to \`lotek.css\`, before everything else.**
+    stylesheetRule: `**One \`<link>\` to \`lotek.css\`, before everything else.**
    Without it, the components look unstyled. The answer is then to add the
    link, never to write your own CSS to make them look right.`,
-    punktFire: `**\`defineLt*()\` runs once in a \`<script type="module">\` with
+    pointFour: `**\`defineLt*()\` runs once in a \`<script type="module">\` with
    the full URL,** and the state is set with \`data-attr:\`, which adds and
    removes the attribute. \`hidden="false"\` would hide the error text all
    the same.`,
-    registreringRegel: `**\`defineLt*()\` runs once** in a
+    registrationRule: `**\`defineLt*()\` runs once** in a
    \`<script type="module">\` in the page template.`,
-    adresse: URL_TIL,
-    sjekk: "npx @lo-tek/interfaces check page.html",
-    stilark: `## 1. The stylesheet and Datastar
+    address: URL_FOR,
+    check: "npx @lo-tek/interfaces check page.html",
+    stylesheet: `## 1. The stylesheet and Datastar
 
 \`\`\`html
-<link rel="stylesheet" href="${cdnTil("lotek.css")}">
+<link rel="stylesheet" href="${cdnUrl("lotek.css")}">
 <script
   type="module"
   src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
 ></script>
 \`\`\`
 
-\`lotek.css\` is ${SAMLET_STØRRELSE}, and has all the components. If you want
-only what you use, ${TOKENS_FØRST}`,
+\`lotek.css\` is ${BUNDLED_SIZE}, and has all the components. If you want
+only what you use, ${TOKENS_FIRST}`,
     markup: `## 5. A form with Datastar
 
 \`\`\`html
@@ -1156,7 +1157,7 @@ only what you use, ${TOKENS_FØRST}`,
 
 <script type="module">
   import { defineLtField } from
-    "${cdnTil("field")}"
+    "${cdnUrl("field")}"
 
   defineLtField()
 </script>
@@ -1171,7 +1172,7 @@ validation from it, \`data-bind:name\` binds the field both ways, and
 \`<lt-field>\` counts the field as invalid when the error text is visible.
 None of the React pitfalls exist here. Datastar works directly on the
 attributes.`,
-    ekstra: `## 6. HTML from the server
+    extra: `## 6. HTML from the server
 
 Datastar can let the server send HTML as the page runs, over Server-Sent
 Events. A web component upgrades itself when it is inserted into the
@@ -1229,56 +1230,56 @@ the same state.
 
 \`lt\` can be used on the server or in a build step. Datastar does not need it
 in the browser.`,
-    fallgruver: [
-      STILER_MANGLER,
-      INGEN_DEFINE,
-      NORSK_TEKST,
-      ALDRI_UGYLDIG,
-      TYPESCRIPT_I_SKRIPT,
+    pitfalls: [
+      STYLES_MISSING,
+      NO_DEFINE,
+      FOREIGN_TEXT,
+      NEVER_INVALID,
+      TYPESCRIPT_IN_SCRIPT,
     ],
   },
 ]
 
 /** The files the generator writes, with the content they should have. */
-export function filer(): Record<string, string> {
-  const ut: Record<string, string> = {}
+export function files(): Record<string, string> {
+  const out: Record<string, string> = {}
 
-  for (const oppskrift of OPPSKRIFTER) {
-    ut[`agent/${oppskrift.navn}.md`] = sammensett(oppskrift)
+  for (const recipe of RECIPES) {
+    out[`agent/${recipe.name}.md`] = assemble(recipe)
   }
 
-  return ut
+  return out
 }
 
-function sammensett(oppskrift: Oppskrift): string {
-  return ombrekk(
+function assemble(recipe: Recipe): string {
+  return reflow(
     `${[
-      `# ${oppskrift.tittel}`,
-      oppskrift.innledning,
+      `# ${recipe.title}`,
+      recipe.intro,
       `This is @lo-tek/interfaces ${VERSION}. The file is generated by the package and follows its version, so it can never say anything other than the code next to it.`,
-      kortversjon(oppskrift),
-      oppskrift.stilark,
-      hvaSomFinnes(oppskrift),
+      shortVersion(recipe),
+      recipe.stylesheet,
+      whatExists(recipe),
       TOKENS,
-      TEMA(oppskrift),
-      webComponents(oppskrift),
-      oppskrift.markup,
-      ...(oppskrift.ekstra ? [oppskrift.ekstra] : []),
-      fallgruver(oppskrift.fallgruver),
-      AVSLUTNING,
+      THEME(recipe),
+      webComponents(recipe),
+      recipe.markup,
+      ...(recipe.extra ? [recipe.extra] : []),
+      pitfalls(recipe.pitfalls),
+      CLOSING,
     ].join("\n\n")}\n`,
   )
 }
 
 /** The names the command knows, read from the recipes. */
-export const NAVN = OPPSKRIFTER.map((oppskrift) => oppskrift.navn)
+export const NAMES = RECIPES.map((recipe) => recipe.name)
 
 if (import.meta.main) {
-  const skrevet = filer()
-  for (const [sti, innhold] of Object.entries(skrevet)) {
-    writeFileSync(join(PAKKE, sti), innhold)
+  const written = files()
+  for (const [path, content] of Object.entries(written)) {
+    writeFileSync(join(PACKAGE, path), content)
   }
   console.log(
-    `✓ ${Object.keys(skrevet).length} rulebooks: ${NAVN.join(", ")} (${antallCssKomponenter()} CSS components, ${antallElementer()} elements, ${byggefunksjoner().split(", ").length} builder functions)`,
+    `✓ ${Object.keys(written).length} rulebooks: ${NAMES.join(", ")} (${countCssComponents()} CSS components, ${countElements()} elements, ${builderFunctions().split(", ").length} builder functions)`,
   )
 }

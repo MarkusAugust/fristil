@@ -1,79 +1,80 @@
 /**
- * At hver tekst pakken skriver inn i siden kan oversettes.
+ * That every text the package writes into the page can be translated.
  *
- * LO-TEK har nesten ingen tekst: den som rendrer skriver den, på sitt eget
- * språk. Det som står igjen er standardverdier, og hver av dem må kunne
- * byttes ut. En ny tekst skrevet rett i en komponent kunne ikke det, og
- * ingen ville merket det før en engelsk side leste opp noe på norsk.
+ * LO-TEK has almost no text: whoever renders writes it, in their own
+ * language. What is left are defaults, and each of them has to be
+ * replaceable. A new text written straight into a component could not be,
+ * and nobody would notice until an English page read something out in
+ * another language.
  *
- * Tre regler:
+ * Three rules:
  *
- *   - en tekst for brukeren i en komponent står i `default-texts.ts`, ikke
- *     som en streng i komponenten. Det gjelder `setText`, `textContent`,
- *     `append`, `aria-label` og konstanter som heter `DEFAULT_…`;
- *   - en tekst i `content:` i CSS leses fra en `--lt-`-variabel, med
- *     teksten som reserve, siden et stilark ikke kan importere noe;
- *   - hver av tekstene står i tabellen på dokumentasjonssiden om
- *     oversettelse, så siden ikke kan love at alt kan oversettes uten å si
- *     hvordan.
+ *   - a text for the user in a component is in `default-texts.ts`, not a
+ *     string in the component. That covers `setText`, `textContent`,
+ *     `append`, `aria-label` and constants named `DEFAULT_…`;
+ *   - a text in `content:` in CSS is read from an `--lt-` variable, with the
+ *     text as the fallback, since a stylesheet cannot import anything;
+ *   - each of the texts is in the table on the documentation page about
+ *     translation, so the page cannot promise that everything can be
+ *     translated without saying how.
  *
- * Sjekken leser kilden, slik `check-writes.ts` gjør. Den fanger formene som
- * står i disse filene og dem som ligger nærmest å skrive neste gang, ikke
- * hver tenkelige måte å få tekst inn i en side på.
+ * The check reads the source, as `check-writes.ts` does. It catches the
+ * forms that appear in these files and the ones closest to hand next time,
+ * not every conceivable way of getting text into a page.
  *
- * Kjør med: bun scripts/check-texts.ts, eller som en del av `bun run build`.
+ * Run with: bun scripts/check-texts.ts, or as part of `bun run build`.
  */
 
 import { readdirSync, readFileSync } from "node:fs"
 import { join, relative } from "node:path"
 import { DEFAULT_TEXTS } from "../src/components/default-texts.js"
 
-const KOMPONENTER = new URL("../src/components", import.meta.url).pathname
-const TEKSTFIL = join(KOMPONENTER, "default-texts.ts")
-const SIDE = new URL(
+const COMPONENTS = new URL("../src/components", import.meta.url).pathname
+const TEXT_FILE = join(COMPONENTS, "default-texts.ts")
+const PAGE = new URL(
   "../../documentation/src/content/docs/translation.mdx",
   import.meta.url,
 ).pathname
 
-function filer(mappe: string, endelse: string): string[] {
-  return readdirSync(mappe, { withFileTypes: true }).flatMap((oppføring) => {
-    const sti = join(mappe, oppføring.name)
-    if (oppføring.isDirectory()) return filer(sti, endelse)
-    if (!oppføring.name.endsWith(endelse)) return []
-    if (oppføring.name.includes(".test.")) return []
-    return [sti]
+function files(folder: string, extension: string): string[] {
+  return readdirSync(folder, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(folder, entry.name)
+    if (entry.isDirectory()) return files(path, extension)
+    if (!entry.name.endsWith(extension)) return []
+    if (entry.name.includes(".test.")) return []
+    return [path]
   })
 }
 
-/** Kilden uten kommentarer, med linjeskiftene i behold så linjenumrene stemmer. */
-function utenKommentarer(kilde: string): string {
-  return kilde
-    .replace(/\/\*[\s\S]*?\*\//g, (blokk) => blokk.replace(/[^\n]/g, " "))
+/** The source without comments, keeping the line breaks so the line numbers match. */
+function withoutComments(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, " "))
     .replace(/(^|[^:"'`])\/\/.*$/gm, "$1")
 }
 
-/** En CSS-streng med escapene pakket ut: `p\\e5 krevd` blir «påkrevd». */
-function pakkUt(streng: string): string {
-  return streng.replace(/\\([0-9a-f]+) ?/gi, (_t, kode: string) =>
-    String.fromCodePoint(Number.parseInt(kode, 16)),
+/** A CSS string with the escapes unpacked: `\\e5 ` becomes "å". */
+function unescapeCss(value: string): string {
+  return value.replace(/\\([0-9a-f]+) ?/gi, (_t, code: string) =>
+    String.fromCodePoint(Number.parseInt(code, 16)),
   )
 }
 
-function linje(kilde: string, indeks: number): number {
-  return kilde.slice(0, indeks).split("\n").length
+function lineOf(source: string, index: number): number {
+  return source.slice(0, index).split("\n").length
 }
 
-/** En streng som inneholder minst én bokstav, altså tekst og ikke et tegn. */
-// `\x60` er backtick, som ikke kan escapes på vanlig måte med Unicode-flagget.
-const TEKST = String.raw`(["'\x60])((?:(?!\1)[^\\]|\\.)*\p{L}(?:(?!\1)[^\\]|\\.)*)\1`
+/** A string that contains at least one letter, so text and not a symbol. */
+// `\x60` is a backtick, which cannot be escaped the usual way with the Unicode flag.
+const TEXT = String.raw`(["'\x60])((?:(?!\1)[^\\]|\\.)*\p{L}(?:(?!\1)[^\\]|\\.)*)\1`
 
 /**
- * En linje som skriver tekst inn i siden. Står det en streng med bokstaver
- * på en slik linje, er det tekst for brukeren, uansett hvor i kallet den
- * står: `setText(s, n ? "a" : "b")` er like mye tekst som `setText(s, "a")`,
- * og `setText(this.querySelector("[role=status]"), "a")` like mye som begge.
+ * A line that writes text into the page. A string with letters on such a
+ * line is text for the user, wherever in the call it stands:
+ * `setText(s, n ? "a" : "b")` is as much text as `setText(s, "a")`, and
+ * `setText(this.querySelector("[role=status]"), "a")` as much as both.
  */
-const SKRIVER_TEKST = new RegExp(
+const WRITES_TEXT = new RegExp(
   [
     String.raw`\bsetText\(`,
     String.raw`\.(?:textContent|innerText|ariaLabel)\s*=`,
@@ -84,15 +85,15 @@ const SKRIVER_TEKST = new RegExp(
   ].join("|"),
 )
 
-/** Attributtnavnene selv er ikke tekst. */
-const IKKE_TEKST = new Set(["aria-label", "title", "placeholder"])
+/** The attribute names themselves are not text. */
+const NOT_TEXT = new Set(["aria-label", "title", "placeholder"])
 
 /**
- * Linja uten det som ikke er tekst: argumentene til oppslag i DOM-en, som er
- * velgere, og strengen i en sammenligning, som `name === "label"`.
+ * The line without what is not text: the arguments to DOM lookups, which are
+ * selectors, and the string in a comparison, like `name === "label"`.
  */
-function utenVelgere(kode: string): string {
-  return kode
+function withoutSelectors(code: string): string {
+  return code
     .replace(
       /\b(?:querySelector(?:All)?|closest|matches|getAttribute|hasAttribute)\((?:[^()]|\([^()]*\))*\)/g,
       "",
@@ -100,110 +101,113 @@ function utenVelgere(kode: string): string {
     .replace(/[!=]==\s*(["'])(?:(?!\1).)*\1/g, "")
 }
 
-const avvik: string[] = []
+const problems: string[] = []
 
-let tsLest = 0
-for (const fil of filer(KOMPONENTER, ".ts")) {
-  if (fil === TEKSTFIL) continue
-  const kilde = utenKommentarer(readFileSync(fil, "utf8"))
-  kilde.split("\n").forEach((kode, i) => {
-    if (!SKRIVER_TEKST.test(kode)) return
-    for (const treff of utenVelgere(kode).matchAll(new RegExp(TEKST, "gu"))) {
-      if (IKKE_TEKST.has(treff[2])) continue
-      avvik.push(
-        `${relative(process.cwd(), fil)}:${i + 1}: teksten «${treff[2]}» ` +
-          "står i komponenten. Legg den i default-texts.ts, med en måte å " +
-          "bytte den ut på.",
+let tsRead = 0
+for (const file of files(COMPONENTS, ".ts")) {
+  if (file === TEXT_FILE) continue
+  const source = withoutComments(readFileSync(file, "utf8"))
+  source.split("\n").forEach((code, i) => {
+    if (!WRITES_TEXT.test(code)) return
+    for (const match of withoutSelectors(code).matchAll(
+      new RegExp(TEXT, "gu"),
+    )) {
+      if (NOT_TEXT.has(match[2])) continue
+      problems.push(
+        `${relative(process.cwd(), file)}:${i + 1}: the text "${match[2]}" ` +
+          "is in the component. Put it in default-texts.ts, with a way to " +
+          "replace it.",
       )
     }
   })
-  tsLest++
+  tsRead++
 }
 
-const reserver: string[] = []
-let cssLest = 0
-for (const fil of filer(KOMPONENTER, ".css")) {
-  const kilde = utenKommentarer(readFileSync(fil, "utf8"))
-  for (const treff of kilde.matchAll(/content\s*:\s*([^;}]+)/g)) {
-    const verdi = treff[1].trim()
-    const strenger = [...verdi.matchAll(/(["'])((?:(?!\1).)*)\1/g)].map(
+const fallbacks: string[] = []
+let cssRead = 0
+for (const file of files(COMPONENTS, ".css")) {
+  const source = withoutComments(readFileSync(file, "utf8"))
+  for (const match of source.matchAll(/content\s*:\s*([^;}]+)/g)) {
+    const value = match[1].trim()
+    const strings = [...value.matchAll(/(["'])((?:(?!\1).)*)\1/g)].map(
       (s) => s[2],
     )
-    // Et tegn som «/» eller «×» er ikke språk. En bokstav er det, også
-    // escapet: `\e5 ` er å.
-    const tekster = strenger.map(pakkUt).filter((s) => /\p{L}/u.test(s))
-    if (tekster.length === 0) continue
-    // Hele verdien må være én variabel med teksten som reserve. Tekst ved
-    // siden av variabelen kan ikke byttes ut.
-    if (!/^var\(--lt-[a-z0-9-]+\s*,\s*(["'])(?:(?!\1).)*\1\s*\)$/.test(verdi)) {
-      avvik.push(
-        `${relative(process.cwd(), fil)}:${linje(kilde, treff.index ?? 0)}: ` +
-          `content: ${verdi} har tekst som ikke kan byttes ut. ` +
-          "Les den fra en --lt-variabel, med teksten som reserve.",
+    // A symbol like "/" or "×" is not language. A letter is, also when
+    // escaped: `\e5 ` is å.
+    const texts = strings.map(unescapeCss).filter((s) => /\p{L}/u.test(s))
+    if (texts.length === 0) continue
+    // The whole value has to be one variable with the text as the fallback.
+    // Text next to the variable cannot be replaced.
+    if (!/^var\(--lt-[a-z0-9-]+\s*,\s*(["'])(?:(?!\1).)*\1\s*\)$/.test(value)) {
+      problems.push(
+        `${relative(process.cwd(), file)}:${lineOf(source, match.index ?? 0)}: ` +
+          `content: ${value} has text that cannot be replaced. ` +
+          "Read it from an --lt- variable, with the text as the fallback.",
       )
       continue
     }
-    reserver.push(...tekster)
+    fallbacks.push(...texts)
   }
-  cssLest++
+  cssRead++
 }
 
 /*
- * Hver tekst skal stå på siden om oversettelse. Mellomrom foran og bak er
- * pynt i CSS-en, ikke en del av teksten, og `{n}` står som den er.
+ * Every text has to be on the page about translation. Leading and trailing
+ * spaces are decoration in the CSS, not part of the text, and `{n}` stays as
+ * it is.
  */
-let side = ""
+let pageText = ""
 try {
-  side = readFileSync(SIDE, "utf8")
+  pageText = readFileSync(PAGE, "utf8")
 } catch {
-  avvik.push(`Fant ikke ${relative(process.cwd(), SIDE)}.`)
+  problems.push(`Could not find ${relative(process.cwd(), PAGE)}.`)
 }
-if (side !== "" && side.trim() === "") {
-  avvik.push(`${relative(process.cwd(), SIDE)} er tom.`)
+if (pageText !== "" && pageText.trim() === "") {
+  problems.push(`${relative(process.cwd(), PAGE)} is empty.`)
 }
 /*
- * Teksten skal stå i en celle i tabellen, ikke hvor som helst på siden. Et
- * ord i brødteksten, eller en stjerne i fet skrift, er ikke tabellen.
+ * The text has to be in a cell of the table, not anywhere on the page. A
+ * word in the body text, or an asterisk in bold, is not the table.
  */
-const celler = new Set(
-  [...side.matchAll(/\|([^|\n]+)(?=\|)/g)].map((celle) =>
-    celle[1].trim().replace(/^`(.*)`$/, "$1"),
+const cells = new Set(
+  [...pageText.matchAll(/\|([^|\n]+)(?=\|)/g)].map((cell) =>
+    cell[1].trim().replace(/^`(.*)`$/, "$1"),
   ),
 )
-const forventet = [...Object.values(DEFAULT_TEXTS), ...new Set(reserver)]
-let dokumentert = 0
-for (const tekst of forventet) {
-  const kjerne = tekst.trim()
-  if (!celler.has(kjerne)) {
-    avvik.push(
-      `Teksten «${kjerne}» står ikke i tabellen på ${relative(process.cwd(), SIDE)}.`,
+const expected = [...Object.values(DEFAULT_TEXTS), ...new Set(fallbacks)]
+let documented = 0
+for (const text of expected) {
+  const core = text.trim()
+  if (!cells.has(core)) {
+    problems.push(
+      `The text "${core}" is not in the table on ${relative(process.cwd(), PAGE)}.`,
     )
     continue
   }
-  dokumentert++
+  documented++
 }
 
 /*
- * Tell det som faktisk ble gjort, og krev at det er mer enn null. En sjekk
- * som ikke fant en eneste fil eller tekst, har ikke sjekket noe.
+ * Count what was actually done, and require it to be more than zero. A check
+ * that found not a single file or text has checked nothing.
  */
-if (tsLest === 0 || cssLest === 0) {
-  avvik.push(
-    `Leste ${tsLest} TypeScript-filer og ${cssLest} stilark. Det skal være flere enn null.`,
+if (tsRead === 0 || cssRead === 0) {
+  problems.push(
+    `Read ${tsRead} TypeScript files and ${cssRead} stylesheets. Both must be more than zero.`,
   )
 }
-if (forventet.length === 0) {
-  avvik.push("Fant ingen standardtekster å kontrollere.")
+if (expected.length === 0) {
+  problems.push("Found no default texts to check.")
 }
 
-if (avvik.length > 0) {
+if (problems.length > 0) {
   console.error(
-    `Tekstene kan ikke oversettes:\n\n${avvik.map((a) => `  ${a}`).join("\n")}\n`,
+    `The texts cannot be translated:\n\n${problems.map((a) => `  ${a}`).join("\n")}\n`,
   )
   process.exit(1)
 }
 
 console.log(
-  `Tekstene kan oversettes: ${tsLest} komponentfiler og ${cssLest} stilark lest, ` +
-    `${dokumentert} av ${forventet.length} standardtekster står på siden om oversettelse.`,
+  `The texts can be translated: ${tsRead} component files and ${cssRead} stylesheets read, ` +
+    `${documented} of ${expected.length} default texts are on the translation page.`,
 )

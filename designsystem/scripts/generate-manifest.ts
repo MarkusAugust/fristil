@@ -47,23 +47,23 @@ import {
 import { classes } from "../src/vocabulary/classes.js"
 import { elements } from "../src/vocabulary/elements.js"
 import {
-  type Byggefunksjon as Lest,
-  lesByggefunksjoner,
-  settene,
-  type Valg,
-  type Valgtype,
+  type BuilderFunction as Base,
+  type Option,
+  type OptionType,
+  readBuilderFunctions,
+  setsOf,
 } from "./builder-functions.js"
 
-const PAKKE = fileURLToPath(new URL("..", import.meta.url))
-const UT = `${PAKKE}manifest/`
-const SKJEMAVERSJON = 1
-const versjon: string = JSON.parse(
-  readFileSync(`${PAKKE}package.json`, "utf8"),
+const PACKAGE = fileURLToPath(new URL("..", import.meta.url))
+const OUT = `${PACKAGE}manifest/`
+const SCHEMA_VERSION = 1
+const version: string = JSON.parse(
+  readFileSync(`${PACKAGE}package.json`, "utf8"),
 ).version
 
-type Byggefunksjon = Lest & { table?: Tabeller }
+type BuilderFunction = Base & { table?: Tables }
 
-const byggefunksjoner: Byggefunksjon[] = lesByggefunksjoner()
+const builderFunctions: BuilderFunction[] = readBuilderFunctions()
 
 /*
  * The cases. Each option is tried alone, and then all combinations when there
@@ -73,7 +73,7 @@ const byggefunksjoner: Byggefunksjon[] = lesByggefunksjoner()
  * does not, a no-break space and a BOM: without them, a port that splits on
  * ASCII whitespace alone would have passed.
  */
-const PRØVER: Record<Valgtype["kind"], unknown[]> = {
+const TRIAL_VALUES: Record<OptionType["kind"], unknown[]> = {
   values: [],
   flag: [false, true],
   text: ["x", "a b", ""],
@@ -91,97 +91,98 @@ const PRØVER: Record<Valgtype["kind"], unknown[]> = {
     [""],
   ],
 }
-const prøver = (v: Valg) => {
-  const verdier = v.type.kind === "values" ? v.type.values : PRØVER[v.type.kind]
+const trialValues = (v: Option) => {
+  const values =
+    v.type.kind === "values" ? v.type.values : TRIAL_VALUES[v.type.kind]
   // An empty required id makes TypeScript create a random id and warn in the
   // console. The result then differs from run to run, and a typed language
   // stops it before it runs. It is not tried.
   if (v.required && v.type.kind === "text" && /^id$|Id$/.test(v.name))
-    return verdier.filter((x) => x !== "")
+    return values.filter((x) => x !== "")
   // Another required text, such as `label` in `tabs`, throws when empty, and
   // is also tried with only whitespace, as JavaScript counts it.
-  if (v.required && v.type.kind === "text") return [...verdier, " \u00a0\ufeff"]
-  if (v.required) return verdier
-  return [undefined, ...verdier]
+  if (v.required && v.type.kind === "text") return [...values, " \u00a0\ufeff"]
+  if (v.required) return values
+  return [undefined, ...values]
 }
 
-const MAKS_KOMBINASJONER = 512
-const UTVALG = 256
+const MAX_COMBINATIONS = 512
+const SAMPLE_SIZE = 256
 
-type Tilfelle = {
+type Case = {
   builder: string
   options: Record<string, unknown>
   expected?: unknown
   throws?: string
 }
 
-function kombinasjoner(valg: Valg[]): Record<string, unknown>[] {
-  const akser = valg.map(prøver)
-  const grunn = Object.fromEntries(
-    valg.flatMap((v, i) => (v.required ? [[v.name, akser[i][0]]] : [])),
+function combinations(options: Option[]): Record<string, unknown>[] {
+  const axes = options.map(trialValues)
+  const base = Object.fromEntries(
+    options.flatMap((v, i) => (v.required ? [[v.name, axes[i][0]]] : [])),
   )
-  const ut: Record<string, unknown>[] = [{ ...grunn }]
-  valg.forEach((v, i) => {
-    for (const verdi of akser[i]) ut.push({ ...grunn, [v.name]: verdi })
+  const out: Record<string, unknown>[] = [{ ...base }]
+  options.forEach((v, i) => {
+    for (const value of axes[i]) out.push({ ...base, [v.name]: value })
   })
-  const antall = akser.reduce((n, a) => n * a.length, 1)
-  if (antall <= MAKS_KOMBINASJONER) {
-    let alle: Record<string, unknown>[] = [{}]
-    valg.forEach((v, i) => {
-      alle = alle.flatMap((delvis) =>
-        akser[i].map((verdi) => ({ ...delvis, [v.name]: verdi })),
+  const count = axes.reduce((n, a) => n * a.length, 1)
+  if (count <= MAX_COMBINATIONS) {
+    let all: Record<string, unknown>[] = [{}]
+    options.forEach((v, i) => {
+      all = all.flatMap((partial) =>
+        axes[i].map((value) => ({ ...partial, [v.name]: value })),
       )
     })
-    ut.push(...alle)
+    out.push(...all)
   } else {
-    let frø = 20261007
-    const tilfeldig = (n: number) => {
-      frø = (frø * 1103515245 + 12345) % 2 ** 31
-      return frø % n
+    let seed = 20261007
+    const random = (n: number) => {
+      seed = (seed * 1103515245 + 12345) % 2 ** 31
+      return seed % n
     }
-    for (let n = 0; n < UTVALG; n++)
-      ut.push(
+    for (let n = 0; n < SAMPLE_SIZE; n++)
+      out.push(
         Object.fromEntries(
-          valg.map((v, i) => [v.name, akser[i][tilfeldig(akser[i].length)]]),
+          options.map((v, i) => [v.name, axes[i][random(axes[i].length)]]),
         ),
       )
   }
   // `undefined` means left out, and two cases that differ only there are the
   // same case.
-  const sett = new Map<string, Record<string, unknown>>()
-  for (const o of ut) {
-    const renset = Object.fromEntries(
+  const unique = new Map<string, Record<string, unknown>>()
+  for (const o of out) {
+    const cleaned = Object.fromEntries(
       Object.entries(o).filter(([, x]) => x !== undefined),
     )
-    sett.set(JSON.stringify(renset), renset)
+    unique.set(JSON.stringify(cleaned), cleaned)
   }
-  return [...sett.values()]
+  return [...unique.values()]
 }
 
-const tilfeller: Tilfelle[] = []
+const cases: Case[] = []
 // The builder functions warn in the console about use they do not like. That
 // is part of what they do in the browser, not of the result, and here it is noise.
-const advar = console.warn
+const warn = console.warn
 console.warn = () => {}
 try {
-  for (const b of byggefunksjoner) {
-    const bygg = (lt as unknown as Record<string, (o: unknown) => unknown>)[
+  for (const b of builderFunctions) {
+    const build = (lt as unknown as Record<string, (o: unknown) => unknown>)[
       b.name
     ]
-    for (const options of kombinasjoner(b.options)) {
+    for (const options of combinations(b.options)) {
       try {
-        tilfeller.push({ builder: b.name, options, expected: bygg(options) })
-      } catch (feil) {
-        tilfeller.push({
+        cases.push({ builder: b.name, options, expected: build(options) })
+      } catch (error) {
+        cases.push({
           builder: b.name,
           options,
-          throws: feil instanceof Error ? feil.message : String(feil),
+          throws: error instanceof Error ? error.message : String(error),
         })
       }
     }
   }
 } finally {
-  console.warn = advar
+  console.warn = warn
 }
 
 /*
@@ -202,174 +203,178 @@ try {
  * `{ "aria-labelledby": "{titleId}" }` in `dialog`. A builder function that
  * returns several sets, such as `dialog` and `popover`, gets one table per set.
  */
-type Attributter = Record<string, string | null>
-type Tabellvalg = {
-  cases: Record<string, Attributter>
-  template?: Attributter
-  empty?: Attributter
+type Attributes = Record<string, string | null>
+type TableOption = {
+  cases: Record<string, Attributes>
+  template?: Attributes
+  empty?: Attributes
 }
-type Tabell = { base: Attributter; options: Record<string, Tabellvalg> }
-type Tabeller =
-  | { kind: "attributes"; table: Tabell }
-  | { kind: "group"; fields: Record<string, Tabell> }
+type Table = { base: Attributes; options: Record<string, TableOption> }
+type Tables =
+  | { kind: "attributes"; table: Table }
+  | { kind: "group"; fields: Record<string, Table> }
 
-const tekst = (verdier: Record<string, unknown>): Record<string, string> =>
+const asText = (values: Record<string, unknown>): Record<string, string> =>
   Object.fromEntries(
-    Object.entries(verdier).map(([k, v]) => [k, v === true ? "" : String(v)]),
+    Object.entries(values).map(([k, v]) => [k, v === true ? "" : String(v)]),
   )
 
-function forskjell(
-  grunn: Record<string, string>,
-  svar: Record<string, string>,
-): Attributter {
-  const d: Attributter = {}
-  for (const k of new Set([...Object.keys(grunn), ...Object.keys(svar)]))
-    if (svar[k] !== grunn[k]) d[k] = svar[k] ?? null
+function difference(
+  base: Record<string, string>,
+  result: Record<string, string>,
+): Attributes {
+  const d: Attributes = {}
+  for (const k of new Set([...Object.keys(base), ...Object.keys(result)]))
+    if (result[k] !== base[k]) d[k] = result[k] ?? null
   return d
 }
 
-const likt = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
+const equal = (a: unknown, b: unknown) =>
+  JSON.stringify(a) === JSON.stringify(b)
 // The order of the attributes does not matter for the result.
-const sortert = (x: Record<string, string>) =>
+const sorted = (x: Record<string, string>) =>
   Object.fromEntries(Object.entries(x).sort(([a], [c]) => (a < c ? -1 : 1)))
 
 /** Replaces values that are exactly the value of a required option with `{name}`. */
-function medPlassholdere(
-  a: Attributter,
-  påkrevde: [string, string][],
-): Attributter {
+function withPlaceholders(
+  a: Attributes,
+  required: [string, string][],
+): Attributes {
   return Object.fromEntries(
     Object.entries(a).map(([k, x]) => {
-      const treff = påkrevde.find(([, verdi]) => verdi === x)
-      return [k, treff ? `{${treff[0]}}` : x]
+      const match = required.find(([, value]) => value === x)
+      return [k, match ? `{${match[0]}}` : x]
     }),
   )
 }
 
-/** The table for one set, where `sett` picks the set out of the result. */
-function tabellFor(
-  b: Byggefunksjon,
-  egne: Tilfelle[],
-  grunnValg: Record<string, unknown>,
-  sett: (svar: unknown) => Record<string, unknown>,
-): Tabell | undefined {
-  const påkrevde = Object.entries(grunnValg).map(
+/** The table for one set, where `pick` picks the set out of the result. */
+function tableFor(
+  b: BuilderFunction,
+  own: Case[],
+  baseOptions: Record<string, unknown>,
+  pick: (result: unknown) => Record<string, unknown>,
+): Table | undefined {
+  const required = Object.entries(baseOptions).map(
     ([k, v]) => [k, String(v)] as [string, string],
   )
-  const grunnTilfelle = egne.find((t) => likt(t.options, grunnValg))
-  if (!grunnTilfelle) return undefined
-  const grunn = tekst(sett(grunnTilfelle.expected))
+  const baseCase = own.find((t) => equal(t.options, baseOptions))
+  if (!baseCase) return undefined
+  const base = asText(pick(baseCase.expected))
 
-  const options: Record<string, Tabellvalg> = {}
+  const options: Record<string, TableOption> = {}
   for (const v of b.options) {
     if (v.required) continue
-    const enkle = egne.filter(
+    const single = own.filter(
       (t) =>
-        Object.keys(t.options).length === påkrevde.length + 1 &&
+        Object.keys(t.options).length === required.length + 1 &&
         v.name in t.options &&
-        påkrevde.every(([k]) => likt(t.options[k], grunnValg[k])),
+        required.every(([k]) => equal(t.options[k], baseOptions[k])),
     )
-    const valg: Tabellvalg = { cases: {} }
-    for (const t of enkle) {
-      const verdi = t.options[v.name]
-      const d = medPlassholdere(
-        forskjell(grunn, tekst(sett(t.expected))),
-        påkrevde,
+    const entry: TableOption = { cases: {} }
+    for (const t of single) {
+      const value = t.options[v.name]
+      const d = withPlaceholders(
+        difference(base, asText(pick(t.expected))),
+        required,
       )
       if (v.type.kind === "values" || v.type.kind === "flag") {
-        valg.cases[String(verdi)] = d
+        entry.cases[String(value)] = d
         continue
       }
       if (v.type.kind === "textList") return undefined
       // Text and numbers: where the value is, the placeholder goes.
-      const s = String(verdi)
+      const s = String(value)
       if (s === "") {
-        valg.empty = d
+        entry.empty = d
         continue
       }
-      const mal = Object.fromEntries(
+      const template = Object.fromEntries(
         Object.entries(d).map(([k, x]) => [k, x === s ? `{${v.name}}` : x]),
       )
-      if (valg.template && !likt(valg.template, mal)) return undefined
-      valg.template = mal
+      if (entry.template && !equal(entry.template, template)) return undefined
+      entry.template = template
     }
-    options[v.name] = valg
+    options[v.name] = entry
   }
 
-  const resultat: Tabell = { base: medPlassholdere(grunn, påkrevde), options }
-  for (const t of egne) {
-    const fasit = sortert(tekst(sett(t.expected)))
-    if (!likt(anvend(resultat, b, t.options), fasit)) return undefined
+  const table: Table = { base: withPlaceholders(base, required), options }
+  for (const t of own) {
+    const expected = sorted(asText(pick(t.expected)))
+    if (!equal(apply(table, b, t.options), expected)) return undefined
   }
-  return resultat
+  return table
 }
 
-function tabeller(b: Byggefunksjon): Tabeller | undefined {
-  const egne = tilfeller.filter((t) => t.builder === b.name)
-  if (egne.length === 0 || egne.some((t) => t.throws)) return undefined
+function tables(b: BuilderFunction): Tables | undefined {
+  const own = cases.filter((t) => t.builder === b.name)
+  if (own.length === 0 || own.some((t) => t.throws)) return undefined
   // The base is the required options with their first trial value, and no others.
-  const grunnValg = Object.fromEntries(
-    b.options.filter((v) => v.required).map((v) => [v.name, prøver(v)[0]]),
+  const baseOptions = Object.fromEntries(
+    b.options.filter((v) => v.required).map((v) => [v.name, trialValues(v)[0]]),
   )
   if (b.returns.kind === "attributes") {
-    const table = tabellFor(
+    const table = tableFor(
       b,
-      egne,
-      grunnValg,
-      (svar) => svar as Record<string, unknown>,
+      own,
+      baseOptions,
+      (result) => result as Record<string, unknown>,
     )
     return table && { kind: "attributes", table }
   }
   if (b.returns.kind !== "group") return undefined
-  const fields: Record<string, Tabell> = {}
-  for (const [navn, felt] of Object.entries(b.returns.fields)) {
-    if (felt.kind !== "attributes" || felt.optional) return undefined
-    const table = tabellFor(
+  const fields: Record<string, Table> = {}
+  for (const [name, field] of Object.entries(b.returns.fields)) {
+    if (field.kind !== "attributes" || field.optional) return undefined
+    const table = tableFor(
       b,
-      egne,
-      grunnValg,
-      (svar) => (svar as Record<string, Record<string, unknown>>)[navn],
+      own,
+      baseOptions,
+      (result) => (result as Record<string, Record<string, unknown>>)[name],
     )
     if (!table) return undefined
-    fields[navn] = table
+    fields[name] = table
   }
   return { kind: "group", fields }
 }
 
 /** The result the table gives for the options. Used to check it. */
-function anvend(
-  t: Tabell,
-  b: Byggefunksjon,
-  valg: Record<string, unknown>,
+function apply(
+  t: Table,
+  b: BuilderFunction,
+  options: Record<string, unknown>,
 ): Record<string, string> {
-  const fyll = (a: Attributter): Attributter =>
+  const fill = (a: Attributes): Attributes =>
     Object.fromEntries(
       Object.entries(a).map(([k, x]) => {
-        const navn = x?.match(/^\{(\w+)\}$/)?.[1]
-        return [k, navn !== undefined && navn in valg ? String(valg[navn]) : x]
+        const name = x?.match(/^\{(\w+)\}$/)?.[1]
+        return [
+          k,
+          name !== undefined && name in options ? String(options[name]) : x,
+        ]
       }),
     )
-  const svar: Attributter = fyll(t.base)
+  const result: Attributes = fill(t.base)
   for (const v of b.options) {
-    if (v.required || !(v.name in valg)) continue
-    const verdi = valg[v.name]
+    if (v.required || !(v.name in options)) continue
+    const value = options[v.name]
     const tv = t.options[v.name]
-    const bidrag =
+    const contribution =
       v.type.kind === "values" || v.type.kind === "flag"
-        ? tv.cases[String(verdi)]
-        : String(verdi) === "" && tv.empty
+        ? tv.cases[String(value)]
+        : String(value) === "" && tv.empty
           ? tv.empty
           : tv.template
-    if (!bidrag) return { "\u0000": "missing" }
-    Object.assign(svar, fyll(bidrag))
+    if (!contribution) return { "\u0000": "missing" }
+    Object.assign(result, fill(contribution))
   }
-  const ut: Record<string, string> = {}
-  for (const [k, x] of Object.entries(svar)) if (x !== null) ut[k] = x
-  return sortert(ut)
+  const out: Record<string, string> = {}
+  for (const [k, x] of Object.entries(result)) if (x !== null) out[k] = x
+  return sorted(out)
 }
 
-for (const b of byggefunksjoner) {
-  const t = tabeller(b)
+for (const b of builderFunctions) {
+  const t = tables(b)
   if (t) b.table = t
 }
 
@@ -383,8 +388,8 @@ for (const b of byggefunksjoner) {
  * in alphabetical order wins.
  */
 const descriptions = new Map<string, string>()
-for (const builder of byggefunksjoner) {
-  const own = tilfeller.filter((t) => t.builder === builder.name && t.expected)
+for (const builder of builderFunctions) {
+  const own = cases.filter((t) => t.builder === builder.name && t.expected)
   for (const option of builder.options) {
     if (!option.description) continue
     const attribute = `data-${option.name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`
@@ -392,11 +397,11 @@ for (const builder of byggefunksjoner) {
       (t) => t.options[option.name] !== undefined,
     )) {
       const { [option.name]: _, ...withoutOption } = withOption.options
-      const base = own.find((t) => likt(t.options, withoutOption))
+      const base = own.find((t) => equal(t.options, withoutOption))
       if (!base) continue
-      const before = new Map(settene(base.expected))
-      for (const [setName, set] of settene(withOption.expected)) {
-        if (likt(set[attribute], before.get(setName)?.[attribute])) continue
+      const before = new Map(setsOf(base.expected))
+      for (const [setName, set] of setsOf(withOption.expected)) {
+        if (equal(set[attribute], before.get(setName)?.[attribute])) continue
         const classNames = String(set.class ?? "")
           .split(/\s+/)
           .filter((c) => classes[c])
@@ -418,23 +423,23 @@ const withDescriptions = (
     }),
   )
 
-const klasser = Object.fromEntries(
-  Object.entries(classes).map(([navn, klasse]) => [
-    navn,
+const classEntries = Object.fromEntries(
+  Object.entries(classes).map(([name, info]) => [
+    name,
     {
-      ...klasse,
+      ...info,
       attributes: withDescriptions(
-        navn,
+        name,
         // The flags, such as `data-interactive` on `lt-card`, are in
         // `classes.ts` with an empty value list, since the editors read that
         // file. Here a flag has no values, see `types.ts`. They are derived
         // from the builder function each time the vocabulary is written, see
-        // `flaggFor` in builder-functions.ts, so a flag that is gone from the
+        // `flagsFor` in builder-functions.ts, so a flag that is gone from the
         // function is gone here too.
         Object.fromEntries(
-          Object.entries(klasse.attributes).map(([attributt, verdi]) => [
-            attributt,
-            verdi.flag ? { flag: true } : verdi,
+          Object.entries(info.attributes).map(([attribute, value]) => [
+            attribute,
+            value.flag ? { flag: true } : value,
           ]),
         ),
       ),
@@ -460,26 +465,26 @@ const klasser = Object.fromEntries(
  */
 const roleToCss = (role: string) =>
   role.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
-const COMPONENT_DIRS = ["css", "frame", "standalone"].flatMap((kategori) =>
-  readdirSync(`${PAKKE}src/components/${kategori}`)
-    .filter((navn) =>
-      statSync(`${PAKKE}src/components/${kategori}/${navn}`).isDirectory(),
+const COMPONENT_DIRS = ["css", "frame", "standalone"].flatMap((category) =>
+  readdirSync(`${PACKAGE}src/components/${category}`)
+    .filter((name) =>
+      statSync(`${PACKAGE}src/components/${category}/${name}`).isDirectory(),
     )
     .sort()
-    .map((navn) => ({
-      navn,
-      sti: `${PAKKE}src/components/${kategori}/${navn}`,
+    .map((name) => ({
+      name,
+      path: `${PACKAGE}src/components/${category}/${name}`,
     })),
 )
-const componentNames = COMPONENT_DIRS.map((d) => d.navn)
+const componentNames = COMPONENT_DIRS.map((d) => d.name)
 /** The component a variable belongs to: the longest name it starts with. */
 const ownerOf = (variable: string, fallback: string) =>
   componentNames
-    .filter((navn) => variable.startsWith(`--lt-${navn}-`))
+    .filter((name) => variable.startsWith(`--lt-${name}-`))
     .sort((a, b) => b.length - a.length)[0] ?? fallback
 const TOKEN_KINDS = new Set(
   Object.keys({ ...cssTokens, ...colorTokens }).map(
-    (navn) => navn.split("-")[3],
+    (name) => name.split("-")[3],
   ),
 )
 /*
@@ -489,74 +494,74 @@ const TOKEN_KINDS = new Set(
  * and are recognised by `setProperty` in the component's own source.
  */
 const setByComponent = new Set<string>()
-for (const { sti } of COMPONENT_DIRS)
-  for (const fil of readdirSync(sti).filter(
+for (const { path } of COMPONENT_DIRS)
+  for (const file of readdirSync(path).filter(
     (f) => f.endsWith(".ts") && !f.includes(".test."),
   ))
-    for (const m of readFileSync(`${sti}/${fil}`, "utf8").matchAll(
+    for (const m of readFileSync(`${path}/${file}`, "utf8").matchAll(
       /setProperty\(\s*["'](--lt-[a-z0-9-]+)["']/g,
     ))
       setByComponent.add(m[1])
 const componentVariables: Record<string, Record<string, string>> = {}
-for (const { navn, sti } of COMPONENT_DIRS) {
-  for (const fil of readdirSync(sti)
+for (const { name, path } of COMPONENT_DIRS) {
+  for (const file of readdirSync(path)
     .filter((f) => f.endsWith(".css"))
     .sort()) {
-    const css = readFileSync(`${sti}/${fil}`, "utf8").replace(
+    const css = readFileSync(`${path}/${file}`, "utf8").replace(
       /\/\*[\s\S]*?\*\//g,
       "",
     )
-    const lesing = /var\(\s*(--lt-[a-z0-9-]+)\s*,/g
-    for (let m = lesing.exec(css); m; m = lesing.exec(css)) {
+    const pattern = /var\(\s*(--lt-[a-z0-9-]+)\s*,/g
+    for (let m = pattern.exec(css); m; m = pattern.exec(css)) {
       // The fallback runs to the parenthesis that closes `var(`, also when it
       // has `calc()` or another `var()` in it.
-      let dybde = 1
-      let i = lesing.lastIndex
-      for (; i < css.length && dybde > 0; i++) {
-        if (css[i] === "(") dybde++
-        else if (css[i] === ")") dybde--
+      let depth = 1
+      let i = pattern.lastIndex
+      for (; i < css.length && depth > 0; i++) {
+        if (css[i] === "(") depth++
+        else if (css[i] === ")") depth--
       }
-      const variabel = m[1]
+      const variable = m[1]
       // A token belongs on the token side, not here. Today no component reads
       // a token with a fallback, but if one did, it would look like a
       // component variable without this.
-      if (TOKEN_KINDS.has(variabel.split("-")[3])) continue
-      if (setByComponent.has(variabel)) continue
-      const reserve = css
-        .slice(lesing.lastIndex, i - 1)
+      if (TOKEN_KINDS.has(variable.split("-")[3])) continue
+      if (setByComponent.has(variable)) continue
+      const fallback = css
+        .slice(pattern.lastIndex, i - 1)
         .trim()
         .replace(/\s+/g, " ")
-      const eier = ownerOf(variabel, navn)
-      componentVariables[eier] ??= {}
-      componentVariables[eier][variabel] ??= reserve
+      const owner = ownerOf(variable, name)
+      componentVariables[owner] ??= {}
+      componentVariables[owner][variable] ??= fallback
     }
   }
 }
 const tokens = {
   spacing: Object.fromEntries(
-    Object.entries(cssTokens).filter(([navn]) =>
-      navn.startsWith("--lt-spacing-"),
+    Object.entries(cssTokens).filter(([name]) =>
+      name.startsWith("--lt-spacing-"),
     ),
   ),
   breakpoints: Breakpoints,
   containers: Containers,
   colors: {
     families: Object.fromEntries(
-      FAMILIES.map((familie) => [familie, FAMILY_DESCRIPTIONS[familie]]),
+      FAMILIES.map((family) => [family, FAMILY_DESCRIPTIONS[family]]),
     ),
     roles: Object.fromEntries(
-      (Object.keys(ROLES) as (keyof typeof ROLES)[]).map((rolle) => [
-        roleToCss(rolle),
-        ROLE_DESCRIPTIONS[rolle],
+      (Object.keys(ROLES) as (keyof typeof ROLES)[]).map((role) => [
+        roleToCss(role),
+        ROLE_DESCRIPTIONS[role],
       ]),
     ),
     layers: Object.fromEntries(
       (Object.keys(NEUTRAL_LAYERS) as (keyof typeof NEUTRAL_LAYERS)[]).map(
-        (lag) => [lag, LAYER_DESCRIPTIONS[lag]],
+        (layer) => [layer, LAYER_DESCRIPTIONS[layer]],
       ),
     ),
-    tokens: Object.keys(colorTokens).filter((navn) =>
-      navn.startsWith("--lt-color-"),
+    tokens: Object.keys(colorTokens).filter((name) =>
+      name.startsWith("--lt-color-"),
     ),
   },
   components: Object.fromEntries(
@@ -566,19 +571,19 @@ const tokens = {
 
 const manifest = {
   $schema: "./manifest.schema.json",
-  schemaVersion: SKJEMAVERSJON,
-  version: versjon,
+  schemaVersion: SCHEMA_VERSION,
+  version: version,
   elements,
-  classes: klasser,
-  builders: byggefunksjoner,
+  classes: classEntries,
+  builders: builderFunctions,
   tokens,
 }
 
-mkdirSync(UT, { recursive: true })
-writeFileSync(`${UT}manifest.json`, `${JSON.stringify(manifest, null, 2)}\n`)
+mkdirSync(OUT, { recursive: true })
+writeFileSync(`${OUT}manifest.json`, `${JSON.stringify(manifest, null, 2)}\n`)
 writeFileSync(
-  `${UT}build-cases.json`,
-  `${JSON.stringify({ version: versjon, cases: tilfeller })}\n`,
+  `${OUT}build-cases.json`,
+  `${JSON.stringify({ version: version, cases: cases })}\n`,
 )
 
 /*
@@ -588,27 +593,27 @@ writeFileSync(
  * folder could not be read through Node's WASI on Windows: `takeover` found
  * no components there.
  */
-const ls = (mappe: string) => readdirSync(`${PAKKE}${mappe}`).sort()
-const filer = {
+const ls = (folder: string) => readdirSync(`${PACKAGE}${folder}`).sort()
+const files = {
   agent: ls("agent")
-    .filter((fil) => fil.endsWith(".md"))
-    .map((fil) => fil.slice(0, -3)),
-  components: ["css", "frame", "standalone"].flatMap((kategori) =>
-    ls(`src/components/${kategori}`)
-      .filter((navn) =>
-        statSync(`${PAKKE}src/components/${kategori}/${navn}`).isDirectory(),
+    .filter((file) => file.endsWith(".md"))
+    .map((file) => file.slice(0, -3)),
+  components: ["css", "frame", "standalone"].flatMap((category) =>
+    ls(`src/components/${category}`)
+      .filter((name) =>
+        statSync(`${PACKAGE}src/components/${category}/${name}`).isDirectory(),
       )
-      .map((navn) => ({
-        category: kategori,
-        name: navn,
-        files: ls(`src/components/${kategori}/${navn}`).filter(
-          (fil) => !fil.includes(".test."),
+      .map((name) => ({
+        category: category,
+        name: name,
+        files: ls(`src/components/${category}/${name}`).filter(
+          (file) => !file.includes(".test."),
         ),
       })),
   ),
 }
-writeFileSync(`${UT}files.json`, `${JSON.stringify(filer, null, 2)}\n`)
+writeFileSync(`${OUT}files.json`, `${JSON.stringify(files, null, 2)}\n`)
 
 console.log(
-  `✓ The manifest: ${byggefunksjoner.length} builder functions, ${Object.keys(elements).length} elements, ${Object.keys(classes).length} classes, ${tilfeller.length} build cases, ${Object.values(componentVariables).reduce((n, v) => n + Object.keys(v).length, 0)} component variables.`,
+  `✓ The manifest: ${builderFunctions.length} builder functions, ${Object.keys(elements).length} elements, ${Object.keys(classes).length} classes, ${cases.length} build cases, ${Object.values(componentVariables).reduce((n, v) => n + Object.keys(v).length, 0)} component variables.`,
 )

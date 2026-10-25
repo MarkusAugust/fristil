@@ -1,162 +1,166 @@
 /**
- * At koden i «How to use it» faktisk stemmer.
+ * That the code in "How to use it" is actually right.
  *
- * Hver komponentside åpner med den seksjonen, og fanene der er det leseren
- * limer inn. En kodeblokk som ser riktig ut, men peker på et inngangspunkt
- * som ikke finnes, eller kaller en byggefunksjon som heter noe annet, er
- * verre enn ingen kode: den ser autoritativ ut og feiler hos konsumenten.
+ * Every component page opens with that section, and the tabs in it are what
+ * the reader pastes in. A code block that looks right, but points at an entry
+ * point that does not exist, or calls a builder function by another name, is
+ * worse than no code: it looks authoritative and fails at the consumer.
  *
- * Sjekken leser mdx-filene som tekst og etterprøver hver påstand mot det
- * pakken faktisk sender ut:
+ * The check reads the mdx files as text and verifies every claim against what
+ * the package actually ships:
  *
- *   - hvert `@lo-tek/interfaces/…` finnes i `exports`;
- *   - hver `defineLtX` er noe den modulen faktisk eksporterer;
- *   - hver `lt.x()` er en byggefunksjon som finnes;
- *   - hver `lt-`-klasse står i et stilark pakken sender ut;
- *   - et pakkenavn står bare i faner som har et byggesteg, og en URL i dem
- *     som ikke har det.
+ *   - every `@lo-tek/interfaces/…` exists in `exports`;
+ *   - every `defineLtX` is something that module actually exports;
+ *   - every `lt.x()` is a builder function that exists;
+ *   - every `lt-` class is in a stylesheet the package ships;
+ *   - a package name appears only in tabs that have a build step, and a URL
+ *     in those that do not.
  *
- * Den siste er ikke pedanteri. `import … from "@lo-tek/interfaces/dialog"`
- * i et `<script type="module">` slår ikke opp i en nettleser: uten importmap
- * eller byggesteg finnes ikke pakkenavnet. Sporene «Plain HTML» og «Datastar» er
- * definert ved å ikke ha noe byggesteg, så der må adressen være en URL.
+ * The last one is not pedantry. `import … from "@lo-tek/interfaces/dialog"`
+ * in a `<script type="module">` does not resolve in a browser: without an
+ * import map or a build step the package name does not exist. The tracks
+ * "Plain HTML" and "Datastar" are defined by having no build step, so there
+ * the address must be a URL.
  */
 
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
-const ROT = fileURLToPath(new URL("../..", import.meta.url))
-const SIDER = join(ROT, "documentation/src/content/docs/components")
-const PAKKE = JSON.parse(
-  readFileSync(join(ROT, "designsystem/package.json"), "utf8"),
+const ROOT = fileURLToPath(new URL("../..", import.meta.url))
+const PAGES = join(ROOT, "documentation/src/content/docs/components")
+const PACKAGE = JSON.parse(
+  readFileSync(join(ROOT, "designsystem/package.json"), "utf8"),
 )
 
-const funn: string[] = []
-const si = (side: string, melding: string) => funn.push(`${side}: ${melding}`)
+const findings: string[] = []
+const report = (page: string, message: string) =>
+  findings.push(`${page}: ${message}`)
 
-/** Inngangspunktene `exports` lover, uten «./»-prefikset. */
-const inngangspunkter = new Set(
-  Object.keys(PAKKE.exports).map((k) =>
+/** The entry points `exports` promises, without the "./" prefix. */
+const entryPoints = new Set(
+  Object.keys(PACKAGE.exports).map((k) =>
     k === "." ? "" : k.replace(/^\.\//, ""),
   ),
 )
 
-/** Alle klassenavn pakken faktisk definerer. */
-const klasser = new Set<string>()
-function lesStilark(mappe: string) {
-  for (const oppf of readdirSync(mappe, { withFileTypes: true })) {
-    const sti = join(mappe, oppf.name)
-    if (oppf.isDirectory()) lesStilark(sti)
-    else if (oppf.name.endsWith(".css"))
-      for (const m of readFileSync(sti, "utf8").matchAll(
+/** Every class name the package actually defines. */
+const classes = new Set<string>()
+function readStylesheets(folder: string) {
+  for (const entry of readdirSync(folder, { withFileTypes: true })) {
+    const path = join(folder, entry.name)
+    if (entry.isDirectory()) readStylesheets(path)
+    else if (entry.name.endsWith(".css"))
+      for (const m of readFileSync(path, "utf8").matchAll(
         /\.(lt-[a-z0-9-]+(?:__[a-z0-9-]+)?)/g,
       ))
-        klasser.add(m[1])
+        classes.add(m[1])
   }
 }
-lesStilark(join(ROT, "designsystem/src"))
+readStylesheets(join(ROOT, "designsystem/src"))
 
-/** Byggefunksjonene som finnes, lest fra pakken selv. */
-const { lt } = await import(join(ROT, "designsystem/dist/lt.js"))
-const byggefunksjoner = new Set(Object.keys(lt))
+/** The builder functions that exist, read from the package itself. */
+const { lt } = await import(join(ROOT, "designsystem/dist/lt.js"))
+const builderFunctions = new Set(Object.keys(lt))
 
-/** `defineLtX`-navnene hver modul eksporterer. */
-const definerere = new Map<string, Set<string>>()
-for (const inn of inngangspunkter) {
-  const mål = PAKKE.exports[inn === "" ? "." : `./${inn}`]
-  const js = typeof mål === "string" ? mål : mål?.import
+/** The `defineLtX` names each module exports. */
+const definers = new Map<string, Set<string>>()
+for (const entry of entryPoints) {
+  const target = PACKAGE.exports[entry === "" ? "." : `./${entry}`]
+  const js = typeof target === "string" ? target : target?.import
   if (typeof js !== "string" || !js.endsWith(".js")) continue
   try {
-    const modul = await import(join(ROT, "designsystem", js))
-    definerere.set(inn, new Set(Object.keys(modul)))
+    const module = await import(join(ROOT, "designsystem", js))
+    definers.set(entry, new Set(Object.keys(module)))
   } catch {
-    // Et inngangspunkt som ikke lar seg laste er `check-server-import` sin jobb.
+    // An entry point that cannot be loaded is `check-server-import`'s job.
   }
 }
 
 /**
- * Hver `<Example>` på siden, med alt som hører til.
+ * Every `<Example>` on the page, with everything that belongs to it.
  *
- * Dette må parses, ikke matches. Et regex på `/>` stopper på den første
- * selvlukkende taggen *inne i* eksempelet, og på ni sider er det et
- * `<input … />` i markupen. Alt bak det punktet ble aldri lest, som er
- * nøyaktig hullet denne funksjonen finnes for å lukke. Første forsøk flyttet
- * feilen fra den ene taggformen til den andre.
+ * This has to be parsed, not matched. A regex on `/>` stops at the first
+ * self-closing tag *inside* the example, and on nine pages there is an
+ * `<input … />` in the markup. Everything past that point was never read,
+ * which is exactly the gap this function exists to close. The first attempt
+ * moved the bug from one tag form to the other.
  *
- * Så: skann fram til `>` som faktisk avslutter åpningstaggen, altså det som
- * står utenfor `{…}` og utenfor en malstreng. Er tegnet foran en skråstrek,
- * lukker taggen seg selv. Ellers hører alt fram til `</Example>` med.
+ * So: scan up to the `>` that actually ends the opening tag, that is one that
+ * stands outside `{…}` and outside a template string. If the character before
+ * it is a slash, the tag closes itself. Otherwise everything up to
+ * `</Example>` belongs to it.
  */
-function eksempler(tekst: string): string[] {
-  const ut: string[] = []
-  for (let i = tekst.indexOf("<Example"); i !== -1; ) {
-    let dybde = 0
-    let iMal = false
+function examples(text: string): string[] {
+  const out: string[] = []
+  for (let i = text.indexOf("<Example"); i !== -1; ) {
+    let depth = 0
+    let inTemplate = false
     let j = i + "<Example".length
-    for (; j < tekst.length; j++) {
-      const c = tekst[j]
-      if (c === "`") iMal = !iMal
-      else if (iMal) continue
-      else if (c === "{") dybde++
-      else if (c === "}") dybde--
-      else if (c === ">" && dybde === 0) break
+    for (; j < text.length; j++) {
+      const c = text[j]
+      if (c === "`") inTemplate = !inTemplate
+      else if (inTemplate) continue
+      else if (c === "{") depth++
+      else if (c === "}") depth--
+      else if (c === ">" && depth === 0) break
     }
-    if (tekst[j - 1] === "/") {
-      ut.push(tekst.slice(i, j + 1))
+    if (text[j - 1] === "/") {
+      out.push(text.slice(i, j + 1))
     } else {
-      const slutt = tekst.indexOf("</Example>", j)
-      ut.push(
-        slutt === -1
-          ? tekst.slice(i, j + 1)
-          : tekst.slice(i, slutt + "</Example>".length),
+      const end = text.indexOf("</Example>", j)
+      out.push(
+        end === -1
+          ? text.slice(i, j + 1)
+          : text.slice(i, end + "</Example>".length),
       )
     }
-    i = tekst.indexOf("<Example", j)
+    i = text.indexOf("<Example", j)
   }
-  return ut
+  return out
 }
 
 /**
- * Hvilke stilark en `lt-`-klasse krever, med `@import`-lukningen regnet inn.
+ * Which stylesheets an `lt-` class requires, with the `@import` closure
+ * counted in.
  *
- * `search.css` henter `input.css` selv, så en oppskrift som bruker
- * `.lt-input` sammen med `.lt-search` trenger ikke begge. Uten lukningen ville
- * regelen krevd stilark som allerede kommer med.
+ * `search.css` pulls in `input.css` itself, so a recipe that uses `.lt-input`
+ * together with `.lt-search` does not need both. Without the closure the rule
+ * would require stylesheets that already come along.
  */
-const FRA_STILARK = new Map<string, string>()
+const FROM_STYLESHEET = new Map<string, string>()
 
-/** Stilarket hvert `lt-`-element styres av. */
-const FRA_ELEMENT = new Map<string, string>()
-const HENTER = new Map<string, Set<string>>()
+/** The stylesheet each `lt-` element is styled by. */
+const FROM_ELEMENT = new Map<string, string>()
+const IMPORTS = new Map<string, Set<string>>()
 {
-  const lesArk = (mappe: string) => {
-    // Sortert: usortert `readdirSync` på Linux ville latt `search.css` vinne
-    // over `input.css` for `.lt-input`, og sjekken feilet tilfeldig i CI.
-    for (const oppf of readdirSync(mappe, { withFileTypes: true }).sort(
+  const readSheets = (folder: string) => {
+    // Sorted: unsorted `readdirSync` on Linux would have let `search.css` win
+    // over `input.css` for `.lt-input`, and the check failed at random in CI.
+    for (const entry of readdirSync(folder, { withFileTypes: true }).sort(
       (a, b) => a.name.localeCompare(b.name),
     )) {
-      const p = join(mappe, oppf.name)
-      if (oppf.isDirectory()) lesArk(p)
-      else if (oppf.name.endsWith(".css")) {
-        const tekst = readFileSync(p, "utf8")
-        for (const m of tekst.matchAll(/\.(lt-[a-z0-9-]+(?:__[a-z0-9-]+)?)/g))
-          if (!FRA_STILARK.has(m[1])) FRA_STILARK.set(m[1], oppf.name)
+      const p = join(folder, entry.name)
+      if (entry.isDirectory()) readSheets(p)
+      else if (entry.name.endsWith(".css")) {
+        const text = readFileSync(p, "utf8")
+        for (const m of text.matchAll(/\.(lt-[a-z0-9-]+(?:__[a-z0-9-]+)?)/g))
+          if (!FROM_STYLESHEET.has(m[1])) FROM_STYLESHEET.set(m[1], entry.name)
         /*
-         * Og elementvelgerne.
+         * And the element selectors.
          *
-         * Ni stilark styrer et `lt-`-element og ingen klasse: toast, field,
+         * Nine stylesheets style an `lt-` element and no class: toast, field,
          * dialog, popover, tabs, suggestion, error-summary,
-         * connection-status og session-timeout. En regel som bare kjenner
-         * klasser kan aldri kreve dem, og da forsvant `toast.css` fra
-         * toast-oppskriften uten at noe sa fra.
+         * connection-status and session-timeout. A rule that only knows
+         * classes can never require them, and then `toast.css` disappeared
+         * from the toast recipe without anything saying so.
          */
-        for (const m of tekst.matchAll(/^\s*(lt-[a-z0-9-]+)[\s,{[:.]/gm))
-          if (!FRA_ELEMENT.has(m[1])) FRA_ELEMENT.set(m[1], oppf.name)
-        HENTER.set(
-          oppf.name,
+        for (const m of text.matchAll(/^\s*(lt-[a-z0-9-]+)[\s,{[:.]/gm))
+          if (!FROM_ELEMENT.has(m[1])) FROM_ELEMENT.set(m[1], entry.name)
+        IMPORTS.set(
+          entry.name,
           new Set(
-            [...tekst.matchAll(/@import "[^"]*\/([a-z-]+\.css)"/g)].map(
+            [...text.matchAll(/@import "[^"]*\/([a-z-]+\.css)"/g)].map(
               (m) => m[1],
             ),
           ),
@@ -164,97 +168,99 @@ const HENTER = new Map<string, Set<string>>()
       }
     }
   }
-  lesArk(join(ROT, "designsystem/src"))
+  readSheets(join(ROOT, "designsystem/src"))
 }
 
-/** Klassen hver byggefunksjon gir, slått opp på funksjonsnavnet. */
-const FRA_BYGGER_OMVENDT = new Map<string, string>()
+/** The class each builder function gives, looked up by function name. */
+const FROM_BUILDER_REVERSED = new Map<string, string>()
 
-/** Stilarkene et sett med oppgitte ark drar med seg, hele veien ned. */
-function lukning(start: string[]): Set<string> {
-  const ut = new Set<string>()
-  const kø = [...start]
-  while (kø.length) {
-    const n = kø.pop()
-    if (!n || ut.has(n)) continue
-    ut.add(n)
-    for (const h of HENTER.get(n) ?? []) kø.push(h)
+/** The stylesheets a set of given sheets brings along, all the way down. */
+function closure(start: string[]): Set<string> {
+  const out = new Set<string>()
+  const queue = [...start]
+  while (queue.length) {
+    const n = queue.pop()
+    if (!n || out.has(n)) continue
+    out.add(n)
+    for (const h of IMPORTS.get(n) ?? []) queue.push(h)
   }
-  return ut
+  return out
 }
 
 /**
- * Bare koden i en fane, uten prosaen rundt.
+ * Only the code in a tab, without the prose around it.
  *
- * To av reglene spør om noe som bare gir mening i kode: at et `<lt-…>` blir
- * registrert, og at `lt.` er importert. Leste de hele fanen, ville en setning
- * som *nevner* `<lt-dialog>` felt CI av en grunn som ikke er en feil, og den
- * nærliggende fiksen ville vært å svekke regelen igjen.
+ * Two of the rules ask about something that only makes sense in code: that an
+ * `<lt-…>` is registered, and that `lt.` is imported. If they read the whole
+ * tab, a sentence that *mentions* `<lt-dialog>` would fail CI for a reason
+ * that is not a bug, and the obvious fix would have been to weaken the rule
+ * again.
  */
-/** Hvert kodegjerde for seg, uten kommentarer. */
-function gjerder(tekst: string): string[] {
-  return [...tekst.matchAll(/```[^\n]*\n([\s\S]*?)```/g)].map((m) =>
+/** Each code fence on its own, without comments. */
+function fences(text: string): string[] {
+  return [...text.matchAll(/```[^\n]*\n([\s\S]*?)```/g)].map((m) =>
     m[1].replace(/<!--[\s\S]*?-->/g, "").replace(/^\s*\/\/.*$/gm, ""),
   )
 }
 
 /**
- * Markupen i `<Example code={`…`}>`, som ikke står i et kodegjerde.
+ * The markup in `<Example code={`…`}>`, which is not in a code fence.
  *
- * Tre regler leste bare gjerder, og på de 32 css-sidene er `<Example>` den
- * eneste markupen som finnes. Registreringen, vertsattributtene og
- * element-til-stilark kunne dermed strukturelt aldri fyre der. Samme form som
- * de seks foregående hullene: regelen var bundet til én måte å skrive koden.
+ * Three rules read only fences, and on the 32 CSS pages `<Example>` is the
+ * only markup there is. The registration, the host attributes and
+ * element-to-stylesheet could therefore structurally never fire there. Same
+ * shape as the six previous gaps: the rule was bound to one way of writing the
+ * code.
  */
-function eksempelMarkup(tekst: string): string {
-  return [...tekst.matchAll(/(?:kode|egenCss)=\{`([\s\S]*?)`\}/g)]
+function exampleMarkup(text: string): string {
+  return [...text.matchAll(/(?:code|customCss)=\{`([\s\S]*?)`\}/g)]
     .map((m) => m[1])
     .join("\n")
 }
 
-function bareKode(tekst: string): string {
-  const gjerder = [...tekst.matchAll(/```[^\n]*\n([\s\S]*?)```/g)].map(
+function codeOnly(text: string): string {
+  const codeFences = [...text.matchAll(/```[^\n]*\n([\s\S]*?)```/g)].map(
     (m) => m[1],
   )
-  // Uten kommentarene: en kommentar som *nevner* `<lt-dialog>` er ikke
-  // markup, og en regel som leser den krever en registrering som ikke
-  // trengs.
-  return [...gjerder, eksempelMarkup(tekst)]
+  // Without the comments: a comment that *mentions* `<lt-dialog>` is not
+  // markup, and a rule that reads it requires a registration that is not
+  // needed.
+  return [...codeFences, exampleMarkup(text)]
     .join("\n")
     .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/^\s*\/\/.*$/gm, "")
 }
 
 /**
- * Stiene `exports` peker på, slik de ser ut inne i tarballen.
+ * The paths `exports` points at, as they look inside the tarball.
  *
- * En CDN-adresse må treffe en av dem. I sporene uten byggesteg *er* adressen
- * oppskriften, og bare siste ledd ble kontrollert: feil mappe, feil versjon
- * og en oppdiktet fil gikk alle grønt, fordi regexen stoppet på `@` i
- * `@0.14.0` og inngangspunktet ble den tomme strengen.
+ * A CDN address must match one of them. In the tracks without a build step
+ * the address *is* the recipe, and only the last part was checked: wrong
+ * folder, wrong version and a made-up file all went green, because the regex
+ * stopped at the `@` in `@0.14.0` and the entry point became the empty string.
  */
-const FILER = new Set<string>()
-for (const mål of Object.values(
-  PAKKE.exports as Record<string, string | Record<string, string>>,
+const FILES = new Set<string>()
+for (const target of Object.values(
+  PACKAGE.exports as Record<string, string | Record<string, string>>,
 )) {
-  if (typeof mål === "string") FILER.add(mål.slice(2))
+  if (typeof target === "string") FILES.add(target.slice(2))
   else
-    for (const v of Object.values(mål))
-      if (typeof v === "string") FILER.add(v.slice(2))
+    for (const v of Object.values(target))
+      if (typeof v === "string") FILES.add(v.slice(2))
 }
 
-const MED_BYGGESTEG = new Set(["React", "Astro", "TypeScript"])
+const WITH_BUILD_STEP = new Set(["React", "Astro", "TypeScript"])
 
 /**
- * Fanenavnene dokumentasjonen bruker, og bare disse.
+ * The tab names the documentation uses, and only these.
  *
- * Hver regel velges på et navn som streng: `MED_BYGGESTEG`, kravet om URL
- * framfor pakkenavn, registreringen og `lt`-importen. Skrev noen
- * `label="Ren html"`, ble to av dem slått av uten at noe sa fra. Et
- * ordforråd som håndheves gjør klassifiseringen etterprøvbar framfor å være
- * noe sjekken bare antar.
+ * Every rule is selected on a name as a string: `WITH_BUILD_STEP`, the
+ * requirement of a URL rather than a package name, the registration and the
+ * `lt` import. If someone wrote `label="Plain html"`, two of them were turned
+ * off without anything saying so. An enforced vocabulary makes the
+ * classification verifiable rather than something the check just assumes.
  */
-const FANENAVN = new Set([
+const TAB_NAMES = new Set([
   "Try it",
   "Example",
   "Plain HTML",
@@ -265,34 +271,35 @@ const FANENAVN = new Set([
 ])
 
 /**
- * Verter der byggefunksjonen gir attributter komponenten ikke setter selv.
+ * Hosts where the builder function gives attributes the component does not
+ * set itself.
  *
- * Der er verten noe du skriver én gang i appen, og fristelsen til å skrive
- * den for hånd er størst. Alle tre har `data-ignore-morph`, som komponenten
- * ikke kan sette på seg selv.
+ * There the host is something you write once in the app, and the temptation
+ * to write it by hand is greatest. All three have `data-ignore-morph`, which
+ * the component cannot set on itself.
  */
-const VERTER: Array<[string, string]> = [
+const HOSTS: Array<[string, string]> = [
   ["lt-toast", "toast"],
   ["lt-connection-status", "connectionStatus"],
   ["lt-session-timeout", "sessionTimeout"],
 ]
 
 /**
- * Klasser en byggefunksjon faktisk sender ut, og hvilken funksjon det er.
+ * Classes a builder function actually emits, and which function it is.
  *
- * Uten denne ville regelen felt hver `lt-`-klasse i en React- eller
- * Astro-fane, også de som ikke har noen funksjon å kalle. Én klasse er slik
- * i dag, og den lager komponenten selv: `lt-connection-status__bar`.
+ * Without this the rule would fail every `lt-` class in a React or Astro tab,
+ * including those that have no function to call. One class is like that
+ * today, and the component creates it itself: `lt-connection-status__bar`.
  */
-const FRA_BYGGER = new Map<string, string>()
-for (const [navn, f] of Object.entries(lt)) {
+const FROM_BUILDER = new Map<string, string>()
+for (const [name, f] of Object.entries(lt)) {
   if (typeof f !== "function") continue
-  let svar: unknown
+  let result: unknown
   try {
-    // `keys` fordi `lt.tabs()` og `lt.suggestion()` kaster uten. Da svelget
-    // `catch` feilen, fanenes klasser kom aldri inn i tabellen, og regelen
-    // om klasser skrevet for hånd var taus for dem.
-    svar = (f as (o?: unknown) => unknown)({
+    // `keys` because `lt.tabs()` and `lt.suggestion()` throw without it. Then
+    // `catch` swallowed the error, the tabs' classes never got into the
+    // table, and the rule about classes written by hand was silent for them.
+    result = (f as (o?: unknown) => unknown)({
       id: "x",
       titleId: "t",
       count: 1,
@@ -302,466 +309,478 @@ for (const [navn, f] of Object.entries(lt)) {
   } catch {
     continue
   }
-  const samle = (verdi: unknown) => {
-    if (Array.isArray(verdi)) return verdi.forEach(samle)
-    if (!verdi || typeof verdi !== "object") return
-    const o = verdi as Record<string, unknown>
+  const collect = (value: unknown) => {
+    if (Array.isArray(value)) return value.forEach(collect)
+    if (!value || typeof value !== "object") return
+    const o = value as Record<string, unknown>
     if (typeof o.class === "string")
       for (const k of o.class.split(/\s+/))
-        if (k && !FRA_BYGGER.has(k)) FRA_BYGGER.set(k, navn)
-    for (const v of Object.values(o)) if (typeof v === "object") samle(v)
+        if (k && !FROM_BUILDER.has(k)) FROM_BUILDER.set(k, name)
+    for (const v of Object.values(o)) if (typeof v === "object") collect(v)
   }
-  samle(svar)
+  collect(result)
 
   /*
-   * Og klassenavnene som henger på selve funksjonen.
+   * And the class names that hang on the function itself.
    *
-   * `lt.switch.row`, `lt.alert.title` og et dusin andre er klasser uten
-   * attributter, så de returneres ikke av et kall, men henges på funksjonen
-   * med `Object.assign`. Ser man bare på returverdien, ser det ut som et hull
-   * i API-et der det ikke er noe. Nitten klasser sto slik, og
-   * `.lt-switch-row` var en av dem.
+   * `lt.switch.row`, `lt.alert.title` and a dozen others are classes without
+   * attributes, so they are not returned by a call, but hung on the function
+   * with `Object.assign`. Looking only at the return value, it looks like a
+   * gap in the API where there is none. Nineteen classes were like that, and
+   * `.lt-switch-row` was one of them.
    */
-  for (const [nøkkel, verdi] of Object.entries(f))
+  for (const [key, value] of Object.entries(f))
     if (
-      typeof verdi === "string" &&
-      verdi.startsWith("lt-") &&
-      !FRA_BYGGER.has(verdi)
+      typeof value === "string" &&
+      value.startsWith("lt-") &&
+      !FROM_BUILDER.has(value)
     )
-      FRA_BYGGER.set(verdi, `${navn}.${nøkkel}`)
+      FROM_BUILDER.set(value, `${name}.${key}`)
 
-  for (const [klasse, bygger] of FRA_BYGGER)
-    if (!FRA_BYGGER_OMVENDT.has(bygger.replace(/[.(].*$/, "")))
-      FRA_BYGGER_OMVENDT.set(bygger.replace(/[.(].*$/, ""), klasse)
+  for (const [className, builder] of FROM_BUILDER)
+    if (!FROM_BUILDER_REVERSED.has(builder.replace(/[.(].*$/, "")))
+      FROM_BUILDER_REVERSED.set(builder.replace(/[.(].*$/, ""), className)
 }
 
-/** Attributtnavnene en byggefunksjon faktisk sender ut for verten sin. */
-function kreves(bygger: string): string[] {
-  // De samme prøvevalgene som over: `lt.sessionTimeout()` krever `titleId`.
-  const svar = (lt as Record<string, (o?: unknown) => Record<string, unknown>>)[
-    bygger
-  ]({ titleId: "t" })
-  const sett = (svar.host ?? svar) as Record<string, unknown>
-  return Object.keys(sett).filter((k) => k !== "class")
+/** The attribute names a builder function actually emits for its host. */
+function required(builder: string): string[] {
+  // The same sample options as above: `lt.sessionTimeout()` requires `titleId`.
+  const result = (
+    lt as Record<string, (o?: unknown) => Record<string, unknown>>
+  )[builder]({ titleId: "t" })
+  const set = (result.host ?? result) as Record<string, unknown>
+  return Object.keys(set).filter((k) => k !== "class")
 }
 
 /*
- * `index.mdx` er oversikten over komponentene, ikke en komponentside.
+ * `index.mdx` is the overview of the components, not a component page.
  *
- * Unntaket er navngitt og ikke et vilkår: alt annet enn nøyaktig den fila
- * kontrolleres som før. En regel som slo av sjekken for en hel klasse sider
- * ville vært farligere enn ingen regel.
+ * The exception is named and not a condition: everything other than exactly
+ * that file is checked as before. A rule that turned the check off for a whole
+ * class of pages would be more dangerous than no rule.
  */
-for (const fil of readdirSync(SIDER).filter(
+for (const file of readdirSync(PAGES).filter(
   (f) => f.endsWith(".mdx") && f !== "index.mdx",
 )) {
-  const side = fil.replace(/\.mdx$/, "")
-  const tekst = readFileSync(join(SIDER, fil), "utf8")
+  const page = file.replace(/\.mdx$/, "")
+  const text = readFileSync(join(PAGES, file), "utf8")
 
-  const start = tekst.indexOf("## How to use it")
+  const start = text.indexOf("## How to use it")
   if (start === -1) {
-    si(side, "mangler seksjonen «How to use it»")
+    report(page, 'is missing the section "How to use it"')
     continue
   }
-  const neste = tekst.indexOf("\n## ", start + 5)
-  const seksjon = tekst.slice(start, neste === -1 ? undefined : neste)
+  const next = text.indexOf("\n## ", start + 5)
+  const section = text.slice(start, next === -1 ? undefined : next)
 
   /*
-   * Hver fane på hele siden, med navnet sitt, ikke bare de i oppskriften.
+   * Every tab on the whole page, with its name, not just those in the recipe.
    *
-   * Seksjoner om oppførsel har også faner nå, som «Lagring med en gang» på
-   * bryteren. Leste sjekken bare oppskriften, gikk en React-fane lenger nede
-   * fri, og det er den samme koden en leser limer inn.
+   * Sections about behaviour have tabs too now, such as "Saving
+   * immediately" on the switch. If the check read only the recipe, a React tab
+   * further down went free, and it is the same code a reader pastes in.
    */
-  const faner: Array<{ navn: string; kode: string; iOppskrift?: boolean }> = []
-  for (const m of tekst.matchAll(
+  const tabs: Array<{ name: string; code: string; inRecipe?: boolean }> = []
+  for (const m of text.matchAll(
     /<TabItem\b[^>]*?\slabel="([^"]+)"[^>]*>([\s\S]*?)<\/TabItem>/g,
   ))
-    faner.push({ navn: m[1], kode: m[2], iOppskrift: seksjon.includes(m[2]) })
+    tabs.push({ name: m[1], code: m[2], inRecipe: section.includes(m[2]) })
 
   /*
-   * Og hver `<Example>`, uansett om siden også har faner.
+   * And every `<Example>`, whether or not the page also has tabs.
    *
-   * Dette sto som en reserve som bare slo inn når siden hadde null
-   * `<TabItem>`. Da forsvant hele `<Example>`-delen ut av sjekken på de ti
-   * sidene som har et `<Tabs>`-blokk et sted, og med den de håndskrevne
-   * TypeScript-blokkene. Verst var at det var stille og asymmetrisk: la noen
-   * et `<Tabs>` på en av css-sidene, slo det av sjekkingen av den sidens
-   * egen oppskrift.
+   * This stood as a fallback that only kicked in when the page had zero
+   * `<TabItem>`. Then the whole `<Example>` part dropped out of the check on
+   * the ten pages that have a `<Tabs>` block somewhere, and with it the
+   * hand-written TypeScript blocks. Worst of all, it was silent and
+   * asymmetric: if someone put a `<Tabs>` on one of the CSS pages, it turned
+   * off the checking of that page's own recipe.
    */
-  for (const m of eksempler(tekst)) {
-    // De to halvdelene hver for seg: markupen hører til «Plain HTML», og
-    // `slot="ts"` til TypeScript. Slått sammen ville kravet om pakkenavn mot
-    // URL vært umulig å stille, siden de to har hver sin regel.
+  for (const m of examples(text)) {
+    // The two halves separately: the markup belongs to "Plain HTML", and
+    // `slot="ts"` to TypeScript. Merged, the package-name-versus-URL
+    // requirement would be impossible to state, since the two have a rule
+    // each.
     const ts = m.match(/<Fragment slot="ts">([\s\S]*?)<\/Fragment>/)
-    faner.push({
-      navn: "Plain HTML",
-      kode: ts ? m.replace(ts[0], "") : m,
-      iOppskrift: seksjon.includes(m),
+    tabs.push({
+      name: "Plain HTML",
+      code: ts ? m.replace(ts[0], "") : m,
+      inRecipe: section.includes(m),
     })
-    // `importer` hører til begge halvdelene: den sier hvilke stilark
-    // eksempelet trenger, uansett hvilken fane de vises i.
-    const erklaering = m.match(/imports=\{\[[^\]]*\]\}/)?.[0] ?? ""
+    // `imports` belongs to both halves: it says which stylesheets the example
+    // needs, whichever tab they are shown in.
+    const declaration = m.match(/imports=\{\[[^\]]*\]\}/)?.[0] ?? ""
     if (ts)
-      faner.push({
-        navn: "TypeScript",
-        kode: erklaering + ts[1],
-        iOppskrift: seksjon.includes(m),
+      tabs.push({
+        name: "TypeScript",
+        code: declaration + ts[1],
+        inRecipe: section.includes(m),
       })
   }
 
   /*
-   * Og resten av siden.
+   * And the rest of the page.
    *
-   * Sjekken leste bare `<TabItem>` og `<Example>`, så en kodeblokk som sto
-   * utenfor begge gikk fri. Toast-siden hadde en slik: den gjentok
-   * «Plain HTML»-oppskriften i den gamle utgaven, med et pakkenavn i et miljø
-   * uten byggesteg og uten `data-ignore-morph`, tre avsnitt etter at siden
-   * skriver at attributtet ikke er valgfritt.
+   * The check read only `<TabItem>` and `<Example>`, so a code block that
+   * stood outside both went free. The toast page had one: it repeated the
+   * "Plain HTML" recipe in the old version, with a package name in an
+   * environment without a build step and without `data-ignore-morph`, three
+   * paragraphs after the page says the attribute is not optional.
    *
-   * Fanenavnet er «resten», ikke et miljø, så regelen om pakkenavn mot URL
-   * stilles ikke her: en prosablokk kan med rette nevne pakkenavnet. Det
-   * som gjelder er at klasser, byggefunksjoner og adresser finnes.
+   * The tab name is "rest", not an environment, so the package-name-versus-URL
+   * rule is not applied here: a prose block may rightly mention the package
+   * name. What applies is that classes, builder functions and addresses
+   * exist.
    */
-  let resten = tekst
-  for (const f of faner) resten = resten.replace(f.kode, "")
-  faner.push({ navn: "resten", kode: resten })
+  let rest = text
+  for (const t of tabs) rest = rest.replace(t.code, "")
+  tabs.push({ name: "rest", code: rest })
 
-  for (const fane of faner) {
-    const hvor = `«${fane.navn}»`
+  for (const tab of tabs) {
+    const where = `"${tab.name}"`
 
-    if (fane.navn !== "resten" && !FANENAVN.has(fane.navn))
-      si(
-        side,
-        `fanen heter «${fane.navn}», som ikke er et av navnene dokumentasjonen bruker. Reglene velges på navnet, så en skrivefeil slår dem av i stillhet.`,
+    if (tab.name !== "rest" && !TAB_NAMES.has(tab.name))
+      report(
+        page,
+        `the tab is called "${tab.name}", which is not one of the names the documentation uses. The rules are selected on the name, so a typo turns them off silently.`,
       )
 
-    for (const m of fane.kode.matchAll(
+    for (const m of tab.code.matchAll(
       /@lo-tek\/interfaces(?:\/([a-z0-9/.-]+))?/g,
     )) {
-      const inn = m[1] ?? ""
-      if (!inngangspunkter.has(inn))
-        si(
-          side,
-          `${hvor} importerer «@lo-tek/interfaces/${inn}», som ikke finnes i exports`,
+      const entry = m[1] ?? ""
+      if (!entryPoints.has(entry))
+        report(
+          page,
+          `${where} imports "@lo-tek/interfaces/${entry}", which does not exist in exports`,
         )
     }
 
-    for (const m of fane.kode.matchAll(/\b(defineLt[A-Za-z]+)\b/g)) {
-      const navn = m[1]
-      const finnes = [...definerere.values()].some((sett) => sett.has(navn))
-      if (!finnes)
-        si(side, `${hvor} kaller ${navn}(), som ingen modul eksporterer`)
+    for (const m of tab.code.matchAll(/\b(defineLt[A-Za-z]+)\b/g)) {
+      const name = m[1]
+      const exists = [...definers.values()].some((set) => set.has(name))
+      if (!exists)
+        report(page, `${where} calls ${name}(), which no module exports`)
     }
 
     /*
-     * Og navnene som ikke er kall.
+     * And the names that are not calls.
      *
-     * Regelen krevde parentes, så `lt.card.title`, `lt.switch.row` og tjue
-     * andre egenskapsreferanser var aldri kontrollert. En skrivefeil der gir
-     * `className={undefined}`, altså et element uten klasse, og ingenting sa
-     * fra. Vaktene, som `lt.button.isVariant`, falt mellom begge regler.
+     * The rule required a parenthesis, so `lt.card.title`, `lt.switch.row` and
+     * twenty other property references were never checked. A typo there gives
+     * `className={undefined}`, an element without a class, and nothing said
+     * so. The guards, such as `lt.button.isVariant`, fell between both rules.
      */
-    for (const m of fane.kode.matchAll(/\blt\.([a-zA-Z]+)\.([a-zA-Z]+)/g)) {
-      const bygger = (lt as Record<string, unknown>)[m[1]]
-      if (typeof bygger !== "function") {
-        si(side, `${hvor} bruker lt.${m[1]}, som ikke finnes i lt`)
+    for (const m of tab.code.matchAll(/\blt\.([a-zA-Z]+)\.([a-zA-Z]+)/g)) {
+      const builder = (lt as Record<string, unknown>)[m[1]]
+      if (typeof builder !== "function") {
+        report(page, `${where} uses lt.${m[1]}, which does not exist in lt`)
         continue
       }
-      if (!(m[2] in (bygger as object)))
-        si(side, `${hvor} bruker lt.${m[1]}.${m[2]}, som ikke finnes`)
+      if (!(m[2] in (builder as object)))
+        report(page, `${where} uses lt.${m[1]}.${m[2]}, which does not exist`)
     }
 
-    for (const m of fane.kode.matchAll(/\blt\.([a-zA-Z]+)\s*\(/g)) {
-      if (!byggefunksjoner.has(m[1]))
-        si(side, `${hvor} kaller lt.${m[1]}(), som ikke finnes i lt`)
+    for (const m of tab.code.matchAll(/\blt\.([a-zA-Z]+)\s*\(/g)) {
+      if (!builderFunctions.has(m[1]))
+        report(page, `${where} calls lt.${m[1]}(), which does not exist in lt`)
     }
 
-    for (const m of fane.kode.matchAll(/class(?:Name)?="([^"]*)"/g)) {
+    for (const m of tab.code.matchAll(/class(?:Name)?="([^"]*)"/g)) {
       for (const k of m[1].split(/\s+/).filter((k) => k.startsWith("lt-")))
-        if (!klasser.has(k))
-          si(side, `${hvor} bruker klassen .${k}, som ingen stilark definerer`)
+        if (!classes.has(k))
+          report(
+            page,
+            `${where} uses the class .${k}, which no stylesheet defines`,
+          )
     }
 
     /*
-     * Attributter byggefunksjonen sender ut, må stå i markupen.
+     * Attributes the builder function emits must be in the markup.
      *
-     * En oppskrift som skriver verten for hånd framfor å spre
-     * byggefunksjonen, mister det byggefunksjonen ville gitt. Toast-siden
-     * skrev `<lt-toast label="Meldinger">` i alle fire fanene, og da manglet
-     * `data-ignore-morph` i alle fire, Datastar-fanen inkludert, der siden
-     * selv skriver at attributtet ikke er valgfritt. Komponenten setter
-     * `role` og `aria-label` selv, men ikke det, så en patch ville revet
-     * meldingene bort.
+     * A recipe that writes the host by hand rather than spreading the builder
+     * function loses what the builder function would have given. The toast
+     * page wrote `<lt-toast label="Notifications">` in all four tabs, and then
+     * `data-ignore-morph` was missing in all four, the Datastar tab included,
+     * where the page itself says the attribute is not optional. The component
+     * sets `role` and `aria-label` itself, but not that, so a patch would have
+     * torn the messages away.
      */
-    for (const [tagg, bygger] of VERTER) {
-      const verter = [
-        ...bareKode(fane.kode).matchAll(new RegExp(`<${tagg}\\b[^>]*>`, "g")),
+    for (const [tag, builder] of HOSTS) {
+      const hosts = [
+        ...codeOnly(tab.code).matchAll(new RegExp(`<${tag}\\b[^>]*>`, "g")),
       ]
-      // Alle vertene, ikke bare den første, og bare i kode: en bar
-      // `<lt-toast>` i en kommentar foran den ekte verten gjorde regelen død.
-      // Alle vertene som faktisk er skrevet ut, ikke bare den første.
       /*
-       * Alle vertene som faktisk er skrevet ut, ikke bare den første.
+       * Every host actually written out, not just the first, and only in code:
+       * a bare `<lt-toast>` in a comment before the real host made the rule
+       * dead.
        *
-       * Et bart `<lt-toast>` i en setning er prosa, ikke markup, så kravet
-       * gjelder dem som har attributter. Og en andre vert i samme fane er
-       * like mye en oppskrift som den første.
+       * A bare `<lt-toast>` in a sentence is prose, not markup, so the
+       * requirement applies to those that have attributes. And a second host
+       * in the same tab is as much a recipe as the first.
        */
-      for (const vert of verter.filter(
+      for (const host of hosts.filter(
         (v) => v[0].includes("=") && !/\{\.\.\./.test(v[0]),
       ))
-        for (const attributt of kreves(bygger)) {
-          if (!vert[0].includes(attributt))
-            si(
-              side,
-              `${hvor} skriver <${tagg}> for hånd uten ${attributt}, som lt.${bygger}() gir`,
+        for (const attribute of required(builder)) {
+          if (!host[0].includes(attribute))
+            report(
+              page,
+              `${where} writes <${tag}> by hand without ${attribute}, which lt.${builder}() gives`,
             )
         }
     }
 
     /*
-     * Lager du markupen med JavaScript, kaller du byggefunksjonen.
+     * If you create the markup with JavaScript, you call the builder function.
      *
-     * Det er hele skillet dokumentasjonen skal lære bort, og en fane som
-     * skriver `class="lt-input"` for hånd i React eller Astro lærer leseren
-     * ingenting om `lt`. Fire faner hadde drevet dit uten at noe sa fra.
+     * That is the whole distinction the documentation is meant to teach, and a
+     * tab that writes `class="lt-input"` by hand in React or Astro teaches the
+     * reader nothing about `lt`. Four tabs had drifted there without anything
+     * saying so.
      *
-     * Regelen gjelder bare der det finnes et byggesteg. I «Plain HTML» og
-     * «Datastar» er det riktige nettopp å skrive klassen: der finnes det
-     * ingen funksjon å kalle.
+     * The rule applies only where there is a build step. In "Plain HTML" and
+     * "Datastar" writing the class is exactly right: there is no function to
+     * call there.
      */
     /*
-     * `className` og ikke `class`.
+     * `className` and not `class`.
      *
-     * TypeScript-fanen viser to scenarier, og det andre er markup en server
-     * eller en mal har sendt. Der er `class="lt-button"` nettopp det riktige,
-     * og en regel som feller den ville gjort fanens eget poeng ulovlig.
-     * `className` finnes bare i JSX, altså der byggefunksjonen skal kalles.
+     * The TypeScript tab shows two scenarios, and the second is markup a
+     * server or a template has sent. There `class="lt-button"` is exactly
+     * right, and a rule that failed it would have made the tab's own point
+     * illegal. `className` exists only in JSX, that is where the builder
+     * function should be called.
      */
-    if (MED_BYGGESTEG.has(fane.navn)) {
-      // Astro skriver `class`, React `className`. TypeScript-fanen viser
-      // med vilje serverskrevet markup, og der er `class` riktig.
-      const attributt =
-        fane.navn === "Astro"
-          ? /class="(lt-[^"]*)"/g
-          : /className="(lt-[^"]*)"/g
-      for (const m of fane.kode.matchAll(attributt))
+    if (WITH_BUILD_STEP.has(tab.name)) {
+      // Astro writes `class`, React `className`. The TypeScript tab shows
+      // server-written markup on purpose, and there `class` is right.
+      const attribute =
+        tab.name === "Astro" ? /class="(lt-[^"]*)"/g : /className="(lt-[^"]*)"/g
+      for (const m of tab.code.matchAll(attribute))
         for (const k of m[1].split(/\s+/))
-          if (FRA_BYGGER.has(k))
-            si(
-              side,
-              `${hvor} skriver class="${k}" for hånd, men lt.${FRA_BYGGER.get(k)} finnes. Der det er et byggesteg, bruk den.`,
+          if (FROM_BUILDER.has(k))
+            report(
+              page,
+              `${where} writes class="${k}" by hand, but lt.${FROM_BUILDER.get(k)} exists. Where there is a build step, use it.`,
             )
     }
 
     /*
-     * Stilarkene må dekke klassene fanen bruker, uansett hvordan de oppgis.
+     * The stylesheets must cover the classes the tab uses, however they are
+     * given.
      *
-     * Dette er den samme feilen tre runder på rad, og hver gang fordi regelen
-     * var bundet til én måte å oppgi stilarkene på. Først så den bare
-     * `importer` på `<Example>`, og da gikk de ni oppførselssidene fri. Så
-     * fikk de håndskrevne `<link>`-blokker, og regelen så ikke dem heller: to
-     * av dem manglet `button.css` mens markupen brukte `.lt-button`.
+     * This is the same bug three rounds in a row, and each time because the
+     * rule was bound to one way of giving the stylesheets. First it saw only
+     * `imports` on `<Example>`, and then the nine behaviour pages went free.
+     * Then they got hand-written `<link>` blocks, and the rule did not see
+     * those either: two of them lacked `button.css` while the markup used
+     * `.lt-button`.
      *
-     * Derfor er regelen nå én, og den spør om det som betyr noe: hvilke ark
-     * har leseren fått vite om, og hvilke krever klassene i denne fanen.
-     * Arkene kan komme fra `importer`, fra en `<link>` eller fra en
-     * `import "@lo-tek/interfaces/x.css"`. Hvor de står er likegyldig.
+     * So the rule is now one, and it asks about what matters: which sheets has
+     * the reader been told about, and which do the classes in this tab
+     * require. The sheets can come from `imports`, from a `<link>` or from an
+     * `import "@lo-tek/interfaces/x.css"`. Where they stand does not matter.
      */
-    const oppgitt = new Set<string>()
-    const fraImporter = fane.kode.match(/imports=\{\[([^\]]*)\]\}/)
-    if (fraImporter)
-      for (const m of fraImporter[1].matchAll(/"([^"]+)"/g)) oppgitt.add(m[1])
-    for (const m of fane.kode.matchAll(/href="[^"]*\/([a-z-]+\.css)"/g))
-      oppgitt.add(m[1])
-    for (const m of fane.kode.matchAll(/@lo-tek\/interfaces\/([a-z-]+\.css)/g))
-      oppgitt.add(m[1])
+    const given = new Set<string>()
+    const fromImports = tab.code.match(/imports=\{\[([^\]]*)\]\}/)
+    if (fromImports)
+      for (const m of fromImports[1].matchAll(/"([^"]+)"/g)) given.add(m[1])
+    for (const m of tab.code.matchAll(/href="[^"]*\/([a-z-]+\.css)"/g))
+      given.add(m[1])
+    for (const m of tab.code.matchAll(/@lo-tek\/interfaces\/([a-z-]+\.css)/g))
+      given.add(m[1])
 
-    const brukteKlasser = new Set<string>()
-    for (const m of fane.kode.matchAll(/class(?:Name)?="([^"]*)"/g))
+    const usedClasses = new Set<string>()
+    for (const m of tab.code.matchAll(/class(?:Name)?="([^"]*)"/g))
       for (const k of m[1].split(/\s+/))
-        if (k.startsWith("lt-")) brukteKlasser.add(k)
+        if (k.startsWith("lt-")) usedClasses.add(k)
     /*
-     * Byggefunksjonen teller, også når den går gjennom en variabel.
+     * The builder function counts, also when it goes through a variable.
      *
-     * Regelen leste `class="…"` og `{...lt.x(` bokstavelig. Den dominerende
-     * formen i React- og Astro-faner er `const boks = lt.dialog(...)` og så
-     * `{...boks.dialog}`, og den ga null klasser. Da kunne `dialog.css`
-     * fjernes fra dialogens React-fane uten at noe sa fra, som er den samme
-     * blindheten fire runder på rad.
+     * The rule read `class="…"` and `{...lt.x(` literally. The dominant form in
+     * React and Astro tabs is `const box = lt.dialog(...)` and then
+     * `{...box.dialog}`, and that gave zero classes. Then `dialog.css` could be
+     * removed from the dialog's React tab without anything saying so, which is
+     * the same blindness four rounds in a row.
      */
-    for (const m of fane.kode.matchAll(/\{\.\.\.lt\.([a-zA-Z]+)[.(]/g)) {
-      const klasse = FRA_BYGGER_OMVENDT.get(m[1])
-      if (klasse) brukteKlasser.add(klasse)
+    for (const m of tab.code.matchAll(/\{\.\.\.lt\.([a-zA-Z]+)[.(]/g)) {
+      const className = FROM_BUILDER_REVERSED.get(m[1])
+      if (className) usedClasses.add(className)
     }
-    const variabler = new Map<string, string>()
-    for (const m of fane.kode.matchAll(
+    const variables = new Map<string, string>()
+    for (const m of tab.code.matchAll(
       /(?:const|let)\s+(?:\{[^}]*\}|(\w+))\s*=\s*lt\.([a-zA-Z]+)\(/g,
     ))
-      if (m[1]) variabler.set(m[1], m[2])
-    for (const m of fane.kode.matchAll(/\{\.\.\.(\w+)[.}\s]/g)) {
-      const bygger = variabler.get(m[1])
-      const klasse = bygger && FRA_BYGGER_OMVENDT.get(bygger)
-      if (klasse) brukteKlasser.add(klasse)
+      if (m[1]) variables.set(m[1], m[2])
+    for (const m of tab.code.matchAll(/\{\.\.\.(\w+)[.}\s]/g)) {
+      const builder = variables.get(m[1])
+      const className = builder && FROM_BUILDER_REVERSED.get(builder)
+      if (className) usedClasses.add(className)
     }
 
-    // «resten» er prosa rundt oppskriften, ikke en oppskrift i seg selv, og
-    // skal ikke måtte gjenta stilarkene seksjonen over alt har oppgitt.
+    // "rest" is prose around the recipe, not a recipe in itself, and should
+    // not have to repeat the stylesheets the section above has already given.
     /*
-     * `oppgitt.size > 0` sto her, og var det samme stille passet en gang til:
-     * en fane som ikke oppga stilark i det hele tatt gikk fri, mens en som
-     * oppga for få ble felt. Tabs-fanene for React og Astro sto slik.
+     * `given.size > 0` stood here, and was the same silent pass once more: a
+     * tab that gave no stylesheets at all went free, while one that gave too
+     * few was failed. The tabs page tabs for React and Astro were like that.
      */
     /*
-     * Bare oppskriften.
+     * Only the recipe.
      *
-     * Senere eksempler på siden er illustrasjoner, ikke hele oppskrifter, og
-     * skal ikke gjenta importene seksjonen øverst alt har gitt. Der er det
-     * `stiler` på `<Example>` som styrer hva forhåndsvisningen laster.
+     * Later examples on the page are illustrations, not whole recipes, and
+     * should not repeat the imports the section at the top has already given.
+     * There it is `styles` on `<Example>` that controls what the preview
+     * loads.
      */
     /*
-     * Og at arkene oppskriften reklamerer med, finnes.
+     * And that the sheets the recipe advertises exist.
      *
-     * Bare retningen «kreves, altså oppgitt» ble sjekket, aldri «oppgitt,
-     * altså finnes». `imports={["knapp.css"]}` ga en 404-lenke og en
-     * byggefeil hos leseren, uten et ord. `exports` har svaret.
+     * Only the direction "required, so given" was checked, never "given, so
+     * exists". `imports={["buton.css"]}` gave a 404 link and a build error at
+     * the reader, without a word. `exports` has the answer.
      */
-    for (const ark of oppgitt)
-      if (!inngangspunkter.has(ark))
-        si(side, `${hvor} oppgir ${ark}, som ikke finnes i exports`)
+    for (const sheet of given)
+      if (!entryPoints.has(sheet))
+        report(page, `${where} gives ${sheet}, which does not exist in exports`)
 
-    const brukteElementer = new Set(
-      [...bareKode(fane.kode).matchAll(/<(lt-[a-z0-9-]+)[\s/>]/g)].map(
+    const usedElements = new Set(
+      [...codeOnly(tab.code).matchAll(/<(lt-[a-z0-9-]+)[\s/>]/g)].map(
         (m) => m[1],
       ),
     )
 
-    if (
-      fane.iOppskrift &&
-      (brukteKlasser.size > 0 || brukteElementer.size > 0)
-    ) {
-      const har = lukning([...oppgitt])
-      for (const el of brukteElementer) {
-        const ark = FRA_ELEMENT.get(el)
-        if (ark && !har.has(ark))
-          si(side, `${hvor} viser <${el}>, men ${ark} er ikke oppgitt`)
+    if (tab.inRecipe && (usedClasses.size > 0 || usedElements.size > 0)) {
+      const has = closure([...given])
+      for (const el of usedElements) {
+        const sheet = FROM_ELEMENT.get(el)
+        if (sheet && !has.has(sheet))
+          report(page, `${where} shows <${el}>, but ${sheet} is not given`)
       }
-      const savnet = new Set<string>()
-      for (const k of brukteKlasser) {
-        const ark = FRA_STILARK.get(k)
-        if (ark && !har.has(ark)) savnet.add(ark)
+      const missing = new Set<string>()
+      for (const k of usedClasses) {
+        const sheet = FROM_STYLESHEET.get(k)
+        if (sheet && !has.has(sheet)) missing.add(sheet)
       }
-      for (const ark of savnet)
-        si(side, `${hvor} bruker en klasse fra ${ark}, som ikke er oppgitt`)
+      for (const sheet of missing)
+        report(page, `${where} uses a class from ${sheet}, which is not given`)
 
       /*
-       * Og `tokens.css`, som ingen klasse kan kreve.
+       * And `tokens.css`, which no class can require.
        *
-       * Den definerer ingen `lt-`-klasser, bare variablene alt annet leser.
-       * En klassedrevet regel kan derfor strukturelt aldri be om den, og uten
-       * den står hver `var(--lt-spacing-…)` uoppløst: padding, skriftstørrelse og
-       * vekt faller bort.
+       * It defines no `lt-` classes, only the variables everything else reads.
+       * A class-driven rule can therefore structurally never ask for it, and
+       * without it every `var(--lt-spacing-…)` is left unresolved: padding,
+       * font size and weight fall away.
        */
-      if (!har.has("tokens.css"))
-        si(side, `${hvor} oppgir ikke tokens.css, som alt annet leser`)
+      if (!has.has("tokens.css"))
+        report(
+          page,
+          `${where} does not give tokens.css, which everything else reads`,
+        )
     }
 
     /*
-     * En oppskrift som viser et `<lt-…>` må registrere det.
+     * A recipe that shows an `<lt-…>` must register it.
      *
-     * Fem Datastar-faner viste markupen og ingenting mer. Elementet er da en
-     * tom vert: ingen tastatur, ingen fokus, ingen hendelser. Registreringen
-     * sto i en egen blokk lenger nede på siden, og den kjører ikke i en side
-     * uten byggesteg bare fordi den står i teksten.
+     * Five Datastar tabs showed the markup and nothing more. The element is
+     * then an empty host: no keyboard, no focus, no events. The registration
+     * stood in a separate block further down the page, and it does not run in
+     * a page without a build step just because it is in the text.
      *
-     * «Try it» er unntatt: der er det Astro som har registrert den, og
-     * «resten» fordi prosa ikke er en oppskrift.
+     * "Try it" is exempt: there Astro has registered it, and "rest" because
+     * prose is not a recipe.
      */
-    if (fane.navn !== "Try it" && fane.navn !== "resten") {
-      const kode = bareKode(fane.kode)
-      const verter = new Set(
-        [...kode.matchAll(/<(lt-[a-z-]+)[\s>]/g)].map((m) => m[1]),
+    if (tab.name !== "Try it" && tab.name !== "rest") {
+      const code = codeOnly(tab.code)
+      const hosts = new Set(
+        [...code.matchAll(/<(lt-[a-z-]+)[\s>]/g)].map((m) => m[1]),
       )
       /*
-       * `defineLt()` fra `/register` registrerer alle, og dekker da hvert
-       * element i fanen. Uttrykket krever parentesen: `defineLtField(`
-       * treffer ikke, og en import uten kall treffer heller ikke.
+       * `defineLt()` from `/register` registers all of them, and then covers
+       * every element in the tab. The expression requires the parenthesis:
+       * `defineLtField(` does not match, and an import without a call does
+       * not match either.
        */
-      const samlet = /\bdefineLt\s*\(/.test(kode)
-      for (const tagg of samlet ? [] : verter) {
-        const funksjon = `defineLt${tagg
+      const all = /\bdefineLt\s*\(/.test(code)
+      for (const tag of all ? [] : hosts) {
+        const fn = `defineLt${tag
           .slice(3)
           .replace(/(^|-)([a-z])/g, (_, __, c) => c.toUpperCase())}`
-        // Kallet, ikke importen: `includes` traff `import { defineLtX }`,
-        // så en oppskrift som importerte og glemte kallet gikk grønt.
-        if (!new RegExp(`\\b${funksjon}\\s*\\(`).test(kode))
-          si(side, `${hvor} viser <${tagg}> uten å kalle ${funksjon}()`)
+        // The call, not the import: `includes` matched `import { defineLtX }`,
+        // so a recipe that imported and forgot the call went green.
+        if (!new RegExp(`\\b${fn}\\s*\\(`).test(code))
+          report(page, `${where} shows <${tag}> without calling ${fn}()`)
       }
     }
 
     /*
-     * Bruker fanen `lt.`, må den importere det.
+     * If the tab uses `lt.`, it must import it.
      *
-     * Astro-fanen på feltsiden kalte `lt.input()` og `lt.errorText()` mens
-     * frontmatteren bare importerte stilark. Limt inn er `lt` udefinert, og
-     * siden feiler ved bygging. Feilen kom av at håndskrevne klasser ble
-     * byttet mot byggefunksjoner uten at importen fulgte med.
+     * The Astro tab on the field page called `lt.input()` and `lt.errorText()`
+     * while the frontmatter imported only stylesheets. Pasted in, `lt` is
+     * undefined, and the page fails at build time. The bug came from
+     * hand-written classes being swapped for builder functions without the
+     * import following along.
      */
-    if (fane.navn !== "resten" && !/<Example\b/.test(fane.kode)) {
-      let importert = false
-      for (const gjerde of gjerder(fane.kode)) {
-        if (
-          /import \{[^}]*\blt\b[^}]*\} from "@lo-tek\/interfaces/.test(gjerde)
-        )
-          importert = true
-        if (!importert && /\blt\.[a-zA-Z]/.test(gjerde)) {
-          si(side, `${hvor} bruker lt. uten å importere lt`)
+    if (tab.name !== "rest" && !/<Example\b/.test(tab.code)) {
+      let imported = false
+      for (const fence of fences(tab.code)) {
+        if (/import \{[^}]*\blt\b[^}]*\} from "@lo-tek\/interfaces/.test(fence))
+          imported = true
+        if (!imported && /\blt\.[a-zA-Z]/.test(fence)) {
+          report(page, `${where} uses lt. without importing lt`)
           break
         }
       }
     }
 
-    // Hele CDN-adressen: versjonen og stien, ikke bare filnavnet.
-    for (const m of fane.kode.matchAll(
+    // The whole CDN address: the version and the path, not just the file name.
+    for (const m of tab.code.matchAll(
       /cdn\.jsdelivr\.net\/npm\/@lo-tek\/interfaces@([^/]+)\/([^"'\s]+)/g,
     )) {
       /*
-       * Versjonen skal stå som plassholderen `VERSION`, som
-       * `remark-version.mjs` bytter med den fra `package.json` når siden
-       * bygges. Sto tallet her i kilden, måtte alle 74 adressene endres ved
-       * hver utgivelse, og en som ble glemt pekte på en eldre pakke enn teksten
-       * rundt den beskrev.
+       * The version must stand as the placeholder `VERSION`, which
+       * `remark-version.mjs` replaces with the one from `package.json` when
+       * the page is built. If the number stood here in the source, all 74
+       * addresses had to change at every release, and one that was forgotten
+       * pointed at an older package than the text around it described.
        */
       if (m[1] !== "VERSION")
-        si(
-          side,
-          `${hvor} peker på @lo-tek/interfaces@${m[1]}. Skriv @lo-tek/interfaces@VERSION, som remark-version.mjs bytter ut.`,
+        report(
+          page,
+          `${where} points at @lo-tek/interfaces@${m[1]}. Write @lo-tek/interfaces@VERSION, which remark-version.mjs replaces.`,
         )
-      if (!FILER.has(m[2]))
-        si(side, `${hvor} peker på ${m[2]}, som pakken ikke sender ut`)
+      if (!FILES.has(m[2]))
+        report(
+          page,
+          `${where} points at ${m[2]}, which the package does not ship`,
+        )
     }
 
-    const pakkenavnIImport = /from\s+\n?\s*"@lo-tek\/interfaces/.test(fane.kode)
-    const urlIImport = /from\s+\n?\s*"https:\/\/cdn\./.test(fane.kode)
+    const packageNameInImport = /from\s+\n?\s*"@lo-tek\/interfaces/.test(
+      tab.code,
+    )
+    const urlInImport = /from\s+\n?\s*"https:\/\/cdn\./.test(tab.code)
     if (
-      !MED_BYGGESTEG.has(fane.navn) &&
-      fane.navn !== "resten" &&
-      fane.navn !== "Try it"
+      !WITH_BUILD_STEP.has(tab.name) &&
+      tab.name !== "rest" &&
+      tab.name !== "Try it"
     ) {
-      if (pakkenavnIImport && !urlIImport)
-        si(
-          side,
-          `${hvor} importerer et pakkenavn i et miljø uten byggesteg. En nettleser kan ikke slå det opp, så koden virker ikke limt inn. Bruk hele URL-en.`,
+      if (packageNameInImport && !urlInImport)
+        report(
+          page,
+          `${where} imports a package name in an environment without a build step. A browser cannot resolve it, so the code does not work pasted in. Use the full URL.`,
         )
     }
   }
 }
 
-if (funn.length > 0) {
+if (findings.length > 0) {
   console.error(
-    `Fant ${funn.length} avvik i oppskriftene:\n${funn.map((f) => `  - ${f}`).join("\n")}`,
+    `Found ${findings.length} problems in the recipes:\n${findings.map((f) => `  - ${f}`).join("\n")}`,
   )
   process.exit(1)
 }
-console.log("Oppskriftene peker på noe som finnes.")
+console.log("The recipes point at things that exist.")

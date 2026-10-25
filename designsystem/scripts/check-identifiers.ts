@@ -1,56 +1,57 @@
 /**
- * At identifikatorene i koden som sendes ut er engelske.
+ * That the identifiers in the code that ships are English.
  *
- * Regelen står i CONTRIBUTING.md: funksjoner, variabler, typer og konstanter
- * navngis på engelsk, også lokale variabler, og aldri blandet i ett navn.
- * Kommentarene er på norsk. Regelen sto lenge uten vaktpost, og en
- * gjennomgang fant ni norske navn i tre komponenter som ingen hadde sett,
- * blant dem `gått`, `forrigeFokus` og `bundne`. Reviewrunder fanger slikt
- * først når noen leser akkurat den fila.
+ * The rule is in CONTRIBUTING.md: functions, variables, types and constants
+ * are named in English, local variables too, and never mixed in one name.
+ * The rule long stood without a guard, and a review found nine Norwegian
+ * names in three components that nobody had seen, among them `gått`,
+ * `forrigeFokus` and `bundne`. Review rounds catch such things only when
+ * someone reads that exact file.
  *
- * Sjekken leser tekst. Den fjerner kommentarer, strenger og regulære
- * uttrykk, deler hver identifikator i ord etter store bokstaver og
- * understrek, og feller på to ting: æ, ø eller å i navnet, og et ord fra
- * lista under. Bare æ, ø og å ville ikke funnet ett eneste av de ni; lista er
- * det som fanger dem. Ordene er valgt fordi de ikke er engelske ord: `rot`,
- * `rad`, `side`, `tom`, `tall`, `del`, `sett`, `vis` og `meld` står ikke der,
- * siden de er begge deler. Finner du et norsk ord lista ikke kjenner, legg
- * det til i samme endring.
+ * The check reads text. It removes comments, strings and regular
+ * expressions, splits each identifier into words at capital letters and
+ * underscores, and fails on two things: æ, ø or å in the name, and a word
+ * from the list below. æ, ø and å alone would not have found a single one of
+ * the nine; the list is what catches them. The words are chosen because they
+ * are not English words: `rot`, `rad`, `side`, `tom`, `tall`, `del`, `sett`,
+ * `vis` and `meld` are not in it, since they are both. If you find a
+ * Norwegian word the list does not know, add it in the same change.
  *
- * Testfiler og `src/testing/` er unntatt, som regelen sier, og `src/types/`
- * er deklarasjoner uten egne navn. Skriptene i `scripts/` sendes ikke ut og
- * leses ikke.
+ * Test files and `src/testing/` are exempt, as the rule says, and
+ * `src/types/` is declarations without names of their own. The scripts in
+ * `scripts/` do not ship and are not read.
  */
 import { readdirSync, readFileSync } from "node:fs"
 import { join, relative } from "node:path"
 
 const REPO = new URL("../..", import.meta.url).pathname
 
-const KILDER = [
+const SOURCES = [
   {
-    rot: new URL("../src", import.meta.url).pathname,
-    unntatt: ["testing", "types"],
+    root: new URL("../src", import.meta.url).pathname,
+    exempt: ["testing", "types"],
   },
-  { rot: new URL("../../editor/src", import.meta.url).pathname, unntatt: [] },
-  { rot: new URL("../../core/src", import.meta.url).pathname, unntatt: [] },
+  { root: new URL("../../editor/src", import.meta.url).pathname, exempt: [] },
+  { root: new URL("../../core/src", import.meta.url).pathname, exempt: [] },
   {
-    rot: new URL("../../kotlin/src/main", import.meta.url).pathname,
-    unntatt: [],
+    root: new URL("../../kotlin/src/main", import.meta.url).pathname,
+    exempt: [],
   },
 ]
 
 /**
- * Filer som er norske tvers igjennom, og som ryddes i hver sin pull request.
+ * Files that are Norwegian throughout, each cleaned up in its own pull
+ * request.
  *
- * De er ikke unntatt: sjekken leser dem, og tallet er antall funn i dag.
- * Flere funn enn tallet feller, så et nytt norsk navn ikke forsvinner i
- * mengden, og færre funn feller også, til tallet er skrevet ned i samme
- * endring. Den dagen en fil er ren, tas den ut. Lista kan altså bare
- * krympe, og et vilkår som slår av sjekken finnes ikke.
+ * They are not exempt: the check reads them, and the number is the count of
+ * findings today. More findings than the number fail, so a new Norwegian name
+ * does not vanish in the crowd, and fewer findings fail too, until the number
+ * is written down in the same change. The day a file is clean, it is taken
+ * out. The list can only shrink, and there is no condition that switches the
+ * check off.
  */
-const KJENT_GJELD = new Map<string, number>([])
-
-const NORSKE_ORD = new Set([
+const KNOWN_DEBT = new Map<string, number>([])
+const NORWEGIAN_WORDS = new Set([
   "aktiv",
   "aktive",
   "alle",
@@ -153,259 +154,265 @@ const NORSKE_ORD = new Set([
   "vises",
 ])
 
-function kildefiler(rot: string, unntatt: string[]): string[] {
-  const filer: string[] = []
-  const les = (mappe: string) => {
-    for (const oppføring of readdirSync(mappe, { withFileTypes: true })) {
-      const sti = join(mappe, oppføring.name)
-      const relativt = relative(rot, sti)
-      if (unntatt.some((u) => relativt === u || relativt.startsWith(`${u}/`)))
-        continue
-      if (oppføring.isDirectory()) {
-        les(sti)
+function sourceFiles(root: string, exempt: string[]): string[] {
+  const files: string[] = []
+  const read = (folder: string) => {
+    for (const entry of readdirSync(folder, { withFileTypes: true })) {
+      const path = join(folder, entry.name)
+      const rel = relative(root, path)
+      if (exempt.some((e) => rel === e || rel.startsWith(`${e}/`))) continue
+      if (entry.isDirectory()) {
+        read(path)
         continue
       }
-      if (!/\.(ts|rs|kt)$/.test(oppføring.name)) continue
-      if (oppføring.name.endsWith(".d.ts")) continue
-      if (oppføring.name.includes(".test.")) continue
-      filer.push(sti)
+      if (!/\.(ts|rs|kt)$/.test(entry.name)) continue
+      if (entry.name.endsWith(".d.ts")) continue
+      if (entry.name.includes(".test.")) continue
+      files.push(path)
     }
   }
-  les(rot)
-  return filer
+  read(root)
+  return files
 }
 
 /**
- * Levetider (`'static`) og tegn (`'a'`, `b'x'`) i Rust, byttet med mellomrom.
+ * Lifetimes (`'static`) and characters (`'a'`, `b'x'`) in Rust, replaced with
+ * spaces.
  *
- * Skanneren under er skrevet for TypeScript, der `'` åpner en streng. I Rust
- * står den alene foran en levetid, og resten av linja ville blitt lest som
- * en streng som aldri lukkes. Kotlin har tegn i `'…'` som TypeScript har
- * strenger, så det trengs ikke der.
+ * The scanner below is written for TypeScript, where `'` opens a string. In
+ * Rust it stands alone before a lifetime, and the rest of the line would be
+ * read as a string that never closes. Kotlin has characters in `'…'` where
+ * TypeScript has strings, so it is not needed there.
  */
-function utenRustTegn(fil: string, innhold: string): string {
-  if (!fil.endsWith(".rs")) return innhold
-  // Også råstrenger, `r#"…"#`: anførselstegnene inni dem parer skanneren
-  // under feil, og ordene i en JSON-tekst i en test ble lest som
-  // identifikatorer.
-  const blank = (treff: string) => treff.replace(/[^\n]/g, " ")
-  return innhold
+function withoutRustChars(file: string, content: string): string {
+  if (!file.endsWith(".rs")) return content
+  // Raw strings too, `r#"…"#`: the scanner below pairs the quotes inside
+  // them wrongly, and the words in a JSON text in a test were read as
+  // identifiers.
+  const blank = (match: string) => match.replace(/[^\n]/g, " ")
+  return content
     .replace(/\br(#+)"[\s\S]*?"\1/g, blank)
     .replace(/\br"[^"\n]*"/g, blank)
-    .replace(/b?'(\\.|[^'\\\n])'/g, (treff) => " ".repeat(treff.length))
-    .replace(/'[a-z_]+\b(?!')/g, (treff) => " ".repeat(treff.length))
+    .replace(/b?'(\\.|[^'\\\n])'/g, (match) => " ".repeat(match.length))
+    .replace(/'[a-z_]+\b(?!')/g, (match) => " ".repeat(match.length))
 }
 
 /**
- * Koden uten strenger, malstrenger, regulære uttrykk og kommentarer.
+ * The code without strings, template strings, regular expressions and
+ * comments.
  *
- * En skanner og ikke regulære uttrykk: en malstreng kan ha en malstreng
- * inni `${…}`, og da parer et regulært uttrykk anførselstegnene feil for
- * resten av fila. Første utgave meldte 13 «identifikatorer» i
- * `diagnostics.ts` som alle var ord i meldinger til brukeren. Tegnene byttes
- * ut med mellomrom framfor å fjernes, så linjenumrene står.
+ * A scanner and not regular expressions: a template string can have a
+ * template string inside `${…}`, and then a regular expression pairs the
+ * quotes wrongly for the rest of the file. The first version reported 13
+ * "identifiers" in `diagnostics.ts` that were all words in messages to the
+ * user. The characters are replaced with spaces rather than removed, so the
+ * line numbers stay.
  *
- * Et regulært uttrykk kjennes igjen på det som står foran skråstreken: etter
- * en verdi er `/` divisjon, etter `(`, `,`, `=`, `:`, `[`, `!`, `&`, `|`,
- * `?`, `{`, `}`, `;`, `>`, `return`, `typeof` eller `case` er det et uttrykk.
+ * A regular expression is recognised by what stands before the slash: after
+ * a value, `/` is division; after `(`, `,`, `=`, `:`, `[`, `!`, `&`, `|`,
+ * `?`, `{`, `}`, `;`, `>`, `return`, `typeof` or `case` it is an expression.
  */
-function bareKode(innhold: string): string {
-  const ut: string[] = []
-  const blank = (tegn: string) => (tegn === "\n" ? "\n" : " ")
+function codeOnly(content: string): string {
+  const out: string[] = []
+  const blank = (char: string) => (char === "\n" ? "\n" : " ")
   let i = 0
-  // Hvor dypt vi står i `${…}` inne i malstrenger. Hvert nivå husker hvor
-  // mange krøllparenteser som er åpne, så `}` som lukker et objekt ikke tas
-  // for slutten på uttrykket.
-  const uttrykk: number[] = []
-  let sisteKode = ""
+  // How deep we are in `${…}` inside template strings. Each level remembers
+  // how many braces are open, so a `}` that closes an object is not taken for
+  // the end of the expression.
+  const expressions: number[] = []
+  let lastCode = ""
 
-  const les = () => innhold[i]
-  const hopp = (tekst: string) => {
-    for (const tegn of tekst) {
-      ut.push(blank(tegn))
+  const peek = () => content[i]
+  const skip = (text: string) => {
+    for (const char of text) {
+      out.push(blank(char))
       i += 1
     }
   }
 
-  function malstreng(): void {
-    hopp("`")
-    while (i < innhold.length) {
-      const tegn = les()
-      if (tegn === "\\") {
-        hopp(innhold.slice(i, i + 2))
-      } else if (tegn === "`") {
-        hopp("`")
-        // En streng er en verdi: `/` rett etter den er divisjon.
-        sisteKode = "v"
+  function templateString(): void {
+    skip("`")
+    while (i < content.length) {
+      const char = peek()
+      if (char === "\\") {
+        skip(content.slice(i, i + 2))
+      } else if (char === "`") {
+        skip("`")
+        // A string is a value: a `/` right after it is division.
+        lastCode = "v"
         return
-      } else if (tegn === "$" && innhold[i + 1] === "{") {
-        hopp("${")
-        uttrykk.push(0)
-        kode()
+      } else if (char === "$" && content[i + 1] === "{") {
+        skip("${")
+        expressions.push(0)
+        code()
       } else {
-        hopp(tegn)
+        skip(char)
       }
     }
   }
 
-  function streng(avslutter: string): void {
-    hopp(avslutter)
-    while (i < innhold.length) {
-      const tegn = les()
-      if (tegn === "\\") hopp(innhold.slice(i, i + 2))
-      else if (tegn === avslutter || tegn === "\n") {
-        hopp(tegn)
-        sisteKode = "v"
+  function string(terminator: string): void {
+    skip(terminator)
+    while (i < content.length) {
+      const char = peek()
+      if (char === "\\") skip(content.slice(i, i + 2))
+      else if (char === terminator || char === "\n") {
+        skip(char)
+        lastCode = "v"
         return
-      } else hopp(tegn)
+      } else skip(char)
     }
   }
 
-  function regulaertUttrykk(): void {
-    hopp("/")
-    let iKlasse = false
-    while (i < innhold.length) {
-      const tegn = les()
-      if (tegn === "\\") hopp(innhold.slice(i, i + 2))
-      else if (tegn === "\n") return
-      else if (iKlasse) {
-        if (tegn === "]") iKlasse = false
-        hopp(tegn)
-      } else if (tegn === "[") {
-        iKlasse = true
-        hopp(tegn)
-      } else if (tegn === "/") {
-        hopp(tegn)
-        while (/[a-z]/.test(innhold[i] ?? "")) hopp(innhold[i])
-        sisteKode = "v"
+  function regularExpression(): void {
+    skip("/")
+    let inClass = false
+    while (i < content.length) {
+      const char = peek()
+      if (char === "\\") skip(content.slice(i, i + 2))
+      else if (char === "\n") return
+      else if (inClass) {
+        if (char === "]") inClass = false
+        skip(char)
+      } else if (char === "[") {
+        inClass = true
+        skip(char)
+      } else if (char === "/") {
+        skip(char)
+        while (/[a-z]/.test(content[i] ?? "")) skip(content[i])
+        lastCode = "v"
         return
-      } else hopp(tegn)
+      } else skip(char)
     }
   }
 
-  function erUttrykkStart(): boolean {
-    if (sisteKode === "") return true
-    // `>` er med for `=>`: en pilfunksjon som returnerer et regulært uttrykk.
-    // Uten den ble `(s) => /\`/.test(s)` lest som divisjon, backticken åpnet
-    // en malstreng, og resten av fila ble usynlig for sjekken.
-    if (/[(,=:[!&|?{};>]/.test(sisteKode)) return true
-    const bak = ut.join("").slice(-12)
-    return /\breturn\s*$|\btypeof\s*$|\bcase\s*$/.test(bak)
+  function isExpressionStart(): boolean {
+    if (lastCode === "") return true
+    // `>` is included for `=>`: an arrow function returning a regular
+    // expression. Without it, `(s) => /\`/.test(s)` was read as division, the
+    // backtick opened a template string, and the rest of the file became
+    // invisible to the check.
+    if (/[(,=:[!&|?{};>]/.test(lastCode)) return true
+    const behind = out.join("").slice(-12)
+    return /\breturn\s*$|\btypeof\s*$|\bcase\s*$/.test(behind)
   }
 
-  function kode(): void {
-    while (i < innhold.length) {
-      const tegn = les()
-      const neste = innhold[i + 1]
-      if (tegn === "/" && neste === "/") {
-        while (i < innhold.length && les() !== "\n") hopp(les())
-      } else if (tegn === "/" && neste === "*") {
-        const slutt = innhold.indexOf("*/", i + 2)
-        hopp(innhold.slice(i, slutt === -1 ? innhold.length : slutt + 2))
-      } else if (tegn === '"' || tegn === "'") {
-        streng(tegn)
-      } else if (tegn === "`") {
-        malstreng()
-      } else if (tegn === "/" && erUttrykkStart()) {
-        regulaertUttrykk()
-      } else if (uttrykk.length > 0 && tegn === "{") {
-        uttrykk[uttrykk.length - 1] += 1
-        ut.push(tegn)
-        sisteKode = tegn
+  function code(): void {
+    while (i < content.length) {
+      const char = peek()
+      const next = content[i + 1]
+      if (char === "/" && next === "/") {
+        while (i < content.length && peek() !== "\n") skip(peek())
+      } else if (char === "/" && next === "*") {
+        const end = content.indexOf("*/", i + 2)
+        skip(content.slice(i, end === -1 ? content.length : end + 2))
+      } else if (char === '"' || char === "'") {
+        string(char)
+      } else if (char === "`") {
+        templateString()
+      } else if (char === "/" && isExpressionStart()) {
+        regularExpression()
+      } else if (expressions.length > 0 && char === "{") {
+        expressions[expressions.length - 1] += 1
+        out.push(char)
+        lastCode = char
         i += 1
-      } else if (uttrykk.length > 0 && tegn === "}") {
-        if (uttrykk[uttrykk.length - 1] === 0) {
-          uttrykk.pop()
-          hopp("}")
+      } else if (expressions.length > 0 && char === "}") {
+        if (expressions[expressions.length - 1] === 0) {
+          expressions.pop()
+          skip("}")
           return
         }
-        uttrykk[uttrykk.length - 1] -= 1
-        ut.push(tegn)
-        sisteKode = tegn
+        expressions[expressions.length - 1] -= 1
+        out.push(char)
+        lastCode = char
         i += 1
       } else {
-        ut.push(tegn)
-        if (!/\s/.test(tegn)) sisteKode = tegn
+        out.push(char)
+        if (!/\s/.test(char)) lastCode = char
         i += 1
       }
     }
   }
 
-  kode()
-  return ut.join("")
+  code()
+  return out.join("")
 }
 
-/** `forrigeFokus` blir `forrige` og `fokus`; `LT_FIELD_TAG` blir tre ord. */
-function ord(identifikator: string): string[] {
-  return identifikator
+/** `forrigeFokus` becomes `forrige` and `fokus`; `LT_FIELD_TAG` becomes three words. */
+function words(identifier: string): string[] {
+  return identifier
     .split(/_|(?<=[a-zæøå0-9])(?=[A-ZÆØÅ])|(?<=[A-ZÆØÅ])(?=[A-ZÆØÅ][a-zæøå])/)
-    .map((del) => del.toLowerCase())
+    .map((part) => part.toLowerCase())
     .filter(Boolean)
 }
 
-const IDENTIFIKATOR = /[A-Za-z_$æøåÆØÅ][\w$æøåÆØÅ]*/g
+const IDENTIFIER = /[A-Za-z_$æøåÆØÅ][\w$æøåÆØÅ]*/g
 
-const funn: string[] = []
-const gjeld = new Map<string, number>()
-let lest = 0
+const findings: string[] = []
+const debt = new Map<string, number>()
+let read = 0
 
-for (const { rot, unntatt } of KILDER) {
-  for (const fil of kildefiler(rot, unntatt)) {
-    lest += 1
-    const relativt = relative(REPO, fil)
-    const kode = bareKode(utenRustTegn(fil, readFileSync(fil, "utf8")))
-    kode.split("\n").forEach((linje, i) => {
-      for (const treff of linje.matchAll(IDENTIFIKATOR)) {
-        const navn = treff[0]
-        const norsk =
-          /[æøåÆØÅ]/.test(navn) || ord(navn).some((o) => NORSKE_ORD.has(o))
-        if (!norsk) continue
-        if (KJENT_GJELD.has(relativt)) {
-          gjeld.set(relativt, (gjeld.get(relativt) ?? 0) + 1)
+for (const { root, exempt } of SOURCES) {
+  for (const file of sourceFiles(root, exempt)) {
+    read += 1
+    const rel = relative(REPO, file)
+    const code = codeOnly(withoutRustChars(file, readFileSync(file, "utf8")))
+    code.split("\n").forEach((line, i) => {
+      for (const match of line.matchAll(IDENTIFIER)) {
+        const name = match[0]
+        const norwegian =
+          /[æøåÆØÅ]/.test(name) ||
+          words(name).some((w) => NORWEGIAN_WORDS.has(w))
+        if (!norwegian) continue
+        if (KNOWN_DEBT.has(rel)) {
+          debt.set(rel, (debt.get(rel) ?? 0) + 1)
         } else {
-          funn.push(`${relativt}:${i + 1}  ${navn}`)
+          findings.push(`${rel}:${i + 1}  ${name}`)
         }
       }
     })
   }
 }
 
-// Gjelden må stemme på tallet, begge veier.
-for (const [fil, tillatt] of KJENT_GJELD) {
-  const antall = gjeld.get(fil) ?? 0
-  if (antall === 0) {
-    funn.push(`${fil}  står i KJENT_GJELD, men er ren. Ta den ut av lista.`)
-  } else if (antall > tillatt) {
-    funn.push(
-      `${fil}  har ${antall} norske identifikatorer, men KJENT_GJELD tillater ${tillatt}. Nye norske navn er ikke lov, heller ikke der.`,
+// The debt has to match the number, both ways.
+for (const [file, allowed] of KNOWN_DEBT) {
+  const count = debt.get(file) ?? 0
+  if (count === 0) {
+    findings.push(
+      `${file}  is in KNOWN_DEBT, but is clean. Take it out of the list.`,
     )
-  } else if (antall < tillatt) {
-    funn.push(
-      `${fil}  har ${antall} norske identifikatorer, men KJENT_GJELD sier ${tillatt}. Skriv tallet ned til ${antall}.`,
+  } else if (count > allowed) {
+    findings.push(
+      `${file}  has ${count} Norwegian identifiers, but KNOWN_DEBT allows ${allowed}. New Norwegian names are not allowed, not there either.`,
+    )
+  } else if (count < allowed) {
+    findings.push(
+      `${file}  has ${count} Norwegian identifiers, but KNOWN_DEBT says ${allowed}. Write the number down to ${count}.`,
     )
   }
 }
 
-// Tell hva som faktisk ble lest. Null filer er en feil i sjekken, ikke en
-// ren kodebase.
-if (lest === 0) {
-  console.error("✗ check-identifiers leste ingen filer.")
+// Count what was actually read. Zero files is a fault in the check, not a
+// clean codebase.
+if (read === 0) {
+  console.error("✗ check-identifiers read no files.")
   process.exit(1)
 }
 
-if (funn.length > 0) {
-  const unike = [...new Set(funn)]
+if (findings.length > 0) {
+  const unique = [...new Set(findings)]
   console.error(
-    `\n✗ ${unike.length} norske identifikatorer i ${lest} leste filer. ` +
-      "Identifikatorer i koden som sendes ut skal være engelske; kommentarene er norske.\n",
+    `\n✗ ${unique.length} Norwegian identifiers in ${read} files read. ` +
+      "Identifiers in the code that ships must be English.\n",
   )
-  for (const f of unike) console.error(`  ${f}`)
+  for (const f of unique) console.error(`  ${f}`)
   process.exit(1)
 }
 
-const gjeldsliste = [...gjeld]
-  .map(([fil, antall]) => `${fil} (${antall})`)
+const debtList = [...debt]
+  .map(([file, count]) => `${file} (${count})`)
   .join(", ")
 console.log(
-  `Identifikatorene er engelske i ${lest} filer. ${gjeldsliste ? `Kjent gjeld: ${gjeldsliste}.` : "Ingen kjent gjeld."}`,
+  `The identifiers are English in ${read} files. ${debtList ? `Known debt: ${debtList}.` : "No known debt."}`,
 )

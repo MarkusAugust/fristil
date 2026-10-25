@@ -1,98 +1,101 @@
 /**
- * At hver side laster stilarkene markupen i vanlig DOM faktisk trenger.
+ * That every page loads the stylesheets its markup in plain DOM actually
+ * needs.
  *
- * `astro.config.mjs` listet en gang alle 42 komponentstilarkene i `customCss`,
- * og da var spørsmålet uinteressant: hver side hadde alt. Nå står `global.css`,
- * `tokens.css` og `button.css` der, fordi de levende eksemplene ligger i en
- * shadow root og `Preview.astro` legger inn sine egne stilark med `?inline`.
- * Det gjør to feil mulige. Skriver noen LO-TEK-markup rett i brødteksten,
- * eller i en komponent utenfor en forhåndsvisning, står den uten stil. Og
- * Vite slutter å skrive et stilark i det hele tatt når det mister importørene
- * sine: `button.css` forsvant ut av bygget da det ble tatt ut av `customCss`,
- * og `src/pages/demo/page-skeleton.astro`, som importerer det selv, kom ut med
- * uformede knapper. Ingen av delene sier fra. Siden ser bare litt feil ut.
+ * `astro.config.mjs` once listed all 42 component stylesheets in `customCss`,
+ * and then the question was uninteresting: every page had everything. Now
+ * `global.css`, `tokens.css` and `button.css` are there, because the live
+ * examples sit in a shadow root and `Preview.astro` adds its own stylesheets
+ * with `?inline`. That makes two bugs possible. If someone writes LO-TEK
+ * markup straight into the body text, or in a component outside a preview,
+ * it stands unstyled. And Vite stops writing a stylesheet at all once it
+ * loses its importers: `button.css` vanished from the build when it was
+ * taken out of `customCss`, and `src/pages/demo/page-skeleton.astro`, which
+ * imports it itself, came out with unstyled buttons. Neither tells you. The
+ * page just looks slightly wrong.
  *
- * Denne vaktposten leser hver bygde side, finner `lt-`-klassene og
- * `<lt-…>`-elementene som står i vanlig DOM, og krever at et av stilarkene
- * siden lenker til definerer dem.
+ * This guard reads every built page, finds the `lt-` classes and `<lt-…>`
+ * elements in plain DOM, and requires one of the stylesheets the page links
+ * to to define them.
  *
- * Fire ting holdes utenfor, og alle fire er markup som ser ekte ut uten å være
- * det: innholdet i `<template>` (shadow rootene, som har sin egen stil),
- * innholdet i `<pre>` og `<code>` (kode som vises fram, ikke kode som kjører),
- * `data-code`-attributtet (kildeteksten Expressive Code legger på kopiknappen)
- * og `<script>`-kropper.
+ * Four things are left out, and all four are markup that looks real without
+ * being it: the content of `<template>` (the shadow roots, which have their
+ * own styles), the content of `<pre>` and `<code>` (code on display, not code
+ * that runs), the `data-code` attribute (the source text Expressive Code puts
+ * on the copy button) and `<script>` bodies.
  *
- * Kjør med: bun documentation/scripts/check-stylesheets.ts
- * Krever at `documentation/dist` er bygd.
+ * Run with: bun documentation/scripts/check-stylesheets.ts
+ * Requires `documentation/dist` to be built.
  */
 
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { Glob } from "bun"
 
-const ROT = fileURLToPath(new URL("../..", import.meta.url))
-const DIST = `${ROT}documentation/dist/`
+const ROOT = fileURLToPath(new URL("../..", import.meta.url))
+const DIST = `${ROOT}documentation/dist/`
 
 /**
- * Klassene som står på et vertselement for en shadow root.
+ * The classes on a host element for a shadow root.
  *
- * `.lt-preview` er den eneste i dag. Den har ingen regel i noe stilark, og
- * skal ikke ha en: `Preview.astro` styler verten med `:host` inne i shadow
- * rooten sin. Regelen er formulert som det den er, framfor som et unntak på
- * navnet, slik at en ny forhåndsvisningskomponent dekkes av den samme
- * begrunnelsen og en vanlig klasse aldri slipper unna ved et uhell.
+ * `.lt-preview` is the only one today. It has no rule in any stylesheet, and
+ * should not have one: `Preview.astro` styles the host with `:host` inside
+ * its shadow root. The rule is stated as what it is, rather than as an
+ * exception on the name, so that a new preview component is covered by the
+ * same reasoning and an ordinary class never slips through by accident.
  *
- * Settet gjelder hele siden, ikke det enkelte elementet. Sto den samme klassen
- * både på en vert og på et vanlig element på samme side, ville det vanlige
- * sluppet unna. Det finnes ikke i dag, og er notert framfor kodet rundt, fordi
- * en presis variant måtte finne verten sin i en strengsøm og ville vært lettere
- * å ta feil av enn regelen den håndhever.
+ * The set applies to the whole page, not to the single element. If the same
+ * class stood both on a host and on an ordinary element on the same page,
+ * the ordinary one would slip through. That does not happen today, and is
+ * noted rather than coded around, because a precise version would have to
+ * find its host in a string search and would be easier to get wrong than the
+ * rule it enforces.
  */
-function skyggeverter(html: string): Set<string> {
-  const navn = new Set<string>()
-  for (const treff of html.matchAll(
+function shadowHosts(html: string): Set<string> {
+  const names = new Set<string>()
+  for (const match of html.matchAll(
     /<[a-z]+[^>]*\sclass="([^"]*)"[^>]*>\s*<template shadowrootmode=/g,
   )) {
-    for (const ord of treff[1].split(/\s+/)) {
-      if (ord.startsWith("lt-")) navn.add(ord)
+    for (const word of match[1].split(/\s+/)) {
+      if (word.startsWith("lt-")) names.add(word)
     }
   }
-  return navn
+  return names
 }
 
-/** Markupen nettleseren faktisk bygger i vanlig DOM. */
-function vanligDom(html: string): string {
-  let ute = ""
+/** The markup the browser actually builds in plain DOM. */
+function plainDom(html: string): string {
+  let out = ""
   let i = 0
 
-  // `<template>` er shadow rootene til forhåndsvisningene, og alt annet
-  // malinnhold. De har sin egen stil, lagt inn av Preview.astro.
+  // `<template>` is the shadow roots of the previews, and any other template
+  // content. They have their own styles, added by Preview.astro.
   while (true) {
     const start = html.slice(i).search(/<template[^>]*>/)
     if (start === -1) {
-      ute += html.slice(i)
+      out += html.slice(i)
       break
     }
-    const fra = i + start
-    const til = html.indexOf("</template>", fra)
-    if (til === -1) {
-      ute += html.slice(i)
+    const from = i + start
+    const to = html.indexOf("</template>", from)
+    if (to === -1) {
+      out += html.slice(i)
       break
     }
-    ute += html.slice(i, fra)
-    i = til + "</template>".length
+    out += html.slice(i, from)
+    i = to + "</template>".length
   }
 
   return (
-    ute
+    out
       /*
-       * Kildeteksten Expressive Code legger på kopiknappen sin. Den ser ut som
-       * markup og er det ikke: en `<lt-field>` der inne er tekst i et attributt
-       * og blir aldri et element. Uten denne linja melder vaktposten hver eneste
-       * komponentside for markup ingen nettleser bygger.
+       * The source text Expressive Code puts on its copy button. It looks
+       * like markup and is not: an `<lt-field>` in there is text in an
+       * attribute and never becomes an element. Without this line the guard
+       * reports every single component page for markup no browser builds.
        */
       .replace(/data-code="[^"]*"/g, "")
-      // Kode som vises fram. En `<lt-field>` i en kodegjerde er en illustrasjon.
+      // Code on display. An `<lt-field>` in a code fence is an illustration.
       .replace(/<pre[\s>][\s\S]*?<\/pre>/g, "<pre></pre>")
       .replace(/<code[\s>][\s\S]*?<\/code>/g, "<code></code>")
       .replace(/<script[^>]*>[\s\S]*?<\/script>/g, "")
@@ -100,178 +103,184 @@ function vanligDom(html: string): string {
 }
 
 /**
- * Om et stilark faktisk definerer dette navnet.
+ * Whether a stylesheet actually defines this name.
  *
- * Et rent delstrengsøk er for løst: `.lt-field` ville blitt sann av
- * `.lt-fieldset`, og en side med `<lt-field>` uten `field.css` sluppet
- * gjennom. Navnet må derfor følges av noe som avslutter det i en velger.
+ * A plain substring search is too loose: `.lt-field` would be true because
+ * of `.lt-fieldset`, and a page with `<lt-field>` without `field.css` would
+ * slip through. The name must therefore be followed by something that ends
+ * it in a selector.
  */
-function definerer(css: string, navn: string): boolean {
-  const escaped = navn.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+function defines(css: string, name: string): boolean {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
   return new RegExp(`${escaped}(?![a-zA-Z0-9_-])`).test(css)
 }
 
 /**
- * All CSS siden faktisk har: både det den lenker til og det som står inline.
+ * All the CSS the page actually has: both what it links to and what is
+ * inline.
  *
- * Astro inliner et stilark som er lite nok, framfor å lenke det. Leste vi bare
- * `<link>`, meldte sjekken at `.lt-sr-only` manglet på en side der regelen sto
- * rett i en `<style>` noen linjer over. Det er en blindsone som gir falskt
- * utslag, og det flyttet seg med hvor store bundlene ble, altså uten at noen
- * hadde rørt siden.
+ * Astro inlines a stylesheet that is small enough, rather than linking it.
+ * If we read only `<link>`, the check reported `.lt-sr-only` as missing on a
+ * page where the rule stood in a `<style>` a few lines above. That is a
+ * blind spot that gives false failures, and it moved with how big the
+ * bundles became, that is, without anyone having touched the page.
  *
- * Den må lese `vanligDom(html)` og ikke rå HTML. `Preview.astro` legger hvert
- * eksempels stilark i en `<style>` inne i `<template shadowrootmode="open">`,
- * og de hører til skyggerota og ikke til siden. Leste vi dem med, ville en
- * `.lt-button` skrevet rett i brødteksten på knappesiden passert, fordi
- * forhåndsvisningen på samme side har hele `button.css` i skyggestilen sin.
- * Det er den ene av de to feilene denne fila finnes for.
+ * It must read `plainDom(html)` and not raw HTML. `Preview.astro` puts each
+ * example's stylesheets in a `<style>` inside `<template
+ * shadowrootmode="open">`, and they belong to the shadow root, not to the
+ * page. If we read them too, an `.lt-button` written straight into the body
+ * text on the button page would pass, because the preview on the same page
+ * has all of `button.css` in its shadow styles. That is one of the two bugs
+ * this file exists for.
  */
-function stilarkFor(html: string, side: string): string {
-  const stier = [...html.matchAll(/<link[^>]*href="([^"]+\.css)"[^>]*>/g)]
-    .filter((treff) => treff[0].includes('rel="stylesheet"'))
-    .map((treff) => treff[1])
+function stylesheetsFor(html: string, page: string): string {
+  const paths = [...html.matchAll(/<link[^>]*href="([^"]+\.css)"[^>]*>/g)]
+    .filter((match) => match[0].includes('rel="stylesheet"'))
+    .map((match) => match[1])
 
-  let samlet = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
-    .map((treff) => treff[1])
+  let combined = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
+    .map((match) => match[1])
     .join("\n")
-  for (const sti of stier) {
+  for (const path of paths) {
     try {
-      samlet += readFileSync(DIST + sti.replace(/^\//, ""), "utf8")
+      combined += readFileSync(DIST + path.replace(/^\//, ""), "utf8")
     } catch {
-      funn.push(`${side}: lenker til ${sti}, som ikke finnes i dist`)
+      findings.push(`${page}: links to ${path}, which does not exist in dist`)
     }
   }
-  return samlet
+  return combined
 }
 
-const funn: string[] = []
+const findings: string[] = []
 
 /*
- * Det forventede kommer ikke fra den samme globben som køen.
+ * The expected set does not come from the same glob as the queue.
  *
- * Teller vi bare «besøkte jeg alt globben fant», etterprøver vakten seg selv,
- * og en glob som plutselig ikke traff noe ville meldt grønt. Forventningen
- * regnes derfor ut av kilden: hver side i `src/content/docs` og hver
- * `.astro`-rute i `src/pages` skal finnes som en bygd side.
+ * If we only count "did I visit everything the glob found", the guard
+ * checks itself, and a glob that suddenly matched nothing would report
+ * green. The expectation is therefore derived from the source: every page in
+ * `src/content/docs` and every `.astro` route in `src/pages` must exist as a
+ * built page.
  *
- * Det er adressene som samles, ikke antallet. Et tall alene tåler at én side
- * faller ut og en annen kommer til, og `dist` har uansett én HTML-fil mer enn
- * kilden, siden Starlight skriver `404.html` som ingen kilde svarer til. Med
- * adressene sier vakten hvilken side som mangler.
+ * It is the addresses that are collected, not the count. A number alone
+ * tolerates one page dropping out and another coming in, and `dist` has one
+ * HTML file more than the source anyway, since Starlight writes `404.html`,
+ * which no source corresponds to. With the addresses the guard says which
+ * page is missing.
  */
-const ventet = new Set<string>()
+const expected = new Set<string>()
 for (const rel of new Glob(
   "documentation/src/content/docs/**/*.{mdx,md}",
-).scanSync(ROT)) {
+).scanSync(ROOT)) {
   const slug = rel
     .replace("documentation/src/content/docs/", "")
     .replace(/\.mdx?$/, "")
-  // `komponenter/index.mdx` bygges til `komponenter/index.html`, ikke til
-  // `komponenter/index/index.html`: fila er mappas egen indeks.
-  ventet.add(
+  // `components/index.mdx` is built to `components/index.html`, not to
+  // `components/index/index.html`: the file is the folder's own index.
+  expected.add(
     slug.endsWith("/index") || slug === "index"
       ? `${slug}.html`
       : `${slug}/index.html`,
   )
 }
 for (const rel of new Glob("documentation/src/pages/**/*.astro").scanSync(
-  ROT,
+  ROOT,
 )) {
-  const rute = rel
+  const route = rel
     .replace("documentation/src/pages/", "")
     .replace(/\.astro$/, "")
-  ventet.add(rute === "index" ? "index.html" : `${rute}/index.html`)
+  expected.add(route === "index" ? "index.html" : `${route}/index.html`)
 }
 
-const besokt = new Set<string>()
-let sjekketSider = 0
-let sjekketNavn = 0
+const visited = new Set<string>()
+let checkedPages = 0
+let checkedNames = 0
 
 for (const rel of new Glob("**/*.html").scanSync(DIST)) {
   const html = readFileSync(DIST + rel, "utf8")
-  const dom = vanligDom(html)
-  const verter = skyggeverter(html)
+  const dom = plainDom(html)
+  const hosts = shadowHosts(html)
 
-  const klasser = new Set<string>()
-  for (const treff of dom.matchAll(/class="([^"]*)"/g)) {
-    for (const ord of treff[1].split(/\s+/)) {
-      if (ord.startsWith("lt-") && !verter.has(ord)) klasser.add(ord)
+  const classes = new Set<string>()
+  for (const match of dom.matchAll(/class="([^"]*)"/g)) {
+    for (const word of match[1].split(/\s+/)) {
+      if (word.startsWith("lt-") && !hosts.has(word)) classes.add(word)
     }
   }
 
-  const elementer = new Set<string>()
-  for (const treff of dom.matchAll(/<(lt-[a-z-]+)[\s>/]/g)) {
-    elementer.add(treff[1].toLowerCase())
+  const elements = new Set<string>()
+  for (const match of dom.matchAll(/<(lt-[a-z-]+)[\s>/]/g)) {
+    elements.add(match[1].toLowerCase())
   }
 
-  if (klasser.size > 0 || elementer.size > 0) {
-    const css = stilarkFor(dom, rel)
+  if (classes.size > 0 || elements.size > 0) {
+    const css = stylesheetsFor(dom, rel)
 
-    for (const klasse of klasser) {
-      sjekketNavn++
-      if (!definerer(css, `.${klasse}`)) {
-        funn.push(
-          `${rel}: bruker .${klasse} uten at noe stilark på siden har den`,
+    for (const className of classes) {
+      checkedNames++
+      if (!defines(css, `.${className}`)) {
+        findings.push(
+          `${rel}: uses .${className} without any stylesheet on the page having it`,
         )
       }
     }
 
-    for (const element of elementer) {
-      sjekketNavn++
-      if (!definerer(css, element)) {
-        funn.push(
-          `${rel}: bruker <${element}> uten at noe stilark på siden har det`,
+    for (const element of elements) {
+      checkedNames++
+      if (!defines(css, element)) {
+        findings.push(
+          `${rel}: uses <${element}> without any stylesheet on the page having it`,
         )
       }
     }
   }
 
-  besokt.add(rel)
-  sjekketSider++
+  visited.add(rel)
+  checkedPages++
 }
 
-for (const linje of funn) console.error(`  ${linje}`)
+for (const line of findings) console.error(`  ${line}`)
 
 console.log(
-  `Sjekket ${sjekketSider} bygde sider og ${sjekketNavn} navn i vanlig DOM.`,
+  `Checked ${checkedPages} built pages and ${checkedNames} names in plain DOM.`,
 )
 
 /*
- * Vakten står nederst, etter rapporten, og krever både at tallet er større enn
- * null og at det dekker kilden. En kjøring som ikke så på noe skal ikke kunne
- * se ut som en som så på alt.
+ * The guard sits at the bottom, after the report, and requires both that
+ * the number is greater than zero and that it covers the source. A run that
+ * looked at nothing must not be able to look like one that looked at
+ * everything.
  */
-if (sjekketSider === 0) {
-  console.error("Vaktposten så ingen bygde sider. Er `dist` bygd?")
+if (checkedPages === 0) {
+  console.error("The guard saw no built pages. Is `dist` built?")
   process.exit(1)
 }
 
-if (sjekketNavn === 0) {
+if (checkedNames === 0) {
   console.error(
-    "Vaktposten fant ingen LO-TEK-markup i vanlig DOM noe sted. Det har det " +
-      "alltid vært noe av, så det er sannsynligvis filteret i `vanligDom` som " +
-      "har begynt å spise for mye, ikke sidene som har blitt rene.",
+    "The guard found no LO-TEK markup in plain DOM anywhere. There has " +
+      "always been some, so it is probably the filter in `plainDom` that has " +
+      "started eating too much, not the pages that have become clean.",
   )
   process.exit(1)
 }
 
-const mangler = [...ventet].filter((adresse) => !besokt.has(adresse))
-if (mangler.length > 0) {
+const missing = [...expected].filter((address) => !visited.has(address))
+if (missing.length > 0) {
   console.error(
-    `${mangler.length} sider finnes i kilden og ikke i bygget, blant dem ` +
-      `${mangler.slice(0, 3).join(", ")}. Bygget er ufullstendig, og da har ` +
-      "vaktposten ikke sett på det den skulle.",
+    `${missing.length} pages exist in the source and not in the build, among them ` +
+      `${missing.slice(0, 3).join(", ")}. The build is incomplete, and then ` +
+      "the guard has not looked at what it was meant to.",
   )
   process.exit(1)
 }
 
-if (funn.length > 0) {
+if (findings.length > 0) {
   console.error(
-    `${funn.length} steder mangler stilarket sitt. Importer det i komponenten ` +
-      "eller siden som skriver markupen, slik `src/pages/index.astro` gjør.",
+    `${findings.length} places are missing their stylesheet. Import it in the component ` +
+      "or page that writes the markup, as `src/pages/index.astro` does.",
   )
   process.exit(1)
 }
 
-console.log("Hver side har stilarkene markupen sin trenger.")
+console.log("Every page has the stylesheets its markup needs.")

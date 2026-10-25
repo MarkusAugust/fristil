@@ -8,7 +8,7 @@
       "message": "data-variant cannot be \"sekundær\" on button. Valid values: secondary, ghost, danger, and primary without the attribute."
     }
   ],
-  "side": [
+  "page": [
     {
       "start": 148,
       "end": 171,

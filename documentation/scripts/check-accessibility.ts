@@ -1,13 +1,13 @@
 /**
- * Kjører axe mot den bygde dokumentasjonssiden, i begge temaer.
+ * Runs axe against the built documentation site, in both themes.
  *
- * Komponenttestene i `designsystem` kjører mot komponentene isolert. Det er
- * bra, men det fanger ikke feil som oppstår først når komponentene settes inn
- * på en side. Dokumentasjonen for et designsystem er et produkt i seg selv.
- * En lysegrå brødtekst på hvit flate gikk rett gjennom nettopp fordi
- * ingenting testet den bygde siden.
+ * The component tests in `designsystem` run against the components in
+ * isolation. That is good, but it does not catch errors that only appear once
+ * the components are placed on a page. The documentation for a design system
+ * is a product in itself. Light grey body text on a white surface went
+ * straight through precisely because nothing tested the built site.
  *
- * Kjør med: bun run test:docs (bygg først)
+ * Run with: bun run test:docs (build first)
  */
 
 import { readFileSync } from "node:fs"
@@ -18,44 +18,45 @@ import { chromium } from "playwright"
 const DIST = fileURLToPath(new URL("../dist/", import.meta.url))
 const PORT = 4173
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
-const TEMAER = ["light", "dark"] as const
+const THEMES = ["light", "dark"] as const
 
-type Brudd = {
-  side: string
-  tema: string
-  regel: string
-  forklaring: string
-  elementer: string[]
+type Violation = {
+  page: string
+  theme: string
+  rule: string
+  explanation: string
+  elements: string[]
 }
 
 /*
- * Hver bygde HTML-fil, ikke bare de som heter `index.html`.
+ * Every built HTML file, not just the ones named `index.html`.
  *
- * Globben tok bare `index.html`, og det gjorde vakten nederst blind: den
- * sammenlignet antall besøkte sidevisninger mot antall treff fra den samme
- * globben, så alt globben ikke fant var usynlig for begge. `dist/404.html`
- * ble derfor aldri besøkt av noen av sjekkene, og begge meldte grønt.
+ * The glob took only `index.html`, and that made the guard at the bottom
+ * blind: it compared the number of page views visited against the number of
+ * matches from the same glob, so anything the glob did not find was invisible
+ * to both. `dist/404.html` was therefore never visited by any of the checks,
+ * and both reported green.
  *
- * Nå tas hver `.html`-fil, så køen er hele settet av bygde sider, og
- * spørsmålet vakten stiller blir det som betyr noe: ble hver side som
- * ligger i `dist` besøkt?
+ * Now every `.html` file is taken, so the queue is the whole set of built
+ * pages, and the question the guard asks becomes the one that matters: was
+ * every page in `dist` visited?
  */
-function finnSider(): string[] {
-  const sider: string[] = []
-  for (const treff of new Bun.Glob("**/*.html").scanSync(DIST)) {
-    const sti = relative(".", treff)
-    sider.push(
-      sti === "index.html"
+function findPages(): string[] {
+  const pages: string[] = []
+  for (const match of new Bun.Glob("**/*.html").scanSync(DIST)) {
+    const path = relative(".", match)
+    pages.push(
+      path === "index.html"
         ? "/"
-        : sti.endsWith("/index.html")
-          ? `/${sti.slice(0, -"index.html".length)}`
-          : `/${sti}`,
+        : path.endsWith("/index.html")
+          ? `/${path.slice(0, -"index.html".length)}`
+          : `/${path}`,
     )
   }
-  return sider.sort()
+  return pages.sort()
 }
 
-const MEDIETYPER: Record<string, string> = {
+const MEDIA_TYPES: Record<string, string> = {
   html: "text/html; charset=utf-8",
   css: "text/css; charset=utf-8",
   js: "text/javascript; charset=utf-8",
@@ -67,270 +68,279 @@ const MEDIETYPER: Record<string, string> = {
 }
 
 /*
- * Tjeneren binder 127.0.0.1, og sjekken kobler til den samme adressen.
+ * The server binds 127.0.0.1, and the check connects to the same address.
  *
- * `Bun.serve` uten vertsnavn binder IPv4-jokeren, og en fremmed prosess på
- * IPv6-loopback tar da porten uten at noe kaster: to tjenere, samme
- * portnummer, ingen feilmelding. `localhost` slår opp IPv6 først på macOS, så
- * sjekken snakket med den andre prosessen. Det skjedde: en helt annen nettside
- * lå på 4173, og sjekken leste tilgjengelighetsbrudd på den. Den kunne like
- * gjerne meldt grønt uten å ha sett en eneste av våre sider.
+ * `Bun.serve` without a hostname binds the IPv4 wildcard, and a foreign
+ * process on IPv6 loopback then takes the port without anything throwing: two
+ * servers, same port number, no error message. `localhost` resolves IPv6
+ * first on macOS, so the check talked to the other process. It happened: a
+ * completely different website was on 4173, and the check read accessibility
+ * violations on it. It could just as well have reported green without having
+ * seen a single one of our pages.
  *
- * Med vertsnavnet satt kaster en andre binding på samme adresse, og det er
- * det vi vil: en port som er opptatt skal stoppe kjøringen, ikke stilltiende
- * sende den et annet sted. Bytt derfor aldri dette tilbake til `localhost`.
+ * With the hostname set, a second binding to the same address throws, and
+ * that is what we want: a port that is taken should stop the run, not
+ * silently send it somewhere else. So never change this back to `localhost`.
  */
-const tjener = Bun.serve({
+const server = Bun.serve({
   hostname: "127.0.0.1",
   port: PORT,
   fetch(request) {
-    const sti = decodeURIComponent(new URL(request.url).pathname)
-    const filsti = sti.endsWith("/")
-      ? join(DIST, sti, "index.html")
-      : join(DIST, sti)
-    const fil = Bun.file(filsti)
-    const endelse = filsti.split(".").pop() ?? ""
-    return fil.exists().then((finnes) =>
-      finnes
-        ? new Response(fil, {
+    const path = decodeURIComponent(new URL(request.url).pathname)
+    const filePath = path.endsWith("/")
+      ? join(DIST, path, "index.html")
+      : join(DIST, path)
+    const file = Bun.file(filePath)
+    const extension = filePath.split(".").pop() ?? ""
+    return file.exists().then((exists) =>
+      exists
+        ? new Response(file, {
             headers: {
-              "content-type": MEDIETYPER[endelse] ?? "application/octet-stream",
+              "content-type":
+                MEDIA_TYPES[extension] ?? "application/octet-stream",
             },
           })
-        : new Response("Ikke funnet", { status: 404 }),
+        : new Response("Not found", { status: 404 }),
     )
   },
 })
 
-const axeKilde = readFileSync(
+const axeSource = readFileSync(
   fileURLToPath(
     new URL("../node_modules/axe-core/axe.min.js", import.meta.url),
   ),
   "utf8",
 )
 
-const sider = finnSider()
-const nettleser = await chromium.launch()
-const brudd: Brudd[] = []
-// Sider der skriptet til Expressive Code ikke hadde kjørt etter 20 sekunder.
-// Skrives ut som bevis, men feller ikke sjekken: tilgangen står i HTML-en.
-const ikkeKjort: string[] = []
+const pages = findPages()
+const browser = await chromium.launch()
+const violations: Violation[] = []
+// Pages where the Expressive Code script had not run after 20 seconds.
+// Printed as evidence, but does not fail the check: the access is in the HTML.
+const notRun: string[] = []
 
 /*
- * Hvert kodefelt skal ha tastaturtilgang i HTML-en, før noe skript kjører.
+ * Every code block must have keyboard access in the HTML, before any script
+ * runs.
  *
- * `ec-tabindex.mjs` setter `tabindex="0"` og `role="region"` på hver `<pre>`
- * Expressive Code rendrer, og skriptet deres tar dem bort der feltet får
- * plass. Forsvinner tillegget, kommer tilgangen igjen bare fra skriptet, og
- * den eneste gangen det sviktet var i CI, uten at noen fant ut hvorfor.
- * Telles over hver bygde fil, og krever at tallet er større enn null.
+ * `ec-tabindex.mjs` sets `tabindex="0"` and `role="region"` on every `<pre>`
+ * Expressive Code renders, and their script removes them where the block
+ * fits. If the plugin disappears, the access comes back only from the
+ * script, and the only time that failed was in CI, without anyone finding out
+ * why. Counted over every built file, and requires the count to be greater
+ * than zero.
  */
-let kodefelt = 0
-const kodefeltUten: string[] = []
-for (const fil of new Bun.Glob("**/*.html").scanSync(DIST)) {
-  const html = readFileSync(join(DIST, fil), "utf8")
-  for (const [tagg] of html.matchAll(/<pre\b[^>]*\bdata-language\b[^>]*>/g)) {
-    kodefelt++
-    if (!/\btabindex="0"/.test(tagg) || !/\brole="region"/.test(tagg)) {
-      kodefeltUten.push(`${fil}: ${tagg.slice(0, 80)}`)
+let codeBlocks = 0
+const codeBlocksWithout: string[] = []
+for (const file of new Bun.Glob("**/*.html").scanSync(DIST)) {
+  const html = readFileSync(join(DIST, file), "utf8")
+  for (const [tag] of html.matchAll(/<pre\b[^>]*\bdata-language\b[^>]*>/g)) {
+    codeBlocks++
+    if (!/\btabindex="0"/.test(tag) || !/\brole="region"/.test(tag)) {
+      codeBlocksWithout.push(`${file}: ${tag.slice(0, 80)}`)
     }
   }
 }
 
 /*
- * Advarslene komponentene skriver ut, samlet på hver eneste side.
+ * The warnings the components print, collected on every single page.
  *
- * Komponentene sier fra med `console.warn` når markupen de fikk ikke henger
- * sammen. Kommer en slik advarsel på våre egne sider, betyr det enten at et
- * eksempel er galt, eller at advarselen slår ut på markup som er i orden. En
- * advarsel som også kommer når alt er riktig blir slått av, og da er den
- * verdiløs, så begge deler må felle sjekken.
+ * The components speak up with `console.warn` when the markup they got does
+ * not hang together. If such a warning appears on our own pages, either an
+ * example is wrong, or the warning fires on markup that is fine. A warning
+ * that also appears when everything is right gets switched off, and then it
+ * is worthless, so both cases must fail the check.
  *
- * Her og ikke bare i `check-component-demos.ts`: dette skriptet besøker hver
- * bygde side, mønstersidene og forsiden medregnet.
+ * Here and not only in `check-component-demos.ts`: this script visits every
+ * built page, the pattern pages and the front page included.
  */
-const advarsler = new Set<string>()
+const warnings = new Set<string>()
 
 /*
- * Et tall fra miljøet må etterprøves, ellers kan det slå av sjekken.
+ * A number from the environment must be checked, or it can switch off the
+ * check.
  *
- * `Array.from({ length: NaN })` og `{ length: 0 }` gir begge en tom liste, så
- * en verdi som `0` eller `abc` ville startet null arbeidere, sjekket null
- * sider og avsluttet med 0. En vaktpost som melder grønt uten å ha sett på
- * noe er verre enn ingen vaktpost.
+ * `Array.from({ length: NaN })` and `{ length: 0 }` both give an empty list,
+ * so a value like `0` or `abc` would have started zero workers, checked zero
+ * pages and exited with 0. A guard that reports green without having looked
+ * at anything is worse than no guard.
  */
-function lesAntall(navn: string, standard: number): number {
-  const raa = Bun.env[navn]
-  if (raa === undefined) return standard
-  const tall = Number(raa)
-  if (!Number.isInteger(tall) || tall < 1) {
-    console.error(`${navn} må være et heltall på minst 1, men var «${raa}».`)
+function readCount(name: string, fallback: number): number {
+  const raw = Bun.env[name]
+  if (raw === undefined) return fallback
+  const count = Number(raw)
+  if (!Number.isInteger(count) || count < 1) {
+    console.error(`${name} must be an integer of at least 1, but was "${raw}".`)
     process.exit(2)
   }
-  return tall
+  return count
 }
 
 /*
- * Sidene deles på flere faner, med én kontekst per tema.
+ * The pages are shared across several tabs, with one context per theme.
  *
- * Kontekstene er delt etter tema og ikke etter arbeider, og det er det som
- * avgjør om omskrivingen lønner seg. To ting trekker i hver sin retning:
+ * The contexts are split by theme and not by worker, and that is what
+ * decides whether the rewrite pays off. Two things pull in opposite
+ * directions:
  *
- * En kontekst har sin egen hurtigbuffer. Gir hver arbeider sin egen, tolkes
- * CSS-en og skriptene på nytt for hver eneste side, og prosessortiden går fra
- * 64 til 202 sekunder. Da hjalp det ikke at fire faner jobbet samtidig:
- * sjekken ble tregere enn med én. Fanene må altså dele en kontekst.
+ * A context has its own cache. If each worker gets its own, the CSS and the
+ * scripts are parsed again for every single page, and CPU time goes from 64
+ * to 202 seconds. Then it did not help that four tabs worked at once: the
+ * check got slower than with one. So the tabs must share a context.
  *
- * Men Starlight skriver temaet til `localStorage`, som deles innenfor en
- * kontekst. Lastet to faner i samme kontekst hvert sitt tema samtidig, kunne
- * den ene skrive over den andre. Med én kontekst per tema ser en kontekst
- * aldri mer enn ett tema, og hasarden finnes ikke. Det er også tettere enn
- * utgaven med én fane, som lot lagringen veksle mellom lyst og mørkt tema
- * gjennom hele kjøringen.
+ * But Starlight writes the theme to `localStorage`, which is shared within a
+ * context. If two tabs in the same context loaded a different theme each at
+ * the same time, one could overwrite the other. With one context per theme, a
+ * context never sees more than one theme, and the hazard does not exist. It
+ * is also tighter than the single-tab version, which let the storage
+ * alternate between light and dark theme throughout the run.
  *
- * To faner per tema gir fire til sammen, altså det CI-maskinen har av
- * kjerner. Denne sjekken er prosessorbundet så snart den går parallelt, siden
- * axe analyserer hele DOM-en, så flere faner enn kjerner gir ingenting. Det
- * skiller den fra `check-mobile.ts`, som bare venter og derfor får åtte.
+ * Two tabs per theme gives four in total, which is what the CI machine has in
+ * cores. This check is CPU-bound as soon as it runs in parallel, since axe
+ * analyses the whole DOM, so more tabs than cores gains nothing. That sets it
+ * apart from `check-mobile.ts`, which only waits and therefore gets eight.
  */
-const FANER_PER_TEMA = lesAntall("FANER_PER_TEMA", 2)
+const TABS_PER_THEME = readCount("TABS_PER_THEME", 2)
 
-// Én kø per tema, slik at en arbeider bare henter jobber for sitt eget tema.
-const koer = new Map(TEMAER.map((tema) => [tema, { neste: 0 }]))
-let sjekket = 0
+// One queue per theme, so that a worker only takes jobs for its own theme.
+const queues = new Map(THEMES.map((theme) => [theme, { next: 0 }]))
+let checked = 0
 
-async function sjekkSider(
-  kontekst: Awaited<ReturnType<typeof nettleser.newContext>>,
-  tema: (typeof TEMAER)[number],
+async function checkPages(
+  context: Awaited<ReturnType<typeof browser.newContext>>,
+  theme: (typeof THEMES)[number],
 ) {
-  const koe = koer.get(tema) as { neste: number }
-  const side = await kontekst.newPage()
+  const queue = queues.get(theme) as { next: number }
+  const page = await context.newPage()
 
-  // Etiketten er lokal for arbeideren, ikke felles for skriptet. Med flere
-  // faner ville en delt variabel gitt advarselen navnet til den siden som
-  // tilfeldigvis ble lastet sist. Konsollhendelser kommer asynkront.
-  let gjeldende = ""
+  // The label is local to the worker, not shared by the script. With several
+  // tabs, a shared variable would have given the warning the name of whichever
+  // page happened to load last. Console events arrive asynchronously.
+  let current = ""
 
-  side.on("console", (melding) => {
-    const type = melding.type()
+  page.on("console", (message) => {
+    const type = message.type()
     if (type !== "warning" && type !== "error") return
-    advarsler.add(`${gjeldende}  ${type}: ${melding.text()}`)
+    warnings.add(`${current}  ${type}: ${message.text()}`)
   })
 
   while (true) {
-    // `koe.neste++` er trygt uten lås: JavaScript kjører én ting om gangen,
-    // og her er det ingen `await` mellom avlesningen og økningen.
-    const url = sider[koe.neste++]
+    // `queue.next++` is safe without a lock: JavaScript runs one thing at a
+    // time, and there is no `await` between the read and the increment.
+    const url = pages[queue.next++]
     if (url === undefined) break
-    gjeldende = `${url} [${tema}]`
+    current = `${url} [${theme}]`
 
     /*
-     * Nettleseren må mene det samme om temaet som vi gjør.
+     * The browser must agree with us about the theme.
      *
-     * Starlight setter `data-theme` selv, fra `localStorage` og ellers fra
-     * `prefers-color-scheme`, og skriptet kjører mens siden lastes. Satte vi
-     * bare attributtet etterpå, kappløp de to: lenkefargen på `/tailwind/`
-     * landet på lys verdi i halvparten av lastingene, og sjekken feilet
-     * tilfeldig på kontrast. Med `emulateMedia` regner Starlight seg fram til
-     * det samme temaet, og ingen overskriver noe.
+     * Starlight sets `data-theme` itself, from `localStorage` and otherwise
+     * from `prefers-color-scheme`, and the script runs while the page loads.
+     * If we only set the attribute afterwards, the two raced: the link colour
+     * on `/tailwind/` landed on the light value in half the loads, and the
+     * check failed at random on contrast. With `emulateMedia`, Starlight
+     * arrives at the same theme, and nobody overwrites anything.
      */
-    await side.emulateMedia({ colorScheme: tema })
+    await page.emulateMedia({ colorScheme: theme })
 
     /*
-     * Statuskoden må leses. `goto` kaster ikke på 404.
+     * The status code must be read. `goto` does not throw on 404.
      *
-     * Tjeneren over svarer «Ikke funnet» med status 404 for en sti den ikke
-     * har. Uten denne sjekken ville en side som ikke ble servert telt som
-     * besøkt: axe finner ingenting på en linje med ren tekst, og
-     * mobilsjekken finner ikke noe som stikker utenfor. Vakten nederst ville
-     * heller ikke fanget det, siden siden faktisk var innom køen.
+     * The server above answers "Not found" with status 404 for a path it does
+     * not have. Without this check, a page that was not served would have
+     * counted as visited: axe finds nothing on a line of plain text, and the
+     * mobile check finds nothing sticking out. The guard at the bottom would
+     * not have caught it either, since the page did go through the queue.
      */
-    const svar = await side.goto(`http://127.0.0.1:${PORT}${url}`, {
+    const response = await page.goto(`http://127.0.0.1:${PORT}${url}`, {
       waitUntil: "networkidle",
     })
-    if (!svar?.ok()) {
+    if (!response?.ok()) {
       throw new Error(
-        `${url} svarte ${svar?.status() ?? "ingenting"}. Sjekken ville ellers meldt siden som bestått uten å ha sett den.`,
+        `${url} answered ${response?.status() ?? "nothing"}. Otherwise the check would have reported the page as passing without having seen it.`,
       )
     }
     /*
-     * Overgangene slås av FØR temaet settes, ikke etter.
+     * Transitions are switched off BEFORE the theme is set, not after.
      *
-     * Den verste kilden til ustabilitet er CSS-overganger: lenkene har
-     * `transition-colors`, så rett etter et temabytte leser axe en farge midt
-     * i overgangen. Første utgave slo dem av etter byttet, og det er for
-     * sent: en overgang som alt er i gang stopper ikke av at `transition`
-     * settes til `none`, den blir stående der den var. Sonden viste det
-     * tydelig, med lenkefargen på `/tailwind/` spredt over ni ulike verdier
-     * på førti lastinger, og sjekken feilet tilfeldig på kontrast.
+     * The worst source of instability is CSS transitions: the links have
+     * `transition-colors`, so right after a theme switch axe reads a colour
+     * in the middle of the transition. The first version switched them off
+     * after the switch, and that is too late: a transition already running
+     * does not stop because `transition` is set to `none`, it stays where it
+     * was. The probe showed it clearly, with the link colour on `/tailwind/`
+     * spread over nine different values in forty loads, and the check failed
+     * at random on contrast.
      *
-     * Settes regelen først, starter ingen overgang i det hele tatt.
-     * En tilgjengelighetsport som feiler tilfeldig blir ignorert.
+     * With the rule set first, no transition starts at all.
+     * An accessibility gate that fails at random gets ignored.
      */
-    await side.addStyleTag({
+    await page.addStyleTag({
       content: `*, *::before, *::after {
         transition: none !important;
         animation: none !important;
       }`,
     })
 
-    await side.evaluate(
+    await page.evaluate(
       (t) => document.documentElement.setAttribute("data-theme", t),
-      tema,
+      theme,
     )
 
-    const ventetForgjeves = await side.evaluate(async () => {
-      const komponenter = [...document.querySelectorAll("*")].filter(
+    const waitedInVain = await page.evaluate(async () => {
+      const components = [...document.querySelectorAll("*")].filter(
         (el): el is HTMLElement & { updateComplete: Promise<unknown> } =>
           "updateComplete" in el,
       )
-      await Promise.all(komponenter.map((el) => el.updateComplete))
+      await Promise.all(components.map((el) => el.updateComplete))
 
       /*
-       * Kodefeltene får tastaturtilgang av et skript, ikke av markupen.
-       * Expressive Code setter `tabindex` på de feltene som kan rulles, og
-       * gjør det etter at siden er tegnet. Kjørte axe før det, meldte den
-       * «Scrollable region must have keyboard access» på et felt som fikk
-       * tilgangen et øyeblikk senere, og sjekken feilet tilfeldig.
+       * The code blocks get keyboard access from a script, not from the
+       * markup. Expressive Code sets `tabindex` on the blocks that can
+       * scroll, and does so after the page has been painted. If axe ran
+       * before that, it reported "Scrollable region must have keyboard
+       * access" on a block that got access a moment later, and the check
+       * failed at random.
        *
-       * Skriftene må også være lastet: det er bredden på tegnene som avgjør
-       * om feltet i det hele tatt kan rulles.
+       * The fonts must also be loaded: the width of the glyphs decides
+       * whether the block can scroll at all.
        */
       await document.fonts.ready
 
-      const uten = () =>
+      const without = () =>
         [...document.querySelectorAll("pre")].filter(
-          (felt) =>
-            felt.scrollWidth > felt.clientWidth &&
-            !felt.hasAttribute("tabindex"),
+          (block) =>
+            block.scrollWidth > block.clientWidth &&
+            !block.hasAttribute("tabindex"),
         )
 
       /*
-       * Fristen er romslig, og et utløp er en feil med navn, ikke stillhet.
-       * Den var tre sekunder og gikk ut uten et ord når maskinen var travel,
-       * så axe fikk se feltene før skriptet hadde rukket dem, og meldte ni
-       * brudd på «Scrollable region must have keyboard access» som var borte
-       * ved neste kjøring. Et vilkår som slår av en venting er det samme som
-       * et vilkår som slår av en sjekk.
+       * The deadline is generous, and a timeout is a named failure, not
+       * silence. It was three seconds and ran out without a word when the
+       * machine was busy, so axe saw the blocks before the script had reached
+       * them, and reported nine violations of "Scrollable region must have
+       * keyboard access" that were gone on the next run. A condition that
+       * switches off a wait is the same as a condition that switches off a
+       * check.
        */
       /*
-       * Et synlig felt som får plass, men fortsatt har `tabindex` fra
-       * HTML-en, betyr at skriptet til Expressive Code ikke har kjørt ennå.
-       * Det er ingen feil for leseren, men det var dette som gikk galt i CI
-       * én gang, og da skal rapporten si hva som ble lastet.
+       * A visible block that fits but still has `tabindex` from the HTML
+       * means the Expressive Code script has not run yet. That is no fault
+       * for the reader, but it is what went wrong in CI once, and then the
+       * report should say what was loaded.
        */
-      const ikkeRyddet = () =>
+      const notCleaned = () =>
         [...document.querySelectorAll(".expressive-code pre")].filter(
-          (felt) =>
-            felt.getClientRects().length > 0 &&
-            felt.scrollWidth <= felt.clientWidth &&
-            felt.hasAttribute("tabindex"),
+          (block) =>
+            block.getClientRects().length > 0 &&
+            block.scrollWidth <= block.clientWidth &&
+            block.hasAttribute("tabindex"),
         )
 
-      const frist = Date.now() + 20_000
+      const deadline = Date.now() + 20_000
       while (
-        (uten().length > 0 || ikkeRyddet().length > 0) &&
-        Date.now() < frist
+        (without().length > 0 || notCleaned().length > 0) &&
+        Date.now() < deadline
       ) {
         await new Promise((r) => setTimeout(r, 50))
       }
@@ -338,186 +348,191 @@ async function sjekkSider(
         requestAnimationFrame(() => requestAnimationFrame(() => r(null))),
       )
 
-      let skriptet: string | null = null
-      if (ikkeRyddet().length > 0) {
-        const lastet = performance
+      let script: string | null = null
+      if (notCleaned().length > 0) {
+        const loaded = performance
           .getEntriesByType("resource")
           .filter((e) => /\/_astro\/ec\.[^/]*\.js$/.test(e.name))
-          // En forespørsel som svarte 404, har også en oppføring her, så
-          // statuskoden må med. `responseStatus` finnes i Chromium.
+          // A request that answered 404 also has an entry here, so the
+          // status code must be included. `responseStatus` exists in Chromium.
           .map((e) => {
             const t = e as PerformanceResourceTiming & {
               responseStatus?: number
             }
-            return `${e.name.split("/").pop()} svarte ${t.responseStatus ?? "ukjent"} etter ${Math.round(t.responseEnd)} ms`
+            return `${e.name.split("/").pop()} answered ${t.responseStatus ?? "unknown"} after ${Math.round(t.responseEnd)} ms`
           })
-        const ledig = await Promise.race([
+        const idle = await Promise.race([
           new Promise<string>((r) => {
             const start = performance.now()
             requestIdleCallback(() =>
-              r(`kjørte etter ${Math.round(performance.now() - start)} ms`),
+              r(`ran after ${Math.round(performance.now() - start)} ms`),
             )
           }),
           new Promise<string>((r) =>
-            setTimeout(() => r("kjørte ikke innen 1 s"), 1000),
+            setTimeout(() => r("did not run within 1 s"), 1000),
           ),
         ])
-        skriptet =
-          `${ikkeRyddet().length} felt som får plass har fortsatt tabindex. ` +
-          `Skriptet: ${lastet.length > 0 ? lastet.join(", ") : "ikke lastet"}. ` +
-          `requestIdleCallback ${ledig}. Siden er ${document.visibilityState}.`
+        script =
+          `${notCleaned().length} blocks that fit still have tabindex. ` +
+          `The script: ${loaded.length > 0 ? loaded.join(", ") : "not loaded"}. ` +
+          `requestIdleCallback ${idle}. The page is ${document.visibilityState}.`
       }
 
       return {
-        uten: uten().map((felt) => felt.outerHTML.slice(0, 160)),
-        skriptet,
+        without: without().map((block) => block.outerHTML.slice(0, 160)),
+        script,
       }
     })
-    if (ventetForgjeves.skriptet !== null) {
-      ikkeKjort.push(`${url} [${tema}]: ${ventetForgjeves.skriptet}`)
+    if (waitedInVain.script !== null) {
+      notRun.push(`${url} [${theme}]: ${waitedInVain.script}`)
     }
-    // Et brudd med eget navn, ikke et kast: da står det i rapporten sammen
-    // med resten, og vakten nederst avgjør utfallet som ellers.
-    if (ventetForgjeves.uten.length > 0) {
-      brudd.push({
-        side: url,
-        tema,
-        regel: "ventet-forgjeves-paa-tabindex",
-        forklaring:
-          "Rullbare <pre> uten tabindex etter 20 sekunder. Enten kjørte ikke " +
-          "Expressive Code sitt skript, eller så mangler feltet tastaturtilgang for godt.",
-        elementer: ventetForgjeves.uten,
+    // A violation with its own name, not a throw: then it appears in the
+    // report with the rest, and the guard at the bottom decides the outcome
+    // as usual.
+    if (waitedInVain.without.length > 0) {
+      violations.push({
+        page: url,
+        theme,
+        rule: "waited-in-vain-for-tabindex",
+        explanation:
+          "Scrollable <pre> without tabindex after 20 seconds. Either the " +
+          "Expressive Code script did not run, or the block lacks keyboard access for good.",
+        elements: waitedInVain.without,
       })
     }
-    await side.addScriptTag({ content: axeKilde })
+    await page.addScriptTag({ content: axeSource })
 
-    const funn = await side.evaluate(async (regler) => {
-      // biome-ignore lint/suspicious/noExplicitAny: axe injiseres i sidekonteksten
-      const resultat = await (window as any).axe.run(document, {
-        runOnly: { type: "tag", values: regler },
+    const findings = await page.evaluate(async (rules) => {
+      // biome-ignore lint/suspicious/noExplicitAny: axe is injected into the page context
+      const result = await (window as any).axe.run(document, {
+        runOnly: { type: "tag", values: rules },
         resultTypes: ["violations"],
       })
-      // biome-ignore lint/suspicious/noExplicitAny: axe sin egen resultattype
-      return resultat.violations.map((v: any) => ({
-        regel: v.id,
-        forklaring: v.help,
-        // biome-ignore lint/suspicious/noExplicitAny: axe sin egen nodetype
-        elementer: v.nodes.map((n: any) => n.html.slice(0, 160)),
+      // biome-ignore lint/suspicious/noExplicitAny: axe's own result type
+      return result.violations.map((v: any) => ({
+        rule: v.id,
+        explanation: v.help,
+        // biome-ignore lint/suspicious/noExplicitAny: axe's own node type
+        elements: v.nodes.map((n: any) => n.html.slice(0, 160)),
       }))
     }, WCAG_AA)
 
-    for (const f of funn) brudd.push({ side: url, tema, ...f })
+    for (const f of findings) violations.push({ page: url, theme, ...f })
 
-    // Sist i kroppen, ikke først. Telleren skal si hvor mange sidevisninger
-    // som ble sjekket, ikke hvor mange som ble tatt av køen: et `continue`
-    // lagt inn senere ville ellers hoppet over arbeidet uten at vakten
-    // merket det.
-    sjekket++
+    // Last in the body, not first. The counter should say how many page
+    // views were checked, not how many were taken off the queue: a `continue`
+    // added later would otherwise skip the work without the guard noticing.
+    checked++
   }
 
-  await side.close()
+  await page.close()
 }
 
 await Promise.all(
-  TEMAER.map(async (tema) => {
-    const kontekst = await nettleser.newContext()
+  THEMES.map(async (theme) => {
+    const context = await browser.newContext()
     await Promise.all(
-      Array.from({ length: FANER_PER_TEMA }, () => sjekkSider(kontekst, tema)),
+      Array.from({ length: TABS_PER_THEME }, () => checkPages(context, theme)),
     )
-    await kontekst.close()
+    await context.close()
   }),
 )
 
-await nettleser.close()
-tjener.stop()
+await browser.close()
+server.stop()
 
 /*
- * Ble hver side faktisk besøkt, i begge temaer?
+ * Was every page actually visited, in both themes?
  *
- * Spørsmålet som betyr noe er om arbeidet ble gjort. `lesAntall` validerer
- * bare hvor mange arbeidere som startes, og sier ingenting om køen de skulle
- * tømme, så den lukker ikke dette.
+ * The question that matters is whether the work was done. `readCount` only
+ * validates how many workers are started, and says nothing about the queue
+ * they were meant to empty, so it does not close this.
  *
- * Vilkåret krever null sider eksplisitt, og ikke bare at tallene er like:
- * `0 !== 0` er usant, så en tom kø ville ellers passert vakten og gitt en
- * kjøring som melder grønt uten å ha åpnet en side.
+ * The condition requires zero pages explicitly, and not just that the
+ * numbers are equal: `0 !== 0` is false, so an empty queue would otherwise
+ * have passed the guard and given a run that reports green without having
+ * opened a page.
  *
- * Utfallet avgjøres nederst, sammen med de andre. Avsluttet vi her, ville en
- * ufullstendig kjøring skjult tilgjengelighetsrapporten den faktisk rakk å
- * lage, og det er den samme feilen som er beskrevet rett under.
+ * The outcome is decided at the bottom, together with the others. Had we
+ * exited here, an incomplete run would have hidden the accessibility report
+ * it did manage to produce, and that is the same mistake described just
+ * below.
  */
-const forventet = sider.length * TEMAER.length
-const ufullstendig = forventet === 0 || sjekket !== forventet
+const expected = pages.length * THEMES.length
+const incomplete = expected === 0 || checked !== expected
 
 /*
- * Rapporten sorteres, fordi arbeiderne blir ferdige i tilfeldig rekkefølge.
+ * The report is sorted, because the workers finish in random order.
  *
- * Uten dette ville to kjøringer av den samme feilen gitt ulik utskrift, og en
- * rapport som stokker om på seg selv er vond å sammenligne mellom to kjøringer.
+ * Without this, two runs of the same failure would give different output, and
+ * a report that reshuffles itself is painful to compare between two runs.
  */
-brudd.sort(
+violations.sort(
   (a, b) =>
-    a.side.localeCompare(b.side) ||
-    a.tema.localeCompare(b.tema) ||
-    a.regel.localeCompare(b.regel),
+    a.page.localeCompare(b.page) ||
+    a.theme.localeCompare(b.theme) ||
+    a.rule.localeCompare(b.rule),
 )
 
-console.log(`Sjekket ${sjekket} sidevisninger over ${TEMAER.length} temaer.`)
+console.log(`Checked ${checked} page views across ${THEMES.length} themes.`)
 
-if (kodefeltUten.length === 0 && kodefelt > 0) {
-  console.log(`Alle ${kodefelt} kodefelt har tabindex og role i HTML-en.`)
-} else if (kodefelt === 0) {
+if (codeBlocksWithout.length === 0 && codeBlocks > 0) {
   console.log(
-    "\n✗ Fant ingen kodefelt i den bygde dokumentasjonen. Rendrer Expressive Code fortsatt <pre data-language>?",
+    `All ${codeBlocks} code blocks have tabindex and role in the HTML.`,
+  )
+} else if (codeBlocks === 0) {
+  console.log(
+    "\n✗ Found no code blocks in the built documentation. Does Expressive Code still render <pre data-language>?",
   )
 } else {
   console.log(
-    `\n✗ ${kodefeltUten.length} av ${kodefelt} kodefelt mangler tabindex eller role i HTML-en. Er ec-tabindex.mjs med i ec.config.mjs?`,
+    `\n✗ ${codeBlocksWithout.length} of ${codeBlocks} code blocks lack tabindex or role in the HTML. Is ec-tabindex.mjs included in ec.config.mjs?`,
   )
-  for (const k of kodefeltUten.slice(0, 10)) console.log(`  ${k}`)
+  for (const k of codeBlocksWithout.slice(0, 10)) console.log(`  ${k}`)
 }
 
-for (const k of ikkeKjort) {
-  console.log(`\nSkriptet til Expressive Code hadde ikke kjørt: ${k}`)
+for (const k of notRun) {
+  console.log(`\nThe Expressive Code script had not run: ${k}`)
 }
 
 /*
- * Begge rapportene skrives ut, og så avgjøres utfallet.
+ * Both reports are printed, and then the outcome is decided.
  *
- * Første utgave avsluttet på konsollmeldingene før axe-funnene ble skrevet,
- * så en enkelt melding skjulte hele tilgjengelighetsrapporten. Utvikleren
- * fikk «404 Not Found» og ingen anelse om at siden også hadde et brudd.
+ * The first version exited on the console messages before the axe findings
+ * were printed, so a single message hid the whole accessibility report. The
+ * developer got "404 Not Found" and no idea that the page also had a
+ * violation.
  */
-if (brudd.length === 0) {
-  console.log("✓ Ingen tilgjengelighetsbrudd.")
+if (violations.length === 0) {
+  console.log("✓ No accessibility violations.")
 } else {
-  for (const b of brudd) {
-    console.log(`\n${b.side} [${b.tema}]  ${b.regel}`)
-    console.log(`  ${b.forklaring}`)
-    for (const el of b.elementer) console.log(`    ${el}`)
+  for (const v of violations) {
+    console.log(`\n${v.page} [${v.theme}]  ${v.rule}`)
+    console.log(`  ${v.explanation}`)
+    for (const el of v.elements) console.log(`    ${el}`)
   }
-  console.log(`\n✗ ${brudd.length} tilgjengelighetsbrudd.`)
+  console.log(`\n✗ ${violations.length} accessibility violations.`)
 }
 
-if (advarsler.size > 0) {
-  console.log(`\n✗ ${advarsler.size} meldinger i konsollen:`)
-  for (const a of [...advarsler].sort()) console.log(`  ${a}`)
+if (warnings.size > 0) {
+  console.log(`\n✗ ${warnings.size} messages in the console:`)
+  for (const w of [...warnings].sort()) console.log(`  ${w}`)
 }
 
-if (ufullstendig) {
+if (incomplete) {
   console.error(
-    forventet === 0
-      ? `\n✗ Fant ingen sider i ${DIST}. Er dokumentasjonen bygget? Sjekken har ikke sett på noe.`
-      : `\n✗ Sjekket ${sjekket} av ${forventet} sidevisninger. Sjekken er ikke til å stole på.`,
+    expected === 0
+      ? `\n✗ Found no pages in ${DIST}. Has the documentation been built? The check has not looked at anything.`
+      : `\n✗ Checked ${checked} of ${expected} page views. The check cannot be trusted.`,
   )
   process.exit(2)
 }
 
 process.exit(
-  brudd.length > 0 ||
-    advarsler.size > 0 ||
-    kodefelt === 0 ||
-    kodefeltUten.length > 0
+  violations.length > 0 ||
+    warnings.size > 0 ||
+    codeBlocks === 0 ||
+    codeBlocksWithout.length > 0
     ? 1
     : 0,
 )

@@ -1,25 +1,25 @@
 /**
- * At ordforrådet og editorfilene på disk er de `generate-vocabulary.ts` ville
- * skrevet nå, og at
- * `metadata.ts` dekker hvert element pakken registrerer og hver klasse i
- * CSS-en, med deler som treffer markupen på komponentsidene.
+ * Checks that the vocabulary and the editor files on disk are what
+ * `generate-vocabulary.ts` would write now, and that `metadata.ts` covers
+ * every element the package registers and every class in the CSS, with parts
+ * that match the markup on the component pages.
  *
- * Typesjekken tar attributtene: `metadata.ts` skriver dem som `Record` over
- * komponentens `observedAttributes`, så et attributt som mangler eller er
- * til overs stopper `tsc`. Det typesjekken ikke kan se, er et helt element
- * som ikke står i lista. Derfor leses `exports` i pakken her, hver modul
- * importeres, og hver klasse med `observedAttributes` må ha sin oppføring.
- * Lista over forventede elementer kommer altså fra pakken, ikke fra
- * metadataen, ellers etterprøver vakten bare seg selv.
+ * The type check covers the attributes: `metadata.ts` writes them as a
+ * `Record` over the component's `observedAttributes`, so a missing or extra
+ * attribute stops `tsc`. What the type check cannot see is a whole element
+ * missing from the list. So `exports` in the package is read here, every
+ * module is imported, and every class with `observedAttributes` must have its
+ * entry. The list of expected elements comes from the package, not from the
+ * metadata, otherwise the guard would only be checking itself.
  *
- * Kjør med: bun scripts/check-vocabulary.ts, eller som en del av `bun run build`.
- * Krever at `designsystem/dist` er bygd.
+ * Run with: bun scripts/check-vocabulary.ts, or as part of `bun run build`.
+ * Requires `designsystem/dist` to be built.
  *
- * I bygget har `generate` nettopp skrevet filene, så del 1 sammenligner med
- * det som ble skrevet og finner ingenting; det er steget «Ingenting er
- * ugenerert» i CI som feller en endring der filene ikke er committet. Kjørt
- * alene sier del 1 om filene på disk er utdaterte. Del 2 gjelder i begge
- * tilfeller.
+ * In the build, `generate` has just written the files, so part 1 compares
+ * against what was written and finds nothing; it is the CI step that checks
+ * nothing is ungenerated that fails a change where the files were not
+ * committed. Run on its own, part 1 says whether the files on disk are out of
+ * date. Part 2 applies in both cases.
  */
 
 import { existsSync, readFileSync } from "node:fs"
@@ -29,8 +29,9 @@ import { elements } from "./metadata"
 
 const findings: string[] = []
 
-// 1. Filene på disk er ferske. Generatoren stopper på en klasse uten
-// innhold i `classDocs`, og på en rad uten klasse, og da står meldingen her.
+// 1. The files on disk are up to date. The generator stops on a class with
+// no content in `classDocs`, and on a row with no class, and then the message
+// is printed here.
 let generated: Record<string, string>
 try {
   generated = files()
@@ -43,7 +44,7 @@ for (const [path, expected] of Object.entries(generated)) {
   try {
     actual = readFileSync(join(ROOT, path), "utf8")
   } catch {
-    // Mangler: meldes under.
+    // Missing: reported below.
   }
   if (actual === null)
     findings.push(
@@ -55,21 +56,21 @@ for (const [path, expected] of Object.entries(generated)) {
     )
 }
 
-// 2. Hvert element pakken registrerer har en oppføring i metadata.ts.
+// 2. Every element the package registers has an entry in metadata.ts.
 type Component = { observedAttributes: readonly string[] }
 const pkg = JSON.parse(
   readFileSync(join(ROOT, "designsystem/package.json"), "utf8"),
 )
 /*
- * Bare modulene som eksporterer nøyaktig ett element teller. Hovedinngangen
- * og `/react` eksporterer alle ni, og der ville «første tagg» og «første
- * klasse» kunne høre til hver sin komponent. Et `Map` gjør samtidig at det
- * samme elementet ikke telles to ganger om det står bak to inngangspunkter.
+ * Only the modules that export exactly one element count. The main entry
+ * point and `/react` export all nine, and there "the first tag" and "the
+ * first class" could belong to different components. A `Map` also keeps the
+ * same element from being counted twice when it is behind two entry points.
  */
 const registered = new Map<string, readonly string[]>()
-/** Delene modulen eksporterer i `LT_…_PARTS`, for elementene som har dem. */
+/** The parts the module exports in `LT_…_PARTS`, for the elements that have them. */
 const exportedParts = new Map<string, Record<string, string>>()
-/** Hver tagg noen modul eksporterer, hovedinngangen medregnet. */
+/** Every tag any module exports, the main entry point included. */
 const allTags = new Set<string>()
 for (const target of Object.values(
   pkg.exports as Record<string, string | Record<string, string>>,
@@ -120,8 +121,8 @@ for (const [tag, attributes] of registered) {
       `<${tag}> has attributes in metadata.ts that do not exist: ${extra}`,
     )
 }
-// En tagg som bare finnes i en modul med flere elementer, som hovedinngangen,
-// ville ellers hoppet stille over både denne sjekken og metadataen.
+// A tag that only exists in a module with several elements, such as the main
+// entry point, would otherwise silently skip both this check and the metadata.
 for (const tag of allTags)
   if (!registered.has(tag))
     findings.push(
@@ -133,9 +134,9 @@ for (const tag of documented.keys())
       `<${tag}> is in metadata.ts, but the package does not register it`,
     )
 
-// 2a. Hver del komponenten eksporterer har en beskrivelse i metadata.ts, med
-// den samme selektoren. Typen i `parts()` krever det for en komponent som står
-// i tabellen; denne ser komponenten som ikke gjør det.
+// 2a. Every part the component exports has a description in metadata.ts,
+// with the same selector. The type in `parts()` requires it for a component
+// in the table; this catches the component that is not in it.
 for (const [tag, parts] of exportedParts) {
   const doc = documented.get(tag)?.parts ?? {}
   for (const [name, selector] of Object.entries(parts))
@@ -154,54 +155,55 @@ for (const [tag, parts] of exportedParts) {
       )
 }
 
-// 2b. Hendelsene i metadata.ts er de komponenten sender, verken flere eller
-// færre. Typesjekken ser ikke dette: navnet står bare i en streng, i
-// `new CustomEvent("…")` eller i komponentens egen `emit("…")`.
-const kilde = (tag: string): string | null => {
+// 2b. The events in metadata.ts are the ones the component dispatches, no
+// more and no fewer. The type check does not see this: the name is only in a
+// string, in `new CustomEvent("…")` or in the component's own `emit("…")`.
+const sourceOf = (tag: string): string | null => {
   const slug = tag.replace(/^lt-/, "")
-  for (const kategori of ["frame", "standalone"]) {
+  for (const category of ["frame", "standalone"]) {
     try {
       return readFileSync(
-        join(ROOT, "designsystem/src/components", kategori, slug, `${tag}.ts`),
+        join(ROOT, "designsystem/src/components", category, slug, `${tag}.ts`),
         "utf8",
       )
     } catch {
-      // Prøv neste kategori.
+      // Try the next category.
     }
   }
   return null
 }
 for (const element of elements) {
-  const tekst = kilde(element.tag)
-  if (tekst === null) {
+  const text = sourceOf(element.tag)
+  if (text === null) {
     findings.push(`Could not find the source code of <${element.tag}>`)
     continue
   }
-  const sendt = new Set(
-    [...tekst.matchAll(/(?:new CustomEvent|emit)\(\s*"([a-z-]+)"/g)].map(
+  const dispatched = new Set(
+    [...text.matchAll(/(?:new CustomEvent|emit)\(\s*"([a-z-]+)"/g)].map(
       (m) => m[1],
     ),
   )
-  const beskrevet = new Set(Object.keys(element.events))
-  for (const navn of sendt)
-    if (!beskrevet.has(navn))
+  const described = new Set(Object.keys(element.events))
+  for (const name of dispatched)
+    if (!described.has(name))
       findings.push(
-        `<${element.tag}> dispatches "${navn}", which is missing in metadata.ts`,
+        `<${element.tag}> dispatches "${name}", which is missing in metadata.ts`,
       )
-  for (const navn of beskrevet)
-    if (!sendt.has(navn))
+  for (const name of described)
+    if (!dispatched.has(name))
       findings.push(
-        `<${element.tag}> has "${navn}" in metadata.ts, but does not dispatch it`,
+        `<${element.tag}> has "${name}" in metadata.ts, but does not dispatch it`,
       )
 }
 
-// 2c. Hver del en klasse har, treffer markupen på komponentsiden, og
-// `partOf` peker på en klasse med en del som treffer denne. Selektorene er
-// relative til elementet med klassen, som for elementene, så hver av dem
-// settes bak `.klassen` før den prøves. Sidene leses som tekst, og det som
-// prøves er hver `kode={…}` og hver ```html-blokk, altså alt leseren ser.
-// Treffer en del ingenting der, viser siden ikke delen, eller selektoren
-// er skrevet for noe annet enn det siden viser.
+// 2c. Every part a class has matches the markup on the component page, and
+// `partOf` points at a class with a part that matches this one. The
+// selectors are relative to the element with the class, as for the elements,
+// so each is put after `.the-class` before it is tried. The pages are read as
+// text, and what is tried is every `code={…}` and every ```html block, that
+// is everything the reader sees. When a part matches nothing there, the page
+// does not show the part, or the selector was written for something other
+// than what the page shows.
 const classes = classesData()
 const PAGES = join(ROOT, "documentation/src/content/docs")
 const markupByPage = new Map<string, string>()
@@ -225,7 +227,7 @@ function pageMarkup(component: string): string {
   }
   return markup
 }
-/** Alternativene i en selektorliste, delt på komma utenfor klammer. */
+/** The alternatives in a selector list, split on commas outside brackets. */
 function alternatives(selector: string): string[] {
   const out: string[] = []
   let depth = 0
@@ -242,7 +244,7 @@ function alternatives(selector: string): string[] {
   out.push(selector.slice(start).trim())
   return out
 }
-/** Antall treff for en selektor i markupen, med Buns innebygde parser. */
+/** The number of matches for a selector in the markup, with Bun's built-in parser. */
 async function matches(selector: string, markup: string): Promise<number> {
   let count = 0
   await new HTMLRewriter()
@@ -263,7 +265,7 @@ for (const [name, info] of Object.entries(classes)) {
       findings.push(`${name} has partOf "${info.partOf}", which is not a class`)
     else if (
       !Object.values(parent.parts ?? {}).some((part) =>
-        // Hele navnet: `.lt-dialog` skal ikke telle som `.lt-dialog__title`.
+        // The whole name: `.lt-dialog` must not count as `.lt-dialog__title`.
         new RegExp(`\\.${name}(?![\\w-])`).test(part.selector),
       )
     )
@@ -285,8 +287,8 @@ for (const [name, info] of Object.entries(classes)) {
   }
 }
 
-// 3. Hver snippet viser elementet sitt. «Har markup» holdt ikke: dialogens
-// snippet hadde en `<dialog>` og ikke noe `<lt-dialog>`.
+// 3. Every snippet shows its element. "Has markup" was not enough: the
+// dialog's snippet had a `<dialog>` and no `<lt-dialog>`.
 const snippets = JSON.parse(generated["designsystem/snippets.json"]) as Record<
   string,
   { body: string[] }
@@ -297,8 +299,8 @@ for (const element of elements) {
     findings.push(
       `The snippet for <${element.tag}> does not contain the element`,
     )
-  // Hver id er et tabbestopp, og hvert tabbestopp er definert én gang:
-  // id-en skrives én gang, og `for` og `href` følger med.
+  // Every id is a tab stop, and every tab stop is defined once: the id is
+  // typed once, and `for` and `href` follow it.
   const text = body.join("\n")
   for (const m of text.matchAll(/\bid="([^"]*)"/g))
     if (!/^\$\{\d+:[^}]+\}$/.test(m[1]))
@@ -313,7 +315,7 @@ for (const element of elements) {
       )
 }
 
-// Live templates for IntelliJ har de samme id-ene som variabler.
+// The IntelliJ live templates have the same ids as variables.
 const liveTemplates = generated["designsystem/live-templates.xml"] ?? ""
 for (const element of elements) {
   if (!liveTemplates.includes(`<template name="${element.tag}"`))
@@ -325,7 +327,7 @@ for (const m of liveTemplates.matchAll(/id=&quot;([^&]*)&quot;/g))
       `Live templates have id=&quot;${m[1]}&quot; without a variable`,
     )
 
-// 4. Tell, sist. Både likt det forventede og større enn null.
+// 4. Count, last. Both equal to the expected number and greater than zero.
 const counted = registered.size
 console.log(
   `Checked ${counted} elements in the package against ${documented.size} in metadata.ts, ${exportedParts.size} with parts, ${Object.keys(classes).length} classes with ${classParts} parts, ${Object.keys(snippets).length} snippets and ${Object.keys(generated).length} files`,

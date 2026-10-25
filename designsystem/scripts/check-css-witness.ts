@@ -1,23 +1,25 @@
 /**
- * At stilarkene vitner om det samme som manifestet.
+ * Checks that the stylesheets bear witness to the same thing as the manifest.
  *
- * Manifestet er kilden: det skrives fra byggefunksjonene, og det er det
- * kjernen sjekker mot og Kotlin genereres fra. CSS-en er et vitne. Sier de
- * to noe forskjellig, er én av dem feil, og da skal det fram:
+ * The manifest is the source: it is written from the builder functions, and
+ * it is what the core checks against and Kotlin is generated from. The CSS
+ * is a witness. If the two say different things, one of them is wrong, and
+ * that must come out:
  *
- *   1. Hver lovlige verdi i manifestet, utenom standardverdien, har en
- *      selektor som `.lt-button[data-variant="ghost"]`. En verdi uten
- *      selektor gjør ingenting synlig. Det kan være riktig, som en verdi
- *      bare skript leser, og da står den i `UTEN_STYLING` med grunnen.
- *   2. Hver verdi en selektor bruker på en `lt-`-klasse, står i manifestet.
- *      En selektor på en verdi ingen byggefunksjon gir, er enten en verdi
- *      som mangler i API-et, eller en intern verdi komponenten setter selv.
- *      Den siste står i `INTERN` med grunnen.
+ *   1. Every allowed value in the manifest, except the default, has a
+ *      selector like `.lt-button[data-variant="ghost"]`. A value without a
+ *      selector does nothing visible. That can be right, as for a value only
+ *      scripts read, and then it is listed in `UNSTYLED` with the reason.
+ *   2. Every value a selector uses on an `lt-` class is in the manifest. A
+ *      selector on a value no builder function gives is either a value
+ *      missing from the API, or an internal value the component sets itself.
+ *      The latter is listed in `INTERNAL` with the reason.
  *
- * Stilarkene leses av kjernens CSS-leser (`core/src/styles.rs`), den samme
- * som `lotek sjekk --css` bruker, så vitnet og sjekken ser det samme.
+ * The stylesheets are read by the core's CSS reader (`core/src/styles.rs`),
+ * the same one `lotek check --css` uses, so the witness and the check see
+ * the same thing.
  *
- * Kjør med: bun scripts/check-css-witness.ts, eller som en del av `bun run build`.
+ * Run with: bun scripts/check-css-witness.ts, or as part of `bun run build`.
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs"
@@ -25,7 +27,7 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { defaultCore } from "../src/diagnostics/default-core.js"
 
-const PAKKE = fileURLToPath(new URL("..", import.meta.url))
+const PACKAGE = fileURLToPath(new URL("..", import.meta.url))
 
 type Manifest = {
   classes: Record<
@@ -39,120 +41,124 @@ type Manifest = {
   >
 }
 const manifest: Manifest = JSON.parse(
-  readFileSync(join(PAKKE, "manifest/manifest.json"), "utf8"),
+  readFileSync(join(PACKAGE, "manifest/manifest.json"), "utf8"),
 )
 
 /**
- * Lovlige verdier uten egen selektor, med grunnen. Nøkkelen er
- * `klasse[attributt="verdi"]`.
+ * Allowed values without a selector of their own, with the reason. The key
+ * is `class[attribute="value"]`.
  */
-const UTEN_STYLING: Record<string, string> = {
+const UNSTYLED: Record<string, string> = {
   'lt-search[data-state="invalid"]':
-    "lt.search() setter alltid lt-input i tillegg, og tilstanden styles der.",
+    "lt.search() always sets lt-input as well, and the state is styled there.",
   'lt-search[data-state="success"]':
-    "lt.search() setter alltid lt-input i tillegg, og tilstanden styles der.",
+    "lt.search() always sets lt-input as well, and the state is styled there.",
 }
 
 /**
- * Verdier stilarkene bruker uten at de står i manifestet, med grunnen.
- * Nøkkelen er `klasse[attributt="verdi"]`, eller `klasse[attributt]` når
- * selektoren bare spør om attributtet finnes.
+ * Values the stylesheets use that are not in the manifest, with the reason.
+ * The key is `class[attribute="value"]`, or `class[attribute]` when the
+ * selector only asks whether the attribute exists.
  */
-const INTERN: Record<string, string> = {
+const INTERNAL: Record<string, string> = {
   'lt-connection-status__bar[data-state="online"]':
-    "<lt-connection-status> setter den selv i nettleseren når forbindelsen er tilbake. Serveren skriver bare linja.",
+    "<lt-connection-status> sets it itself in the browser when the connection is back. The server writes only the bar.",
   'lt-toast__message[data-color="success"]':
-    "<lt-toast> lager meldingene selv, med fargen fra show(). Serveren skriver bare regionen.",
+    "<lt-toast> creates the messages itself, with the colour from show(). The server writes only the region.",
   'lt-toast__message[data-color="warning"]':
-    "<lt-toast> lager meldingene selv, med fargen fra show(). Serveren skriver bare regionen.",
+    "<lt-toast> creates the messages itself, with the colour from show(). The server writes only the region.",
   'lt-toast__message[data-color="danger"]':
-    "<lt-toast> lager meldingene selv, med fargen fra show(). Serveren skriver bare regionen.",
+    "<lt-toast> creates the messages itself, with the colour from show(). The server writes only the region.",
 }
 
-const nøkkel = (klasse: string, attributt: string, verdi?: string) =>
-  verdi === undefined
-    ? `${klasse}[${attributt}]`
-    : `${klasse}[${attributt}="${verdi}"]`
+const key = (className: string, attribute: string, value?: string) =>
+  value === undefined
+    ? `${className}[${attribute}]`
+    : `${className}[${attribute}="${value}"]`
 
-function* stilark(mappe: string): Generator<string> {
-  for (const navn of readdirSync(mappe)) {
-    const sti = join(mappe, navn)
-    if (statSync(sti).isDirectory()) yield* stilark(sti)
-    else if (navn.endsWith(".css")) yield sti
+function* stylesheets(folder: string): Generator<string> {
+  for (const name of readdirSync(folder)) {
+    const path = join(folder, name)
+    if (statSync(path).isDirectory()) yield* stylesheets(path)
+    else if (name.endsWith(".css")) yield path
   }
 }
 
-/** Hver `klasse[attributt]` og `klasse[attributt="verdi"]` stilarkene bruker. */
-const vitnet = new Map<string, string>()
-const kjerne = defaultCore()
-for (const sti of [
-  ...stilark(join(PAKKE, "src/components")),
-  ...stilark(join(PAKKE, "src/tokens")),
+/** Every `class[attribute]` and `class[attribute="value"]` the stylesheets use. */
+const witnessed = new Map<string, string>()
+const core = defaultCore()
+for (const path of [
+  ...stylesheets(join(PACKAGE, "src/components")),
+  ...stylesheets(join(PACKAGE, "src/tokens")),
 ]) {
-  const fil = sti.slice(PAKKE.length)
-  for (const { class: klasse, attribute, value } of kjerne.inspectStyles(
-    readFileSync(sti, "utf8"),
+  const file = path.slice(PACKAGE.length)
+  for (const { class: className, attribute, value } of core.inspectStyles(
+    readFileSync(path, "utf8"),
   ).attributes) {
-    if (klasse.startsWith("lt-") && attribute.startsWith("data-"))
-      vitnet.set(nøkkel(klasse, attribute, value), fil)
+    if (className.startsWith("lt-") && attribute.startsWith("data-"))
+      witnessed.set(key(className, attribute, value), file)
   }
 }
 
-const avvik: string[] = []
-const brukt = new Set<string>()
+const mismatches: string[] = []
+const used = new Set<string>()
 
-// 1. Hver lovlige verdi har en selektor. En selektor som bare spør om
-// attributtet finnes, som `.lt-label[data-required]`, vitner for alle
-// verdiene, og er det eneste et flagg kan ha.
-let verdier = 0
-for (const [klasse, { attributes }] of Object.entries(manifest.classes)) {
+// 1. Every allowed value has a selector. A selector that only asks whether
+// the attribute exists, like `.lt-label[data-required]`, witnesses for all
+// the values, and is the only thing a flag can have.
+let valueCount = 0
+for (const [className, { attributes }] of Object.entries(manifest.classes)) {
   for (const [
-    attributt,
-    { values = [], default: standard, flag },
+    attribute,
+    { values = [], default: defaultValue, flag },
   ] of Object.entries(attributes)) {
-    const bar = vitnet.has(nøkkel(klasse, attributt))
-    for (const verdi of flag ? [undefined] : values) {
-      if (verdi === standard) continue
-      verdier += 1
-      const k = nøkkel(klasse, attributt, verdi)
-      if (bar || vitnet.has(k)) continue
-      if (k in UTEN_STYLING) brukt.add(k)
+    const bare = witnessed.has(key(className, attribute))
+    for (const value of flag ? [undefined] : values) {
+      if (value === defaultValue) continue
+      valueCount += 1
+      const k = key(className, attribute, value)
+      if (bare || witnessed.has(k)) continue
+      if (k in UNSTYLED) used.add(k)
       else
-        avvik.push(
-          `${k} er ${flag ? "et flagg" : "en lovlig verdi"} uten selektor. Style ${flag ? "det" : "den"}, eller før ${flag ? "det" : "den"} opp i UTEN_STYLING med grunnen.`,
+        mismatches.push(
+          `${k} is ${flag ? "a flag" : "an allowed value"} without a selector. Style it, or list it in UNSTYLED with the reason.`,
         )
     }
   }
 }
 
-// 2. Hver verdi en selektor bruker, står i manifestet.
-for (const [k, fil] of vitnet) {
-  const [, klasse, attributt, verdi] =
+// 2. Every value a selector uses is in the manifest.
+for (const [k, file] of witnessed) {
+  const [, className, attribute, value] =
     k.match(/^(lt-[^[]+)\[([^=\]]+)(?:="(.*)")?\]$/) ?? []
-  const lovlige = manifest.classes[klasse]?.attributes[attributt]
-  const kjent =
-    lovlige !== undefined &&
-    (verdi === undefined ||
-      lovlige.values?.includes(verdi) ||
-      verdi === lovlige.default)
-  if (kjent) continue
-  if (k in INTERN) brukt.add(k)
+  const allowed = manifest.classes[className]?.attributes[attribute]
+  const known =
+    allowed !== undefined &&
+    (value === undefined ||
+      allowed.values?.includes(value) ||
+      value === allowed.default)
+  if (known) continue
+  if (k in INTERNAL) used.add(k)
   else
-    avvik.push(
-      `${fil} styler ${k}, som ikke står i manifestet. Legg verdien til i byggefunksjonen, eller før den opp i INTERN med grunnen.`,
+    mismatches.push(
+      `${file} styles ${k}, which is not in the manifest. Add the value to the builder function, or list it in INTERNAL with the reason.`,
     )
 }
 
-// Et unntak som ikke lenger trengs, skal bort, ellers gjemmer det neste feil.
-for (const k of [...Object.keys(UTEN_STYLING), ...Object.keys(INTERN)])
-  if (!brukt.has(k))
-    avvik.push(`${k} står som unntak, men trengs ikke lenger. Fjern det.`)
+// An exception that is no longer needed must go, or it hides the next fault.
+for (const k of [...Object.keys(UNSTYLED), ...Object.keys(INTERNAL)])
+  if (!used.has(k))
+    mismatches.push(
+      `${k} is listed as an exception, but is no longer needed. Remove it.`,
+    )
 
-if (avvik.length > 0) {
-  console.error(`CSS-en og manifestet sier ${avvik.length} ting forskjellig:\n`)
-  for (const a of avvik) console.error(`  ${a}`)
+if (mismatches.length > 0) {
+  console.error(
+    `The CSS and the manifest disagree on ${mismatches.length} things:\n`,
+  )
+  for (const m of mismatches) console.error(`  ${m}`)
   process.exit(1)
 }
 console.log(
-  `CSS-en vitner om det samme som manifestet: ${verdier} lovlige verdier og ${vitnet.size} selektorer, med ${Object.keys(UTEN_STYLING).length + Object.keys(INTERN).length} begrunnede unntak.`,
+  `The CSS bears witness to the same thing as the manifest: ${valueCount} allowed values and ${witnessed.size} selectors, with ${Object.keys(UNSTYLED).length + Object.keys(INTERNAL).length} justified exceptions.`,
 )

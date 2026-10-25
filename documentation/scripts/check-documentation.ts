@@ -1,16 +1,16 @@
 /**
- * Kontrollerer at dokumentasjonen følger koden.
+ * Checks that the documentation follows the code.
  *
- * Tabellene over komponentvariabler og klasser er skrevet for hånd, og de
- * glir fra hverandre uten at noe sier fra: `--lt-calendar-trigger-padding`
- * og `--lt-date-field-icon-radius` fantes i CSS-en i flere runder uten å stå
- * noe sted en konsument kunne lese.
+ * The tables of component variables and classes are written by hand, and
+ * they drift apart without anything saying so: `--lt-calendar-trigger-padding`
+ * and `--lt-date-field-icon-radius` existed in the CSS for several rounds
+ * without appearing anywhere a consumer could read them.
  *
- * Et navn regnes som nevnt bare når det står som et helt ord, se `nevnt()`.
- * Med `includes` var `.lt-button` dokumentert så lenge `.lt-button-group`
- * sto på siden.
+ * A name counts as mentioned only when it stands as a whole word, see
+ * `mentioned()`. With `includes`, `.lt-button` was documented as long as
+ * `.lt-button-group` was on the page.
  *
- * Kjør med: bun run test:docs
+ * Run with: bun run test:docs
  */
 
 import { readFileSync } from "node:fs"
@@ -23,583 +23,601 @@ import {
   roleToCss,
 } from "../../designsystem/scripts/color-contract.ts"
 
-const ROT = fileURLToPath(new URL("../../", import.meta.url))
-const KOMPONENTER = `${ROT}designsystem/src/components/`
-const SIDER = `${ROT}documentation/src/content/docs/components/`
-const TILPASNING = `${ROT}documentation/src/content/docs/customising.mdx`
-const DOKUMENTASJON = `${ROT}documentation/src/`
+const ROOT = fileURLToPath(new URL("../../", import.meta.url))
+const COMPONENTS = `${ROOT}designsystem/src/components/`
+const PAGES = `${ROOT}documentation/src/content/docs/components/`
+const CUSTOMISING = `${ROOT}documentation/src/content/docs/customising.mdx`
+const DOCUMENTATION = `${ROOT}documentation/src/`
 
-type Avvik = { hvor: string; hva: string }
+type Problem = { where: string; what: string }
 
-const avvik: Avvik[] = []
+const problems: Problem[] = []
 
-function les(sti: string): string {
-  return readFileSync(sti, "utf8")
+function read(path: string): string {
+  return readFileSync(path, "utf8")
 }
 
-function filer(mønster: string): string[] {
-  return [...new Bun.Glob(mønster).scanSync(KOMPONENTER)].map(
-    (treff) => `${KOMPONENTER}${treff}`,
+function files(pattern: string): string[] {
+  return [...new Bun.Glob(pattern).scanSync(COMPONENTS)].map(
+    (match) => `${COMPONENTS}${match}`,
   )
 }
 
 /**
- * At `navn` står i `tekst` som et helt ord: uten bokstav, tall, `_` eller `-`
- * rett før eller rett etter. `lt-button` er da ikke nevnt i `lt-button-group`,
- * og `--lt-card-padding` ikke i `--lt-card-padding-inline`.
+ * Whether `name` stands in `text` as a whole word: with no letter, digit, `_`
+ * or `-` right before or right after. `lt-button` is then not mentioned in
+ * `lt-button-group`, and `--lt-card-padding` not in `--lt-card-padding-inline`.
  */
-function nevnt(tekst: string, navn: string): boolean {
-  const kant = /[\w-]/
-  for (let i = tekst.indexOf(navn); i >= 0; i = tekst.indexOf(navn, i + 1)) {
-    const etter = tekst[i + navn.length] ?? ""
-    if (!kant.test(tekst[i - 1] ?? "") && !kant.test(etter)) return true
+function mentioned(text: string, name: string): boolean {
+  const edge = /[\w-]/
+  for (let i = text.indexOf(name); i >= 0; i = text.indexOf(name, i + 1)) {
+    const after = text[i + name.length] ?? ""
+    if (!edge.test(text[i - 1] ?? "") && !edge.test(after)) return true
   }
   return false
 }
 
-/** Komponentmappene: mappenavnet, som `button`, og stien til mappa. */
-function komponentmapper(): { navn: string; sti: string }[] {
-  const mapper = new Map<string, string>()
-  for (const fil of filer("*/*/*.ts")) {
-    const deler = fil.slice(KOMPONENTER.length).split("/")
-    if (deler.length < 3) continue
-    mapper.set(deler[1], `${KOMPONENTER}${deler[0]}/${deler[1]}/`)
+/** The component folders: the folder name, such as `button`, and its path. */
+function componentFolders(): { name: string; path: string }[] {
+  const folders = new Map<string, string>()
+  for (const file of files("*/*/*.ts")) {
+    const parts = file.slice(COMPONENTS.length).split("/")
+    if (parts.length < 3) continue
+    folders.set(parts[1], `${COMPONENTS}${parts[0]}/${parts[1]}/`)
   }
-  return [...mapper]
-    .map(([navn, sti]) => ({ navn, sti }))
-    .sort((a, b) => a.navn.localeCompare(b.navn))
+  return [...folders]
+    .map(([name, path]) => ({ name, path }))
+    .sort((a, b) => a.name.localeCompare(b.name))
 }
 
-function kilde(sti: string, endelse: string): string {
-  const treff = [...new Bun.Glob(`*${endelse}`).scanSync(sti)].filter(
-    (navn) => !navn.includes(".test."),
+function source(path: string, extension: string): string {
+  const matches = [...new Bun.Glob(`*${extension}`).scanSync(path)].filter(
+    (name) => !name.includes(".test."),
   )
-  return treff.map((navn) => les(`${sti}${navn}`)).join("\n")
+  return matches.map((name) => read(`${path}${name}`)).join("\n")
 }
 
-/** Klassenavnene et stilark definerer. */
-function klasser(css: string): string[] {
-  const rent = css
+/** The class names a stylesheet defines. */
+function classes(css: string): string[] {
+  const clean = css
     .replace(/\/\*[\s\S]*?\*\//g, " ")
     .replace(/url\([^)]*\)/g, " ")
     .replace(/"[^"]*"/g, " ")
-  return [...new Set((rent.match(/\.lt-[\w-]+/g) ?? []).map((n) => n.slice(1)))]
+  return [
+    ...new Set((clean.match(/\.lt-[\w-]+/g) ?? []).map((n) => n.slice(1))),
+  ]
 }
 
 /**
- * Komponentvariablene, altså det konsumenten kan sette på én komponent.
+ * The component variables, that is what the consumer can set on one component.
  *
- * Lista leses fra manifestet, som `generate-manifest.ts` skriver fra
- * stilarkene: hver `var(--lt-<komponent>-…, <reserve>)`, ført til komponenten
- * navnet begynner med. Før leste denne sjekken stilarkene selv, med sin egen
- * regel for hva som er et token og hva som er en komponentvariabel, og da
- * fantes lista to steder. Nå er manifestet det ene, og en variabel som ikke
- * står der, finnes ikke for dokumentasjonen heller. At manifestet er
- * generert på nytt, vokter CI-steget «Ingenting er ugenerert».
+ * The list is read from the manifest, which `generate-manifest.ts` writes from
+ * the stylesheets: every `var(--lt-<component>-…, <fallback>)`, assigned to the
+ * component the name starts with. This check used to read the stylesheets
+ * itself, with its own rule for what is a token and what is a component
+ * variable, and then the list existed in two places. Now the manifest is the
+ * one place, and a variable that is not there does not exist for the
+ * documentation either. That the manifest has been regenerated is guarded by
+ * the CI step "Nothing is ungenerated".
  */
 const MANIFEST: {
   tokens: { components: Record<string, Record<string, string>> }
-} = JSON.parse(les(`${ROT}designsystem/manifest/manifest.json`))
-const KOMPONENTVARIABLER = MANIFEST.tokens.components
+} = JSON.parse(read(`${ROOT}designsystem/manifest/manifest.json`))
+const COMPONENT_VARIABLES = MANIFEST.tokens.components
 
 /**
- * Eksempler skal kunne kopieres rett inn.
+ * Examples must be possible to copy straight in.
  *
- * `style=` i et eksempel er nesten alltid en jukselapp for å få
- * forhåndsvisningen til å se riktig ut, og leseren kan ikke se forskjell på
- * den og systemet. Trenger visningen en tilpasning, hører den i `visningsCss`
- * på `<Example>`, som ikke vises i kodefanen.
+ * `style=` in an example is nearly always a cheat to make the preview look
+ * right, and the reader cannot tell it apart from the system. If the preview
+ * needs an adjustment, it belongs in `previewCss` on `<Example>`, which is not
+ * shown in the code tab.
  */
 /*
- * Klassenavnene fra vårt eget navnerom, samlet fra all MDX.
+ * The class names from our own namespace, collected from all MDX.
  *
- * Kandidaten er alt som ser ut som en utility-klasse med `-lt-` i, uten
- * prefiksliste. En liste over lovlige prefikser sto her først, og den var
- * feil i begge retninger: `shadow-lt-accent-fill` finnes i Tailwind 4, siden
- * `--color-*` også mater `shadow-<farge>`, og ville blitt meldt som ukjent,
- * mens et utdatert `w-lt-aside` eller `p-lt-4` aldri ville blitt sett.
- * Et `data-lt-…` er et attributt, ikke en klasse, og telles ikke.
+ * The candidate is anything that looks like a utility class with `-lt-` in it,
+ * with no list of prefixes. A list of allowed prefixes stood here first, and
+ * it was wrong in both directions: `shadow-lt-accent-fill` exists in
+ * Tailwind 4, since `--color-*` also feeds `shadow-<colour>`, and would have
+ * been reported as unknown, while an outdated `w-lt-aside` or `p-lt-4` would
+ * never have been seen. A `data-lt-…` is an attribute, not a class, and is not
+ * counted.
  */
-const KANDIDAT = /(?<![\w-])(?!data-lt-)[a-z][a-z-]*-lt-[a-z0-9][a-z0-9-]*/g
+const CANDIDATE = /(?<![\w-])(?!data-lt-)[a-z][a-z-]*-lt-[a-z0-9][a-z0-9-]*/g
 
-const kandidater = new Map<string, Set<string>>()
+const candidates = new Map<string, Set<string>>()
 
 /*
- * Forekomster av `-lt-` som ikke ble en kandidat.
+ * Occurrences of `-lt-` that did not become a candidate.
  *
- * Dette er den uavhengige tellingen. `kandidater.size` er utledet av selve
- * regexen, så en regex som snevrer seg fra nitten treff til tre gir et tall
- * som er større enn null og en sjekk som melder grønt. Her spørres det
- * motsatte: står det en `-lt-` igjen i teksten etter at hvert kandidattreff er
- * fjernet? Da er det noe regexen ikke klassifiserte, og det skal sies.
+ * This is the independent count. `candidates.size` is derived from the regex
+ * itself, so a regex that narrows from nineteen matches to three gives a
+ * number greater than zero and a check that reports green. This asks the
+ * opposite: is there a `-lt-` left in the text after every candidate match is
+ * removed? Then there is something the regex did not classify, and it must be
+ * said.
  */
-const uklassifisert = new Map<string, number>()
+const unclassified = new Map<string, number>()
 
-for (const fil of new Bun.Glob("**/*.mdx").scanSync(
-  `${ROT}documentation/src/content/docs`,
+for (const file of new Bun.Glob("**/*.mdx").scanSync(
+  `${ROOT}documentation/src/content/docs`,
 )) {
-  const tekst = les(`${ROT}documentation/src/content/docs/${fil}`)
+  const text = read(`${ROOT}documentation/src/content/docs/${file}`)
 
-  // `visningsCss` er CSS, og kan inneholde ordet uten at det er markup.
-  const utenVisningsCss = tekst.replace(/previewCss=\{`[\s\S]*?`\}/g, " ")
+  // `previewCss` is CSS, and can contain the word without it being markup.
+  const withoutPreviewCss = text.replace(/previewCss=\{`[\s\S]*?`\}/g, " ")
 
-  // `style = '…'` og `style='…'` er like gyldige som `style="…"`.
-  if (/\bstyle\s*=/.test(utenVisningsCss)) {
-    avvik.push({
-      hvor: fil,
-      hva: "har et style-attributt i et eksempel. Bruk visningsCss, eller en klasse fra systemet.",
+  // `style = '…'` and `style='…'` are as valid as `style="…"`.
+  if (/\bstyle\s*=/.test(withoutPreviewCss)) {
+    problems.push({
+      where: file,
+      what: "has a style attribute in an example. Use previewCss, or a class from the system.",
     })
   }
 
-  for (const treff of tekst.matchAll(KANDIDAT)) {
-    kandidater.set(treff[0], (kandidater.get(treff[0]) ?? new Set()).add(fil))
+  for (const match of text.matchAll(CANDIDATE)) {
+    candidates.set(match[0], (candidates.get(match[0]) ?? new Set()).add(file))
   }
 
   /*
-   * `--lt-…` er et tokennavn og ikke en klasse, og `lt-button` og
-   * `lt-tabs__list` er våre egne klasser. Begge fjernes før det som er igjen
-   * telles.
+   * `--lt-…` is a token name and not a class, and `lt-button` and
+   * `lt-tabs__list` are our own classes. Both are removed before what is left
+   * is counted.
    */
-  const rest = tekst
-    .replace(KANDIDAT, " ")
+  const rest = text
+    .replace(CANDIDATE, " ")
     .replace(/--lt-[a-z0-9-]*/g, " ")
     .replace(/(?<![\w-])data-lt-[a-z0-9-]*/g, " ")
     .replace(/(?<![\w-])lt-[a-z0-9_-]+/g, " ")
     /*
-     * Et kodeord med en plassholder i er et navnemønster og ikke et navn:
-     * `<verktøy>-lt-<familie>-<rolle>` sier hvordan klassene heter. Hele
-     * kodeordet strykes, ellers står `-lt-` igjen mellom plassholderne.
+     * A code word with a placeholder in it is a naming pattern and not a name:
+     * `<utility>-lt-<family>-<role>` says how the classes are named. The whole
+     * code word is struck out, otherwise `-lt-` is left between the
+     * placeholders.
      */
     .replace(/`[^`\n]*<[^`\n]+`/g, " ")
 
-  const igjen = rest.match(/-lt-/g)?.length ?? 0
-  if (igjen > 0) uklassifisert.set(fil, igjen)
+  const left = rest.match(/-lt-/g)?.length ?? 0
+  if (left > 0) unclassified.set(file, left)
 }
 
 /*
- * Hver kandidat prøves mot en ekte Tailwind.
+ * Every candidate is tried against a real Tailwind.
  *
- * Tailwind sier ingenting om en klasse den ikke kjenner: den lager bare ingen
- * regel. Fargene byttet navn i 0.22.0, og tolv klassenavn fra tiden før sto
- * igjen i brødtekst og tabeller på to sider. Jeg rettet den ene siden, og fem
- * av navnene sto fortsatt på den andre. En vakt på eksempelmarkupen alene
- * fanger ikke det, siden en tabellrad ikke er markup.
+ * Tailwind says nothing about a class it does not know: it just makes no rule.
+ * The colours were renamed in 0.22.0, and twelve class names from before were
+ * left in body text and tables on two pages. I fixed one page, and five of the
+ * names were still on the other. A guard on the example markup alone does not
+ * catch that, since a table row is not markup.
  *
- * Kompilatoren spørres framfor at navnerommene tolkes her. `build()` er
- * kumulativ, så en kandidat som ikke gir noe lar lengden stå.
+ * The compiler is asked rather than interpreting the namespaces here.
+ * `build()` is cumulative, so a candidate that produces nothing leaves the
+ * length unchanged.
  */
-const kompilator = await compile(
+const compiler = await compile(
   [
     '@import "tailwindcss/theme.css" layer(theme);',
     '@import "tailwindcss/utilities.css" layer(utilities);',
     '@import "@lo-tek/interfaces/tailwind.css";',
   ].join("\n"),
   {
-    base: `${ROT}documentation`,
+    base: `${ROOT}documentation`,
     loadStylesheet: async (id: string, basedir: string) => {
-      const sti = id.startsWith(".")
+      const path = id.startsWith(".")
         ? join(basedir, id)
         : Bun.resolveSync(id, basedir)
-      return { path: sti, base: dirname(sti), content: les(sti) }
+      return { path, base: dirname(path), content: read(path) }
     },
   },
 )
 
-let lengde = kompilator.build([]).length
-let provdeKlasser = 0
+let length = compiler.build([]).length
+let triedClasses = 0
 
-for (const [klasse, filer] of kandidater) {
-  const ny = kompilator.build([klasse]).length
-  provdeKlasser += 1
+for (const [className, classFiles] of candidates) {
+  const next = compiler.build([className]).length
+  triedClasses += 1
 
-  if (ny <= lengde) {
-    for (const fil of filer) {
-      avvik.push({
-        hvor: fil,
-        hva: `nevner Tailwind-klassen \`${klasse}\`, som ikke finnes i temaet`,
+  if (next <= length) {
+    for (const file of classFiles) {
+      problems.push({
+        where: file,
+        what: `mentions the Tailwind class \`${className}\`, which does not exist in the theme`,
       })
     }
   }
-  lengde = Math.max(lengde, ny)
+  length = Math.max(length, next)
 }
 
 /*
- * Tre ledd som skal felle en sjekk som ikke har sett på noe.
+ * Three parts that must fail a check that has not looked at anything.
  *
- * Det første er den uavhengige tellingen over: en `-lt-` som ikke ble en
- * kandidat. Det andre er at det i det hele tatt fantes kandidater. Det tredje
- * er en negativ kontroll: uten den ville sjekken vært permanent grønn den
- * dagen `build()` sluttet å være selektiv, siden hver ekte kandidat er gyldig
- * og avvisningsveien derfor aldri utøves av dem.
+ * The first is the independent count above: a `-lt-` that did not become a
+ * candidate. The second is that there were any candidates at all. The third
+ * is a negative control: without it the check would be permanently green the
+ * day `build()` stopped being selective, since every real candidate is valid
+ * and the rejection path is therefore never exercised by them.
  */
-for (const [fil, antall] of uklassifisert) {
-  avvik.push({
-    hvor: fil,
-    hva: `har ${antall} forekomster av «-lt-» som ikke ble lest som en klasse. Regexen treffer ikke alt den skal.`,
+for (const [file, count] of unclassified) {
+  problems.push({
+    where: file,
+    what: `has ${count} occurrences of "-lt-" that were not read as a class. The regex does not match everything it should.`,
   })
 }
 
-if (provdeKlasser === 0) {
-  avvik.push({
-    hvor: "check-documentation.ts",
-    hva: "fant ingen Tailwind-klasser å prøve. Regexen treffer ikke lenger.",
+if (triedClasses === 0) {
+  problems.push({
+    where: "check-documentation.ts",
+    what: "found no Tailwind classes to try. The regex no longer matches.",
   })
 }
 
-const foerKontroll = lengde
-if (kompilator.build(["bg-lt-finnes-ikke-i-temaet"]).length > foerKontroll) {
-  avvik.push({
-    hvor: "check-documentation.ts",
-    hva: "Tailwind lagde en regel for en klasse som ikke finnes. Sjekken over kan ikke avvise noe.",
+const beforeControl = length
+if (compiler.build(["bg-lt-not-in-the-theme"]).length > beforeControl) {
+  problems.push({
+    where: "check-documentation.ts",
+    what: "Tailwind made a rule for a class that does not exist. The check above cannot reject anything.",
   })
 }
 
-const tilpasning = les(TILPASNING)
-const alleVariabler = new Set<string>()
+const customising = read(CUSTOMISING)
+const allVariables = new Set<string>()
 
-// Tokenene skal stå på tokensiden. Ellers finnes de bare i kildekoden, og en
-// konsument som skal bygge sitt eget tema vet ikke at de er der.
-const tokenside = les(`${ROT}documentation/src/content/docs/design-tokens.mdx`)
-
-/*
- * Fargene dokumenteres som matrise, ikke som 86 navn.
- *
- * `--lt-color-<familie>-<rolle>` er systematisk, så siden er dekkende når hver
- * familie og hver rolle står der. Å kreve hver celle ville gitt en side som er
- * en liste framfor en forklaring, og den ville måttet skrives om hver gang en
- * familie kom til.
- *
- * Alt som ikke er en celle kreves fortsatt navngitt.
- */
-const tokenCss = les(`${ROT}designsystem/src/tokens/tokens.css`)
-const alleTokens = [...tokenCss.matchAll(/^\s*(--lt-[\w-]+):/gm)].map(
-  (treff) => treff[1],
+// The tokens must be on the tokens page. Otherwise they exist only in the
+// source code, and a consumer building their own theme does not know they are
+// there.
+const tokenPage = read(
+  `${ROOT}documentation/src/content/docs/design-tokens.mdx`,
 )
 
 /*
- * Aksene leses fra `FAMILIES` og `ROLES`, ikke ut av navnene i `tokens.css`.
+ * The colours are documented as a matrix, not as 86 names.
  *
- * Å utlede dem fra navnene ga `disabled` som en tiende familie, fordi
- * `--lt-color-disabled-text` ser ut som en celle. Den har bare to av de ni
- * rollene og er nettopp ikke en familie. Alt som ikke er en ekte celle må ha
- * sitt fulle tokennavn på siden, som før.
+ * `--lt-color-<family>-<role>` is systematic, so the page is complete when
+ * every family and every role is on it. Requiring every cell would give a page
+ * that is a list rather than an explanation, and it would have to be rewritten
+ * every time a family was added.
+ *
+ * Everything that is not a cell is still required by name.
  */
-const familier = new Set<string>(FAMILIES)
-const roller = new Set<string>(
-  Object.keys(ROLES).map((rolle) => roleToCss(rolle as keyof typeof ROLES)),
+const tokenCss = read(`${ROOT}designsystem/src/tokens/tokens.css`)
+const allTokens = [...tokenCss.matchAll(/^\s*(--lt-[\w-]+):/gm)].map(
+  (match) => match[1],
 )
-const andre = new Set<string>()
 
-for (const token of alleTokens) {
-  const celle = token.match(/^--lt-color-([a-z0-9]+)-(.+)$/)
-  if (celle && familier.has(celle[1]) && roller.has(celle[2])) continue
-  andre.add(token)
+/*
+ * The axes are read from `FAMILIES` and `ROLES`, not out of the names in
+ * `tokens.css`.
+ *
+ * Deriving them from the names gave `disabled` as a tenth family, because
+ * `--lt-color-disabled-text` looks like a cell. It has only two of the nine
+ * roles and is precisely not a family. Everything that is not a real cell must
+ * have its full token name on the page, as before.
+ */
+const families = new Set<string>(FAMILIES)
+const roles = new Set<string>(
+  Object.keys(ROLES).map((role) => roleToCss(role as keyof typeof ROLES)),
+)
+const others = new Set<string>()
+
+for (const token of allTokens) {
+  const cell = token.match(/^--lt-color-([a-z0-9]+)-(.+)$/)
+  if (cell && families.has(cell[1]) && roles.has(cell[2])) continue
+  others.add(token)
 }
 
 /*
- * Navnet må stå først i en tabellrad, ikke bare et sted på siden.
+ * The name must be first in a table row, not just somewhere on the page.
  *
- * `tokenside.includes(navn)` på bare ordet var mye svakere enn navnesjekken
- * den erstattet: `border` er en delstreng av `border-subtle`, så den kunne
- * aldri feile for seg, og `danger`, `success` og `accent` traff også i prosa
- * og i stier. Backticker alene holdt heller ikke: raden for `border` kunne
- * fjernes, siden løftet i raden under nevner den. Kravet er at navnet står
- * som første celle i en rad, altså at det er forklart og ikke bare nevnt.
+ * `tokenPage.includes(name)` on the bare word was much weaker than the name
+ * check it replaced: `border` is a substring of `border-subtle`, so it could
+ * never fail on its own, and `danger`, `success` and `accent` also matched in
+ * prose and in paths. Backticks alone were not enough either: the row for
+ * `border` could be removed, since the promise in the row below mentions it.
+ * The requirement is that the name stands as the first cell in a row, that is
+ * that it is explained and not just mentioned.
  */
-const forsteCeller = tokenside
+const firstCells = tokenPage
   .split("\n")
-  .filter((linje) => linje.startsWith("|"))
-  .map((linje) => linje.split("|")[1] ?? "")
+  .filter((line) => line.startsWith("|"))
+  .map((line) => line.split("|")[1] ?? "")
 
-const oppfort = (navn: string) =>
-  forsteCeller.some((celle) => celle.includes(`\`${navn}\``))
+const listed = (name: string) =>
+  firstCells.some((cell) => cell.includes(`\`${name}\``))
 
-for (const familie of familier) {
-  if (!oppfort(familie)) {
-    avvik.push({
-      hvor: "design-tokens.mdx",
-      hva: `familien \`${familie}\` er ikke dokumentert`,
+for (const family of families) {
+  if (!listed(family)) {
+    problems.push({
+      where: "design-tokens.mdx",
+      what: `the family \`${family}\` is not documented`,
     })
   }
 }
 
-for (const rolle of roller) {
-  if (!oppfort(rolle)) {
-    avvik.push({
-      hvor: "design-tokens.mdx",
-      hva: `rollen \`${rolle}\` er ikke dokumentert`,
+for (const role of roles) {
+  if (!listed(role)) {
+    problems.push({
+      where: "design-tokens.mdx",
+      what: `the role \`${role}\` is not documented`,
     })
   }
 }
 
-for (const token of andre) {
-  if (!nevnt(tokenside, token)) {
-    avvik.push({
-      hvor: "design-tokens.mdx",
-      hva: `tokenet \`${token}\` er ikke dokumentert`,
+for (const token of others) {
+  if (!mentioned(tokenPage, token)) {
+    problems.push({
+      where: "design-tokens.mdx",
+      what: `the token \`${token}\` is not documented`,
     })
   }
 }
 
-for (const { navn, sti } of komponentmapper()) {
-  const side = `${SIDER}${navn}.mdx`
-  let tekst: string
+for (const { name, path } of componentFolders()) {
+  const page = `${PAGES}${name}.mdx`
+  let text: string
   try {
-    tekst = les(side)
+    text = read(page)
   } catch {
-    avvik.push({
-      hvor: `components/${navn}.mdx`,
-      hva: "komponenten mangler en dokumentasjonsside",
+    problems.push({
+      where: `components/${name}.mdx`,
+      what: "the component has no documentation page",
     })
     continue
   }
 
-  const css = kilde(sti, ".css")
-  const variabler = Object.keys(KOMPONENTVARIABLER[navn] ?? {})
-  const hvor = `components/${navn}.mdx`
+  const css = source(path, ".css")
+  const variables = Object.keys(COMPONENT_VARIABLES[name] ?? {})
+  const where = `components/${name}.mdx`
 
-  if (!/^## .*[Aa]ccessibility/m.test(tekst)) {
-    avvik.push({ hvor, hva: "mangler seksjonen «Accessibility»" })
+  if (!/^## .*[Aa]ccessibility/m.test(text)) {
+    problems.push({ where, what: 'is missing the section "Accessibility"' })
   }
 
-  // <Example> for de enkle, eller en egen demokomponent der eksempelet
-  // trenger skript, som <CalendarDemo>.
-  if (!/<(Example|[A-Z][A-Za-z]*Demo)\b/.test(tekst)) {
-    avvik.push({ hvor, hva: "mangler en levende forhåndsvisning" })
+  // <Example> for the simple ones, or a separate demo component where the
+  // example needs a script, such as <CalendarDemo>.
+  if (!/<(Example|[A-Z][A-Za-z]*Demo)\b/.test(text)) {
+    problems.push({ where, what: "is missing a live preview" })
   }
 
   /*
-   * Importene hører i oppskriften, ikke hvor som helst på siden.
+   * The imports belong in the recipe, not anywhere on the page.
    *
-   * Regelen så før etter en `js`-blokk med pakkenavnet i, hvor som helst i
-   * teksten. Den gikk grønn på de fleste sidene av feil grunn: «TypeScript»
-   * nederst nevner `@lo-tek/interfaces/react`, og det telte. Nå kreves
-   * det at «How to use it» selv sier hva som skal importeres,
-   * enten i en kodefane eller gjennom `importer` på <Example>.
+   * The rule used to look for a `js` block with the package name in it,
+   * anywhere in the text. It went green on most pages for the wrong reason:
+   * "TypeScript" at the bottom mentions `@lo-tek/interfaces/react`, and that
+   * counted. Now "How to use it" itself must say what to import, either in a
+   * code tab or through `imports` on <Example>.
    */
-  const oppskriftStart = tekst.indexOf("## How to use it")
-  const oppskriftSlutt = tekst.indexOf("\n## ", oppskriftStart + 5)
-  const oppskrift =
-    oppskriftStart === -1
+  const recipeStart = text.indexOf("## How to use it")
+  const recipeEnd = text.indexOf("\n## ", recipeStart + 5)
+  const recipe =
+    recipeStart === -1
       ? ""
-      : tekst.slice(
-          oppskriftStart,
-          oppskriftSlutt === -1 ? undefined : oppskriftSlutt,
-        )
+      : text.slice(recipeStart, recipeEnd === -1 ? undefined : recipeEnd)
 
-  if (oppskriftStart === -1) {
-    avvik.push({ hvor, hva: "mangler seksjonen «How to use it»" })
-  } else if (!/\.css/.test(oppskrift) && !/imports=\{/.test(oppskrift)) {
+  if (recipeStart === -1) {
+    problems.push({ where, what: 'is missing the section "How to use it"' })
+  } else if (!/\.css/.test(recipe) && !/imports=\{/.test(recipe)) {
     /*
-     * Et stilark, ikke bare pakkenavnet.
+     * A stylesheet, not just the package name.
      *
-     * Regelen krevde før at oppskriften nevnte `@lo-tek/interfaces`, og
-     * `tabs.mdx` gikk grønn på `@lo-tek/interfaces/tabs`, altså
-     * JavaScript-modulen, uten å nevne `tabs.css` med et ord. Leseren som
-     * fulgte oppskriften fikk ustylede faner.
+     * The rule used to require the recipe to mention `@lo-tek/interfaces`,
+     * and `tabs.mdx` went green on `@lo-tek/interfaces/tabs`, the JavaScript
+     * module, without a word about `tabs.css`. The reader who followed the
+     * recipe got unstyled tabs.
      */
-    avvik.push({ hvor, hva: "sier ikke hvilke stilark oppskriften trenger" })
-  }
-
-  // Komponenter som ikke rendrer noe selv, som <lt-field>, har ingenting å
-  // eksponere og trenger derfor ingen slik seksjon.
-  const eksponerer = klasser(css).length > 0 || variabler.length > 0
-  const stylbare = /## (Classes|Parts) you can style/.test(tekst)
-  if (eksponerer && !stylbare) {
-    avvik.push({
-      hvor,
-      hva: "mangler seksjonen «Classes you can style» eller «Parts you can style»",
+    problems.push({
+      where,
+      what: "does not say which stylesheets the recipe needs",
     })
   }
 
-  for (const klasse of klasser(css)) {
-    if (!nevnt(tekst, klasse)) {
-      avvik.push({ hvor, hva: `klassen \`.${klasse}\` er ikke dokumentert` })
+  // Components that render nothing themselves, such as <lt-field>, have
+  // nothing to expose and therefore need no such section.
+  const exposes = classes(css).length > 0 || variables.length > 0
+  const styleable = /## (Classes|Parts) you can style/.test(text)
+  if (exposes && !styleable) {
+    problems.push({
+      where,
+      what: 'is missing the section "Classes you can style" or "Parts you can style"',
+    })
+  }
+
+  for (const className of classes(css)) {
+    if (!mentioned(text, className)) {
+      problems.push({
+        where,
+        what: `the class \`.${className}\` is not documented`,
+      })
     }
   }
 
-  for (const variabel of variabler) {
-    alleVariabler.add(variabel)
-    if (!nevnt(tekst, variabel)) {
-      avvik.push({
-        hvor,
-        hva: `variabelen \`${variabel}\` er ikke dokumentert`,
+  for (const variable of variables) {
+    allVariables.add(variable)
+    if (!mentioned(text, variable)) {
+      problems.push({
+        where,
+        what: `the variable \`${variable}\` is not documented`,
       })
     }
   }
 }
 
 /*
- * Hver variabel i manifestet, også dem en komponent uten side skulle hatt:
- * oversikten skal ha alle, og tellingen skal være større enn null, ellers har
- * manifestet ingen komponentvariabler og sjekken over sa ingenting.
+ * Every variable in the manifest, including those of a component without a
+ * page: the overview must have them all, and the count must be greater than
+ * zero, otherwise the manifest has no component variables and the check above
+ * said nothing.
  */
-for (const variabler of Object.values(KOMPONENTVARIABLER))
-  for (const variabel of Object.keys(variabler)) alleVariabler.add(variabel)
-if (alleVariabler.size === 0) {
-  avvik.push({
-    hvor: "manifest.json",
-    hva: "har ingen komponentvariabler, så ingen variabel ble sjekket",
+for (const variables of Object.values(COMPONENT_VARIABLES))
+  for (const variable of Object.keys(variables)) allVariables.add(variable)
+if (allVariables.size === 0) {
+  problems.push({
+    where: "manifest.json",
+    what: "has no component variables, so no variable was checked",
   })
 }
 /*
- * Som første celle i en tabellrad, ikke bare nevnt: `--lt-card-padding` står
- * i prosaen om rekkevidde lenger opp, og raden kunne tas ut av oversikten
- * uten at noe sa fra.
+ * As the first cell in a table row, not just mentioned: `--lt-card-padding`
+ * stands in the prose about scope further up, and the row could be taken out
+ * of the overview without anything saying so.
  */
-const oppfortITilpasning = new Set(
-  tilpasning
+const listedInCustomising = new Set(
+  customising
     .split("\n")
-    .filter((linje) => linje.startsWith("| `--lt-"))
-    .map((linje) => linje.split("|")[1]?.trim().replace(/`/g, "") ?? ""),
+    .filter((line) => line.startsWith("| `--lt-"))
+    .map((line) => line.split("|")[1]?.trim().replace(/`/g, "") ?? ""),
 )
-for (const variabel of [...alleVariabler].sort()) {
-  if (!oppfortITilpasning.has(variabel)) {
-    avvik.push({
-      hvor: "customising.mdx",
-      hva: `variabelen \`${variabel}\` mangler i oversikten`,
+for (const variable of [...allVariables].sort()) {
+  if (!listedInCustomising.has(variable)) {
+    problems.push({
+      where: "customising.mdx",
+      what: `the variable \`${variable}\` is missing from the overview`,
     })
   }
 }
 
 /*
- * Eksempler som kaller `lt.field()` uten `id`.
+ * Examples that call `lt.field()` without `id`.
  *
- * `id` er påkrevd, og en konsument som kopierer et eksempel uten den får en
- * advarsel i konsollen og en id som ikke overlever hydrering. Ingenting annet
- * i rekka leser kodeblokkene: `check-documentation` ser etter navn i teksten,
- * og ingen av dem kompileres. Da denne endringen ble gjort, sto alle
- * eksemplene allerede riktig, men det var tilfeldig og ikke voktet.
+ * `id` is required, and a consumer who copies an example without it gets a
+ * warning in the console and an id that does not survive hydration. Nothing
+ * else in the run reads the code blocks: `check-documentation` looks for names
+ * in the text, and none of them is compiled. When this change was made, all
+ * the examples were already right, but that was by chance and not guarded.
  */
 /**
- * Et kall på en byggefunksjon som tar en id, og argumentet det fikk.
+ * A call to a builder function that takes an id, and the argument it got.
  *
- * Objektet fanges med ett nivå nesting, så `${x}` og et nøstet objekt inni
- * ikke avslutter treffet for tidlig. Er argumentet en variabel framfor et
- * objekt, sier sjekken ingenting: den kan ikke vite hva som står i den, og en
- * falsk alarm på riktig kode er verre enn et hull.
+ * The object is captured with one level of nesting, so `${x}` and a nested
+ * object inside do not end the match too early. If the argument is a variable
+ * rather than an object, the check says nothing: it cannot know what is in
+ * it, and a false alarm on correct code is worse than a gap.
  */
-const KODEKALL =
+const CODE_CALL =
   /\blt\.(field|suggestion|tabs|popover|dialog)\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})?\s*\)?/g
 
-/** Det samme, men bare når kallet har en argumentliste. Se `inlineKode`. */
-const KODEKALL_MED_ARGUMENT =
+/** The same, but only when the call has an argument list. See `inlineCode`. */
+const CODE_CALL_WITH_ARGUMENT =
   /\blt\.(field|suggestion|tabs|popover|dialog)\(\s*(\{(?:[^{}]|\{[^{}]*\})*\})\s*\)/g
 
 /**
- * Bare koden.
+ * Only the code.
  *
- * I brødtekst nevnes `lt.field()` uten at det er et kall, og på forsiden står
- * det til og med inni en `<code>`-tagg i en setning. I mdx er koden det som
- * står i kodegjerdene, i Astro er det frontmatteret og skriptene.
+ * In body text `lt.field()` is mentioned without being a call, and on the
+ * front page it even stands inside a `<code>` tag in a sentence. In mdx the
+ * code is what stands in the code fences, in Astro it is the frontmatter and
+ * the scripts.
  */
-function kodebiter(fil: string, innhold: string): string[] {
-  if (fil.endsWith(".mdx")) {
-    return [...innhold.matchAll(/```[a-zA-Z]*\n([\s\S]*?)```/g)].map(
-      (treff) => treff[1],
+function codeSnippets(file: string, content: string): string[] {
+  if (file.endsWith(".mdx")) {
+    return [...content.matchAll(/```[a-zA-Z]*\n([\s\S]*?)```/g)].map(
+      (match) => match[1],
     )
   }
 
-  const frontmatter = innhold.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? ""
-  const skript = [
-    ...innhold.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g),
-  ].map((treff) => treff[1])
-  return [frontmatter, ...skript]
+  const frontmatter = content.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? ""
+  const scripts = [
+    ...content.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g),
+  ].map((match) => match[1])
+  return [frontmatter, ...scripts]
 }
 
 /**
- * Det som står i enkle bakoverfnutter i brødteksten.
+ * What stands in single backticks in the body text.
  *
- * `lt.suggestion({ count: treff.length })` uten `id` sto i en setning under
- * et eksempel og slapp gjennom, siden bare kodegjerdene ble lest. Et kall med
- * en argumentliste er et eksempel uansett hvor det står.
+ * `lt.suggestion({ count: matches.length })` without `id` stood in a sentence
+ * below an example and slipped through, since only the code fences were read.
+ * A call with an argument list is an example wherever it stands.
  */
-function inlineKode(fil: string, innhold: string): string[] {
-  if (!fil.endsWith(".mdx")) return []
-  const utenGjerder = innhold.replace(/```[\s\S]*?```/g, "")
-  return [...utenGjerder.matchAll(/`([^`\n]+)`/g)].map((treff) => treff[1])
+function inlineCode(file: string, content: string): string[] {
+  if (!file.endsWith(".mdx")) return []
+  const withoutFences = content.replace(/```[\s\S]*?```/g, "")
+  return [...withoutFences.matchAll(/`([^`\n]+)`/g)].map((match) => match[1])
 }
 
-function lesKall(fil: string, treff: RegExpMatchArray): void {
-  const bygger = treff[1]
-  const argument = treff[2]
-  // Ingen argumentliste å lese, altså en variabel. Da sier vi ingenting.
-  if (argument === undefined && !/\(\s*\)/.test(treff[0])) return
+function readCall(file: string, match: RegExpMatchArray): void {
+  const builder = match[1]
+  const argument = match[2]
+  // No argument list to read, so a variable. Then we say nothing.
+  if (argument === undefined && !/\(\s*\)/.test(match[0])) return
 
-  const nokkel = bygger === "dialog" ? "titleId" : "id"
-  // Uten kolon: `{ titleId }` er kortformen, og den teller. Ordgrensene gjør
-  // at `helpId` og `errorId` ikke går for `id`.
-  if (argument && new RegExp(`\\b${nokkel}\\b`).test(argument)) return
+  const key = builder === "dialog" ? "titleId" : "id"
+  // Without a colon: `{ titleId }` is the shorthand, and it counts. The word
+  // boundaries keep `helpId` and `errorId` from passing for `id`.
+  if (argument && new RegExp(`\\b${key}\\b`).test(argument)) return
 
-  avvik.push({
-    hvor: fil,
-    hva: `\`lt.${bygger}()\` uten \`${nokkel}\`. Den er påkrevd, og et eksempel uten den lærer bort en felle`,
+  problems.push({
+    where: file,
+    what: `\`lt.${builder}()\` without \`${key}\`. It is required, and an example without it teaches a trap`,
   })
 }
 
-for (const fil of [
-  ...new Bun.Glob("**/*.{mdx,astro}").scanSync(DOKUMENTASJON),
+for (const file of [
+  ...new Bun.Glob("**/*.{mdx,astro}").scanSync(DOCUMENTATION),
 ]) {
-  const innhold = les(`${DOKUMENTASJON}${fil}`)
+  const content = read(`${DOCUMENTATION}${file}`)
 
-  for (const kode of kodebiter(fil, innhold)) {
-    for (const treff of kode.matchAll(KODEKALL)) lesKall(fil, treff)
+  for (const code of codeSnippets(file, content)) {
+    for (const match of code.matchAll(CODE_CALL)) readCall(file, match)
   }
 
   /*
-   * I brødteksten teller bare kallet som faktisk har en argumentliste.
-   * `lt.field()` uten argumenter er navnet på en funksjon, og står slik i
-   * dusinvis av setninger.
+   * In the body text only a call that actually has an argument list counts.
+   * `lt.field()` without arguments is the name of a function, and stands like
+   * that in dozens of sentences.
    */
-  for (const kode of inlineKode(fil, innhold)) {
-    for (const treff of kode.matchAll(KODEKALL_MED_ARGUMENT))
-      lesKall(fil, treff)
+  for (const code of inlineCode(file, content)) {
+    for (const match of code.matchAll(CODE_CALL_WITH_ARGUMENT))
+      readCall(file, match)
   }
 }
 
 /*
- * Versjonen i en CDN-adresse skal komme fra `remark-version.mjs`, ikke fra
- * tastaturet.
+ * The version in a CDN address must come from `remark-version.mjs`, not from
+ * the keyboard.
  *
- * Adressene sto hardkodet 74 steder i 12 filer, og `prepare-version` skrev dem
- * om ved hver utgivelse. Et omskrivingssteg må finne den gamle versjonen for å
- * bytte den, så en fil som hadde glidd ble stående og pekte på en eldre pakke
- * enn teksten rundt beskrev. Plassholderen kan ikke gli.
+ * The addresses were hard-coded in 74 places in 12 files, and
+ * `prepare-version` rewrote them at every release. A rewriting step has to
+ * find the old version to replace it, so a file that had drifted was left
+ * pointing at an older package than the text around it described. The
+ * placeholder cannot drift.
  *
- * Kravet er at versjonsleddet er nøyaktig `VERSION`, ikke bare at det lar være
- * å være siffer: `@latest` ville ellers passert og gitt en adresse jsdelivr
- * svarer annerledes på enn teksten lover.
+ * The requirement is that the version part is exactly `VERSION`, not just that
+ * it is not digits: `@latest` would otherwise pass and give an address
+ * jsdelivr answers differently from what the text promises.
  */
-for (const fil of [
-  ...new Bun.Glob("**/*.{mdx,astro}").scanSync(DOKUMENTASJON),
+for (const file of [
+  ...new Bun.Glob("**/*.{mdx,astro}").scanSync(DOCUMENTATION),
 ]) {
-  const innhold = les(`${DOKUMENTASJON}${fil}`)
+  const content = read(`${DOCUMENTATION}${file}`)
 
-  for (const treff of innhold.matchAll(/@lo-tek\/interfaces@([^/\s"'`)]+)/g)) {
-    // `VERSION` er formen i markdown. I en `.astro`-fil kjører ingen remark, og
-    // der er den riktige formen å lese versjonen av `package.json` i koden.
-    // Unntaket må være bundet til filtypen: uten det slapp
-    // `@lo-tek/interfaces@${versjon}` gjennom i en mdx-kodeblokk også, der
-    // ingen bytter den ut og ingen annen vakt ser etter den.
-    if (treff[1] === "VERSION") continue
-    if (fil.endsWith(".astro") && treff[1].startsWith("${")) continue
+  for (const match of content.matchAll(/@lo-tek\/interfaces@([^/\s"'`)]+)/g)) {
+    // `VERSION` is the form in markdown. In an `.astro` file no remark runs,
+    // and there the right form is to read the version from `package.json` in
+    // the code. The exception must be bound to the file type: without that,
+    // `@lo-tek/interfaces@${version}` slipped through in an mdx code block
+    // too, where nobody replaces it and no other guard looks for it.
+    if (match[1] === "VERSION") continue
+    if (file.endsWith(".astro") && match[1].startsWith("${")) continue
 
-    const linje = innhold.slice(0, treff.index).split("\n").length
-    avvik.push({
-      hvor: `${fil}:${linje}`,
-      hva: `${treff[0]} står med versjonen skrevet for hånd. Bruk @lo-tek/interfaces@VERSION, som remark-version.mjs bytter ut.`,
+    const line = content.slice(0, match.index).split("\n").length
+    problems.push({
+      where: `${file}:${line}`,
+      what: `${match[0]} has the version written by hand. Use @lo-tek/interfaces@VERSION, which remark-version.mjs replaces.`,
     })
   }
 }
 
-if (avvik.length > 0) {
-  const oppsummering = avvik.map((a) => `  ${a.hvor}: ${a.hva}`).join("\n")
+if (problems.length > 0) {
+  const summary = problems.map((p) => `  ${p.where}: ${p.what}`).join("\n")
   console.error(
-    `Fant ${avvik.length} avvik mellom koden og dokumentasjonen:\n\n${oppsummering}\n`,
+    `Found ${problems.length} mismatches between the code and the documentation:\n\n${summary}\n`,
   )
   process.exit(1)
 }
 
 console.log(
-  `Dokumentasjonen følger koden. ${provdeKlasser} Tailwind-klasser prøvd mot temaet.`,
+  `The documentation follows the code. ${triedClasses} Tailwind classes tried against the theme.`,
 )

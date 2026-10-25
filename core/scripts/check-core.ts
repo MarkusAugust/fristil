@@ -1,35 +1,37 @@
 /**
- * At kjernen svarer det den skal, på alt den kan møte.
+ * That the core answers what it should, on everything it can meet.
  *
- * Tre kilder til markup, fra den smaleste til den bredeste:
+ * Three sources of markup, from the narrowest to the widest:
  *
- * 1. Fiksturene i `parity/`. Svaret skal være nøyaktig fasiten ved siden av,
- *    felt for felt, og til sammen skal fiksturene utløse hver regel kjernen
- *    har. Fasiten for de ti første ble skrevet av TypeScript-versjonen av
- *    sjekken før den ble slettet, de andre av kjernen da de kom til. Den er
- *    en vanlig test: en endring i et svar er en endring i fasiten, og synes i
- *    diffen. En fikstur med en `.css` ved siden av sjekkes også med
- *    stilarket, som `diagnoseRendered`, og svaret står under `stylet`.
- *    `ParityTest` i `kotlin/` krever den samme fasiten fra JVM-en.
- * 2. Alt i repoet som har markup i seg: dokumentasjonen, regelbøkene,
- *    komponentene og testene deres. Det er markup skrevet av mennesker og
- *    agenter, med alt det rare det har i seg.
- * 3. Ødelagt markup: hver fikstur, klipt, skjøtet og med tegn satt inn og tatt
- *    bort, med et fast frø, så et funn kan gjenskapes.
+ * 1. The fixtures in `parity/`. The answer must be exactly the expected
+ *    result next to it, field by field, and together the fixtures must
+ *    trigger every rule the core has. The expected results for the first ten
+ *    were written by the TypeScript version of the check before it was
+ *    deleted, the others by the core when they were added. It is an ordinary
+ *    test: a change in an answer is a change in the expected result, and shows
+ *    in the diff. A fixture with a `.css` next to it is also checked with the
+ *    stylesheet, like `diagnoseRendered`, and the answer is under `styled`.
+ *    `ParityTest` in `kotlin/` requires the same expected results from the JVM.
+ * 2. Everything in the repository with markup in it: the documentation, the
+ *    rulebooks, the components and their tests. It is markup written by people
+ *    and agents, with all the oddities that come with it.
+ * 3. Broken markup: every fixture, cut, spliced and with characters inserted
+ *    and removed, with a fixed seed, so a finding can be reproduced.
  *
- * Temaet har sin egen fasit i `theme/`: oppskrifter til `buildTheme`, og
- * temaer skrevet som CSS til `inspectTheme`, med svaret ved siden av.
+ * The theme has its own expected results in `theme/`: recipes for
+ * `buildTheme`, and themes written as CSS for `inspectTheme`, with the answer
+ * next to them.
  *
- * I tillegg malene i `templates/`, én per malspråk: Thymeleaf, JTE, Go, Razor og
- * Blade. Hver har nøyaktig én skrivefeil med vilje, og skal gi nøyaktig det
- * funnet og ingen andre.
+ * In addition the templates in `templates/`, one per template language:
+ * Thymeleaf, JTE, Go, Razor and Blade. Each has exactly one deliberate typo,
+ * and must give exactly that finding and no others.
  *
- * For 2 og 3 finnes ingen fasit, men svaret må holde: kjernen kaster ikke,
- * hvert funn ligger innenfor teksten, linja og kolonnen svarer til `start`,
- * regelen er en kjernen har, og en rettelse ligger innenfor teksten. Sjekken
- * gjøres med både `diagnoseMarkup` og `diagnosePage`.
+ * For 2 and 3 there are no expected results, but the answer must hold: the
+ * core does not throw, every finding lies within the text, the line and column
+ * match `start`, the rule is one the core has, and a fix lies within the text.
+ * The check runs with both `diagnoseMarkup` and `diagnosePage`.
  *
- * Kjør med: bun core/scripts/check-core.ts (etter build.ts)
+ * Run with: bun core/scripts/check-core.ts (after build.ts)
  */
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
@@ -39,41 +41,41 @@ import {
   type Finding,
   loadCore,
 } from "../../designsystem/src/diagnostics/core.js"
-import { MODUL } from "./build.js"
+import { MODULE } from "./build.js"
 
-const ROT = fileURLToPath(new URL("../..", import.meta.url))
-const kjerne = loadCore(readFileSync(MODUL))
-// Kjernen bærer ingen data. Sjekken gir den pakkens manifest og fargekontrakt,
-// slik hver vert gjør.
-kjerne.loadManifest(
-  readFileSync(join(ROT, "designsystem/manifest/manifest.json"), "utf8"),
+const ROOT = fileURLToPath(new URL("../..", import.meta.url))
+const core = loadCore(readFileSync(MODULE))
+// The core carries no data. The check gives it the package's manifest and
+// colour contract, as every host does.
+core.loadManifest(
+  readFileSync(join(ROOT, "designsystem/manifest/manifest.json"), "utf8"),
 )
-kjerne.loadContract(
+core.loadContract(
   readFileSync(
-    join(ROT, "designsystem/src/tokens/color-contract.json"),
+    join(ROOT, "designsystem/src/tokens/color-contract.json"),
     "utf8",
   ),
 )
 
 /**
- * Reglene kjernen har, lest fra `RULES` i `core/src/types.rs`. Lista sto
- * her skrevet av for hånd, og manglet de to `ustylet-*`-reglene.
+ * The rules the core has, read from `RULES` in `core/src/types.rs`. The list
+ * used to be copied out here by hand, and lacked the two `unstyled-*` rules.
  */
-const REGLER = new Set(
+const RULES = new Set(
   [
     ...(
       /pub const RULES: &\[&str\] = &\[([^\]]*)\]/.exec(
-        readFileSync(join(ROT, "core/src/types.rs"), "utf8"),
+        readFileSync(join(ROOT, "core/src/types.rs"), "utf8"),
       )?.[1] ?? ""
     ).matchAll(/"([a-z-]+)"/g),
   ].map((m) => m[1]),
 )
-if (REGLER.size === 0) throw new Error("found no RULES in core/src/types.rs")
+if (RULES.size === 0) throw new Error("found no RULES in core/src/types.rs")
 
-/** Feltene fasiten har, i fast rekkefølge, så to like funn blir like strenger. */
-const kanonisk = (funn: Omit<Finding, "rule" | "line" | "column">[]) =>
+/** The fields the expected results have, in a fixed order, so two equal findings give equal strings. */
+const canonical = (findings: Omit<Finding, "rule" | "line" | "column">[]) =>
   JSON.stringify(
-    funn.map((f) => ({
+    findings.map((f) => ({
       start: f.start,
       end: f.end,
       severity: f.severity,
@@ -91,46 +93,48 @@ const kanonisk = (funn: Omit<Finding, "rule" | "line" | "column">[]) =>
     })),
   )
 
-let antall = 0
-let funnTotalt = 0
-const feil: string[] = []
+let count = 0
+let totalFindings = 0
+const failures: string[] = []
 
 /**
- * Linja og kolonnen `start` har i teksten, fra 1. Et linjeskift er `\n`,
- * `\r\n` eller `\r` alene, som i LSP.
+ * The line and column `start` has in the text, from 1. A line break is `\n`,
+ * `\r\n` or `\r` alone, as in LSP.
  */
-function plass(html: string, start: number): [number, number] {
-  let linje = 1
-  let linjestart = 0
+function position(html: string, start: number): [number, number] {
+  let line = 1
+  let lineStart = 0
   for (let i = 0; i < start; i++)
     if (html[i] === "\n" || (html[i] === "\r" && html[i + 1] !== "\n")) {
-      linje += 1
-      linjestart = i + 1
+      line += 1
+      lineStart = i + 1
     }
-  return [linje, start - linjestart + 1]
+  return [line, start - lineStart + 1]
 }
 
-/** Det et svar må holde, også uten fasit. */
-function holder(navn: string, html: string) {
-  for (const [hva, sjekk] of [
-    ["markup", kjerne.diagnoseMarkup],
-    ["side", kjerne.diagnosePage],
+/** What an answer must hold, also without expected results. */
+function holds(name: string, html: string) {
+  for (const [mode, check] of [
+    ["markup", core.diagnoseMarkup],
+    ["page", core.diagnosePage],
   ] as const) {
-    antall += 1
-    let funn: Finding[]
+    count += 1
+    let findings: Finding[]
     try {
-      funn = sjekk(html)
+      findings = check(html)
     } catch (e) {
-      feil.push(`${navn} (${hva}): threw ${e instanceof Error ? e.message : e}`)
+      failures.push(
+        `${name} (${mode}): threw ${e instanceof Error ? e.message : e}`,
+      )
       continue
     }
-    funnTotalt += funn.length
-    for (const f of funn) {
-      const galt = !(0 <= f.start && f.start <= f.end && f.end <= html.length)
+    totalFindings += findings.length
+    for (const f of findings) {
+      const wrong = !(0 <= f.start && f.start <= f.end && f.end <= html.length)
         ? "outside the text"
-        : plass(html, f.start).join(":") !== `${f.line}:${f.column}`
-          ? `line and column ${f.line}:${f.column}, expected ${plass(html, f.start).join(":")}`
-          : !REGLER.has(f.rule)
+        : position(html, f.start).join(":") !== `${f.line}:${f.column}`
+          ? `line and column ${f.line}:${f.column}, expected ${position(html, f.start).join(":")}`
+          : !RULES.has(f.rule)
             ? `unknown rule ${f.rule}`
             : f.fix &&
                 !f.fix.edits.every(
@@ -144,118 +148,126 @@ function holder(navn: string, html: string) {
                   )
                 ? "the edits in the fix overlap or are in the wrong order"
                 : undefined
-      if (galt) feil.push(`${navn} (${hva}): ${galt} in ${JSON.stringify(f)}`)
+      if (wrong)
+        failures.push(`${name} (${mode}): ${wrong} in ${JSON.stringify(f)}`)
     }
   }
 }
 
-// 1. Fiksturene.
-const PARITET = join(ROT, "core/parity")
-const fiksturer = readdirSync(PARITET)
+// 1. The fixtures.
+const PARITY = join(ROOT, "core/parity")
+const fixtures = readdirSync(PARITY)
   .filter((f) => f.endsWith(".html"))
-  .map((f) => [f, readFileSync(join(PARITET, f), "utf8")] as const)
-const dekket = new Set<string>()
-for (const [navn, html] of fiksturer) {
-  const fasit = JSON.parse(
-    readFileSync(join(PARITET, navn.replace(/\.html$/, ".json")), "utf8"),
+  .map((f) => [f, readFileSync(join(PARITY, f), "utf8")] as const)
+const covered = new Set<string>()
+for (const [name, html] of fixtures) {
+  const expectedResult = JSON.parse(
+    readFileSync(join(PARITY, name.replace(/\.html$/, ".json")), "utf8"),
   )
-  const cssFil = join(PARITET, navn.replace(/\.html$/, ".css"))
-  const css = existsSync(cssFil) ? [readFileSync(cssFil, "utf8")] : undefined
-  krevSammeNokler(navn, fasit, css !== undefined)
-  for (const [hva, sjekk] of [
-    ["markup", kjerne.diagnoseMarkup],
-    ["side", kjerne.diagnosePage],
+  const cssFile = join(PARITY, name.replace(/\.html$/, ".css"))
+  const css = existsSync(cssFile) ? [readFileSync(cssFile, "utf8")] : undefined
+  requireSameKeys(name, expectedResult, css !== undefined)
+  for (const [mode, check] of [
+    ["markup", core.diagnoseMarkup],
+    ["page", core.diagnosePage],
     ...(css
       ? ([
-          ["stylet", (h: string) => kjerne.diagnoseStyled(h, css, true)],
+          ["styled", (h: string) => core.diagnoseStyled(h, css, true)],
         ] as const)
       : []),
   ] as const) {
-    antall += 1
-    const funn = sjekk(html)
-    for (const f of funn) dekket.add(f.rule)
-    const ventet = kanonisk(fasit[hva] ?? [])
-    const svar = kanonisk(funn)
-    if (svar !== ventet)
-      feil.push(
-        `${navn} (${hva})\n  Expected: ${ventet.slice(0, 600)}\n  Core:     ${svar.slice(0, 600)}`,
+    count += 1
+    const findings = check(html)
+    for (const f of findings) covered.add(f.rule)
+    const expected = canonical(expectedResult[mode] ?? [])
+    const answer = canonical(findings)
+    if (answer !== expected)
+      failures.push(
+        `${name} (${mode})\n  Expected: ${expected.slice(0, 600)}\n  Core:     ${answer.slice(0, 600)}`,
       )
   }
-  holder(navn, html)
+  holds(name, html)
 }
-const udekket = [...REGLER].filter((r) => !dekket.has(r))
-if (udekket.length > 0)
-  feil.push(
-    `no fixture in parity/ triggers ${udekket.join(", ")}. Add one, so the rule is also tested on the JVM.`,
+const uncovered = [...RULES].filter((r) => !covered.has(r))
+if (uncovered.length > 0)
+  failures.push(
+    `no fixture in parity/ triggers ${uncovered.join(", ")}. Add one, so the rule is also tested on the JVM.`,
   )
 
-/** En fasit med `stylet` uten stilark, eller omvendt, sjekker ingenting. */
-function krevSammeNokler(navn: string, fasit: object, harCss: boolean) {
-  const nokler = Object.keys(fasit).sort().join(",")
-  const ventet = harCss ? "markup,side,stylet" : "markup,side"
-  if (nokler !== ventet)
-    feil.push(`${navn}: the expected file has ${nokler}, expected ${ventet}`)
+/** An expected result with `styled` and no stylesheet, or the reverse, checks nothing. */
+function requireSameKeys(
+  name: string,
+  expectedResult: object,
+  hasCss: boolean,
+) {
+  const keys = Object.keys(expectedResult).sort().join(",")
+  const expected = hasCss ? "markup,page,styled" : "markup,page"
+  if (keys !== expected)
+    failures.push(
+      `${name}: the expected file has ${keys}, expected ${expected}`,
+    )
 }
 
-// Temaet: oppskriftene og temaene i `theme/` mot fasiten ved siden av. Fasiten
-// ble skrevet av TypeScript-utgaven av temaet før den ble slettet.
-const TEMA = join(ROT, "core/theme")
-/** JSON med nøklene sortert: rekkefølgen i et objekt er ikke en del av svaret. */
-const sortert = (verdi: unknown): string =>
-  JSON.stringify(verdi, (_, v) =>
+// The theme: the recipes and themes in `theme/` against the expected results
+// next to them. They were written by the TypeScript version of the theme
+// before it was deleted.
+const THEME = join(ROOT, "core/theme")
+/** JSON with the keys sorted: the order in an object is not part of the answer. */
+const sorted = (value: unknown): string =>
+  JSON.stringify(value, (_, v) =>
     v && typeof v === "object" && !Array.isArray(v)
       ? Object.fromEntries(
           Object.entries(v).sort(([a], [b]) => (a < b ? -1 : 1)),
         )
       : v,
   )
-const oppskrifter: Record<
+const recipes: Record<
   string,
-  { oppskrift: unknown; theme?: unknown; feil?: string }
-> = JSON.parse(readFileSync(join(TEMA, "recipes.json"), "utf8"))
-for (const [
-  navn,
-  { oppskrift, theme: tema, feil: ventetFeil },
-] of Object.entries(oppskrifter)) {
-  antall += 1
-  let svar: unknown
+  { recipe: unknown; theme?: unknown; error?: string }
+> = JSON.parse(readFileSync(join(THEME, "recipes.json"), "utf8"))
+for (const [name, { recipe, theme, error: expectedError }] of Object.entries(
+  recipes,
+)) {
+  count += 1
+  let answer: unknown
   try {
-    svar = { tema: kjerne.buildTheme(oppskrift) }
+    answer = { theme: core.buildTheme(recipe) }
   } catch (e) {
-    svar = { feil: e instanceof Error ? e.message : String(e) }
+    answer = { error: e instanceof Error ? e.message : String(e) }
   }
-  const ventet = ventetFeil === undefined ? { tema } : { feil: ventetFeil }
-  if (sortert(svar) !== sortert(ventet))
-    feil.push(
-      `theme/recipes.json, ${navn}\n  Expected: ${sortert(ventet).slice(0, 400)}\n  Core:     ${sortert(svar).slice(0, 400)}`,
+  const expected =
+    expectedError === undefined ? { theme } : { error: expectedError }
+  if (sorted(answer) !== sorted(expected))
+    failures.push(
+      `theme/recipes.json, ${name}\n  Expected: ${sorted(expected).slice(0, 400)}\n  Core:     ${sorted(answer).slice(0, 400)}`,
     )
 }
-const rapporter: Record<string, unknown> = JSON.parse(
-  readFileSync(join(TEMA, "reports.json"), "utf8"),
+const reports: Record<string, unknown> = JSON.parse(
+  readFileSync(join(THEME, "reports.json"), "utf8"),
 )
-for (const [navn, ventet] of Object.entries(rapporter)) {
-  antall += 1
-  const svar = kjerne.inspectTheme(
-    readFileSync(join(TEMA, `${navn}.css`), "utf8"),
+for (const [name, expected] of Object.entries(reports)) {
+  count += 1
+  const answer = core.inspectTheme(
+    readFileSync(join(THEME, `${name}.css`), "utf8"),
   )
-  if (sortert(svar) !== sortert(ventet))
-    feil.push(
-      `theme/${navn}.css\n  Expected: ${sortert(ventet).slice(0, 400)}\n  Core:     ${sortert(svar).slice(0, 400)}`,
+  if (sorted(answer) !== sorted(expected))
+    failures.push(
+      `theme/${name}.css\n  Expected: ${sorted(expected).slice(0, 400)}\n  Core:     ${sorted(answer).slice(0, 400)}`,
     )
 }
 
-// Temaene ødelagt, klipt og skjøtet: kjernen skal svare, ikke krasje. En
-// panikk i Rust blir et krasj i WebAssembly, og da får verten bare
-// «unreachable». En oppskrift kan avvises, men bare med en forklaring.
-let temafrø = 20261008
-const temaTilfeldig = (n: number) => {
-  temafrø = (temafrø * 1103515245 + 12345) % 2 ** 31
-  return temafrø % n
+// The themes broken, cut and spliced: the core must answer, not crash. A
+// panic in Rust becomes a crash in WebAssembly, and then the host only gets
+// "unreachable". A recipe may be rejected, but only with an explanation.
+let themeSeed = 20261008
+const themeRandom = (n: number) => {
+  themeSeed = (themeSeed * 1103515245 + 12345) % 2 ** 31
+  return themeSeed % n
 }
-const temaKilder = readdirSync(TEMA)
+const themeSources = readdirSync(THEME)
   .filter((f) => f.endsWith(".css"))
-  .map((f) => readFileSync(join(TEMA, f), "utf8"))
-const TEMABITER = [
+  .map((f) => readFileSync(join(THEME, f), "utf8"))
+const THEME_PIECES = [
   "{",
   "}",
   ";",
@@ -273,89 +285,92 @@ const TEMABITER = [
   "ø",
   "#",
 ]
-const ØDELAGTE_TEMAER = 2000
-for (let n = 0; n < ØDELAGTE_TEMAER; n++) {
-  let css = temaKilder[temaTilfeldig(temaKilder.length)]
-  for (let steg = 0, ganger = 1 + temaTilfeldig(6); steg < ganger; steg++) {
-    const ved = temaTilfeldig(css.length + 1)
-    const valg = temaTilfeldig(3)
-    if (valg === 0)
+const BROKEN_THEMES = 2000
+for (let n = 0; n < BROKEN_THEMES; n++) {
+  let css = themeSources[themeRandom(themeSources.length)]
+  for (let step = 0, times = 1 + themeRandom(6); step < times; step++) {
+    const at = themeRandom(css.length + 1)
+    const choice = themeRandom(3)
+    if (choice === 0)
       css =
-        css.slice(0, ved) +
-        TEMABITER[temaTilfeldig(TEMABITER.length)] +
-        css.slice(ved)
-    else if (valg === 1)
-      css = css.slice(0, ved) + css.slice(ved + 1 + temaTilfeldig(30))
-    else css = css.slice(0, ved)
+        css.slice(0, at) +
+        THEME_PIECES[themeRandom(THEME_PIECES.length)] +
+        css.slice(at)
+    else if (choice === 1)
+      css = css.slice(0, at) + css.slice(at + 1 + themeRandom(30))
+    else css = css.slice(0, at)
   }
-  antall += 1
+  count += 1
   try {
-    kjerne.inspectTheme(css)
+    core.inspectTheme(css)
   } catch (e) {
-    feil.push(
+    failures.push(
       `inspectTheme crashed on ${JSON.stringify(css).slice(0, 300)}: ${e}`,
     )
   }
-  // Den samme ødelagte CSS-en gjennom leseren for selektorer, og som
-  // stilark til sjekken.
+  // The same broken CSS through the selector reader, and as a stylesheet for
+  // the check.
   try {
-    kjerne.inspectStyles(css)
-    kjerne.diagnoseStyled(
+    core.inspectStyles(css)
+    core.diagnoseStyled(
       '<div class="lt-card lt-button" data-variant="ghost"></div>',
       [css],
       true,
     )
   } catch (e) {
-    feil.push(
+    failures.push(
       `inspectStyles crashed on ${JSON.stringify(css).slice(0, 300)}: ${e}`,
     )
   }
 }
-for (const [navn, { oppskrift }] of Object.entries(oppskrifter)) {
-  for (const ødelagt of [
-    { ...(oppskrift as object), accent: 42 },
+for (const [name, { recipe }] of Object.entries(recipes)) {
+  for (const broken of [
+    { ...(recipe as object), accent: 42 },
     { typography: { fontFamily: ["Arial"] } },
     { shape: { buttonRadius: null } },
-    "ikke et objekt",
+    "not an object",
     [],
   ]) {
-    antall += 1
+    count += 1
     try {
-      kjerne.buildTheme(ødelagt)
+      core.buildTheme(broken)
     } catch (e) {
       if (!(e instanceof Error) || /unreachable|RuntimeError/.test(String(e)))
-        feil.push(
-          `buildTheme crashed on ${navn}, ${JSON.stringify(ødelagt)}: ${e}`,
+        failures.push(
+          `buildTheme crashed on ${name}, ${JSON.stringify(broken)}: ${e}`,
         )
     }
   }
 }
 
-// Malspråkene: hver fil i `templates/` har markup med malsyntaks, og nøyaktig én
-// skrivefeil med vilje. Malsyntaksen skal ikke gi funn, og skrivefeilen skal.
-const MALER = join(ROT, "core/templates")
-const SKRIVEFEILEN: Record<string, string> = {
+// The template languages: every file in `templates/` has markup with template
+// syntax, and exactly one deliberate typo. The template syntax must give no
+// findings, and the typo must.
+const TEMPLATES = join(ROOT, "core/templates")
+const THE_TYPO: Record<string, string> = {
   "thymeleaf.html": "unknown-class",
   "jte.kte": "invalid-class-value",
   "go.tmpl": "unknown-class",
   "razor.cshtml": "invalid-class-value",
   "blade.blade.php": "unknown-element",
 }
-for (const navn of readdirSync(MALER)) {
-  antall += 1
-  const funn = kjerne.diagnoseMarkup(readFileSync(join(MALER, navn), "utf8"))
-  const regler = funn.map((f) => f.rule).join(", ") || "none"
-  if (!(navn in SKRIVEFEILEN))
-    feil.push(`templates/${navn}: is not in SKRIVEFEILEN in check-core.ts`)
-  else if (regler !== SKRIVEFEILEN[navn])
-    feil.push(
-      `templates/${navn}: expected one finding, ${SKRIVEFEILEN[navn]}, got ${regler}: ${funn.map((f) => f.message).join(" | ")}`,
+for (const name of readdirSync(TEMPLATES)) {
+  count += 1
+  const findings = core.diagnoseMarkup(
+    readFileSync(join(TEMPLATES, name), "utf8"),
+  )
+  const rules = findings.map((f) => f.rule).join(", ") || "none"
+  if (!(name in THE_TYPO))
+    failures.push(`templates/${name}: is not in THE_TYPO in check-core.ts`)
+  else if (rules !== THE_TYPO[name])
+    failures.push(
+      `templates/${name}: expected one finding, ${THE_TYPO[name]}, got ${rules}: ${findings.map((f) => f.message).join(" | ")}`,
     )
 }
 
-// 2. Markupen i repoet.
-const UTVIDELSER = /\.(html|astro|mdx?|ts)$/
-const HOPP = new Set([
+// 2. The markup in the repository.
+const EXTENSIONS = /\.(html|astro|mdx?|ts)$/
+const SKIP = new Set([
   "node_modules",
   "dist",
   ".astro",
@@ -363,36 +378,36 @@ const HOPP = new Set([
   "build",
   ".gradle",
 ])
-function* filer(mappe: string): Generator<string> {
-  for (const navn of readdirSync(mappe)) {
-    if (HOPP.has(navn) || navn.startsWith(".")) continue
-    const sti = join(mappe, navn)
-    if (statSync(sti).isDirectory()) yield* filer(sti)
-    else if (UTVIDELSER.test(navn)) yield sti
+function* files(dir: string): Generator<string> {
+  for (const name of readdirSync(dir)) {
+    if (SKIP.has(name) || name.startsWith(".")) continue
+    const path = join(dir, name)
+    if (statSync(path).isDirectory()) yield* files(path)
+    else if (EXTENSIONS.test(name)) yield path
   }
 }
-let repofiler = 0
-for (const mappe of [
+let repoFiles = 0
+for (const dir of [
   "documentation/src",
   "designsystem/src",
   "designsystem/agent",
   "editor/src",
 ]) {
-  for (const sti of filer(join(ROT, mappe))) {
-    const tekst = readFileSync(sti, "utf8")
-    if (!tekst.includes("<")) continue
-    repofiler += 1
-    holder(relative(ROT, sti), tekst)
+  for (const path of files(join(ROOT, dir))) {
+    const text = readFileSync(path, "utf8")
+    if (!text.includes("<")) continue
+    repoFiles += 1
+    holds(relative(ROOT, path), text)
   }
 }
 
-// 3. Ødelagt markup, med et fast frø.
-let frø = 20261007
-const tilfeldig = (n: number) => {
-  frø = (frø * 1103515245 + 12345) % 2 ** 31
-  return frø % n
+// 3. Broken markup, with a fixed seed.
+let seed = 20261007
+const random = (n: number) => {
+  seed = (seed * 1103515245 + 12345) % 2 ** 31
+  return seed % n
 }
-const BITER = [
+const PIECES = [
   "<",
   ">",
   '"',
@@ -420,36 +435,35 @@ const BITER = [
   'aria-describedby="',
   'id="x"',
 ]
-const ØDELAGTE = 4000
-for (let n = 0; n < ØDELAGTE; n++) {
-  const [navn, original] = fiksturer[tilfeldig(fiksturer.length)]
+const BROKEN = 4000
+for (let n = 0; n < BROKEN; n++) {
+  const [name, original] = fixtures[random(fixtures.length)]
   let html = original
-  for (let steg = 0, ganger = 1 + tilfeldig(6); steg < ganger; steg++) {
-    const ved = tilfeldig(html.length + 1)
-    const valg = tilfeldig(4)
-    if (valg === 0)
-      html =
-        html.slice(0, ved) + BITER[tilfeldig(BITER.length)] + html.slice(ved)
-    else if (valg === 1)
-      html = html.slice(0, ved) + html.slice(ved + 1 + tilfeldig(8))
-    else if (valg === 2) html = html.slice(0, ved)
+  for (let step = 0, times = 1 + random(6); step < times; step++) {
+    const at = random(html.length + 1)
+    const choice = random(4)
+    if (choice === 0)
+      html = html.slice(0, at) + PIECES[random(PIECES.length)] + html.slice(at)
+    else if (choice === 1)
+      html = html.slice(0, at) + html.slice(at + 1 + random(8))
+    else if (choice === 2) html = html.slice(0, at)
     else
       html =
-        html.slice(ved) +
-        fiksturer[tilfeldig(fiksturer.length)][1].slice(0, tilfeldig(200))
+        html.slice(at) +
+        fixtures[random(fixtures.length)][1].slice(0, random(200))
   }
-  holder(
-    `broken #${n} from ${navn}: ${JSON.stringify(html).slice(0, 300)}`,
+  holds(
+    `broken #${n} from ${name}: ${JSON.stringify(html).slice(0, 300)}`,
     html,
   )
 }
 
 console.log(
-  `${antall} checks: ${fiksturer.length} fixtures against the expected results with ${dekket.size} of ${REGLER.size} rules, ${readdirSync(MALER).length} templates, ${Object.keys(oppskrifter).length + Object.keys(rapporter).length} themes and ${ØDELAGTE_TEMAER} broken ones, ${repofiler} files from the repository and ${ØDELAGTE} broken ones, with ${funnTotalt} findings in total.`,
+  `${count} checks: ${fixtures.length} fixtures against the expected results with ${covered.size} of ${RULES.size} rules, ${readdirSync(TEMPLATES).length} templates, ${Object.keys(recipes).length + Object.keys(reports).length} themes and ${BROKEN_THEMES} broken ones, ${repoFiles} files from the repository and ${BROKEN} broken ones, with ${totalFindings} findings in total.`,
 )
-if (feil.length > 0) {
-  console.error(`\n${feil.length} failures:\n`)
-  for (const f of feil.slice(0, 15)) console.error(`${f}\n`)
+if (failures.length > 0) {
+  console.error(`\n${failures.length} failures:\n`)
+  for (const f of failures.slice(0, 15)) console.error(`${f}\n`)
   process.exit(1)
 }
 console.log("The core answers what it should on everything.")

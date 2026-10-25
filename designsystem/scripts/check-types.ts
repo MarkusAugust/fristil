@@ -1,21 +1,23 @@
 /**
- * At typene følger med hver inngang til web-komponentene, alene.
+ * Checks that the types come with each entry point to the web components,
+ * on its own.
  *
- * Typesikker bruk-siden lover at `querySelector("lt-dialog")` og
- * `addEventListener("dialog-toggle", …)` er typet med det du alt importerer,
- * også fra `/register` og `/react-jsx`. `typecheck:tests` kan ikke se om det
- * holder: der kompileres hele `src` i ett program, så utvidelsene av
- * `HTMLElementTagNameMap` og `HTMLElementEventMap` er alltid med, uansett
- * hvilken fil de står i. Fra `/register` alene var `querySelector("lt-dialog")`
- * et `Element`, og lytteren på det fikk `Event` uten `detail`, fordi tagkartet
- * sto i `lt-*.ts`-filene, og `register.d.ts` importerer dem ikke.
+ * The type-safe usage page promises that `querySelector("lt-dialog")` and
+ * `addEventListener("dialog-toggle", …)` are typed by what you already
+ * import, also from `/register` and `/react-jsx`. `typecheck:tests` cannot
+ * see whether that holds: it compiles all of `src` in one program, so the
+ * augmentations of `HTMLElementTagNameMap` and `HTMLElementEventMap` are
+ * always present, whatever file they are in. From `/register` alone,
+ * `querySelector("lt-dialog")` was an `Element`, and its listener got
+ * `Event` without `detail`, because the tag map was in the `lt-*.ts` files,
+ * and `register.d.ts` does not import them.
  *
- * Her kompileres én fil per inngang, med bare den importen, mot `dist` slik
- * en konsument ser pakken: hovedinngangen, `/register`, `/react`, `/react-jsx`
- * og hver web-komponent. Ett program per fil, ellers hadde de lånt typer av
- * hverandre, som testene gjør.
+ * Here one file per entry point is compiled, with only that import, against
+ * `dist` as a consumer sees the package: the main entry point, `/register`,
+ * `/react`, `/react-jsx` and every web component. One program per file,
+ * otherwise they would have borrowed types from each other, as the tests do.
  *
- * Kjøres av `bun run build`, etter at `dist` er bygd.
+ * Run by `bun run build`, after `dist` is built.
  */
 
 import { join } from "node:path/posix"
@@ -23,44 +25,48 @@ import { fileURLToPath } from "node:url"
 import ts from "typescript"
 
 /*
- * Med skråstrek også på Windows: TypeScript normaliserer rotfilene til
- * skråstrek før den spør verten om dem, så den virtuelle fila må ligge under
- * samme stavemåte for at oppslaget skal treffe.
+ * With forward slashes on Windows too: TypeScript normalises the root files
+ * to forward slashes before it asks the host for them, so the virtual file
+ * must be stored under the same spelling for the lookup to hit.
  */
-const pakke = fileURLToPath(new URL("../", import.meta.url)).replace(/\\/g, "/")
-const manifest = (await Bun.file(join(pakke, "package.json")).json()) as {
+const packageRoot = fileURLToPath(new URL("../", import.meta.url)).replace(
+  /\\/g,
+  "/",
+)
+const manifest = (await Bun.file(join(packageRoot, "package.json")).json()) as {
   name: string
   exports: Record<string, string | { types?: string }>
 }
 
-/** Inngangene som skal kjenne web-komponentene: de fire felles og hver `lt-*`. */
-const FELLES = [".", "./register", "./react", "./react-jsx"]
+/** The entry points that must know the web components: the four shared ones and every `lt-*`. */
+const SHARED = [".", "./register", "./react", "./react-jsx"]
 
-const innganger = Object.entries(manifest.exports)
+const entryPoints = Object.entries(manifest.exports)
   .filter(
-    ([navn, verdi]) =>
-      typeof verdi === "object" &&
-      typeof verdi.types === "string" &&
-      (FELLES.includes(navn) || verdi.types.includes("/lt-")),
+    ([name, value]) =>
+      typeof value === "object" &&
+      typeof value.types === "string" &&
+      (SHARED.includes(name) || value.types.includes("/lt-")),
   )
-  .map(([navn]) => navn)
+  .map(([name]) => name)
 
-if (innganger.length < FELLES.length + 9) {
+if (entryPoints.length < SHARED.length + 9) {
   console.error(
-    `Fant bare ${innganger.length} innganger å prøve: ${innganger.join(", ")}. Sjekk formatet på exports.`,
+    `Found only ${entryPoints.length} entry points to try: ${entryPoints.join(", ")}. Check the format of exports.`,
   )
   process.exit(1)
 }
 
 /**
- * Det en konsument skriver etter å ha importert inngangen. `querySelector`
- * med tagnavn gir komponentklassen bare når `HTMLElementTagNameMap` er
- * utvidet, og `detail` finnes bare når `HTMLElementEventMap` er det. Lytteren
- * på `document` går gjennom `DocumentEventMap`.
+ * What a consumer writes after importing the entry point. `querySelector`
+ * with a tag name gives the component class only when
+ * `HTMLElementTagNameMap` is augmented, and `detail` exists only when
+ * `HTMLElementEventMap` is. The listener on `document` goes through
+ * `DocumentEventMap`.
  */
-function prøve(inngang: string, feil = false): string {
-  const type = feil ? "string" : "boolean"
-  return `import "${manifest.name}${inngang.slice(1)}"
+function sample(entryPoint: string, wrong = false): string {
+  const type = wrong ? "string" : "boolean"
+  return `import "${manifest.name}${entryPoint.slice(1)}"
 
 const dialog = document.querySelector("lt-dialog")
 dialog?.addEventListener("dialog-toggle", (event) => {
@@ -70,8 +76,8 @@ dialog?.addEventListener("dialog-toggle", (event) => {
   void returnValue
 })
 
-const faner = document.querySelector("lt-tabs")
-faner?.addEventListener("tab-select", (event) => {
+const tabs = document.querySelector("lt-tabs")
+tabs?.addEventListener("tab-select", (event) => {
   const index: number = event.detail.index
   void index
 })
@@ -81,8 +87,8 @@ document.addEventListener("suggestion-select", (event) => {
   void value
 })
 
-const felt: HTMLElement | null = document.querySelector("lt-field")
-void felt
+const field: HTMLElement | null = document.querySelector("lt-field")
+void field
 
 export {}
 `
@@ -100,66 +106,68 @@ const options: ts.CompilerOptions = {
 }
 
 /*
- * Fila finnes bare her, ikke på disk, men stien ligger i pakken, så importen
- * av pakkenavnet løses gjennom `exports` i package.json, slik Node gjør det.
- * Kildefilene fra `lib` og `dist` leses én gang og deles mellom programmene;
- * det er programmet, ikke filene, som må være nytt for hver inngang.
+ * The file exists only here, not on disk, but its path is inside the
+ * package, so the import of the package name resolves through `exports` in
+ * package.json, as Node does it. The source files from `lib` and `dist` are
+ * read once and shared between the programs; it is the program, not the
+ * files, that must be new for each entry point.
  */
-const virtuelle = new Map<string, string>()
-const lest = new Map<string, ts.SourceFile | undefined>()
-const vert = ts.createCompilerHost(options, true)
-const hentKilde = vert.getSourceFile
-vert.getSourceFile = (fil, språk, vedFeil, skalLage) => {
-  const innhold = virtuelle.get(fil)
-  if (innhold !== undefined)
-    return ts.createSourceFile(fil, innhold, språk, true)
-  if (!lest.has(fil)) lest.set(fil, hentKilde(fil, språk, vedFeil, skalLage))
-  return lest.get(fil)
+const virtualFiles = new Map<string, string>()
+const read = new Map<string, ts.SourceFile | undefined>()
+const host = ts.createCompilerHost(options, true)
+const getSource = host.getSourceFile
+host.getSourceFile = (file, languageVersion, onError, shouldCreate) => {
+  const content = virtualFiles.get(file)
+  if (content !== undefined)
+    return ts.createSourceFile(file, content, languageVersion, true)
+  if (!read.has(file))
+    read.set(file, getSource(file, languageVersion, onError, shouldCreate))
+  return read.get(file)
 }
-vert.fileExists = (fil) => virtuelle.has(fil) || ts.sys.fileExists(fil)
-vert.readFile = (fil) => virtuelle.get(fil) ?? ts.sys.readFile(fil)
+host.fileExists = (file) => virtualFiles.has(file) || ts.sys.fileExists(file)
+host.readFile = (file) => virtualFiles.get(file) ?? ts.sys.readFile(file)
 
-function feilene(inngang: string, innhold: string): string[] {
-  const fil = join(
-    pakke,
+function errorsFor(entryPoint: string, content: string): string[] {
+  const file = join(
+    packageRoot,
     "check-types",
-    `${inngang.replace(/^\.\/?/, "") || "index"}.ts`,
+    `${entryPoint.replace(/^\.\/?/, "") || "index"}.ts`,
   )
-  virtuelle.set(fil, innhold)
-  const program = ts.createProgram([fil], options, vert)
-  const diagnostikk = ts.getPreEmitDiagnostics(program)
-  return diagnostikk.map((d) => {
-    const sted = d.file
-      ? `${d.file.fileName.replace(pakke, "")}:${d.file.getLineAndCharacterOfPosition(d.start ?? 0).line + 1}`
+  virtualFiles.set(file, content)
+  const program = ts.createProgram([file], options, host)
+  const diagnostics = ts.getPreEmitDiagnostics(program)
+  return diagnostics.map((d) => {
+    const location = d.file
+      ? `${d.file.fileName.replace(packageRoot, "")}:${d.file.getLineAndCharacterOfPosition(d.start ?? 0).line + 1}`
       : "tsc"
-    return `${sted}: ${ts.flattenDiagnosticMessageText(d.messageText, " ")}`
+    return `${location}: ${ts.flattenDiagnosticMessageText(d.messageText, " ")}`
   })
 }
 
-const feil: string[] = []
+const failures: string[] = []
 
-for (const inngang of innganger) {
-  for (const linje of feilene(inngang, prøve(inngang)))
-    feil.push(`${inngang}: ${linje}`)
+for (const entryPoint of entryPoints) {
+  for (const line of errorsFor(entryPoint, sample(entryPoint)))
+    failures.push(`${entryPoint}: ${line}`)
 }
 
-// Sjekken må kunne felle. Ellers beviser et grønt resultat ingenting.
+// The check must be able to fail. Otherwise a green result proves nothing.
 if (
-  feilene(innganger[0] as string, prøve(innganger[0] as string, true))
+  errorsFor(entryPoints[0] as string, sample(entryPoints[0] as string, true))
     .length === 0
 ) {
-  feil.push(
-    "Prøven med feil type gikk gjennom, så sjekken ser ikke på typene i det hele tatt.",
+  failures.push(
+    "The sample with the wrong type passed, so the check is not looking at the types at all.",
   )
 }
 
-if (feil.length > 0) {
+if (failures.length > 0) {
   console.error(
-    `Typene følger ikke med hver inngang alene:\n\n${feil.map((f) => `  ${f}`).join("\n")}\n`,
+    `The types do not come with each entry point on its own:\n\n${failures.map((f) => `  ${f}`).join("\n")}\n`,
   )
   process.exit(1)
 }
 
 console.log(
-  `Typene til web-komponentene følger med hver av de ${innganger.length} inngangene alene: ${innganger.join(", ")}.`,
+  `The web components' types come with each of the ${entryPoints.length} entry points on its own: ${entryPoints.join(", ")}.`,
 )

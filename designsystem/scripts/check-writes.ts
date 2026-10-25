@@ -1,22 +1,22 @@
 /**
- * At komponentene skriver attributter gjennom `setAttr`, ikke rått.
+ * That the components write attributes through `setAttr`, not raw.
  *
- * Komponentene observerer de attributtene de selv setter, for å kunne sette
- * dem tilbake etter en patch fra serveren. Skriver en av dem en verdi som alt
- * står der, teller det som en endring, observatøren kaller seg selv, skriver
- * på nytt, og mikrotaskkøen tømmes aldri. Siden fryser.
+ * The components observe the attributes they set themselves, so they can set
+ * them back after a patch from the server. If one of them writes a value that
+ * is already there, it counts as a change, the observer calls itself, writes
+ * again, and the microtask queue never empties. The page freezes.
  *
- * Det er derfor denne sjekken finnes, og hvorfor den er et skript og ikke en
- * nettlesertest: bryter en komponent regelen, **henger** en testkjøring
- * framfor å feile. Ingen stakksporing, ingen påstand, bare stillhet, og en
- * kjøring som må drepes for hånd. En regel som bare kan brytes på den måten
- * må håndheves i kilden, og den må feile på sekunder.
+ * That is why this check exists, and why it is a script and not a browser
+ * test: when a component breaks the rule, a test run **hangs** instead of
+ * failing. No stack trace, no assertion, just silence, and a run that has to
+ * be killed by hand. A rule that can only be broken that way has to be
+ * enforced in the source, and it has to fail in seconds.
  *
- * Seks skrivemåter utløser en mutasjonspost uten at verdien endrer seg, og
- * fem av dem har vært i bruk i disse komponentene. Det er derfor ikke nok å
- * se etter `setAttribute`:
+ * Six ways of writing trigger a mutation record without the value changing,
+ * and five of them have been used in these components. Looking for
+ * `setAttribute` is therefore not enough:
  *
- * | Skriving | Bruk i stedet |
+ * | Write | Use instead |
  * | --- | --- |
  * | `el.setAttribute(n, v)` | `setAttr(el, n, v)` |
  * | `el.hidden = x`, `el.disabled = x` | `setFlag(el, "hidden", x)` |
@@ -25,101 +25,105 @@
  * | `el.classList.add(k)` | `addClass(el, k)` |
  * | `el.style.cssText = s` | `el.style.setProperty(…)` |
  *
- * `removeAttribute`, `toggleAttribute` og `style.setProperty` gir ingen post
- * når ingenting endrer seg, og er trygge.
+ * `removeAttribute`, `toggleAttribute` and `style.setProperty` give no record
+ * when nothing changes, and are safe.
  *
- * **Verten er ikke et unntak.** Den forrige utgaven lot `this.…` stå, med den
- * begrunnelsen at verten bare observeres gjennom `observedAttributes`. Det er
- * ikke sant: hver av komponentene kaller `observe(this, …)`, og en observatør
- * på en node ser nodens egne attributter og egne barn. `this.classList.add()`
- * i `<lt-field>`, som har `class` i filteret sitt, ville hengt en kjøring like
- * godt som en skriving på et barn.
+ * **The host is not an exception.** The previous version let `this.…` pass,
+ * on the grounds that the host is only observed through `observedAttributes`.
+ * That is not true: each of the components calls `observe(this, …)`, and an
+ * observer on a node sees the node's own attributes and its own children.
+ * `this.classList.add()` in `<lt-field>`, which has `class` in its filter,
+ * would have hung a run just as well as a write on a child.
  *
- * Det ene som er lov på verten er å tilordne en egenskap komponenten selv har
- * deklarert med `set`. `this.open = true` kaller da setteren i den samme fila,
- * og det er den som skriver, gjennom `setFlag`. Setternavnene leses ut av fila
- * framfor å stå i en liste her, så en ny setter ikke må huskes to steder.
+ * The one thing allowed on the host is assigning a property the component
+ * itself declares with `set`. `this.open = true` then calls the setter in the
+ * same file, and that is what writes, through `setFlag`. The setter names are
+ * read from the file rather than listed here, so a new setter does not have
+ * to be remembered in two places.
  *
- * Sjekken leser tekst, og den fanger ikke alt. `Object.assign(el, { … })`,
- * en `setAttribute` lagret i en variabel og `replaceChildren()` slipper forbi.
- * Ingen av dem er i bruk, og en tekstsjekk som skal fange dem ville tatt like
- * mye riktig kode med seg. Det den fanger er formene som faktisk står i disse
- * filene, og de som ligger nærmest å skrive neste gang.
+ * The check reads text, and it does not catch everything.
+ * `Object.assign(el, { … })`, a `setAttribute` stored in a variable and
+ * `replaceChildren()` slip past. None of them are in use, and a text check
+ * that caught them would take as much correct code with it. What it catches
+ * are the forms that actually appear in these files, and the ones closest to
+ * hand next time.
  *
- * Bare `frame/` leses. De frittstående komponentene lager sitt eget innhold og
- * observerer det ikke, så en skriving der kan ikke kalle noen observatør.
+ * Only `frame/` is read. The standalone components create their own content
+ * and do not observe it, so a write there cannot call any observer.
  *
  */
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 
-const ROT = new URL("../src/components/frame", import.meta.url).pathname
+const ROOT = new URL("../src/components/frame", import.meta.url).pathname
 
-function komponentfiler(mappe: string): string[] {
-  return readdirSync(mappe, { withFileTypes: true }).flatMap((oppføring) => {
-    const sti = join(mappe, oppføring.name)
-    if (oppføring.isDirectory()) return komponentfiler(sti)
-    if (!oppføring.name.startsWith("lt-")) return []
-    if (!oppføring.name.endsWith(".ts")) return []
-    if (oppføring.name.includes(".test.")) return []
-    return [sti]
+function componentFiles(folder: string): string[] {
+  return readdirSync(folder, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(folder, entry.name)
+    if (entry.isDirectory()) return componentFiles(path)
+    if (!entry.name.startsWith("lt-")) return []
+    if (!entry.name.endsWith(".ts")) return []
+    if (entry.name.includes(".test.")) return []
+    return [path]
   })
 }
 
 /**
- * Skrivemåtene som gir en mutasjonspost selv når verdien er den samme.
+ * The ways of writing that give a mutation record even when the value is the
+ * same.
  *
- * `(?<!\bthis)` er unntaket for verten, og det må stå på selve mottakeren.
- * En sjekk på om linja inneholder `this.` var for bred: da slapp
- * `this.panel.setAttribute(...)` forbi, og det er nettopp skrivemåten en
- * komponent ville brukt.
+ * `(?<!\bthis)` is the exception for the host, and it has to sit on the
+ * receiver itself. A check on whether the line contains `this.` was too
+ * broad: `this.panel.setAttribute(...)` slipped past, and that is exactly how
+ * a component would write it.
  */
-const FORBUDT: { monster: RegExp; bruk: string }[] = [
-  { monster: /\.setAttribute\(/, bruk: "setAttr()" },
-  { monster: /\.classList\.(add|remove|toggle)\(/, bruk: "addClass()" },
-  { monster: /\.(hidden|disabled|open|checked)\s*=[^=]/, bruk: "setFlag()" },
-  { monster: /\.(tabIndex|id|className|htmlFor)\s*=[^=]/, bruk: "setAttr()" },
-  { monster: /\.(textContent|innerText)\s*=[^=]/, bruk: "setText()" },
-  { monster: /\.style\.cssText\s*=[^=]/, bruk: "style.setProperty()" },
+const FORBIDDEN: { pattern: RegExp; use: string }[] = [
+  { pattern: /\.setAttribute\(/, use: "setAttr()" },
+  { pattern: /\.classList\.(add|remove|toggle)\(/, use: "addClass()" },
+  { pattern: /\.(hidden|disabled|open|checked)\s*=[^=]/, use: "setFlag()" },
+  { pattern: /\.(tabIndex|id|className|htmlFor)\s*=[^=]/, use: "setAttr()" },
+  { pattern: /\.(textContent|innerText)\s*=[^=]/, use: "setText()" },
+  { pattern: /\.style\.cssText\s*=[^=]/, use: "style.setProperty()" },
 ]
 
-const funn: string[] = []
+const findings: string[] = []
 
-for (const fil of komponentfiler(ROT)) {
-  const innhold = readFileSync(fil, "utf8")
-  // Egenskapene fila selv deklarerer. `this.open = x` går da gjennom setteren.
-  const settere = [...innhold.matchAll(/^\s*set ([a-zA-Z]+)\(/gm)].map(
-    (treff) => treff[1],
+for (const file of componentFiles(ROOT)) {
+  const content = readFileSync(file, "utf8")
+  // The properties the file itself declares. `this.open = x` then goes
+  // through the setter.
+  const setters = [...content.matchAll(/^\s*set ([a-zA-Z]+)\(/gm)].map(
+    (match) => match[1],
   )
 
-  const linjer = innhold.split("\n")
-  linjer.forEach((linje, i) => {
-    const trimmet = linje.trim()
-    // Kommentarer er ikke kode. Både `//` og linjene inne i en `/** … */`.
-    if (trimmet.startsWith("*") || trimmet.startsWith("/*")) return
-    const kode = linje.split("//")[0]
+  const lines = content.split("\n")
+  lines.forEach((line, i) => {
+    const trimmed = line.trim()
+    // Comments are not code. Both `//` and the lines inside a `/** … */`.
+    if (trimmed.startsWith("*") || trimmed.startsWith("/*")) return
+    const code = line.split("//")[0]
 
-    // En `set`-tilbehører er deklarasjonen av en egenskap, ikke en skriving.
-    if (/^\s*(set|get) /.test(kode)) return
-    if (settere.some((navn) => kode.includes(`this.${navn} =`))) return
+    // A `set` accessor declares a property, it does not write.
+    if (/^\s*(set|get) /.test(code)) return
+    if (setters.some((name) => code.includes(`this.${name} =`))) return
 
-    for (const { monster, bruk } of FORBUDT) {
-      if (!monster.test(kode)) continue
-      funn.push(
-        `${fil.replace(`${ROT}/`, "")}:${i + 1}  ${trimmet}   → ${bruk}`,
+    for (const { pattern, use } of FORBIDDEN) {
+      if (!pattern.test(code)) continue
+      findings.push(
+        `${file.replace(`${ROOT}/`, "")}:${i + 1}  ${trimmed}   → ${use}`,
       )
       break
     }
   })
 }
 
-if (funn.length > 0) {
+if (findings.length > 0) {
   console.error(
-    `\n✗ ${funn.length} rå skrivinger. Bruk hjelperne i host-element.ts, som\n` +
-      "  sammenligner først. Uten dem kaller observatøren seg selv, og kjøringen henger.\n",
+    `\n✗ ${findings.length} raw writes. Use the helpers in host-element.ts, which\n` +
+      "  compare first. Without them the observer calls itself, and the run hangs.\n",
   )
-  for (const f of funn) console.error(`  ${f}`)
+  for (const f of findings) console.error(`  ${f}`)
   process.exit(1)
 }
 
-console.log("Komponentene skriver gjennom hjelperne som sammenligner.")
+console.log("The components write through the helpers that compare first.")

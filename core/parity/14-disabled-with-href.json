@@ -15,7 +15,7 @@
       "message": "lt-button is disabled with aria-disabled but has href, and Enter still follows it. Remove href, and write role=\"link\" and tabindex=\"0\" so it is still a link in the tab order."
     }
   ],
-  "side": [
+  "page": [
     {
       "start": 40,
       "end": 58,

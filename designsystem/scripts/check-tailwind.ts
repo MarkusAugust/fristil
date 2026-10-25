@@ -1,15 +1,15 @@
 /**
- * Kontrollerer at Tailwind-temaet gir de verdiene det lover.
+ * Checks that the Tailwind theme gives the values it promises.
  *
- * Fila `src/tailwind/tailwind.css` er ren CSS, og pakken har ingen
- * avhengighet til Tailwind. Da kan ingen typefeil eller versjonskonflikt si
- * fra hvis noe er galt: en skrivefeil i et variabelnavn gir bare en
- * utility-klasse som stille ikke finnes.
+ * The file `src/tailwind/tailwind.css` is plain CSS, and the package has no
+ * dependency on Tailwind. So no type error or version conflict can report a
+ * problem: a typo in a variable name just gives a utility class that silently
+ * does not exist.
  *
- * Her kompileres temaet med en ekte Tailwind, og det kontrolleres at
- * klassene faktisk kommer ut med LO-TEKs tokens i seg.
+ * Here the theme is compiled with a real Tailwind, and the check confirms
+ * that the classes actually come out with LO-TEK's tokens in them.
  *
- * Kjør med: bun scripts/check-tailwind.ts
+ * Run with: bun scripts/check-tailwind.ts
  */
 
 import { readFile } from "node:fs/promises"
@@ -18,57 +18,60 @@ import { fileURLToPath } from "node:url"
 import { compile } from "tailwindcss"
 import { colorTokens } from "../src/tokens/tokens.js"
 
-const pakke = fileURLToPath(new URL("../", import.meta.url))
+const packageRoot = fileURLToPath(new URL("../", import.meta.url))
 
 async function loadStylesheet(id: string, basedir: string) {
-  const sti = id.startsWith(".")
+  const path = id.startsWith(".")
     ? join(basedir, id)
     : Bun.resolveSync(id, basedir)
   return {
-    path: sti,
-    base: dirname(sti),
-    content: await readFile(sti, "utf8"),
+    path,
+    base: dirname(path),
+    content: await readFile(path, "utf8"),
   }
 }
 
-const tema = await readFile(join(pakke, "src/tailwind/tailwind.css"), "utf8")
+const theme = await readFile(
+  join(packageRoot, "src/tailwind/tailwind.css"),
+  "utf8",
+)
 
 const input = `
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
-${tema}
+${theme}
 `
 
-const compiler = await compile(input, { base: pakke, loadStylesheet })
+const compiler = await compile(input, { base: packageRoot, loadStylesheet })
 
 /*
- * Hver farge, ikke et utvalg.
+ * Every colour, not a sample.
  *
- * Lista sto her med sju håndplukkede celler og en kommentar som sa «én celle
- * per rolle, og én per familie». Talt opp var det sju av 86 farger, altså
- * verken hver rolle eller hver familie, og en generator som hoppet over raden
- * `warning` eller kolonnen `content` gikk fri. Nå bygges lista av
- * `colorTokens`, altså av den samme kilden generatoren leser, og da er
- * dekningen komplett per definisjon.
+ * The list used to have seven hand-picked cells and a comment that said "one
+ * cell per role, and one per family". Counted, it was seven of 86 colours,
+ * so neither every role nor every family, and a generator that skipped the
+ * `warning` row or the `content` column went unnoticed. Now the list is
+ * built from `colorTokens`, the same source the generator reads, so the
+ * coverage is complete by definition.
  *
- * Det er ingen sirkel: det som kontrolleres er ikke at navnene stemmer, men
- * at en ekte Tailwind lager en klasse av hver av dem, med tokenet i seg.
+ * That is not circular: what is checked is not that the names match, but
+ * that a real Tailwind makes a class from each of them, with the token in it.
  */
-const fargeklasser: [klasse: string, inneholder: string][] = Object.keys(
+const colorClasses: [className: string, contains: string][] = Object.keys(
   colorTokens,
 )
-  .filter((navn) => navn.startsWith("--lt-color-"))
-  .map((navn) => [`bg-lt-${navn.slice("--lt-color-".length)}`, `var(${navn})`])
+  .filter((name) => name.startsWith("--lt-color-"))
+  .map((name) => [`bg-lt-${name.slice("--lt-color-".length)}`, `var(${name})`])
 
-/** Klassen, og det den må inneholde for at koblingen skal være ekte. */
-const forventet: [klasse: string, inneholder: string][] = [
+/** The class, and what it must contain for the connection to be real. */
+const expected: [className: string, contains: string][] = [
   ["p-4", "calc(var(--lt-spacing-1) * 4)"],
   ["gap-2", "calc(var(--lt-spacing-1) * 2)"],
-  // Tailwinds egen `px` er den faste pikselen, som `--lt-spacing-px`. Tabellen
-  // på Design tokens-siden oppgir den som motstykket, og det må være sant.
+  // Tailwind's own `px` is the fixed pixel, like `--lt-spacing-px`. The table
+  // on the Design tokens page gives it as the counterpart, and that must be true.
   ["p-px", "1px"],
-  ...fargeklasser,
-  // Én farge også som tekst, så navnerommet ikke bare virker for bakgrunn.
+  ...colorClasses,
+  // One colour as text as well, so the namespace does not only work for backgrounds.
   ["text-lt-accent-text", "var(--lt-color-accent-text)"],
   ["border-lt-neutral-border", "var(--lt-color-neutral-border)"],
   ["text-lt-xxs", "var(--lt-font-size-xxs)"],
@@ -77,48 +80,50 @@ const forventet: [klasse: string, inneholder: string][] = [
   ["shadow-lt-overlay", "var(--lt-shadow-overlay)"],
 ]
 
-const css = compiler.build(forventet.map(([klasse]) => klasse))
-const feil: string[] = []
+const css = compiler.build(expected.map(([className]) => className))
+const failures: string[] = []
 
-for (const [klasse, inneholder] of forventet) {
-  const regel = new RegExp(
-    `\\.${klasse.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}\\s*\\{[^}]*\\}`,
+for (const [className, contains] of expected) {
+  const rule = new RegExp(
+    `\\.${className.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}\\s*\\{[^}]*\\}`,
   ).exec(css)
 
-  if (!regel) {
-    feil.push(`.${klasse} ble ikke laget i det hele tatt`)
-  } else if (!regel[0].includes(inneholder)) {
-    feil.push(`.${klasse} inneholder ikke ${inneholder}: ${regel[0].trim()}`)
+  if (!rule) {
+    failures.push(`.${className} was not generated at all`)
+  } else if (!rule[0].includes(contains)) {
+    failures.push(
+      `.${className} does not contain ${contains}: ${rule[0].trim()}`,
+    )
   }
 }
 
-/** Klasser som ville betydd at vi har tatt over noe som er Tailwinds eget. */
-const skalIkkeRøres: [klasse: string, ikke: string][] = [
+/** Classes that would mean we have taken over something that is Tailwind's own. */
+const mustNotTouch: [className: string, notContains: string][] = [
   ["bg-neutral-100", "--lt-color"],
   ["max-w-md", "--container-lt"],
 ]
 
-const annetCss = compiler.build(skalIkkeRøres.map(([klasse]) => klasse))
+const otherCss = compiler.build(mustNotTouch.map(([className]) => className))
 
-for (const [klasse, ikke] of skalIkkeRøres) {
-  const regel = new RegExp(
-    `\\.${klasse.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}\\s*\\{[^}]*\\}`,
-  ).exec(annetCss)
+for (const [className, notContains] of mustNotTouch) {
+  const rule = new RegExp(
+    `\\.${className.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}\\s*\\{[^}]*\\}`,
+  ).exec(otherCss)
 
-  if (regel?.[0].includes(ikke)) {
-    feil.push(`.${klasse} er overstyrt av LO-TEK: ${regel[0].trim()}`)
+  if (rule?.[0].includes(notContains)) {
+    failures.push(`.${className} is overridden by LO-TEK: ${rule[0].trim()}`)
   }
 }
 
-if (feil.length > 0) {
+if (failures.length > 0) {
   console.error(
-    `Tailwind-temaet holder ikke det det lover:\n\n${feil
-      .map((linje) => `  ${linje}`)
+    `The Tailwind theme does not keep its promise:\n\n${failures
+      .map((line) => `  ${line}`)
       .join("\n")}\n`,
   )
   process.exit(1)
 }
 
 console.log(
-  `Tailwind-temaet gir ${forventet.length} kontrollerte klasser LO-TEKs verdier, ${fargeklasser.length} av dem hver sin farge, og lar Tailwinds egne være i fred.`,
+  `The Tailwind theme gives ${expected.length} checked classes LO-TEK's values, ${colorClasses.length} of them one colour each, and leaves Tailwind's own alone.`,
 )

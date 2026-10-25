@@ -1,11 +1,11 @@
 /**
- * Fargekontrakten for skriptene: familiene og rollene, lest fra
- * `src/tokens/color-contract.json`, som kjernen også leser.
+ * The colour contract for the scripts: the families and the roles, read from
+ * `src/tokens/color-contract.json`, which the core also reads.
  */
 
 import { readFileSync } from "node:fs"
 
-const kontrakt: {
+const contract: {
   families: string[]
   roles: Record<string, unknown>
 } = JSON.parse(
@@ -15,13 +15,13 @@ const kontrakt: {
   ),
 )
 
-/** Familiene LO-TEK leverer selv. */
-export const FAMILIES: readonly string[] = kontrakt.families
+/** The families LO-TEK ships itself. */
+export const FAMILIES: readonly string[] = contract.families
 
-/** Rollene, med navnet slik kontrakten skriver det, som `textSubtle`. */
-export const ROLES: Record<string, unknown> = kontrakt.roles
+/** The roles, named as the contract writes them, such as `textSubtle`. */
+export const ROLES: Record<string, unknown> = contract.roles
 
-/** Rollenavnet slik det skrives i CSS. `textSubtle` blir `text-subtle`. */
+/** The role name as it is written in CSS. `textSubtle` becomes `text-subtle`. */
 export function roleToCss(role: string): string {
   return role.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
 }

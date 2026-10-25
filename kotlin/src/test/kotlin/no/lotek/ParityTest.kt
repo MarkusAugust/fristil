@@ -30,12 +30,12 @@ class ParityTest {
         val expected = Json.parse(File(DIR, "$name.json").readText()) as Map<*, *>
 
         assertEquals(expected["markup"], toJson(Lotek.diagnoseMarkup(html)), "diagnoseMarkup")
-        assertEquals(expected["side"], toJson(Lotek.diagnosePage(html)), "diagnosePage")
+        assertEquals(expected["page"], toJson(Lotek.diagnosePage(html)), "diagnosePage")
         val css = File(DIR, "$name.css")
-        assertEquals(css.exists(), expected.containsKey("stylet"), "stylet in the expected results and a .css next to it go together")
+        assertEquals(css.exists(), expected.containsKey("styled"), "styled in the expected results and a .css next to it go together")
         if (css.exists()) {
             val rendered = mapOf("html" to html, "css" to listOf(css.readText()))
-            assertEquals(expected["stylet"], toJson(Lotek.diagnoseRendered(rendered)), "diagnoseRendered")
+            assertEquals(expected["styled"], toJson(Lotek.diagnoseRendered(rendered)), "diagnoseRendered")
         }
     }
 

@@ -29,8 +29,8 @@ class ThemeParityTest {
     @MethodSource("recipes")
     fun `buildTheme answers the same as TypeScript`(name: String) {
         val case = RECIPES.getValue(name) as Map<*, *>
-        val recipe = Json.write(case["oppskrift"])
-        val expectedError = case["feil"] as String?
+        val recipe = Json.write(case["recipe"])
+        val expectedError = case["error"] as String?
         if (expectedError != null) {
             assertEquals(expectedError, assertFailsWith<IllegalArgumentException> { Lotek.buildTheme(recipe) }.message)
             return
@@ -95,7 +95,7 @@ class ThemeParityTest {
 
         @JvmStatic
         fun recipes(): List<String> {
-            assertTrue(RECIPES.isNotEmpty() && RECIPES.values.any { (it as Map<*, *>).containsKey("feil") }, "The expected results must have recipes, and at least one that is rejected")
+            assertTrue(RECIPES.isNotEmpty() && RECIPES.values.any { (it as Map<*, *>).containsKey("error") }, "The expected results must have recipes, and at least one that is rejected")
             return RECIPES.keys.sorted()
         }
 

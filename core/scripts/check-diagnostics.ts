@@ -1,19 +1,20 @@
 /**
- * At kjernen feller hver feiltype den skal, og bare dem.
+ * That the core fails on every error type it should, and only on those.
  *
- * Kjernen er Rust-modulen slik `bun run core` sist bygget den, med
- * pakkens manifest. En regel som er skrudd av i Rust, feller her etter
- * neste bygg av modulen. Hvert tilfelle sier hvor mange funn det skal gi og
- * hva meldingen skal nevne, og de rene tilfellene skal gi null. Snippetene
- * fra komponentsidene er med som rene tilfeller: gir en av dem funn, er
- * enten regelen eller oppskriften feil, og begge deler skal fram.
+ * The core is the Rust module as `bun run core` last built it, with the
+ * package's manifest. A rule switched off in Rust fails here after the
+ * next build of the module. Each case says how many findings it must give
+ * and what the message must mention, and the clean cases must give none.
+ * The snippets from the component pages are included as clean cases: if one
+ * of them gives a finding, either the rule or the recipe is wrong, and both
+ * must come out.
  *
- * Tilfellene dekker også parseren, ikke bare reglene: en verdi med `>` i,
- * en verdi uten anførselstegn, enkle anførselstegn, en tagg over flere
- * linjer, et felt uten lukketagg. En gren uten tilfelle overlever at den
- * fjernes, og da vet ingen at den virker.
+ * The cases cover the parser too, not just the rules: a value with `>` in
+ * it, an unquoted value, single quotes, a tag over several lines, a field
+ * without a closing tag. A branch without a case survives being removed,
+ * and then nobody knows it works.
  *
- * Kjør med: bun core/scripts/check-diagnostics.ts (etter bun core/scripts/build.ts)
+ * Run with: bun core/scripts/check-diagnostics.ts (after bun core/scripts/build.ts)
  */
 
 import { readFileSync } from "node:fs"
@@ -30,12 +31,12 @@ import type {
   Classes,
   Elements,
 } from "../../designsystem/src/vocabulary/types.js"
-import { MODUL } from "./build.js"
+import { MODULE } from "./build.js"
 
 const all: Elements = diagnosticsData()
 const classes: Classes = classesData()
-const core = loadCore(readFileSync(MODUL))
-// Kjernen bærer ingen data, og får pakkens manifest som hver vert gir den.
+const core = loadCore(readFileSync(MODULE))
+// The core carries no data, and gets the package's manifest as every host gives it.
 core.loadManifest(
   readFileSync(
     new URL("../../designsystem/manifest/manifest.json", import.meta.url),
@@ -50,24 +51,25 @@ type Case = {
   count: number
   mentions?: string[]
   severity?: "error" | "warning"
-  /** Teksten funnet skal dekke, når posisjonen er poenget. */
+  /** The text the finding must cover, when the position is the point. */
   covers?: string
   /**
-   * Der funnet skal begynne. Trengs når den samme teksten står flere steder:
-   * `covers` alene består da også når funnet peker på feil forekomst.
+   * Where the finding must start. Needed when the same text appears in several
+   * places: `covers` alone then passes even when the finding points at the
+   * wrong occurrence.
    */
   coversAt?: number
-  /** Det meldingen ikke skal nevne. */
+  /** What the message must not mention. */
   notMentions?: string[]
-  /** Rettelsen anvendt på html skal gi dette. */
+  /** The fix applied to html must give this. */
   fixed?: string
   fixTitle?: string
   fixPreferred?: boolean
-  /** Funnet skal ikke ha noen rettelse. */
+  /** The finding must have no fix. */
   noFix?: boolean
-  /** Hvor lang tid tilfellet får, når farten er poenget. */
+  /** How long the case may take, when speed is the point. */
   maxMs?: number
-  /** Sjekk som en hel side, med reglene for koblingen. */
+  /** Check as a whole page, with the wiring rules. */
   page?: boolean
 }
 
@@ -75,7 +77,7 @@ const FIELD_OK = `<lt-field id="f"><label for="navn">Navn</label><input class="l
 
 const cases: Case[] = [
   {
-    name: "en knapp med bare et ikon og ikke noe navn",
+    name: "a button with only an icon and no name",
     html: `<button class="lt-button"><svg class="lt-icon" aria-hidden="true"><path d="M0 0"/></svg><span aria-hidden="true">x</span></button>`,
     count: 1,
     mentions: ["<button> has only an icon", "aria-label", "lt-sr-only"],
@@ -84,14 +86,14 @@ const cases: Case[] = [
     coversAt: 1,
   },
   {
-    name: "en lenke med bare et bilde uten alt",
+    name: "a link with only an image without alt",
     html: `<a href="/hjem"><img src="hus.svg" alt=""></a>`,
     count: 1,
     mentions: ["<a> has only an icon", '"link"'],
     severity: "error",
   },
   {
-    name: "et ikon med navn fra tekst, aria-label, title, alt eller svg-tittel",
+    name: "an icon named by text, aria-label, title, alt or an svg title",
     html: `<button><svg class="lt-icon" aria-hidden="true"></svg> Slett</button>
 <button aria-label="Slett"><svg class="lt-icon" aria-hidden="true"></svg></button>
 <button title="Slett"><svg class="lt-icon" aria-hidden="true"></svg></button>
@@ -105,7 +107,7 @@ const cases: Case[] = [
     count: 0,
   },
   {
-    name: "et felt med to kontroller",
+    name: "a field with two controls",
     html: `<lt-field><label for="a">Telefon</label><input name="a" id="a"><select name="b"></select></lt-field>`,
     count: 1,
     mentions: [
@@ -116,21 +118,21 @@ const cases: Case[] = [
     covers: "select",
   },
   {
-    name: "to hjelpetekster i et felt, der bare den første kobles",
+    name: "two help texts in a field, where only the first is wired",
     html: `<lt-field><label for="n">Navn</label><input name="n" id="n"><p class="lt-help-text">A</p><p class="lt-help-text">B</p></lt-field>`,
     count: 1,
     mentions: ['"help"'],
     coversAt: 90,
   },
   {
-    name: "en klasse med to av en del som skal stå én gang",
+    name: "a class with two of a part that must appear once",
     html: `<table class="lt-table"><caption>A</caption><caption>B</caption><thead></thead><tbody></tbody></table>`,
     count: 1,
     mentions: ['lt-table has the part "caption"', "must appear once"],
     coversAt: 45,
   },
   {
-    name: "deler som står flere ganger der det er lov, eller hører til noe annet",
+    name: "parts repeated where that is allowed, or belonging to something else",
     html: `<lt-popover><button>Meny</button><ul class="lt-popover" id="meny"><li><button>A</button></li><li><button>B</button></li></ul></lt-popover>
 <lt-dialog><dialog><h2>Tittel</h2><div class="lt-dialog__body"><h3>Del</h3></div></dialog></lt-dialog>
 <lt-field><label>A <input name="a"></label><lt-field><label>B <input name="b"></label></lt-field></lt-field>
@@ -140,14 +142,14 @@ const cases: Case[] = [
     count: 0,
   },
   {
-    name: "to dialoger rett under <lt-dialog>, men ikke en nøstet",
+    name: "two dialogs directly under <lt-dialog>, but not a nested one",
     html: `<lt-dialog><dialog></dialog><dialog></dialog></lt-dialog>
 <lt-dialog><dialog></dialog><div><dialog></dialog></div></lt-dialog>`,
     count: 1,
     mentions: ['"dialog"'],
   },
   {
-    name: "en skjult verdi er ikke en kontroll til, og en delt knapp er ikke to utløsere",
+    name: "a hidden value is not another control, and a split button is not two triggers",
     html: `<lt-field><input type="hidden" name="x"><label><input type="checkbox" name="y"> Jeg godtar</label></lt-field>
 <lt-popover><button type="button">Lagre</button><button type="button" aria-controls="m">Flere valg</button><ul class="lt-popover" id="m"><li><button type="button">Lagre som</button></li></ul></lt-popover>
 <fieldset class="lt-fieldset"><legend class="lt-legend">Adresse</legend><p class="lt-help-text">Der du bor</p><lt-field><label for="g">Gate</label><input name="g" id="g"><p class="lt-help-text">Med nummer</p></lt-field></fieldset>
@@ -155,23 +157,23 @@ const cases: Case[] = [
     count: 0,
   },
   {
-    name: "en dyp nøsting og et felt med mange kontroller går fort",
+    name: "deep nesting and a field with many controls are fast",
     html: `<ul class="lt-list">${"<li>x".repeat(3000)}</ul><lt-field><label for="a">A</label><input name="a" id="a">${'<input name="a">'.repeat(1999)}</lt-field>`,
     count: 1999,
     maxMs: 500,
   },
   {
-    name: "to deler bak et vilkår i en mal er ikke to deler",
+    name: "two parts behind a condition in a template are not two parts",
     html: `<lt-field><label>Svar</label>{{if .Lang}}<textarea name="s"></textarea>{{else}}<input name="s">{{end}}</lt-field>`,
     count: 0,
   },
   {
-    name: "en del til kan undertrykkes",
+    name: "an extra part can be suppressed",
     html: `<lt-field><label for="a">A</label><input name="a" id="a"><!-- lotek-ignore-next part-repeated --><input name="b"></lt-field>`,
     count: 0,
   },
   {
-    name: "et element som ikke finnes",
+    name: "an element that does not exist",
     html: `<lt-dialog><lt-dialog-header>Tittel</lt-dialog-header></lt-dialog>`,
     count: 1,
     mentions: ["<lt-dialog-header> does not exist", "lt-dialog"],
@@ -179,7 +181,7 @@ const cases: Case[] = [
     covers: "lt-dialog-header",
   },
   {
-    name: "et attributt elementet ikke har",
+    name: "an attribute the element does not have",
     html: `<lt-popover placemnet="top-start"></lt-popover>`,
     count: 1,
     mentions: ['"placemnet"', "placement"],
@@ -187,44 +189,44 @@ const cases: Case[] = [
     covers: "placemnet",
   },
   {
-    name: "globale attributter, data-, aria- og hendelser slipper gjennom",
+    name: "global attributes, data-, aria- and event handlers pass",
     html: `<lt-popover id="p" class="x" data-on-click="@get('/x')" aria-label="Hjelp" onclick="1" role="dialog" hidden></lt-popover>`,
     count: 0,
   },
   {
-    name: "HTMX, Alpine og Vue sine prefikser slipper gjennom",
+    name: "HTMX, Alpine and Vue prefixes pass",
     html: `<lt-popover hx-get="/x" x-data="{}" v-if="c"></lt-popover>`,
     count: 0,
   },
   {
-    name: "Alpine, Svelte og Angular sine tegn slipper gjennom",
+    name: "Alpine, Svelte and Angular syntax passes",
     html: `<lt-popover @click="a" :open="b" on:click="d" bind:open="e" [open]="f" (close)="g"></lt-popover>`,
     count: 0,
   },
   {
-    name: "Angulars strukturdirektiver og i18n, og hyperscripts _, slipper gjennom",
+    name: "Angular structural directives and i18n, and hyperscript's _, pass",
     html: `<lt-popover *ngIf="x" i18n placement="top-start"></lt-popover><lt-dialog _="on click toggle @open"></lt-dialog>`,
     count: 0,
   },
   {
-    name: "en web component som begynner på select er ingen kontroll",
+    name: "a web component whose name starts with select is not a control",
     html: `<lt-field><label-x>N</label-x><select-all></select-all></lt-field>`,
     count: 1,
     mentions: ["found no control"],
   },
   {
-    name: "Alpine i taggen gjør ikke resten til en mal",
+    name: "Alpine in the tag does not make the rest a template",
     html: `<lt-popover @click="a" placemnet="top-start"></lt-popover>`,
     count: 1,
     mentions: ['"placemnet"'],
   },
   {
-    name: "en Razor-partial inne i feltet",
+    name: "a Razor partial inside the field",
     html: `<lt-field><label>Navn</label>@Html.Partial("Input")</lt-field>`,
     count: 0,
   },
   {
-    name: "en verdi utenfor lista",
+    name: "a value outside the list",
     html: `<lt-popover placement="midt"></lt-popover>`,
     count: 1,
     mentions: ['"midt"', "Valid values"],
@@ -232,43 +234,43 @@ const cases: Case[] = [
     covers: "placement",
   },
   {
-    name: "et listeattributt uten verdi",
+    name: "a list attribute without a value",
     html: `<lt-popover placement></lt-popover>`,
     count: 1,
     mentions: ["Valid values"],
     severity: "error",
   },
   {
-    name: "et boolsk attributt med «false»",
+    name: 'a boolean attribute with "false"',
     html: `<lt-field disabled="false"><label>N <input></label></lt-field>`,
     count: 1,
     mentions: ["boolean", 'disabled="false" means the same as disabled'],
     severity: "warning",
   },
   {
-    name: "et boolsk attributt med sitt eget navn eller tom verdi er greit",
+    name: "a boolean attribute with its own name or an empty value is fine",
     html: `<lt-field disabled="disabled" optional=""><label>N <input></label></lt-field>`,
     count: 0,
   },
   {
-    name: "hidden=until-found er HTML",
+    name: "hidden=until-found is HTML",
     html: `<lt-error-summary hidden="until-found"></lt-error-summary>`,
     count: 0,
   },
   {
-    name: "et tall som ikke er et tall",
+    name: "a number that is not a number",
     html: `<lt-toast duration="lenge"></lt-toast>`,
     count: 1,
     mentions: ["must be a number", '"lenge"'],
     severity: "error",
   },
   {
-    name: "et tall som er et tall",
+    name: "a number that is a number",
     html: `<lt-toast duration="5000"></lt-toast>`,
     count: 0,
   },
   {
-    name: "et felt uten kontroll",
+    name: "a field without a control",
     html: `<lt-field><label>Navn</label><p class="lt-help-text">Hjelp</p></lt-field>`,
     count: 1,
     mentions: ["found no control", "<input>, <textarea> or <select>"],
@@ -276,25 +278,25 @@ const cases: Case[] = [
     covers: "lt-field",
   },
   {
-    name: "en skjult input er ingen kontroll, som i komponenten",
+    name: "a hidden input is not a control, as in the component",
     html: `<lt-field><label>X</label><input type="hidden" name="csrf"></lt-field>`,
     count: 1,
     mentions: ["found no control"],
   },
   {
-    name: "kontrollen etter en skjult input teller",
+    name: "the control after a hidden input counts",
     html: `<lt-field><input type="hidden" name="csrf"><input aria-label="Søk"></lt-field>`,
     count: 0,
   },
   {
-    name: "et felt uten ledetekst",
+    name: "a field without a label",
     html: `<lt-field><input class="lt-input"></lt-field>`,
     count: 1,
     mentions: ["found no <label>", "without a name"],
     severity: "warning",
   },
   {
-    name: "et varsel om økten uten dialog, slik det ble skrevet før",
+    name: "a session timeout without a dialog, as it used to be written",
     html: `<lt-session-timeout warn-at="1500"></lt-session-timeout>`,
     count: 1,
     mentions: ["found no <dialog>", "without warning"],
@@ -302,198 +304,198 @@ const cases: Case[] = [
     covers: "lt-session-timeout",
   },
   {
-    name: "et varsel om økten med dialog",
+    name: "a session timeout with a dialog",
     html: `<lt-session-timeout><dialog><h2>Snart ute</h2></dialog></lt-session-timeout>`,
     count: 0,
   },
   {
-    name: "et varsel om økten uten lukketagg, med en annen dialog lenger ned",
+    name: "a session timeout without a closing tag, with another dialog further down",
     html: `<lt-session-timeout warn-at="1500">\n<lt-dialog><dialog><h2>Annet</h2></dialog></lt-dialog>`,
     count: 0,
   },
   {
-    name: "et varsel om økten der dialogen står i en partial",
+    name: "a session timeout whose dialog is in a partial",
     html: `<lt-session-timeout>{{ template "okt" . }}</lt-session-timeout>`,
     count: 0,
   },
   {
-    name: "et tomt felt er et område serveren ikke har fylt",
+    name: "an empty field is an area the server has not filled",
     html: `<lt-field id="senere"></lt-field>`,
     count: 0,
   },
   {
-    name: "ledetekst utenfor, med for",
+    name: "label outside, with for",
     html: `<label for="epost">E-post</label><lt-field><input id="epost"></lt-field>`,
     count: 0,
   },
   {
-    name: "ledetekst utenfor, med for uten anførselstegn",
+    name: "label outside, with an unquoted for",
     html: `<label for=epost>E-post</label><lt-field><input id="epost"></lt-field>`,
     count: 0,
   },
   {
-    name: "en id med klammer og parenteser kaster ikke",
+    name: "an id with brackets and parentheses does not throw",
     html: `<label for="a[0].x(1)">X</label><lt-field><input id="a[0].x(1)"></lt-field>`,
     count: 0,
   },
   {
-    name: "punktum i id-en er et punktum, ikke hva som helst",
+    name: "a full stop in the id is a full stop, not any character",
     html: `<label for="ab">X</label><lt-field><input id="a.b"></lt-field>`,
     count: 1,
     mentions: ["found no <label>"],
   },
   {
-    name: "aria-label på kontrollen",
+    name: "aria-label on the control",
     html: `<lt-field><input aria-label="Søk"></lt-field>`,
     count: 0,
   },
   {
-    name: "aria-labelledby på kontrollen",
+    name: "aria-labelledby on the control",
     html: `<lt-field><input aria-labelledby="tittel"></lt-field>`,
     count: 0,
   },
   {
-    name: "Go-mal i taggen",
+    name: "a Go template in the tag",
     html: `<lt-field {{ if .Av }}disabled{{ end }}><label>N</label><input></lt-field>`,
     count: 0,
   },
   {
-    name: "Jinja i taggen og i verdien",
+    name: "Jinja in the tag and in the value",
     html: `<lt-popover {% if x %}open{% endif %} placement="{{ p }}"></lt-popover>`,
     count: 0,
   },
   {
-    name: "PHP i taggen",
+    name: "PHP in the tag",
     html: `<lt-field <?= $av ? 'disabled' : '' ?>><label>N <input></label></lt-field>`,
     count: 0,
   },
   {
-    name: "Razor i verdien",
+    name: "Razor in the value",
     html: `<lt-field disabled="@Model.Disabled"><label>N <input></label></lt-field>`,
     count: 0,
   },
   {
-    name: "en partial inne i feltet er ikke et felt uten kontroll",
+    name: "a partial inside the field is not a field without a control",
     html: `<lt-field><label>Navn</label>{{ template "input" . }}</lt-field>`,
     count: 0,
   },
   {
-    name: "et ukjent element meldes også i en mal",
+    name: "an unknown element is reported in a template too",
     html: `<lt-feild {{ if .X }}disabled{{ end }}></lt-feild>`,
     count: 1,
     mentions: ["does not exist"],
   },
   {
-    name: "kommentarer, skript og stilark leses ikke",
+    name: "comments, scripts and stylesheets are not read",
     html: `<!-- <lt-finnes-ikke> --><script>"<lt-nei>"</script><style>/* <lt-nei> */</style>${FIELD_OK}`,
     count: 0,
   },
   {
-    name: "posisjonen står selv om en kommentar går over flere linjer",
+    name: "the position holds when a comment spans several lines",
     html: `<!--\n<lt-nei>\n-->\n<lt-tull></lt-tull>`,
     count: 1,
     covers: "lt-tull",
   },
   {
-    name: "store bokstaver i tagg og attributt, og selvlukking",
+    name: "upper case in tag and attribute, and self-closing",
     html: `<LT-TOAST DURATION="x"/>`,
     count: 1,
     mentions: ["must be a number"],
     covers: "DURATION",
   },
   {
-    name: "en verdi med > i",
+    name: "a value with > in it",
     html: `<lt-toast label="a > b" duration="5"></lt-toast>`,
     count: 0,
   },
   {
-    name: "en verdi uten anførselstegn",
+    name: "an unquoted value",
     html: `<lt-popover placement=top-start></lt-popover><lt-popover placement=topp></lt-popover>`,
     count: 1,
     mentions: ['"topp"'],
   },
   {
-    name: "enkle anførselstegn",
+    name: "single quotes",
     html: `<lt-popover placement='top-start'></lt-popover><lt-popover placement='topp'></lt-popover>`,
     count: 1,
     mentions: ['"topp"'],
   },
   {
-    name: "en tagg over flere linjer",
+    name: "a tag over several lines",
     html: `<lt-popover\n  placement="top-start"\n  open\n></lt-popover>`,
     count: 0,
   },
   {
-    name: "felt i felt",
+    name: "a field in a field",
     html: `<lt-field><label>A <input></label><lt-field><label>B <input></label></lt-field></lt-field>`,
     count: 0,
   },
   {
-    name: "et felt uten lukketagg",
+    name: "a field without a closing tag",
     html: `<lt-field><label>A <input></label>`,
     count: 0,
   },
   {
-    name: "Alpine på kontrollen gjør ikke feltet til en mal",
+    name: "Alpine on the control does not make the field a template",
     html: `<lt-field><input @input="x = 1"></lt-field>`,
     count: 1,
     mentions: ["found no <label>"],
   },
   {
-    name: "Alpine på en knapp i feltet heller",
+    name: "nor does Alpine on a button in the field",
     html: `<lt-field><label>N</label><button @click="x">Send</button></lt-field>`,
     count: 1,
     mentions: ["found no control"],
   },
   {
-    name: "store bokstaver i felt: tomt felt er stille",
+    name: "upper-case field: an empty field is silent",
     html: `<LT-FIELD id="senere"></LT-FIELD>\n<p>tekst</p>`,
     count: 0,
   },
   {
-    name: "store bokstaver i felt: uten ledetekst felles",
+    name: "upper-case field: without a label it fails",
     html: `<LT-FIELD><INPUT></LT-FIELD>\n<label>x</label>`,
     count: 1,
     mentions: ["found no <label>"],
   },
   {
-    name: "en skrivefeil som ligner et kjent attributt",
+    name: "a typo that resembles a known attribute",
     html: `<lt-connection-status onlinetext="Tilkoblet"></lt-connection-status>`,
     count: 1,
     mentions: ["Did you mean online-text?"],
     covers: "onlinetext",
   },
   {
-    name: "en skrivefeil uten bindestrek",
+    name: "a typo without a hyphen",
     html: `<lt-field describedBy="vilkar"><label>N <input></label></lt-field>`,
     count: 1,
     mentions: ["Did you mean described-by?"],
   },
   {
-    name: "en uavsluttet kontroll leser ikke resten som sine attributter",
+    name: "an unterminated control does not read the rest as its attributes",
     html: `<lt-field><input placeholder=it's><span aria-label="x"></span></lt-field>`,
     count: 1,
     mentions: ["found no"],
   },
   {
-    name: "tall slik komponentene leser dem",
+    name: "numbers as the components read them",
     html: `<lt-toast duration=" 5000 "></lt-toast><lt-toast duration="1e3"></lt-toast><lt-toast duration=""></lt-toast>`,
     count: 1,
     mentions: ["must be a number"],
   },
   {
-    name: "en Jinja-kommentar i taggen",
+    name: "a Jinja comment in the tag",
     html: `<lt-popover {# note #} placement="top-start"></lt-popover>`,
     count: 0,
   },
   {
-    name: "PHP i taggen avslutter den ikke, og feilen etter felles",
+    name: "PHP in the tag does not end it, and the error after it fails",
     html: `<lt-popover <?= $x ?> placement="midt"></lt-popover>`,
     count: 1,
     mentions: ['"midt"'],
   },
   {
-    name: "en klasse som ikke finnes, med forslag og rettelse",
+    name: "a class that does not exist, with a suggestion and a fix",
     html: `<button class="lt-buton">Send</button>`,
     count: 1,
     mentions: ['"lt-buton" does not exist', "Did you mean lt-button?"],
@@ -503,30 +505,30 @@ const cases: Case[] = [
     fixTitle: "Change to lt-button",
   },
   {
-    name: "en klasse langt fra alle kjente får ikke forslag",
+    name: "a class far from every known one gets no suggestion",
     html: `<button class="lt-knapp">Send</button>`,
     count: 1,
     mentions: ['"lt-knapp" does not exist'],
     notMentions: ["Did you mean"],
   },
   {
-    name: "en ren verdi i en tagg med mal sjekkes likevel",
+    name: "a plain value in a tag with a template is still checked",
     html: `<button class="lt-button" {{ if .X }}disabled{{ end }} data-variant="ghots"></button>`,
     count: 1,
     mentions: ['"ghots"'],
   },
   {
-    name: "en klasse med mal i navnet er ingen skrivefeil",
+    name: "a class with a template in its name is not a typo",
     html: `<div class="lt-{{ .Type }} kort"></div><div class="lt-<?= $x ?>"></div>`,
     count: 0,
   },
   {
-    name: "kjente klasser, også flere i samme attributt og med mal",
+    name: "known classes, also several in one attribute and with a template",
     html: `<input class="lt-input lt-search" type="search"><div class="{{ .Klasse }} lt-card"></div><p class="kort lt-paragraph"></p>`,
     count: 0,
   },
   {
-    name: "en variant utenfor lista, med forslag og rettelse",
+    name: "a variant outside the list, with a suggestion and a fix",
     html: `<button class="lt-button" data-variant="ghots">Send</button>`,
     count: 1,
     mentions: [
@@ -538,30 +540,30 @@ const cases: Case[] = [
     fixTitle: "Change to ghost",
   },
   {
-    name: "lovlige varianter, standardverdien og type på input",
+    name: "valid variants, the default value and type on input",
     html: `<button class="lt-button" data-variant="danger"></button><button class="lt-button" data-variant="primary"></button><input class="lt-input" type="email"><h2 class="lt-heading" data-size="xl"></h2>`,
     count: 0,
   },
   {
-    name: "et attributt en annen klasse tar, sjekkes ikke her",
+    name: "an attribute another class takes is not checked here",
     html: `<div class="lt-card" data-variant="ghost"></div><span class="lt-badge" data-size="xl"></span>`,
     count: 1,
     mentions: ['data-variant cannot be "ghost" on card'],
   },
   {
-    name: "variantverdi fra en mal sjekkes ikke",
+    name: "a variant value from a template is not checked",
     html: `<button class="lt-button" data-variant="{{ .Variant }}"></button><button class="lt-button" data-variant="@Model.V"></button>`,
     count: 0,
   },
   {
-    name: "rettelsen for et attributtnavn",
+    name: "the fix for an attribute name",
     html: `<lt-connection-status onlinetext="Tilkoblet"></lt-connection-status>`,
     count: 1,
     fixed: `<lt-connection-status online-text="Tilkoblet"></lt-connection-status>`,
     fixTitle: "Change to online-text",
   },
   {
-    name: "rettelsen for et boolsk attributt tar med verdien og mellomrommet",
+    name: "the fix for a boolean attribute takes the value and the space",
     html: `<lt-field disabled="false" id="x"><label>N <input></label></lt-field>`,
     count: 1,
     fixed: `<lt-field id="x"><label>N <input></label></lt-field>`,
@@ -569,166 +571,166 @@ const cases: Case[] = [
     fixPreferred: true,
   },
   {
-    name: "rettelsen for et boolsk attributt sist i taggen",
+    name: "the fix for a boolean attribute last in the tag",
     html: `<lt-field id="x" disabled="false"><label>N <input></label></lt-field>`,
     count: 1,
     fixed: `<lt-field id="x"><label>N <input></label></lt-field>`,
   },
   {
-    name: "rettelsen for et felt uten ledetekst",
+    name: "the fix for a field without a label",
     html: `<lt-field><input class="lt-input" id="navn"></lt-field>`,
     count: 1,
     fixed: `<lt-field><label for="navn">Label</label><input class="lt-input" id="navn"></lt-field>`,
     fixTitle: "Add a label",
   },
   {
-    // En `<label>` uten `for` ved siden av feltet er ikke koblet til det.
-    // Uten id finnes ingen rettelse som er én innsetting.
-    name: "et felt uten ledetekst og uten id får ingen rettelse",
+    // A `<label>` without `for` next to the field is not wired to it.
+    // Without an id there is no fix that is a single insertion.
+    name: "a field without a label and without an id gets no fix",
     html: `<lt-field><input class="lt-input"></lt-field>`,
     count: 1,
     mentions: ["put the <label> around the field"],
     noFix: true,
   },
   {
-    name: "ledeteksten får sin egen linje med samme innrykk",
+    name: "the label gets its own line with the same indentation",
     html: `<lt-field>\n  <input class="lt-input" id="navn">\n</lt-field>`,
     count: 1,
     fixed: `<lt-field>\n  <label for="navn">Label</label>\n  <input class="lt-input" id="navn">\n</lt-field>`,
   },
   {
-    name: "ledeteksten får sin egen linje også med \\r-linjeskift",
+    name: "the label gets its own line with \\r line breaks too",
     html: `<lt-field>\r  <input class="lt-input" id="navn">\r</lt-field>`,
     count: 1,
     fixed: `<lt-field>\r  <label for="navn">Label</label>\r  <input class="lt-input" id="navn">\r</lt-field>`,
   },
   {
-    name: "data-required på ledetekst og legend",
+    name: "data-required on label and legend",
     html: `<label class="lt-label" data-required="stjerne">N</label><legend class="lt-legend" data-required="text">G</legend>`,
     count: 1,
     mentions: ['data-required cannot be "stjerne"', "symbol, text"],
   },
   {
-    name: "data-variant på input, som CSS-en leser",
+    name: "data-variant on input, which the CSS reads",
     html: `<input class="lt-input" data-variant="dato" type="date"><input class="lt-input" data-variant="date" type="date">`,
     count: 1,
     mentions: ['data-variant cannot be "dato"', "date, datetime-local, time"],
     fixed: `<input class="lt-input" data-variant="date" type="date"><input class="lt-input" data-variant="date" type="date">`,
   },
   {
-    name: "type på input er HTML sitt eget, og sjekkes ikke, heller ikke hidden",
+    name: "type on input belongs to HTML and is not checked, hidden included",
     html: `<input class="lt-input" type="color"><input class="lt-input" type="hidden"><input class="lt-input" type="file">`,
     count: 0,
   },
   {
-    name: "et kort navn får ikke forslag to tegn unna",
+    name: "a short name gets no suggestion two characters away",
     html: `<div class="lt-tabs"></div>`,
     count: 1,
     notMentions: ["Did you mean"],
   },
   {
-    name: "en byttet plass er én feil, og forslaget er ikke foretrukket",
+    name: "a swap is one error, and the suggestion is not preferred",
     html: `<button class="lt-button" data-variant="ghots"></button>`,
     count: 1,
     fixTitle: "Change to ghost",
     fixPreferred: false,
   },
   {
-    name: "samme bokstaver er den sikre rettelsen",
+    name: "the same letters are the safe fix",
     html: `<lt-connection-status onlinetext="x"></lt-connection-status>`,
     count: 1,
     mentions: ["Did you mean online-text"],
     fixPreferred: true,
   },
   {
-    name: "et langt navn får to tegns slingring",
+    name: "a long name gets two characters of slack",
     html: `<p class="lt-eror-txt"></p>`,
     count: 1,
     mentions: ["Did you mean lt-error-text?"],
   },
   {
-    name: "lengdefilteret slipper gjennom akkurat på grensen",
+    name: "the length filter lets through exactly at the limit",
     html: `<a class="lt-lin"></a>`,
     count: 1,
     mentions: ["Did you mean lt-link?"],
   },
   {
-    name: "ved lik avstand vinner den som deler begynnelsen",
+    name: "at equal distance the one sharing the beginning wins",
     html: `<table class="lt-tabel"></table>`,
     count: 1,
     mentions: ["Did you mean lt-table?"],
   },
   {
-    name: "«Ta bort» over flere linjer",
+    name: '"Remove" over several lines',
     html: `<lt-field\n  disabled="false"\n  id="x"><label>N <input></label></lt-field>`,
     count: 1,
     fixed: `<lt-field\n  id="x"><label>N <input></label></lt-field>`,
   },
   {
-    name: "rettelse på en klasse uten anførselstegn",
+    name: "a fix on an unquoted class",
     html: `<p class=lt-buton></p>`,
     count: 1,
     fixed: `<p class=lt-button></p>`,
   },
   {
-    name: "rettelse på en verdi uten anførselstegn",
+    name: "a fix on an unquoted value",
     html: `<button class=lt-button data-variant=ghots></button>`,
     count: 1,
     fixed: `<button class=lt-button data-variant=ghost></button>`,
   },
   {
-    name: "to klasser som tar samme attributt gir ett funn",
+    name: "two classes taking the same attribute give one finding",
     html: `<input class="lt-input lt-search" data-state="ugyldig">`,
     count: 1,
   },
   {
-    name: "Astro og Svelte: en verdi i klammer er et uttrykk",
+    name: "Astro and Svelte: a value in braces is an expression",
     html: `<lt-popover placement={placement} open={isOpen}></lt-popover><lt-toast duration={ms}></lt-toast><button class="lt-button" data-variant={v}></button>`,
     count: 0,
   },
   {
-    name: "Astro og Svelte: klammer med anførselstegn og nøsting inni",
+    name: "Astro and Svelte: braces with quotes and nesting inside",
     html: `<input class="lt-input" data-state={feil ? "invalid" : undefined}><lt-field class:list={["lt-card", { kort }]}></lt-field>`,
     count: 0,
   },
   {
-    name: "en klamme inne i et anførselstegn i uttrykket avslutter det ikke",
+    name: "a brace inside a quote in the expression does not end it",
     html: `<lt-popover placement={a ? "}" : "x"} open></lt-popover>`,
     count: 0,
   },
   {
-    name: "klammer i klammer, og feilen etter dem felles fortsatt",
+    name: "braces in braces, and the error after them still fails",
     html: `<lt-popover placement={c ? {a:1}.p : "top-start"} plasement="x"></lt-popover>`,
     count: 1,
     mentions: ['"plasement"'],
   },
   {
-    name: "Svelte: en klasse med et uttrykk i sjekkes ikke, de andre gjør",
+    name: "Svelte: a class with an expression in it is not checked, the others are",
     html: `<div class="lt-card lt-{b} lt-buton"></div>`,
     count: 1,
     mentions: ['"lt-buton"'],
   },
   {
-    name: "klammeverdi og så en ekte feil etter",
+    name: "a braced value followed by a real error",
     html: `<lt-popover open={isOpen} placemnet="top-start"></lt-popover>`,
     count: 1,
     mentions: ['"placemnet"'],
     covers: "placemnet",
   },
   {
-    name: "en tom verdi er ingen verdi",
+    name: "an empty value is no value",
     html: `<button class="lt-button" data-variant=""></button>`,
     count: 0,
   },
   {
-    name: "samme bokstaver i en klasse er den sikre rettelsen",
+    name: "the same letters in a class are the safe fix",
     html: `<p class="lt-error_text"></p>`,
     count: 1,
     fixTitle: "Change to lt-error-text",
     fixPreferred: true,
   },
   {
-    name: "samme ukjente klasse mange ganger går fort",
+    name: "the same unknown class many times is fast",
     html: Array.from(
       { length: 3000 },
       () => `<td class="lt-cell lt-celle">x</td>`,
@@ -737,34 +739,34 @@ const cases: Case[] = [
     maxMs: 60,
   },
   {
-    name: "funnene kommer i tekstens rekkefølge",
+    name: "the findings come in the order of the text",
     html: `<lt-popover placemnet="x"></lt-popover><button class="lt-buton"></button><lt-tull></lt-tull>`,
     count: 3,
     mentions: ["placemnet"],
   },
   {
-    name: "flere funn i samme tagg meldes hver for seg",
+    name: "several findings in one tag are reported separately",
     html: `<lt-popover placemnet="top-start" open="false"></lt-popover>`,
     count: 2,
   },
   {
-    name: "en ren fil",
+    name: "a clean file",
     html: `<!doctype html><html><body>${FIELD_OK}<lt-popover placement="top-start" open></lt-popover></body></html>`,
     count: 0,
   },
 ]
 
-// Koblingen på en hel side, med `--rendret` eller en adresse.
+// The wiring on a whole page, with `--rendered` or an address.
 const LABELLED = `<label class="lt-label" for="epost">E-post</label><input class="lt-input" id="epost" aria-describedby="epost-help"><p class="lt-help-text" id="epost-help">Hjelp</p>`
 cases.push(
   {
-    name: "side: et rent felt med ledetekst og hjelpetekst",
+    name: "page: a clean field with label and help text",
     html: LABELLED,
     count: 0,
     page: true,
   },
   {
-    name: "side: for peker på en id som ikke finnes",
+    name: "page: for points at an id that does not exist",
     html: `<label class="lt-label" for="e-post">E-post</label><input class="lt-input" id="epost">`,
     count: 2,
     page: true,
@@ -773,7 +775,7 @@ cases.push(
     covers: "e-post",
   },
   {
-    name: "side: én av flere id-er i aria-describedby finnes ikke",
+    name: "page: one of several ids in aria-describedby does not exist",
     html: LABELLED.replace(
       'aria-describedby="epost-help"',
       'aria-describedby="epost-help epost-feil"',
@@ -785,14 +787,14 @@ cases.push(
     covers: "epost-feil",
   },
   {
-    name: "side: aria-labelledby peker på en id som ikke finnes",
+    name: "page: aria-labelledby points at an id that does not exist",
     html: `<input class="lt-input" id="sok" aria-labelledby="sok-tittel">`,
     count: 1,
     page: true,
     mentions: ["aria-labelledby", "the name"],
   },
   {
-    name: "side: aria-controls får ingen oppskrift om feltet",
+    name: "page: aria-controls gets no recipe about the field",
     html: `<button class="lt-button" aria-controls="meny">Meny</button>`,
     count: 1,
     page: true,
@@ -800,7 +802,7 @@ cases.push(
     notMentions: ["lt.field("],
   },
   {
-    name: "side: en id som står to ganger",
+    name: "page: an id that appears twice",
     html: `${LABELLED}<p id="epost">Igjen</p>`,
     count: 1,
     page: true,
@@ -809,7 +811,7 @@ cases.push(
     covers: "epost",
   },
   {
-    name: "side: et LO-TEK-felt uten ledetekst",
+    name: "page: a LO-TEK field without a label",
     html: `<label class="lt-label">Navn</label><input class="lt-input" id="navn">`,
     count: 1,
     page: true,
@@ -818,38 +820,38 @@ cases.push(
     covers: "input",
   },
   {
-    name: "side: et felt med <label> rundt har ledetekst",
+    name: "page: a field with <label> around it has a label",
     html: `<label class="lt-label">Navn <input class="lt-input"></label>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: et felt med aria-label har ledetekst",
+    name: "page: a field with aria-label has a label",
     html: `<input class="lt-input lt-search" type="search" aria-label="Søk">`,
     count: 0,
     page: true,
   },
   {
-    name: "side: et skjult felt og en sendeknapp trenger ingen ledetekst",
+    name: "page: a hidden field and a submit button need no label",
     html: `<input class="lt-input" type="hidden" name="t"><input class="lt-button" type="submit" value="Send">`,
     count: 0,
     page: true,
   },
   {
-    name: "side: bar markup inni <lt-field> er riktig",
+    name: "page: bare markup inside <lt-field> is correct",
     html: `<lt-field><label class="lt-label" for="navn">Navn</label><input class="lt-input" id="navn"><p class="lt-help-text">Hjelp</p><p class="lt-error-text" hidden>Feil</p></lt-field>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: en id som peker feil inni <lt-field>, meldes likevel, og ledeteksten er da ikke koblet",
+    name: "page: an id pointing wrong inside <lt-field> is still reported, and the label is then not wired",
     html: `<lt-field><label class="lt-label" for="x">Navn</label><input class="lt-input" id="y"></lt-field>`,
     count: 2,
     page: true,
     mentions: ['"x"'],
   },
   {
-    name: "side: en hjelpetekst uten id",
+    name: "page: a help text without an id",
     html: `<label class="lt-label" for="a">A</label><input class="lt-input" id="a"><p class="lt-help-text">Hjelp</p>`,
     count: 1,
     page: true,
@@ -857,66 +859,66 @@ cases.push(
     mentions: ["The help text", "has no id"],
   },
   {
-    name: "side: en synlig feilmelding som ingen peker på",
+    name: "page: a visible error text nothing points at",
     html: `<label class="lt-label" for="a">A</label><input class="lt-input" id="a"><p class="lt-error-text" id="a-feil">Feil</p>`,
     count: 1,
     page: true,
     mentions: ["The error text", '"a-feil"'],
   },
   {
-    name: "side: en skjult feilmelding trenger ingen kobling",
+    name: "page: a hidden error text needs no wiring",
     html: `<label class="lt-label" for="a">A</label><input class="lt-input" id="a"><p class="lt-error-text" id="a-feil" hidden>Feil</p>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: en id i en kommentar teller ikke",
+    name: "page: an id in a comment does not count",
     html: `<!-- <p id="hjelp"></p> --><label class="lt-label" for="hjelp">A</label><input class="lt-input" id="a">`,
     count: 2,
     page: true,
     mentions: ['"hjelp"'],
   },
   {
-    name: "side: en ledetekst uten for inni <lt-suggestion> meldes, for malen skal skrive den",
+    name: "page: a label without for inside <lt-suggestion> is reported, since the template must write it",
     html: `<lt-suggestion><label class="lt-label">Kommune</label><input class="lt-input" type="text"></lt-suggestion>`,
     count: 1,
     page: true,
     mentions: ["The label is not wired"],
   },
   {
-    name: "side: en hjelpetekst inni <lt-suggestion> må kobles",
+    name: "page: a help text inside <lt-suggestion> must be wired",
     html: `<lt-suggestion><label class="lt-label" for="k">Kommune</label><input class="lt-input" type="text" id="k"><p class="lt-help-text">Hjelp</p></lt-suggestion>`,
     count: 1,
     page: true,
     mentions: ["The help text"],
   },
   {
-    name: "side: id-er i en shadow root har sitt eget rom",
+    name: "page: ids in a shadow root have their own scope",
     html: `${LABELLED}<div><template shadowrootmode="open"><label class="lt-label" for="epost">E-post</label><input class="lt-input" id="epost"></template></div>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: markup i en attributtverdi er tekst, ikke elementer",
+    name: "page: markup in an attribute value is text, not elements",
     html: `${LABELLED}<button class="lt-button" data-code='<lt-modal open><input class="lt-input" id="epost">'>Kopier</button>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: en verdi som slutter på = sluker ikke resten av siden",
+    name: "page: a value ending in = does not swallow the rest of the page",
     html: `<img src="data:image/png;base64,iVBORw0KGgo=" alt="">${LABELLED}`,
     count: 0,
     page: true,
   },
   {
-    name: "side: et felt etter en verdi som slutter på = sjekkes fortsatt",
+    name: "page: a field after a value ending in = is still checked",
     html: `<a href="/s" title="1+1=">x</a><input class="lt-input" id="q">`,
     count: 1,
     page: true,
     mentions: ["<input> has no label"],
   },
   {
-    name: "side: for som peker på en <div>",
+    name: "page: for pointing at a <div>",
     html: `<label class="lt-label" for="boks">Navn</label><div id="boks"></div><input class="lt-input" aria-label="Navn">`,
     count: 1,
     page: true,
@@ -925,7 +927,7 @@ cases.push(
     covers: "boks",
   },
   {
-    name: "side: en lenke i feiloppsummeringen til et felt som ikke finnes",
+    name: "page: a link in the error summary to a field that does not exist",
     html: `${LABELLED}<lt-error-summary><h2>Rett feilene</h2><ul><li><a href="#e-post">E-post</a></li></ul></lt-error-summary>`,
     count: 1,
     page: true,
@@ -934,124 +936,124 @@ cases.push(
     covers: "e-post",
   },
   {
-    name: "side: en lenke i feiloppsummeringen til et felt som finnes",
+    name: "page: a link in the error summary to a field that exists",
     html: `${LABELLED}<lt-error-summary><h2>Rett feilene</h2><ul><li><a href="#epost">E-post</a></li></ul></lt-error-summary>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: en hjelpetekst i en skjult forelder eller lukket dialog",
+    name: "page: a help text in a hidden parent or closed dialog",
     html: `<div hidden><p class="lt-help-text">A</p></div><dialog><p class="lt-error-text">B</p></dialog>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: en hjelpetekst i en åpen dialog sjekkes",
+    name: "page: a help text in an open dialog is checked",
     html: `<dialog open><p class="lt-help-text">A</p></dialog>`,
     count: 1,
     page: true,
     mentions: ["The help text"],
   },
   {
-    name: "side: en hjelpetekst som er et statusfelt, trenger ingen kobling",
+    name: "page: a help text that is a status region needs no wiring",
     html: `<p class="lt-help-text" role="status"></p><p class="lt-error-text" aria-live="assertive"></p>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: entiteter dekodes før id-ene sammenlignes",
+    name: "page: entities are decoded before the ids are compared",
     html: `<label class="lt-label" for="c&#46;d">C</label><input class="lt-input" id="c.d">`,
     count: 0,
     page: true,
   },
   {
-    name: "side: markup i en <textarea> er tekst",
+    name: "page: markup in a <textarea> is text",
     html: `${LABELLED}<label class="lt-label" for="t">T</label><textarea class="lt-textarea" id="t"><input class="lt-input" id="epost"></textarea>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: en <textarea> i en attributtverdi sluker ikke siden",
+    name: "page: a <textarea> in an attribute value does not swallow the page",
     html: `<button class="lt-button" data-code="<textarea>">Kopier</button><label class="lt-label" for="borte">X</label><label class="lt-label" for="t">T</label><textarea class="lt-textarea" id="t"></textarea>`,
     count: 1,
     page: true,
     mentions: ['"borte"'],
   },
   {
-    name: "side: en <template> i en attributtverdi sluker ikke siden",
+    name: "page: a <template> in an attribute value does not swallow the page",
     html: `<button class="lt-button" data-code='<template>'>Kopier</button><label class="lt-label" for="borte">X</label><p>tekst</p><template></template>`,
     count: 1,
     page: true,
     mentions: ['"borte"'],
   },
   {
-    name: "side: en kommentar i en attributtverdi sluker ikke siden",
+    name: "page: a comment in an attribute value does not swallow the page",
     html: `<button class="lt-button" data-code="<!--">Kopier</button><label class="lt-label" for="borte">X</label><!-- slutt -->`,
     count: 1,
     page: true,
     mentions: ['"borte"'],
   },
   {
-    name: "side: en tallentitet utenfor Unicode krasjer ikke",
+    name: "page: a numeric entity outside Unicode does not crash",
     html: `<p id="&#99999999;">A</p><p id="&#x110000;">B</p>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: en prosentkodet lenke i feiloppsummeringen",
+    name: "page: a percent-encoded link in the error summary",
     html: `<label class="lt-label" for="fødselsdato">F</label><input class="lt-input" id="fødselsdato"><lt-error-summary><h2>Feil</h2><ul><li><a href="#f%C3%B8dselsdato">Dato</a></li></ul></lt-error-summary>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: en id som er en del av en annen id, teller for seg",
+    name: "page: an id that is part of another id counts on its own",
     html: `${LABELLED.replace('aria-describedby="epost-help"', 'aria-describedby="epost-help epost"')}`,
     count: 0,
     page: true,
   },
   {
-    name: "side: funnet peker på den id-en som mangler",
+    name: "page: the finding points at the id that is missing",
     html: `<input class="lt-input" aria-label="A" aria-describedby="x-help x"><p id="x-help">H</p>`,
     count: 1,
     page: true,
     covers: "x",
-    // Den andre `x`-en i verdien, ikke den første bokstaven i `x-help`.
+    // The second `x` in the value, not the first letter of `x-help`.
     coversAt: '<input class="lt-input" aria-label="A" aria-describedby="x-help '
       .length,
   },
   {
-    name: "side: <label/> åpner et element i HTML",
+    name: "page: <label/> opens an element in HTML",
     html: `<label class="lt-label"/>Navn <input class="lt-input"></label>`,
     count: 0,
     page: true,
   },
   {
-    name: "side: en / til slutt i en verdi uten anførselstegn hører til verdien",
+    name: "page: a trailing / in an unquoted value belongs to the value",
     html: `<label class="lt-label" for=a/>A</label><input class="lt-input" id="a/">`,
     count: 0,
     page: true,
   },
   {
-    name: "mal: markup i en attributtverdi leses som før uten --rendret",
+    name: "template: markup in an attribute value is read as before without --rendered",
     html: `<button class="lt-button" data-code="<lt-modal>">Kopier</button>`,
     count: 1,
     mentions: ["lt-modal"],
   },
   {
-    name: "mal: en id som peker ut av fila meldes ikke uten --rendret",
+    name: "template: an id pointing out of the file is not reported without --rendered",
     html: `<label class="lt-label" for="e-post">E-post</label><input class="lt-input" id="epost">`,
     count: 0,
   },
 )
 
-// Snippetene fra komponentsidene skal være rene, også som hele sider: de
-// skal kunne limes inn og virke, koblingen medregnet.
+// The snippets from the component pages must be clean, also as whole pages:
+// they must work when pasted in, wiring included.
 /**
- * Snippeten slik den står i dokumentet etter at brukeren har godtatt
- * tabbestoppene: `${1:navn}` blir `navn`, og `$1` det samme, slik VS Code
- * speiler dem. Rømmingen tas bort til slutt.
+ * The snippet as it stands in the document after the user has accepted the
+ * tab stops: `${1:navn}` becomes `navn`, and `$1` the same, as VS Code
+ * mirrors them. The escaping is removed last.
  */
-function utenTabbestopp(body: string[]): string {
+function withoutTabStops(body: string[]): string {
   const text = body.join("\n")
   const defaults = new Map<string, string>()
   for (const m of text.matchAll(/\$\{(\d+):([^}]*)\}/g))
@@ -1066,24 +1068,24 @@ function utenTabbestopp(body: string[]): string {
 for (const [tag, snippet] of Object.entries(snippets()))
   for (const page of [false, true])
     cases.push({
-      name: `snippeten for <${tag}>${page ? " som hel side" : ""}`,
-      html: utenTabbestopp(snippet.body),
+      name: `the snippet for <${tag}>${page ? " as a whole page" : ""}`,
+      html: withoutTabStops(snippet.body),
       count: 0,
       page,
     })
 
 const started = performance.now()
 
-// Koblingen malen må skrive selv, så feltet virker uten JavaScript og
-// overlever en oppdatering fra serveren (plan v6, PR 3).
+// The wiring the template must write itself, so the field works without
+// JavaScript and survives an update from the server (plan v6, PR 3).
 const TABS = (
-  rad: string,
-  paneler = `<section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2></section><section class="lt-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>`,
-) => `<lt-tabs>${rad}${paneler}</lt-tabs>`
-const RAD = `<ul class="lt-tabs__list" aria-label="Case sections"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`
+  list: string,
+  panels = `<section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2></section><section class="lt-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>`,
+) => `<lt-tabs>${list}${panels}</lt-tabs>`
+const LIST = `<ul class="lt-tabs__list" aria-label="Case sections"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`
 cases.push(
   {
-    name: "en ledetekst uten for ved siden av et felt uten id",
+    name: "a label without for next to a field without an id",
     html: `<lt-field><label class="lt-label">Kommune</label><input class="lt-input" name="kommune"></lt-field>`,
     count: 1,
     mentions: ["The label is not wired to <input>", "for on the label"],
@@ -1094,70 +1096,70 @@ cases.push(
     fixPreferred: true,
   },
   {
-    name: "en ledetekst som peker på en annen id enn feltets",
+    name: "a label pointing at a different id than the field's",
     html: `<lt-field><label class="lt-label" for="annen">Kommune</label><input class="lt-input" id="kommune" name="kommune"></lt-field>`,
     count: 1,
     mentions: ["The label is not wired"],
     noFix: true,
   },
   {
-    name: "et name som ikke kan bli en id gir ingen rettelse",
+    name: "a name that cannot become an id gives no fix",
     html: `<lt-field><label class="lt-label">E-post</label><input class="lt-input" name="items[0].email"></lt-field>`,
     count: 1,
     noFix: true,
   },
   {
-    name: "et name som alt er en id på siden gir ingen rettelse",
+    name: "a name that is already an id on the page gives no fix",
     html: `<p id="kommune"></p><lt-field><label class="lt-label">Kommune</label><input class="lt-input" name="kommune"></lt-field>`,
     count: 1,
     noFix: true,
   },
   {
-    name: "et felt med for og id er koblet",
+    name: "a field with for and id is wired",
     html: `<lt-field><label class="lt-label" for="kommune">Kommune</label><input class="lt-input" id="kommune" name="kommune"></lt-field>`,
     count: 0,
   },
   {
-    name: "en ledetekst rundt feltet er koblet",
+    name: "a label around the field is wired",
     html: `<lt-field><label class="lt-label">Kommune <input class="lt-input" name="kommune"></label></lt-field>`,
     count: 0,
   },
   {
-    name: "et felt med aria-label trenger ingen kobling",
+    name: "a field with aria-label needs no wiring",
     html: `<lt-field><label class="lt-label">Søk</label><input class="lt-input" name="q" aria-label="Søk i saken"></lt-field>`,
     count: 0,
   },
   {
-    name: "en bundet id er serverens sak",
+    name: "a bound id is up to the server",
     html: `<lt-field><label class="lt-label" :for="id">Kommune</label><input class="lt-input" :id="id" name="kommune"></lt-field>`,
     count: 0,
   },
   {
-    name: "en id med malsyntaks er serverens sak",
+    name: "an id with template syntax is up to the server",
     html: `<lt-field><label class="lt-label" for="{{ .Id }}">Kommune</label><input class="lt-input" id="{{ .Id }}" name="kommune"></lt-field>`,
     count: 0,
   },
   {
-    name: "asp-for gir id i Razor",
+    name: "asp-for gives an id in Razor",
     html: `<lt-field><label class="lt-label" asp-for="Kommune">Kommune</label><input class="lt-input" asp-for="Kommune"></lt-field>`,
     count: 0,
   },
   {
-    name: "forslagsfeltet med ledetekst uten for",
+    name: "the suggestion field with a label without for",
     html: `<lt-suggestion><label class="lt-label">Sted</label><input class="lt-input" id="sted" name="sted"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     count: 1,
     mentions: ["The label is not wired"],
     noFix: true,
   },
   {
-    name: "forslagsfeltet uten ledetekst i det hele tatt",
+    name: "the suggestion field with no label at all",
     html: `<lt-suggestion><input class="lt-input" name="sted"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     count: 1,
     mentions: ["no label wired to it"],
     noFix: true,
   },
   {
-    name: "et panel i sprettoppvinduet uten id",
+    name: "a panel in the popover without an id",
     html: `<lt-popover><button class="lt-button" type="button">Meny</button><div class="lt-popover" popover>Innhold</div></lt-popover>`,
     count: 1,
     mentions: ['"panel" without an id', "aria-controls", "never creates one"],
@@ -1165,19 +1167,19 @@ cases.push(
     noFix: true,
   },
   {
-    name: "et panel med id",
+    name: "a panel with an id",
     html: `<lt-popover><button class="lt-button" type="button" popovertarget="meny">Meny</button><div class="lt-popover" popover id="meny">Innhold</div></lt-popover>`,
     count: 0,
   },
   {
-    name: "et panel med bundet id",
+    name: "a panel with a bound id",
     html: `<lt-popover><button class="lt-button" type="button">Meny</button><div class="lt-popover" popover :id="id">Innhold</div></lt-popover>`,
     count: 0,
   },
   {
-    name: "en fane som peker på et panel som ikke finnes",
+    name: "a tab pointing at a panel that does not exist",
     html: TABS(
-      RAD,
+      LIST,
       `<section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>`,
     ),
     count: 1,
@@ -1185,12 +1187,12 @@ cases.push(
     covers: "a",
   },
   {
-    name: "et panel utenfor raden teller",
-    html: `${TABS(RAD, `<section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>`)}<section class="lt-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>`,
+    name: "a panel outside the tab list counts",
+    html: `${TABS(LIST, `<section class="lt-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>`)}<section class="lt-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>`,
     count: 0,
   },
   {
-    name: "en lenke med malsyntaks i href er serverens sak",
+    name: "a link with template syntax in href is up to the server",
     html: TABS(
       `<ul class="lt-tabs__list" aria-label="Deler"><li><a href="#{{ .Id }}">Søknaden</a></li></ul>`,
       `<section class="lt-tabs__panel" id="{{ .Id }}"></section>`,
@@ -1198,7 +1200,7 @@ cases.push(
     count: 0,
   },
   {
-    name: "en knapp med role=tab i raden",
+    name: "a button with role=tab in the tab list",
     html: TABS(
       `<ul class="lt-tabs__list" aria-label="Case sections"><li><a href="#soknaden">Søknaden</a></li><li><button type="button" role="tab">Vedlegg</button></li></ul>`,
     ),
@@ -1207,14 +1209,14 @@ cases.push(
     covers: "button",
   },
   {
-    name: "en lenke med role=tab er en fane",
+    name: "a link with role=tab is a tab",
     html: TABS(
       `<ul class="lt-tabs__list" aria-label="Case sections" role="tablist"><li role="presentation"><a href="#soknaden" role="tab">Søknaden</a></li><li role="presentation"><a href="#vedlegg" role="tab">Vedlegg</a></li></ul>`,
     ),
     count: 0,
   },
   {
-    name: "en fanerad uten navn",
+    name: "a tab list without a name",
     html: TABS(
       `<ul class="lt-tabs__list"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`,
     ),
@@ -1227,78 +1229,78 @@ cases.push(
     ),
   },
   {
-    name: "en fanerad med aria-labelledby",
+    name: "a tab list with aria-labelledby",
     html: `<h2 id="deler">Deler av saken</h2>${TABS(`<ul class="lt-tabs__list" aria-labelledby="deler"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`)}`,
     count: 0,
   },
   {
-    name: "en fanerad med bundet aria-label",
+    name: "a tab list with a bound aria-label",
     html: TABS(
       `<ul class="lt-tabs__list" :aria-label="navn"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`,
     ),
     count: 0,
   },
   {
-    name: "hjelpeteksten inni ledeteksten",
+    name: "the help text inside the label",
     html: `<lt-field><label class="lt-label" for="epost">E-post <span class="lt-help-text">Vi sender aldri reklame.</span></label><input class="lt-input" id="epost" name="epost"></lt-field>`,
     count: 1,
     mentions: ["The help text is inside <label>", "part of the field's name"],
     covers: "span",
   },
   {
-    name: "feilmeldingen inni ledeteksten",
+    name: "the error text inside the label",
     html: `<lt-field><label class="lt-label" for="epost">E-post <span class="lt-error-text">Skriv en e-postadresse.</span></label><input class="lt-input" id="epost" name="epost"></lt-field>`,
     count: 1,
     mentions: ["The error text is inside <label>"],
   },
   {
-    name: "hjelpeteksten ved siden av ledeteksten",
+    name: "the help text next to the label",
     html: `<lt-field><label class="lt-label" for="epost">E-post</label><input class="lt-input" id="epost" name="epost"><p class="lt-help-text">Vi sender aldri reklame.</p></lt-field>`,
     count: 0,
   },
   {
-    name: "alternativer med data-value uten verdifelt",
+    name: "options with data-value without a value field",
     html: `<lt-suggestion><label class="lt-label" for="k">Kommune</label><input class="lt-input" id="k" name="k"><ul class="lt-suggestion__list"><li data-value="4601">Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     count: 1,
     mentions: ["data-value, but no .lt-suggestion__value"],
     covers: "li",
   },
   {
-    name: "et verdifelt uten alternativer med data-value",
+    name: "a value field without options with data-value",
     html: `<lt-suggestion><label class="lt-label" for="k">Kommune</label><input class="lt-input" id="k" name="k"><input type="hidden" class="lt-suggestion__value" name="nr"><ul class="lt-suggestion__list"><li>Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     count: 1,
     mentions: ["no options with data-value"],
     covers: "input",
   },
   {
-    name: "data-value og verdifelt sammen",
+    name: "data-value and a value field together",
     html: `<lt-suggestion><label class="lt-label" for="k">Kommune</label><input class="lt-input" id="k" name="k"><input type="hidden" class="lt-suggestion__value" name="nr"><ul class="lt-suggestion__list"><li data-value="4601">Bergen</li></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     count: 0,
   },
   {
-    name: "en tom liste serveren fyller senere",
+    name: "an empty list the server fills later",
     html: `<lt-suggestion><label class="lt-label" for="k">Kommune</label><input class="lt-input" id="k" name="k"><input type="hidden" class="lt-suggestion__value" name="nr"><ul class="lt-suggestion__list"></ul><span class="lt-sr-only" role="status"></span></lt-suggestion>`,
     count: 0,
   },
   {
-    name: "en skjult feilmelding ved siden av aria-invalid",
+    name: "a hidden error text next to aria-invalid",
     html: `<lt-field><label class="lt-label" for="fnr">Fødselsnummer</label><input class="lt-input" id="fnr" name="fnr" aria-invalid="true"><p class="lt-error-text" hidden>Skriv elleve siffer.</p></lt-field>`,
     count: 1,
     mentions: ["The error text has hidden", 'aria-invalid="true"'],
     covers: "p",
   },
   {
-    name: "en skjult feilmelding på et gyldig felt",
+    name: "a hidden error text on a valid field",
     html: `<lt-field><label class="lt-label" for="fnr">Fødselsnummer</label><input class="lt-input" id="fnr" name="fnr"><p class="lt-error-text" hidden>Skriv elleve siffer.</p></lt-field>`,
     count: 0,
   },
   {
-    name: "en feilmelding Datastar skjuler er serverens sak",
+    name: "an error text Datastar hides is up to the server",
     html: `<lt-field><label class="lt-label" for="fnr">Fødselsnummer</label><input class="lt-input" id="fnr" name="fnr" aria-invalid="true"><p class="lt-error-text" data-attr:hidden="!$ugyldig">Skriv elleve siffer.</p></lt-field>`,
     count: 0,
   },
   {
-    name: "invalid på lt-field, slik det ble skrevet før",
+    name: "invalid on lt-field, as it used to be written",
     html: `<lt-field invalid><label class="lt-label" for="fnr">Fødselsnummer</label><input class="lt-input" id="fnr" name="fnr"></lt-field>`,
     count: 1,
     mentions: ["invalid has been removed from <lt-field>", "aria-invalid"],
@@ -1307,38 +1309,38 @@ cases.push(
     fixed: `<lt-field><label class="lt-label" for="fnr">Fødselsnummer</label><input class="lt-input" id="fnr" name="fnr"></lt-field>`,
   },
   {
-    name: "required-marker på lt-field, slik det ble skrevet før",
+    name: "required-marker on lt-field, as it used to be written",
     html: `<lt-field required-marker="*"><label class="lt-label" for="fnr">Fødselsnummer</label><input class="lt-input" id="fnr" name="fnr"></lt-field>`,
     count: 1,
     mentions: ["data-required"],
     fixed: `<lt-field><label class="lt-label" for="fnr">Fødselsnummer</label><input class="lt-input" id="fnr" name="fnr"></lt-field>`,
   },
   {
-    name: "en id komponenten lagde selv, kopiert inn i malen",
+    name: "an id the component made itself, copied into the template",
     html: `<lt-field><label class="lt-label" for="e">E-post</label><input class="lt-input" id="e" name="epost"><p class="lt-help-text" id="lt-field-help-a1b2c3d">Hjelp</p></lt-field>`,
     count: 1,
     mentions: ["copied from DevTools"],
     covers: "lt-field-help-a1b2c3d",
   },
   {
-    name: "en id fra createFieldId, kopiert inn i malen",
+    name: "an id from createFieldId, copied into the template",
     html: `<lt-field><label class="lt-label" for="lt-field-3-k2x9qa">E-post</label><input class="lt-input" id="lt-field-3-k2x9qa" name="epost"></lt-field>`,
     count: 1,
     mentions: ["copied from DevTools"],
   },
   {
-    name: "den samme id-en på en rendret side er riktig",
+    name: "the same id on a rendered page is correct",
     html: `<lt-field><label class="lt-label" for="e">E-post</label><input class="lt-input" id="e" name="epost" aria-describedby="lt-field-help-a1b2c3d"><p class="lt-help-text" id="lt-field-help-a1b2c3d">Hjelp</p></lt-field>`,
     count: 0,
     page: true,
   },
   {
-    name: "en egen id som begynner med lt-",
+    name: "a custom id starting with lt-",
     html: `<lt-field><label class="lt-label" for="e">E-post</label><input class="lt-input" id="e" name="epost"><p class="lt-help-text" id="lt-field-help">Hjelp</p></lt-field>`,
     count: 0,
   },
   {
-    name: "et kodet fragment finner panelet sitt, som i nettleseren",
+    name: "an encoded fragment finds its panel, as in the browser",
     html: TABS(
       `<ul class="lt-tabs__list" aria-label="Deler"><li><a href="#s%C3%B8knaden">Søknaden</a></li></ul>`,
       `<section class="lt-tabs__panel" id="søknaden"></section>`,
@@ -1346,7 +1348,7 @@ cases.push(
     count: 0,
   },
   {
-    name: "invalid bundet i Datastar, slik den gamle oppskriften skrev det",
+    name: "invalid bound in Datastar, as the old recipe wrote it",
     html: `<lt-field data-attr:invalid="$ugyldig"><label class="lt-label" for="e">E-post</label><input class="lt-input" id="e"></lt-field>`,
     count: 1,
     mentions: ["invalid has been removed from <lt-field>"],
@@ -1354,40 +1356,40 @@ cases.push(
     fixed: `<lt-field><label class="lt-label" for="e">E-post</label><input class="lt-input" id="e"></lt-field>`,
   },
   {
-    name: "invalid bundet i Vue",
+    name: "invalid bound in Vue",
     html: `<lt-field :invalid="ugyldig"><label class="lt-label" for="e">E-post</label><input class="lt-input" id="e"></lt-field>`,
     count: 1,
     mentions: ["invalid has been removed from <lt-field>"],
   },
   {
-    name: "id-ene forslagsfeltet lager selv, kopiert inn i malen",
+    name: "the ids the suggestion field makes itself, copied into the template",
     html: `<lt-suggestion><label class="lt-label" for="k">Kommune</label><input class="lt-input" id="k"><ul class="lt-suggestion__list" id="lt-suggestion-list-a1b2c3d" aria-labelledby="lt-suggestion-label-z8y7x6w"><li id="lt-suggestion-option-q9w8e7r">Bergen</li></ul><span id="lt-suggestion-label-z8y7x6w"></span></lt-suggestion>`,
     count: 3,
     mentions: ["copied from DevTools"],
   },
   {
-    name: "en bundet for på ledeteksten er serverens sak",
+    name: "a bound for on the label is up to the server",
     html: `<lt-suggestion><label class="lt-label" :for="'k'">Kommune</label><input class="lt-input" id="k"><ul class="lt-suggestion__list"><li>Bergen</li></ul></lt-suggestion>`,
     count: 0,
   },
   {
-    name: "[attr.id] og [attr.for] i Angular er serverens sak",
+    name: "[attr.id] and [attr.for] in Angular are up to the server",
     html: `<lt-field><label class="lt-label" [attr.for]="id">Kommune</label><input class="lt-input" [attr.id]="id" name="kommune"></lt-field>`,
     count: 0,
   },
   {
-    name: "meldingen om et panel uten id er ren tekst",
+    name: "the message about a panel without an id is plain text",
     html: `<lt-popover><button class="lt-button" type="button">Meny</button><div class="lt-popover" popover>Innhold</div></lt-popover>`,
     count: 1,
     notMentions: ["`"],
   },
   {
-    name: "en vert i en løkke i malen er serverens sak",
+    name: "a host in a loop in the template is up to the server",
     html: `{{ range .Felt }}<lt-field><label class="lt-label">{{ .Navn }}</label><input class="lt-input" name="{{ .Navn }}"></lt-field>{{ end }}`,
     count: 0,
   },
   {
-    name: "en ledetekst med v-if er serverens sak",
+    name: "a label with v-if is up to the server",
     html: `<lt-field><label class="lt-label" v-if="vis">Kommune</label><input class="lt-input" name="kommune"></lt-field>`,
     count: 0,
   },
@@ -1403,8 +1405,8 @@ for (const c of cases) {
     fail(`threw: ${error instanceof Error ? error.message : String(error)}`)
     continue
   }
-  // Tidsgrensen er en lokal vakt for hurtigbufferen, ikke en påstand om en
-  // delt CI-maskin: der kan veggklokka gi rødt uten at noe er galt.
+  // The time limit is a local guard for the cache, not a claim about a
+  // shared CI machine: there the wall clock can go red with nothing wrong.
   const took = performance.now() - before
   if (c.maxMs && took > c.maxMs && !process.env.CI)
     fail(`took ${Math.round(took)} ms, and must take less than ${c.maxMs}`)
@@ -1440,11 +1442,11 @@ for (const c of cases) {
   if (c.fixed !== undefined || c.fixTitle || c.fixPreferred !== undefined) {
     if (!first.fix) fail("the finding has no fix")
     else {
-      // Bakfra, så posisjonene i de første endringene holder.
+      // From the end, so the positions in the first edits hold.
       const applied = [...first.fix.edits]
         .sort((a, b) => b.start - a.start)
         .reduce(
-          (tekst, e) => tekst.slice(0, e.start) + e.text + tekst.slice(e.end),
+          (text, e) => text.slice(0, e.start) + e.text + text.slice(e.end),
           c.html,
         )
       if (c.fixed !== undefined && applied !== c.fixed)

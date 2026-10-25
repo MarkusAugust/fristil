@@ -1,177 +1,184 @@
 /**
- * Bygger `lotek.css` i minnet: alle stilarkene i én fil, uten `@import`.
+ * Builds `lotek.css` in memory: every stylesheet in one file, without `@import`.
  *
- * De enkelte stilarkene henter delene sine med `@import`, og en nettleser
- * uten byggesteg må først laste og lese den ytre fila før den vet at de finnes.
- * På et mobilnett er det en synlig forsinkelse, og den rammet nettopp
- * feltene: kommunefeltet i spilldemoen sto uten ramme og bakgrunn til den
- * andre runden kom. Demoen forhåndslastet fem filer for hånd for å komme
- * rundt det, og en liste hver konsument må vedlikeholde er ikke en løsning.
+ * The individual stylesheets fetch their parts with `@import`, and a browser
+ * without a build step has to load and read the outer file before it knows
+ * they exist. On a mobile network that is a visible delay, and it hit the
+ * fields in particular: the municipality field in the game demo had no
+ * border or background until the second round trip arrived. The demo
+ * preloaded five files by hand to get round it, and a list every consumer
+ * has to maintain is not a solution.
  *
- * Her flates alt ut til én fil som lenkes alene. Et byggesteg bruker de
- * stilarkene som før, og laster bare det de trenger; denne er for dem som
- * lenker fra CDN eller `node_modules` og heller vil ha én rundtur enn et
- * utvalg.
+ * Here everything is flattened into one file that is linked on its own. A
+ * build step uses the stylesheets as before and loads only what it needs;
+ * this one is for those who link from a CDN or `node_modules` and would
+ * rather have one round trip than a selection.
  *
- * Lista er `exports` i `package.json`, ikke mappa: det er oppføringene som
- * er kontrakten, og en ny komponent kommer med av seg selv når den får sin
- * oppføring. `tokens.css` legges først, siden alt annet bygger på den, og
- * `boundary.css` sist, siden den er den eneste regelen uten lag og ellers
- * ville stått midt i fila. Tailwind-temaet holdes utenfor, siden det er en `@theme`-blokk for
- * Tailwind og ikke et stilark for en side.
+ * The list is `exports` in `package.json`, not the folder: the entries are
+ * the contract, and a new component is included by itself once it has its
+ * entry. `tokens.css` goes first, since everything else builds on it, and
+ * `boundary.css` last, since it is the only rule without a layer and would
+ * otherwise sit in the middle of the file. The Tailwind theme is left out,
+ * since it is a `@theme` block for Tailwind and not a stylesheet for a page.
  *
- * Hver fil tas med én gang, uansett hvor mange som importerer den, og en
- * import som ikke finnes stopper bygget framfor å bli borte i stillhet.
- * Kommentarene strykes; de er skrevet for den som leser kilden, og kilden
- * ligger i pakken som før.
+ * Each file is included once, however many import it, and an import that
+ * does not exist stops the build rather than disappearing silently.
+ * Comments are stripped; they are written for whoever reads the source, and
+ * the source is in the package as before.
  *
- * Regnestykket står her framfor i `build-css.ts`, fordi to kallere trenger
- * det: `build-css.ts` skriver fila, og `agent-parts.ts` oppgir størrelsen i
- * regelbøkene. Størrelsen sto før som et hardkodet tall i generatoren, og
- * var 75 kB da fila var 90 kB. `bygg:css` kjører dessuten etter `generate`
- * i pakkens bygg, så generatoren kan ikke lese `dist/lotek.css`.
+ * The calculation lives here rather than in `build-css.ts` because two
+ * callers need it: `build-css.ts` writes the file, and `agent-parts.ts`
+ * states the size in the rulebooks. The size used to be a hard-coded number
+ * in the generator, and said 75 kB when the file was 90 kB. `build:css` also
+ * runs after `generate` in the package build, so the generator cannot read
+ * `dist/lotek.css`.
  */
 import { existsSync, readFileSync } from "node:fs"
 import { dirname, join, relative, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { gzipSync } from "node:zlib"
 
-const PAKKE = fileURLToPath(new URL("../", import.meta.url))
+const PACKAGE = fileURLToPath(new URL("../", import.meta.url))
 
-export interface SamletCss {
-  /** Hele fila, slik den skrives til `dist/lotek.css`. */
+export interface BundledCss {
+  /** The whole file, as it is written to `dist/lotek.css`. */
   css: string
-  /** Antall CSS-oppføringer i `exports` som ble lest. */
-  oppføringer: number
-  /** Antall kildefiler som kom med, `@import`-ene medregnet. */
-  filer: number
-  /** Antall `@import` som ble flatet ut. */
-  importer: number
+  /** Number of CSS entries in `exports` that were read. */
+  entries: number
+  /** Number of source files included, the `@import`s counted. */
+  files: number
+  /** Number of `@import`s flattened. */
+  imports: number
 }
 
-export function byggSamletCss(): SamletCss {
-  const manifest = JSON.parse(readFileSync(join(PAKKE, "package.json"), "utf8"))
-  const versjon: string = manifest.version
+export function buildBundledCss(): BundledCss {
+  const manifest = JSON.parse(
+    readFileSync(join(PACKAGE, "package.json"), "utf8"),
+  )
+  const version: string = manifest.version
   const exports: Record<string, string | Record<string, string>> =
     manifest.exports
 
-  const oppføringer = Object.entries(exports)
+  const entries = Object.entries(exports)
     .filter(
-      ([navn, sti]) =>
-        navn.endsWith(".css") &&
-        typeof sti === "string" &&
-        navn !== "./tailwind.css" &&
-        navn !== "./lotek.css",
+      ([name, path]) =>
+        name.endsWith(".css") &&
+        typeof path === "string" &&
+        name !== "./tailwind.css" &&
+        name !== "./lotek.css",
     )
-    .map(([navn, sti]) => ({ navn, fil: resolve(PAKKE, sti as string) }))
+    .map(([name, path]) => ({ name, file: resolve(PACKAGE, path as string) }))
     .sort((a, b) => {
-      if (a.navn === "./tokens.css") return -1
-      if (b.navn === "./tokens.css") return 1
-      if (a.navn === "./boundary.css") return 1
-      if (b.navn === "./boundary.css") return -1
-      return a.navn.localeCompare(b.navn)
+      if (a.name === "./tokens.css") return -1
+      if (b.name === "./tokens.css") return 1
+      if (a.name === "./boundary.css") return 1
+      if (b.name === "./boundary.css") return -1
+      return a.name.localeCompare(b.name)
     })
 
-  if (oppføringer.length === 0)
-    throw new Error("fant ingen CSS-oppføringer i exports")
+  if (entries.length === 0) throw new Error("found no CSS entries in exports")
 
-  const tatt = new Set<string>()
-  const deler: string[] = []
-  let importer = 0
+  const taken = new Set<string>()
+  const parts: string[] = []
+  let imports = 0
 
-  function ta(fil: string, fra: string | null): void {
-    if (tatt.has(fil)) return
-    if (!existsSync(fil)) {
-      const hvor = fra ? ` (importert fra ${relative(PAKKE, fra)})` : ""
-      throw new Error(`${relative(PAKKE, fil)} finnes ikke${hvor}`)
+  function take(file: string, from: string | null): void {
+    if (taken.has(file)) return
+    if (!existsSync(file)) {
+      const where = from ? ` (imported from ${relative(PACKAGE, from)})` : ""
+      throw new Error(`${relative(PACKAGE, file)} does not exist${where}`)
     }
-    tatt.add(fil)
+    taken.add(file)
 
-    // Kommentarene først, så en `@import` i en kommentar ikke hentes. De er
-    // for den som leser kilden, og de er mange: uten dem er fila under
-    // halvparten så stor. Kildefilene ligger i pakken som før.
-    const utenKommentarer = readFileSync(fil, "utf8").replace(
+    // Comments first, so an `@import` inside a comment is not fetched. They
+    // are for whoever reads the source, and there are many: without them the
+    // file is less than half the size. The source files are in the package
+    // as before.
+    const withoutComments = readFileSync(file, "utf8").replace(
       /\/\*[\s\S]*?\*\//g,
       "",
     )
 
-    // Importene, slik nettleseren ville lest dem: det de definerer skal være
-    // der før fila selv. Bare den enkle formen kjennes igjen; en `@import` med
-    // lag eller medieliste blir stående, og vakten under feller den.
-    const uten = utenKommentarer.replace(
+    // The imports, as the browser would read them: what they define has to
+    // be there before the file itself. Only the simple form is recognised;
+    // an `@import` with a layer or media list is left in place, and the
+    // guard below fails on it.
+    const without = withoutComments.replace(
       /^\s*@import\s+(?:url\()?["']([^"']+)["']\)?\s*;[ \t]*$/gm,
-      (_, sti: string) => {
-        importer += 1
-        ta(resolve(dirname(fil), sti), fil)
+      (_, path: string) => {
+        imports += 1
+        take(resolve(dirname(file), path), file)
         return ""
       },
     )
 
-    const ryddet = uten.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n")
-    deler.push(`/* ${relative(PAKKE, fil)} */\n${ryddet.trim()}\n`)
+    const tidied = without.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n")
+    parts.push(`/* ${relative(PACKAGE, file)} */\n${tidied.trim()}\n`)
   }
 
-  for (const { fil } of oppføringer) ta(fil, null)
+  for (const { file } of entries) take(file, null)
 
-  const hode = [
-    `/* @lo-tek/interfaces ${versjon}. Alle stilarkene i én fil, uten @import,`,
-    " * for den som lenker fra CDN eller node_modules. Et byggesteg bruker",
-    " * stilarkene. Generert av scripts/build-css.ts; rediger kildene, ikke denne. */",
+  const header = [
+    `/* @lo-tek/interfaces ${version}. Every stylesheet in one file, without @import,`,
+    " * for those who link from a CDN or node_modules. A build step uses the",
+    " * stylesheets. Generated by scripts/build-css.ts; edit the sources, not this. */",
     "",
   ].join("\n")
 
-  const css = hode + deler.join("\n")
+  const css = header + parts.join("\n")
 
   /*
-   * Vakten teller det som faktisk står i resultatet, ikke det skriptet tror
-   * det gjorde. Hver kildefil pakker alt i `@layer lotek { … }`, så antall
-   * slike blokker i utdata skal være antall filer som ble tatt. Et tall
-   * mindre er en fil som ble hentet uten å komme med, eller en kildefil uten
-   * lag; det siste ville latt konsumentens regler tape mot våre. Og ingen
-   * `@import` skal stå igjen, heller ikke en innrykket eller en med lag.
+   * The guard counts what is actually in the result, not what the script
+   * thinks it did. Every source file wraps everything in `@layer lotek { … }`,
+   * so the number of such blocks in the output must be the number of files
+   * taken. One fewer is a file that was fetched without being included, or a
+   * source file without a layer; the latter would make consumers' rules lose
+   * to ours. And no `@import` may remain, not even an indented one or one
+   * with a layer.
    */
-  const gjenstaaende = css.match(/^\s*@import\b.*$/gm) ?? []
-  if (gjenstaaende.length > 0)
+  const remaining = css.match(/^\s*@import\b.*$/gm) ?? []
+  if (remaining.length > 0)
     throw new Error(
-      `lotek.css har fortsatt @import: ${gjenstaaende[0]?.trim() ?? ""}`,
+      `lotek.css still has @import: ${remaining[0]?.trim() ?? ""}`,
     )
 
   /*
-   * Grensen mot en vertsside er den ene fila uten lag, med vilje; se
-   * `boundary.css`. Den trekkes fra ved navn, så en annen fil uten lag
-   * fortsatt feller vakten.
+   * The boundary towards a host page is the one file without a layer, on
+   * purpose; see `boundary.css`. It is subtracted by name, so another file
+   * without a layer still fails the guard.
    */
-  const utenLag = [...tatt].filter((fil) =>
-    fil.endsWith(join("src", "tokens", "boundary.css")),
+  const withoutLayer = [...taken].filter((file) =>
+    file.endsWith(join("src", "tokens", "boundary.css")),
   ).length
-  const lag = (css.match(/^@layer lotek \{/gm) ?? []).length
-  if (lag !== tatt.size - utenLag || tatt.size < oppføringer.length)
+  const layers = (css.match(/^@layer lotek \{/gm) ?? []).length
+  if (layers !== taken.size - withoutLayer || taken.size < entries.length)
     throw new Error(
-      `lotek.css har ${lag} @layer lotek-blokker, men ${tatt.size} filer ble tatt av ${oppføringer.length} oppføringer`,
+      `lotek.css has ${layers} @layer lotek blocks, but ${taken.size} files were taken from ${entries.length} entries`,
     )
 
-  return { css, oppføringer: oppføringer.length, filer: tatt.size, importer }
+  return { css, entries: entries.length, files: taken.size, imports }
 }
 
 /**
- * Størrelsen på den samlede fila, i hele kB, ukomprimert og med gzip.
+ * The size of the bundled file, in whole kB, uncompressed and with gzip.
  *
- * `Buffer.byteLength` og ikke `String.length`: det siste teller
- * UTF-16-kodeenheter, og fila har tegn utenfor ASCII. Og kB er tusen byte,
- * som er enheten en nettverksfane oppgir; `/1024` er KiB, og sto her merket
- * som kB.
+ * `Buffer.byteLength` and not `String.length`: the latter counts UTF-16 code
+ * units, and the file has characters outside ASCII. And kB is a thousand
+ * bytes, which is the unit a network tab shows; `/1024` is KiB, and was
+ * labelled kB here.
  *
- * Tallene rundes til hele kB fordi gzip-resultatet avhenger av hvilken zlib
- * som kjører: 11 163 byte i Bun, 11 474 i Node og 11 482 med `gzip` på
- * kommandolinja. Et tall med desimal ville sagt tre ulike ting om den samme
- * fila. Avrundingen gjør dem bare enige så lenge de ligger innenfor samme
- * halve kB, og Nodes tall er 26 byte fra å vippe til 12; generatoren kjører
- * alltid under Bun, så det er Buns tall som står i filene.
+ * The numbers are rounded to whole kB because the gzip result depends on
+ * which zlib runs: 11 163 bytes in Bun, 11 474 in Node and 11 482 with `gzip`
+ * on the command line. A number with a decimal would say three different
+ * things about the same file. Rounding only makes them agree as long as they
+ * fall within the same half kB, and Node's number is 26 bytes from tipping
+ * to 12; the generator always runs under Bun, so Bun's number is the one in
+ * the files.
  */
-export function samletStørrelse(css: string): { kb: number; gzipKb: number } {
-  const byte = Buffer.byteLength(css)
+export function bundledSize(css: string): { kb: number; gzipKb: number } {
+  const bytes = Buffer.byteLength(css)
   return {
-    kb: Math.round(byte / 1000),
+    kb: Math.round(bytes / 1000),
     gzipKb: Math.round(gzipSync(css).length / 1000),
   }
 }

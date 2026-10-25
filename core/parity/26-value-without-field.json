@@ -15,7 +15,7 @@
       "message": "<lt-suggestion> has an .lt-suggestion__value, but no options with data-value. The field stays empty. Give every option a data-value with the code it stands for."
     }
   ],
-  "side": [
+  "page": [
     {
       "start": 167,
       "end": 169,

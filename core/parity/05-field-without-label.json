@@ -15,7 +15,7 @@
       "message": "<lt-field> found no control to wire up. The label, help text and error text have no field, so the wiring cannot be made. Add an <input>, <textarea> or <select>."
     }
   ],
-  "side": [
+  "page": [
     {
       "start": 1,
       "end": 9,

@@ -1,22 +1,23 @@
 /**
- * Kontrollerer at ingen side ruller sidelengs på en mobilskjerm.
+ * Checks that no page scrolls sideways on a mobile screen.
  *
- * Siden var bygget for stor skjerm først: overskriften brakk midt i ordet,
- * menyen i toppen stakk utenfor, og kortene på forsiden var bredere enn
- * telefonen. Det er lett å innføre på nytt, siden ingenting sier fra i et
- * vanlig utviklingsvindu.
+ * The site was built for large screens first: the heading broke mid-word,
+ * the menu at the top stuck out, and the cards on the front page were wider
+ * than the phone. It is easy to reintroduce, since nothing tells you in an
+ * ordinary development window.
  *
- * Den ene målingen er den brukeren merker: kan siden faktisk dras sidelengs?
- * `scrollWidth` alene er misvisende, for et kodefelt som er klippet av en
- * `overflow: hidden` teller med der uten at noe kan rulles.
+ * The first check is the one the user notices: can the page actually be
+ * dragged sideways? `scrollWidth` alone is misleading, because a code block
+ * clipped by `overflow: hidden` counts there without anything being
+ * scrollable.
  *
- * Den andre er innhold som stikker utenfor skjermen uten å gjøre siden
- * dragbar, fordi noe lenger ute klipper det. Det synes ikke som en rullefelt,
- * men teksten er borte. Knappen «Fjern <filnavn>» i filopplastingen var
- * nøyaktig dette. Forhåndsvisningene ligger i skyggerøtter, så målingen må
- * gå inn i dem for å se slikt.
+ * The second is content that sticks out of the screen without making the
+ * page draggable, because something further out clips it. It does not show
+ * as a scrollbar, but the text is gone. The "Remove <file name>" button in
+ * the file upload was exactly this. The previews live in shadow roots, so
+ * the check has to go into them to see it.
  *
- * Kjør med: bun run test:docs (bygg først)
+ * Run with: bun run test:docs (build first)
  */
 
 import { join, relative } from "node:path"
@@ -25,37 +26,38 @@ import { chromium } from "playwright"
 
 const DIST = fileURLToPath(new URL("../dist/", import.meta.url))
 const PORT = 4179
-/** iPhone SE, den smaleste skjermen det er verdt å ta hensyn til. */
-const BREDDE = 375
+/** iPhone SE, the narrowest screen worth taking into account. */
+const WIDTH = 375
 
 /*
- * Hver bygde HTML-fil, ikke bare de som heter `index.html`.
+ * Every built HTML file, not just the ones named `index.html`.
  *
- * Globben tok bare `index.html`, og det gjorde vakten nederst blind: den
- * sammenlignet antall besøkte sider mot antall treff fra den samme
- * globben, så alt globben ikke fant var usynlig for begge. `dist/404.html`
- * ble derfor aldri besøkt av noen av sjekkene, og begge meldte grønt.
+ * The glob took only `index.html`, and that made the guard at the bottom
+ * blind: it compared the number of pages visited with the number of matches
+ * from the same glob, so everything the glob did not find was invisible to
+ * both. `dist/404.html` was therefore never visited by any of the checks,
+ * and both reported green.
  *
- * Nå tas hver `.html`-fil, så køen er hele settet av bygde sider, og
- * spørsmålet vakten stiller blir det som betyr noe: ble hver side som
- * ligger i `dist` besøkt?
+ * Now every `.html` file is taken, so the queue is the whole set of built
+ * pages, and the question the guard asks becomes the one that matters: was
+ * every page in `dist` visited?
  */
-function finnSider(): string[] {
-  const sider: string[] = []
-  for (const treff of new Bun.Glob("**/*.html").scanSync(DIST)) {
-    const sti = relative(".", treff)
-    sider.push(
-      sti === "index.html"
+function findPages(): string[] {
+  const pages: string[] = []
+  for (const match of new Bun.Glob("**/*.html").scanSync(DIST)) {
+    const path = relative(".", match)
+    pages.push(
+      path === "index.html"
         ? "/"
-        : sti.endsWith("/index.html")
-          ? `/${sti.slice(0, -"index.html".length)}`
-          : `/${sti}`,
+        : path.endsWith("/index.html")
+          ? `/${path.slice(0, -"index.html".length)}`
+          : `/${path}`,
     )
   }
-  return sider.sort()
+  return pages.sort()
 }
 
-const MEDIETYPER: Record<string, string> = {
+const MEDIA_TYPES: Record<string, string> = {
   html: "text/html; charset=utf-8",
   css: "text/css; charset=utf-8",
   js: "text/javascript; charset=utf-8",
@@ -67,229 +69,238 @@ const MEDIETYPER: Record<string, string> = {
 }
 
 /*
- * Tjeneren binder 127.0.0.1, og sjekken kobler til den samme adressen.
+ * The server binds 127.0.0.1, and the check connects to the same address.
  *
- * `Bun.serve` uten vertsnavn binder IPv4-jokeren, og en fremmed prosess på
- * IPv6-loopback tar da porten uten at noe kaster: to tjenere, samme
- * portnummer, ingen feilmelding. `localhost` slår opp IPv6 først på macOS, så
- * sjekken snakket med den andre prosessen. Det skjedde: en helt annen nettside
- * lå på 4173, og sjekken leste tilgjengelighetsbrudd på den. Den kunne like
- * gjerne meldt grønt uten å ha sett en eneste av våre sider.
+ * `Bun.serve` without a hostname binds the IPv4 wildcard, and a foreign
+ * process on IPv6 loopback then takes the port without anything throwing:
+ * two servers, same port number, no error message. `localhost` resolves
+ * IPv6 first on macOS, so the check talked to the other process. It
+ * happened: a completely different website was on 4173, and the check read
+ * accessibility violations on it. It could just as well have reported green
+ * without having seen a single one of our pages.
  *
- * Med vertsnavnet satt kaster en andre binding på samme adresse, og det er
- * det vi vil: en port som er opptatt skal stoppe kjøringen, ikke stilltiende
- * sende den et annet sted. Bytt derfor aldri dette tilbake til `localhost`.
+ * With the hostname set, a second binding on the same address throws, and
+ * that is what we want: a port that is taken should stop the run, not
+ * silently send it somewhere else. So never change this back to `localhost`.
  */
-const tjener = Bun.serve({
+const server = Bun.serve({
   hostname: "127.0.0.1",
   port: PORT,
   fetch(request) {
-    const sti = decodeURIComponent(new URL(request.url).pathname)
-    const filsti = sti.endsWith("/")
-      ? join(DIST, sti, "index.html")
-      : join(DIST, sti)
-    const fil = Bun.file(filsti)
-    const endelse = filsti.split(".").pop() ?? ""
-    return fil.exists().then((finnes) =>
-      finnes
-        ? new Response(fil, {
+    const path = decodeURIComponent(new URL(request.url).pathname)
+    const filePath = path.endsWith("/")
+      ? join(DIST, path, "index.html")
+      : join(DIST, path)
+    const file = Bun.file(filePath)
+    const extension = filePath.split(".").pop() ?? ""
+    return file.exists().then((exists) =>
+      exists
+        ? new Response(file, {
             headers: {
-              "content-type": MEDIETYPER[endelse] ?? "application/octet-stream",
+              "content-type":
+                MEDIA_TYPES[extension] ?? "application/octet-stream",
             },
           })
-        : new Response("Ikke funnet", { status: 404 }),
+        : new Response("Not found", { status: 404 }),
     )
   },
 })
 
-const nettleser = await chromium.launch()
+const browser = await chromium.launch()
 
-type Funn = { side: string; rullet: number; synder: string }
-const funn: Funn[] = []
+type Finding = { page: string; scrolled: number; culprit: string }
+const findings: Finding[] = []
 
 /*
- * Et tall fra miljøet må etterprøves, ellers kan det slå av sjekken.
+ * A number from the environment must be validated, or it can switch the
+ * check off.
  *
- * `Array.from({ length: NaN })` og `{ length: 0 }` gir begge en tom liste, så
- * en verdi som `0` eller `abc` ville startet null arbeidere, sjekket null
- * sider og avsluttet med 0. En vaktpost som melder grønt uten å ha sett på
- * noe er verre enn ingen vaktpost.
+ * `Array.from({ length: NaN })` and `{ length: 0 }` both give an empty list,
+ * so a value like `0` or `abc` would have started zero workers, checked zero
+ * pages and exited with 0. A guard that reports green without having looked
+ * at anything is worse than no guard.
  */
-function lesAntall(navn: string, standard: number): number {
-  const raa = Bun.env[navn]
-  if (raa === undefined) return standard
-  const tall = Number(raa)
-  if (!Number.isInteger(tall) || tall < 1) {
-    console.error(`${navn} må være et heltall på minst 1, men var «${raa}».`)
+function readCount(name: string, fallback: number): number {
+  const raw = Bun.env[name]
+  if (raw === undefined) return fallback
+  const count = Number(raw)
+  if (!Number.isInteger(count) || count < 1) {
+    console.error(`${name} must be an integer of at least 1, but was "${raw}".`)
     process.exit(2)
   }
-  return tall
+  return count
 }
 
 /*
- * Sidene deles på flere faner, fordi sjekken venter framfor å regne.
+ * The pages are split across several tabs, because the check waits rather
+ * than computes.
  *
- * Med én fane brukte de 59 sidene 32 sekunder, og av det var bare 5 sekunder
- * prosessortid: 19 prosent av én kjerne. Resten var venting på
- * `networkidle`. Derfor skalerer den forbi kjernetallet, og tallet er åtte og
- * ikke fire: 32 s med én fane, 8,7 med fire, 5,0 med åtte, 4,3 med tolv.
- * Etter åtte er det lite igjen å hente.
+ * With one tab the 59 pages took 32 seconds, and only 5 seconds of that was
+ * CPU time: 19 per cent of one core. The rest was waiting for
+ * `networkidle`. That is why it scales past the core count, and why the
+ * number is eight and not four: 32 s with one tab, 8.7 with four, 5.0 with
+ * eight, 4.3 with twelve. After eight there is little left to gain.
  */
-const PARALLELLE = lesAntall("SIDER_I_PARALLELL", 8)
+const PARALLEL = readCount("PAGES_IN_PARALLEL", 8)
 
-const koe = finnSider()
-let neste = 0
-let sjekket = 0
+const queue = findPages()
+let next = 0
+let checked = 0
 
-async function sjekkSider() {
-  const kontekst = await nettleser.newContext({
-    viewport: { width: BREDDE, height: 800 },
+async function checkPages() {
+  const context = await browser.newContext({
+    viewport: { width: WIDTH, height: 800 },
   })
-  const side = await kontekst.newPage()
+  const page = await context.newPage()
 
   while (true) {
-    // `neste++` er trygt uten lås: JavaScript kjører én ting om gangen, og
-    // her er det ingen `await` mellom avlesningen og økningen.
-    const url = koe[neste++]
+    // `next++` is safe without a lock: JavaScript runs one thing at a time,
+    // and there is no `await` between the read and the increment here.
+    const url = queue[next++]
     if (url === undefined) break
 
     /*
-     * Statuskoden må leses. `goto` kaster ikke på 404.
+     * The status code must be read. `goto` does not throw on 404.
      *
-     * Tjeneren over svarer «Ikke funnet» med status 404 for en sti den ikke
-     * har. Uten denne sjekken ville en side som ikke ble servert telt som
-     * besøkt: axe finner ingenting på en linje med ren tekst, og
-     * mobilsjekken finner ikke noe som stikker utenfor. Vakten nederst ville
-     * heller ikke fanget det, siden siden faktisk var innom køen.
+     * The server above answers "Not found" with status 404 for a path it
+     * does not have. Without this check, a page that was not served would
+     * count as visited: axe finds nothing on a line of plain text, and the
+     * mobile check finds nothing sticking out. The guard at the bottom would
+     * not have caught it either, since the page did pass through the queue.
      */
-    const svar = await side.goto(`http://127.0.0.1:${PORT}${url}`, {
+    const response = await page.goto(`http://127.0.0.1:${PORT}${url}`, {
       waitUntil: "networkidle",
     })
-    if (!svar?.ok()) {
+    if (!response?.ok()) {
       throw new Error(
-        `${url} svarte ${svar?.status() ?? "ingenting"}. Sjekken ville ellers meldt siden som bestått uten å ha sett den.`,
+        `${url} answered ${response?.status() ?? "nothing"}. The check would otherwise have reported the page as passing without having seen it.`,
       )
     }
 
-    const resultat = await side.evaluate((bredde) => {
+    const result = await page.evaluate((width) => {
       /*
-       * `behavior: "instant"`, ellers leser vi alltid 0.
+       * `behavior: "instant"`, or we always read 0.
        *
-       * Starlight setter `scroll-behavior: smooth` på `<html>`, så en vanlig
-       * `scrollTo` animeres og `window.scrollX` på linja etter står fortsatt
-       * på 0. Denne målingen har derfor vært død på hver eneste side, og den
-       * er den eneste av de to som dekker `body` selv og pseudoelementer,
-       * siden `samle(document.body)` bare samler etterkommere. En side med et
-       * bredt `body::after` kunne dras 375 piksler sidelengs og meldte grønt.
+       * Starlight sets `scroll-behavior: smooth` on `<html>`, so a plain
+       * `scrollTo` is animated and `window.scrollX` on the next line is
+       * still 0. This check was therefore dead on every single page, and it
+       * is the only one of the two that covers `body` itself and
+       * pseudo-elements, since `collect(document.body)` only collects
+       * descendants. A page with a wide `body::after` could be dragged 375
+       * pixels sideways and reported green.
        */
-      window.scrollTo({ left: bredde, behavior: "instant" })
-      const rullet = window.scrollX
+      window.scrollTo({ left: width, behavior: "instant" })
+      const scrolled = window.scrollX
       window.scrollTo({ left: 0, behavior: "instant" })
 
-      // Alle elementer, også de som ligger inne i en skyggerot.
-      const alle: HTMLElement[] = []
-      const samle = (rot: ParentNode) => {
-        for (const element of rot.querySelectorAll<HTMLElement>("*")) {
-          alle.push(element)
-          if (element.shadowRoot) samle(element.shadowRoot)
+      // Every element, including those inside a shadow root.
+      const all: HTMLElement[] = []
+      const collect = (root: ParentNode) => {
+        for (const element of root.querySelectorAll<HTMLElement>("*")) {
+          all.push(element)
+          if (element.shadowRoot) collect(element.shadowRoot)
         }
       }
-      samle(document.body)
+      collect(document.body)
 
-      // Det som stikker ut, og som ikke ligger i noe som kan rulles for seg
-      // selv. Et kodefelt og en bred tabell har sitt eget rullefelt, og er
-      // dermed i orden. `hidden` og `clip` teller ikke: de klipper uten å gi
-      // noen vei til innholdet, og er nettopp feilen vi leter etter.
-      const utenfor: string[] = []
-      for (const element of alle) {
-        const rute = element.getBoundingClientRect()
-        if (rute.width === 0 || rute.right <= bredde + 1) continue
+      // What sticks out and is not inside something that can scroll on its
+      // own. A code block and a wide table have their own scrollbar, and are
+      // therefore fine. `hidden` and `clip` do not count: they clip without
+      // giving any way to the content, and are exactly the bug we are
+      // looking for.
+      const outside: string[] = []
+      for (const element of all) {
+        const box = element.getBoundingClientRect()
+        if (box.width === 0 || box.right <= width + 1) continue
 
-        let forelder = element.parentElement
-        let egenRull = false
-        while (forelder) {
-          const overflow = getComputedStyle(forelder).overflowX
+        let parent = element.parentElement
+        let ownScroll = false
+        while (parent) {
+          const overflow = getComputedStyle(parent).overflowX
           if (overflow === "auto" || overflow === "scroll") {
-            egenRull = true
+            ownScroll = true
             break
           }
-          forelder = forelder.parentElement
+          parent = parent.parentElement
         }
-        if (egenRull) continue
+        if (ownScroll) continue
 
-        const klasse = (element.className || "").toString().split(" ")[0]
-        const tekst = (element.textContent ?? "").trim().slice(0, 30)
-        utenfor.push(
-          `${element.tagName.toLowerCase()}${klasse ? `.${klasse}` : ""} er ${Math.round(rute.width)} piksler bred${tekst ? ` («${tekst}»)` : ""}`,
+        const className = (element.className || "").toString().split(" ")[0]
+        const text = (element.textContent ?? "").trim().slice(0, 30)
+        outside.push(
+          `${element.tagName.toLowerCase()}${className ? `.${className}` : ""} is ${Math.round(box.width)} pixels wide${text ? ` ("${text}")` : ""}`,
         )
       }
 
-      return { rullet, synder: [...new Set(utenfor)].slice(0, 3).join("; ") }
-    }, BREDDE)
+      return {
+        scrolled,
+        culprit: [...new Set(outside)].slice(0, 3).join("; "),
+      }
+    }, WIDTH)
 
-    if (resultat.rullet > 0 || resultat.synder !== "") {
-      funn.push({
-        side: url,
-        rullet: resultat.rullet,
-        synder: resultat.synder || "fant ikke hvilket element",
+    if (result.scrolled > 0 || result.culprit !== "") {
+      findings.push({
+        page: url,
+        scrolled: result.scrolled,
+        culprit: result.culprit || "could not find which element",
       })
     }
 
-    // Sist i kroppen, ikke først. Telleren skal si hvor mange sider som ble
-    // sjekket, ikke hvor mange som ble tatt av køen: et `continue` lagt inn
-    // senere ville ellers hoppet over arbeidet uten at vakten merket det.
-    sjekket++
+    // Last in the body, not first. The counter should say how many pages
+    // were checked, not how many were taken from the queue: a `continue`
+    // added later would otherwise skip the work without the guard noticing.
+    checked++
   }
 
-  await kontekst.close()
+  await context.close()
 }
 
-await Promise.all(Array.from({ length: PARALLELLE }, () => sjekkSider()))
+await Promise.all(Array.from({ length: PARALLEL }, () => checkPages()))
 
-await nettleser.close()
-tjener.stop()
+await browser.close()
+server.stop()
 
 /*
- * Ble hver side faktisk besøkt?
+ * Was every page actually visited?
  *
- * Spørsmålet som betyr noe er om arbeidet ble gjort. `lesAntall` validerer
- * bare hvor mange arbeidere som startes, og sier ingenting om køen de skulle
- * tømme, så den lukker ikke dette.
+ * The question that matters is whether the work was done. `readCount` only
+ * validates how many workers are started, and says nothing about the queue
+ * they were meant to empty, so it does not close this.
  *
- * Vilkåret krever null sider eksplisitt, og ikke bare at tallene er like:
- * `0 !== 0` er usant, så en tom kø ville ellers passert vakten og gitt en
- * kjøring som melder grønt uten å ha åpnet en side.
+ * The condition rejects zero pages explicitly, not just unequal numbers:
+ * `0 !== 0` is false, so an empty queue would otherwise pass the guard and
+ * give a run that reports green without having opened a page.
  *
- * Utfallet avgjøres nederst, slik at en ufullstendig kjøring ikke skjuler de
- * sidene den faktisk rakk å felle.
+ * The outcome is decided at the bottom, so that an incomplete run does not
+ * hide the pages it did manage to fail.
  */
-const ufullstendig = koe.length === 0 || sjekket !== koe.length
+const incomplete = queue.length === 0 || checked !== queue.length
 
-// Arbeiderne blir ferdige i tilfeldig rekkefølge, så rapporten sorteres for
-// at to kjøringer av den samme feilen skal se like ut.
-funn.sort((a, b) => a.side.localeCompare(b.side))
+// The workers finish in random order, so the report is sorted for two runs
+// of the same failure to look the same.
+findings.sort((a, b) => a.page.localeCompare(b.page))
 
-if (funn.length > 0) {
+if (findings.length > 0) {
   console.error(
-    `Fant ${funn.length} sider med innhold utenfor skjermen på ${BREDDE} piksler:\n\n` +
-      funn
+    `Found ${findings.length} pages with content outside the screen at ${WIDTH} pixels:\n\n` +
+      findings
         .map(
           (f) =>
-            `  ${f.side}: ${f.rullet > 0 ? `siden kan dras ${f.rullet} piksler til siden. ` : ""}${f.synder}`,
+            `  ${f.page}: ${f.scrolled > 0 ? `the page can be dragged ${f.scrolled} pixels sideways. ` : ""}${f.culprit}`,
         )
         .join("\n") +
       "\n",
   )
-  if (!ufullstendig) process.exit(1)
+  if (!incomplete) process.exit(1)
 }
 
-if (ufullstendig) {
+if (incomplete) {
   console.error(
-    koe.length === 0
-      ? `Fant ingen sider i ${DIST}. Er dokumentasjonen bygget? Sjekken har ikke sett på noe.`
-      : `Sjekket ${sjekket} av ${koe.length} sider. Sjekken er ikke til å stole på.`,
+    queue.length === 0
+      ? `Found no pages in ${DIST}. Has the documentation been built? The check has not looked at anything.`
+      : `Checked ${checked} of ${queue.length} pages. The check cannot be trusted.`,
   )
   process.exit(2)
 }
 
-console.log(`Alt holder seg innenfor ${BREDDE} piksler.`)
+console.log(`Everything stays within ${WIDTH} pixels.`)

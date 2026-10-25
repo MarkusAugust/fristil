@@ -1,105 +1,108 @@
 /**
- * At versjonen faktisk ble satt inn i det bygde resultatet.
+ * That the version was actually inserted into the built output.
  *
- * Adressene i eksemplene står som `@lo-tek/interfaces@VERSION` i kilden, og
- * `remark-version.mjs` bytter plassholderen når siden bygges. To vaktposter
- * passer på kilden, og ingen passet på resultatet.
+ * The addresses in the examples are written as `@lo-tek/interfaces@VERSION`
+ * in the source, and `remark-version.mjs` replaces the placeholder when the
+ * page is built. Two guards watched the source, and none watched the output.
  *
- * Det er ikke en teoretisk mangel. `astro.config.mjs` sier selv at
- * `markdown.remarkPlugins` er merket som utfaset, og at MDX-veien er det eneste
- * som holder den i live. Slutter plugin-en å kjøre, går alle adressene ut med
- * ordet VERSION i seg, «Plain HTML»- og Datastar-sporet er dødt for leseren, og
- * `bun run check` er grønn hele veien.
+ * It is not a theoretical gap. `astro.config.mjs` itself says that
+ * `markdown.remarkPlugins` is marked as deprecated, and that the MDX path is
+ * the only thing keeping it alive. If the plugin stops running, every address
+ * goes out with the word VERSION in it, the "Plain HTML" and Datastar track is
+ * dead for the reader, and `bun run check` is green all the way.
  *
- * Kjør med: bun documentation/scripts/check-built-version.ts
- * Krever at `documentation/dist` er bygd.
+ * Run with: bun documentation/scripts/check-built-version.ts
+ * Requires `documentation/dist` to be built.
  */
 
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { Glob } from "bun"
 
-const ROT = fileURLToPath(new URL("../..", import.meta.url))
+const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 
 const { version } = JSON.parse(
-  readFileSync(`${ROT}designsystem/package.json`, "utf8"),
+  readFileSync(`${ROOT}designsystem/package.json`, "utf8"),
 ) as { version: string }
 
-const PLASSHOLDER = "@lo-tek/interfaces@VERSION"
-const MED_VERSJON = `@lo-tek/interfaces@${version}`
+const PLACEHOLDER = "@lo-tek/interfaces@VERSION"
+const WITH_VERSION = `@lo-tek/interfaces@${version}`
 
-const funn: string[] = []
+const findings: string[] = []
 
 /*
- * Det forventede kommer fra kilden, ikke fra det bygde.
+ * The expected set comes from the source, not from the build.
  *
- * Første utgave talte hver adresse i `dist` som hadde versjonen i seg, og kom
- * til 320. Men 172 av dem skrives av `Example.astro` på hver eneste
- * eksempelside, og de går aldri gjennom remark. Tallet kunne altså stå høyt og
- * grønt selv om hver eneste plassholder forsvant ut av kilden, og vakten påsto
- * arbeid den ikke hadde gjort.
+ * The first version counted every address in `dist` that had the version in
+ * it, and came to 320. But 172 of them are written by `Example.astro` on
+ * every single example page, and they never go through remark. So the number
+ * could stay high and green even if every single placeholder vanished from
+ * the source, and the guard claimed work it had not done.
  *
- * Nå samles adressene plassholderen står i, og hver av dem må finnes i det
- * bygde med versjonen satt inn. Det dekker samtidig de nodetypene plugin-en
- * ikke når: står plassholderen i en JSX-attributt som `code={…}`, blir den ikke
- * byttet, og da mangler adressen her.
+ * Now the addresses the placeholder appears in are collected, and each of
+ * them must exist in the build with the version inserted. That also covers
+ * the node types the plugin does not reach: if the placeholder is in a JSX
+ * attribute like `code={…}`, it is not replaced, and then the address is
+ * missing here.
  */
-const iKilden = new Set<string>()
+const inSource = new Set<string>()
 
 for (const rel of new Glob("documentation/src/**/*.{mdx,md,astro}").scanSync(
-  ROT,
+  ROOT,
 )) {
-  const tekst = readFileSync(ROT + rel, "utf8")
+  const text = readFileSync(ROOT + rel, "utf8")
 
-  for (const treff of tekst.matchAll(
+  for (const match of text.matchAll(
     /@lo-tek\/interfaces@VERSION(\/[^"'`\s)]+)/g,
   )) {
-    iKilden.add(treff[1])
+    inSource.add(match[1])
   }
 }
 
-let leste = 0
-const manglende: string[] = []
-const bygget: string[] = []
+let read = 0
+const missing: string[] = []
+const built: string[] = []
 
-for (const rel of new Glob("documentation/dist/**/*.html").scanSync(ROT)) {
-  const tekst = readFileSync(ROT + rel, "utf8")
-  bygget.push(tekst)
+for (const rel of new Glob("documentation/dist/**/*.html").scanSync(ROOT)) {
+  const text = readFileSync(ROOT + rel, "utf8")
+  built.push(text)
 
-  // Starlight rømmer `@` i noen sammenhenger, så det er ordet VERSION rett
-  // etter pakkenavnet som letes etter, ikke plassholderen tegn for tegn.
-  // Versjonsloggen er unntatt ved navn: den rendres fra CHANGELOG.md, som
-  // nevner plassholderen der den ble innført, og har ingen CDN-adresser.
+  // Starlight escapes `@` in some contexts, so it is the word VERSION right
+  // after the package name that is searched for, not the placeholder
+  // character by character. The changelog is exempt by name: it is rendered
+  // from CHANGELOG.md, which mentions the placeholder where it was
+  // introduced, and has no CDN addresses.
   if (
     rel !== "documentation/dist/changelog/index.html" &&
-    (tekst.includes(PLASSHOLDER) ||
-      /designsystem[@-]?(?:&#\d+;)?VERSION/.test(tekst))
+    (text.includes(PLACEHOLDER) ||
+      /designsystem[@-]?(?:&#\d+;)?VERSION/.test(text))
   )
-    funn.push(`${rel} har en plassholder som ikke ble byttet ut`)
+    findings.push(`${rel} has a placeholder that was not replaced`)
 
-  leste += 1
+  read += 1
 }
 
-for (const filsti of iKilden) {
-  if (!bygget.some((tekst) => tekst.includes(MED_VERSJON + filsti))) {
-    manglende.push(filsti)
+for (const filePath of inSource) {
+  if (!built.some((text) => text.includes(WITH_VERSION + filePath))) {
+    missing.push(filePath)
   }
 }
 
 /*
- * Maven-koordinatene og WebJar-stien på Kotlin-siden har også plassholderen,
- * og `remark-version.mjs` bytter dem for seg. Regexen over ser bare
- * npm-navnet, så uten dette kunne Gradle-eksemplene gå ut med ordet VERSION
- * i seg mens sjekken var grønn. Hver av de tre formene kontrolleres begge
- * veier: at den står med versjonen i det bygde, og at plassholderen ikke
- * står igjen.
+ * The Maven coordinates and the WebJar path on the Kotlin page also have the
+ * placeholder, and `remark-version.mjs` replaces them separately. The regex
+ * above only sees the npm name, so without this the Gradle examples could go
+ * out with the word VERSION in them while the check was green. Each of the
+ * three forms is checked both ways: that it appears with the version in the
+ * build, and that the placeholder is not left behind.
  *
- * Plugin-linja leses fra kopieringsknappens `data-code`, ikke fra `<pre>`.
- * Expressive Code deler kodeblokka i spenn per token, så i `<pre>` står
- * `version ` og `"0.33.0"` i hvert sitt `<span>`, og en søkestreng med
- * anførselstegnet rett etter ordet kan aldri treffe der, verken med versjon
- * eller med plassholder. I `data-code` står linja samlet, med `"` som
- * `&#x22;`. Første utgave lette etter `version "VERSION"` og var død.
+ * The plugin line is read from the copy button's `data-code`, not from
+ * `<pre>`. Expressive Code splits the code block into one span per token, so
+ * in `<pre>` `version ` and `"0.33.0"` sit in separate `<span>`s, and a
+ * search string with the quote right after the word can never match there,
+ * neither with the version nor with the placeholder. In `data-code` the line
+ * is in one piece, with `"` as `&#x22;`. The first version searched for
+ * `version "VERSION"` and was dead.
  */
 const MAVEN = [
   [
@@ -109,40 +112,40 @@ const MAVEN = [
   ["version &#x22;VERSION&#x22;", `version &#x22;${version}&#x22;`],
   ["webjars/lo-tek/VERSION/", `webjars/lo-tek/${version}/`],
 ]
-for (const [igjen, medVersjon] of MAVEN) {
-  if (!bygget.some((tekst) => tekst.includes(medVersjon))) {
-    funn.push(
-      `«${medVersjon}» finnes ikke i det bygde. Kotlin-siden skal ha den med versjonen satt inn.`,
+for (const [leftOver, withVersion] of MAVEN) {
+  if (!built.some((text) => text.includes(withVersion))) {
+    findings.push(
+      `"${withVersion}" does not exist in the build. The Kotlin page should have it with the version inserted.`,
     )
   }
-  if (bygget.some((tekst) => tekst.includes(igjen))) {
-    funn.push(
-      `«${igjen}» står igjen i det bygde uten at versjonen ble satt inn`,
+  if (built.some((text) => text.includes(leftOver))) {
+    findings.push(
+      `"${leftOver}" is left in the build without the version having been inserted`,
     )
   }
 }
 
-if (leste === 0 || iKilden.size === 0) {
-  funn.push(
-    `Sjekken så ikke på noe: ${leste} bygde sider og ${iKilden.size} adresser med plassholder i kilden. Er dist bygd?`,
+if (read === 0 || inSource.size === 0) {
+  findings.push(
+    `The check looked at nothing: ${read} built pages and ${inSource.size} addresses with a placeholder in the source. Is dist built?`,
   )
 }
 
-for (const filsti of manglende) {
-  funn.push(
-    `${MED_VERSJON}${filsti} finnes ikke i det bygde, men plassholderen står i kilden.`,
+for (const filePath of missing) {
+  findings.push(
+    `${WITH_VERSION}${filePath} does not exist in the build, but the placeholder is in the source.`,
   )
 }
 
-if (funn.length > 0) {
+if (findings.length > 0) {
   console.error(
-    `Versjonen kom ikke inn i det bygde resultatet:\n${funn
-      .map((linje) => `  - ${linje}`)
+    `The version did not make it into the built output:\n${findings
+      .map((line) => `  - ${line}`)
       .join("\n")}\n`,
   )
   process.exit(1)
 }
 
 console.log(
-  `Alle ${iKilden.size} adressene fra kilden står i det bygde med ${version} i seg, over ${leste} sider, og ingen plassholder er igjen.`,
+  `All ${inSource.size} addresses from the source appear in the build with ${version} in them, across ${read} pages, and no placeholder is left.`,
 )

@@ -1,138 +1,145 @@
 /**
- * At ingen markup for nettleseren importerer et pakkenavn.
+ * That no markup for the browser imports a package name.
  *
- * `import … from "@lo-tek/interfaces/field"` i en `<script type="module">`
- * slår ikke opp i en nettleser: uten byggesteg eller importmap finnes ikke
- * pakkenavnet, og importen feiler stille. Koden ser riktig ut, og virker ikke
- * limt inn.
+ * `import … from "@lo-tek/interfaces/field"` in a `<script type="module">`
+ * does not resolve in a browser: without a build step or an import map the
+ * package name does not exist, and the import fails silently. The code looks
+ * right, and does not work when pasted.
  *
- * Regelen fantes allerede i `check-recipes.ts`, men den leser bare
- * komponentsidene og velger regel ut fra navnet på fanen. To sider utenfor det
- * søket sto derfor med feilen i flere runder: Datastar-sporet i `frameworks.mdx`
- * og dialogen i `patterns/confirmation.mdx`. Denne sjekken er enklere og dekker
- * alt: en `html`-blokk er markup for nettleseren uansett hvilken side den står
- * på, og uansett hva fanen rundt heter.
+ * The rule already existed in `check-recipes.ts`, but it only reads the
+ * component pages and picks the rule from the name of the tab. Two pages
+ * outside that search therefore had the bug for several rounds: the Datastar
+ * track in `frameworks.mdx` and the dialog in `patterns/confirmation.mdx`.
+ * This check is simpler and covers everything: an `html` block is markup for
+ * the browser whatever page it is on, and whatever the surrounding tab is
+ * called.
  *
- * `ts`, `tsx`, `js` og `astro` sjekkes ikke. Der finnes det et byggesteg, og da
- * er pakkenavnet riktig.
+ * `ts`, `tsx`, `js` and `astro` are not checked. There is a build step there,
+ * and then the package name is right.
  *
- * Kjør med: bun documentation/scripts/check-browser-import.ts
+ * Run with: bun documentation/scripts/check-browser-import.ts
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { Glob } from "bun"
 
-const ROT = fileURLToPath(new URL("../..", import.meta.url))
-const SIDER = "documentation/src/content/docs/**/*.{mdx,md}"
+const ROOT = fileURLToPath(new URL("../..", import.meta.url))
+const PAGES = "documentation/src/content/docs/**/*.{mdx,md}"
 
-/** Sidene i mappa, talt uten glob, så de to kildene er uavhengige. */
-function tellSider(mappe: string): number {
-  let antall = 0
+/** The pages in the folder, counted without a glob, so the two sources are
+ * independent. */
+function countPages(folder: string): number {
+  let count = 0
 
-  for (const oppf of readdirSync(mappe, { withFileTypes: true })) {
-    if (oppf.isDirectory()) antall += tellSider(`${mappe}/${oppf.name}`)
-    else if (/\.(mdx|md)$/.test(oppf.name)) antall += 1
+  for (const entry of readdirSync(folder, { withFileTypes: true })) {
+    if (entry.isDirectory()) count += countPages(`${folder}/${entry.name}`)
+    else if (/\.(mdx|md)$/.test(entry.name)) count += 1
   }
 
-  return antall
+  return count
 }
 
-const funn: string[] = []
+const findings: string[] = []
 
-let leste = 0
-let blokker = 0
+let read = 0
+let blocks = 0
 
 /*
- * Gjerdet kan ha mer enn språket i seg, som ```html title="index.html", og
- * språket kan stå med store bokstaver. Avslutningen må stå i starten av en
- * linje: uten det kuttet en ``` inne i blokka, som i `<pre>```</pre>`, resten
- * av den bort, og importene under ble aldri lest mens telleren gikk opp.
+ * The fence can have more than the language in it, like ```html
+ * title="index.html", and the language can be in capitals. The closing fence
+ * must be at the start of a line: without that, a ``` inside the block, as in
+ * `<pre>```</pre>`, cut off the rest of it, and the imports below were never
+ * read while the counter went up.
  *
- * Importen kan skrives på flere måter enn `from "…"`: en bivirkningsimport uten
- * `from`, enkle anførselstegn, og `import("…")`. Alle feiler like stille i en
- * nettleser.
+ * The import can be written in more ways than `from "…"`: a side-effect
+ * import without `from`, single quotes, and `import("…")`. All fail just as
+ * silently in a browser.
  */
-const GJERDE = /^[ \t]*```html[^\n]*\n([\s\S]*?)^[ \t]*```/gim
+const FENCE = /^[ \t]*```html[^\n]*\n([\s\S]*?)^[ \t]*```/gim
 const IMPORT = /(?:from|import)\s*\(?\s*\n?\s*["'](@lo-tek\/[^"']*)["']/g
 
 /*
- * En hardkodet CDN-adresse skal peke på en fil pakken faktisk sender ut, på den
- * versjonen som er utgitt.
+ * A hard-coded CDN address must point to a file the package actually ships,
+ * at the released version.
  *
- * `check-recipes.ts` har den samme regelen, men leser bare komponentsidene.
- * Fire av adressene står utenfor den mappa, og en skrivefeil som `lt-fields.js`
- * ville passert hver eneste vaktpost i repoet og gitt 404 i nettleseren. Vakten
- * har adressen i hånda uansett, så den kontrollerer den.
+ * `check-recipes.ts` has the same rule, but only reads the component pages.
+ * Four of the addresses are outside that folder, and a typo like
+ * `lt-fields.js` would have passed every single guard in the repository and
+ * given a 404 in the browser. The guard has the address in hand anyway, so it
+ * checks it.
  *
- * Versjonsleddet skal være plassholderen, ikke et tall: `remark-version.mjs`
- * bytter den når siden bygges, og `check-built-version.ts` kontrollerer at det
- * faktisk skjedde.
+ * The version segment must be the placeholder, not a number:
+ * `remark-version.mjs` replaces it when the page is built, and
+ * `check-built-version.ts` checks that it actually happened.
  */
 const CDN = /cdn\.jsdelivr\.net\/npm\/@lo-tek\/interfaces@([^/]+)\/([^"'\s]+)/g
 
-const linjen = (tekst: string, indeks: number) =>
-  tekst.slice(0, indeks).split("\n").length
+const lineOf = (text: string, index: number) =>
+  text.slice(0, index).split("\n").length
 
-for (const rel of new Glob(SIDER).scanSync(ROT)) {
-  const tekst = readFileSync(ROT + rel, "utf8")
+for (const rel of new Glob(PAGES).scanSync(ROOT)) {
+  const text = readFileSync(ROOT + rel, "utf8")
 
-  for (const blokk of tekst.matchAll(GJERDE)) {
-    // Innholdet begynner etter gjerdelinja, ikke på den.
-    const start = (blokk.index ?? 0) + blokk[0].indexOf("\n") + 1
+  for (const block of text.matchAll(FENCE)) {
+    // The content starts after the fence line, not on it.
+    const start = (block.index ?? 0) + block[0].indexOf("\n") + 1
 
-    for (const treff of blokk[1].matchAll(IMPORT)) {
-      funn.push(
-        `${rel}:${linjen(tekst, start + (treff.index ?? 0))} importerer «${treff[1]}» i markup for nettleseren. Bruk hele URL-en.`,
+    for (const match of block[1].matchAll(IMPORT)) {
+      findings.push(
+        `${rel}:${lineOf(text, start + (match.index ?? 0))} imports "${match[1]}" in markup for the browser. Use the full URL.`,
       )
     }
 
-    blokker += 1
+    blocks += 1
   }
 
-  for (const treff of tekst.matchAll(CDN)) {
-    const [, versjon, filsti] = treff
-    const hvor = `${rel}:${linjen(tekst, treff.index ?? 0)}`
+  for (const match of text.matchAll(CDN)) {
+    const [, version, filePath] = match
+    const where = `${rel}:${lineOf(text, match.index ?? 0)}`
 
-    if (versjon !== "VERSION") {
-      funn.push(
-        `${hvor} peker på @lo-tek/interfaces@${versjon}. Skriv @lo-tek/interfaces@VERSION, som remark-version.mjs bytter ut når siden bygges.`,
+    if (version !== "VERSION") {
+      findings.push(
+        `${where} points to @lo-tek/interfaces@${version}. Write @lo-tek/interfaces@VERSION, which remark-version.mjs replaces when the page is built.`,
       )
     }
 
-    if (!existsSync(`${ROT}designsystem/${filsti}`)) {
-      funn.push(`${hvor} peker på ${filsti}, som pakken ikke sender ut.`)
+    if (!existsSync(`${ROOT}designsystem/${filePath}`)) {
+      findings.push(
+        `${where} points to ${filePath}, which the package does not ship.`,
+      )
     }
   }
 
-  leste += 1
+  read += 1
 }
 
 /*
- * Tell hva som faktisk ble gjort, og krev at tallet er både likt det forventede
- * og større enn null. Det forventede kommer fra en annen mekanisme enn køen:
- * globben fylte lista, og en vanlig gjennomgang av mappa teller den. Faller
- * mønsteret fra 58 sider til 1, sier de to ulike tall.
+ * Count what was actually done, and require the number to be both equal to
+ * the expected and greater than zero. The expected comes from a different
+ * mechanism than the queue: the glob filled the list, and a plain walk of the
+ * folder counts it. If the pattern drops from 58 pages to 1, the two give
+ * different numbers.
  */
-const ventet = [...new Glob(SIDER).scanSync(ROT)].length
-const fraMappa = tellSider(`${ROT}documentation/src/content/docs`)
+const expected = [...new Glob(PAGES).scanSync(ROOT)].length
+const fromFolder = countPages(`${ROOT}documentation/src/content/docs`)
 
-if (leste === 0 || blokker === 0 || leste !== ventet || leste !== fraMappa) {
+if (read === 0 || blocks === 0 || read !== expected || read !== fromFolder) {
   console.error(
-    `Sjekken så ikke på det den skulle: ${leste} sider lest, ${ventet} fra globben, ${fraMappa} i mappa, og ${blokker} markupblokker.\n`,
+    `The check did not look at what it was meant to: ${read} pages read, ${expected} from the glob, ${fromFolder} in the folder, and ${blocks} markup blocks.\n`,
   )
   process.exit(1)
 }
 
-if (funn.length > 0) {
+if (findings.length > 0) {
   console.error(
-    `Fant ${funn.length} adresser som ikke virker i en nettleser:\n${funn
-      .map((linje) => `  - ${linje}`)
+    `Found ${findings.length} addresses that do not work in a browser:\n${findings
+      .map((line) => `  - ${line}`)
       .join("\n")}\n`,
   )
   process.exit(1)
 }
 
 console.log(
-  `Ingen av ${blokker} markupblokker i ${leste} sider importerer et pakkenavn, og hver CDN-adresse bruker plassholderen og peker på en fil som finnes.`,
+  `None of ${blocks} markup blocks in ${read} pages imports a package name, and every CDN address uses the placeholder and points to a file that exists.`,
 )

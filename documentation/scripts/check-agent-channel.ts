@@ -1,144 +1,148 @@
 /**
- * At regelbøkene også finnes på nettsiden, og at de er de samme.
+ * That the rulebooks also exist on the website, and that they are the same.
  *
- * Kanalen finnes for agenten som ikke har `node_modules`: blir noen bedt om å
- * «lage et skjema med LO-TEK» i en tom mappe, skrives markupen før
- * `npm install` har kjørt. To kanaler med samme innhold er bare en fordel så
- * lenge de faktisk er like, og en rute som stille slutter å bygges ville ingen
- * lagt merke til før en agent hentet en 404.
+ * The channel exists for the agent that has no `node_modules`: if someone is
+ * asked to "make a form with LO-TEK" in an empty folder, the markup is written
+ * before `npm install` has run. Two channels with the same content are only an
+ * advantage as long as they actually are the same, and nobody would have
+ * noticed a route that silently stopped being built until an agent fetched a
+ * 404.
  *
- * Kjør med: bun documentation/scripts/check-agent-channel.ts
- * Krever at `documentation/dist` er bygd.
+ * Run with: bun documentation/scripts/check-agent-channel.ts
+ * Requires `documentation/dist` to be built.
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
-const ROT = fileURLToPath(new URL("../..", import.meta.url))
-const PAKKEN = `${ROT}designsystem/agent/`
-const SIDEN = `${ROT}documentation/dist/agent/`
+const ROOT = fileURLToPath(new URL("../..", import.meta.url))
+const PACKAGE = `${ROOT}designsystem/agent/`
+const SITE = `${ROOT}documentation/dist/agent/`
 
-const avvik: string[] = []
+const problems: string[] = []
 
-const bøker = readdirSync(PAKKEN).filter((fil) => fil.endsWith(".md"))
+const books = readdirSync(PACKAGE).filter((file) => file.endsWith(".md"))
 
-if (bøker.length === 0) avvik.push("designsystem/agent/ har ingen regelbøker")
+if (books.length === 0) problems.push("designsystem/agent/ has no rulebooks")
 
-for (const fil of bøker) {
-  let påSiden: string | null = null
+for (const file of books) {
+  let onSite: string | null = null
 
   try {
-    påSiden = readFileSync(`${SIDEN}${fil}`, "utf8")
+    onSite = readFileSync(`${SITE}${file}`, "utf8")
   } catch {
-    avvik.push(
-      `/agent/${fil} ble ikke bygd. Ruten er src/pages/agent/[navn].md.ts`,
+    problems.push(
+      `/agent/${file} was not built. The route is src/pages/agent/[navn].md.ts`,
     )
     continue
   }
 
-  if (påSiden !== readFileSync(`${PAKKEN}${fil}`, "utf8"))
-    avvik.push(`/agent/${fil} er ikke den samme som pakkens`)
+  if (onSite !== readFileSync(`${PACKAGE}${file}`, "utf8"))
+    problems.push(`/agent/${file} is not the same as the package's`)
 }
 
 /*
- * Bygget må være nyere enn rutene og enn regelbøkene.
+ * The build must be newer than the routes and the rulebooks.
  *
- * `test:docs` bygger ikke selv, og kan kjøres alene. Uten dette kunne en slettet
- * rute eller en endret regelbok passere på forrige bygg, som er nettopp den
- * kjøringen som ser grønn ut uten å ha sett på noe.
+ * `test:docs` does not build by itself, and can be run alone. Without this a
+ * deleted route or a changed rulebook could pass on the previous build, which
+ * is exactly the run that looks green without having looked at anything.
  */
-const bygget = `${ROT}documentation/dist/llms.txt`
-const kilder = [
-  `${ROT}documentation/src/pages/llms.txt.ts`,
-  `${ROT}documentation/src/pages/agent/[navn].md.ts`,
-  ...bøker.map((fil) => `${PAKKEN}${fil}`),
+const build = `${ROOT}documentation/dist/llms.txt`
+const sources = [
+  `${ROOT}documentation/src/pages/llms.txt.ts`,
+  `${ROOT}documentation/src/pages/agent/[navn].md.ts`,
+  ...books.map((file) => `${PACKAGE}${file}`),
 ]
 
 try {
-  const alder = statSync(bygget).mtimeMs
-  const nyere = kilder.filter((kilde) => statSync(kilde).mtimeMs > alder)
+  const age = statSync(build).mtimeMs
+  const newer = sources.filter((source) => statSync(source).mtimeMs > age)
 
-  if (nyere.length > 0) {
-    avvik.push(
-      `documentation/dist er eldre enn ${nyere.length} av kildene. Kjør bun run build.`,
+  if (newer.length > 0) {
+    problems.push(
+      `documentation/dist is older than ${newer.length} of the sources. Run bun run build.`,
     )
   }
 } catch {
-  // Mangler bygget, meldes under.
+  // If the build is missing, that is reported below.
 }
 
-// `llms.txt` er inngangen. Den skal nevne hver regelbok, og de fire reglene.
+// `llms.txt` is the entry point. It must mention every rulebook, and the four
+// rules.
 let llms = ""
 
 try {
-  llms = readFileSync(bygget, "utf8")
+  llms = readFileSync(build, "utf8")
 } catch {
-  avvik.push("llms.txt ble ikke bygd. Ruten er src/pages/llms.txt.ts")
+  problems.push("llms.txt was not built. The route is src/pages/llms.txt.ts")
 }
 
 /*
- * En tom fil er ikke en fil som stemmer. Vilkåret sto som `llms !== ""`, og en
- * `llms.txt` på null byte ville da hoppet over hver innholdssjekk og meldt
- * grønt: et vilkår som slår av sjekken.
+ * An empty file is not a file that matches. The condition was `llms !== ""`,
+ * and an `llms.txt` of zero bytes would then have skipped every content check
+ * and reported green: a condition that switches the check off.
  */
 if (llms.trim() === "") {
-  avvik.push("llms.txt er tom")
+  problems.push("llms.txt is empty")
 } else {
-  for (const fil of bøker) {
-    if (!llms.includes(`/agent/${fil}`))
-      avvik.push(`llms.txt lenker ikke til /agent/${fil}`)
+  for (const file of books) {
+    if (!llms.includes(`/agent/${file}`))
+      problems.push(`llms.txt does not link to /agent/${file}`)
   }
 
-  for (const del of ["lt-modal", "var(--lt-color-", "defineLt", "sjekk"]) {
-    if (!llms.includes(del)) avvik.push(`llms.txt nevner ikke ${del}`)
+  for (const part of ["lt-modal", "var(--lt-color-", "defineLt", "check"]) {
+    if (!llms.includes(part)) problems.push(`llms.txt does not mention ${part}`)
   }
 }
 
 /*
- * Sidelista i `llms.txt` kan forsvinne i stillhet.
+ * The page list in `llms.txt` can vanish silently.
  *
- * Den bygges av `getCollection("docs")`, og `seksjon()` gir tom streng på en
- * tom liste, som `.filter(Boolean)` fjerner. Blir samlingen tom, fordi den
- * omdøpes eller innholdsmappa flyttes, kommer `llms.txt` ut uten Veiledning,
- * Mønstre og Komponenter, og alt annet i denne vakten er fortsatt grønt.
+ * It is built from `getCollection("docs")`, and `seksjon()` returns an empty
+ * string for an empty list, which `.filter(Boolean)` removes. If the
+ * collection becomes empty, because it is renamed or the content folder is
+ * moved, `llms.txt` comes out without Guides, Patterns and Components, and
+ * everything else in this guard is still green.
  *
- * Antallet måles derfor mot en vanlig gjennomgang av innholdsmappa, altså en
- * annen mekanisme enn den som bygde lista.
+ * The count is therefore checked against a plain walk of the content folder,
+ * that is, a different mechanism from the one that built the list.
  */
-function tellSider(mappe: string): number {
-  let antall = 0
+function countPages(folder: string): number {
+  let count = 0
 
-  for (const oppf of readdirSync(mappe, { withFileTypes: true })) {
-    if (oppf.isDirectory()) antall += tellSider(`${mappe}/${oppf.name}`)
-    else if (/\.mdx?$/.test(oppf.name)) antall += 1
+  for (const entry of readdirSync(folder, { withFileTypes: true })) {
+    if (entry.isDirectory()) count += countPages(`${folder}/${entry.name}`)
+    else if (/\.mdx?$/.test(entry.name)) count += 1
   }
 
-  return antall
+  return count
 }
 
 if (llms.trim() !== "") {
-  const sider = tellSider(`${ROT}documentation/src/content/docs`)
-  // Sidene lenkes til Markdown-utgaven, og regelbøkene under `/agent/` er ikke sider.
-  const lenker = [
+  const pages = countPages(`${ROOT}documentation/src/content/docs`)
+  // The pages link to the Markdown version, and the rulebooks under
+  // `/agent/` are not pages.
+  const links = [
     ...llms.matchAll(/^- \[[^\]]+\]\((https:\/\/[^)]+\.md)\)/gm),
-  ].filter(([, adresse]) => !adresse.includes("/agent/"))
+  ].filter(([, address]) => !address.includes("/agent/"))
 
-  if (lenker.length !== sider) {
-    avvik.push(
-      `llms.txt lenker til ${lenker.length} sider, mens innholdsmappa har ${sider}.`,
+  if (links.length !== pages) {
+    problems.push(
+      `llms.txt links to ${links.length} pages, while the content folder has ${pages}.`,
     )
   }
 }
 
-if (avvik.length > 0) {
+if (problems.length > 0) {
   console.error(
-    `Kanalen til kodeagenter stemmer ikke:\n\n${avvik
-      .map((linje) => `  ${linje}`)
+    `The channel for coding agents does not match:\n\n${problems
+      .map((line) => `  ${line}`)
       .join("\n")}\n`,
   )
   process.exit(1)
 }
 
 console.log(
-  `Regelbøkene finnes på nettsiden også: llms.txt og ${bøker.length} filer, like pakkens.`,
+  `The rulebooks exist on the website too: llms.txt and ${books.length} files, identical to the package's.`,
 )

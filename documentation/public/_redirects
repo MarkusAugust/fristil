@@ -1,5 +1,5 @@
 # Old Norwegian paths, one 301 per page, so links agents and readers
-# already hold keep working after the host redirect from fristil.sobernetics.no.
+# already hold keep working after the old host redirects here.
 # Each page has an HTML form (/path/) and a Markdown form (/path.md).
 /introduksjon  /introduction/  301
 /introduksjon/  /introduction/  301
