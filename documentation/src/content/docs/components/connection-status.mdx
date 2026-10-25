@@ -17,12 +17,12 @@ import "@lo-tek/interfaces/connection-status.css"
 defineLtConnectionStatus()
 ```
 
-## Slik tar du den i bruk
+## How to use it
 <Tabs>
-  <TabItem label="Prøv den">
+  <TabItem label="Try it">
     <ConnectionStatusDemo />
   </TabItem>
-  <TabItem label="Ren HTML">
+  <TabItem label="Plain HTML">
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
@@ -185,7 +185,7 @@ Komponenten lytter i tillegg på nettleserens `offline` og `online`, så et nett
 | `connection-lost` | Linja kommer til syne. Én gang per utfall, uansett hvor mange `offline`-hendelser nettleseren sender |
 | `connection-restored` | Forbindelsen er tilbake |
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -202,7 +202,7 @@ Komponenten lytter i tillegg på nettleserens `offline` og `online`, så et nett
   --lt-connection-status-layer: 9999;
 }
 ```
-## Tilgjengelighet
+## Accessibility
 
 Linja er `role="status"` med `aria-live="polite"`, ikke `alert`. Beskjeden er viktig, men skal ikke avbryte midt i et ord. Den blir stående til forbindelsen er tilbake, så den som leser sakte rekker den.
 

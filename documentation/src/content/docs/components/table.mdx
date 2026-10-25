@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Klassen settes på et ekte `<table>`. Det er `<th>` med `scope` som gjør at skjermlesere kan si «Beløp, 1 240 kroner» når brukeren står i en celle. Bygger du tabellen av `<div>`-er, finnes ikke den koblingen, og tallene står uten betydning.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "table.css"]}
   stiler={["table"]} layout="stabel" maxWidth="34rem" kode={`
@@ -144,7 +144,7 @@ En tabell som er bredere enn skjermen må kunne rulles sidelengs, og det område
 
 `tabindex="0"` er ikke valgfritt. Uten det kommer ingen som navigerer med tastatur til innholdet som ligger utenfor kanten. `role="region"` med en tekst gjør at skjermleseren sier hva området inneholder når fokus havner der.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -190,7 +190,7 @@ Trenger du flere rader på skjermen, er det cellenes luft som skal ned. Det er �
 
 Skriften skal du la være. `--lt-font-size-m` i tabellen er den samme som brødteksten, og tall blir vanskeligere å lese nedover i en kolonne når de krymper. Vil du likevel ha mindre tekst, er det en vanlig regel i din egen CSS, ikke en variabel, siden den ikke er ment å endres.
 
-## Tilgjengelighet
+## Accessibility
 
 - Hver kolonneoverskrift skal være `<th scope="col">`, og raden sin egen nøkkel `<th scope="row">`. Da vet skjermleseren hvilken kolonne og rad en celle hører til.
 - Gi tabellen en `<caption>`. Den sier hva tabellen inneholder, og er det første som leses opp.

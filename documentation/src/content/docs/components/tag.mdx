@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 En merkelapp merker innhold: emneord på en artikkel, valgte filtre over en liste. Sier lappen hvilken tilstand noe er i, som «Innvilget» eller «Forfalt», er [Badge](../badge/) riktig i stedet.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "tag.css"]}
   stiler={["tag"]} kode={`
@@ -80,7 +80,7 @@ Tre filtre over en liste med saker. «Innvilget» er valgt, de to andre ikke, og
 
 `aria-pressed` er det som gjør at skjermleseren sier «valgt» eller «ikke valgt». Fargen alene sier ingenting.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -93,7 +93,7 @@ Tre filtre over en liste med saker. «Innvilget» er valgt, de to andre ikke, og
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - En lapp som ikke kan trykkes på skal ikke se ut som om den kan det. Bruk `data-selectable` bare på ekte knapper.
 - Har du mange filtre, legg dem i en liste med en overskrift som sier hva de filtrerer.

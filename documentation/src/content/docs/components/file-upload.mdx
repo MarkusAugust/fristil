@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Klassen settes på et vanlig `<input type="file">`. Knappen inni er nettleserens egen, og teksten på den kommer fra operativsystemets språk. Den kan ikke oversettes, så ledeteksten over feltet må si hva som skal lastes opp.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "file-upload.css", "label.css", "help-text.css"]}
   stiler={["file-upload", "label", "help-text"]} layout="stabel" maxWidth="32rem" kode={`
@@ -109,7 +109,7 @@ skjema.addEventListener("submit", async (hendelse) => {
 
 Feltet må stå i et `<form>` og ha et `name`. Det er tømt etter hvert valg, så en vanlig innsending tar ikke med noen av filene. Derfor sendes skjemaet med `fetch`, med filene lagt til i `FormData`.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -125,7 +125,7 @@ Knappen inne i feltet styles gjennom `::file-selector-button`, som er den eneste
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Si hvilke filtyper og hvilken største størrelse som godtas, før brukeren prøver. En feilmelding etterpå er et dårligere alternativ.
 - Meld fra når en fil er lagt til eller fjernet, i et felt med `role="status"`.

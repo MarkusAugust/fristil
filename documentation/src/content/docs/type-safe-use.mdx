@@ -31,7 +31,7 @@ Importer fra `@lo-tek/interfaces/react` i stedet. Kallstedene er identiske, men 
 
 `lt` returnerer `class` og `for`, slik attributtene faktisk heter i HTML. React godtar dem, og de havner riktig i DOM-en, men utviklingsbygget skriver «Invalid DOM property `class`. Did you mean `className`?» i konsollen for hvert element. Med et helt felt blir det to advarsler per felt.
 
-Ren HTML, Astro og Datastar tar `class` og `for` som de er, og bruker hovedinngangen.
+Plain HTML, Astro og Datastar tar `class` og `for` som de er, og bruker hovedinngangen.
 :::
 
 ## I vanlig DOM
@@ -141,7 +141,7 @@ Da får attributtene autofullføring og sjekk:
 <lt-connection-status offline="Nede" />  // feil: ukjent attributt
 ```
 
-Ren HTML, Astro og Datastar trenger ikke dette. Der er `<lt-field>` bare en HTML-tagg.
+Plain HTML, Astro og Datastar trenger ikke dette. Der er `<lt-field>` bare en HTML-tagg.
 
 ### Hendelsene
 

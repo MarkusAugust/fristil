@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 En ramme rundt innhold som hører sammen, som én sak i en liste over saker. Kortet er en beholder, ikke en komponent med oppførsel: det er innholdet som bestemmer hva brukeren kan gjøre.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "card.css", "badge.css", "button.css"]}
   stiler={["card", "badge", "button"]} layout="stabel" maxWidth="32rem" kode={`
@@ -74,7 +74,7 @@ lt.setAttributes(kort, lt.card({ interactive: true }))
 
 Har kortet flere handlinger, skal ikke hele kortet være en lenke. Da havner knappene inni en lenke, og brukeren kan ikke trykke på dem uten å navigere. Lag heller én tydelig lenke i overskriften.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -106,7 +106,7 @@ Et eksempel. Et kort som bærer en hel seksjon tåler mer luft enn et som står 
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Overskriften i kortet skal være et ekte overskriftselement, og på riktig nivå for siden. Klassen setter størrelsen, vekten og linjeavstanden, ikke nivået.
 - Er kortene en liste, marker dem som en liste med `<ul>` og `<li>`. Da sier skjermleseren hvor mange det er og hvor i rekken brukeren er.

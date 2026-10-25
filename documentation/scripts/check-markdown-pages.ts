@@ -102,7 +102,7 @@ for (const fil of htmlsider(DIST)) {
   /*
    * Hver kodeblokk på siden skal stå i Markdown, verken mer eller mindre.
    * Forhåndsvisningene i `<template>` telles ikke: markupen der står i
-   * «Ren HTML»-fanen, som er en kodeblokk.
+   * «Plain HTML»-fanen, som er en kodeblokk.
    */
   const innhold = html
     .slice(html.indexOf('class="sl-markdown-content"'))

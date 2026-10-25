@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Navigering mellom sider i en lang liste. Hver side er en lenke med sin egen adresse, ikke en knapp: da kan brukeren åpne side tre i ny fane, kopiere adressen, og komme tilbake med tilbakeknappen.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "pagination.css"]}
   stiler={["pagination"]} layout="stabel" maxWidth="34rem" kode={`
@@ -61,7 +61,7 @@ Et tall alene sier lite når det leses opp midt i en rekke. `aria-label="Side 3"
 
 Er brukeren på første side, skal «Forrige» ikke være en lenke. Bytt den ut med `<span aria-disabled="true">` eller la den være ute.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -78,7 +78,7 @@ Er brukeren på første side, skal «Forrige» ikke være en lenke. Bytt den ut 
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Si hvor brukeren er, også utenfor selve velgeren: «Viser 21 til 40 av 184 saker» over listen hjelper mer enn tallrekken alene.
 - Etter at en ny side er lastet, flytt fokus til toppen av listen. Ellers står fokus igjen på et tall som nå betyr noe annet.

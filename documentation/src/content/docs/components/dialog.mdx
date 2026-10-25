@@ -18,15 +18,15 @@ import "@lo-tek/interfaces/dialog.css"
 
 Det er et problem bare for én slags app: den som ikke har noe sted å kalle fra, fordi all markup blir til på serveren. Til den finnes `<lt-dialog>`, [lenger ned på siden](#når-serveren-åpner-dialogen). Den er valgfri, på samme måte som `<lt-field>` er valgfri ved siden av `lt.field()`.
 
-## Slik tar du den i bruk
+## How to use it
 
-Fanen «Prøv den» er dialogen i drift. De fire andre er dialogen skrevet for hvert sitt miljø, og hver av dem er hele oppskriften. De tre første gjør kallet selv; Datastar-utgaven lar `<lt-dialog>` gjøre det, fordi en server som bare sender HTML ikke har noe sted å kalle fra. Stilarkene er de samme i alle fire, og står i hver fane.
+Fanen «Try it» er dialogen i drift. De fire andre er dialogen skrevet for hvert sitt miljø, og hver av dem er hele oppskriften. De tre første gjør kallet selv; Datastar-utgaven lar `<lt-dialog>` gjøre det, fordi en server som bare sender HTML ikke har noe sted å kalle fra. Stilarkene er de samme i alle fire, og står i hver fane.
 
 <Tabs>
-  <TabItem label="Prøv den">
+  <TabItem label="Try it">
     <DialogDemo />
   </TabItem>
-  <TabItem label="Ren HTML">
+  <TabItem label="Plain HTML">
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
@@ -217,7 +217,7 @@ Fanen «Prøv den» er dialogen i drift. De fire andre er dialogen skrevet for h
   </TabItem>
 </Tabs>
 
-Knappen i «Prøv den» gjør det en server ellers ville gjort: setter `open` på `<lt-dialog>`, slik Datastar-oppskriften gjør. Dialogen i «Prøv den» har i tillegg en farget topp med undertekst, som står under [Farget topp](#farget-topp).
+Knappen i «Try it» gjør det en server ellers ville gjort: setter `open` på `<lt-dialog>`, slik Datastar-oppskriften gjør. Dialogen i «Try it» har i tillegg en farget topp med undertekst, som står under [Farget topp](#farget-topp).
 
 ## Det som er felles for alle fire
 
@@ -334,7 +334,7 @@ Importen går til `/react` her, siden eksempelet er JSX. Derfra heter nøklene `
 
 `lt.dialog.title`, `lt.dialog.body` og `lt.dialog.footer` gir klassenavnene alene. Se [Typesikker bruk](../../type-safe-use/).
 
-Lager du markupen med JavaScript og styrer alt i nettleseren, trenger du ingen komponent: kall `showModal()` selv, som i «Ren HTML»-oppskriften over. Da skal du ikke sende `open` inn i `lt.dialog()`. Attributtet er serverens beskjed til `<lt-dialog>`, og `showModal()` kaster `InvalidStateError` på en dialog som alt står åpen.
+Lager du markupen med JavaScript og styrer alt i nettleseren, trenger du ingen komponent: kall `showModal()` selv, som i «Plain HTML»-oppskriften over. Da skal du ikke sende `open` inn i `lt.dialog()`. Attributtet er serverens beskjed til `<lt-dialog>`, og `showModal()` kaster `InvalidStateError` på en dialog som alt står åpen.
 
 I React er attributtet dessuten det eneste som stemmer når serveren rendrer dialogen åpen. Komponenten setter `open` på `<dialog>` før React hydrerer, så sto det ikke i serverens HTML, meldte React avvik ved hvert eneste oppslag.
 
@@ -387,7 +387,7 @@ Toppen er valgfri, og uten den står dialogen som før. Fargen gjelder toppen, s
 | `open` | boolsk | Om dialogen vises. Serveren setter det når dialogen skal vises, og komponenten fjerner det når brukeren lukker den. Skal serveren vise dialogen, må `open` også stå på `<dialog>`. |
 | `server-controlled` | boolsk | Fjerner en oppdatering fra serveren `open` fra `<dialog>` mens dialogen er åpen, lukker komponenten den og sender `dialog-toggle`. Uten attributtet setter den `open` tilbake. Se [Når serveren åpner dialogen](#når-serveren-åpner-dialogen). |
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -415,7 +415,7 @@ Flaten bak dialogen er `::backdrop`, og finnes bare når dialogen er åpnet med 
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Dialogen trenger et navn. `lt.dialog({ titleId })` skriver `aria-labelledby` mot overskriften, og inne i `<lt-dialog>` setter komponenten det fra den første overskriften utenfor kroppen når det mangler. Har du ingen overskrift, bruk `aria-label`.
 - Overskriften skal stille spørsmålet: «Slette søknaden?», ikke «Bekreft».

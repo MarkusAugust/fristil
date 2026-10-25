@@ -9,7 +9,7 @@ import Example from "../../../components/Example.astro"
 
 Komponenten er i praksis to ting: en nullstilling av nettleserens ramme fra 1996, og samme markering av påkrevd og valgfritt som på en vanlig [Label](../label/).
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "fieldset.css", "radio.css"]}
   stiler={["fieldset", "radio", "label"]} layout="stabel" maxWidth="28rem" kode={`
@@ -108,7 +108,7 @@ Gruppen kan ha hjelpetekst og feilmelding som feltene ellers. Koblingen til skje
 
 Merk at `disabled` på gruppen ikke setter `disabled` på hver kontroll. Egenskapen `knapp.disabled` står fortsatt til `false`, mens `knapp.matches(":disabled")` er sann. Sjekker du i JavaScript, bruk den siste.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -126,7 +126,7 @@ De tre siste er teksten i markeringen bak `data-required` og `data-optional` på
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - `<legend>` skal være det første elementet inne i `<fieldset>`. HTML krever det, og markupen er ellers ugyldig. Nettleserne kobler som regel den første `<legend>`-en til gruppen uansett hvor den står, men det er ikke noe å lene seg på: utenfor innholdsmodellen kan nettlesere og hjelpemidler oppføre seg ulikt.
 - Bruk gruppen der alternativene hører til samme spørsmål. Et enkelt avkryssingsfelt for «Jeg godtar vilkårene» trenger den ikke.

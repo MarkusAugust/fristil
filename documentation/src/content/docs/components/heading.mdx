@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Størrelsen og nivået er to forskjellige ting. Nivået er `<h1>` til `<h6>` og bestemmer strukturen skjermlesere navigerer etter. `data-size` bestemmer bare hvor stor teksten ser ut.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "heading.css"]}
   stiler={["heading"]} layout="stabel" maxWidth="32rem" kode={`
@@ -66,7 +66,7 @@ En `<h2>` som skal se liten ut er riktig. En `<h4>` valgt fordi den var liten no
 
 Siden skal ha én `<h1>`, og nivåene under skal følge hverandre uten hopp.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -83,7 +83,7 @@ Overskriftene bruker `text-wrap: balance`, så en overskrift over to linjer ikke
 
 Se [Tilpasning](../../customising/) for hvordan laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Skjermlesere kan liste opp alle overskrifter og hoppe mellom dem. Det er den vanligste måten å finne fram på en lang side.
 - Ikke bruk en overskrift for å gjøre tekst stor. Bruk [Paragraph](../paragraph/) med `data-size="large"`.

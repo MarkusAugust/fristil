@@ -7,7 +7,7 @@
  * innholdet uten alt det.
  *
  * Kilden er den bygde siden, ikke `.mdx`-fila. Det er hele poenget. I MDX står
- * markupen i en `kode`-streng til `<Example>`, og «Ren HTML»-fanen med
+ * markupen i en `kode`-streng til `<Example>`, og «Plain HTML»-fanen med
  * `<link>`-ene til CDN-en, importlinjene og versjonsnummeret finnes ikke der i
  * det hele tatt: den regnes ut av komponenten. En omskriver som leste MDX måtte
  * ha gjort den utregningen en gang til, og da finnes regelen to steder. Her
@@ -18,7 +18,7 @@
  * type="text/markdown">` i sidehodet, som `src/route-data.ts` setter. Fila
  * skrives dit lenken peker, og ingen andre steder.
  *
- * Det som tas bort: de levende eksemplene (markupen står i «Ren HTML»-fanen
+ * Det som tas bort: de levende eksemplene (markupen står i «Plain HTML»-fanen
  * ved siden av), ankerlenkene ved overskriftene, kopierknappene og fanelista.
  * Fanene blir avsnitt med fanenavnet i fet skrift foran innholdet, så alle
  * fanene står etter hverandre.

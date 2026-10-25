@@ -19,12 +19,12 @@ import "@lo-tek/interfaces/session-timeout.css"
 defineLtSessionTimeout()
 ```
 
-## Slik tar du den i bruk
+## How to use it
 <Tabs>
-  <TabItem label="Prøv den">
+  <TabItem label="Try it">
     <SessionTimeoutDemo />
   </TabItem>
-  <TabItem label="Ren HTML">
+  <TabItem label="Plain HTML">
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
@@ -240,7 +240,7 @@ kanal.addEventListener("message", () => {
 
 `extendSession(element)` og `resetSession(element)` fra `@lo-tek/interfaces/session-timeout` gjør det samme, men venter først på at elementet er registrert.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -264,7 +264,7 @@ Form og størrelse leses fra komponentvariabler, med systemets verdi som reserve
   --lt-session-timeout-width: 32rem;
 }
 ```
-## Tilgjengelighet
+## Accessibility
 
 Dialogen er en ekte `<dialog>` åpnet med `showModal()`, så fokusfellen, Escape og topplaget kommer fra nettleseren. Den har `role="alertdialog"`, fordi den avbryter noe brukeren ikke ba om å bli avbrutt i.
 

@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Samme utseende og tilstander som [Input](../input/), på et ekte `<select>`. Da brukes nettleserens egen liste, den som allerede virker med tastatur, skjermleser og mobilens innebygde velger.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "select.css", "label.css"]}
   stiler={["select", "label"]} layout="stabel" maxWidth="26rem" kode={`
@@ -114,7 +114,7 @@ lt.select({ picker: "styled" })
 // { class: "lt-select", "data-picker": "styled" }
 ```
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -136,7 +136,7 @@ Et kompakt felt, som «Antall per side», blir så bredt som innholdet med `--lt
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - En `<option>` som sier «Velg fylke» er en ledetekst i forkledning, ikke en erstatning for `<label>`.
 - Har listen flere enn rundt sju valg som hører logisk sammen, grupper dem med `<optgroup label="…">`.

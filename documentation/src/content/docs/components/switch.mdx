@@ -10,7 +10,7 @@ En avkryssingsboks med `role="switch"`. Skjermlesere sier da «på» og «av» f
 
 **Velg Switch** når innstillingen trer i kraft med det samme. Skal valget først gjelde når skjemaet sendes inn, er [Checkbox](../checkbox/) riktig: en bryter som ikke gjør noe før du trykker «Lagre» lover mer enn den holder.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "switch.css", "label.css", "help-text.css"]}
   stiler={["switch", "label"]} layout="stabel" maxWidth="28rem" kode={`
@@ -75,10 +75,10 @@ import { switchControl } from "@lo-tek/interfaces"
 
 ## Lagring med en gang
 
-Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feiler, og gå tilbake. `fetch` avviser bare når nettet svikter, så et svar med feilkode må sjekkes selv, ellers lander et avslag fra serveren i grenen som melder at det gikk bra. I «Ren HTML», Astro og React sperres et nytt trykk mens lagringen pågår uten `disabled`, som ville tatt fokuset fra bryteren; i Datastar sender et nytt trykk en ny `@put`, og serveren avgjør. Markupen er den samme i «Ren HTML» og Astro; React bruker byggefunksjonene, og Datastar sine egne attributter. Astro bruker det samme skriptet som «Ren HTML».
+Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feiler, og gå tilbake. `fetch` avviser bare når nettet svikter, så et svar med feilkode må sjekkes selv, ellers lander et avslag fra serveren i grenen som melder at det gikk bra. I «Plain HTML», Astro og React sperres et nytt trykk mens lagringen pågår uten `disabled`, som ville tatt fokuset fra bryteren; i Datastar sender et nytt trykk en ny `@put`, og serveren avgjør. Markupen er den samme i «Plain HTML» og Astro; React bruker byggefunksjonene, og Datastar sine egne attributter. Astro bruker det samme skriptet som «Plain HTML».
 
 <Tabs>
-  <TabItem label="Ren HTML">
+  <TabItem label="Plain HTML">
     ```html
     <div class="lt-switch-row">
       <input class="lt-switch" type="checkbox" role="switch" id="varsler" />
@@ -197,7 +197,7 @@ Bryteren lover at endringen gjelder. Da må den også si fra når lagringen feil
 
 `role="status"` gjør at skjermlesere leser opp resultatet uten å avbryte det brukeren holder på med.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -213,7 +213,7 @@ Knappen inni er en gradient og ikke et pseudoelement, fordi Firefox ikke rendrer
 
 Bryteren glir mellom av og på. Har brukeren bedt om mindre bevegelse i systemet sitt, bytter den i stedet tilstand uten overgang.
 
-## Tilgjengelighet
+## Accessibility
 
 - Ledeteksten skal si hva bryteren styrer, ikke hvilken tilstand den er i. «Varsle meg på e-post», ikke «E-postvarsler på».
 - Ikke skriv «Av» og «På» som tekst ved siden av. Skjermleseren sier det allerede, og teksten blir motsatt av seg selv når brukeren slår den om.

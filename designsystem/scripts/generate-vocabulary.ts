@@ -175,8 +175,8 @@ export function webTypes(version: string) {
  * Markupen som viser elementet, fra komponentsiden.
  *
  * Den første kodeblokken med HTML på siden som faktisk inneholder `<lt-…>`,
- * uten stilark og uten Datastar. Som regel er det «Ren HTML»-fanen. På
- * dialogsiden er det ikke: der åpner «Ren HTML»-oppskriften dialogen med
+ * uten stilark og uten Datastar. Som regel er det «Plain HTML»-fanen. På
+ * dialogsiden er det ikke: der åpner «Plain HTML»-oppskriften dialogen med
  * `showModal()` fra skript, uten web-komponenten, og en snippet for
  * `<lt-dialog>` uten `<lt-dialog>` i seg var det første reviewfunnet.
  *

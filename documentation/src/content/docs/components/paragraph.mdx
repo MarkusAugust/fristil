@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Brødtekst med lesbar linjelengde. Bredden er begrenset til 70 tegn, fordi lengre linjer gjør det vanskelig å finne tilbake til starten av neste. Det er den vanligste grunnen til at en tekst er tung å lese selv når skriften er stor nok.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "paragraph.css", "heading.css"]}
   stiler={["paragraph", "heading"]} layout="stabel" maxWidth="34rem" kode={`
@@ -63,7 +63,7 @@ lt.setAttributes(ingress, lt.paragraph({ variant: "lead" }))
 
 Avsnitt som følger hverandre får luft mellom seg av seg selv.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -87,7 +87,7 @@ Står avsnittet i en spalte som allerede er smal nok, kan grensen fjernes:
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Ikke bruk `<br>` for å lage avsnitt. Et nytt `<p>` er det skjermlesere kan hoppe mellom.
 - `data-size="small"` skal ikke brukes på noe brukeren må lese. Vilkår i liten skrift er like vanskelige på skjerm som på papir.

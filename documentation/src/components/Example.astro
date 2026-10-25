@@ -75,7 +75,7 @@ const harTypeScript = Astro.slots.has("ts")
 /*
  * Stilarkene, på den måten fanen de står i faktisk kan bruke.
  *
- * «Ren HTML» er definert ved å ikke ha noe byggesteg, så der kan det ikke
+ * «Plain HTML» er definert ved å ikke ha noe byggesteg, så der kan det ikke
  * stå `import "@lo-tek/interfaces/tokens.css"`: en nettleser slår ikke
  * opp et pakkenavn. Der skrives `<link>` med hele adressen. Importlinjene
  * hører i TypeScript-fanen, der det finnes et byggesteg.
@@ -114,12 +114,12 @@ const importlinjer = importer
 ---
 
 <Tabs>
-	<TabItem label="Eksempel">
+	<TabItem label="Example">
 		<Preview stiler={stiler} layout={layout} maxWidth={maxWidth} ekstraCss={forhaandsvisningsCss}>
 			<Fragment set:html={kode} />
 		</Preview>
 	</TabItem>
-	<TabItem label="Ren HTML">
+	<TabItem label="Plain HTML">
 		{lenker && <Code code={lenker} lang="html" />}
 		<Code code={kode.trim()} lang="html" />
 		{egenCss && <Code code={egenCss.trim()} lang="css" />}

@@ -9,7 +9,7 @@ Ren CSS på et vanlig `<input type="radio">`. Knappene i en gruppe kobles sammen
 
 Kan brukeren velge flere, bruk [Checkbox](../checkbox/). Er alternativene mange, er [Select](../select/) kortere på skjermen.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "radio.css", "fieldset.css", "label.css"]}
   stiler={["radio", "label", "fieldset"]} layout="stabel" maxWidth="28rem" kode={`
@@ -87,7 +87,7 @@ Gruppen hører alltid hjemme i en [Fieldset](../fieldset/). Uten den leses bare 
 
 Feiler valideringen, sett tilstanden på alle knappene i gruppen. Det er gruppen som er ugyldig, ikke én av knappene.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -100,7 +100,7 @@ Feiler valideringen, sett tilstanden på alle knappene i gruppen. Det er gruppen
 
 Prikken er en gradient tegnet i `--lt-color-accent-content`, så den følger temaet uten et eget bilde. Se [Tilpasning](../../customising/).
 
-## Tilgjengelighet
+## Accessibility
 
 - Alle knappene i gruppen må dele `name`. Uten det blir hver knapp sin egen gruppe, og brukeren kan velge flere.
 - Piltastene flytter mellom knappene og velger samtidig. Tab hopper ut av hele gruppen. Det er nettleserens egen oppførsel, og den skal ikke overstyres.

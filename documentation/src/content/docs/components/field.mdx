@@ -21,15 +21,15 @@ Begge bruker den samme funksjonen under, så kontrakten kan ikke gå fra hverand
 `<lt-field>` kan erstattes helt av byggefunksjonen, fordi koblingen er markup og ikke oppførsel. Det samme gjelder [Dialog](../dialog/), når appen selv kaller `showModal()`. [Tabs](../tabs/), [Popover](../popover/), [Suggestion](../suggestion/) og [Error Summary](../error-summary/) gjør noe en funksjon ikke kan, som piltaster og fokus, så der bruker du byggefunksjonen **og** komponenten. Se [Markup og oppførsel](/markup-and-behaviour/#byggefunksjon-eller-web-component).
 :::
 
-## Slik tar du den i bruk
+## How to use it
 
 `defineLtField()` registrerer web componenten i nettleseren, og kalles én gang ved oppstart. Flere kall er ufarlige. Stilarket må importeres fordi barna er dine egne elementer med klassene `lt-label`, `lt-input` og så videre, og de klassene må ligge på siden. `field.css` samler dem.
 
 <Tabs>
-  <TabItem label="Prøv den">
+  <TabItem label="Try it">
     <FieldDemo />
   </TabItem>
-  <TabItem label="Ren HTML">
+  <TabItem label="Plain HTML">
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
@@ -338,7 +338,7 @@ Delene er bare dem som hører til dette feltet. Står et `<lt-field>` inni et an
 
 Det finnes ikke noe `invalid`-attributt. Feltet er ugyldig når feilmeldingen synes, eller når serveren har skrevet `aria-invalid` på kontrollen. Påkrevd-merket står som `data-required` på ledeteksten, og er bare visuelt: `required` må stå på selve `<input>`.
 
-## Tilgjengelighet
+## Accessibility
 
 - Komponenten gjør koblingen, ikke innholdet. Ledeteksten og feilmeldingen må du fortsatt skrive godt.
 - Skriv `for` på ledeteksten og `id` på feltet, eller legg ledeteksten rundt feltet. Uten det har feltet ikke noe navn før skriptet har kjørt. Uten id får feltet ikke fokus tilbake etter en `innerHTML`-oppdatering med htmx, som finner det igjen på id, og stemmestyring på Windows er ikke etterprøvd med ledeteksten rundt feltet.

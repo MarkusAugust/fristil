@@ -25,12 +25,12 @@ import "@lo-tek/interfaces/popover.css"
 defineLtPopover()
 ```
 
-## Slik tar du den i bruk
+## How to use it
 <Tabs>
-  <TabItem label="Prøv den">
+  <TabItem label="Try it">
     <PopoverDemo />
   </TabItem>
-  <TabItem label="Ren HTML">
+  <TabItem label="Plain HTML">
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
@@ -246,7 +246,7 @@ meny.addEventListener("popover-toggle", (hendelse) => {
 
 Panelet flytter seg med siden når brukeren ruller eller endrer vindusstørrelsen. Er det ikke plass under knappen, legger det seg over.
 
-## Klasser du kan style
+## Classes you can style
 
 Komponenten rendrer i vanlig DOM, så markupen din treffes av vanlige selektorer:
 
@@ -266,7 +266,7 @@ Posisjonen settes som `--lt-popover-top` og `--lt-popover-left` på elementet. D
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Panelet er ikke en dialog. Fokus flyttes ikke inn automatisk, og resten av siden er fortsatt i bruk. Trenger du å stoppe brukeren, bruk [Dialog](../dialog/).
 - Escape lukker og gir fokus tilbake til knappen. Uten det står fokus på noe som ikke finnes lenger.

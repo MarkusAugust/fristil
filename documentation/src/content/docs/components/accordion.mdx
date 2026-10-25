@@ -9,7 +9,7 @@ Klassen settes på et `<details>` med et `<summary>` først. Nettleseren tar seg
 
 Bygger du det samme av knapper og `aria-expanded`, må alt det skrives på nytt. Og teksten i et lukket panel skjules med `hidden`, så nettleserens eget søk i siden finner den ikke lenger.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "accordion.css"]}
   stiler={["accordion"]} layout="stabel" maxWidth="34rem" kode={`
@@ -92,7 +92,7 @@ Skal panelene være en del av sidens struktur, legg en overskrift inne i `<summa
 
 Da kan skjermlesere hoppe mellom spørsmålene med overskriftsnavigasjon. Nivået må passe med resten av siden.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -127,7 +127,7 @@ Skal tegnet bytte når panelet er åpent, sett det på `.lt-accordion[open] summ
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Ikke gjem noe brukeren trenger for å komme videre. Et skjemafelt som er påkrevd hører ikke hjemme i et lukket panel.
 - Overskriften i `<summary>` skal si hva som kommer, ikke «Les mer».

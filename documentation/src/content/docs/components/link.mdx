@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Lenkestil med tydelig understrek, hover og fokusmarkering. Skal lenken se ut som en knapp, bruk [Button](../button/) på `<a>`-elementet i stedet.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "link.css"]}
   stiler={["link"]} layout="stabel" maxWidth="32rem" kode={`
@@ -62,7 +62,7 @@ Uten `href` er en `<a>` ingen lenke for skjermleseren, og den står ikke i tabre
 
 `lotek sjekk` melder en `lt-link` eller `lt-button` med både `aria-disabled="true"` og `href` (regelen `deaktivert-med-href`).
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -70,7 +70,7 @@ Uten `href` er en `<a>` ingen lenke for skjermleseren, og den står ikke i tabre
 
 Se [Tilpasning](../../customising/) for hvordan laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Lenketeksten skal gi mening lest alene. Skjermlesere kan liste opp alle lenker på siden, og der hjelper «Se faktura for mars» der «Klikk her» ikke sier noe.
 - Ikke fjern `outline` på `:focus-visible`. Den er det eneste tastaturbrukere navigerer etter.

@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 En boks som sier noe om helheten: at søknaden ble sendt, at tjenesten er nede, at fristen nærmer seg. Gjelder meldingen ett felt, hører den hjemme under feltet som [Error Text](../error-text/) eller [Help Text](../help-text/).
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "alert.css"]}
   stiler={["alert"]} layout="stabel" maxWidth="34rem" kode={`
@@ -99,7 +99,7 @@ Rollen er ikke en del av `data-color`, fordi den avhenger av *når* meldingen ko
 
 Elementet må stå i DOM-en før du fyller det med tekst. Legger du inn hele boksen ferdig utfylt, rekker ikke skjermleseren å se endringen.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -114,7 +114,7 @@ Elementet må stå i DOM-en før du fyller det med tekst. Legger du inn hele bok
 
 Hver farge har en strek på kanten og en svak flate bak teksten, og brødteksten holder kontrasten mot den flaten i begge temaer. Se [Tilpasning](../../customising/).
 
-## Tilgjengelighet
+## Accessibility
 
 - Fargen alene sier ingenting. Teksten må bære beskjeden også for den som ikke ser forskjell på grønt og rødt.
 - Én melding om gangen. Tre bokser over hverandre leses som støy, og brukeren finner ikke den som gjelder.

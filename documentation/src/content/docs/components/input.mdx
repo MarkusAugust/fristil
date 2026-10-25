@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Ren CSS på et vanlig `<input>`, så nettleserens egen validering, autofyll og tastaturhåndtering virker som før.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "input.css", "label.css"]}
   stiler={["input", "label"]} layout="stabel" maxWidth="26rem" kode={`
@@ -100,7 +100,7 @@ Bare `date`, `time` og `datetime-local` påvirker utseendet. De øvrige typene f
 | Nettleserens egen datovelger holder | **Input** med `type="date"` |
 | Du skal be om en dato | [Dato i et skjema](../../patterns/date/) |
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -133,7 +133,7 @@ Variabelen står på beholderen, ikke på feltet, så den gjelder hvert felt i s
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Hvert felt trenger en synlig `<label>` med `for`. `placeholder` er ingen erstatning, siden den forsvinner idet brukeren skriver.
 - Bruk riktig `type`. Det bestemmer mobiltastaturet og hva nettleseren tilbyr av autofyll.

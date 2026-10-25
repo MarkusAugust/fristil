@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Riktig typografi på `<label>`, og en fast måte å markere påkrevde og valgfrie felt på. Setter du opp et helt felt, er [Field](../field/) som regel enklere. Den setter `for`, `id` og `aria-describedby` for deg.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "label.css", "input.css"]}
   stiler={["label", "input"]} layout="stabel" maxWidth="26rem" kode={`
@@ -92,7 +92,7 @@ Velg én av `data-required` og `data-optional` og hold deg til den gjennom skjem
 <p class="lt-help-text" id="epost-hjelp">Vi bruker adressen til å sende kvittering.</p>
 `} />
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -117,7 +117,7 @@ Variablene gjelder også `.lt-legend` i [Fieldset](../fieldset/). Se [Oversettel
 
 Se [Tilpasning](../../customising/) for hvordan laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - `data-required` er bare visuelt. Sett `required` på selve feltet, ellers vet ikke skjermleseren at det må fylles ut.
 - Stjernen og «(påkrevd)» legges til med `::after`. Innhold i `::after` regnes med i navnet på feltet, så en skjermleser kan lese det etter ledeteksten. Det er `required` på feltet som sier at det må fylles ut.

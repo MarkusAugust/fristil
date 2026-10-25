@@ -358,8 +358,8 @@ for (const { navn, sti } of komponentmapper()) {
   const variabler = Object.keys(KOMPONENTVARIABLER[navn] ?? {})
   const hvor = `components/${navn}.mdx`
 
-  if (!/^## .*[Tt]ilgjengelighet/m.test(tekst)) {
-    avvik.push({ hvor, hva: "mangler seksjonen «Tilgjengelighet»" })
+  if (!/^## .*[Aa]ccessibility/m.test(tekst)) {
+    avvik.push({ hvor, hva: "mangler seksjonen «Accessibility»" })
   }
 
   // <Example> for de enkle, eller en egen demokomponent der eksempelet
@@ -374,10 +374,10 @@ for (const { navn, sti } of komponentmapper()) {
    * Regelen så før etter en `js`-blokk med pakkenavnet i, hvor som helst i
    * teksten. Den gikk grønn på de fleste sidene av feil grunn: «TypeScript»
    * nederst nevner `@lo-tek/interfaces/react`, og det telte. Nå kreves
-   * det at «Slik tar du den i bruk» selv sier hva som skal importeres,
+   * det at «How to use it» selv sier hva som skal importeres,
    * enten i en kodefane eller gjennom `importer` på <Example>.
    */
-  const oppskriftStart = tekst.indexOf("## Slik tar du den i bruk")
+  const oppskriftStart = tekst.indexOf("## How to use it")
   const oppskriftSlutt = tekst.indexOf("\n## ", oppskriftStart + 5)
   const oppskrift =
     oppskriftStart === -1
@@ -388,7 +388,7 @@ for (const { navn, sti } of komponentmapper()) {
         )
 
   if (oppskriftStart === -1) {
-    avvik.push({ hvor, hva: "mangler seksjonen «Slik tar du den i bruk»" })
+    avvik.push({ hvor, hva: "mangler seksjonen «How to use it»" })
   } else if (!/\.css/.test(oppskrift) && !/importer=\{/.test(oppskrift)) {
     /*
      * Et stilark, ikke bare pakkenavnet.
@@ -404,11 +404,11 @@ for (const { navn, sti } of komponentmapper()) {
   // Komponenter som ikke rendrer noe selv, som <lt-field>, har ingenting å
   // eksponere og trenger derfor ingen slik seksjon.
   const eksponerer = klasser(css).length > 0 || variabler.length > 0
-  const stylbare = /## (Klasser|Deler) du kan style/.test(tekst)
+  const stylbare = /## (Classes|Parts) you can style/.test(tekst)
   if (eksponerer && !stylbare) {
     avvik.push({
       hvor,
-      hva: "mangler seksjonen «Klasser du kan style» eller «Deler du kan style»",
+      hva: "mangler seksjonen «Classes you can style» eller «Parts you can style»",
     })
   }
 

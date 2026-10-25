@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Stien fra forsiden til der brukeren står nå. Klassen settes på en `<ol>` inne i en `<nav>`: rekkefølgen betyr noe, så listen må være nummerert selv om tallene ikke vises.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "breadcrumbs.css"]}
   stiler={["breadcrumbs"]} layout="stabel" maxWidth="32rem" kode={`
@@ -61,7 +61,7 @@ Tre ting må stå i markupen:
 
 Skilletegnet legges inn med CSS. Sto skråstreken i markupen, ville skjermlesere lest «skråstrek» mellom hvert steg.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -87,7 +87,7 @@ Skilletegnet kommer fra `::before` på hvert steg etter det første, og kan bytt
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Siste steg skal være der brukeren er nå, ikke et sted å gå. Enten som en lenke med `aria-current="page"`, eller som ren tekst.
 - Ikke kort ned stegene til «...» på liten skjerm uten at de kan foldes ut. Da mister brukeren nettopp den oversikten stien er til for.

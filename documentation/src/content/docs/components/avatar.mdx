@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 En rund flate med et bilde eller initialer. Komponenten sier ingenting om hvem personen er: det gjør teksten ved siden av, eller en tekst du gir bildet.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "avatar.css"]}
   stiler={["avatar"]} kode={`
@@ -90,7 +90,7 @@ Står bildet alene, må det si hvem det er:
 
 Rekkefølgen snus i CSS: det første elementet i markupen står lengst til høyre i stabelen. Navnene må stå et sted, som i teksten under: initialer er ingen identifikasjon.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -110,7 +110,7 @@ Rekkefølgen snus i CSS: det første elementet i markupen står lengst til høyr
 
 `--lt-avatar-radius` gjelder bare firkantvarianten. Den runde er alltid rund. Se [Tilpasning](../../customising/).
 
-## Tilgjengelighet
+## Accessibility
 
 - Initialer er ingen identifikasjon. To personer kan ha de samme, så navnet må stå et sted.
 - Et `<img>` uten `alt` leses opp som filnavnet. Er bildet pynt, skriv `alt=""`.

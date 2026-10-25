@@ -59,14 +59,14 @@ Pakken har ingen avhengigheter. Web-komponentene er vanlige `HTMLElement`-klasse
   </TabItem>
 </Tabs>
 
-**Lenker du uten byggesteg, bruk `lotek.css`.** Én rundtur på <CssSize />, og ingen `@import` nettleseren må laste fila for å oppdage. Lista med ett stilark per komponent er for den som har et byggesteg: der laster en side med bare knapper ikke CSS for en dialog. «Ren HTML»-fanen på hver komponentside oppgir lenkene til de enkelte stilarkene, siden lista samtidig sier hva komponenten krever, og `lotek.css` dekker hver av dem.
+**Lenker du uten byggesteg, bruk `lotek.css`.** Én rundtur på <CssSize />, og ingen `@import` nettleseren må laste fila for å oppdage. Lista med ett stilark per komponent er for den som har et byggesteg: der laster en side med bare knapper ikke CSS for en dialog. «Plain HTML»-fanen på hver komponentside oppgir lenkene til de enkelte stilarkene, siden lista samtidig sier hva komponenten krever, og `lotek.css` dekker hver av dem.
 
 ## Første komponent
 
 Med `tokens.css` og `button.css` importert:
 
 <Tabs>
-  <TabItem label="Eksempel">
+  <TabItem label="Example">
     <Preview stiler={["button"]}>
       <button class="lt-button">Send søknad</button>
       <button class="lt-button" data-variant="secondary">Lagre utkast</button>

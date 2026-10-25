@@ -14,13 +14,13 @@ Lages markupen med JavaScript, skriver `lt.tabs()` lenkene, id-ene på panelene 
 Unntaket er React: der skriver `lt.tabs()` fra `@lo-tek/interfaces/react` hele tilstanden, se React-fanen under.
 :::
 
-## Slik tar du den i bruk
+## How to use it
 
 <Tabs>
-  <TabItem label="Prøv den">
+  <TabItem label="Try it">
     <TabsDemo />
   </TabItem>
-  <TabItem label="Ren HTML">
+  <TabItem label="Plain HTML">
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
@@ -283,7 +283,7 @@ Settes attributtet mens siden lever, er det som står i markupen utgangspunktet,
 | `activation` | `automatic` eller `manual` | Hva piltastene gjør. Med `automatic`, som er standard, velger de fanen med en gang. Med `manual` flytter de bare fokus, og Enter eller mellomrom velger. Det passer når innholdet i et panel tar tid å laste. |
 | `server-controlled` | boolsk | Serveren bestemmer hvilken fane som er valgt. Se [Når serveren bestemmer fanen](#når-serveren-bestemmer-fanen). |
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -304,7 +304,7 @@ Lenkene har ingen egen klasse, de styles som `.lt-tabs__list a`. Den valgte har 
 }
 ```
 
-## Tilgjengelighet
+## Accessibility
 
 Fanene er `role="tab"` i en `role="tablist"`, listepunktene rundt dem er `role="presentation"` så skjermleseren ikke teller dem som liste, og panelene er `role="tabpanel"`. Skriver du dem med `lt.tabs()` fra React-inngangen, står rollene i HTML-en før skriptet har kjørt. Ellers setter komponenten dem i det den registreres, og setter dem tilbake om en oppdatering tar dem.
 

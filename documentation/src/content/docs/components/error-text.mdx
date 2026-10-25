@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Meldingen som vises når et felt ikke kan sendes inn slik det står. Den hører rett under feltet, ikke øverst på siden. Skal teksten forklare hva feltet forventer før brukeren har gjort noe, bruk [Help Text](../help-text/).
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "error-text.css"]}
   stiler={["error-text"]} layout="stabel" maxWidth="30rem" kode={`
@@ -80,7 +80,7 @@ Tre ting må stemme samtidig: `data-state` for fargen, `aria-invalid` for skjerm
 - Ta med et eksempel når formatet er uvanlig.
 - Ikke legg skylden på brukeren, og dropp utropstegnet.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -88,7 +88,7 @@ Tre ting må stemme samtidig: `data-state` for fargen, `aria-invalid` for skjerm
 
 Se [Tilpasning](../../customising/) for hvordan laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Vis feilen når brukeren har forlatt feltet, ikke mens han skriver.
 - Dukker meldingen opp mens siden ellers står stille, legg `role="alert"` på elementet.

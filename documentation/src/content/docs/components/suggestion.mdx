@@ -23,12 +23,12 @@ import "@lo-tek/interfaces/suggestion.css"
 defineLtSuggestion()
 ```
 
-## Slik tar du den i bruk
+## How to use it
 <Tabs>
-  <TabItem label="Prøv den">
+  <TabItem label="Try it">
     <SuggestionDemo />
   </TabItem>
-  <TabItem label="Ren HTML">
+  <TabItem label="Plain HTML">
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
@@ -210,7 +210,7 @@ const forslag = lt.suggestion({ id: "kommune", keys: ["4601", "1804"], help: tru
 
 Feltet er et ekte `<input>` med `name`, så det blir med i innsendingen før skriptet har kjørt. Komponenten lagde tidligere hele feltet selv, og da fantes det verken ledetekst eller inndatafelt for en bruker som ventet på JavaScript. Se [Markup og oppførsel](/markup-and-behaviour/).
 
-Kommer markupen fra en mal uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, slik «Ren HTML»-oppskriften viser, eller legger ledeteksten rundt feltet. Komponenten setter rollene, gir lista og alternativene id, skriver `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Hver `<li>` i lista blir et alternativ; en overskrift i lista trenger `role="presentation"` for å bli latt i fred. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
+Kommer markupen fra en mal uten JavaScript, skriver malen `for` på ledeteksten og `id` på feltet, slik «Plain HTML»-oppskriften viser, eller legger ledeteksten rundt feltet. Komponenten setter rollene, gir lista og alternativene id, skriver `aria-controls` på feltet, og holder lista lukket til brukeren rører feltet. Hver `<li>` i lista blir et alternativ; en overskrift i lista trenger `role="presentation"` for å bli latt i fred. Det serveren har skrevet står, og det komponenten fylte inn settes tilbake om en oppdatering tar det. Statuselementet må stå i markupen: det er innhold serveren sender, og uten det leses ikke antall treff opp.
 
 Komponenten skriver aldri id på feltet. Datastar og idiomorph kjenner igjen et element på id, og et felt med en id serveren ikke sendte, ville blitt byttet ut ved neste oppdatering, med fokus og det brukeren har skrevet. `for` på ledeteksten skriver komponenten fra feltets id når ledeteksten ikke står rundt feltet, som `<lt-field>` gjør; skriv den i malen også, siden det er den som gir feltet et navn uten JavaScript. Alternativene får id fra nøkkelen i `keys`, som kommunenummeret, så en oppdatering kjenner dem igjen. En nøkkel som er tom, har mellomrom eller står to ganger, kaster, i TypeScript som i Kotlin. Mangler id-ene, som i en mal uten byggefunksjon, gir komponenten lista og alternativene id. Sender serveren hele lista på nytt, byttes de ut, og det koster ingenting: komponenten kobler dem på nytt og finner det markerte alternativet igjen på teksten.
 
@@ -312,7 +312,7 @@ Se [Markup og oppførsel](../../markup-and-behaviour/#før-komponenten-er-regist
 | `server-controlled` | boolsk | Serveren bestemmer om lista er utvidet og hvilket alternativ som er markert. Komponenten setter dem ikke tilbake etter en oppdatering fra serveren, slik den gjør uten attributtet. |
 | `count-none`, `count-zero`, `count-one`, `count-two`, `count-few`, `count-many`, `count-other` | tekst | Opplesningen av antall treff. Se [Antall treff på andre språk](#antall-treff-på-andre-språk). |
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -334,7 +334,7 @@ Lista står i det øverste laget når den er åpen, så den legger seg over alt 
   --lt-suggestion-max-height: 24rem;
 }
 ```
-## Tilgjengelighet
+## Accessibility
 
 Feltet er en `role="combobox"` med `aria-autocomplete="list"`, og lista en `role="listbox"` med `role="option"` i seg. Skriver serveren dem med `lt.suggestion()`, står de i HTML-en før skriptet kjører. Kommer markupen uten, setter komponenten dem i det den registreres.
 

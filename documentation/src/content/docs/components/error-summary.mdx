@@ -21,12 +21,12 @@ import "@lo-tek/interfaces/error-summary.css"
 defineLtErrorSummary()
 ```
 
-## Slik tar du den i bruk
+## How to use it
 <Tabs>
-  <TabItem label="Prøv den">
+  <TabItem label="Try it">
     <ErrorSummaryDemo />
   </TabItem>
-  <TabItem label="Ren HTML">
+  <TabItem label="Plain HTML">
     ```html
     <!-- Stilarkene siden trenger. Uten byggesteg er det `<link>`, ikke
          `import`: en nettleser slår ikke opp et pakkenavn. -->
@@ -213,7 +213,7 @@ Hver lenke i lista skal peke på `id`-en til kontrollen som feilet. Peker den p�
 <input class="lt-input" id="fodselsdato" type="date">
 ```
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -230,7 +230,7 @@ Hver lenke i lista skal peke på `id`-en til kontrollen som feilet. Peker den p�
   --lt-error-summary-padding: var(--lt-spacing-6);
 }
 ```
-## Tilgjengelighet
+## Accessibility
 
 Boksen er `role="alert"`, så den leses opp når den kommer til syne. Den har `tabindex="-1"` for å kunne få fokus uten å bli en tabbestopp.
 

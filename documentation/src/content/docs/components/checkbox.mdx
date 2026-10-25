@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Ren CSS på et vanlig `<input type="checkbox">`, så tastatur, `FormData` og nettleserens egen validering virker som før. Skal brukeren velge ett av flere alternativer, er [Radio](../radio/) riktig. Er valget av eller på for en innstilling som slår inn med en gang, bruk [Switch](../switch/).
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "checkbox.css", "label.css"]}
   stiler={["checkbox", "label"]} layout="stabel" maxWidth="28rem" kode={`
@@ -139,7 +139,7 @@ Hører boksene til samme spørsmål, samle dem i en [Fieldset](../fieldset/). Da
 
 Like `name`-verdier gir én nøkkel med flere verdier i `FormData`. Les dem med `formData.getAll("varsel")`.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -153,7 +153,7 @@ Like `name`-verdier gir én nøkkel med flere verdier i `FormData`. Les dem med 
 
 Haken og streken tegnes fra `--lt-icon-check` og `--lt-icon-dash`, som snur med temaet. Se [Tilpasning](../../customising/).
 
-## Tilgjengelighet
+## Accessibility
 
 - Hver boks trenger en `<label>` med `for`. Uten den er klikkflaten bare selve boksen, og skjermleseren leser ingenting.
 - Teksten skal si hva som skjer når boksen er krysset av, ikke hva spørsmålet het. «Send meg nyhetsbrev», ikke «Nyhetsbrev».

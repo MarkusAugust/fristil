@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Den som navigerer med tastatur må ellers gjennom hele menyen på hver eneste side. Lenken ligger utenfor skjermen til den får fokus, og er som regel det første elementet i `<body>`.
 
-## Slik tar du den i bruk
+## How to use it
 
 Lenken ligger utenfor skjermen til den får fokus. Forhåndsvisningen under tvinger den fram, slik at du ser hvordan den ser ut når den er synlig. Markupen er den samme som i en ekte side:
 
@@ -74,7 +74,7 @@ Lenken flyttes utenfor skjermen med `transform`, ikke med `display: none` eller 
 
 Den kommer til syne på `:focus`, ikke `:focus-visible`. Fokus satt fra kode etter et museklikk regnes ikke som synlig fokus, og lenken ville da blitt stående skjult for den som hopper dit fra et skript, for eksempel fra en knapp. Etter et tastetrykk, og rett etter at siden er lastet, regnes det som synlig, men det er museklikket som avgjør valget.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -87,7 +87,7 @@ Den kommer til syne på `:focus`, ikke `:focus-visible`. Fokus satt fra kode ett
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Lenken skal være det første elementet som får fokus på siden. Står den etter menyen, hjelper den ingen.
 - Teksten skal si hvor man havner. «Hopp til hovedinnhold», ikke «Hopp».

@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Samme utseende og tilstander som [Input](../input/), for svar som blir lengre enn én linje.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "textarea.css", "label.css"]}
   stiler={["textarea", "label"]} layout="stabel" maxWidth="26rem" kode={`
@@ -69,7 +69,7 @@ felt.addEventListener("blur", () => {
 
 `data-state` er farge. Skjermlesere trenger `aria-invalid="true"` i tillegg, eller [Field](../field/), som setter begge.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -85,7 +85,7 @@ felt.addEventListener("blur", () => {
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Hvert felt trenger en synlig `<label>` med `for` som peker på `id`-en.
 - Har feltet en øvre grense, si det i hjelpeteksten før brukeren skriver. `maxlength` alene hindrer innskriving uten å forklare hvorfor.

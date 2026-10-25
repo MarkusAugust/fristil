@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Et `lt-input` med plass til et forstørrelsesglass. Begge klassene settes, så alle tilstandene og variablene fra [Input](../input/) gjelder her også.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "search.css", "button.css", "label.css", "sr-only.css"]}
   stiler={["search", "button", "label", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
@@ -84,7 +84,7 @@ Plassholderen forsvinner idet brukeren skriver, og flere skjermlesere leser den 
 
 Ventetiden på 300 millisekunder er ikke bare for serveren. Uten den leses antall treff opp for hvert tastetrykk.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -98,7 +98,7 @@ Ventetiden på 300 millisekunder er ikke bare for serveren. Uten den leses antal
 
 Ikonet kommer fra `--lt-icon-search` og snur med temaet. Se [Tilpasning](../../customising/).
 
-## Tilgjengelighet
+## Accessibility
 
 - Meld antall treff i et felt med `role="status"`. Uten det vet ikke den som hører siden om søket ga noe.
 - Ikke fjern nettleserens kryss uten å gi noe annet. Å tømme feltet for hånd er tungvint på mobil.

@@ -3,7 +3,7 @@
  * JavaScript og overlever at serveren sender området på nytt, på hver av
  * de tre måtene en side oppdateres på.
  *
- * Markupen leses rett fra «Ren HTML»-fanen på komponentsidene, så testen
+ * Markupen leses rett fra «Plain HTML»-fanen på komponentsidene, så testen
  * og dokumentasjonen ikke kan si to ulike ting. Datastar og idiomorph, som
  * htmx morfer med, kjenner igjen et element på id. Et element uten id
  * beholdes, og et element med en id serveren ikke sendte, byttes ut.
@@ -52,11 +52,11 @@ type Maate = "Datastar" | "idiomorph" | "innerHTML"
 const MAATER: Maate[] = ["Datastar", "idiomorph", "innerHTML"]
 
 /**
- * Oppskriften i «Ren HTML»-fanen på en komponentside: den første
+ * Oppskriften i «Plain HTML»-fanen på en komponentside: den første
  * html-blokken med elementet i, uten skriptene.
  */
 function oppskrift(side: string, tag: string): string {
-  const fane = side.slice(side.indexOf('<TabItem label="Ren HTML">'))
+  const fane = side.slice(side.indexOf('<TabItem label="Plain HTML">'))
   const blokker = [...fane.matchAll(/```html\n([\s\S]*?)```/g)].map((m) => m[1])
   const blokk = blokker.find((b) => b.includes(`<${tag}`))
   if (!blokk) throw new Error(`fant ingen oppskrift med <${tag}> på siden`)

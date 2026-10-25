@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Gruppen er radioknapper i forkledning. Hvert alternativ er en `<label>` med en `<input type="radio">` inni, krympet bort visuelt. Da beholder du piltastene, `FormData` og at skjermleseren sier «2 av 3», uten at noe av det må skrives på nytt.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "toggle-group.css", "sr-only.css"]}
   stiler={["toggle-group", "sr-only"]} layout="stabel" maxWidth="30rem" kode={`
@@ -79,7 +79,7 @@ gruppe.addEventListener("change", (hendelse) => {
 | Av og på for én innstilling | [Switch](../switch/) |
 | Handlinger, som «fet, kursiv, understreket» | Knapper med `aria-pressed` |
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -96,7 +96,7 @@ Den valgte flaten settes med `:has(input:checked)`, altså fra tilstanden på de
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Radioknappen er krympet bort, ikke fjernet. `display: none` ville tatt den ut av tastaturrekkefølgen, og da virker ikke piltastene.
 - Piltastene flytter mellom alternativene og velger samtidig. Tab hopper ut av hele gruppen. Slik virker radioknapper, og det skal ikke overstyres.

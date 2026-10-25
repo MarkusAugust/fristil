@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Den lille teksten under et felt som forklarer hva systemet forventer. Er teksten en feilmelding, bruk [Error Text](../error-text/).
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "help-text.css"]}
   stiler={["help-text"]} layout="stabel" maxWidth="30rem" kode={`
@@ -76,7 +76,7 @@ Uten `aria-describedby` leses ikke hjelpeteksten opp når feltet får fokus.
 
 [Field](../field/) genererer `id`-en og setter `aria-describedby` for deg.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -84,7 +84,7 @@ Uten `aria-describedby` leses ikke hjelpeteksten opp når feltet får fokus.
 
 Se [Tilpasning](../../customising/) for hvordan laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Uten `aria-describedby` er teksten usynlig for skjermlesere. Koblingen er hele poenget.
 - Hold den kort. Den leses opp rett etter ledeteksten hver gang feltet får fokus.

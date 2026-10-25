@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Klassen settes på `<ul>` eller `<ol>` og gir listen riktig luft og innrykk. Variantene fjerner punktene visuelt uten å fjerne selve listen. Unntaket er Safari, der VoiceOver kan la være å lese en `<ul>` uten synlige punkter som en liste. En `<ol>` og en liste i `<nav>` beholder den. Er antallet viktig for den som hører siden, sett `role="list"` på `<ul>`.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "list.css"]}
   stiler={["list"]} layout="stabel" maxWidth="32rem" kode={`
@@ -85,7 +85,7 @@ Uten `plain` ville folk skrevet `<div>` for å bli kvitt punktene, og da forsvin
 </ul>
 `} />
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -97,7 +97,7 @@ Uten `plain` ville folk skrevet `<div>` for å bli kvitt punktene, og da forsvin
 
 `--lt-list-gap` er avstanden mellom elementene, og blir til luft over og under hver rad i `divided`. De to har ulik standardverdi, så setter du variabelen gjelder tallet ditt begge steder. Se [Tilpasning](../../customising/).
 
-## Tilgjengelighet
+## Accessibility
 
 - Bruk `<ol>` når rekkefølgen betyr noe, som i en oppskrift eller en saksgang. Bruk `<ul>` ellers.
 - Ikke legg annet enn `<li>` rett inni listen. Et `<div>` mellom bryter koblingen mellom listen og elementene.

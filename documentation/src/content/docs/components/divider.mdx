@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Klassen settes på et vanlig `<hr>`. Nettleserens egen strek har både ramme og høyde, og begge må nullstilles før fargen fra tokenene er den eneste som vises. Den har også auto-marger til sidene, som i en flex-kolonne gjør streken 0 piksler bred. Klassen nullstiller dem, så streken fyller bredden.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "divider.css"]}
   stiler={["divider"]} layout="flyt" maxWidth="32rem" kode={`
@@ -62,7 +62,7 @@ lt.setAttributes(strek, lt.divider({ variant: "subtle" }))
 
 Skiller den derimot to virkelige deler av siden, skal den bli stående i tilgjengelighetstreet. Den er da den eneste måten skjermleseren får vite at et emne er slutt.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -74,7 +74,7 @@ Skiller den derimot to virkelige deler av siden, skal den bli stående i tilgjen
 
 `--lt-divider-space` er luften over og under streken. Se [Tilpasning](../../customising/).
 
-## Tilgjengelighet
+## Accessibility
 
 - Ikke bruk en strek der en overskrift hører hjemme. En overskrift sier hva som kommer; en strek sier bare at noe er slutt.
 - En strek mellom hvert element i en liste er støy for den som hører siden. Bruk heller `aria-hidden="true"`, eller la være.

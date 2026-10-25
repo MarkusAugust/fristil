@@ -8,7 +8,7 @@
  * Det er ikke en teoretisk mangel. `astro.config.mjs` sier selv at
  * `markdown.remarkPlugins` er merket som utfaset, og at MDX-veien er det eneste
  * som holder den i live. Slutter plugin-en å kjøre, går alle adressene ut med
- * ordet VERSJON i seg, «Ren HTML»- og Datastar-sporet er dødt for leseren, og
+ * ordet VERSJON i seg, «Plain HTML»- og Datastar-sporet er dødt for leseren, og
  * `bun run check` er grønn hele veien.
  *
  * Kjør med: bun documentation/scripts/check-built-version.ts

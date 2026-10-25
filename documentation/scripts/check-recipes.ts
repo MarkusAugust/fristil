@@ -1,5 +1,5 @@
 /**
- * At koden i «Slik tar du den i bruk» faktisk stemmer.
+ * At koden i «How to use it» faktisk stemmer.
  *
  * Hver komponentside åpner med den seksjonen, og fanene der er det leseren
  * limer inn. En kodeblokk som ser riktig ut, men peker på et inngangspunkt
@@ -18,7 +18,7 @@
  *
  * Den siste er ikke pedanteri. `import … from "@lo-tek/interfaces/dialog"`
  * i et `<script type="module">` slår ikke opp i en nettleser: uten importmap
- * eller byggesteg finnes ikke pakkenavnet. Sporene «Ren HTML» og «Datastar» er
+ * eller byggesteg finnes ikke pakkenavnet. Sporene «Plain HTML» og «Datastar» er
  * definert ved å ikke ha noe byggesteg, så der må adressen være en URL.
  */
 
@@ -255,9 +255,9 @@ const MED_BYGGESTEG = new Set(["React", "Astro", "TypeScript"])
  * noe sjekken bare antar.
  */
 const FANENAVN = new Set([
-  "Prøv den",
-  "Eksempel",
-  "Ren HTML",
+  "Try it",
+  "Example",
+  "Plain HTML",
   "React",
   "Astro",
   "Datastar",
@@ -358,9 +358,9 @@ for (const fil of readdirSync(SIDER).filter(
   const side = fil.replace(/\.mdx$/, "")
   const tekst = readFileSync(join(SIDER, fil), "utf8")
 
-  const start = tekst.indexOf("## Slik tar du den i bruk")
+  const start = tekst.indexOf("## How to use it")
   if (start === -1) {
-    si(side, "mangler seksjonen «Slik tar du den i bruk»")
+    si(side, "mangler seksjonen «How to use it»")
     continue
   }
   const neste = tekst.indexOf("\n## ", start + 5)
@@ -390,12 +390,12 @@ for (const fil of readdirSync(SIDER).filter(
    * egen oppskrift.
    */
   for (const m of eksempler(tekst)) {
-    // De to halvdelene hver for seg: markupen hører til «Ren HTML», og
+    // De to halvdelene hver for seg: markupen hører til «Plain HTML», og
     // `slot="ts"` til TypeScript. Slått sammen ville kravet om pakkenavn mot
     // URL vært umulig å stille, siden de to har hver sin regel.
     const ts = m.match(/<Fragment slot="ts">([\s\S]*?)<\/Fragment>/)
     faner.push({
-      navn: "Ren HTML",
+      navn: "Plain HTML",
       kode: ts ? m.replace(ts[0], "") : m,
       iOppskrift: seksjon.includes(m),
     })
@@ -415,7 +415,7 @@ for (const fil of readdirSync(SIDER).filter(
    *
    * Sjekken leste bare `<TabItem>` og `<Example>`, så en kodeblokk som sto
    * utenfor begge gikk fri. Toast-siden hadde en slik: den gjentok
-   * «Ren HTML»-oppskriften i den gamle utgaven, med et pakkenavn i et miljø
+   * «Plain HTML»-oppskriften i den gamle utgaven, med et pakkenavn i et miljø
    * uten byggesteg og uten `data-ignore-morph`, tre avsnitt etter at siden
    * skriver at attributtet ikke er valgfritt.
    *
@@ -527,7 +527,7 @@ for (const fil of readdirSync(SIDER).filter(
      * skriver `class="lt-input"` for hånd i React eller Astro lærer leseren
      * ingenting om `lt`. Fire faner hadde drevet dit uten at noe sa fra.
      *
-     * Regelen gjelder bare der det finnes et byggesteg. I «Ren HTML» og
+     * Regelen gjelder bare der det finnes et byggesteg. I «Plain HTML» og
      * «Datastar» er det riktige nettopp å skrive klassen: der finnes det
      * ingen funksjon å kalle.
      */
@@ -675,10 +675,10 @@ for (const fil of readdirSync(SIDER).filter(
      * sto i en egen blokk lenger nede på siden, og den kjører ikke i en side
      * uten byggesteg bare fordi den står i teksten.
      *
-     * «Prøv den» er unntatt: der er det Astro som har registrert den, og
+     * «Try it» er unntatt: der er det Astro som har registrert den, og
      * «resten» fordi prosa ikke er en oppskrift.
      */
-    if (fane.navn !== "Prøv den" && fane.navn !== "resten") {
+    if (fane.navn !== "Try it" && fane.navn !== "resten") {
       const kode = bareKode(fane.kode)
       const verter = new Set(
         [...kode.matchAll(/<(lt-[a-z-]+)[\s>]/g)].map((m) => m[1]),
@@ -749,7 +749,7 @@ for (const fil of readdirSync(SIDER).filter(
     if (
       !MED_BYGGESTEG.has(fane.navn) &&
       fane.navn !== "resten" &&
-      fane.navn !== "Prøv den"
+      fane.navn !== "Try it"
     ) {
       if (pakkenavnIImport && !urlIImport)
         si(

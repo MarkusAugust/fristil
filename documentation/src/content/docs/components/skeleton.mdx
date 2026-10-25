@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Grå former som viser hvor innholdet kommer. De er alltid skjult for skjermlesere, så ventingen må meldes ett sted i tillegg. Er det ingen form å vise, eller tar ventingen kort tid, er [Spinner](../spinner/) enklere.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example
   importer={["tokens.css", "skeleton.css"]}
@@ -63,7 +63,7 @@ lt.setAttributes(linje, lt.skeleton({ variant: "text" }))
 | `text` | Én tekstlinje |
 | `circle` | Profilbilde |
 
-Blokken og tekstlinjene fyller bredden de får, mens `circle` er like bred som den er høy. `sak-siste-linje` og `sak-bilde` er dine egne klasser, ikke LO-TEKs, og de står i «Ren HTML»-fanen over sammen med markupen.
+Blokken og tekstlinjene fyller bredden de får, mens `circle` er like bred som den er høy. `sak-siste-linje` og `sak-bilde` er dine egne klasser, ikke LO-TEKs, og de står i «Plain HTML»-fanen over sammen med markupen.
 
 Sett bredden på den siste linjen til under 100 prosent. Et avsnitt der alle linjene er like lange ser ikke ut som tekst.
 
@@ -81,7 +81,7 @@ En rekke tomme bokser som leses opp er verre enn stillhet. Derfor setter `lt.ske
 
 Når innholdet kommer, fjern `aria-busy` og tøm statusfeltet.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -96,7 +96,7 @@ Skimmeret er en gradient som beveger seg over flaten, ikke en gjennomsiktighet s
 
 Se [Tilpasning](../../customising/) for hvordan variablene og laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - Formene skal ligne på det som kommer. En plassholder som er tre linjer der resultatet er tjue, gjør siden urolig når innholdet lander.
 - Vent litt før du viser dem, som med en venteindikator. Et glimt av grå bokser er mer forstyrrende enn en kort pause.

@@ -7,7 +7,7 @@ import Example from "../../../components/Example.astro"
 
 Klassen går på en `<svg>`. LO-TEK sender ingen ikoner, så svg-en kommer fra settet appen alt bruker. Klassen gjør ikonet like stort som teksten rundt og midt på linja med den, og `lt.icon()` skjuler det for skjermlesere når det bare er pynt.
 
-## Slik tar du den i bruk
+## How to use it
 
 <Example importer={["tokens.css", "button.css", "icon.css"]}
   stiler={["button", "icon"]} kode={`
@@ -74,7 +74,7 @@ Står ikonet alene og sier noe leseren trenger, som et varseltegn uten tekst ved
 
 Er det tekst ved siden av som sier det samme, er ikonet pynt, og skal ha `aria-hidden="true"`. Ellers leses det samme opp to ganger.
 
-## Klasser du kan style
+## Classes you can style
 
 | Klasse | Hva det er |
 | --- | --- |
@@ -82,7 +82,7 @@ Er det tekst ved siden av som sier det samme, er ikonet pynt, og skal ha `aria-h
 
 Se [Tilpasning](../../customising/) for hvordan laget virker.
 
-## Tilgjengelighet
+## Accessibility
 
 - En knapp eller lenke med bare et ikon i seg må få et navn: `aria-label` på knappen, eller en tekst i et element med klassen `lt-sr-only`. `lotek sjekk` og editorene melder `ikon-uten-navn` når det mangler.
 - Skriv hva knappen gjør, ikke hva ikonet forestiller. «Slett søknaden» er bedre enn «Søppelkasse».

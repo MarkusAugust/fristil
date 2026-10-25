@@ -16,7 +16,7 @@ import "../label/label.css"
 /**
  * Lagringseksempelet på siden, kjørt slik leseren limer det inn.
  *
- * Kodeblokkene på komponentsidene kjøres ikke av noe annet. «Ren HTML»-fanen
+ * Kodeblokkene på komponentsidene kjøres ikke av noe annet. «Plain HTML»-fanen
  * under «Lagring med en gang» lover at bryteren går tilbake når lagringen
  * feiler, og siden lover at tastaturet virker som for en vanlig boks. Før
  * slo eksemplet av bryteren mens den lagret, og da tok nettleseren fokuset
@@ -24,12 +24,12 @@ import "../label/label.css"
  * feilkode, så et avslag fra serveren ble meldt som at det gikk bra.
  */
 describe("lagringseksempelet på siden", () => {
-  /** Markupen og skriptet i «Ren HTML»-fanen, lest fra siden. */
+  /** Markupen og skriptet i «Plain HTML»-fanen, lest fra siden. */
   function lesFanen(): { markup: string; skript: string } {
-    const fane = /<TabItem label="Ren HTML">\s*```html\n([\s\S]*?)```/.exec(
+    const fane = /<TabItem label="Plain HTML">\s*```html\n([\s\S]*?)```/.exec(
       side,
     )?.[1]
-    if (fane === undefined) throw new Error("Fant ingen «Ren HTML»-fane")
+    if (fane === undefined) throw new Error("Fant ingen «Plain HTML»-fane")
     const skript = /<script type="module">([\s\S]*?)<\/script>/.exec(fane)?.[1]
     if (skript === undefined) throw new Error("Fant ikke skriptet i fanen")
     return { markup: fane.replace(/<script[\s\S]*<\/script>/, ""), skript }
