@@ -1163,7 +1163,7 @@ cases.push(
     name: "et panel i sprettoppvinduet uten id",
     html: `<fs-popover><button class="fs-button" type="button">Meny</button><div class="fs-popover" popover>Innhold</div></fs-popover>`,
     count: 1,
-    mentions: ["«panel» uten id", "popovertarget"],
+    mentions: ["«panel» uten id", "aria-controls", "lager aldri en"],
     covers: "div",
     noFix: true,
   },
