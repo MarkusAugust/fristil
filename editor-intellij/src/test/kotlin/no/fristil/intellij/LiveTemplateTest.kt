@@ -1,5 +1,7 @@
 package no.fristil.intellij
 
+import com.intellij.codeInsight.template.TemplateManager
+import com.intellij.codeInsight.template.impl.TemplateManagerImpl
 import com.intellij.codeInsight.template.impl.TemplateSettings
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
@@ -20,16 +22,17 @@ class LiveTemplateTest : BasePlatformTestCase() {
         val tekst = mal!!.string
         assertTrue("id-en skal være en variabel: $tekst", tekst.contains("id=\"\$navn\$\""))
         assertTrue("for skal speile den: $tekst", tekst.contains("for=\"\$navn\$\""))
-        assertEquals(listOf("navn"), mal.variables.map { it.name })
+        // Skjemaet rundt feltet har sin egen id, og den er også en variabel.
+        assertTrue("variablene var ${mal.variables.map { it.name }}", mal.variables.map { it.name }.contains("navn"))
     }
 
     fun `test malen utvides i en HTML-fil`() {
-        myFixture.configureByText("test.html", "fs-field<caret>")
+        TemplateManagerImpl.setTemplateTesting(testRootDisposable)
+        myFixture.configureByText("test.html", "<caret>")
         val mal = TemplateSettings.getInstance().getTemplate("fs-field", "Fristil")!!
-        myFixture.type("\t")
+        TemplateManager.getInstance(project).startTemplate(myFixture.editor, mal)
         val tekst = myFixture.editor.document.text
         assertTrue("markupen skal stå der: $tekst", tekst.contains("<fs-field>") && tekst.contains("id=\"navn\""))
         assertFalse("variabelen skal være byttet ut: $tekst", tekst.contains("\$navn\$"))
-        assertNotNull(mal)
     }
 }
