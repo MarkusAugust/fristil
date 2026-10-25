@@ -9,7 +9,7 @@ class ShownTest {
     @Test
     fun `a file inside the project is shown relative to it, others absolute`() {
         val project = File("/prosjekt").absoluteFile
-        assertEquals("maler${File.separator}a.html", shown(File(project, "templates/a.html"), project))
+        assertEquals("templates${File.separator}a.html", shown(File(project, "templates/a.html"), project))
         val outside = File("/annet/b.html").absoluteFile
         assertEquals(outside.absolutePath, shown(outside, project))
     }

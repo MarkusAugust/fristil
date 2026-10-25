@@ -30,7 +30,7 @@ class ManifestTest {
         )
         assertEquals(
             listOf("ustylet-klasse"),
-            LO-TEK
+            Lotek
                 .diagnoseMarkup("""<div class="lt-kort">x</div>""", css = emptyList(), manifest = takenOver)
                 .map { it.rule },
         )

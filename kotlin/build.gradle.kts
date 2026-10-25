@@ -151,11 +151,11 @@ tasks.test {
     val kjerne = rootDir.resolve("../core")
     val designsystem = rootDir.resolve("../designsystem")
     systemProperty("parity", kjerne.resolve("parity").absolutePath)
-    systemProperty("tema", kjerne.resolve("tema").absolutePath)
+    systemProperty("tema", kjerne.resolve("theme").absolutePath)
     // Fiksturene og byggetilfellene leses gjennom en sti, så Gradle ser dem
     // ikke uten dette, og en ny fikstur ville latt testen stå som oppdatert.
     inputs.dir(kjerne.resolve("parity")).withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.dir(kjerne.resolve("tema")).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir(kjerne.resolve("theme")).withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file(designsystem.resolve("manifest/build-cases.json")).withPathSensitivity(PathSensitivity.NONE)
     inputs.file(manifestFil).withPathSensitivity(PathSensitivity.NONE)
     val manifestSti = manifestFil.map { it.asFile.absolutePath }
