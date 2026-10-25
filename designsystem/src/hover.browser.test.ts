@@ -123,7 +123,7 @@ const TILFELLER: Tilfelle[] = [
  *
  * De ble en gang kontrollert på et tokenpar skrevet inn her. Det er fjernet:
  * paret var skrevet av for hånd, så det sa ingenting om hva CSS-en faktisk
- * gjorde, og det ene av de to var ordrett løftet «text mot egen surface» som
+ * gjorde, og det ene av de to var ordrett løftet «text on its own surface» som
  * kontrakten alt kontrollerer for hver familie. En påstand som gjentar en
  * strengere vaktpost ser ut som dekning og er støy.
  */

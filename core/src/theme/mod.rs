@@ -552,7 +552,7 @@ mod recipe_tests {
             report
                 .problems
                 .iter()
-                .any(|p| p.message.starts_with("accent: text mot canvas is 1.00:1")),
+                .any(|p| p.message.starts_with("accent: text on canvas is 1.00:1")),
             "{:?}",
             report
                 .problems

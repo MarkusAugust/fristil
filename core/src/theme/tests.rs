@@ -200,7 +200,7 @@ fn reports_content_on_fill_that_does_not_hold() {
         &white_layers(),
     )
     .unwrap();
-    assert!(broken.iter().any(|v| v.promise == "content oppå fill"));
+    assert!(broken.iter().any(|v| v.promise == "content on top of fill"));
 }
 
 // The requirement is above WCAG, so a small adjustment breaks nothing.
@@ -380,7 +380,7 @@ fn fails_when_the_border_is_too_weak_against_raised() {
         &white_layers(),
     )
     .unwrap();
-    assert!(broken.iter().any(|v| v.promise == "border mot raised"));
+    assert!(broken.iter().any(|v| v.promise == "border on raised"));
 }
 
 // The check reads CSS the way it is actually written.

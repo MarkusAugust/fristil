@@ -9,35 +9,35 @@
     "problems": [
       {
         "selector": ":root",
-        "message": "accent: border mot canvas is 1.43:1, the requirement is 3.1:1."
+        "message": "accent: border on canvas is 1.43:1, the requirement is 3.1:1."
       },
       {
         "selector": ":root",
-        "message": "accent: border mot raised is 1.12:1, the requirement is 3.1:1."
+        "message": "accent: border on raised is 1.12:1, the requirement is 3.1:1."
       },
       {
         "selector": ":root",
-        "message": "accent: border mot egen surface is 1.27:1, the requirement is 3.1:1."
+        "message": "accent: border on its own surface is 1.27:1, the requirement is 3.1:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot canvas is 2.05:1, the requirement is 4.6:1."
+        "message": "danger: text on canvas is 2.05:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot surface is 1.82:1, the requirement is 4.6:1."
+        "message": "danger: text on surface is 1.82:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot raised is 1.61:1, the requirement is 4.6:1."
+        "message": "danger: text on raised is 1.61:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot egen surface is 1.81:1, the requirement is 4.6:1."
+        "message": "danger: text on its own surface is 1.81:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: content oppå text is 1.98:1, the requirement is 4.6:1."
+        "message": "danger: content on top of text is 1.98:1, the requirement is 4.6:1."
       }
     ],
     "blocks": 1,
@@ -105,23 +105,23 @@
     "problems": [
       {
         "selector": ":root",
-        "message": "danger: text mot canvas is 2.05:1, the requirement is 4.6:1."
+        "message": "danger: text on canvas is 2.05:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot surface is 1.82:1, the requirement is 4.6:1."
+        "message": "danger: text on surface is 1.82:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot raised is 1.61:1, the requirement is 4.6:1."
+        "message": "danger: text on raised is 1.61:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: text mot egen surface is 1.81:1, the requirement is 4.6:1."
+        "message": "danger: text on its own surface is 1.81:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root",
-        "message": "danger: content oppå text is 1.98:1, the requirement is 4.6:1."
+        "message": "danger: content on top of text is 1.98:1, the requirement is 4.6:1."
       }
     ],
     "blocks": 2,
@@ -136,23 +136,23 @@
       },
       {
         "selector": ":root (in the dark theme, no dark block overrides)",
-        "message": "danger: text mot canvas is 1.84:1, the requirement is 4.6:1."
+        "message": "danger: text on canvas is 1.84:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root (in the dark theme, no dark block overrides)",
-        "message": "danger: text mot surface is 1.52:1, the requirement is 4.6:1."
+        "message": "danger: text on surface is 1.52:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root (in the dark theme, no dark block overrides)",
-        "message": "danger: text mot raised is 1.24:1, the requirement is 4.6:1."
+        "message": "danger: text on raised is 1.24:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root (in the dark theme, no dark block overrides)",
-        "message": "danger: text mot egen surface is 1.54:1, the requirement is 4.6:1."
+        "message": "danger: text on its own surface is 1.54:1, the requirement is 4.6:1."
       },
       {
         "selector": ":root (in the dark theme, no dark block overrides)",
-        "message": "danger: content oppå text is 1.90:1, the requirement is 4.6:1."
+        "message": "danger: content on top of text is 1.90:1, the requirement is 4.6:1."
       }
     ],
     "blocks": 1,

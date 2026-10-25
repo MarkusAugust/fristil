@@ -1,5 +1,5 @@
 {
-  "$comment": "Fargekontrakten: familiene, LO-TEKs merkefarger, lysheten og metningen per rolle, lagene bare den nøytrale familien har, kontrastkravene og løftene. Lest av kjernen (core/src/theme/) og av skriptene i designsystem/. Et løfte med own: true måles mot familiens egen rolle, ellers mot laget i den nøytrale familien.",
+  "$comment": "The colour contract: the families, LO-TEK's brand colours, the lightness and saturation per role, the layers only the neutral family has, the contrast requirements and the promises. Read by the core (core/src/theme/) and by the scripts in designsystem/. A promise with own: true is checked against the family's own role, otherwise against the layer in the neutral family.",
   "families": [
     "accent",
     "visited",
@@ -109,119 +109,119 @@
   },
   "promises": [
     {
-      "name": "text mot canvas",
+      "name": "text on canvas",
       "foreground": "text",
       "background": "canvas",
       "own": false,
       "requirement": "text"
     },
     {
-      "name": "text mot surface",
+      "name": "text on surface",
       "foreground": "text",
       "background": "surface",
       "own": false,
       "requirement": "text"
     },
     {
-      "name": "text mot raised",
+      "name": "text on raised",
       "foreground": "text",
       "background": "raised",
       "own": false,
       "requirement": "text"
     },
     {
-      "name": "text mot egen surface",
+      "name": "text on its own surface",
       "foreground": "text",
       "background": "surface",
       "own": true,
       "requirement": "text"
     },
     {
-      "name": "textStrong mot canvas",
+      "name": "textStrong on canvas",
       "foreground": "textStrong",
       "background": "canvas",
       "own": false,
       "requirement": "text"
     },
     {
-      "name": "textStrong mot surface",
+      "name": "textStrong on surface",
       "foreground": "textStrong",
       "background": "surface",
       "own": false,
       "requirement": "text"
     },
     {
-      "name": "textStrong mot raised",
+      "name": "textStrong on raised",
       "foreground": "textStrong",
       "background": "raised",
       "own": false,
       "requirement": "text"
     },
     {
-      "name": "textSubtle mot canvas",
+      "name": "textSubtle on canvas",
       "foreground": "textSubtle",
       "background": "canvas",
       "own": false,
       "requirement": "text"
     },
     {
-      "name": "textSubtle mot surface",
+      "name": "textSubtle on surface",
       "foreground": "textSubtle",
       "background": "surface",
       "own": false,
       "requirement": "text"
     },
     {
-      "name": "textSubtle mot raised",
+      "name": "textSubtle on raised",
       "foreground": "textSubtle",
       "background": "raised",
       "own": false,
       "requirement": "text"
     },
     {
-      "name": "border mot canvas",
+      "name": "border on canvas",
       "foreground": "border",
       "background": "canvas",
       "own": false,
       "requirement": "graphic"
     },
     {
-      "name": "border mot raised",
+      "name": "border on raised",
       "foreground": "border",
       "background": "raised",
       "own": false,
       "requirement": "graphic"
     },
     {
-      "name": "border mot egen surface",
+      "name": "border on its own surface",
       "foreground": "border",
       "background": "surface",
       "own": true,
       "requirement": "graphic"
     },
     {
-      "name": "fill mot canvas",
+      "name": "fill on canvas",
       "foreground": "fill",
       "background": "canvas",
       "own": false,
       "requirement": "graphic"
     },
     {
-      "name": "fill mot raised",
+      "name": "fill on raised",
       "foreground": "fill",
       "background": "raised",
       "own": false,
       "requirement": "graphic"
     },
     {
-      "name": "content oppå fill",
+      "name": "content on top of fill",
       "foreground": "content",
       "background": "fill",
       "own": true,
       "requirement": "text"
     },
     {
-      "name": "content oppå text",
+      "name": "content on top of text",
       "foreground": "content",
       "background": "text",
       "own": true,
