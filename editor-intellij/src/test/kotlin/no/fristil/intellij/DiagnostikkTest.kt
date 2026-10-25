@@ -136,7 +136,7 @@ class DiagnostikkTest : BasePlatformTestCase() {
             "Visning.kt",
             """
             // language=HTML
-            val rad = "<fs-tabs><u<caret>l class=\"fs-tabs__list\"><li><a href=\"#a\">A</a></li></ul><section class=\"fs-tabs__panel\" id=\"a\"></section></fs-tabs>"
+            val rad = "<fs-tabs><u<caret>l class='fs-tabs__list'><li><a href='#a'>A</a></li></ul><section class='fs-tabs__panel' id='a'></section></fs-tabs>"
             """.trimIndent(),
         )
         // Rettelsen hentes fra funnet, som i editoren: intensjonslista
@@ -149,9 +149,13 @@ class DiagnostikkTest : BasePlatformTestCase() {
             null
         }
         assertNotNull("funnet skal ha en rettelse", rettelse)
+        // `myFixture.file` er fragmentet når markøren står i det; vertsfila
+        // er den som har literalen, og det er der rømmingen synes. Den hentes
+        // før rettelsen, for fragmentet lages på nytt etterpå.
+        val vert = com.intellij.lang.injection.InjectedLanguageManager.getInstance(project).getTopLevelFile(myFixture.file)
         myFixture.launchAction(rettelse!!)
-        val tekst = myFixture.editor.document.text
-        assertTrue("aria-label skal stå rømt i strengen: $tekst", tekst.contains("""<ul aria-label=\"Deler av saken\" class=\"fs-tabs__list\">"""))
+        val tekst = vert.viewProvider.document!!.text
+        assertTrue("aria-label skal stå rømt i strengen: $tekst", tekst.contains("""<ul aria-label=\"Deler av saken\" class='fs-tabs__list'>"""))
     }
 
     fun `test rettelsen bytter ut teksten`() {

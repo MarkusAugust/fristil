@@ -5,10 +5,12 @@ import com.intellij.codeInsight.intention.PriorityAction
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.psi.ElementManipulators
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -105,10 +107,23 @@ private class ReplaceFix(private val fix: Fix) : IntentionAction, PriorityAction
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (file == null) return
-        // For et injisert fragment er dette dokumentet til fragmentet, og
-        // endringen havner på riktig sted i strengen i vertsfila.
         val document = PsiDocumentManager.getInstance(project).getDocument(file) ?: return
         if (end > document.textLength) return
+        val injected = InjectedLanguageManager.getInstance(project)
+        if (injected.isInjectedFragment(file)) {
+            // Et injisert fragment: dokumentet er fragmentets, med teksten
+            // slik den er uten rømming. En endring skrevet rett i det havner
+            // urømt i vertsfila, og `aria-label="…"` i en "…"-streng i Kotlin
+            // brøt literalen. Derfor skrives hele det nye innholdet gjennom
+            // vertsstrengens egen manipulator, som rømmer det den må.
+            val host = injected.getInjectionHost(file) ?: return
+            val text = StringBuilder(document.text)
+            for (edit in fix.edits.sortedByDescending { it.start }) {
+                text.replace(edit.start, edit.end, edit.text)
+            }
+            ElementManipulators.handleContentChange(host, text.toString())
+            return
+        }
         for (edit in fix.edits.sortedByDescending { it.start }) {
             document.replaceString(edit.start, edit.end, edit.text)
         }

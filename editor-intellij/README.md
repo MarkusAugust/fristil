@@ -36,7 +36,10 @@ da kalles det også for injiserte fragmenter. Sjekken er `diagnoseMarkup`, fordi
 en fil eller et fragment er en mal. Hvert funn har regelnavnet og en lenke til
 dokumentasjonen, og en rettelse når kjernen har en. En rettelse kan være
 flere endringer, som `id` på feltet og `for` på ledeteksten; de brukes bakfra,
-så posisjonene holder. Et funn undertrykkes med
+så posisjonene holder. I en streng skrives det nye innholdet gjennom
+vertsstrengens egen manipulator, så anførselstegnene rettelsen setter inn,
+rømmes i en `"…"`-streng: skrevet rett i fragmentets dokument sto de urømt i
+vertsfila, og literalen var ødelagt. Et funn undertrykkes med
 `<!-- fristil-ignore-next regelnavn -->` over taggen.
 
 Sjekken går mot prosjektets manifest, funnet slik språkserveren finner det:
