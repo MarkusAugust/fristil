@@ -1,14 +1,14 @@
-//! Siden bak en adresse, til `lotek sjekk`.
+//! The page behind an address, for `lotek check`.
 //!
-//! Den kjørbare fila henter `http://` selv, som dekker `localhost`, der en app
-//! under utvikling svarer. `https://` krever TLS, og WASI-utgaven har ikke
-//! nettverk i det hele tatt. Der henter verten siden i stedet: Node og JVM-en
-//! har nettverk, henter adressen og gir svaret hit som en fil med
-//! `--hentet=<fil>`, i adressens plass blant argumentene.
+//! The executable fetches `http://` itself, which covers `localhost`, where an
+//! app under development answers. `https://` needs TLS, and the WASI build has
+//! no network at all. There the host fetches the page instead: Node and the
+//! JVM have a network, fetch the address and hand the answer over as a file
+//! with `--fetched=<file>`, in the address's place among the arguments.
 //!
-//! Fila verten skriver har fire deler: adressen på første linje, statuskoden
-//! på andre (0 når ingen svarte), innholdstypen på tredje, eller grunnen når
-//! ingen svarte, og resten er siden.
+//! The file the host writes has four parts: the address on the first line,
+//! the status code on the second (0 when nobody answered), the content type
+//! on the third, or the reason when nobody answered, and the rest is the page.
 
 use std::io::{Read, Write};
 use std::net::TcpStream;
@@ -20,8 +20,9 @@ pub fn is_address(path: &str) -> bool {
     lower.starts_with("http://") || lower.starts_with("https://")
 }
 
-/// Svaret slik `lotek sjekk` vurderer det: statuskoden leses, for en
-/// 404-side er HTML, og innholdstypen, for en sti som svarer JSON er ikke en side.
+/// The answer as `lotek check` judges it: the status code is read, since a
+/// 404 page is HTML, and the content type, since a path that answers JSON is
+/// not a page.
 fn judge(
     address: &str,
     status: u16,
@@ -29,31 +30,31 @@ fn judge(
     body: String,
 ) -> Result<(String, String), String> {
     if !(200..300).contains(&status) {
-        return Err(format!("{address} svarte {status}."));
+        return Err(format!("{address} answered {status}."));
     }
     let lower = content_type.to_ascii_lowercase();
     if !lower.contains("text/html") && !lower.contains("application/xhtml+xml") {
         let shown = if content_type.is_empty() {
-            "ingen innholdstype"
+            "no content type"
         } else {
             content_type
         };
-        return Err(format!("{address} svarte med {shown}, ikke HTML."));
+        return Err(format!("{address} answered with {shown}, not HTML."));
     }
     let body = crate::check::without_bom(body);
-    // En side som rendret tomt, er nesten alltid en feil i appen, og en
-    // CI-linje mot den skal ikke bli grønn uten å ha sjekket noe.
+    // A page that rendered empty is almost always a bug in the app, and a CI
+    // line against it must not pass without having checked anything.
     if body.trim().is_empty() {
-        return Err(format!("{address} svarte med en tom side."));
+        return Err(format!("{address} answered with an empty page."));
     }
     Ok((address.to_string(), body))
 }
 
-/// En side verten har hentet. Se forklaringen øverst.
+/// A page the host has fetched. See the explanation at the top.
 pub fn from_host(file: &str) -> Result<(String, String), String> {
     let bytes = std::fs::read(file).map_err(|e| {
         format!(
-            "Fant ikke det verten hentet, «{}»: {e}",
+            "Could not read what the host fetched, \"{}\": {e}",
             crate::output::shown(file)
         )
     })?;
@@ -64,17 +65,17 @@ pub fn from_host(file: &str) -> Result<(String, String), String> {
     let third = parts.next().unwrap_or_default().to_string();
     let body = parts.next().unwrap_or_default().to_string();
     if status == 0 {
-        return Err(format!("Fikk ikke kontakt med {address}: {third}"));
+        return Err(format!("Could not reach {address}: {third}"));
     }
     judge(&address, status, &third, body)
 }
 
-/// Henter siden, og følger omdirigeringer slik `fetch` gjør.
+/// Fetches the page, and follows redirects as `fetch` does.
 pub fn page(address: &str) -> Result<(String, String), String> {
     let mut current = address.to_string();
     for _ in 0..20 {
         let response =
-            get(&current).map_err(|reason| format!("Fikk ikke kontakt med {address}: {reason}"))?;
+            get(&current).map_err(|reason| format!("Could not reach {address}: {reason}"))?;
         if matches!(response.status, 301 | 302 | 303 | 307 | 308) {
             if let Some(location) = response.header("location") {
                 current = resolve(&current, location);
@@ -88,9 +89,7 @@ pub fn page(address: &str) -> Result<(String, String), String> {
         let body = String::from_utf8_lossy(&response.body).into_owned();
         return judge(address, response.status, &content_type, body);
     }
-    Err(format!(
-        "Fikk ikke kontakt med {address}: for mange omdirigeringer"
-    ))
+    Err(format!("Could not reach {address}: too many redirects"))
 }
 
 struct Response {
@@ -109,14 +108,14 @@ impl Response {
     }
 }
 
-/// En adresse delt i vert, port og sti.
+/// An address split into host, port and path.
 fn split(address: &str) -> Result<(String, u16, String), String> {
     let lower = address.to_ascii_lowercase();
     if lower.starts_with("https://") {
         return Err(if cfg!(target_os = "wasi") {
             unavailable(address)
         } else {
-            format!("denne utgaven av lotek henter bare http://. Hent siden selv og send den inn: curl -s {address} | lotek sjekk --rendret")
+            format!("this build of lotek fetches only http://. Fetch the page yourself and send it in: curl -s {address} | lotek check --rendered")
         });
     }
     let rest = &address["http://".len()..];
@@ -127,19 +126,19 @@ fn split(address: &str) -> Result<(String, u16, String), String> {
     };
     let path = path.split('#').next().unwrap_or("/").to_string();
     let authority = authority.rsplit('@').next().unwrap_or(authority);
-    // En IPv6-adresse står i klammer, med kolon inni: porten er det som står
-    // etter `]`, ikke etter det siste kolonet.
+    // An IPv6 address is in brackets, with colons inside: the port is what
+    // comes after `]`, not after the last colon.
     let (host, port) = match authority.strip_prefix('[') {
         Some(inner) => {
             let close = inner
                 .find(']')
-                .ok_or_else(|| format!("ugyldig vert i {address}"))?;
+                .ok_or_else(|| format!("invalid host in {address}"))?;
             let host = format!("[{}]", &inner[..close]);
             match &inner[close + 1..] {
                 "" => (host, 80),
                 rest => match rest.strip_prefix(':') {
                     Some(p) => (host, port_of(p, address)?),
-                    None => return Err(format!("ugyldig vert i {address}")),
+                    None => return Err(format!("invalid host in {address}")),
                 },
             }
         }
@@ -149,18 +148,18 @@ fn split(address: &str) -> Result<(String, u16, String), String> {
         },
     };
     if host.is_empty() {
-        return Err(format!("{address} har ingen vert"));
+        return Err(format!("{address} has no host"));
     }
     Ok((host, port, path))
 }
 
 fn port_of(text: &str, address: &str) -> Result<u16, String> {
     text.parse::<u16>()
-        .map_err(|_| format!("ugyldig port i {address}"))
+        .map_err(|_| format!("invalid port in {address}"))
 }
 
 fn unavailable(address: &str) -> String {
-    format!("denne utgaven av lotek kan ikke hente adresser. Hent siden selv og send den inn: curl -s {address} | lotek sjekk --rendret")
+    format!("this build of lotek cannot fetch addresses. Fetch the page yourself and send it in: curl -s {address} | lotek check --rendered")
 }
 
 fn get(address: &str) -> Result<Response, String> {
@@ -170,7 +169,7 @@ fn get(address: &str) -> Result<Response, String> {
         if e.kind() == std::io::ErrorKind::Unsupported {
             unavailable(address)
         } else {
-            format!("ingen svarte på {host}:{port} ({e})")
+            format!("nobody answered on {host}:{port} ({e})")
         }
     })?;
     let _ = stream.set_read_timeout(Some(Duration::from_secs(30)));
@@ -191,14 +190,14 @@ fn get(address: &str) -> Result<Response, String> {
     let end = raw
         .windows(4)
         .position(|w| w == b"\r\n\r\n")
-        .ok_or("svaret hadde ingen hode")?;
+        .ok_or("the answer had no header")?;
     let head = String::from_utf8_lossy(&raw[..end]).into_owned();
     let mut lines = head.split("\r\n");
     let status = lines
         .next()
         .and_then(|l| l.split_whitespace().nth(1))
         .and_then(|s| s.parse().ok())
-        .ok_or("svaret hadde ingen statuskode")?;
+        .ok_or("the answer had no status code")?;
     let headers: Vec<(String, String)> = lines
         .filter_map(|l| l.split_once(':'))
         .map(|(n, v)| (n.trim().to_string(), v.trim().to_string()))
@@ -223,7 +222,7 @@ fn get(address: &str) -> Result<Response, String> {
     Ok(Response { body, ..response })
 }
 
-/// Setter sammen et svar sendt i biter (`Transfer-Encoding: chunked`).
+/// Joins an answer sent in chunks (`Transfer-Encoding: chunked`).
 fn unchunk(mut data: &[u8]) -> Vec<u8> {
     let mut out = Vec::new();
     while let Some(line_end) = data.windows(2).position(|w| w == b"\r\n") {
@@ -241,8 +240,8 @@ fn unchunk(mut data: &[u8]) -> Vec<u8> {
     out
 }
 
-/// En omdirigering kan peke på en hel adresse, en adresse uten protokoll
-/// (`//vert/sti`), en sti fra roten, en spørring eller en sti ved siden av.
+/// A redirect can point to a full address, an address without a scheme
+/// (`//host/path`), a path from the root, a query or a sibling path.
 fn resolve(base: &str, location: &str) -> String {
     if is_address(location) {
         return location.to_string();
@@ -251,8 +250,8 @@ fn resolve(base: &str, location: &str) -> String {
     if location.starts_with("//") {
         return format!("{}{location}", &base[..scheme_end - 2]);
     }
-    // Verten slutter ved den første `/`, `?` eller `#`, og stien ved den
-    // første `?` eller `#`. En `/` i spørringen er ikke en mappe.
+    // The host ends at the first `/`, `?` or `#`, and the path at the first
+    // `?` or `#`. A `/` in the query is not a folder.
     let authority_end = base[scheme_end..]
         .find(['/', '?', '#'])
         .map_or(base.len(), |i| scheme_end + i);
@@ -292,14 +291,14 @@ mod tests {
             ("localhost".into(), 8080, "/form?x=1".into())
         );
         assert_eq!(
-            split("http://eksempel.no").unwrap(),
-            ("eksempel.no".into(), 80, "/".into())
+            split("http://example.com").unwrap(),
+            ("example.com".into(), 80, "/".into())
         );
         assert_eq!(
-            split("http://eksempel.no?q#topp").unwrap(),
-            ("eksempel.no".into(), 80, "/?q".into())
+            split("http://example.com?q#top").unwrap(),
+            ("example.com".into(), 80, "/?q".into())
         );
-        assert!(split("https://eksempel.no").unwrap_err().contains("curl"));
+        assert!(split("https://example.com").unwrap_err().contains("curl"));
     }
 
     #[test]
@@ -322,15 +321,15 @@ mod tests {
     fn judges_the_answer_like_fetch() {
         assert!(judge("u", 404, "text/html", String::new())
             .unwrap_err()
-            .contains("svarte 404"));
+            .contains("answered 404"));
         assert!(judge("u", 200, "", String::new())
             .unwrap_err()
-            .contains("ingen innholdstype"));
+            .contains("no content type"));
         assert!(judge("u", 200, "Text/HTML; charset=utf-8", "x".into()).is_ok());
         assert!(judge("u", 200, "text/html", " \n".into())
             .unwrap_err()
-            .contains("tom side"));
-        // BOM-en fjernes, som `response.text()` gjør i Node.
+            .contains("empty page"));
+        // The BOM is removed, as `response.text()` does in Node.
         assert_eq!(
             judge("u", 200, "text/html", "\u{feff}<p>".into())
                 .unwrap()

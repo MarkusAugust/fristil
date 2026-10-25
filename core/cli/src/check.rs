@@ -1,11 +1,12 @@
-//! `lotek sjekk <fil|adresse…>`: den samme sjekken som editoren kjører mens
-//! du skriver, over ferdige filer.
+//! `lotek check <file|address…>`: the same check the editor runs while you
+//! type, over finished files.
 //!
-//! Uten filer leses standard inn, så en test kan sende HTML-en serveren
-//! faktisk sender. En adresse hentes og sjekkes som en hel side: da kreves det
-//! i tillegg at hver id det pekes på finnes, og at hvert felt er koblet. Det
-//! samme gjør `--rendret` for filer og standard inn. En mal sjekkes ikke slik
-//! uten flagget, siden en id i en mal kan stå i en annen fil.
+//! Without files, standard input is read, so a test can send the HTML the
+//! server actually sends. An address is fetched and checked as a whole page:
+//! then every id referred to must also exist, and every field must be wired.
+//! `--rendered` does the same for files and standard input. A template is not
+//! checked that way without the flag, since an id in a template can be in
+//! another file.
 
 use std::io::{IsTerminal, Read};
 
@@ -16,10 +17,10 @@ use lotek_core::text::utf16;
 use lotek_core::types::Severity;
 use lotek_core::{diagnose_markup, diagnose_page, diagnose_styled, manifest, Lines};
 
-/// Teksten uten en BOM (U+FEFF) først, slik nettleseren og editoren leser
-/// den. Med den ville linje 1 fått én kolonne mer enn editoren viser, og
-/// Node-verten, der `response.text()` fjerner den, svart annerledes enn den
-/// kjørbare fila og JVM-en.
+/// The text without a leading BOM (U+FEFF), as the browser and the editor
+/// read it. With it, line 1 would get one column more than the editor shows,
+/// and the Node host, where `response.text()` removes it, would answer
+/// differently from the executable and the JVM.
 pub fn without_bom(text: String) -> String {
     match text.strip_prefix('\u{feff}') {
         Some(rest) => rest.to_string(),
@@ -27,9 +28,9 @@ pub fn without_bom(text: String) -> String {
     }
 }
 
-/// Hele standard inn. Er røret i ikke-blokkerende modus, ventes det og
-/// leses igjen til skriveren er ferdig, i stedet for å gi opp med det som
-/// tilfeldigvis var kommet.
+/// All of standard input. If the pipe is in non-blocking mode, it waits and
+/// reads again until the writer is done, instead of giving up with whatever
+/// happened to have arrived.
 fn read_all_input() -> Vec<u8> {
     let mut bytes = Vec::new();
     let mut buffer = [0u8; 64 * 1024];
@@ -47,21 +48,21 @@ fn read_all_input() -> Vec<u8> {
     }
 }
 
-/// Fragmentene i filene, hvert av dem kontrollert mot `base` for seg, så en
-/// feil sier hvilken fil den står i.
+/// The fragments in the files, each checked against `base` on its own, so an
+/// error says which file it is in.
 pub fn read_fragments(base: &str, manifests: &[&str]) -> Vec<String> {
     let mut texts = Vec::new();
     for path in manifests {
         let Ok(bytes) = std::fs::read(path) else {
             fail(&format!(
-                "Fant ikke manifestet «{}».\n\nFragmentet skrives av lotek overta, ved siden av kopien.\n",
+                "Manifest not found: \"{}\".\n\nThe fragment is written by lotek takeover, next to the copy.\n",
                 shown(path)
             ));
         };
         let text = String::from_utf8_lossy(&bytes).into_owned();
         if let Err(reason) = manifest::with_fragments(base, &[&text]) {
             fail(&format!(
-                "«{}» kan ikke leses som et manifest: {reason}\n",
+                "\"{}\" cannot be read as a manifest: {reason}\n",
                 shown(path)
             ));
         }
@@ -70,20 +71,22 @@ pub fn read_fragments(base: &str, manifests: &[&str]) -> Vec<String> {
     texts
 }
 
-/// Ordforrådet: manifestet i pakken, med fragmentene lagt til.
+/// The vocabulary: the manifest in the package, with the fragments added.
 fn vocabulary(manifests: &[&str]) -> std::rc::Rc<lotek_core::types::Vocabulary> {
     let base = crate::package::manifest();
     let texts = read_fragments(&base, manifests);
     let all: Vec<&str> = texts.iter().map(String::as_str).collect();
     match manifest::with_fragments(&base, &all) {
         Ok(vocabulary) => std::rc::Rc::new(vocabulary),
-        Err(reason) => fail(&format!("Manifestene kan ikke leses sammen: {reason}\n")),
+        Err(reason) => fail(&format!(
+            "The manifests cannot be read together: {reason}\n"
+        )),
     }
 }
 
-/// Stien uten `.` og `..`, så to stier til samme fil er like. Uten dette
-/// ble `a/../b/y.css` og `a/../b/../b/y.css` to filer, og to stilark som
-/// importerer hverandre gjennom `../`, ga en løkke uten ende.
+/// The path without `.` and `..`, so two paths to the same file are equal.
+/// Without this, `a/../b/y.css` and `a/../b/../b/y.css` were two files, and
+/// two style sheets importing each other through `../` gave an endless loop.
 fn normalized(path: &std::path::Path) -> std::path::PathBuf {
     use std::path::Component;
     let mut out = std::path::PathBuf::new();
@@ -103,15 +106,15 @@ fn normalized(path: &std::path::Path) -> std::path::PathBuf {
     out
 }
 
-/// Fila en pakkesti som `@lo-tek/interfaces/lotek.css` peker på.
+/// The file a package path like `@lo-tek/interfaces/lotek.css` points to.
 ///
-/// Leter etter `node_modules/<pakke>` oppover fra stilarkets mappe, og slår
-/// opp underveien i `exports` i pakkens `package.json`: en nøyaktig nøkkel,
-/// ellers et mønster som `./*`, og verdien som streng eller som
-/// betingelsesobjekt (`style`, `default`). En pakke importert ved navn alene
-/// bruker `.` og så `style`. Uten treff brukes den direkte stien.
+/// Looks for `node_modules/<package>` upwards from the style sheet's folder,
+/// and looks up the subpath in `exports` in the package's `package.json`: an
+/// exact key, otherwise a pattern like `./*`, and the value as a string or as
+/// a conditions object (`style`, `default`). A package imported by name alone
+/// uses `.` and then `style`. Without a match, the direct path is used.
 ///
-/// En sti som begynner med `.` eller `/` er en fil, ikke en pakke, og gir
+/// A path that starts with `.` or `/` is a file, not a package, and gives
 /// `None`.
 fn package_file(folder: &std::path::Path, spec: &str) -> Option<std::path::PathBuf> {
     use lotek_core::json::{parse, Json};
@@ -150,7 +153,7 @@ fn package_file(folder: &std::path::Path, spec: &str) -> Option<std::path::PathB
         if let Some(found) = exports.and_then(|e| e.get(&key)).and_then(pick) {
             return Some(found);
         }
-        // Et mønster, som `"./*": "./dist/*"`.
+        // A pattern, like `"./*": "./dist/*"`.
         if let Some(Json::Object(entries)) = exports {
             for (pattern, value) in entries {
                 let Some((before, after)) = pattern.split_once('*') else {
@@ -184,11 +187,11 @@ fn package_file(folder: &std::path::Path, spec: &str) -> Option<std::path::PathB
     None
 }
 
-/// Stilarkene, med det de importerer.
+/// The style sheets, with what they import.
 ///
-/// `@import` følges til en fil ved siden av, og til en pakke i
-/// `node_modules`, som `@lo-tek/interfaces/lotek.css`. En adresse på
-/// nettet hentes ikke.
+/// `@import` is followed to a file next to it, and to a package in
+/// `node_modules`, like `@lo-tek/interfaces/lotek.css`. An address on the
+/// web is not fetched.
 fn read_style_sheets(paths: &[&str]) -> Styles {
     let mut styles = Styles::default();
     let mut seen: Vec<std::path::PathBuf> = Vec::new();
@@ -204,7 +207,7 @@ fn read_style_sheets(paths: &[&str]) -> Styles {
         let Ok(bytes) = std::fs::read(&path) else {
             if given {
                 fail(&format!(
-                    "Fant ikke stilarket «{}».",
+                    "Style sheet not found: \"{}\".",
                     shown(&path.display().to_string())
                 ));
             }
@@ -247,22 +250,23 @@ struct Source {
 }
 
 pub fn run(arguments: &[String]) {
-    let rendered = arguments.iter().any(|a| a == "--rendret");
+    let rendered = arguments.iter().any(|a| a == "--rendered");
     let mut sources: Vec<Source> = Vec::new();
     let mut missing: Vec<String> = Vec::new();
     let mut unreachable: Vec<String> = Vec::new();
 
-    // Fragmentene fra `lotek overta`, så markupen for en kopi sjekkes også.
+    // The fragments from `lotek takeover`, so the markup for a copy is checked
+    // too.
     let manifests: Vec<&str> = arguments
         .iter()
         .filter_map(|a| a.strip_prefix("--manifest="))
         .collect();
     let inputs: Vec<&String> = arguments
         .iter()
-        .filter(|a| *a != "--rendret" && !a.starts_with("--manifest=") && !a.starts_with("--css="))
+        .filter(|a| *a != "--rendered" && !a.starts_with("--manifest=") && !a.starts_with("--css="))
         .collect();
     let vocabulary = vocabulary(&manifests);
-    // Stilarkene, så sjekken også ser det som ikke er stylet.
+    // The style sheets, so the check also sees what is not styled.
     let style_sheets: Vec<&str> = arguments
         .iter()
         .filter_map(|a| a.strip_prefix("--css="))
@@ -270,23 +274,23 @@ pub fn run(arguments: &[String]) {
     let styles = (!style_sheets.is_empty()).then(|| read_style_sheets(&style_sheets));
 
     if inputs.is_empty() {
-        // WASI kan ikke se om standard inn er en terminal, så verten sier
-        // det. Chicory melder et rør som en terminal, så som WASI-modul
-        // stoler kommandolinja bare på verten.
+        // WASI cannot see whether standard input is a terminal, so the host
+        // says so. Chicory reports a pipe as a terminal, so as a WASI module
+        // the command line trusts only the host.
         let terminal = if cfg!(target_os = "wasi") {
             std::env::var("LOTEK_TERMINAL").is_ok_and(|v| v == "1")
         } else {
             std::io::stdin().is_terminal()
         };
         if terminal {
-            error("Leser markup fra standard inn. Avslutt med Ctrl-D.");
+            error("Reading markup from standard input. End with Ctrl-D.");
         }
         let bytes = read_all_input();
         let text = without_bom(String::from_utf8_lossy(&bytes).into_owned());
-        // Tom inndata er ikke markup som stemmer. Et glob som ikke traff noe,
-        // ville ellers meldt grønt uten å ha sett på noe.
+        // Empty input is not markup that matches. A glob that matched nothing
+        // would otherwise pass without having looked at anything.
         if text.trim().is_empty() {
-            fail("Ingen markup å sjekke: standard inn var tom.");
+            fail("No markup to check: standard input was empty.");
         }
         sources.push(Source {
             name: "stdin".into(),
@@ -296,9 +300,9 @@ pub fn run(arguments: &[String]) {
     }
 
     for input in inputs {
-        // En side verten alt har hentet, i stedet for adressen. Se
+        // A page the host has already fetched, in place of the address. See
         // `fetch::from_host`.
-        let answer = if let Some(file) = input.strip_prefix("--hentet=") {
+        let answer = if let Some(file) = input.strip_prefix("--fetched=") {
             Some(fetch::from_host(file))
         } else if fetch::is_address(input) {
             Some(fetch::page(input))
@@ -325,7 +329,7 @@ pub fn run(arguments: &[String]) {
 
     if !missing.is_empty() || !unreachable.is_empty() {
         for path in &missing {
-            error(&format!("Fant ikke fila «{}».", shown(path)));
+            error(&format!("File not found: \"{}\".", shown(path)));
         }
         for reason in &unreachable {
             error(reason);
@@ -333,19 +337,17 @@ pub fn run(arguments: &[String]) {
         std::process::exit(1);
     }
 
-    // Som for standard inn: er hver fil tom, er det ingenting å sjekke. Én
-    // tom fil blant flere, som en tom partial i et glob, er ikke en feil.
+    // As for standard input: if every file is empty, there is nothing to
+    // check. One empty file among several, like an empty partial in a glob,
+    // is not an error.
     if !sources.is_empty() && sources.iter().all(|s| s.text.trim().is_empty()) {
         fail(&if sources.len() == 1 {
             format!(
-                "Ingen markup å sjekke: «{}» er tom.",
+                "No markup to check: \"{}\" is empty.",
                 shown(&sources[0].name)
             )
         } else {
-            format!(
-                "Ingen markup å sjekke: alle de {} filene er tomme.",
-                sources.len()
-            )
+            format!("No markup to check: all {} files are empty.", sources.len())
         });
     }
 
@@ -362,8 +364,8 @@ pub fn run(arguments: &[String]) {
             found += 1;
             let (line, column) = lines.line_and_column(finding.start);
             let kind = match finding.severity {
-                Severity::Error => "feil",
-                Severity::Warning => "advarsel",
+                Severity::Error => "error",
+                Severity::Warning => "warning",
             };
             log(&format!(
                 "{}:{line}:{column}: {kind}: {}",
@@ -373,11 +375,14 @@ pub fn run(arguments: &[String]) {
         }
     }
 
-    let files = count(sources.len(), "fil", "filer");
+    let files = count(sources.len(), "file", "files");
     if found > 0 {
-        fail(&format!("\n{found} funn i {files}."));
+        fail(&format!(
+            "\n{} in {files}.",
+            count(found, "finding", "findings")
+        ));
     }
-    log(&format!("Markupen stemmer med LO-TEK i {files}."));
+    log(&format!("The markup matches LO-TEK in {files}."));
 }
 
 #[cfg(test)]
@@ -410,7 +415,7 @@ mod tests {
         let start = root.join("a/x.css");
         let styles = read_style_sheets(&[start.to_str().unwrap()]);
         assert!(styles.classes.contains("lt-a") && styles.classes.contains("lt-b"));
-        assert_eq!(styles.imports.len(), 2, "hvert stilark leses én gang");
+        assert_eq!(styles.imports.len(), 2, "each style sheet is read once");
         std::fs::remove_dir_all(root).unwrap();
     }
 }

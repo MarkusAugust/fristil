@@ -1,12 +1,13 @@
-//! `lotek manifest`: manifestet sjekken bruker, med fragmentene fra
-//! `lotek overta` lagt til.
+//! `lotek manifest`: the manifest the check uses, with the fragments from
+//! `lotek takeover` added.
 //!
 //! ```bash
-//! lotek manifest --manifest=src/ui/button/lotek-manifest.json --ut=build/lotek/manifest.json
+//! lotek manifest --manifest=src/ui/button/lotek-manifest.json --out=build/lotek/manifest.json
 //! ```
 //!
-//! Det er det Gradle-pluginen skriver til `build/lotek/`, så en editor kan
-//! lese ordforrådet prosjektet faktisk har, med de overtatte komponentene.
+//! That is what the Gradle plugin writes to `build/lotek/`, so an editor can
+//! read the vocabulary the project actually has, with the taken-over
+//! components.
 
 use crate::check::read_fragments;
 use crate::output::{count, error, fail, log, shown};
@@ -25,13 +26,13 @@ pub fn run(arguments: &[String]) {
         .flags
         .iter()
         .map(|(n, _)| n.as_str())
-        .filter(|n| !["manifest", "ut"].contains(n))
+        .filter(|n| !["manifest", "out"].contains(n))
         .map(|n| format!("--{n}"))
         .chain(parsed.files.iter().cloned())
         .collect();
     if !unknown.is_empty() {
         fail(&format!(
-            "Ukjent argument: {}\n\nKjente flagg: --manifest, --ut\n\nHele oversikten: lotek --hjelp\n",
+            "Unknown argument: {}\n\nKnown flags: --manifest, --out\n\nFull overview: lotek --help\n",
             unknown.join(", ")
         ));
     }
@@ -40,8 +41,8 @@ pub fn run(arguments: &[String]) {
     let texts = read_fragments(&base, &manifests);
     let all: Vec<&str> = texts.iter().map(String::as_str).collect();
     let json = match merged(&base, &all) {
-        // Skjemaet er oppgitt med en sti ved siden av manifestet i pakken,
-        // og den finnes ikke der denne fila skrives.
+        // The schema is given as a path next to the manifest in the package,
+        // and that path does not exist where this file is written.
         Ok(Json::Object(entries)) => format!(
             "{}\n",
             Json::Object(
@@ -53,20 +54,22 @@ pub fn run(arguments: &[String]) {
             .to_pretty()
         ),
         Ok(json) => format!("{}\n", json.to_pretty()),
-        Err(reason) => fail(&format!("Manifestene kan ikke leses sammen: {reason}\n")),
+        Err(reason) => fail(&format!(
+            "The manifests cannot be read together: {reason}\n"
+        )),
     };
-    match parsed.flag("ut") {
+    match parsed.flag("out") {
         Some(path) => {
             if let Some(folder) = std::path::Path::new(path).parent() {
                 let _ = std::fs::create_dir_all(folder);
             }
             if let Err(e) = std::fs::write(path, &json) {
-                fail(&format!("Klarte ikke skrive {}: {e}", shown(path)));
+                fail(&format!("Could not write {}: {e}", shown(path)));
             }
             error(&format!(
-                "Skrev {}, med {}.",
+                "Wrote {}, with {}.",
                 shown(path),
-                count(manifests.len(), "fragment", "fragmenter")
+                count(manifests.len(), "fragment", "fragments")
             ));
         }
         None => log(json.trim_end()),

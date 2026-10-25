@@ -1,12 +1,12 @@
 /**
- * Kontrollerer kommandolinjeverktøyet, slik en konsument kjører det.
+ * Checks the command line tool, the way a consumer runs it.
  *
- * `bun run test` kjører i nettleseren, og `tsc` leser bare typene. Flagg som
- * ikke leses, en fil som ikke skrives, eller en feil som avslutter med kode
- * null ville derfor gått rett gjennom. Her kjøres den bygde fila i en egen
- * prosess, som er det en konsument faktisk får.
+ * `bun run test` runs in the browser, and `tsc` reads only the types. Flags
+ * that are not read, a file that is not written, or an error that exits with
+ * code zero would therefore go straight through. Here the built file runs in
+ * its own process, which is what a consumer actually gets.
  *
- * Kjør med: bun scripts/check-cli.ts, eller som en del av `bun run build`.
+ * Run with: bun scripts/check-cli.ts, or as part of `bun run build`.
  */
 
 import {
@@ -24,638 +24,698 @@ import { fileURLToPath } from "node:url"
 
 import { lightCells } from "../src/tokens/matrix-cells.js"
 
-const pakke = fileURLToPath(new URL("../", import.meta.url))
+const packageDir = fileURLToPath(new URL("../", import.meta.url))
 
-// Pakken for den kjørbare fila, som ikke har noen vert som setter den.
-// Eksplisitt, siden `Bun.spawn` ikke arver endringer i `process.env`.
+// The package for the executable, which has no host to set it. Explicit,
+// since `Bun.spawn` does not inherit changes to `process.env`.
 const ENVIRONMENT = {
   ...process.env,
-  LOTEK_PACKAGE: process.env.LOTEK_PACKAGE ?? pakke,
+  LOTEK_PACKAGE: process.env.LOTEK_PACKAGE ?? packageDir,
 }
-const cli = join(pakke, "dist/cli.js")
+const cli = join(packageDir, "dist/cli.js")
 
 /*
- * Kommandoen som prøves. Standard er den bygde fila, som en konsument får.
- * `LOTEK_CLI` peker på en annen, som den kjørbare fila fra `core/cli`, så
- * de samme påstandene prøves mot den. `LOTEK_SAMMENLIGN` kjører hver
- * kjøring med begge og krever det samme svaret byte for byte: utdata,
- * feilkanalen og feilkoden. Begge kan være en JSON-liste, en kommando med
- * argumenter, som `["java", "-jar", "lotek.jar"]`.
+ * The command under test. The default is the built file, which a consumer
+ * gets. `LOTEK_CLI` points to another one, like the executable from
+ * `core/cli`, so the same assertions are tested against it. `LOTEK_SAMMENLIGN`
+ * runs every run with both and requires the same answer byte for byte:
+ * standard output, standard error and the exit code. Both can be a JSON
+ * list, a command with arguments, like `["java", "-jar", "lotek.jar"]`.
  */
-const kommando = (verdi: string): string[] =>
-  verdi.startsWith("[") ? JSON.parse(verdi) : [verdi]
-const KOMMANDO = process.env.LOTEK_CLI
-  ? kommando(process.env.LOTEK_CLI)
+const command = (value: string): string[] =>
+  value.startsWith("[") ? JSON.parse(value) : [value]
+const COMMAND = process.env.LOTEK_CLI
+  ? command(process.env.LOTEK_CLI)
   : ["node", cli]
-const SAMMENLIGN = process.env.LOTEK_SAMMENLIGN
-  ? kommando(process.env.LOTEK_SAMMENLIGN)
+const COMPARE = process.env.LOTEK_SAMMENLIGN
+  ? command(process.env.LOTEK_SAMMENLIGN)
   : undefined
-const avvik: string[] = []
+const differences: string[] = []
 
-const FARGER = [
-  "--aksent=#7c3aed",
-  "--fare=#b3261e",
-  "--suksess=#2b6940",
-  "--advarsel=#8a5a00",
+const COLOURS = [
+  "--accent=#7c3aed",
+  "--danger=#b3261e",
+  "--success=#2b6940",
+  "--warning=#8a5a00",
 ]
 
-type Kjøring = { kode: number; ut: string; feil: string }
+type Run = { code: number; out: string; err: string }
 
-let antallKjøringer = 0
+let runCount = 0
 
-async function kjør(argumenter: string[], mappe?: string): Promise<Kjøring> {
-  antallKjøringer += 1
+async function run(args: string[], folder?: string): Promise<Run> {
+  runCount += 1
 
-  const start = (kommando: string[], med = argumenter) =>
-    Bun.spawn([...kommando, ...med], {
+  const start = (command: string[], withArgs = args) =>
+    Bun.spawn([...command, ...withArgs], {
       env: ENVIRONMENT,
       stdout: "pipe",
       stderr: "pipe",
-      // `agent` leser package.json i arbeidsmappa. Uten dette ville hver
-      // kjøring sett pakkens egen, og deteksjonen aldri blitt prøvd.
-      cwd: mappe,
+      // `agent` reads package.json in the working directory. Without this
+      // every run would see the package's own, and the detection would never
+      // be tested.
+      cwd: folder,
     })
-  const svar = async (prosess: ReturnType<typeof start>) => {
-    const [ut, feil, kode] = await Promise.all([
-      new Response(prosess.stdout).text(),
-      new Response(prosess.stderr).text(),
-      prosess.exited,
+  const answer = async (child: ReturnType<typeof start>) => {
+    const [out, err, code] = await Promise.all([
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+      child.exited,
     ])
-    return { kode, ut, feil }
+    return { code, out, err }
   }
 
   /*
-   * `overta` skriver til mappa i `--ut`. Den andre kommandoen får sin egen
-   * kopi av mappa, slik den var før den første kjørte, og stien byttes
-   * tilbake i svaret før det sammenlignes.
+   * `takeover` writes to the folder in `--out`. The other command gets its
+   * own copy of the folder, as it was before the first one ran, and the path
+   * is swapped back in the answer before it is compared.
    */
-  const ut =
-    SAMMENLIGN && argumenter[0] === "overta"
-      ? argumenter.find((del) => del.startsWith("--ut="))?.slice("--ut=".length)
+  const out =
+    COMPARE && args[0] === "takeover"
+      ? args.find((part) => part.startsWith("--out="))?.slice("--out=".length)
       : undefined
-  const annenUt = ut
-    ? join(await mkdtemp(join(tmpdir(), "lotek-sammenlign-")), "ut")
+  const otherOut = out
+    ? join(await mkdtemp(join(tmpdir(), "lotek-compare-")), "out")
     : undefined
-  if (ut && annenUt) await cp(ut, annenUt, { recursive: true }).catch(() => {})
+  if (out && otherOut)
+    await cp(out, otherOut, { recursive: true }).catch(() => {})
 
-  const resultat = await svar(start(KOMMANDO))
-  if (SAMMENLIGN) {
-    const annet = await svar(
+  const result = await answer(start(COMMAND))
+  if (COMPARE) {
+    const other = await answer(
       start(
-        SAMMENLIGN,
-        argumenter.map((del) =>
-          ut && annenUt && del === `--ut=${ut}` ? `--ut=${annenUt}` : del,
+        COMPARE,
+        args.map((part) =>
+          out && otherOut && part === `--out=${out}`
+            ? `--out=${otherOut}`
+            : part,
         ),
       ),
     )
-    if (ut && annenUt) {
-      annet.ut = annet.ut.replaceAll(annenUt, ut)
-      annet.feil = annet.feil.replaceAll(annenUt, ut)
-      await rm(dirname(annenUt), { recursive: true, force: true })
+    if (out && otherOut) {
+      other.out = other.out.replaceAll(otherOut, out)
+      other.err = other.err.replaceAll(otherOut, out)
+      await rm(dirname(otherOut), { recursive: true, force: true })
     }
     /*
-     * To forklaringer kom fra JavaScript-motoren selv, og kan ikke bli like:
-     * hva som er galt i en JSON-fil, og hvorfor ingen svarte på en adresse
-     * («fetch failed»). Resten av meldingen skal være lik.
+     * Two explanations come from the JavaScript engine itself, and cannot be
+     * made equal: what is wrong in a JSON file, and why nobody answered on an
+     * address ("fetch failed"). The rest of the message must be the same.
      */
-    const likt = (tekst: string) =>
-      tekst
-        .replace(/(er ikke gyldig JSON: ).*/g, "$1…")
-        .replace(/(Fikk ikke kontakt med \S+: ).*/g, "$1…")
-    for (const del of ["kode", "ut", "feil"] as const)
-      if (likt(String(resultat[del])) !== likt(String(annet[del])))
-        avvik.push(
-          `${argumenter.join(" ")} (${del})\n    ${JSON.stringify(resultat[del]).slice(0, 400)}\n    ${JSON.stringify(annet[del]).slice(0, 400)}`,
+    const same = (text: string) =>
+      text
+        .replace(/(is not valid JSON: ).*/g, "$1…")
+        .replace(/(Could not reach \S+: ).*/g, "$1…")
+    for (const part of ["code", "out", "err"] as const)
+      if (same(String(result[part])) !== same(String(other[part])))
+        differences.push(
+          `${args.join(" ")} (${part})\n    ${JSON.stringify(result[part]).slice(0, 400)}\n    ${JSON.stringify(other[part]).slice(0, 400)}`,
         )
   }
-  return resultat
+  return result
 }
 
-const feil: string[] = []
+const failures: string[] = []
 
-function krev(påstand: boolean, beskrivelse: string): void {
-  if (!påstand) feil.push(beskrivelse)
+function expect(claim: boolean, description: string): void {
+  if (!claim) failures.push(description)
 }
 
-// Skriver temaet til utdata når ingen fil er oppgitt
+// Writes the theme to standard output when no file is given
 {
-  const { kode, ut } = await kjør(["tema", ...FARGER])
+  const { code, out } = await run(["theme", ...COLOURS])
 
-  krev(kode === 0, `tema med alle farger avsluttet med kode ${kode}`)
-  krev(
-    ut.includes("--lt-color-accent-fill"),
-    "utdata mangler fargene fra matrisen",
+  expect(code === 0, `theme with every colour exited with code ${code}`)
+  expect(
+    out.includes("--lt-color-accent-fill"),
+    "the output is missing the colours from the matrix",
   )
-  krev(ut.includes('[data-theme="dark"]'), "utdata mangler mørkt tema")
+  expect(
+    out.includes('[data-theme="dark"]'),
+    "the output is missing the dark theme",
+  )
 }
 
-// Skriver til fil når --ut er med, og lar utdata være tom
+// Writes to a file when --out is given, and leaves standard output empty
 {
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-cli-"))
-  const sti = join(mappe, "theme.css")
+  const folder = await mkdtemp(join(tmpdir(), "lotek-cli-"))
+  const path = join(folder, "theme.css")
 
-  const { kode, ut } = await kjør(["tema", ...FARGER, `--ut=${sti}`])
-  const innhold = await readFile(sti, "utf8")
+  const { code, out } = await run(["theme", ...COLOURS, `--out=${path}`])
+  const content = await readFile(path, "utf8")
 
-  krev(kode === 0, `skriving til fil avsluttet med kode ${kode}`)
-  krev(ut.trim() === "", "utdata skulle vært tom når temaet skrives til fil")
-  krev(innhold.includes("@layer lotek"), "fila mangler laget")
+  expect(code === 0, `writing to a file exited with code ${code}`)
+  expect(
+    out.trim() === "",
+    "standard output should be empty when the theme is written to a file",
+  )
+  expect(content.includes("@layer lotek"), "the file is missing the layer")
 
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// Leser fargene fra en JSON-fil
+// Reads the colours from a JSON file
 {
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-cli-"))
-  const sti = join(mappe, "lotek.theme.json")
+  const folder = await mkdtemp(join(tmpdir(), "lotek-cli-"))
+  const path = join(folder, "lotek.theme.json")
   await writeFile(
-    sti,
+    path,
     JSON.stringify({
-      aksent: "#0f766e",
-      fare: "#9f1239",
-      suksess: "#15803d",
-      advarsel: "#a16207",
+      accent: "#0f766e",
+      danger: "#9f1239",
+      success: "#15803d",
+      warning: "#a16207",
     }),
   )
 
-  const { kode, ut } = await kjør(["tema", sti])
+  const { code, out } = await run(["theme", path])
 
-  krev(kode === 0, `lesing fra fil avsluttet med kode ${kode}`)
-  krev(ut.includes("--lt-color-accent-fill"), "utdata mangler fargene fra fila")
+  expect(code === 0, `reading from a file exited with code ${code}`)
+  expect(
+    out.includes("--lt-color-accent-fill"),
+    "the output is missing the colours from the file",
+  )
 
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// `sjekk-tema` kontrollerer et tema, og teller konsumentens egne verdier
+// `check-theme` checks a theme, and counts the consumer's own values
 {
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-theme-"))
-  const godt = join(mappe, "godt.css")
+  const folder = await mkdtemp(join(tmpdir(), "lotek-theme-"))
+  const good = join(folder, "good.css")
 
-  // Matrisen skrevet ut som et tema, kontrollert mot seg selv
+  // The matrix written out as a theme, checked against itself
   await writeFile(
-    godt,
+    good,
     ":root {\n  color-scheme: light;\n" +
       Object.entries(lightCells)
-        .map(([navn, verdi]) => `  ${navn}: ${verdi};`)
+        .map(([name, value]) => `  ${name}: ${value};`)
         .join("\n") +
       "\n}\n",
   )
 
-  const rent = await kjør(["sjekk-tema", godt])
-  krev(rent.kode === 0, `et tema som holder avsluttet med ${rent.kode}`)
-  krev(
-    /\d+ verdier/.test(rent.ut),
-    `sjekk-tema sier ikke hvor mange verdier den leste: ${rent.ut.slice(0, 80)}`,
+  const clean = await run(["check-theme", good])
+  expect(clean.code === 0, `a theme that holds exited with ${clean.code}`)
+  expect(
+    /\d+ values/.test(clean.out),
+    `check-theme does not say how many values it read: ${clean.out.slice(0, 80)}`,
   )
 
-  // En for lys faretekst skal felle, og si hvilken celle det gjelder
-  const svakt = join(mappe, "svakt.css")
+  // A danger text that is too light fails, and says which cell
+  const weak = join(folder, "weak.css")
   await writeFile(
-    svakt,
+    weak,
     ":root { color-scheme: light; --lt-color-danger-text: #ff9999; }",
   )
-  const felt = await kjør(["sjekk-tema", svakt])
-  krev(felt.kode !== 0, "en for lys faretekst skulle gitt feilkode")
-  krev(
-    felt.feil.includes("danger"),
-    `meldingen nevner ikke familien: ${felt.feil.slice(0, 80)}`,
+  const failed = await run(["check-theme", weak])
+  expect(
+    failed.code !== 0,
+    "a danger text that is too light should give an error code",
+  )
+  expect(
+    failed.err.includes("danger"),
+    `the message does not name the family: ${failed.err.slice(0, 80)}`,
   )
 
-  // Et tema uten farger fra `tema` har ingen kontrast å kontrollere, og det
-  // er ikke et brudd. En fil uten tema er det fortsatt.
-  const fargelost = join(mappe, "fargelost.css")
-  const laget = await kjør([
-    "tema",
-    "--skrift=Helvetica, Arial, sans-serif",
-    "--knapp-hjorner=2.75rem",
-    `--ut=${fargelost}`,
+  // A theme without colours from `theme` has no contrast to check, and that
+  // is not a violation. A file without a theme still is.
+  const colourless = join(folder, "colourless.css")
+  const built = await run([
+    "theme",
+    "--font=Helvetica, Arial, sans-serif",
+    "--button-radius=2.75rem",
+    `--out=${colourless}`,
   ])
-  krev(laget.kode === 0, `tema uten farger avsluttet med ${laget.kode}`)
-  const utenFarger = await kjør(["sjekk-tema", fargelost])
-  krev(
-    utenFarger.kode === 0,
-    `et tema uten farger avsluttet med ${utenFarger.kode}: ${utenFarger.feil.slice(0, 120)}`,
+  expect(built.code === 0, `theme without colours exited with ${built.code}`)
+  const withoutColours = await run(["check-theme", colourless])
+  expect(
+    withoutColours.code === 0,
+    `a theme without colours exited with ${withoutColours.code}: ${withoutColours.err.slice(0, 120)}`,
   )
-  const ingenTema = join(mappe, "ingen-tema.css")
-  await writeFile(ingenTema, "body { color: red }")
-  const ingen = await kjør(["sjekk-tema", ingenTema])
-  krev(ingen.kode !== 0, "en fil uten tema skulle gitt feilkode")
+  const noTheme = join(folder, "no-theme.css")
+  await writeFile(noTheme, "body { color: red }")
+  const none = await run(["check-theme", noTheme])
+  expect(none.code !== 0, "a file without a theme should give an error code")
 
-  // Et ukjent flagg skal stoppe kjøringen, ikke forsvinne
-  const flagg = await kjør(["sjekk-tema", godt, "--noe"])
-  krev(flagg.kode !== 0, "et ukjent flagg skulle gitt feilkode")
+  // An unknown flag stops the run instead of disappearing
+  const flag = await run(["check-theme", good, "--something"])
+  expect(flag.code !== 0, "an unknown flag should give an error code")
 
-  // Og uten filer skal den si hva den vil ha
-  const uten = await kjør(["sjekk-tema"])
-  krev(uten.kode !== 0, "sjekk-tema uten filer skulle gitt feilkode")
+  // And without files it says what it wants
+  const withoutFiles = await run(["check-theme"])
+  expect(
+    withoutFiles.code !== 0,
+    "check-theme without files should give an error code",
+  )
 
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// En familie som utelates arver LO-TEKs egen, framfor å felle kjøringen
+// A family that is left out inherits LO-TEK's own, rather than failing the run
 {
-  const { kode, ut } = await kjør(["tema", "--aksent=#7c3aed"])
+  const { code, out } = await run(["theme", "--accent=#7c3aed"])
 
-  krev(kode === 0, `ett merke alene avsluttet med kode ${kode}`)
-  krev(
-    ut.includes("--lt-color-danger-fill"),
-    "et tema med bare aksent mangler de arvede familiene",
+  expect(code === 0, `one brand colour alone exited with code ${code}`)
+  expect(
+    out.includes("--lt-color-danger-fill"),
+    "a theme with only accent is missing the inherited families",
   )
 }
 
 /*
- * Skrift og form, som flagg og fra fil.
+ * Font and shape, as flags and from a file.
  *
- * Dette er den eneste sjekken som kjører flaggene slik en konsument gjør.
- * `buildTheme()` testes i nettleseren, men den ser aldri et flagg: reverteres
- * bindestreken i tegnklassen som leser dem, blir `--knapp-hjorner=2rem` lest
- * som et filnavn igjen, og alt annet melder grønt.
+ * This is the only check that runs the flags the way a consumer does.
+ * `buildTheme()` is tested in the browser, but it never sees a flag: if the
+ * hyphen in the character class that reads them is reverted,
+ * `--button-radius=2rem` is read as a file name again, and everything else
+ * passes.
  */
 {
-  const { kode, ut } = await kjør([
-    "tema",
-    "--skrift=Helvetica, Arial, sans-serif",
-    "--knapp-hjorner=2.75rem",
-    "--felt-hjorner=0.25rem",
-    "--flate-hjorner=0.25rem",
-    "--knapp-ramme=3px",
-    "--knapp-vekt=700",
+  const { code, out } = await run([
+    "theme",
+    "--font=Helvetica, Arial, sans-serif",
+    "--button-radius=2.75rem",
+    "--field-radius=0.25rem",
+    "--surface-radius=0.25rem",
+    "--button-border=3px",
+    "--button-weight=700",
   ])
 
-  krev(kode === 0, `tema uten farger avsluttet med kode ${kode}`)
-  krev(
-    ut.includes("--lt-font-family-base: Helvetica, Arial, sans-serif;"),
-    "skriften kom ikke med",
+  expect(code === 0, `theme without colours exited with code ${code}`)
+  expect(
+    out.includes("--lt-font-family-base: Helvetica, Arial, sans-serif;"),
+    "the font is missing",
   )
-  krev(
-    ut.includes("font-family: var(--lt-font-family-base);"),
-    "skriften ble ikke satt som en regel, bare som et token",
+  expect(
+    out.includes("font-family: var(--lt-font-family-base);"),
+    "the font was not set as a rule, only as a token",
   )
-  krev(
-    ut.includes("--lt-button-radius: 2.75rem;"),
-    "knappehjørnet kom ikke med",
+  expect(
+    out.includes("--lt-button-radius: 2.75rem;"),
+    "the button radius is missing",
   )
-  krev(
-    ut.includes("--lt-textarea-radius: 0.25rem;"),
-    "tekstområdet kom ikke med",
+  expect(
+    out.includes("--lt-textarea-radius: 0.25rem;"),
+    "the text area radius is missing",
   )
-  krev(
-    ut.includes("--lt-button-border-width: 3px;"),
-    "knapperammen kom ikke med",
+  expect(
+    out.includes("--lt-button-border-width: 3px;"),
+    "the button border is missing",
   )
-  krev(
-    ut.includes("--lt-button-font-weight: 700;"),
-    "knappevekten kom ikke med",
+  expect(
+    out.includes("--lt-button-font-weight: 700;"),
+    "the button weight is missing",
   )
-  krev(
-    !ut.includes("--palette-") && !ut.includes("--semantic-"),
-    "et tema uten farger skal ikke skrive farger",
+  expect(
+    !out.includes("--palette-") && !out.includes("--semantic-"),
+    "a theme without colours must not write colours",
   )
 }
 
-// Skrift og form fra en temafil, sammen med fargene
+// Font and shape from a theme file, together with the colours
 {
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-theme-"))
-  const sti = join(mappe, "lotek.theme.json")
+  const folder = await mkdtemp(join(tmpdir(), "lotek-theme-"))
+  const path = join(folder, "lotek.theme.json")
   await writeFile(
-    sti,
+    path,
     JSON.stringify({
-      aksent: "#7c3aed",
-      fare: "#b3261e",
-      suksess: "#2b6940",
-      advarsel: "#8a5a00",
-      typografi: { fontFamily: "Georgia, serif" },
-      form: { buttonRadius: "1rem" },
+      accent: "#7c3aed",
+      danger: "#b3261e",
+      success: "#2b6940",
+      warning: "#8a5a00",
+      typography: { fontFamily: "Georgia, serif" },
+      shape: { buttonRadius: "1rem" },
     }),
   )
 
-  const { kode, ut } = await kjør(["tema", sti])
+  const { code, out } = await run(["theme", path])
 
-  krev(kode === 0, `tema fra fil med skrift og form avsluttet med kode ${kode}`)
-  krev(
-    ut.includes("--lt-font-family-base: Georgia, serif;"),
-    "skriften fra fila kom ikke med",
+  expect(
+    code === 0,
+    `theme from a file with font and shape exited with code ${code}`,
   )
-  krev(
-    ut.includes("--lt-button-radius: 1rem;"),
-    "hjørnet fra fila kom ikke med",
+  expect(
+    out.includes("--lt-font-family-base: Georgia, serif;"),
+    "the font from the file is missing",
   )
-  krev(ut.includes("--lt-color-accent-fill"), "fargene fra fila kom ikke med")
+  expect(
+    out.includes("--lt-button-radius: 1rem;"),
+    "the radius from the file is missing",
+  )
+  expect(
+    out.includes("--lt-color-accent-fill"),
+    "the colours from the file are missing",
+  )
 
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// Sier fra om et flagg som ikke finnes, framfor å ignorere det
+// The Norwegian keys are gone, and an unknown key names the English ones
 {
-  // `--knapp-hjørner` med ø er den naturlige norske stavemåten, og flagget
-  // heter `hjorner`. Den gikk stille gjennom før, og temaet kom ut uten
-  // hjørnet og uten et ord.
-  const { kode, feil: melding } = await kjør([
-    "tema",
-    "--skrift=Helvetica",
-    "--knapp-hjørner=2rem",
+  const folder = await mkdtemp(join(tmpdir(), "lotek-theme-"))
+  const path = join(folder, "lotek.theme.json")
+  await writeFile(
+    path,
+    JSON.stringify({ aksent: "#7c3aed", typography: { fontFamly: "Georgia" } }),
+  )
+
+  const { code, err } = await run(["theme", path])
+
+  expect(code === 1, `a recipe with unknown keys gave code ${code}`)
+  expect(
+    err.includes("aksent") && err.includes("typography.fontFamly"),
+    `the message does not name the unknown keys with their path: ${err.slice(0, 160)}`,
+  )
+
+  await rm(folder, { recursive: true, force: true })
+}
+
+// Says so when a flag does not exist, rather than ignoring it
+{
+  // A misspelt flag went quietly through once, and the theme came out
+  // without the radius and without a word.
+  const { code, err } = await run([
+    "theme",
+    "--font=Helvetica",
+    "--button-radii=2rem",
   ])
 
-  krev(kode !== 0, "et ukjent flagg skulle gitt en feilkode")
-  krev(
-    melding.includes("knapp-hjørner"),
-    "feilmeldingen sier ikke hvilket flagg",
+  expect(code !== 0, "an unknown flag should give an error code")
+  expect(
+    err.includes("--button-radii"),
+    "the error message does not say which flag",
   )
 }
 
-// Avviser en verdi som kan bryte ut av CSS-regelen den skrives inn i
+// Rejects a value that could break out of the CSS rule it is written into
 {
-  const { kode, feil: melding } = await kjør([
-    "tema",
-    "--knapp-hjorner=4px; } html { display: none } :root { --x: 1",
+  const { code, err } = await run([
+    "theme",
+    "--button-radius=4px; } html { display: none } :root { --x: 1",
   ])
 
-  krev(kode !== 0, "en verdi som lukker regelen skulle gitt en feilkode")
-  krev(
-    melding.includes("CSS-regel"),
-    `feilmeldingen forklarer ikke hvorfor: ${melding.slice(0, 120)}`,
+  expect(code !== 0, "a value that closes the rule should give an error code")
+  expect(
+    err.includes("buttonRadius"),
+    `the error message does not name the value: ${err.slice(0, 120)}`,
   )
-  krev(
-    !melding.includes("heksadesimale"),
-    "feilmeldingen peker på fargene, og feilen handler ikke om farger",
-  )
-}
-
-// Sier fra når oppskriften ikke setter noe
-{
-  const { kode, feil: melding } = await kjør(["tema"])
-
-  krev(kode !== 0, "et tomt tema skulle gitt en feilkode")
-  krev(
-    melding.includes("tomt"),
-    `feilmeldingen sier ikke at temaet er tomt: ${melding.slice(0, 120)}`,
+  expect(
+    !err.includes("Colours are written as hexadecimal"),
+    "the error message points to the colours, and the error is not about colours",
   )
 }
 
-// Sier fra på en lesbar måte når en farge ikke er en farge
+// Says so when the recipe sets nothing
 {
-  const { kode, feil: melding } = await kjør([
-    "tema",
-    "--aksent=lilla",
-    "--fare=#b3261e",
-    "--suksess=#2b6940",
-    "--advarsel=#8a5a00",
+  const { code, err } = await run(["theme"])
+
+  expect(code !== 0, "an empty theme should give an error code")
+  expect(
+    err.includes("empty"),
+    `the error message does not say the theme is empty: ${err.slice(0, 120)}`,
+  )
+}
+
+// Says so in a readable way when a colour is not a colour
+{
+  const { code, err } = await run([
+    "theme",
+    "--accent=purple",
+    "--danger=#b3261e",
+    "--success=#2b6940",
+    "--warning=#8a5a00",
   ])
 
-  krev(kode !== 0, "ugyldig farge skulle gitt en feilkode")
-  krev(
-    melding.includes("lilla"),
-    `feilmeldingen nevner ikke verdien som var feil: ${melding.slice(0, 120)}`,
+  expect(code !== 0, "an invalid colour should give an error code")
+  expect(
+    err.includes("purple"),
+    `the error message does not name the wrong value: ${err.slice(0, 120)}`,
   )
-  krev(
-    !melding.includes("at buildTheme"),
-    "feilmeldingen viser et stakkspor framfor å si hva som er galt",
+  expect(
+    err.includes("Colours are written as hexadecimal"),
+    `the error message has no hint about the colours: ${err.slice(0, 160)}`,
+  )
+  expect(
+    !err.includes("at buildTheme"),
+    "the error message shows a stack trace rather than saying what is wrong",
   )
 }
 
 /**
- * Hver komponent skal kunne overtas, og kopien skal ikke peke i løse lufta.
+ * Every component can be taken over, and the copy does not point into thin
+ * air.
  *
- * Omskrivingen bytter en relativ sti med inngangspunktet i `exports`, men
- * bare når inngangspunktet finnes. Gjør det ikke det, blir stien stående som
- * den er, og kopien peker på en mappe som ikke finnes hos konsumenten. Det
- * sto lenge skrevet ned som en fare, uten at noe sjekket det.
+ * The rewrite swaps a relative path for the entry point in `exports`, but
+ * only when the entry point exists. If it does not, the path stays as it is,
+ * and the copy points to a folder that does not exist for the consumer. That
+ * was written down as a risk for a long time, without anything checking it.
  *
- * Her overtas hver komponent verktøyet selv lister opp, og hver henvisning
- * ut av mappa kontrolleres mot `exports` i pakken.
+ * Here every component the tool itself lists is taken over, and every
+ * reference out of the folder is checked against `exports` in the package.
  */
 {
-  const eksport = new Set(
+  const exported = new Set(
     Object.keys(
       (
-        JSON.parse(await readFile(join(pakke, "package.json"), "utf8")) as {
+        JSON.parse(
+          await readFile(join(packageDir, "package.json"), "utf8"),
+        ) as {
           exports: Record<string, unknown>
         }
       ).exports,
     ),
   )
 
-  const liste = await kjør(["overta"])
-  const navnene = (liste.feil + liste.ut)
-    .split("Komponenter:")[1]
+  const list = await run(["takeover"])
+  const names = (list.err + list.out)
+    .split("Components:")[1]
     ?.split("\n")[1]
     ?.split(",")
-    .map((navn) => navn.trim())
+    .map((name) => name.trim())
     .filter(Boolean)
 
-  krev(
-    (navnene?.length ?? 0) > 10,
-    `fant bare ${navnene?.length ?? 0} komponenter å overta`,
+  expect(
+    (names?.length ?? 0) > 10,
+    `found only ${names?.length ?? 0} components to take over`,
   )
 
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-overta-"))
+  const folder = await mkdtemp(join(tmpdir(), "lotek-takeover-"))
 
-  for (const navn of navnene ?? []) {
-    const { kode } = await kjør(["overta", navn, `--ut=${join(mappe, navn)}`])
-    krev(kode === 0, `overta ${navn} avsluttet med kode ${kode}`)
-
-    const kopimappe = join(mappe, navn, navn)
-    const lest = await kjør([
-      "sjekk",
-      `--manifest=${join(kopimappe, "lotek-manifest.json")}`,
-      join(kopimappe, `${(await readdir(kopimappe))[0]}`),
+  for (const name of names ?? []) {
+    const { code } = await run([
+      "takeover",
+      name,
+      `--out=${join(folder, name)}`,
     ])
-    krev(
-      !lest.feil.includes("kan ikke leses som et manifest") &&
-        !lest.feil.includes("Fant ikke manifestet"),
-      `fragmentet for ${navn} kunne ikke leses: ${lest.feil.slice(0, 200)}`,
-    )
-    for (const fil of await readdir(kopimappe)) {
-      const innhold = await readFile(join(kopimappe, fil), "utf8")
+    expect(code === 0, `takeover ${name} exited with code ${code}`)
 
-      for (const treff of innhold.matchAll(
+    const copyFolder = join(folder, name, name)
+    const read = await run([
+      "check",
+      `--manifest=${join(copyFolder, "lotek-manifest.json")}`,
+      join(copyFolder, `${(await readdir(copyFolder))[0]}`),
+    ])
+    expect(
+      !read.err.includes("cannot be read as a manifest") &&
+        !read.err.includes("Manifest not found"),
+      `the fragment for ${name} could not be read: ${read.err.slice(0, 200)}`,
+    )
+    for (const file of await readdir(copyFolder)) {
+      const content = await readFile(join(copyFolder, file), "utf8")
+
+      for (const match of content.matchAll(
         /(?:from|@import)\s+["']([^"']+)["']/g,
       )) {
-        const sti = treff[1] as string
+        const path = match[1] as string
 
-        krev(
-          !sti.startsWith("../"),
-          `${navn}/${fil} peker ut av mappa med «${sti}», som ikke finnes hos konsumenten`,
+        expect(
+          !path.startsWith("../"),
+          `${name}/${file} points out of the folder with "${path}", which does not exist for the consumer`,
         )
 
-        if (!sti.startsWith("@lo-tek/interfaces")) continue
+        if (!path.startsWith("@lo-tek/interfaces")) continue
 
-        const under = `.${sti.slice("@lo-tek/interfaces".length)}`
-        krev(
-          eksport.has(under),
-          `${navn}/${fil} peker på «${sti}», som ikke står i exports`,
+        const subpath = `.${path.slice("@lo-tek/interfaces".length)}`
+        expect(
+          exported.has(subpath),
+          `${name}/${file} points to "${path}", which is not in exports`,
         )
       }
     }
   }
 
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// Overtar en komponent, og skriver om henvisningene ut av mappa
+// Takes over a component, and rewrites the references out of the folder
 {
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-cli-"))
+  const folder = await mkdtemp(join(tmpdir(), "lotek-cli-"))
 
-  const { kode, feil: melding } = await kjør([
-    "overta",
+  const { code, err } = await run([
+    "takeover",
     "button",
-    `--ut=${join(mappe, "ui")}`,
+    `--out=${join(folder, "ui")}`,
   ])
 
-  const filer = await readdir(join(mappe, "ui/button"))
-  const kilde = await readFile(join(mappe, "ui/button/button.ts"), "utf8")
+  const files = await readdir(join(folder, "ui/button"))
+  const source = await readFile(join(folder, "ui/button/button.ts"), "utf8")
 
-  krev(kode === 0, `overta button avsluttet med kode ${kode}`)
-  krev(
-    filer.includes("button.ts") && filer.includes("button.css"),
-    `kopien mangler filer: ${filer.join(", ")}`,
+  expect(code === 0, `takeover button exited with code ${code}`)
+  expect(
+    files.includes("button.ts") && files.includes("button.css"),
+    `the copy is missing files: ${files.join(", ")}`,
   )
-  krev(!filer.some((fil) => fil.includes(".test.")), "testene ble med i kopien")
-  krev(
-    kilde.includes('from "@lo-tek/interfaces/shared"'),
-    "henvisningen ut av mappa ble ikke skrevet om",
+  expect(
+    !files.some((file) => file.includes(".test.")),
+    "the tests came along in the copy",
   )
-  krev(
-    melding.includes("er nå din"),
-    "utskriften sier ikke at kopien er konsumentens ansvar",
+  expect(
+    source.includes('from "@lo-tek/interfaces/shared"'),
+    "the reference out of the folder was not rewritten",
+  )
+  expect(
+    err.includes("is now yours"),
+    "the output does not say the copy is the consumer's responsibility",
   )
 
-  // Kopien har fått nytt navn, og et fragment av manifestet med det navnet.
-  krev(
-    kilde.includes('"app-button"') && !kilde.includes('"lt-button"'),
-    "kopien heter fortsatt lt-button",
+  // The copy has a new name, and a fragment of the manifest with that name.
+  expect(
+    source.includes('"app-button"') && !source.includes('"lt-button"'),
+    "the copy is still called lt-button",
   )
-  const css = await readFile(join(mappe, "ui/button/button.css"), "utf8")
-  krev(
+  const css = await readFile(join(folder, "ui/button/button.css"), "utf8")
+  expect(
     css.includes(".app-button") && css.includes("var(--lt-"),
-    "stilarket fikk ikke nytt navn, eller mistet variablene fra temaet",
+    "the style sheet did not get a new name, or lost the variables from the theme",
   )
-  krev(
-    filer.includes("lotek-manifest.json"),
-    "fragmentet av manifestet ble ikke skrevet",
+  expect(
+    files.includes("lotek-manifest.json"),
+    "the fragment of the manifest was not written",
   )
-  const fragment = `--manifest=${join(mappe, "ui/button/lotek-manifest.json")}`
-  const side = join(mappe, "side.html")
+  const fragment = `--manifest=${join(folder, "ui/button/lotek-manifest.json")}`
+  const page = join(folder, "page.html")
   await writeFile(
-    side,
-    '<button class="app-button" data-variant="feil">x</button>\n',
+    page,
+    '<button class="app-button" data-variant="wrong">x</button>\n',
   )
-  const medFragment = await kjør(["sjekk", fragment, side])
-  krev(
-    medFragment.kode !== 0 && medFragment.ut.includes("data-variant"),
-    "sjekken med fragmentet så ikke feilen i markupen for kopien",
+  const withFragment = await run(["check", fragment, page])
+  expect(
+    withFragment.code !== 0 && withFragment.out.includes("data-variant"),
+    "the check with the fragment did not see the mistake in the markup for the copy",
   )
-  const utenFragment = await kjør(["sjekk", side])
-  krev(
-    utenFragment.kode === 0,
-    "sjekken uten fragmentet skulle latt app-button være",
+  const withoutFragment = await run(["check", page])
+  expect(
+    withoutFragment.code === 0,
+    "the check without the fragment should have left app-button alone",
   )
-  const samlet = await kjør(["manifest", fragment])
-  krev(
-    samlet.kode === 0 &&
-      samlet.ut.includes('"app-button"') &&
-      samlet.ut.includes('"lt-button"'),
-    "manifest med fragmentet har ikke både kopien og LO-TEKs egne klasser",
+  const merged = await run(["manifest", fragment])
+  expect(
+    merged.code === 0 &&
+      merged.out.includes('"app-button"') &&
+      merged.out.includes('"lt-button"'),
+    "manifest with the fragment does not have both the copy and LO-TEK's own classes",
   )
-  const manifestFil = join(mappe, "build/lotek/manifest.json")
-  const skrevet = await kjør(["manifest", fragment, `--ut=${manifestFil}`])
-  krev(
-    skrevet.kode === 0 &&
-      (await readFile(manifestFil, "utf8")) === `${samlet.ut}`,
-    "manifest --ut skrev noe annet enn det som står i utdata",
+  const manifestFile = join(folder, "build/lotek/manifest.json")
+  const written = await run(["manifest", fragment, `--out=${manifestFile}`])
+  expect(
+    written.code === 0 &&
+      (await readFile(manifestFile, "utf8")) === `${merged.out}`,
+    "manifest --out wrote something other than what is in standard output",
   )
-  const feilArgument = await kjør(["manifest", "form.html"])
-  krev(
-    feilArgument.kode !== 0 && feilArgument.feil.includes("form.html"),
-    "manifest med en fil i stedet for et flagg ble ikke meldt",
+  const wrongArgument = await run(["manifest", "form.html"])
+  expect(
+    wrongArgument.code !== 0 && wrongArgument.err.includes("form.html"),
+    "manifest with a file instead of a flag was not reported",
   )
-  const ukjent = await kjør([
-    "sjekk",
-    `--manifest=${join(mappe, "finnes-ikke.json")}`,
-    side,
+  const unknown = await run([
+    "check",
+    `--manifest=${join(folder, "does-not-exist.json")}`,
+    page,
   ])
-  krev(
-    ukjent.kode !== 0 && ukjent.feil.includes("finnes-ikke.json"),
-    "et manifest som ikke finnes, ble ikke meldt",
+  expect(
+    unknown.code !== 0 && unknown.err.includes("does-not-exist.json"),
+    "a manifest that does not exist was not reported",
   )
 
-  // Kopien skal ikke skrives over uten at det er bedt om.
-  await writeFile(join(mappe, "ui/button/button.ts"), "// min egen versjon\n")
-  const igjen = await kjør(["overta", "button", `--ut=${join(mappe, "ui")}`])
-  const etterpå = await readFile(join(mappe, "ui/button/button.ts"), "utf8")
+  // The copy is not overwritten unless asked.
+  await writeFile(join(folder, "ui/button/button.ts"), "// my own version\n")
+  const again = await run(["takeover", "button", `--out=${join(folder, "ui")}`])
+  const after = await readFile(join(folder, "ui/button/button.ts"), "utf8")
 
-  krev(igjen.kode !== 0, "en kopi som finnes fra før ble skrevet over")
-  krev(
-    etterpå.startsWith("// min egen versjon"),
-    "endringene i kopien gikk tapt",
+  expect(again.code !== 0, "a copy that already existed was overwritten")
+  expect(
+    after.startsWith("// my own version"),
+    "the changes in the copy were lost",
   )
 
-  const tvunget = await kjør([
-    "overta",
+  const forced = await run([
+    "takeover",
     "button",
-    `--ut=${join(mappe, "ui")}`,
-    "--overskriv=ja",
+    `--out=${join(folder, "ui")}`,
+    "--overwrite=yes",
   ])
-  const erstattet = await readFile(join(mappe, "ui/button/button.ts"), "utf8")
+  const replaced = await readFile(join(folder, "ui/button/button.ts"), "utf8")
 
-  krev(tvunget.kode === 0, "--overskriv=ja virket ikke")
-  krev(
-    erstattet.includes("BUTTON_CLASS"),
-    "kopien ble ikke erstattet med --overskriv=ja",
+  expect(forced.code === 0, "--overwrite=yes did not work")
+  expect(
+    replaced.includes("BUTTON_CLASS"),
+    "the copy was not replaced with --overwrite=yes",
   )
 
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// Med stilarkene sier sjekken også fra om det de ikke styler
+// With the style sheets, the check also reports what they do not style
 {
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-css-"))
-  const side = join(mappe, "side.html")
+  const folder = await mkdtemp(join(tmpdir(), "lotek-css-"))
+  const page = join(folder, "page.html")
   await writeFile(
-    side,
+    page,
     '<button class="lt-button" data-variant="ghost">x</button>\n<div class="lt-card">y</div>\n',
   )
-  await writeFile(join(mappe, "app.css"), '@import "knapp.css";\n')
-  await writeFile(join(mappe, "knapp.css"), ".lt-button { }\n")
+  await writeFile(join(folder, "app.css"), '@import "button.css";\n')
+  await writeFile(join(folder, "button.css"), ".lt-button { }\n")
 
-  const hele = await kjør([
-    "sjekk",
-    `--css=${join(pakke, "dist/lotek.css")}`,
-    side,
+  const whole = await run([
+    "check",
+    `--css=${join(packageDir, "dist/lotek.css")}`,
+    page,
   ])
-  krev(
-    hele.kode === 0,
-    `med hele lotek.css skulle siden vært ren: ${hele.ut}${hele.feil}`,
+  expect(
+    whole.code === 0,
+    `with all of lotek.css the page should have been clean: ${whole.out}${whole.err}`,
   )
 
-  const delvis = await kjør(["sjekk", `--css=${join(mappe, "app.css")}`, side])
-  krev(
-    delvis.kode !== 0 &&
-      delvis.ut.includes('data-variant="ghost"') &&
-      delvis.ut.includes("«lt-card»"),
-    `et stilark som bare styler knappen, skulle gitt to funn: ${delvis.ut}`,
+  const partial = await run(["check", `--css=${join(folder, "app.css")}`, page])
+  expect(
+    partial.code !== 0 &&
+      partial.out.includes('data-variant="ghost"') &&
+      partial.out.includes("lt-card"),
+    `a style sheet that styles only the button should have given two findings: ${partial.out}`,
   )
 
-  const borte = await kjør(["sjekk", `--css=${join(mappe, "borte.css")}`, side])
-  krev(
-    borte.kode !== 0 && borte.feil.includes("borte.css"),
-    "et stilark som ikke finnes, ble ikke meldt",
+  const gone = await run(["check", `--css=${join(folder, "gone.css")}`, page])
+  expect(
+    gone.code !== 0 && gone.err.includes("gone.css"),
+    "a style sheet that does not exist was not reported",
   )
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// `@import` fra en pakke følger `exports`, slik en bundler gjør
+// `@import` from a package follows `exports`, as a bundler does
 {
   /*
-   * Stien i `@import "@lo-tek/interfaces/lotek.css"` er et navn i
-   * `exports`, ikke en fil i pakken: fila ligger i `dist/`. Sjekken slo den
-   * opp som en fil, fant ingenting og meldte hver klasse som ustylet. Pakkene
-   * står i en `node_modules` over stilarket, og kommandoen kjøres fra en
-   * annen mappe, så oppslaget går fra stilarket og ikke fra arbeidsmappa.
+   * The path in `@import "@lo-tek/interfaces/lotek.css"` is a name in
+   * `exports`, not a file in the package: the file is in `dist/`. The check
+   * looked it up as a file, found nothing and reported every class as
+   * unstyled. The packages are in a `node_modules` above the style sheet, and
+   * the command runs from another folder, so the lookup goes from the style
+   * sheet and not from the working directory.
    */
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-css-"))
-  const lotek = join(mappe, "node_modules/@lo-tek/interfaces")
-  await cp(join(pakke, "dist/lotek.css"), join(lotek, "dist/lotek.css"))
+  const folder = await mkdtemp(join(tmpdir(), "lotek-css-"))
+  const lotek = join(folder, "node_modules/@lo-tek/interfaces")
+  await cp(join(packageDir, "dist/lotek.css"), join(lotek, "dist/lotek.css"))
   await writeFile(
     join(lotek, "package.json"),
     JSON.stringify({
@@ -663,556 +723,607 @@ function krev(påstand: boolean, beskrivelse: string): void {
       exports: { "./lotek.css": "./dist/lotek.css" },
     }),
   )
-  // Et betingelsesobjekt, som pakker med både `style` og `default` bruker.
-  // Fila er lotek.css igjen, så siden er bare ren hvis den blir funnet.
-  const tema = join(mappe, "node_modules/theme")
-  await cp(join(pakke, "dist/lotek.css"), join(tema, "lib/theme.css"))
+  // A conditions object, which packages with both `style` and `default` use.
+  // The file is lotek.css again, so the page is clean only if it is found.
+  const theme = join(folder, "node_modules/theme")
+  await cp(join(packageDir, "dist/lotek.css"), join(theme, "lib/theme.css"))
   await writeFile(
-    join(tema, "package.json"),
+    join(theme, "package.json"),
     JSON.stringify({
-      name: "tema",
+      name: "theme",
       exports: { "./theme.css": { style: "./lib/theme.css" } },
     }),
   )
-  const stiler = join(mappe, "src/stiler")
-  await mkdir(stiler, { recursive: true })
+  const styles = join(folder, "src/styles")
+  await mkdir(styles, { recursive: true })
   await writeFile(
-    join(stiler, "app.css"),
+    join(styles, "app.css"),
     '@import "@lo-tek/interfaces/lotek.css";\n',
   )
-  await writeFile(join(stiler, "theme.css"), '@import "theme/theme.css";\n')
-  // Et mønster i `exports`, og en pakke importert ved navn alene.
-  const stjerne = join(mappe, "node_modules/stjerne")
-  await cp(join(pakke, "dist/lotek.css"), join(stjerne, "dist/alt.css"))
+  await writeFile(join(styles, "theme.css"), '@import "theme/theme.css";\n')
+  // A pattern in `exports`, and a package imported by name alone.
+  const star = join(folder, "node_modules/star")
+  await cp(join(packageDir, "dist/lotek.css"), join(star, "dist/all.css"))
   await writeFile(
-    join(stjerne, "package.json"),
-    JSON.stringify({ name: "stjerne", exports: { "./*": "./dist/*" } }),
+    join(star, "package.json"),
+    JSON.stringify({ name: "star", exports: { "./*": "./dist/*" } }),
   )
-  await writeFile(join(stiler, "stjerne.css"), '@import "stjerne/alt.css";\n')
-  const naken = join(mappe, "node_modules/naken")
-  await cp(join(pakke, "dist/lotek.css"), join(naken, "alt.css"))
+  await writeFile(join(styles, "star.css"), '@import "star/all.css";\n')
+  const bare = join(folder, "node_modules/bare")
+  await cp(join(packageDir, "dist/lotek.css"), join(bare, "all.css"))
   await writeFile(
-    join(naken, "package.json"),
-    JSON.stringify({ name: "naken", exports: { ".": "./alt.css" } }),
+    join(bare, "package.json"),
+    JSON.stringify({ name: "bare", exports: { ".": "./all.css" } }),
   )
-  await writeFile(join(stiler, "naken.css"), '@import "naken";\n')
-  const side = join(mappe, "side.html")
+  await writeFile(join(styles, "bare.css"), '@import "bare";\n')
+  const page = join(folder, "page.html")
   await writeFile(
-    side,
+    page,
     '<button class="lt-button" data-variant="ghost">x</button>\n<div class="lt-card">y</div>\n',
   )
 
-  for (const stilark of ["app.css", "theme.css", "stjerne.css", "naken.css"]) {
-    for (const fra of [mappe, stiler, tmpdir()]) {
-      const svar = await kjør(
-        ["sjekk", `--css=${join(stiler, stilark)}`, side],
-        fra,
+  for (const sheet of ["app.css", "theme.css", "star.css", "bare.css"]) {
+    for (const from of [folder, styles, tmpdir()]) {
+      const answer = await run(
+        ["check", `--css=${join(styles, sheet)}`, page],
+        from,
       )
-      krev(
-        svar.kode === 0,
-        `@import fra en pakke i ${stilark} ble ikke fulgt, kjørt fra ${fra}: ${svar.ut}${svar.feil}`,
+      expect(
+        answer.code === 0,
+        `@import from a package in ${sheet} was not followed, run from ${from}: ${answer.out}${answer.err}`,
       )
     }
   }
 
-  // En relativ sti er en fil, ikke en pakke. `../alt.css` finnes ikke ved
-  // siden av stilarket, og skal ikke finnes et annet sted i prosjektet.
-  await mkdir(join(mappe, "src"), { recursive: true })
-  await cp(join(pakke, "dist/lotek.css"), join(mappe, "alt.css"))
-  await writeFile(join(mappe, "package.json"), "{}")
-  await writeFile(join(stiler, "relativ.css"), '@import "../alt.css";\n')
-  const relativ = await kjør([
-    "sjekk",
-    `--css=${join(stiler, "relativ.css")}`,
-    side,
+  // A relative path is a file, not a package. `../all.css` does not exist
+  // next to the style sheet, and must not be found elsewhere in the project.
+  await mkdir(join(folder, "src"), { recursive: true })
+  await cp(join(packageDir, "dist/lotek.css"), join(folder, "all.css"))
+  await writeFile(join(folder, "package.json"), "{}")
+  await writeFile(join(styles, "relative.css"), '@import "../all.css";\n')
+  const relative = await run([
+    "check",
+    `--css=${join(styles, "relative.css")}`,
+    page,
   ])
-  krev(
-    relativ.kode !== 0,
-    "en relativ @import som ikke finnes, ble hentet fra et annet sted i prosjektet",
+  expect(
+    relative.code !== 0,
+    "a relative @import that does not exist was taken from elsewhere in the project",
   )
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// Merkefargene har et siffer i flaggnavnet, og ble lest som filnavn
+// The brand colours have a digit in the flag name, and were read as file names
 {
-  const uten = await kjør(["tema", "--aksent=#7c3aed"])
-  const med = await kjør(["tema", "--aksent=#7c3aed", "--merke1=#aa3366"])
+  const without = await run(["theme", "--accent=#7c3aed"])
+  const withBrand = await run(["theme", "--accent=#7c3aed", "--brand1=#aa3366"])
 
-  krev(med.kode === 0, `--merke1 avsluttet med kode ${med.kode}`)
-  krev(
-    med.ut.includes("--lt-color-brand1-fill") && med.ut !== uten.ut,
-    "--merke1 endret ikke temaet",
+  expect(withBrand.code === 0, `--brand1 exited with code ${withBrand.code}`)
+  expect(
+    withBrand.out.includes("--lt-color-brand1-fill") &&
+      withBrand.out !== without.out,
+    "--brand1 did not change the theme",
   )
 }
 
-// Et flagg uten likhetstegn stopper, framfor å skrive til standardmappa
+// A flag without an equals sign stops, rather than writing to the default folder
 {
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-overta-"))
-  const { kode, feil: melding } = await kjør([
-    "overta",
+  const folder = await mkdtemp(join(tmpdir(), "lotek-takeover-"))
+  const { code, err } = await run([
+    "takeover",
     "button",
-    "--ut",
-    join(mappe, "ui"),
+    "--out",
+    join(folder, "ui"),
   ])
 
-  krev(kode !== 0, "overta med --ut uten likhetstegn skulle gitt en feilkode")
-  krev(
-    melding.includes("--ut") && melding.includes("="),
-    "feilmeldingen sier ikke at --ut mangler en verdi",
+  expect(
+    code !== 0,
+    "takeover with --out without an equals sign should give an error code",
   )
-  await rm(mappe, { recursive: true, force: true })
+  expect(
+    err.includes("--out") && err.includes("="),
+    "the error message does not say that --out has no value",
+  )
+  await rm(folder, { recursive: true, force: true })
 }
 
-// Det samme gjelder tema etter en oppskriftsfil. `--ut theme.css` ble lest
-// som to filnavn til, temaet gikk til utdata og ingen fil ble skrevet, og
-// `--aksent #f00` ble stille borte bak fargen i fila.
+// The same goes for theme after a recipe file. `--out theme.css` was read as
+// two more file names, the theme went to standard output and no file was
+// written, and `--accent #f00` quietly disappeared behind the colour in the
+// file.
 {
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-theme-"))
-  const oppskrift = join(mappe, "oppskrift.json")
-  await writeFile(oppskrift, JSON.stringify({ aksent: "#7c3aed" }))
-  const tema = join(mappe, "theme.css")
+  const folder = await mkdtemp(join(tmpdir(), "lotek-theme-"))
+  const recipe = join(folder, "recipe.json")
+  await writeFile(recipe, JSON.stringify({ accent: "#7c3aed" }))
+  const theme = join(folder, "theme.css")
 
-  for (const [flagg, verdi] of [
-    ["--ut", tema],
-    ["--aksent", "#ff0000"],
+  for (const [flag, value] of [
+    ["--out", theme],
+    ["--accent", "#ff0000"],
   ] as const) {
-    const {
-      kode,
-      ut,
-      feil: melding,
-    } = await kjør(["tema", oppskrift, flagg, verdi])
-    krev(
-      kode === 1,
-      `tema med ${flagg} uten likhetstegn skulle gitt feilkode, ga ${kode}`,
+    const { code, out, err } = await run(["theme", recipe, flag, value])
+    expect(
+      code === 1,
+      `theme with ${flag} without an equals sign should give an error code, gave ${code}`,
     )
-    krev(ut === "", `tema med ${flagg} uten likhetstegn skrev et tema likevel`)
-    krev(
-      melding.includes(`«${flagg}» mangler en verdi`),
-      `feilmeldingen sier ikke at ${flagg} mangler en verdi: ${melding}`,
+    expect(
+      out === "",
+      `theme with ${flag} without an equals sign wrote a theme anyway`,
+    )
+    expect(
+      err.includes(`"${flag}" has no value`),
+      `the error message does not say that ${flag} has no value: ${err}`,
     )
   }
-  krev(
-    !(await readFile(tema).then(
+  expect(
+    !(await readFile(theme).then(
       () => true,
       () => false,
     )),
-    "tema skrev en fil selv om --ut manglet likhetstegn",
+    "theme wrote a file even though --out had no equals sign",
   )
 
-  const to = await kjør(["tema", oppskrift, oppskrift])
-  krev(to.kode === 1, `tema med to oppskrifter skulle gitt feilkode`)
-  krev(
-    to.feil.includes("én oppskrift"),
-    `tema med to oppskrifter sa ikke hva som var galt: ${to.feil}`,
+  const two = await run(["theme", recipe, recipe])
+  expect(two.code === 1, `theme with two recipes should give an error code`)
+  expect(
+    two.err.includes("one recipe"),
+    `theme with two recipes did not say what was wrong: ${two.err}`,
   )
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// Et ukjent flagg med likhetstegn stopper også overta og agent. `--utt=`
-// la kopien stille i standardmappa, og `--rammverk=` ga regelboka for maler.
+// An unknown flag with an equals sign also stops takeover and agent.
+// `--outt=` put the copy quietly in the default folder, and `--framwork=`
+// gave the templates rulebook.
 {
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-overta-"))
-  const overta = await kjør(["overta", "button", "--utt=src/ui"], mappe)
-  krev(overta.kode === 1, `overta med --utt skulle gitt feilkode`)
-  krev(
-    overta.feil.includes("Ukjent flagg: --utt"),
-    `overta med --utt sa ikke at flagget er ukjent: ${overta.feil}`,
+  const folder = await mkdtemp(join(tmpdir(), "lotek-takeover-"))
+  const takeover = await run(["takeover", "button", "--outt=src/ui"], folder)
+  expect(takeover.code === 1, `takeover with --outt should give an error code`)
+  expect(
+    takeover.err.includes("Unknown flag: --outt"),
+    `takeover with --outt did not say the flag is unknown: ${takeover.err}`,
   )
-  krev(
-    (await readdir(mappe)).length === 0,
-    "overta med et ukjent flagg skrev en kopi likevel",
+  expect(
+    (await readdir(folder)).length === 0,
+    "takeover with an unknown flag wrote a copy anyway",
   )
 
-  const agent = await kjør(["agent", "--rammverk=react"], mappe)
-  krev(agent.kode === 1, `agent med --rammverk skulle gitt feilkode`)
-  krev(
-    agent.ut === "" && agent.feil.includes("Ukjent flagg: --rammverk"),
-    `agent med --rammverk sa ikke at flagget er ukjent: ${agent.feil}`,
+  const agent = await run(["agent", "--framwork=react"], folder)
+  expect(agent.code === 1, `agent with --framwork should give an error code`)
+  expect(
+    agent.out === "" && agent.err.includes("Unknown flag: --framwork"),
+    `agent with --framwork did not say the flag is unknown: ${agent.err}`,
   )
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// Sier hvilke komponenter som finnes når navnet er ukjent
+// Says which components exist when the name is unknown
 {
-  const { kode, feil: melding } = await kjør(["overta", "knapp"])
+  const { code, err } = await run(["takeover", "buton"])
 
-  krev(kode !== 0, "et ukjent komponentnavn skulle gitt en feilkode")
-  krev(
-    melding.includes("knapp") && melding.includes("button"),
-    "feilmeldingen lister ikke komponentene som finnes",
+  expect(code !== 0, "an unknown component name should give an error code")
+  expect(
+    err.includes("buton") && err.includes("button"),
+    "the error message does not list the components that exist",
   )
 }
 
-// Skriver ut hjelpen uten argumenter, og når noen ber om den
-for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
-  const { kode, ut } = await kjør(argumenter)
+// Prints the help without arguments, and when someone asks for it
+for (const args of [[], ["--help"], ["-h"], ["help"]]) {
+  const { code, out } = await run(args)
 
-  krev(
-    kode === 0,
-    `«${argumenter[0] ?? "uten argumenter"}» avsluttet med kode ${kode}`,
+  expect(
+    code === 0,
+    `"${args[0] ?? "without arguments"}" exited with code ${code}`,
   )
-  krev(
-    ut.includes("overta") && ut.includes("tema"),
-    `hjelpen nevner ikke begge kommandoene: ${ut.slice(0, 80)}`,
+  expect(
+    out.includes("takeover") && out.includes("theme"),
+    `the help does not mention both commands: ${out.slice(0, 80)}`,
   )
 }
 
-// Sier fra om en ukjent kommando i stedet for å lese den som et filnavn
+// The old Norwegian verbs and help flags are gone, not kept as aliases
+for (const old of [
+  "sjekk",
+  "sjekk-tema",
+  "overta",
+  "tema",
+  "hjelp",
+  "--hjelp",
+]) {
+  const { code } = await run([old])
+  expect(code === 1, `"${old}" should be an unknown command, gave code ${code}`)
+}
+
+// Says so about an unknown command instead of reading it as a file name
 {
-  const { kode, feil: melding } = await kjør(["bygg"])
+  const { code, err } = await run(["build"])
 
-  krev(kode !== 0, "en ukjent kommando skulle gitt en feilkode")
-  krev(
-    melding.includes("bygg") && !melding.includes("ENOENT"),
-    `feilmeldingen er et stakkspor i stedet for en forklaring: ${melding.slice(0, 80)}`,
+  expect(code !== 0, "an unknown command should give an error code")
+  expect(
+    err.includes("build") && !err.includes("ENOENT"),
+    `the error message is a stack trace instead of an explanation: ${err.slice(0, 80)}`,
   )
 }
 
-// Sier fra om en temafil som ikke finnes, eller ikke er JSON
+// Says so about a theme file that does not exist, or is not JSON
 {
-  const borte = await kjør(["tema", "finnes-ikke.json"])
+  const gone = await run(["theme", "does-not-exist.json"])
 
-  krev(borte.kode !== 0, "en temafil som ikke finnes skulle gitt en feilkode")
-  krev(
-    borte.feil.includes("finnes-ikke.json") && !borte.feil.includes("ENOENT"),
-    `feilmeldingen er et stakkspor: ${borte.feil.slice(0, 80)}`,
+  expect(
+    gone.code !== 0,
+    "a theme file that does not exist should give an error code",
+  )
+  expect(
+    gone.err.includes("does-not-exist.json") && !gone.err.includes("ENOENT"),
+    `the error message is a stack trace: ${gone.err.slice(0, 80)}`,
   )
 
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-cli-"))
-  const sti = join(mappe, "ugyldig.json")
-  await writeFile(sti, "{ikke json")
+  const folder = await mkdtemp(join(tmpdir(), "lotek-cli-"))
+  const path = join(folder, "invalid.json")
+  await writeFile(path, "{not json")
 
-  const ugyldig = await kjør(["tema", sti])
+  const invalid = await run(["theme", path])
 
-  krev(ugyldig.kode !== 0, "ugyldig JSON skulle gitt en feilkode")
-  krev(
-    ugyldig.feil.includes("JSON"),
-    `feilmeldingen sier ikke at fila ikke er JSON: ${ugyldig.feil.slice(0, 80)}`,
+  expect(invalid.code !== 0, "invalid JSON should give an error code")
+  expect(
+    invalid.err.includes("JSON"),
+    `the error message does not say the file is not JSON: ${invalid.err.slice(0, 80)}`,
   )
 
-  // Fila leses som `JSON.parse` leser den, slik TypeScript-utgaven gjorde:
-  // tall og strenger som ikke er JSON avvises, også på et lavere nivå.
-  for (const [navn, tekst] of [
-    ["null foran", '{"typografi":{"weights":{"bold":0700}}}'],
-    ["punktum til slutt", '{"typografi":{"lineHeights":{"default":1.}}}'],
-    ["kontrolltegn", '{"aksent":"#7c3aed\u0001"}'],
-    ["dyp nesting", `{"form":${"[".repeat(100_000)}`],
+  // The file is read as `JSON.parse` reads it, as the TypeScript version did:
+  // numbers and strings that are not JSON are rejected, at a lower level too.
+  for (const [name, text] of [
+    ["a leading zero", '{"typography":{"weights":{"bold":0700}}}'],
+    ["a trailing point", '{"typography":{"lineHeights":{"default":1.}}}'],
+    ["a control character", '{"accent":"#7c3aed\u0001"}'],
+    ["deep nesting", `{"shape":${"[".repeat(100_000)}`],
   ]) {
-    await writeFile(sti, tekst)
-    const svar = await kjør(["tema", sti])
-    krev(
-      svar.kode === 1 && svar.feil.includes("er ikke gyldig JSON"),
-      `en oppskrift med ${navn} skulle vært ugyldig JSON, ga ${svar.kode}: ${svar.feil.slice(0, 120)}`,
+    await writeFile(path, text)
+    const answer = await run(["theme", path])
+    expect(
+      answer.code === 1 && answer.err.includes("is not valid JSON"),
+      `a recipe with ${name} should have been invalid JSON, gave ${answer.code}: ${answer.err.slice(0, 120)}`,
     )
   }
 
-  // Står en nøkkel to ganger, vinner den siste, som i `JSON.parse`.
-  await writeFile(sti, '{"aksent":"#ff0000","aksent":"#0000ff"}')
-  const dobbel = await kjør(["tema", sti])
-  const blå = await kjør(["tema", "--aksent=#0000ff"])
-  krev(
-    dobbel.kode === 0 && dobbel.ut === blå.ut,
-    "en nøkkel som står to ganger i oppskriften, fikk ikke den siste verdien",
+  // When a key appears twice, the last one wins, as in `JSON.parse`.
+  await writeFile(path, '{"accent":"#ff0000","accent":"#0000ff"}')
+  const twice = await run(["theme", path])
+  const blue = await run(["theme", "--accent=#0000ff"])
+  expect(
+    twice.code === 0 && twice.out === blue.out,
+    "a key that appears twice in the recipe did not get the last value",
   )
 
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// `sjekk`: filer som stemmer gir 0, ett funn gir 1 med fil, linje og kolonne
+// `check`: files that match give 0, one finding gives 1 with file, line and column
 {
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-cli-"))
-  const riktig = join(mappe, "riktig.html")
-  const galt = join(mappe, "galt.html")
+  const folder = await mkdtemp(join(tmpdir(), "lotek-cli-"))
+  const right = join(folder, "right.html")
+  const wrong = join(folder, "wrong.html")
   await writeFile(
-    riktig,
-    `<lt-field id="f"><label for="navn">Navn</label><input class="lt-input" name="navn" id="navn"></lt-field>\n`,
+    right,
+    `<lt-field id="f"><label for="name">Name</label><input class="lt-input" name="name" id="name"></lt-field>\n`,
   )
   await writeFile(
-    galt,
-    `<p>Hei</p>\n<button class="lt-buton">Lagre</button>\n<lt-dialog-header>Tittel</lt-dialog-header>\n`,
+    wrong,
+    `<p>Hello</p>\n<button class="lt-buton">Save</button>\n<lt-dialog-header>Title</lt-dialog-header>\n`,
   )
 
-  const rent = await kjør(["sjekk", riktig])
-  krev(
-    rent.kode === 0,
-    `sjekk av riktig markup avsluttet med kode ${rent.kode}`,
+  const clean = await run(["check", right])
+  expect(
+    clean.code === 0,
+    `check of right markup exited with code ${clean.code}`,
   )
-  krev(rent.ut.includes("stemmer"), "sjekk sier ikke at markupen stemmer")
+  expect(
+    clean.out.includes("The markup matches LO-TEK in 1 file."),
+    `check does not say the markup matches: ${clean.out}`,
+  )
 
-  const funn = await kjør(["sjekk", galt, riktig])
-  krev(funn.kode === 1, `sjekk med funn avsluttet med kode ${funn.kode}`)
-  krev(
-    funn.ut.includes(`${galt}:2:`) && funn.ut.includes("lt-buton"),
-    `funnet står ikke med fil og linje: ${funn.ut.slice(0, 160)}`,
+  const found = await run(["check", wrong, right])
+  expect(found.code === 1, `check with findings exited with code ${found.code}`)
+  expect(
+    found.out.includes(`${wrong}:2:`) && found.out.includes("lt-buton"),
+    `the finding is not given with file and line: ${found.out.slice(0, 160)}`,
   )
-  krev(
-    funn.ut.includes(`${galt}:3:`) && funn.ut.includes("lt-dialog-header"),
-    "elementet som ikke finnes ble ikke meldt på linje 3",
+  expect(
+    found.out.includes(`${wrong}:3:`) && found.out.includes("lt-dialog-header"),
+    "the element that does not exist was not reported on line 3",
   )
-  krev(!funn.ut.includes("riktig.html:"), "den riktige fila fikk et funn")
+  expect(
+    /: (warning|error): /.test(found.out),
+    `the findings have no severity label: ${found.out.slice(0, 160)}`,
+  )
+  expect(
+    found.err.includes("2 findings in 2 files."),
+    `the summary does not count the findings and files: ${found.err}`,
+  )
+  expect(!found.out.includes("right.html:"), "the right file got a finding")
 
-  // Fra standard inn, slik en test i en app sender HTML-en serveren lager
-  const prosess = Bun.spawn([...KOMMANDO, "sjekk"], {
+  // From standard input, the way a test in an app sends the HTML the server makes
+  const child = Bun.spawn([...COMMAND, "check"], {
     env: ENVIRONMENT,
     stdin: new Blob([`<lt-popover placemnet="top-start"></lt-popover>`]),
     stdout: "pipe",
     stderr: "pipe",
   })
-  antallKjøringer += 1
-  const [stdinUt, stdinKode] = await Promise.all([
-    new Response(prosess.stdout).text(),
-    prosess.exited,
+  runCount += 1
+  const [stdinOut, stdinCode] = await Promise.all([
+    new Response(child.stdout).text(),
+    child.exited,
   ])
-  krev(
-    stdinKode === 1,
-    `sjekk fra standard inn avsluttet med kode ${stdinKode}`,
+  expect(
+    stdinCode === 1,
+    `check from standard input exited with code ${stdinCode}`,
   )
-  krev(
-    stdinUt.includes("stdin:1:") && stdinUt.includes("placement"),
-    `funnet fra standard inn mangler: ${stdinUt.slice(0, 120)}`,
+  expect(
+    stdinOut.includes("stdin:1:") && stdinOut.includes("placement"),
+    `the finding from standard input is missing: ${stdinOut.slice(0, 120)}`,
   )
 
-  const borte = await kjør([
-    "sjekk",
-    join(mappe, "finnes-ikke.html"),
-    join(mappe, "heller-ikke.html"),
+  const gone = await run([
+    "check",
+    join(folder, "does-not-exist.html"),
+    join(folder, "nor-this.html"),
   ])
-  krev(borte.kode === 1, "en fil som ikke finnes skulle gitt feilkode")
-  krev(
-    borte.feil.includes("finnes-ikke.html") &&
-      borte.feil.includes("heller-ikke.html"),
-    "begge filene som mangler skulle vært nevnt",
+  expect(
+    gone.code === 1,
+    "a file that does not exist should give an error code",
+  )
+  expect(
+    gone.err.includes("File not found") &&
+      gone.err.includes("does-not-exist.html") &&
+      gone.err.includes("nor-this.html"),
+    "both missing files should have been named",
   )
 
-  // Tom standard inn er ikke markup som stemmer: et glob uten treff eller en
-  // test som glemte å sende noe skal ikke melde grønt.
-  const tom = Bun.spawn([...KOMMANDO, "sjekk"], {
+  // Empty standard input is not markup that matches: a glob without matches
+  // or a test that forgot to send anything must not pass.
+  const empty = Bun.spawn([...COMMAND, "check"], {
     env: ENVIRONMENT,
     stdin: new Blob([""]),
     stdout: "pipe",
     stderr: "pipe",
   })
-  antallKjøringer += 1
-  const [tomFeil, tomKode] = await Promise.all([
-    new Response(tom.stderr).text(),
-    tom.exited,
+  runCount += 1
+  const [emptyErr, emptyCode] = await Promise.all([
+    new Response(empty.stderr).text(),
+    empty.exited,
   ])
-  krev(tomKode === 1, `tom standard inn avsluttet med kode ${tomKode}`)
-  krev(
-    tomFeil.includes("standard inn var tom"),
-    "feilmeldingen sier ikke at inndata var tom",
+  expect(emptyCode === 1, `empty standard input exited with code ${emptyCode}`)
+  expect(
+    emptyErr.includes("standard input was empty"),
+    "the error message does not say the input was empty",
   )
 
-  // Det samme gjelder filer: er hver fil tom, er det ingenting å sjekke.
-  // Én tom fil blant flere, som en tom partial i et glob, er ikke en feil.
-  const tomme = await mkdtemp(join(tmpdir(), "lotek-tom-"))
-  const tomFil = join(tomme, "tom.html")
-  const blankFil = join(tomme, "blank.html")
-  const fullFil = join(tomme, "full.html")
-  await writeFile(tomFil, "")
-  await writeFile(blankFil, " \n\t\n")
-  await writeFile(fullFil, '<button class="lt-button">Lagre</button>')
-  for (const filer of [[tomFil], [blankFil], [tomFil, blankFil]]) {
-    const { kode, feil: melding } = await kjør(["sjekk", ...filer])
-    krev(
-      kode === 1,
-      `sjekk av bare tomme filer avsluttet med kode ${kode}: ${filer.join(" ")}`,
+  // The same goes for files: if every file is empty, there is nothing to
+  // check. One empty file among several, like an empty partial in a glob,
+  // is not an error.
+  const emptyFolder = await mkdtemp(join(tmpdir(), "lotek-empty-"))
+  const emptyFile = join(emptyFolder, "empty.html")
+  const blankFile = join(emptyFolder, "blank.html")
+  const fullFile = join(emptyFolder, "full.html")
+  await writeFile(emptyFile, "")
+  await writeFile(blankFile, " \n\t\n")
+  await writeFile(fullFile, '<button class="lt-button">Save</button>')
+  for (const files of [[emptyFile], [blankFile], [emptyFile, blankFile]]) {
+    const { code, err } = await run(["check", ...files])
+    expect(
+      code === 1,
+      `check of only empty files exited with code ${code}: ${files.join(" ")}`,
     )
-    krev(
-      melding.includes("Ingen markup å sjekke"),
-      `sjekk av bare tomme filer sa ikke at det var ingenting å sjekke: ${melding}`,
+    expect(
+      err.includes("No markup to check"),
+      `check of only empty files did not say there was nothing to check: ${err}`,
     )
   }
-  const blandet = await kjør(["sjekk", tomFil, fullFil])
-  krev(
-    blandet.kode === 0,
-    `én tom fil blant flere ga kode ${blandet.kode}: ${blandet.feil}`,
+  const mixed = await run(["check", emptyFile, fullFile])
+  expect(
+    mixed.code === 0,
+    `one empty file among several gave code ${mixed.code}: ${mixed.err}`,
   )
 
-  // En BOM først teller ikke som en kolonne, slik editoren viser linja. Det
-  // gjelder en fil, standard inn og en side verten har hentet.
-  const bomFil = join(tomme, "bom.html")
-  const bomSide = '\uFEFF<span class="lt-buton">x</span>\n'
-  await writeFile(bomFil, bomSide)
-  const bom = await kjør(["sjekk", bomFil])
-  krev(
-    bom.ut.includes(`${bomFil}:1:14:`),
-    `en fil med BOM fikk feil kolonne: ${bom.ut}`,
+  // A leading BOM does not count as a column, as the editor shows the line.
+  // That goes for a file, standard input and a page the host has fetched.
+  const bomFile = join(emptyFolder, "bom.html")
+  const bomPage = '﻿<span class="lt-buton">x</span>\n'
+  await writeFile(bomFile, bomPage)
+  const bom = await run(["check", bomFile])
+  expect(
+    bom.out.includes(`${bomFile}:1:14:`),
+    `a file with a BOM got the wrong column: ${bom.out}`,
   )
-  const bomInn = Bun.spawn([...KOMMANDO, "sjekk"], {
+  const bomIn = Bun.spawn([...COMMAND, "check"], {
     env: ENVIRONMENT,
-    stdin: new Blob([bomSide]),
+    stdin: new Blob([bomPage]),
     stdout: "pipe",
     stderr: "pipe",
   })
-  antallKjøringer += 1
-  const [bomInnUt] = await Promise.all([
-    new Response(bomInn.stdout).text(),
-    bomInn.exited,
+  runCount += 1
+  const [bomInOut] = await Promise.all([
+    new Response(bomIn.stdout).text(),
+    bomIn.exited,
   ])
-  krev(
-    bomInnUt.includes("stdin:1:14:"),
-    `standard inn med BOM fikk feil kolonne: ${bomInnUt}`,
+  expect(
+    bomInOut.includes("stdin:1:14:"),
+    `standard input with a BOM got the wrong column: ${bomInOut}`,
   )
-  const hentetFil = join(tomme, "hentet.txt")
+  const fetchedFile = join(emptyFolder, "fetched.txt")
   await writeFile(
-    hentetFil,
-    `http://localhost:1/bom\n200\ntext/html\n${bomSide}`,
+    fetchedFile,
+    `http://localhost:1/bom\n200\ntext/html\n${bomPage}`,
   )
-  const hentet = await kjør(["sjekk", `--hentet=${hentetFil}`])
-  krev(
-    hentet.ut.includes("http://localhost:1/bom:1:14:"),
-    `en hentet side med BOM fikk feil kolonne: ${hentet.ut}`,
+  const fetched = await run(["check", `--fetched=${fetchedFile}`])
+  expect(
+    fetched.out.includes("http://localhost:1/bom:1:14:"),
+    `a fetched page with a BOM got the wrong column: ${fetched.out}`,
   )
-  await writeFile(hentetFil, "http://localhost:1/bom\n200\ntext/html\n\uFEFF")
-  const bareBom = await kjør(["sjekk", `--hentet=${hentetFil}`])
-  krev(
-    bareBom.kode === 1 && bareBom.feil.includes("svarte med en tom side"),
-    `en hentet side med bare en BOM ble ikke meldt som tom: ${bareBom.feil}`,
+  await writeFile(fetchedFile, "http://localhost:1/bom\n200\ntext/html\n﻿")
+  const onlyBom = await run(["check", `--fetched=${fetchedFile}`])
+  expect(
+    onlyBom.code === 1 && onlyBom.err.includes("answered with an empty page"),
+    `a fetched page with only a BOM was not reported as empty: ${onlyBom.err}`,
   )
-  await rm(tomme, { recursive: true, force: true })
+  await rm(emptyFolder, { recursive: true, force: true })
 
-  // Et rør der skriveren bruker tid, som `curl … | lotek sjekk`. En
-  // synkron lesing av fd 0 kastet EAGAIN her etter at `process.stdin` var
-  // rørt, siden strømmen da setter røret i ikke-blokkerende modus. Bitene
-  // deles midt i `ø`: lest som `Buffer` ble hver halvdel et erstatningstegn,
-  // og funnet siterte «lt-kn��pp». Første bit skrives før pausen, så barnet
-  // må lese to ganger uansett hvor travel maskinen er.
+  // A pipe where the writer takes its time, like `curl … | lotek check`. A
+  // synchronous read of fd 0 threw EAGAIN here after `process.stdin` had been
+  // touched, since the stream then puts the pipe in non-blocking mode. The
+  // chunks are split in the middle of `ü`: read as a `Buffer`, each half
+  // became a replacement character, and the finding quoted "lt-b��tton". The
+  // first chunk is written before the pause, so the child must read twice
+  // however busy the machine is.
   const bytes = new TextEncoder().encode(
-    `<button class="lt-knøpp">Lagre</button>`,
+    `<button class="lt-bütton">Save</button>`,
   )
-  const kutt = bytes.indexOf(0xc3) + 1
-  // Uten en ø å dele blir første bit tom, og tilfellet passerer stille.
-  krev(kutt > 0, "teksten i det trege røret har ingen ø å dele")
-  const treg = Bun.spawn([...KOMMANDO, "sjekk"], {
+  const cut = bytes.indexOf(0xc3) + 1
+  // Without a ü to split, the first chunk is empty, and the case passes
+  // silently.
+  expect(cut > 0, "the text in the slow pipe has no ü to split")
+  const slow = Bun.spawn([...COMMAND, "check"], {
     env: ENVIRONMENT,
     stdin: "pipe",
     stdout: "pipe",
     stderr: "pipe",
   })
-  antallKjøringer += 1
-  treg.stdin.write(bytes.slice(0, kutt))
+  runCount += 1
+  slow.stdin.write(bytes.slice(0, cut))
   await Bun.sleep(300)
-  treg.stdin.write(bytes.slice(kutt))
-  treg.stdin.end()
-  const [tregUt, tregFeil, tregKode] = await Promise.all([
-    new Response(treg.stdout).text(),
-    new Response(treg.stderr).text(),
-    treg.exited,
+  slow.stdin.write(bytes.slice(cut))
+  slow.stdin.end()
+  const [slowOut, slowErr, slowCode] = await Promise.all([
+    new Response(slow.stdout).text(),
+    new Response(slow.stderr).text(),
+    slow.exited,
   ])
-  krev(
-    tregKode === 1 &&
-      tregUt.includes("stdin:1:") &&
-      tregUt.includes("«lt-knøpp»"),
-    `et tregt rør ga ikke funnet med hel tekst: kode ${tregKode}, ${(tregUt + tregFeil).slice(0, 120)}`,
+  expect(
+    slowCode === 1 &&
+      slowOut.includes("stdin:1:") &&
+      slowOut.includes("lt-bütton"),
+    `a slow pipe did not give the finding with the whole text: code ${slowCode}, ${(slowOut + slowErr).slice(0, 120)}`,
   )
-  krev(!tregFeil.includes("EAGAIN"), "lesingen av standard inn kastet EAGAIN")
+  expect(!slowErr.includes("EAGAIN"), "reading standard input threw EAGAIN")
 
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// `agent`: regelboka til utdata, meldinga til feilkanalen, og ingen fil skrevet
+// `agent`: the rulebook to standard output, the message to standard error,
+// and no file written
 {
-  const mappe = await mkdtemp(join(tmpdir(), "lotek-agent-"))
+  const folder = await mkdtemp(join(tmpdir(), "lotek-agent-"))
+  const rulebook = (name: string) =>
+    readFile(join(packageDir, `agent/${name}.md`), "utf8")
 
-  // Uten package.json er markupen serverens, og malregelboka er den riktige.
-  const mal = await kjør(["agent"], mappe)
+  // Without package.json the markup comes from the server, and the
+  // templates rulebook is the right one.
+  const templates = await run(["agent"], folder)
 
-  krev(mal.kode === 0, `agent uten package.json avsluttet med kode ${mal.kode}`)
-  krev(
-    mal.ut.startsWith("# LO-TEK i maler"),
-    `agent uten package.json ga ikke malregelboka: ${mal.ut.slice(0, 60)}`,
+  expect(
+    templates.code === 0,
+    `agent without package.json exited with code ${templates.code}`,
   )
-  krev(
-    mal.feil.includes("templates") && mal.feil.includes("ingen package.json"),
-    `grunnen til valget står ikke i feilkanalen: ${mal.feil.slice(0, 80)}`,
+  expect(
+    templates.out === (await rulebook("templates")),
+    `agent without package.json did not give the templates rulebook: ${templates.out.slice(0, 60)}`,
   )
-  // Hele poenget med at meldinga går til feilkanalen: utdata kan pipes rent.
-  // Teksten det letes etter står bare i meldinga; regelboka begynner selv med
-  // ordene «Regelboka for», så den kan ikke brukes til å skille de to.
-  krev(
-    !mal.ut.includes("ingen package.json i denne mappa"),
-    "meldinga om valget havnet i utdata, som da ikke kan pipes rent",
+  expect(
+    templates.err.includes("templates") &&
+      templates.err.includes("no package.json"),
+    `the reason for the choice is not in standard error: ${templates.err.slice(0, 80)}`,
   )
-  // Kommandoen skal ikke ha rørt mappa den ble kjørt i.
-  krev(
-    (await readdir(mappe)).length === 0,
-    "agent skrev en fil i arbeidsmappa; den skal aldri skrive noe",
+  // The whole point of the message going to standard error: standard output
+  // can be piped cleanly.
+  expect(
+    !templates.out.includes("no package.json in this folder"),
+    "the message about the choice ended up in standard output, which then cannot be piped cleanly",
+  )
+  // The command must not have touched the folder it ran in.
+  expect(
+    (await readdir(folder)).length === 0,
+    "agent wrote a file in the working directory; it must never write anything",
   )
 
-  // Avhengighetene avgjør, og de tre utfallene er ulike regelbøker.
-  const oppdaget: [Record<string, string>, string, string][] = [
-    [{ react: "19.0.0" }, "react", "# LO-TEK i React"],
-    [{ vue: "3.5.0" }, "bundles", "# LO-TEK med bundles"],
-    [{ astro: "6.0.0" }, "astro", "# LO-TEK i Astro"],
-    // En package.json betyr et byggesteg, og da importeres stilarkene.
-    [{ typescript: "6.0.0" }, "bundles", "# LO-TEK med bundles"],
+  // The dependencies decide, and the outcomes are different rulebooks.
+  const detected: [Record<string, string>, string][] = [
+    [{ react: "19.0.0" }, "react"],
+    [{ vue: "3.5.0" }, "bundles"],
+    [{ astro: "6.0.0" }, "astro"],
+    // A package.json means a build step, and then the style sheets are
+    // imported.
+    [{ typescript: "6.0.0" }, "bundles"],
   ]
 
-  for (const [avhengigheter, navn, overskrift] of oppdaget) {
+  for (const [dependencies, name] of detected) {
     await writeFile(
-      join(mappe, "package.json"),
-      JSON.stringify({ dependencies: avhengigheter }),
+      join(folder, "package.json"),
+      JSON.stringify({ dependencies }),
     )
-    const kjøring = await kjør(["agent"], mappe)
+    const answer = await run(["agent"], folder)
 
-    krev(kjøring.kode === 0, `agent med ${navn} ga kode ${kjøring.kode}`)
-    krev(
-      kjøring.ut.startsWith(overskrift),
-      `${Object.keys(avhengigheter)[0]} ga ikke ${navn}-regelboka: ${kjøring.ut.slice(0, 50)}`,
+    expect(answer.code === 0, `agent with ${name} gave code ${answer.code}`)
+    expect(
+      answer.out === (await rulebook(name)),
+      `${Object.keys(dependencies)[0]} did not give the ${name} rulebook: ${answer.out.slice(0, 50)}`,
     )
   }
 
-  // En Astro-app med React-øyer har begge, og Astro bestemmer stilarkene.
+  // An Astro app with React islands has both, and Astro decides the style
+  // sheets.
   await writeFile(
-    join(mappe, "package.json"),
+    join(folder, "package.json"),
     JSON.stringify({ dependencies: { astro: "6.0.0", react: "19.0.0" } }),
   )
-  const begge = await kjør(["agent"], mappe)
+  const both = await run(["agent"], folder)
 
-  krev(
-    begge.ut.startsWith("# LO-TEK i Astro"),
-    "astro tapte mot react, men den bestemmer hvordan stilarkene kommer inn",
+  expect(
+    both.out === (await rulebook("astro")),
+    "astro lost to react, but it decides how the style sheets come in",
   )
 
-  // Vue, Svelte, Solid og Lit deler regelbok, og den som skriver navnet sitt
-  // skal ikke måtte vite det. Aliaset skal likevel være synlig i meldinga.
-  const svelte = await kjør(["agent", "--rammeverk=svelte"], mappe)
+  // Vue, Svelte, Solid and Lit share a rulebook, and whoever writes their
+  // framework's name should not have to know. The alias is still visible in
+  // the message.
+  const svelte = await run(["agent", "--framework=svelte"], folder)
 
-  krev(svelte.kode === 0, `--rammeverk=svelte ga kode ${svelte.kode}`)
-  krev(
-    svelte.ut.startsWith("# LO-TEK med bundles"),
-    "svelte pekte ikke på bundles-regelboka",
+  expect(svelte.code === 0, `--framework=svelte gave code ${svelte.code}`)
+  expect(
+    svelte.out === (await rulebook("bundles")),
+    "svelte did not point to the bundles rulebook",
   )
-  krev(
-    svelte.feil.includes("bundles") && svelte.feil.includes("svelte"),
-    `meldinga viser ikke at svelte ble et alias: ${svelte.feil.slice(0, 80)}`,
-  )
-
-  const ukjent = await kjør(["agent", "--rammeverk=kohana"], mappe)
-
-  krev(ukjent.kode === 1, `et ukjent navn ga kode ${ukjent.kode}`)
-  krev(
-    ukjent.feil.includes("Kjenner ikke") && ukjent.feil.includes("bundles"),
-    `et ukjent navn fikk ikke lista over valgene: ${ukjent.feil.slice(0, 80)}`,
+  expect(
+    svelte.err.includes("bundles") && svelte.err.includes("svelte"),
+    `the message does not show that svelte became an alias: ${svelte.err.slice(0, 80)}`,
   )
 
-  // Flagget slår deteksjonen: astro og react står fortsatt i package.json her.
-  const html = await kjør(["agent", "--rammeverk=html"], mappe)
+  const unknown = await run(["agent", "--framework=kohana"], folder)
 
-  krev(html.kode === 0, `--rammeverk=html avsluttet med kode ${html.kode}`)
-  krev(
-    html.ut.startsWith("# LO-TEK i ren HTML"),
-    "--rammeverk=html overstyrte ikke deteksjonen",
+  expect(unknown.code === 1, `an unknown name gave code ${unknown.code}`)
+  expect(
+    unknown.err.includes("kohana") && unknown.err.includes("bundles"),
+    `an unknown name did not get the list of choices: ${unknown.err.slice(0, 80)}`,
   )
-  // Regelboka skal være regelboka, ikke en tom fil som ser riktig ut.
-  for (const del of ["lotek.css", "data-variant", "defineLtField", "sjekk"]) {
-    krev(html.ut.includes(del), `regelboka nevner ikke ${del}`)
+
+  // The flag beats the detection: astro and react are still in package.json
+  // here.
+  const html = await run(["agent", "--framework=html"], folder)
+
+  expect(html.code === 0, `--framework=html exited with code ${html.code}`)
+  expect(
+    html.out === (await rulebook("html")),
+    "--framework=html did not override the detection",
+  )
+  // The rulebook must be the rulebook, not an empty file that looks right.
+  for (const part of ["lotek.css", "data-variant", "defineLtField"]) {
+    expect(html.out.includes(part), `the rulebook does not mention ${part}`)
   }
 
-  // Markupen i regelbøkene må tåle LO-TEKs egen sjekk. En agent-instruksjon
-  // med et eksempel sjekken ville avvist er verre enn ingen instruksjon.
-  for (const rammeverk of [
+  // The markup in the rulebooks must pass LO-TEK's own check. An agent
+  // instruction with an example the check would reject is worse than no
+  // instruction.
+  for (const framework of [
     "html",
     "templates",
     "bundles",
@@ -1220,133 +1331,143 @@ for (const argumenter of [[], ["--hjelp"], ["--help"], ["-h"], ["help"]]) {
     "astro",
     "datastar",
   ]) {
-    const bok = await kjør(["agent", `--rammeverk=${rammeverk}`], mappe)
-    const blokker = [...bok.ut.matchAll(/```html\n([\s\S]*?)```/g)]
+    const book = await run(["agent", `--framework=${framework}`], folder)
+    const blocks = [...book.out.matchAll(/```html\n([\s\S]*?)```/g)]
 
-    for (const [nummer, blokk] of blokker.entries()) {
-      const prøve = Bun.spawn([...KOMMANDO, "sjekk"], {
+    for (const [number, block] of blocks.entries()) {
+      const attempt = Bun.spawn([...COMMAND, "check"], {
         env: ENVIRONMENT,
-        stdin: new Blob([blokk[1]]),
+        stdin: new Blob([block[1]]),
         stdout: "pipe",
         stderr: "pipe",
       })
-      antallKjøringer += 1
-      const [ut, kode] = await Promise.all([
-        new Response(prøve.stdout).text(),
-        prøve.exited,
+      runCount += 1
+      const [out, code] = await Promise.all([
+        new Response(attempt.stdout).text(),
+        attempt.exited,
       ])
 
-      krev(
-        kode === 0,
-        `eksempel ${nummer + 1} i ${rammeverk}-regelboka stemmer ikke med LO-TEK: ${ut.slice(0, 120)}`,
+      expect(
+        code === 0,
+        `example ${number + 1} in the ${framework} rulebook does not match LO-TEK: ${out.slice(0, 120)}`,
       )
     }
   }
 
-  await rm(mappe, { recursive: true, force: true })
+  await rm(folder, { recursive: true, force: true })
 }
 
-// En adresse hentes og sjekkes som en hel side
+// An address is fetched and checked as a whole page
 {
-  const side =
-    '<!doctype html><html lang="nb"><body><label for="borte">Navn</label><button class="lt-buton">Lagre</button></body></html>'
-  const tjener = Bun.serve({
+  const page =
+    '<!doctype html><html lang="en"><body><label for="nowhere">Name</label><button class="lt-buton">Save</button></body></html>'
+  const server = Bun.serve({
     port: 0,
-    fetch(forespørsel) {
-      const sti = new URL(forespørsel.url).pathname
+    fetch(request) {
+      const path = new URL(request.url).pathname
       const html = { "content-type": "text/html; charset=utf-8" }
-      if (sti === "/side") return new Response(side, { headers: html })
-      if (sti === "/videre")
+      if (path === "/page") return new Response(page, { headers: html })
+      if (path === "/onwards")
         return new Response(null, {
           status: 302,
-          headers: { location: "/side" },
+          headers: { location: "/page" },
         })
-      if (sti === "/biter")
+      if (path === "/chunks")
         return new Response(
           new ReadableStream({
-            start(kontroll) {
-              const koder = new TextEncoder()
-              kontroll.enqueue(koder.encode(side.slice(0, 40)))
-              kontroll.enqueue(koder.encode(side.slice(40)))
-              kontroll.close()
+            start(controller) {
+              const encoder = new TextEncoder()
+              controller.enqueue(encoder.encode(page.slice(0, 40)))
+              controller.enqueue(encoder.encode(page.slice(40)))
+              controller.close()
             },
           }),
           { headers: html },
         )
-      if (sti === "/json") return Response.json({ ok: true })
-      if (sti === "/tom") return new Response("", { headers: html })
-      if (sti === "/bom")
+      if (path === "/json") return Response.json({ ok: true })
+      if (path === "/empty") return new Response("", { headers: html })
+      if (path === "/bom")
         return new Response(
-          new Uint8Array([0xef, 0xbb, 0xbf, ...new TextEncoder().encode(side)]),
+          new Uint8Array([0xef, 0xbb, 0xbf, ...new TextEncoder().encode(page)]),
           { headers: html },
         )
-      return new Response("<p>Finnes ikke</p>", { status: 404, headers: html })
+      return new Response("<p>Not found</p>", { status: 404, headers: html })
     },
   })
-  const rot = `http://localhost:${tjener.port}`
+  const root = `http://localhost:${server.port}`
 
-  for (const sti of ["/side", "/videre", "/biter", "/bom"]) {
-    const { kode, ut } = await kjør(["sjekk", `${rot}${sti}`])
-    krev(kode === 1, `${sti} skulle gitt feilkode for funnene, ga ${kode}`)
-    krev(
-      ut.includes(`${rot}${sti}:1:`) && ut.includes("lt-buton"),
-      `${sti}: klassen som ikke finnes, ble ikke meldt med adressen: ${ut.slice(0, 160)}`,
+  for (const path of ["/page", "/onwards", "/chunks", "/bom"]) {
+    const { code, out } = await run(["check", `${root}${path}`])
+    expect(
+      code === 1,
+      `${path} should give an error code for the findings, gave ${code}`,
     )
-    krev(
-      ut.includes("«borte»"),
-      `${sti}: siden ble ikke sjekket som hel side, for-koblingen mangler: ${ut.slice(0, 200)}`,
+    expect(
+      out.includes(`${root}${path}:1:`) && out.includes("lt-buton"),
+      `${path}: the class that does not exist was not reported with the address: ${out.slice(0, 160)}`,
+    )
+    expect(
+      out.includes("nowhere"),
+      `${path}: the page was not checked as a whole page, the for wiring is missing: ${out.slice(0, 200)}`,
     )
   }
 
-  // BOM-en først gir ikke en kolonne mer: funnene er de samme som uten.
-  const utenBom = await kjør(["sjekk", `${rot}/side`])
-  const medBom = await kjør(["sjekk", `${rot}/bom`])
-  krev(
-    medBom.ut.replaceAll("/bom", "/side") === utenBom.ut,
-    `en side med BOM ga andre posisjoner enn uten: ${medBom.ut.slice(0, 200)}`,
+  // A leading BOM does not add a column: the findings are the same as without.
+  const withoutBom = await run(["check", `${root}/page`])
+  const withBom = await run(["check", `${root}/bom`])
+  expect(
+    withBom.out.replaceAll("/bom", "/page") === withoutBom.out,
+    `a page with a BOM gave other positions than without: ${withBom.out.slice(0, 200)}`,
   )
 
-  const json = await kjør(["sjekk", `${rot}/json`])
-  krev(json.kode === 1, "en adresse som svarer JSON skulle gitt feilkode")
-  krev(json.feil.includes("ikke HTML"), `JSON ble ikke avvist: ${json.feil}`)
+  const json = await run(["check", `${root}/json`])
+  expect(
+    json.code === 1,
+    "an address that answers JSON should give an error code",
+  )
+  expect(json.err.includes("not HTML"), `JSON was not rejected: ${json.err}`)
 
-  // En side som rendret tomt, skal ikke bli grønn uten å ha sjekket noe.
-  const tom = await kjør(["sjekk", `${rot}/tom`])
-  krev(tom.kode === 1, `en tom side skulle gitt feilkode, ga ${tom.kode}`)
-  krev(
-    tom.feil.includes(`${rot}/tom svarte med en tom side.`),
-    `en tom side ble ikke meldt: ${tom.feil}`,
+  // A page that rendered empty must not pass without having checked anything.
+  const empty = await run(["check", `${root}/empty`])
+  expect(
+    empty.code === 1,
+    `an empty page should give an error code, gave ${empty.code}`,
+  )
+  expect(
+    empty.err.includes(`${root}/empty answered with an empty page.`),
+    `an empty page was not reported: ${empty.err}`,
   )
 
-  const borte = await kjør(["sjekk", `${rot}/borte`])
-  krev(borte.kode === 1, "en 404 skulle gitt feilkode")
-  krev(borte.feil.includes("svarte 404"), `404 ble ikke meldt: ${borte.feil}`)
+  const gone = await run(["check", `${root}/gone`])
+  expect(gone.code === 1, "a 404 should give an error code")
+  expect(gone.err.includes("answered 404"), `404 was not reported: ${gone.err}`)
 
-  tjener.stop(true)
-  const ingen = await kjør(["sjekk", rot])
-  krev(ingen.kode === 1, "en adresse der ingen svarer, skulle gitt feilkode")
-  krev(
-    ingen.feil.includes(`Fikk ikke kontakt med ${rot}`),
-    `en adresse der ingen svarer, ble ikke meldt: ${ingen.feil}`,
+  server.stop(true)
+  const nobody = await run(["check", root])
+  expect(
+    nobody.code === 1,
+    "an address where nobody answers should give an error code",
+  )
+  expect(
+    nobody.err.includes(`Could not reach ${root}`),
+    `an address where nobody answers was not reported: ${nobody.err}`,
   )
 }
 
-if (avvik.length > 0) {
+if (differences.length > 0) {
   console.error(
-    `${avvik.length} kjøringer svarte forskjellig fra ${SAMMENLIGN}:\n\n${avvik.map((a) => `  ${a}`).join("\n\n")}\n`,
+    `${differences.length} runs answered differently from ${COMPARE}:\n\n${differences.map((d) => `  ${d}`).join("\n\n")}\n`,
   )
   process.exit(1)
 }
 
-if (feil.length > 0) {
+if (failures.length > 0) {
   console.error(
-    `Kommandolinjeverktøyet oppfører seg ikke som lovet:\n\n${feil
-      .map((linje) => `  ${linje}`)
+    `The command line tool does not behave as promised:\n\n${failures
+      .map((line) => `  ${line}`)
       .join("\n")}\n`,
   )
   process.exit(1)
 }
 
-console.log(
-  `Kommandolinjeverktøyet svarer som det skal på ${antallKjøringer} kjøringer.`,
-)
+console.log(`The command line tool answers as it should on ${runCount} runs.`)

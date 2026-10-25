@@ -5,13 +5,13 @@ plugins {
 }
 
 /*
- * Kommandolinja på JVM-en: `java -jar lotek.jar sjekk form.html`.
+ * The command line on the JVM: `java -jar lotek.jar check form.html`.
  *
- * Kommandoene er skrevet i Rust (`core/cli/`), og WASI-modulen følger med
- * npm-pakken som `core/lotek.wasm`. Chicory kjører den, kompilert til
- * bytekode her, så jar-en svarer det samme som `npx @lo-tek/interfaces` og
- * den kjørbare fila fra `cargo install`. Den trenger bare Java 17, ikke Node,
- * ikke Rust.
+ * The commands are written in Rust (`core/cli/`), and the WASI module comes
+ * with the npm package as `core/lotek.wasm`. Chicory runs it, compiled to
+ * bytecode here, so the jar answers the same as `npx @lo-tek/interfaces` and
+ * the executable from `cargo install`. It needs only Java 17, not Node, not
+ * Rust.
  */
 group = rootProject.group
 version = rootProject.version
@@ -40,7 +40,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-// Kommandolinja og filene den leser, fra npm-pakken rotprosjektet har pakket ut.
+// The command line and the files it reads, from the npm package the root project has unpacked.
 val pakke = rootProject.tasks.named<Sync>("pakkUt").map { it.destinationDir }
 
 val kompilerKommandolinje = tasks.register<no.lotek.build.CompileCore>("kompilerKommandolinje") {
@@ -51,9 +51,10 @@ val kompilerKommandolinje = tasks.register<no.lotek.build.CompileCore>("kompiler
 }
 
 /*
- * Pakken kommandolinja leser fra: manifestet, fargekontrakten, regelbøkene
- * og kildekoden til komponentene for `lotek overta`. Modulen bærer ingen
- * av dem, og `CommandLine` gir den mappa som `LOTEK_PACKAGE`.
+ * The package the command line reads from: the manifest, the colour
+ * contract, the rulebooks and the source of the components for
+ * `lotek takeover`. The module carries none of them, and `CommandLine` gives
+ * it the folder as `LOTEK_PACKAGE`.
  */
 tasks.processResources {
     from(pakke) {
@@ -72,8 +73,9 @@ dependencies {
 }
 
 /*
- * Én fil med alt i, så `java -jar lotek.jar` er hele installasjonen. Den
- * vanlige jar-en er uten avhengighetene, og er den Gradle-pluginen bruker.
+ * One file with everything in it, so `java -jar lotek.jar` is the whole
+ * installation. The plain jar is without the dependencies, and is the one
+ * the Gradle plugin uses.
  */
 val samletJar = tasks.register<Jar>("samletJar") {
     archiveFileName.set("lotek.jar")

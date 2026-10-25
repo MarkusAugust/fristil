@@ -193,8 +193,8 @@ jobs:
       # Filene skal svare før de gis ut.
       - name: Filene virker
         run: |
-          java -jar utgivelse/lotek.jar --hjelp > /dev/null
-          echo '<button class="lt-button">Lagre</button>' | java -jar utgivelse/lotek.jar sjekk
+          java -jar utgivelse/lotek.jar --help > /dev/null
+          echo '<button class="lt-button">Lagre</button>' | java -jar utgivelse/lotek.jar check
 
       - uses: actions/attest-build-provenance@v3
         with:

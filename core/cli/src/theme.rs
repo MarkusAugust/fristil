@@ -1,41 +1,34 @@
-//! `lotek tema`: et fargetema av merkefargene, skriften og formen din.
+//! `lotek theme`: a colour theme from your brand colours, font and shape.
 //!
 //! ```bash
-//! lotek tema --aksent=#7c3aed --fare=#b3261e --ut=theme.css
-//! lotek tema lotek.theme.json --ut=theme.css
+//! lotek theme --accent=#7c3aed --danger=#b3261e --out=theme.css
+//! lotek theme lotek.theme.json --out=theme.css
 //! ```
 //!
-//! Temaet bygges av kjernen, og løftene holder av konstruksjon. Holder et par
-//! likevel ikke, avsluttes kjøringen med feil framfor å levere et tema som ser
-//! riktig ut. Et flagg eller en nøkkel som ikke finnes, stopper kjøringen: en
-//! skrivefeil skal ikke se ut som om kommandoen gjorde det du ba om.
+//! The core builds the theme, and the promises hold by construction. If a
+//! pair still fails, the run exits with an error rather than delivering a
+//! theme that looks right. A flag or a key that does not exist stops the run:
+//! a typo must not look as if the command did what you asked.
 
 use crate::output::{error, fail, log, shown};
 use crate::{refuse_unknown_flags, refuse_without_value, Arguments};
 use lotek_core::json::{parse, Json};
 use lotek_core::theme::{build_theme, js_number, to_fixed2};
 
-/// Fargene, med flaggets norske navn og familiens engelske.
-const COLORS: [(&str, &str); 9] = [
-    ("aksent", "accent"),
-    ("fare", "danger"),
-    ("suksess", "success"),
-    ("advarsel", "warning"),
-    ("noytral", "neutral"),
-    ("besokt", "visited"),
-    ("merke1", "brand1"),
-    ("merke2", "brand2"),
-    ("merke3", "brand3"),
+/// The colour families. The flag, the recipe key and the family have the
+/// same name.
+const COLORS: [&str; 9] = [
+    "accent", "danger", "success", "warning", "neutral", "visited", "brand1", "brand2", "brand3",
 ];
 
-const TYPOGRAPHY_FLAGS: [(&str, &str); 1] = [("skrift", "fontFamily")];
+const TYPOGRAPHY_FLAGS: [(&str, &str); 1] = [("font", "fontFamily")];
 
 const SHAPE_FLAGS: [(&str, &str); 5] = [
-    ("knapp-hjorner", "buttonRadius"),
-    ("felt-hjorner", "fieldRadius"),
-    ("flate-hjorner", "surfaceRadius"),
-    ("knapp-ramme", "buttonBorderWidth"),
-    ("knapp-vekt", "buttonFontWeight"),
+    ("button-radius", "buttonRadius"),
+    ("field-radius", "fieldRadius"),
+    ("surface-radius", "surfaceRadius"),
+    ("button-border", "buttonBorderWidth"),
+    ("button-weight", "buttonFontWeight"),
 ];
 
 const TYPOGRAPHY_KEYS: [&str; 3] = ["fontFamily", "weights", "lineHeights"];
@@ -58,7 +51,7 @@ fn set(object: &mut Object, key: &str, value: Json) {
     }
 }
 
-/// `{ ...verdi }`: navnene og verdiene slik JavaScript sprer dem.
+/// `{ ...value }`: the names and values as JavaScript spreads them.
 fn spread(value: Option<&Json>) -> Object {
     match value {
         Some(Json::Object(entries)) => entries.clone(),
@@ -76,15 +69,7 @@ fn spread(value: Option<&Json>) -> Object {
     }
 }
 
-/// `a ?? b`: `b` når `a` mangler eller er `null`.
-fn coalesce<'a>(a: Option<&'a Json>, b: Option<&'a Json>) -> Option<&'a Json> {
-    match a {
-        None | Some(Json::Null) => b,
-        some => some,
-    }
-}
-
-/// Nøklene i et objekt som ikke står i lista, med stien foran.
+/// The keys in an object that are not in the list, with the path in front.
 fn unknown_keys(value: Option<&Json>, allowed: &[&str], path: &str) -> Vec<String> {
     let keys: Vec<String> = match value {
         Some(Json::Object(entries)) => entries.iter().map(|(k, _)| k.clone()).collect(),
@@ -97,38 +82,39 @@ fn unknown_keys(value: Option<&Json>, allowed: &[&str], path: &str) -> Vec<Strin
         .collect()
 }
 
-/// Oppskriften i en JSON-fil, eller en forklaring og feilkode.
+/// The recipe in a JSON file, or an explanation and an error code.
 fn read_recipe(file: &str) -> Object {
     let path = shown(file);
     let Ok(bytes) = std::fs::read(file) else {
         fail(&format!(
-            "Fant ikke fila «{path}».\n\nOppgi en JSON-fil med fargene, eller sett dem som flagg. Se `lotek --hjelp`.\n"
+            "File not found: \"{path}\".\n\nGive a JSON file with the colours, or set them as flags. See `lotek --help`.\n"
         ));
     };
     match parse(&String::from_utf8_lossy(&bytes)) {
         Ok(Json::Object(entries)) => entries,
-        // `null`, en liste og en streng er alle gyldig JSON, og ingen av dem
-        // er en oppskrift.
+        // `null`, a list and a string are all valid JSON, and none of them is
+        // a recipe.
         Ok(_) => fail(&format!(
-            "«{path}» er gyldig JSON, men ikke en oppskrift.\n\nFila skal være et objekt med fargene i seg, for eksempel:\n  {{\"aksent\": \"#7c3aed\", \"fare\": \"#b3261e\"}}\n"
+            "\"{path}\" is valid JSON, but not a recipe.\n\nThe file must be an object with the colours in it, for example:\n  {{\"accent\": \"#7c3aed\", \"danger\": \"#b3261e\"}}\n"
         )),
-        Err(reason) => fail(&format!("«{path}» er ikke gyldig JSON: {reason}\n")),
+        Err(reason) => fail(&format!("\"{path}\" is not valid JSON: {reason}\n")),
     }
 }
 
 pub fn run(arguments: &[String]) {
     let arguments = Arguments::read(arguments);
-    // `--ut theme.css` uten likhetstegn ble lest som to filnavn etter
-    // oppskriften. Temaet gikk da til utdata, og ingen fil ble skrevet.
+    // `--out theme.css` without an equals sign was read as two file names
+    // after the recipe. The theme then went to standard output, and no file
+    // was written.
     refuse_without_value(&arguments);
     if arguments.files.len() > 1 {
         let files: Vec<String> = arguments
             .files
             .iter()
-            .map(|f| format!("«{}»", shown(f)))
+            .map(|f| format!("\"{}\"", shown(f)))
             .collect();
         fail(&format!(
-            "Temaet lages av én oppskrift, men fikk {} filer: {}.\n\nSlå dem sammen til én JSON-fil, eller sett resten som flagg. Se `lotek --hjelp`.\n",
+            "A theme is built from one recipe, but got {} files: {}.\n\nMerge them into one JSON file, or set the rest as flags. See `lotek --help`.\n",
             files.len(),
             files.join(", ")
         ));
@@ -140,30 +126,26 @@ pub fn run(arguments: &[String]) {
     let from_file = Json::Object(recipe.clone());
 
     let mut input: Object = Vec::new();
-    for (norwegian, english) in COLORS {
-        let value = match arguments.flag(norwegian) {
+    for family in COLORS {
+        let value = match arguments.flag(family) {
             Some(v) => Some(Json::String(v.to_string())),
-            None => coalesce(from_file.get(norwegian), from_file.get(english)).cloned(),
+            None => from_file.get(family).cloned(),
         };
         if let Some(Json::String(s)) = value {
             if !s.is_empty() {
-                set(&mut input, english, Json::String(s));
+                set(&mut input, family, Json::String(s));
             }
         }
     }
 
-    // Skrift og form kan komme fra fila eller fra flagg, og flagget vinner.
-    // Fila kan skrive dem på norsk eller engelsk, som fargene.
-    let mut typography = spread(coalesce(
-        from_file.get("typography"),
-        from_file.get("typografi"),
-    ));
+    // Font and shape can come from the file or from flags, and the flag wins.
+    let mut typography = spread(from_file.get("typography"));
     for (flag, key) in TYPOGRAPHY_FLAGS {
         if let Some(v) = arguments.flag(flag) {
             set(&mut typography, key, Json::String(v.to_string()));
         }
     }
-    let mut shape = spread(coalesce(from_file.get("shape"), from_file.get("form")));
+    let mut shape = spread(from_file.get("shape"));
     for (flag, key) in SHAPE_FLAGS {
         if let Some(v) = arguments.flag(flag) {
             set(&mut shape, key, Json::String(v.to_string()));
@@ -180,18 +162,18 @@ pub fn run(arguments: &[String]) {
 
     let known: Vec<&str> = COLORS
         .iter()
-        .map(|(n, _)| *n)
+        .copied()
         .chain(TYPOGRAPHY_FLAGS.iter().map(|(n, _)| *n))
         .chain(SHAPE_FLAGS.iter().map(|(n, _)| *n))
-        .chain(["ut"])
+        .chain(["out"])
         .collect();
 
-    // Nøklene i oppskriftsfila, som kan komme fra et annet repo, der en
-    // skrivefeil er vanskeligere å oppdage enn en på kommandolinja.
+    // The keys in the recipe file, which can come from another repository,
+    // where a typo is harder to spot than one on the command line.
     let top_level: Vec<&str> = COLORS
         .iter()
-        .flat_map(|(n, e)| [*n, *e])
-        .chain(["typografi", "typography", "form", "shape", "$schema"])
+        .copied()
+        .chain(["typography", "shape", "$schema"])
         .collect();
     let mut unknown: Vec<String> = recipe
         .iter()
@@ -201,40 +183,45 @@ pub fn run(arguments: &[String]) {
     unknown.extend(unknown_keys(
         Some(&typography),
         &TYPOGRAPHY_KEYS,
-        "typografi",
+        "typography",
     ));
     unknown.extend(unknown_keys(
         typography.get("weights"),
         &WEIGHT_KEYS,
-        "typografi.weights",
+        "typography.weights",
     ));
     unknown.extend(unknown_keys(
         typography.get("lineHeights"),
         &LINE_KEYS,
-        "typografi.lineHeights",
+        "typography.lineHeights",
     ));
-    unknown.extend(unknown_keys(Some(&shape), &SHAPE_KEYS, "form"));
+    unknown.extend(unknown_keys(Some(&shape), &SHAPE_KEYS, "shape"));
 
     if !unknown.is_empty() {
         fail(&format!(
-            "Ukjent nøkkel i oppskriften: {}\n\nHele oversikten: lotek --hjelp\n",
+            "Unknown key in the recipe: {}\n\nFull overview: lotek --help\n",
             unknown.join(", ")
         ));
     }
-    // Etter nøklene, så en feil i oppskriften meldes før et ukjent flagg.
+    // After the keys, so a mistake in the recipe is reported before an
+    // unknown flag.
     refuse_unknown_flags(&arguments, &known);
 
     crate::package::load_contract();
     let theme = match build_theme(&Json::Object(input)) {
         Ok(theme) => theme,
         Err(message) => {
-            // Hintet om heksadesimale farger står bare når feilen handler om
-            // en farge, ikke om en verdi som kunne bryte ut av CSS-regelen.
-            let about_colors = !message.contains("CSS-regel");
+            // The hint about hexadecimal colours is shown only when the error
+            // is about a colour, not about a font or shape value that could
+            // break out of its CSS rule. Those errors name the recipe key.
+            let about_colors = !TYPOGRAPHY_KEYS
+                .iter()
+                .chain(SHAPE_KEYS.iter())
+                .any(|key| message.contains(key));
             fail(&format!(
                 "\n{message}\n{}",
                 if about_colors {
-                    "\nFargene skrives som heksadesimale verdier, for eksempel #7c3aed.\n"
+                    "\nColours are written as hexadecimal values, for example #7c3aed.\n"
                 } else {
                     ""
                 }
@@ -248,7 +235,7 @@ pub fn run(arguments: &[String]) {
             .iter()
             .map(|v| {
                 format!(
-                    "  {}: {} er {}:1, kravet er {}:1",
+                    "  {}: {} is {}:1, the requirement is {}:1",
                     v.family,
                     v.promise,
                     to_fixed2(v.ratio),
@@ -257,18 +244,18 @@ pub fn run(arguments: &[String]) {
             })
             .collect();
         fail(&format!(
-            "\nTemaet holder ikke kontrastkravet:\n\n{}\n",
+            "\nThe theme does not meet the contrast requirement:\n\n{}\n",
             lines.join("\n")
         ));
     }
 
-    match arguments.flag("ut") {
+    match arguments.flag("out") {
         Some(path) => {
             if let Err(e) = std::fs::write(path, &theme.css) {
-                fail(&format!("Klarte ikke skrive {}: {e}", shown(path)));
+                fail(&format!("Could not write {}: {e}", shown(path)));
             }
             error(&format!(
-                "\nSkrev {}. {} farger i hvert tema, alle løfter holder.",
+                "\nWrote {}. {} colours in each theme, every promise holds.",
                 shown(path),
                 theme.light.len()
             ));

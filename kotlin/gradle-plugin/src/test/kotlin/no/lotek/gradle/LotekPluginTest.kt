@@ -14,10 +14,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Pluginen i et ekte, lite prosjekt, kjørt av Gradle selv. Det som prøves er
- * det en bruker merker: at `check` feiler på en feil i en mal og sier hvor,
- * at temaet og manifestet skrives, og at en overtatt komponent sjekkes mot
- * fragmentet sitt.
+ * The plugin in a real, small project, run by Gradle itself. What is tested
+ * is what a user notices: that `check` fails on a mistake in a template and
+ * says where, that the theme and the manifest are written, and that a
+ * taken-over component is checked against its fragment.
  */
 class LotekPluginTest {
     private val project: File = Files.createTempDirectory("lotek-gradle-").toFile()
@@ -55,38 +55,41 @@ class LotekPluginTest {
         file("templates/form.html", "<form>\n  <button class=\"lt-buton\">Send</button>\n</form>\n")
 
         val failed = gradle("check").buildAndFail()
-        assertContains(failed.output, "templates/form.html:2:18: advarsel: Klassen «lt-buton» finnes ikke i LO-TEK. Mente du lt-button?")
-        assertEquals(TaskOutcome.FAILED, failed.task(":lotekSjekk")?.outcome)
+        assertContains(failed.output, "The markup does not match LO-TEK:")
+        val finding = failed.output.lines().first { it.startsWith("templates/form.html:2:18: warning: ") }
+        assertContains(finding, "lt-buton")
+        assertContains(finding, "lt-button?")
+        assertEquals(TaskOutcome.FAILED, failed.task(":lotekCheck")?.outcome)
 
         file("templates/form.html", "<form>\n  <button class=\"lt-button\">Send</button>\n</form>\n")
         val passed = gradle("check").build()
-        assertEquals(TaskOutcome.SUCCESS, passed.task(":lotekSjekk")?.outcome)
-        assertEquals(TaskOutcome.UP_TO_DATE, gradle("check").build().task(":lotekSjekk")?.outcome)
+        assertEquals(TaskOutcome.SUCCESS, passed.task(":lotekCheck")?.outcome)
+        assertEquals(TaskOutcome.UP_TO_DATE, gradle("check").build().task(":lotekCheck")?.outcome)
     }
 
     @Test
     fun `without templates there is nothing to check`() {
         setUp()
-        assertEquals(TaskOutcome.NO_SOURCE, gradle("lotekSjekk").build().task(":lotekSjekk")?.outcome)
+        assertEquals(TaskOutcome.NO_SOURCE, gradle("lotekCheck").build().task(":lotekCheck")?.outcome)
     }
 
     @Test
     fun `builds the theme from the recipe`() {
         setUp("themeRecipe = file(\"lotek.theme.json\")")
-        file("lotek.theme.json", "{\"aksent\": \"#7c3aed\", \"fare\": \"#b3261e\"}\n")
+        file("lotek.theme.json", "{\"accent\": \"#7c3aed\", \"danger\": \"#b3261e\"}\n")
 
-        gradle("lotekTema").build()
+        gradle("lotekTheme").build()
         val theme = File(project, "build/lotek/theme.css").readText()
         assertContains(theme, "--lt-color-accent-fill")
 
-        file("lotek.theme.json", "{\"aksent\": \"lilla\"}\n")
-        assertContains(gradle("lotekTema").buildAndFail().output, "heksadesimale")
+        file("lotek.theme.json", "{\"accent\": \"purple\"}\n")
+        assertContains(gradle("lotekTheme").buildAndFail().output, "hexadecimal")
     }
 
     @Test
     fun `the theme is skipped without a recipe`() {
         setUp()
-        assertEquals(TaskOutcome.SKIPPED, gradle("lotekTema").build().task(":lotekTema")?.outcome)
+        assertEquals(TaskOutcome.SKIPPED, gradle("lotekTheme").build().task(":lotekTheme")?.outcome)
     }
 
     @Test
@@ -94,7 +97,7 @@ class LotekPluginTest {
         val output = ByteArrayOutputStream()
         val code =
             CommandLine.run(
-                listOf("overta", "button", "--ut=src/ui"),
+                listOf("takeover", "button", "--out=src/ui"),
                 project,
                 ByteArrayInputStream(ByteArray(0)),
                 output,
@@ -102,11 +105,13 @@ class LotekPluginTest {
             )
         assertEquals(0, code, output.toString(Charsets.UTF_8))
         setUp("manifests.from(\"src/ui/button/lotek-manifest.json\")")
-        file("templates/side.html", "<button class=\"app-button\" data-variant=\"feil\">Send</button>\n")
+        file("templates/page.html", "<button class=\"app-button\" data-variant=\"wrong\">Send</button>\n")
 
-        assertContains(gradle("check").buildAndFail().output, "data-variant kan ikke være «feil»")
+        val finding = gradle("check").buildAndFail().output.lines().first { it.startsWith("templates/page.html:1:") }
+        assertContains(finding, "data-variant")
+        assertContains(finding, "wrong")
 
-        file("templates/side.html", "<button class=\"app-button\">Send</button>\n")
+        file("templates/page.html", "<button class=\"app-button\">Send</button>\n")
         gradle("build", "--configuration-cache").build()
         val manifest = File(project, "build/lotek/manifest.json").readText()
         assertContains(manifest, "\"app-button\"")
@@ -114,8 +119,8 @@ class LotekPluginTest {
         assertFalse(manifest.contains("\$schema"))
         assertTrue(gradle("build", "--configuration-cache").build().output.contains("Reusing configuration cache"))
 
-        // Uten fragmenter er pakkens manifest det riktige, og fila
-        // fra forrige bygg må bort, ellers foretrekker editoren den.
+        // Without fragments the package's manifest is the right one, and the
+        // file from the previous build must go, or the editor prefers it.
         setUp()
         gradle("build").build()
         assertFalse(File(project, "build/lotek/manifest.json").exists())
@@ -124,7 +129,7 @@ class LotekPluginTest {
     @Test
     fun `without fragments no manifest is written`() {
         setUp()
-        file("templates/side.html", "<button class=\"lt-button\">Send</button>\n")
+        file("templates/page.html", "<button class=\"lt-button\">Send</button>\n")
         gradle("build").build()
         assertFalse(File(project, "build/lotek/manifest.json").exists())
     }

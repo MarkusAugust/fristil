@@ -1,31 +1,33 @@
-//! `lotek lsp`: språkserveren, over standard inn og ut.
+//! `lotek lsp`: the language server, over standard input and output.
 //!
-//! Den samme sjekken som `lotek sjekk`, mens du skriver, i hver editor som
-//! snakker LSP: VS Code, Neovim og Helix. Funnene blir diagnostikk, med
-//! regelnavnet som kode og komponentsiden som lenke, og en rettelse blir en
-//! hurtigrettelse. IntelliJ-pluginen bruker ikke serveren: den kjører kjernen
-//! selv, gjennom Kotlin-pakken. Zed starter bare servere en Zed-utvidelse har
-//! meldt inn, og en slik finnes ikke ennå.
+//! The same check as `lotek check`, while you type, in every editor that
+//! speaks LSP: VS Code, Neovim and Helix. The findings become diagnostics,
+//! with the rule name as the code and the component page as the link, and a
+//! fix becomes a quick fix. The IntelliJ plugin does not use the server: it
+//! runs the core itself, through the Kotlin package. Zed only starts servers
+//! a Zed extension has registered, and no such extension exists yet.
 //!
-//! Ordforrådet er det prosjektet faktisk har. Serveren leter i
-//! arbeidsområdet etter
+//! The vocabulary is the one the project actually has. The server looks in
+//! the workspace for
 //!
-//! 1. `build/lotek/manifest.json`, som Gradle-pluginen skriver, med
-//!    fragmentene fra `lotek overta`;
-//! 2. `node_modules/@lo-tek/interfaces/manifest/manifest.json`, den
-//!    installerte versjonen av pakken;
+//! 1. `build/lotek/manifest.json`, which the Gradle plugin writes, with the
+//!    fragments from `lotek takeover`;
+//! 2. `node_modules/@lo-tek/interfaces/manifest/manifest.json`, the
+//!    installed version of the package;
 //!
-//! og så manifestet i pakken verten har gitt med `LOTEK_PACKAGE`, som
-//! VS Code-utvidelsen gjør. Finnes ingen av dem, sjekkes
-//! ingenting, og serveren sier fra én gang. Fila leses på nytt når den
-//! endres, så et nytt bygg eller en oppgradering når editoren uten omstart.
+//! and then the manifest in the package the host has given with
+//! `LOTEK_PACKAGE`, as the VS Code extension does. If none of them exists,
+//! nothing is checked, and the server says so once. The file is read again
+//! when it changes, so a new build or an upgrade reaches the editor without a
+//! restart.
 //!
-//! Posisjonene er UTF-16, som LSP krever som standard og kjernen regner i.
-//! Dokumentene sendes hele ved hver endring: kjernen bruker et par
-//! millisekunder på en side, og det holder serveren enkel.
+//! The positions are UTF-16, which LSP requires by default and the core
+//! counts in. The documents are sent whole on every change: the core spends a
+//! couple of milliseconds on a page, and that keeps the server simple.
 //!
-//! `initializationOptions` kan ha `manifest`, en sti til et manifest som går
-//! foran de andre, og `rendered`, som sjekker dokumentene som hele sider.
+//! `initializationOptions` can have `manifest`, a path to a manifest that
+//! comes before the others, and `rendered`, which checks the documents as
+//! whole pages.
 
 use std::io::{Read, Write};
 use std::rc::Rc;
@@ -36,9 +38,9 @@ use lotek_core::text::utf16;
 use lotek_core::types::{Finding, Severity, Vocabulary};
 use lotek_core::{diagnose_markup, diagnose_page, manifest, Lines};
 
-/// Stedene manifestet letes etter: i mappa til fila og hver mappe over den
-/// til og med rota av arbeidsområdet fila ligger i, og så ved rota av hvert
-/// arbeidsområde.
+/// Where the manifest is looked for: in the file's folder and every folder
+/// above it up to and including the root of the workspace the file is in,
+/// and then at the root of every workspace.
 const CANDIDATES: [&str; 2] = [
     "build/lotek/manifest.json",
     "node_modules/@lo-tek/interfaces/manifest/manifest.json",
@@ -50,7 +52,7 @@ struct Document {
     findings: Vec<Finding>,
 }
 
-/// Manifestet som gjelder, og hvor det kom fra.
+/// The manifest that applies, and where it came from.
 struct Source {
     path: Option<String>,
     modified: Option<SystemTime>,
@@ -62,26 +64,30 @@ pub struct Server {
     roots: Vec<String>,
     preferred: Option<String>,
     rendered: bool,
-    /// Manifestene som er lest, ett per sti. I et monorepo kan to dokumenter
-    /// høre til hver sin pakke, med hver sin versjon av LO-TEK.
+    /// The manifests that have been read, one per path. In a monorepo two
+    /// documents can belong to different packages, each with its own version
+    /// of LO-TEK.
     sources: Vec<Source>,
     shut_down: bool,
-    /// Meldinger til editoren som venter på å bli sendt.
+    /// Messages to the editor waiting to be sent.
     outgoing: Vec<Json>,
-    /// Manifestet er lest på nytt, og alle åpne dokumenter skal sjekkes.
+    /// The manifest has been read again, and every open document is to be
+    /// checked.
     reloaded: bool,
-    /// Om serveren har sagt fra om at et dokument ikke har noe manifest.
+    /// Whether the server has said that a document has no manifest.
     warned: bool,
-    /// Manifestet i pakken verten har gitt i `LOTEK_PACKAGE`, lest én gang.
-    /// Ikke `node_modules` over arbeidsmappa: en pakke over rota av
-    /// arbeidsområdet er ikke prosjektets, og den ved rota er alt med.
+    /// The manifest in the package the host has given in `LOTEK_PACKAGE`,
+    /// read once. Not `node_modules` above the working directory: a package
+    /// above the root of the workspace is not the project's, and the one at
+    /// the root is already included.
     package_manifest: Option<String>,
-    /// Endringer sjekkes først når det ikke ligger flere meldinger i kø, se
-    /// [`Server::flush`]. Av i testene, der hver melding sjekkes med en gang.
+    /// Changes are checked only when no more messages are queued, see
+    /// [`Server::flush`]. Off in the tests, where every message is checked at
+    /// once.
     deferred: bool,
-    /// Dokumentene som er endret og ikke sjekket ennå.
+    /// The documents that have changed and are not checked yet.
     dirty: Vec<String>,
-    /// Om editoren lar serveren melde inn filovervåkere selv.
+    /// Whether the editor lets the server register file watchers itself.
     can_watch: bool,
 }
 
@@ -102,10 +108,10 @@ fn number(n: usize) -> Json {
     Json::Number(n as f64)
 }
 
-/// Stien i en `file:`-adresse, slik programmet ser filsystemet.
+/// The path in a `file:` address, as the program sees the file system.
 ///
-/// På Windows er `file:///c%3A/prosjekt` stasjonen `C:`. Som WASI-modul har
-/// verten åpnet den som `/c`, og som kjørbar fil er det `C:/prosjekt`.
+/// On Windows `file:///c%3A/project` is the drive `C:`. As a WASI module the
+/// host has opened it as `/c`, and as an executable it is `C:/project`.
 pub fn path_of(uri: &str) -> Option<String> {
     let rest = uri.strip_prefix("file://")?;
     let rest = rest.strip_prefix("localhost").unwrap_or(rest);
@@ -125,10 +131,10 @@ pub fn path_of(uri: &str) -> Option<String> {
     })
 }
 
-/// Stien til manifestet i `initializationOptions`, slik programmet ser
-/// filsystemet. Den kan være en `file:`-adresse, en absolutt sti, også på
-/// Windows (`C:\\prosjekt\\…` eller `\\\\server\\…`), eller relativ til
-/// arbeidsområdet.
+/// The path to the manifest in `initializationOptions`, as the program sees
+/// the file system. It can be a `file:` address, an absolute path, also on
+/// Windows (`C:\\project\\…` or `\\\\server\\…`), or relative to the
+/// workspace.
 pub fn manifest_path(path: &str, root: Option<&str>) -> String {
     if let Some(from_uri) = path.strip_prefix("file:").and(path_of(path)) {
         return from_uri;
@@ -139,7 +145,7 @@ pub fn manifest_path(path: &str, root: Option<&str>) -> String {
         && bytes[1] == b':'
         && matches!(bytes[2], b'/' | b'\\');
     if drive {
-        // Som WASI-modul har verten åpnet stasjonen som `/c`.
+        // As a WASI module the host has opened the drive as `/c`.
         return if cfg!(target_os = "wasi") {
             format!(
                 "/{}/{}",
@@ -164,8 +170,8 @@ fn percent_decode(s: &str) -> String {
     let mut out = Vec::with_capacity(bytes.len());
     let mut i = 0;
     while i < bytes.len() {
-        // `%` og to heksadesimale sifre. `from_str_radix` godtar et `+`
-        // foran, og `%+f` er ikke en kodet byte.
+        // `%` and two hexadecimal digits. `from_str_radix` accepts a leading
+        // `+`, and `%+f` is not an encoded byte.
         if bytes[i] == b'%'
             && i + 2 < bytes.len()
             && bytes[i + 1..i + 3].iter().all(u8::is_ascii_hexdigit)
@@ -184,7 +190,7 @@ fn percent_decode(s: &str) -> String {
     String::from_utf8_lossy(&out).into_owned()
 }
 
-/// LSP-posisjonen, linje og tegn fra 0, for en UTF-16-posisjon.
+/// The LSP position, line and character from 0, for a UTF-16 offset.
 fn position(lines: &Lines, at: usize) -> Json {
     let (line, column) = lines.line_and_column(at);
     object(vec![
@@ -210,7 +216,7 @@ fn diagnostic(lines: &Lines, finding: &Finding) -> Json {
                 Severity::Warning => 2,
             }),
         ),
-        // Regelnavnet er det `<!-- lotek-ignore-next … -->` tar.
+        // The rule name is what `<!-- lotek-ignore-next … -->` takes.
         ("code", text(finding.rule)),
         ("source", text("LO-TEK")),
         ("message", text(&finding.message)),
@@ -268,20 +274,22 @@ impl Server {
         );
     }
 
-    /// Manifestet som skal gjelde for et dokument: det første som finnes,
-    /// lest på nytt når fila er endret.
+    /// The manifest that applies to a document: the first one that exists,
+    /// read again when the file has changed.
     ///
-    /// Det letes fra mappa til dokumentet og oppover, slik Node finner en
-    /// pakke, og så ved rota av arbeidsområdene. Før ble bare rota sett på,
-    /// så en side i `apps/web/` i et monorepo ble sjekket mot et annet
-    /// manifestet, enda `apps/web/node_modules` hadde pakken.
+    /// The search goes from the document's folder upwards, as Node finds a
+    /// package, and then at the roots of the workspaces. Before, only the
+    /// root was looked at, so a page in `apps/web/` in a monorepo was checked
+    /// against another manifest, even though `apps/web/node_modules` had the
+    /// package.
     fn vocabulary(&mut self, uri: Option<&str>) -> Option<Rc<Vocabulary>> {
         let mut candidates: Vec<String> = self.preferred.iter().cloned().collect();
         if let Some(file) = uri.and_then(path_of) {
-            // Ikke over rota av arbeidsområdet fila ligger i: en pakke i
-            // hjemmemappa er ikke prosjektets, og editoren følger ikke med på
-            // filer der. Stien skrives med `/` som ved rota under, så den
-            // samme fila har samme nøkkel i `sources` også på Windows.
+            // Not above the root of the workspace the file is in: a package in
+            // the home folder is not the project's, and the editor does not
+            // watch files there. The path is written with `/` as for the root
+            // below, so the same file has the same key in `sources` on
+            // Windows too.
             let file = file.replace('\\', "/");
             let root = self
                 .roots
@@ -289,12 +297,12 @@ impl Server {
                 .map(|r| r.replace('\\', "/").trim_end_matches('/').to_string())
                 .filter(|r| file.starts_with(&format!("{r}/")))
                 .max_by_key(String::len);
-            // Ligger fila ikke under noen rot, som en kladdefil utenfor
-            // arbeidsområdet, eller når editoren ikke ga noe arbeidsområde,
-            // er det ingen rot å stoppe ved. Da letes det ikke fra fila i det
-            // hele tatt, som i IntelliJ-pluginen; rota av hvert arbeidsområde
-            // prøves fortsatt, under. Før gikk letingen helt til rota av
-            // filsystemet, og tok pakken i hjemmemappa.
+            // If the file is under no root, like a scratch file outside the
+            // workspace, or when the editor gave no workspace, there is no
+            // root to stop at. Then nothing is searched from the file at all,
+            // as in the IntelliJ plugin; the root of every workspace is still
+            // tried, below. Before, the search went all the way to the root of
+            // the file system, and took the package in the home folder.
             let mut dir = root
                 .as_ref()
                 .and_then(|_| std::path::Path::new(&file).parent());
@@ -314,7 +322,7 @@ impl Server {
                 candidates.push(format!("{}/{candidate}", root.trim_end_matches('/')));
             }
         }
-        // Til sist pakken verten har gitt, som utvidelsen peker på.
+        // Last, the package the host has given, which the extension points to.
         candidates.extend(self.package_manifest.clone());
         let found = candidates.into_iter().find_map(|path| {
             let modified = std::fs::metadata(&path).ok()?.modified().ok();
@@ -330,8 +338,8 @@ impl Server {
                 return self.sources[index].vocabulary.clone();
             }
         }
-        // Et manifest som er nytt eller endret, gjelder alle åpne dokumenter
-        // som finner det. Det første som leses, er ingen endring.
+        // A manifest that is new or changed applies to every open document
+        // that finds it. The first one read is not a change.
         self.reloaded = !self.sources.is_empty();
         let vocabulary = match &path {
             None => None,
@@ -343,7 +351,7 @@ impl Server {
                 Err(reason) => {
                     self.message(
                         2,
-                        &format!("LO-TEK kunne ikke lese {file}, og sjekker ingenting før det kan leses: {reason}"),
+                        &format!("LO-TEK could not read {file}, and checks nothing until it can be read: {reason}"),
                     );
                     None
                 }
@@ -364,13 +372,13 @@ impl Server {
     fn check(&mut self, index: usize) {
         let uri = self.documents[index].uri.clone();
         let vocabulary = self.vocabulary(Some(&uri));
-        // Bare når et dokument faktisk står uten, og én gang: `initialize`
-        // leter bare ved rota, og i et monorepo ligger pakken lenger ned.
+        // Only when a document actually has none, and once: `initialize` looks
+        // only at the root, and in a monorepo the package is further down.
         if vocabulary.is_none() && !self.warned {
             self.warned = true;
             self.message(
                 2,
-                "LO-TEK fant ikke noe manifest, og sjekker ingenting. Installer @lo-tek/interfaces i prosjektet, og åpne fila i et arbeidsområde som har den.",
+                "LO-TEK found no manifest, and checks nothing. Install @lo-tek/interfaces in the project, and open the file in a workspace that has it.",
             );
         }
         let document = &mut self.documents[index];
@@ -418,7 +426,7 @@ impl Server {
         }
     }
 
-    /// Sjekker alle åpne dokumenter.
+    /// Checks every open document.
     fn check_all(&mut self) {
         for index in 0..self.documents.len() {
             self.check(index);
@@ -426,16 +434,17 @@ impl Server {
         self.reloaded = false;
     }
 
-    /// Ble manifestet lest på nytt, er funnene i de andre dokumentene gamle.
+    /// If the manifest was read again, the findings in the other documents are
+    /// stale.
     fn after_reload(&mut self) {
         if self.reloaded {
             self.check_all();
         }
     }
 
-    /// Sjekker dokumentene som er endret siden sist. Kjøres når det ikke
-    /// ligger flere meldinger i kø, så tastetrykk som kom tett, sjekkes som
-    /// én endring, med den nyeste teksten.
+    /// Checks the documents that have changed since last time. Runs when no
+    /// more messages are queued, so keystrokes that came close together are
+    /// checked as one change, with the newest text.
     pub fn flush(&mut self) {
         for uri in std::mem::take(&mut self.dirty) {
             if let Some(index) = self.documents.iter().position(|d| d.uri == uri) {
@@ -478,8 +487,8 @@ impl Server {
                 .map(|p| manifest_path(p, self.roots.first().map(String::as_str)));
             self.rendered = matches!(options.get("rendered"), Some(Json::Bool(true)));
         }
-        // Versjonen av LO-TEK serveren sjekker mot. Uten manifest er den ukjent,
-        // og feltet utelates, som LSP tillater.
+        // The version of LO-TEK the server checks against. Without a manifest
+        // it is unknown, and the field is left out, as LSP allows.
         let version = self.vocabulary(None).map(|v| v.version.clone());
         object(vec![
             (
@@ -491,7 +500,7 @@ impl Server {
                         object(vec![
                             ("openClose", Json::Bool(true)),
                             ("change", number(1)),
-                            // Et bygg kan ha skrevet et nytt manifest.
+                            // A build may have written a new manifest.
                             ("save", object(vec![("includeText", Json::Bool(false))])),
                         ]),
                     ),
@@ -516,7 +525,7 @@ impl Server {
         ])
     }
 
-    /// Hurtigrettelsene for funnene som overlapper området.
+    /// The quick fixes for the findings that overlap the range.
     fn code_actions(&self, params: &Json) -> Json {
         let uri = params
             .get("textDocument")
@@ -549,9 +558,9 @@ impl Server {
             .filter(|f| at(f.start) <= to && from <= at(f.end))
             .map(|f| {
                 let fix = f.fix.as_ref().unwrap();
-                // Én kodehandling med alle endringene: editoren bruker dem
-                // under ett, så `id` på feltet og `for` på ledeteksten kommer
-                // sammen.
+                // One code action with all the edits: the editor applies them
+                // together, so `id` on the field and `for` on the label come
+                // together.
                 let edits = fix
                     .edits
                     .iter()
@@ -580,9 +589,9 @@ impl Server {
         Json::Array(actions)
     }
 
-    /// Håndterer én melding. Svaret, og alt annet som skal til editoren,
-    /// ligger i [`Server::take`] etterpå. `Some(kode)` betyr at serveren skal
-    /// avslutte.
+    /// Handles one message. The answer, and everything else for the editor,
+    /// is in [`Server::take`] afterwards. `Some(code)` means the server is to
+    /// exit.
     pub fn handle(&mut self, message: &Json) -> Option<i32> {
         let method = message.get("method").and_then(Json::as_str).unwrap_or("");
         let id = message.get("id").cloned();
@@ -602,8 +611,8 @@ impl Server {
             }
             "exit" => return Some(if self.shut_down { 0 } else { 1 }),
             "initialized" => {
-                // Editoren overvåker manifestene og sier fra når de endres,
-                // også i Neovim og Helix, der ingen utvidelse gjør det.
+                // The editor watches the manifests and says when they change,
+                // also in Neovim and Helix, where no extension does it.
                 if self.can_watch {
                     self.outgoing.push(object(vec![
                         ("jsonrpc", text("2.0")),
@@ -651,7 +660,7 @@ impl Server {
                 None
             }
             "textDocument/didChange" => {
-                // Hele dokumentet står i den siste endringen.
+                // The whole document is in the last change.
                 let content = params
                     .get("contentChanges")
                     .and_then(Json::as_array)
@@ -676,13 +685,13 @@ impl Server {
                 );
                 None
             }
-            // Et nytt bygg eller en oppgradering kan ha endret manifestet.
+            // A new build or an upgrade may have changed the manifest.
             "textDocument/didSave" | "workspace/didChangeWatchedFiles" => {
                 self.flush();
                 self.check_all();
                 None
             }
-            // Rettelsene skal gjelde den nyeste teksten.
+            // The fixes apply to the newest text.
             "textDocument/codeAction" => {
                 self.flush();
                 Some(self.code_actions(&params))
@@ -705,25 +714,25 @@ impl Server {
                         "error",
                         object(vec![
                             ("code", Json::Number(-32601.0)),
-                            ("message", text(&format!("lotek lsp kan ikke {method}."))),
+                            ("message", text(&format!("lotek lsp cannot do {method}."))),
                         ]),
                     ),
                 ]),
             };
-            // Svaret går foran diagnostikken det førte til.
+            // The answer goes before the diagnostics it led to.
             self.outgoing.insert(0, reply);
         }
         None
     }
 
-    /// Meldingene som venter på å bli sendt.
+    /// The messages waiting to be sent.
     pub fn take(&mut self) -> Vec<Json> {
         std::mem::take(&mut self.outgoing)
     }
 }
 
-/// Leser nøyaktig så mange byte, og venter i stedet for å gi opp når røret
-/// er i ikke-blokkerende modus.
+/// Reads exactly that many bytes, and waits instead of giving up when the
+/// pipe is in non-blocking mode.
 fn read_exact(input: &mut impl Read, buffer: &mut [u8]) -> bool {
     let mut filled = 0;
     while filled < buffer.len() {
@@ -740,17 +749,18 @@ fn read_exact(input: &mut impl Read, buffer: &mut [u8]) -> bool {
     true
 }
 
-/// Det som ble lest fra editoren.
+/// What was read from the editor.
 #[derive(Debug, PartialEq)]
 enum Incoming {
     Message(Vec<u8>),
-    /// Hodene hadde ingen `Content-Length` som kunne leses.
+    /// The headers had no `Content-Length` that could be read.
     BadHeader,
-    /// Editoren lukket røret.
+    /// The editor closed the pipe.
     Closed,
 }
 
-/// Én melding: hodene til en tom linje, og så `Content-Length` byte JSON.
+/// One message: the headers up to an empty line, and then `Content-Length`
+/// bytes of JSON.
 fn read_message(input: &mut impl Read) -> Incoming {
     let mut header = Vec::new();
     let mut byte = [0u8];
@@ -784,7 +794,7 @@ fn write_message(output: &mut impl Write, message: &Json) {
     let _ = output.flush();
 }
 
-/// Svaret på en melding som ikke kunne leses.
+/// The answer to a message that could not be read.
 fn parse_error(reason: &str) -> Json {
     object(vec![
         ("jsonrpc", text("2.0")),
@@ -803,17 +813,17 @@ pub fn run(_arguments: &[String]) {
     let mut server = Server::new();
     server.deferred = true;
     let stdin = std::io::stdin();
-    // Egen buffer, så serveren kan se om det ligger flere meldinger i kø.
+    // Its own buffer, so the server can see whether more messages are queued.
     let mut input = std::io::BufReader::with_capacity(1 << 16, stdin.lock());
     let stdout = std::io::stdout();
     loop {
         let code = match read_message(&mut input) {
-            // Editoren lukket røret uten `exit`.
+            // The editor closed the pipe without `exit`.
             Incoming::Closed => std::process::exit(1),
-            // Én ødelagt melding skal ikke ta ned serveren.
+            // One broken message must not take down the server.
             Incoming::BadHeader => {
                 server.outgoing.push(parse_error(
-                    "Meldingen hadde ingen Content-Length som kunne leses.",
+                    "The message had no Content-Length that could be read.",
                 ));
                 None
             }
@@ -898,7 +908,7 @@ mod tests {
         assert_eq!(start.get("line").unwrap().as_f64(), Some(1.0));
         assert_eq!(start.get("character").unwrap().as_f64(), Some(10.0));
 
-        // Endringen erstatter hele dokumentet, og funnet er borte.
+        // The change replaces the whole document, and the finding is gone.
         server.handle(&notification(
             "textDocument/didChange",
             r#"{"textDocument":{"uri":"file:///a.html","version":2},"contentChanges":[{"text":"<b class=\"lt-button\"></b>"}]}"#,
@@ -916,8 +926,8 @@ mod tests {
 
     #[test]
     fn counts_carriage_returns_as_line_breaks_like_lsp() {
-        // LSP deler linjer på `\n`, `\r\n` og `\r`. En klient som sender
-        // bufferen slik den er, som Neovim med fileformat=mac, sender `\r`.
+        // LSP splits lines on `\n`, `\r\n` and `\r`. A client that sends the
+        // buffer as it is, like Neovim with fileformat=mac, sends `\r`.
         for (text, line, character) in [
             (
                 r#"<div>\r<div>\r<span class=\"lt-buton\">x</span>"#,
@@ -968,7 +978,7 @@ mod tests {
         let action = &reply.get("result").unwrap().as_array().unwrap()[0];
         assert_eq!(
             action.get("title").unwrap().as_str(),
-            Some("Bytt til lt-button")
+            Some("Change to lt-button")
         );
         let edit = &action
             .get("edit")
@@ -1017,14 +1027,14 @@ mod tests {
     #[test]
     fn reads_paths_from_file_addresses() {
         assert_eq!(path_of("file:///home/a%20b/x"), Some("/home/a b/x".into()));
-        let windows = path_of("file:///c%3A/prosjekt").unwrap();
+        let windows = path_of("file:///c%3A/project").unwrap();
         if cfg!(target_os = "wasi") {
-            assert_eq!(windows, "/c/prosjekt");
+            assert_eq!(windows, "/c/project");
         } else {
-            assert_eq!(windows, "C:/prosjekt");
+            assert_eq!(windows, "C:/project");
         }
         assert_eq!(path_of("untitled:Untitled-1"), None);
-        // Manifestet i initializationOptions.
+        // The manifest in initializationOptions.
         let windows = manifest_path(r"C:\proj\build\lotek\manifest.json", Some("/c/proj"));
         if cfg!(target_os = "wasi") {
             assert_eq!(windows, "/c/proj/build/lotek/manifest.json");
@@ -1052,7 +1062,7 @@ mod tests {
             Incoming::Message(b"null".to_vec())
         );
         assert_eq!(read_message(&mut input), Incoming::Closed);
-        // Et hode uten lengde er en ødelagt melding, ikke et lukket rør.
+        // A header without a length is a broken message, not a closed pipe.
         let mut broken: &[u8] = b"Content-Type: x\r\n\r\nContent-Length: 2\r\n\r\n{}";
         assert_eq!(read_message(&mut broken), Incoming::BadHeader);
         assert_eq!(read_message(&mut broken), Incoming::Message(b"{}".to_vec()));
@@ -1107,8 +1117,9 @@ mod tests {
 
     #[test]
     fn finds_the_manifest_in_the_folder_above_the_document() {
-        // Et monorepo: pakken står i `apps/web/node_modules`, ikke ved rota.
-        let root = std::env::temp_dir().join(format!("lotek-lsp-opp-{}", std::process::id()));
+        // A monorepo: the package is in `apps/web/node_modules`, not at the
+        // root.
+        let root = std::env::temp_dir().join(format!("lotek-lsp-up-{}", std::process::id()));
         let web = root.join("apps/web");
         let folder = web.join("node_modules/@lo-tek/interfaces/manifest");
         std::fs::create_dir_all(&folder).unwrap();
@@ -1150,21 +1161,21 @@ mod tests {
                 })
                 .unwrap()
         };
-        let inside = format!("file://{}/src/side.html", web.display());
+        let inside = format!("file://{}/src/page.html", web.display());
         assert_eq!(
             count(&mut server, &inside),
             1,
-            "siden i apps/web ser pakken der"
+            "the page in apps/web sees the package there"
         );
-        let outside = format!("file://{}/side.html", root.display());
+        let outside = format!("file://{}/page.html", root.display());
         assert_eq!(
             count(&mut server, &outside),
             0,
-            "en side ved rota ser den ikke"
+            "a page at the root does not see it"
         );
 
-        // Over rota letes det ikke: arbeidsområdet `apps/web/src` ser ikke
-        // pakken i `apps/web`, som ligger utenfor det.
+        // Nothing is searched above the root: the workspace `apps/web/src`
+        // does not see the package in `apps/web`, which is outside it.
         let mut narrow = Server::new();
         narrow.handle(&request(
             1,
@@ -1178,18 +1189,19 @@ mod tests {
         assert_eq!(
             count(&mut narrow, &inside),
             0,
-            "pakken over rota gjelder ikke"
+            "the package above the root does not apply"
         );
         std::fs::remove_dir_all(root).unwrap();
     }
 
     #[test]
     fn does_not_look_above_the_workspace_for_a_file_outside_it() {
-        // Pakken står over arbeidsområdet, som i hjemmemappa, og
-        // arbeidsområdet selv har ingen. Før stoppet letingen bare ved en rot
-        // fila lå under, så en fil utenfor roten, og hver fil når editoren
-        // ikke ga noen rot, gikk helt til rota av filsystemet og fant den.
-        let root = std::env::temp_dir().join(format!("lotek-lsp-utenfor-{}", std::process::id()));
+        // The package is above the workspace, as in the home folder, and the
+        // workspace itself has none. Before, the search stopped only at a root
+        // the file was under, so a file outside the root, and every file when
+        // the editor gave no root, went all the way to the root of the file
+        // system and found it.
+        let root = std::env::temp_dir().join(format!("lotek-lsp-outside-{}", std::process::id()));
         let folder = root.join("node_modules/@lo-tek/interfaces/manifest");
         std::fs::create_dir_all(&folder).unwrap();
         std::fs::create_dir_all(root.join("proj")).unwrap();
@@ -1237,10 +1249,10 @@ mod tests {
         assert_eq!(
             count(&mut server, &outside),
             0,
-            "en fil utenfor arbeidsområdet ser ikke pakken over det"
+            "a file outside the workspace does not see the package above it"
         );
 
-        // Uten arbeidsområde, som Neovim uten treff på `root_markers`.
+        // Without a workspace, like Neovim without a match on `root_markers`.
         let mut rootless = Server::new();
         rootless.handle(&request(
             1,
@@ -1248,11 +1260,11 @@ mod tests {
             r#"{"rootUri":null,"capabilities":{}}"#,
         ));
         rootless.take();
-        let inside = format!("file://{}/proj/side.html", root.display());
+        let inside = format!("file://{}/proj/page.html", root.display());
         assert_eq!(
             count(&mut rootless, &inside),
             0,
-            "uten rot letes det ikke oppover fra fila"
+            "without a root nothing is searched upwards from the file"
         );
         std::fs::remove_dir_all(root).unwrap();
     }
@@ -1271,11 +1283,11 @@ mod tests {
         }
         assert!(
             server.take().is_empty(),
-            "ingenting sjekkes mens det ligger meldinger i kø"
+            "nothing is checked while messages are queued"
         );
         server.flush();
         let sent = server.take();
-        assert_eq!(sent.len(), 1, "tre endringer gir én sjekk");
+        assert_eq!(sent.len(), 1, "three changes give one check");
         assert!(sent[0]
             .get("params")
             .unwrap()
@@ -1288,7 +1300,7 @@ mod tests {
 
     #[test]
     fn registers_watchers_and_rechecks_every_document_when_the_manifest_changes() {
-        let root = std::env::temp_dir().join(format!("lotek-lsp-alle-{}", std::process::id()));
+        let root = std::env::temp_dir().join(format!("lotek-lsp-all-{}", std::process::id()));
         std::fs::create_dir_all(root.join("build/lotek")).unwrap();
         let mut server = Server::new();
         server.handle(&request(
@@ -1333,7 +1345,7 @@ mod tests {
                 m.get("method").and_then(Json::as_str) == Some("textDocument/publishDiagnostics")
             })
             .count();
-        assert_eq!(published, 2, "begge dokumentene sjekkes på nytt");
+        assert_eq!(published, 2, "both documents are checked again");
         std::fs::remove_dir_all(root).unwrap();
     }
 }

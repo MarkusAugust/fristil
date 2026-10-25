@@ -1,11 +1,11 @@
-//! Utdata slik `console.log` og `console.error` skriver dem: teksten og et
-//! linjeskift. Svarene skal være de samme byte for byte som da kommandolinja
-//! var skrevet i TypeScript, så en test eller et skript som leser dem, ikke
-//! merker byttet.
+//! Output as `console.log` and `console.error` write it: the text and a line
+//! break. The answers were the same byte for byte as when the command line
+//! was written in TypeScript, so a test or a script reading them did not
+//! notice the switch.
 
 use std::io::Write;
 
-/// `console.log`: til utdata, med linjeskift.
+/// `console.log`: to standard output, with a line break.
 pub fn log(text: &str) {
     let mut out = std::io::stdout().lock();
     let _ = out.write_all(text.as_bytes());
@@ -13,7 +13,7 @@ pub fn log(text: &str) {
     let _ = out.flush();
 }
 
-/// `console.error`: til feilkanalen, med linjeskift.
+/// `console.error`: to standard error, with a line break.
 pub fn error(text: &str) {
     let mut err = std::io::stderr().lock();
     let _ = err.write_all(text.as_bytes());
@@ -21,29 +21,29 @@ pub fn error(text: &str) {
     let _ = err.flush();
 }
 
-/// `console.error(tekst)` og `process.exit(1)`.
+/// `console.error(text)` and `process.exit(1)`.
 pub fn fail(text: &str) -> ! {
     error(text);
     std::process::exit(1);
 }
 
-/// `process.stdout.write`: til utdata, uten noe lagt til.
+/// `process.stdout.write`: to standard output, with nothing added.
 pub fn write(text: &str) {
     let mut out = std::io::stdout().lock();
     let _ = out.write_all(text.as_bytes());
     let _ = out.flush();
 }
 
-/// «1 fil» eller «3 filer».
+/// "1 file" or "3 files".
 pub fn count(n: usize, one: &str, many: &str) -> String {
     format!("{n} {}", if n == 1 { one } else { many })
 }
 
-/// En sti slik brukeren skrev den.
+/// A path as the user wrote it.
 ///
-/// På Windows gjør verten `C:\\prosjekt\\a.html` om til `/c/prosjekt/a.html`,
-/// som WASI-modulen forstår, og setter `LOTEK_WINDOWS`. I meldingene skal
-/// stien se ut som den brukeren kjenner igjen.
+/// On Windows the host turns `C:\\project\\a.html` into `/c/project/a.html`,
+/// which the WASI module understands, and sets `LOTEK_WINDOWS`. In the
+/// messages the path should look like the one the user recognises.
 pub fn shown(path: &str) -> String {
     shown_with(path, std::env::var("LOTEK_WINDOWS").as_deref() == Ok("1"))
 }
@@ -71,8 +71,8 @@ mod tests {
     #[test]
     fn shows_windows_paths_as_written() {
         assert_eq!(
-            shown_with("/c/Users/a/galt.html", true),
-            r"C:\Users\a\galt.html"
+            shown_with("/c/Users/a/wrong.html", true),
+            r"C:\Users\a\wrong.html"
         );
         assert_eq!(shown_with("/d", true), r"D:\");
         assert_eq!(shown_with("templates/a.html", true), r"templates\a.html");

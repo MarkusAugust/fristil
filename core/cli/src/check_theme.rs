@@ -1,11 +1,12 @@
-//! `lotek sjekk-tema <fil…>`: kontrollerer et tema noen har skrevet selv.
+//! `lotek check-theme <file…>`: checks a theme someone wrote by hand.
 //!
-//! Generatoren holder løftene av konstruksjon, men et tema skrevet for hånd er
-//! konsumentens ansvar. Uten denne kommandoen er «du kan overstyre hvilken som
-//! helst celle» en felle.
+//! The generator keeps the promises by construction, but a hand-written theme
+//! is the consumer's responsibility. Without this command, "you can override
+//! any cell" is a trap.
 //!
-//! Tellingen står sist og krever at tallet er større enn null. En kjøring som
-//! ikke fant en eneste fil skal ikke kunne se ut som en kjøring uten funn.
+//! The count comes last and requires the number to be greater than zero. A
+//! run that found not a single file must not look like a run without
+//! findings.
 
 use std::io::ErrorKind;
 
@@ -13,8 +14,8 @@ use crate::output::{count, error, fail, log, shown};
 use lotek_core::theme::check::inspect_theme;
 
 pub fn run(arguments: &[String]) {
-    // Et ukjent flagg skal stoppe kjøringen, ikke forsvinne: en skrivefeil i
-    // et flagg ser ut som om kommandoen gjorde det du ba om.
+    // An unknown flag stops the run instead of disappearing: a typo in a flag
+    // looks as if the command did what you asked.
     let unknown: Vec<&str> = arguments
         .iter()
         .filter(|a| a.starts_with('-'))
@@ -22,15 +23,15 @@ pub fn run(arguments: &[String]) {
         .collect();
     if !unknown.is_empty() {
         fail(&format!(
-            "Ukjent flagg: {}.\n\n`lotek sjekk-tema` tar bare filnavn.\n",
+            "Unknown flag: {}.\n\n`lotek check-theme` takes only file names.\n",
             unknown.join(", ")
         ));
     }
     if arguments.is_empty() {
-        fail("Oppgi minst én CSS-fil: `lotek sjekk-tema theme.css`.\n\nKommandoen leser --lt-color-*-verdiene i fila og kontrollerer at hvert kontrastløfte holder, i hver blokk.\n");
+        fail("Give at least one CSS file: `lotek check-theme theme.css`.\n\nThe command reads the --lt-color-* values in the file and checks that every contrast promise holds, in every block.\n");
     }
 
-    // Filer som ikke lot seg lese samles og meldes samlet.
+    // Files that could not be read are collected and reported together.
     let mut sources: Vec<(&str, String)> = Vec::new();
     let mut unreadable: Vec<String> = Vec::new();
     for path in arguments {
@@ -46,16 +47,16 @@ pub fn run(arguments: &[String]) {
             Err(e) => unreadable.push({
                 let path = shown(path);
                 match e.kind() {
-                    ErrorKind::IsADirectory => format!("{path} (er en mappe)"),
-                    ErrorKind::NotFound => format!("{path} (finnes ikke)"),
+                    ErrorKind::IsADirectory => format!("{path} (is a folder)"),
+                    ErrorKind::NotFound => format!("{path} (does not exist)"),
                     ErrorKind::PermissionDenied => format!("{path} (EACCES)"),
-                    _ => format!("{path} (kunne ikke leses)"),
+                    _ => format!("{path} (could not be read)"),
                 }
             }),
         }
     }
     if !unreadable.is_empty() {
-        fail(&format!("Klarte ikke lese: {}.", unreadable.join(", ")));
+        fail(&format!("Could not read: {}.", unreadable.join(", ")));
     }
 
     crate::package::load_contract();
@@ -77,36 +78,36 @@ pub fn run(arguments: &[String]) {
         others += report.others;
     }
 
-    // Tellingen står sist, og teller konsumentens egne verdier: standardverdiene
-    // fyller hullene, så én linje gir like mange løfter som et helt tema.
-    let files = count(sources.len(), "fil", "filer");
+    // The count comes last, and counts the consumer's own values: the defaults
+    // fill the gaps, so one line gives as many promises as a whole theme.
+    let files = count(sources.len(), "file", "files");
     let summary = format!(
-        "{} i {}, mot {}, i {files}",
-        count(declarations, "verdi", "verdier"),
-        count(blocks, "blokk", "blokker"),
-        count(promises, "løfte", "løfter"),
+        "{} in {}, against {}, in {files}",
+        count(declarations, "value", "values"),
+        count(blocks, "block", "blocks"),
+        count(promises, "promise", "promises"),
     );
-    // Et tema uten farger, bare skrift og form, har ingen kontrast å
-    // kontrollere. Det er ikke det samme som en fil uten tema.
+    // A theme without colours, only font and shape, has no contrast to
+    // check. That is not the same as a file without a theme.
     if declarations == 0 && problems == 0 && others > 0 {
         log(&format!(
-            "Ingen kontrast å kontrollere: {files} setter bare {} uten kontrastløfte, som skrift, form og systemfargene.",
+            "No contrast to check: {files} sets only {} without a contrast promise, such as font, shape and the system colours.",
             count(others, "token", "tokens")
         ));
         return;
     }
     if declarations == 0 && problems == 0 {
         fail(&format!(
-            "Fant ingen --lt-color-*-verdier i {files}. Sjekken har ikke sett på noe."
+            "Found no --lt-color-* values in {files}. The check has not looked at anything."
         ));
     }
     if problems > 0 {
         fail(&format!(
-            "\n{}. Kontrollerte {summary}.",
-            count(problems, "problem", "problemer")
+            "\n{}. Checked {summary}.",
+            count(problems, "problem", "problems")
         ));
     }
     log(&format!(
-        "Temaet holder hvert løfte. Kontrollerte {summary}."
+        "The theme keeps every promise. Checked {summary}."
     ));
 }

@@ -1,5 +1,5 @@
 /**
- * LO-TEK i Gradle.
+ * LO-TEK in Gradle.
  *
  * ```kotlin
  * plugins {
@@ -12,9 +12,9 @@
  * }
  * ```
  *
- * `lotekSjekk` kjøres av `check`, og `lotekManifest` av `assemble`.
- * `lotekTema` kjøres når den blir bedt om, eller når en annen oppgave
- * trenger temaet.
+ * `lotekCheck` runs as part of `check`, and `lotekManifest` as part of
+ * `assemble`. `lotekTheme` runs when asked for, or when another task needs
+ * the theme.
  */
 package no.lotek.gradle
 
@@ -41,25 +41,25 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-/** Innstillingene, under `lotek { }`. */
+/** The settings, under `lotek { }`. */
 abstract class LotekExtension {
-    /** Malene og sidene `lotekSjekk` sjekker. */
+    /** The templates and pages `lotekCheck` checks. */
     abstract val templates: ConfigurableFileCollection
 
     /**
-     * Sjekk filene som hele sider, med koblingen mellom ledetekster, felt og
-     * id-er. Som `lotek sjekk --rendret`. Av som standard, siden en id i en
-     * mal kan stå i en annen fil.
+     * Check the files as whole pages, with the wiring between labels, fields
+     * and ids. Like `lotek check --rendered`. Off by default, since an id in a
+     * template can be in another file.
      */
     abstract val rendered: Property<Boolean>
 
-    /** Fragmentene `lotek overta` skrev ved siden av kopiene. */
+    /** The fragments `lotek takeover` wrote next to the copies. */
     abstract val manifests: ConfigurableFileCollection
 
-    /** Oppskriften `lotekTema` bygger temaet av, som `lotek tema <fil>`. */
+    /** The recipe `lotekTheme` builds the theme from, like `lotek theme <file>`. */
     abstract val themeRecipe: RegularFileProperty
 
-    /** Hvor temaet skrives. Standard: `build/lotek/theme.css`. */
+    /** Where the theme is written. Default: `build/lotek/theme.css`. */
     abstract val themeOutput: RegularFileProperty
 }
 
@@ -69,26 +69,26 @@ class LotekPlugin : Plugin<Project> {
         extension.rendered.convention(false)
         extension.themeOutput.convention(project.layout.buildDirectory.file("lotek/theme.css"))
 
-        val check = project.tasks.register("lotekSjekk", LotekCheck::class.java) { task ->
+        val check = project.tasks.register("lotekCheck", LotekCheck::class.java) { task ->
             task.group = "verification"
-            task.description = "Sjekker malene mot LO-TEK, som lotek sjekk."
+            task.description = "Checks the templates against LO-TEK, like lotek check."
             task.templates.from(extension.templates)
             task.rendered.set(extension.rendered)
             task.manifests.from(extension.manifests)
             task.workingDirectory.set(project.layout.projectDirectory)
             task.report.set(project.layout.buildDirectory.file("lotek/check.txt"))
         }
-        project.tasks.register("lotekTema", LotekTheme::class.java) { task ->
+        project.tasks.register("lotekTheme", LotekTheme::class.java) { task ->
             task.group = "build"
-            task.description = "Bygger temaet av oppskriften, som lotek tema."
+            task.description = "Builds the theme from the recipe, like lotek theme."
             task.recipe.set(extension.themeRecipe)
             task.output.set(extension.themeOutput)
             task.workingDirectory.set(project.layout.projectDirectory)
-            task.onlyIf("lotek.themeRecipe er satt") { task.recipe.isPresent }
+            task.onlyIf("lotek.themeRecipe is set") { task.recipe.isPresent }
         }
         val manifest = project.tasks.register("lotekManifest", LotekManifest::class.java) { task ->
             task.group = "build"
-            task.description = "Skriver manifestet prosjektet sjekkes mot, med fragmentene fra lotek overta."
+            task.description = "Writes the manifest the project is checked against, with the fragments from lotek takeover."
             task.manifests.from(extension.manifests)
             task.workingDirectory.set(project.layout.projectDirectory)
             task.output.set(project.layout.buildDirectory.file("lotek/manifest.json"))
@@ -101,7 +101,7 @@ class LotekPlugin : Plugin<Project> {
     }
 }
 
-/** Kjører én kommando og gir feilkoden og alt den skrev. */
+/** Runs one command and gives the exit code and everything it wrote. */
 private fun run(args: List<String>, workingDirectory: File): Pair<Int, String> {
     val stdout = ByteArrayOutputStream()
     val stderr = ByteArrayOutputStream()
@@ -109,10 +109,10 @@ private fun run(args: List<String>, workingDirectory: File): Pair<Int, String> {
     return code to (stdout.toString(Charsets.UTF_8) + stderr.toString(Charsets.UTF_8)).trim()
 }
 
-/** Stien slik den står i en melding: fra prosjektmappa når fila ligger der. */
+/** The path as it appears in a message: from the project folder when the file is there. */
 internal fun shown(file: File, workingDirectory: File): String {
-    // På Windows kan fila ligge på en annen stasjon enn prosjektet, og da
-    // finnes det ingen relativ sti: `relativize` kaster.
+    // On Windows the file can be on another drive than the project, and then
+    // there is no relative path: `relativize` throws.
     val relative =
         try {
             workingDirectory.toPath().relativize(file.toPath()).toString()
@@ -122,7 +122,7 @@ internal fun shown(file: File, workingDirectory: File): String {
     return if (relative.startsWith("..")) file.absolutePath else relative
 }
 
-/** `lotekSjekk`: malene mot LO-TEK, og mot fragmentene fra `lotek overta`. */
+/** `lotekCheck`: the templates against LO-TEK, and against the fragments from `lotek takeover`. */
 abstract class LotekCheck : DefaultTask() {
     @get:InputFiles
     @get:SkipWhenEmpty
@@ -139,7 +139,7 @@ abstract class LotekCheck : DefaultTask() {
     @get:Internal
     abstract val workingDirectory: DirectoryProperty
 
-    /** Svaret fra siste kjøring, så oppgaven står som oppdatert når ingenting er endret. */
+    /** The answer from the last run, so the task is up to date when nothing has changed. */
     @get:OutputFile
     abstract val report: RegularFileProperty
 
@@ -147,19 +147,19 @@ abstract class LotekCheck : DefaultTask() {
     fun check() {
         val directory = workingDirectory.get().asFile
         val args = buildList {
-            add("sjekk")
-            if (rendered.get()) add("--rendret")
+            add("check")
+            if (rendered.get()) add("--rendered")
             manifests.files.sorted().forEach { add("--manifest=${shown(it, directory)}") }
             templates.files.sorted().forEach { add(shown(it, directory)) }
         }
         val (code, output) = run(args, directory)
         report.get().asFile.writeText("$output\n")
-        if (code != 0) throw GradleException("Markupen stemmer ikke med LO-TEK:\n\n$output")
+        if (code != 0) throw GradleException("The markup does not match LO-TEK:\n\n$output")
         logger.info(output)
     }
 }
 
-/** `lotekTema`: temaet av oppskriften. */
+/** `lotekTheme`: the theme from the recipe. */
 abstract class LotekTheme : DefaultTask() {
     @get:InputFile
     @get:Optional
@@ -178,21 +178,22 @@ abstract class LotekTheme : DefaultTask() {
         val target = output.get().asFile
         target.parentFile.mkdirs()
         val (code, text) =
-            run(listOf("tema", shown(recipe.get().asFile, directory), "--ut=${target.absolutePath}"), directory)
-        if (code != 0) throw GradleException("Temaet kunne ikke bygges:\n\n$text")
+            run(listOf("theme", shown(recipe.get().asFile, directory), "--out=${target.absolutePath}"), directory)
+        if (code != 0) throw GradleException("The theme could not be built:\n\n$text")
         logger.info(text)
     }
 }
 
 /**
- * `lotekManifest`: manifestet med fragmentene, for editoren og språkserveren.
+ * `lotekManifest`: the manifest with the fragments, for the editor and the
+ * language server.
  *
- * Fila skrives bare når prosjektet har fragmenter. Språkserveren og
- * IntelliJ-pluginen foretrekker `build/lotek/manifest.json` framfor
- * manifestet i npm-pakken, så en fil uten fragmenter ville bare vært en kopi
- * av pakkens, og den ble stående når pakken ble oppdatert. Fjernes det
- * siste fragmentet, slettes fila, ellers ville editoren fortsatt godtatt
- * klassene fra en komponent som ikke finnes lenger.
+ * The file is written only when the project has fragments. The language
+ * server and the IntelliJ plugin prefer `build/lotek/manifest.json` over the
+ * manifest in the npm package, so a file without fragments would only be a
+ * copy of the package's, and it stayed behind when the package was updated.
+ * If the last fragment is removed, the file is deleted, otherwise the editor
+ * would still accept the classes of a component that no longer exists.
  */
 abstract class LotekManifest : DefaultTask() {
     @get:InputFiles
@@ -210,16 +211,16 @@ abstract class LotekManifest : DefaultTask() {
         val directory = workingDirectory.get().asFile
         if (manifests.isEmpty) {
             val old = output.get().asFile
-            if (old.exists() && !old.delete()) throw GradleException("Kunne ikke slette ${old.absolutePath}.")
+            if (old.exists() && !old.delete()) throw GradleException("Could not delete ${old.absolutePath}.")
             return
         }
         val args = buildList {
             add("manifest")
             manifests.files.sorted().forEach { add("--manifest=${shown(it, directory)}") }
-            add("--ut=${output.get().asFile.absolutePath}")
+            add("--out=${output.get().asFile.absolutePath}")
         }
         val (code, text) = run(args, directory)
-        if (code != 0) throw GradleException("Manifestet kunne ikke skrives:\n\n$text")
+        if (code != 0) throw GradleException("The manifest could not be written:\n\n$text")
         logger.info(text)
     }
 }

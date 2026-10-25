@@ -1,6 +1,6 @@
 /**
- * `java -jar lotek.jar`: kommandolinja fra terminalen. Selve kjøringen står
- * i [CommandLine].
+ * `java -jar lotek.jar`: the command line from the terminal. The run itself is
+ * in [CommandLine].
  */
 package no.lotek.cli
 
@@ -10,11 +10,11 @@ import java.nio.file.Path
 import kotlin.system.exitProcess
 
 /**
- * Om kommandolinja kjøres fra en terminal.
+ * Whether the command line runs from a terminal.
  *
- * Java 17 har en konsoll bare når både inn og ut er en terminal, og det holder
- * for å vise hintet til den som skrev kommandoen uten filer. Fra Java 22 har
- * den alltid en, og `isTerminal()` svarer i stedet.
+ * Java 17 has a console only when both input and output are a terminal, and
+ * that is enough to show the hint to whoever typed the command without files.
+ * From Java 22 it always has one, and `isTerminal()` answers instead.
  */
 private fun interactive(): Boolean {
     val console = System.console() ?: return false
@@ -26,12 +26,12 @@ private fun interactive(): Boolean {
 }
 
 /**
- * Argumentene slik de ble skrevet.
+ * The arguments as they were written.
  *
- * JVM-en leser argumentene med tegnsettet til locale-innstillingen, og uten
- * en (`LANG` tom, som i mange containere) blir `--knapp-hjørner` til
- * `--knapp-hj??rner`. På Linux ligger de rå bytene i `/proc/self/cmdline`, og
- * leses derfra som UTF-8 når tegnsettet er et annet.
+ * The JVM reads the arguments with the character set of the locale, and
+ * without one (`LANG` empty, as in many containers) `--font=Söhne` becomes
+ * `--font=S??hne`. On Linux the raw bytes are in `/proc/self/cmdline`, and are
+ * read from there as UTF-8 when the character set is another.
  */
 private fun asWritten(args: Array<String>): List<String> {
     val encoding = System.getProperty("sun.jnu.encoding") ?: return args.toList()
@@ -46,16 +46,17 @@ private fun asWritten(args: Array<String>): List<String> {
 }
 
 /**
- * Argumentene fra `/proc/self/cmdline`, lest som UTF-8, når de er de samme
- * som JVM-en fikk, bare lest med et annet tegnsett. Ellers argumentene slik
- * JVM-en leste dem.
+ * The arguments from `/proc/self/cmdline`, read as UTF-8, when they are the
+ * same as the JVM got, only read with another character set. Otherwise the
+ * arguments as the JVM read them.
  *
- * Programmets argumenter står sist, etter `java` og flaggene til JVM-en, men
- * ikke alltid: med en `@argfil` står de i fila, og ikke i `cmdline`. Hvert
- * argument sammenlignes derfor med det JVM-en leste, før det brukes.
+ * The program's arguments come last, after `java` and the JVM's flags, but
+ * not always: with an `@argfile` they are in the file, and not in `cmdline`.
+ * Each argument is therefore compared with what the JVM read before it is
+ * used.
  */
 internal fun fromCommandLine(raw: ByteArray, args: List<String>, charset: java.nio.charset.Charset): List<String> {
-    // Hvert argument avsluttes med en nullbyte, også det siste.
+    // Every argument ends with a null byte, the last one too.
     val parts = mutableListOf<ByteArray>()
     var start = 0
     for (i in raw.indices) {

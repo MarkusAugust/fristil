@@ -1,17 +1,19 @@
 /**
- * Kommandolinja til LO-TEK på JVM-en: `java -jar lotek.jar` og
- * Gradle-pluginen.
+ * The LO-TEK command line on the JVM: `java -jar lotek.jar` and the Gradle
+ * plugin.
  *
- * Kommandoene er skrevet én gang, i Rust (`core/cli/`), og kjøres her som
- * en WASI-modul med Chicory, kompilert til bytekode når jar-en bygges. Fila
- * gjør det samme som skallet i npm-pakken (`designsystem/src/cli.ts`), og bare
- * det WASI ikke kan:
+ * The commands are written once, in Rust (`core/cli/`), and run here as a
+ * WASI module with Chicory, compiled to bytecode when the jar is built. The
+ * file does the same as the shell in the npm package
+ * (`designsystem/src/cli.ts`), and only what WASI cannot:
  *
- * - åpner filsystemet for modulen, så både relative og absolutte stier virker;
- * - henter adressene `lotek sjekk` får, siden WASI ikke har nettverk, og
- *   gir siden til modulen som en fil (se `core/cli/src/fetch.rs`);
- * - sier fra når standard inn er en terminal, som WASI ikke kan se;
- * - gir modulen pakkens filer, som ligger i jar-en (se `packageDir`).
+ * - opens the file system for the module, so both relative and absolute
+ *   paths work;
+ * - fetches the addresses `lotek check` gets, since WASI has no network, and
+ *   gives the page to the module as a file (see `core/cli/src/fetch.rs`);
+ * - says when standard input is a terminal, which WASI cannot see;
+ * - gives the module the package's files, which are in the jar (see
+ *   `packageDir`).
  */
 package no.lotek.cli
 
@@ -34,10 +36,10 @@ import java.nio.file.Path
 private val windows = System.getProperty("os.name").lowercase().startsWith("windows")
 
 /**
- * En sti slik WASI-modulen ser den.
+ * A path as the WASI module sees it.
  *
- * På Windows åpnes hver stasjon som sin egen mappe, `C:\` som `/c`, og
- * skråstrekene snus. Andre steder er stien den samme.
+ * On Windows every drive is opened as its own folder, `C:\` as `/c`, and
+ * the backslashes become slashes. Elsewhere the path is the same.
  */
 private fun forWasi(path: String): String {
     if (!windows) return path
@@ -49,22 +51,22 @@ private fun forWasi(path: String): String {
     return path.replace('\\', '/')
 }
 
-/** Et argument for WASI-modulen: stien i en fil eller i et `--flagg=verdi`. */
+/** An argument for the WASI module: the path in a file or in a `--flag=value`. */
 private fun toModule(part: String): String {
     val flag = Regex("""^(--[^=]+=)(.*)$""", RegexOption.DOT_MATCHES_ALL).find(part)
     return if (flag != null) flag.groupValues[1] + forWasi(flag.groupValues[2]) else forWasi(part)
 }
 
 /**
- * Svaret fra en adresse, i fila modulen leser: adressen, statuskoden (0 når
- * ingen svarte), innholdstypen eller grunnen, og siden. Vurderingen av svaret
- * gjør modulen.
+ * The answer from an address, in the file the module reads: the address, the
+ * status code (0 when nobody answered), the content type or the reason, and
+ * the page. The module judges the answer.
  */
 private fun fetch(client: HttpClient, address: String): String =
     try {
         val request = HttpRequest.newBuilder(URI(address))
-            // Som den kjørbare fila: en server som aldri svarer, skal ikke
-            // henge en CI-jobb til den blir drept.
+            // As in the executable: a server that never answers must not hang
+            // a CI job until it is killed.
             .timeout(java.time.Duration.ofSeconds(30))
             .GET()
             .build()
@@ -77,8 +79,8 @@ private fun fetch(client: HttpClient, address: String): String =
     }
 
 /**
- * Sender hver skriving videre med en gang. Modulen buffrer selv, per linje,
- * og språkserveren må svare mens den kjører, ikke når den avslutter.
+ * Passes every write on at once. The module buffers itself, per line, and the
+ * language server must answer while it runs, not when it exits.
  */
 private class Flushing(private val out: OutputStream) : OutputStream() {
     override fun write(b: Int) {
@@ -94,24 +96,24 @@ private class Flushing(private val out: OutputStream) : OutputStream() {
     override fun flush() = out.flush()
 }
 
-/** Kommandolinja, kjørt i denne prosessen. */
+/** The command line, run in this process. */
 object CommandLine {
     /*
-     * Pakken kommandolinja leser fra: manifestet, fargekontrakten,
-     * regelbøkene og komponentene. Modulen bærer ingen av dem, og jar-en har
-     * dem med under `lotek-pakke/`. WASI leser filer og ikke ressurser, så
-     * i en jar pakkes de ut én gang, til en mappe i temp som er navngitt etter
-     * jar-ens størrelse og endringstid, og som neste kjøring av den samme
-     * jar-en bruker igjen. Mappa flyttes på plass først når den er ferdig, så
-     * to prosesser som starter samtidig ikke ser en halv pakke. Fra en mappe,
-     * som i testene, brukes mappa som den er.
+     * The package the command line reads from: the manifest, the colour
+     * contract, the rulebooks and the components. The module carries none of
+     * them, and the jar has them under `lotek-pakke/`. WASI reads files and
+     * not resources, so in a jar they are unpacked once, to a folder in temp
+     * named after the jar's size and modification time, which the next run of
+     * the same jar uses again. The folder is moved into place only when it is
+     * complete, so two processes starting at the same time do not see half a
+     * package. From a folder, as in the tests, the folder is used as it is.
      */
     private val packageDir: Path by lazy {
         val uri = CommandLine::class.java.getResource("/lotek-pakke/manifest/manifest.json")?.toURI()
-            ?: error("lotek-pakke mangler i jar-en")
+            ?: error("lotek-pakke is missing from the jar")
         if (uri.scheme != "jar") return@lazy Path.of(uri).parent.parent
-        // Jar-en åpnes som en fil, ikke gjennom adressen: et filsystem for
-        // adressen kan alt være åpnet av noe annet i samme JVM.
+        // The jar is opened as a file, not through the URI: a file system for
+        // the URI may already be open by something else in the same JVM.
         val jarFile = Path.of(CommandLine::class.java.protectionDomain.codeSource.location.toURI())
         val tmp = Path.of(System.getProperty("java.io.tmpdir"))
         val target = tmp.resolve("lotek-pakke-${Files.size(jarFile)}-${Files.getLastModifiedTime(jarFile).toMillis()}")
@@ -129,16 +131,17 @@ object CommandLine {
         try {
             Files.move(partial, target, java.nio.file.StandardCopyOption.ATOMIC_MOVE)
         } catch (_: java.io.IOException) {
-            // En annen prosess kom først. Dens kopi er den samme.
+            // Another process came first. Its copy is the same.
             partial.toFile().deleteRecursively()
         }
         target
     }
 
     /**
-     * Kjører én kommando, som `listOf("sjekk", "form.html")`, og gir
-     * feilkoden. Relative stier leses fra [workingDirectory]. [terminal] sier
-     * om standard inn er en terminal, så `sjekk` uten filer kan si fra.
+     * Runs one command, like `listOf("check", "form.html")`, and gives the
+     * exit code. Relative paths are read from [workingDirectory]. [terminal]
+     * says whether standard input is a terminal, so `check` without files can
+     * say so.
      */
     fun run(
         args: List<String>,
@@ -154,14 +157,14 @@ object CommandLine {
             val address = Regex("^https?://", RegexOption.IGNORE_CASE)
             val client by lazy { HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).connectTimeout(java.time.Duration.ofSeconds(30)).build() }
             for ((index, part) in args.withIndex()) {
-                if (args[0] != "sjekk" || index == 0 || !address.containsMatchIn(part)) {
+                if (args[0] != "check" || index == 0 || !address.containsMatchIn(part)) {
                     moduleArgs += toModule(part)
                     continue
                 }
                 val dir = fetchedDir ?: Files.createTempDirectory("lotek-").also { fetchedDir = it }
                 val file = dir.resolve("$index.txt")
                 Files.writeString(file, fetch(client, part))
-                moduleArgs += "--hentet=${forWasi(file.toString())}"
+                moduleArgs += "--fetched=${forWasi(file.toString())}"
             }
 
             val out = Flushing(stdout)
@@ -172,13 +175,14 @@ object CommandLine {
                     .withStdout(out)
                     .withStderr(err)
                     .withArguments(listOf("lotek") + moduleArgs)
-                    .withEnvironment("LOTEK_ARBEIDSMAPPE", forWasi(workingDirectory.absolutePath))
+                    .withEnvironment("LOTEK_WORKDIR", forWasi(workingDirectory.absolutePath))
                     .withEnvironment("LOTEK_PACKAGE", forWasi(packageDir.toString()))
                     .apply {
                         if (terminal) withEnvironment("LOTEK_TERMINAL", "1")
-                        // Så meldingene viser stiene som `C:\\…`, ikke som `/c/…`.
+                        // So the messages show the paths as `C:\\…`, not as `/c/…`.
                         if (windows) withEnvironment("LOTEK_WINDOWS", "1")
-                        // Hele filsystemet åpnes, og modulen går selv til arbeidsmappa.
+                        // The whole file system is opened, and the module goes to the
+                        // working directory itself.
                         if (windows) {
                             for (root in File.listRoots()) {
                                 val drive = root.path.firstOrNull()?.lowercaseChar() ?: continue

@@ -1,27 +1,27 @@
-//! `lotek overta <komponent>`: kopierer kildekoden til én komponent inn i
-//! prosjektet, når tilpasning gjennom CSS ikke strekker til.
+//! `lotek takeover <component>`: copies the source of one component into the
+//! project, when customising through CSS is not enough.
 //!
-//! Laget og `--lt-*`-variablene dekker utseendet, og siden ingen komponent har
-//! shadow DOM, når CSS-en din fram overalt. Det de ikke dekker er «jeg vil at
-//! denne komponenten skal oppføre seg annerledes». Da er alternativet enten å
-//! leve med det eller å skrive komponenten på nytt fra bunnen, og denne
-//! kommandoen er veien imellom: en komponent er et stilark og en fil på
-//! mellom hundre og tre hundre linjer, uten avhengigheter.
+//! The layer and the `--lt-*` variables cover the appearance, and since no
+//! component has shadow DOM, your CSS reaches everywhere. What they do not
+//! cover is "I want this component to behave differently". The alternative is
+//! then either to live with it or to write the component again from scratch,
+//! and this command is the way in between: a component is a style sheet and a
+//! file of between one and three hundred lines, without dependencies.
 //!
-//! Tre ting gjøres med kopien:
+//! Three things are done to the copy:
 //!
-//! - Henvisningene ut av mappa skrives om. `../shared.js` finnes ikke der
-//!   kopien havner, og blir til `@lo-tek/interfaces/shared`, som fortsatt
-//!   virker og viser hva kopien henter fra pakken.
-//! - Kopien får nytt navn: `lt-button` blir `app-button` i klasser, tagger,
-//!   `define` og selektorer. Det du overtar, eier du, og den kan stå ved siden
-//!   av originalen uten at rekkefølgen avgjør hvilken som vinner.
-//!   `--lt-*`-variablene beholdes, så temaet virker som før.
-//! - Et fragment av manifestet skrives ved siden av, med de nye navnene, så
-//!   `lotek sjekk --manifest=…` sjekker markupen for kopien også.
+//! - The references out of the folder are rewritten. `../shared.js` does not
+//!   exist where the copy ends up, and becomes `@lo-tek/interfaces/shared`,
+//!   which still works and shows what the copy takes from the package.
+//! - The copy gets a new name: `lt-button` becomes `app-button` in classes,
+//!   tags, `define` and selectors. What you take over is yours, and it can
+//!   sit next to the original without the order deciding which one wins.
+//!   The `--lt-*` variables are kept, so the theme works as before.
+//! - A fragment of the manifest is written next to it, with the new names, so
+//!   `lotek check --manifest=…` checks the markup for the copy too.
 //!
-//! Kildekoden leses fra pakken prosjektet har installert (se `package.rs`),
-//! så kopien er av den versjonen prosjektet bruker.
+//! The source is read from the package the project has installed (see
+//! `package.rs`), so the copy is of the version the project uses.
 
 use crate::output::{error, fail, shown};
 use crate::{refuse_unknown_flags, refuse_without_value, Arguments};
@@ -35,8 +35,8 @@ pub struct Component {
 }
 
 impl Component {
-    /// Filnavnet og innholdet, uten testene, sortert etter navn. Leses først
-    /// når komponenten er valgt.
+    /// The file name and the content, without the tests, sorted by name. Read
+    /// only once the component is chosen.
     pub fn files(&self) -> Vec<(String, String)> {
         self.names
             .iter()
@@ -44,7 +44,7 @@ impl Component {
             .map(|(file, path)| {
                 let text = std::fs::read_to_string(&path).unwrap_or_else(|e| {
                     fail(&format!(
-                        "Klarte ikke lese {}: {e}\n",
+                        "Could not read {}: {e}\n",
                         shown(&path.to_string_lossy())
                     ))
                 });
@@ -54,7 +54,7 @@ impl Component {
     }
 }
 
-/// Komponentene i pakken, sortert etter navn.
+/// The components in the package, sorted by name.
 pub fn components() -> Vec<Component> {
     let root = crate::package::require().join("src/components");
     let text = |c: &Json, key: &str| {
@@ -85,15 +85,15 @@ pub fn components() -> Vec<Component> {
     out
 }
 
-/// Forstavelsen kopien får i stedet for `lt-`.
+/// The prefix the copy gets instead of `lt-`.
 const PREFIX: &str = "app-";
 
-/// Fila med fragmentet av manifestet, i mappa til kopien.
+/// The file with the fragment of the manifest, in the copy's folder.
 pub const FRAGMENT: &str = "lotek-manifest.json";
 
-/// En fil i pakken.
+/// A file in the package.
 pub struct SourceFile {
-    /// Stien i pakken, som «src/components/css/button/button.ts».
+    /// The path in the package, like "src/components/css/button/button.ts".
     pub path: String,
     pub content: String,
 }
@@ -105,31 +105,31 @@ pub struct Rewrite {
 }
 
 pub struct PlannedFile {
-    /// Filnavnet alene, som «button.ts».
+    /// The file name alone, like "button.ts".
     pub name: String,
     pub content: String,
-    /// Henvisninger som ble skrevet om, til utskrift etterpå.
+    /// References that were rewritten, to print afterwards.
     pub rewrites: Vec<Rewrite>,
 }
 
 pub struct Plan {
     pub files: Vec<PlannedFile>,
-    /// Pakker kopien trenger i prosjektet. Tom i dag: pakken har ingen
-    /// avhengigheter, men en konsument skal få vite det med én gang hvis en
-    /// komponent en dag henter noe utenfra.
+    /// Packages the copy needs in the project. Empty today: the package has no
+    /// dependencies, but a consumer should be told at once if a component one
+    /// day takes something from outside.
     pub dependencies: Vec<String>,
-    /// Stilark og moduler kopien fortsatt henter fra pakken. Utskriften
-    /// viser omskrivingene i stedet, så bare testene leser lista.
+    /// Style sheets and modules the copy still takes from the package. The
+    /// output shows the rewrites instead, so only the tests read the list.
     #[cfg_attr(not(test), allow(dead_code))]
     pub kept_imports: Vec<String>,
-    /// Inngangspunktene i pakken som laster originalen.
+    /// The entry points in the package that load the original.
     pub replaced_entries: Vec<String>,
 }
 
-/// Oppslaget fra en fil i pakken til inngangspunktet som peker på den.
+/// The lookup from a file in the package to the entry point that points to it.
 ///
-/// `exports` peker på `dist` for JavaScript og på `src` for komponentenes
-/// CSS. Begge føres tilbake til kilden, siden det er kilden som kopieres.
+/// `exports` points to `dist` for JavaScript and to `src` for the components'
+/// CSS. Both are led back to the source, since the source is what is copied.
 pub fn entry_points(name: &str, exports: &Json) -> Vec<(String, String)> {
     let mut entries: Vec<(String, String)> = Vec::new();
     for (subpath, target) in exports.as_object().unwrap_or(&[]) {
@@ -165,7 +165,7 @@ fn lookup<'a>(entries: &'a [(String, String)], source: &str) -> Option<&'a str> 
         .map(|(_, e)| e.as_str())
 }
 
-/// Slår sammen en relativ sti med mappa den står i.
+/// Joins a relative path with the folder it is in.
 pub fn resolve_path(from_directory: &str, relative: &str) -> String {
     let mut parts: Vec<&str> = from_directory
         .split('/')
@@ -183,18 +183,18 @@ pub fn resolve_path(from_directory: &str, relative: &str) -> String {
     parts.join("/")
 }
 
-/// En henvisning i en fil: `from "…"` eller `@import "…"`.
+/// A reference in a file: `from "…"` or `@import "…"`.
 struct Reference {
-    /// Fra starten av `from` eller `@import` til og med det siste anførselstegnet.
+    /// From the start of `from` or `@import` up to and including the last quote.
     start: usize,
     end: usize,
-    /// Alt før stien: `from ` og anførselstegnet.
+    /// Everything before the path: `from ` and the quote.
     lead: String,
     quote: char,
     specifier: String,
 }
 
-/// `/(from\s+|@import\s+)(["'])([^"']+)\2/g`, uten regulære uttrykk.
+/// `/(from\s+|@import\s+)(["'])([^"']+)\2/g`, without regular expressions.
 fn references(text: &str) -> Vec<Reference> {
     let mut found = Vec::new();
     let mut at = 0;
@@ -241,9 +241,10 @@ fn reference_at(text: &str, start: usize) -> Option<Reference> {
     })
 }
 
-/// Skriver om henvisningene ut av mappa i én fil.
+/// Rewrites the references out of the folder in one file.
 ///
-/// En nabo i samme mappe blir med i kopien, og skal fortsatt finnes der.
+/// A neighbour in the same folder comes along in the copy, and must still be
+/// found there.
 pub fn rewrite_references(
     file: &SourceFile,
     entries: &[(String, String)],
@@ -258,10 +259,11 @@ pub fn rewrite_references(
             continue;
         }
         let target = resolve_path(directory, &reference.specifier);
-        // En fil som blir med i kopien skal stå urørt. Sammenligningen går på
-        // hele stien: filnavnet alene ville latt `../shared.js` stå så snart
-        // mappa selv hadde en `shared.ts`. Importen peker dessuten på «.js»,
-        // filen etter bygging, mens kilden heter «.ts».
+        // A file that comes along in the copy is left alone. The comparison is
+        // on the whole path: the file name alone would have left
+        // `../shared.js` as it was as soon as the folder itself had a
+        // `shared.ts`. The import also points to ".js", the file after the
+        // build, while the source is called ".ts".
         let as_source = match target.strip_suffix(".js") {
             Some(stem) => format!("{stem}.ts"),
             None => target.clone(),
@@ -296,7 +298,7 @@ pub fn rewrite_references(
     }
 }
 
-/// Setter sammen hele planen for én komponent.
+/// Puts together the whole plan for one component.
 pub fn plan_takeover(files: &[SourceFile], entries: &[(String, String)]) -> Plan {
     let own: Vec<String> = files.iter().map(|f| f.path.clone()).collect();
     let planned: Vec<PlannedFile> = files
@@ -340,7 +342,7 @@ pub fn plan_takeover(files: &[SourceFile], entries: &[(String, String)]) -> Plan
     }
 }
 
-/// Blokken en klasse hører til: `lt-button` for `lt-button--primary`.
+/// The block a class belongs to: `lt-button` for `lt-button--primary`.
 fn block(name: &str) -> &str {
     let end = [name.find("__"), name.find("--")]
         .into_iter()
@@ -350,8 +352,8 @@ fn block(name: &str) -> &str {
     &name[..end]
 }
 
-/// Blokkene og elementene komponenten eier, som `lt-avatar` og
-/// `lt-avatar-stack`, lest av manifestet.
+/// The blocks and elements that belong to the component, like `lt-avatar`
+/// and `lt-avatar-stack`, read from the manifest.
 pub fn own_names(manifest: &Json, component: &str) -> Vec<String> {
     let mut names: Vec<String> = Vec::new();
     for (name, class) in manifest
@@ -389,7 +391,7 @@ fn is_name_byte(b: u8) -> bool {
     b.is_ascii_alphanumeric() || b == b'-' || b == b'_'
 }
 
-/// Det nye navnet for et `lt-`-navn.
+/// The new name for an `lt-` name.
 pub fn renamed(name: &str) -> String {
     match name.strip_prefix("lt-") {
         Some(rest) => format!("{PREFIX}{rest}"),
@@ -397,11 +399,12 @@ pub fn renamed(name: &str) -> String {
     }
 }
 
-/// Gir komponentens egne navn det nye navnet.
+/// Gives the component's own names the new name.
 ///
-/// Et navn byttes der det står alene, eller med en variant eller et element
-/// etter (`lt-button--primary`, `lt-button__icon`). `lt-button-group` er en
-/// annen komponent, og `--lt-button-bg` en variabel fra temaet, og begge står.
+/// A name is replaced where it stands alone, or with a variant or an element
+/// after it (`lt-button--primary`, `lt-button__icon`). `lt-button-group` is
+/// another component, and `--lt-button-bg` a variable from the theme, and
+/// both are left alone.
 pub fn rename(content: &str, names: &[String]) -> String {
     let bytes = content.as_bytes();
     let mut out = String::with_capacity(content.len());
@@ -413,7 +416,8 @@ pub fn rename(content: &str, names: &[String]) -> String {
             .then(|| {
                 names.iter().find(|name| {
                     let end = at + name.len();
-                    // Bytevis: navnene er ASCII, men teksten rundt er det ikke.
+                    // Byte by byte: the names are ASCII, but the text around
+                    // them is not.
                     bytes[at..].starts_with(name.as_bytes())
                         && (end == bytes.len()
                             || !is_name_byte(bytes[end])
@@ -436,8 +440,9 @@ pub fn rename(content: &str, names: &[String]) -> String {
     out
 }
 
-/// `value` med de nye navnene i hver streng og hver nøkkel. Selektorene i
-/// delene og beskrivelsene nevner klassene, og kopien har bare de nye.
+/// `value` with the new names in every string and every key. The selectors in
+/// the parts and the descriptions mention the classes, and the copy has only
+/// the new ones.
 fn renamed_value(value: &Json, names: &[String]) -> Json {
     match value {
         Json::String(text) => Json::String(rename(text, names)),
@@ -452,8 +457,9 @@ fn renamed_value(value: &Json, names: &[String]) -> Json {
     }
 }
 
-/// Fragmentet av manifestet for kopien: elementene og klassene komponenten
-/// eier, med de nye navnene, også inne i selektorene og beskrivelsene.
+/// The fragment of the manifest for the copy: the elements and classes that
+/// belong to the component, with the new names, also inside the selectors and
+/// the descriptions.
 pub fn fragment(manifest: &Json, component: &str, names: &[String]) -> Json {
     let owned = |name: &str| names.iter().any(|n| n == block(name) || n == name);
     let section = |key: &str| -> Json {
@@ -480,40 +486,46 @@ pub fn fragment(manifest: &Json, component: &str, names: &[String]) -> Json {
 
 pub fn run(arguments: &[String]) {
     let parsed = Arguments::read(arguments);
-    // Som i `agent`: `--ut src/ui` uten likhetstegn ble lest som to filnavn,
-    // og kopien havnet stille i standardmappa.
+    // As in `agent`: `--out src/ui` without an equals sign was read as two
+    // file names, and the copy quietly ended up in the default folder.
     refuse_without_value(&parsed);
-    refuse_unknown_flags(&parsed, &["ut", "overskriv"]);
+    refuse_unknown_flags(&parsed, &["out", "overwrite"]);
 
     let name = parsed.files.first().map(String::as_str);
     let all_components = components();
     let Some(component) = name.and_then(|n| all_components.iter().find(|c| c.name == n)) else {
         let all: Vec<&str> = all_components.iter().map(|c| c.name.as_str()).collect();
         fail(&format!(
-            "{}Bruk: lotek overta <komponent> [--ut=<mappe>]\nHele oversikten: lotek --hjelp\n\nKomponenter:\n  {}\n",
-            name.map_or(String::new(), |n| format!("Fant ingen komponent som heter «{n}».\n\n")),
+            "{}Usage: lotek takeover <component> [--out=<folder>]\nFull overview: lotek --help\n\nComponents:\n  {}\n",
+            name.map_or(String::new(), |n| format!("No component is called \"{n}\".\n\n")),
             all.join(", ")
         ));
     };
 
-    let base = parsed.flag("ut").unwrap_or("src/lotek");
+    let base = parsed.flag("out").unwrap_or("src/lotek");
     let target = std::path::Path::new(base).join(&component.name);
     let shown = shown(&target.display().to_string());
-    if target.exists() && parsed.flag("overskriv") != Some("ja") {
+    if target.exists() && parsed.flag("overwrite") != Some("yes") {
         fail(&format!(
-            "{shown} finnes allerede.\n\nHar du endret kopien, blir endringene borte. Kjør med --overskriv=ja hvis den skal erstattes.\n"
+            "{shown} already exists.\n\nIf you have changed the copy, the changes will be lost. Run with --overwrite=yes if it should be replaced.\n"
         ));
     }
 
-    let package = parse(&crate::package::read("package.json"))
-        .unwrap_or_else(|e| fail(&format!("package.json i pakken kan ikke leses: {e}\n")));
+    let package = parse(&crate::package::read("package.json")).unwrap_or_else(|e| {
+        fail(&format!(
+            "package.json in the package cannot be read: {e}\n"
+        ))
+    });
     let package_name = package
         .get("name")
         .and_then(Json::as_str)
         .unwrap_or("@lo-tek/interfaces");
     let entries = entry_points(package_name, package.get("exports").unwrap_or(&Json::Null));
-    let manifest = parse(&crate::package::manifest())
-        .unwrap_or_else(|e| fail(&format!("Manifestet i pakken kan ikke leses: {e}\n")));
+    let manifest = parse(&crate::package::manifest()).unwrap_or_else(|e| {
+        fail(&format!(
+            "The manifest in the package cannot be read: {e}\n"
+        ))
+    });
 
     let folder = format!("src/components/{}/{}", component.category, component.name);
     let files: Vec<SourceFile> = component
@@ -528,13 +540,13 @@ pub fn run(arguments: &[String]) {
     let names = own_names(&manifest, &component.name);
 
     if let Err(e) = std::fs::create_dir_all(&target) {
-        fail(&format!("Klarte ikke lage {shown}: {e}"));
+        fail(&format!("Could not create {shown}: {e}"));
     }
     let write = |file: &str, content: &str| {
         let path = target.join(file);
         if let Err(e) = std::fs::write(&path, content) {
             fail(&format!(
-                "Klarte ikke skrive {}: {e}",
+                "Could not write {}: {e}",
                 crate::output::shown(&path.display().to_string())
             ));
         }
@@ -551,47 +563,48 @@ pub fn run(arguments: &[String]) {
     );
 
     let new_names: Vec<String> = names.iter().map(|n| renamed(n)).collect();
-    let mut lines = vec![format!("Kopierte {} til {shown}/", component.name)];
+    let mut lines = vec![format!("Copied {} to {shown}/", component.name)];
     lines.extend(plan.files.iter().map(|f| format!("  {}", f.name)));
     lines.push(format!("  {FRAGMENT}"));
     lines.push(String::new());
     lines.push(format!(
-        "Komponenten er nå din. Oppdateringer av {package_name} rører den ikke."
+        "The component is now yours. Updates of {package_name} do not touch it."
     ));
     lines.push(String::new());
     lines.push(format!(
-        "Kopien heter {}, og kan stå ved siden av originalen.",
-        new_names.join(" og ")
+        "The copy is called {}, and can sit next to the original.",
+        new_names.join(" and ")
     ));
-    lines.push("Bytt til det nye navnet i markupen der kopien skal brukes. Variablene".into());
-    lines.push("fra temaet (--lt-*) er de samme.".into());
+    lines.push("Switch to the new name in the markup where the copy is used. The".into());
+    lines.push("variables from the theme (--lt-*) are the same.".into());
 
     let rewrites: Vec<&Rewrite> = plan.files.iter().flat_map(|f| &f.rewrites).collect();
     if !rewrites.is_empty() {
         lines.push(String::new());
-        lines.push("Henvisninger ut av mappa peker nå på pakken:".into());
+        lines.push("References out of the folder now point to the package:".into());
         lines.extend(rewrites.iter().map(|r| format!("  {} → {}", r.from, r.to)));
     }
 
     if !plan.replaced_entries.is_empty() {
         lines.push(String::new());
-        lines
-            .push("Disse importene laster originalen, og kan fjernes når ingen bruker den:".into());
+        lines.push(
+            "These imports load the original, and can be removed when nothing uses it:".into(),
+        );
         lines.extend(plan.replaced_entries.iter().map(|e| format!("  {e}")));
     }
 
     if !plan.dependencies.is_empty() {
         lines.push(String::new());
         lines.push(format!(
-            "Kopien trenger {} i prosjektet ditt.",
+            "The copy needs {} in your project.",
             plan.dependencies.join(", ")
         ));
     }
 
     lines.push(String::new());
-    lines.push("Sjekk markupen for kopien med:".into());
+    lines.push("Check the markup for the copy with:".into());
     lines.push(format!(
-        "  lotek sjekk --manifest={} <filer…>",
+        "  lotek check --manifest={} <files…>",
         crate::output::shown(&target.join(FRAGMENT).display().to_string())
     ));
 
@@ -682,8 +695,8 @@ mod tests {
 
     #[test]
     fn leaves_a_neighbour_in_the_same_folder() {
-        // Importen peker på «.js», kilden heter «.ts». Uten den
-        // sammenligningen ble naboen skrevet om til pakken.
+        // The import points to ".js", the source is called ".ts". Without that
+        // comparison the neighbour was rewritten to the package.
         let planned = rewrite_references(
             &file(
                 "src/components/frame/field/lt-field.ts",
@@ -732,15 +745,15 @@ mod tests {
 
     #[test]
     fn names_dependencies_and_what_it_replaces() {
-        // LO-TEK har ingen avhengigheter, så dette er en oppdiktet komponent.
+        // LO-TEK has no dependencies, so this is a made-up component.
         let plan = plan_takeover(
             &[file(
                 "src/components/frame/suggestion/lt-suggestion.ts",
-                "import { noe } from \"et-bibliotek\"\nimport { attributes } from \"../../css/shared.js\"\n",
+                "import { thing } from \"a-library\"\nimport { attributes } from \"../../css/shared.js\"\n",
             )],
             &entries(),
         );
-        assert_eq!(plan.dependencies, ["et-bibliotek"]);
+        assert_eq!(plan.dependencies, ["a-library"]);
         assert_eq!(plan.kept_imports, ["@lo-tek/interfaces/shared"]);
         assert_eq!(plan.replaced_entries, ["@lo-tek/interfaces/suggestion"]);
     }
@@ -771,20 +784,20 @@ mod tests {
         assert!(components.len() > 40);
         for component in &components {
             let files = component.files();
-            assert!(!files.is_empty(), "{} har ingen filer", component.name);
+            assert!(!files.is_empty(), "{} has no files", component.name);
             assert!(files.iter().all(|(f, _)| !f.contains(".test.")));
             let names = own_names(&manifest, &component.name);
             let copy: String = files.iter().map(|(_, c)| rename(c, &names)).collect();
             let original: String = files.iter().map(|(_, c)| c.as_str()).collect();
             assert!(
                 names.iter().any(|n| original.contains(n.as_str())),
-                "{} nevner ikke {names:?}",
+                "{} does not mention {names:?}",
                 component.name
             );
             for name in &names {
                 assert!(
                     copy.contains(&renamed(name)),
-                    "{} fikk ikke nytt navn",
+                    "{} did not get a new name",
                     component.name
                 );
             }

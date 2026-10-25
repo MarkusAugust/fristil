@@ -1,18 +1,18 @@
 /// <reference types="node" />
 /**
- * Verten for kommandolinja i Node: kjører WASI-modulen `lotek.wasm` med
- * Node sin egen `node:wasi`. Brukt av `cli.ts`, og av VS Code-utvidelsen, som
- * starter språkserveren, `lotek lsp`, slik.
+ * The host for the command line in Node: runs the WASI module `lotek.wasm`
+ * with Node's own `node:wasi`. Used by `cli.ts`, and by the VS Code
+ * extension, which starts the language server, `lotek lsp`, this way.
  *
- * Kommandoene er skrevet én gang, i Rust (`core/cli/`). Den samme koden er
- * den kjørbare fila fra `cargo install` og det `java -jar` kjører, så svarene
- * er de samme overalt. Verten gjør bare det WASI ikke kan:
+ * The commands are written once, in Rust (`core/cli/`). The same code is the
+ * executable from `cargo install` and what `java -jar` runs, so the answers
+ * are the same everywhere. The host does only what WASI cannot:
  *
- * - åpner mappene modulen skal lese og skrive i, arbeidsmappa og resten av
- *   filsystemet, så både relative og absolutte stier virker;
- * - henter adressene `lotek sjekk` får, siden WASI ikke har nettverk, og
- *   gir siden til modulen som en fil (se `core/cli/src/fetch.rs`);
- * - sier fra når standard inn er en terminal, som WASI ikke kan se.
+ * - opens the folders the module reads and writes in, the working directory
+ *   and the rest of the file system, so both relative and absolute paths work;
+ * - fetches the addresses `lotek check` gets, since WASI has no network, and
+ *   gives the page to the module as a file (see `core/cli/src/fetch.rs`);
+ * - says when standard input is a terminal, which WASI cannot see.
  */
 
 import {
@@ -30,10 +30,10 @@ import { fileURLToPath } from "node:url"
 const windows = process.platform === "win32"
 
 /**
- * En sti slik WASI-modulen ser den.
+ * A path as the WASI module sees it.
  *
- * På Windows åpnes hver stasjon som sin egen mappe, `C:\` som `/c`, og
- * skråstrekene snus. Andre steder er stien den samme.
+ * On Windows every drive is opened as its own folder, `C:\` as `/c`, and
+ * the backslashes become slashes. Elsewhere the path is the same.
  */
 function forWasi(path: string): string {
   if (!windows) return path
@@ -43,17 +43,18 @@ function forWasi(path: string): string {
   return path.replace(/\\/g, "/")
 }
 
-/** Et argument for WASI-modulen: stien i en fil eller i et `--flagg=verdi`. */
+/** An argument for the WASI module: the path in a file or in a `--flag=value`. */
 function toModule(part: string): string {
   const flag = /^(--[^=]+=)(.*)$/s.exec(part)
   return flag ? flag[1] + forWasi(flag[2]) : forWasi(part)
 }
 
 /**
- * Kjører én kommando, som `["sjekk", "form.html"]`, og gir feilkoden.
- * `module` er stien til `lotek.wasm`, og `packageDir` mappa med pakkens
- * filer: manifestet, fargekontrakten, regelbøkene og komponentene.
- * Kommandolinja bærer ingen av dem, og får mappa som `LOTEK_PACKAGE`.
+ * Runs one command, like `["check", "form.html"]`, and gives the exit code.
+ * `module` is the path to `lotek.wasm`, and `packageDir` the folder with the
+ * package's files: the manifest, the colour contract, the rulebooks and the
+ * components. The command line carries none of them, and gets the folder as
+ * `LOTEK_PACKAGE`.
  */
 export async function runCommandLine(
   module: string | URL,
@@ -61,14 +62,14 @@ export async function runCommandLine(
   packageDir: string | URL,
 ): Promise<number> {
   /*
-   * Hele filsystemet åpnes, og modulen får vite hvor arbeidsmappa er og går dit
-   * selv. En WASI-modul begynner ellers i `/`, og en relativ sti ble lest fra
-   * rota.
+   * The whole file system is opened, and the module is told where the working
+   * directory is and goes there itself. A WASI module otherwise starts in `/`,
+   * and a relative path was read from the root.
    */
   const preopens: Record<string, string> = {}
   if (windows) {
-    // Bare stasjonene som finnes. En mappe som ikke kan åpnes, stopper
-    // `node:wasi` før modulen starter, og de fleste maskiner har bare C:.
+    // Only the drives that exist. A folder that cannot be opened stops
+    // `node:wasi` before the module starts, and most machines have only C:.
     for (const letter of "abcdefghijklmnopqrstuvwxyz") {
       const drive = `${letter.toUpperCase()}:\\`
       if (existsSync(drive)) preopens[`/${letter}`] = drive
@@ -76,11 +77,12 @@ export async function runCommandLine(
   } else preopens["/"] = "/"
 
   /*
-   * Adressene hentes her og gis til modulen som filer.
+   * The addresses are fetched here and given to the module as files.
    *
-   * Fila har adressen, statuskoden (0 når ingen svarte), innholdstypen eller
-   * grunnen, og siden, i den rekkefølgen. Vurderingen av svaret, om det er en
-   * side og om statuskoden er i orden, gjør modulen.
+   * The file has the address, the status code (0 when nobody answered), the
+   * content type or the reason, and the page, in that order. The module
+   * judges the answer: whether it is a page and whether the status code is
+   * fine.
    */
   let fetchedDir: string | undefined
   const warn = process.emitWarning
@@ -88,15 +90,15 @@ export async function runCommandLine(
     const address = /^https?:\/\//i
     const moduleArgs: string[] = []
     for (const [index, part] of args.entries()) {
-      if (args[0] !== "sjekk" || index === 0 || !address.test(part)) {
+      if (args[0] !== "check" || index === 0 || !address.test(part)) {
         moduleArgs.push(toModule(part))
         continue
       }
       fetchedDir ??= mkdtempSync(join(tmpdir(), "lotek-"))
       let answer: string
       try {
-        // Som den kjørbare fila: en server som aldri svarer, skal ikke henge
-        // en CI-jobb til den blir drept.
+        // As in the executable: a server that never answers must not hang a
+        // CI job until it is killed.
         const response = await fetch(part, {
           signal: AbortSignal.timeout(30_000),
         })
@@ -108,14 +110,14 @@ export async function runCommandLine(
       }
       const file = join(fetchedDir, `${index}.txt`)
       writeFileSync(file, answer)
-      moduleArgs.push(`--hentet=${forWasi(file)}`)
+      moduleArgs.push(`--fetched=${forWasi(file)}`)
     }
 
-    // `node:wasi` er merket eksperimentell, og sier det i konsollen. Det er ikke
-    // noe brukeren av kommandolinja kan gjøre noe med.
-    process.emitWarning = ((warning: string | Error, ...resten: unknown[]) => {
+    // `node:wasi` is marked experimental, and says so in the console. That is
+    // nothing the user of the command line can do anything about.
+    process.emitWarning = ((warning: string | Error, ...rest: unknown[]) => {
       if (String(warning).includes("WASI")) return
-      ;(warn as (...a: unknown[]) => void).call(process, warning, ...resten)
+      ;(warn as (...a: unknown[]) => void).call(process, warning, ...rest)
     }) as typeof process.emitWarning
 
     const { WASI } = await import("node:wasi")
@@ -123,15 +125,15 @@ export async function runCommandLine(
       version: "preview1",
       args: ["lotek", ...moduleArgs],
       env: {
-        LOTEK_ARBEIDSMAPPE: forWasi(process.cwd()),
+        LOTEK_WORKDIR: forWasi(process.cwd()),
         LOTEK_PACKAGE: forWasi(
           packageDir instanceof URL ? fileURLToPath(packageDir) : packageDir,
         ),
-        // Så meldingene viser stiene som `C:\\…`, ikke som `/c/…`.
+        // So the messages show the paths as `C:\\…`, not as `/c/…`.
         ...(windows ? { LOTEK_WINDOWS: "1" } : {}),
-        // `isatty(0)`, ikke `process.stdin.isTTY`: å røre `process.stdin` setter
-        // et rør i ikke-blokkerende modus, og modulen ga da opp å lese før
-        // skriveren var ferdig, som i `curl … | lotek sjekk`.
+        // `isatty(0)`, not `process.stdin.isTTY`: touching `process.stdin`
+        // puts a pipe in non-blocking mode, and the module then gave up
+        // reading before the writer was done, as in `curl … | lotek check`.
         ...(isatty(0) ? { LOTEK_TERMINAL: "1" } : {}),
       },
       preopens,
@@ -145,8 +147,8 @@ export async function runCommandLine(
     )
     return wasi.start(instance)
   } finally {
-    // Også når modulen krasjer: de hentede sidene skal ikke bli liggende, og
-    // varslene skal tilbake for resten av prosessen.
+    // Also when the module crashes: the fetched pages must not be left
+    // behind, and the warnings come back for the rest of the process.
     process.emitWarning = warn
     if (fetchedDir) rmSync(fetchedDir, { recursive: true, force: true })
   }

@@ -3,7 +3,7 @@ name = "lotek"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Kommandolinja til LO-TEK: sjekker markup og temaer mot designsystemet, og lager temaer."
+description = "The LO-TEK CLI: checks markup and themes against the design system, and creates themes."
 repository = "https://github.com/MarkusAugust/lo-tek"
 publish = false
 
