@@ -29,6 +29,7 @@ import { fs as fsReact } from "../../../react"
 import { monter, ventPaTegning } from "../../../testing/a11y"
 import { settAdresse } from "../../../testing/adresse"
 import { rgb } from "../../../testing/farge"
+import { Idiomorph } from "../../../testing/idiomorph/idiomorph-v0.8.0.js"
 import { attr } from "../../../testing/markup"
 import { contrastRatio } from "../../../tokens/color"
 import { defineFsTabs, FsTabs } from "./fs-tabs"
@@ -1618,6 +1619,56 @@ describe("F. Oppdatering fra serveren", () => {
       "presentation",
     ])
   })
+
+  /**
+   * F3: en morfing med idiomorph beholder lenkene og panelene, og valget står.
+   *
+   * idiomorph kjenner et element igjen på id, som Datastar. Serveren sender
+   * markupen slik malen skriver den, uten `aria-selected` og uten `hidden`,
+   * så morfingen river alt komponenten skrev. Lenkene har ingen id, og
+   * panelene har serverens, så nodene beholdes, og komponenten skriver
+   * valget tilbake på de samme nodene.
+   */
+  for (const [kilde, markup] of [
+    ["bar markup", bar],
+    ["markup fra fs.tabs()", fraByggefunksjonen],
+  ] as const) {
+    it(`F3: idiomorph beholder lenkene og panelene, og valget står (${kilde})`, async () => {
+      const spion = lyttEtterAdvarsler()
+      const flate = monter(markup())
+      await tegn()
+      const faneFør = faner()
+      const panelFør = paneler()
+      faneFør[1].click()
+      await tegn()
+      expect(valgt()).toEqual([false, true, false])
+
+      Idiomorph.morph(flate, `<div id="fs-testflate">${markup()}</div>`, {
+        morphStyle: "outerHTML",
+      })
+      await tegn()
+      await tegn()
+
+      expect(faner().map((f, i) => f === faneFør[i])).toEqual([
+        true,
+        true,
+        true,
+      ])
+      expect(paneler().map((p, i) => p === panelFør[i])).toEqual([
+        true,
+        true,
+        true,
+      ])
+      expect(valgt()).toEqual([false, true, false])
+      expect(paneler().map((p) => p.getAttribute("hidden"))).toEqual([
+        "until-found",
+        null,
+        "until-found",
+      ])
+      expect(faner().map((f) => f.id)).toEqual(["", "", ""])
+      expect(await advarsler(spion)).toEqual([])
+    })
+  }
 
   it("G2 med F4: tab-select sendes ikke når innerHTML bare bytter ut lenkene", async () => {
     monter(bar())
