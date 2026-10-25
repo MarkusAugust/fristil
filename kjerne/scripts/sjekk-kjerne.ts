@@ -133,12 +133,13 @@ function holder(navn: string, html: string) {
             ? `ukjent regel ${f.rule}`
             : f.fix &&
                 !f.fix.edits.every(
-                  (e) => 0 <= e.start && e.start <= e.end && e.end <= html.length,
+                  (e) =>
+                    0 <= e.start && e.start <= e.end && e.end <= html.length,
                 )
               ? "rettelsen er utenfor teksten"
-              : f.fix &&
-                  f.fix.edits.some(
-                    (e, i) => i > 0 && e.start < (f.fix?.edits[i - 1]?.end ?? 0),
+              : f.fix?.edits.some(
+                    (e, i) =>
+                      i > 0 && e.start < (f.fix?.edits[i - 1]?.end ?? 0),
                   )
                 ? "endringene i rettelsen overlapper eller står i feil rekkefølge"
                 : undefined

@@ -3,6 +3,22 @@
 Utvidelsen har sitt eget versjonsnummer. Den følger ikke pakken, siden den
 bare endrer seg når et element eller et attributt gjør det.
 
+## 0.9.0
+
+I takt med pakkens 0.36.0.
+
+- Ti nye feilmeldinger fra kjernen, om det malen må skrive selv for at
+  komponentene skal virke uten JavaScript og overleve en oppdatering fra
+  serveren: en ledetekst som ikke er koblet til feltet, et panel uten id, en
+  fane uten panel, en fanerad uten navn, en fane som ikke er en lenke,
+  hjelpetekst inni `<label>`, `data-value` uten verdifelt, en skjult
+  feilmelding ved siden av `aria-invalid`, de utgåtte attributtene på
+  `<fs-field>`, og en id kopiert inn fra DevTools.
+- En hurtigrettelse kan gjøre flere endringer under ett: «Gi feltet id
+  «epost»» skriver `id` på feltet og `for` på ledeteksten.
+- Snippetene har id-en som tabbestopp: skriv den én gang, så følger `for`
+  og `href` med.
+
 ## 0.8.0
 
 I takt med pakkens 0.32.0.

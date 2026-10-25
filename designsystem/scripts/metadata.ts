@@ -383,7 +383,7 @@ export const elements: readonly ElementDoc[] = [
     {},
     {
       invalid:
-        "Feltet er ugyldig når feilmeldingen, `.fs-error-text`, står synlig, eller når serveren har skrevet `aria-invalid` på kontrollen. I Datastar: `data-attr:hidden=\"!$ugyldig\"` på feilmeldingen.",
+        'Feltet er ugyldig når feilmeldingen, `.fs-error-text`, står synlig, eller når serveren har skrevet `aria-invalid` på kontrollen. I Datastar: `data-attr:hidden="!$ugyldig"` på feilmeldingen.',
       "required-marker":
         "Påkrevd-merket står som `data-required` på `<label>`, og vises da også uten JavaScript.",
       "control-id":

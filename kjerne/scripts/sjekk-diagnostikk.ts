@@ -1057,7 +1057,8 @@ cases.push(
 function utenTabbestopp(body: string[]): string {
   const text = body.join("\n")
   const defaults = new Map<string, string>()
-  for (const m of text.matchAll(/\$\{(\d+):([^}]*)\}/g)) defaults.set(m[1], m[2])
+  for (const m of text.matchAll(/\$\{(\d+):([^}]*)\}/g))
+    defaults.set(m[1], m[2])
   return text
     .replace(/\$\{(\d+):([^}]*)\}/g, (_, _n, value: string) => value)
     .replace(/(?<!\\)\$(\d+)\b/g, (_, n: string) => defaults.get(n) ?? "")
@@ -1078,8 +1079,10 @@ const started = performance.now()
 
 // Koblingen malen må skrive selv, så feltet virker uten JavaScript og
 // overlever en oppdatering fra serveren (plan v6, PR 3).
-const TABS = (rad: string, paneler = `<section class="fs-tabs__panel" id="soknaden"><h2>Søknaden</h2></section><section class="fs-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>`) =>
-  `<fs-tabs>${rad}${paneler}</fs-tabs>`
+const TABS = (
+  rad: string,
+  paneler = `<section class="fs-tabs__panel" id="soknaden"><h2>Søknaden</h2></section><section class="fs-tabs__panel" id="vedlegg"><h2>Vedlegg</h2></section>`,
+) => `<fs-tabs>${rad}${paneler}</fs-tabs>`
 const RAD = `<ul class="fs-tabs__list" aria-label="Deler av saken"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`
 cases.push(
   {
@@ -1176,7 +1179,10 @@ cases.push(
   },
   {
     name: "en fane som peker på et panel som ikke finnes",
-    html: TABS(RAD, `<section class="fs-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>`),
+    html: TABS(
+      RAD,
+      `<section class="fs-tabs__panel" id="soknaden"><h2>Søknaden</h2></section>`,
+    ),
     count: 1,
     mentions: ["#vedlegg", "ingen element har den id-en"],
     covers: "a",
@@ -1188,29 +1194,40 @@ cases.push(
   },
   {
     name: "en lenke med malsyntaks i href er serverens sak",
-    html: TABS(`<ul class="fs-tabs__list" aria-label="Deler"><li><a href="#{{ .Id }}">Søknaden</a></li></ul>`, `<section class="fs-tabs__panel" id="{{ .Id }}"></section>`),
+    html: TABS(
+      `<ul class="fs-tabs__list" aria-label="Deler"><li><a href="#{{ .Id }}">Søknaden</a></li></ul>`,
+      `<section class="fs-tabs__panel" id="{{ .Id }}"></section>`,
+    ),
     count: 0,
   },
   {
     name: "en knapp med role=tab i raden",
-    html: TABS(`<ul class="fs-tabs__list" aria-label="Deler av saken"><li><a href="#soknaden">Søknaden</a></li><li><button type="button" role="tab">Vedlegg</button></li></ul>`),
+    html: TABS(
+      `<ul class="fs-tabs__list" aria-label="Deler av saken"><li><a href="#soknaden">Søknaden</a></li><li><button type="button" role="tab">Vedlegg</button></li></ul>`,
+    ),
     count: 1,
     mentions: ['role="tab" står på <button>', "Fanene er lenker"],
     covers: "button",
   },
   {
     name: "en lenke med role=tab er en fane",
-    html: TABS(`<ul class="fs-tabs__list" aria-label="Deler av saken" role="tablist"><li role="presentation"><a href="#soknaden" role="tab">Søknaden</a></li><li role="presentation"><a href="#vedlegg" role="tab">Vedlegg</a></li></ul>`),
+    html: TABS(
+      `<ul class="fs-tabs__list" aria-label="Deler av saken" role="tablist"><li role="presentation"><a href="#soknaden" role="tab">Søknaden</a></li><li role="presentation"><a href="#vedlegg" role="tab">Vedlegg</a></li></ul>`,
+    ),
     count: 0,
   },
   {
     name: "en fanerad uten navn",
-    html: TABS(`<ul class="fs-tabs__list"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`),
+    html: TABS(
+      `<ul class="fs-tabs__list"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`,
+    ),
     count: 1,
     mentions: ["fanerad uten navn", "«faneliste»"],
     covers: "ul",
     fixTitle: "Gi raden et navn med aria-label",
-    fixed: TABS(`<ul aria-label="Deler av saken" class="fs-tabs__list"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`),
+    fixed: TABS(
+      `<ul aria-label="Deler av saken" class="fs-tabs__list"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`,
+    ),
   },
   {
     name: "en fanerad med aria-labelledby",
@@ -1219,7 +1236,9 @@ cases.push(
   },
   {
     name: "en fanerad med bundet aria-label",
-    html: TABS(`<ul class="fs-tabs__list" :aria-label="navn"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`),
+    html: TABS(
+      `<ul class="fs-tabs__list" :aria-label="navn"><li><a href="#soknaden">Søknaden</a></li><li><a href="#vedlegg">Vedlegg</a></li></ul>`,
+    ),
     count: 0,
   },
   {

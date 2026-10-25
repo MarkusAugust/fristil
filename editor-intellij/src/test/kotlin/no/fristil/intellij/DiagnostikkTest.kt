@@ -114,6 +114,38 @@ class DiagnostikkTest : BasePlatformTestCase() {
         assertEquals("fs-kort skal meldes, fikk $ut", listOf("fs-kort"), ut.map { it.first })
     }
 
+    fun `test en rettelse med flere endringer brukes under ett`() {
+        // «Gi feltet id «epost»» skriver id på feltet og for på ledeteksten.
+        myFixture.configureByText(
+            "test.html",
+            """<fs-field><label class="fs-label">E-post</label><input class="fs-input<caret>" name="epost"></fs-field>""",
+        )
+        val rettelser = myFixture.availableIntentions.filter { it.familyName == "Fristil" }
+        assertTrue("kjernen skal foreslå en rettelse, fikk ${myFixture.availableIntentions.map { it.text }}", rettelser.isNotEmpty())
+        myFixture.launchAction(rettelser.first())
+        assertEquals(
+            """<fs-field><label for="epost" class="fs-label">E-post</label><input id="epost" class="fs-input" name="epost"></fs-field>""",
+            myFixture.editor.document.text,
+        )
+    }
+
+    fun `test en rettelse i en vanlig streng holder literalen hel`() {
+        // Rettelsen setter inn anførselstegn. I en "…"-streng må de rømmes
+        // gjennom vertsstrengen, ellers er literalen ødelagt etterpå.
+        myFixture.configureByText(
+            "Visning.kt",
+            """
+            // language=HTML
+            val rad = "<fs-tabs><ul class=\"fs-tabs__list<caret>\"><li><a href=\"#a\">A</a></li></ul><section class=\"fs-tabs__panel\" id=\"a\"></section></fs-tabs>"
+            """.trimIndent(),
+        )
+        val rettelser = myFixture.availableIntentions.filter { it.familyName == "Fristil" }
+        assertTrue("kjernen skal foreslå et navn på raden, fikk ${myFixture.availableIntentions.map { it.text }}", rettelser.isNotEmpty())
+        myFixture.launchAction(rettelser.first())
+        val tekst = myFixture.editor.document.text
+        assertTrue("aria-label skal stå rømt i strengen: $tekst", tekst.contains("""<ul aria-label=\"Deler av saken\" class=\"fs-tabs__list\">"""))
+    }
+
     fun `test rettelsen bytter ut teksten`() {
         myFixture.configureByText("test.html", """<button class="fs-buton<caret>">Lagre</button>""")
         val rettelser = myFixture.availableIntentions.filter { it.familyName == "Fristil" }
