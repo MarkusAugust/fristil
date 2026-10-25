@@ -742,9 +742,7 @@ for (const fil of readdirSync(SIDER).filter(
         si(side, `${hvor} peker på ${m[2]}, som pakken ikke sender ut`)
     }
 
-    const pakkenavnIImport = /from\s+\n?\s*"@lo-tek\/interfaces/.test(
-      fane.kode,
-    )
+    const pakkenavnIImport = /from\s+\n?\s*"@lo-tek\/interfaces/.test(fane.kode)
     const urlIImport = /from\s+\n?\s*"https:\/\/cdn\./.test(fane.kode)
     if (
       !MED_BYGGESTEG.has(fane.navn) &&
