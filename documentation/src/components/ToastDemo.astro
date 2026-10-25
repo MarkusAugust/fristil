@@ -8,13 +8,14 @@ import Preview from "./Preview.astro"
 	maxWidth="30rem"
 	fastInni
 	ekstraCss={`
-		/* Bare for visningen: meldingene legger seg i hjørnet av boksen, slik de
-		   legger seg i hjørnet av vinduet i en app. Høyden gir dem plass. */
+		/* Only for the preview: the messages sit in the corner of the box, as
+		   they sit in the corner of the window in an app. The height gives them
+		   room. */
 		.flate { min-block-size: 10rem; }
 	`}
 >
-	<button class="lt-button" id="demo-toast-knapp" type="button">Lagre søknaden</button>
-	<lt-toast id="demo-toast-kø" label="Meldinger"></lt-toast>
+	<button class="lt-button" id="demo-toast-knapp" type="button">Save the application</button>
+	<lt-toast id="demo-toast-queue" label="Notifications"></lt-toast>
 </Preview>
 
 <script>
@@ -22,12 +23,12 @@ import Preview from "./Preview.astro"
 
 	defineLtToast()
 
-	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
+	// The preview sits in a shadow root, so we go through the host element.
 	const flate = document.getElementById("demo-toast")?.shadowRoot
 	const knapp = flate?.getElementById("demo-toast-knapp")
-	const meldinger = flate?.getElementById("demo-toast-kø")
+	const meldinger = flate?.getElementById("demo-toast-queue")
 
 	knapp?.addEventListener("click", () => {
-		meldinger?.show("Søknaden er lagret", { color: "success" })
+		meldinger?.show("The application has been saved", { color: "success" })
 	})
 </script>

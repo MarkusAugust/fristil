@@ -2,8 +2,8 @@
 import { lt } from "@lo-tek/interfaces"
 import Preview from "./Preview.astro"
 
-// Serveren skriver hele boksen: klassen, rollen, tabbestoppen og
-// overskriften. Komponenten flytter bare fokus og tar klikk på lenkene.
+// The server writes the whole box: the class, the role, the tab stop and
+// the heading. The component only moves focus and handles clicks on the links.
 const feil = lt.errorSummary({ count: 2, id: "demo-oppsummering" })
 ---
 
@@ -15,17 +15,17 @@ const feil = lt.errorSummary({ count: 2, id: "demo-oppsummering" })
 >
 	<form id="demo-skjema" novalidate>
 		<lt-error-summary {...feil.host} data-autofocus="false">
-			<h2 {...feil.title}>Skjemaet har to feil</h2>
+			<h2 {...feil.title}>The form has two errors</h2>
 			<ul class="lt-list">
-				<li><a href="#demo-epost">Skriv en e-postadresse med krøllalfa</a></li>
-				<li><a href="#demo-dato">Skriv datoen som dag, måned og år</a></li>
+				<li><a href="#demo-epost">Enter an email address with an @ sign</a></li>
+				<li><a href="#demo-dato">Enter the date as day, month and year</a></li>
 			</ul>
 		</lt-error-summary>
 
-		<label class="lt-label" for="demo-epost">E-postadresse</label>
-		<input class="lt-input" id="demo-epost" type="email" value="ola.nordmann" data-state="invalid" aria-invalid="true" />
+		<label class="lt-label" for="demo-epost">Email address</label>
+		<input class="lt-input" id="demo-epost" type="email" value="jo.example" data-state="invalid" aria-invalid="true" />
 
-		<label class="lt-label" for="demo-dato">Fødselsdato</label>
+		<label class="lt-label" for="demo-dato">Date of birth</label>
 		<input class="lt-input" id="demo-dato" type="date" data-state="invalid" aria-invalid="true" />
 	</form>
 </Preview>

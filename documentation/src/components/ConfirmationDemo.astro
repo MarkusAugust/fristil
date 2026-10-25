@@ -8,28 +8,28 @@ import Preview from "./Preview.astro"
 	layout="stabel"
 	maxWidth="34rem"
 >
-	<p class="lt-paragraph">Søknad 2026-0481, sendt 4. mars.</p>
+	<p class="lt-paragraph">Application 2026-0481, sent 4 March.</p>
 
 	<button class="lt-button" data-variant="danger" type="button" id="demo-slett">
-		Slett søknaden
+		Delete the application
 	</button>
 
 	<dialog class="lt-dialog" id="demo-dialog" aria-labelledby="demo-dialog-tittel">
-		<h2 class="lt-dialog__title" id="demo-dialog-tittel">Slette søknaden?</h2>
+		<h2 class="lt-dialog__title" id="demo-dialog-tittel">Delete the application?</h2>
 
 		<div class="lt-dialog__body">
 			<p class="lt-paragraph">
-				Søknaden og vedleggene blir borte. Dette kan ikke angres.
+				The application and its attachments will be gone. This cannot be undone.
 			</p>
 		</div>
 
 		<form method="dialog" class="lt-dialog__footer">
-			<button class="lt-button" data-variant="secondary" value="avbryt">Avbryt</button>
-			<button class="lt-button" data-variant="danger" value="slett">Slett søknaden</button>
+			<button class="lt-button" data-variant="secondary" value="cancel">Cancel</button>
+			<button class="lt-button" data-variant="danger" value="delete">Delete the application</button>
 		</form>
 	</dialog>
 
-	<lt-toast id="demo-meldinger" label="Meldinger"></lt-toast>
+	<lt-toast id="demo-meldinger" label="Notifications"></lt-toast>
 </Preview>
 
 <script>
@@ -45,16 +45,16 @@ import Preview from "./Preview.astro"
 
 	flate?.getElementById("demo-slett")?.addEventListener("click", () => {
 		if (!dialog) return
-		// Escape og close() uten verdi lar forrige verdi stå.
+		// Escape and close() without a value leave the previous value in place.
 		dialog.returnValue = ""
 		dialog.showModal()
 	})
 
 	dialog?.addEventListener("close", () => {
-		if (dialog.returnValue !== "slett") return
+		if (dialog.returnValue !== "delete") return
 
-		// Handlingen er utført. Meldingen bekrefter, men er ikke stedet for
-		// en angreknapp: den forsvinner.
-		meldinger?.show("Søknaden er slettet", { color: "success" })
+		// The action has been carried out. The message confirms it, but is not
+		// the place for an undo button: it disappears.
+		meldinger?.show("The application has been deleted", { color: "success" })
 	})
 </script>

@@ -17,17 +17,17 @@ import Preview from "./Preview.astro"
 	layout="stabel"
 	maxWidth="34rem"
 	ekstraCss={`
-		/* Oppsettet er appens valg, ikke systemets. LO-TEK gir feltene,
-		   mens avstanden mellom dem hører til skjemaet som setter dem
-		   sammen. To felt som står klistret til hverandre leses som ett. */
+		/* The layout is the app's choice, not the system's. LO-TEK provides
+		   the fields, while the spacing between them belongs to the form that
+		   puts them together. Two fields stuck together read as one. */
 		#demo-soknad {
 			display: flex;
 			flex-direction: column;
 			gap: var(--lt-spacing-5);
 		}
 
-		/* Knappen skal ha mer luft over seg enn feltene har mellom seg, så
-		   den ikke ser ut som en del av det siste feltet. */
+		/* The button gets more space above it than the fields have between
+		   them, so it does not look like part of the last field. */
 		.demo-knapperad {
 			margin-block-start: var(--lt-spacing-2);
 		}
@@ -42,12 +42,12 @@ import Preview from "./Preview.astro"
 			data-autofocus="false"
 			hidden=""
 		>
-			<h2 class="lt-error-summary__title">Skjemaet kan ikke sendes</h2>
+			<h2 class="lt-error-summary__title">The form cannot be sent</h2>
 			<ul class="lt-list"></ul>
 		</lt-error-summary>
 
 		<div>
-			<label class="lt-label" data-required="symbol" for="demo-epost">E-postadresse</label>
+			<label class="lt-label" data-required="symbol" for="demo-epost">Email address</label>
 			<input
 				class="lt-input"
 				id="demo-epost"
@@ -56,12 +56,12 @@ import Preview from "./Preview.astro"
 				required
 				aria-describedby="demo-epost-hjelp"
 			/>
-			<p class="lt-help-text" id="demo-epost-hjelp">Vi sender kvittering hit.</p>
+			<p class="lt-help-text" id="demo-epost-hjelp">We send the receipt here.</p>
 			<p class="lt-error-text" id="demo-epost-feil" hidden></p>
 		</div>
 
 		<div>
-			<label class="lt-label" data-required="symbol" for="demo-fodselsdato">Fødselsdato</label>
+			<label class="lt-label" data-required="symbol" for="demo-fodselsdato">Date of birth</label>
 			<input
 				class="lt-input"
 				id="demo-fodselsdato"
@@ -76,7 +76,7 @@ import Preview from "./Preview.astro"
 		</div>
 
 		<div class="demo-knapperad">
-			<button class="lt-button" type="submit">Send søknaden</button>
+			<button class="lt-button" type="submit">Send the application</button>
 		</div>
 
 		<p class="lt-sr-only" role="status" id="demo-status"></p>
@@ -88,44 +88,44 @@ import Preview from "./Preview.astro"
 
 	defineLtErrorSummary()
 
-	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
+	// The preview sits in a shadow root, so we go through the host element.
 	const flate = document.getElementById("demo-skjema")?.shadowRoot
 	const skjema = flate?.getElementById("demo-soknad") as HTMLFormElement | null
 	const oppsummering = flate?.getElementById("demo-feil")
 	const status = flate?.getElementById("demo-status")
 	const felter = skjema ? [...skjema.querySelectorAll("input")] : []
 
-	/** Felt brukeren har skrevet i, og som derfor kan få en feilmelding. */
+	/** Fields the user has typed in, and which can therefore get an error message. */
 	const rort = new Set<HTMLInputElement>()
 	let forsokt = false
 
 	/**
-	 * Meldingene er våre egne, ikke nettleserens engelske standardtekster.
+	 * The messages are our own, not the browser's default texts.
 	 *
-	 * E-postadressen sjekkes i tillegg til `type="email"`. Nettleseren godtar
-	 * `ola@eksempel`, uten toppdomene, siden det er en gyldig adresse på et
-	 * internt nett. I et skjema som sender kvittering på e-post er det nesten
-	 * alltid en skrivefeil.
+	 * The email address is checked in addition to `type="email"`. The browser
+	 * accepts `jo@example`, with no top-level domain, since that is a valid
+	 * address on an internal network. In a form that sends a receipt by email
+	 * it is almost always a typo.
 	 */
 	const ADRESSE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/
 
 	function meldingFor(felt: HTMLInputElement): string {
 		if (felt.value === "") {
 			return felt.name === "epost"
-				? "Skriv e-postadressen din"
-				: "Skriv fødselsdatoen din"
+				? "Enter your email address"
+				: "Enter your date of birth"
 		}
 
 		if (felt.name === "epost") {
 			return felt.checkValidity() && ADRESSE.test(felt.value)
 				? ""
-				: "Skriv hele e-postadressen, for eksempel ola@eksempel.no"
+				: "Enter the full email address, for example jo@example.com"
 		}
 
-		return felt.checkValidity() ? "" : "Skriv en dato som finnes"
+		return felt.checkValidity() ? "" : "Enter a date that exists"
 	}
 
-	/** Viser eller fjerner feilmeldingen for ett felt. */
+	/** Shows or removes the error message for one field. */
 	function vis(felt: HTMLInputElement, melding: string) {
 		const feiltekst = flate?.getElementById(`${felt.id}-feil`)
 		if (feiltekst) {
@@ -146,8 +146,9 @@ import Preview from "./Preview.astro"
 			delete felt.dataset.state
 		}
 
-		// Feilmeldingen skal ut av aria-describedby igjen når feltet blir
-		// gyldig. Ellers peker feltet på en tekst som ikke står på skjermen.
+		// The error text comes out of aria-describedby again when the field
+		// becomes valid. Otherwise the field points at text that is not on
+		// screen.
 		if (beskrevetAv.length > 0) {
 			felt.setAttribute("aria-describedby", beskrevetAv.join(" "))
 		} else {
@@ -156,19 +157,19 @@ import Preview from "./Preview.astro"
 	}
 
 	/**
-	 * Bygger oppsummeringen av det som faktisk står i skjemaet nå.
+	 * Builds the summary of what is actually in the form now.
 	 *
-	 * Den leses ut av feltene, ikke ført som en egen liste ved siden av.
-	 * Retter du én av to feil, er det den gjenværende som står igjen, og
-	 * overskriften teller riktig.
+	 * It is read from the fields, not kept as a separate list alongside them.
+	 * If you fix one of two errors, the remaining one is what is left, and the
+	 * heading counts correctly.
 	 *
-	 * Boksen er `role="alert"`, og hver endring i den leses opp med en gang.
-	 * Mens brukeren skriver og går mellom feltene, skrives den derfor bare
-	 * når innholdet faktisk endres, og den kommer ikke til syne. Før ble den
-	 * skrevet på nytt ved hvert tastetrykk i et ugyldig felt og ved hver Tab,
-	 * og skjermleseren avbrøt ledeteksten til neste felt. Ved innsending
-	 * skrives den alltid, så den leses opp og brukeren vet at forsøket ble
-	 * avvist.
+	 * The box is `role="alert"`, and every change to it is announced at once.
+	 * While the user types and moves between fields, it is therefore only
+	 * written when its content actually changes, and it does not become
+	 * visible. It used to be rewritten on every keystroke in an invalid field
+	 * and on every Tab, and the screen reader cut off the label of the next
+	 * field. On submit it is always written, so it is announced and the user
+	 * knows the attempt was rejected.
 	 */
 	function oppsummer(innsending = false) {
 		const feil = felter
@@ -186,23 +187,23 @@ import Preview from "./Preview.astro"
 			liste.innerHTML = markup
 		}
 
-		// Overskriften og hidden skrives her, slik en server ville gjort det.
-		// Komponenten lager ingen markup: gjorde den det, ville en morfing i
-		// Datastar fjernet den igjen. Se «Markup og oppførsel».
+		// The heading and hidden are written here, as a server would do it.
+		// The component creates no markup: if it did, a Datastar morph would
+		// remove it again. See "Markup and behaviour".
 		const tittel = oppsummering?.querySelector(".lt-error-summary__title")
 
-		// Bare innsending viser boksen. Underveis kan den bare forsvinne, når
-		// den siste feilen er rettet.
+		// Only a submit shows the box. In between it can only disappear, when
+		// the last error has been fixed.
 		if (oppsummering && (innsending || feil.length === 0)) {
 			oppsummering.hidden = feil.length === 0
 		}
 
-		// Står lista tom, blir overskriften urørt. «Skjemaet har 0 feil» ville
-		// vært det siste som ble lest opp.
+		// If the list is empty, the heading is left alone. "The form has 0
+		// errors" would have been the last thing announced.
 		const overskrift =
 			feil.length === 1
-				? "Skjemaet har én feil"
-				: `Skjemaet har ${feil.length} feil`
+				? "The form has one error"
+				: `The form has ${feil.length} errors`
 		if (feil.length > 0 && tittel && tittel.textContent !== overskrift) {
 			tittel.textContent = overskrift
 		}
@@ -211,8 +212,8 @@ import Preview from "./Preview.astro"
 	}
 
 	for (const felt of felter) {
-		// Mens brukeren skriver sier vi ingenting nytt, men en feilmelding som
-		// alt står der forsvinner i det feltet blir riktig.
+		// While the user types we say nothing new, but an error message that
+		// is already there disappears as soon as the field is correct.
 		felt.addEventListener("input", () => {
 			rort.add(felt)
 
@@ -222,8 +223,8 @@ import Preview from "./Preview.astro"
 			}
 		})
 
-		// Når feltet forlates er brukeren ferdig med det, og da er en
-		// feilmelding en hjelp og ikke en avbrytelse.
+		// When the field is left, the user is done with it, and then an error
+		// message is a help and not an interruption.
 		felt.addEventListener("blur", () => {
 			if (!rort.has(felt) && !forsokt) return
 
@@ -241,11 +242,11 @@ import Preview from "./Preview.astro"
 		const antall = oppsummer(true)
 
 		if (status) {
-			status.textContent = antall === 0 ? "Søknaden er sendt." : ""
+			status.textContent = antall === 0 ? "The application has been sent." : ""
 		}
 
-		// Boksen har `data-autofocus="false"`, siden den også bygges når et
-		// felt forlates. Da er det innsendingen som må flytte fokus dit.
+		// The box has `data-autofocus="false"`, since it is also built when a
+		// field is left. So it is the submit that has to move focus there.
 		if (antall > 0) oppsummering?.focus()
 	})
 </script>

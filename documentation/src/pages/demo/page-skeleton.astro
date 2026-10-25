@@ -1,15 +1,15 @@
 ---
 /**
- * Sideskjelettet som en ekte side, ikke en tegning av en.
+ * The page skeleton as a real page, not a drawing of one.
  *
- * Mønsteret handler om landemerker, overskriftsnivåer og hopplenken, og det
- * lar seg ikke vise i en boks inne i en dokumentasjonsside: hopplenken skal
- * være det første i `<body>`, og `<main>` kan bare finnes én gang per side.
- * Derfor er demoen en egen adresse, som vises i en ramme på mønstersiden og
- * kan åpnes for seg selv.
+ * The pattern is about landmarks, heading levels and the skip link, and it
+ * cannot be shown in a box inside a documentation page: the skip link must be
+ * the first thing in `<body>`, and `<main>` can only exist once per page. So
+ * the demo has its own address, shown in a frame on the pattern page and
+ * openable on its own.
  *
- * Siden er bygget av LO-TEKs egne komponenter, uten Tailwind, så det som
- * står her er det samme som en konsument ville skrevet.
+ * The page is built from LO-TEK's own components, without Tailwind, so what
+ * is here is the same as what a consumer would write.
  */
 
 import { lt } from "@lo-tek/interfaces"
@@ -27,88 +27,88 @@ import "@lo-tek/interfaces/list.css"
 import "@lo-tek/interfaces/divider.css"
 
 /*
- * Klassen fra `lt.*` må trekkes ut og slås sammen med sidens egen for hånd.
- * Skriver du `{...lt.list()} class="min-klasse"`, skriver Astro ut begge
- * attributtene, og nettleseren beholder den første. Den egne klassen blir
- * altså borte uten at noe sier fra, og menyen lå lenge under hverandre i en
- * kolonne av nettopp den grunnen.
+ * The class from `lt.*` has to be pulled out and merged with the page's own
+ * by hand. If you write `{...lt.list()} class="my-class"`, Astro writes out
+ * both attributes, and the browser keeps the first. The page's own class is
+ * then lost without anything saying so, and for a long time the menu was
+ * stacked in a column for exactly that reason.
  */
 const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 ---
 
 <!doctype html>
-<html lang="nb">
+<html lang="en">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-		<title>Mine saker | Eksempelkommune</title>
+		<title>My cases | Example Council</title>
 		<meta
 			name="description"
-			content="Demo av sideskjelettet i LO-TEK: hopplenke, landemerker og overskriftsnivåer i en hel side."
+			content="Demo of the page skeleton in LO-TEK: skip link, landmarks and heading levels in a whole page."
 		/>
 	</head>
 	<body>
-		<a {...lt.skipLink()} href="#hovedinnhold">Hopp til hovedinnhold</a>
+		<a {...lt.skipLink()} href="#hovedinnhold">Skip to main content</a>
 
 		<header class="skjelett-topp">
 			<div class="skjelett-bredde skjelett-toppinnhold">
-				<a class="skjelett-merke" href="#" aria-label="Eksempelkommune, til forsiden">
-					Eksempelkommune
+				<a class="skjelett-merke" href="#" aria-label="Example Council, home page">
+					Example Council
 				</a>
 
-				<nav aria-label="Hovedmeny">
+				<nav aria-label="Main menu">
 					<ul {...liste} class={`${listeKlasse} skjelett-meny`}>
-						<li><a href="#" aria-current="page">Mine saker</a></li>
-						<li><a href="#">Søknader</a></li>
-						<li><a href="#">Kontakt oss</a></li>
+						<li><a href="#" aria-current="page">My cases</a></li>
+						<li><a href="#">Applications</a></li>
+						<li><a href="#">Contact us</a></li>
 					</ul>
 				</nav>
 			</div>
 		</header>
 
 		<div class="skjelett-bredde skjelett-sti">
-			<nav aria-label="Du er her">
+			<nav aria-label="You are here">
 				<ol {...lt.breadcrumbs()}>
-					<li><a {...lt.link()} href="#">Forsiden</a></li>
-					<li><a {...lt.link()} href="#">Min side</a></li>
-					<li><a {...lt.link()} href="#" aria-current="page">Mine saker</a></li>
+					<li><a {...lt.link()} href="#">Home</a></li>
+					<li><a {...lt.link()} href="#">My page</a></li>
+					<li><a {...lt.link()} href="#" aria-current="page">My cases</a></li>
 				</ol>
 			</nav>
 		</div>
 
 		<main id="hovedinnhold" tabindex="-1" class="skjelett-bredde skjelett-hoved">
-			<h1 {...lt.heading({ size: "xl" })}>Mine saker</h1>
+			<h1 {...lt.heading({ size: "xl" })}>My cases</h1>
 
 			<p {...lt.paragraph({ variant: "lead" })}>
-				Her finner du sakene dine, og hva som skjer med dem.
+				Here you find your cases, and what is happening with them.
 			</p>
 
 			<section aria-labelledby="til-behandling">
-				<h2 {...lt.heading({ size: "m" })} id="til-behandling">Til behandling</h2>
+				<h2 {...lt.heading({ size: "m" })} id="til-behandling">Under review</h2>
 
 				<ul {...liste} class={`${listeKlasse} skjelett-saker`}>
 					<li>
 						<article {...lt.card()}>
-							<h3 class={lt.card.title}>Søknad om bostøtte</h3>
+							<h3 class={lt.card.title}>Housing benefit application</h3>
 							<p {...lt.paragraph({ size: "small" })}>
-								Sendt 4. mars 2026. Saksnummer 2026-0481.
+								Sent 4 March 2026. Case number 2026-0481.
 							</p>
-							<p><span {...lt.badge({ color: "warning" })}>Mangler vedlegg</span></p>
+							<p><span {...lt.badge({ color: "warning" })}>Attachments missing</span></p>
 							<p>
-								<a {...lt.link()} href="#">Se hva som mangler</a>
+								<a {...lt.link()} href="#">See what is missing</a>
 							</p>
 						</article>
 					</li>
 					<li>
 						<article {...lt.card()}>
-							<h3 class={lt.card.title}>Søknad om barnehageplass</h3>
+							<h3 class={lt.card.title}>Nursery place application</h3>
 							<p {...lt.paragraph({ size: "small" })}>
-								Sendt 12. februar 2026. Saksnummer 2026-0377.
+								Sent 12 February 2026. Case number 2026-0377.
 							</p>
-							<p><span {...lt.badge({ color: "success" })}>Innvilget</span></p>
+							<p><span {...lt.badge({ color: "success" })}>Approved</span></p>
 							<p>
-								<a {...lt.link()} href="#">Se vedtaket</a>
+								<a {...lt.link()} href="#">See the decision</a>
 							</p>
 						</article>
 					</li>
@@ -118,35 +118,36 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 			<hr {...lt.divider()} />
 
 			<section aria-labelledby="ny-soknad">
-				<h2 {...lt.heading({ size: "m" })} id="ny-soknad">Ny søknad</h2>
+				<h2 {...lt.heading({ size: "m" })} id="ny-soknad">New application</h2>
 				<p {...lt.paragraph()}>
-					Du kan søke om bostøtte hver måned. Fristen er den 25.
+					You can apply for housing benefit every month. The deadline is the 25th.
 				</p>
-				<p><button {...lt.button()} type="button">Start ny søknad</button></p>
+				<p><button {...lt.button()} type="button">Start a new application</button></p>
 			</section>
 		</main>
 
 		<footer class="skjelett-bunn">
 			<div class="skjelett-bredde">
 				<p {...lt.paragraph({ size: "small" })}>
-					Eksempelkommune, postboks 1, 0000 Eksempelby. Telefon 00 00 00 00.
+					Example Council, PO Box 1, Exampletown 0000. Telephone 00 00 00 00.
 				</p>
 			</div>
 		</footer>
 
 		<style is:global>
 			/*
-			 * Oppsettet er appens, ikke designsystemets.
+			 * The layout is the app's, not the design system's.
 			 *
-			 * LO-TEK gir komponentene og tokenene. Bredden på spalten, luften
-			 * mellom delene og fargen på topp og bunn hører til siden, og står
-			 * derfor her. Alle verdiene er tokens, så siden følger temaet.
+			 * LO-TEK provides the components and the tokens. The column width,
+			 * the space between the parts and the colour of the header and
+			 * footer belong to the page, and are therefore here. Every value is
+			 * a token, so the page follows the theme.
 			 */
-			/* Sida følger systemet gjennom tokenene, så rullefelt og
-			   skjemakontroller må følge med. LO-TEK setter ikke denne på
-			   `:root`, fordi en verdi der ville gjeldt hele dokumentet også
-			   der pakken bare er en gjest. Den står på <html>, siden
-			   rullefeltet i vinduet følger rotelementet. */
+			/* The page follows the system through the tokens, so scrollbars and
+			   form controls have to follow too. LO-TEK does not set this on
+			   `:root`, because a value there would apply to the whole document,
+			   also where the package is only a guest. It is on <html>, since the
+			   window's scrollbar follows the root element. */
 			html {
 				color-scheme: light dark;
 			}
@@ -164,16 +165,16 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 
 			.skjelett-bredde {
 				box-sizing: border-box;
-				/* LO-TEK har ingen CSS-token for spaltebredde. Den er appens valg. */
+				/* LO-TEK has no CSS token for column width. It is the app's choice. */
 				max-inline-size: 60rem;
 				margin-inline: auto;
 				padding-inline: var(--lt-spacing-4);
 			}
 
 			/*
-			 * Topplinja er appens merkevare, og skrives derfor uten LO-TEKs
-			 * lenkefarge. Det er mulig fordi systemets CSS ligger i
-			 * @layer lotek: reglene her vinner uten !important.
+			 * The header bar is the app's brand, and is therefore written without
+			 * LO-TEK's link colour. That is possible because the system's CSS is
+			 * in @layer lotek: the rules here win without !important.
 			 */
 			.skjelett-topp {
 				background: var(--lt-color-accent-fill);
@@ -189,9 +190,9 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 				padding-block: var(--lt-spacing-4);
 			}
 
-			/* Fargen settes, ikke arves: menyen står i en `.lt-list`, som selv
-			   setter tekstfargen, og `inherit` hadde hentet den derfra og gitt
-			   mørk tekst på den blå flaten. */
+			/* The colour is set, not inherited: the menu is in an `.lt-list`, which
+			   sets the text colour itself, and `inherit` would have taken it from
+			   there and given dark text on the blue surface. */
 			.skjelett-topp a {
 				color: var(--lt-color-accent-content);
 				text-decoration: none;
@@ -222,7 +223,7 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 				margin-block-start: 0;
 			}
 
-			/* Siden du står på markeres med strek, ikke bare med farge. */
+			/* The current page is marked with an underline, not only with colour. */
 			.skjelett-meny [aria-current="page"] {
 				text-decoration: underline;
 				text-underline-offset: 0.35em;
@@ -240,8 +241,8 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 				padding-block: var(--lt-spacing-5) var(--lt-spacing-7);
 			}
 
-			/* Overskriften og ingressen hører sammen, og skal stå tettere på
-			   hverandre enn på seksjonene under. */
+			/* The heading and the lead paragraph belong together, and sit closer to
+			   each other than to the sections below. */
 			.skjelett-hoved > h1 {
 				margin-block-end: calc(var(--lt-spacing-5) * -1 + var(--lt-spacing-2));
 			}
@@ -268,8 +269,8 @@ const { class: listeKlasse, ...liste } = lt.list({ variant: "plain" })
 				border-block-start: 1px solid var(--lt-color-neutral-border-subtle);
 			}
 
-			/* Fokusmarkeringen på hovedinnholdet er til for hopplenken, og skal
-			   ikke vises når brukeren bare klikker et sted på siden. */
+			/* The focus outline on the main content is for the skip link, and is
+			   not shown when the user just clicks somewhere on the page. */
 			main:focus {
 				outline: none;
 			}

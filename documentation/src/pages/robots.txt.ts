@@ -1,9 +1,9 @@
 /**
- * `robots.txt`: alt er åpent, og sitemapen står her.
+ * `robots.txt`: everything is open, and the sitemap is listed here.
  *
- * Uten fila fant en agent som søkte på nettet verken `llms.txt` eller
- * regelbøkene, fordi ingen søkemotor hadde fått en liste over sidene.
- * Adressen leses av `homepage` i pakken, som `llms.txt` også gjør.
+ * Without the file, an agent searching the web found neither `llms.txt` nor
+ * the rulebooks, because no search engine had been given a list of the pages.
+ * The address is read from `homepage` in the package, as `llms.txt` also does.
  */
 
 import type { APIRoute } from "astro"

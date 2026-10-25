@@ -4,7 +4,7 @@ import Preview from "./Preview.astro"
 
 <Preview id="demo-dato" stiler={["field", "button", "paragraph"]} maxWidth="26rem" layout="kolonne">
 	<lt-field>
-		<label class="lt-label" for="demo-dato-fodt">Fødselsdato</label>
+		<label class="lt-label" for="demo-dato-fodt">Date of birth</label>
 		<input
 			class="lt-input"
 			data-variant="date"
@@ -14,10 +14,10 @@ import Preview from "./Preview.astro"
 			min="1900-01-01"
 			max="2026-12-31"
 		/>
-		<p class="lt-help-text">Skriv datoen som 31.05.2026, eller velg den i kalenderen.</p>
+		<p class="lt-help-text">Type the date as 31/05/2026, or pick it in the calendar.</p>
 	</lt-field>
 
-	<p class="lt-paragraph" id="demo-dato-svar">Ingen dato valgt ennå.</p>
+	<p class="lt-paragraph" id="demo-dato-svar">No date chosen yet.</p>
 </Preview>
 
 <script>
@@ -25,7 +25,7 @@ import Preview from "./Preview.astro"
 
 	defineLtField()
 
-	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
+	// The preview sits in a shadow root, so we go through the host element.
 	const flate = document.getElementById("demo-dato")?.shadowRoot
 	const felt = flate?.getElementById("demo-dato-fodt") as HTMLInputElement | null
 	const svar = flate?.getElementById("demo-dato-svar")
@@ -33,7 +33,7 @@ import Preview from "./Preview.astro"
 	felt?.addEventListener("change", () => {
 		if (!svar) return
 		svar.textContent = felt.value
-			? `Serveren får ${felt.value}, uansett hvordan datoen ser ut i feltet.`
-			: "Ingen dato valgt ennå."
+			? `The server receives ${felt.value}, whatever the date looks like in the field.`
+			: "No date chosen yet."
 	})
 </script>

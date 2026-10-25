@@ -4,22 +4,22 @@ import Preview from "./Preview.astro"
 
 <Preview id="demo-field" stiler={["field"]} layout="stabel" maxWidth="34rem">
 	<lt-field>
-		<label class="lt-label" for="demo-epost-input" data-required="text">E-postadresse</label>
+		<label class="lt-label" for="demo-epost-input" data-required="text">Email address</label>
 		<input
 			id="demo-epost-input"
 			class="lt-input"
 			type="email"
-			placeholder="ola@eksempel.no"
+			placeholder="jo@example.com"
 			required
 		/>
-		<p class="lt-help-text">Vi sender kvittering til denne adressen.</p>
-		<p class="lt-error-text" id="demo-epost-feil" hidden>Skriv en e-postadresse med krøllalfa.</p>
+		<p class="lt-help-text">We send the receipt to this address.</p>
+		<p class="lt-error-text" id="demo-epost-feil" hidden>Enter an email address with an @ sign.</p>
 	</lt-field>
 
 	<lt-field optional="">
-		<label for="demo-melding">Melding til saksbehandler</label>
-		<textarea id="demo-melding" class="lt-textarea" rows="3" placeholder="Skriv en kort melding"></textarea>
-		<p class="lt-help-text">Du kan skrive opptil 500 tegn.</p>
+		<label for="demo-melding">Message to the caseworker</label>
+		<textarea id="demo-melding" class="lt-textarea" rows="3" placeholder="Write a short message"></textarea>
+		<p class="lt-help-text">You can write up to 500 characters.</p>
 	</lt-field>
 </Preview>
 
@@ -28,8 +28,8 @@ import Preview from "./Preview.astro"
 
 	defineLtField()
 
-	// Forhåndsvisningen ligger i en shadow root, så document.getElementById
-	// når ikke inn. Vi går via vertselementet.
+	// The preview sits in a shadow root, so document.getElementById does
+	// not reach inside. We go through the host element.
 	const flate = document.getElementById("demo-field")?.shadowRoot
 	const feil = flate?.getElementById("demo-epost-feil")
 	const input = flate?.getElementById("demo-epost-input") as HTMLInputElement | null
@@ -38,8 +38,8 @@ import Preview from "./Preview.astro"
 		const erGyldig = () =>
 			input.value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)
 
-		// Feltet er ugyldig når feilmeldingen synes. Komponenten setter da
-		// aria-invalid og kobler meldingen til feltet.
+		// The field is invalid while the error text is visible. The component
+		// then sets aria-invalid and wires the message to the field.
 		input.addEventListener("blur", () => {
 			feil.hidden = erGyldig()
 		})

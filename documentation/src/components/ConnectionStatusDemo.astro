@@ -9,15 +9,15 @@ import Preview from "./Preview.astro"
 	layout="stabel"
 	fastInni
 	ekstraCss={`
-		/* Bare for visningen: linja legger seg øverst i boksen, slik den legger
-		   seg øverst i vinduet i en app. Plassen her gjør at den ikke dekker
-		   knappene. En konsument trenger ingenting av dette. */
+		/* Only for the preview: the bar sits at the top of the box, as it sits
+		   at the top of the window in an app. The space here keeps it from
+		   covering the buttons. A consumer needs none of this. */
 		.flate { padding-block-start: var(--lt-spacing-12); }
 	`}
 >
 	<div class="demo-samband-knapper">
-		<button class="lt-button" id="demo-samband-av" type="button">Simuler at kallet feiler</button>
-		<button class="lt-button" data-variant="secondary" id="demo-samband-pa" type="button">Simuler at det virker igjen</button>
+		<button class="lt-button" id="demo-samband-av" type="button">Simulate a failed request</button>
+		<button class="lt-button" data-variant="secondary" id="demo-samband-pa" type="button">Simulate it working again</button>
 	</div>
 	<lt-connection-status class="lt-connection-status" data-ignore-morph></lt-connection-status>
 </Preview>
@@ -27,7 +27,7 @@ import Preview from "./Preview.astro"
 
 	defineLtConnectionStatus()
 
-	// Forhåndsvisningen ligger i en shadow root, så vi går via vertselementet.
+	// The preview sits in a shadow root, so we go through the host element.
 	const flate = document.getElementById("demo-samband")?.shadowRoot
 	const status = flate?.querySelector("lt-connection-status")
 

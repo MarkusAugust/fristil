@@ -7,25 +7,25 @@ import { compile } from "tailwindcss"
 import Preview, { type Stilark } from "./Preview.astro"
 
 interface Props {
-  /** LO-TEK-stilarkene eksempelet trenger. */
+  /** The LO-TEK stylesheets the example needs. */
   stiler?: Stilark[]
-  /** `rad` legger innholdet side om side, `stabel` under hverandre. */
+  /** `rad` lays the content out side by side, `stabel` one below the other. */
   layout?: "rad" | "stabel"
-  /** Valgfri maksbredde. */
+  /** Optional maximum width. */
   maxWidth?: string
-  /** Markupen. Vises både levende og som kode. */
+  /** The markup. Shown both live and as code. */
   kode: string
 }
 
 const { stiler = [], layout = "rad", maxWidth, kode } = Astro.props
 
 /*
- * Eksempelet kompileres av en ekte Tailwind under bygging.
+ * The example is compiled by a real Tailwind at build time.
  *
- * Forhåndsvisningen ligger i en shadow root, og dokumentasjonssidens egne
- * utility-klasser når ikke inn dit. Å skrive dem av for hånd ville gjort
- * eksempelet til en tegning av noe som kanskje virker. Her er det Tailwind
- * selv som lager klassene, av nøyaktig den markupen som står i kodefanen.
+ * The preview sits in a shadow root, and the documentation site's own utility
+ * classes do not reach in there. Copying them by hand would have made the
+ * example a drawing of something that might work. Here Tailwind itself
+ * generates the classes, from exactly the markup shown in the code tab.
  */
 async function lastStilark(id: string, basedir: string) {
   const url = id.startsWith(".")
@@ -36,7 +36,7 @@ async function lastStilark(id: string, basedir: string) {
   return { path: sti, base: dirname(sti), content: await readFile(sti, "utf8") }
 }
 
-/** Klassenavnene i markupen, som er det Tailwind skal lage regler for. */
+/** The class names in the markup, which are what Tailwind is to generate rules for. */
 const klasser = [...kode.matchAll(/class="([^"]*)"/g)].flatMap((treff) =>
   treff[1].split(/\s+/).filter(Boolean),
 )
@@ -51,20 +51,21 @@ const compiler = await compile(
 )
 
 /*
- * En klasse fra LO-TEKs navnerom som ikke finnes, skal felle bygget.
+ * A class from the LO-TEK namespace that does not exist must fail the build.
  *
- * Tailwind sier ingenting om en klasse den ikke kjenner: den lager bare ingen
- * regel, og eksempelet ser ut som det virker. Siden sto med tolv navn fra
- * fargesystemet slik det het før matrisen, og ingenting sa fra. Bare
- * `-lt-`-klassene kontrolleres, siden de er våre; `p-4` og `rounded-xl` er
- * Tailwinds egne.
+ * Tailwind says nothing about a class it does not know: it simply generates no
+ * rule, and the example looks as if it works. The page carried twelve names
+ * from the colour system as it was named before the matrix, and nothing said
+ * so. Only the `-lt-` classes are checked, since they are ours; `p-4` and
+ * `rounded-xl` are Tailwind's own.
  *
- * Målet er om `build()` ga noe nytt, ikke om en selektor står i utdata.
- * Selektoren måtte i så fall bygges av klassenavnet, og Tailwind escaper `/`,
- * `[`, `!` og et halvt dusin tegn til, så `hover:bg-lt-accent-fill/50` ville
- * blitt meldt som ukjent selv om den finnes. `build()` er dessuten
- * kumulativ, så et navn som er et prefiks av et annet, som `text-lt-accent`
- * mot `text-lt-accent-text`, ikke slipper gjennom på et delstrengtreff.
+ * The test is whether `build()` produced anything new, not whether a selector
+ * appears in the output. The selector would then have to be built from the
+ * class name, and Tailwind escapes `/`, `[`, `!` and half a dozen more
+ * characters, so `hover:bg-lt-accent-fill/50` would have been reported as
+ * unknown even though it exists. `build()` is also cumulative, so a name that
+ * is a prefix of another, such as `text-lt-accent` against
+ * `text-lt-accent-text`, does not slip through on a substring match.
  */
 const ukjente: string[] = []
 let lengde = compiler.build([]).length
@@ -78,7 +79,7 @@ for (const klasse of new Set(klasser)) {
 
 if (ukjente.length > 0) {
   throw new Error(
-    `Tailwind-eksempelet bruker klasser som ikke finnes i temaet: ${ukjente.join(", ")}`,
+    `The Tailwind example uses classes that do not exist in the theme: ${ukjente.join(", ")}`,
   )
 }
 
@@ -96,7 +97,7 @@ const tailwindCss = compiler.build(klasser)
 			<Fragment set:html={kode} />
 		</Preview>
 	</TabItem>
-	<TabItem label="Kode">
+	<TabItem label="Code">
 		<Code code={kode.trim()} lang="html" />
 	</TabItem>
 </Tabs>

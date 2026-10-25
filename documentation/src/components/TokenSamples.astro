@@ -2,13 +2,13 @@
 import Preview from "./Preview.astro"
 
 interface Props {
-  /** Tokennavn uten `--`-prefiks, vist som én prøve hver. */
+  /** Token names without the `--` prefix, shown as one swatch each. */
   semantiske?: string[]
-  /** Familier vist som en rad med én rute per rolle. */
+  /** Families shown as a row with one square per role. */
   matrise?: string[]
 }
 
-/** Rollene, i samme rekkefølge som kontrakten lister dem. */
+/** The roles, in the same order as the contract lists them. */
 const ROLLER = [
   "surface",
   "border-subtle",

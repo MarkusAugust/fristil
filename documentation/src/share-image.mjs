@@ -1,12 +1,13 @@
 import pakke from "../../designsystem/package.json" with { type: "json" }
 
 /*
- * Bildet en lenke til dokumentasjonen får når den deles. Starlight-sidene får
- * taggene fra `head` i `astro.config.mjs`, og forsiden, som står utenfor
- * Starlight, skriver dem selv i `index.astro`. Begge leser lista herfra.
+ * The image a link to the documentation gets when it is shared. The Starlight
+ * pages get the tags from `head` in `astro.config.mjs`, and the front page,
+ * which sits outside Starlight, writes them itself in `index.astro`. Both read
+ * the list from here.
  *
- * Adressen må være absolutt: X og de andre leser ikke en relativ sti.
- * Bildet er `public/og.png`, 1200 × 630 piksler.
+ * The address must be absolute: X and the others do not read a relative path.
+ * The image is `public/og.png`, 1200 × 630 pixels.
  */
 const BASE = pakke.homepage.replace(/\/$/, "")
 
@@ -14,11 +15,11 @@ export const DELINGSBILDE = [
   ["og:image", `${BASE}/og.png`],
   ["og:image:width", "1200"],
   ["og:image:height", "630"],
-  ["og:image:alt", "LO-TEK. Rammeverksuavhengig designsystem."],
+  ["og:image:alt", "LO-TEK. Framework-independent design system."],
   ["twitter:image", `${BASE}/og.png`],
 ]
 
-// `og:*` er en `property` i Open Graph, `twitter:*` er et `name`.
+// `og:*` is a `property` in Open Graph, `twitter:*` is a `name`.
 export const metaAttributter = ([navn, verdi]) =>
   navn.startsWith("og:")
     ? { property: navn, content: verdi }

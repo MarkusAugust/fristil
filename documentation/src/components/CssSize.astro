@@ -1,15 +1,15 @@
 ---
 /**
- * Størrelsen på `lotek.css`, lest fra fila når siden bygges.
+ * The size of `lotek.css`, read from the file when the site is built.
  *
- * «Kom i gang» oppga 90 kB og 11 kB komprimert lenge etter at fila hadde
- * vokst forbi det. Tallet leses nå av den bygde `dist/lotek.css`, altså fila
- * konsumenten får, og regnes som i regelbøkene: tusen byte per kB, og gzip
- * med standardnivået.
+ * "Getting started" gave 90 kB and 11 kB compressed long after the file had
+ * grown past that. The number is now read from the built `dist/lotek.css`,
+ * which is the file the consumer gets, and computed as in the rulebooks: a
+ * thousand bytes per kB, and gzip at the default level.
  *
- * Fila hentes med `?raw`, ikke med `readFileSync`. En sti regnet fra
- * `import.meta.url` pekte inn i `documentation/` etter at bygget hadde
- * laget en bundle av siden, slik det også gjorde for versjonsloggen.
+ * The file is loaded with `?raw`, not with `readFileSync`. A path computed
+ * from `import.meta.url` pointed into `documentation/` after the build had
+ * bundled the page, as it also did for the changelog.
  */
 import { gzipSync } from "node:zlib"
 import css from "../../../designsystem/dist/lotek.css?raw"
@@ -18,4 +18,4 @@ const kb = Math.round(Buffer.byteLength(css) / 1000)
 const gzipKb = Math.round(gzipSync(css).length / 1000)
 ---
 
-{kb} kB, {gzipKb} kB komprimert med gzip
+{kb} kB, {gzipKb} kB compressed with gzip

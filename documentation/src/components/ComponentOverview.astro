@@ -1,26 +1,26 @@
 ---
 /**
- * Oversikten over alle komponentene, lest av det som finnes.
+ * The overview of every component, read from what exists.
  *
- * Ingenting her er skrevet for hånd. Tittelen og beskrivelsen kommer fra
- * frontmatteren på hver komponentside, og kategorien fra mappa komponenten
- * ligger i under `designsystem/src/components/`. Da kan lista verken gå tom
- * eller gli fra sidene: en ny komponent dukker opp av seg selv, og en
- * beskrivelse som endres her er den samme som på siden.
+ * Nothing here is written by hand. The title and description come from the
+ * frontmatter of each component page, and the category from the folder the
+ * component sits in under `designsystem/src/components/`. The list can then
+ * neither run empty nor drift from the pages: a new component appears by
+ * itself, and a description changed here is the same one as on the page.
  *
- * Kildene hentes med `import.meta.glob`, som Vite løser ved bygging. En sti
- * regnet ut av `import.meta.url` ville pekt på chunken etter bundling, ikke på
- * kilden, slik `llms.txt.ts` forklarer på samme sted.
+ * The sources are loaded with `import.meta.glob`, which Vite resolves at build
+ * time. A path computed from `import.meta.url` would have pointed at the chunk
+ * after bundling, not at the source, as `llms.txt.ts` explains in the same place.
  */
 
 import { getCollection } from "astro:content"
 
 /*
- * Mappenavnet til hver komponent, med kategorien den ligger under.
+ * The folder name of each component, with the category it sits under.
  *
- * Uten `eager`: vi trenger bare stiene, ikke modulene. Kjørte vi dem, ville
- * hver web component blitt evaluert under byggingen av en side som ikke bruker
- * dem.
+ * Without `eager`: we only need the paths, not the modules. Running them would
+ * have evaluated every web component while building a page that does not use
+ * them.
  */
 const KILDER = import.meta.glob("../../../designsystem/src/components/*/*/*.ts")
 
@@ -37,21 +37,21 @@ for (const sti of Object.keys(KILDER)) {
 const GRUPPER: { kategori: Kategori; tittel: string; forklaring: string }[] = [
   {
     kategori: "css",
-    tittel: "CSS-komponenter",
+    tittel: "CSS components",
     forklaring:
-      "En klasse og noen dataattributter på et vanlig HTML-element. Ingen JavaScript lastes.",
+      "A class and a few data attributes on a plain HTML element. No JavaScript is loaded.",
   },
   {
     kategori: "frame",
-    tittel: "Rammekomponenter",
+    tittel: "Frame components",
     forklaring:
-      "Du skriver markupen, og web-komponenten fester tastatur, fokus og koblingen oppå. Elementene blir liggende i vanlig DOM.",
+      "You write the markup, and the web component adds keyboard handling, focus and the wiring on top. The elements stay in the plain DOM.",
   },
   {
     kategori: "standalone",
-    tittel: "Frittstående komponenter",
+    tittel: "Standalone components",
     forklaring:
-      "Komponenten lager innholdet sitt selv, fordi det ikke finnes noe for serveren å sende. Du kaller en metode.",
+      "The component creates its own content, because there is nothing for the server to send. You call a method.",
   },
 ]
 
@@ -69,19 +69,19 @@ const grupper = GRUPPER.map((gruppe) => ({
   ...gruppe,
   sider: sider
     .filter((side) => kategoriFor.get(side.navn) === gruppe.kategori)
-    .sort((a, b) => a.tittel.localeCompare(b.tittel, "nb")),
+    .sort((a, b) => a.tittel.localeCompare(b.tittel, "en")),
 })).filter((gruppe) => gruppe.sider.length > 0)
 
 /*
- * En oversikt som har mistet halve lista ser ut som en kort oversikt. Derfor
- * telles det som faktisk ble satt inn, og bygget stopper hvis en side falt ut
- * av kategoriseringen.
+ * An overview that has lost half its list looks like a short overview. So what
+ * was actually placed is counted, and the build stops if a page fell out of the
+ * categorisation.
  */
 const plassert = grupper.reduce((sum, g) => sum + g.sider.length, 0)
 if (plassert !== sider.length) {
   const borte = sider.filter((s) => !kategoriFor.has(s.navn)).map((s) => s.navn)
   throw new Error(
-    `ComponentOverview: ${plassert} av ${sider.length} sider havnet i en gruppe. Uten mappe under designsystem/src/components: ${borte.join(", ")}`,
+    `ComponentOverview: ${plassert} of ${sider.length} pages ended up in a group. No folder under designsystem/src/components: ${borte.join(", ")}`,
   )
 }
 ---
@@ -131,8 +131,8 @@ if (plassert !== sider.length) {
     font-size: var(--lt-font-size-s);
     line-height: var(--lt-line-height-default);
     color: var(--lt-color-neutral-text-subtle);
-    /* Beskrivelsene er hele setninger, og et langt ord skal ikke sprenge
-       kortet på en smal skjerm. */
+    /* The descriptions are full sentences, and a long word must not burst
+       the card on a narrow screen. */
     overflow-wrap: anywhere;
   }
 </style>

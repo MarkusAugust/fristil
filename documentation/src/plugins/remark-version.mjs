@@ -1,22 +1,23 @@
 /**
- * Setter pakkeversjonen inn i dokumentasjonen, fra én kilde.
+ * Puts the package version into the documentation, from one source.
  *
- * CDN-adressene i eksemplene må peke på en versjon som finnes, og de sto
- * skrevet for hånd 74 steder i 12 filer. Ved hver utgivelse måtte alle 74
- * endres, og en som ble glemt ville sendt leseren til en gammel pakke uten at
- * noe sa fra. Nå står plassholderen `@lo-tek/interfaces@VERSJON` i kilden,
- * og versjonen leses av `designsystem/package.json` når siden bygges.
+ * The CDN addresses in the examples have to point at a version that exists,
+ * and they were written by hand in 74 places across 12 files. Every release
+ * meant changing all 74, and one that was forgotten would have sent the reader
+ * to an old package without anything saying so. Now the placeholder
+ * `@lo-tek/interfaces@VERSJON` is in the source, and the version is read from
+ * `designsystem/package.json` when the site is built.
  *
- * `check-documentation.ts` feller hvis noen skriver tallet for hånd likevel.
+ * `check-documentation.ts` fails if someone writes the number by hand anyway.
  *
- * Plassholderen byttes i kodeblokker, i kode inne i en setning, i brødtekst og
- * i lenkeadresser. Det dekker alle adressene i dag.
+ * The placeholder is replaced in code blocks, in inline code, in body text and
+ * in link addresses. That covers every address today.
  *
- * Det den ikke når, er verdier som ikke ligger i `children`: JSX-attributter
- * som `kode={…}`, bildeadresser, mdx-uttrykk og frontmatter. Skriver noen en
- * adresse et slikt sted, blir plassholderen stående, og det er
- * `check-built-version.ts` som fanger den: den krever at hver adresse
- * plassholderen står i, finnes i det bygde med versjonen satt inn.
+ * What it does not reach are values outside `children`: JSX attributes such as
+ * `kode={…}`, image addresses, mdx expressions and frontmatter. If someone
+ * writes an address in such a place, the placeholder stays, and
+ * `check-built-version.ts` catches it: it requires every address the
+ * placeholder appears in to exist in the build with the version filled in.
  */
 
 import { readFileSync } from "node:fs"
@@ -29,17 +30,17 @@ const { version } = JSON.parse(
 
 const MED_VERSJON = `@lo-tek/interfaces@${version}`
 
-// Tarballen i npm-registeret, for den som henter pakken uten npm.
+// The tarball in the npm registry, for anyone fetching the package without npm.
 const TARBALL = "designsystem-VERSJON.tgz"
 
 /*
- * Maven-koordinatene og WebJar-stien på Kotlin-siden har samme versjon som
- * npm-pakken, og sto med `{versjon}` i kilden, som leseren fikk se
- * bokstavelig. Ordet VERSJON byttes der det står rett etter
- * `markusaugust:lo-tek-interfaces:`, `markusaugust.lotek") version "` og
- * `webjars/lo-tek/`, og ingen andre steder. `check-built-version.ts`
- * krever at hver av de tre står med versjonen i det bygde, og at ingen av
- * dem står igjen med plassholderen.
+ * The Maven coordinates and the WebJar path on the Kotlin page have the same
+ * version as the npm package, and were written as `{versjon}` in the source,
+ * which the reader saw literally. The word VERSJON is replaced where it comes
+ * right after `markusaugust:lo-tek-interfaces:`, `markusaugust.lotek") version "`
+ * and `webjars/lo-tek/`, and nowhere else. `check-built-version.ts` requires
+ * each of the three to appear with the version in the build, and none of them
+ * to be left with the placeholder.
  */
 const MAVEN = [
   [

@@ -94,37 +94,37 @@ const STILARK = {
 export type Stilark = keyof typeof STILARK
 
 interface Props {
-  /** Stilarkene eksempelet trenger, de samme du ville importert i en app. */
+  /** The stylesheets the example needs, the same ones you would import in an app. */
   stiler?: Stilark[]
   /**
-   * `rad` legger innholdet side om side, `stabel` under hverandre.
-   * `flyt` er vanlig blokkflyt, der margene slås sammen slik de gjør på en
-   * ekte side. I `stabel` er flaten en flex-kolonne, og der legges margene
-   * og mellomrommet oppå hverandre.
+   * `rad` lays the content out side by side, `stabel` one below the other.
+   * `flyt` is ordinary block flow, where margins collapse as they do on a
+   * real page. In `stabel` the surface is a flex column, and there the
+   * margins and the gap add up.
    */
   layout?: "rad" | "stabel" | "flyt"
-  /** Valgfri maksbredde, for eksempel "34rem". */
+  /** Optional maximum width, for example "34rem". */
   maxWidth?: string
-  /** Id på vertselementet, for demoer som trenger å finne fram med skript. */
+  /** Id of the host element, for demos that need to find their way in with script. */
   id?: string
   /**
-   * CSS som legges sist i skyggerota.
+   * CSS added last in the shadow root.
    *
-   * To bruk: utility-klasser kompilert av Tailwind, og tilpasning som bare
-   * gjelder visningen, som plass til en linje som legger seg øverst i boksen.
-   * Det siste er alternativet til et `style=`-attributt i eksempelet, og skal
-   * alltid ha en kommentar som sier at leseren ikke trenger det.
+   * Two uses: utility classes compiled by Tailwind, and customising that
+   * applies only to the preview, such as room for a bar that sits at the top
+   * of the box. The latter is the alternative to a `style=` attribute in the
+   * example, and must always have a comment saying the reader does not need it.
    */
   ekstraCss?: string
   /**
-   * Hold `position: fixed` inne i boksen.
+   * Keep `position: fixed` inside the box.
    *
-   * Noen komponenter fester innholdet sitt til vinduet, som linja fra
-   * `<lt-connection-status>` øverst og meldingene fra `<lt-toast>` i hjørnet.
-   * I en app er det riktig. I dokumentasjonen var det ikke det: leseren
-   * trykket på knappen midt i siden, og linja dukket opp i toppen av vinduet,
-   * bak den faste toppen på dokumentasjonssiden. Det så ut som at ingenting
-   * skjedde.
+   * Some components fix their content to the window, such as the bar from
+   * `<lt-connection-status>` at the top and the messages from `<lt-toast>` in
+   * the corner. In an app that is right. In the documentation it was not: the
+   * reader pressed the button in the middle of the page, and the bar appeared
+   * at the top of the window, behind the documentation site's fixed header.
+   * It looked as if nothing happened.
    */
   fastInni?: boolean
 }
@@ -141,24 +141,24 @@ const {
 for (const navn of stiler) {
   if (!(navn in STILARK)) {
     throw new Error(
-      `Preview: ukjent stilark «${navn}». Gyldige: ${Object.keys(STILARK).join(", ")}`,
+      `Preview: unknown stylesheet "${navn}". Valid: ${Object.keys(STILARK).join(", ")}`,
     )
   }
 }
 
 /*
- * Forhåndsvisningen ligger i en shadow root, opprettet deklarativt av
- * nettleseren. Det er ikke pynt: uten den treffer dokumentasjonssidens CSS
- * elementene i eksempelet, og en regel som treffer <p> direkte slår den
- * arvede tekstfargen uansett spesifisitet.
+ * The preview sits in a shadow root, created declaratively by the browser.
+ * That is not decoration: without it the documentation site's CSS hits the
+ * elements in the example, and a rule that targets <p> directly beats the
+ * inherited text colour regardless of specificity.
  *
- * Isolasjonen gjør også eksempelet ærlig: det viser nøyaktig det en konsument
- * får med stilarkene under, og ingenting dokumentasjonssiden tilfeldigvis
- * gjør.
+ * The isolation also keeps the example honest: it shows exactly what a
+ * consumer gets with the stylesheets below, and nothing the documentation
+ * site happens to do.
  *
- * Flaten følger temaet. CSS-variablene settes på :root av tokens.css og arves
- * inn gjennom skyggegrensen, så både lyst og mørkt tema slår gjennom uten at
- * noe gjentas her.
+ * The surface follows the theme. The CSS variables are set on :root by
+ * tokens.css and inherited through the shadow boundary, so both light and
+ * dark themes come through without anything being repeated here.
  */
 const stilark = [
   `
@@ -180,10 +180,10 @@ const stilark = [
 		line-height: 1.6;
 	}
 
-	/* Bare for visningen. Layout-inneslutning gjør boksen til utgangspunktet
-	   for et fastposisjonert barn, slik at leseren ser resultatet der hun
-	   trykket framfor i toppen av vinduet. En konsument trenger ikke dette,
-	   og skal ikke kopiere det. */
+	/* Only for the preview. Layout containment makes the box the containing
+	   block for a fixed-position child, so the reader sees the result where
+	   they pressed rather than at the top of the window. A consumer does not
+	   need this, and should not copy it. */
 	.flate[data-fast-inni] {
 		contain: layout;
 	}
@@ -202,9 +202,10 @@ const stilark = [
 		display: block;
 	}
 
-	/* Bevisst ingen reset her. Flaten skal vise nøyaktig det en konsument får
-	   med stilarkene under og nettleserens egne standardverdier. Ser noe rart
-	   ut, er det komponenten som mangler noe, ikke forhåndsvisningen. */
+	/* Deliberately no reset here. The surface must show exactly what a
+	   consumer gets with the stylesheets below and the browser's own
+	   defaults. If something looks odd, it is the component that is missing
+	   something, not the preview. */
 	`,
   ...stiler.map((navn) => STILARK[navn]),
   ekstraCss ?? "",

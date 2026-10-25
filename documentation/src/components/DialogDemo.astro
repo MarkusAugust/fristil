@@ -2,28 +2,28 @@
 import { lt } from "@lo-tek/interfaces"
 import Preview from "./Preview.astro"
 
-// Serveren skriver hele dialogen og sier om den er åpen. Komponenten kaller
-// showModal(), som en server ikke kan gjøre selv.
+// The server writes the whole dialog and says whether it is open. The
+// component calls showModal(), which a server cannot do itself.
 const boks = lt.dialog({ titleId: "demo-dialog-tittel", color: "danger" })
 ---
 
 <Preview id="demo-dialog" stiler={["dialog", "button"]} maxWidth="30rem">
 	<button {...lt.button({ variant: "danger" })} type="button" data-apne>
-		Slett søknaden
+		Delete the application
 	</button>
 
 	<lt-dialog {...boks.host}>
 		<dialog {...boks.dialog}>
 			<div {...boks.header}>
-				<h2 {...boks.title}>Slette søknaden?</h2>
-				<p {...boks.subtitle}>Dette kan ikke angres</p>
+				<h2 {...boks.title}>Delete the application?</h2>
+				<p {...boks.subtitle}>This cannot be undone</p>
 			</div>
 			<div {...boks.body}>
-				<p>Søknaden og vedleggene blir borte. Dette kan ikke angres.</p>
+				<p>The application and its attachments will be gone. This cannot be undone.</p>
 			</div>
 			<form method="dialog" {...boks.footer}>
-				<button {...lt.button({ variant: "secondary" })} value="avbryt">Avbryt</button>
-				<button {...lt.button({ variant: "danger" })} value="slett">Slett søknaden</button>
+				<button {...lt.button({ variant: "secondary" })} value="cancel">Cancel</button>
+				<button {...lt.button({ variant: "danger" })} value="delete">Delete the application</button>
 			</form>
 		</dialog>
 	</lt-dialog>
@@ -34,9 +34,10 @@ const boks = lt.dialog({ titleId: "demo-dialog-tittel", color: "danger" })
 
 	defineLtDialog()
 
-	// I en app med server ville knappen sendt en forespørsel, og serveren
-	// svart med den samme markupen og `open` på verten. Her gjør knappen det
-	// serveren ellers ville gjort, slik at eksempelet kan prøves.
+	// In an app with a server, the button would send a request, and the
+	// server would answer with the same markup and `open` on the host. Here
+	// the button does what the server would otherwise do, so the example can
+	// be tried.
 	const vert = document
 		.getElementById("demo-dialog")
 		?.shadowRoot?.querySelector("lt-dialog")

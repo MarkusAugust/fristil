@@ -1,16 +1,18 @@
 /**
- * Regelbøkene som filer på nettsiden, på en stabil adresse.
+ * The rulebooks as files on the website, at a stable address.
  *
- * Den viktigste agenten har ingen `node_modules`. Blir noen bedt om å «lage et
- * skjema med LO-TEK» i en tom mappe, skrives markupen før `npm install` har
- * kjørt, og regelboka i pakken er da usynlig. Derfor ligger de samme filene
- * her, på `/agent/<navn>.md`, hentbare med nettilgang alene.
+ * The most important agent has no `node_modules`. If someone is asked to "make
+ * a form with LO-TEK" in an empty folder, the markup is written before
+ * `npm install` has run, and the rulebook in the package is then invisible.
+ * That is why the same files are here, at `/agent/<name>.md`, fetchable with
+ * web access alone.
  *
- * Filene hentes med `import.meta.glob`, som Vite løser når siden bygges, framfor
- * med `readFileSync` og en relativ sti. En sti regnet ut fra `import.meta.url`
- * peker på chunken etter bundling, ikke på kilden, og traff bare ved at antallet
- * mapper opp tilfeldigvis var det samme. Her finnes ingen sti å bomme på, og
- * innholdet er det samme som pakken sender med: én kilde, to kanaler.
+ * The files are loaded with `import.meta.glob`, which Vite resolves when the
+ * site is built, rather than with `readFileSync` and a relative path. A path
+ * computed from `import.meta.url` points at the chunk after bundling, not at
+ * the source, and only worked because the number of folders up happened to be
+ * the same. Here there is no path to get wrong, and the content is the same as
+ * the package ships: one source, two channels.
  */
 
 import type { APIRoute, GetStaticPaths } from "astro"
@@ -31,7 +33,7 @@ export const GET: APIRoute = ({ params }) => {
     (kandidat) => navnet(kandidat) === params.navn,
   )
 
-  if (!sti) return new Response("Finnes ikke", { status: 404 })
+  if (!sti) return new Response("Not found", { status: 404 })
 
   return new Response(BØKER[sti], {
     headers: { "content-type": "text/markdown; charset=utf-8" },

@@ -1,22 +1,21 @@
 /**
- * Legger et rullefelt rundt hver tabell i dokumentasjonen.
+ * Puts a scroll container around every table in the documentation.
  *
- * En tabell med tre kolonner og kodeord i cellene blir bredere enn en
- * telefon. Det første forsøket var å la lange ord brekke, men da brekker
- * `<lt-error-summary>` midt i taggen, og raden blir fire linjer høy med
- * kodebakgrunn på hver bit. Det ser ødelagt ut, og er vanskeligere å lese
- * enn å dra tabellen sidelengs.
+ * A table with three columns and code in the cells gets wider than a phone.
+ * The first attempt was to let long words break, but then `<lt-error-summary>`
+ * breaks in the middle of the tag, and the row becomes four lines tall with a
+ * code background on every piece. It looks broken, and is harder to read than
+ * dragging the table sideways.
  *
- * Dette er det samme vi ber konsumenter om å gjøre med `.lt-table-scroll`,
- * og vi følger den samme oppskriften: `tabindex` for at tastaturet skal nå
- * kolonnene utenfor kanten, og `role="region"` med en tekst, slik at
- * skjermleseren sier hvilken tabell fokus har havnet i. Teksten hentes fra
- * overskriften tabellen står under, siden markdown-tabeller ikke har
- * `<caption>`.
+ * This is what we ask consumers to do with `.lt-table-scroll`, and we follow
+ * the same recipe: `tabindex` so the keyboard can reach the columns beyond the
+ * edge, and `role="region"` with a text, so the screen reader says which table
+ * focus has landed in. The text is taken from the heading the table sits
+ * under, since markdown tables have no `<caption>`.
  *
- * MarkdownContent.astro tar alle tre bort igjen for de tabellene som får
- * plass. En tabell som ikke ruller skal verken være et tabbstopp eller et
- * eget område i skjermleserens liste.
+ * MarkdownContent.astro removes all three again for the tables that fit. A
+ * table that does not scroll is neither a tab stop nor a region of its own in
+ * the screen reader's list.
  */
 export function rehypeTabellrull() {
   return (tre) => {
@@ -43,8 +42,8 @@ export function rehypeTabellrull() {
           tabIndex: 0,
           role: "region",
           ariaLabel: tilstand.overskrift
-            ? `Tabell: ${tilstand.overskrift}`
-            : "Tabell",
+            ? `Table: ${tilstand.overskrift}`
+            : "Table",
         },
         children: [barn],
       }
@@ -52,7 +51,7 @@ export function rehypeTabellrull() {
   }
 }
 
-/** Teksten i en node, uten lenkene Starlight legger på overskrifter. */
+/** The text in a node, without the links Starlight adds to headings. */
 function tekstIn(node) {
   if (node.type === "text") return node.value
   if (!node.children) return ""

@@ -1,27 +1,28 @@
 /**
- * Hver side også som Markdown, laget av den ferdig bygde HTML-en.
+ * Every page also as Markdown, made from the finished HTML.
  *
- * En agent som henter `/components/button/` får Starlights HTML, med
- * navigasjon, fargelegging i tusen `<span>`er og fanene som skjuler halve
- * innholdet. Markdown-utgaven på `/components/button.md` er det samme
- * innholdet uten alt det.
+ * An agent fetching `/components/button/` gets Starlight's HTML, with
+ * navigation, highlighting in a thousand `<span>`s and tabs that hide half the
+ * content. The Markdown version at `/components/button.md` is the same content
+ * without all that.
  *
- * Kilden er den bygde siden, ikke `.mdx`-fila. Det er hele poenget. I MDX står
- * markupen i en `kode`-streng til `<Example>`, og «Plain HTML»-fanen med
- * `<link>`-ene til CDN-en, importlinjene og versjonsnummeret finnes ikke der i
- * det hele tatt: den regnes ut av komponenten. En omskriver som leste MDX måtte
- * ha gjort den utregningen en gang til, og da finnes regelen to steder. Her
- * leses det komponenten faktisk skrev, så Markdown-utgaven kan ikke si noe
- * annet enn siden.
+ * The source is the built page, not the `.mdx` file. That is the whole point.
+ * In MDX the markup is in a `kode` string passed to `<Example>`, and the
+ * "Plain HTML" tab with the `<link>`s to the CDN, the import lines and the
+ * version number does not exist there at all: it is computed by the component.
+ * A converter that read MDX would have had to do that computation again, and
+ * then the rule would exist in two places. Here what the component actually
+ * wrote is read, so the Markdown version cannot say anything other than the
+ * page.
  *
- * Hvilke sider som får en fil, avgjøres av `<link rel="alternate"
- * type="text/markdown">` i sidehodet, som `src/route-data.ts` setter. Fila
- * skrives dit lenken peker, og ingen andre steder.
+ * Which pages get a file is decided by `<link rel="alternate"
+ * type="text/markdown">` in the page head, which `src/route-data.ts` sets. The
+ * file is written where the link points, and nowhere else.
  *
- * Det som tas bort: de levende eksemplene (markupen står i «Plain HTML»-fanen
- * ved siden av), ankerlenkene ved overskriftene, kopierknappene og fanelista.
- * Fanene blir avsnitt med fanenavnet i fet skrift foran innholdet, så alle
- * fanene står etter hverandre.
+ * What is removed: the live examples (the markup is in the "Plain HTML" tab
+ * next to them), the anchor links by the headings, the copy buttons and the
+ * tab list. The tabs become paragraphs with the tab name in bold before the
+ * content, so all the tabs follow one another.
  */
 
 import { readFileSync, writeFileSync } from "node:fs"
@@ -36,7 +37,7 @@ import { unified } from "unified"
 
 const MARKDOWNLENKE = 'link[rel="alternate"][type="text/markdown"]'
 
-/** Det som er der for øyet eller for tastaturet, og ikke er innhold. */
+/** What is there for the eye or the keyboard, and is not content. */
 const STØY = [
   "script",
   "style",
@@ -52,9 +53,9 @@ const STØY = [
 const tolk = unified().use(rehypeParse)
 
 /*
- * `rehype-remark` tar språket fra klassen på `<code>`, men ikke filnavnet.
- * Det står i `title=` etter språket, slik Expressive Code selv skriver det, så
- * en agent ser hvilken fil blokka hører hjemme i.
+ * `rehype-remark` takes the language from the class on `<code>`, but not the
+ * file name. That goes in `title=` after the language, as Expressive Code
+ * itself writes it, so an agent sees which file the block belongs in.
  */
 function pre(_tilstand, node) {
   const kode = node.children.find((barn) => barn.tagName === "code") ?? node
@@ -84,7 +85,7 @@ const element = (tagName, properties, children) => ({
 
 const tekst = (value) => ({ type: "text", value })
 
-/** Bytter ut hvert element `velger` treffer med det `lag` gir tilbake. */
+/** Replaces every element `velger` matches with what `lag` returns. */
 function bytt(tre, velger, lag) {
   for (const gammel of selectAll(velger, tre)) {
     const ny = lag(gammel)
@@ -111,9 +112,9 @@ const erTom = (node) =>
   )
 
 /**
- * Expressive Code skriver hver linje som en `<div>` med fargede `<span>`er.
- * Tilbake blir den en vanlig `<pre><code>` med språket og filnavnet, som
- * Markdown-skriveren gjør om til en kodeblokk med gjerder.
+ * Expressive Code writes each line as a `<div>` with coloured `<span>`s. It is
+ * turned back into a plain `<pre><code>` with the language and file name,
+ * which the Markdown writer turns into a fenced code block.
  */
 function kodeblokk(figur) {
   const pre = select("pre", figur)
@@ -136,9 +137,9 @@ function kodeblokk(figur) {
 }
 
 /**
- * Fanenavnet på hvert panel, mens fanelista ennå finnes. Den er støy og tas
- * bort sammen med resten, men navnene trengs når fanene legges etter
- * hverandre.
+ * The tab name of every panel, while the tab list still exists. It is noise
+ * and is removed with the rest, but the names are needed when the tabs are
+ * laid out one after another.
  */
 function merkFaner(tre) {
   for (const tabs of selectAll("starlight-tabs", tre)) {
@@ -149,7 +150,7 @@ function merkFaner(tre) {
   }
 }
 
-/** Fanene etter hverandre, hver med navnet sitt foran. */
+/** The tabs one after another, each with its name in front. */
 function faner(tabs) {
   const barn = []
 
@@ -167,7 +168,7 @@ function faner(tabs) {
   return element("div", {}, barn)
 }
 
-/** En Starlight-merknad blir et sitat med tittelen i fet skrift. */
+/** A Starlight aside becomes a blockquote with the title in bold. */
 function merknad(aside) {
   const innhold = select(".starlight-aside__content", aside)
 
@@ -180,12 +181,13 @@ function merknad(aside) {
 }
 
 /**
- * Lenker til en annen side som har en Markdown-utgave, går dit i stedet. En
- * agent som leser Markdown, skal kunne følge lenkene uten å havne i HTML igjen.
+ * Links to another page that has a Markdown version go there instead. An
+ * agent reading Markdown should be able to follow the links without ending up
+ * in HTML again.
  *
- * Sidene lenker relativt, som `../../type-safe-use/`. Det løses opp mot
- * sidens egen adresse, siden Markdown-fila ligger et annet sted enn siden og
- * den samme relative stien ville bommet derfra.
+ * The pages link relatively, as in `../../type-safe-use/`. That is resolved
+ * against the page's own address, since the Markdown file sits somewhere else
+ * than the page and the same relative path would miss from there.
  */
 function lenker(tre, sti, adresser) {
   for (const a of selectAll("a[href]", tre)) {
@@ -210,9 +212,10 @@ function tilMarkdown(html, sti, adresser) {
     .content
 
   /*
-   * Kodeblokkene først: kopierknappen og «Terminal window» ligger inni dem, og
-   * `kodeblokk` henter linjene før de forsvinner. Fanene sist, så en fane som
-   * bare hadde et levende eksempel er tom når den vurderes, og faller bort.
+   * The code blocks first: the copy button and "Terminal window" are inside
+   * them, and `kodeblokk` takes the lines before they disappear. The tabs
+   * last, so a tab that only had a live example is empty when it is
+   * considered, and drops out.
    */
   bytt(innhold, ".expressive-code", kodeblokk)
   merkFaner(innhold)
@@ -238,7 +241,7 @@ export function markdownsider() {
       "astro:build:done": ({ dir, pages, logger }) => {
         const rot = fileURLToPath(dir)
 
-        // Hver side som har en Markdown-utgave, og hvor den skal ligge.
+        // Every page that has a Markdown version, and where it is to go.
         const sider = []
         for (const { pathname } of pages) {
           const fil = `${rot}${pathname}index.html`.replace(/\/\/+/g, "/")
@@ -260,9 +263,7 @@ export function markdownsider() {
         for (const { sti, html, md } of sider) {
           const markdown = tilMarkdown(html, sti, adresser)
           if (markdown === null) {
-            throw new Error(
-              `${sti} har en Markdown-lenke, men ikke noe innhold`,
-            )
+            throw new Error(`${sti} has a Markdown link, but no content`)
           }
 
           writeFileSync(`${rot}${md.slice(1)}`, `${markdown}\n`)
@@ -270,18 +271,18 @@ export function markdownsider() {
         }
 
         /*
-         * Innholdstypen per fil, av samme grunn som for regelbøkene i
-         * `public/_headers`. Hver fil står med sin egen adresse, så ingenting
-         * avhenger av hvordan Netlify tolker et jokertegn midt i et filnavn,
-         * og lista lages av filene som faktisk ble skrevet.
+         * The content type per file, for the same reason as for the rulebooks
+         * in `public/_headers`. Each file is listed at its own address, so
+         * nothing depends on how Netlify reads a wildcard in the middle of a
+         * file name, and the list is made from the files actually written.
          */
         const headerfil = `${rot}_headers`
         writeFileSync(
           headerfil,
-          `${readFileSync(headerfil, "utf8").trimEnd()}\n\n# Markdown-utgavene av sidene, skrevet av src/plugins/markdown-pages.mjs.\n${headers.join("\n")}\n`,
+          `${readFileSync(headerfil, "utf8").trimEnd()}\n\n# The Markdown versions of the pages, written by src/plugins/markdown-pages.mjs.\n${headers.join("\n")}\n`,
         )
 
-        logger.info(`${sider.length} sider skrevet som Markdown.`)
+        logger.info(`${sider.length} pages written as Markdown.`)
       },
     },
   }

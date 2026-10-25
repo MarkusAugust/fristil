@@ -1,15 +1,16 @@
 ---
 /**
- * Temavelgeren som en ekte side, uten en linje JavaScript.
+ * The theme picker as a real page, without a line of JavaScript.
  *
- * Den må være en egen adresse og ikke en forhåndsvisning, for `:root:has()`
- * ser bare sitt eget tre. Alle forhåndsvisningene våre ligger i en skyggerot,
- * og en kontroll der inne setter ikke tema på siden. Det er etterprøvd i alle
- * tre motorene, og står som en begrensning på mønstersiden.
+ * It has to be its own address and not a preview, because `:root:has()` only
+ * sees its own tree. All our previews sit in a shadow root, and a control in
+ * there does not set the theme on the page. That has been checked in all three
+ * engines, and is stated as a limitation on the pattern page.
  *
- * Siden har med vilje ingen `data-theme` på `<html>`: da er «Følg systemet»
- * maskinens eget valg, som er det en konsument uten lagret valg ville fått.
- * Og den har med vilje ingen `<script>`: hele poenget er at den virker uten.
+ * The page deliberately has no `data-theme` on `<html>`: then "Follow the
+ * system" is the machine's own choice, which is what a consumer with no stored
+ * choice would get. And it deliberately has no `<script>`: the whole point is
+ * that it works without one.
  */
 
 import "@lo-tek/interfaces/tokens.css"
@@ -25,37 +26,37 @@ import "@lo-tek/interfaces/card.css"
 import "@lo-tek/interfaces/badge.css"
 
 const VALG = [
-  { verdi: "auto", tekst: "Følg systemet" },
-  { verdi: "light", tekst: "Lyst" },
-  { verdi: "dark", tekst: "Mørkt" },
+  { verdi: "auto", tekst: "Follow the system" },
+  { verdi: "light", tekst: "Light" },
+  { verdi: "dark", tekst: "Dark" },
 ]
 ---
 
 <!doctype html>
-<html lang="nb">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Temavelger</title>
+    <title>Theme picker</title>
   </head>
   <body>
     <main class="demo__innhold">
-      <h1 class="lt-heading" data-size="xl">Utseende</h1>
+      <h1 class="lt-heading" data-size="xl">Appearance</h1>
       <p class="lt-paragraph">
-        Valget slår inn med en gang. Ingenting på denne siden kjører
+        The choice takes effect at once. Nothing on this page runs
         JavaScript.
       </p>
 
       <div class="demo__skjema">
         <fieldset class="lt-toggle-group" aria-describedby="demo-tema-bytte">
-          <legend class="lt-sr-only">Tema</legend>
+          <legend class="lt-sr-only">Theme</legend>
           {
             VALG.map(({ verdi, tekst }) => (
               <label class="lt-toggle-group__option">
                 <input
                   class="lt-theme-control"
                   type="radio"
-                  name="tema"
+                  name="theme"
                   value={verdi}
                   checked={verdi === "auto"}
                 />
@@ -65,31 +66,31 @@ const VALG = [
           }
         </fieldset>
         <p class="lt-help-text" id="demo-tema-bytte">
-          Byttet er ren CSS. Å få valget til å vare er en annen oppgave, og den
-          er appens: her er det ingen server og ingen lagring, så valget står
-          til du laster siden på nytt.
+          The switch is pure CSS. Making the choice last is a different job, and
+          it is the app's: here there is no server and no storage, so the choice
+          holds until you reload the page.
         </p>
       </div>
 
       <section class="lt-card demo__kort">
         <h2 class="lt-heading" data-size="m">
-          Søknad om tilskudd
-          <span class="lt-badge" data-color="warning">Til behandling</span>
+          Grant application
+          <span class="lt-badge" data-color="warning">Under review</span>
         </h2>
         <p class="lt-paragraph">
-          Flatene, kantene og teksten leser alle fargene sine fra de samme
-          tokenene, så de følger valget uten at noen av dem vet om det.
+          The surfaces, borders and text all read their colours from the same
+          tokens, so they follow the choice without any of them knowing about it.
         </p>
-        <label class="lt-label" for="demo-tema-sum">Omsøkt beløp</label>
+        <label class="lt-label" for="demo-tema-sum">Amount applied for</label>
         <input
           class="lt-input"
           id="demo-tema-sum"
           type="text"
-          value="48 000"
+          value="48,000"
           aria-describedby="demo-tema-hjelp"
         />
         <p class="lt-help-text" id="demo-tema-hjelp">
-          Nettleserens egne flater følger med, fordi blokkene setter
+          The browser's own surfaces follow along, because the blocks set
           <code>color-scheme</code>.
         </p>
       </section>
@@ -97,12 +98,12 @@ const VALG = [
 
     <style>
       /*
-       * Siden setter med vilje ikke `color-scheme` selv.
+       * The page deliberately does not set `color-scheme` itself.
        *
-       * Velgeren gjør det: «Følg systemet» setter `light dark`, og et valgt
-       * tema setter sitt eget. Skrev siden den her, utenfor et lag, ville den
-       * slått `@layer lotek` og låst nettleserens flater til systemet mens
-       * brukeren hadde valgt noe annet.
+       * The picker does: "Follow the system" sets `light dark`, and a chosen
+       * theme sets its own. If the page wrote it here, outside a layer, it
+       * would beat `@layer lotek` and lock the browser's surfaces to the
+       * system while the user had chosen something else.
        */
       body {
         margin: 0;
@@ -132,11 +133,12 @@ const VALG = [
       }
 
       /*
-       * Kortet skal fylle bredden, ellers krymper det til innholdet sitt.
+       * The card fills the width, or it shrinks to its content.
        *
-       * Og bare det: Astro skriver denne blokka uten lag, og et usortert lag
-       * slår `@layer lotek`. Satte vi `gap` her, overstyrte demoen kortets
-       * egen avstand, altså nøyaktig det tilpasningssiden advarer mot.
+       * And only that: Astro writes this block without a layer, and an
+       * unlayered rule beats `@layer lotek`. Had we set `gap` here, the demo
+       * would have overridden the card's own spacing, which is exactly what the
+       * customising page warns against.
        */
       .demo__kort {
         align-self: stretch;

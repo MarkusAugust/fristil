@@ -3,7 +3,7 @@ import { Code, TabItem, Tabs } from "@astrojs/starlight/components"
 import pakke from "../../../designsystem/package.json"
 import Preview, { type Stilark } from "./Preview.astro"
 
-/** Adressene stilarkene ligger på, lest av pakkens egen `exports`. */
+/** The addresses of the stylesheets, read from the package's own `exports`. */
 const STILARK: Record<string, string> = Object.fromEntries(
   Object.entries(pakke.exports as Record<string, unknown>)
     .filter(([n, m]) => n.endsWith(".css") && typeof m === "string")
@@ -13,46 +13,47 @@ const STILARK: Record<string, string> = Object.fromEntries(
 const CDN = `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@${pakke.version}`
 
 interface Props {
-  /** Stilarkene eksempelet trenger, de samme du ville importert i en app. */
+  /** The stylesheets the example needs, the same ones you would import in an app. */
   stiler?: Stilark[]
   /**
-   * `rad` legger innholdet side om side, `stabel` under hverandre.
-   * `flyt` er vanlig blokkflyt, der margene slås sammen slik de gjør på en
-   * ekte side. I `stabel` er flaten en flex-kolonne, og der legges margene
-   * og mellomrommet oppå hverandre.
+   * `rad` lays the content out side by side, `stabel` one below the other.
+   * `flyt` is ordinary block flow, where margins collapse as they do on a
+   * real page. In `stabel` the surface is a flex column, and there the
+   * margins and the gap add up.
    */
   layout?: "rad" | "stabel" | "flyt"
-  /** Valgfri maksbredde, for eksempel "34rem". */
+  /** Optional maximum width, for example "34rem". */
   maxWidth?: string
-  /** Markupen. Vises både levende og som kode. */
+  /** The markup. Shown both live and as code. */
   kode: string
   /**
-   * CSS som bare gjelder forhåndsvisningen.
+   * CSS that applies only to the preview.
    *
-   * Noen komponenter viser seg ikke av seg selv i en boks: hopplenken ligger
-   * utenfor skjermen til den får fokus, og dialogen ligger i topplaget. Da
-   * tvinges de fram her, framfor med `style=` i markupen. Det leseren
-   * kopierer skal være det som virker i en ekte side.
+   * Some components do not show themselves in a box: the skip link sits off
+   * screen until it gets focus, and the dialog sits in the top layer. They
+   * are forced into view here rather than with `style=` in the markup. What
+   * the reader copies must be what works on a real page.
    */
   visningsCss?: string
   /**
-   * Stilarkene som skal stå i kodefanen, slik de importeres i en app.
+   * The stylesheets to show in the code tab, as they are imported in an app.
    *
-   * Uten dem er kodefanen bare markup, og leseren må lete lenger opp på
-   * siden etter hva som må importeres for at den skal se slik ut. Med dem er
-   * fanen hele oppskriften.
+   * Without them the code tab is only markup, and the reader has to look
+   * further up the page for what must be imported to make it look like this.
+   * With them the tab is the whole recipe.
    */
   importer?: string[]
   /**
-   * CSS som hører til eksempelet, og som leseren skal ha med seg.
+   * CSS that belongs to the example, and that the reader should take along.
    *
-   * Forskjellen fra `visningsCss` er hvem den er til for. `visningsCss`
-   * tvinger fram noe som ellers ikke lar seg vise i en boks, og skal ikke
-   * kopieres. Denne er en del av oppskriften: konsumentens egne klasser, som
-   * `.sak-siste-linje` på skjelettsiden. Derfor vises den i kodefanen.
+   * The difference from `visningsCss` is who it is for. `visningsCss` forces
+   * something into view that cannot otherwise be shown in a box, and is not
+   * to be copied. This one is part of the recipe: the consumer's own classes,
+   * such as `.sak-siste-linje` on the skeleton page. That is why it is shown
+   * in the code tab.
    *
-   * Uten skillet havnet slik CSS i `visningsCss`, og da sto det klasser i
-   * kodefanen som ikke fantes noe sted leseren kunne se.
+   * Without the distinction, such CSS ended up in `visningsCss`, and the code
+   * tab then had classes that were not defined anywhere the reader could see.
    */
   egenCss?: string
 }
@@ -63,22 +64,22 @@ const { stiler, layout, maxWidth, kode, visningsCss, importer, egenCss } =
 const forhaandsvisningsCss = [egenCss, visningsCss].filter(Boolean).join("\n")
 
 /*
- * Fanen for byggefunksjonen, når siden har noe å si der.
+ * The tab for the builder function, when the page has something to say there.
  *
- * Den sto før som en egen `## TypeScript`-seksjon lenger nede. Da hadde
- * css-sidene den og de ni med oppførsel ikke, siden disse viser `lt` i
- * React- og Astro-fanene sine i stedet. Nå står alt om hvordan komponenten
- * lages i den samme seksjonen, på alle sidene.
+ * It used to be a separate `## TypeScript` section further down. The css
+ * pages had it and the nine with behaviour did not, since those show `lt` in
+ * their React and Astro tabs instead. Now everything about how the component
+ * is made is in the same section, on every page.
  */
 const harTypeScript = Astro.slots.has("ts")
 
 /*
- * Stilarkene, på den måten fanen de står i faktisk kan bruke.
+ * The stylesheets, in the form the tab they are in can actually use.
  *
- * «Plain HTML» er definert ved å ikke ha noe byggesteg, så der kan det ikke
- * stå `import "@lo-tek/interfaces/tokens.css"`: en nettleser slår ikke
- * opp et pakkenavn. Der skrives `<link>` med hele adressen. Importlinjene
- * hører i TypeScript-fanen, der det finnes et byggesteg.
+ * "Plain HTML" is defined by having no build step, so it cannot say
+ * `import "@lo-tek/interfaces/tokens.css"`: a browser does not resolve a
+ * package name. There a `<link>` with the full address is written. The import
+ * lines belong in the TypeScript tab, where there is a build step.
  */
 const lenker =
   importer &&
@@ -88,15 +89,16 @@ const lenker =
         `<link rel="stylesheet" href="${CDN}/${STILARK[fil] ?? `src/${fil}`}">`,
     ),
     /*
-     * Og den ene fila som erstatter dem.
+     * And the single file that replaces them.
      *
-     * Lista over er presis, og det er grunnen til at den står: den sier hva
-     * komponenten krever. Men «Kom i gang» anbefaler `lotek.css` til den som
-     * lenker uten byggesteg, og uten denne linja anbefalte de to sidene hver
-     * sin ting. Ingen side oppgir `tailwind.css` i `importer`, som er det
-     * eneste stilarket den samlede fila ikke dekker, så linja er sann overalt.
+     * The list above is precise, and that is why it is there: it says what
+     * the component requires. But "Getting started" recommends `lotek.css` to
+     * anyone linking without a build step, and without this line the two
+     * pages recommended different things. No page lists `tailwind.css` in
+     * `importer`, which is the only stylesheet the combined file does not
+     * cover, so the line is true everywhere.
      */
-    `<!-- Eller alt i én fil: ${CDN}/${STILARK["lotek.css"]} -->`,
+    `<!-- Or everything in one file: ${CDN}/${STILARK["lotek.css"]} -->`,
   ].join("\n")
 
 const importlinjer = importer
@@ -104,12 +106,12 @@ const importlinjer = importer
   .join("\n")
 
 /*
- * Markupen står ett sted.
+ * The markup is in one place.
  *
- * Før ble den skrevet to ganger, én gang i forhåndsvisningen og én gang i
- * kodefanen, og de hadde allerede drevet fra hverandre: badge-siden viste
- * <div> i forhåndsvisningen og <ul> i koden. Her er det samme streng som
- * rendres og vises, så de kan ikke gå i utakt.
+ * It used to be written twice, once in the preview and once in the code tab,
+ * and the two had already drifted apart: the badge page showed a <div> in the
+ * preview and a <ul> in the code. Here the same string is rendered and shown,
+ * so they cannot fall out of step.
  */
 ---
 

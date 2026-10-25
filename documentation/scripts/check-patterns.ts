@@ -150,7 +150,7 @@ function lesSkjema() {
   )
 
   // Retter brukeren én av to feil, skal den andre stå igjen alene.
-  await skrivIFelt("demo-epost", "ola@eksempel.no")
+  await skrivIFelt("demo-epost", "jo@example.com")
   await side.waitForTimeout(200)
 
   const etterRetting = await lesSkjema()
@@ -160,17 +160,17 @@ function lesSkjema() {
     `oppsummeringen har ${etterRetting.lenker} feil etter at én er rettet, ventet 1`,
   )
   krev(
-    etterRetting.overskrift.includes("én"),
+    etterRetting.overskrift.includes("one"),
     `overskriften teller ikke ned: «${etterRetting.overskrift}»`,
   )
 
   // En adresse uten toppdomene godtas av nettleseren, men ikke av skjemaet.
-  await skrivIFelt("demo-epost", "ola@eksempel")
+  await skrivIFelt("demo-epost", "jo@example")
   await side.waitForTimeout(200)
 
   krev(
     (await lesSkjema()).lenker === 2,
-    "«ola@eksempel» ble godtatt som e-postadresse",
+    "«jo@example» ble godtatt som e-postadresse",
   )
 }
 
@@ -178,7 +178,7 @@ function lesSkjema() {
 {
   await apne("/patterns/form/")
 
-  await skrivIFelt("demo-epost", "ola")
+  await skrivIFelt("demo-epost", "jo")
   await side.waitForTimeout(200)
 
   const etterBlur = await lesSkjema()
@@ -212,10 +212,10 @@ function lesSkjema() {
     `antall treff meldes ikke: «${forst.status}»`,
   )
 
-  // Sorteringen: et klikk på «Saksnummer» snur rekkefølgen, flytter
+  // Sorteringen: et klikk på «Case number» snur rekkefølgen, flytter
   // `aria-sort` og lar fokus bli på knappen, selv om tabellen tegnes på nytt.
   await side
-    .locator("#demo-liste .lt-table__sort", { hasText: "Saksnummer" })
+    .locator("#demo-liste .lt-table__sort", { hasText: "Case number" })
     .click()
   const sortert = await side.evaluate(() => {
     const rot = document.getElementById("demo-liste")?.shadowRoot
@@ -233,18 +233,18 @@ function lesSkjema() {
     `første rad etter sortering er «${sortert.forste}», ventet 2025-0988`,
   )
   krev(
-    sortert.sortert.join() === "Saksnummer=ascending",
-    `aria-sort står på ${sortert.sortert.join() || "ingen"}, ventet Saksnummer=ascending`,
+    sortert.sortert.join() === "Case number=ascending",
+    `aria-sort står på ${sortert.sortert.join() || "ingen"}, ventet Case number=ascending`,
   )
   krev(
-    sortert.fokus === "Saksnummer",
+    sortert.fokus === "Case number",
     `fokus er på «${sortert.fokus}» etter sorteringen, ventet knappen`,
   )
 
   await side.evaluate(() => {
     const rot = document.getElementById("demo-liste")?.shadowRoot
     const felt = rot?.getElementById("demo-sok") as HTMLInputElement
-    felt.value = "finnes ikke"
+    felt.value = "does not exist"
     felt.dispatchEvent(new Event("input", { bubbles: true }))
   })
   await side.waitForTimeout(1100)
@@ -259,12 +259,12 @@ function lesSkjema() {
   })
 
   krev(
-    tomt.tekst.includes("finnes ikke"),
+    tomt.tekst.includes("does not exist"),
     "den tomme tilstanden sier ikke hva som ble søkt etter",
   )
   krev(tomt.harNullstill, "den tomme tilstanden mangler en vei videre")
   krev(
-    tomt.status.includes("Ingen treff"),
+    tomt.status.includes("No matches"),
     `tomt resultat meldes ikke: «${tomt.status}»`,
   )
 }
@@ -294,7 +294,7 @@ function lesSkjema() {
   await side.evaluate(() => {
     const rot = document.getElementById("demo-bekreft")?.shadowRoot
     const dialog = rot?.getElementById("demo-dialog") as HTMLDialogElement
-    dialog.close("slett")
+    dialog.close("delete")
   })
   await side.waitForTimeout(200)
 
@@ -304,7 +304,7 @@ function lesSkjema() {
   })
 
   krev(
-    melding.includes("slettet"),
+    melding.includes("deleted"),
     `meldingen kom ikke etter handlingen: «${melding}»`,
   )
 }

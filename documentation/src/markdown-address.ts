@@ -1,13 +1,16 @@
 /**
- * Adressen til Markdown-utgaven av en side, regnet ut fra sidens egen adresse.
+ * The address of the Markdown version of a page, computed from the page's own
+ * address.
  *
- * `/components/button/` har sin på `/components/button.md`, og forsiden sin på
- * `/index.md`. Det er samme form som regelbøkene på `/agent/<navn>.md`, og den
- * llmstxt.org foreslår: siden med `.md` på, ikke en egen mappe ved siden av.
+ * `/components/button/` has its own at `/components/button.md`, and the front
+ * page at `/index.md`. It is the same form as the rulebooks at
+ * `/agent/<name>.md`, and the one llmstxt.org suggests: the page with `.md`
+ * added, not a separate folder alongside.
  *
- * Både `<link rel="alternate">` i sidehodet og lenkene i `llms.txt` regnes ut
- * her. Integrasjonen som skriver filene, leser adressen av lenken i den bygde
- * siden, så det finnes bare én regel for hvor fila ligger.
+ * Both `<link rel="alternate">` in the page head and the links in `llms.txt`
+ * are computed here. The integration that writes the files reads the address
+ * from the link in the built page, so there is only one rule for where the
+ * file is.
  */
 export function markdownAdresse(sti: string): string {
   const uten = sti.replace(/\/+$/, "")

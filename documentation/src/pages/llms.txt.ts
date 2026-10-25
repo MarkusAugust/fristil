@@ -1,17 +1,17 @@
 /**
- * `llms.txt`: inngangen for en agent som bare har nettilgang.
+ * `llms.txt`: the entry point for an agent that only has web access.
  *
- * Etter oppskriften på llmstxt.org: én overskrift, ett sammendrag, og så lenker
- * med en linje hver. Den er en indeks, ikke en regelbok. Reglene i sin helhet
- * står i `/agent/<navn>.md`, én komplett fil per miljø.
+ * Following the format on llmstxt.org: one heading, one summary, and then
+ * links with one line each. It is an index, not a rulebook. The rules in full
+ * are in `/agent/<name>.md`, one complete file per environment.
  *
- * De fire reglene står likevel her, i kortform. En agent som henter bare denne
- * fila og ikke følger en eneste lenke, skal fortsatt slippe å gjette på det som
- * koster mest.
+ * The four rules are still here, in short form. An agent that fetches only
+ * this file and follows not a single link should still not have to guess at
+ * what costs the most.
  *
- * Alt utenom de fire reglene leses av innholdet: regelbøkene av mappa de ligger
- * i, og sidelista av samlingen Starlight bygger. Da kan ingen av dem gli fra
- * det som faktisk finnes.
+ * Everything apart from the four rules is read from the content: the rulebooks
+ * from the folder they are in, and the page list from the collection Starlight
+ * builds. Then none of them can drift from what actually exists.
  */
 
 import { getCollection } from "astro:content"
@@ -22,8 +22,9 @@ import { markdownAdresse } from "../markdown-address"
 const BASE = pakke.homepage.replace(/\/$/, "")
 
 /*
- * Regelbøkene hentes med `import.meta.glob`, som Vite løser ved bygging. En sti
- * regnet ut fra `import.meta.url` peker på chunken etter bundling, ikke på kilden.
+ * The rulebooks are loaded with `import.meta.glob`, which Vite resolves at build
+ * time. A path computed from `import.meta.url` points at the chunk after
+ * bundling, not at the source.
  */
 const BØKER = import.meta.glob("../../../designsystem/agent/*.md", {
   query: "?raw",
@@ -31,7 +32,7 @@ const BØKER = import.meta.glob("../../../designsystem/agent/*.md", {
   eager: true,
 }) as Record<string, string>
 
-/** Overskrifta og første avsnitt i en regelbok, som tittel og beskrivelse. */
+/** The heading and first paragraph of a rulebook, as title and description. */
 function lesRegelbok(sti: string) {
   const navn = sti.replace(/^.*\/|\.md$/g, "")
   const tekst = BØKER[sti]
@@ -39,41 +40,46 @@ function lesRegelbok(sti: string) {
   const avsnitt = tekst.split("\n\n")[1] ?? ""
 
   /*
-   * Første setning er nok på en indeksrad, og lenkelista skal kunne leses.
-   * Delingen skjer etter punktumet, ikke på det, så setningen beholder sitt
-   * eget og ikke får et nytt på toppen.
+   * The first sentence is enough on an index row, and the link list has to be
+   * readable. The split happens after the full stop, not on it, so the
+   * sentence keeps its own and does not get another one added.
    */
   const første = avsnitt.replace(/\n/g, " ").split(/(?<=\.)\s/)[0]
 
-  return { navn, tittel, beskrivelse: første.replace(/^Regelboka for /, "") }
+  return {
+    navn,
+    tittel,
+    beskrivelse: første.replace(/^(?:Regelboka|The rulebook) for /, ""),
+  }
 }
 
 const REGELBØKER = Object.keys(BØKER).sort().map(lesRegelbok)
 
-const REGLENE = `Fire feil står for nesten alt som går galt. De gjelder i alle miljøer:
+const REGLENE = `Four mistakes account for almost everything that goes wrong. They apply in every environment:
 
-1. Stilarket må lastes. Mangler det, ser komponentene ustilte ut, og svaret er
-   å laste det, aldri å skrive egen CSS for å få dem til å se riktige ut.
-2. Bare klassene og elementene som finnes, finnes. \`lt-modal\`,
-   \`lt-datepicker\` og \`data-variant="outline"\` hører til andre
-   designsystemer. Hele lista står i hver regelbok.
-3. Ingen hardkodede farger eller piksler. \`var(--lt-color-…)\` og
+1. The stylesheet must be loaded. If it is missing, the components look
+   unstyled, and the answer is to load it, never to write your own CSS to make
+   them look right.
+2. Only the classes and elements that exist, exist. \`lt-modal\`,
+   \`lt-datepicker\` and \`data-variant="outline"\` belong to other design
+   systems. The full list is in every rulebook.
+3. No hard-coded colours or pixels. \`var(--lt-color-…)\` and
    \`var(--lt-spacing-…)\`.
-4. Web components registreres én gang med \`defineLt*()\`, og et boolsk
-   attributt er sant så lenge det står der: \`invalid="false"\` gjør feltet
-   ugyldig. Attributtet må fjernes, ikke settes til \`false\`.
+4. Web components are registered once with \`defineLt*()\`, and a boolean
+   attribute is true as long as it is there: \`invalid="false"\` makes the
+   field invalid. The attribute has to be removed, not set to \`false\`.
 
-Sjekk markupen når du er ferdig, og rett det den melder:
+Check the markup when you are done, and fix what it reports:
 
-    npx @lo-tek/interfaces sjekk <fil>
-    npx @lo-tek/interfaces sjekk http://localhost:8080/side
+    npx @lo-tek/interfaces check <file>
+    npx @lo-tek/interfaces check http://localhost:8080/page
 
-Den kjenner hver klasse, hvert element, hvert attributt og hver lovlige verdi,
-skriver \`fil:linje:kolonne: feil: melding\`, eller \`advarsel:\`, og avslutter med feilkode ved funn.
-Med en adresse sjekker den siden slik serveren sender den, og krever i tillegg
-at hver \`for\` og \`aria-describedby\` peker på en id som finnes, og at hvert
-felt har en ledetekst. Du er ferdig når begge svarer «Markupen stemmer med
-LO-TEK». Alt om kommandoene: ${BASE}/command-line/`
+It knows every class, every element, every attribute and every valid value,
+writes \`file:line:column: error: message\`, or \`warning:\`, and exits with an error code when it finds something.
+With an address it checks the page as the server sends it, and also requires
+that every \`for\` and \`aria-describedby\` points at an id that exists, and
+that every field has a label. You are done when both answer "The markup
+matches LO-TEK". Everything about the commands: ${BASE}/command-line/`
 
 type Rad = { tittel: string; beskrivelse: string; adresse: string }
 
@@ -113,23 +119,23 @@ export const GET: APIRoute = async () => {
 
   const tekst = [
     "# LO-TEK",
-    `> ${pakke.description} Versjon ${pakke.version}. Komponentene er CSS-klasser og web components, altså ting nettleseren allerede forstår, så de samme komponentene virker i ren HTML, i en Go-mal, med bundles, i React, i Astro og med Datastar.`,
+    `> ${pakke.description} Version ${pakke.version}. The components are CSS classes and web components, things the browser already understands, so the same components work in plain HTML, in a Go template, with bundles, in React, in Astro and with Datastar.`,
     REGLENE,
     seksjon(
-      "Regelbøker for kodeagenter",
+      "Rulebooks for coding agents",
       REGELBØKER.map(({ navn, tittel, beskrivelse }) => ({
         tittel,
         beskrivelse,
         adresse: `${BASE}/agent/${navn}.md`,
       })),
     ),
-    `Hver regelbok er komplett for sitt miljø. Er pakken
-installert, ligger de samme filene i
-\`node_modules/@lo-tek/interfaces/agent/\`, og \`npx @lo-tek/interfaces agent\`
-skriver den som passer dette prosjektet.`,
-    seksjon("Veiledning", veiledning),
-    seksjon("Mønstre", mønstre),
-    seksjon("Komponenter", komponenter),
+    `Each rulebook is complete for its environment. If the package is
+installed, the same files are in
+\`node_modules/@lo-tek/interfaces/agent/\`, and \`npx @lo-tek/interfaces agent\`
+writes the one that fits this project.`,
+    seksjon("Guides", veiledning),
+    seksjon("Patterns", mønstre),
+    seksjon("Components", komponenter),
   ]
     .filter(Boolean)
     .join("\n\n")

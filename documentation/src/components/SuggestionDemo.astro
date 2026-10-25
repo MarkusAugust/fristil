@@ -2,18 +2,18 @@
 import { lt } from "@lo-tek/interfaces"
 import Preview from "./Preview.astro"
 
-// Nøkkelen er kommunenummeret: den gir hvert alternativ en fast id, så en
-// oppdatering fra serveren kjenner alternativet igjen.
+// The key is the city's code: it gives each option a fixed id, so an
+// update from the server recognises the option.
 const kommuner = [
-  { nr: "4601", navn: "Bergen" },
-  { nr: "1804", navn: "Bodø" },
-  { nr: "0301", navn: "Oslo" },
-  { nr: "1103", navn: "Stavanger" },
-  { nr: "5501", navn: "Tromsø" },
-  { nr: "5001", navn: "Trondheim" },
+  { nr: "abd", navn: "Aberdeen" },
+  { nr: "bel", navn: "Belfast" },
+  { nr: "bol", navn: "Bolton" },
+  { nr: "bou", navn: "Bournemouth" },
+  { nr: "car", navn: "Cardiff" },
+  { nr: "yor", navn: "York" },
 ]
 
-// Serveren skriver feltet og lista. Komponenten filtrerer og tar tastaturet.
+// The server writes the field and the list. The component filters and handles the keyboard.
 const forslag = lt.suggestion({
   id: "demo-kommune",
   keys: kommuner.map((k) => k.nr),
@@ -23,14 +23,14 @@ const forslag = lt.suggestion({
 
 <Preview id="demo-suggestion" stiler={["suggestion", "label", "input", "help-text", "sr-only"]} maxWidth="30rem">
 	<lt-suggestion>
-		<label {...forslag.label}>Kommune</label>
-		<input {...forslag.control} name="kommune" placeholder="Begynn å skrive" />
+		<label {...forslag.label}>City</label>
+		<input {...forslag.control} name="city" placeholder="Start typing" />
 		<ul {...forslag.list}>
 			{forslag.options.map((valg, i) => <li {...valg}>{kommuner[i].navn}</li>)}
 		</ul>
-		<p {...forslag.empty}>Ingen treff</p>
+		<p {...forslag.empty}>No matches</p>
 		<span {...forslag.status}></span>
-		<p class="lt-help-text" {...forslag.help}>Vi fyller ut resten av adressen for deg.</p>
+		<p class="lt-help-text" {...forslag.help}>We fill in the rest of the address for you.</p>
 	</lt-suggestion>
 </Preview>
 

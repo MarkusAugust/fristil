@@ -1,23 +1,23 @@
 ---
 /**
- * Viser en hel side i en ramme, med en vei til å åpne den for seg selv.
+ * Shows a whole page in a frame, with a way to open it on its own.
  *
- * Noen mønstre handler om siden som helhet: hopplenken skal være det første i
- * `<body>`, `<main>` kan bare finnes én gang, og landemerkene gir bare mening
- * i forhold til hverandre. Slikt lar seg ikke vise i en boks inne i en annen
- * side. Demoen er derfor en ekte side på egen adresse, som vises her i en
- * `<iframe>` og kan åpnes i egen fane.
+ * Some patterns are about the page as a whole: the skip link must be the first
+ * thing in `<body>`, `<main>` can only exist once, and the landmarks only make
+ * sense in relation to each other. None of that can be shown in a box inside
+ * another page. The demo is therefore a real page at its own address, shown
+ * here in an `<iframe>` and openable in its own tab.
  *
- * Rammen har sin egen vindusbredde, så det du ser er det siden faktisk gjør
- * på den bredden, uten triksing med skalering.
+ * The frame has its own viewport width, so what you see is what the page
+ * actually does at that width, with no scaling tricks.
  */
 
 interface Props {
-  /** Adressen til demosiden. */
+  /** The address of the demo page. */
   src: string
-  /** Hva rammen inneholder. Blir `title`, som skjermlesere leser opp. */
+  /** What the frame contains. Becomes `title`, which screen readers announce. */
   tittel: string
-  /** Høyden på rammen. */
+  /** The height of the frame. */
   hoyde?: string
 }
 
@@ -30,9 +30,9 @@ const { src, tittel, hoyde = "34rem" } = Astro.props
 
 	<figcaption>
 		<a href={src} target="_blank" rel="noreferrer">
-			Åpne {tittel.toLowerCase()} i egen fane
+			Open {tittel.toLowerCase()} in a new tab
 		</a>
-		<span> (der virker Tab og hopplenken som på en ekte side)</span>
+		<span> (there, Tab and the skip link work as on a real page)</span>
 	</figcaption>
 </figure>
 
@@ -49,7 +49,7 @@ const { src, tittel, hoyde = "34rem" } = Astro.props
 		border: 1px solid var(--lt-color-neutral-border-subtle);
 		border-radius: var(--lt-spacing-2);
 		background: var(--lt-color-neutral-canvas);
-		/* Rammen er en egen side, og skal rulle for seg selv. */
+		/* The frame is a separate page, and scrolls on its own. */
 		overflow: auto;
 	}
 

@@ -2,11 +2,11 @@
 import pakke from "../../../designsystem/package.json" with { type: "json" }
 
 /*
- * Versjonen leses av pakken når siden bygges, slik at merket følger
- * `prepare-version` uten at noen husker det. Merket står ved siden av
- * logolenken og ikke inni den: en lenke i en lenke er ugyldig HTML.
- * Navnet begynner med den synlige teksten, så en som styrer med stemmen
- * og sier «v0.30.0», treffer lenken.
+ * The version is read from the package when the site is built, so the badge
+ * follows `prepare-version` without anyone remembering it. The badge sits
+ * next to the logo link and not inside it: a link inside a link is invalid
+ * HTML. The name starts with the visible text, so someone using voice control
+ * who says "v0.30.0" hits the link.
  */
 const { version } = pakke
 ---
@@ -14,7 +14,7 @@ const { version } = pakke
 <a
   href="/changelog/"
   class="versjonsmerke"
-  aria-label={`v${version}, versjonslogg`}
+  aria-label={`v${version}, changelog`}
   translate="no"
 >v{version}</a>
 
