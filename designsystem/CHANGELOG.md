@@ -23,6 +23,8 @@ egen overskrift «Brytende».
 
 ## Ikke utgitt
 
+## 0.36.0 (2026-10-25)
+
 ### Brytende
 
 - **Forslagslista står i det øverste laget.** Den var `position: absolute` i
@@ -120,8 +122,8 @@ egen overskrift «Brytende».
   stedet) og `id-fra-komponenten` (en id komponenten lagde selv, kopiert inn
   fra DevTools; bare i markupmodus). Reglene tier der malen avgjør markupen,
   også ved en bundet id som `:id`, `th:id` eller `asp-for`. Hver bygde side
-  i dokumentasjonen gir null funn, og hver forhåndsvisning på den lest som
-  markup, og det er en vaktpost i bygget.
+  i dokumentasjonen gir null funn, også hver forhåndsvisning lest som markup,
+  og en vaktpost i bygget krever det.
 - **Manifestet sier hvilke deler som må ha id fra serveren**, `stableId` på
   delen, og hvilke attributter som er tatt ut av et element, `removed` med
   beskjeden. Begge er tillegg; `schemaVersion` er fortsatt 1.
