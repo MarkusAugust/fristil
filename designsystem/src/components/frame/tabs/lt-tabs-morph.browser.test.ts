@@ -49,8 +49,8 @@ import {
   vi,
 } from "vitest"
 
-import { ventPaTegning } from "../../../testing/a11y"
-import { settAdresse } from "../../../testing/address"
+import { waitForPaint } from "../../../testing/a11y"
+import { setAddress } from "../../../testing/address"
 import { attr } from "../../../testing/markup"
 import { defineLtField } from "../field/lt-field"
 import { defineLtPopover } from "../popover/lt-popover"
@@ -119,12 +119,12 @@ function valgt(): (string | null)[] {
 async function klikkOgPatch(markup: string) {
   document.body.innerHTML = markup
   await customElements.whenDefined("lt-tabs")
-  await ventPaTegning()
+  await waitForPaint()
 
   const faneFør = faner()
   const panelFør = paneler()
   faneFør[1].click()
-  await ventPaTegning()
+  await waitForPaint()
   expect(valgt()).toEqual(["false", "true", "false"])
 
   const meldt: number[] = []
@@ -135,7 +135,7 @@ async function klikkOgPatch(markup: string) {
     { signal: lytter.signal },
   )
   patch(markup)
-  await ventPaTegning()
+  await waitForPaint()
   lytter.abort()
 
   return {
@@ -161,7 +161,7 @@ describe("lt-tabs through Datastar's morph", () => {
   beforeEach(async () => {
     // A click on a tab writes the address, and the component reads it on
     // load.
-    await settAdresse("")
+    await setAddress("")
   })
 
   it("bare markup: the links and panels are morphed, and the selection stays", async () => {
@@ -207,16 +207,16 @@ describe("lt-tabs through Datastar's morph", () => {
     const side = (innhold: string) => `<main id="side">${innhold}</main>`
     const uten = BAR.replace(' id="saken"', ' class="saken"')
     document.body.innerHTML = side(uten)
-    await ventPaTegning()
+    await waitForPaint()
     const lenker = () => [
       ...document.querySelectorAll("#side .lt-tabs__list a"),
     ]
     const før = lenker()
     ;(før[1] as HTMLElement).click()
-    await ventPaTegning()
+    await waitForPaint()
 
     patch(side(uten))
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(sammeNoder(før, lenker())).toEqual([true, true, true])
     expect(lenker().map((k) => k.getAttribute("aria-selected"))).toEqual([
@@ -250,14 +250,14 @@ describe("lt-tabs through Datastar's morph", () => {
     try {
       document.body.innerHTML = `${BAR}
         <button id="oppdater" data-on:click="@get('/saken')">Oppdater</button>`
-      await ventPaTegning()
+      await waitForPaint()
       // Datastar reads `data-*` in a `setTimeout` after the node arrived.
       await new Promise((ferdig) => setTimeout(ferdig, 20))
 
       const før = faner()
       const panelFør = paneler()
       før[1].click()
-      await ventPaTegning()
+      await waitForPaint()
       expect(valgt()).toEqual(["false", "true", "false"])
 
       document.getElementById("oppdater")?.click()
@@ -265,7 +265,7 @@ describe("lt-tabs through Datastar's morph", () => {
       await vi.waitFor(() =>
         expect(paneler()[0].textContent).toContain("Oppdatert"),
       )
-      await ventPaTegning()
+      await waitForPaint()
 
       expect(hent).toHaveBeenCalledOnce()
       expect(sammeNoder(før, faner())).toEqual([true, true, true])
@@ -309,7 +309,7 @@ describe("lt-suggestion through Datastar's morph", () => {
   async function skrivOgPatch(markup: string) {
     document.body.innerHTML = markup
     await customElements.whenDefined("lt-suggestion")
-    await ventPaTegning()
+    await waitForPaint()
 
     const felt = document.querySelector("input") as HTMLInputElement
     const liste = document.querySelector("ul") as HTMLElement
@@ -319,11 +319,11 @@ describe("lt-suggestion through Datastar's morph", () => {
     felt.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
     )
-    await ventPaTegning()
+    await waitForPaint()
     expect(felt.getAttribute("aria-expanded")).toBe("true")
 
     patch(markup)
-    await ventPaTegning()
+    await waitForPaint()
 
     const nyttFelt = document.querySelector("input") as HTMLInputElement
     return {
@@ -392,18 +392,18 @@ describe("lt-popover through Datastar's morph", () => {
   async function åpneOgPatch(markup: string) {
     document.body.innerHTML = markup
     await customElements.whenDefined("lt-popover")
-    await ventPaTegning()
+    await waitForPaint()
 
     const knapp = document.querySelector("lt-popover > button") as HTMLElement
     const panel = document.querySelector(".lt-popover") as HTMLElement
     knapp.click()
-    await ventPaTegning()
+    await waitForPaint()
     const slett = panel.querySelector("button") as HTMLButtonElement
     slett.focus()
     expect(panel.matches(":popover-open")).toBe(true)
 
     patch(markup)
-    await ventPaTegning()
+    await waitForPaint()
 
     const nyttPanel = document.querySelector(".lt-popover") as HTMLElement
     return {
@@ -485,11 +485,11 @@ describe("the components warn when a patch replaced the elements", () => {
    * Waits until `warnAboutMarkup` has checked its condition.
    *
    * It waits two frames after the patch landed, and its two are registered
-   * after the test's two, so one `ventPaTegning` is not enough.
+   * after the test's two, so one `waitForPaint` is not enough.
    */
   async function roSeg() {
-    await ventPaTegning()
-    await ventPaTegning()
+    await waitForPaint()
+    await waitForPaint()
   }
 
   /** Patches like a `datastar-patch-elements` with a selector and mode. */
@@ -511,7 +511,7 @@ describe("the components warn when a patch replaced the elements", () => {
     expect(meldinger()).toEqual([])
 
     faner()[1].click()
-    await ventPaTegning()
+    await waitForPaint()
     patch(BAR)
     await roSeg()
     expect(valgt()).toEqual(["false", "true", "false"])
@@ -520,9 +520,9 @@ describe("the components warn when a patch replaced the elements", () => {
 
   it("lt-tabs: not on a narrow patch, where the selection stays", async () => {
     document.body.innerHTML = BAR
-    await ventPaTegning()
+    await waitForPaint()
     faner()[1].click()
-    await ventPaTegning()
+    await waitForPaint()
 
     patchInni("#saken > section:last-child", "Tre nye meldinger.")
     await roSeg()
@@ -544,24 +544,24 @@ describe("the components warn when a patch replaced the elements", () => {
 
   async function skrivOgPatchForslag(markup: string, tekst: string) {
     document.body.innerHTML = markup
-    await ventPaTegning()
+    await waitForPaint()
     const felt = document.querySelector("input") as HTMLInputElement
     felt.focus()
     felt.value = tekst
     felt.dispatchEvent(new Event("input", { bubbles: true }))
-    await ventPaTegning()
+    await waitForPaint()
     patch(markup)
     await roSeg()
   }
 
   it("lt-suggestion: when the id from the server changed between two renders", async () => {
     document.body.innerHTML = FORSLAG("kommune-1")
-    await ventPaTegning()
+    await waitForPaint()
     const felt = document.querySelector("input") as HTMLInputElement
     felt.focus()
     felt.value = "B"
     felt.dispatchEvent(new Event("input", { bubbles: true }))
-    await ventPaTegning()
+    await waitForPaint()
     patch(FORSLAG("kommune-2"))
     await roSeg()
     expect(meldinger()).toHaveLength(1)
@@ -582,7 +582,7 @@ describe("the components warn when a patch replaced the elements", () => {
 
   async function skrivOgPatchFelt(foer: string, etter: string, tekst: string) {
     document.body.innerHTML = foer
-    await ventPaTegning()
+    await waitForPaint()
     const felt = document.querySelector("input") as HTMLInputElement
     felt.value = tekst
     patch(etter)
@@ -649,7 +649,7 @@ describe("the components warn when a patch replaced the elements", () => {
   <label>Land <select class="lt-select"><option>Norge</option><option>Sverige</option></select></label>
 </lt-field>`
     document.body.innerHTML = valg
-    await ventPaTegning()
+    await waitForPaint()
     patch(valg)
     await roSeg()
     expect(meldinger()).toEqual([])
@@ -660,7 +660,7 @@ describe("the components warn when a patch replaced the elements", () => {
   <label><input class="lt-checkbox" type="checkbox" name="samtykke"> Samtykke</label>
 </lt-field>`
     document.body.innerHTML = boks
-    await ventPaTegning()
+    await waitForPaint()
     const gammel = document.querySelector("input") as HTMLInputElement
     gammel.checked = true
     patch(boks)
@@ -678,7 +678,7 @@ describe("the components warn when a patch replaced the elements", () => {
   <label><input class="lt-checkbox" type="checkbox" name="samtykke" id="${id}"> Samtykke</label>
 </lt-field>`
     document.body.innerHTML = boks("samtykke-1")
-    await ventPaTegning()
+    await waitForPaint()
     ;(document.querySelector("input") as HTMLInputElement).checked = true
     patch(boks("samtykke-2"))
     await roSeg()
@@ -698,10 +698,10 @@ describe("the components warn when a patch replaced the elements", () => {
 
   async function apneOgPatchMeny(markup: string, apne: boolean) {
     document.body.innerHTML = markup
-    await ventPaTegning()
+    await waitForPaint()
     if (apne) {
       ;(document.querySelector("lt-popover > button") as HTMLElement).click()
-      await ventPaTegning()
+      await waitForPaint()
     }
     patch(markup)
     await roSeg()
@@ -714,9 +714,9 @@ describe("the components warn when a patch replaced the elements", () => {
   <div class="lt-popover" id="${id}" popover="manual"><button>Slett</button></div>
 </lt-popover>`
     document.body.innerHTML = meny("meny-1")
-    await ventPaTegning()
+    await waitForPaint()
     ;(document.querySelector("lt-popover > button") as HTMLElement).click()
-    await ventPaTegning()
+    await waitForPaint()
     patch(meny("meny-2"))
     await roSeg()
     expect(meldinger()).toHaveLength(1)

@@ -6,7 +6,7 @@ import { defineLtPopover } from "./components/frame/popover/lt-popover"
 import { defineLtSessionTimeout } from "./components/frame/session-timeout/lt-session-timeout"
 import { defineLtSuggestion } from "./components/frame/suggestion/lt-suggestion"
 import { defineLtTabs } from "./components/frame/tabs/lt-tabs"
-import { monter, ventPaTegning } from "./testing/a11y"
+import { mount, waitForPaint } from "./testing/a11y"
 
 /**
  * That a component speaks up when the markup it was given does not hold
@@ -29,8 +29,8 @@ import { monter, ventPaTegning } from "./testing/a11y"
  * was scheduled first.
  */
 async function ventTilRo(): Promise<void> {
-  await ventPaTegning()
-  await ventPaTegning()
+  await waitForPaint()
+  await waitForPaint()
 }
 
 function meldinger(advarsel: { mock: { calls: unknown[][] } }): string[] {
@@ -59,7 +59,7 @@ describe("the component reports markup that does not hold together", () => {
   it("the field without a control", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-field>
         <label class="lt-label">E-post</label>
         <p class="lt-help-text">Vi sender aldri spam.</p>
@@ -75,7 +75,7 @@ describe("the component reports markup that does not hold together", () => {
   it("the field without a label", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-field>
         <input class="lt-input" />
       </lt-field>
@@ -90,7 +90,7 @@ describe("the component reports markup that does not hold together", () => {
     // valid solution. A warning there would be wrong.
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-field>
         <input class="lt-input lt-search" type="search" aria-label="Søk i saker" />
       </lt-field>
@@ -105,7 +105,7 @@ describe("the component reports markup that does not hold together", () => {
     // the component connects it the same way as one inside.
     const advarsel = lytt()
 
-    const flate = monter(`
+    const flate = mount(`
       <div>
         <label class="lt-label" for="epost" data-required="symbol">E-post</label>
         <lt-field>
@@ -125,7 +125,7 @@ describe("the component reports markup that does not hold together", () => {
     // that must be reported.
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-field>
         <label class="lt-label">Søk</label>
         <input class="lt-input" type="search" />
@@ -147,7 +147,7 @@ describe("the component reports markup that does not hold together", () => {
      */
     const advarsel = lytt()
 
-    const flate = monter(`
+    const flate = mount(`
       <lt-field>
         <label class="lt-label">E-post</label>
         <input class="lt-input" type="email" />
@@ -166,7 +166,7 @@ describe("the component reports markup that does not hold together", () => {
   it("but not when the label wraps the field", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-field>
         <label class="lt-label">E-post <input class="lt-input" type="email" /></label>
       </lt-field>
@@ -184,7 +184,7 @@ describe("the component reports markup that does not hold together", () => {
      */
     const advarsel = lytt()
 
-    const flate = monter(`
+    const flate = mount(`
       <lt-field>
         <label class="lt-label" for="navn-1">Navn</label>
         <input class="lt-input" id="navn-1" name="navn" />
@@ -213,7 +213,7 @@ describe("the component reports markup that does not hold together", () => {
   it("but not when the server sent a different field on purpose", async () => {
     const advarsel = lytt()
 
-    const flate = monter(`
+    const flate = mount(`
       <lt-field>
         <label class="lt-label" for="navn">Navn</label>
         <input class="lt-input" id="navn" name="navn" />
@@ -240,7 +240,7 @@ describe("the component reports markup that does not hold together", () => {
     // inside the field. Each field then has its own control.
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-field>
         <label class="lt-label" for="kommune">Kommune</label>
         <input class="lt-input" id="kommune" type="text" />
@@ -261,7 +261,7 @@ describe("the component reports markup that does not hold together", () => {
     // body, where it belongs to the content and not to the dialog.
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-dialog>
         <dialog>
           <div class="lt-dialog__body"><h3>Vedlegg</h3><p>To vedlegg.</p></div>
@@ -278,7 +278,7 @@ describe("the component reports markup that does not hold together", () => {
   it("but not about an empty dialog the server has not filled yet", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-dialog>
         <dialog></dialog>
       </lt-dialog>
@@ -293,7 +293,7 @@ describe("the component reports markup that does not hold together", () => {
     // used to be, has no tabs the component can connect.
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-tabs>
         <ul class="lt-tabs__list">
           <li><button>Søknaden</button></li>
@@ -311,7 +311,7 @@ describe("the component reports markup that does not hold together", () => {
   it("tabs without a panel", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-tabs>
         <ul class="lt-tabs__list">
           <li><a href="#soknad">Søknaden</a></li>
@@ -330,7 +330,7 @@ describe("the component reports markup that does not hold together", () => {
   it("the dialog without a <dialog>", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-dialog>
         <div class="lt-dialog">
           <h2 class="lt-dialog__title">Slette søknaden?</h2>
@@ -345,7 +345,7 @@ describe("the component reports markup that does not hold together", () => {
   it("the session timeout without a <dialog>", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-session-timeout>
         <div class="lt-session-timeout__dialog">
           <h2>Du blir snart logget ut</h2>
@@ -360,7 +360,7 @@ describe("the component reports markup that does not hold together", () => {
   it("the session timeout without a count, announcement or buttons", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-session-timeout>
         <dialog>
           <h2>Du blir snart logget ut</h2>
@@ -383,7 +383,7 @@ describe("the component reports markup that does not hold together", () => {
     // field at all it finds nothing to listen to.
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-suggestion>
         <label class="lt-label">Kommune</label>
         <ul class="lt-suggestion__list"><li>Bergen</li></ul>
@@ -397,7 +397,7 @@ describe("the component reports markup that does not hold together", () => {
   it("the suggestion field without a listbox", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-suggestion>
         <label class="lt-label" for="kommune">Kommune</label>
         <input class="lt-input" id="kommune" role="combobox"
@@ -415,7 +415,7 @@ describe("the component reports markup that does not hold together", () => {
     // never learnt that the list narrowed.
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-suggestion>
         <label class="lt-label" for="kommune">Kommune</label>
         <input class="lt-input" id="kommune" role="combobox"
@@ -435,7 +435,7 @@ describe("the component reports markup that does not hold together", () => {
   it("the popover without a panel", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-popover>
         <button class="lt-button">Handlinger</button>
       </lt-popover>
@@ -451,7 +451,7 @@ describe("the component reports markup that does not hold together", () => {
     // The component never writes an id on the panel, so the button cannot be connected.
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-popover>
         <button class="lt-button">Handlinger</button>
         <div class="lt-popover">Flytt saken</div>
@@ -471,7 +471,7 @@ describe("the component reports markup that does not hold together", () => {
     // finds none.
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-popover>
         <a href="/handlinger" class="lt-link">Handlinger</a>
         <div popover id="handlinger" class="lt-popover">Flytt saken</div>
@@ -487,7 +487,7 @@ describe("the component reports markup that does not hold together", () => {
   it("the error summary with items that link nowhere", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-error-summary class="lt-error-summary" role="alert" tabindex="-1">
         <h2 class="lt-error-summary__title">Skjemaet har én feil</h2>
         <ul class="lt-list"><li>Skriv en gyldig e-postadresse</li></ul>
@@ -506,7 +506,7 @@ describe("the component reports markup that does not hold together", () => {
     // Each link reports itself.
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <lt-error-summary class="lt-error-summary" role="alert" tabindex="-1">
         <h2 class="lt-error-summary__title">Skjemaet har to feil</h2>
         <ul class="lt-list">
@@ -525,7 +525,7 @@ describe("the component reports markup that does not hold together", () => {
   it("says it once, not once per sync", async () => {
     const advarsel = lytt()
 
-    const flate = monter(`
+    const flate = mount(`
       <lt-field>
         <label class="lt-label">E-post</label>
       </lt-field>
@@ -554,7 +554,7 @@ describe("the component reports markup that does not hold together", () => {
      */
     const advarsel = lytt()
 
-    const flate = monter(`
+    const flate = mount(`
       <lt-tabs>
         <ul class="lt-tabs__list" aria-label="Deler av saken">
           <li><a href="#en">En</a></li>
@@ -589,7 +589,7 @@ describe("the component reports markup that does not hold together", () => {
      */
     const advarsel = lytt()
 
-    const flate = monter(`
+    const flate = mount(`
       <lt-field>
         <label class="lt-label" for="epost">E-post</label>
       </lt-field>
@@ -607,7 +607,7 @@ describe("the component reports markup that does not hold together", () => {
   it("says nothing about an empty region the server has not filled", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <div>
         <lt-field></lt-field>
         <lt-tabs></lt-tabs>
@@ -626,7 +626,7 @@ describe("the component reports markup that does not hold together", () => {
   it("says nothing about markup that holds together", async () => {
     const advarsel = lytt()
 
-    monter(`
+    mount(`
       <div>
         <lt-field>
           <label class="lt-label" for="epost">E-post</label>

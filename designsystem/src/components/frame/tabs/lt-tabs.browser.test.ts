@@ -3,11 +3,11 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
-import { gåTil, settAdresse } from "../../../testing/address"
+import { goTo, setAddress } from "../../../testing/address"
 import { attr } from "../../../testing/markup"
 import { defineLtTabs, type LtTabs } from "./lt-tabs"
 import { tabs } from "./tabs"
@@ -74,13 +74,13 @@ function tast(element: Element, key: string) {
 
 async function tegn() {
   await customElements.whenDefined("lt-tabs")
-  await ventPaTegning()
+  await waitForPaint()
 }
 
 beforeEach(async () => {
   // The web component reads the address on load, and the address carries
   // over between tests.
-  await settAdresse("")
+  await setAddress("")
 })
 
 describe("lt-tabs", () => {
@@ -89,7 +89,7 @@ describe("lt-tabs", () => {
   })
 
   beforeEach(async () => {
-    monter(fraByggefunksjonen())
+    mount(fraByggefunksjonen())
     await tegn()
   })
 
@@ -170,8 +170,8 @@ describe("lt-tabs", () => {
   })
 
   it("has no accessibility violations", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
@@ -233,7 +233,7 @@ describe("lt-tabs finds the panel through href and skips what cannot be selected
     // was left without a single tab that could take focus. The keyboard user
     // was locked out.
     const første = deler(FANER, [1])
-    monter(
+    mount(
       `<lt-tabs>${liste(første.lenker)}${første.paneler.join("")}</lt-tabs>`,
     )
     await tegn()
@@ -249,7 +249,7 @@ describe("lt-tabs finds the panel through href and skips what cannot be selected
     expect(document.activeElement).toBe(faner()[0])
 
     const andre = deler(FANER, [2])
-    monter(`<lt-tabs>${liste(andre.lenker)}${andre.paneler.join("")}</lt-tabs>`)
+    mount(`<lt-tabs>${liste(andre.lenker)}${andre.paneler.join("")}</lt-tabs>`)
     await tegn()
     faner()[0].focus()
     tast(faner()[0], "End")
@@ -263,7 +263,7 @@ describe("lt-tabs finds the panel through href and skips what cannot be selected
 
   it("goes to the first and last tab with Home and End", async () => {
     const { lenker, paneler: p } = deler()
-    monter(`<lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>`)
+    mount(`<lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>`)
     await tegn()
     faner()[1].click()
     await tegn()
@@ -286,7 +286,7 @@ describe("lt-tabs finds the panel through href and skips what cannot be selected
     const indre = tabs({ id: "indre", keys: ["a", "b"], label: "Indre" })
     const rad = (f: typeof ytre, navn: string) =>
       f.tabs.map((t, i) => `<li><a ${attr(t)}>${navn} ${i}</a></li>`).join("")
-    monter(`
+    mount(`
       <lt-tabs>
         <ul ${attr(ytre.list)}>${rad(ytre, "Ytre")}</ul>
         <section ${attr(ytre.panels[0])}>
@@ -326,7 +326,7 @@ describe("lt-tabs finds the panel through href and skips what cannot be selected
     // a different order, a click on tab 1 showed another tab's panel.
     const { lenker, paneler: p } = deler()
     const [forste, ...resten] = p
-    monter(`<lt-tabs>${liste(lenker)}${[...resten, forste].join("")}</lt-tabs>`)
+    mount(`<lt-tabs>${liste(lenker)}${[...resten, forste].join("")}</lt-tabs>`)
     await tegn()
     faner()[1].click()
     await tegn()
@@ -340,7 +340,7 @@ describe("lt-tabs finds the panel through href and skips what cannot be selected
 
   it("finds a panel outside the host", async () => {
     const { lenker, paneler: p } = deler()
-    monter(`
+    mount(`
       <lt-tabs>${liste(lenker)}${p[0]}</lt-tabs>
       ${p[1]}
       ${p[2]}
@@ -362,7 +362,7 @@ describe("lt-tabs finds the panel through href and skips what cannot be selected
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     try {
       const { lenker, paneler: p } = deler()
-      monter(`
+      mount(`
         <lt-tabs>${liste(
           lenker
             .replace('href="#sak-vedlegg"', 'href="#sak-vedleggx"')
@@ -398,7 +398,7 @@ describe("lt-tabs finds the panel through href and skips what cannot be selected
     // the panel: when only the first tab wrote, the panel stayed hidden while
     // the other was selected.
     const { lenker, paneler: p } = deler()
-    monter(`
+    mount(`
       <lt-tabs>${liste(
         lenker
           .replace('href="#sak-meldinger"', 'href="#sak-soknaden"')
@@ -421,7 +421,7 @@ describe("lt-tabs finds the panel through href and skips what cannot be selected
 
   it("moves the tab stop when a patch disables the selected tab", async () => {
     const { lenker, paneler: p } = deler()
-    monter(`<lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>`)
+    mount(`<lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>`)
     await tegn()
     faner()[1].click()
     await tegn()
@@ -437,7 +437,7 @@ describe("lt-tabs finds the panel through href and skips what cannot be selected
     // React 19 writes the property when it exists, and the documentation
     // shows `tabs.selected` as API. A getter alone threw on assignment.
     const { lenker, paneler: p } = deler()
-    monter(`<lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>`)
+    mount(`<lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>`)
     await tegn()
 
     const meldinger: number[] = []
@@ -457,7 +457,7 @@ describe("lt-tabs finds the panel through href and skips what cannot be selected
     // On a page read from right to left the next tab is to the left. Without
     // this the right arrow moved focus visually backwards.
     const { lenker, paneler: p } = deler()
-    monter(`
+    mount(`
       <div dir="rtl">
         <lt-tabs>${liste(lenker)}${p.join("")}</lt-tabs>
       </div>
@@ -511,7 +511,7 @@ describe("lt-tabs wires bare structure", () => {
   }
 
   it("sets roles, wiring and tab stops", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     const { liste, punkter, lenker, paneler: p } = barDeler()
 
@@ -552,11 +552,11 @@ describe("lt-tabs wires bare structure", () => {
       "until-found",
     ])
 
-    await forventIngenTilgjengelighetsbrudd()
+    await expectNoAccessibilityViolations()
   })
 
   it("writes no id on links, list items, the tab list or the panels", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     const { liste, punkter, lenker, paneler: p } = barDeler()
 
@@ -574,7 +574,7 @@ describe("lt-tabs wires bare structure", () => {
   })
 
   it("names the panel from the heading in it", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     const { paneler: p } = barDeler()
 
@@ -587,7 +587,7 @@ describe("lt-tabs wires bare structure", () => {
   })
 
   it("uses the tab's text as the name when the panel has no heading", async () => {
-    monter(BAR.replaceAll(/<h2>[^<]*<\/h2>/g, ""))
+    mount(BAR.replaceAll(/<h2>[^<]*<\/h2>/g, ""))
     await tegn()
     const { paneler: p } = barDeler()
 
@@ -602,7 +602,7 @@ describe("lt-tabs wires bare structure", () => {
   it("uses the tab's text as the name when aria-labelledby points to nothing", async () => {
     // An `aria-labelledby` without a valid id is ignored when the name is
     // computed, and then `aria-label` takes over.
-    monter(
+    mount(
       BAR.replaceAll(/<h2>[^<]*<\/h2>/g, "").replace(
         'id="vedlegg"',
         'id="vedlegg" aria-labelledby="finnes-ikke"',
@@ -616,7 +616,7 @@ describe("lt-tabs wires bare structure", () => {
   })
 
   it("leaves a name the server wrote, and removes the fallback when it arrives", async () => {
-    monter(
+    mount(
       BAR.replaceAll(/<h2>[^<]*<\/h2>/g, "").replace(
         'id="vedlegg"',
         'id="vedlegg" aria-labelledby="eget-navn"',
@@ -634,7 +634,7 @@ describe("lt-tabs wires bare structure", () => {
   })
 
   it("leaves an aria-label the server wrote", async () => {
-    monter(
+    mount(
       BAR.replace('id="vedlegg"', 'id="vedlegg" aria-label="Alle vedlegg"'),
     )
     await tegn()
@@ -645,7 +645,7 @@ describe("lt-tabs wires bare structure", () => {
   })
 
   it("reads the selection from hidden when no tab is marked", async () => {
-    monter(
+    mount(
       BAR.replace('id="soknaden"', 'id="soknaden" hidden').replace(
         'id="meldinger"',
         'id="meldinger" hidden',
@@ -668,7 +668,7 @@ describe("lt-tabs wires bare structure", () => {
   it("leaves what the server wrote", async () => {
     // Values the web component would never write itself, so the test tells
     // "left alone" from "wrote the same".
-    monter(BAR.replace('id="vedlegg"', 'id="vedlegg" tabindex="-1"'))
+    mount(BAR.replace('id="vedlegg"', 'id="vedlegg" tabindex="-1"'))
     await tegn()
     const { paneler: p } = barDeler()
 
@@ -678,7 +678,7 @@ describe("lt-tabs wires bare structure", () => {
   it("writes aria-controls from href, also when the server wrote another", async () => {
     // The two are the same information, and `href` is the one that works
     // without JavaScript.
-    monter(
+    mount(
       BAR.replace(
         '<a href="#vedlegg">',
         '<a href="#vedlegg" aria-controls="feil">',
@@ -691,7 +691,7 @@ describe("lt-tabs wires bare structure", () => {
   })
 
   it("restores the wiring with the same heading id after a patch", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     const { lenker, paneler: p } = barDeler()
     const overskrift = p[1].querySelector("h2") as HTMLElement
@@ -706,7 +706,7 @@ describe("lt-tabs wires bare structure", () => {
       p[1].removeAttribute(navn)
     }
     overskrift.removeAttribute("id")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(overskrift.id).toBe(id)
     expect(p[1].getAttribute("aria-labelledby")).toBe(id)
@@ -723,14 +723,14 @@ describe("lt-tabs wires bare structure", () => {
      * `aria-selected="true"` on the first itself, and read it back as the
      * server's word, so the panel the server had just shown was hidden again.
      */
-    monter(BAR.replace("<lt-tabs>", "<lt-tabs server-controlled>"))
+    mount(BAR.replace("<lt-tabs>", "<lt-tabs server-controlled>"))
     await tegn()
     const { lenker, paneler: p } = barDeler()
     expect(lenker[0].getAttribute("aria-selected")).toBe("true")
 
     p[0].setAttribute("hidden", "")
     p[1].removeAttribute("hidden")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(p.map((x) => x.hasAttribute("hidden"))).toEqual([true, false, true])
     expect(lenker.map((l) => l.getAttribute("aria-selected"))).toEqual([
@@ -744,7 +744,7 @@ describe("lt-tabs wires bare structure", () => {
   it("leaves a link without a role alone when the server wrote the roles", async () => {
     // If the server has written the roles itself, a link without a role in
     // the tab list is something other than a tab.
-    monter(`
+    mount(`
       <lt-tabs>
         <ul class="lt-tabs__list" role="tablist" aria-label="Deler av saken">
           <li role="presentation"><a href="#soknaden" role="tab">Søknaden</a></li>
@@ -764,7 +764,7 @@ describe("lt-tabs wires bare structure", () => {
   })
 
   it("takes a new link in a bare tab list as a tab", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     const { liste, paneler: p } = barDeler()
 
@@ -776,7 +776,7 @@ describe("lt-tabs wires bare structure", () => {
     panel.id = "historikk"
     panel.innerHTML = "<h2>Historikk</h2>"
     p[2].after(panel)
-    await ventPaTegning()
+    await waitForPaint()
     const ny = punkt.querySelector("a") as HTMLElement
 
     expect(punkt.getAttribute("role")).toBe("presentation")
@@ -786,12 +786,12 @@ describe("lt-tabs wires bare structure", () => {
   })
 
   it("keeps the user's selection through a patch that removes everything the web component wrote", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     const { lenker, paneler: p } = barDeler()
 
     lenker[2].click()
-    await ventPaTegning()
+    await waitForPaint()
     expect(p[2].hasAttribute("hidden")).toBe(false)
 
     for (const lenke of lenker) {
@@ -800,7 +800,7 @@ describe("lt-tabs wires bare structure", () => {
       }
     }
     for (const panel of p) panel.removeAttribute("hidden")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(lenker.map((l) => l.getAttribute("aria-selected"))).toEqual([
       "false",
@@ -842,11 +842,11 @@ describe("lt-tabs under server-controlled", () => {
      * server's old word from memory. A test that reads right after the click
      * does not see it, so this one waits for a frame first.
      */
-    monter(FIRE)
+    mount(FIRE)
     await tegn()
 
     document.querySelectorAll<HTMLElement>("lt-tabs a")[1].click()
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(tilstand()).toEqual({
       valgt: ["false", "true"],
@@ -859,18 +859,18 @@ describe("lt-tabs under server-controlled", () => {
     // But the web component wrote `aria-selected` on the tabs itself on the
     // click. When that counted as the server's, it took precedence over
     // `hidden`, and the server could not move the tab.
-    monter(FIRE.replace("<lt-tabs server-controlled>", "<lt-tabs>"))
+    mount(FIRE.replace("<lt-tabs server-controlled>", "<lt-tabs>"))
     await tegn()
     const vert = document.querySelector("lt-tabs") as HTMLElement
     document.querySelectorAll<HTMLElement>("lt-tabs a")[1].click()
-    await ventPaTegning()
+    await waitForPaint()
     vert.setAttribute("server-controlled", "")
-    await ventPaTegning()
+    await waitForPaint()
 
     const p = paneler()
     p[0].removeAttribute("hidden")
     p[1].setAttribute("hidden", "")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(tilstand()).toEqual({
       valgt: ["true", "false"],
@@ -880,12 +880,12 @@ describe("lt-tabs under server-controlled", () => {
 
   it("takes what is there as the starting point when server-controlled is set, and repairs again when it is removed", async () => {
     // Without the attribute from the start, as when a patch sets it.
-    monter(FIRE.replace("<lt-tabs server-controlled>", "<lt-tabs>"))
+    mount(FIRE.replace("<lt-tabs server-controlled>", "<lt-tabs>"))
     await tegn()
     const vert = document.querySelector("lt-tabs") as HTMLElement
     const lenker = [...document.querySelectorAll<HTMLElement>("lt-tabs a")]
     lenker[1].click()
-    await ventPaTegning()
+    await waitForPaint()
 
     // The server takes over, and a patch writes the panel as it is. Unless
     // the web component forgot its memory, the tab list jumped back to what
@@ -893,7 +893,7 @@ describe("lt-tabs under server-controlled", () => {
     vert.setAttribute("server-controlled", "")
     const p = paneler()
     p[0].setAttribute("hidden", p[0].getAttribute("hidden") ?? "")
-    await ventPaTegning()
+    await waitForPaint()
     expect(tilstand()).toEqual({
       valgt: ["false", "true"],
       skjult: [true, false],
@@ -904,7 +904,7 @@ describe("lt-tabs under server-controlled", () => {
     vert.removeAttribute("server-controlled")
     p[0].removeAttribute("hidden")
     p[1].setAttribute("hidden", "")
-    await ventPaTegning()
+    await waitForPaint()
     expect(tilstand()).toEqual({
       valgt: ["true", "false"],
       skjult: [false, true],
@@ -912,10 +912,10 @@ describe("lt-tabs under server-controlled", () => {
 
     // A new click stands through a patch that strips it.
     lenker[1].click()
-    await ventPaTegning()
+    await waitForPaint()
     p[0].removeAttribute("hidden")
     p[1].setAttribute("hidden", "")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(tilstand()).toEqual({
       valgt: ["false", "true"],
@@ -924,17 +924,17 @@ describe("lt-tabs under server-controlled", () => {
   })
 
   it("lets the server move the selection after the click", async () => {
-    monter(FIRE)
+    mount(FIRE)
     await tegn()
     const p = paneler()
 
     document.querySelectorAll<HTMLElement>("lt-tabs a")[1].click()
-    await ventPaTegning()
+    await waitForPaint()
 
     // The server sends the first tab again, and touches only the panels.
     p[0].removeAttribute("hidden")
     p[1].setAttribute("hidden", "")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(tilstand()).toEqual({
       valgt: ["true", "false"],
@@ -956,10 +956,10 @@ describe("lt-tabs under server-controlled", () => {
     </lt-tabs>`
 
   async function klikkAndre() {
-    monter(TRE)
+    mount(TRE)
     await tegn()
     document.querySelectorAll<HTMLElement>("lt-tabs a")[1].click()
-    await ventPaTegning()
+    await waitForPaint()
     return {
       lenker: [...document.querySelectorAll<HTMLElement>("lt-tabs a")],
       paneler: paneler(),
@@ -972,7 +972,7 @@ describe("lt-tabs under server-controlled", () => {
     // The server answers with the third, and touches only the panels.
     p[1].setAttribute("hidden", "")
     p[2].removeAttribute("hidden")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(tilstand()).toEqual({
       valgt: ["false", "false", "true"],
@@ -985,7 +985,7 @@ describe("lt-tabs under server-controlled", () => {
 
     lenker[1].setAttribute("aria-selected", "false")
     lenker[2].setAttribute("aria-selected", "true")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(tilstand()).toEqual({
       valgt: ["false", "false", "true"],
@@ -1008,13 +1008,13 @@ describe("lt-tabs under server-controlled", () => {
       "beforeend",
       '<section class="lt-tabs__panel" id="historikk" hidden><h2>Historikk</h2></section>',
     )
-    await ventPaTegning()
+    await waitForPaint()
     expect(tilstand().valgt).toEqual(["false", "true", "false", "false"])
 
     // Then the server moves to the third, with `hidden` alone.
     p[1].setAttribute("hidden", "")
     p[2].removeAttribute("hidden")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(tilstand()).toEqual({
       valgt: ["false", "false", "true", "false"],
@@ -1032,7 +1032,7 @@ describe("lt-tabs under server-controlled", () => {
     const { lenker } = await klikkAndre()
 
     for (const lenke of lenker) lenke.removeAttribute("aria-selected")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(tilstand()).toEqual({
       valgt: ["false", "true", "false"],
@@ -1041,25 +1041,25 @@ describe("lt-tabs under server-controlled", () => {
   })
 
   it("ignores the address, so the server decides", async () => {
-    await settAdresse("#meldinger")
-    monter(TRE)
+    await setAddress("#meldinger")
+    mount(TRE)
     await tegn()
 
     expect(tilstand().valgt).toEqual(["true", "false", "false"])
   })
 
   it("ignores the address also when it changes", async () => {
-    monter(TRE)
+    mount(TRE)
     await tegn()
 
-    await gåTil("#meldinger")
+    await goTo("#meldinger")
     await tegn()
 
     expect(tilstand().valgt).toEqual(["true", "false", "false"])
   })
 
   it("reports a click with tab-select, and writes it to the address", async () => {
-    monter(TRE)
+    mount(TRE)
     await tegn()
     const meldt: number[] = []
     document
@@ -1069,7 +1069,7 @@ describe("lt-tabs under server-controlled", () => {
       )
 
     document.querySelectorAll<HTMLElement>("lt-tabs a")[2].click()
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(meldt).toEqual([2])
     expect(location.hash).toBe("#meldinger")
@@ -1082,7 +1082,7 @@ describe("lt-tabs when a patch touches the panels and the links", () => {
   })
 
   it("gives a new panel with the same id the role, the name and hidden", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     const gammelt = document.getElementById("vedlegg") as HTMLElement
 
@@ -1091,7 +1091,7 @@ describe("lt-tabs when a patch touches the panels and the links", () => {
     nytt.id = "vedlegg"
     nytt.innerHTML = "<h2>Nye vedlegg</h2>"
     gammelt.replaceWith(nytt)
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(nytt.getAttribute("role")).toBe("tabpanel")
     expect(
@@ -1110,17 +1110,17 @@ describe("lt-tabs when a patch touches the panels and the links", () => {
      * and then what the markup says applies, and otherwise the address.
      */
     const bar = BAR.slice(BAR.indexOf(">") + 1, BAR.lastIndexOf("<"))
-    monter(BAR)
+    mount(BAR)
     await tegn()
     const vert = document.querySelector("lt-tabs") as LtTabs
     faner()[1].click()
-    await ventPaTegning()
+    await waitForPaint()
     expect(vert.selected).toBe(1)
     expect(location.hash).toBe("#vedlegg")
 
     // No tab marked by the server: the address says where the user was.
     vert.innerHTML = bar
-    await ventPaTegning()
+    await waitForPaint()
     expect(vert.selected).toBe(1)
 
     // The server marks a tab itself, and it wins over the address.
@@ -1130,13 +1130,13 @@ describe("lt-tabs when a patch touches the panels and the links", () => {
         '<a href="#soknaden" aria-selected="true">',
       )
       .replace('id="vedlegg"', 'id="vedlegg" hidden')
-    await ventPaTegning()
+    await waitForPaint()
     expect(vert.selected).toBe(0)
 
     // Nothing in the address either: the first.
     history.replaceState(null, "", location.pathname + location.search)
     vert.innerHTML = bar
-    await ventPaTegning()
+    await waitForPaint()
     expect(vert.selected).toBe(0)
     expect(faner()[0].getAttribute("aria-selected")).toBe("true")
   })
@@ -1144,7 +1144,7 @@ describe("lt-tabs when a patch touches the panels and the links", () => {
   it("warns and leaves the other panels alone when one is removed", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     try {
-      monter(BAR)
+      mount(BAR)
       await tegn()
       const lenker = faner()
       const p = paneler()
@@ -1166,7 +1166,7 @@ describe("lt-tabs when a patch touches the panels and the links", () => {
   })
 
   it("leaves the browser's shortcuts with Alt and Cmd alone", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     faner()[0].focus()
 
@@ -1191,7 +1191,7 @@ describe("lt-tabs as links", () => {
   })
 
   it("writes the selection to the address without jumping, and without a new history entry", async () => {
-    monter(fraByggefunksjonen())
+    mount(fraByggefunksjonen())
     await tegn()
     const lengde = history.length
 
@@ -1208,7 +1208,7 @@ describe("lt-tabs as links", () => {
   it("selects the tab even when the address cannot be written", async () => {
     // Safari throws after a hundred calls in ten seconds. The throw stopped
     // the click before the tab was selected.
-    monter(fraByggefunksjonen())
+    mount(fraByggefunksjonen())
     await tegn()
     const skriv = vi.spyOn(history, "replaceState").mockImplementation(() => {
       throw new DOMException("Too many calls", "SecurityError")
@@ -1225,7 +1225,7 @@ describe("lt-tabs as links", () => {
   })
 
   it("lets the browser open the link when a modifier is held down", async () => {
-    monter(fraByggefunksjonen())
+    mount(fraByggefunksjonen())
     await tegn()
     const lenke = faner()[1]
 
@@ -1251,8 +1251,8 @@ describe("lt-tabs as links", () => {
   })
 
   it("selects the tab the address points to on load", async () => {
-    await settAdresse("#sak-vedlegg")
-    monter(fraByggefunksjonen())
+    await setAddress("#sak-vedlegg")
+    mount(fraByggefunksjonen())
     await tegn()
 
     expect(valgt()).toEqual([false, true, false])
@@ -1260,7 +1260,7 @@ describe("lt-tabs as links", () => {
   })
 
   it("selects the tab when the address changes", async () => {
-    monter(fraByggefunksjonen())
+    mount(fraByggefunksjonen())
     await tegn()
 
     history.replaceState(null, "", "#sak-meldinger")
@@ -1271,7 +1271,7 @@ describe("lt-tabs as links", () => {
   })
 
   it("selects the tab on beforematch", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
 
     paneler()[2].dispatchEvent(new Event("beforematch", { bubbles: true }))
@@ -1283,7 +1283,7 @@ describe("lt-tabs as links", () => {
   it("lets a panel hidden with until-found take no space", async () => {
     // A hidden panel keeps its box, so the spacing around the content must be
     // zeroed, or there is an empty gap under the selected panel.
-    monter(BAR)
+    mount(BAR)
     await tegn()
 
     const høyder = paneler().map((p) => p.getBoundingClientRect().height)
@@ -1296,7 +1296,7 @@ describe("lt-tabs as links", () => {
   it("hides the panels in the same form across the whole tab list", async () => {
     // The server hides with `hidden=""`. The first panel was never hidden by
     // the server, but gets the same form as the others when it is hidden.
-    monter(
+    mount(
       BAR.replace('id="vedlegg"', 'id="vedlegg" hidden').replace(
         'id="meldinger"',
         'id="meldinger" hidden',
@@ -1315,7 +1315,7 @@ describe("lt-tabs as links", () => {
   })
 
   it("only moves focus with the arrow keys under manual activation, and selects with Space", async () => {
-    monter(fraByggefunksjonen(FANER, ' activation="manual"'))
+    mount(fraByggefunksjonen(FANER, ' activation="manual"'))
     await tegn()
     faner()[0].focus()
 
@@ -1337,7 +1337,7 @@ describe("lt-tabs as links", () => {
   })
 
   it("selects at once by default", async () => {
-    monter(fraByggefunksjonen())
+    mount(fraByggefunksjonen())
     await tegn()
     faner()[0].focus()
 
@@ -1364,7 +1364,7 @@ describe("lt-tabs after a morph and with arrow keys", () => {
       .join("")
 
   async function monterFaner() {
-    monter(`
+    mount(`
       <lt-tabs>
         <ul ${attr(FEM.list)}>${lenker()}</ul>
         ${FEM.panels
@@ -1385,18 +1385,18 @@ describe("lt-tabs after a morph and with arrow keys", () => {
     const rad = vert.querySelector(".lt-tabs__list") as HTMLElement
     for (let gang = 0; gang < 3; gang++) {
       rad.innerHTML = lenker()
-      await ventPaTegning()
+      await waitForPaint()
     }
 
     faner()[2].click()
-    await ventPaTegning()
+    await waitForPaint()
     expect(
       (document.getElementById("s-c") as HTMLElement).hasAttribute("hidden"),
     ).toBe(false)
 
     faner()[2].focus()
     tast(faner()[2], "ArrowRight")
-    await ventPaTegning()
+    await waitForPaint()
     expect(document.activeElement).toBe(faner()[0])
   })
 
@@ -1411,11 +1411,11 @@ describe("lt-tabs after a morph and with arrow keys", () => {
 
     faner()[0].focus()
     tast(faner()[0], "ArrowRight")
-    await ventPaTegning()
+    await waitForPaint()
     expect(document.activeElement).toBe(faner()[1])
 
     faner()[2].click()
-    await ventPaTegning()
+    await waitForPaint()
     expect(
       (document.getElementById("s-c") as HTMLElement).hasAttribute("hidden"),
     ).toBe(false)
@@ -1433,7 +1433,7 @@ describe("lt-tabs after a morph and with arrow keys", () => {
     })
 
     forste.dispatchEvent(trykk)
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(document.activeElement).toBe(forste)
     expect(trykk.defaultPrevented).toBe(false)
@@ -1447,7 +1447,7 @@ describe("lt-tabs after a morph and with arrow keys", () => {
     faner()[0].focus()
 
     tast(faner()[0], "ArrowDown")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(document.activeElement).toBe(faner()[1])
   })

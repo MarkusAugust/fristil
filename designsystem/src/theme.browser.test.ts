@@ -5,7 +5,7 @@
 
 import { afterEach, describe, expect, it } from "vitest"
 import { cdp, server } from "vitest/browser"
-import { ventPaTegning } from "./testing/a11y"
+import { waitForPaint } from "./testing/a11y"
 import tokenKilde from "./tokens/tokens.css?inline"
 
 import "./tokens/tokens.css"
@@ -327,7 +327,7 @@ describe.skipIf(server.browser !== "chromium")(
       await cdp().send("Emulation.setEmulatedMedia", {
         features: [{ name: "prefers-color-scheme", value: skjema }],
       })
-      await ventPaTegning()
+      await waitForPaint()
     }
 
     afterEach(async () => {
@@ -372,7 +372,7 @@ describe.skipIf(server.browser !== "chromium")(
 
       // Og tilbake: «følg systemet» gir den mørke maskinen sitt eget svar.
       ;(hent("valg-auto") as HTMLInputElement).checked = true
-      await ventPaTegning()
+      await waitForPaint()
       expect(token(hent("ute"))).toBe(MORK)
     })
 

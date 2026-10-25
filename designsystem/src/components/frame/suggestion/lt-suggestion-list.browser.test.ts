@@ -13,9 +13,9 @@
 import { beforeAll, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
 import { defineLtSuggestion, type LtSuggestion } from "./lt-suggestion"
@@ -65,8 +65,8 @@ function fraByggefunksjonen(valg: { pending?: boolean } = {}) {
 
 async function tegn() {
   await customElements.whenDefined("lt-suggestion")
-  await ventPaTegning()
-  await ventPaTegning()
+  await waitForPaint()
+  await waitForPaint()
   return document.querySelector("lt-suggestion") as LtSuggestion
 }
 
@@ -102,7 +102,7 @@ describe("lista har et navn", () => {
   })
 
   it("fra ledeteksten, når markupen kom uten", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     expect(navn(liste())).toBe("Kommune")
   })
@@ -110,7 +110,7 @@ describe("lista har et navn", () => {
   it("fra ledeteksten rundt feltet, uten id på ledeteksten eller feltet", async () => {
     // En id på ledeteksten rundt feltet ville fått en morfing til å bytte ut
     // ledeteksten, og feltet i den. Navnet er da teksten, uten verdien.
-    monter(RUNDT)
+    mount(RUNDT)
     await tegn()
     felt().value = "Ber"
     felt().dispatchEvent(new Event("input", { bubbles: true }))
@@ -121,13 +121,13 @@ describe("lista har et navn", () => {
   })
 
   it("fra byggefunksjonen, uten at komponenten skriver noe", async () => {
-    monter(fraByggefunksjonen())
+    mount(fraByggefunksjonen())
     expect(liste().getAttribute("aria-labelledby")).toBe("kommune-label")
     expect(document.querySelector("label")?.id).toBe("kommune-label")
   })
 
   it("lar et navn serveren skrev stå", async () => {
-    monter(
+    mount(
       BAR.replace(
         '<ul class="lt-suggestion__list">',
         '<ul class="lt-suggestion__list" aria-label="Kommuner i Norge">',
@@ -139,11 +139,11 @@ describe("lista har et navn", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd med lista åpen", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     await apne()
     expect(liste().hidden).toBe(false)
-    await forventIngenTilgjengelighetsbrudd()
+    await expectNoAccessibilityViolations()
   })
 })
 
@@ -154,7 +154,7 @@ describe("hvert alternativ sier om det er valgt", () => {
 
   it("fra starten, før lista har vært åpen", async () => {
     // Firefox leser et alternativ uten `aria-selected` som valgt.
-    monter(BAR)
+    mount(BAR)
     await tegn()
     expect(alternativer().map((o) => o.getAttribute("aria-selected"))).toEqual([
       "false",
@@ -178,7 +178,7 @@ describe("lista sier fra mens svaret er underveis", () => {
   })
 
   it("holder tommeldingen skjult mens lista sier aria-busy", async () => {
-    monter(
+    mount(
       BAR.replace(
         '<ul class="lt-suggestion__list">',
         '<ul class="lt-suggestion__list" aria-busy="true">',
@@ -207,7 +207,7 @@ describe("lista står i det øverste laget", () => {
   })
 
   it("er et popover, åpent når lista er åpen og lukket ellers", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     expect(liste().getAttribute("popover")).toBe("manual")
     expect(liste().matches(":popover-open")).toBe(false)
@@ -222,7 +222,7 @@ describe("lista står i det øverste laget", () => {
   })
 
   it("klippes ikke av en forelder med overflow", async () => {
-    monter(`<div class="rulleboks">${BAR}</div>`)
+    mount(`<div class="rulleboks">${BAR}</div>`)
     const boks = document.querySelector(".rulleboks") as HTMLElement
     // Som kroppen i en dialog: lav, og rullbar.
     boks.style.blockSize = "4rem"
@@ -239,7 +239,7 @@ describe("lista står i det øverste laget", () => {
   })
 
   it("står under feltet, like bred som det", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     await apne()
     const f = felt().getBoundingClientRect()
@@ -251,7 +251,7 @@ describe("lista står i det øverste laget", () => {
   })
 
   it("står åpent når en oppdatering tar popover fra lista", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     await apne()
     // Slik en morfing fra serverens markup gjør det.
@@ -262,7 +262,7 @@ describe("lista står i det øverste laget", () => {
   })
 
   it("følger serveren som lukker lista med hidden", async () => {
-    monter(BAR.replace("<lt-suggestion>", "<lt-suggestion server-controlled>"))
+    mount(BAR.replace("<lt-suggestion>", "<lt-suggestion server-controlled>"))
     await tegn()
     await apne()
     liste().hidden = true

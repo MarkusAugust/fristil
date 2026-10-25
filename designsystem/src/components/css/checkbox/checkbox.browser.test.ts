@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { checkbox } from "./checkbox"
 
@@ -23,7 +23,7 @@ function stil(id: string) {
 
 describe("lt-checkbox", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <div class="lt-checkbox-row">
         <input class="lt-checkbox" type="checkbox" id="vilkar" />
         <label class="lt-label" for="vilkar">Jeg godtar vilkårene</label>
@@ -85,7 +85,7 @@ describe("lt-checkbox", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

@@ -3,9 +3,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import side from "../../../../../documentation/src/content/docs/components/switch.mdx?raw"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { switchControl } from "./switch"
 
@@ -43,7 +43,7 @@ describe("the saving example on the page", () => {
 
   /** Mounts the example with a server that answers `status`, and flips the switch. */
   function slaOm(status: number) {
-    monter(markup)
+    mount(markup)
     let kall = 0
     vi.stubGlobal("fetch", () => {
       kall += 1
@@ -100,7 +100,7 @@ describe("the saving example on the page", () => {
 
 describe("lt-switch", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <div class="lt-switch-row">
         <input class="lt-switch" type="checkbox" role="switch" id="varsler" checked />
         <label class="lt-label" for="varsler">Varsle meg på e-post</label>
@@ -152,7 +152,7 @@ describe("lt-switch", () => {
   })
 
   it("has no accessibility violations", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

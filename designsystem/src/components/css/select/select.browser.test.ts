@@ -3,12 +3,12 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/color"
-import { finnOverflyt, monterIsolert } from "../../../testing/isolated"
+import { color } from "../../../testing/color"
+import { findOverflow, mountIsolated } from "../../../testing/isolated"
 import { contrastRatio, parseHex } from "../../../tokens/color"
 import selectCss from "./select.css?inline"
 
@@ -38,31 +38,31 @@ describe("lt-select", () => {
   it("applies default styles", () => {
     const select = css("default")
 
-    expect(select.backgroundColor).toBe(farge("--lt-color-neutral-canvas"))
-    expect(select.borderTopColor).toBe(farge("--lt-color-disabled-text"))
-    expect(select.color).toBe(farge("--lt-color-neutral-text-strong"))
+    expect(select.backgroundColor).toBe(color("--lt-color-neutral-canvas"))
+    expect(select.borderTopColor).toBe(color("--lt-color-disabled-text"))
+    expect(select.color).toBe(color("--lt-color-neutral-text-strong"))
   })
 
   it("applies invalid styles", () => {
     const select = css("invalid")
 
-    expect(select.backgroundColor).toBe(farge("--lt-color-danger-surface"))
-    expect(select.borderTopColor).toBe(farge("--lt-color-danger-text"))
+    expect(select.backgroundColor).toBe(color("--lt-color-danger-surface"))
+    expect(select.borderTopColor).toBe(color("--lt-color-danger-text"))
   })
 
   it("applies success styles", () => {
     const select = css("success")
 
-    expect(select.backgroundColor).toBe(farge("--lt-color-success-surface"))
-    expect(select.borderTopColor).toBe(farge("--lt-color-success-text"))
+    expect(select.backgroundColor).toBe(color("--lt-color-success-surface"))
+    expect(select.borderTopColor).toBe(color("--lt-color-success-text"))
   })
 
   it("applies disabled styles", () => {
     const select = css("disabled")
 
-    expect(select.backgroundColor).toBe(farge("--lt-color-disabled-surface"))
-    expect(select.borderTopColor).toBe(farge("--lt-color-disabled-surface"))
-    expect(select.color).toBe(farge("--lt-color-disabled-text"))
+    expect(select.backgroundColor).toBe(color("--lt-color-disabled-surface"))
+    expect(select.borderTopColor).toBe(color("--lt-color-disabled-surface"))
+    expect(select.color).toBe(color("--lt-color-disabled-text"))
     // Markøren vises bare hvis elementet treffes av pekeren
     expect(select.pointerEvents).toBe("auto")
   })
@@ -70,7 +70,7 @@ describe("lt-select", () => {
 
 describe("lt-select tilgjengelighet", () => {
   it("har nok kontrast og ledetekst i alle tilstander", async () => {
-    monter(`
+    mount(`
       <label class="lt-label" for="a11y-fylke">Fylke</label>
       <select class="lt-select" id="a11y-fylke">
         <option value="">Velg fylke</option>
@@ -83,25 +83,25 @@ describe("lt-select tilgjengelighet", () => {
       </select>
     `)
 
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
 describe("lt-select uten CSS-reset", () => {
   it("holder seg innenfor boksen sin", () => {
-    const { boks } = monterIsolert(
+    const { boks } = mountIsolated(
       selectCss,
       `<select class="lt-select"><option>Vestland</option></select>`,
     )
 
-    expect(finnOverflyt(boks)).toEqual([])
+    expect(findOverflow(boks)).toEqual([])
   })
 })
 
 describe("lt-select deaktivert", () => {
   it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
-    monter(`<select class="lt-select" disabled><option>Av</option></select>`)
+    mount(`<select class="lt-select" disabled><option>Av</option></select>`)
 
     const element = document.querySelector("select") as HTMLElement
     const ramme = element.getBoundingClientRect()
@@ -133,7 +133,7 @@ const harBaseSelect = CSS.supports("appearance", "base-select")
 /** Leser en utregnet fargeverdi som tre tall. */
 function rgb(verdi: string): [number, number, number] {
   const tall = verdi.match(/\d+/g)
-  if (!tall || tall.length < 3) throw new Error(`Uleselig farge «${verdi}»`)
+  if (!tall || tall.length < 3) throw new Error(`Uleselig color «${verdi}»`)
   return [Number(tall[0]), Number(tall[1]), Number(tall[2])]
 }
 
@@ -152,7 +152,7 @@ async function ventPaListen(element: HTMLElement): Promise<void> {
 /** Lukker lista igjen, slik at den ikke står åpen inn i neste test. */
 async function lukk(element: HTMLElement): Promise<void> {
   await userEvent.keyboard("{Escape}")
-  await ventPaTegning(element)
+  await waitForPaint(element)
 }
 
 describe('lt-select med data-picker="styled"', () => {
@@ -193,9 +193,9 @@ describe('lt-select med data-picker="styled"', () => {
   it("beholder farger og tilstand fra resten av komponenten", () => {
     const stylet = css("stylet")
 
-    expect(stylet.backgroundColor).toBe(farge("--lt-color-neutral-canvas"))
-    expect(stylet.borderTopColor).toBe(farge("--lt-color-disabled-text"))
-    expect(stylet.color).toBe(farge("--lt-color-neutral-text-strong"))
+    expect(stylet.backgroundColor).toBe(color("--lt-color-neutral-canvas"))
+    expect(stylet.borderTopColor).toBe(color("--lt-color-disabled-text"))
+    expect(stylet.color).toBe(color("--lt-color-neutral-text-strong"))
   })
 
   it("åpner lista inne i siden, med vår egen flate", async () => {
@@ -210,8 +210,8 @@ describe('lt-select med data-picker="styled"', () => {
     const liste = getComputedStyle(element, "::picker(select)")
 
     expect(element.matches(":open")).toBe(true)
-    expect(liste.backgroundColor).toBe(farge("--lt-color-neutral-canvas"))
-    expect(liste.borderTopColor).toBe(farge("--lt-color-disabled-text"))
+    expect(liste.backgroundColor).toBe(color("--lt-color-neutral-canvas"))
+    expect(liste.borderTopColor).toBe(color("--lt-color-disabled-text"))
     expect(liste.overflowY).toBe("auto")
 
     // Høyden animeres fra null i Chromium. Går noe galt med overgangen, står
@@ -237,13 +237,13 @@ describe('lt-select med data-picker="styled"', () => {
     }
 
     expect(getComputedStyle(valgt).backgroundColor).toBe(
-      farge("--lt-color-accent-fill"),
+      color("--lt-color-accent-fill"),
     )
     expect(getComputedStyle(valgt).color).toBe(
-      farge("--lt-color-accent-content"),
+      color("--lt-color-accent-content"),
     )
     expect(getComputedStyle(annet).backgroundColor).toBe(
-      farge("--lt-color-neutral-canvas"),
+      color("--lt-color-neutral-canvas"),
     )
     expect(getComputedStyle(annet).padding).toBe("8px 12px")
 
@@ -282,7 +282,7 @@ describe('lt-select med data-picker="styled"', () => {
     // Den arver fra gruppa, så det er gruppa som må ha verdiene.
     expect(getComputedStyle(gruppe).fontSize).toBe("14px")
     expect(getComputedStyle(gruppe).color).toBe(
-      farge("--lt-color-neutral-text-subtle"),
+      color("--lt-color-neutral-text-subtle"),
     )
     expect(getComputedStyle(gruppe).textIndent).toBe("12px")
 
@@ -290,7 +290,7 @@ describe('lt-select med data-picker="styled"', () => {
     // så `bergen` viser den vanlige teksten.
     expect(getComputedStyle(iGruppe).fontSize).toBe("16px")
     expect(getComputedStyle(iGruppe).color).toBe(
-      farge("--lt-color-neutral-text-strong"),
+      color("--lt-color-neutral-text-strong"),
     )
     expect(getComputedStyle(iGruppe).textIndent).toBe("0px")
     expect(iGruppe.getBoundingClientRect().width).toBe(
@@ -320,7 +320,7 @@ describe('lt-select med data-picker="styled"', () => {
       </div>
     `
     const element = document.getElementById("langt") as HTMLElement
-    await ventPaTegning(element)
+    await waitForPaint(element)
 
     const innhold = element.querySelector("selectedcontent") as HTMLElement
     expect(innhold.textContent).toBe(langt)
@@ -334,7 +334,7 @@ describe('lt-select med data-picker="styled"', () => {
 
 describe("lt-select med lista i siden, tilgjengelighet", () => {
   it("har nok kontrast og ledetekst", async () => {
-    monter(`
+    mount(`
       <label class="lt-label" for="a11y-stylet">Fylke</label>
       <select class="lt-select" id="a11y-stylet" data-picker="styled">
         <optgroup label="Vestlandet">
@@ -344,8 +344,8 @@ describe("lt-select med lista i siden, tilgjengelighet", () => {
       </select>
     `)
 
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 
   /*
@@ -357,7 +357,7 @@ describe("lt-select med lista i siden, tilgjengelighet", () => {
   it("holder kontrastkravet på valgene i den åpne lista", async () => {
     if (!harBaseSelect) return
 
-    monter(`
+    mount(`
       <label class="lt-label" for="kontrast-stylet">Fylke</label>
       <select class="lt-select" id="kontrast-stylet" data-picker="styled">
         <optgroup label="Vestlandet">

@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { card } from "./card"
 
@@ -19,7 +19,7 @@ import "../button/button.css"
 
 describe("lt-card", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <div class="lt-card" id="vanlig">
         <h3 class="lt-card__title">Søknad om bostøtte</h3>
         <p>Sendt 4. mars. Saksnummer 2026-0481.</p>
@@ -36,7 +36,7 @@ describe("lt-card", () => {
   })
 
   it("lar et merke, en knapp og en lenke ha sin egen bredde, og strekker avsnittet", () => {
-    monter(`
+    mount(`
       <div class="lt-card" id="med-merke" style="width: 400px">
         <p>Sendt 4. mars.</p>
         <span class="lt-badge" data-color="success">Innvilget</span>
@@ -87,15 +87,15 @@ describe("lt-card", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
 describe("lt-card som knapp", () => {
   it("har samme skrift som et kort som er en lenke", () => {
     // En <button> arver ikke skriften, og kortet hadde 13 piksler.
-    monter(`
+    mount(`
       <a class="lt-card" data-interactive href="#"><p id="i-lenke">Tekst</p></a>
       <button class="lt-card" data-interactive type="button"><p id="i-knapp">Tekst</p></button>
     `)
@@ -110,7 +110,7 @@ describe("avsnitt i lt-card", () => {
   it("lar klassen på avsnittet vinne over kortet", () => {
     // `.lt-card p` slo `.lt-paragraph` på spesifisitet, så
     // `--lt-paragraph-line-height` virket overalt unntatt i et kort.
-    monter(`
+    mount(`
       <p class="lt-paragraph" id="utenfor" style="--lt-paragraph-line-height: 1.2">Tekst</p>
       <div class="lt-card">
         <p class="lt-paragraph" id="inni" style="--lt-paragraph-line-height: 1.2">Tekst</p>

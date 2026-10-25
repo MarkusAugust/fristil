@@ -43,7 +43,7 @@ import { defineLtField } from "./components/frame/field/lt-field"
 import { defineLtPopover } from "./components/frame/popover/lt-popover"
 import { defineLtSuggestion } from "./components/frame/suggestion/lt-suggestion"
 import suggestionCss from "./components/frame/suggestion/suggestion.css?inline"
-import { ventPaTegning } from "./testing/a11y"
+import { waitForPaint } from "./testing/a11y"
 import { Idiomorph } from "./testing/idiomorph/idiomorph-v0.8.0.js"
 import tokensCss from "./tokens/tokens.css?inline"
 
@@ -129,8 +129,8 @@ async function oppdater(maate: Maate, innhold: string): Promise<void> {
 
 /** Waits until the observers have run. */
 async function roSeg() {
-  await ventPaTegning()
-  await ventPaTegning()
+  await waitForPaint()
+  await waitForPaint()
 }
 
 /** Waits until `warnAboutMarkup` has seen the page settle. */
@@ -143,7 +143,7 @@ async function roSeg() {
  */
 const stille = () => new Promise((r) => setTimeout(r, 300))
 
-async function monter(innhold: string) {
+async function mount(innhold: string) {
   document.body.innerHTML = omraade(innhold)
   await roSeg()
 }
@@ -175,7 +175,7 @@ describe("fields and suggestion fields through a server update", () => {
       // The plan's 6.1: choose a suggestion, then update. The server sends
       // the value field empty; with `innerHTML` it must send both values back.
       const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-      await monter(KODE)
+      await mount(KODE)
       const input = felt()
       input.focus()
       ;(document.querySelector("li") as HTMLElement).click()
@@ -233,7 +233,7 @@ describe("fields and suggestion fields through a server update", () => {
     for (const t of TILFELLER) {
       it(`${t.navn}: ${maate}`, async () => {
         const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-        await monter(t.markup)
+        await mount(t.markup)
         const foer = felt()
         foer.focus()
         foer.value = "Kari"
@@ -269,7 +269,7 @@ describe("fields and suggestion fields through a server update", () => {
 
   it("idiomorph without ignoreActiveValue also sets the focused field from the server", async () => {
     // The default in idiomorph, and so in htmx without a setting in `hx-swap`.
-    await monter(FELT)
+    await mount(FELT)
     const input = felt()
     input.focus()
     input.value = "Kari"
@@ -291,7 +291,7 @@ describe("fields and suggestion fields through a server update", () => {
        * so with htmx the server must send the value back. That is the one
        * sentence the documentation gives htmx users, and it is checked here.
        */
-      await monter(FELT)
+      await mount(FELT)
       felt().value = "Kari"
       felt().blur()
 
@@ -307,7 +307,7 @@ describe("fields and suggestion fields through a server update", () => {
     })
 
     it(`checkbox: ${maate} and what the server sends back`, async () => {
-      await monter(AVKRYSSING(false))
+      await mount(AVKRYSSING(false))
       const boks = document.getElementById("vilkar") as HTMLInputElement
       boks.click()
       expect(boks.checked).toBe(true)
@@ -339,7 +339,7 @@ describe("fields and suggestion fields through a server update", () => {
             return `<lt-field id="rad-${k}"><label class="lt-label" for="merknad-${k}">${n}</label><input class="lt-input" id="merknad-${k}" name="merknad-${k}"></lt-field>`
           })
           .join("")
-      await monter(liste(["Bergen", "Oslo"]))
+      await mount(liste(["Bergen", "Oslo"]))
       const bergen = document.getElementById(
         "merknad-bergen",
       ) as HTMLInputElement
@@ -360,14 +360,14 @@ describe("fields and suggestion fields through a server update", () => {
 
   it("writes for on a label without one, from the field's id", async () => {
     // The mutation: take the `for` write out of the component.
-    await monter(FELT.replace(' for="name"', ""))
+    await mount(FELT.replace(' for="name"', ""))
     const label = document.querySelector("label") as HTMLLabelElement
     expect(label.htmlFor).toBe("name")
   })
 
   it("reports once when the recipe has no id on the field", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
-    await monter(FELT.replace(' id="name"', ""))
+    await mount(FELT.replace(' id="name"', ""))
     await stille()
     expect(advarsel).toHaveBeenCalledTimes(1)
     expect(String(advarsel.mock.calls[0][0])).toContain("not connected")
@@ -478,7 +478,7 @@ describe("the popover through a server update", () => {
   ] as const) {
     for (const maate of MAATER) {
       it(`${navn}: ${maate}`, async () => {
-        await monter(markup)
+        await mount(markup)
         const knapp = document.querySelector(
           "lt-popover > button",
         ) as HTMLElement

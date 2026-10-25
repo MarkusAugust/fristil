@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { spinner } from "./spinner"
 
@@ -14,7 +14,7 @@ import "./spinner.css"
 
 describe("lt-spinner", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <span class="lt-spinner" id="vanlig" role="status" aria-label="Laster søknader"></span>
       <span class="lt-spinner" data-size="small" id="liten" aria-hidden="true"></span>
       <span class="lt-spinner" data-size="large" id="stor" aria-hidden="true"></span>
@@ -49,7 +49,7 @@ describe("lt-spinner", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

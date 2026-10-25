@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { paragraph } from "./paragraph"
 
@@ -14,7 +14,7 @@ import "./paragraph.css"
 
 describe("lt-paragraph", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <p class="lt-paragraph" data-variant="lead" id="ingress">
         Bostøtte er en støtteordning for deg som har lave inntekter og høye boutgifter.
       </p>
@@ -58,7 +58,7 @@ describe("lt-paragraph", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

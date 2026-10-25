@@ -11,9 +11,9 @@ import {
 } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
 import {
@@ -130,7 +130,7 @@ function lytt(element: HTMLElement, navn: string[]) {
   return hendelser
 }
 
-// requestAnimationFrame must be real. If we fake it too, ventPaTegning
+// requestAnimationFrame must be real. If we fake it too, waitForPaint
 // hangs, because nothing moves the clock while it waits.
 function falskKlokke() {
   vi.useFakeTimers({
@@ -151,7 +151,7 @@ describe("lt-session-timeout", () => {
 
   beforeEach(async () => {
     falskKlokke()
-    monter(`<div lang="nb">${varsel()}</div>`)
+    mount(`<div lang="nb">${varsel()}</div>`)
     await customElements.whenDefined("lt-session-timeout")
   })
 
@@ -232,9 +232,9 @@ describe("lt-session-timeout", () => {
     expect(dialog().open).toBe(true)
 
     vi.useRealTimers()
-    await ventPaTegning()
+    await waitForPaint()
 
-    await forventIngenTilgjengelighetsbrudd()
+    await expectNoAccessibilityViolations()
   })
 })
 
@@ -253,7 +253,7 @@ describe("lt-session-timeout handles Escape, wrong numbers and an expiry", () =>
   })
 
   async function monterKort(markup = varsel()) {
-    monter(`<div lang="nb">${markup}</div>`)
+    mount(`<div lang="nb">${markup}</div>`)
     await customElements.whenDefined("lt-session-timeout")
     return vert()
   }
@@ -307,8 +307,8 @@ describe("lt-session-timeout handles Escape, wrong numbers and an expiry", () =>
   it("reports numbers that do not add up", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     await monterKort(varsel({ warnAt: 10, expiresAt: 5 }))
-    await ventPaTegning()
-    await ventPaTegning()
+    await waitForPaint()
+    await waitForPaint()
 
     expect(
       advarsel.mock.calls.some((k) =>
@@ -321,8 +321,8 @@ describe("lt-session-timeout handles Escape, wrong numbers and an expiry", () =>
       varsel().replace(/warn-at="\d+"/, 'warn-at="abc"'),
     )
     element.setAttribute("expires-at", "-3")
-    await ventPaTegning()
-    await ventPaTegning()
+    await waitForPaint()
+    await waitForPaint()
 
     expect(
       advarsel.mock.calls.some((k) => String(k[0]).includes("not a number")),
@@ -541,7 +541,7 @@ describe("lt-session-timeout handles Escape, wrong numbers and an expiry", () =>
     expect(dialog().matches(":modal")).toBe(true)
 
     dialog().removeAttribute("open")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(dialog().open).toBe(true)
     expect(dialog().matches(":modal")).toBe(true)
@@ -554,7 +554,7 @@ describe("lt-session-timeout handles Escape, wrong numbers and an expiry", () =>
     await gaFram(4)
 
     await lukk(() => knapp("extend").click())
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(dialog().open).toBe(false)
   })
@@ -613,7 +613,7 @@ describe("lt-session-timeout does not touch the markup from the builder function
     // The direct claim behind "what the renderer wrote stays": markup from
     // the builder function already has everything the component would fill
     // in.
-    const flate = monter(`<div id="flate" lang="nb"></div>`)
+    const flate = mount(`<div id="flate" lang="nb"></div>`)
     const beholder = flate.querySelector("#flate") as HTMLElement
     const poster: MutationRecord[] = []
     const observator = new MutationObserver((p) => poster.push(...p))
@@ -642,7 +642,7 @@ describe("lt-session-timeout does not touch the markup from the builder function
  */
 describe("extendSession() and resetSession() wait for the registration", () => {
   it("sends session-extend only once the element is upgraded", async () => {
-    monter(
+    mount(
       `<lt-session-timeout-sen class="lt-session-timeout" warn-at="3" expires-at="13"></lt-session-timeout-sen>`,
     )
     const element = document.querySelector("lt-session-timeout-sen") as Element
@@ -653,7 +653,7 @@ describe("extendSession() and resetSession() wait for the registration", () => {
     const løfte = extendSession(element).then(() => {
       ferdig = true
     })
-    await ventPaTegning()
+    await waitForPaint()
     expect(ferdig).toBe(false)
     expect(forlenget).toHaveLength(0)
 
@@ -687,7 +687,7 @@ describe("lt-session-timeout: a threshold that is skipped", () => {
   it("announces when the clock jumps past a threshold", async () => {
     // A tick that comes late, or is throttled in a background tab, can jump
     // from 61 to 59. Before, the announcement required exactly 60.
-    monter(`<div lang="nb">${varsel({ warnAt: 1, expiresAt: 70 })}</div>`)
+    mount(`<div lang="nb">${varsel({ warnAt: 1, expiresAt: 70 })}</div>`)
     await customElements.whenDefined("lt-session-timeout")
     await gaFram(9)
     expect(dialog().open).toBe(true)
@@ -718,7 +718,7 @@ describe("lt-session-timeout: announcements in the page language, and moving", (
   it("announces the same as the number shows when it is not whole minutes", async () => {
     // Rounded off, the announcement said "2 minutter" while the number
     // showed 1:30.
-    monter(`<div lang="nb">${varsel({ warnAt: 1, expiresAt: 91 })}</div>`)
+    mount(`<div lang="nb">${varsel({ warnAt: 1, expiresAt: 91 })}</div>`)
     await customElements.whenDefined("lt-session-timeout")
     await gaFram(1)
 
@@ -728,7 +728,7 @@ describe("lt-session-timeout: announcements in the page language, and moving", (
   })
 
   it("announces in English on an English page, without anyone translating the time", async () => {
-    monter(
+    mount(
       `<div lang="en">${varsel({ warnAt: 1, expiresAt: 91 }, ENGELSK)}</div>`,
     )
     await customElements.whenDefined("lt-session-timeout")
@@ -742,7 +742,7 @@ describe("lt-session-timeout: announcements in the page language, and moving", (
   it("announces in the browser's language when lang is not a language code", async () => {
     // `Intl` throws on an invalid code. Then the browser's language is better
     // than no announcement.
-    monter(`<div lang="!!">${varsel({ warnAt: 1, expiresAt: 91 })}</div>`)
+    mount(`<div lang="!!">${varsel({ warnAt: 1, expiresAt: 91 })}</div>`)
     await customElements.whenDefined("lt-session-timeout")
     await gaFram(1)
 
@@ -755,7 +755,7 @@ describe("lt-session-timeout: announcements in the page language, and moving", (
     // browser's language on a Norwegian page.
     // Norwegian and not English: the browser the tests run in has English as
     // its language, and then English would have passed without the fix too.
-    const flate = monter(`<div lang="nb"><div id="vert"></div></div>`)
+    const flate = mount(`<div lang="nb"><div id="vert"></div></div>`)
     const rot = (flate.querySelector("#vert") as HTMLElement).attachShadow({
       mode: "open",
     })
@@ -772,7 +772,7 @@ describe("lt-session-timeout: announcements in the page language, and moving", (
     // Otherwise the paragraph was read without a number, and the number on
     // screen is `aria-hidden`, so the screen reader never heard how much time
     // was left.
-    monter(`
+    mount(`
       <div lang="nb">
         <lt-session-timeout warn-at="1" expires-at="91">
           <dialog>
@@ -822,7 +822,7 @@ describe("lt-session-timeout: announcements in the page language, and moving", (
   it("gives focus back to a field in the page when the component is in a shadow root", async () => {
     // The component's root has no `activeElement` when focus is outside it,
     // so read from there the component remembered nothing.
-    const flate = monter(
+    const flate = mount(
       `<div lang="nb"><input id="felt"><button id="annet">Annet</button><div id="vert"></div></div>`,
     )
     const rot = (flate.querySelector("#vert") as HTMLElement).attachShadow({
@@ -839,7 +839,7 @@ describe("lt-session-timeout: announcements in the page language, and moving", (
   it("gives focus back to a field in the same shadow root", async () => {
     // `document.activeElement` is the shadow host here, and `focus()` on it
     // did nothing.
-    const flate = monter(
+    const flate = mount(
       `<div lang="nb"><button id="annet">Annet</button><div id="vert"></div></div>`,
     )
     const rot = (flate.querySelector("#vert") as HTMLElement).attachShadow({
@@ -854,7 +854,7 @@ describe("lt-session-timeout: announcements in the page language, and moving", (
   })
 
   it("is still modal after the element has been moved while the warning is showing", async () => {
-    const flate = monter(`${varsel()}<div id="annet"></div>`)
+    const flate = mount(`${varsel()}<div id="annet"></div>`)
     await customElements.whenDefined("lt-session-timeout")
     await gaFram(3)
     expect(dialog().matches(":modal")).toBe(true)
@@ -880,7 +880,7 @@ describe("lt-session-timeout when warn-at is raised while the warning is showing
   })
 
   it("lets the countdown continue", async () => {
-    monter(varsel())
+    mount(varsel())
     await customElements.whenDefined("lt-session-timeout")
     await gaFram(4)
     const tall = () => dialog().textContent?.match(/\d+:\d+/)?.[0]

@@ -2,11 +2,11 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/color"
+import { color } from "../../../testing/color"
 
 import "../../../tokens/tokens.css"
 import "./error-text.css"
@@ -33,20 +33,20 @@ describe("lt-error-text", () => {
   it("applies error defaults", () => {
     const text = css("error")
 
-    expect(text.color).toBe(farge("--lt-color-danger-text"))
+    expect(text.color).toBe(color("--lt-color-danger-text"))
     expect(text.fontWeight).toBe("500")
   })
 
   it("applies warning variant", () => {
     const text = css("warning")
 
-    expect(text.color).toBe(farge("--lt-color-warning-text"))
+    expect(text.color).toBe(color("--lt-color-warning-text"))
   })
 })
 
 describe("lt-error-text tilgjengelighet", () => {
   it("har nok kontrast og er koblet til feltet", async () => {
-    monter(`
+    mount(`
       <label class="lt-label" for="a11y-feil-epost">E-postadresse</label>
       <input
         class="lt-input"
@@ -62,7 +62,7 @@ describe("lt-error-text tilgjengelighet", () => {
       <p class="lt-error-text" data-variant="warning">Adressen finnes ikke i folkeregisteret.</p>
     `)
 
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

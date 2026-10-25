@@ -1,7 +1,7 @@
 /// <reference path="./types/css.d.ts" />
 
 import { afterEach, describe, expect, it } from "vitest"
-import { farge, rgb } from "./testing/color"
+import { color, rgb } from "./testing/color"
 import { contrastRatio } from "./tokens/color"
 
 import "./tokens/tokens.css"
@@ -13,7 +13,7 @@ import "./components/standalone/toast/toast.css"
 /**
  * At en temagrense gir alt under seg temaet, ikke bare fargetokenene.
  *
- * `monter()` setter sidens flate på `body`, og skjulte dermed at en
+ * `mount()` setter sidens flate på `body`, og skjulte dermed at en
  * `<div data-theme="dark">` sto gjennomsiktig. Testene her bygger siden selv,
  * slik «Kom i gang» sier en konsument skal gjøre det.
  */
@@ -44,9 +44,9 @@ function ringen(inni: Element): string {
   const prove = document.createElement("span")
   prove.style.outline = "var(--lt-focus-ring)"
   inni.append(prove)
-  const farge = getComputedStyle(prove).outlineColor
+  const color = getComputedStyle(prove).outlineColor
   prove.remove()
-  return farge
+  return color
 }
 
 function side(html: string) {
@@ -73,7 +73,7 @@ describe("en temagrense", () => {
 
     // Før var seksjonen gjennomsiktig, og avsnittet 1,23:1 mot sidens hvite.
     expect(getComputedStyle(seksjon).backgroundColor).toBe(
-      farge("--lt-color-neutral-canvas", "dark"),
+      color("--lt-color-neutral-canvas", "dark"),
     )
     expect(
       kontrast(getComputedStyle(avsnitt).color, flaten(avsnitt)),
@@ -90,7 +90,7 @@ describe("en temagrense", () => {
     const kort = document.getElementById("kort") as HTMLElement
 
     expect(getComputedStyle(kort).backgroundColor).toBe(
-      farge("--lt-color-neutral-surface", "dark"),
+      color("--lt-color-neutral-surface", "dark"),
     )
   })
 
@@ -131,11 +131,11 @@ describe("en temagrense", () => {
 
     // Før arvet seksjonen ringen og den avslåtte flaten ferdig utregnet fra
     // `:root`, altså lyst tema: 2,4:1 mot den mørke flaten.
-    expect(ringen(knapp)).toBe(farge("--lt-color-accent-border-strong", "dark"))
+    expect(ringen(knapp)).toBe(color("--lt-color-accent-border-strong", "dark"))
     expect(
       getComputedStyle(document.getElementById("av") as HTMLElement)
         .backgroundColor,
-    ).toBe(farge("--lt-color-neutral-raised", "dark"))
+    ).toBe(color("--lt-color-neutral-raised", "dark"))
   })
 
   it("gir en lys seksjon på en mørk side den lyse fokusringen", async () => {
@@ -145,7 +145,7 @@ describe("en temagrense", () => {
         <button class="lt-button" id="knapp" type="button">Knapp</button>
       </div>`)
     expect(ringen(document.getElementById("knapp") as HTMLElement)).toBe(
-      farge("--lt-color-accent-border-strong", "light"),
+      color("--lt-color-accent-border-strong", "light"),
     )
   })
 

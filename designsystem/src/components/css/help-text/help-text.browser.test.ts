@@ -2,11 +2,11 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/color"
+import { color } from "../../../testing/color"
 
 import "../../../tokens/tokens.css"
 import "./help-text.css"
@@ -35,31 +35,31 @@ describe("lt-help-text", () => {
   it("applies muted defaults", () => {
     const help = css("muted")
 
-    expect(help.color).toBe(farge("--lt-color-neutral-text-subtle"))
+    expect(help.color).toBe(color("--lt-color-neutral-text-subtle"))
   })
 
   it("applies strong variant", () => {
     const help = css("strong")
 
-    expect(help.color).toBe(farge("--lt-color-neutral-text-strong"))
+    expect(help.color).toBe(color("--lt-color-neutral-text-strong"))
   })
 
   it("applies success variant", () => {
     const help = css("success")
 
-    expect(help.color).toBe(farge("--lt-color-success-text"))
+    expect(help.color).toBe(color("--lt-color-success-text"))
   })
 
   it("applies warning variant", () => {
     const help = css("warning")
 
-    expect(help.color).toBe(farge("--lt-color-warning-text"))
+    expect(help.color).toBe(color("--lt-color-warning-text"))
   })
 })
 
 describe("lt-help-text tilgjengelighet", () => {
   it("har nok kontrast og er koblet til feltet", async () => {
-    monter(`
+    mount(`
       <label class="lt-label" for="a11y-kid">KID-nummer</label>
       <input class="lt-input" id="a11y-kid" inputmode="numeric" aria-describedby="a11y-kid-hjelp" />
       <p class="lt-help-text" id="a11y-kid-hjelp">Du finner nummeret øverst på fakturaen.</p>
@@ -69,7 +69,7 @@ describe("lt-help-text tilgjengelighet", () => {
       <p class="lt-help-text" data-variant="warning">Søknadsfristen går ut om tre dager.</p>
     `)
 
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { srOnly } from "./sr-only"
 
@@ -15,7 +15,7 @@ import "../button/button.css"
 
 describe("lt-sr-only", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <button class="lt-button" type="button">
         Slett<span id="skjult" class="lt-sr-only"> søknaden fra 4. mars</span>
       </button>
@@ -45,7 +45,7 @@ describe("lt-sr-only", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

@@ -4,9 +4,9 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { rgb } from "../../../testing/color"
 import { contrastRatio } from "../../../tokens/color"
@@ -18,7 +18,7 @@ import "../sr-only/sr-only.css"
 
 describe("lt-toggle-group", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <fieldset class="lt-toggle-group">
         <legend class="lt-sr-only">Visning</legend>
         <label class="lt-toggle-group__option" id="liste">
@@ -64,15 +64,15 @@ describe("lt-toggle-group", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
 describe("fokusringen på det valgte alternativet", () => {
   for (const tema of ["light", "dark"] as const) {
     it(`synes mot den valgte flaten (${tema})`, async () => {
-      monter(`
+      mount(`
         <div data-theme="${tema}">
           <fieldset class="lt-toggle-group">
             <legend class="lt-sr-only">Visning</legend>
@@ -93,7 +93,7 @@ describe("fokusringen på det valgte alternativet", () => {
       const valgt = document.getElementById("liste") as HTMLInputElement
       valgt.focus()
       expect(document.activeElement).toBe(valgt)
-      await ventPaTegning()
+      await waitForPaint()
 
       const stil = getComputedStyle(valgt.closest("label") as Element)
       expect(stil.outlineStyle).toBe("solid")

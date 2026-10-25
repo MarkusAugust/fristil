@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { radio } from "./radio"
 
@@ -16,7 +16,7 @@ import "../fieldset/fieldset.css"
 
 describe("lt-radio", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <fieldset class="lt-fieldset">
         <legend class="lt-legend">Leveringsmåte</legend>
         <div class="lt-radio-row">
@@ -64,7 +64,7 @@ describe("lt-radio", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

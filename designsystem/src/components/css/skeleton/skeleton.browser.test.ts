@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { skeleton } from "./skeleton"
 
@@ -14,7 +14,7 @@ import "./skeleton.css"
 
 describe("lt-skeleton", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <p role="status">Henter søknadene dine</p>
       <div class="lt-skeleton" data-variant="circle" id="sirkel" aria-hidden="true"></div>
       <div class="lt-skeleton" data-variant="text" id="tekst" aria-hidden="true"></div>
@@ -57,7 +57,7 @@ describe("lt-skeleton", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

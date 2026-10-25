@@ -3,8 +3,8 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
 
-import { monter, ventPaTegning } from "../../../testing/a11y"
-import { gåTil, settAdresse } from "../../../testing/address"
+import { mount, waitForPaint } from "../../../testing/a11y"
+import { goTo, setAddress } from "../../../testing/address"
 
 import "../../../tokens/tokens.css"
 import "./tabs.css"
@@ -56,23 +56,23 @@ function visning(): string[] {
 }
 
 beforeEach(async () => {
-  await settAdresse("")
+  await setAddress("")
 })
 
 describe("tabs.css før komponenten er registrert", () => {
   it("viser bare det første panelet når serveren ikke sa noe", async () => {
     expect(customElements.get("lt-tabs")).toBeUndefined()
-    monter(BAR)
-    await ventPaTegning()
+    mount(BAR)
+    await waitForPaint()
 
     expect(visning()).toEqual(["block", "none", "none"])
   })
 
   it("lar serverens hidden bestemme hvilket panel som er det første synlige", async () => {
-    monter(
+    mount(
       BAR.replace('id="soknaden">Søknaden', 'id="soknaden" hidden>Søknaden'),
     )
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(visning()).toEqual(["none", "block", "none"])
   })
@@ -81,85 +81,85 @@ describe("tabs.css før komponenten er registrert", () => {
    * Peker adressen på et panel, eller på noe i det, viser CSS det panelet.
    * Det er det komponenten velger når den registreres (krav E1), så
    * innholdet ikke hopper (A4). Monteres først og navigeres etter, slik
-   * nettleseren finner elementet når siden lastes, se `gåTil()`.
+   * nettleseren finner elementet når siden lastes, se `goTo()`.
    */
   it("viser panelet adressen peker på", async () => {
-    monter(BAR)
-    await gåTil("#meldinger")
-    await ventPaTegning()
+    mount(BAR)
+    await goTo("#meldinger")
+    await waitForPaint()
 
     expect(visning()).toEqual(["none", "none", "block"])
   })
 
   it("viser panelet med det adressen peker på inni", async () => {
-    monter(BAR)
-    await gåTil("#inne-vedlegg")
-    await ventPaTegning()
+    mount(BAR)
+    await goTo("#inne-vedlegg")
+    await waitForPaint()
 
     expect(visning()).toEqual(["none", "block", "none"])
   })
 
   it("viser panelet et kodet fragment peker på", async () => {
-    monter(BAR.replace('id="vedlegg"', 'id="søknaden-2"'))
-    await gåTil("#s%C3%B8knaden-2")
-    await ventPaTegning()
+    mount(BAR.replace('id="vedlegg"', 'id="søknaden-2"'))
+    await goTo("#s%C3%B8knaden-2")
+    await waitForPaint()
 
     expect(visning()).toEqual(["none", "block", "none"])
   })
 
   it("viser det første panelet når adressen peker utenfor raden", async () => {
-    monter(`<p id="annet">Annet</p>${BAR}`)
-    await gåTil("#annet")
-    await ventPaTegning()
+    mount(`<p id="annet">Annet</p>${BAR}`)
+    await goTo("#annet")
+    await waitForPaint()
 
     expect(visning()).toEqual(["block", "none", "none"])
   })
 
   it("lar serverens hidden gå foran adressen", async () => {
-    monter(
+    mount(
       BAR.replace('id="meldinger">', 'id="meldinger" hidden>').replace(
         'id="soknaden">',
         'id="soknaden" hidden>',
       ),
     )
-    await gåTil("#meldinger")
-    await ventPaTegning()
+    await goTo("#meldinger")
+    await waitForPaint()
 
     expect(visning()).toEqual(["none", "block", "none"])
   })
 
   it("lar adressen være under server-controlled, der komponenten ikke velger fra den", async () => {
-    monter(BAR.replace("<lt-tabs>", "<lt-tabs server-controlled>"))
-    await gåTil("#meldinger")
-    await ventPaTegning()
+    mount(BAR.replace("<lt-tabs>", "<lt-tabs server-controlled>"))
+    await goTo("#meldinger")
+    await waitForPaint()
 
     expect(visning()).toEqual(["block", "none", "none"])
   })
 
   it("viser treffet i faner i faner, i begge radene", async () => {
-    monter(FANER_I_FANER())
-    await gåTil("#dypt")
-    await ventPaTegning()
+    mount(FANER_I_FANER())
+    await goTo("#dypt")
+    await waitForPaint()
 
     expect(vises("ya", "yb", "ia", "ib")).toEqual([false, true, false, true])
   })
 
   it("viser det første i en indre rad med server-controlled, og treffet i den ytre", async () => {
-    monter(FANER_I_FANER(" server-controlled"))
-    await gåTil("#dypt")
-    await ventPaTegning()
+    mount(FANER_I_FANER(" server-controlled"))
+    await goTo("#dypt")
+    await waitForPaint()
 
     expect(vises("ya", "yb", "ia", "ib")).toEqual([false, true, true, false])
   })
 
   it("viser panelet en lenke i raden fører til, også når komponenten aldri blir registrert", async () => {
-    monter(BAR)
-    await ventPaTegning()
+    mount(BAR)
+    await waitForPaint()
 
     await userEvent.click(
       document.querySelector('a[href="#meldinger"]') as HTMLElement,
     )
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(visning()).toEqual(["none", "none", "block"])
   })

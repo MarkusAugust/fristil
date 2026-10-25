@@ -3,9 +3,9 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { defineLtToast, type LtToast, showToast } from "./lt-toast"
 import { toast as ltToast } from "./toast"
@@ -16,7 +16,7 @@ import "./toast.css"
 async function tegn() {
   const toast = document.querySelector("lt-toast") as LtToast
   await customElements.whenDefined("lt-toast")
-  await ventPaTegning()
+  await waitForPaint()
   return toast
 }
 
@@ -26,7 +26,7 @@ describe("lt-toast", () => {
   })
 
   beforeEach(async () => {
-    monter(`<lt-toast label="Meldinger"></lt-toast>`)
+    mount(`<lt-toast label="Meldinger"></lt-toast>`)
     await tegn()
   })
 
@@ -84,8 +84,8 @@ describe("lt-toast", () => {
     const toast = await tegn()
     toast.show("Søknaden er sendt", { color: "success", duration: 0 })
 
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
@@ -98,7 +98,7 @@ describe("lt-toast keeps the pause and focus", () => {
     // The pause was two independent pairs: the mouse leaving restarted the
     // clock while focus was in the message, and the message disappeared from
     // under the user.
-    monter(`<lt-toast></lt-toast><button id="annet">Annet</button>`)
+    mount(`<lt-toast></lt-toast><button id="annet">Annet</button>`)
     const toast = await tegn()
     const melding = toast.show("Lagret", { duration: 40 })
     const lukk = melding.querySelector("button") as HTMLElement
@@ -117,7 +117,7 @@ describe("lt-toast keeps the pause and focus", () => {
   })
 
   it("moves focus to the neighbouring message when the one with focus is closed", async () => {
-    monter(`<lt-toast></lt-toast>`)
+    mount(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     const eldste = toast.show("Første", { duration: 0 })
     const midten = toast.show("Andre", { duration: 0 })
@@ -133,7 +133,7 @@ describe("lt-toast keeps the pause and focus", () => {
   })
 
   it("treats duration=0 on the element as keeping the messages", async () => {
-    monter(`<lt-toast duration="0"></lt-toast>`)
+    mount(`<lt-toast duration="0"></lt-toast>`)
     const toast = await tegn()
     toast.show("Blir stående")
     await new Promise((r) => setTimeout(r, 50))
@@ -142,27 +142,27 @@ describe("lt-toast keeps the pause and focus", () => {
 
   it("treats an empty duration as the default", async () => {
     // `Number("")` is 0, and `<lt-toast duration>` kept the messages.
-    monter(`<lt-toast duration></lt-toast>`)
+    mount(`<lt-toast duration></lt-toast>`)
     const toast = await tegn()
     expect(toast.duration).toBe(6000)
   })
 
   it("is not atomic, so only the new message is announced", async () => {
-    monter(`<lt-toast></lt-toast>`)
+    mount(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     expect(toast.getAttribute("aria-atomic")).toBe("false")
     expect(ltToast().host["aria-atomic"]).toBe("false")
   })
 
   it("is named Notifications in both the builder function and the component", async () => {
-    monter(`<lt-toast></lt-toast>`)
+    mount(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     expect(toast.getAttribute("aria-label")).toBe("Notifications")
     expect(ltToast().host["aria-label"]).toBe("Notifications")
   })
 
   it("gives an unknown colour no border", async () => {
-    monter(`<lt-toast></lt-toast>`)
+    mount(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     const melding = toast.show("Rar", {
       color: "lilla" as unknown as "success",
@@ -172,7 +172,7 @@ describe("lt-toast keeps the pause and focus", () => {
   })
 
   it("removes all of them with clear()", async () => {
-    monter(`<lt-toast></lt-toast>`)
+    mount(`<lt-toast></lt-toast>`)
     const toast = await tegn()
     toast.show("En", { duration: 0 })
     toast.show("To", { duration: 0 })
@@ -187,7 +187,7 @@ describe("lt-toast keeps the pause and focus", () => {
  */
 describe("showToast() waits for the registration", () => {
   it("shows the message only once the element is upgraded", async () => {
-    monter(`<lt-toast-sen role="status" aria-live="polite"></lt-toast-sen>`)
+    mount(`<lt-toast-sen role="status" aria-live="polite"></lt-toast-sen>`)
     const element = document.querySelector("lt-toast-sen") as Element
 
     let ferdig = false
@@ -197,7 +197,7 @@ describe("showToast() waits for the registration", () => {
       ferdig = true
       return melding
     })
-    await ventPaTegning()
+    await waitForPaint()
     expect(ferdig).toBe(false)
     expect(element.querySelector(".lt-toast__message")).toBeNull()
 
@@ -218,7 +218,7 @@ describe("lt-toast under another tag name", () => {
      * the class, which the component sets itself.
      */
     defineLtToast("annen-toast")
-    monter("<annen-toast></annen-toast>")
+    mount("<annen-toast></annen-toast>")
     await customElements.whenDefined("annen-toast")
     const region = document.querySelector("annen-toast") as LtToast
 
@@ -242,7 +242,7 @@ describe("lt-toast, focus and name", () => {
 
   it("sends focus back where it came from when all messages are removed", () => {
     // Before, focus fell to `body`, and the next Tab started at the top of the page.
-    monter(`<button id="ute">Lagre</button><lt-toast duration="0"></lt-toast>`)
+    mount(`<button id="ute">Lagre</button><lt-toast duration="0"></lt-toast>`)
     const region = document.querySelector("lt-toast") as LtToast
     const ute = document.getElementById("ute") as HTMLButtonElement
     const melding = region.show("Lagret")
@@ -255,7 +255,7 @@ describe("lt-toast, focus and name", () => {
   })
 
   it("sends focus back when the last message is closed", () => {
-    monter(`<button id="ute">Lagre</button><lt-toast duration="0"></lt-toast>`)
+    mount(`<button id="ute">Lagre</button><lt-toast duration="0"></lt-toast>`)
     const region = document.querySelector("lt-toast") as LtToast
     const ute = document.getElementById("ute") as HTMLButtonElement
     const melding = region.show("Lagret")
@@ -271,7 +271,7 @@ describe("lt-toast, focus and name", () => {
   it("forgets where focus came from when it leaves the region", () => {
     // Before, focus later came back to an element the user left long ago,
     // and the page scrolled there.
-    monter(`
+    mount(`
       <button id="a">A</button><button id="b">B</button>
       <lt-toast duration="0"></lt-toast>`)
     const region = document.querySelector("lt-toast") as LtToast
@@ -291,7 +291,7 @@ describe("lt-toast, focus and name", () => {
   })
 
   it("gives the region the default name when label is removed", () => {
-    monter(`<lt-toast label="Meldinger"></lt-toast>`)
+    mount(`<lt-toast label="Meldinger"></lt-toast>`)
     const region = document.querySelector("lt-toast") as LtToast
     expect(region.getAttribute("aria-label")).toBe("Meldinger")
 
@@ -302,7 +302,7 @@ describe("lt-toast, focus and name", () => {
 
   it("leaves an aria-label the author set", () => {
     // Before, `label` overwrote it.
-    monter(`<lt-toast aria-label="Forfatter"></lt-toast>`)
+    mount(`<lt-toast aria-label="Forfatter"></lt-toast>`)
     const region = document.querySelector("lt-toast") as LtToast
 
     region.setAttribute("label", "Annet")
@@ -324,7 +324,7 @@ describe("lt-toast in a shadow root", () => {
   })
 
   function monterISkygge() {
-    monter(`<button id="ute">Lagre</button><div id="vert"></div>`)
+    mount(`<button id="ute">Lagre</button><div id="vert"></div>`)
     const vert = document.getElementById("vert") as HTMLElement
     const rot = vert.attachShadow({ mode: "open" })
     rot.innerHTML = `<lt-toast duration="0"></lt-toast>`

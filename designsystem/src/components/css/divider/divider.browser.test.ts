@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { divider } from "./divider"
 
@@ -14,7 +14,7 @@ import "./divider.css"
 
 describe("lt-divider", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <p>Saken er registrert.</p>
       <hr class="lt-divider" id="vanlig" />
       <p>Du får svar innen tre uker.</p>
@@ -38,7 +38,7 @@ describe("lt-divider", () => {
   ])("fyller bredden i en forelder med %s", (oppsett) => {
     // Nettleserens auto-marger til sidene vinner over stretch i flex, og
     // streken ble 0 piksler bred. Dokumentasjonssiden viste ingen strek.
-    monter(`
+    mount(`
       <div id="forelder" style="${oppsett}; inline-size: 20rem">
         <p>Saken er registrert.</p>
         <hr class="lt-divider" id="i-forelder" />
@@ -72,7 +72,7 @@ describe("lt-divider", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

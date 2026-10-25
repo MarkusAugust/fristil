@@ -6,8 +6,8 @@
 import { afterEach, describe, expect, it } from "vitest"
 import { cdp, server, userEvent } from "vitest/browser"
 
-import { monter, ventPaTegning } from "./testing/a11y"
-import { piksel } from "./testing/pixel"
+import { mount, waitForPaint } from "./testing/a11y"
+import { pixel } from "./testing/pixel"
 
 import "./tokens/tokens.css"
 import "./components/css/checkbox/checkbox.css"
@@ -44,7 +44,7 @@ async function settHoeykontrast(på: boolean) {
   await cdp().send("Emulation.setEmulatedMedia", {
     features: på ? [{ name: "forced-colors", value: "active" }] : [],
   })
-  await ventPaTegning()
+  await waitForPaint()
 }
 
 function stil(id: string) {
@@ -62,7 +62,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
 
   it("holder skillelinja og skjelettet synlige", async () => {
     // Begge var bare bakgrunn, og bakgrunner tvinges til sideflatens farge.
-    monter(`
+    mount(`
       <hr class="lt-divider" id="linje" />
       <hr class="lt-divider" data-variant="subtle" id="svak" />
       <div class="lt-skeleton" id="skjelett"></div>
@@ -77,7 +77,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
   })
 
   it("lar nettleseren tegne avkryssingsboksen, radioknappen og bryteren", async () => {
-    monter(`
+    mount(`
       <input class="lt-checkbox" type="checkbox" id="boks" checked />
       <input class="lt-radio" type="radio" id="radio" checked />
       <input class="lt-switch" type="checkbox" role="switch" id="bryter" checked />
@@ -96,7 +96,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
   })
 
   it("beholder rollen på bryteren selv om formen forsvinner", async () => {
-    monter(
+    mount(
       `<input class="lt-switch" type="checkbox" role="switch" id="bryter" checked />`,
     )
 
@@ -108,7 +108,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
   })
 
   it("skiller det valgte alternativet med systemfargene", async () => {
-    monter(`
+    mount(`
       <fieldset class="lt-toggle-group">
         <legend>Visning</legend>
         <label class="lt-toggle-group__option" id="valgt">
@@ -149,7 +149,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
   it("holder gjeldende side lesbar under musa", async () => {
     // Hover-regelen slo høykontrastregelen på spesifisitet, og bakgrunnen
     // ble tvunget til `Canvas` under `HighlightText`: samme farge på begge.
-    monter(`
+    mount(`
       <ul class="lt-pagination">
         <li><a href="#" aria-current="page" id="side-na">2</a></li>
       </ul>
@@ -157,14 +157,14 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
     await settHoeykontrast(true)
 
     await userEvent.hover(document.getElementById("side-na") as HTMLElement)
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(stil("side-na").backgroundColor).not.toBe(stil("side-na").color)
     await userEvent.unhover(document.getElementById("side-na") as HTMLElement)
   })
 
   it("gir hjelpeboblen en kant, så den ikke flyter oppå innholdet", async () => {
-    monter(`
+    mount(`
       <span class="lt-tooltip">
         <button type="button" aria-describedby="hint">Arkiver</button>
         <span class="lt-tooltip__bubble" role="tooltip" id="hint">Flyttes til arkivet</span>
@@ -180,7 +180,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
   it("tegner pila i en sorterbar kolonne i systemets tekstfarge", async () => {
     // Pila er en maske med bakgrunnsfarge, og bakgrunner tvinges til
     // sideflatens farge. Uten regelen ble den usynlig.
-    monter(`
+    mount(`
       <table class="lt-table">
         <thead><tr>
           <th scope="col" aria-sort="ascending"><button type="button" class="lt-table__sort" id="sortert">Dato</button></th>
@@ -204,7 +204,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
   it("viser at noe pågår i en ubestemt fremdriftsindikator", async () => {
     // Stripen som sveiper over, er en gradient, og gradienter fjernes i
     // modusen. Uten unntaket sto en tom ramme igjen.
-    monter(`
+    mount(`
       <progress class="lt-progress" id="ubestemt" aria-label="Laster opp"></progress>
       <span id="markering" style="color: Highlight">x</span>
       <span id="tekst" style="color: CanvasText">x</span>
@@ -223,7 +223,7 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
     // Den fylte delen er et pseudoelement som leste `currentColor`, og
     // modusen tvang bakgrunnen til `Canvas`. Stilen på verten så riktig ut,
     // men stolpen var tom, så det er pikslene som må leses.
-    monter(`
+    mount(`
       <progress class="lt-progress" id="bestemt" value="50" max="100"
         aria-label="Lastet opp" style="--lt-progress-height: 16px"></progress>
       <progress class="lt-progress" id="farget" value="50" max="100"
@@ -233,15 +233,15 @@ describe.skipIf(server.browser !== "chromium")("i høykontrastmodus", () => {
 
     for (const id of ["bestemt", "farget"]) {
       const stolpe = document.getElementById(id) as HTMLElement
-      const fylt = await piksel(stolpe, 0.25)
-      const tom = await piksel(stolpe, 0.75)
+      const fylt = await pixel(stolpe, 0.25)
+      const tom = await pixel(stolpe, 0.75)
       expect(fylt, id).not.toEqual(tom)
     }
   })
 
   it("lar tilstanden være uendret utenfor modusen", async () => {
-    monter(`<input class="lt-checkbox" type="checkbox" id="boks" checked />`)
-    await ventPaTegning()
+    mount(`<input class="lt-checkbox" type="checkbox" id="boks" checked />`)
+    await waitForPaint()
 
     expect(stil("boks").appearance).toBe("none")
     expect(stil("boks").backgroundImage).toContain("svg")

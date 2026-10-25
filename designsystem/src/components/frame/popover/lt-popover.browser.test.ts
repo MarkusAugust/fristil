@@ -4,9 +4,9 @@ import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
 import { defineLtPopover, type LtPopover } from "./lt-popover"
@@ -22,7 +22,7 @@ const BOKS = popover({ id: "panel" })
 
 async function tegn() {
   await customElements.whenDefined("lt-popover")
-  await ventPaTegning()
+  await waitForPaint()
 }
 
 describe("lt-popover", () => {
@@ -31,7 +31,7 @@ describe("lt-popover", () => {
   })
 
   beforeEach(async () => {
-    monter(`
+    mount(`
       <lt-popover placement="bottom-end" ${attr(BOKS.host)}>
         <button ${attr(BOKS.trigger)} class="lt-button" id="utloser">Handlinger</button>
         <ul ${attr(BOKS.panel)} data-variant="plain">
@@ -128,7 +128,7 @@ describe("lt-popover", () => {
     utloser.click()
     await tegn()
 
-    await forventIngenTilgjengelighetsbrudd()
+    await expectNoAccessibilityViolations()
   })
 })
 
@@ -151,7 +151,7 @@ describe("lt-popover finner delene sine", () => {
   })
 
   it("virker på markup helt uten slot", async () => {
-    monter(`
+    mount(`
       <lt-popover ${attr(BOKS.host)}>
         <button ${attr(BOKS.trigger)} class="lt-button" id="bare-aria">Handlinger</button>
         <ul ${attr(BOKS.panel)}><li>Arkiver</li></ul>
@@ -165,7 +165,7 @@ describe("lt-popover finner delene sine", () => {
     expect(document.querySelectorAll("[slot]")).toHaveLength(0)
 
     knapp.click()
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(panel.matches(":popover-open")).toBe(true)
     expect(knapp.getAttribute("aria-expanded")).toBe("true")
@@ -174,7 +174,7 @@ describe("lt-popover finner delene sine", () => {
   it("lar et gammelt slot-attributt stå uten å ta skade", async () => {
     // En server som ennå ikke er oppdatert sender fortsatt `slot="trigger"`.
     // Det skal ikke hindre noe: attributtet er inert uten en skyggerot.
-    monter(`
+    mount(`
       <lt-popover ${attr(BOKS.host)}>
         <button ${attr(BOKS.trigger)} slot="trigger" class="lt-button" id="med-slot">Handlinger</button>
         <ul ${attr(BOKS.panel)}><li>Arkiver</li></ul>
@@ -186,7 +186,7 @@ describe("lt-popover finner delene sine", () => {
     const panel = document.querySelector("[popover]") as HTMLElement
 
     knapp.click()
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(panel.matches(":popover-open")).toBe(true)
   })
@@ -220,7 +220,7 @@ describe("lt-popover plasserer panelet", () => {
   }
 
   it("henger under knappen, med samme venstrekant", async () => {
-    monter(markup("p1"))
+    mount(markup("p1"))
     await tegn()
     const { knapp, panel } = await apne("p1")
 
@@ -229,7 +229,7 @@ describe("lt-popover plasserer panelet", () => {
   })
 
   it("høyrekanter med bottom-end", async () => {
-    monter(markup("p2", 'placement="bottom-end"'))
+    mount(markup("p2", 'placement="bottom-end"'))
     await tegn()
     const { knapp, panel } = await apne("p2")
 
@@ -240,7 +240,7 @@ describe("lt-popover plasserer panelet", () => {
     // Posisjonen er fysisk, men `start` og `end` følger leseretningen. Med
     // logisk `inset-inline-start` og en fysisk verdi lå panelet på motsatt
     // side av knappen.
-    monter(`<div dir="rtl">${markup("p3")}</div>`)
+    mount(`<div dir="rtl">${markup("p3")}</div>`)
     await tegn()
     const { knapp, panel } = await apne("p3")
 
@@ -251,7 +251,7 @@ describe("lt-popover plasserer panelet", () => {
   it("faller ned under knappen når det ikke er plass over", async () => {
     // `top-start` klemte ikke, og et panel ved toppen av siden lå helt
     // utenfor skjermen, uten å kunne rulles fram.
-    monter(markup("p4", 'placement="top-start"'))
+    mount(markup("p4", 'placement="top-start"'))
     await tegn()
     const { knapp, panel } = await apne("p4")
 
@@ -263,7 +263,7 @@ describe("lt-popover plasserer panelet", () => {
     // Håndskrevet markup med bare `popover` er `auto`, og da lukker
     // nettleseren panelet selv. Verten sto igjen med `open`, og neste klikk
     // på knappen gjorde ingenting synlig.
-    monter(markup("p5", "", "popover"))
+    mount(markup("p5", "", "popover"))
     await tegn()
     const vert = document.querySelector("lt-popover") as HTMLElement
     const knapp = document.getElementById("p5-knapp") as HTMLElement
@@ -291,7 +291,7 @@ describe("lt-popover plasserer panelet", () => {
   })
 
   it("setter posisjonen igjen etter en patch som river style bort", async () => {
-    monter(markup("p6"))
+    mount(markup("p6"))
     await tegn()
     await apne("p6")
     const panel = document.getElementById("p6") as HTMLElement
@@ -354,7 +354,7 @@ describe("lt-popover kobler fra bar struktur", () => {
   }
 
   it("skriver aldri id på panelet, og åpner likevel på klikk", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     const { knapp, panel } = deler()
 
@@ -364,14 +364,14 @@ describe("lt-popover kobler fra bar struktur", () => {
     expect(knapp.getAttribute("aria-expanded")).toBe("false")
 
     knapp.click()
-    await ventPaTegning()
+    await waitForPaint()
     expect(panel.matches(":popover-open")).toBe(true)
     expect(knapp.getAttribute("aria-expanded")).toBe("true")
     ;(document.querySelector("lt-popover") as LtPopover).hide()
   })
 
   it("skriver aria-controls fra id-en malen ga panelet, og åpner på klikk", async () => {
-    monter(MED_ID)
+    mount(MED_ID)
     await tegn()
     const { knapp, panel } = deler()
 
@@ -381,11 +381,11 @@ describe("lt-popover kobler fra bar struktur", () => {
     expect(knapp.getAttribute("aria-expanded")).toBe("false")
 
     knapp.click()
-    await ventPaTegning()
+    await waitForPaint()
     expect(panel.matches(":popover-open")).toBe(true)
     expect(knapp.getAttribute("aria-expanded")).toBe("true")
 
-    await forventIngenTilgjengelighetsbrudd()
+    await expectNoAccessibilityViolations()
     ;(document.querySelector("lt-popover") as LtPopover).hide()
   })
 
@@ -397,18 +397,18 @@ describe("lt-popover kobler fra bar struktur", () => {
      * lukkingen, som en egen oppgave. Den ble tatt som brukerens lukking, og
      * vinduet sto lukket etter en patch som ikke sa noe om det.
      */
-    monter(BAR)
+    mount(BAR)
     await tegn()
     const { knapp, panel } = deler()
     const vert = document.querySelector("lt-popover") as LtPopover
     knapp.click()
-    await ventPaTegning()
+    await waitForPaint()
     expect(panel.matches(":popover-open")).toBe(true)
 
     vert.removeAttribute("open")
     panel.removeAttribute("popover")
-    await ventPaTegning()
-    await ventPaTegning()
+    await waitForPaint()
+    await waitForPaint()
 
     expect(vert.open).toBe(true)
     expect(panel.getAttribute("popover")).toBe("manual")
@@ -418,22 +418,22 @@ describe("lt-popover kobler fra bar struktur", () => {
   })
 
   it("åpner ikke av seg selv når server-controlled settes og fjernes igjen", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     const { knapp, panel } = deler()
     const vert = document.querySelector("lt-popover") as LtPopover
     knapp.click()
-    await ventPaTegning()
+    await waitForPaint()
     expect(panel.matches(":popover-open")).toBe(true)
 
     // Serveren overtar og lukker. Så slipper den igjen. Husket komponenten
     // at brukeren åpnet vinduet, spratt det opp i det attributtet ble fjernet.
     vert.setAttribute("server-controlled", "")
     vert.removeAttribute("open")
-    await ventPaTegning()
+    await waitForPaint()
     vert.removeAttribute("server-controlled")
-    await ventPaTegning()
-    await ventPaTegning()
+    await waitForPaint()
+    await waitForPaint()
 
     expect(vert.open).toBe(false)
     expect(panel.matches(":popover-open")).toBe(false)
@@ -442,7 +442,7 @@ describe("lt-popover kobler fra bar struktur", () => {
   it("lar det serveren skrev stå", async () => {
     // `popover` uten verdi er `auto`, og det er en annen verdi enn
     // komponentens `manual`. Id-en er også serverens.
-    monter(
+    mount(
       BAR.replace(
         '<ul class="lt-popover" data-variant="plain">',
         '<ul class="lt-popover" id="eget-panel" popover data-variant="plain">',
@@ -457,7 +457,7 @@ describe("lt-popover kobler fra bar struktur", () => {
   })
 
   it("velger ikke en knapp som peker på noe annet", async () => {
-    monter(
+    mount(
       MED_ID.replace(
         '<button class="lt-button" id="bar-knapp">',
         '<button class="lt-button" aria-controls="noe-annet" id="feil-knapp">Filter</button>' +
@@ -474,7 +474,7 @@ describe("lt-popover kobler fra bar struktur", () => {
   })
 
   it("setter koblingen tilbake etter en patch", async () => {
-    monter(MED_ID)
+    mount(MED_ID)
     await tegn()
     const { knapp, panel } = deler()
 
@@ -484,7 +484,7 @@ describe("lt-popover kobler fra bar struktur", () => {
     for (const navn of ["aria-controls", "aria-expanded"]) {
       knapp.removeAttribute(navn)
     }
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(panel.id).toBe("meny")
     expect(panel.getAttribute("popover")).toBe("manual")
@@ -493,19 +493,19 @@ describe("lt-popover kobler fra bar struktur", () => {
   })
 
   it("gir panelet id-en når en patch fra serveren gir det en", async () => {
-    monter(BAR)
+    mount(BAR)
     await tegn()
     const { knapp, panel } = deler()
     expect(knapp.hasAttribute("aria-controls")).toBe(false)
 
     panel.id = "meny"
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(knapp.getAttribute("aria-controls")).toBe("meny")
   })
 
   it("gjør knappen til en vanlig knapp, så den ikke sender skjemaet", async () => {
-    monter(`
+    mount(`
       <form id="skjema">
         <lt-popover>
           <button class="lt-button">Hva betyr dette?</button>
@@ -534,7 +534,7 @@ describe("lt-popover kobler fra bar struktur", () => {
   })
 
   it("retter en tom type, men lar en knapp som sier submit stå", async () => {
-    monter(`
+    mount(`
       <lt-popover id="tom">
         <button class="lt-button" type="">Hva betyr dette?</button>
         <div class="lt-popover">Forklaring</div>
@@ -586,19 +586,19 @@ describe("lt-popover når React skriver egenskapen", () => {
   })
 
   it("åpner ikke vinduet av at egenskapen settes til undefined", async () => {
-    monter(
+    mount(
       `<lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}>Innhold</div>
       </lt-popover>`,
     )
     await customElements.whenDefined("lt-popover")
-    await ventPaTegning()
+    await waitForPaint()
     const vert = document.querySelector("lt-popover") as LtPopover
 
     // Slik React 19 skriver en prop som er borte.
     ;(vert as unknown as { open: undefined }).open = undefined
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(vert.hasAttribute("open")).toBe(false)
     expect(document.getElementById("panel")?.matches(":popover-open")).toBe(
@@ -612,28 +612,28 @@ describe("lt-popover når React skriver egenskapen", () => {
      * attributtet, ville Datastar-oppskriften med `data-attr:open` og
      * `data-on:popover-toggle` fått sitt eget signal i retur.
      */
-    monter(
+    mount(
       `<lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}>Innhold</div>
       </lt-popover>`,
     )
     await customElements.whenDefined("lt-popover")
-    await ventPaTegning()
+    await waitForPaint()
     const vert = document.querySelector("lt-popover") as LtPopover
     const panel = document.getElementById("panel") as HTMLElement
     const logg: boolean[] = []
     vert.addEventListener("popover-toggle", (e) => logg.push(e.detail.open))
 
     vert.open = true
-    await ventPaTegning()
+    await waitForPaint()
     expect(panel.matches(":popover-open")).toBe(true)
     vert.open = false
-    await ventPaTegning()
+    await waitForPaint()
     vert.setAttribute("open", "")
-    await ventPaTegning()
+    await waitForPaint()
     vert.removeAttribute("open")
-    await ventPaTegning()
+    await waitForPaint()
     expect(panel.matches(":popover-open")).toBe(false)
     expect(logg).toEqual([])
 
@@ -649,7 +649,7 @@ describe("lt-popover inne i en modal dialog", () => {
   })
 
   it("lukker bare vinduet ved Escape, ikke dialogen", async () => {
-    monter(`
+    mount(`
       <dialog id="dialog">
         <lt-popover ${attr(BOKS.host)}>
           <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
@@ -661,14 +661,14 @@ describe("lt-popover inne i en modal dialog", () => {
     const vert = document.querySelector("lt-popover") as LtPopover
     dialog.showModal()
     vert.show()
-    await ventPaTegning()
+    await waitForPaint()
     expect(vert.open).toBe(true)
 
     // Et ekte tastetrykk: en syntetisk hendelse lukker aldri en dialog, så
     // bare dette viser at dialogen faktisk overlever.
     ;(document.querySelector("#panel button") as HTMLElement).focus()
     await userEvent.keyboard("{Escape}")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(vert.open, "vinduet ble ikke lukket").toBe(false)
     expect(dialog.open, "Escape lukket dialogen også").toBe(true)
@@ -677,7 +677,7 @@ describe("lt-popover inne i en modal dialog", () => {
 
   it("lukker ved Escape i et annet felt, men lar fokus stå der", async () => {
     // Før hoppet fokus fra feltet brukeren sto i, til knappen.
-    monter(`
+    mount(`
       <lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}>Innhold</div>
@@ -686,19 +686,19 @@ describe("lt-popover inne i en modal dialog", () => {
     await customElements.whenDefined("lt-popover")
     const vert = document.querySelector("lt-popover") as LtPopover
     vert.show()
-    await ventPaTegning()
+    await waitForPaint()
 
     const annet = document.getElementById("annet") as HTMLInputElement
     annet.focus()
     await userEvent.keyboard("{Escape}")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(vert.open).toBe(false)
     expect(document.activeElement).toBe(annet)
   })
 
   it("lar en modal dialog åpnet oppå vinduet lukkes av sitt eget trykk", async () => {
-    monter(`
+    mount(`
       <lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}>Innhold</div>
@@ -707,13 +707,13 @@ describe("lt-popover inne i en modal dialog", () => {
     await customElements.whenDefined("lt-popover")
     const vert = document.querySelector("lt-popover") as LtPopover
     vert.show()
-    await ventPaTegning()
+    await waitForPaint()
 
     const over = document.getElementById("over") as HTMLDialogElement
     over.showModal()
     ;(document.getElementById("ok") as HTMLElement).focus()
     await userEvent.keyboard("{Escape}")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(over.open, "dialogen ble ikke lukket").toBe(false)
     expect(vert.open, "vinduet under ble lukket").toBe(true)
@@ -722,7 +722,7 @@ describe("lt-popover inne i en modal dialog", () => {
   it("lukker vinduet, ikke dialogen, når fokus står på dialogen selv", async () => {
     // Et klikk på tekst i panelet gir dialogen fokus, ikke `body`. Før
     // lukket Escape da dialogen og lot vinduet stå åpent i den.
-    monter(`
+    mount(`
       <dialog id="dialog" tabindex="-1">
         <lt-popover ${attr(BOKS.host)}>
           <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
@@ -734,11 +734,11 @@ describe("lt-popover inne i en modal dialog", () => {
     const vert = document.querySelector("lt-popover") as LtPopover
     dialog.showModal()
     vert.show()
-    await ventPaTegning()
+    await waitForPaint()
 
     dialog.focus()
     await userEvent.keyboard("{Escape}")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(vert.open, "vinduet ble ikke lukket").toBe(false)
     expect(dialog.open, "Escape lukket dialogen").toBe(true)
@@ -747,7 +747,7 @@ describe("lt-popover inne i en modal dialog", () => {
 
   it("lukker det innerste av to nøstede vinduer først", async () => {
     const indre = popover({ id: "indre" })
-    monter(`
+    mount(`
       <lt-popover ${attr(BOKS.host)} id="ytre">
         <button type="button" ${attr(BOKS.trigger)}>Meny</button>
         <div ${attr(BOKS.panel)}>
@@ -762,17 +762,17 @@ describe("lt-popover inne i en modal dialog", () => {
     const nost = document.getElementById("nost") as LtPopover
     ytre.show()
     nost.show()
-    await ventPaTegning()
+    await waitForPaint()
 
     ;(document.getElementById("inni") as HTMLElement).focus()
     await userEvent.keyboard("{Escape}")
-    await ventPaTegning()
+    await waitForPaint()
     // Før lukket det ytre seg og lot det indre stå åpent.
     expect(nost.open).toBe(false)
     expect(ytre.open).toBe(true)
 
     await userEvent.keyboard("{Escape}")
-    await ventPaTegning()
+    await waitForPaint()
     expect(ytre.open).toBe(false)
   })
 
@@ -787,7 +787,7 @@ describe("lt-popover inne i en modal dialog", () => {
         },
       )
     }
-    monter(`
+    mount(`
       <lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}><skygge-felt></skygge-felt></div>
@@ -795,14 +795,14 @@ describe("lt-popover inne i en modal dialog", () => {
     await customElements.whenDefined("lt-popover")
     const vert = document.querySelector("lt-popover") as LtPopover
     vert.show()
-    await ventPaTegning()
+    await waitForPaint()
 
     const felt = document
       .querySelector("skygge-felt")
       ?.shadowRoot?.querySelector("input") as HTMLInputElement
     felt.focus()
     await userEvent.keyboard("{Escape}")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(vert.open).toBe(false)
   })
@@ -810,7 +810,7 @@ describe("lt-popover inne i en modal dialog", () => {
   it("lar et trykk noe annet alt har brukt være", async () => {
     // En forslagsliste i vinduet lukker seg på Escape og kaller
     // `preventDefault`. Før tok samme trykk vinduet også.
-    monter(`
+    mount(`
       <lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}><input id="felt"></div>
@@ -818,27 +818,27 @@ describe("lt-popover inne i en modal dialog", () => {
     await customElements.whenDefined("lt-popover")
     const vert = document.querySelector("lt-popover") as LtPopover
     vert.show()
-    await ventPaTegning()
+    await waitForPaint()
 
     const felt = document.getElementById("felt") as HTMLInputElement
     felt.addEventListener("keydown", (event) => event.preventDefault())
     felt.focus()
     await userEvent.keyboard("{Escape}")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(vert.open).toBe(true)
     expect(document.activeElement).toBe(felt)
   })
 
   it("rører ikke Escape når vinduet er lukket", async () => {
-    monter(`
+    mount(`
       <lt-popover ${attr(BOKS.host)}>
         <button type="button" ${attr(BOKS.trigger)}>Handlinger</button>
         <div ${attr(BOKS.panel)}>Innhold</div>
       </lt-popover>
       <button type="button" id="annet">Annet</button>`)
     await customElements.whenDefined("lt-popover")
-    await ventPaTegning()
+    await waitForPaint()
     const annet = document.getElementById("annet") as HTMLElement
     annet.focus()
 

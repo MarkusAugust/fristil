@@ -2,11 +2,11 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/color"
+import { color } from "../../../testing/color"
 
 import "../../../tokens/tokens.css"
 import "./label.css"
@@ -34,36 +34,36 @@ describe("lt-label", () => {
 
   it("default: correct color and weight", () => {
     const label = css("default")
-    expect(label.color).toBe(farge("--lt-color-neutral-text-strong"))
+    expect(label.color).toBe(color("--lt-color-neutral-text-strong"))
     expect(label.fontWeight).toBe("600")
   })
 
   it("disabled: muted color", () => {
     const label = css("disabled")
-    expect(label.color).toBe(farge("--lt-color-neutral-text-subtle"))
+    expect(label.color).toBe(color("--lt-color-neutral-text-subtle"))
   })
 
   it("required symbol: ::after has danger color", () => {
     const after = css("required-symbol", "::after")
-    expect(after.color).toBe(farge("--lt-color-danger-text"))
+    expect(after.color).toBe(color("--lt-color-danger-text"))
     expect(after.content).toBe('" *"')
   })
 
   it("required text: ::after shows (required) in danger color", () => {
     const after = css("required-text", "::after")
-    expect(after.color).toBe(farge("--lt-color-danger-text"))
+    expect(after.color).toBe(color("--lt-color-danger-text"))
     expect(after.content).toBe('" (required)"')
   })
 
   it("optional: ::after has muted color", () => {
     const after = css("optional", "::after")
-    expect(after.color).toBe(farge("--lt-color-neutral-text-subtle"))
+    expect(after.color).toBe(color("--lt-color-neutral-text-subtle"))
   })
 })
 
 describe("lt-label accessibility", () => {
   it("connects the label to the field in every marker", async () => {
-    monter(`
+    mount(`
       <label class="lt-label" for="a11y-navn">Fullt navn</label>
       <input class="lt-input" id="a11y-navn" type="text" />
 
@@ -77,14 +77,14 @@ describe("lt-label accessibility", () => {
       <input class="lt-input" id="a11y-adresse" type="text" />
     `)
 
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
 describe("the text in the marker can be replaced", () => {
   it("is English when the variables are not set", () => {
-    monter(`
+    mount(`
       <label id="krav" class="lt-label" data-required="text">Navn</label>
       <label id="valg" class="lt-label" data-optional>Mellomnavn</label>
     `)
@@ -98,7 +98,7 @@ describe("the text in the marker can be replaced", () => {
     // `:lang(nb)` is one way, a variable set from i18next another. The
     // values differ from the defaults, so the test fails if the variables
     // are not read.
-    monter(`
+    mount(`
       <div style="--lt-label-required-text: ' (påkrevd)'; --lt-label-optional-text: ' (valgfri)'; --lt-label-required-symbol: ' †'">
         <label id="krav" class="lt-label" data-required="text">Name</label>
         <label id="valg" class="lt-label" data-optional>Middle name</label>

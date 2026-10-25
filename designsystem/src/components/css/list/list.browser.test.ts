@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { list } from "./list"
 
@@ -14,7 +14,7 @@ import "./list.css"
 
 describe("lt-list", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <ul class="lt-list" id="vanlig">
         <li>Fødselsattest</li>
         <li>Bekreftelse fra arbeidsgiver</li>
@@ -55,7 +55,7 @@ describe("lt-list", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

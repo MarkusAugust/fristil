@@ -1,7 +1,7 @@
 /// <reference path="./types/css.d.ts" />
 
 import { describe, expect, it } from "vitest"
-import { monter } from "./testing/a11y"
+import { mount } from "./testing/a11y"
 
 import "./tokens/tokens.css"
 import "./components/css/checkbox/checkbox.css"
@@ -37,7 +37,7 @@ describe("avslått med tilstand", () => {
     for (const tilstand of ["invalid", "success"]) {
       it(`${navn} med ${tilstand} ser avslått ut`, () => {
         const slutt = SLUTT[navn] ?? ">"
-        monter(`
+        mount(`
           ${start} id="ren" aria-label="Ren" disabled${slutt}
           ${start} id="med" aria-label="Med" disabled data-state="${tilstand}"${slutt}
         `)

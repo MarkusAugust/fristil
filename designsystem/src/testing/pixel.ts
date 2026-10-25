@@ -8,7 +8,7 @@ import { page } from "vitest/browser"
  * painted over each other. `x` and `y` are fractions of the width and
  * height, from 0 to 1.
  */
-export async function piksel(
+export async function pixel(
   element: HTMLElement,
   x: number,
   y = 0.5,

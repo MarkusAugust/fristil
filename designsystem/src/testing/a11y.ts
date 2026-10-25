@@ -20,7 +20,7 @@ const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
  * "incomplete" instead of giving an answer. The test would then have been
  * indifferent to exactly what we want to check.
  */
-export function monter(html: string): HTMLElement {
+export function mount(html: string): HTMLElement {
   document.body.style.background = "var(--lt-color-neutral-canvas)"
   document.body.style.color = "var(--lt-color-neutral-text-strong)"
   document.body.innerHTML = `<div id="lt-testflate">${html}</div>`
@@ -37,7 +37,7 @@ export function monter(html: string): HTMLElement {
   return flate
 }
 
-export type Tilgjengelighetsbrudd = {
+export type AccessibilityViolation = {
   regel: string
   forklaring: string
   elementer: string[]
@@ -55,9 +55,9 @@ export type Tilgjengelighetsbrudd = {
  * picks outside a terminal, the console is not shown for a test that
  * passes. `--silent=false --reporter=default` shows it.
  */
-export async function finnTilgjengelighetsbrudd(
+export async function findAccessibilityViolations(
   rot: Element = document.body,
-): Promise<Tilgjengelighetsbrudd[]> {
+): Promise<AccessibilityViolation[]> {
   const resultat = await axe.run(rot, {
     runOnly: { type: "tag", values: WCAG_AA },
     resultTypes: ["violations", "incomplete"],
@@ -91,12 +91,12 @@ export async function finnTilgjengelighetsbrudd(
  * element, so whoever gets the red test does not have to run axe by hand to
  * understand what is wrong.
  */
-export async function forventIngenTilgjengelighetsbrudd(
+export async function expectNoAccessibilityViolations(
   rot: Element = document.body,
 ): Promise<void> {
   const html = document.documentElement
   const before = html.getAttribute("data-theme")
-  const brudd: Tilgjengelighetsbrudd[] = []
+  const brudd: AccessibilityViolation[] = []
   // Transitions are turned off before the theme changes. A transition that
   // is already running does not stop when `transition` is set to `none`
   // afterwards, and axe read the colour of a link halfway between light and
@@ -109,8 +109,8 @@ export async function forventIngenTilgjengelighetsbrudd(
   try {
     for (const tema of ["light", "dark"]) {
       html.setAttribute("data-theme", tema)
-      await ventPaTegning()
-      for (const b of await finnTilgjengelighetsbrudd(rot))
+      await waitForPaint()
+      for (const b of await findAccessibilityViolations(rot))
         brudd.push({ ...b, regel: `${b.regel} (${tema})` })
     }
   } finally {
@@ -119,7 +119,7 @@ export async function forventIngenTilgjengelighetsbrudd(
     // colours afterwards read a value on its way back from dark.
     if (before === null) html.removeAttribute("data-theme")
     else html.setAttribute("data-theme", before)
-    await ventPaTegning()
+    await waitForPaint()
     uten.remove()
   }
   if (brudd.length === 0) return
@@ -148,7 +148,7 @@ export async function forventIngenTilgjengelighetsbrudd(
  * LO-TEK's components has one since Lit was removed in 0.5.0, but a test can
  * pass it an element from another library.
  */
-export async function ventPaTegning(element?: Element): Promise<void> {
+export async function waitForPaint(element?: Element): Promise<void> {
   const oppdatering = (element as { updateComplete?: Promise<unknown> })
     ?.updateComplete
   if (oppdatering) await oppdatering

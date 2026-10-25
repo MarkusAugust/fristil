@@ -3,9 +3,9 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
 import { connectionStatus } from "./connection-status"
@@ -29,11 +29,11 @@ describe("lt-connection-status", () => {
   })
 
   beforeEach(async () => {
-    monter(
+    mount(
       `<lt-connection-status ${attr(connectionStatus())}></lt-connection-status>`,
     )
     await customElements.whenDefined("lt-connection-status")
-    await ventPaTegning()
+    await waitForPaint()
   })
 
   it("asks the server to leave the content alone", () => {
@@ -55,7 +55,7 @@ describe("lt-connection-status", () => {
     // navigator.onLine only says the machine has a network, not that the
     // server answers. So the app reports it itself.
     status.reportFailure()
-    await ventPaTegning()
+    await waitForPaint()
 
     const bar = linje() as HTMLElement
     expect(bar.dataset.state).toBe("offline")
@@ -69,9 +69,9 @@ describe("lt-connection-status", () => {
     ) as LtConnectionStatus
 
     status.reportFailure()
-    await ventPaTegning()
+    await waitForPaint()
     status.reportSuccess()
-    await ventPaTegning()
+    await waitForPaint()
 
     const bar = linje() as HTMLElement
     expect(bar.dataset.state).toBe("online")
@@ -89,7 +89,7 @@ describe("lt-connection-status", () => {
 
     status.reportFailure()
     status.reportSuccess()
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(meldinger).toEqual(["connection-lost", "connection-restored"])
     // The offline text is written in the next frame, and must not land on
@@ -100,20 +100,20 @@ describe("lt-connection-status", () => {
 
   it("reacts to the network going away", async () => {
     window.dispatchEvent(new Event("offline"))
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(linje()?.dataset.state).toBe("offline")
   })
 
   it("lets a custom text override", async () => {
-    monter(
+    mount(
       `<lt-connection-status ${attr(connectionStatus({ offlineText: "Sambandet er nede." }))}></lt-connection-status>`,
     )
-    await ventPaTegning()
+    await waitForPaint()
     ;(
       document.querySelector("lt-connection-status") as LtConnectionStatus
     ).reportFailure()
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(linje()?.textContent).toBe("Sambandet er nede.")
   })
@@ -122,9 +122,9 @@ describe("lt-connection-status", () => {
     ;(
       document.querySelector("lt-connection-status") as LtConnectionStatus
     ).reportFailure()
-    await ventPaTegning()
+    await waitForPaint()
 
-    await forventIngenTilgjengelighetsbrudd()
+    await expectNoAccessibilityViolations()
   })
 })
 
@@ -134,9 +134,9 @@ describe("lt-connection-status speaks up once and comes back", () => {
   })
 
   async function monterLinje(attributter = attr(connectionStatus())) {
-    monter(`<lt-connection-status ${attributter}></lt-connection-status>`)
+    mount(`<lt-connection-status ${attributter}></lt-connection-status>`)
     await customElements.whenDefined("lt-connection-status")
-    await ventPaTegning()
+    await waitForPaint()
     return document.querySelector("lt-connection-status") as LtConnectionStatus
   }
 
@@ -151,7 +151,7 @@ describe("lt-connection-status speaks up once and comes back", () => {
     window.dispatchEvent(new Event("offline"))
     window.dispatchEvent(new Event("offline"))
     status.reportFailure()
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(hendelser).toEqual(["lost"])
     expect(linje()?.textContent).toContain("No connection")
@@ -160,7 +160,7 @@ describe("lt-connection-status speaks up once and comes back", () => {
   it("removes the receipt after a while", async () => {
     const status = await monterLinje()
     status.reportFailure()
-    await ventPaTegning()
+    await waitForPaint()
 
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
     try {
@@ -176,9 +176,9 @@ describe("lt-connection-status speaks up once and comes back", () => {
   it("comes back online when the network does", async () => {
     await monterLinje()
     window.dispatchEvent(new Event("offline"))
-    await ventPaTegning()
+    await waitForPaint()
     window.dispatchEvent(new Event("online"))
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(linje()?.dataset.state).toBe("online")
   })
@@ -186,16 +186,16 @@ describe("lt-connection-status speaks up once and comes back", () => {
   it("does not let the network override a failure the app reported", async () => {
     const status = await monterLinje()
     status.reportFailure()
-    await ventPaTegning()
+    await waitForPaint()
     window.dispatchEvent(new Event("online"))
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(linje()?.dataset.state, "the network overrode the app").toBe(
       "offline",
     )
 
     status.reportSuccess()
-    await ventPaTegning()
+    await waitForPaint()
     expect(linje()?.dataset.state).toBe("online")
   })
 
@@ -204,9 +204,9 @@ describe("lt-connection-status speaks up once and comes back", () => {
       attr(connectionStatus({ onlineText: "Tilbake." })),
     )
     status.reportFailure()
-    await ventPaTegning()
+    await waitForPaint()
     status.reportSuccess()
-    await ventPaTegning()
+    await waitForPaint()
     expect(linje()?.textContent).toBe("Tilbake.")
 
     status.offlineText = "Borte."
@@ -223,7 +223,7 @@ describe("lt-connection-status speaks up once and comes back", () => {
  */
 describe("reportFailure() and reportSuccess() wait for the registration", () => {
   it("makes the calls in order once the element is upgraded", async () => {
-    monter(
+    mount(
       `<lt-connection-status-sen class="lt-connection-status"></lt-connection-status-sen>`,
     )
     const element = document.querySelector(
@@ -234,7 +234,7 @@ describe("reportFailure() and reportSuccess() wait for the registration", () => 
     const løfte = reportFailure(element).then(() => {
       ferdig = true
     })
-    await ventPaTegning()
+    await waitForPaint()
     expect(ferdig).toBe(false)
     expect(linje()).toBeNull()
 
@@ -254,9 +254,9 @@ describe("lt-connection-status out of the document and back in", () => {
   })
 
   async function monterNy() {
-    const flate = monter("<lt-connection-status></lt-connection-status>")
+    const flate = mount("<lt-connection-status></lt-connection-status>")
     await customElements.whenDefined("lt-connection-status")
-    await ventPaTegning()
+    await waitForPaint()
     return {
       flate,
       status: document.querySelector(
@@ -314,13 +314,13 @@ describe("lt-connection-status when the text changes while the bar is showing", 
   })
 
   it("shows the new text", async () => {
-    monter("<lt-connection-status></lt-connection-status>")
+    mount("<lt-connection-status></lt-connection-status>")
     await customElements.whenDefined("lt-connection-status")
     const status = document.querySelector(
       "lt-connection-status",
     ) as LtConnectionStatus
     status.reportFailure()
-    await ventPaTegning()
+    await waitForPaint()
 
     status.setAttribute("offline-text", "Ingen kontakt med serveren.")
 

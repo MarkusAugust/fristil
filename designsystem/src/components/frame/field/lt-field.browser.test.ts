@@ -2,9 +2,9 @@
 
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
 import { computeFieldAttributes } from "./field-core"
@@ -88,13 +88,13 @@ describe("lt-field", () => {
     expect(input.getAttribute("aria-describedby")).toBeNull()
 
     error.hidden = false
-    await ventPaTegning()
+    await waitForPaint()
     expect(input.getAttribute("aria-invalid")).toBe("true")
     expect(input.getAttribute("data-state")).toBe("invalid")
     expect(input.getAttribute("aria-describedby")).toBe(error.id)
 
     error.hidden = true
-    await ventPaTegning()
+    await waitForPaint()
     expect(input.hasAttribute("aria-invalid")).toBe(false)
     expect(input.hasAttribute("data-state")).toBe(false)
     expect(input.getAttribute("aria-describedby")).toBeNull()
@@ -109,7 +109,7 @@ describe("lt-field", () => {
         <p class="lt-error-text">Skriv en gyldig e-post.</p>
       </lt-field>
     `
-    await ventPaTegning()
+    await waitForPaint()
 
     const error = document.querySelector(".lt-error-text") as HTMLElement
     expect(error.hidden).toBe(false)
@@ -156,11 +156,11 @@ describe("lt-field", () => {
     const input = document.querySelector("input") as HTMLInputElement
     const error = document.querySelector(".lt-error-text") as HTMLElement
     error.hidden = true
-    await ventPaTegning()
+    await waitForPaint()
     error.hidden = false
-    await ventPaTegning()
+    await waitForPaint()
     error.hidden = true
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(input.getAttribute("aria-invalid")).toBe("true")
     expect(input.getAttribute("data-state")).toBe("invalid")
@@ -245,7 +245,7 @@ describe("lt-field", () => {
         <p class="lt-help-text">Vi sender kvittering hit.</p>
       </lt-field>
     `
-    await ventPaTegning()
+    await waitForPaint()
 
     const label = document.querySelector("label") as HTMLLabelElement
     const input = document.querySelector("input") as HTMLInputElement
@@ -286,7 +286,7 @@ describe("lt-field", () => {
 
 describe("lt-field accessibility", () => {
   it("has no violations for a field with help text and error text", async () => {
-    monter(`
+    mount(`
       <lt-field>
         <label for="epost" data-required="symbol">E-postadresse</label>
         <input id="epost" class="lt-input" type="email" value="ola@" required />
@@ -301,32 +301,32 @@ describe("lt-field accessibility", () => {
       </lt-field>
     `)
 
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 
   it("has no violations for a field without help text", async () => {
-    monter(`
+    mount(`
       <lt-field>
         <label>Fullt navn <input class="lt-input" type="text" /></label>
       </lt-field>
     `)
 
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
 describe("lt-field label", () => {
   it("gives the label lt-label, so the required marker actually shows", async () => {
-    monter(`
+    mount(`
       <lt-field>
         <label for="epost" data-required="text">E-postadresse</label>
         <input id="epost" class="lt-input" type="email" />
       </lt-field>
     `)
 
-    await ventPaTegning()
+    await waitForPaint()
 
     const label = document.querySelector("label") as HTMLLabelElement
     expect(label.classList.contains("lt-label")).toBe(true)
@@ -338,14 +338,14 @@ describe("lt-field label", () => {
   })
 
   it("marks optional fields the same way", async () => {
-    monter(`
+    mount(`
       <lt-field optional>
         <label for="adresse">Adresse</label>
         <input id="adresse" class="lt-input" type="text" />
       </lt-field>
     `)
 
-    await ventPaTegning()
+    await waitForPaint()
 
     const label = document.querySelector("label") as HTMLLabelElement
     expect(label.classList.contains("lt-label")).toBe(true)
@@ -375,7 +375,7 @@ describe("lt-field does not fight the server", () => {
       required: "symbol",
     })
 
-    monter(`
+    mount(`
       <lt-field>
         <label ${attr(felt.label)}>E-postadresse</label>
         <input class="lt-input" type="email" ${attr(felt.control)} />
@@ -384,7 +384,7 @@ describe("lt-field does not fight the server", () => {
       </lt-field>
     `)
 
-    await ventPaTegning()
+    await waitForPaint()
 
     const input = document.getElementById("epost") as HTMLInputElement
     const label = document.querySelector("label") as HTMLLabelElement
@@ -401,7 +401,7 @@ describe("lt-field does not fight the server", () => {
   it("does not set aria-hidden on a hidden error text", async () => {
     // `hidden` already takes it out of the accessibility tree, and an
     // attribute the server does not write gives a hydration error in React.
-    monter(`
+    mount(`
       <lt-field>
         <label for="epost">E-postadresse</label>
         <input id="epost" class="lt-input" type="email" />
@@ -409,7 +409,7 @@ describe("lt-field does not fight the server", () => {
       </lt-field>
     `)
 
-    await ventPaTegning()
+    await waitForPaint()
 
     const feilmelding = document.querySelector(".lt-error-text") as HTMLElement
     expect(feilmelding.hidden).toBe(true)
@@ -429,7 +429,7 @@ describe("lt-field connects markup that has only structure", () => {
   })
 
   it("gives the full wiring from for, id and a visible error text", async () => {
-    monter(`
+    mount(`
       <lt-field>
         <label data-required="symbol">E-post</label>
         <input id="epost" class="lt-input" type="email">
@@ -438,7 +438,7 @@ describe("lt-field connects markup that has only structure", () => {
       </lt-field>
     `)
 
-    await ventPaTegning()
+    await waitForPaint()
 
     const label = document.querySelector("label") as HTMLLabelElement
     const input = document.querySelector("input") as HTMLInputElement
@@ -468,7 +468,7 @@ describe("lt-field connects markup that has only structure", () => {
    * the error text, without anything saying so.
    */
   it("does not adopt a paragraph that only has a role on it", async () => {
-    monter(`
+    mount(`
       <lt-field>
         <label for="postnummer">Postnummer</label>
         <input id="postnummer" class="lt-input" aria-invalid="true">
@@ -476,7 +476,7 @@ describe("lt-field connects markup that has only structure", () => {
       </lt-field>
     `)
 
-    await ventPaTegning()
+    await waitForPaint()
 
     const input = document.querySelector("input") as HTMLInputElement
     const avsnitt = document.querySelector(".egen-feil") as HTMLElement
@@ -500,14 +500,14 @@ describe("lt-field is a block element", () => {
     // Without this the element is `display: inline`, and spacing set on the
     // outside does nothing. The children are blocks, so the bug does not
     // show until someone puts the field in a grid or gives it a margin.
-    monter(`
+    mount(`
       <lt-field>
         <label class="lt-label">E-post</label>
         <input class="lt-input" type="email" />
       </lt-field>
     `)
 
-    await ventPaTegning()
+    await waitForPaint()
 
     const felt = document.querySelector("lt-field") as HTMLElement
     expect(getComputedStyle(felt).display).toBe("block")
@@ -549,7 +549,7 @@ describe("lt-field only controls what it wrote itself", () => {
 
     const error = document.getElementById("x") as HTMLElement
     error.hidden = true
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(input.getAttribute("aria-describedby")).toBe("h")
   })
@@ -616,7 +616,7 @@ describe("lt-field only controls what it wrote itself", () => {
 
     const error = document.getElementById("epost-error") as HTMLElement
     error.hidden = true
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(input.getAttribute("aria-describedby")).toBe("epost-help vilkar")
   })
@@ -713,7 +713,7 @@ describe("lt-field only controls what it wrote itself", () => {
     b.append(felt)
     await Promise.resolve()
     ;(felt.querySelector(".lt-error-text") as HTMLElement).hidden = true
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(input.getAttribute("aria-invalid")).toBeNull()
   })
@@ -738,7 +738,7 @@ describe("lt-field only controls what it wrote itself", () => {
     await new Promise((ferdig) => requestAnimationFrame(ferdig))
 
     ;(felt.querySelector(".lt-error-text") as HTMLElement).hidden = true
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(input.getAttribute("aria-invalid")).toBeNull()
   })
@@ -762,10 +762,10 @@ describe("lt-field only controls what it wrote itself", () => {
 
     // The error text is shown and hidden again. The server's "false" comes back.
     error.hidden = false
-    await ventPaTegning()
+    await waitForPaint()
     expect(input.getAttribute("aria-invalid")).toBe("true")
     error.hidden = true
-    await ventPaTegning()
+    await waitForPaint()
     expect(input.getAttribute("aria-invalid")).toBe("false")
   })
 
@@ -809,10 +809,10 @@ describe("lt-field only controls what it wrote itself", () => {
     // The error text is shown and hidden again. The server's empty string
     // comes back.
     error.hidden = false
-    await ventPaTegning()
+    await waitForPaint()
     expect(input.getAttribute("aria-invalid")).toBe("true")
     error.hidden = true
-    await ventPaTegning()
+    await waitForPaint()
     expect(input.getAttribute("aria-invalid")).toBe("")
     expect(input.getAttribute("data-state")).toBeNull()
   })
@@ -873,11 +873,11 @@ describe("lt-field does not read its own echo from the label", () => {
     vert: string,
     kontroll = '<input id="navn" class="lt-input" />',
   ) {
-    monter(
+    mount(
       `<lt-field ${vert}><label for="navn">Navn</label>${kontroll}</lt-field>`,
     )
     await customElements.whenDefined("lt-field")
-    await ventPaTegning()
+    await waitForPaint()
     return {
       vert: document.querySelector("lt-field") as LtField,
       ledetekst: document.querySelector("label") as HTMLLabelElement,
@@ -890,23 +890,23 @@ describe("lt-field does not read its own echo from the label", () => {
     expect(ledetekst.hasAttribute("data-optional")).toBe(true)
 
     vert.removeAttribute("optional")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(ledetekst.hasAttribute("data-optional")).toBe(false)
   })
 
   it("leaves the markers the server wrote on the label", async () => {
-    monter(
+    mount(
       `<lt-field><label for="navn" data-required="text">Navn</label><input id="navn" class="lt-input" /></lt-field>`,
     )
     await customElements.whenDefined("lt-field")
-    await ventPaTegning()
+    await waitForPaint()
     const ledetekst = document.querySelector("label") as HTMLLabelElement
     const vert = document.querySelector("lt-field") as LtField
 
     // One more round, as a patch would trigger.
     vert.setAttribute("described-by", "annet")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(ledetekst.getAttribute("data-required")).toBe("text")
   })
@@ -943,7 +943,7 @@ describe("lt-field does not read its own echo from the label", () => {
     expect(kontroll.getAttribute("data-state")).toBe("invalid")
 
     ;(document.querySelector(".lt-error-text") as HTMLElement).hidden = true
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(kontroll.hasAttribute("data-state")).toBe(false)
   })
@@ -971,7 +971,7 @@ describe("lt-field does not read its own echo from the label", () => {
         <p class="lt-help-text" id="ytre-help">Kommunen du bor i.</p>
       </lt-field>
     `
-    await ventPaTegning()
+    await waitForPaint()
 
     const ytreLabel = document.getElementById("ytre-label") as HTMLLabelElement
     const ytreInput = document.getElementById("ytre-input") as HTMLInputElement
@@ -1003,21 +1003,21 @@ describe("lt-field does not read its own echo from the label", () => {
         <input class="lt-input" id="e">
         <p class="lt-error-text borte">Skriv en gyldig adresse.</p>
       </lt-field>`
-    await ventPaTegning()
+    await waitForPaint()
     const input = document.getElementById("e") as HTMLInputElement
     expect(input.hasAttribute("aria-invalid")).toBe(false)
 
     ;(document.querySelector(".lt-error-text") as HTMLElement).classList.remove(
       "borte",
     )
-    await ventPaTegning()
+    await waitForPaint()
     expect(input.getAttribute("aria-invalid")).toBe("true")
   })
 
   it("says nothing when the label wraps the whole element", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     document.body.innerHTML = `<label>Navn <lt-field><input class="lt-input" name="navn"></lt-field></label>`
-    await ventPaTegning()
+    await waitForPaint()
     await new Promise((r) => setTimeout(r, 300))
     expect(
       (document.querySelector("input") as HTMLInputElement).labels?.length,
@@ -1029,7 +1029,7 @@ describe("lt-field does not read its own echo from the label", () => {
   it("rewrites for, and reports it, when the label pointed to another id", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     document.body.innerHTML = `<lt-field><label class="lt-label" for="feil">Navn</label><input class="lt-input" id="navn"></lt-field>`
-    await ventPaTegning()
+    await waitForPaint()
     await new Promise((r) => setTimeout(r, 300))
     expect((document.querySelector("label") as HTMLLabelElement).htmlFor).toBe(
       "navn",
@@ -1044,7 +1044,7 @@ describe("lt-field does not read its own echo from the label", () => {
   it("says nothing about a control without an id that is named by aria-labelledby", async () => {
     const advarsel = vi.spyOn(console, "warn").mockImplementation(() => {})
     document.body.innerHTML = `<lt-field><label id="l">Navn</label><input class="lt-input" name="navn" aria-labelledby="l"></lt-field>`
-    await ventPaTegning()
+    await waitForPaint()
     await new Promise((r) => setTimeout(r, 300))
     expect(advarsel).not.toHaveBeenCalled()
     advarsel.mockRestore()
@@ -1056,7 +1056,7 @@ describe("lt-field does not read its own echo from the label", () => {
       <input class="lt-input" id="e" aria-invalid="true">
       <p class="lt-error-text" hidden>Skriv en gyldig adresse.</p>
     </lt-field>`
-    await ventPaTegning()
+    await waitForPaint()
     const input = document.getElementById("e") as HTMLInputElement
     expect(input.getAttribute("aria-invalid")).toBe("true")
     expect(input.getAttribute("aria-describedby")).toBeNull()

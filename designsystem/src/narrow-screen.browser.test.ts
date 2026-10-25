@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest"
 import { page, userEvent } from "vitest/browser"
 
 import { defineLt } from "./register"
-import { monter, ventPaTegning } from "./testing/a11y"
+import { mount, waitForPaint } from "./testing/a11y"
 
 import "./tokens/tokens.css"
 
@@ -442,11 +442,11 @@ describe(`komponentene i et vindu på ${SMAL} piksler`, () => {
   })
 
   it.each(TILFELLER)("%s holder seg innenfor", async (_navn, tilfelle) => {
-    monter(tilfelle.markup)
-    await ventPaTegning()
+    mount(tilfelle.markup)
+    await waitForPaint()
     await tilfelle.aapne?.()
-    await ventPaTegning()
-    await ventPaTegning()
+    await waitForPaint()
+    await waitForPaint()
 
     expect(window.innerWidth).toBe(SMAL)
 

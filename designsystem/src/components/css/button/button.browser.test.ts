@@ -2,11 +2,11 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/color"
+import { color } from "../../../testing/color"
 
 import "../../../tokens/tokens.css"
 import "./button.css"
@@ -34,17 +34,17 @@ describe("lt-button variants", () => {
   it("applies primary defaults", () => {
     const primary = css("primary")
 
-    expect(primary.backgroundColor).toBe(farge("--lt-color-accent-fill"))
-    expect(primary.borderTopColor).toBe(farge("--lt-color-accent-fill"))
-    expect(primary.color).toBe(farge("--lt-color-accent-content"))
+    expect(primary.backgroundColor).toBe(color("--lt-color-accent-fill"))
+    expect(primary.borderTopColor).toBe(color("--lt-color-accent-fill"))
+    expect(primary.color).toBe(color("--lt-color-accent-content"))
   })
 
   it("applies secondary variant styles", () => {
     const secondary = css("secondary")
 
     expect(secondary.backgroundColor).toBe("rgba(0, 0, 0, 0)")
-    expect(secondary.borderTopColor).toBe(farge("--lt-color-accent-border"))
-    expect(secondary.color).toBe(farge("--lt-color-accent-text"))
+    expect(secondary.borderTopColor).toBe(color("--lt-color-accent-border"))
+    expect(secondary.color).toBe(color("--lt-color-accent-text"))
   })
 
   it("applies ghost variant styles", () => {
@@ -52,23 +52,23 @@ describe("lt-button variants", () => {
 
     expect(ghost.backgroundColor).toBe("rgba(0, 0, 0, 0)")
     expect(ghost.borderTopColor).toBe("rgba(0, 0, 0, 0)")
-    expect(ghost.color).toBe(farge("--lt-color-accent-text"))
+    expect(ghost.color).toBe(color("--lt-color-accent-text"))
   })
 
   it("applies danger variant styles", () => {
     const danger = css("danger")
 
-    expect(danger.backgroundColor).toBe(farge("--lt-color-danger-surface"))
-    expect(danger.borderTopColor).toBe(farge("--lt-color-danger-text"))
-    expect(danger.color).toBe(farge("--lt-color-danger-text"))
+    expect(danger.backgroundColor).toBe(color("--lt-color-danger-surface"))
+    expect(danger.borderTopColor).toBe(color("--lt-color-danger-text"))
+    expect(danger.color).toBe(color("--lt-color-danger-text"))
   })
 
   it("applies disabled styles", () => {
     const disabled = css("disabled")
 
-    expect(disabled.backgroundColor).toBe(farge("--lt-color-disabled-surface"))
-    expect(disabled.borderTopColor).toBe(farge("--lt-color-disabled-surface"))
-    expect(disabled.color).toBe(farge("--lt-color-disabled-text"))
+    expect(disabled.backgroundColor).toBe(color("--lt-color-disabled-surface"))
+    expect(disabled.borderTopColor).toBe(color("--lt-color-disabled-surface"))
+    expect(disabled.color).toBe(color("--lt-color-disabled-text"))
     // Markøren vises bare hvis elementet treffes av pekeren
     expect(disabled.pointerEvents).toBe("auto")
   })
@@ -76,7 +76,7 @@ describe("lt-button variants", () => {
 
 describe("lt-button tilgjengelighet", () => {
   it("har nok kontrast i alle varianter", async () => {
-    monter(`
+    mount(`
       <button class="lt-button">Send søknad</button>
       <button class="lt-button" data-variant="secondary">Lagre utkast</button>
       <button class="lt-button" data-variant="ghost">Legg til vedlegg</button>
@@ -85,14 +85,14 @@ describe("lt-button tilgjengelighet", () => {
       <a class="lt-button" href="/oversikt">Gå til oversikten</a>
     `)
 
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
 describe("lt-button deaktivert", () => {
   it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
-    monter(`<button class="lt-button" disabled>Av</button>`)
+    mount(`<button class="lt-button" disabled>Av</button>`)
 
     const element = document.querySelector("button") as HTMLElement
     const ramme = element.getBoundingClientRect()

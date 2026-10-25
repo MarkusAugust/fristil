@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { alert } from "./alert"
 
@@ -15,7 +15,7 @@ import "../help-text/help-text.css"
 
 describe("lt-alert", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <div class="lt-alert">
         <p class="lt-alert__title">Saken er registrert</p>
         <p>Du får svar innen tre uker.</p>
@@ -55,7 +55,7 @@ describe("lt-alert", () => {
 
   it("lar marginen til en hjelpetekst i meldingen stå", () => {
     // `.lt-alert p` nullet den, siden den slo `.lt-help-text` på spesifisitet.
-    monter(`
+    mount(`
       <div class="lt-alert">
         <p>Du får svar innen tre uker.</p>
         <p class="lt-help-text" id="hjelp">Saksnummeret står i kvitteringen.</p>
@@ -80,7 +80,7 @@ describe("lt-alert", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

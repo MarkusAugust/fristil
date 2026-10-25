@@ -16,7 +16,7 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import inputKilde from "./components/css/input/input.css?inline"
 import sokKilde from "./components/css/search/search.css?inline"
-import { monter, ventPaTegning } from "./testing/a11y"
+import { mount, waitForPaint } from "./testing/a11y"
 import { contrastRatio } from "./tokens/color.js"
 import tokenKilde from "./tokens/tokens.css?inline"
 
@@ -46,7 +46,7 @@ describe("disabled button", () => {
   const VARIANTER = ["secondary", "ghost", "danger"] as const
 
   beforeEach(() => {
-    monter(`
+    mount(`
       <button class="lt-button" id="primary" disabled>Send</button>
       ${VARIANTER.map(
         (v) => `
@@ -87,7 +87,7 @@ describe("the search field when input.css loads last", () => {
       <input class="lt-input lt-search" id="gyldig" data-state="success" />
       <input class="lt-input lt-search" id="av" disabled />`)
     dokument.close()
-    await ventPaTegning()
+    await waitForPaint()
 
     for (const id of ["vanlig", "ugyldig", "gyldig", "av"]) {
       const felt = dokument.getElementById(id) as HTMLElement
@@ -107,7 +107,7 @@ describe("the search field when input.css loads last", () => {
 
 describe("the markers on label and legend", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <label class="lt-label" id="l-tekst" data-required="text">Navn</label>
       <label class="lt-label" id="l-valgfri" data-optional>Navn</label>
       <label class="lt-label" id="l-begge" data-required="symbol" data-optional>Navn</label>

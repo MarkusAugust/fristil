@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { pagination } from "./pagination"
 
@@ -14,7 +14,7 @@ import "./pagination.css"
 
 describe("lt-pagination", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <nav aria-label="Sidenavigering">
         <ul class="lt-pagination">
           <li><a href="#">Forrige</a></li>
@@ -55,14 +55,14 @@ describe("lt-pagination", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
 describe("lt-pagination med en deaktivert «Neste»", () => {
   it("gir span-en samme boks som lenkene, og deaktivert farge", () => {
-    monter(`
+    mount(`
       <nav class="lt-pagination" aria-label="Sider">
         <ul>
           <li><a href="#" id="lenke">2</a></li>

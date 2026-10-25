@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest"
 
-import { monter, ventPaTegning } from "../../../testing/a11y"
+import { mount, waitForPaint } from "../../../testing/a11y"
 
 import "../../../tokens/tokens.css"
 import "./suggestion.css"
@@ -16,7 +16,7 @@ import "./suggestion.css"
 describe("suggestion.css før komponenten er registrert", () => {
   it("holder en bar liste skjult", async () => {
     expect(customElements.get("lt-suggestion")).toBeUndefined()
-    monter(`
+    mount(`
       <lt-suggestion>
         <label>Kommune</label>
         <div>
@@ -25,7 +25,7 @@ describe("suggestion.css før komponenten er registrert", () => {
         </div>
       </lt-suggestion>
     `)
-    await ventPaTegning()
+    await waitForPaint()
 
     const liste = document.querySelector("ul") as HTMLElement
     expect(getComputedStyle(liste).display).toBe("none")

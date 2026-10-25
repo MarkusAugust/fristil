@@ -8,7 +8,7 @@ import { defineLtSuggestion } from "./components/frame/suggestion/lt-suggestion"
 import { suggestion } from "./components/frame/suggestion/suggestion"
 import { defineLtTabs } from "./components/frame/tabs/lt-tabs"
 import { tabs } from "./components/frame/tabs/tabs"
-import { monter, ventPaTegning } from "./testing/a11y"
+import { mount, waitForPaint } from "./testing/a11y"
 
 /**
  * At en komponent ikke skriver i ring.
@@ -35,8 +35,8 @@ const attr = (verdier: Record<string, unknown>) =>
 
 /** Teller mutasjoner i et undertre over fire tegninger. */
 async function mutasjonerEtterRo(rot: Element): Promise<number> {
-  await ventPaTegning()
-  await ventPaTegning()
+  await waitForPaint()
+  await waitForPaint()
 
   let antall = 0
   const observatør = new MutationObserver((poster) => {
@@ -49,7 +49,7 @@ async function mutasjonerEtterRo(rot: Element): Promise<number> {
     characterData: true,
   })
 
-  for (let n = 0; n < 4; n += 1) await ventPaTegning()
+  for (let n = 0; n < 4; n += 1) await waitForPaint()
   observatør.disconnect()
   return antall
 }
@@ -64,7 +64,7 @@ describe("komponentene faller til ro", () => {
   })
 
   it("feltet, etter at koblingen er satt", async () => {
-    const flate = monter(`
+    const flate = mount(`
       <lt-field>
         <label class="lt-label" for="ro-epost" data-required="symbol">E-post</label>
         <input class="lt-input" id="ro-epost" type="email" />
@@ -82,7 +82,7 @@ describe("komponentene faller til ro", () => {
       keys: ["oversikt", "vedlegg"],
       label: "Saken",
     })
-    const flate = monter(`
+    const flate = mount(`
       <lt-tabs>
         <ul ${attr(FANER.list)}>
           <li><a ${attr(FANER.tabs[0])}>Oversikt</a></li>
@@ -92,7 +92,7 @@ describe("komponentene faller til ro", () => {
         <section ${attr(FANER.panels[1])}><h2 ${attr(FANER.headings[1])}>Vedlegg</h2>Filer</section>
       </lt-tabs>
     `)
-    await ventPaTegning()
+    await waitForPaint()
 
     const lenker = [...flate.querySelectorAll("[role='tab']")] as HTMLElement[]
     lenker[1].click()
@@ -102,13 +102,13 @@ describe("komponentene faller til ro", () => {
 
   it("sprettoppvinduet, etter at det er åpnet", async () => {
     const SPRETT = popover({ id: "meny" })
-    const flate = monter(`
+    const flate = mount(`
       <lt-popover ${attr(SPRETT.host)}>
         <button ${attr(SPRETT.trigger)} class="lt-button">Handlinger</button>
         <ul ${attr(SPRETT.panel)}><li>Arkiver</li></ul>
       </lt-popover>
     `)
-    await ventPaTegning()
+    await waitForPaint()
 
     const vindu = flate.querySelector("lt-popover") as HTMLElement & {
       show(): void
@@ -120,7 +120,7 @@ describe("komponentene faller til ro", () => {
 
   it("forslagsfeltet, etter at lista er åpnet og et alternativ markert", async () => {
     const FORSLAG = suggestion({ id: "kommune", keys: ["a", "b"] })
-    const flate = monter(`
+    const flate = mount(`
       <lt-suggestion>
         <label ${attr(FORSLAG.label)}>Kommune</label>
         <div>
@@ -134,7 +134,7 @@ describe("komponentene faller til ro", () => {
         </div>
       </lt-suggestion>
     `)
-    await ventPaTegning()
+    await waitForPaint()
 
     const kontroll = flate.querySelector("input") as HTMLInputElement
     kontroll.focus()
@@ -148,7 +148,7 @@ describe("komponentene faller til ro", () => {
 
   it("dialogen, etter at den er åpnet", async () => {
     const BOKS = dialog({ titleId: "tittel", open: true })
-    const flate = monter(`
+    const flate = mount(`
       <lt-dialog ${attr(BOKS.host)}>
         <dialog ${attr(BOKS.dialog)}>
           <h2 ${attr(BOKS.title)}>Vedtaket er registrert</h2>

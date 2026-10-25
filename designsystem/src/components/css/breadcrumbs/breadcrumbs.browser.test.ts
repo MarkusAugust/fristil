@@ -3,9 +3,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import side from "../../../../../documentation/src/content/docs/components/breadcrumbs.mdx?raw"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { breadcrumbs } from "./breadcrumbs"
 
@@ -18,7 +18,7 @@ describe("lt-breadcrumbs", () => {
   })
 
   beforeEach(() => {
-    monter(`
+    mount(`
       <nav aria-label="Du er her">
         <ol class="lt-breadcrumbs">
           <li><a href="#">Forsiden</a></li>
@@ -93,7 +93,7 @@ describe("lt-breadcrumbs", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

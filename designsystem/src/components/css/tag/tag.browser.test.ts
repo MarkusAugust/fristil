@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { tag } from "./tag"
 
@@ -14,7 +14,7 @@ import "./tag.css"
 
 describe("lt-tag", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <span class="lt-tag" id="vanlig">Bostøtte</span>
       <span class="lt-tag" data-variant="filled" id="fylt">Barnehage</span>
       <button class="lt-tag" data-selectable aria-pressed="true" id="valgt" type="button">
@@ -53,7 +53,7 @@ describe("lt-tag", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

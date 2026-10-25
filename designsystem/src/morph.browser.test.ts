@@ -30,7 +30,7 @@ import { defineLtSuggestion } from "./components/frame/suggestion/lt-suggestion"
 import { suggestion } from "./components/frame/suggestion/suggestion"
 import { defineLtTabs } from "./components/frame/tabs/lt-tabs"
 import { tabs } from "./components/frame/tabs/tabs"
-import { settAdresse } from "./testing/address"
+import { setAddress } from "./testing/address"
 
 import "./tokens/tokens.css"
 
@@ -109,7 +109,7 @@ describe("morfing river ikke bort det komponenten setter", () => {
   beforeEach(async () => {
     // Komponenten leser adressen ved lasting, og et klikk på en fane skriver
     // den.
-    await settAdresse("")
+    await setAddress("")
   })
 
   /*

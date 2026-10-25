@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
-import { monter, ventPaTegning } from "./testing/a11y"
+import { mount, waitForPaint } from "./testing/a11y"
 
 import "./tokens/tokens.css"
 import "./components/css/accordion/accordion.css"
@@ -37,7 +37,7 @@ describe("høyre til venstre", () => {
     uten.textContent = `.lt-switch { transition: none; }`
     document.head.append(uten)
 
-    monter(`
+    mount(`
       <input class="lt-input lt-search" type="search" id="sok" />
       <input class="lt-input" type="date" data-variant="date" id="dato" />
       <input class="lt-switch" type="checkbox" role="switch" id="av" />
@@ -57,11 +57,11 @@ describe("høyre til venstre", () => {
   })
 
   it("snur ikonet i søkefeltet", async () => {
-    await ventPaTegning()
+    await waitForPaint()
     const venstre = stil("sok").backgroundPositionX
 
     document.documentElement.dir = "rtl"
-    await ventPaTegning()
+    await waitForPaint()
     const hoyre = stil("sok").backgroundPositionX
 
     expect(venstre).not.toBe(hoyre)
@@ -75,11 +75,11 @@ describe("høyre til venstre", () => {
    * ingenting å regnes om, og alle tre motorene svarer likt.
    */
   it("snur pila i nedtrekkslista, og plassen den ligger i", async () => {
-    monter(`
+    mount(`
       <div dir="ltr"><select class="lt-select" id="venstremot"><option>Valg</option></select></div>
       <div dir="rtl"><select class="lt-select" id="hoyremot"><option>خيار</option></select></div>
     `)
-    await ventPaTegning()
+    await waitForPaint()
 
     const ltr = stil("venstremot")
     const rtl = stil("hoyremot")
@@ -107,11 +107,11 @@ describe("høyre til venstre", () => {
     // Der tegner nettleseren pila selv, og den tar ekte plass i oppsettet.
     // Da skal ingen av sidene ha reservert plass i tillegg. Firefox 150 har
     // ikke `appearance: base-select`, og skal ha feltet som før.
-    monter(`
+    mount(`
       <div dir="ltr"><select class="lt-select" data-picker="styled" id="stylet-ltr"><option>Valg</option></select></div>
       <div dir="rtl"><select class="lt-select" data-picker="styled" id="stylet-rtl"><option>خيار</option></select></div>
     `)
-    await ventPaTegning()
+    await waitForPaint()
 
     for (const id of ["stylet-ltr", "stylet-rtl"]) {
       const felt = stil(id)
@@ -125,17 +125,17 @@ describe("høyre til venstre", () => {
   })
 
   it("snur ikonet i datofeltet", async () => {
-    await ventPaTegning()
+    await waitForPaint()
     const foer = stil("dato").backgroundPositionX
 
     document.documentElement.dir = "rtl"
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(stil("dato").backgroundPositionX).not.toBe(foer)
   })
 
   it("lar bryterknappen bety det samme i begge retninger", async () => {
-    await ventPaTegning()
+    await waitForPaint()
     const avFoer = stil("av").backgroundPositionX
     const paaFoer = stil("pa").backgroundPositionX
 
@@ -143,7 +143,7 @@ describe("høyre til venstre", () => {
     expect(avFoer).not.toBe(paaFoer)
 
     document.documentElement.dir = "rtl"
-    await ventPaTegning()
+    await waitForPaint()
 
     const avEtter = stil("av").backgroundPositionX
     const paaEtter = stil("pa").backgroundPositionX
@@ -162,7 +162,7 @@ describe("høyre til venstre", () => {
      * retning side om side, av samme grunn som i testene over. Begge boblene
      * vises med `display: block`, siden bare én knapp kan ha fokus.
      */
-    monter(
+    mount(
       ["ltr", "rtl"]
         .map(
           (retning) => `
@@ -175,7 +175,7 @@ describe("høyre til venstre", () => {
         )
         .join(""),
     )
-    await ventPaTegning()
+    await waitForPaint()
 
     for (const retning of ["ltr", "rtl"]) {
       const knapp = document
@@ -194,7 +194,7 @@ describe("høyre til venstre", () => {
   it("lar pila i en accordion peke ned og opp i begge retninger", async () => {
     // Kantene er logiske og bytter side, men `rotate` er fysisk. Før pekte
     // pila sidelengs i høyre-til-venstre.
-    monter(
+    mount(
       ["ltr", "rtl"]
         .map(
           (retning) => `
@@ -205,7 +205,7 @@ describe("høyre til venstre", () => {
         )
         .join(""),
     )
-    await ventPaTegning()
+    await waitForPaint()
 
     const vinkel = (id: string) => {
       const summary = document.querySelector(`#${id} summary`) as Element
@@ -223,11 +223,11 @@ describe("høyre til venstre", () => {
   })
 
   it("lar de logiske egenskapene snu av seg selv", async () => {
-    await ventPaTegning()
+    await waitForPaint()
     const foer = stil("sok").paddingLeft
 
     document.documentElement.dir = "rtl"
-    await ventPaTegning()
+    await waitForPaint()
 
     // padding-inline-start i CSS-en, altså ingen egen regel for retningen.
     expect(stil("sok").paddingLeft).not.toBe(foer)

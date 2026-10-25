@@ -3,11 +3,11 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { setAttributes } from "../../../dom"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/color"
+import { color } from "../../../testing/color"
 import { link } from "./link"
 import linkCss from "./link.css?inline"
 
@@ -34,14 +34,14 @@ describe("lt-link variants", () => {
   it("applies default link styles", () => {
     const defaultLink = css("default")
 
-    expect(defaultLink.color).toBe(farge("--lt-color-accent-text"))
+    expect(defaultLink.color).toBe(color("--lt-color-accent-text"))
     expect(defaultLink.textDecorationLine).toBe("underline")
   })
 
   it("applies aria-disabled styles", () => {
     const disabled = css("disabled")
 
-    expect(disabled.color).toBe(farge("--lt-color-neutral-text-subtle"))
+    expect(disabled.color).toBe(color("--lt-color-neutral-text-subtle"))
     expect(disabled.textDecorationLine).toBe("none")
     expect(disabled.pointerEvents).toBe("none")
   })
@@ -49,7 +49,7 @@ describe("lt-link variants", () => {
 
 describe("lt-link tilgjengelighet", () => {
   it("har nok kontrast i tekst og i deaktivert tilstand", async () => {
-    monter(`
+    mount(`
       <p>
         Søknaden er sendt. Du finner den under
         <a class="lt-link" href="/mine-soknader">Mine søknader</a>.
@@ -57,8 +57,8 @@ describe("lt-link tilgjengelighet", () => {
       <a class="lt-link" role="link" tabindex="0" aria-disabled="true">Se årsoppgave</a>
     `)
 
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
@@ -69,7 +69,7 @@ describe("lt.link({ disabled })", () => {
    * og står ikke i tabrekkefølgen, så byggefunksjonen gir begge tilbake.
    */
   it("gir en lenke uten href rollen og plassen i tabrekkefølgen", () => {
-    monter(`<a id="arsoppgave">Se årsoppgave</a>`)
+    mount(`<a id="arsoppgave">Se årsoppgave</a>`)
     const lenke = document.getElementById("arsoppgave") as HTMLAnchorElement
 
     setAttributes(lenke, link({ disabled: true }))
@@ -92,12 +92,12 @@ describe("lt-link besøkt", () => {
    * Nettleseren skjuler `:visited` for skript, så en lenke kan ikke gjøres
    * besøkt herfra. Testen bytter derfor `:visited` med et attributt i en kopi
    * av reglene, i samme rekkefølge. `:hover` sto før `:visited` med samme
-   * spesifisitet, og en besøkt lenke skiftet ikke farge under musa. `:hover`
+   * spesifisitet, og en besøkt lenke skiftet ikke color under musa. `:hover`
    * byttes også, for nettlesersiden har én mus, og hover.browser.test.ts
    * flytter den samtidig.
    */
-  it("skifter farge under musa også når lenken er besøkt", () => {
-    monter(`
+  it("skifter color under musa også når lenken er besøkt", () => {
+    mount(`
       <style>
         ${linkCss.replaceAll(":visited", "[data-besokt]").replaceAll(":hover", "[data-mus]")}
         .lt-link { transition: none; }
@@ -105,11 +105,11 @@ describe("lt-link besøkt", () => {
       <a id="besokt" class="lt-link" href="#" data-besokt>Søknaden din</a>
     `)
     const lenke = document.getElementById("besokt") as HTMLElement
-    expect(getComputedStyle(lenke).color).toBe(farge("--lt-color-visited-text"))
+    expect(getComputedStyle(lenke).color).toBe(color("--lt-color-visited-text"))
 
     lenke.setAttribute("data-mus", "")
     expect(getComputedStyle(lenke).color).toBe(
-      farge("--lt-color-accent-text-strong"),
+      color("--lt-color-accent-text-strong"),
     )
   })
 })

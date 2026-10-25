@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { heading } from "./heading"
 
@@ -14,7 +14,7 @@ import "./heading.css"
 
 describe("lt-heading", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <h1 class="lt-heading" data-size="mega" id="mega">Søknad om bostøtte</h1>
       <h2 class="lt-heading" id="standard">Om søkeren</h2>
       <h3 class="lt-heading" data-size="s" id="liten">Vedlegg</h3>
@@ -49,7 +49,7 @@ describe("lt-heading", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

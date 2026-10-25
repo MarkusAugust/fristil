@@ -4,9 +4,9 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { server } from "vitest/browser"
 import side from "../../../../../documentation/src/content/docs/components/accordion.mdx?raw"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { accordion } from "./accordion"
 
@@ -19,7 +19,7 @@ describe("lt-accordion", () => {
   })
 
   beforeEach(() => {
-    monter(`
+    mount(`
       <details class="lt-accordion" id="forste">
         <summary>Hvem kan søke om bostøtte?</summary>
         <div class="lt-accordion__content">
@@ -107,7 +107,7 @@ describe("lt-accordion", () => {
   it.skipIf(server.browser !== "chromium")(
     "lar teksten i et lukket panel bli funnet av søk i siden",
     () => {
-      monter(`
+      mount(`
         <details class="lt-accordion" id="lukket">
           <summary>Hvem kan søke om bostøtte?</summary>
           <div class="lt-accordion__content"><p>Hybelkaninhabitat</p></div>
@@ -130,7 +130,7 @@ describe("lt-accordion", () => {
   it("gir en overskrift i summary samme størrelse som uten", () => {
     // Dokumentasjonen viser `<summary><h3>`. Før fikk overskriften
     // nettleserens marg og størrelse.
-    monter(`
+    mount(`
       <details class="lt-accordion"><summary id="uten">Spørsmål</summary></details>
       <details class="lt-accordion"><summary><h3 id="med">Spørsmål</h3></summary></details>
     `)
@@ -144,7 +144,7 @@ describe("lt-accordion", () => {
   })
 
   it("gir overskriften og innholdet samme luft til sidene", () => {
-    monter(`
+    mount(`
       <details class="lt-accordion" open style="--lt-accordion-padding-inline: 40px">
         <summary id="topp">Spørsmål</summary>
         <div class="lt-accordion__content" id="innhold"><p>Svar</p></div>
@@ -171,7 +171,7 @@ describe("lt-accordion", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

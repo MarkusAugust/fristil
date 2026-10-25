@@ -12,7 +12,7 @@
  * stylesheet we pass in. That is the most honest test.
  */
 
-export type IsolertFlate = {
+export type IsolatedSurface = {
   /** The shadow root the content is in. */
   rot: ShadowRoot
   /** The box the content is in, with the width the test asked for. */
@@ -24,11 +24,11 @@ export type IsolertFlate = {
  * @param html The markup to test
  * @param bredde The width of the surrounding box, for example "300px"
  */
-export function monterIsolert(
+export function mountIsolated(
   css: string,
   html: string,
   bredde = "300px",
-): IsolertFlate {
+): IsolatedSurface {
   document.body.innerHTML = '<div id="lt-isolert"></div>'
 
   const vert = document.getElementById("lt-isolert")
@@ -47,7 +47,7 @@ export function monterIsolert(
   return { rot, boks }
 }
 
-export type Overflyt = {
+export type Overflow = {
   merke: string
   piksler: number
 }
@@ -57,7 +57,7 @@ export type Overflyt = {
  *
  * Returns an empty list when everything stays inside.
  */
-export function finnOverflyt(boks: HTMLElement): Overflyt[] {
+export function findOverflow(boks: HTMLElement): Overflow[] {
   const ramme = boks.getBoundingClientRect()
 
   return [...boks.querySelectorAll("*")]

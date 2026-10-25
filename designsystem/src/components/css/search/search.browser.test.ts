@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { search } from "./search"
 
@@ -16,7 +16,7 @@ import "../label/label.css"
 
 describe("lt-search", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <form class="lt-search-row" role="search">
         <label class="lt-label lt-sr-only" for="sok">Søk i saker</label>
         <input class="lt-input lt-search" type="search" id="sok" name="q"
@@ -54,7 +54,7 @@ describe("lt-search", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

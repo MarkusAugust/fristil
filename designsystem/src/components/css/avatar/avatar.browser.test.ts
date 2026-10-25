@@ -3,11 +3,11 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
-import { piksel } from "../../../testing/pixel"
+import { pixel } from "../../../testing/pixel"
 import { avatar } from "./avatar"
 import avatarCss from "./avatar.css?inline"
 
@@ -16,7 +16,7 @@ import "./avatar.css"
 
 describe("lt-avatar", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <span class="lt-avatar" data-size="small" id="liten" aria-hidden="true">ON</span>
       <span class="lt-avatar" id="vanlig" aria-hidden="true">ON</span>
       <span class="lt-avatar" data-size="large" id="stor" aria-hidden="true">ON</span>
@@ -56,8 +56,8 @@ describe("lt-avatar", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
@@ -70,7 +70,7 @@ describe("lt-avatar som knapp", () => {
    * et attributt i en kopi av reglene, slik testen for besøkte lenker gjør.
    */
   it("viser fokusringen og ikke ringen rundt bildet", () => {
-    monter(`
+    mount(`
       <style>${avatarCss.replaceAll(":focus-visible", "[data-fokus]")}</style>
       <button class="lt-avatar" id="profil" aria-label="Profil">ON</button>
     `)
@@ -95,20 +95,20 @@ describe("lt-avatar med bilde", () => {
     )}`
     const stil =
       "--lt-avatar-size: 96px; --lt-color-neutral-border-subtle: rgb(255, 0, 0)"
-    monter(`
+    mount(`
       <span class="lt-avatar" id="rund" style="${stil}"><img src="${hvitt}" alt="" /></span>
       <span class="lt-avatar" data-variant="square" id="firkant" style="${stil}"><img src="${hvitt}" alt="" /></span>
     `)
     for (const bilde of document.querySelectorAll("img")) await bilde.decode()
-    await ventPaTegning()
+    await waitForPaint()
 
     for (const id of ["rund", "firkant"]) {
       const element = document.getElementById(id) as HTMLElement
-      expect(await piksel(element, 0.5), id).toEqual([255, 255, 255])
+      expect(await pixel(element, 0.5), id).toEqual([255, 255, 255])
       // De ytterste pikslene, siden kanten av en sirkel er utjevnet mot siden.
       let rødest = 0
       for (const x of [0, 0.01, 0.02, 0.03]) {
-        const [r, g, b] = await piksel(element, x)
+        const [r, g, b] = await pixel(element, x)
         rødest = Math.max(rødest, r - Math.max(g, b))
       }
       expect(rødest, id).toBeGreaterThan(60)
@@ -118,19 +118,19 @@ describe("lt-avatar med bilde", () => {
     // Ringen er en `outline`, og en slik males etter alt innholdet i
     // stablingskonteksten. Uten en egen kontekst per avatar lå ringen til
     // avataren bak som en bue over bildet til den foran. Den bak får en rød
-    // ring og den foran et hvitt bilde med hvit ring, så hver rød piksel inne
+    // ring og den foran et hvitt bilde med hvit ring, så hver rød pixel inne
     // i den foran er ringen bak som skinner gjennom.
     const hvitt = `data:image/svg+xml,${encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="white"/></svg>',
     )}`
-    monter(`
+    mount(`
       <ul class="lt-avatar-stack" style="--lt-avatar-size: 96px; --lt-avatar-stack-overlap: -24px">
         <li><span class="lt-avatar" id="bak" style="--lt-color-neutral-border-subtle: rgb(255, 0, 0)"><img src="${hvitt}" alt="" /></span></li>
         <li><span class="lt-avatar" id="foran" style="--lt-color-neutral-border-subtle: rgb(255, 255, 255)"><img src="${hvitt}" alt="" /></span></li>
       </ul>
     `)
     for (const bilde of document.querySelectorAll("img")) await bilde.decode()
-    await ventPaTegning()
+    await waitForPaint()
 
     // Stabelen snur rekkefølgen: den første i markupen står lengst til
     // høyre, og den andre ligger over venstre kant av den, 24 px inn.
@@ -139,7 +139,7 @@ describe("lt-avatar med bilde", () => {
     // Ringen bak finnes: rød i den ytterste kanten på siden som ikke er dekket.
     let rødest = 0
     for (const x of [0.97, 0.98, 0.99, 1]) {
-      const [r, g, b] = await piksel(bak, x)
+      const [r, g, b] = await pixel(bak, x)
       rødest = Math.max(rødest, r - Math.max(g, b))
     }
     expect(rødest, "ringen bak").toBeGreaterThan(60)
@@ -148,7 +148,7 @@ describe("lt-avatar med bilde", () => {
     // leses over en bredde på noen piksler og i tre høyder.
     for (const x of [0.73, 0.75, 0.77, 0.79])
       for (const y of [0.3, 0.5, 0.7]) {
-        const [r, g, b] = await piksel(foran, x, y)
+        const [r, g, b] = await pixel(foran, x, y)
         expect(r - Math.max(g, b), `foran ved ${x},${y}`).toBeLessThan(40)
       }
   })
@@ -162,7 +162,7 @@ describe("lt-avatar med bilde", () => {
     const hvitt = `data:image/svg+xml,${encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="white"/></svg>',
     )}`
-    monter(`
+    mount(`
       <style>${avatarCss.replaceAll(":focus-visible", "[data-fokus]")}</style>
       <ul class="lt-avatar-stack" id="stabel" style="--lt-avatar-size: 96px; --lt-avatar-stack-overlap: -24px; --lt-focus-ring: 2px solid rgb(255, 0, 0)">
         <li><button class="lt-avatar" id="bak" data-fokus aria-label="Bak"><img src="${hvitt}" alt="" /></button></li>
@@ -170,7 +170,7 @@ describe("lt-avatar med bilde", () => {
       </ul>
     `)
     for (const bilde of document.querySelectorAll("img")) await bilde.decode()
-    await ventPaTegning()
+    await waitForPaint()
 
     // Stabelen er 168 px bred. Den bak begynner 72 px inn, og fokusringen
     // ligger 2 til 4 px utenfor venstre kant, under den foran uten løftet.
@@ -178,7 +178,7 @@ describe("lt-avatar med bilde", () => {
     expect(stabel.getBoundingClientRect().width).toBeCloseTo(168, 0)
     let rødest = 0
     for (const x of [0.4, 0.405, 0.41, 0.415]) {
-      const [r, g, b] = await piksel(stabel, x)
+      const [r, g, b] = await pixel(stabel, x)
       rødest = Math.max(rødest, r - Math.max(g, b))
     }
     expect(rødest, "fokusringen bak").toBeGreaterThan(60)

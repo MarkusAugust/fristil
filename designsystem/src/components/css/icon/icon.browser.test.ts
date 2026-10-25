@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { lt } from "../../../lt"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { icon } from "./icon"
 
@@ -17,7 +17,7 @@ const STREK = `<path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-widt
 
 describe("lt-icon", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <p style="font-size: 32px">
         Stor tekst <svg class="lt-icon" id="stor" aria-hidden="true" viewBox="0 0 24 24" fill="none">${STREK}</svg>
       </p>
@@ -81,7 +81,7 @@ describe("lt-icon", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

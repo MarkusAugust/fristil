@@ -2,8 +2,8 @@
 
 import { describe, expect, it } from "vitest"
 
-import { monter, ventPaTegning } from "../../../testing/a11y"
-import { gåTil } from "../../../testing/address"
+import { mount, waitForPaint } from "../../../testing/a11y"
+import { goTo } from "../../../testing/address"
 import { defineLtTabs } from "./lt-tabs"
 
 import "../../../tokens/tokens.css"
@@ -56,15 +56,15 @@ function synlige(): string[] {
 describe("overgangen fra tabs.css til komponenten", () => {
   it("viser de samme panelene før og etter registrering", async () => {
     expect(customElements.get("lt-tabs")).toBeUndefined()
-    monter(SIDEN)
-    await gåTil("#dypt")
-    await ventPaTegning()
+    mount(SIDEN)
+    await goTo("#dypt")
+    await waitForPaint()
     const foer = synlige()
 
     defineLtTabs()
     await customElements.whenDefined("lt-tabs")
-    await ventPaTegning()
-    await ventPaTegning()
+    await waitForPaint()
+    await waitForPaint()
 
     // Treffet står i en rad med server-controlled, der adressen ikke velger.
     // De to ytre radene viser panelet med treffet, raden ved siden av den

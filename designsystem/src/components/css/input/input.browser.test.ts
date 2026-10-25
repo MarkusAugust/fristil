@@ -2,12 +2,12 @@
 
 import { beforeEach, describe, expect, it } from "vitest"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
-import { farge } from "../../../testing/color"
-import { finnOverflyt, monterIsolert } from "../../../testing/isolated"
+import { color } from "../../../testing/color"
+import { findOverflow, mountIsolated } from "../../../testing/isolated"
 import inputCss from "./input.css?inline"
 
 import "../../../tokens/tokens.css"
@@ -39,16 +39,16 @@ describe("lt-input", () => {
   it("applies default styles", () => {
     const input = css("default")
 
-    expect(input.backgroundColor).toBe(farge("--lt-color-neutral-canvas"))
-    expect(input.borderTopColor).toBe(farge("--lt-color-disabled-text"))
-    expect(input.color).toBe(farge("--lt-color-neutral-text-strong"))
+    expect(input.backgroundColor).toBe(color("--lt-color-neutral-canvas"))
+    expect(input.borderTopColor).toBe(color("--lt-color-disabled-text"))
+    expect(input.color).toBe(color("--lt-color-neutral-text-strong"))
   })
 
   it("applies invalid styles", () => {
     const input = css("invalid")
 
-    expect(input.backgroundColor).toBe(farge("--lt-color-danger-surface"))
-    expect(input.borderTopColor).toBe(farge("--lt-color-danger-text"))
+    expect(input.backgroundColor).toBe(color("--lt-color-danger-surface"))
+    expect(input.borderTopColor).toBe(color("--lt-color-danger-text"))
   })
 
   it("applies date variant styles", () => {
@@ -73,16 +73,16 @@ describe("lt-input", () => {
   it("applies success styles", () => {
     const input = css("success")
 
-    expect(input.backgroundColor).toBe(farge("--lt-color-success-surface"))
-    expect(input.borderTopColor).toBe(farge("--lt-color-success-text"))
+    expect(input.backgroundColor).toBe(color("--lt-color-success-surface"))
+    expect(input.borderTopColor).toBe(color("--lt-color-success-text"))
   })
 
   it("applies disabled styles", () => {
     const input = css("disabled")
 
-    expect(input.backgroundColor).toBe(farge("--lt-color-disabled-surface"))
-    expect(input.borderTopColor).toBe(farge("--lt-color-disabled-surface"))
-    expect(input.color).toBe(farge("--lt-color-disabled-text"))
+    expect(input.backgroundColor).toBe(color("--lt-color-disabled-surface"))
+    expect(input.borderTopColor).toBe(color("--lt-color-disabled-surface"))
+    expect(input.color).toBe(color("--lt-color-disabled-text"))
     // Markøren vises bare hvis elementet treffes av pekeren
     expect(input.pointerEvents).toBe("auto")
   })
@@ -90,7 +90,7 @@ describe("lt-input", () => {
 
 describe("lt-input tilgjengelighet", () => {
   it("har nok kontrast og ledetekst i alle tilstander", async () => {
-    monter(`
+    mount(`
       <label class="lt-label" for="a11y-standard">E-postadresse</label>
       <input class="lt-input" id="a11y-standard" type="email" />
 
@@ -104,25 +104,25 @@ describe("lt-input tilgjengelighet", () => {
       <input class="lt-input" id="a11y-dato" type="date" data-variant="date" value="2026-05-31" />
     `)
 
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
 describe("lt-input uten CSS-reset", () => {
   it("holder seg innenfor boksen sin", () => {
-    const { boks } = monterIsolert(
+    const { boks } = mountIsolated(
       inputCss,
       `<input class="lt-input" type="email" value="ola@eksempel.no" />`,
     )
 
-    expect(finnOverflyt(boks)).toEqual([])
+    expect(findOverflow(boks)).toEqual([])
   })
 })
 
 describe("lt-input deaktivert", () => {
   it("viser not-allowed-markøren, og blir faktisk truffet av musa", () => {
-    monter(`<input class="lt-input" disabled value="Av" />`)
+    mount(`<input class="lt-input" disabled value="Av" />`)
 
     const element = document.querySelector("input") as HTMLElement
     const ramme = element.getBoundingClientRect()

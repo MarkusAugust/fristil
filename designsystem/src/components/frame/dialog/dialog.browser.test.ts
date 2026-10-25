@@ -11,9 +11,9 @@ import {
 } from "vitest"
 import { userEvent } from "vitest/browser"
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
 import { dialog } from "./dialog"
@@ -25,7 +25,7 @@ import "../../css/button/button.css"
 
 describe(".lt-dialog", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <button class="lt-button" id="apne" type="button">Slett søknaden</button>
       <dialog class="lt-dialog" id="dialog" aria-labelledby="dialog-tittel">
         <h2 class="lt-dialog__title" id="dialog-tittel">Slette søknaden?</h2>
@@ -102,8 +102,8 @@ describe(".lt-dialog", () => {
     const d = document.getElementById("dialog") as HTMLDialogElement
     d.showModal()
 
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
@@ -118,7 +118,7 @@ describe("bredden på dialogen", () => {
      * boksen her; uten den er det vindusruten som gjelder, og det er riktig
      * for en dialog åpnet med `showModal()`.
      */
-    monter(`
+    mount(`
       <div id="smal" style="width: 240px; position: relative">
         <dialog class="lt-dialog" id="i-boks" open>
           <p>Innhold</p>
@@ -132,7 +132,7 @@ describe("bredden på dialogen", () => {
       </div>
     `)
 
-    await ventPaTegning()
+    await waitForPaint()
 
     for (const [boksId, dialogId] of [
       ["smal", "i-boks"],
@@ -170,7 +170,7 @@ async function lukkOgVent(d: HTMLDialogElement, verdi?: string) {
   )
   d.close(verdi)
   await lukket
-  await ventPaTegning()
+  await waitForPaint()
 }
 
 describe("lt-dialog", () => {
@@ -180,7 +180,7 @@ describe("lt-dialog", () => {
 
   async function monterDialog(open: boolean) {
     const boks = dialog({ titleId: "tittel", open })
-    monter(`
+    mount(`
       <lt-dialog ${attr(boks.host)}>
         <dialog ${attr(boks.dialog)}>
           <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
@@ -192,7 +192,7 @@ describe("lt-dialog", () => {
       </lt-dialog>
     `)
     await customElements.whenDefined("lt-dialog")
-    await ventPaTegning()
+    await waitForPaint()
     return {
       vert: document.querySelector("lt-dialog") as HTMLElement,
       d: document.querySelector("dialog") as HTMLDialogElement,
@@ -225,11 +225,11 @@ describe("lt-dialog", () => {
     const { vert, d } = await monterDialog(false)
 
     vert.setAttribute("open", "")
-    await ventPaTegning()
+    await waitForPaint()
     expect(d.open).toBe(true)
 
     vert.removeAttribute("open")
-    await ventPaTegning()
+    await waitForPaint()
     expect(d.open).toBe(false)
   })
 
@@ -264,7 +264,7 @@ describe("lt-dialog", () => {
         </dialog>
       </lt-dialog>`
 
-    await ventPaTegning()
+    await waitForPaint()
     window.removeEventListener("error", lytter)
 
     expect(feil).toEqual([])
@@ -300,7 +300,7 @@ describe("lt-dialog", () => {
 
     // Dette er det en morfing gjør: serverens node sier fortsatt `open`.
     vert.setAttribute("open", "")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(d.open, "serveren kunne ikke åpne dialogen på nytt").toBe(true)
   })
@@ -313,7 +313,7 @@ describe("lt-dialog", () => {
     })
 
     vert.setAttribute("open", "")
-    await ventPaTegning()
+    await waitForPaint()
     await lukkOgVent(d)
 
     expect(meldinger).toEqual([true, false])
@@ -323,7 +323,7 @@ describe("lt-dialog", () => {
     // Håndskrevet markup, og dokumentasjonen har vist dette lenge: verten
     // sier `open`, men `<dialog>` har det ikke. Byggefunksjonen gir begge nå,
     // så dette tilfellet finnes bare i maler noen har skrevet selv.
-    monter(`
+    mount(`
       <lt-dialog open>
         <dialog class="lt-dialog" aria-labelledby="tittel">
           <h2 class="lt-dialog__title" id="tittel">Tittel</h2>
@@ -331,7 +331,7 @@ describe("lt-dialog", () => {
       </lt-dialog>
     `)
     await customElements.whenDefined("lt-dialog")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(document.querySelector("dialog")?.matches(":modal")).toBe(true)
   })
@@ -351,7 +351,7 @@ describe("lt-dialog", () => {
 
     d.removeAttribute("open")
     vert.removeAttribute("open")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(d.matches(":modal"), "dialogen står igjen i topplaget").toBe(false)
 
@@ -397,7 +397,7 @@ describe("lt-dialog", () => {
     d.close("lukk")
 
     document.body.append(holder)
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(d.open, "dialogen spratt opp igjen").toBe(false)
     expect(
@@ -446,8 +446,8 @@ describe("lt-dialog", () => {
     vert.removeAttribute("open")
     vert.setAttribute("open", "")
 
-    await ventPaTegning()
-    await ventPaTegning()
+    await waitForPaint()
+    await waitForPaint()
 
     expect(d.matches(":modal"), "dialogen lukket seg selv etterpå").toBe(true)
     expect(vert.hasAttribute("open")).toBe(true)
@@ -459,7 +459,7 @@ describe("lt-dialog", () => {
     // først i dokumentet her, så en komponent som bare spurte etter «den
     // første dialogen» ville åpnet feil boks.
     const boks = dialog({ titleId: "tittel", open: true })
-    monter(`
+    mount(`
       <lt-dialog ${attr(boks.host)}>
         <div class="et-eller-annet-kort">
           <dialog id="fremmed"><p>Noe helt annet</p></dialog>
@@ -470,7 +470,7 @@ describe("lt-dialog", () => {
       </lt-dialog>
     `)
     await customElements.whenDefined("lt-dialog")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect((document.getElementById("min") as HTMLDialogElement).open).toBe(
       true,
@@ -496,7 +496,7 @@ describe("lt-dialog", () => {
     const { vert, d } = await monterDialog(true)
     await lukkOgVent(d, "slett")
     vert.setAttribute("open", "")
-    await ventPaTegning()
+    await waitForPaint()
     expect(d.matches(":modal")).toBe(true)
 
     const svar: Array<{ open: boolean; returnValue: string }> = []
@@ -504,7 +504,7 @@ describe("lt-dialog", () => {
       svar.push(event.detail)
     })
     vert.removeAttribute("open")
-    await ventPaTegning()
+    await waitForPaint()
 
     // Før kom «slett» fra forrige gang, og en app som slettet på den verdien
     // slettet noe brukeren aldri ba om.
@@ -523,7 +523,7 @@ describe("lt-dialog", () => {
     vert.remove()
     vert.setAttribute("open", "")
     annet.append(vert)
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(d.matches(":modal")).toBe(true)
     expect(vert.hasAttribute("open")).toBe(true)
@@ -543,7 +543,7 @@ describe("lt-dialog", () => {
     d.close("slett")
     vert.setAttribute("open", "")
     await lukket
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(lest).toEqual(["slett"])
     expect(d.matches(":modal")).toBe(false)
@@ -561,7 +561,7 @@ describe("lt-dialog", () => {
     ny.setAttribute("open", "")
     ny.append(d)
     document.body.append(ny)
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(d.matches(":modal")).toBe(true)
     expect(ny.hasAttribute("open")).toBe(true)
@@ -579,7 +579,7 @@ describe("lt-dialog", () => {
 
     vert.prepend(document.createElement("span"))
     vert.append(d)
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(d.matches(":modal")).toBe(true)
     expect(svar).toEqual([])
@@ -595,7 +595,7 @@ describe("lt-dialog", () => {
     const annet = document.createElement("div")
     document.body.append(annet)
     annet.append(vert)
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(d.matches(":modal")).toBe(true)
     expect(svar).toEqual([])
@@ -604,7 +604,7 @@ describe("lt-dialog", () => {
   it("har ingen tilgjengelighetsbrudd når den er åpen", async () => {
     await monterDialog(true)
 
-    await forventIngenTilgjengelighetsbrudd()
+    await expectNoAccessibilityViolations()
   })
 })
 
@@ -786,7 +786,7 @@ describe("dialogen før den er modal", () => {
 
         const etter = boks.getBoundingClientRect()
 
-        // Én piksel slingringsmonn for avrunding, ikke mer.
+        // Én pixel slingringsmonn for avrunding, ikke mer.
         expect(Math.abs(etter.left - før.left)).toBeLessThanOrEqual(1)
         expect(Math.abs(etter.top - før.top)).toBeLessThanOrEqual(1)
         expect(Math.abs(etter.width - før.width)).toBeLessThanOrEqual(1)
@@ -1052,7 +1052,7 @@ describe("lt-dialog med server-controlled", () => {
     // det komponenten lukker dialogen, og uten en melding herfra fikk appen
     // aldri vite at den ble lukket.
     const boks = dialog({ titleId: "sc2-tittel", open: true })
-    monter(`
+    mount(`
       <lt-dialog server-controlled ${attr(boks.host)}>
         <dialog ${attr(boks.dialog)}>
           <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
@@ -1060,7 +1060,7 @@ describe("lt-dialog med server-controlled", () => {
       </lt-dialog>
     `)
     await customElements.whenDefined("lt-dialog")
-    await ventPaTegning()
+    await waitForPaint()
 
     const vert = document.querySelector("lt-dialog") as HTMLElement
     const d = document.querySelector("dialog") as HTMLDialogElement
@@ -1069,8 +1069,8 @@ describe("lt-dialog med server-controlled", () => {
 
     d.removeAttribute("open")
     vert.removeAttribute("open")
-    await ventPaTegning()
-    await ventPaTegning()
+    await waitForPaint()
+    await waitForPaint()
 
     expect(d.matches(":modal")).toBe(false)
     expect(meldinger).toEqual([false])
@@ -1085,7 +1085,7 @@ describe("lt-dialog med server-controlled", () => {
      * også når dialogen står i topplaget.
      */
     const boks = dialog({ titleId: "sc-tittel", open: true })
-    monter(`
+    mount(`
       <lt-dialog server-controlled ${attr(boks.host)}>
         <dialog ${attr(boks.dialog)}>
           <h2 ${attr(boks.title)}>Vedtaket er registrert</h2>
@@ -1097,7 +1097,7 @@ describe("lt-dialog med server-controlled", () => {
       <button id="utenfor">Utenfor</button>
     `)
     await customElements.whenDefined("lt-dialog")
-    await ventPaTegning()
+    await waitForPaint()
 
     const vert = document.querySelector("lt-dialog") as HTMLElement
     const d = document.querySelector("dialog") as HTMLDialogElement
@@ -1106,8 +1106,8 @@ describe("lt-dialog med server-controlled", () => {
     expect(d.matches(":modal")).toBe(true)
 
     d.removeAttribute("open")
-    await ventPaTegning()
-    await ventPaTegning()
+    await waitForPaint()
+    await waitForPaint()
 
     expect(d.matches(":modal"), "dialogen står igjen i topplaget").toBe(false)
     expect(vert.hasAttribute("open")).toBe(false)
@@ -1129,7 +1129,7 @@ describe("dialogen med farget topp", () => {
     expect(boks.dialog["data-color"]).toBe("success")
     expect(dialog({ titleId: "x" }).dialog["data-color"]).toBeUndefined()
 
-    monter(`
+    mount(`
       <dialog ${attr(boks.dialog)} open>
         <div ${attr(boks.header)}>
           <h2 ${attr(boks.title)}>Full pott</h2>
@@ -1139,7 +1139,7 @@ describe("dialogen med farget topp", () => {
         <form method="dialog" ${attr(boks.footer)}><button class="lt-button" value="lukk">Lukk</button></form>
       </dialog>
     `)
-    await ventPaTegning()
+    await waitForPaint()
 
     const d = document.querySelector("dialog") as HTMLElement
     const topp = d.querySelector(".lt-dialog__header") as HTMLElement
@@ -1165,13 +1165,13 @@ describe("dialogen med farget topp", () => {
 
   it("gir ingen stripe når toppen står uten farge", async () => {
     const boks = dialog({ titleId: "noytral-tittel" })
-    monter(`
+    mount(`
       <dialog ${attr(boks.dialog)} open>
         <div ${attr(boks.header)}><h2 ${attr(boks.title)}>Nøytral</h2></div>
         <div ${attr(boks.body)}><p>Tekst.</p></div>
       </dialog>
     `)
-    await ventPaTegning()
+    await waitForPaint()
 
     const topp = document.querySelector(".lt-dialog__header") as HTMLElement
     const kropp = document.querySelector(".lt-dialog__body") as HTMLElement
@@ -1191,7 +1191,7 @@ describe("dialogen med farget topp", () => {
   it("gir neutral samme luft som ingen farge", async () => {
     const boks = dialog({ titleId: "uten-tittel" })
     const noytral = dialog({ titleId: "noytral-verdi-tittel" })
-    monter(`
+    mount(`
       <dialog ${attr(boks.dialog)} id="uten" open>
         <div ${attr(boks.header)}><h2 ${attr(boks.title)}>Uten</h2></div>
         <div ${attr(boks.body)}><p>Tekst.</p></div>
@@ -1201,7 +1201,7 @@ describe("dialogen med farget topp", () => {
         <div ${attr(noytral.body)}><p>Tekst.</p></div>
       </dialog>
     `)
-    await ventPaTegning()
+    await waitForPaint()
 
     // `neutral` er standardverdien, og editoren foreslår den. Før fikk den
     // 20 piksler under overskriften i stedet for 8.
@@ -1217,7 +1217,7 @@ describe("dialogen med farget topp", () => {
     // En bekreftelsesdialog med bare overskrift og knapper. Med bunnluften
     // satt til null sto knappene helt inntil overskriften.
     const medTopp = dialog({ titleId: "kort-tittel" })
-    monter(`
+    mount(`
       <dialog ${attr(medTopp.dialog)} open id="med">
         <div ${attr(medTopp.header)}><h2 ${attr(medTopp.title)}>Slette?</h2></div>
         <form method="dialog" ${attr(medTopp.footer)}><button class="lt-button" value="ja">Ja</button></form>
@@ -1227,7 +1227,7 @@ describe("dialogen med farget topp", () => {
         <form method="dialog" class="lt-dialog__footer"><button class="lt-button" value="ja">Ja</button></form>
       </dialog>
     `)
-    await ventPaTegning()
+    await waitForPaint()
 
     // Til knappen, ikke til knapperadens boks: radens luft ligger inni boksen
     // med topp, og under boksen som marg uten. Det brukeren ser er knappen.
@@ -1246,13 +1246,13 @@ describe("dialogen med farget topp", () => {
 
   it("står som før uten en topp", async () => {
     const boks = dialog({ titleId: "vanlig-tittel" })
-    monter(`
+    mount(`
       <dialog ${attr(boks.dialog)} open>
         <h2 ${attr(boks.title)}>Vanlig</h2>
         <div ${attr(boks.body)}><p>Tekst.</p></div>
       </dialog>
     `)
-    await ventPaTegning()
+    await waitForPaint()
 
     const d = document.querySelector("dialog") as HTMLElement
     expect(getComputedStyle(d).paddingTop).not.toBe("0px")
@@ -1295,9 +1295,9 @@ describe("lt-dialog kobler fra bar struktur", () => {
     </lt-dialog>`
 
   async function monterBar(markup = BAR) {
-    monter(markup)
+    mount(markup)
     await customElements.whenDefined("lt-dialog")
-    await ventPaTegning()
+    await waitForPaint()
     return {
       d: document.querySelector("dialog") as HTMLDialogElement,
       tittel: document.querySelector("h2") as HTMLElement,
@@ -1386,7 +1386,7 @@ describe("lt-dialog kobler fra bar struktur", () => {
     // En bekreftelse i kroppen til en innstillingsdialog: den indre
     // dialogens overskrift står i den ytre dialogens kropp, men kroppen er
     // ikke den indres, så overskriften er fortsatt tittelen dens.
-    monter(`
+    mount(`
       <dialog id="ytre" aria-label="Innstillinger">
         <div class="lt-dialog__body">
           <lt-dialog>
@@ -1401,7 +1401,7 @@ describe("lt-dialog kobler fra bar struktur", () => {
       </dialog>
     `)
     await customElements.whenDefined("lt-dialog")
-    await ventPaTegning()
+    await waitForPaint()
     const indre = document.getElementById("indre") as HTMLDialogElement
     const tittel = document.getElementById("sikker") as HTMLElement
 
@@ -1434,7 +1434,7 @@ describe("lt-dialog kobler fra bar struktur", () => {
     d.close("slett")
     knapp.classList.add("opptatt")
     await lukket
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(d.open).toBe(false)
     expect(vert.hasAttribute("open")).toBe(false)
@@ -1464,7 +1464,7 @@ describe("lt-dialog kobler fra bar struktur", () => {
     d.close("slett")
     kropp.append(document.createElement("p"))
     await lukket
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(d.open).toBe(false)
     expect(vert.hasAttribute("open")).toBe(false)
@@ -1480,7 +1480,7 @@ describe("lt-dialog kobler fra bar struktur", () => {
     d.removeAttribute("aria-labelledby")
     tittel.removeAttribute("id")
     tittel.removeAttribute("class")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(tittel.id).toBe(id)
     expect(d.getAttribute("aria-labelledby")).toBe(id)
@@ -1511,7 +1511,7 @@ describe("lt-dialog kobler fra bar struktur", () => {
 
     document.body.append(omslag)
     await customElements.whenDefined("lt-dialog")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(poster.map((p) => `${p.type} ${p.attributeName}`)).toEqual([])
     observatør.disconnect()
@@ -1531,7 +1531,7 @@ describe("lt-dialog når React skriver egenskapen", () => {
      * brukeren hadde lukket fikk `open` tilbake og åpnet seg igjen.
      */
     const boks = dialog({ titleId: "tittel" })
-    monter(
+    mount(
       `<lt-dialog><dialog ${attr(boks.dialog)}><h2 ${attr(boks.title)}>Slette?</h2></dialog></lt-dialog>`,
     )
     await customElements.whenDefined("lt-dialog")
@@ -1543,11 +1543,11 @@ describe("lt-dialog når React skriver egenskapen", () => {
     expect(vert.hasAttribute("open"), "undefined på en lukket").toBe(false)
 
     vert.open = true
-    await ventPaTegning()
+    await waitForPaint()
     expect(vert.hasAttribute("open")).toBe(true)
 
     vert.open = undefined
-    await ventPaTegning()
+    await waitForPaint()
     expect(vert.hasAttribute("open"), "undefined på en åpen").toBe(false)
     expect(document.querySelector("dialog")?.matches(":modal")).toBe(false)
   })

@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { fileUpload } from "./file-upload"
 
@@ -17,7 +17,7 @@ import "../button/button.css"
 
 describe("lt-file-upload", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <label class="lt-label" for="vedlegg">Last opp vedlegg</label>
       <input class="lt-file-upload" type="file" id="vedlegg" multiple
         accept=".pdf,.jpg" aria-describedby="vedlegg-hjelp" />
@@ -62,7 +62,7 @@ describe("lt-file-upload", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

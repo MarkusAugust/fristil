@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest"
 import { userEvent } from "vitest/browser"
-import { monter, ventPaTegning } from "./testing/a11y"
+import { mount, waitForPaint } from "./testing/a11y"
 import { lightCells } from "./tokens/matrix-cells"
 
 import "./tokens/tokens.css"
@@ -161,8 +161,8 @@ async function fokuserGjennom() {
 
 describe("tastaturfokus er synlig", () => {
   it("gir hver kontroll en ring på to piksler", async () => {
-    monter(SIDEN)
-    await ventPaTegning()
+    mount(SIDEN)
+    await waitForPaint()
 
     const funnet = await fokuserGjennom()
 
@@ -179,8 +179,8 @@ describe("tastaturfokus er synlig", () => {
   })
 
   it("henter ringen fra tokenet, ikke fra hver komponent", async () => {
-    monter(`<button class="lt-button" type="button">Send</button>`)
-    await ventPaTegning()
+    mount(`<button class="lt-button" type="button">Send</button>`)
+    await waitForPaint()
 
     const ring = getComputedStyle(document.documentElement)
       .getPropertyValue("--lt-focus-ring")

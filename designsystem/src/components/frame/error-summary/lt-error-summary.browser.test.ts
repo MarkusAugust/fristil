@@ -3,9 +3,9 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
 import { errorSummary } from "./error-summary"
@@ -21,7 +21,7 @@ const FEIL = errorSummary({ count: 2 })
 
 async function tegn() {
   await customElements.whenDefined("lt-error-summary")
-  await ventPaTegning()
+  await waitForPaint()
 }
 
 describe("lt-error-summary", () => {
@@ -30,7 +30,7 @@ describe("lt-error-summary", () => {
   })
 
   beforeEach(async () => {
-    monter(`
+    mount(`
       <lt-error-summary ${attr(FEIL.host)}>
         <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
         <ul>
@@ -111,8 +111,8 @@ describe("lt-error-summary", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
@@ -136,7 +136,7 @@ describe("lt-error-summary i en skyggerot", () => {
       <input id="skygge-epost" type="email" />
     `
 
-    await ventPaTegning()
+    await waitForPaint()
     ;(rot.getElementById("skygge-lenke") as HTMLElement).click()
 
     expect(rot.activeElement?.id).toBe("skygge-epost")
@@ -159,7 +159,7 @@ describe("lt-error-summary når skjemaet feiler igjen", () => {
   })
 
   beforeEach(async () => {
-    monter(`
+    mount(`
       <lt-error-summary ${attr(FEIL.host)} hidden>
         <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
         <ul>
@@ -177,17 +177,17 @@ describe("lt-error-summary når skjemaet feiler igjen", () => {
     const felt = document.getElementById("epost") as HTMLInputElement
 
     boks.hidden = false
-    await ventPaTegning()
+    await waitForPaint()
     expect(document.activeElement).toBe(boks)
 
     // Brukeren retter noe, serveren skjuler boksen igjen.
     boks.hidden = true
     felt.focus()
-    await ventPaTegning()
+    await waitForPaint()
 
     // Og så feiler innsendingen på nytt, med de samme feilene.
     boks.hidden = false
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(
       document.activeElement,
@@ -208,7 +208,7 @@ describe("lt-error-summary flytter fokus dit det faktisk kan lande", () => {
      * satt likevel, og boksen fikk aldri fokus da forelderen ble synlig og
      * lista byttet ut.
      */
-    monter(`
+    mount(`
       <div id="panel" hidden>
         <lt-error-summary ${attr(FEIL.host)}>
           <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
@@ -235,7 +235,7 @@ describe("lt-error-summary flytter fokus dit det faktisk kan lande", () => {
     // Landet ikke første forsøk, prøver komponenten igjen ved neste endring
     // i lista. Men ikke mens noen skriver: da patcher live-valideringen
     // lista, og fokus skal bli der det er.
-    monter(`
+    mount(`
       <div id="panel" hidden>
         <lt-error-summary ${attr(FEIL.host)}>
           <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
@@ -258,7 +258,7 @@ describe("lt-error-summary flytter fokus dit det faktisk kan lande", () => {
   })
 
   it("følger for til en gruppe når ledeteksten ikke har en kontroll", async () => {
-    monter(`
+    mount(`
       <lt-error-summary ${attr(FEIL.host)} data-autofocus="false">
         <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
         <ul><li><a href="#valg-label" id="valg-lenke">Velg minst ett alternativ</a></li></ul>
@@ -275,7 +275,7 @@ describe("lt-error-summary flytter fokus dit det faktisk kan lande", () => {
   it("river ikke fokus ut av et felt utenfor skyggerota boksen står i", async () => {
     // Rotas `activeElement` er null når fokus står utenfor skyggetreet, så
     // brukeren ble regnet som «ingen», og gjenforsøket tok fokus.
-    monter(`<input id="ute" />`)
+    mount(`<input id="ute" />`)
     const vert = document.createElement("div")
     vert.hidden = true
     document.body.append(vert)
@@ -303,7 +303,7 @@ describe("lt-error-summary flytter fokus dit det faktisk kan lande", () => {
     // `for` er ikke den eneste koblingen mellom ledetekst og kontroll. Med
     // kontrollen inni ledeteksten fikk ledeteksten fokus og en `tabindex`
     // den ikke skulle hatt.
-    monter(`
+    mount(`
       <lt-error-summary ${attr(FEIL.host)} data-autofocus="false">
         <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
         <ul><li><a href="#navn-label" id="navn-lenke">Skriv navnet ditt</a></li></ul>
@@ -326,7 +326,7 @@ describe("lt-error-summary kobler fra bar struktur", () => {
   })
 
   beforeEach(async () => {
-    monter(`
+    mount(`
       <lt-error-summary id="bar-feil">
         <h2>Skjemaet har én feil</h2>
         <ul>
@@ -354,11 +354,11 @@ describe("lt-error-summary kobler fra bar struktur", () => {
     // Og da kan den få fokus, som er hele grunnen til komponenten.
     expect(document.activeElement).toBe(boks())
 
-    await forventIngenTilgjengelighetsbrudd()
+    await expectNoAccessibilityViolations()
   })
 
   it("lar en rolle serveren skrev stå", async () => {
-    monter(`
+    mount(`
       <lt-error-summary id="bar-feil" role="status">
         <h2>Skjemaet har én feil</h2>
         <ul><li><a href="#bar-epost">Skriv en gyldig e-postadresse</a></li></ul>
@@ -379,7 +379,7 @@ describe("lt-error-summary kobler fra bar struktur", () => {
     boks().removeAttribute("role")
     boks().removeAttribute("tabindex")
     tittel.removeAttribute("class")
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(boks().classList.contains("lt-error-summary")).toBe(true)
     expect(boks().getAttribute("role")).toBe("alert")
@@ -394,7 +394,7 @@ describe("lt-error-summary mens brukeren retter", () => {
   })
 
   it("tar ikke fokus når en synlig liste tømmes og fylles igjen", async () => {
-    monter(
+    mount(
       `<lt-error-summary ${attr(FEIL.host)}>
         <h2 ${attr(FEIL.title)}>Skjemaet har feil</h2>
         <ul><li><a href="#navn">Navn mangler</a></li></ul>
@@ -408,9 +408,9 @@ describe("lt-error-summary mens brukeren retter", () => {
 
     navn.focus()
     liste.innerHTML = ""
-    await ventPaTegning()
+    await waitForPaint()
     liste.innerHTML = '<li><a href="#epost">E-post mangler</a></li>'
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(document.activeElement).toBe(navn)
   })
@@ -421,7 +421,7 @@ describe("lt-error-summary mens brukeren retter", () => {
      * Nullstillingen ved `hidden` sto etter returen for en tom liste, så
      * boksen tok fokus ved første feilede innsending og aldri igjen.
      */
-    monter(
+    mount(
       `<lt-error-summary ${attr(FEIL.host)}>
         <h2 ${attr(FEIL.title)}>Skjemaet har feil</h2>
         <ul><li><a href="#navn">Navn mangler</a></li></ul>
@@ -437,11 +437,11 @@ describe("lt-error-summary mens brukeren retter", () => {
     navn.focus()
     liste.innerHTML = ""
     boks.hidden = true
-    await ventPaTegning()
+    await waitForPaint()
 
     liste.innerHTML = '<li><a href="#navn">Navn mangler</a></li>'
     boks.hidden = false
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(document.activeElement, "andre innsending").toBe(boks)
   })
@@ -459,7 +459,7 @@ describe("lt-error-summary og en prosentkodet lenke", () => {
       advarsler.push(String(deler[0]))
     }
     try {
-      monter(
+      mount(
         `<lt-error-summary ${attr(FEIL.host)} data-autofocus="false">
           <h2 ${attr(FEIL.title)}>Skjemaet har én feil</h2>
           <ul><li><a href="#f%C3%B8dselsdato">Skriv en dato som finnes</a></li></ul>
@@ -467,8 +467,8 @@ describe("lt-error-summary og en prosentkodet lenke", () => {
         <label for="fødselsdato">Fødselsdato</label><input id="fødselsdato" />`,
       )
       await tegn()
-      await ventPaTegning()
-      await ventPaTegning()
+      await waitForPaint()
+      await waitForPaint()
 
       expect(advarsler.filter((a) => a.includes("lenken peker"))).toEqual([])
 
@@ -490,7 +490,7 @@ describe("lt-error-summary under et annet tagnavn", () => {
      * klassen, så boksen skjules likevel.
      */
     defineLtErrorSummary("annen-oppsummering")
-    monter(`
+    mount(`
       <annen-oppsummering ${attr(FEIL.host)} hidden>
         <h2 ${attr(FEIL.title)}>Skjemaet har to feil</h2>
         <ul>
@@ -501,14 +501,14 @@ describe("lt-error-summary under et annet tagnavn", () => {
       <input id="epost" />
     `)
     await customElements.whenDefined("annen-oppsummering")
-    await ventPaTegning()
+    await waitForPaint()
     const boks = document.querySelector("annen-oppsummering") as HTMLElement
 
     expect(boks.classList.contains("lt-error-summary")).toBe(true)
     expect(getComputedStyle(boks).display).toBe("none")
 
     boks.hidden = false
-    await ventPaTegning()
+    await waitForPaint()
     expect(getComputedStyle(boks).display).toBe("block")
     expect(document.activeElement).toBe(boks)
   })
@@ -533,7 +533,7 @@ describe("lt-error-summary når et rammeverk gir fokus tilbake", () => {
     </lt-error-summary>`
 
   it("tar fokus tilbake når boksen vises", async () => {
-    monter(
+    mount(
       `<form>${boks()}<input id="epost-r"><button type="submit" id="send-r">Send</button></form>`,
     )
     await tegn()
@@ -543,13 +543,13 @@ describe("lt-error-summary når et rammeverk gir fokus tilbake", () => {
 
     feil.hidden = false
     send.focus()
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(document.activeElement).toBe(feil)
   })
 
   it("tar fokus tilbake når boksen settes inn", async () => {
-    monter(
+    mount(
       `<form id="skjema-r"><input id="epost-r"><button type="submit" id="send-r">Send</button></form>`,
     )
     await tegn()
@@ -561,7 +561,7 @@ describe("lt-error-summary når et rammeverk gir fokus tilbake", () => {
     const feil = mal.content.firstElementChild as HTMLElement
     document.getElementById("skjema-r")?.prepend(feil)
     send.focus()
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(document.activeElement).toBe(feil)
   })
@@ -581,14 +581,14 @@ describe("lt-error-summary når et rammeverk gir fokus tilbake", () => {
     // Boksen fikk fokus, ellers sier testen ingenting om vilkåret.
     expect(rot.activeElement).toBe(feil)
     epost.focus()
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(rot.activeElement).toBe(epost)
     vert.remove()
   })
 
   it("lar fokus stå når et skript har flyttet det til noe annet", async () => {
-    monter(
+    mount(
       `<form>${boks()}<input id="epost-r"><button type="submit" id="send-r">Send</button></form>`,
     )
     await tegn()
@@ -600,7 +600,7 @@ describe("lt-error-summary når et rammeverk gir fokus tilbake", () => {
     feil.hidden = false
     expect(document.activeElement).toBe(feil)
     epost.focus()
-    await ventPaTegning()
+    await waitForPaint()
 
     expect(document.activeElement).toBe(epost)
   })

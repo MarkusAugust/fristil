@@ -12,9 +12,9 @@
  * from the previous test, and `hashchange` is awaited, so it does not arrive
  * during the test.
  */
-export async function settAdresse(hash: string): Promise<void> {
+export async function setAddress(hash: string): Promise<void> {
   document.body.innerHTML = ""
-  await gåTil(hash)
+  await goTo(hash)
 }
 
 /**
@@ -25,7 +25,7 @@ export async function settAdresse(hash: string): Promise<void> {
  * afterwards does not become it, so a test of `:target` must mount first and
  * navigate afterwards.
  */
-export async function gåTil(hash: string): Promise<void> {
+export async function goTo(hash: string): Promise<void> {
   const fragment = hash.replace(/^#/, "")
   if (location.hash.slice(1) === fragment) return
   const endret = new Promise<void>((ferdig) =>

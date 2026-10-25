@@ -20,7 +20,7 @@ function løs(tabell: Record<string, string>, token: string): string {
   return verdi
 }
 
-export function farge(
+export function color(
   token: string,
   utseende: "light" | "dark" = "light",
 ): string {

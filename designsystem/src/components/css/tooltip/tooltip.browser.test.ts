@@ -5,9 +5,9 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { cdp, server } from "vitest/browser"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { tooltip } from "./tooltip"
 
@@ -17,7 +17,7 @@ import "../button/button.css"
 
 describe("lt-tooltip", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <span class="lt-tooltip">
         <button class="lt-button" data-variant="ghost" type="button"
           aria-describedby="hint" id="utloser">Arkiver</button>
@@ -63,7 +63,7 @@ describe("lt-tooltip", () => {
     const omslag = utloser.closest(".lt-tooltip") as HTMLElement
     const boble = document.getElementById("hint") as HTMLElement
     utloser.focus()
-    await ventPaTegning()
+    await waitForPaint()
 
     const knapp = utloser.getBoundingClientRect()
     const hoyde = (boble.getBoundingClientRect().bottom + knapp.top) / 2
@@ -125,7 +125,7 @@ describe("lt-tooltip", () => {
   )
 
   it("tar ikke plass når den er skjult, så den ikke gir sidelengs rulling", () => {
-    monter(`
+    mount(`
       <div style="inline-size: 320px; overflow: auto" id="smal">
         <div style="display: flex; justify-content: flex-end">
           <span class="lt-tooltip">
@@ -145,7 +145,7 @@ describe("lt-tooltip", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

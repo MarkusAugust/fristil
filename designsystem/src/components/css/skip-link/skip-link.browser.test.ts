@@ -4,9 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { userEvent } from "vitest/browser"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { skipLink } from "./skip-link"
 import skipLinkCss from "./skip-link.css?inline"
@@ -19,7 +19,7 @@ const SYNLIG = /matrix\(1, 0, 0, 1, 0, 0\)|none/
 
 describe("lt-skip-link", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <a class="lt-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
       <main id="hovedinnhold" tabindex="-1">
         <p>Innholdet på siden.</p>
@@ -63,7 +63,7 @@ describe("lt-skip-link", () => {
     // svaret ikke avhenger av om vinduet har fokus i motoren testen kjører i.
     expect(skipLinkCss).toContain(".lt-skip-link:focus {")
     expect(skipLinkCss).not.toMatch(/\.lt-skip-link:focus-visible/)
-    monter(`
+    mount(`
       <style>
         ${skipLinkCss.replaceAll(":focus", "[data-fokus]")}
         .lt-skip-link { transition: none; }
@@ -82,7 +82,7 @@ describe("lt-skip-link", () => {
     // Det er derfor stilarket bruker `:focus`. Etter et tastetrykk treffer
     // `:focus-visible` også fra kode, så det er museklikket som avgjør, og
     // klikket må være ekte, fra pekeren.
-    monter(`
+    mount(`
       <a class="lt-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
       <main id="hovedinnhold" tabindex="-1">
         <p>Innholdet på siden.</p>
@@ -119,7 +119,7 @@ describe("lt-skip-link", () => {
     // ikke fokus, så skjermleseren får ikke beskjed om at brukeren er
     // framme. Siden sa at neste Tab da fortsatte i menyen, men nettleseren
     // fortsetter fra målet uansett: det er fokuset som mangler.
-    monter(`
+    mount(`
       <a class="lt-skip-link" href="#hovedinnhold" id="hopp">Hopp til hovedinnhold</a>
       <header><a href="#meny" id="meny">Meny</a></header>
       <main id="hovedinnhold" tabindex="-1">
@@ -158,7 +158,7 @@ describe("lt-skip-link", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })

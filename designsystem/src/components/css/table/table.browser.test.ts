@@ -3,9 +3,9 @@
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  forventIngenTilgjengelighetsbrudd,
-  monter,
-  ventPaTegning,
+  expectNoAccessibilityViolations,
+  mount,
+  waitForPaint,
 } from "../../../testing/a11y"
 import { table, tableSort, tableSortDirections } from "./table"
 
@@ -14,7 +14,7 @@ import "./table.css"
 
 describe("lt-table", () => {
   beforeEach(() => {
-    monter(`
+    mount(`
       <div class="lt-table-scroll" tabindex="0" role="region" aria-label="Fakturaer">
         <table class="lt-table" data-variant="striped" id="tabell">
           <caption>Fakturaer i 2026</caption>
@@ -63,8 +63,8 @@ describe("lt-table", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
 
@@ -85,7 +85,7 @@ describe("kolonner som kan sorteres", () => {
         </tbody>
       </table>
     `
-    monter(rad(false, "uten") + rad(true, "med"))
+    mount(rad(false, "uten") + rad(true, "med"))
   })
 
   /** Hvor teksten i et element faktisk står, ikke hvor boksen står. */
@@ -172,7 +172,7 @@ describe("kolonner som kan sorteres", () => {
   })
 
   it("har ingen tilgjengelighetsbrudd", async () => {
-    await ventPaTegning()
-    await forventIngenTilgjengelighetsbrudd()
+    await waitForPaint()
+    await expectNoAccessibilityViolations()
   })
 })
