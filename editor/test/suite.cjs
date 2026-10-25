@@ -40,7 +40,7 @@ exports.run = async () => {
     document.uri,
     found[0].range,
   )
-  const fix = actions.find((a) => a.title === "Bytt til lt-button")
+  const fix = actions.find((a) => a.title === "Change to lt-button")
   assert.ok(
     fix,
     `ingen rettelse blant ${actions.map((a) => a.title).join(", ")}`,
