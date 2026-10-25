@@ -250,7 +250,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
     },
     panel: {
       description:
-        "Panelet som åpnes: elementet med `popover`, eller klassen. Det må ha en id fra serveren, som `popovertarget` og `aria-controls` peker på; uten den går fokus tapt etter en oppdatering.",
+        "Panelet som åpnes: elementet med `popover`, eller klassen. Det må ha en id fra serveren, som `aria-controls` på knappen peker på. Komponenten lager aldri en, og uten den kan knappen ikke kobles til panelet.",
       content: "free",
       stableId: true,
     },
@@ -454,7 +454,7 @@ export const elements: readonly ElementDoc[] = [
   element<typeof FsPopover>(
     FS_POPOVER_TAG,
     "popover",
-    "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` er nok; komponenten setter `popover`, id-en og `aria-controls` der markupen kom uten.",
+    "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en.",
     {
       open: flag(
         "Panelet er åpent. Serveren kan sende attributtet for å åpne panelet.",

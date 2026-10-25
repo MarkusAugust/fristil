@@ -572,8 +572,8 @@ skriver derfor aldri id på det brukeren rører: feltet i \`<fs-field>\` og
 \`<fs-suggestion>\`, og fanene i \`<fs-tabs>\`. Skriv \`for\` på ledeteksten og
 \`id\` på feltet, eller legg ledeteksten rundt feltet. Fanene er lenker uten
 id, og panelene har den id-en lenken peker på, den samme ved hver rendring.
-Panelet i \`<fs-popover>\` trenger id på samme måte, for \`popovertarget\` og
-\`aria-controls\`. Lista og alternativene i \`<fs-suggestion>\` kan byttes ut;
+Panelet i \`<fs-popover>\` trenger id på samme måte, for \`aria-controls\` på
+knappen; komponenten lager ingen. Lista og alternativene i \`<fs-suggestion>\` kan byttes ut;
 komponenten kobler dem på nytt og finner det markerte alternativet igjen på
 teksten. Komponenten sier fra i konsollen første gang en patch bytter ut noe
 brukeren hadde rørt.
@@ -1175,7 +1175,7 @@ den første. Og \`outer\` morfer bare når id-ene stemmer: et element med en id
 serveren ikke sendte byttes ut. Komponentene skriver derfor aldri id på det
 brukeren rører. Fanene er lenker uten id, og panelene har den id-en lenken
 peker på, den samme ved hver rendring, som \`fs.tabs()\` skriver den. Panelet i
-\`<fs-popover>\` trenger id på samme måte. Kontrollen i \`<fs-field>\` og
+\`<fs-popover>\` trenger id på samme måte; komponenten lager ingen. Kontrollen i \`<fs-field>\` og
 feltet i \`<fs-suggestion>\` får aldri id fra komponenten: \`for\` og \`id\`
 skriver malen, som HTML krever for at feltet skal ha navn uten JavaScript, eller
 så står ledeteksten rundt feltet og ingen id trengs. Komponenten sier fra i

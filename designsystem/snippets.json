@@ -69,7 +69,7 @@
       "  </ul>",
       "</fs-popover>"
     ],
-    "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` er nok; komponenten setter `popover`, id-en og `aria-controls` der markupen kom uten."
+    "description": "Panel som henger under en knapp og lukker seg selv. En knapp og et panel med klassen `fs-popover` og en id fra malen; komponenten setter `popover` og `aria-controls` der markupen kom uten, men aldri id-en."
   },
   "fs-suggestion": {
     "prefix": "fs-suggestion",

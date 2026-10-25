@@ -413,14 +413,16 @@ describe("fs-popover gjennom Datastars morfing", () => {
     }
   }
 
-  it("bar markup: panelet byttes ut og åpnes igjen, men fokus er borte", async () => {
-    // Knappen har ingen id, bare `aria-controls`, og morfes.
+  it("bar markup: panelet morfes, står åpent, og fokus står", async () => {
+    // Komponenten skriver ingen id på panelet, så panelet i siden og det
+    // serveren sender er det samme for morfingen. Skrev den en id, ble
+    // panelet byttet ut, og fokus var borte.
     const r = await åpneOgPatch(MENY_BAR)
     expect(r).toEqual({
       sammeKnapp: true,
-      sammePanel: false,
+      sammePanel: true,
       åpent: true,
-      fokusIPanelet: false,
+      fokusIPanelet: true,
     })
   })
 
@@ -703,10 +705,27 @@ describe("komponentene sier fra når en patch byttet ut elementene", () => {
     await roSeg()
   }
 
-  it("fs-popover: når det åpne panelet byttes ut", async () => {
-    await apneOgPatchMeny(MENY(""), true)
+  it("fs-popover: når id-en fra serveren endret seg mens vinduet sto åpent", async () => {
+    // Slik en mal skriver det når id-en lages av en teller.
+    const meny = (id: string) => `<fs-popover id="meny-vert">
+  <button class="fs-button" aria-controls="${id}">Handlinger</button>
+  <div class="fs-popover" id="${id}" popover="manual"><button>Slett</button></div>
+</fs-popover>`
+    document.body.innerHTML = meny("meny-1")
+    await ventPaTegning()
+    ;(document.querySelector("fs-popover > button") as HTMLElement).click()
+    await ventPaTegning()
+    patch(meny("meny-2"))
+    await roSeg()
     expect(meldinger()).toHaveLength(1)
-    expect(meldinger()[0]).toContain("fs-popover: en patch byttet ut panelet")
+    expect(meldinger()[0]).toContain(
+      "fs-popover: en oppdatering fra serveren byttet ut panelet",
+    )
+  })
+
+  it("fs-popover: ikke når panelet er bart, for da beholdes det", async () => {
+    await apneOgPatchMeny(MENY(""), true)
+    expect(meldinger()).toEqual([])
   })
 
   it("fs-popover: ikke når serveren skrev id", async () => {

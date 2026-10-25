@@ -119,6 +119,13 @@ egen overskrift «Brytende».
 
 ### Rettet
 
+- **`<fs-popover>` skriver aldri id på panelet.** Den lagde en når malen ikke
+  hadde skrevet en, og Datastar og idiomorph byttet da ut panelet ved neste
+  oppdatering, med fokus og det brukeren gjorde i det. Nå beholdes panelet.
+  Uten id kan knappen ikke kobles til panelet med `aria-controls`, og
+  komponenten sier fra i konsollen. Byttes panelet ut mens det står åpent
+  fordi id-en fra serveren endret seg, sier komponenten også fra, som
+  `<fs-field>` gjør. Oppskriften har id på panelet og merker ingen forskjell.
 - **`server-controlled` satt etter et klikk lot ikke serveren flytte fanen
   med bare `hidden`.** `aria-selected` komponenten selv hadde skrevet, ble
   regnet som serverens ord. Nå gjør komponenten det samme som når serveren

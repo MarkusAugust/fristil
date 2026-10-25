@@ -447,6 +447,24 @@ describe("komponenten sier fra om markup som ikke henger sammen", () => {
     ).toBe(true)
   })
 
+  it("sprettoppvinduet med et panel uten id", async () => {
+    // Komponenten skriver aldri id på panelet, så knappen kan ikke kobles.
+    const advarsel = lytt()
+
+    monter(`
+      <fs-popover>
+        <button class="fs-button">Handlinger</button>
+        <div class="fs-popover">Flytt saken</div>
+      </fs-popover>
+    `)
+    await ventTilRo()
+
+    const om = meldinger(advarsel).filter((m) =>
+      m.includes("panelet har ingen id"),
+    )
+    expect(om).toHaveLength(1)
+  })
+
   it("sprettoppvinduet uten en knapp", async () => {
     // En knapp utenfor panelet er nok: komponenten kobler den. Uten en
     // eneste, eller med bare en som peker på noe annet, finner den ingen.

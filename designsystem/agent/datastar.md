@@ -345,12 +345,13 @@ ellers den første. Og `outer` morfer bare når id-ene stemmer: et element med
 en id serveren ikke sendte byttes ut. Komponentene skriver derfor aldri id på
 det brukeren rører. Fanene er lenker uten id, og panelene har den id-en lenken
 peker på, den samme ved hver rendring, som `fs.tabs()` skriver den. Panelet i
-`<fs-popover>` trenger id på samme måte. Kontrollen i `<fs-field>` og feltet i
-`<fs-suggestion>` får aldri id fra komponenten: `for` og `id` skriver malen,
-som HTML krever for at feltet skal ha navn uten JavaScript, eller så står
-ledeteksten rundt feltet og ingen id trengs. Komponenten sier fra i konsollen
-første gang en patch bytter ut noe brukeren hadde rørt. Skal serveren kunne
-flytte fanen, sier du det med `server-controlled`:
+`<fs-popover>` trenger id på samme måte; komponenten lager ingen. Kontrollen i
+`<fs-field>` og feltet i `<fs-suggestion>` får aldri id fra komponenten: `for`
+og `id` skriver malen, som HTML krever for at feltet skal ha navn uten
+JavaScript, eller så står ledeteksten rundt feltet og ingen id trengs.
+Komponenten sier fra i konsollen første gang en patch bytter ut noe brukeren
+hadde rørt. Skal serveren kunne flytte fanen, sier du det med
+`server-controlled`:
 
 ```html
 <fs-tabs server-controlled data-on:tab-select="$fane = evt.detail.index">
