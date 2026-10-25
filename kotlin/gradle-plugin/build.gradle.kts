@@ -6,13 +6,13 @@ plugins {
 }
 
 /*
- * Gradle-pluginen: `lotekSjekk` sjekker malene som en del av `check`,
- * `lotekTema` bygger temaet av en oppskrift, og `lotekManifest` skriver
- * manifestet prosjektet sjekkes mot til `build/lotek/manifest.json` når
- * prosjektet har fragmenter.
+ * The Gradle plugin: `lotekCheck` checks the templates as part of `check`,
+ * `lotekTheme` builds the theme from a recipe, and `lotekManifest` writes
+ * the manifest the project is checked against to `build/lotek/manifest.json`
+ * when the project has fragments.
  *
- * Den kjører kommandolinja i Gradle-prosessen, den samme WASI-modulen som
- * `java -jar lotek.jar`, så svarene er de samme som i terminalen.
+ * It runs the CLI in the Gradle process, the same WASI module as
+ * `java -jar lotek.jar`, so the answers are the same as in the terminal.
  */
 group = rootProject.group
 version = rootProject.version
@@ -42,7 +42,7 @@ gradlePlugin {
             id = "io.github.markusaugust.lo-tek"
             implementationClass = "no.lotek.gradle.LotekPlugin"
             displayName = "LO-TEK"
-            description = "Sjekker malene mot LO-TEK og bygger temaet, med den samme kjernen som editoren."
+            description = "Checks templates against LO-TEK and builds the theme, with the same core as the editor."
         }
     }
 }

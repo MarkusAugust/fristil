@@ -1,7 +1,7 @@
 {
   "name": "interfaces",
   "displayName": "LO-TEK Interfaces",
-  "description": "Fullføring, forklaringer, snippets, feilmeldinger og hurtigrettelser for LO-TEK-designsystemet: <lt-*>-elementene, lt-klassene og variantene deres.",
+  "description": "Completion, hover, snippets, diagnostics and quick fixes for the LO-TEK design system: the <lt-*> elements, the lt- classes and their variants.",
   "version": "0.9.0",
   "publisher": "lo-tek",
   "license": "MIT",
@@ -156,7 +156,7 @@
             "nunjucks",
             "edge"
           ],
-          "description": "Språkene, som VS Code-språk-id-er, der utvidelsen sjekker markupen og fullfører klasser og verdier. Fullføringen av <lt-*>-elementene fra VS Codes egen HTML-tjeneste gjelder bare html."
+          "description": "The languages, as VS Code language ids, in which the extension checks the markup and completes classes and values. Completion of the <lt-*> elements from VS Code's own HTML service applies only to html."
         }
       }
     }

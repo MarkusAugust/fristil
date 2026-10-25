@@ -1,148 +1,148 @@
 # LO-TEK for Kotlin
 
-LO-TEK i Kotlin og Java, uten Node og uten npm: byggefunksjonene,
-diagnostikken, og CSS-en og web-komponentene som WebJar.
+LO-TEK in Kotlin and Java, without Node and without npm: the builder functions,
+the diagnostics, and the CSS and web components as a WebJar.
 
 ```kotlin
-val felt = Lt.field(id = "epost", required = RequiredMarker.TEXT, error = true, invalid = ugyldig)
+val field = Lt.field(id = "email", required = RequiredMarker.TEXT, error = true, invalid = invalid)
 
 """
-<label ${felt.label.toHtml()}>E-postadresse</label>
-<input ${(Lt.input(type = InputType.EMAIL, state = felt.state) + felt.control).toHtml()}>
-<p ${(Lt.errorText() + felt.error).toHtml()}>Skriv en gyldig adresse.</p>
+<label ${field.label.toHtml()}>Email address</label>
+<input ${(Lt.input(type = InputType.EMAIL, state = field.state) + field.control).toHtml()}>
+<p ${(Lt.errorText() + field.error).toHtml()}>Enter a valid address.</p>
 """
 ```
 
 ```kotlin
-val html = client.post("/soknad") { setBody(ugyldig) }.bodyAsText()
+val html = client.post("/application") { setBody(invalidForm) }.bodyAsText()
 assertEquals(emptyList(), Lotek.diagnosePage(html))
 ```
 
-## Byggefunksjonene
+## The builder functions
 
-`Lt` har de samme byggefunksjonene og valgene som `lt` i TypeScript, med de
-lovlige verdiene som `enum`-er. Hver gir et `Attributes`, et vanlig
-`Map<String, String>` som kan gis til hvilken som helst malmotor, eller skrives
-ut med `toHtml()`. Byggefunksjonene som gir flere sett, som `Lt.dialog` og
-`Lt.field`, gir en dataklasse med ett felt per sett.
+`Lt` has the same builder functions and options as `lt` in TypeScript, with the
+allowed values as `enum`s. Each returns an `Attributes`, a plain
+`Map<String, String>` that can be given to any template engine, or written
+out with `toHtml()`. The builder functions that return several sets, such as `Lt.dialog` and
+`Lt.field`, return a data class with one field per set.
 
-De fleste genereres fra manifestet (`manifest/manifest.json` i npm-pakken)
-når pakken bygges. Manifestet beskriver hver byggefunksjon som en tabell over
-hva hvert valg legger til, og `generate-manifest.ts` prøver tabellen mot
-TypeScript for hver kombinasjon av valg før den skrives. De seks der valgene
-virker sammen (`field`, `label`, `legend`, `suggestion`, `tabs` og
-`errorSummary`) står skrevet for hånd i `Handwritten.kt`.
+Most are generated from the manifest (`manifest/manifest.json` in the npm package)
+when the package is built. The manifest describes each builder function as a table of
+what each option adds, and `generate-manifest.ts` tests the table against
+TypeScript for every combination of options before it is written. The six where the options
+interact (`field`, `label`, `legend`, `suggestion`, `tabs` and
+`errorSummary`) are written by hand in `Handwritten.kt`.
 
-`ContractTest` kjører alle mot hvert byggetilfelle i
-`../designsystem/manifest/build-cases.json`, som har svaret fra TypeScript.
-Én forskjell i ett attributt, og testen feiler.
+`ContractTest` runs all of them against every build case in
+`../designsystem/manifest/build-cases.json`, which has the answer from TypeScript.
+One difference in one attribute, and the test fails.
 
-## Diagnostikken
+## The diagnostics
 
-Diagnostikken er skrevet i Rust (`../core`) og kompilert til WebAssembly.
-Her kjøres modulen av [Chicory](https://chicory.dev), en WebAssembly-runtime i
-ren Java. Modulen gjøres om til JVM-bytekode når pakken bygges, så den kjører
-med JIT-en og starter på en brøkdel av et sekund. Pakken har én avhengighet,
-`chicory:runtime`, uten JNI og uten noe å installere.
+The diagnostics are written in Rust (`../core`) and compiled to WebAssembly.
+Here the module is run by [Chicory](https://chicory.dev), a WebAssembly runtime in
+pure Java. The module is turned into JVM bytecode when the package is built, so it runs
+with the JIT and starts in a fraction of a second. The package has one dependency,
+`chicory:runtime`, with no JNI and nothing to install.
 
-Det virker likt for alt som lager HTML på JVM-en: strenger, kotlinx.html,
-Thymeleaf, JTE, Ktor og Spring. Sjekken leser HTML-en som kommer ut, ikke
-kilden. Et kall låner en instans fra en pool og gir den tilbake etterpå, så
-kall fra flere tråder venter ikke på hverandre. Poolen holder høyst like mange
-ledige instanser som maskinen har prosessorer.
+It works the same for everything that produces HTML on the JVM: strings, kotlinx.html,
+Thymeleaf, JTE, Ktor and Spring. The check reads the HTML that comes out, not
+the source. A call borrows an instance from a pool and returns it afterwards, so
+calls from several threads do not wait for each other. The pool keeps at most as many
+idle instances as the machine has processors.
 
-## Temaet
+## The theme
 
-`Lotek.buildTheme(oppskrift)` bygger fargetemaet av JSON-teksten i en
-oppskrift, med norske eller engelske nøkler som `lotek tema`, og
-`Lotek.inspectTheme(css)` kontrollerer et håndskrevet tema. Svarene,
-`Theme` og `ThemeReport`, har de samme feltene som `CoreTheme` og
-`CoreThemeReport` i TypeScript. Fargekontrakten ligger i jar-en som
-manifestet gjør, og `ThemeParityTest` krever det samme svaret som fasiten i
-`core/theme/` for hver oppskrift og hvert tema.
+`Lotek.buildTheme(recipe)` builds the colour theme from the JSON text of a
+recipe, with Norwegian or English keys like `lotek theme`, and
+`Lotek.inspectTheme(css)` checks a hand-written theme. The answers,
+`Theme` and `ThemeReport`, have the same fields as `CoreTheme` and
+`CoreThemeReport` in TypeScript. The colour contract is in the jar like
+the manifest, and `ThemeParityTest` requires the same answer as the expected results in
+`core/theme/` for every recipe and every theme.
 
-## Manifestet
+## The manifest
 
-`Lotek.manifest` er manifestet i pakken, det samme sjekken går mot, med
-typer: elementene med attributter, deler og hendelser, og klassene med
-attributtene, de lovlige verdiene, innholdet og delene, tokenene med
-avstandene, brekkpunktene, containerbreddene, fargeaksene og
-komponentvariablene, og byggefunksjonene med valgene og formen på
-svaret. `Manifest.parse` leser et annet, som
-det `lotekManifest` skriver for et prosjekt som har overtatt komponenter.
-IntelliJ-pluginen henter klassene til fullføringen herfra.
-`ManifestReaderTest` krever at ingenting fra JSON-en blir borte på veien.
+`Lotek.manifest` is the manifest in the package, the same one the check runs against, with
+types: the elements with attributes, parts and events; the classes with
+attributes, allowed values, content and parts; the tokens with
+the spacings, breakpoints, container widths, colour axes and
+component variables; and the builder functions with their options and the shape of
+the answer. `Manifest.parse` reads another one, such as
+the one `lotekManifest` writes for a project that has taken over components.
+The IntelliJ plugin gets the classes for completion from here.
+`ManifestReaderTest` requires that nothing from the JSON is lost on the way.
 
 ## kotlinx.html
 
-`kotlinx-html/` er en egen pakke, `lo-tek-kotlinx-html`, med utvidelsen
-`Tag.lt(…)`, som legger attributtene fra byggefunksjonene på en tagg.
-`LtTest` bygger en søknadsside med den og krever at `assertLotek` består,
-med og uten feil i skjemaet.
+`kotlinx-html/` is a separate package, `lo-tek-kotlinx-html`, with the extension
+`Tag.lt(…)`, which puts the attributes from the builder functions on a tag.
+`LtTest` builds an application page with it and requires `assertLotek` to pass,
+with and without errors in the form.
 
-## WebJar-en
+## The WebJar
 
-`lotek.css`, stilarket for hver komponent og JavaScript-modulene for
-nettleseren ligger under `META-INF/resources/webjars/lo-tek/<versjon>/`, med
-de samme stiene som i npm-pakken. `LotekWebJar` har stiene. Filene kopieres
-fra npm-pakken, og `WebJarTest` krever at hver import i hver modul peker på en
-fil i WebJar-en.
+`lotek.css`, the stylesheet for each component and the JavaScript modules for
+the browser are under `META-INF/resources/webjars/lo-tek/<version>/`, with
+the same paths as in the npm package. `LotekWebJar` has the paths. The files are copied
+from the npm package, and `WebJarTest` requires every import in every module to point to a
+file in the WebJar.
 
-## Kommandolinja
+## The CLI
 
-`cli/` bygger `lotek.jar`, kommandolinja som `java -jar`. Den
-kjører WASI-modulen fra npm-pakken (`core/lotek.wasm`) med Chicory,
-kompilert til bytekode ved bygg, og henter adresser med Javas egen
-HTTP-klient. `lotek.jar` gis ut på GitHub Releases. Den vanlige jar-en, uten
-avhengighetene i seg, ligger på Maven som `lo-tek-cli`, fordi
-Gradle-pluginen kjører den.
+`cli/` builds `lotek.jar`, the CLI as `java -jar`. It
+runs the WASI module from the npm package (`core/lotek.wasm`) with Chicory,
+compiled to bytecode at build time, and fetches URLs with Java's own
+HTTP client. `lotek.jar` is released on GitHub Releases. The plain jar, without
+the dependencies in it, is on Maven as `lo-tek-cli`, because
+the Gradle plugin runs it.
 
 ```bash
 cd kotlin && ./gradlew :cli:samletJar -Plotek.pakke=../designsystem
-java -jar cli/build/libs/lotek.jar --hjelp
+java -jar cli/build/libs/lotek.jar --help
 ```
 
-## Gradle-pluginen
+## The Gradle plugin
 
-`gradle-plugin/` er pluginen `io.github.markusaugust.lo-tek`, med
-`lotekSjekk`, `lotekTema` og `lotekManifest`. Den kjører kommandolinja
-fra `cli/` i Gradle-prosessen. `LotekPluginTest` kjører den i et
-lite prosjekt med Gradle TestKit, også med konfigurasjonsbufferen.
+`gradle-plugin/` is the plugin `io.github.markusaugust.lo-tek`, with
+`lotekSjekk`, `lotekTema` and `lotekManifest`. It runs the CLI
+from `cli/` in the Gradle process. `LotekPluginTest` runs it in a
+small project with Gradle TestKit, also with the configuration cache.
 
-## Kjør
+## Running
 
 ```bash
 bun --filter @lo-tek/interfaces pack
 cd kotlin && ./gradlew test -Plotek.pakke=../designsystem
 ```
 
-Bygget trenger bare Java. Alt pakken består av, kommer fra npm-pakken
-`@lo-tek/interfaces` med versjonen i `gradle.properties`: kjernen og
-kommandolinja som WebAssembly, manifestet, regelbøkene og filene til
-WebJar-en. `io.github.markusaugust:lo-tek-interfaces` og `@lo-tek/interfaces` med
-samme versjon er altså bygd av de samme filene.
+The build needs only Java. Everything the package consists of comes from the npm package
+`@lo-tek/interfaces` with the version in `gradle.properties`: the core and
+the CLI as WebAssembly, the manifest, the rulebooks and the files for
+the WebJar. `io.github.markusaugust:lo-tek-interfaces` and `@lo-tek/interfaces` with
+the same version are therefore built from the same files.
 
-Uten noe mer hentes versjonen fra npm, og fila sammenlignes med integriteten
-registeret oppgir. Mellom to utgivelser er koden her nyere enn det som ligger
-på npm, og da pakkes tarballen fra repoet og oppgis med `lotek.pakke`, slik
-kommandoene over og CI gjør. Pakkingen krever Bun og Rust, men Gradle gjør
-det ikke. Mot npm-utgaven gir testene feil svar: fasiten under er fra repoet,
-og kjernen fra forrige utgivelse.
+With nothing more, the version is fetched from npm, and the file is compared with the integrity
+the registry states. Between two releases the code here is newer than what is
+on npm, and then the tarball is packed from the repository and passed with `lotek.pakke`, as
+the commands above and CI do. Packing needs Bun and Rust, but Gradle does
+not. Against the npm release the tests give wrong answers: the expected results below are from the repository,
+and the core from the previous release.
 
-`lotek.pakke` er tarballen eller mappa den ligger i, regnet fra `kotlin/`,
-også når bygget tas inn med `includeBuild`. Er den en mappe, brukes
-`lo-tek-interfaces-<versjon>.tgz`. Pakk på nytt når pakken er endret:
-Gradle bruker tarballen som ligger der, også en gammel. Bygget stopper hvis tarballen har en
-annen versjon enn `gradle.properties`, og `bun run prepare-version` setter
-begge.
+`lotek.pakke` is the tarball or the folder it is in, relative to `kotlin/`,
+also when the build is included with `includeBuild`. If it is a folder,
+`lo-tek-interfaces-<version>.tgz` is used. Pack again when the package has changed:
+Gradle uses the tarball that is there, even an old one. The build stops if the tarball has a
+different version from `gradle.properties`, and `bun run prepare-version` sets
+both.
 
-Fasiten for testene er ikke en del av npm-pakken, og leses fra repoet:
-`../designsystem/manifest/build-cases.json` og `../core/parity/`.
+The expected results for the tests are not part of the npm package, and are read from the repository:
+`../designsystem/manifest/build-cases.json` and `../core/parity/`.
 
-`ParityTest` krever at funnene på JVM-en er identiske med fasiten i
-`../core/parity/`, den samme fasiten `core/scripts/check-core.ts`
-krever av kjernen i Bun. Fiksturene utløser til sammen hver regel kjernen har,
-stilarkreglene medregnet, og posisjonene skal peke på riktig tekst i en
-Kotlin-streng, også med «æøå» og emoji foran. Skriptet som leser den rendrede
-siden, `READ_RENDERED_PAGE`, testes av `designsystem/scripts/check-rendered.ts`
-i en ekte nettleser.
+`ParityTest` requires the findings on the JVM to be identical to the expected results in
+`../core/parity/`, the same expected results `core/scripts/check-core.ts`
+requires of the core in Bun. Together the fixtures trigger every rule the core has,
+the stylesheet rules included, and the positions must point to the right text in a
+Kotlin string, also with "æøå" and emoji in front. The script that reads the rendered
+page, `READ_RENDERED_PAGE`, is tested by `designsystem/scripts/check-rendered.ts`
+in a real browser.

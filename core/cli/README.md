@@ -1,50 +1,50 @@
-# lotek, kommandolinja
+# lotek, the CLI
 
-Kommandolinja til LO-TEK, skrevet én gang i Rust:
+LO-TEK's command line, written once in Rust:
 
 ```bash
-lotek sjekk templates/*.html
-lotek sjekk http://localhost:8080/form
-lotek sjekk-tema theme.css
-lotek tema --aksent=#7c3aed --ut=theme.css
+lotek check templates/*.html
+lotek check http://localhost:8080/form
+lotek check-theme theme.css
+lotek theme --accent=#7c3aed --out=theme.css
 lotek agent
-lotek overta button --ut=src/ui
+lotek takeover button --out=src/ui
 ```
 
-`lotek --hjelp` har resten.
+`lotek --help` has the rest.
 
-Den samme koden kjører på to måter:
+The same code runs in two ways:
 
-- **Som kjørbar fil**, bygget for maskinen: `cargo build --release -p lotek`.
-  Den henter `http://`-adresser selv, som en app under utvikling på
-  `localhost`. En `https://`-adresse hentes med `curl` og sendes inn:
-  `curl -s https://… | lotek sjekk --rendret`.
-- **Som WASI-modul**, `cargo build --release -p lotek --target wasm32-wasip1`,
-  som `npx @lo-tek/interfaces`, `java -jar` og wasmtime kjører. WASI har
-  ikke nettverk, så der henter verten siden og gir den til modulen med
-  `--hentet=<fil>`. Se `src/fetch.rs`.
+- **As an executable**, built for the machine: `cargo build --release -p lotek`.
+  It fetches `http://` URLs itself, such as an app in development on
+  `localhost`. An `https://` URL is fetched with `curl` and piped in:
+  `curl -s https://… | lotek check --rendered`.
+- **As a WASI module**, `cargo build --release -p lotek --target wasm32-wasip1`,
+  which `npx @lo-tek/interfaces`, `java -jar` and wasmtime run. WASI has
+  no network, so there the host fetches the page and gives it to the module with
+  `--hentet=<file>`. See `src/fetch.rs`.
 
-Programmet bærer ingen data. Manifestet, fargekontrakten, regelbøkene for
-`agent` og kildekoden til komponentene for `overta` leses fra
-`@lo-tek/interfaces`: fra mappa `LOTEK_PACKAGE` peker på, som npm-pakken,
-jar-en og VS Code-utvidelsen setter selv, eller fra `node_modules` i
-arbeidsmappa eller en mappe over den. Svaret gjelder altså versjonen prosjektet
-har installert. Finnes ingen pakke, sier programmet fra og stopper. Se
+The program carries no data. The manifest, the colour contract, the rulebooks for
+`agent` and the source code of the components for `takeover` are read from
+`@lo-tek/interfaces`: from the folder `LOTEK_PACKAGE` points to, which the npm package,
+the jar and the VS Code extension set themselves, or from `node_modules` in
+the working directory or a directory above it. The answer therefore applies to the version the project
+has installed. If there is no package, the program says so and stops. See
 `src/package.rs`.
 
-Installert fra repoet: `cargo install --git https://github.com/MarkusAugust/lo-tek lotek`.
+Installed from the repository: `cargo install --git https://github.com/MarkusAugust/lo-tek lotek`.
 
-## At den svarer det samme
+## Every host answers the same
 
-Kommandolinja var skrevet i TypeScript. Hver vert svarer det samme, byte for
-byte, på utdata, feilkanalen og feilkoden, i hver kjøring i
+The CLI used to be written in TypeScript. Every host gives the same answer, byte for
+byte, on standard output, standard error and the exit code, in every run in
 `designsystem/scripts/check-cli.ts`:
 
 ```bash
 cargo build --release -p lotek
 LOTEK_SAMMENLIGN=$PWD/target/release/lotek bun ../designsystem/scripts/check-cli.ts
-LOTEK_SAMMENLIGN='["java", "-jar", "/sti/til/lotek.jar"]' bun ../designsystem/scripts/check-cli.ts
+LOTEK_SAMMENLIGN='["java", "-jar", "/path/to/lotek.jar"]' bun ../designsystem/scripts/check-cli.ts
 ```
 
-To forklaringer kommer fra verten og er ikke like: hva som er galt i en
-JSON-fil, og hvorfor ingen svarte på en adresse.
+Two explanations come from the host and are not identical: what is wrong in a
+JSON file, and why nothing answered at a URL.

@@ -3,22 +3,22 @@ name = "lotek-core"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "LO-TEKs sjekk og temagenerator, kompilert til WebAssembly for alle vertsspråk."
+description = "LO-TEK's check and theme generator, compiled to WebAssembly for every host language."
 publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-# Kommandolinja, `lotek`, er en egen crate i `cli/`. Den bruker kjernen som
-# et vanlig bibliotek, og bygges både for maskinen og som WASI-modul.
+# The CLI, `lotek`, is a separate crate in `cli/`. It uses the core as an
+# ordinary library, and is built both for the machine and as a WASI module.
 [workspace]
 members = ["cli"]
 
-# Én avhengighet: CSS-tokenizeren fra Servo, den Firefox bruker, som leser CSS
-# etter CSS Syntax Level 3. Sjekken av et tema trenger den, og den samme skal
-# bære leseren av stilarkene. Manifestet leses av en liten JSON-leser i
-# `src/json.rs`, og de regulære uttrykkene fra TypeScript er skrevet ut for
-# hånd, så modulen slipper en regex-motor.
+# One dependency: the CSS tokenizer from Servo, the one Firefox uses, which reads
+# CSS following CSS Syntax Level 3. The theme check needs it, and the stylesheet
+# reader is to be built on the same one. The manifest is read by a small JSON
+# reader in `src/json.rs`, and the regular expressions from TypeScript are
+# written out by hand, so the module needs no regex engine.
 [dependencies]
 cssparser = "0.38"
 

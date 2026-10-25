@@ -1,124 +1,124 @@
-# LO-TEK-kjernen
+# The LO-TEK core
 
-LO-TEKs sjekk og temagenerator i Rust, kompilert til én WebAssembly-modul som alle
-vertsspråk kjører: Node, Bun og nettleseren direkte (`@lo-tek/interfaces/diagnostics`),
-VS Code (`../editor`), JVM-en gjennom Chicory (`../kotlin`), IntelliJ
-(`../editor-intellij`), og Go, .NET og Python gjennom sine egne runtimer.
+LO-TEK's check and theme generator in Rust, compiled to one WebAssembly module that every
+host language runs: Node, Bun and the browser directly (`@lo-tek/interfaces/diagnostics`),
+VS Code (`../editor`), the JVM through Chicory (`../kotlin`), IntelliJ
+(`../editor-intellij`), and Go, .NET and Python through their own runtimes.
 
-## Hvorfor
+## Why
 
-Sjekken er det eneste som leser markup fra en servermal: Thymeleaf, JTE,
-kotlinx.html, Go-maler, Razor eller en streng. Skrevet i TypeScript var den
-bare tilgjengelig der det fantes en JavaScript-motor. I Rust er den én liten
-modul (rundt 350 kB) uten importer og uten data, og verten trenger bare en
-WebAssembly-runtime.
+The check is the only thing that reads markup from a server template: Thymeleaf, JTE,
+kotlinx.html, Go templates, Razor or a string. Written in TypeScript, it was
+only available where there was a JavaScript engine. In Rust it is one small
+module (around 350 kB) with no imports and no data, and the host only needs a
+WebAssembly runtime.
 
-Den var skrevet i TypeScript først. Rust-utgaven ble oversatt funksjon for
-funksjon, og de to ble kjørt side om side, felt for felt, på over 4000 sider
-uten ett avvik før TypeScript-utgaven ble slettet.
+It was written in TypeScript first. The Rust version was translated function by
+function, and the two were run side by side, field by field, on over 4000 pages
+without a single difference before the TypeScript version was deleted.
 
-## Grensesnittet
+## The interface
 
-Ingen bindingsverktøy, så den samme modulen virker overalt:
+No binding tools, so the same module works everywhere:
 
-1. `alloc(lengde)` gir et område i modulens minne.
-2. Verten skriver HTML-en dit som UTF-8.
-3. `diagnose_markup_raw(peker, lengde)` eller `diagnose_page_raw(…)`, som
-   svarer 0 med funnene.
-4. `result_ptr()` og `result_len()` peker på funnene som JSON.
+1. `alloc(length)` returns a region in the module's memory.
+2. The host writes the HTML there as UTF-8.
+3. `diagnose_markup_raw(pointer, length)` or `diagnose_page_raw(…)`, which
+   answers 0 with the findings.
+4. `result_ptr()` and `result_len()` point to the findings as JSON.
 
-Kjernen bærer ingen data. Verten gir den ordforrådet med
-`load_manifest_raw` og fargekontrakten med `load_contract_raw`, fra pakken
-den har. Hvordan hvert kall svarer, står øverst i `src/lib.rs`.
+The core carries no data. The host gives it the vocabulary with
+`load_manifest_raw` and the colour contract with `load_contract_raw`, from the package
+it has. How each call answers is at the top of `src/lib.rs`.
 
-Hvert funn har `start`, `end`, `line`, `column`, `severity`, `rule`, `link`,
-`message` og noen ganger `fix`. Posisjonene er UTF-16-indekser, som i
-JavaScript og Kotlin: hele kjernen jobber på UTF-16-enheter, så ingen
-posisjon må regnes om. Linja og kolonnen begynner på 1.
+Each finding has `start`, `end`, `line`, `column`, `severity`, `rule`, `link`,
+`message` and sometimes `fix`. The positions are UTF-16 indices, as in
+JavaScript and Kotlin: the whole core works on UTF-16 units, so no
+position has to be converted. Line and column start at 1.
 
-Lasteren for JavaScript står i `designsystem/src/diagnostics/core.ts`, og
-den for Kotlin i `../kotlin/src/main/kotlin/no/lotek/Lotek.kt`. Hver er
-rundt 40 linjer.
+The loader for JavaScript is in `designsystem/src/diagnostics/core.ts`, and
+the one for Kotlin in `../kotlin/src/main/kotlin/no/lotek/Lotek.kt`. Each is
+around 40 lines.
 
-## Temaet
+## The theme
 
-`src/theme/` bygger et fargetema av merkefarger og kontrollerer et tema skrevet
-som CSS. Fargekontrakten, altså lysheten per rolle, kravene og løftene, er data i
-`designsystem/src/tokens/color-contract.json`, som verten gir kjernen.
-`build_theme_raw(peker, lengde)` tar oppskriften som JSON og svarer 0 med temaet
-eller 1 med `{"error": …}`. `inspect_theme_raw(peker, lengde)` tar CSS-en og
-svarer med funnene og hva som ble kontrollert.
+`src/theme/` builds a colour theme from brand colours and checks a theme written
+as CSS. The colour contract, meaning the lightness per role, the requirements and the promises, is data in
+`designsystem/src/tokens/color-contract.json`, which the host gives the core.
+`build_theme_raw(pointer, length)` takes the recipe as JSON and answers 0 with the theme
+or 1 with `{"error": …}`. `inspect_theme_raw(pointer, length)` takes the CSS and
+answers with the findings and what was checked.
 
-CSS-en leses med `cssparser`, tokenizeren fra Servo som Firefox bruker, etter
-CSS Syntax Level 3. Det er kjernens eneste avhengighet.
+The CSS is read with `cssparser`, the tokenizer from Servo that Firefox uses, following
+CSS Syntax Level 3. It is the core's only dependency.
 
-## Ordforrådet
+## The vocabulary
 
-Manifestet er `designsystem/manifest/manifest.json`, som pakken skriver fra
-koden. Verten gir kjernen det, eller et annet, for eksempel det prosjektet
-har installert. Hvor hver vert finner det, står i lasteren for den. Manifestet har en
-`schemaVersion`, og kjernen avviser et manifest med en form den ikke forstår,
-med en forklaring.
+The manifest is `designsystem/manifest/manifest.json`, which the package writes from
+the code. The host gives it to the core, or another one, such as the one the project
+has installed. Where each host finds it is in that host's loader. The manifest has a
+`schemaVersion`, and the core rejects a manifest with a shape it does not understand,
+with an explanation.
 
-## Undertrykking
+## Suppression
 
-En kommentar gjelder den neste taggen:
+A comment applies to the next tag:
 
 ```html
 <!-- lotek-ignore-next -->
-<!-- lotek-ignore-next ukjent-klasse ugyldig-klasseverdi -->
+<!-- lotek-ignore-next unknown-class invalid-class-value -->
 ```
 
-Uten regelnavn undertrykkes alle funn i taggen, med regelnavn bare dem.
-Reglene står i `src/types.rs` (`RULES`).
+Without rule names every finding in the tag is suppressed, with rule names only those.
+The rules are in `src/types.rs` (`RULES`).
 
-## Testene
+## The tests
 
-- `cargo test`: enhetstestene i Rust.
-- `scripts/check-core.ts`: fiksturene i `parity/` mot fasiten ved siden
-  av, felt for felt, og krav om at de til sammen utløser hver regel i
-  `RULES`. En fikstur med en `.css` ved siden av sjekkes også med
-  stilarket. Fasiten for de ti første ble skrevet av TypeScript-utgaven, de
-  andre av kjernen, og den er nå en vanlig test: et endret svar er en endret
-  fasit, og synes i diffen. `ParityTest` i `../kotlin` krever den samme
-  fasiten fra JVM-en. I tillegg kjøres all markup i repoet og 4000
-  ødelagte varianter av fiksturene, med et fast frø, mot kravene et svar må
-  holde: ingen unntak, hvert funn innenfor teksten, riktig linje og kolonne,
-  og en regel som finnes.
-- `scripts/check-diagnostics.ts`: tilfeller som hver sier hvor mange
-  funn de skal gi, hva meldingen skal nevne, hva funnet skal dekke og
-  hva rettelsen skal gjøre. Også tidsgrenser for store sider.
-- `src/theme/tests.rs`: kontrakten og kontrollen av et tema, med tolv
-  aksentfarger, fra knallrød og neon til nesten svart, mot ti nøytrale, fra
-  svart og hvitt til farget grått, i begge utseender: 240 kombinasjoner.
-- `theme/`: oppskrifter og temaer med svaret ved siden av, skrevet av
-  TypeScript-utgaven av temaet før den ble slettet. `check-core.ts` krever
-  det samme svaret, og at 2000 ødelagte temaer ikke krasjer kjernen.
-- `../kotlin`: den samme fasiten fra JVM-en.
+- `cargo test`: the unit tests in Rust.
+- `scripts/check-core.ts`: the fixtures in `parity/` against the expected results next
+  to them, field by field, and a requirement that together they trigger every rule in
+  `RULES`. A fixture with a `.css` next to it is also checked with
+  the stylesheet. The expected results for the first ten were written by the TypeScript version, the
+  others by the core, and it is now an ordinary test: a changed answer is a changed
+  expected result, and shows in the diff. `ParityTest` in `../kotlin` requires the same
+  expected results from the JVM. In addition, all markup in the repository and 4000
+  broken variants of the fixtures, with a fixed seed, are run against the requirements an answer has to
+  meet: no exceptions, every finding within the text, the right line and column,
+  and a rule that exists.
+- `scripts/check-diagnostics.ts`: cases that each state how many
+  findings they should give, what the message should mention, what the finding should cover and
+  what the fix should do. Also time limits for large pages.
+- `src/theme/tests.rs`: the contract and the checking of a theme, with twelve
+  accent colours, from bright red and neon to almost black, against ten neutrals, from
+  black and white to tinted grey, in both appearances: 240 combinations.
+- `theme/`: recipes and themes with the answer next to them, written by
+  the TypeScript version of the theme before it was deleted. `check-core.ts` requires
+  the same answer, and that 2000 broken themes do not crash the core.
+- `../kotlin`: the same expected results from the JVM.
 
-## Kjør
+## Running
 
 ```bash
-bun core/scripts/build.ts         # modulene, til core/dist/
-bun core/scripts/check-core.ts # fasiten og kravene
+bun core/scripts/build.ts         # the modules, to core/dist/
+bun core/scripts/check-core.ts    # the expected results and the requirements
 bun --filter @lo-tek/interfaces pack && (cd kotlin && ./gradlew test -Plotek.pakke=../designsystem)
 ```
 
-Krever Rust. `rust-toolchain.toml` henter versjonen og målene
-`wasm32-unknown-unknown` og `wasm32-wasip1` ved første kall.
+Requires Rust. `rust-toolchain.toml` fetches the version and the targets
+`wasm32-unknown-unknown` and `wasm32-wasip1` on the first call.
 
-Kjernen leser ingenting utenfor `core/` når den bygges. Pakken henter
-modulene med `bun --filter @lo-tek/interfaces core`, og Kotlin-pakken
-får dem fra npm-pakken, så Gradle-bygget trenger verken Rust eller Bun.
+The core reads nothing outside `core/` when it is built. The package fetches
+the modules with `bun --filter @lo-tek/interfaces core`, and the Kotlin package
+gets them from the npm package, so the Gradle build needs neither Rust nor Bun.
 
-## Ytelse
+## Performance
 
-På en side på 68 000 tegn:
+On a page of 68,000 characters:
 
 | | per `diagnosePage` |
 | --- | --- |
-| Rust-modulen i Bun | 9,5 ms |
-| TypeScript-utgaven i Bun, før den ble slettet | 18 ms |
+| The Rust module in Bun | 9.5 ms |
+| The TypeScript version in Bun, before it was deleted | 18 ms |
 
-På JVM er modulen kompilert til bytekode når jar-en bygges, så første kall
-tar rundt 0,2 sekunder, og en ny tråd rundt 40 millisekunder.
+On the JVM the module is compiled to bytecode when the jar is built, so the first call
+takes around 0.2 seconds, and a new thread around 40 milliseconds.
