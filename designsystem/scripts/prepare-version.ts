@@ -14,7 +14,7 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { norskDato } from "./norwegian-date.js"
+import { englishDate } from "./english-date.js"
 
 const pakke = fileURLToPath(new URL("../", import.meta.url))
 const monorepoRot = fileURLToPath(new URL("../../", import.meta.url))
@@ -110,7 +110,7 @@ if (!webTypes.includes(webTypesFør)) {
 /*
  * Merket øverst i presentasjonen bærer versjonen og dagen den kom.
  *
- * Det sto «LO-TEK 0.15.0 · 26. september 2026» mens pakken var på 0.19.0,
+ * Det sto «LO-TEK 0.15.0 · 26 September 2026» mens pakken var på 0.19.0,
  * altså fire versjoner bak, og ingenting oppdaterte det. Presentasjonen har
  * ingen byggesteg, så den kan ikke hente verdien selv slik dokumentasjonen nå
  * gjør; den må skrives, og `check-version.ts` feller hvis den glir fra igjen.
@@ -135,7 +135,7 @@ try {
   stopp(`Fant ikke ${dekkSti}. Er presentasjonen flyttet?`)
 }
 
-const merke = /(Designsystemarkitektur · LO-TEK )[^<·]+ · [^<·]+/
+const merke = /(Design system architecture · LO-TEK )[^<·]+ · [^<·]+/
 if (!merke.test(dekk)) {
   stopp(
     `Fant ikke merket med versjonen i ${dekkSti}. Står det fortsatt der, og heter det det samme?`,
@@ -205,10 +205,10 @@ writeFileSync(
   webTypes.replace(webTypesFør, `"version": "${nyVersjon}"`),
 )
 
-const paaNorsk = norskDato(dato)
+const paaEngelsk = englishDate(dato)
 
-writeFileSync(dekkSti, dekk.replace(merke, `$1${nyVersjon} · ${paaNorsk}`))
-console.log(`Merket i presentasjonen står nå på ${nyVersjon}, ${paaNorsk}.`)
+writeFileSync(dekkSti, dekk.replace(merke, `$1${nyVersjon} · ${paaEngelsk}`))
+console.log(`Merket i presentasjonen står nå på ${nyVersjon}, ${paaEngelsk}.`)
 
 /*
  * `agent/*.md` og `manifest/*.json` har versjonen i seg, og generatorene

@@ -9,7 +9,7 @@
 
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { MAANEDER, norskDato } from "./norwegian-date.js"
+import { englishDate, MONTHS } from "./english-date.js"
 
 const ROT = fileURLToPath(new URL("..", import.meta.url))
 const pakke = await Bun.file(join(ROT, "package.json")).json()
@@ -66,7 +66,9 @@ if (!(pakke.files as string[]).includes("CHANGELOG.md")) {
  * verdien for å bytte den, og det er nettopp det som svikter stille, slik det
  * gjorde for CDN-adressene i dokumentasjonen. Derfor denne.
  */
-const iDekket = /Designsystemarkitektur · LO-TEK ([^\s·]+) · ([^<]+)/.exec(dekk)
+const iDekket = /Design system architecture · LO-TEK ([^\s·]+) · ([^<]+)/.exec(
+  dekk,
+)
 
 /*
  * Datoen har en fasit: den dagen versjonen ble gitt ut, som står i overskriften
@@ -100,15 +102,15 @@ if (!iDekket) {
     feil.push(
       `Overskrifta for ${pakke.version} i CHANGELOG.md mangler en dato på formen «## ${pakke.version} (2026-09-28)», så datoen i presentasjonen kan ikke kontrolleres.`,
     )
-  } else if (iDekket[2].trim() !== norskDato(utgittDato)) {
+  } else if (iDekket[2].trim() !== englishDate(utgittDato)) {
     feil.push(
-      `Presentasjonen er datert «${iDekket[2].trim()}», mens ${pakke.version} ble gitt ut ${norskDato(utgittDato)}.`,
+      `Presentasjonen er datert «${iDekket[2].trim()}», mens ${pakke.version} ble gitt ut ${englishDate(utgittDato)}.`,
     )
   }
 }
 
 /*
- * Målingen i avhengighetsgrafen må si når den ble gjort.
+ * Tallene i avhengighetsgrafen må si når de ble sjekket.
  *
  * Tallene der er lest av `package-lock.json` en bestemt dag, og de eldes: en
  * graf uten dato leses som en påstand om nåtid. Datoen kan ikke utledes av noe
@@ -116,12 +118,12 @@ if (!iDekket) {
  * Det er nok til at den ikke kan bli borte i stillhet.
  */
 const maalt = new RegExp(
-  `class="[^"]*\\bavh-maalt\\b[^"]*"\\s*>\\s*Målt (\\d{1,2}\\. (?:${MAANEDER.join("|")}) \\d{4})`,
+  `class="[^"]*\\bavh-maalt\\b[^"]*"\\s*>\\s*Checked (\\d{1,2} (?:${MONTHS.join("|")}) \\d{4})`,
 ).exec(dekk)
 
 if (!maalt) {
   feil.push(
-    "Avhengighetsgrafen i presentasjonen sier ikke når målingen ble gjort. Den skal ha «Målt <dag>. <måned> <år>» i et element med klassen avh-maalt.",
+    "Avhengighetsgrafen i presentasjonen sier ikke når tallene ble sjekket. Den skal ha «Checked <day> <Month> <year>», for eksempel «Checked 12 October 2026», i et element med klassen avh-maalt.",
   )
 }
 

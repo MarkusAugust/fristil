@@ -1,11 +1,11 @@
-# Presentasjonen på designsystemarkitektur.sobernetics.no, som er domenet til
-# Netlify-prosjektet designsystemarkitetktur.
+# The presentation at designsystemarkitektur.sobernetics.no, the domain of
+# the Netlify project designsystemarkitetktur.
 #
-# Det er et eget Netlify-prosjekt, med denne mappa som basemappe, og det
-# bygger fra master på hver push, som dokumentasjonen. Ingenting kompileres:
-# dekket er én HTML-fil, og bygget kopierer den til index.html så adressen
-# er rota, som den var da fila ble lastet opp for hånd. Kopien lages under
-# bygget og er ikke sporet i git.
+# It is a separate Netlify project, with this folder as its base directory, and
+# it builds from master on every push, like the documentation. Nothing is
+# compiled: the deck is one HTML file, and the build copies it to index.html so
+# the address is the root, as it was when the file was uploaded by hand. The
+# copy is made during the build and is not tracked in git.
 [build]
   base = "presentation"
   publish = "."
