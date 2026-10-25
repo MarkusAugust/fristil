@@ -364,7 +364,7 @@ for (const { navn, sti } of komponentmapper()) {
 
   // <Example> for de enkle, eller en egen demokomponent der eksempelet
   // trenger skript, som <CalendarDemo>.
-  if (!/<(Eksempel|[A-Z][A-Za-z]*Demo)\b/.test(tekst)) {
+  if (!/<(Example|[A-Z][A-Za-z]*Demo)\b/.test(tekst)) {
     avvik.push({ hvor, hva: "mangler en levende forhåndsvisning" })
   }
 
