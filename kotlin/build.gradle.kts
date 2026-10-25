@@ -155,7 +155,7 @@ tasks.test {
     val kjerne = rootDir.resolve("../core")
     val designsystem = rootDir.resolve("../designsystem")
     systemProperty("parity", kjerne.resolve("parity").absolutePath)
-    systemProperty("tema", kjerne.resolve("theme").absolutePath)
+    systemProperty("theme", kjerne.resolve("theme").absolutePath)
     // The fixtures and the build cases are read through a path, so Gradle
     // does not see them without this, and a new fixture would leave the test
     // counted as up to date.

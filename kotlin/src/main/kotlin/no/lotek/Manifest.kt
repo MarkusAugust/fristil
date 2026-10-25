@@ -87,7 +87,7 @@ data class Manifest(
                 "text" -> OptionType.Text
                 "number" -> OptionType.Number
                 "textList" -> OptionType.TextList
-                else -> wrong("$at.kind", "one of «values», «flag», «text», «number», «textList», not «$kind»")
+                else -> wrong("$at.kind", "one of \"values\", \"flag\", \"text\", \"number\", \"textList\", not \"$kind\"")
             }
 
         private fun returns(r: Map<String, Any?>, at: String): Returns {
@@ -98,7 +98,7 @@ data class Manifest(
                 "values" -> Returns.Values(r["values"].strings("$at.values"), optional)
                 "list" -> Returns.ListOf(returns(r["of"].obj("$at.of"), "$at.of"), optional)
                 "group" -> Returns.Group(r["fields"].obj("$at.fields").mapValues { (field, f) -> returns(f.obj("$at.fields.$field"), "$at.fields.$field") }, optional)
-                else -> wrong("$at.kind", "one of «attributes», «text», «values», «list», «group», not «$kind»")
+                else -> wrong("$at.kind", "one of \"attributes\", \"text\", \"values\", \"list\", \"group\", not \"$kind\"")
             }
         }
 
@@ -199,7 +199,7 @@ data class Manifest(
 
         private inline fun <reified E : Enum<E>> enumOf(value: String, at: String): E =
             enumValues<E>().firstOrNull { it.json == value }
-                ?: wrong(at, "one of ${enumValues<E>().joinToString { "«${it.json}»" }}, not «$value»")
+                ?: wrong(at, "one of ${enumValues<E>().joinToString { "\"${it.json}\"" }}, not \"$value\"")
 
         private val Enum<*>.json get() = name.lowercase()
 

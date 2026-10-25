@@ -204,7 +204,7 @@ class ManifestReaderTest {
         assertEquals(Returns.Attributes(optional = true), group.fields.getValue("host"))
         // Every option has a description today, so an option without one is tested by removing the first.
         // The description is last in the option, so the comma before it must go too, or the JSON becomes invalid.
-        // The same sentence is on the class attribute further up, so the replacement is made from «builders» onwards.
+        // The same sentence is on the class attribute further up, so the replacement is made from \"builders\" onwards.
         val buildersAt = text.indexOf("\"builders\"")
         val firstDescription = Regex(",\\n\\s*\"description\": \"(?:[^\"\\\\]|\\\\.)*\"").find(text, buildersAt)!!
         val withoutDescription = Manifest.parse(text.substring(0, buildersAt) + text.substring(buildersAt).replaceFirst(firstDescription.value, ""))
@@ -308,10 +308,10 @@ class ManifestReaderTest {
             error(text.replaceFirst("\"link\": \"https://lo-tek.sobernetics.no/components/tabs/\"", "\"link\": 3")),
             "elements.lt-tabs.link",
         )
-        assertContains(error(text.replaceFirst("\"content\": \"text\"", "\"content\": \"tekst\"")), "«tekst»")
+        assertContains(error(text.replaceFirst("\"content\": \"text\"", "\"content\": \"tekst\"")), "\"tekst\"")
         assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": []}"""), "classes should have been an object")
         // Without tokens the manifest is from before 0.34 and is read; with the wrong shape it throws.
         assertContains(error("""{"schemaVersion": 1, "version": "0", "elements": {}, "classes": {}, "builders": [], "tokens": 3}"""), "tokens should have been an object")
-        assertContains(error(text.replaceFirst("\"kind\": \"flag\"", "\"kind\": \"flagg\"")), "«flagg»")
+        assertContains(error(text.replaceFirst("\"kind\": \"flag\"", "\"kind\": \"flagg\"")), "\"flagg\"")
     }
 }

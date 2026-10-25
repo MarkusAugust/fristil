@@ -25,10 +25,10 @@ private fun requireKeys(builder: String, keys: List<String>): List<String> {
             "Lt.$builder: a key in keys is empty. The keys become ids, and each must be a fixed value from the data."
         }
         require(key.none(::isJsWhitespace)) {
-            "Lt.$builder: the key «$key» contains whitespace. The keys become ids, and an id cannot contain whitespace."
+            "Lt.$builder: the key \"$key\" contains whitespace. The keys become ids, and an id cannot contain whitespace."
         }
         require(seen.add(key)) {
-            "Lt.$builder: the key «$key» appears twice in keys. The keys become ids, and two equal ids point to the same element."
+            "Lt.$builder: the key \"$key\" appears twice in keys. The keys become ids, and two equal ids point to the same element."
         }
     }
     return keys
@@ -274,11 +274,11 @@ fun Lt.tabs(
 ): TabsParts {
     requireId("tabs", id)
     require(id.none(::isJsWhitespace)) {
-        "Lt.tabs: the id «$id» contains whitespace. It becomes part of every id, and an id cannot contain whitespace."
+        "Lt.tabs: the id \"$id\" contains whitespace. It becomes part of every id, and an id cannot contain whitespace."
     }
     // Whitespace as JavaScript counts it, like `trim()` in TypeScript.
     require(!label.all(::isJsWhitespace)) {
-        "Lt.tabs: label is missing or empty. The tab list needs a name that says what the tabs choose between, otherwise the screen reader says only «tab list»."
+        "Lt.tabs: label is missing or empty. The tab list needs a name that says what the tabs choose between, otherwise the screen reader says only \"tab list\"."
     }
     val tabKeys = requireKeys("tabs", keys)
     fun panelId(key: String) = "$id-$key"

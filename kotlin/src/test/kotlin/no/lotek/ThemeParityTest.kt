@@ -67,27 +67,25 @@ class ThemeParityTest {
     }
 
     @Test
-    fun `Norwegian and English keys give the same theme`() {
-        val norwegian = Lotek.buildTheme("""{"aksent": "#7c3aed", "fare": "#b3261e", "form": {"buttonRadius": "0"}}""")
-        val english = Lotek.buildTheme("""{"accent": "#7c3aed", "danger": "#b3261e", "shape": {"buttonRadius": "0"}}""")
-        assertEquals(english, norwegian)
-        assertTrue(norwegian.light.isNotEmpty() && norwegian.violations.isEmpty() && "--lt-button-radius" in norwegian.css)
+    fun `Norwegian keys are unknown keys`() {
+        val error = assertFailsWith<IllegalArgumentException> { Lotek.buildTheme("""{"aksent": "#7c3aed", "form": {"buttonRadius": "0"}}""") }
+        assertEquals("Unknown key in the recipe: aksent, form", error.message)
     }
 
     @Test
     fun `a recipe with an unknown key throws before the core sees it`() {
-        val error = assertFailsWith<IllegalArgumentException> { Lotek.buildTheme("""{"aksent": "#7c3aed", "acent": "#000", "form": {"radius": "0"}}""") }
-        assertEquals("Unknown key in the recipe: acent, form.radius", error.message)
+        val error = assertFailsWith<IllegalArgumentException> { Lotek.buildTheme("""{"accent": "#7c3aed", "acent": "#000", "shape": {"radius": "0"}}""") }
+        assertEquals("Unknown key in the recipe: acent, shape.radius", error.message)
         // A string or list where an object should have been, as `lotek theme` reports it.
-        val text = assertFailsWith<IllegalArgumentException> { Lotek.buildTheme("""{"aksent": "#7c3aed", "typografi": "Inter"}""") }
-        assertEquals("Unknown key in the recipe: typografi.0, typografi.1, typografi.2, typografi.3, typografi.4", text.message)
-        val list = assertFailsWith<IllegalArgumentException> { Lotek.buildTheme("""{"typografi": {"weights": [400]}}""") }
-        assertEquals("Unknown key in the recipe: typografi.weights.0", list.message)
+        val text = assertFailsWith<IllegalArgumentException> { Lotek.buildTheme("""{"accent": "#7c3aed", "typography": "Inter"}""") }
+        assertEquals("Unknown key in the recipe: typography.0, typography.1, typography.2, typography.3, typography.4", text.message)
+        val list = assertFailsWith<IllegalArgumentException> { Lotek.buildTheme("""{"typography": {"weights": [400]}}""") }
+        assertEquals("Unknown key in the recipe: typography.weights.0", list.message)
         assertFailsWith<IllegalArgumentException> { Lotek.buildTheme("[]") }
     }
 
     companion object {
-        private val DIR = File(System.getProperty("tema"))
+        private val DIR = File(System.getProperty("theme"))
 
         @Suppress("UNCHECKED_CAST")
         private val RECIPES = Json.parse(File(DIR, "recipes.json").readText()) as Map<String, Any?>

@@ -97,9 +97,8 @@ object Lotek {
     /**
      * Builds a colour theme from the recipe, as `lotek theme` does.
      *
-     * [recipe] is the JSON text of a recipe file: the nine colours with
-     * English or Norwegian keys (`accent` or `aksent`, `danger` or `fare`,
-     * and so on), `typography` or `typografi`, and `shape` or `form`.
+     * [recipe] is the JSON text of a recipe file: the nine colours
+     * (`accent`, `danger` and so on), `typography` and `shape`.
      * An unknown key, and a recipe the core rejects, throw
      * [IllegalArgumentException] with the explanation. The promises hold by
      * construction, so [Theme.violations] is empty for a recipe with valid
@@ -369,24 +368,12 @@ data class ThemeProblem(
 /**
  * The recipe as `lotek theme` reads it, translated to what the core takes.
  *
- * The file can write the colours, the typography and the shape in English or
- * Norwegian, and the core takes only English. The keys are the same as in
- * `core/cli/src/theme.rs`, and a key that is not there throws, since a typo
- * would otherwise look like a recipe that worked.
+ * The keys are the same as in `core/cli/src/theme.rs`, and a key that is not
+ * there throws, since a typo would otherwise look like a recipe that worked.
  */
 internal object ThemeRecipe {
     private val COLORS =
-        listOf(
-            "aksent" to "accent",
-            "fare" to "danger",
-            "suksess" to "success",
-            "advarsel" to "warning",
-            "noytral" to "neutral",
-            "besokt" to "visited",
-            "merke1" to "brand1",
-            "merke2" to "brand2",
-            "merke3" to "brand3",
-        )
+        listOf("accent", "danger", "success", "warning", "neutral", "visited", "brand1", "brand2", "brand3")
     private val TYPOGRAPHY_KEYS = listOf("fontFamily", "weights", "lineHeights")
     private val WEIGHT_KEYS = listOf("regular", "medium", "semibold", "bold")
     private val LINE_KEYS = listOf("default", "heading", "article", "compact")
@@ -397,20 +384,20 @@ internal object ThemeRecipe {
         val file =
             parsed as? Map<*, *>
                 ?: throw IllegalArgumentException("The recipe is valid JSON, but not an object with the colours in it.")
-        val topLevel = COLORS.flatMap { (n, e) -> listOf(n, e) } + listOf("typografi", "typography", "form", "shape", "\$schema")
+        val topLevel = COLORS + listOf("typography", "shape", "\$schema")
         val unknown = file.keys.map { it.toString() }.filter { it !in topLevel }.toMutableList()
-        val typography = spread(file["typography"] ?: file["typografi"])
-        val shape = spread(file["shape"] ?: file["form"])
-        unknown += unknownKeys(typography, TYPOGRAPHY_KEYS, "typografi")
-        unknown += unknownKeys(spread(typography["weights"]), WEIGHT_KEYS, "typografi.weights")
-        unknown += unknownKeys(spread(typography["lineHeights"]), LINE_KEYS, "typografi.lineHeights")
-        unknown += unknownKeys(shape, SHAPE_KEYS, "form")
+        val typography = spread(file["typography"])
+        val shape = spread(file["shape"])
+        unknown += unknownKeys(typography, TYPOGRAPHY_KEYS, "typography")
+        unknown += unknownKeys(spread(typography["weights"]), WEIGHT_KEYS, "typography.weights")
+        unknown += unknownKeys(spread(typography["lineHeights"]), LINE_KEYS, "typography.lineHeights")
+        unknown += unknownKeys(shape, SHAPE_KEYS, "shape")
         if (unknown.isNotEmpty()) throw IllegalArgumentException("Unknown key in the recipe: ${unknown.joinToString(", ")}")
 
         val input = linkedMapOf<String, Any?>()
-        for ((norwegian, english) in COLORS) {
-            val value = file[norwegian] ?: file[english]
-            if (value is String && value.isNotEmpty()) input[english] = value
+        for (color in COLORS) {
+            val value = file[color]
+            if (value is String && value.isNotEmpty()) input[color] = value
         }
         if (typography.isNotEmpty()) input["typography"] = typography
         if (shape.isNotEmpty()) input["shape"] = shape
@@ -420,7 +407,7 @@ internal object ThemeRecipe {
     /**
      * `{ ...value }` as JavaScript spreads it, like `spread` in `theme.rs`: a
      * list gets its indices as keys and a string one character per key, so
-     * `"typografi": "Inter"` is reported as unknown keys rather than vanishing.
+     * `"typography": "Inter"` is reported as unknown keys rather than vanishing.
      */
     private fun spread(value: Any?): Map<String, Any?> =
         when (value) {
