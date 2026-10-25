@@ -75,7 +75,7 @@ const COMPONENTS: Record<string, Case[]> = {
   ],
   badge: [
     {
-      markup: `<span class="lt-badge" data-color="warning">Waiting for documentation from the employer</span>`,
+      markup: `<span class="lt-badge" data-color="warning">Awaiting documents from the employer</span>`,
     },
   ],
   breadcrumbs: [
