@@ -58,7 +58,7 @@
     },
     "editor": {
       "name": "fristil-vscode",
-      "version": "0.8.0",
+      "version": "0.9.0",
       "devDependencies": {
         "@fristil/designsystem": "workspace:*",
         "@types/node": "24.12.4",
