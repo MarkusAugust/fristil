@@ -24,6 +24,8 @@ including 0.36.0 were written in Norwegian, and list them under "Brytende".
 
 ## Unreleased
 
+## 0.37.0 (2026-10-26)
+
 ### Breaking
 
 - **Fristil is now LO-TEK, and everything is in English.** The package, the

@@ -1,7 +1,7 @@
 {
   "$schema": "./manifest.schema.json",
   "schemaVersion": 1,
-  "version": "0.36.0",
+  "version": "0.37.0",
   "elements": {
     "lt-field": {
       "link": "https://lo-tek.sobernetics.no/components/field/",
