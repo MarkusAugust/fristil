@@ -44,6 +44,10 @@ jobs:
     # for browsers the image does not have.
     container:
       image: mcr.microsoft.com/playwright:v1.60.0-noble
+      # The container runs as root, and Firefox will not start as root with a
+      # home folder owned by another user, which the runner's is.
+      env:
+        HOME: /root
 
     steps:
       # The image lacks a C linker, which Cargo needs for the CLI, `unzip`,
