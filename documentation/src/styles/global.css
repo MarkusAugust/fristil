@@ -324,12 +324,7 @@
     margin-top: 0;
     padding-bottom: var(--lt-spacing-4);
     background:
-      linear-gradient(
-        to right,
-        var(--lt-color-accent-fill) 0 3.5rem,
-        var(--lt-color-neutral-border-strong) 3.5rem
-      )
-      no-repeat bottom / 100% var(--lt-spacing-0-5);
+      var(--profile-register) no-repeat bottom / 100% var(--lt-spacing-0-5);
   }
 
   @media (min-width: 50rem) {

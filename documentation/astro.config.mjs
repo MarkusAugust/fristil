@@ -53,31 +53,6 @@ export default defineConfig({
       title: "LO-TEK",
       // The pointer to llms.txt on every page, for an agent that reads the page head.
       head: [
-        /*
-         * The two typefaces the profile shares with sobernetics.no: Michroma
-         * for the names and IBM Plex Mono for the data. The body text is a
-         * system face and needs no file. Which they are, and why, is in
-         * `src/styles/profile.css`.
-         */
-        {
-          tag: "link",
-          attrs: { rel: "preconnect", href: "https://fonts.googleapis.com" },
-        },
-        {
-          tag: "link",
-          attrs: {
-            rel: "preconnect",
-            href: "https://fonts.gstatic.com",
-            crossorigin: true,
-          },
-        },
-        {
-          tag: "link",
-          attrs: {
-            rel: "stylesheet",
-            href: "https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Mono:wght@400;500;600&display=swap",
-          },
-        },
         {
           tag: "link",
           attrs: {

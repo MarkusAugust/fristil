@@ -111,6 +111,9 @@ export const GET: APIRoute = async () => {
   const components: Row[] = []
 
   for (const page of pages.sort((a, b) => a.id.localeCompare(b.id))) {
+    // The 404 page has no Markdown version (see `route-data.ts`), and nothing
+    // an agent is looking for.
+    if (page.id === "404") continue
     const row = asRow(page.id, page.data)
     if (page.id.startsWith("components/")) components.push(row)
     else if (page.id.startsWith("patterns/")) patterns.push(row)

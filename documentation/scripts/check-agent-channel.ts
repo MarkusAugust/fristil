@@ -99,7 +99,7 @@ if (llms.trim() === "") {
 /*
  * The page list in `llms.txt` can vanish silently.
  *
- * It is built from `getCollection("docs")`, and `seksjon()` returns an empty
+ * It is built from `getCollection("docs")`, and `section()` returns an empty
  * string for an empty list, which `.filter(Boolean)` removes. If the
  * collection becomes empty, because it is renamed or the content folder is
  * moved, `llms.txt` comes out without Guides, Patterns and Components, and
@@ -119,8 +119,15 @@ function countPages(folder: string): number {
   return count
 }
 
+/*
+ * The 404 page is a document in the content folder, but not a page an agent
+ * reads: it gets no Markdown version, so `llms.txt` leaves it out.
+ */
+const NOT_LISTED = ["404.mdx"]
+
 if (llms.trim() !== "") {
-  const pages = countPages(`${ROOT}documentation/src/content/docs`)
+  const pages =
+    countPages(`${ROOT}documentation/src/content/docs`) - NOT_LISTED.length
   // The pages link to the Markdown version, and the rulebooks under
   // `/agent/` are not pages.
   const links = [
@@ -131,6 +138,22 @@ if (llms.trim() !== "") {
     problems.push(
       `llms.txt links to ${links.length} pages, while the content folder has ${pages}.`,
     )
+  }
+
+  /*
+   * A count that matches says nothing about where the links go. The 404 page
+   * was once listed with a link to `/404.md`, which is never written, and the
+   * count above passed because it counted the same page. Every link must
+   * therefore be a file in the build.
+   */
+  const BASE_ADDRESS = /^https:\/\/[^/]+\//
+  for (const [, address] of links) {
+    const file = `${ROOT}documentation/dist/${address.replace(BASE_ADDRESS, "")}`
+    try {
+      statSync(file)
+    } catch {
+      problems.push(`llms.txt links to ${address}, which is not in the build`)
+    }
   }
 }
 
