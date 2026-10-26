@@ -65,7 +65,7 @@ including 0.36.0 were written in Norwegian, and list them under "Brytende".
   | Gradle plugin `io.github.markusaugust.fristil`, tasks `fristilSjekk`, `fristilTema`, `fristilManifest` | `io.github.markusaugust.lo-tek`, `lotekCheck`, `lotekTheme`, `lotekManifest` |
   | WebJar `webjars/fristil/` | `webjars/lo-tek/` |
   | VS Code `Fristil.fristil-vscode` | `lo-tek.interfaces` ("LO-TEK for VS Code") |
-  | IntelliJ `no.fristil` | `no.lotek` ("LO-TEK for IntelliJ") |
+  | IntelliJ `no.fristil` | `no.lotek` ("LO-TEK Interfaces") |
   | rulebook `agent/maler.md` | `agent/templates.md` |
 
 - **The command line has English verbs, flags and recipe keys.** There are
