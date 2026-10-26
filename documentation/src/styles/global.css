@@ -136,6 +136,12 @@
     }
   }
 
+  /* Starlight rules off the title panel from the body. The register under the
+     title already does that, and two lines read as one doubled. */
+  .content-panel + .content-panel {
+    border-top: none;
+  }
+
   /* The top: one rule, no blur. */
   header.header {
     border-bottom: var(--profile-rule);
