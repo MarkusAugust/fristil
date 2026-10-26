@@ -6,6 +6,7 @@ import "@lo-tek/interfaces/sr-only.css"
 import "../styles/profile.css"
 import pkg from "../../../interfaces/package.json" with { type: "json" }
 import sobernetics from "../assets/sobernetics.svg?raw"
+import Film from "../components/Film.astro"
 import FontPreload from "../components/FontPreload.astro"
 import Logo from "../components/Logo.astro"
 import Plate from "../components/Plate.astro"
@@ -15,6 +16,9 @@ import { metaAttributes, SHARE_IMAGE } from "../share-image.mjs"
 const title = "LO-TEK Interfaces"
 const description =
   "A framework-independent design system where the components are CSS classes and web components. The same API in React, Astro, Datastar and plain HTML."
+
+// The film on YouTube, the part after `v=` or `youtu.be/` in its address.
+const FILM_ID = "35LsWor1EY8"
 
 /*
  * The categories, as a ladder of nodes the way sobernetics.no draws its
@@ -287,6 +291,22 @@ form.html:3:13: warning: The class "lt-modal"
           </p>
         </li>
       </ol>
+
+      <!-- The film. The loop from it is the poster, and YouTube is reached
+           only when the reader presses play. -->
+      <div class="profile-plate">
+        <h2 class="profile-plate__title" id="film">The film</h2>
+        <p class="profile-plate__count" aria-hidden="true">05:13 runtime</p>
+      </div>
+
+      <Film youtubeId={FILM_ID} title="LO-TEK: Nothing In Between">
+        <b>LO-TEK: Nothing In Between.</b> One unbroken flight inwards
+        through a machine drawn in white ink on dark paper, from a tower in
+        the rain down through server halls, circuit boards, hard drives and a
+        picture tube to single atoms. The machines come apart in time with
+        the music, and the film ends on a small screen with a page that is
+        still loading. With English captions.
+      </Film>
     </main>
 
     <footer class="colophon">

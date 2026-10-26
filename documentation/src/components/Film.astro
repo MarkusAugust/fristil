@@ -1,0 +1,161 @@
+---
+/**
+ * The film on the front page: a silent loop from it stands where the film
+ * is, and the film itself comes from YouTube when the reader asks for it.
+ *
+ * Nothing is fetched from YouTube before that. The iframe is made on the
+ * click, from youtube-nocookie.com, so a visit to the front page tells
+ * Google nothing, and the page does not carry a player nobody started.
+ * Without JavaScript the play button is an ordinary link to the film on
+ * YouTube.
+ *
+ * The loop moves on its own, so it can be stopped (WCAG 2.2.2): the button
+ * under it pauses it, and for a reader who has asked the system for less
+ * motion it does not start at all, and the poster stands in its place. It
+ * plays only while it is on screen, and `preload="none"` keeps the files
+ * from being fetched before then. The browser takes the first source it can
+ * play, the smallest first.
+ *
+ * The loop is decoration for the button and is hidden from the screen
+ * reader. What the film shows is said in the caption, from the slot.
+ */
+interface Props {
+  /** The video's id on YouTube, the part after `v=` or `youtu.be/`. */
+  youtubeId: string
+  /** The film's title, which names the player for the screen reader. */
+  title: string
+}
+
+const { youtubeId, title } = Astro.props
+---
+
+<figure class="film" data-film={youtubeId} data-title={title}>
+  <div class="film__frame">
+    <video
+      class="film__loop"
+      muted
+      loop
+      playsinline
+      preload="none"
+      poster="/loop/lotek-loop-poster.webp"
+      aria-hidden="true"
+    >
+      <source src="/loop/lotek-loop-av1.mp4" type='video/mp4; codecs="av01.0.05M.08"' />
+      <source src="/loop/lotek-loop-vp9.webm" type='video/webm; codecs="vp9"' />
+      <source src="/loop/lotek-loop-h264.mp4" type="video/mp4" />
+    </video>
+    <a class="lt-button film__play" href={`https://www.youtube.com/watch?v=${youtubeId}`}>
+      Play the film
+    </a>
+  </div>
+  <button type="button" class="lt-button film__pause" data-variant="secondary" hidden>
+    Pause the loop
+  </button>
+  <figcaption class="film__caption"><slot /></figcaption>
+</figure>
+
+<script>
+  for (const film of document.querySelectorAll<HTMLElement>("[data-film]")) {
+    const frame = film.querySelector<HTMLElement>(".film__frame")
+    const loop = film.querySelector<HTMLVideoElement>(".film__loop")
+    const play = film.querySelector<HTMLAnchorElement>(".film__play")
+    const pause = film.querySelector<HTMLButtonElement>(".film__pause")
+    if (!frame || !loop || !play || !pause) continue
+
+    const still = matchMedia("(prefers-reduced-motion: reduce)")
+    let paused = false
+    let visible = false
+
+    const update = () => {
+      // The button is only there when there is something to stop.
+      pause.hidden = still.matches
+      pause.textContent = paused ? "Play the loop" : "Pause the loop"
+
+      if (visible && !paused && !still.matches) {
+        // A browser that refuses to start a video on its own leaves the
+        // poster, which is the same as reduced motion.
+        loop.play().catch(() => {})
+      } else {
+        loop.pause()
+      }
+    }
+
+    const watcher = new IntersectionObserver(([entry]) => {
+      visible = entry?.isIntersecting ?? false
+      update()
+    })
+    watcher.observe(frame)
+    still.addEventListener("change", update)
+
+    pause.addEventListener("click", () => {
+      paused = !paused
+      update()
+    })
+
+    play.addEventListener("click", (event) => {
+      event.preventDefault()
+      // The loop is gone with the poster, and so is the reason to stop it.
+      watcher.disconnect()
+      still.removeEventListener("change", update)
+      pause.remove()
+
+      const player = document.createElement("iframe")
+      player.className = "film__player"
+      player.src = `https://www.youtube-nocookie.com/embed/${film.dataset.film}?autoplay=1&rel=0`
+      player.title = film.dataset.title ?? "The film"
+      player.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen"
+      player.allowFullscreen = true
+      frame.replaceChildren(player)
+      // The link had focus, and it is gone. The player takes it, so the
+      // keyboard can start and stop the film straight away.
+      player.focus()
+    })
+  }
+</script>
+
+<style>
+  .film {
+    margin: var(--lt-spacing-5) 0 0;
+  }
+
+  .film__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--lt-color-neutral-canvas);
+  }
+
+  .film__loop,
+  .film__frame :global(.film__player) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .film__loop {
+    object-fit: cover;
+  }
+
+  .film__play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+  }
+
+  /* Under the picture, not on it: on a phone it would cover the play
+     button, and on the moving picture its contrast cannot be promised. */
+  .film__pause {
+    margin-top: var(--lt-spacing-3);
+  }
+
+  .film__caption {
+    margin-top: var(--lt-spacing-3);
+    max-inline-size: 60ch;
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-s);
+    color: var(--lt-color-neutral-text-subtle);
+  }
+</style>
