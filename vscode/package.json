@@ -1,5 +1,5 @@
 {
-  "name": "vscode",
+  "name": "interfaces",
   "displayName": "LO-TEK for VS Code",
   "description": "Completion, hover, snippets, diagnostics and quick fixes for the LO-TEK design system: the <lt-*> elements, the lt- classes and their variants.",
   "version": "0.10.0",

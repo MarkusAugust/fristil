@@ -28,7 +28,7 @@ A Bun monorepo with three workspaces, a Cargo workspace for the Rust code, and t
 | --- | --- | --- |
 | `interfaces/` | `@lo-tek/interfaces` | tokens, CSS components, web components, the theme generator |
 | `documentation/` | `@lo-tek/documentation` | Astro 6 + Starlight, the demos and the checks of them |
-| `vscode/` | `vscode` | the VS Code extension: completion, snippets and diagnostics |
+| `vscode/` | `interfaces` | the VS Code extension: completion, snippets and diagnostics |
 | `core/` | `lotek-core`, a Cargo crate | the check and the theme generator in Rust, compiled to WebAssembly |
 | `cli/` | `lotek`, a Cargo crate | the command line, `lotek` |
 | `kotlin/` | not a bun workspace | LO-TEK for Kotlin and Java, built with Gradle |
