@@ -4,7 +4,7 @@ import Preview from "./Preview.astro"
 
 // The server writes the whole dialog and says whether it is open. The
 // component calls showModal(), which a server cannot do itself.
-const boks = lt.dialog({ titleId: "demo-dialog-title", color: "danger" })
+const box = lt.dialog({ titleId: "demo-dialog-title", color: "danger" })
 ---
 
 <Preview id="demo-dialog" styles={["dialog", "button"]} maxWidth="30rem">
@@ -12,16 +12,16 @@ const boks = lt.dialog({ titleId: "demo-dialog-title", color: "danger" })
 		Delete the application
 	</button>
 
-	<lt-dialog {...boks.host}>
-		<dialog {...boks.dialog}>
-			<div {...boks.header}>
-				<h2 {...boks.title}>Delete the application?</h2>
-				<p {...boks.subtitle}>This cannot be undone</p>
+	<lt-dialog {...box.host}>
+		<dialog {...box.dialog}>
+			<div {...box.header}>
+				<h2 {...box.title}>Delete the application?</h2>
+				<p {...box.subtitle}>This cannot be undone</p>
 			</div>
-			<div {...boks.body}>
+			<div {...box.body}>
 				<p>The application and its attachments will be gone. This cannot be undone.</p>
 			</div>
-			<form method="dialog" {...boks.footer}>
+			<form method="dialog" {...box.footer}>
 				<button {...lt.button({ variant: "secondary" })} value="cancel">Cancel</button>
 				<button {...lt.button({ variant: "danger" })} value="delete">Delete the application</button>
 			</form>
@@ -38,12 +38,12 @@ const boks = lt.dialog({ titleId: "demo-dialog-title", color: "danger" })
 	// server would answer with the same markup and `open` on the host. Here
 	// the button does what the server would otherwise do, so the example can
 	// be tried.
-	const vert = document
+	const host = document
 		.getElementById("demo-dialog")
 		?.shadowRoot?.querySelector("lt-dialog")
 
 	document
 		.getElementById("demo-dialog")
 		?.shadowRoot?.querySelector("[data-open]")
-		?.addEventListener("click", () => vert?.setAttribute("open", ""))
+		?.addEventListener("click", () => host?.setAttribute("open", ""))
 </script>

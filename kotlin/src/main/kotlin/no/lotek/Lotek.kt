@@ -368,7 +368,7 @@ data class ThemeProblem(
 /**
  * The recipe as `lotek theme` reads it, translated to what the core takes.
  *
- * The keys are the same as in `core/cli/src/theme.rs`, and a key that is not
+ * The keys are the same as in `cli/src/theme.rs`, and a key that is not
  * there throws, since a typo would otherwise look like a recipe that worked.
  */
 internal object ThemeRecipe {

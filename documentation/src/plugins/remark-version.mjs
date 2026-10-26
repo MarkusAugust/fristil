@@ -6,7 +6,7 @@
  * meant changing all 74, and one that was forgotten would have sent the reader
  * to an old package without anything saying so. Now the placeholder
  * `@lo-tek/interfaces@VERSION` is in the source, and the version is read from
- * `designsystem/package.json` when the site is built.
+ * `interfaces/package.json` when the site is built.
  *
  * `check-documentation.ts` fails if someone writes the number by hand anyway.
  *
@@ -14,7 +14,7 @@
  * in link addresses. That covers every address today.
  *
  * What it does not reach are values outside `children`: JSX attributes such as
- * `kode={…}`, image addresses, mdx expressions and frontmatter. If someone
+ * `code={…}`, image addresses, mdx expressions and frontmatter. If someone
  * writes an address in such a place, the placeholder stays, and
  * `check-built-version.ts` catches it: it requires every address the
  * placeholder appears in to exist in the build with the version filled in.
@@ -22,13 +22,13 @@
 
 import { readFileSync } from "node:fs"
 
-const PLASSHOLDER = "@lo-tek/interfaces@VERSION"
+const PLACEHOLDER = "@lo-tek/interfaces@VERSION"
 
 const { version } = JSON.parse(
-  readFileSync(new URL("../../../designsystem/package.json", import.meta.url)),
+  readFileSync(new URL("../../../interfaces/package.json", import.meta.url)),
 )
 
-const MED_VERSJON = `@lo-tek/interfaces@${version}`
+const WITH_VERSION = `@lo-tek/interfaces@${version}`
 
 // The tarball in the npm registry, for anyone fetching the package without npm.
 const TARBALL = "interfaces-VERSION.tgz"
@@ -54,31 +54,31 @@ const MAVEN = [
   ["webjars/lo-tek/VERSION/", `webjars/lo-tek/${version}/`],
 ]
 
-const bytt = (tekst) => {
-  if (typeof tekst !== "string") return tekst
-  let ut = tekst
-    .split(PLASSHOLDER)
-    .join(MED_VERSJON)
+const replaceVersion = (text) => {
+  if (typeof text !== "string") return text
+  let out = text
+    .split(PLACEHOLDER)
+    .join(WITH_VERSION)
     .split(TARBALL)
     .join(`interfaces-${version}.tgz`)
-  for (const [fra, til] of MAVEN) ut = ut.split(fra).join(til)
-  return ut
+  for (const [from, to] of MAVEN) out = out.split(from).join(to)
+  return out
 }
 
-export function remarkVersjon() {
-  return (tre) => besok(tre)
+export function remarkVersion() {
+  return (tree) => visit(tree)
 }
 
-function besok(node) {
+function visit(node) {
   if (
     node.type === "code" ||
     node.type === "inlineCode" ||
     node.type === "text"
   )
-    node.value = bytt(node.value)
+    node.value = replaceVersion(node.value)
 
   if (node.type === "link" || node.type === "definition")
-    node.url = bytt(node.url)
+    node.url = replaceVersion(node.url)
 
-  for (const barn of node.children ?? []) besok(barn)
+  for (const child of node.children ?? []) visit(child)
 }

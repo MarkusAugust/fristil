@@ -3,13 +3,13 @@ import Preview from "./Preview.astro"
 
 interface Props {
   /** Token names without the `--` prefix, shown as one swatch each. */
-  semantiske?: string[]
+  semantic?: string[]
   /** Families shown as a row with one square per role. */
-  matrise?: string[]
+  matrix?: string[]
 }
 
 /** The roles, in the same order as the contract lists them. */
-const ROLLER = [
+const ROLES = [
   "surface",
   "border-subtle",
   "border",
@@ -21,27 +21,27 @@ const ROLLER = [
   "text-strong",
 ]
 
-const { semantiske = [], matrise = [] } = Astro.props
+const { semantic = [], matrix = [] } = Astro.props
 ---
 
 <Preview layout="stack" maxWidth="34rem">
 	<div style="display: grid; gap: var(--lt-spacing-2);">
-		{semantiske.map((navn) => (
+		{semantic.map((name) => (
 			<div style="display: flex; align-items: center; gap: var(--lt-spacing-3);">
 				<span
-					style={`width: var(--lt-spacing-10); height: var(--lt-spacing-6); border-radius: var(--lt-spacing-1); border: 1px solid var(--lt-color-neutral-border-subtle); background: var(--${navn})`}
+					style={`width: var(--lt-spacing-10); height: var(--lt-spacing-6); border-radius: var(--lt-spacing-1); border: 1px solid var(--lt-color-neutral-border-subtle); background: var(--${name})`}
 				/>
-				<code style="font-size: var(--lt-font-size-s);">--{navn}</code>
+				<code style="font-size: var(--lt-font-size-s);">--{name}</code>
 			</div>
 		))}
 
-		{matrise.map((familie) => (
+		{matrix.map((family) => (
 			<div style="display: flex; gap: var(--lt-spacing-1); align-items: center;">
-				<code style="font-size: var(--lt-font-size-xs); width: 5.5rem;">{familie}</code>
-				{ROLLER.map((rolle) => (
+				<code style="font-size: var(--lt-font-size-xs); width: 5.5rem;">{family}</code>
+				{ROLES.map((role) => (
 					<span
-						title={`--lt-color-${familie}-${rolle}`}
-						style={`flex: 1; height: var(--lt-spacing-6); border: 1px solid var(--lt-color-neutral-border-subtle); background: var(--lt-color-${familie}-${rolle})`}
+						title={`--lt-color-${family}-${role}`}
+						style={`flex: 1; height: var(--lt-spacing-6); border: 1px solid var(--lt-color-neutral-border-subtle); background: var(--lt-color-${family}-${role})`}
 					/>
 				))}
 			</div>

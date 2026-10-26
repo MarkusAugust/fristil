@@ -16,7 +16,7 @@ const sizeMap = {
 
 const s = sizeMap[size]
 const cyanId = `lotekCyan-${size}`
-const lillaId = `lotekLilla-${size}`
+const purpleId = `lotekPurple-${size}`
 ---
 
 <div
@@ -36,14 +36,14 @@ const lillaId = `lotekLilla-${size}`
         <stop offset="0%" stop-color="#00f2fe" />
         <stop offset="100%" stop-color="#4facfe" />
       </linearGradient>
-      <linearGradient id={lillaId} gradientUnits="userSpaceOnUse" x1="24" y1="21" x2="60" y2="45">
+      <linearGradient id={purpleId} gradientUnits="userSpaceOnUse" x1="24" y1="21" x2="60" y2="45">
         <stop offset="0%" stop-color="#4facfe" />
         <stop offset="100%" stop-color="#b15cff" />
       </linearGradient>
     </defs>
     <!-- Two layers that sit against each other without overlapping: markup and behaviour. -->
     <path d="M5 2H88L74 16H19V40H71L57 54H19V84L5 98Z" fill={`url(#${cyanId})`} />
-    <path d="M24 21H76L95 2V35H24ZM24 59H59L78 40V73H38V98H12L24 86Z" fill={`url(#${lillaId})`} />
+    <path d="M24 21H76L95 2V35H24ZM24 59H59L78 40V73H38V98H12L24 86Z" fill={`url(#${purpleId})`} />
   </svg>
 
   <div style="display: flex; flex-direction: column; line-height: 1;">

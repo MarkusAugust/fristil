@@ -38,12 +38,12 @@ pub mod theme;
 pub mod types;
 pub mod wiring;
 
-/// A file in the package, for the tests: from `designsystem/` next to this
+/// A file in the package, for the tests: from `interfaces/` next to this
 /// directory. The build never reads it.
 #[cfg(test)]
 pub(crate) fn package_file(path: &str) -> String {
     std::fs::read_to_string(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/../designsystem/").to_owned() + path,
+        concat!(env!("CARGO_MANIFEST_DIR"), "/../interfaces/").to_owned() + path,
     )
     .unwrap_or_else(|e| panic!("the tests need {path} in the package: {e}"))
 }

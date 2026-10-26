@@ -19,7 +19,7 @@ import org.junit.jupiter.params.provider.MethodSource
  * one character in one message or one position differs, the test fails.
  *
  * The script that reads the rendered page, [Lotek.READ_RENDERED_PAGE], is
- * not tested here, but by `designsystem/scripts/check-rendered.ts`, which
+ * not tested here, but by `interfaces/scripts/check-rendered.ts`, which
  * runs it in a real browser next to the TypeScript version.
  */
 class ParityTest {

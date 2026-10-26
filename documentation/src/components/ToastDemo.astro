@@ -25,10 +25,10 @@ import Preview from "./Preview.astro"
 
 	// The preview sits in a shadow root, so we go through the host element.
 	const surface = document.getElementById("demo-toast")?.shadowRoot
-	const knapp = surface?.getElementById("demo-toast-button")
-	const meldinger = surface?.getElementById("demo-toast-queue")
+	const button = surface?.getElementById("demo-toast-button")
+	const messages = surface?.getElementById("demo-toast-queue")
 
-	knapp?.addEventListener("click", () => {
-		meldinger?.show("The application has been saved", { color: "success" })
+	button?.addEventListener("click", () => {
+		messages?.show("The application has been saved", { color: "success" })
 	})
 </script>

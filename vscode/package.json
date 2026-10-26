@@ -1,0 +1,177 @@
+{
+  "name": "vscode",
+  "displayName": "LO-TEK for VS Code",
+  "description": "Completion, hover, snippets, diagnostics and quick fixes for the LO-TEK design system: the <lt-*> elements, the lt- classes and their variants.",
+  "version": "0.9.0",
+  "publisher": "lo-tek",
+  "license": "MIT",
+  "icon": "icon.png",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MarkusAugust/lo-tek.git",
+    "directory": "vscode"
+  },
+  "homepage": "https://lo-tek.sobernetics.no/",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "categories": [
+    "Snippets",
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "lotek",
+    "designsystem",
+    "web-components",
+    "html",
+    "css",
+    "lint"
+  ],
+  "contributes": {
+    "html": {
+      "customData": [
+        "./dist/html-data.json"
+      ]
+    },
+    "snippets": [
+      {
+        "language": "html",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "php",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "razor",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "aspnetcorerazor",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "astro",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "svelte",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "vue",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "twig",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "blade",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "jinja",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "jinja-html",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "django-html",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "handlebars",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "erb",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "gotmpl",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "go-template",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "ejs",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "liquid",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "nunjucks",
+        "path": "./dist/snippets.json"
+      },
+      {
+        "language": "edge",
+        "path": "./dist/snippets.json"
+      }
+    ],
+    "configurationDefaults": {
+      "[html]": {
+        "editor.snippetSuggestions": "top"
+      }
+    },
+    "configuration": {
+      "title": "LO-TEK",
+      "properties": {
+        "lotek.languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "html",
+            "php",
+            "razor",
+            "aspnetcorerazor",
+            "astro",
+            "svelte",
+            "vue",
+            "twig",
+            "blade",
+            "jinja",
+            "jinja-html",
+            "django-html",
+            "handlebars",
+            "erb",
+            "gotmpl",
+            "go-template",
+            "ejs",
+            "liquid",
+            "nunjucks",
+            "edge"
+          ],
+          "description": "The languages, as VS Code language ids, in which the extension checks the markup and completes classes and values. Completion of the <lt-*> elements from VS Code's own HTML service applies only to html."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "bun build src/extension.ts --outfile dist/extension.js --target node --format cjs --external vscode && bun build src/server.ts --outfile dist/server.js --target node --format cjs && rm -f dist/lotek-core.wasm && cp ../interfaces/core/lotek.wasm dist/ && mkdir -p dist/manifest && cp ../interfaces/manifest/manifest.json dist/manifest/ && cp ../interfaces/html-data.json ../interfaces/snippets.json dist/",
+    "check": "bun run build && vsce package --no-dependencies --out lotek.vsix",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@lo-tek/interfaces": "workspace:*",
+    "@types/node": "24.12.4",
+    "@types/vscode": "1.90.0",
+    "@vscode/test-electron": "2.5.2",
+    "@vscode/vsce": "^3.6.0",
+    "vscode-languageclient": "9.0.1"
+  }
+}

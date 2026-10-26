@@ -4,11 +4,11 @@ import startlight from "@astrojs/starlight"
 import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "astro/config"
 import remarkGfm from "remark-gfm"
-import pakke from "../designsystem/package.json" with { type: "json" }
-import { markdownsider } from "./src/plugins/markdown-pages.mjs"
-import { rehypeTabellrull } from "./src/plugins/rehype-table-scroll.mjs"
-import { remarkVersjon } from "./src/plugins/remark-version.mjs"
-import { DELINGSBILDE, metaAttributter } from "./src/share-image.mjs"
+import pkg from "../interfaces/package.json" with { type: "json" }
+import { markdownPages } from "./src/plugins/markdown-pages.mjs"
+import { rehypeTableScroll } from "./src/plugins/rehype-table-scroll.mjs"
+import { remarkVersion } from "./src/plugins/remark-version.mjs"
+import { metaAttributes, SHARE_IMAGE } from "./src/share-image.mjs"
 
 /*
  * The sitemap only includes the HTML pages by itself. `llms.txt` and the
@@ -16,12 +16,12 @@ import { DELINGSBILDE, metaAttributter } from "./src/share-image.mjs"
  * rulebooks are read from the folder, so a new one is included without anyone
  * remembering it.
  */
-const BASE = pakke.homepage.replace(/\/$/, "")
-const AGENTFILER = [
+const BASE = pkg.homepage.replace(/\/$/, "")
+const AGENT_FILES = [
   `${BASE}/llms.txt`,
-  ...readdirSync(new URL("../designsystem/agent/", import.meta.url))
-    .filter((fil) => fil.endsWith(".md"))
-    .map((fil) => `${BASE}/agent/${fil}`),
+  ...readdirSync(new URL("../interfaces/agent/", import.meta.url))
+    .filter((file) => file.endsWith(".md"))
+    .map((file) => `${BASE}/agent/${file}`),
 ]
 
 // https://astro.build/config
@@ -31,7 +31,7 @@ export default defineConfig({
    * `robots.txt` also read. With `site` set, Starlight makes the sitemap
    * itself, and that is how search engines and agents find the pages.
    */
-  site: pakke.homepage,
+  site: pkg.homepage,
   /*
    * `markdown.remarkPlugins` is marked as deprecated in favour of
    * `markdown.processor`. That route does not work here: the pages are
@@ -40,15 +40,15 @@ export default defineConfig({
    * out as raw text with pipes. It stays until MDX reads the processor.
    */
   markdown: {
-    remarkPlugins: [remarkGfm, remarkVersjon],
-    rehypePlugins: [rehypeTabellrull],
+    remarkPlugins: [remarkGfm, remarkVersion],
+    rehypePlugins: [rehypeTableScroll],
   },
   vite: {
     plugins: [tailwindcss()],
   },
   integrations: [
     // Comes before Starlight, which then does not add its own.
-    sitemap({ customPages: AGENTFILER }),
+    sitemap({ customPages: AGENT_FILES }),
     startlight({
       title: "LO-TEK",
       // The pointer to llms.txt on every page, for an agent that reads the page head.
@@ -67,12 +67,12 @@ export default defineConfig({
          * description and `twitter:card` itself, but no image, and without one
          * X shows the link with no preview.
          */
-        ...DELINGSBILDE.map((tagg) => ({
+        ...SHARE_IMAGE.map((tag) => ({
           tag: "meta",
-          attrs: metaAttributter(tagg),
+          attrs: metaAttributes(tag),
         })),
       ],
-      // The pointer to each page's Markdown version, which `markdownsider` writes.
+      // The pointer to each page's Markdown version, which `markdownPages` writes.
       routeMiddleware: "./src/route-data.ts",
       defaultLocale: "root",
       locales: {
@@ -90,7 +90,7 @@ export default defineConfig({
        * pages, and none of them was used by the plain DOM anywhere.
        *
        * The reason is `Preview.astro`. Every live example sits in a shadow
-       * root, and the preview itself adds exactly the stylesheets the `stiler`
+       * root, and the preview itself adds exactly the stylesheets the `styles`
        * list names, with `?inline`. A stylesheet in `customCss` therefore never
        * reached the examples it was meant for: they have their own copies.
        * Outside the previews only `.lt-preview` itself is in the plain DOM, and
@@ -224,6 +224,6 @@ export default defineConfig({
       ],
     }),
     // After Starlight, so the pages it reads are finished.
-    markdownsider(),
+    markdownPages(),
   ],
 })

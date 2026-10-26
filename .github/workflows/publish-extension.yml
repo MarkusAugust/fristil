@@ -28,7 +28,7 @@ jobs:
 
       - name: Read the version
         id: version
-        working-directory: editor
+        working-directory: vscode
         run: echo "number=$(bun -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
       - name: Check that the tag and the version agree
@@ -36,7 +36,7 @@ jobs:
         run: |
           tag="${GITHUB_REF_NAME#extension-v}"
           if [ "$tag" != "${{ steps.version.outputs.number }}" ]; then
-            echo "The tag $GITHUB_REF_NAME says $tag, while editor/package.json says ${{ steps.version.outputs.number }}. Fix it before publishing." >&2
+            echo "The tag $GITHUB_REF_NAME says $tag, while vscode/package.json says ${{ steps.version.outputs.number }}. Fix it before publishing." >&2
             exit 1
           fi
 
@@ -47,7 +47,7 @@ jobs:
         run: bun run typecheck
 
       # The extension carries the core in dist/, built from Rust. rustup
-      # fetches the version in `core/rust-toolchain.toml`.
+      # fetches the version in `rust-toolchain.toml`.
       - name: Build the core
         run: bun --filter @lo-tek/interfaces core
 
@@ -56,17 +56,17 @@ jobs:
       # they should, before the extension is packed with them.
       - name: Check the vocabulary and the diagnostics
         run: |
-          (cd designsystem && bun run build:browser)
+          (cd interfaces && bun run build:browser)
           bun --filter @lo-tek/interfaces check:vocabulary
           bun core/scripts/check-diagnostics.ts
 
       - name: Pack
-        run: bun --filter interfaces check
+        run: bun --filter vscode check
 
       # Marketplace has no OIDC. The token is created under the publisher on
       # marketplace.visualstudio.com and stored as the secret VSCE_PAT.
       - name: Publish
-        working-directory: editor
+        working-directory: vscode
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: ./node_modules/.bin/vsce publish --packagePath lotek.vsix

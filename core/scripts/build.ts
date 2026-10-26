@@ -6,7 +6,7 @@
  *
  * Two modules: `lotek-core.wasm`, the check and the theme, and `lotek.wasm`,
  * the command line (`cli/`) as a WASI module. The package fetches them from
- * there with `bun run core` in `designsystem/`. Neither is checked in.
+ * there with `bun run core` in `interfaces/`. Neither is checked in.
  *
  * Run with: bun core/scripts/build.ts. Requires Rust. `rust-toolchain.toml`
  * fetches the version and the targets.
@@ -17,9 +17,12 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const CORE = fileURLToPath(new URL("..", import.meta.url))
-const WASM = join(CORE, "target/wasm32-unknown-unknown/release/lotek_core.wasm")
+const WASM = join(
+  CORE,
+  "../target/wasm32-unknown-unknown/release/lotek_core.wasm",
+)
 export const MODULE = join(CORE, "dist/lotek-core.wasm")
-const CLI = join(CORE, "target/wasm32-wasip1/release/lotek.wasm")
+const CLI = join(CORE, "../target/wasm32-wasip1/release/lotek.wasm")
 export const COMMAND_LINE = join(CORE, "dist/lotek.wasm")
 
 if (import.meta.main) {

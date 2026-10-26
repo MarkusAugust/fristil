@@ -3,5 +3,5 @@
     "composite": true
   },
   "files": [],
-  "references": [{ "path": "./designsystem" }]
+  "references": [{ "path": "./interfaces" }]
 }

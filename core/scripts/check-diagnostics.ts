@@ -22,15 +22,15 @@ import {
   classesData,
   diagnosticsData,
   snippets,
-} from "../../designsystem/scripts/generate-vocabulary"
+} from "../../interfaces/scripts/generate-vocabulary"
 import {
   type Finding,
   loadCore,
-} from "../../designsystem/src/diagnostics/core.js"
+} from "../../interfaces/src/diagnostics/core.js"
 import type {
   Classes,
   Elements,
-} from "../../designsystem/src/vocabulary/types.js"
+} from "../../interfaces/src/vocabulary/types.js"
 import { MODULE } from "./build.js"
 
 const all: Elements = diagnosticsData()
@@ -39,7 +39,7 @@ const core = loadCore(readFileSync(MODULE))
 // The core carries no data, and gets the package's manifest as every host gives it.
 core.loadManifest(
   readFileSync(
-    new URL("../../designsystem/manifest/manifest.json", import.meta.url),
+    new URL("../../interfaces/manifest/manifest.json", import.meta.url),
     "utf8",
   ),
 )

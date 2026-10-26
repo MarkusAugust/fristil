@@ -31,21 +31,21 @@ import Preview from "./Preview.astro"
 	// The preview sits in a shadow root, so document.getElementById does
 	// not reach inside. We go through the host element.
 	const surface = document.getElementById("demo-field")?.shadowRoot
-	const feil = surface?.getElementById("demo-email-error")
+	const errorText = surface?.getElementById("demo-email-error")
 	const input = surface?.getElementById("demo-email-input") as HTMLInputElement | null
 
-	if (feil && input) {
-		const erGyldig = () =>
+	if (errorText && input) {
+		const isValid = () =>
 			input.value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)
 
 		// The field is invalid while the error text is visible. The component
 		// then sets aria-invalid and wires the message to the field.
 		input.addEventListener("blur", () => {
-			feil.hidden = erGyldig()
+			errorText.hidden = isValid()
 		})
 
 		input.addEventListener("input", () => {
-			if (!feil.hidden) feil.hidden = erGyldig()
+			if (!errorText.hidden) errorText.hidden = isValid()
 		})
 	}
 </script>

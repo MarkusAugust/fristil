@@ -4,7 +4,7 @@
  *
  * Nothing here is written by hand. The title and description come from the
  * frontmatter of each component page, and the category from the folder the
- * component sits in under `designsystem/src/components/`. The list can then
+ * component sits in under `interfaces/src/components/`. The list can then
  * neither run empty nor drift from the pages: a new component appears by
  * itself, and a description changed here is the same one as on the page.
  *
@@ -22,80 +22,82 @@ import { getCollection } from "astro:content"
  * have evaluated every web component while building a page that does not use
  * them.
  */
-const KILDER = import.meta.glob("../../../designsystem/src/components/*/*/*.ts")
+const SOURCES = import.meta.glob("../../../interfaces/src/components/*/*/*.ts")
 
-type Kategori = "css" | "frame" | "standalone"
+type Category = "css" | "frame" | "standalone"
 
-const kategoriFor = new Map<string, Kategori>()
-for (const sti of Object.keys(KILDER)) {
-  const deler = sti.split("/")
-  const mappe = deler.at(-2)
-  const kategori = deler.at(-3) as Kategori
-  if (mappe && kategori) kategoriFor.set(mappe, kategori)
+const categoryOf = new Map<string, Category>()
+for (const path of Object.keys(SOURCES)) {
+  const parts = path.split("/")
+  const folder = parts.at(-2)
+  const category = parts.at(-3) as Category
+  if (folder && category) categoryOf.set(folder, category)
 }
 
-const GRUPPER: { kategori: Kategori; title: string; forklaring: string }[] = [
+const GROUPS: { category: Category; title: string; explanation: string }[] = [
   {
-    kategori: "css",
+    category: "css",
     title: "CSS components",
-    forklaring:
+    explanation:
       "A class and a few data attributes on a plain HTML element. No JavaScript is loaded.",
   },
   {
-    kategori: "frame",
+    category: "frame",
     title: "Frame components",
-    forklaring:
+    explanation:
       "You write the markup, and the web component adds keyboard handling, focus and the wiring on top. The elements stay in the plain DOM.",
   },
   {
-    kategori: "standalone",
+    category: "standalone",
     title: "Standalone components",
-    forklaring:
+    explanation:
       "The component creates its own content, because there is nothing for the server to send. You call a method.",
   },
 ]
 
-const sider = (await getCollection("docs"))
-  .filter((side) => side.id.startsWith("components/"))
-  .map((side) => ({
-    navn: side.id.slice("components/".length),
-    title: side.data.title,
-    beskrivelse: side.data.description ?? "",
-    adresse: `/${side.id}/`,
+const pages = (await getCollection("docs"))
+  .filter((page) => page.id.startsWith("components/"))
+  .map((page) => ({
+    name: page.id.slice("components/".length),
+    title: page.data.title,
+    description: page.data.description ?? "",
+    address: `/${page.id}/`,
   }))
-  .filter((side) => side.navn !== "" && !side.navn.includes("/"))
+  .filter((page) => page.name !== "" && !page.name.includes("/"))
 
-const grupper = GRUPPER.map((gruppe) => ({
-  ...gruppe,
-  sider: sider
-    .filter((side) => kategoriFor.get(side.navn) === gruppe.kategori)
+const groups = GROUPS.map((group) => ({
+  ...group,
+  pages: pages
+    .filter((page) => categoryOf.get(page.name) === group.category)
     .sort((a, b) => a.title.localeCompare(b.title, "en")),
-})).filter((gruppe) => gruppe.sider.length > 0)
+})).filter((group) => group.pages.length > 0)
 
 /*
  * An overview that has lost half its list looks like a short overview. So what
  * was actually placed is counted, and the build stops if a page fell out of the
  * categorisation.
  */
-const plassert = grupper.reduce((sum, g) => sum + g.sider.length, 0)
-if (plassert !== sider.length) {
-  const borte = sider.filter((s) => !kategoriFor.has(s.navn)).map((s) => s.navn)
+const placed = groups.reduce((sum, g) => sum + g.pages.length, 0)
+if (placed !== pages.length) {
+  const missing = pages
+    .filter((s) => !categoryOf.has(s.name))
+    .map((s) => s.name)
   throw new Error(
-    `ComponentOverview: ${plassert} of ${sider.length} pages ended up in a group. No folder under designsystem/src/components: ${borte.join(", ")}`,
+    `ComponentOverview: ${placed} of ${pages.length} pages ended up in a group. No folder under interfaces/src/components: ${missing.join(", ")}`,
   )
 }
 ---
 
 {
-  grupper.map((gruppe) => (
+  groups.map((group) => (
     <section class="overview">
-      <h2 id={gruppe.kategori}>{gruppe.title}</h2>
-      <p>{gruppe.forklaring}</p>
+      <h2 id={group.category}>{group.title}</h2>
+      <p>{group.explanation}</p>
       <ul class="overview__list">
-        {gruppe.sider.map((side) => (
+        {group.pages.map((page) => (
           <li class="overview__card">
-            <a href={side.adresse}>{side.title}</a>
-            <span>{side.beskrivelse}</span>
+            <a href={page.address}>{page.title}</a>
+            <span>{page.description}</span>
           </li>
         ))}
       </ul>

@@ -1,0 +1,10 @@
+# One pinned Rust version for the core, locally and in CI.
+#
+# The compiler decides which WebAssembly features the module uses, and newer
+# versions turn more of them on by default. With a pinned version the module
+# does not change just because someone updated Rust.
+[toolchain]
+channel = "1.97.0"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown", "wasm32-wasip1"]
+profile = "minimal"

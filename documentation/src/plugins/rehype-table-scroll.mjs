@@ -17,22 +17,22 @@
  * table that does not scroll is neither a tab stop nor a region of its own in
  * the screen reader's list.
  */
-export function rehypeTabellrull() {
-  return (tre) => {
-    besok(tre, { overskrift: "" })
+export function rehypeTableScroll() {
+  return (tree) => {
+    visit(tree, { heading: "" })
   }
 
-  function besok(node, tilstand) {
+  function visit(node, state) {
     if (!node.children) return
 
-    node.children = node.children.map((barn) => {
-      if (barn.type === "element" && /^h[1-6]$/.test(barn.tagName)) {
-        tilstand.overskrift = tekstIn(barn)
+    node.children = node.children.map((child) => {
+      if (child.type === "element" && /^h[1-6]$/.test(child.tagName)) {
+        state.heading = textIn(child)
       }
 
-      besok(barn, tilstand)
+      visit(child, state)
 
-      if (barn.type !== "element" || barn.tagName !== "table") return barn
+      if (child.type !== "element" || child.tagName !== "table") return child
 
       return {
         type: "element",
@@ -41,23 +41,21 @@ export function rehypeTabellrull() {
           className: ["table-scroll"],
           tabIndex: 0,
           role: "region",
-          ariaLabel: tilstand.overskrift
-            ? `Table: ${tilstand.overskrift}`
-            : "Table",
+          ariaLabel: state.heading ? `Table: ${state.heading}` : "Table",
         },
-        children: [barn],
+        children: [child],
       }
     })
   }
 }
 
 /** The text in a node, without the links Starlight adds to headings. */
-function tekstIn(node) {
+function textIn(node) {
   if (node.type === "text") return node.value
   if (!node.children) return ""
 
   return node.children
-    .map((barn) => tekstIn(barn))
+    .map((child) => textIn(child))
     .join("")
     .replace(/\s+/g, " ")
     .trim()

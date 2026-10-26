@@ -1,0 +1,406 @@
+{
+  "name": "@lo-tek/interfaces",
+  "version": "0.36.0",
+  "description": "Framework-agnostic design system: tokens, CSS components and web components.",
+  "license": "MIT",
+  "author": "August Søberg-Klyver",
+  "homepage": "https://lo-tek.sobernetics.no",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MarkusAugust/lo-tek.git",
+    "directory": "interfaces"
+  },
+  "bugs": {
+    "url": "https://github.com/MarkusAugust/lo-tek/issues"
+  },
+  "keywords": [
+    "designsystem",
+    "design-system",
+    "web-components",
+    "custom-elements",
+    "css",
+    "design-tokens",
+    "accessibility",
+    "universell-utforming"
+  ],
+  "type": "module",
+  "engines": {
+    "node": "^20.16.0 || >=22.3.0"
+  },
+  "web-types": "./web-types.json",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "lotek": "dist/cli.js"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./manifest.json": "./manifest/manifest.json",
+    "./color-contract.json": "./src/tokens/color-contract.json",
+    "./core.wasm": "./core/lotek-core.wasm",
+    "./tokens.css": "./src/tokens/tokens.css",
+    "./boundary.css": "./src/tokens/boundary.css",
+    "./lotek.css": "./dist/lotek.css",
+    "./button.css": "./src/components/css/button/button.css",
+    "./link.css": "./src/components/css/link/link.css",
+    "./sr-only.css": "./src/components/css/sr-only/sr-only.css",
+    "./file-upload.css": "./src/components/css/file-upload/file-upload.css",
+    "./popover.css": "./src/components/frame/popover/popover.css",
+    "./toast.css": "./src/components/standalone/toast/toast.css",
+    "./suggestion.css": "./src/components/frame/suggestion/suggestion.css",
+    "./checkbox.css": "./src/components/css/checkbox/checkbox.css",
+    "./radio.css": "./src/components/css/radio/radio.css",
+    "./switch.css": "./src/components/css/switch/switch.css",
+    "./fieldset.css": "./src/components/css/fieldset/fieldset.css",
+    "./alert.css": "./src/components/css/alert/alert.css",
+    "./card.css": "./src/components/css/card/card.css",
+    "./divider.css": "./src/components/css/divider/divider.css",
+    "./progress.css": "./src/components/css/progress/progress.css",
+    "./spinner.css": "./src/components/css/spinner/spinner.css",
+    "./badge.css": "./src/components/css/badge/badge.css",
+    "./label.css": "./src/components/css/label/label.css",
+    "./input.css": "./src/components/css/input/input.css",
+    "./textarea.css": "./src/components/css/textarea/textarea.css",
+    "./select.css": "./src/components/css/select/select.css",
+    "./help-text.css": "./src/components/css/help-text/help-text.css",
+    "./icon.css": "./src/components/css/icon/icon.css",
+    "./error-text.css": "./src/components/css/error-text/error-text.css",
+    "./field.css": "./src/components/frame/field/field.css",
+    "./tabs.css": "./src/components/frame/tabs/tabs.css",
+    "./error-summary.css": "./src/components/frame/error-summary/error-summary.css",
+    "./label": {
+      "types": "./dist/components/css/label/label.d.ts",
+      "import": "./dist/components/css/label/label.js"
+    },
+    "./input": {
+      "types": "./dist/components/css/input/input.d.ts",
+      "import": "./dist/components/css/input/input.js"
+    },
+    "./textarea": {
+      "types": "./dist/components/css/textarea/textarea.d.ts",
+      "import": "./dist/components/css/textarea/textarea.js"
+    },
+    "./select": {
+      "types": "./dist/components/css/select/select.d.ts",
+      "import": "./dist/components/css/select/select.js"
+    },
+    "./help-text": {
+      "types": "./dist/components/css/help-text/help-text.d.ts",
+      "import": "./dist/components/css/help-text/help-text.js"
+    },
+    "./icon": {
+      "types": "./dist/components/css/icon/icon.d.ts",
+      "import": "./dist/components/css/icon/icon.js"
+    },
+    "./error-text": {
+      "types": "./dist/components/css/error-text/error-text.d.ts",
+      "import": "./dist/components/css/error-text/error-text.js"
+    },
+    "./field": {
+      "types": "./dist/components/frame/field/lt-field.d.ts",
+      "import": "./dist/components/frame/field/lt-field.js"
+    },
+    "./tabs": {
+      "types": "./dist/components/frame/tabs/lt-tabs.d.ts",
+      "import": "./dist/components/frame/tabs/lt-tabs.js"
+    },
+    "./error-summary": {
+      "types": "./dist/components/frame/error-summary/lt-error-summary.d.ts",
+      "import": "./dist/components/frame/error-summary/lt-error-summary.js"
+    },
+    "./button": {
+      "types": "./dist/components/css/button/button.d.ts",
+      "import": "./dist/components/css/button/button.js"
+    },
+    "./tokens": {
+      "types": "./dist/tokens/tokens.d.ts",
+      "import": "./dist/tokens/tokens.js"
+    },
+    "./theme": {
+      "types": "./dist/tokens/theme.d.ts",
+      "import": "./dist/tokens/theme.js"
+    },
+    "./color": {
+      "types": "./dist/tokens/color.d.ts",
+      "import": "./dist/tokens/color.js"
+    },
+    "./contract": {
+      "types": "./dist/tokens/contract.d.ts",
+      "import": "./dist/tokens/contract.js"
+    },
+    "./matrix": {
+      "types": "./dist/tokens/matrix.d.ts",
+      "import": "./dist/tokens/matrix.js"
+    },
+    "./theme-check": {
+      "types": "./dist/tokens/theme-check.d.ts",
+      "import": "./dist/tokens/theme-check.js"
+    },
+    "./tailwind.css": "./src/tailwind/tailwind.css",
+    "./badge": {
+      "types": "./dist/components/css/badge/badge.d.ts",
+      "import": "./dist/components/css/badge/badge.js"
+    },
+    "./link": {
+      "types": "./dist/components/css/link/link.d.ts",
+      "import": "./dist/components/css/link/link.js"
+    },
+    "./sr-only": {
+      "types": "./dist/components/css/sr-only/sr-only.d.ts",
+      "import": "./dist/components/css/sr-only/sr-only.js"
+    },
+    "./file-upload": {
+      "types": "./dist/components/css/file-upload/file-upload.d.ts",
+      "import": "./dist/components/css/file-upload/file-upload.js"
+    },
+    "./popover": {
+      "types": "./dist/components/frame/popover/lt-popover.d.ts",
+      "import": "./dist/components/frame/popover/lt-popover.js"
+    },
+    "./toast": {
+      "types": "./dist/components/standalone/toast/lt-toast.d.ts",
+      "import": "./dist/components/standalone/toast/lt-toast.js"
+    },
+    "./suggestion": {
+      "types": "./dist/components/frame/suggestion/lt-suggestion.d.ts",
+      "import": "./dist/components/frame/suggestion/lt-suggestion.js"
+    },
+    "./checkbox": {
+      "types": "./dist/components/css/checkbox/checkbox.d.ts",
+      "import": "./dist/components/css/checkbox/checkbox.js"
+    },
+    "./radio": {
+      "types": "./dist/components/css/radio/radio.d.ts",
+      "import": "./dist/components/css/radio/radio.js"
+    },
+    "./switch": {
+      "types": "./dist/components/css/switch/switch.d.ts",
+      "import": "./dist/components/css/switch/switch.js"
+    },
+    "./fieldset": {
+      "types": "./dist/components/css/fieldset/fieldset.d.ts",
+      "import": "./dist/components/css/fieldset/fieldset.js"
+    },
+    "./alert": {
+      "types": "./dist/components/css/alert/alert.d.ts",
+      "import": "./dist/components/css/alert/alert.js"
+    },
+    "./card": {
+      "types": "./dist/components/css/card/card.d.ts",
+      "import": "./dist/components/css/card/card.js"
+    },
+    "./divider": {
+      "types": "./dist/components/css/divider/divider.d.ts",
+      "import": "./dist/components/css/divider/divider.js"
+    },
+    "./progress": {
+      "types": "./dist/components/css/progress/progress.d.ts",
+      "import": "./dist/components/css/progress/progress.js"
+    },
+    "./spinner": {
+      "types": "./dist/components/css/spinner/spinner.d.ts",
+      "import": "./dist/components/css/spinner/spinner.js"
+    },
+    "./shared": {
+      "types": "./dist/components/css/shared.d.ts",
+      "import": "./dist/components/css/shared.js"
+    },
+    "./field-core": {
+      "types": "./dist/components/frame/field/field-core.d.ts",
+      "import": "./dist/components/frame/field/field-core.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    },
+    "./react-jsx": {
+      "types": "./dist/jsx/react.d.ts",
+      "import": "./dist/jsx/react.js"
+    },
+    "./dom": {
+      "types": "./dist/dom.d.ts",
+      "import": "./dist/dom.js"
+    },
+    "./host-element": {
+      "types": "./dist/components/host-element.d.ts",
+      "import": "./dist/components/host-element.js"
+    },
+    "./default-texts": {
+      "types": "./dist/components/default-texts.d.ts",
+      "import": "./dist/components/default-texts.js"
+    },
+    "./table.css": "./src/components/css/table/table.css",
+    "./table": {
+      "types": "./dist/components/css/table/table.d.ts",
+      "import": "./dist/components/css/table/table.js"
+    },
+    "./list.css": "./src/components/css/list/list.css",
+    "./list": {
+      "types": "./dist/components/css/list/list.d.ts",
+      "import": "./dist/components/css/list/list.js"
+    },
+    "./tag.css": "./src/components/css/tag/tag.css",
+    "./tag": {
+      "types": "./dist/components/css/tag/tag.d.ts",
+      "import": "./dist/components/css/tag/tag.js"
+    },
+    "./avatar.css": "./src/components/css/avatar/avatar.css",
+    "./avatar": {
+      "types": "./dist/components/css/avatar/avatar.d.ts",
+      "import": "./dist/components/css/avatar/avatar.js"
+    },
+    "./skeleton.css": "./src/components/css/skeleton/skeleton.css",
+    "./skeleton": {
+      "types": "./dist/components/css/skeleton/skeleton.d.ts",
+      "import": "./dist/components/css/skeleton/skeleton.js"
+    },
+    "./breadcrumbs.css": "./src/components/css/breadcrumbs/breadcrumbs.css",
+    "./breadcrumbs": {
+      "types": "./dist/components/css/breadcrumbs/breadcrumbs.d.ts",
+      "import": "./dist/components/css/breadcrumbs/breadcrumbs.js"
+    },
+    "./pagination.css": "./src/components/css/pagination/pagination.css",
+    "./pagination": {
+      "types": "./dist/components/css/pagination/pagination.d.ts",
+      "import": "./dist/components/css/pagination/pagination.js"
+    },
+    "./skip-link.css": "./src/components/css/skip-link/skip-link.css",
+    "./skip-link": {
+      "types": "./dist/components/css/skip-link/skip-link.d.ts",
+      "import": "./dist/components/css/skip-link/skip-link.js"
+    },
+    "./accordion.css": "./src/components/css/accordion/accordion.css",
+    "./accordion": {
+      "types": "./dist/components/css/accordion/accordion.d.ts",
+      "import": "./dist/components/css/accordion/accordion.js"
+    },
+    "./dialog.css": "./src/components/frame/dialog/dialog.css",
+    "./dialog": {
+      "types": "./dist/components/frame/dialog/lt-dialog.d.ts",
+      "import": "./dist/components/frame/dialog/lt-dialog.js"
+    },
+    "./search.css": "./src/components/css/search/search.css",
+    "./search": {
+      "types": "./dist/components/css/search/search.d.ts",
+      "import": "./dist/components/css/search/search.js"
+    },
+    "./toggle-group.css": "./src/components/css/toggle-group/toggle-group.css",
+    "./toggle-group": {
+      "types": "./dist/components/css/toggle-group/toggle-group.d.ts",
+      "import": "./dist/components/css/toggle-group/toggle-group.js"
+    },
+    "./tooltip.css": "./src/components/css/tooltip/tooltip.css",
+    "./tooltip": {
+      "types": "./dist/components/css/tooltip/tooltip.d.ts",
+      "import": "./dist/components/css/tooltip/tooltip.js"
+    },
+    "./heading.css": "./src/components/css/heading/heading.css",
+    "./heading": {
+      "types": "./dist/components/css/heading/heading.d.ts",
+      "import": "./dist/components/css/heading/heading.js"
+    },
+    "./paragraph.css": "./src/components/css/paragraph/paragraph.css",
+    "./paragraph": {
+      "types": "./dist/components/css/paragraph/paragraph.d.ts",
+      "import": "./dist/components/css/paragraph/paragraph.js"
+    },
+    "./session-timeout": {
+      "types": "./dist/components/frame/session-timeout/lt-session-timeout.d.ts",
+      "import": "./dist/components/frame/session-timeout/lt-session-timeout.js"
+    },
+    "./session-timeout.css": "./src/components/frame/session-timeout/session-timeout.css",
+    "./connection-status": {
+      "types": "./dist/components/standalone/connection-status/lt-connection-status.d.ts",
+      "import": "./dist/components/standalone/connection-status/lt-connection-status.js"
+    },
+    "./connection-status.css": "./src/components/standalone/connection-status/connection-status.css",
+    "./register": {
+      "types": "./dist/register.d.ts",
+      "import": "./dist/register.js"
+    },
+    "./diagnostics": {
+      "types": "./dist/diagnostics/index.d.ts",
+      "import": "./dist/diagnostics/index.js"
+    }
+  },
+  "files": [
+    "agent",
+    "dist",
+    "web-types.json",
+    "live-templates.xml",
+    "manifest/manifest.json",
+    "manifest/files.json",
+    "core/lotek-core.wasm",
+    "core/lotek.wasm",
+    "manifest/manifest.schema.json",
+    "src/*.ts",
+    "src/diagnostics",
+    "src/jsx",
+    "src/tokens",
+    "src/components",
+    "src/tailwind",
+    "src/vocabulary",
+    "CHANGELOG.md",
+    "!**/*.browser.test.ts",
+    "!**/*.test.ts",
+    "!**/*.tsbuildinfo"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "generate": "bun scripts/generate-matrix.ts && bun scripts/generate-tokens.ts && bun scripts/generate-tailwind.ts && bun scripts/generate-vocabulary.ts && bun scripts/generate-agent.ts && bun scripts/generate-manifest.ts",
+    "build:css": "bun scripts/build-css.ts",
+    "pack": "bun run core && rm -rf dist && tsc -b --force && bun run build:css && npm pack --ignore-scripts",
+    "build:browser": "tsc -b && bun run build:css",
+    "vocabulary": "bun scripts/generate-vocabulary.ts",
+    "check:vocabulary": "bun scripts/check-vocabulary.ts",
+    "core": "bun ../core/scripts/build.ts && mkdir -p core && cp ../core/dist/lotek-core.wasm ../core/dist/lotek.wasm core/",
+    "build": "bun run core && bun run generate && rm -rf dist && tsc -b --force && bun run build:css && bun run check:exports && bun run check:server && bun run check:types && bun run check:writes && bun run check:test-files && bun run check:texts && bun run check:identifiers && bun run check:agent && bun run check:vocabulary && bun run check:css-witness && bun run check:wording && bun run check:cli && bun run check:version && bun run check:package",
+    "typecheck": "tsc --noEmit",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
+    "test:browser": "vitest --config vitest.config.ts --run",
+    "check:exports": "bun scripts/check-exports.ts",
+    "check:server": "bun scripts/check-server-import.ts",
+    "check:types": "bun scripts/check-types.ts",
+    "check:tailwind": "bun scripts/check-tailwind.ts",
+    "browsers": "playwright install chromium firefox webkit",
+    "test:chromium": "vitest --config vitest.chromium.config.ts --run",
+    "theme": "bun src/cli.ts",
+    "check:cli": "bun scripts/check-cli.ts",
+    "check:version": "bun scripts/check-version.ts",
+    "check:package": "publint",
+    "prepublishOnly": "bun run build",
+    "check:writes": "bun scripts/check-writes.ts",
+    "check:test-files": "bun scripts/check-test-files.ts",
+    "check:identifiers": "bun scripts/check-identifiers.ts",
+    "typecheck:scripts": "tsc --noEmit -p scripts/tsconfig.json",
+    "check:wording": "bun scripts/check-wording.ts",
+    "check:agent": "bun scripts/check-agent.ts",
+    "check:css-witness": "bun scripts/check-css-witness.ts",
+    "check:texts": "bun scripts/check-texts.ts",
+    "check:without-javascript": "bun scripts/check-without-javascript.ts"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.4",
+    "@types/react": "19",
+    "@types/react-dom": "19",
+    "@vitest/browser": "4.1.7",
+    "@vitest/browser-playwright": "^4.1.7",
+    "axe-core": "^4.13.0",
+    "playwright": "1.60.0",
+    "publint": "^0.3.24",
+    "react": "19",
+    "react-dom": "19",
+    "tailwindcss": "4.3.0",
+    "vite": "7.0.0",
+    "vitest": "4.1.7"
+  }
+}

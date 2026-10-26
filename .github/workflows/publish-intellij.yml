@@ -1,7 +1,7 @@
 name: Publish the IntelliJ plugin
 
 # Runs when a tag of the form intellij-v* is pushed, and can be started by
-# hand. The plugin has its own number in editor-intellij/gradle.properties,
+# hand. The plugin has its own number in intellij/gradle.properties,
 # separate from the package's v* tags and the extension's extension-v* tags.
 #
 # JetBrains approves every version before it becomes visible on Marketplace,
@@ -41,7 +41,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       # rustup is on the machine and fetches the version in
-      # `core/rust-toolchain.toml`.
+      # `rust-toolchain.toml`.
       - name: Rust version
         working-directory: core
         run: rustc --version
@@ -51,7 +51,7 @@ jobs:
 
       - name: Read the version
         id: version
-        working-directory: editor-intellij
+        working-directory: intellij
         run: |
           number=$(grep '^pluginVersion=' gradle.properties | cut -d= -f2)
           platform=$(grep '^platformVersion=' gradle.properties | cut -d= -f2)
@@ -74,19 +74,19 @@ jobs:
       - name: Restore the IntelliJ platform from cache
         uses: actions/cache@v4
         with:
-          path: editor-intellij/.intellijPlatform
+          path: intellij/.intellijPlatform
           key: intellij-${{ steps.version.outputs.platform }}
 
       - name: Build and test
-        working-directory: editor-intellij
-        run: ./gradlew build -Plotek.package=../designsystem
+        working-directory: intellij
+        run: ./gradlew build -Plotek.package=../interfaces
 
       # Marketplace has no OIDC. The token is created under the profile on
       # plugins.jetbrains.com (My Tokens) and stored as the secret
       # JETBRAINS_MARKETPLACE_TOKEN. If it is missing, the step stops here
       # rather than with a Gradle error about a property that is not set.
       - name: Upload to JetBrains Marketplace
-        working-directory: editor-intellij
+        working-directory: intellij
         env:
           ORG_GRADLE_PROJECT_intellijPlatformPublishingToken: ${{ secrets.JETBRAINS_MARKETPLACE_TOKEN }}
         run: |
@@ -94,4 +94,4 @@ jobs:
             echo "The secret JETBRAINS_MARKETPLACE_TOKEN is missing." >&2
             exit 1
           fi
-          ./gradlew publishPlugin -Plotek.package=../designsystem
+          ./gradlew publishPlugin -Plotek.package=../interfaces

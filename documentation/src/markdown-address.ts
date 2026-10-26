@@ -12,8 +12,8 @@
  * from the link in the built page, so there is only one rule for where the
  * file is.
  */
-export function markdownAdresse(sti: string): string {
-  const uten = sti.replace(/\/+$/, "")
+export function markdownAddress(path: string): string {
+  const trimmed = path.replace(/\/+$/, "")
 
-  return `${uten === "" ? "/index" : uten}.md`
+  return `${trimmed === "" ? "/index" : trimmed}.md`
 }

@@ -11,19 +11,19 @@
  */
 
 import { defineRouteMiddleware } from "@astrojs/starlight/route-data"
-import { markdownAdresse } from "./markdown-address"
+import { markdownAddress } from "./markdown-address"
 
-export const onRequest = defineRouteMiddleware((kontekst) => {
-  const rute = kontekst.locals.starlightRoute
+export const onRequest = defineRouteMiddleware((context) => {
+  const route = context.locals.starlightRoute
 
-  if (rute.entry.id === "404") return
+  if (route.entry.id === "404") return
 
-  rute.head.push({
+  route.head.push({
     tag: "link",
     attrs: {
       rel: "alternate",
       type: "text/markdown",
-      href: markdownAdresse(kontekst.url.pathname),
+      href: markdownAddress(context.url.pathname),
       title: "Markdown",
     },
   })

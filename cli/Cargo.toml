@@ -1,0 +1,15 @@
+[package]
+name = "lotek"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "The LO-TEK CLI: checks markup and themes against the design system, and creates themes."
+repository = "https://github.com/MarkusAugust/lo-tek"
+publish = false
+
+[[bin]]
+name = "lotek"
+path = "src/main.rs"
+
+[dependencies]
+lotek-core = { path = "../core" }

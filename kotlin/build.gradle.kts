@@ -82,7 +82,7 @@ val unpackPackage = tasks.register<Sync>("unpackPackage") {
         val pkg = groovy.json.JsonSlurper().parse(destinationDir.resolve("package.json")) as Map<*, *>
         check(pkg["name"] == "@lo-tek/interfaces" && pkg["version"] == expected) {
             "The tarball is ${pkg["name"]}@${pkg["version"]}, but the Kotlin package is $expected. " +
-                "The version in kotlin/gradle.properties and designsystem/package.json must be the same."
+                "The version in kotlin/gradle.properties and interfaces/package.json must be the same."
         }
     }
 }
@@ -153,7 +153,7 @@ tasks.test {
      * the same age.
      */
     val core = rootDir.resolve("../core")
-    val designsystem = rootDir.resolve("../designsystem")
+    val interfaces = rootDir.resolve("../interfaces")
     systemProperty("parity", core.resolve("parity").absolutePath)
     systemProperty("theme", core.resolve("theme").absolutePath)
     // The fixtures and the build cases are read through a path, so Gradle
@@ -161,11 +161,11 @@ tasks.test {
     // counted as up to date.
     inputs.dir(core.resolve("parity")).withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir(core.resolve("theme")).withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file(designsystem.resolve("manifest/build-cases.json")).withPathSensitivity(PathSensitivity.NONE)
+    inputs.file(interfaces.resolve("manifest/build-cases.json")).withPathSensitivity(PathSensitivity.NONE)
     inputs.file(manifestFile).withPathSensitivity(PathSensitivity.NONE)
     val manifestPath = manifestFile.map { it.asFile.absolutePath }
     jvmArgumentProviders.add(CommandLineArgumentProvider { listOf("-Dmanifest=${manifestPath.get()}") })
-    systemProperty("buildCases", designsystem.resolve("manifest/build-cases.json").absolutePath)
+    systemProperty("buildCases", interfaces.resolve("manifest/build-cases.json").absolutePath)
     systemProperty("webjar", layout.buildDirectory.dir("webjar/META-INF/resources/webjars/lo-tek/$version").get().asFile.absolutePath)
     testLogging { events("failed") }
 }

@@ -4,12 +4,12 @@ import { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Code, TabItem, Tabs } from "@astrojs/starlight/components"
 import { compile } from "tailwindcss"
-import Preview, { type Stilark } from "./Preview.astro"
+import Preview, { type Stylesheet } from "./Preview.astro"
 
 interface Props {
   /** The LO-TEK stylesheets the example needs. */
-  styles?: Stilark[]
-  /** `rad` lays the content out side by side, `stabel` one below the other. */
+  styles?: Stylesheet[]
+  /** `row` lays the content out side by side, `stack` one below the other. */
   layout?: "row" | "stack"
   /** Optional maximum width. */
   maxWidth?: string
@@ -27,18 +27,22 @@ const { styles = [], layout = "row", maxWidth, code } = Astro.props
  * example a drawing of something that might work. Here Tailwind itself
  * generates the classes, from exactly the markup shown in the code tab.
  */
-async function lastStilark(id: string, basedir: string) {
+async function loadStylesheet(id: string, basedir: string) {
   const url = id.startsWith(".")
     ? new URL(id, `file://${basedir}/`)
     : new URL(import.meta.resolve(id))
-  const sti = fileURLToPath(url)
+  const path = fileURLToPath(url)
 
-  return { path: sti, base: dirname(sti), content: await readFile(sti, "utf8") }
+  return {
+    path: path,
+    base: dirname(path),
+    content: await readFile(path, "utf8"),
+  }
 }
 
 /** The class names in the markup, which are what Tailwind is to generate rules for. */
-const klasser = [...code.matchAll(/class="([^"]*)"/g)].flatMap((treff) =>
-  treff[1].split(/\s+/).filter(Boolean),
+const classes = [...code.matchAll(/class="([^"]*)"/g)].flatMap((match) =>
+  match[1].split(/\s+/).filter(Boolean),
 )
 
 const compiler = await compile(
@@ -47,7 +51,7 @@ const compiler = await compile(
 	@import "tailwindcss/utilities.css" layer(utilities);
 	@import "@lo-tek/interfaces/tailwind.css";
 	`,
-  { base: process.cwd(), loadStylesheet: lastStilark },
+  { base: process.cwd(), loadStylesheet: loadStylesheet },
 )
 
 /*
@@ -67,23 +71,23 @@ const compiler = await compile(
  * is a prefix of another, such as `text-lt-accent` against
  * `text-lt-accent-text`, does not slip through on a substring match.
  */
-const ukjente: string[] = []
-let lengde = compiler.build([]).length
+const unknown: string[] = []
+let length = compiler.build([]).length
 
-for (const klasse of new Set(klasser)) {
-  if (!klasse.includes("-lt-")) continue
-  const ny = compiler.build([klasse]).length
-  if (ny <= lengde) ukjente.push(klasse)
-  lengde = Math.max(lengde, ny)
+for (const className of new Set(classes)) {
+  if (!className.includes("-lt-")) continue
+  const next = compiler.build([className]).length
+  if (next <= length) unknown.push(className)
+  length = Math.max(length, next)
 }
 
-if (ukjente.length > 0) {
+if (unknown.length > 0) {
   throw new Error(
-    `The Tailwind example uses classes that do not exist in the theme: ${ukjente.join(", ")}`,
+    `The Tailwind example uses classes that do not exist in the theme: ${unknown.join(", ")}`,
   )
 }
 
-const tailwindCss = compiler.build(klasser)
+const tailwindCss = compiler.build(classes)
 ---
 
 <Tabs>

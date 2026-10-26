@@ -1,11 +1,11 @@
 ---
 import { createMarkdownProcessor } from "@astrojs/markdown-remark"
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro"
-import logg from "../../../designsystem/CHANGELOG.md?raw"
-import { rehypeTabellrull } from "../plugins/rehype-table-scroll.mjs"
+import changelog from "../../../interfaces/CHANGELOG.md?raw"
+import { rehypeTableScroll } from "../plugins/rehype-table-scroll.mjs"
 
 /*
- * The changelog is rendered from `designsystem/CHANGELOG.md`, which is the
+ * The changelog is rendered from `interfaces/CHANGELOG.md`, which is the
  * single source. The file is loaded with `?raw` and not with `readFileSync`: a
  * path computed from `import.meta.url` points the wrong way after the build
  * has bundled the page. The heading in the file is replaced by the page's own
@@ -13,7 +13,7 @@ import { rehypeTabellrull } from "../plugins/rehype-table-scroll.mjs"
  * the file at all times, empty too right after a release, and is only included
  * when there is something under it.
  */
-const kilde = logg
+const source = changelog
   .replace(/^# .*\n/, "")
   .replace(/^## Unreleased\s*\n(?=## )/m, "")
 
@@ -26,11 +26,11 @@ const kilde = logg
  * `<pre>` gets Starlight's own colours in both.
  */
 const markdown = await createMarkdownProcessor({
-  rehypePlugins: [rehypeTabellrull],
+  rehypePlugins: [rehypeTableScroll],
   syntaxHighlight: false,
 })
-const { code, metadata } = await markdown.render(kilde)
-const overskrifter = metadata.headings.filter((h) => h.depth === 2)
+const { code, metadata } = await markdown.render(source)
+const headings = metadata.headings.filter((h) => h.depth === 2)
 ---
 
 <StarlightPage
@@ -38,7 +38,7 @@ const overskrifter = metadata.headings.filter((h) => h.depth === 2)
     title: "Changelog",
     description: "What has changed in each version of @lo-tek/interfaces.",
   }}
-  headings={overskrifter}
+  headings={headings}
 >
   <Fragment set:html={code} />
 </StarlightPage>

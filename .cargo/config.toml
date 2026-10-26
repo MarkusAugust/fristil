@@ -1,0 +1,8 @@
+# WebAssembly as the first standard described it (MVP), without the extensions
+# Rust turns on by default from 1.82 (multivalue, reference-types and more).
+#
+# The module has to run the same in Node, in browsers that are not the newest,
+# and in Chicory on the JVM. The core needs none of the extensions: it is plain
+# text in and JSON out, with no imports.
+[target.wasm32-unknown-unknown]
+rustflags = ["-C", "target-cpu=mvp"]

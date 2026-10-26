@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "types": ["bun"],
+    "noEmit": true,
+    // bun-types 1.3.14 disagrees with @types/node 24 on four lines in its own
+    // files. It is not our code, and without this the type check fails on
+    // them. interfaces/scripts/tsconfig.json has the same errors, but nothing
+    // runs it.
+    "skipLibCheck": true
+  },
+  "include": ["scripts/**/*", "src/**/*"]
+}

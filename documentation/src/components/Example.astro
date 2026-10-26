@@ -1,24 +1,24 @@
 ---
 import { Code, TabItem, Tabs } from "@astrojs/starlight/components"
-import pakke from "../../../designsystem/package.json"
-import Preview, { type Stilark } from "./Preview.astro"
+import pkg from "../../../interfaces/package.json"
+import Preview, { type Stylesheet } from "./Preview.astro"
 
 /** The addresses of the stylesheets, read from the package's own `exports`. */
-const STILARK: Record<string, string> = Object.fromEntries(
-  Object.entries(pakke.exports as Record<string, unknown>)
+const STYLESHEETS: Record<string, string> = Object.fromEntries(
+  Object.entries(pkg.exports as Record<string, unknown>)
     .filter(([n, m]) => n.endsWith(".css") && typeof m === "string")
     .map(([n, m]) => [n.slice(2), (m as string).slice(2)]),
 )
 
-const CDN = `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@${pakke.version}`
+const CDN = `https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@${pkg.version}`
 
 interface Props {
   /** The stylesheets the example needs, the same ones you would import in an app. */
-  styles?: Stilark[]
+  styles?: Stylesheet[]
   /**
-   * `rad` lays the content out side by side, `stabel` one below the other.
+   * `row` lays the content out side by side, `stack` one below the other.
    * `flow` is ordinary block flow, where margins collapse as they do on a
-   * real page. In `stabel` the surface is a flex column, and there the
+   * real page. In `stack` the surface is a flex column, and there the
    * margins and the gap add up.
    */
   layout?: "row" | "stack" | "flow"
@@ -49,7 +49,7 @@ interface Props {
    * The difference from `previewCss` is who it is for. `previewCss` forces
    * something into view that cannot otherwise be shown in a box, and is not
    * to be copied. This one is part of the recipe: the consumer's own classes,
-   * such as `.sak-siste-linje` on the skeleton page. That is why it is shown
+   * such as `.compact-panel` on the customising page. That is why it is shown
    * in the code tab.
    *
    * Without the distinction, such CSS ended up in `previewCss`, and the code
@@ -61,7 +61,7 @@ interface Props {
 const { styles, layout, maxWidth, code, previewCss, imports, customCss } =
   Astro.props
 
-const forhaandsvisningsCss = [customCss, previewCss].filter(Boolean).join("\n")
+const combinedPreviewCss = [customCss, previewCss].filter(Boolean).join("\n")
 
 /*
  * The tab for the builder function, when the page has something to say there.
@@ -71,7 +71,7 @@ const forhaandsvisningsCss = [customCss, previewCss].filter(Boolean).join("\n")
  * their React and Astro tabs instead. Now everything about how the component
  * is made is in the same section, on every page.
  */
-const harTypeScript = Astro.slots.has("ts")
+const hasTypeScript = Astro.slots.has("ts")
 
 /*
  * The stylesheets, in the form the tab they are in can actually use.
@@ -81,12 +81,12 @@ const harTypeScript = Astro.slots.has("ts")
  * package name. There a `<link>` with the full address is written. The import
  * lines belong in the TypeScript tab, where there is a build step.
  */
-const lenker =
+const links =
   imports &&
   [
     ...imports.map(
-      (fil) =>
-        `<link rel="stylesheet" href="${CDN}/${STILARK[fil] ?? `src/${fil}`}">`,
+      (file) =>
+        `<link rel="stylesheet" href="${CDN}/${STYLESHEETS[file] ?? `src/${file}`}">`,
     ),
     /*
      * And the single file that replaces them.
@@ -98,11 +98,11 @@ const lenker =
      * `imports`, which is the only stylesheet the combined file does not
      * cover, so the line is true everywhere.
      */
-    `<!-- Or everything in one file: ${CDN}/${STILARK["lotek.css"]} -->`,
+    `<!-- Or everything in one file: ${CDN}/${STYLESHEETS["lotek.css"]} -->`,
   ].join("\n")
 
-const importlinjer = imports
-  ?.map((fil) => `import "@lo-tek/interfaces/${fil}"`)
+const importLines = imports
+  ?.map((file) => `import "@lo-tek/interfaces/${file}"`)
   .join("\n")
 
 /*
@@ -117,19 +117,19 @@ const importlinjer = imports
 
 <Tabs>
 	<TabItem label="Example">
-		<Preview styles={styles} layout={layout} maxWidth={maxWidth} extraCss={forhaandsvisningsCss}>
+		<Preview styles={styles} layout={layout} maxWidth={maxWidth} extraCss={combinedPreviewCss}>
 			<Fragment set:html={code} />
 		</Preview>
 	</TabItem>
 	<TabItem label="Plain HTML">
-		{lenker && <Code code={lenker} lang="html" />}
+		{links && <Code code={links} lang="html" />}
 		<Code code={code.trim()} lang="html" />
 		{customCss && <Code code={customCss.trim()} lang="css" />}
 	</TabItem>
 	{
-		harTypeScript && (
+		hasTypeScript && (
 			<TabItem label="TypeScript">
-				{importlinjer && <Code code={importlinjer} lang="ts" />}
+				{importLines && <Code code={importLines} lang="ts" />}
 				<slot name="ts" />
 			</TabItem>
 		)

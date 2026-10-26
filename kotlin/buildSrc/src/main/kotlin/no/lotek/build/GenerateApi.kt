@@ -13,7 +13,7 @@ import org.gradle.api.tasks.TaskAction
 /**
  * Writes the Kotlin API from the manifest.
  *
- * The manifest (`designsystem/manifest/manifest.json`) is written by the
+ * The manifest (`interfaces/manifest/manifest.json`) is written by the
  * package from the TypeScript code. From it come the allowed values as
  * `enum`s, every builder function that has a table, and the types for the
  * results that have several sets. The few builder functions whose options

@@ -24,18 +24,18 @@ export function ecTabindex() {
     name: "lotek-ec-tabindex",
     hooks: {
       postprocessRenderedBlock: ({ renderData }) => {
-        besok(renderData.blockAst)
+        visit(renderData.blockAst)
       },
     },
   }
 }
 
-function besok(node) {
+function visit(node) {
   if (node.type === "element" && node.tagName === "pre") {
     node.properties ??= {}
     node.properties.tabindex = "0"
     node.properties.role = "region"
     return
   }
-  for (const barn of node.children ?? []) besok(barn)
+  for (const child of node.children ?? []) visit(child)
 }

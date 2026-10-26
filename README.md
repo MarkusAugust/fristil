@@ -9,7 +9,7 @@ LO-TEK is a framework-agnostic design system for the web. The components are CSS
 ## Status
 
 LO-TEK is pre-1.0. A minor version can contain breaking changes, and they are listed under
-"Breaking" in the [changelog](designsystem/CHANGELOG.md).
+"Breaking" in the [changelog](interfaces/CHANGELOG.md).
 
 Contributions from others happen only by agreement with the maintainer.
 
@@ -26,12 +26,12 @@ A Bun monorepo with three workspaces, and one Gradle project alongside:
 
 | Workspace | Package | Contents |
 | --- | --- | --- |
-| `designsystem/` | `@lo-tek/interfaces` | tokens, CSS components, web components, the theme generator |
+| `interfaces/` | `@lo-tek/interfaces` | tokens, CSS components, web components, the theme generator |
 | `documentation/` | `@lo-tek/documentation` | Astro 6 + Starlight, the demos and the checks of them |
 | `editor/` | `interfaces` | the VS Code extension: completion, snippets and diagnostics |
-| `editor-intellij/` | not a bun workspace | the IntelliJ plugin, built with Gradle |
+| `intellij/` | not a bun workspace | the IntelliJ plugin, built with Gradle |
 
-The components live under `designsystem/src/components/`, split into three categories by who creates the markup and whether a web component adds behaviour to it:
+The components live under `interfaces/src/components/`, split into three categories by who creates the markup and whether a web component adds behaviour to it:
 
 - `css/<component>/`: a class and `data-*` attributes, no JavaScript.
 - `frame/<component>/`: a web component that wires together the elements you put in yourself, such as `<lt-field>`.
@@ -45,7 +45,7 @@ Prerequisites: Bun and Rust ([rustup](https://rustup.rs)). `bun run check` also 
 
 ```bash
 bun install
-bun run build   # must run once: the documentation reads from designsystem/dist
+bun run build   # must run once: the documentation reads from interfaces/dist
 bun run dev     # the documentation site
 ```
 
@@ -64,15 +64,15 @@ The browsers are installed with `bun --filter @lo-tek/interfaces browsers`.
 
 ## Workflow
 
-`master` is protected and must always be green, so all work goes through a branch and a pull request. Run `bun run check` before you send anything off. The whole flow, including how a version is released, is in [CONTRIBUTING.md](CONTRIBUTING.md). Changes a consumer will notice go into [designsystem/CHANGELOG.md](designsystem/CHANGELOG.md) in the same pull request.
+`master` is protected and must always be green, so all work goes through a branch and a pull request. Run `bun run check` before you send anything off. The whole flow, including how a version is released, is in [CONTRIBUTING.md](CONTRIBUTING.md). Changes a consumer will notice go into [interfaces/CHANGELOG.md](interfaces/CHANGELOG.md) in the same pull request.
 
 ## New component
 
 1. Create the folder under the right category, with the component, the stylesheet and a `*.browser.test.ts` next to them.
-2. Add `exports` entries in `designsystem/package.json`, for both CSS and JS.
-3. Export from `designsystem/src/index.ts` if it belongs in `lt`.
-4. Add the builder function to `designsystem/src/react.ts`, with the React names of the attributes.
-5. Declare the element and its properties in `designsystem/src/jsx/react.ts`.
+2. Add `exports` entries in `interfaces/package.json`, for both CSS and JS.
+3. Export from `interfaces/src/index.ts` if it belongs in `lt`.
+4. Add the builder function to `interfaces/src/react.ts`, with the React names of the attributes.
+5. Declare the element and its properties in `interfaces/src/jsx/react.ts`.
 6. Add the stylesheet to `STILARK` in `documentation/src/components/Preview.astro`, otherwise the styles are missing from the examples.
 7. Write the component page under `documentation/src/content/docs/components/` and add it to the sidebar in `documentation/astro.config.mjs`.
 
@@ -111,7 +111,7 @@ Eight checks keep this in place, and `bun run check` runs them:
 
 ## Tokens
 
-`tokens.css` is generated, and changes made directly in it are overwritten. The source is `designsystem/src/tokens/tokens.ts` for everything except colour. The colours have no value written down anywhere: the brand colours, the lightness per role and the promises are in `src/tokens/color-contract.json`, and the core in `core/` computes the colours from them. To move a colour, that is the file you edit:
+`tokens.css` is generated, and changes made directly in it are overwritten. The source is `interfaces/src/tokens/tokens.ts` for everything except colour. The colours have no value written down anywhere: the brand colours, the lightness per role and the promises are in `src/tokens/color-contract.json`, and the core in `core/` computes the colours from them. To move a colour, that is the file you edit:
 
 ```bash
 bun --filter @lo-tek/interfaces generate

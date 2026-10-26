@@ -1,0 +1,13 @@
+# The Rust code: the core, which is the domain and does no I/O, and the
+# command line, an adapter that reads files, fetches addresses and writes to
+# the terminal. The other adapters are the hosts in interfaces/ and kotlin/.
+[workspace]
+members = ["core", "cli"]
+resolver = "2"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

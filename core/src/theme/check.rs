@@ -205,7 +205,7 @@ impl<'i> RuleBodyItemParser<'i, Item, ()> for Reader {
 /// a modal. They are no cell, have no family and no role, and promise no
 /// contrast. A control that is disabled is exempt from the requirement in
 /// WCAG 1.4.3. The same as `SystemColorToken` in
-/// `designsystem/src/tokens/tokens.ts`, without the shadow.
+/// `interfaces/src/tokens/tokens.ts`, without the shadow.
 const SYSTEM_COLORS: [&str; 3] = [
     "--lt-color-disabled-surface",
     "--lt-color-disabled-text",

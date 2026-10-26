@@ -7,7 +7,7 @@ plugins {
 /*
  * The command line on the JVM: `java -jar lotek.jar check form.html`.
  *
- * The commands are written in Rust (`core/cli/`), and the WASI module comes
+ * The commands are written in Rust (`cli/`), and the WASI module comes
  * with the npm package as `core/lotek.wasm`. Chicory runs it, compiled to
  * bytecode here, so the jar answers the same as `npx @lo-tek/interfaces` and
  * the executable from `cargo install`. It needs only Java 17, not Node, not

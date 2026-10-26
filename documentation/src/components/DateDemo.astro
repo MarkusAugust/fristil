@@ -9,7 +9,7 @@ import Preview from "./Preview.astro"
 			class="lt-input"
 			data-variant="date"
 			id="demo-date-born"
-			name="fodselsdato"
+			name="birth-date"
 			type="date"
 			min="1900-01-01"
 			max="2026-12-31"
@@ -27,13 +27,13 @@ import Preview from "./Preview.astro"
 
 	// The preview sits in a shadow root, so we go through the host element.
 	const surface = document.getElementById("demo-date")?.shadowRoot
-	const felt = surface?.getElementById("demo-date-born") as HTMLInputElement | null
-	const svar = surface?.getElementById("demo-date-answer")
+	const field = surface?.getElementById("demo-date-born") as HTMLInputElement | null
+	const answer = surface?.getElementById("demo-date-answer")
 
-	felt?.addEventListener("change", () => {
-		if (!svar) return
-		svar.textContent = felt.value
-			? `The server receives ${felt.value}, whatever the date looks like in the field.`
+	field?.addEventListener("change", () => {
+		if (!answer) return
+		answer.textContent = field.value
+			? `The server receives ${field.value}, whatever the date looks like in the field.`
 			: "No date chosen yet."
 	})
 </script>

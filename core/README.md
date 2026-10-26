@@ -3,7 +3,7 @@
 LO-TEK's check and theme generator in Rust, compiled to one WebAssembly module that every
 host language runs: Node, Bun and the browser directly (`@lo-tek/interfaces/diagnostics`),
 VS Code (`../editor`), the JVM through Chicory (`../kotlin`), IntelliJ
-(`../editor-intellij`), and Go, .NET and Python through their own runtimes.
+(`../intellij`), and Go, .NET and Python through their own runtimes.
 
 ## Why
 
@@ -36,7 +36,7 @@ Each finding has `start`, `end`, `line`, `column`, `severity`, `rule`, `link`,
 JavaScript and Kotlin: the whole core works on UTF-16 units, so no
 position has to be converted. Line and column start at 1.
 
-The loader for JavaScript is in `designsystem/src/diagnostics/core.ts`, and
+The loader for JavaScript is in `interfaces/src/diagnostics/core.ts`, and
 the one for Kotlin in `../kotlin/src/main/kotlin/no/lotek/Lotek.kt`. Each is
 around 40 lines.
 
@@ -44,7 +44,7 @@ around 40 lines.
 
 `src/theme/` builds a colour theme from brand colours and checks a theme written
 as CSS. The colour contract, meaning the lightness per role, the requirements and the promises, is data in
-`designsystem/src/tokens/color-contract.json`, which the host gives the core.
+`interfaces/src/tokens/color-contract.json`, which the host gives the core.
 `build_theme_raw(pointer, length)` takes the recipe as JSON and answers 0 with the theme
 or 1 with `{"error": …}`. `inspect_theme_raw(pointer, length)` takes the CSS and
 answers with the findings and what was checked.
@@ -54,7 +54,7 @@ CSS Syntax Level 3. It is the core's only dependency.
 
 ## The vocabulary
 
-The manifest is `designsystem/manifest/manifest.json`, which the package writes from
+The manifest is `interfaces/manifest/manifest.json`, which the package writes from
 the code. The host gives it to the core, or another one, such as the one the project
 has installed. Where each host finds it is in that host's loader. The manifest has a
 `schemaVersion`, and the core rejects a manifest with a shape it does not understand,
@@ -101,7 +101,7 @@ The rules are in `src/types.rs` (`RULES`).
 ```bash
 bun core/scripts/build.ts         # the modules, to core/dist/
 bun core/scripts/check-core.ts    # the expected results and the requirements
-bun --filter @lo-tek/interfaces pack && (cd kotlin && ./gradlew test -Plotek.package=../designsystem)
+bun --filter @lo-tek/interfaces pack && (cd kotlin && ./gradlew test -Plotek.package=../interfaces)
 ```
 
 Requires Rust. `rust-toolchain.toml` fetches the version and the targets

@@ -1,6 +1,6 @@
 {
-  // Biome formaterer og linter. Den har siste ordet i dette repoet, og
-  // `bun run lint` kjører nøyaktig det samme.
+  // Biome formats and lints. It has the last word in this repository, and
+  // `bun run lint` runs exactly the same.
   "biome.enabled": true,
   "editor.defaultFormatter": "biomejs.biome",
   "editor.codeActionsOnSave": {
@@ -8,7 +8,7 @@
     "source.fixAll.biome": "always"
   },
 
-  // MDX-språktjeneren er av. Slå den på igjen hvis du vil ha hjelp i
-  // dokumentasjonssidene; den er ikke nødvendig for at noe skal bygge.
+  // The MDX language server is off. Turn it back on if you want help in the
+  // documentation pages; nothing needs it to build.
   "mdx.server.enable": false
 }

@@ -34,7 +34,7 @@ interact (`field`, `label`, `legend`, `suggestion`, `tabs` and
 `errorSummary`) are written by hand in `Handwritten.kt`.
 
 `ContractTest` runs all of them against every build case in
-`../designsystem/manifest/build-cases.json`, which has the answer from TypeScript.
+`../interfaces/manifest/build-cases.json`, which has the answer from TypeScript.
 One difference in one attribute, and the test fails.
 
 ## The diagnostics
@@ -98,7 +98,7 @@ the dependencies in it, is on Maven as `lo-tek-cli`, because
 the Gradle plugin runs it.
 
 ```bash
-cd kotlin && ./gradlew :cli:fatJar -Plotek.package=../designsystem
+cd kotlin && ./gradlew :cli:fatJar -Plotek.package=../interfaces
 java -jar cli/build/libs/lotek.jar --help
 ```
 
@@ -113,7 +113,7 @@ small project with Gradle TestKit, also with the configuration cache.
 
 ```bash
 bun --filter @lo-tek/interfaces pack
-cd kotlin && ./gradlew test -Plotek.package=../designsystem
+cd kotlin && ./gradlew test -Plotek.package=../interfaces
 ```
 
 The build needs only Java. Everything the package consists of comes from the npm package
@@ -137,12 +137,12 @@ different version from `gradle.properties`, and `bun run prepare-version` sets
 both.
 
 The expected results for the tests are not part of the npm package, and are read from the repository:
-`../designsystem/manifest/build-cases.json` and `../core/parity/`.
+`../interfaces/manifest/build-cases.json` and `../core/parity/`.
 
 `ParityTest` requires the findings on the JVM to be identical to the expected results in
 `../core/parity/`, the same expected results `core/scripts/check-core.ts`
 requires of the core in Bun. Together the fixtures trigger every rule the core has,
 the stylesheet rules included, and the positions must point to the right text in a
 Kotlin string, also with "æøå" and emoji in front. The script that reads the rendered
-page, `READ_RENDERED_PAGE`, is tested by `designsystem/scripts/check-rendered.ts`
+page, `READ_RENDERED_PAGE`, is tested by `interfaces/scripts/check-rendered.ts`
 in a real browser.

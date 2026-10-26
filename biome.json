@@ -10,21 +10,21 @@
     "includes": [
       "**",
       "!presentation",
-      "!designsystem/html-data.json",
-      "!designsystem/snippets.json",
-      "!designsystem/src/vocabulary/elements.ts",
-      "!designsystem/src/vocabulary/classes.ts",
-      "!designsystem/src/components/events.ts",
-      "!designsystem/src/tokens/matrix-cells.ts",
-      "!designsystem/web-types.json",
+      "!interfaces/html-data.json",
+      "!interfaces/snippets.json",
+      "!interfaces/src/vocabulary/elements.ts",
+      "!interfaces/src/vocabulary/classes.ts",
+      "!interfaces/src/components/events.ts",
+      "!interfaces/src/tokens/matrix-cells.ts",
+      "!interfaces/web-types.json",
       "!core/parity",
       "!core/templates",
       "!core/theme",
-      "!designsystem/manifest/manifest.json",
-      "!designsystem/manifest/files.json",
-      "!designsystem/manifest/build-cases.json",
-      "!designsystem/src/testing/datastar",
-      "!designsystem/src/testing/idiomorph/idiomorph-v0.8.0.js"
+      "!interfaces/manifest/manifest.json",
+      "!interfaces/manifest/files.json",
+      "!interfaces/manifest/build-cases.json",
+      "!interfaces/src/testing/datastar",
+      "!interfaces/src/testing/idiomorph/idiomorph-v0.8.0.js"
     ]
   },
   "formatter": {

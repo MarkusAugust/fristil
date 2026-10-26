@@ -30,7 +30,7 @@ import { fileURLToPath } from "node:url"
 const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 const PAGES = join(ROOT, "documentation/src/content/docs/components")
 const PACKAGE = JSON.parse(
-  readFileSync(join(ROOT, "designsystem/package.json"), "utf8"),
+  readFileSync(join(ROOT, "interfaces/package.json"), "utf8"),
 )
 
 const findings: string[] = []
@@ -57,10 +57,10 @@ function readStylesheets(folder: string) {
         classes.add(m[1])
   }
 }
-readStylesheets(join(ROOT, "designsystem/src"))
+readStylesheets(join(ROOT, "interfaces/src"))
 
 /** The builder functions that exist, read from the package itself. */
-const { lt } = await import(join(ROOT, "designsystem/dist/lt.js"))
+const { lt } = await import(join(ROOT, "interfaces/dist/lt.js"))
 const builderFunctions = new Set(Object.keys(lt))
 
 /** The `defineLtX` names each module exports. */
@@ -70,7 +70,7 @@ for (const entry of entryPoints) {
   const js = typeof target === "string" ? target : target?.import
   if (typeof js !== "string" || !js.endsWith(".js")) continue
   try {
-    const module = await import(join(ROOT, "designsystem", js))
+    const module = await import(join(ROOT, "interfaces", js))
     definers.set(entry, new Set(Object.keys(module)))
   } catch {
     // An entry point that cannot be loaded is `check-server-import`'s job.
@@ -168,7 +168,7 @@ const IMPORTS = new Map<string, Set<string>>()
       }
     }
   }
-  readSheets(join(ROOT, "designsystem/src"))
+  readSheets(join(ROOT, "interfaces/src"))
 }
 
 /** The class each builder function gives, looked up by function name. */

@@ -51,7 +51,7 @@ import Preview from "./Preview.astro"
 			<input
 				class="lt-input"
 				id="demo-email"
-				name="epost"
+				name="email"
 				type="email"
 				required
 				aria-describedby="demo-email-help"
@@ -65,7 +65,7 @@ import Preview from "./Preview.astro"
 			<input
 				class="lt-input"
 				id="demo-birth-date"
-				name="fodselsdato"
+				name="birth-date"
 				type="date"
 				data-variant="date"
 				required
@@ -90,14 +90,14 @@ import Preview from "./Preview.astro"
 
 	// The preview sits in a shadow root, so we go through the host element.
 	const surface = document.getElementById("demo-form")?.shadowRoot
-	const skjema = surface?.getElementById("demo-application") as HTMLFormElement | null
-	const oppsummering = surface?.getElementById("demo-errors")
+	const form = surface?.getElementById("demo-application") as HTMLFormElement | null
+	const summary = surface?.getElementById("demo-errors")
 	const status = surface?.getElementById("demo-status")
-	const felter = skjema ? [...skjema.querySelectorAll("input")] : []
+	const fields = form ? [...form.querySelectorAll("input")] : []
 
 	/** Fields the user has typed in, and which can therefore get an error message. */
-	const rort = new Set<HTMLInputElement>()
-	let forsokt = false
+	const touched = new Set<HTMLInputElement>()
+	let attempted = false
 
 	/**
 	 * The messages are our own, not the browser's default texts.
@@ -107,52 +107,52 @@ import Preview from "./Preview.astro"
 	 * address on an internal network. In a form that sends a receipt by email
 	 * it is almost always a typo.
 	 */
-	const ADRESSE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/
+	const ADDRESS = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/
 
-	function meldingFor(felt: HTMLInputElement): string {
-		if (felt.value === "") {
-			return felt.name === "epost"
+	function messageFor(field: HTMLInputElement): string {
+		if (field.value === "") {
+			return field.name === "email"
 				? "Enter your email address"
 				: "Enter your date of birth"
 		}
 
-		if (felt.name === "epost") {
-			return felt.checkValidity() && ADRESSE.test(felt.value)
+		if (field.name === "email") {
+			return field.checkValidity() && ADDRESS.test(field.value)
 				? ""
 				: "Enter the full email address, for example jo@example.com"
 		}
 
-		return felt.checkValidity() ? "" : "Enter a date that exists"
+		return field.checkValidity() ? "" : "Enter a date that exists"
 	}
 
 	/** Shows or removes the error message for one field. */
-	function vis(felt: HTMLInputElement, melding: string) {
-		const feiltekst = surface?.getElementById(`${felt.id}-error`)
-		if (feiltekst) {
-			feiltekst.textContent = melding
-			feiltekst.hidden = melding === ""
+	function show(field: HTMLInputElement, message: string) {
+		const errorText = surface?.getElementById(`${field.id}-error`)
+		if (errorText) {
+			errorText.textContent = message
+			errorText.hidden = message === ""
 		}
 
-		const beskrevetAv = (felt.getAttribute("aria-describedby") ?? "")
+		const describedBy = (field.getAttribute("aria-describedby") ?? "")
 			.split(/\s+/)
-			.filter((id) => id && id !== `${felt.id}-error`)
+			.filter((id) => id && id !== `${field.id}-error`)
 
-		if (melding) {
-			felt.setAttribute("aria-invalid", "true")
-			felt.dataset.state = "invalid"
-			beskrevetAv.push(`${felt.id}-error`)
+		if (message) {
+			field.setAttribute("aria-invalid", "true")
+			field.dataset.state = "invalid"
+			describedBy.push(`${field.id}-error`)
 		} else {
-			felt.removeAttribute("aria-invalid")
-			delete felt.dataset.state
+			field.removeAttribute("aria-invalid")
+			delete field.dataset.state
 		}
 
 		// The error text comes out of aria-describedby again when the field
 		// becomes valid. Otherwise the field points at text that is not on
 		// screen.
-		if (beskrevetAv.length > 0) {
-			felt.setAttribute("aria-describedby", beskrevetAv.join(" "))
+		if (describedBy.length > 0) {
+			field.setAttribute("aria-describedby", describedBy.join(" "))
 		} else {
-			felt.removeAttribute("aria-describedby")
+			field.removeAttribute("aria-describedby")
 		}
 	}
 
@@ -171,82 +171,82 @@ import Preview from "./Preview.astro"
 	 * field. On submit it is always written, so it is announced and the user
 	 * knows the attempt was rejected.
 	 */
-	function oppsummer(innsending = false) {
-		const feil = felter
-			.filter((felt) => felt.getAttribute("aria-invalid") === "true")
-			.map((felt) => ({
-				id: felt.id,
-				melding: surface?.getElementById(`${felt.id}-error`)?.textContent ?? "",
+	function summarise(submitting = false) {
+		const errors = fields
+			.filter((field) => field.getAttribute("aria-invalid") === "true")
+			.map((field) => ({
+				id: field.id,
+				message: surface?.getElementById(`${field.id}-error`)?.textContent ?? "",
 			}))
 
-		const liste = oppsummering?.querySelector("ul")
-		const markup = feil
-			.map((f) => `<li><a href="#${f.id}">${f.melding}</a></li>`)
+		const list = summary?.querySelector("ul")
+		const markup = errors
+			.map((f) => `<li><a href="#${f.id}">${f.message}</a></li>`)
 			.join("")
-		if (liste && (innsending || liste.innerHTML !== markup)) {
-			liste.innerHTML = markup
+		if (list && (submitting || list.innerHTML !== markup)) {
+			list.innerHTML = markup
 		}
 
 		// The heading and hidden are written here, as a server would do it.
 		// The component creates no markup: if it did, a Datastar morph would
 		// remove it again. See "Markup and behaviour".
-		const title = oppsummering?.querySelector(".lt-error-summary__title")
+		const title = summary?.querySelector(".lt-error-summary__title")
 
 		// Only a submit shows the box. In between it can only disappear, when
 		// the last error has been fixed.
-		if (oppsummering && (innsending || feil.length === 0)) {
-			oppsummering.hidden = feil.length === 0
+		if (summary && (submitting || errors.length === 0)) {
+			summary.hidden = errors.length === 0
 		}
 
 		// If the list is empty, the heading is left alone. "The form has 0
 		// errors" would have been the last thing announced.
-		const overskrift =
-			feil.length === 1
+		const heading =
+			errors.length === 1
 				? "The form has one error"
-				: `The form has ${feil.length} errors`
-		if (feil.length > 0 && title && title.textContent !== overskrift) {
-			title.textContent = overskrift
+				: `The form has ${errors.length} errors`
+		if (errors.length > 0 && title && title.textContent !== heading) {
+			title.textContent = heading
 		}
 
-		return feil.length
+		return errors.length
 	}
 
-	for (const felt of felter) {
+	for (const field of fields) {
 		// While the user types we say nothing new, but an error message that
 		// is already there disappears as soon as the field is correct.
-		felt.addEventListener("input", () => {
-			rort.add(felt)
+		field.addEventListener("input", () => {
+			touched.add(field)
 
-			if (felt.getAttribute("aria-invalid") === "true") {
-				vis(felt, meldingFor(felt))
-				oppsummer()
+			if (field.getAttribute("aria-invalid") === "true") {
+				show(field, messageFor(field))
+				summarise()
 			}
 		})
 
 		// When the field is left, the user is done with it, and then an error
 		// message is a help and not an interruption.
-		felt.addEventListener("blur", () => {
-			if (!rort.has(felt) && !forsokt) return
+		field.addEventListener("blur", () => {
+			if (!touched.has(field) && !attempted) return
 
-			vis(felt, meldingFor(felt))
-			oppsummer()
+			show(field, messageFor(field))
+			summarise()
 		})
 	}
 
-	skjema?.addEventListener("submit", (hendelse) => {
-		hendelse.preventDefault()
-		forsokt = true
+	form?.addEventListener("submit", (event) => {
+		event.preventDefault()
+		attempted = true
 
-		for (const felt of felter) vis(felt, meldingFor(felt))
+		for (const field of fields) show(field, messageFor(field))
 
-		const antall = oppsummer(true)
+		const count = summarise(true)
 
 		if (status) {
-			status.textContent = antall === 0 ? "The application has been sent." : ""
+			status.textContent = count === 0 ? "The application has been sent." : ""
 		}
 
 		// The box has `data-autofocus="false"`, since it is also built when a
 		// field is left. So it is the submit that has to move focus there.
-		if (antall > 0) oppsummering?.focus()
+		if (count > 0) summary?.focus()
 	})
 </script>

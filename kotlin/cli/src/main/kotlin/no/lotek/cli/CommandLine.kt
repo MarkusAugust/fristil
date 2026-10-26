@@ -2,15 +2,15 @@
  * The LO-TEK command line on the JVM: `java -jar lotek.jar` and the Gradle
  * plugin.
  *
- * The commands are written once, in Rust (`core/cli/`), and run here as a
+ * The commands are written once, in Rust (`cli/`), and run here as a
  * WASI module with Chicory, compiled to bytecode when the jar is built. The
  * file does the same as the shell in the npm package
- * (`designsystem/src/cli.ts`), and only what WASI cannot:
+ * (`interfaces/src/cli.ts`), and only what WASI cannot:
  *
  * - opens the file system for the module, so both relative and absolute
  *   paths work;
  * - fetches the addresses `lotek check` gets, since WASI has no network, and
- *   gives the page to the module as a file (see `core/cli/src/fetch.rs`);
+ *   gives the page to the module as a file (see `cli/src/fetch.rs`);
  * - says when standard input is a terminal, which WASI cannot see;
  * - gives the module the package's files, which are in the jar (see
  *   `packageDir`).

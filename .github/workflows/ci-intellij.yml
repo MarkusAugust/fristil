@@ -20,25 +20,25 @@ on:
   push:
     branches: [master]
     paths:
-      - "editor-intellij/**"
+      - "intellij/**"
       - "kotlin/**"
       - "core/**"
-      - "designsystem/manifest/**"
-      - "designsystem/src/**"
-      - "designsystem/agent/**"
-      - "designsystem/scripts/**"
-      - "designsystem/package.json"
+      - "interfaces/manifest/**"
+      - "interfaces/src/**"
+      - "interfaces/agent/**"
+      - "interfaces/scripts/**"
+      - "interfaces/package.json"
       - ".github/workflows/ci-intellij.yml"
   pull_request:
     paths:
-      - "editor-intellij/**"
+      - "intellij/**"
       - "kotlin/**"
       - "core/**"
-      - "designsystem/manifest/**"
-      - "designsystem/src/**"
-      - "designsystem/agent/**"
-      - "designsystem/scripts/**"
-      - "designsystem/package.json"
+      - "interfaces/manifest/**"
+      - "interfaces/src/**"
+      - "interfaces/agent/**"
+      - "interfaces/scripts/**"
+      - "interfaces/package.json"
       - ".github/workflows/ci-intellij.yml"
   workflow_dispatch:
 
@@ -86,7 +86,7 @@ jobs:
       # the IDE again for no reason.
       - name: Read the platform version
         id: platform
-        working-directory: editor-intellij
+        working-directory: intellij
         run: |
           version=$(grep '^platformVersion=' gradle.properties | cut -d= -f2)
           if [ -z "$version" ]; then
@@ -98,15 +98,15 @@ jobs:
       - name: Restore the IntelliJ platform from cache
         uses: actions/cache@v4
         with:
-          path: editor-intellij/.intellijPlatform
+          path: intellij/.intellijPlatform
           key: intellij-${{ steps.platform.outputs.version }}
 
       - name: Build and test
-        working-directory: editor-intellij
-        run: ./gradlew build -Plotek.package=../designsystem
+        working-directory: intellij
+        run: ./gradlew build -Plotek.package=../interfaces
 
       - name: Upload the plugin
         uses: actions/upload-artifact@v4
         with:
           name: lo-tek-intellij
-          path: editor-intellij/build/distributions/*.zip
+          path: intellij/build/distributions/*.zip
