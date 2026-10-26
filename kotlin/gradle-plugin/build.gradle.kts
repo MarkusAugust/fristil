@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -54,6 +55,6 @@ tasks.test {
     // failure that does not happen locally cannot be read anywhere.
     testLogging {
         events("failed")
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        exceptionFormat = TestExceptionFormat.FULL
     }
 }
