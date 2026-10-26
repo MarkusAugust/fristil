@@ -8,7 +8,7 @@
  * reached with the keyboard. On a wide screen none of them scroll, and then
  * the 150 stops are only noise for someone tabbing through the page. The
  * script below removes `tabindex` again when the table fits, and puts it back
- * when the window shrinks.
+ * when the window shrinks or the table grows.
  *
  * The attribute is in the HTML and removed by script, not the other way
  * round: without JavaScript the reader keeps access to the columns.
@@ -58,7 +58,12 @@ import Default from "@astrojs/starlight/components/MarkdownContent.astro"
 		}
 
 		update()
-		new ResizeObserver(update).observe(scroller)
+		// The table too, not only the container: when a font arrives the table
+		// grows inside a container that keeps its size, and the container alone
+		// would not say that it now scrolls.
+		const observer = new ResizeObserver(update)
+		observer.observe(scroller)
+		if (scroller.firstElementChild) observer.observe(scroller.firstElementChild)
 		scroller.addEventListener("scroll", update, { passive: true })
 	}
 </script>

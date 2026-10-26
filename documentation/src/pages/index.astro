@@ -6,6 +6,7 @@ import "@lo-tek/interfaces/sr-only.css"
 import "../styles/profile.css"
 import pkg from "../../../interfaces/package.json" with { type: "json" }
 import sobernetics from "../assets/sobernetics.svg?raw"
+import FontPreload from "../components/FontPreload.astro"
 import Logo from "../components/Logo.astro"
 import Plate from "../components/Plate.astro"
 import VersionBadge from "../components/VersionBadge.astro"
@@ -59,6 +60,7 @@ const GRADE = [
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <FontPreload />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
   <title>{title}</title>
