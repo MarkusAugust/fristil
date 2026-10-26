@@ -33,8 +33,10 @@ const SKIPPED: Record<string, string> = {
   windows:
     "the job runs on Windows, and the paths and drives it tests do not exist here",
   "check/Update npm": "changes the global npm on the machine",
-  "check/Install browsers":
-    "downloads browsers. Fetch them once with `bun --filter @lo-tek/interfaces browsers`",
+  "check/Container tools":
+    "installs what the CI container lacks. Here the browsers are fetched once with `bun --filter @lo-tek/interfaces browsers`",
+  "check/Trust the checkout":
+    "is only needed where the container runs as another user than the checkout",
 }
 
 /*
@@ -54,6 +56,8 @@ const STEP_KEYS = new Set([
 const JOB_KEYS = new Set([
   "name",
   "runs-on",
+  // The image only supplies what the machine lacks; the steps run the same.
+  "container",
   "steps",
   "needs",
   "timeout-minutes",
