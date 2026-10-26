@@ -61,7 +61,7 @@ jobs:
           bun core/scripts/check-diagnostics.ts
 
       - name: Pack
-        run: bun --filter vscode check
+        run: bun --filter ./vscode check
 
       # Marketplace has no OIDC. The token is created under the publisher on
       # marketplace.visualstudio.com and stored as the secret VSCE_PAT.

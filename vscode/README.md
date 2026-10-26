@@ -12,7 +12,7 @@ where no compiler looks at the attributes.
 ## Getting started
 
 1. **Install the extension.** Search for "LO-TEK" under Extensions in VS Code,
-   or run `code --install-extension lo-tek.vscode`.
+   or run `code --install-extension lo-tek.interfaces`.
 2. **Install LO-TEK in the app.** The package has no dependencies:
 
    ```bash

@@ -16,7 +16,7 @@ documentation/scripts/.local/
 # Temporary demo apps for checking against real SSR, not part of the package
 demos-local/
 
-# Packaged extension, made by `bun --filter vscode check`
+# Packaged extension, made by `bun --filter ./vscode check`
 *.vsix
 .vscode-test/
 

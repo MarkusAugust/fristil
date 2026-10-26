@@ -188,7 +188,7 @@ bun --filter @lo-tek/interfaces vocabulary
 The core has no VS Code in it, and `core/scripts/check-diagnostics.ts`
 runs it over every error type it is meant to catch, with the snippets as clean
 cases. If you add a rule in `core/src/`, add the case that fails it, and check
-that it actually fails by switching the rule off. See `core/README.md`. `bun --filter vscode
+that it actually fails by switching the rule off. See `core/README.md`. `bun --filter ./vscode
 check` builds `dist/extension.js` and packs `lotek.vsix`.
 
 The extension has its own version number in `vscode/package.json` and its own
