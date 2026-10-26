@@ -30,7 +30,13 @@ try {
     extensionTestsPath: fileURLToPath(
       new URL("../test/suite.cjs", import.meta.url),
     ),
-    launchArgs: ["--disable-extensions", "--disable-workspace-trust"],
+    launchArgs: [
+      "--disable-extensions",
+      "--disable-workspace-trust",
+      // CI runs in a container as root, and Chromium will not start its
+      // sandbox for root. Nowhere else does the flag apply.
+      ...(process.getuid?.() === 0 ? ["--no-sandbox"] : []),
+    ],
   })
   console.log("The extension gives findings and fixes in VS Code.")
   // `runTests` leaves something behind that fails after VS Code has closed,

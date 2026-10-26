@@ -36,9 +36,33 @@ jobs:
   check:
     name: Lint, types and tests
     runs-on: ubuntu-latest
+    # Playwright's own image, with the browsers and every library they need
+    # already in it. `playwright install --with-deps` fetched those libraries
+    # with apt on every run, and the runner's package mirror sometimes took
+    # minutes per package, so the step hung until it was cancelled. The tag
+    # must match `playwright` in `interfaces/package.json`, or the tests look
+    # for browsers the image does not have.
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
 
     steps:
+      # The image lacks a C linker, which Cargo needs for the CLI, `unzip`,
+      # which `setup-bun` unpacks Bun with, and Rust. Only these few packages
+      # come from apt. Rustup then installs the version in
+      # `rust-toolchain.toml` on the first call.
+      - name: Container tools
+        run: |
+          apt-get update
+          apt-get install --yes --no-install-recommends gcc libc6-dev unzip
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
       - uses: actions/checkout@v7
+
+      # Git refuses to work in a checkout owned by another user, and the
+      # container runs as root over a folder the runner created.
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -52,20 +76,6 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
-
-      # The browsers are large, and only change when Playwright does.
-      - name: Restore browsers from cache
-        id: browsers
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-
-      # The package's own Playwright, not `bunx playwright`, which can fetch a
-      # different version from the one vitest uses.
-      - name: Install browsers
-        working-directory: interfaces
-        run: ./node_modules/.bin/playwright install --with-deps chromium firefox webkit
 
       - name: Lint
         run: bun run lint
