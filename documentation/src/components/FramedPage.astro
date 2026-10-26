@@ -19,13 +19,24 @@ interface Props {
   title: string
   /** The height of the frame. */
   height?: string
+  /**
+   * Whether the page in the frame takes the theme the reader chose for the
+   * documentation. Off for a demo whose point is to follow the system by
+   * itself, such as the theme picker.
+   */
+  followTheme?: boolean
 }
 
-const { src, title, height = "34rem" } = Astro.props
+const { src, title, height = "34rem", followTheme = true } = Astro.props
 ---
 
 <figure class="framed-page not-content">
-	<iframe src={src} title={title} loading="lazy" style={`height: ${height}`}
+	<iframe
+		src={src}
+		title={title}
+		loading="lazy"
+		style={`height: ${height}`}
+		data-follow-theme={followTheme ? "" : undefined}
 	></iframe>
 
 	<figcaption>
@@ -35,6 +46,41 @@ const { src, title, height = "34rem" } = Astro.props
 		<span> (there, Tab and the skip link work as on a real page)</span>
 	</figcaption>
 </figure>
+
+<script>
+	/*
+	 * The demo is its own page, so by itself it follows the system, while the
+	 * documentation around it follows the reader's choice. Chosen light on a
+	 * dark phone gave a dark page inside a light one. The frame is on the same
+	 * origin, so the documentation hands its resolved theme to the page in the
+	 * frame when it loads and whenever the reader changes it. `color-scheme`
+	 * goes along, because the demo sets `light dark` on its own `<html>`, and
+	 * scrollbars and form controls read that.
+	 */
+	const root = document.documentElement
+
+	function handOver(frame: HTMLIFrameElement) {
+		const html = frame.contentDocument?.documentElement
+		const theme = root.dataset.theme
+		if (!html || (theme !== "light" && theme !== "dark")) return
+		html.dataset.theme = theme
+		html.style.colorScheme = theme
+	}
+
+	const frames = [
+		...document.querySelectorAll<HTMLIFrameElement>(
+			".framed-page iframe[data-follow-theme]",
+		),
+	]
+	for (const frame of frames) {
+		frame.addEventListener("load", () => handOver(frame))
+		handOver(frame)
+	}
+	new MutationObserver(() => frames.forEach(handOver)).observe(root, {
+		attributes: true,
+		attributeFilter: ["data-theme"],
+	})
+</script>
 
 <style>
 	.framed-page {
@@ -47,7 +93,7 @@ const { src, title, height = "34rem" } = Astro.props
 	.framed-page iframe {
 		inline-size: 100%;
 		border: 1px solid var(--lt-color-neutral-border-subtle);
-		border-radius: var(--lt-spacing-2);
+		border-radius: 0;
 		background: var(--lt-color-neutral-canvas);
 		/* The frame is a separate page, and scrolls on its own. */
 		overflow: auto;

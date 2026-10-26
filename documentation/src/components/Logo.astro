@@ -1,63 +1,105 @@
 ---
+/**
+ * The mark and the wordmark.
+ *
+ * The mark is L and T set tight together, with a shadow cast by the pair.
+ * Its colours are fixed and do not follow the theme: a mark that changes with
+ * the page is not a mark. The dark edge round the letters and the shadow is
+ * what holds it against a light background, so it needs no box behind it.
+ * Only the large logo has the mark, with the shadow drawn as scan lines. The
+ * header has the name alone. The icon in `public/favicon.svg` fills the
+ * shadow, since lines that fine disappear at the size of a tab.
+ *
+ * The name stands in Michroma, in capitals, the way sobernetics.no sets its
+ * own. It comes in one weight, so `font-synthesis: none` stops the browser
+ * from making a bold that smears the square curves. The hyphen is in the
+ * accent colour: it is the join between the two halves, where the signal
+ * goes, as the Ø is on sobernetics.no. The name is type, not part of the
+ * mark, so it takes the text colour of the theme.
+ */
 export interface Props {
-  size?: "sm" | "md" | "lg"
+  size?: "sm" | "lg"
   className?: string
-  /** The words "Design system" under the name. The front page has them in the heading right below, so there it is off. */
+  /** The word "Interfaces" under the name. The front page says it in the line below, so there it is off. */
   subtitle?: boolean
 }
 
-const { size = "md", className = "", subtitle = true } = Astro.props
-
-const sizeMap = {
-  sm: { svg: 40, gap: "12px", textSize: "1.4rem", subtitleSize: "0.65rem" },
-  md: { svg: 60, gap: "16px", textSize: "2.2rem", subtitleSize: "0.8rem" },
-  lg: { svg: 80, gap: "18px", textSize: "3rem", subtitleSize: "1rem" },
-}
-
-const s = sizeMap[size]
-const cyanId = `lotekCyan-${size}`
-const purpleId = `lotekPurple-${size}`
+const { size = "sm", className = "", subtitle = true } = Astro.props
+const VIEW_BOX = "-5 -12.0711 125.071 129.071"
+const EDGE =
+  "M7 105L7 117L49.07 117L70 96.07L70 82L70 65L70 35L92.07 35L120.07 7L96.07 7L108.07 -5L23 -5L23 -12.07L-5 15.93L-5 105Z"
+const INK =
+  "M23 18L35 18L35 77L53 77L53 18L78 18L96 0L23 0ZM0 100L35 100L53 82L18 82L18 0L0 18Z"
+const SCAN_LINES =
+  "M49 110L12 110L12 112L47 112ZM54 105L37.07 105L12 105L12 108L51 108ZM59 100L42.07 100L39.07 103L56 103ZM64 95L47.07 95L44.07 98L61 98ZM65 90L52.07 90L49.07 93L65 93ZM65 85L57.07 85L54.07 88L65 88ZM65 80L62.07 80L59.07 83L65 83ZM95 25L58 25L58 28L92 28ZM100 20L83.07 20L80.07 23L97 23ZM105 15L88.07 15L85.07 18L102 18ZM108 12L91.07 12L90.07 13L107 13ZM58 33L65 33L65 30L58 30ZM58 38L65 38L65 35L58 35ZM58 43L65 43L65 40L58 40ZM58 48L65 48L65 45L58 45ZM58 53L65 53L65 50L58 50ZM58 58L65 58L65 55L58 55ZM58 63L65 63L65 60L58 60ZM58 68L65 68L65 65L58 65ZM58 73L65 73L65 70L58 70ZM58 77L65 77L65 75L58 75ZM30 25L23 25L23 28L30 28ZM23 33L30 33L30 30L23 30ZM23 38L30 38L30 35L23 35ZM23 43L30 43L30 40L23 40ZM23 48L30 48L30 45L23 45ZM23 53L30 53L30 50L23 50ZM23 58L30 58L30 55L23 55ZM23 63L30 63L30 60L23 60ZM23 68L30 68L30 65L23 65ZM23 73L30 73L30 70L23 70ZM23 77L30 77L30 75L23 75Z"
 ---
 
-<div
-  class:list={["lotek-logo-wrapper", className]}
-  style={`display: flex; align-items: center; gap: ${s.gap}; font-family: 'Inter', sans-serif;`}
->
-  <svg
-    width={s.svg}
-    height={s.svg}
-    viewBox="0 0 100 100"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    style="flex-shrink: 0;"
-  >
-    <defs>
-      <linearGradient id={cyanId} gradientUnits="userSpaceOnUse" x1="5" y1="2" x2="60" y2="98">
-        <stop offset="0%" stop-color="#00f2fe" />
-        <stop offset="100%" stop-color="#4facfe" />
-      </linearGradient>
-      <linearGradient id={purpleId} gradientUnits="userSpaceOnUse" x1="24" y1="21" x2="60" y2="45">
-        <stop offset="0%" stop-color="#4facfe" />
-        <stop offset="100%" stop-color="#b15cff" />
-      </linearGradient>
-    </defs>
-    <!-- Two layers that sit against each other without overlapping: markup and behaviour. -->
-    <path d="M5 2H88L74 16H19V40H71L57 54H19V84L5 98Z" fill={`url(#${cyanId})`} />
-    <path d="M24 21H76L95 2V35H24ZM24 59H59L78 40V73H38V98H12L24 86Z" fill={`url(#${purpleId})`} />
-  </svg>
+<span class:list={["logo", `logo--${size}`, className]}>
+  {size === "lg" && (
+    <svg class="logo__mark" viewBox={VIEW_BOX} xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill="#111212" d={EDGE} />
+      <path fill="#4992e2" d={SCAN_LINES} />
+      <path fill="#e6e8eb" d={INK} />
+    </svg>
+  )}
+  <span class="logo__text">
+    <span class="logo__name profile-name">LO<span class="logo__join">-</span>TEK</span>
+    {subtitle && <span class="logo__subtitle profile-label">Interfaces</span>}
+  </span>
+</span>
 
-  <div style="display: flex; flex-direction: column; line-height: 1;">
-    <span
-      style={`font-size: ${s.textSize}; font-weight: 800; letter-spacing: -0.03em; color: currentColor;`}
-    >
-      LO-TEK
-    </span>
-    {subtitle && (
-      <span
-        style={`font-size: ${s.subtitleSize}; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: currentColor; opacity: 0.6; margin-top: 4px;`}
-      >
-        Design system
-      </span>
-    )}
-  </div>
-</div>
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--logo-gap);
+    color: inherit;
+    line-height: 1;
+  }
+
+  .logo--sm {
+    --logo-gap: var(--lt-spacing-1-5, 0.375rem);
+    --logo-name: 1.25rem;
+  }
+
+  .logo--lg {
+    --logo-gap: var(--lt-spacing-2);
+    /* Sized against the width of the sheet, not the window, so the name never breaks. */
+    --logo-mark: clamp(3.5rem, 15cqi, 7rem);
+    --logo-name: clamp(2rem, 11cqi, 5rem);
+  }
+
+  .logo__mark {
+    flex: none;
+    inline-size: var(--logo-mark);
+    block-size: var(--logo-mark);
+  }
+
+  .logo__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--lt-spacing-1);
+  }
+
+  .logo__name {
+    font-size: var(--logo-name);
+    color: currentColor;
+    white-space: nowrap;
+  }
+
+  /*
+   * Michroma spaces the hyphen evenly between the outlines, but the eye
+   * measures it against the stem of the T, not the end of its bar, and saw it
+   * pushed towards the O. Pulling the T in until its bar hangs over the
+   * hyphen puts the hyphen midway between the O and the stem. The bar and the
+   * hyphen are at different heights, so they never touch.
+   */
+  .logo__join {
+    margin-inline-end: -0.3em;
+    color: var(--lt-color-accent-fill);
+  }
+
+  .logo--lg .logo__subtitle {
+    font-size: var(--lt-font-size-xs);
+  }
+</style>

@@ -1,24 +1,61 @@
 ---
-import "@lo-tek/interfaces/button.css"
 import "@lo-tek/interfaces/tokens.css"
+import "@lo-tek/interfaces/button.css"
+import "@lo-tek/interfaces/tag.css"
 import "@lo-tek/interfaces/sr-only.css"
-import Logo from "../components/Logo.astro"
-import VersionBadge from "../components/VersionBadge.astro"
-import "../styles/custom-pages-tailwind.css"
+import "../styles/profile.css"
+import pkg from "../../../interfaces/package.json" with { type: "json" }
 import sobernetics from "../assets/sobernetics.svg?raw"
+import Logo from "../components/Logo.astro"
+import Plate from "../components/Plate.astro"
+import VersionBadge from "../components/VersionBadge.astro"
 import { metaAttributes, SHARE_IMAGE } from "../share-image.mjs"
 
-const title = "LO-TEK design system"
+const title = "LO-TEK Interfaces"
 const description =
   "A framework-independent design system where the components are CSS classes and web components. The same API in React, Astro, Datastar and plain HTML."
+
+/*
+ * The categories, as a ladder of nodes the way sobernetics.no draws its
+ * projects. The text is the same as on the introduction page; here it is
+ * short.
+ */
+const CATEGORIES = [
+  {
+    name: "css",
+    what: "A class on a plain HTML element. No JavaScript is loaded, and variants are set with data attributes. A button costs one class.",
+    code: '<button class="lt-button">',
+    examples: ["Button", "Field", "Table", "Card"],
+  },
+  {
+    name: "frame",
+    what: "You write the HTML. The web component fills in the wiring where it is missing, adds keyboard handling and focus, and leaves the elements in the plain DOM.",
+    code: "<lt-field>…</lt-field>",
+    examples: ["Field", "Tabs", "Dialog", "Suggestion"],
+  },
+  {
+    name: "standalone",
+    what: "The web component creates all of its content itself, because there is nothing for the server to send. A server that is gone cannot report it.",
+    code: "<lt-connection-status>",
+    examples: ["Connection status", "Toast"],
+  },
+]
+
+// The three lines the firm signs, above the facts in the register.
+const GRADE = [
+  "Reads on any screen.",
+  "Survives any patch.",
+  "Says when it’s broken.",
+]
 ---
 
 <!DOCTYPE html>
 <!-- The page is always dark. `data-theme` gives both LO-TEK's dark tokens and
      `color-scheme: dark`, which is what the scrollbar and the browser's own
-     surfaces read. `class="dark"` is Tailwind's own switch and does something
-     else. -->
-<html lang="en" class="dark" data-theme="dark">
+     surfaces read. The front page is a poster: the wordmark, the light and
+     the deep surface are drawn for each other, and a light version would be
+     another poster. Every other page follows the reader. -->
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -27,7 +64,7 @@ const description =
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
   />
   <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
   <title>{title}</title>
@@ -39,249 +76,690 @@ const description =
   <meta property="og:type" content="website" />
   <meta property="og:url" content={Astro.site?.href} />
   <meta property="og:locale" content="en" />
-  <meta property="og:site_name" content="LO-TEK" />
+  <meta property="og:site_name" content="LO-TEK Interfaces" />
   <meta name="twitter:card" content="summary_large_image" />
   {SHARE_IMAGE.map((tag) => {
     const { property, name, content } = metaAttributes(tag)
     return <meta property={property} name={name} content={content} />
   })}
 </head>
-<body class="min-h-screen bg-zinc-950 bg-[linear-gradient(145deg,#0b1020_0%,#12122e_55%,#181540_100%)] text-zinc-50 antialiased">
-  <div class="flex min-h-screen flex-col">
-  <header class="sticky top-0 z-50 border-b border-zinc-800/80 bg-[rgb(11_16_32/0.85)] backdrop-blur-xl">
-    <div class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-4 sm:px-8 sm:py-5">
-      <div class="inline-flex items-center gap-6">
-        <a href="/" class="inline-flex items-center text-inherit no-underline">
-            <Logo size="sm" />
+<body class="profile-grain">
+  <a class="skip lt-sr-only" href="#content">Skip to content</a>
+
+  <div class="sheet">
+    <header class="top">
+      <div class="top__mark">
+        <a href="/" class="top__home" aria-label="LO-TEK, front page">
+          <Logo size="sm" />
         </a>
         <VersionBadge />
       </div>
-      <nav>
-          <ul class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium text-zinc-300 sm:gap-x-8 sm:text-base">
-            <li><a class="transition-colors hover:text-white" href="/introduction/">Documentation</a></li>
-            <li><a class="transition-colors hover:text-white" href="/components/">Components</a></li>
-            <li><a class="transition-colors hover:text-white" href="/llms.txt">llms.txt</a></li>
-            <li><a class="transition-colors hover:text-white" href="https://github.com/MarkusAugust/lo-tek" target="_blank" rel="noreferrer">GitHub</a></li>
-          </ul>
-        </nav>
-    </div>
-  </header>
+      <nav class="top__nav" aria-label="Main">
+        <ul>
+          <li><a href="/introduction/">Documentation</a></li>
+          <li><a href="/components/">Components</a></li>
+          <li><a href="/llms.txt">llms.txt</a></li>
+          <li><a href="https://github.com/MarkusAugust/lo-tek" rel="noreferrer">GitHub</a></li>
+        </ul>
+      </nav>
+    </header>
 
-  <main class="flex-1">
-  <section class="relative overflow-hidden pb-20 pt-16 sm:pb-28 sm:pt-24">
-    <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_18%_18%,rgba(96,165,250,0.18),transparent_32%),radial-gradient(circle_at_82%_8%,rgba(167,139,250,0.16),transparent_34%),radial-gradient(circle_at_50%_100%,rgba(129,140,248,0.12),transparent_42%)]"></div>
-    <div class="mx-auto grid w-full max-w-6xl gap-12 px-4 sm:px-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(20rem,0.8fr)] lg:items-stretch">
-      <div class="flex max-w-3xl flex-col">
-        <Logo size="lg" className="mb-8" subtitle={false} />
-        <!-- One text element, not two spans. Two spans were read out as one
-             run-together word. Hyphenation lets a long word break where it
-             can actually break. -->
-        <h1 class="mb-4 bg-linear-to-br from-blue-300 via-blue-400 to-violet-400 bg-clip-text text-3xl font-black tracking-tight text-balance text-transparent hyphens-auto sm:text-5xl">
-          Framework-independent design system
-        </h1>
-        <p class="mb-8 max-w-2xl text-lg font-medium text-balance text-zinc-400 sm:text-2xl">
-          CSS classes and web components.
-        </p>
-        <p class="mb-8 max-w-2xl text-base leading-8 text-zinc-300 sm:text-xl">
-          The components are things the browser already understands. Whether the team uses React, Astro, Datastar or plain HTML, it is the same system and the same API. A design system tied to one framework has to be rewritten when the framework is replaced. The browser's own APIs are not replaced.
-        </p>
-        <p class="mb-8 max-w-2xl text-base leading-8 text-zinc-300 sm:text-xl">
-          The documentation is written for developers and read just as well by coding agents: every page also exists as Markdown, and a rulebook per framework ships with the package.
-        </p>
-        <div class="flex w-full max-w-xl flex-col gap-3 sm:flex-row">
-          <a href="/getting-started/" class="inline-flex w-full items-center justify-center rounded-xl bg-linear-to-br from-blue-300 via-blue-400 to-violet-400 px-8 py-3.5 text-base font-semibold text-zinc-950 shadow-[0_18px_38px_-24px_rgba(96,165,250,0.45)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_44px_-24px_rgba(96,165,250,0.55)] sm:w-auto">
-          Get started
-        </a>
-          <a href="/components/" class="inline-flex w-full items-center justify-center rounded-xl border border-zinc-700 bg-zinc-900/90 px-8 py-3.5 text-base font-semibold text-zinc-100 transition hover:border-blue-400 hover:bg-zinc-900 sm:w-auto">
-          See the components
-        </a>
-        </div>
-        <!-- The quote is not attributed to anyone, so it is a paragraph and not
-             a blockquote: a blockquote without a source promises a sender who
-             does not exist.
-
-             The quotation mark is its own element, not a `::before` on the
-             paragraph. `bg-clip-text` paints the text with the element's own
-             background, so a character that sticks out of the box becomes
-             invisible. Here it has its own muted colour and is pure
-             decoration.
-
-             The character is “ and not «. As large decoration, « is two thin
-             angles sitting at the bottom of their own box, so it ends up at
-             line two whatever the margin says. “ is filled and sits at the top
-             by itself.
-             On a wide screen the quote is centred in the space left over next
-             to "What you get". `my-auto` becomes zero when that space is used
-             up, and the quote then sat right under the buttons. `pt-12` is the
-             floor, roughly the distance the quote had before the hero text got
-             another paragraph. -->
-        <div class="mx-auto mt-10 flex w-fit max-w-xl items-center gap-3 lg:my-auto lg:pt-12">
-          <span
-            aria-hidden="true"
-            class="font-quote -mt-1 shrink-0 text-5xl leading-none text-logo-purple/70 sm:text-7xl"
-          >
-            &ldquo;
-          </span>
-          <p class="bg-linear-to-br from-logo-purple via-pink-400 to-rose-400 bg-clip-text font-quote text-lg italic leading-snug text-balance text-transparent sm:text-xl">
-            An uncompromising, minimalist sports car built straight on the browser's own APIs. LO-TEK throws out all the heavy baggage and gives you a real, unfiltered feel for the road: the DOM itself.
+    <main id="content">
+      <!-- The masthead: the name, the line, the register and the plate. -->
+      <section class="masthead" aria-labelledby="name">
+        <div class="masthead__text">
+          <h1 id="name" class="masthead__name">
+            <Logo size="lg" subtitle={false} />
+          </h1>
+          <p class="masthead__line">
+            A framework-independent design system. The components are CSS
+            classes and web components, things the browser already
+            understands. Whether the team uses React, Astro, Datastar or plain
+            HTML, it is the same system and the same API.
           </p>
-        </div>
-      </div>
+          <p class="masthead__line masthead__line--second">
+            A design system tied to one framework has to be rewritten when the
+            framework is replaced. The browser's own APIs are not replaced.
+          </p>
 
-      <aside class="rounded-[1.75rem] border border-zinc-800 bg-zinc-900/72 p-6 shadow-[0_28px_80px_-42px_rgba(0,0,0,0.9)] backdrop-blur-sm sm:p-8">
-        <p class="mb-6 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">What you get</p>
-        <div class="space-y-4">
-          <div class="rounded-2xl border border-zinc-800/90 bg-zinc-950/80 p-5">
-            <h2 class="mb-2 text-lg font-bold text-white">A button costs one class</h2>
-            <p class="text-sm leading-7 text-zinc-300">A button is one CSS class and no JavaScript. A suggestion list is a web component, because keyboard handling and announcements have to follow what the list shows. You load only what the component actually needs.</p>
+          <div class="masthead__register">
+            <p class="profile-label" id="grade">LO-TEK grade</p>
+            <ol class="grade" aria-labelledby="grade">
+              {GRADE.map((line, i) => (
+                <li><span class="grade__index" aria-hidden="true">0{i + 1}</span>{line}</li>
+              ))}
+            </ol>
+
+            <dl class="profile-register-list">
+              <dt>Package</dt>
+              <dd><code>{pkg.name}</code></dd>
+              <dt>Status</dt>
+              <dd>Before 1.0. Breaking changes are in the changelog.</dd>
+              <dt>Licence</dt>
+              <dd>MIT</dd>
+              <dt>Source</dt>
+              <dd><a class="masthead__link" href="https://github.com/MarkusAugust/lo-tek">github.com/MarkusAugust/lo-tek</a></dd>
+            </dl>
           </div>
-          <div class="rounded-2xl border border-zinc-800/90 bg-zinc-950/80 p-5">
-            <h2 class="mb-2 text-lg font-bold text-white">The wiring is done in one place</h2>
-            <p class="text-sm leading-7 text-zinc-300">Label, field, help text and error text have to point at each other with <code class="text-zinc-200">for</code>, <code class="text-zinc-200">id</code> and <code class="text-zinc-200">aria-describedby</code>. The system sets them, so each app does not have to.</p>
-          </div>
-          <div class="rounded-2xl border border-zinc-800/90 bg-zinc-950/80 p-5">
-            <h2 class="mb-2 text-lg font-bold text-white">Adopt it gradually</h2>
-            <p class="text-sm leading-7 text-zinc-300">Start with the tokens and a few buttons. Bring in the rest when you need it. Nothing requires you to take everything.</p>
+
+          <div class="masthead__actions">
+            <a href="/getting-started/" class="lt-button">Get started</a>
+            <a href="/components/" class="lt-button" data-variant="secondary">See the components</a>
           </div>
         </div>
-      </aside>
-    </div>
-  </section>
 
-  <section class="pb-24 pt-2 sm:pt-4">
-    <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
-      <div class="mb-10 max-w-2xl">
-        <p class="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Architecture</p>
-        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Three categories: CSS only, frame and standalone</h2>
-      </div>
-      <div class="grid gap-5 lg:grid-cols-3">
-        <article class="group min-w-0 rounded-3xl border border-zinc-800 bg-zinc-900/86 p-8 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.88)] transition hover:-translate-y-1 hover:border-blue-400/70 hover:shadow-[0_30px_80px_-42px_rgba(96,165,250,0.3)]">
-          <div class="mb-4 text-4xl">🎨</div>
-          <h3 class="mb-3 text-xl font-bold">css</h3>
-          <p class="text-sm leading-7 text-zinc-300">
-            A class on a plain HTML element. No JavaScript is loaded. Variants are set with data attributes.
-          </p>
-          <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;button class="lt-button"&gt;</code>
-        </article>
-        <article class="group min-w-0 rounded-3xl border border-zinc-800 bg-zinc-900/86 p-8 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.88)] transition hover:-translate-y-1 hover:border-sky-400/70 hover:shadow-[0_30px_80px_-42px_rgba(56,189,248,0.3)]">
-          <div class="mb-4 text-4xl">⚡</div>
-          <h3 class="mb-3 text-xl font-bold">frame</h3>
-          <p class="text-sm leading-7 text-zinc-300">
-            You write the HTML. The component fills in the wiring where it is missing, adds keyboard handling and focus, and leaves the elements in the plain DOM.
-          </p>
-          <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;lt-field&gt;…&lt;/lt-field&gt;</code>
-        </article>
-        <article class="group min-w-0 rounded-3xl border border-zinc-800 bg-zinc-900/86 p-8 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.88)] transition hover:-translate-y-1 hover:border-violet-400/70 hover:shadow-[0_30px_80px_-42px_rgba(167,139,250,0.3)]">
-          <div class="mb-4 text-4xl">🔒</div>
-          <h3 class="mb-3 text-xl font-bold">standalone</h3>
-          <p class="text-sm leading-7 text-zinc-300">
-            The component creates all of its content itself, because there is nothing for the server to send. Like the bar that says the connection is gone: a server that is gone cannot report it.
-          </p>
-          <code tabindex="0" class="mt-4 block overflow-x-auto text-xs text-zinc-400">&lt;lt-connection-status&gt;</code>
-        </article>
-      </div>
-    </div>
-  </section>
+        <div class="masthead__plate">
+          <Plate />
+        </div>
+      </section>
 
-  <section class="border-t border-zinc-800/80 bg-zinc-900/30 py-24">
-    <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
-      <div class="mb-10 max-w-2xl">
-        <p class="mb-3 text-sm font-semibold uppercase tracking-[0.24em] text-zinc-400">Strengths</p>
-        <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Four things you do not have to solve yourself</h2>
+      <span class="profile-register" aria-hidden="true"></span>
+
+      <!-- The epigraph. It is attributed, so it is a blockquote with a source. -->
+      <figure class="epigraph">
+        <blockquote class="epigraph__words">
+          <p>The Halcyon board asked Trace what it runs on.</p>
+          <p>“Whatever sends the page. Whatever shows it. Nothing in between.”</p>
+          <p>“So it needs a framework?”</p>
+          <p>“It doesn’t need anything. Bring yours.”</p>
+        </blockquote>
+        <figcaption class="epigraph__source">
+          Trace, LO-TEK Interfaces
+        </figcaption>
+      </figure>
+
+      <!-- The architecture: three categories, drawn as a ladder of nodes. -->
+      <div class="profile-plate">
+        <h2 class="profile-plate__title" id="architecture">Architecture</h2>
+        <p class="profile-plate__count" aria-hidden="true">03 categories</p>
       </div>
 
-      <div class="grid gap-5 lg:grid-cols-2">
-        <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
-          <h3 class="mb-3 text-xl font-bold">The editor knows the components</h3>
-          <p class="mb-5 text-sm leading-7 text-zinc-300">
-            Write <code class="text-zinc-200">data-variant="secundary"</code> by hand and nothing happens: the button keeps the default style, and the browser says nothing. Write it through the function and you get an error in the editor before you can save.
+      <ol class="ladder" aria-labelledby="architecture">
+        {CATEGORIES.map((category, i) => (
+          <li class="node">
+            <p class="node__index" aria-hidden="true">0{i + 1}</p>
+            <h3 class="node__name profile-name">{category.name}</h3>
+            <p class="node__what">{category.what}</p>
+            <code class="node__code" tabindex="0">{category.code}</code>
+            <ul class="node__examples" aria-label="Examples">
+              {category.examples.map((example) => (
+                <li class="lt-tag">{example}</li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+
+      <p class="ladder__after">
+        The whole reasoning, and the answer to when you use the builder
+        function rather than the web component, is in
+        <a class="masthead__link" href="/markup-and-behaviour/">Markup and behaviour</a>.
+      </p>
+
+      <!-- What you do not have to solve yourself. -->
+      <div class="profile-plate">
+        <h2 class="profile-plate__title" id="strengths">What you do not have to solve yourself</h2>
+        <p class="profile-plate__count" aria-hidden="true">04 points</p>
+      </div>
+
+      <ol class="ladder ladder--prose" aria-labelledby="strengths">
+        <li class="node">
+          <p class="node__index" aria-hidden="true">01</p>
+          <h3 class="node__title">The editor knows the components</h3>
+          <p class="node__what">
+            Write <code>data-variant="secundary"</code> by hand and nothing
+            happens: the button keeps the default style, and the browser says
+            nothing. Write it through the function and you get an error in the
+            editor before you can save.
           </p>
-          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>&lt;button
+          <pre class="node__pre" tabindex="0"><code>&lt;button
   &#123;...lt.button(&#123;
     variant: "secondary",
   &#125;)&#125;
 &gt;
   Save draft
 &lt;/button&gt;</code></pre>
-          <p class="mt-5 text-sm leading-7 text-zinc-300">
-            The function returns a plain object of attributes. That is why the same call works in JSX, in an Astro template and in plain JavaScript.
+          <p class="node__what">
+            The function returns a plain object of attributes, so the same call
+            works in JSX, in an Astro template and in plain JavaScript. If you
+            write HTML without TypeScript, <a class="masthead__link" href="/the-editor/">the VS Code extension</a>
+            does the same, and JetBrains gets completion from the package itself.
           </p>
-          <p class="mt-5 text-sm leading-7 text-zinc-300">
-            If you write HTML without TypeScript, <a href="/the-editor/" class="text-blue-300 underline-offset-4 hover:underline">the VS Code extension</a> does the same: <code class="text-zinc-200">secundary</code> gets a squiggle, and the light bulb corrects it to <code class="text-zinc-200">secondary</code>. JetBrains gets completion from the package itself, from 0.15.0.
-          </p>
-        </article>
+        </li>
 
-        <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
-          <h3 class="mb-3 text-xl font-bold">Your CSS beats ours</h3>
-          <p class="mb-5 text-sm leading-7 text-zinc-300">
-            All our CSS sits in its own cascade layer. An ordinary rule in your own CSS then beats ours, however specific ours is, and without <code class="text-zinc-200">!important</code>. If you only want to change shape or size, there is a variable per component.
+        <li class="node">
+          <p class="node__index" aria-hidden="true">02</p>
+          <h3 class="node__title">Your CSS beats ours</h3>
+          <p class="node__what">
+            All our CSS sits in its own cascade layer. An ordinary rule in your
+            own CSS then beats ours, however specific ours is, and without
+            <code>!important</code>. If you only want to change shape or size,
+            there is a variable per component.
           </p>
-          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>:root &#123;
+          <pre class="node__pre" tabindex="0"><code>:root &#123;
   --lt-button-radius: 9999px;
 &#125;</code></pre>
-          <p class="mt-5 text-sm leading-7 text-zinc-300">
-            The tests open a browser and check that your rule actually wins, that the variable comes through, and that a Tailwind utility beats the component's own value.
+          <p class="node__what">
+            The tests open a browser and check that your rule actually wins,
+            that the variable comes through, and that a Tailwind utility beats
+            the component's own value.
           </p>
-        </article>
+        </li>
 
-        <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
-          <h3 class="mb-3 text-xl font-bold">The colours meet the contrast requirement</h3>
-          <p class="mb-5 text-sm leading-7 text-zinc-300">
-            Every colour pair in the system is computed and checked against the WCAG requirement, in both light and dark themes. If you give your own brand colours, their families are computed afresh with <code class="text-zinc-200">buildTheme</code> from <code class="text-zinc-200">@lo-tek/interfaces/theme</code>.
+        <li class="node">
+          <p class="node__index" aria-hidden="true">03</p>
+          <h3 class="node__title">The colours meet the contrast requirement</h3>
+          <p class="node__what">
+            Every colour pair in the system is computed and checked against the
+            WCAG requirement, in both light and dark themes. If you give your
+            own brand colours, their families are computed afresh with
+            <code>buildTheme</code>.
           </p>
-          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>const theme = buildTheme(&#123;
+          <pre class="node__pre" tabindex="0"><code>const theme = buildTheme(&#123;
   accent: "#0062ba",
 &#125;)
 
 // theme.violations is empty
 // when the contrast holds</code></pre>
-          <p class="mt-5 text-sm leading-7 text-zinc-300">
-            The colours are computed in OKLCH, because lightness in HSL means something different for each hue. The brand colour gives the hue, while the role sets the lightness and how much of the chroma is kept.
+          <p class="node__what">
+            The colours are computed in OKLCH, because lightness in HSL means
+            something different for each hue. The brand colour gives the hue,
+            while the role sets the lightness and how much of the chroma is
+            kept. Every page here is run through axe in both themes.
           </p>
-          <p class="mt-5 text-sm leading-7 text-zinc-300">
-            The components are run through axe in Chromium, Firefox and WebKit. Every page of this documentation is run through axe in both themes.
-          </p>
-        </article>
+        </li>
 
-        <article class="min-w-0 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-8">
-          <h3 class="mb-3 text-xl font-bold">The coding agent does not have to guess</h3>
-          <p class="mb-5 text-sm leading-7 text-zinc-300">
-            An agent that does not know the design system invents <code class="text-zinc-200">lt-modal</code>, hard-codes the colours and writes its own CSS when the stylesheet is missing. LO-TEK has a rulebook for agents per framework, and it ships with the package. When the agent is done, the check says what is wrong, with file and line.
+        <li class="node">
+          <p class="node__index" aria-hidden="true">04</p>
+          <h3 class="node__title">The coding agent does not have to guess</h3>
+          <p class="node__what">
+            An agent that does not know the design system invents
+            <code>lt-modal</code>, hard-codes the colours and writes its own CSS
+            when the stylesheet is missing. LO-TEK has a rulebook for agents
+            per framework, and it ships with the package. When the agent is
+            done, the check says what is wrong, with file and line.
           </p>
-          <pre tabindex="0" class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-xs leading-6 text-zinc-300"><code>npx @lo-tek/interfaces check form.html
+          <pre class="node__pre" tabindex="0"><code>npx @lo-tek/interfaces check form.html
 
 form.html:3:13: warning: The class "lt-modal"
   does not exist in LO-TEK.</code></pre>
-          <p class="mt-5 text-sm leading-7 text-zinc-300">
-            The whole documentation also exists as Markdown, made from the same pages you are reading now, and <a href="/llms.txt" class="text-blue-300 underline-offset-4 hover:underline">llms.txt</a> shows the way. More about the setup under <a href="/coding-agents/" class="text-blue-300 underline-offset-4 hover:underline">Coding agents</a>.
+          <p class="node__what">
+            The whole documentation also exists as Markdown, made from the same
+            pages you are reading now, and <a class="masthead__link" href="/llms.txt">llms.txt</a>
+            shows the way. More about the setup under
+            <a class="masthead__link" href="/coding-agents/">Coding agents</a>.
           </p>
-        </article>
-      </div>
-    </div>
-  </section>
-  </main>
+        </li>
+      </ol>
+    </main>
 
-  <footer class="border-t border-zinc-800 bg-zinc-900/90 py-10 text-center text-sm text-zinc-300">
-    <div class="mx-auto w-full max-w-6xl px-4 sm:px-8">
-      <p>&copy; 2026 August Søberg-Klyver. LO-TEK is a framework-independent design system, released under the MIT licence.</p>
+    <footer class="colophon">
+      <p>
+        &copy; 2026 August Søberg-Klyver. LO-TEK is a framework-independent
+        design system, released under the MIT licence.
+      </p>
       <a class="sobernetics" href="https://sobernetics.no"><Fragment set:html={sobernetics} /></a>
-    </div>
-  </footer>
+    </footer>
   </div>
+</body>
+</html>
+
+<style>
+  /*
+   * The page is a printed sheet with margins, not a hero section. The colours
+   * come from tokens, and the only thing written in is the geometry.
+   */
+  html {
+    background: var(--lt-color-neutral-canvas);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-block-size: 100dvh;
+    margin: 0;
+    background: transparent;
+    color: var(--lt-color-neutral-text);
+    /* The front page is set as a printout, in the data face, as sobernetics.no
+       is. It is short. The documentation pages are long, and keep the
+       grotesque. */
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-s);
+    line-height: var(--lt-line-height-default);
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  code {
+    font-family: var(--profile-font-data);
+    font-size: 0.9em;
+  }
+
+  .skip:focus {
+    position: fixed;
+    inset-block-start: var(--lt-spacing-2);
+    inset-inline-start: var(--lt-spacing-2);
+    inline-size: auto;
+    block-size: auto;
+    margin: 0;
+    padding: var(--lt-spacing-2) var(--lt-spacing-3);
+    clip: auto;
+    clip-path: none;
+    overflow: visible;
+    white-space: normal;
+    background: var(--lt-color-neutral-text-strong);
+    color: var(--lt-color-neutral-canvas);
+    font-family: var(--profile-font-data);
+    outline: var(--lt-focus-ring, 2px solid var(--lt-color-accent-fill));
+    outline-offset: 2px;
+    z-index: 10;
+  }
+
+  .sheet {
+    container-type: inline-size;
+    max-inline-size: 72rem;
+    margin-inline: auto;
+    padding: var(--lt-spacing-5) var(--lt-spacing-5) var(--lt-spacing-12);
+  }
+
+  @media (min-width: 48rem) {
+    .sheet {
+      padding: var(--lt-spacing-8) var(--lt-spacing-10) var(--lt-spacing-16);
+    }
+  }
+
+  /*
+   * Crop marks in the corners of the sheet, as on a printed sheet before it is
+   * trimmed. Each corner is two short hairlines, drawn as backgrounds so they
+   * take no element and nothing for a screen reader. They sit in the margin,
+   * outside the text.
+   */
+  .sheet {
+    --crop: var(--lt-color-neutral-border-strong);
+    --crop-length: 1.25rem;
+    --crop-inset: var(--lt-spacing-2);
+    background:
+      linear-gradient(var(--crop), var(--crop)) left var(--crop-inset) top var(--crop-inset) / var(--crop-length) 1px,
+      linear-gradient(var(--crop), var(--crop)) left var(--crop-inset) top var(--crop-inset) / 1px var(--crop-length),
+      linear-gradient(var(--crop), var(--crop)) right var(--crop-inset) top var(--crop-inset) / var(--crop-length) 1px,
+      linear-gradient(var(--crop), var(--crop)) right var(--crop-inset) top var(--crop-inset) / 1px var(--crop-length),
+      linear-gradient(var(--crop), var(--crop)) left var(--crop-inset) bottom var(--crop-inset) / var(--crop-length) 1px,
+      linear-gradient(var(--crop), var(--crop)) left var(--crop-inset) bottom var(--crop-inset) / 1px var(--crop-length),
+      linear-gradient(var(--crop), var(--crop)) right var(--crop-inset) bottom var(--crop-inset) / var(--crop-length) 1px,
+      linear-gradient(var(--crop), var(--crop)) right var(--crop-inset) bottom var(--crop-inset) / 1px var(--crop-length);
+    background-repeat: no-repeat;
+  }
+
+  /* The top: the mark on the left, the menu on the right, a rule below. */
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--lt-spacing-3) var(--lt-spacing-6);
+    padding-block-end: var(--lt-spacing-4);
+    border-block-end: var(--profile-rule);
+  }
+
+  .top__mark {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--lt-spacing-4);
+  }
+
+  .top__home {
+    color: var(--lt-color-neutral-text-strong);
+    text-decoration: none;
+  }
+
+  .top__nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lt-spacing-2) var(--lt-spacing-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .top__nav a {
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--lt-color-neutral-text);
+    text-decoration: none;
+  }
+
+  .top__nav a:hover {
+    color: var(--lt-color-neutral-text-strong);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .top__home:focus-visible,
+  .top__nav a:focus-visible,
+  .masthead__link:focus-visible,
+  .node__code:focus-visible,
+  .node__pre:focus-visible,
+  .sobernetics:focus-visible {
+    outline: var(--lt-focus-ring, 2px solid var(--lt-color-accent-fill));
+    outline-offset: var(--lt-spacing-1);
+  }
+
+  /* The masthead. The text on the left, the plate on the right from 64rem. */
+  .masthead {
+    display: grid;
+    gap: var(--lt-spacing-10);
+    padding-block: var(--lt-spacing-10) var(--lt-spacing-8);
+  }
+
+  @media (min-width: 64rem) {
+    .masthead {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      align-items: start;
+      padding-block: var(--lt-spacing-14, 3.5rem) var(--lt-spacing-10);
+    }
+  }
+
+  .masthead__text {
+    container-type: inline-size;
+    min-inline-size: 0;
+  }
+
+  .masthead__name {
+    margin: 0;
+    color: var(--lt-color-neutral-text-strong);
+  }
+
+  .masthead__line {
+    max-inline-size: 38rem;
+    margin: var(--lt-spacing-6) 0 0;
+    font-size: var(--lt-font-size-m);
+    line-height: var(--lt-line-height-article);
+    color: var(--lt-color-neutral-text);
+    text-wrap: pretty;
+  }
+
+  .masthead__line--second {
+    margin-block-start: var(--lt-spacing-4);
+    color: var(--lt-color-neutral-text-subtle);
+  }
+
+  .masthead__register {
+    margin-block-start: var(--lt-spacing-6);
+  }
+
+  /* The grade: three numbered lines in the data face, above the facts. */
+  .grade {
+    margin: var(--lt-spacing-2) 0 var(--lt-spacing-4);
+    padding: 0 0 var(--lt-spacing-4);
+    list-style: none;
+    border-block-end: var(--profile-rule-subtle);
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-xs);
+    color: var(--lt-color-neutral-text-strong);
+  }
+
+  .grade li + li {
+    margin-block-start: var(--lt-spacing-1);
+  }
+
+  .grade__index {
+    display: inline-block;
+    min-inline-size: 2.5em;
+    font-variant-numeric: tabular-nums;
+    color: var(--lt-color-accent-text);
+  }
+
+  .masthead__link {
+    color: var(--lt-color-accent-text);
+    text-decoration: underline;
+    text-decoration-thickness: 0.06em;
+    text-underline-offset: 0.14em;
+  }
+
+  .masthead__link:hover {
+    color: var(--lt-color-accent-text-strong);
+  }
+
+  .masthead__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lt-spacing-3);
+    margin-block-start: var(--lt-spacing-8);
+  }
+
+  /* The buttons are LO-TEK's own, but here without rounded corners, like everything else. */
+  .masthead__actions .lt-button {
+    --lt-button-radius: 0;
+    text-decoration: none;
+  }
+
+  .masthead__plate {
+    min-inline-size: 0;
+  }
+
+  /* The epigraph: an excerpt with a rule on the left, set a little narrower. */
+  .epigraph {
+    margin: var(--lt-spacing-10) 0 0;
+    max-inline-size: 44rem;
+  }
+
+  .epigraph__words {
+    margin: 0;
+    padding-inline-start: var(--lt-spacing-5);
+    border-inline-start: var(--lt-spacing-0-5) solid var(--lt-color-accent-fill);
+  }
+
+  .epigraph__words p {
+    margin: 0;
+    font-size: var(--lt-font-size-s);
+    line-height: var(--lt-line-height-article);
+    color: var(--lt-color-neutral-text);
+    text-wrap: pretty;
+  }
+
+  .epigraph__words p + p {
+    margin-block-start: var(--lt-spacing-3);
+  }
+
+  .epigraph__source {
+    margin: var(--lt-spacing-3) 0 0 var(--lt-spacing-5);
+    padding-inline-start: var(--lt-spacing-0-5);
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-xs);
+    letter-spacing: 0.04em;
+    color: var(--lt-color-neutral-text-subtle);
+  }
+
+  /* The plates have space above them, and the list right below. */
+  .profile-plate {
+    margin-block-start: var(--lt-spacing-16);
+  }
+
+  /* The ladder: a numbered list drawn as nodes with a rule between. */
+  .ladder {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .node {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    grid-template-areas:
+      "index name"
+      ".     what"
+      ".     code"
+      ".     examples";
+    column-gap: var(--lt-spacing-4);
+    padding-block: var(--lt-spacing-6);
+    border-block-end: var(--profile-rule);
+  }
+
+  @media (min-width: 48rem) {
+    .node {
+      grid-template-columns: 5rem minmax(0, 1fr);
+    }
+  }
+
+  .node__index {
+    grid-area: index;
+    margin: 0;
+    padding-block-start: 0.35em;
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-xs);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.1em;
+    color: var(--lt-color-neutral-text-subtle);
+  }
+
+  .node__name,
+  .node__title {
+    grid-area: name;
+    margin: 0;
+    color: var(--lt-color-neutral-text-strong);
+  }
+
+  .node__name {
+    font-size: clamp(1.1rem, 3.6cqi, 1.75rem);
+    line-height: 1.05;
+  }
+
+  .node__title {
+    font-size: var(--lt-font-size-xl);
+    font-weight: 700;
+    line-height: var(--lt-line-height-heading);
+  }
+
+  .node__what {
+    grid-area: what;
+    max-inline-size: 60ch;
+    margin: var(--lt-spacing-3) 0 0;
+    font-size: var(--lt-font-size-s);
+    line-height: var(--lt-line-height-article);
+    color: var(--lt-color-neutral-text);
+    text-wrap: pretty;
+  }
+
+  .node__what code {
+    color: var(--lt-color-neutral-text-strong);
+  }
+
+  .node__code,
+  .node__pre {
+    grid-area: code;
+    display: block;
+    max-inline-size: 100%;
+    margin: var(--lt-spacing-4) 0 0;
+    padding: var(--lt-spacing-2) var(--lt-spacing-3);
+    border: var(--profile-rule-subtle);
+    border-inline-start: var(--lt-spacing-0-5) solid var(--lt-color-neutral-border);
+    background: var(--lt-color-neutral-surface);
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-xs);
+    line-height: 1.6;
+    color: var(--lt-color-neutral-text-strong);
+    overflow-x: auto;
+  }
+
+  .node__pre {
+    max-inline-size: 36rem;
+    padding: var(--lt-spacing-3) var(--lt-spacing-4);
+  }
+
+  .node__pre code {
+    font-size: inherit;
+  }
+
+  /* In the list of prose a node has a paragraph after the code, and no
+     examples, so the fourth area is the paragraph's. */
+  .ladder--prose .node {
+    grid-template-areas:
+      "index name"
+      ".     what"
+      ".     code"
+      ".     after";
+  }
+
+  .ladder--prose .node__what + .node__pre + .node__what {
+    grid-area: after;
+  }
+
+  .node__examples {
+    grid-area: examples;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lt-spacing-2);
+    margin: var(--lt-spacing-4) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ladder__after {
+    max-inline-size: 60ch;
+    margin: var(--lt-spacing-5) 0 0;
+    font-size: var(--lt-font-size-s);
+    line-height: var(--lt-line-height-article);
+    color: var(--lt-color-neutral-text-subtle);
+  }
+
+  @media (min-width: 48rem) {
+    .ladder__after {
+      padding-inline-start: calc(5rem + var(--lt-spacing-4));
+    }
+  }
+
+  /* The colophon. It has no rule of its own: the last node's rule above it
+     already closes the sheet, and a second one read as a double line. */
+  .colophon {
+    margin-block-start: var(--lt-spacing-12);
+    max-inline-size: 44ch;
+    font-size: var(--lt-font-size-s);
+    color: var(--lt-color-neutral-text-subtle);
+  }
+
+  .colophon p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  @media (prefers-contrast: more) {
+    .top__nav a,
+    .masthead__link {
+      text-decoration: underline;
+    }
+  }
+
+  @media print {
+    body {
+      background: #fff;
+      color: #000;
+    }
+
+    .sheet {
+      max-inline-size: none;
+      padding: 0;
+    }
+  }
+</style>
+
 <style is:global>
-  /* The Søbernetics mark. Small on purpose, and small is the whole of how it stays quiet: the
-     opacity this first had took it to 3.5:1 against the ground, which is below the contrast
-     required of a link, and on one page left it all but invisible. Subtlety is size, not a
+  /* The Søbernetics mark. Small on purpose, and small is the whole of how it
+     stays quiet: the opacity it first had took it to 3.5:1 against the
+     surface, below the contrast required of a link. Subtlety is size, not a
      washed-out colour.
 
-     The red is Søbernetics' own, set here per theme rather than taken from the host's accent
-     token. Streamlord's accent is a blue, so the mark arrived there wearing Streamlord's colour,
-     and a mark that changes hue per project is not a mark. */
+     The red is Søbernetics' own, set here and not taken from the host's
+     accent token: a mark that changes hue per project is not a mark. */
   .sobernetics {
     /* The page is always dark, so the mark takes the dark value outright. */
     --sobernetics-accent: #f44851;
     display: inline-block;
-    margin-top: 1.25rem;
+    margin-block-start: var(--lt-spacing-5);
     color: var(--lt-color-neutral-text-subtle);
   }
 
@@ -292,10 +770,7 @@ form.html:3:13: warning: The class "lt-modal"
 
   .sobernetics svg {
     display: block;
-    height: 18px;
-    width: auto;
+    block-size: 18px;
+    inline-size: auto;
   }
-
 </style>
-</body>
-</html>

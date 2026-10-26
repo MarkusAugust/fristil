@@ -1,14 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <defs>
-    <linearGradient id="lotekCyan" gradientUnits="userSpaceOnUse" x1="5" y1="2" x2="60" y2="98">
-      <stop offset="0%" stop-color="#00f2fe" />
-      <stop offset="100%" stop-color="#4facfe" />
-    </linearGradient>
-    <linearGradient id="lotekLilla" gradientUnits="userSpaceOnUse" x1="24" y1="21" x2="60" y2="45">
-      <stop offset="0%" stop-color="#4facfe" />
-      <stop offset="100%" stop-color="#b15cff" />
-    </linearGradient>
-  </defs>
-  <path d="M5 2H88L74 16H19V40H71L57 54H19V84L5 98Z" fill="url(#lotekCyan)" />
-  <path d="M24 21H76L95 2V35H24ZM24 59H59L78 40V73H38V98H12L24 86Z" fill="url(#lotekLilla)" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5 -12.0711 125.071 129.071">
+  <!-- The mark, the same as in Logo.astro with the solid shadow, since scan
+       lines disappear at the size of a tab. The colours are fixed: the mark
+       looks the same in every theme, and the dark edge round the letters is
+       what holds it against a light background. -->
+  <path fill="#111212" d="M7 105L7 117L49.07 117L70 96.07L70 82L70 65L70 35L92.07 35L120.07 7L96.07 7L108.07 -5L23 -5L23 -12.07L-5 15.93L-5 105Z"/>
+  <path fill="#4992e2" d="M47 112L65 94L65 77.07L37.07 105L12 105L12 112ZM65 30L90 30L108 12L91.07 12L80.07 23L58 23L58 77L65 77ZM30 30L30 23L23 23L23 77L30 77Z"/>
+  <path fill="#e6e8eb" d="M23 18L35 18L35 77L53 77L53 18L78 18L96 0L23 0ZM0 100L35 100L53 82L18 82L18 0L0 18Z"/>
 </svg>

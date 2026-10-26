@@ -1,0 +1,83 @@
+---
+/**
+ * The plate on the front page: an exploded view from a service manual.
+ *
+ * The drawing is the architecture as hardware. The chassis and the panel are
+ * the markup, which stands there regardless. The card that pulls out of its
+ * slot and goes back in is the web component. The cables bring the page in
+ * from the server, and the screws are the web standards, which fit every
+ * framework. The caption says which letter is which, so the drawing
+ * itself is decoration and has an empty `alt`.
+ *
+ * The file is black ink on a transparent ground, so the paper's grain shows
+ * between the lines without a blend mode. A blend mode would not have
+ * worked here: the sheet is a size container, which makes it its own
+ * stacking context, and the drawing then blended with nothing and stood in
+ * a box of its own. The dark theme inverts the ink.
+ */
+---
+
+<figure class="plate">
+  <img
+    class="plate__drawing"
+    src="/exploded-view.webp"
+    alt=""
+    width="1360"
+    height="1436"
+    decoding="async"
+  />
+  <figcaption class="plate__caption">
+    <span class="profile-label">Figure 1-1 · Interface unit, exploded view</span>
+    <b>C</b> is the chassis and <b>B</b> the panel: the markup, which stands
+    there whatever happens. <b>D</b> is the web component, a card that pulls
+    out and goes back without the rest noticing. <b>E</b> brings the page in
+    from the server. <b>F</b> are the screws: the web standards, a thread that
+    fits every frame.
+  </figcaption>
+</figure>
+
+<style>
+  .plate {
+    margin: 0;
+    display: grid;
+    gap: var(--lt-spacing-3);
+  }
+
+  .plate__drawing {
+    display: block;
+    inline-size: 100%;
+    max-inline-size: 32rem;
+    block-size: auto;
+    opacity: 0.72;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .plate__drawing {
+      filter: invert(1);
+      opacity: 0.6;
+    }
+  }
+
+  :global(:root[data-theme="dark"]) .plate__drawing {
+    filter: invert(1);
+    opacity: 0.6;
+  }
+
+  .plate__caption {
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-xs);
+    line-height: var(--lt-line-height-default);
+    color: var(--lt-color-neutral-text-subtle);
+    text-wrap: pretty;
+  }
+
+  .plate__caption .profile-label {
+    display: block;
+    margin-block-end: var(--lt-spacing-1);
+  }
+
+  .plate__caption b {
+    font-weight: 600;
+    color: var(--lt-color-neutral-text-strong);
+  }
+</style>
