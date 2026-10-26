@@ -44,18 +44,21 @@ jobs:
     # for browsers the image does not have.
     container:
       image: mcr.microsoft.com/playwright:v1.60.0-noble
-      # The container runs as root, and Firefox will not start as root with a
-      # home folder owned by another user, which the runner's is.
-      env:
-        HOME: /root
 
     steps:
       # The image lacks a C linker, which Cargo needs for the CLI, `unzip`,
       # which `setup-bun` unpacks Bun with, and Rust. Only these few packages
       # come from apt. Rustup then installs the version in
       # `rust-toolchain.toml` on the first call.
+      #
+      # The container runs as root, and Firefox will not start as root with a
+      # home folder owned by another user. The runner mounts its own as `HOME`
+      # and sets it after the job's `env`, so it is changed here, for this
+      # step and every later one.
       - name: Container tools
         run: |
+          export HOME=/root
+          echo "HOME=/root" >> "$GITHUB_ENV"
           apt-get update
           apt-get install --yes --no-install-recommends gcc libc6-dev unzip
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none
