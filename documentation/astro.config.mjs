@@ -79,6 +79,7 @@ export default defineConfig({
         root: { label: "English", lang: "en" },
       },
       components: {
+        Head: "./src/components/Head.astro",
         SiteTitle: "./src/components/SiteTitle.astro",
         MarkdownContent: "./src/components/MarkdownContent.astro",
       },

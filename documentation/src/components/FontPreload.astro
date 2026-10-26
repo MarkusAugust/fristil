@@ -1,0 +1,12 @@
+---
+/**
+ * Fetches the name face together with the stylesheet, instead of when the
+ * browser first meets the name. Michroma waits for its file rather than
+ * swapping (see `profile.css`), so the sooner it is here, the shorter the
+ * name stays empty. The import gives the same hashed address as the `url()`
+ * in the stylesheet, so the file is fetched once.
+ */
+import michroma from "../fonts/michroma-400.woff2?url"
+---
+
+<link rel="preload" href={michroma} as="font" type="font/woff2" crossorigin />

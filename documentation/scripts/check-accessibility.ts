@@ -307,8 +307,12 @@ async function checkPages(
        */
       await document.fonts.ready
 
+      // The tables in the Markdown get theirs the same way, from the script
+      // in `MarkdownContent.astro`, one frame after the fonts have changed
+      // their width. Without them here, axe once saw a table on
+      // `/changelog/` in that frame.
       const without = () =>
-        [...document.querySelectorAll("pre")].filter(
+        [...document.querySelectorAll("pre, .table-scroll")].filter(
           (block) =>
             block.scrollWidth > block.clientWidth &&
             !block.hasAttribute("tabindex"),
@@ -330,7 +334,9 @@ async function checkPages(
        * report should say what was loaded.
        */
       const notCleaned = () =>
-        [...document.querySelectorAll(".expressive-code pre")].filter(
+        [
+          ...document.querySelectorAll(".expressive-code pre, .table-scroll"),
+        ].filter(
           (block) =>
             block.getClientRects().length > 0 &&
             block.scrollWidth <= block.clientWidth &&
