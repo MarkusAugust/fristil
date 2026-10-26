@@ -15,7 +15,7 @@ export const SHARE_IMAGE = [
   ["og:image", `${BASE}/og.png`],
   ["og:image:width", "1200"],
   ["og:image:height", "630"],
-  ["og:image:alt", "LO-TEK. Framework-independent design system."],
+  ["og:image:alt", "LO-TEK Interfaces. Framework-independent design system."],
   ["twitter:image", `${BASE}/og.png`],
 ]
 

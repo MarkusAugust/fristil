@@ -45,6 +45,9 @@ const NOISE = [
   "svg",
   ".sl-anchor-link",
   ".lt-preview",
+  // A quotation at the head of a page, for the reader and not part of what
+  // the page teaches. See `Epigraph.astro`.
+  ".epigraph",
   ".copy",
   ".tablist-wrapper",
   ".expressive-code .sr-only",

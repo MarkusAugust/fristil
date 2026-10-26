@@ -18,33 +18,71 @@
 /* LO-TEK's tokens as Tailwind values, that is `p-4`, `text-lt-muted` and the rest. */
 @import "@lo-tek/interfaces/tailwind.css";
 
+/* The visual language the site shares with sobernetics.no. */
+@import "./profile.css" layer(components);
+
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
 
-  --color-accent-50: var(--color-sky-50);
-  --color-accent-100: var(--color-sky-100);
-  --color-accent-200: var(--color-sky-200);
-  --color-accent-300: var(--color-sky-300);
-  --color-accent-400: var(--color-sky-400);
-  --color-accent-500: var(--color-sky-500);
-  --color-accent-600: var(--color-sky-600);
-  --color-accent-700: var(--color-sky-700);
-  --color-accent-800: var(--color-sky-800);
-  --color-accent-900: var(--color-sky-900);
-  --color-accent-950: var(--color-sky-950);
+/*
+ * Starlight's own colours, read from LO-TEK's tokens.
+ *
+ * Starlight draws its whole shell with `--sl-color-*`. The Tailwind bridge
+ * sets them from its own scales in the `utilities` layer, the last of the
+ * layers, so they have to be written over without a layer. LO-TEK's tokens
+ * change value by themselves with `data-theme` and with the system setting,
+ * so one mapping covers both themes, and the documentation stands in the
+ * same colours as the components it shows.
+ *
+ * Starlight says "white" for the text colour and "black" for the surface, in
+ * both themes: in the light theme `--sl-color-white` is nearly black. The
+ * grey scale runs from text (1) to surface (7), and the roles in LO-TEK run
+ * the same way.
+ */
+:root {
+  --sl-color-white: var(--lt-color-neutral-text-strong);
+  --sl-color-gray-1: var(--lt-color-neutral-text-strong);
+  --sl-color-gray-2: var(--lt-color-neutral-text);
+  --sl-color-gray-3: var(--lt-color-neutral-text-subtle);
+  --sl-color-gray-4: var(--lt-color-neutral-border);
+  --sl-color-gray-5: var(--lt-color-neutral-border-subtle);
+  --sl-color-gray-6: var(--lt-color-neutral-surface);
+  --sl-color-gray-7: color-mix(
+    in oklab,
+    var(--lt-color-neutral-canvas) 60%,
+    var(--lt-color-neutral-surface)
+  );
+  --sl-color-black: var(--lt-color-neutral-canvas);
 
-  --color-gray-50: var(--color-zinc-50);
-  --color-gray-100: var(--color-zinc-100);
-  --color-gray-200: var(--color-zinc-200);
-  --color-gray-300: var(--color-zinc-300);
-  --color-gray-400: var(--color-zinc-400);
-  --color-gray-500: var(--color-zinc-500);
-  --color-gray-600: var(--color-zinc-600);
-  --color-gray-700: var(--color-zinc-700);
-  --color-gray-800: var(--color-zinc-800);
-  --color-gray-900: var(--color-zinc-900);
-  --color-gray-950: var(--color-zinc-950);
+  --sl-color-accent-low: var(--lt-color-accent-surface);
+  --sl-color-accent: var(--lt-color-accent-fill);
+  --sl-color-accent-high: var(--lt-color-accent-text-strong);
+  --sl-color-text: var(--lt-color-neutral-text);
+  --sl-color-text-accent: var(--lt-color-accent-text);
+  --sl-color-text-invert: var(--lt-color-accent-content);
+  --sl-color-bg: var(--lt-color-neutral-canvas);
+  --sl-color-bg-nav: var(--lt-color-neutral-canvas);
+  --sl-color-bg-sidebar: var(--lt-color-neutral-canvas);
+  --sl-color-bg-inline-code: var(--lt-color-neutral-surface);
+  --sl-color-bg-accent: var(--lt-color-accent-fill);
+  --sl-color-hairline-light: var(--lt-color-neutral-border);
+  --sl-color-hairline: var(--lt-color-neutral-border-subtle);
+  --sl-color-hairline-shade: var(--lt-color-neutral-canvas);
+
+  /* The focus ring is LO-TEK's, also around Starlight's own controls. */
+  --sl-outline-offset-inside: -0.1875rem;
+}
+
+/* Starlight's frames around search and dialogs read these as well. */
+:root[data-theme="dark"],
+:root:not([data-theme="light"]) {
+  --sl-color-backdrop-overlay: rgb(0 0 0 / 0.66);
+}
+
+:root[data-theme="light"] {
+  --sl-color-backdrop-overlay: rgb(39 41 43 / 0.5);
 }
 
 @layer components {
@@ -52,60 +90,31 @@
     --sl-content-width: 50rem;
     --sl-sidebar-width: 17.5rem;
     --sl-text-5xl: 3.25rem;
-  }
-
-  /* Starlight's Tailwind theme gives links and the current item in the table
-     of contents accent-600 in the light theme. That is 3.98:1 against white
-     at 13 pixels, below the requirement of 4.5. axe found it on only one
-     page at first: on the others there is a gradient behind, and then it
-     abstains. Accent-700 gives 5.9:1. */
-  :root[data-theme="light"] {
-    --sl-color-text-accent: var(--color-accent-700);
+    --sl-line-height: 1.65;
   }
 
   html {
-    @apply scroll-smooth;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-zinc-50 text-zinc-900 antialiased selection:bg-sky-300/40 selection:text-zinc-950 dark:bg-zinc-950 dark:text-zinc-100 dark:selection:bg-sky-400/30 dark:selection:text-white;
-    background-image:
-      radial-gradient(
-        circle at top left,
-        rgb(147 197 253 / 0.16),
-        transparent 26%
-      ),
-      radial-gradient(
-        circle at top right,
-        rgb(196 181 253 / 0.12),
-        transparent 24%
-      ),
-      linear-gradient(
-        to bottom,
-        rgb(250 250 250 / 0.98),
-        rgb(244 244 245 / 0.98)
-      );
+    font-family: var(--profile-font-text);
+    -webkit-font-smoothing: antialiased;
   }
 
-  :root[data-theme="dark"] body {
-    background-image:
-      radial-gradient(
-        circle at top left,
-        rgb(96 165 250 / 0.14),
-        transparent 30%
-      ),
-      radial-gradient(
-        circle at top right,
-        rgb(167 139 250 / 0.12),
-        transparent 26%
-      ),
-      linear-gradient(to bottom, rgb(12 14 30 / 0.99), rgb(23 22 46 / 0.99));
+  ::selection {
+    background: var(--lt-color-accent-surface);
+    color: var(--lt-color-accent-text-strong);
   }
 
   .page,
   .main-pane,
   .content-panel {
-    @apply bg-transparent;
+    background: transparent;
+  }
+
+  .page {
+    min-height: 100vh;
   }
 
   /*
@@ -118,193 +127,231 @@
    * the effect was barely visible. From tablet up, Starlight's value stands.
    */
   .content-panel {
-    @apply py-2 md:py-6;
+    padding-block: var(--lt-spacing-2);
   }
 
-  .page {
-    @apply min-h-screen;
-  }
-
-  header.header {
-    @apply border-b border-zinc-200/80 bg-white/88 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-950/84;
-  }
-
-  .site-title {
-    @apply no-underline;
-  }
-
-  .site-title span[translate="no"] {
-    @apply bg-linear-to-r from-cyan-300 via-sky-400 to-fuchsia-400 bg-clip-text font-black tracking-tight text-transparent;
-  }
-
-  .sidebar-pane {
-    @apply border-r border-zinc-200/80 bg-white/72 dark:border-zinc-800/80 dark:bg-zinc-950/50;
-  }
-
-  /*
-   * Below 50rem the menu is an overlay right on top of the article, not a
-   * column beside it. Then it has to be opaque.
-   *
-   * The blur did not save it: `backdrop-filter` is on `.sidebar-content`,
-   * which has no background, while the translucent background is on
-   * `.sidebar-pane`, which has no blur. The text underneath therefore showed
-   * through at 28 per cent in the light theme and 50 in the dark.
-   *
-   * 50rem is Starlight's own breakpoint for when the menu becomes a column.
-   */
-  @media (width < 50rem) {
-    .sidebar-pane {
-      @apply bg-white dark:bg-zinc-950;
+  @media (min-width: 50rem) {
+    .content-panel {
+      padding-block: var(--lt-spacing-6);
     }
   }
 
+  /* The top: one rule, no blur. */
+  header.header {
+    border-bottom: var(--profile-rule);
+    background: var(--lt-color-neutral-canvas);
+  }
+
+  .site-title {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /*
+   * Starlight's search button and theme picker are rounded cards. Here
+   * everything is square, as in a manual: no corners, only rules.
+   */
+  site-search button,
+  starlight-theme-select select,
+  .pagination-links a,
+  mobile-starlight-toc nav,
+  mobile-starlight-toc summary,
+  mobile-starlight-toc .toggle,
+  .sidebar-content a,
+  .sidebar-content summary,
+  .sl-markdown-content code:not(pre code):not(.not-content, .not-content *),
+  .expressive-code .frame,
+  .expressive-code .frame pre,
+  .expressive-code .copy button,
+  .sl-tabs,
+  .starlight-aside,
+  .sl-markdown-content .table-scroll {
+    border-radius: 0;
+  }
+
+  site-search button {
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-xs);
+    border-color: var(--lt-color-neutral-border);
+  }
+
+  site-search button:hover {
+    border-color: var(--lt-color-accent-fill);
+  }
+
+  site-search kbd {
+    font-family: var(--profile-font-data);
+    border-radius: 0;
+    background: var(--lt-color-neutral-surface);
+  }
+
+  /* The menu on the left: a table of contents set in the data face. */
+  .sidebar-pane {
+    border-right: var(--profile-rule-subtle);
+    background: var(--lt-color-neutral-canvas);
+  }
+
   .sidebar-content {
-    @apply gap-4 px-3 py-4 backdrop-blur-sm md:px-4 md:py-5;
+    gap: var(--lt-spacing-4);
+    padding: var(--lt-spacing-4) var(--lt-spacing-3);
+    font-family: var(--profile-font-data);
+  }
+
+  @media (min-width: 50rem) {
+    .sidebar-content {
+      padding: var(--lt-spacing-5) var(--lt-spacing-4);
+    }
+  }
+
+  .sidebar-content .group-label span {
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-xxs);
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lt-color-neutral-text-subtle);
+  }
+
+  .sidebar-content ul ul .group-label span {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: var(--lt-font-size-xs);
+    color: var(--lt-color-neutral-text);
   }
 
   .sidebar-content a,
   .sidebar-content summary {
-    @apply rounded-lg px-3 py-2.5 transition-colors;
+    padding: var(--lt-spacing-1-5, 0.375rem) var(--lt-spacing-2);
+    font-size: var(--lt-font-size-xs);
+    transition: color 120ms, background-color 120ms;
   }
 
-  .sidebar-content ul ul .group-label span {
-    @apply font-normal text-zinc-500 dark:text-zinc-400;
-  }
-
-  .sidebar-content a[aria-current="page"] {
-    @apply rounded-md bg-sky-700 text-white shadow-[0_10px_24px_-16px_rgba(2,132,199,0.8)] ring-1 ring-sky-600/40 dark:bg-sky-400 dark:text-zinc-950 dark:ring-sky-300/30;
+  .sidebar-content a {
+    color: var(--lt-color-neutral-text);
   }
 
   .sidebar-content a:hover,
   .sidebar-content summary:hover {
-    @apply bg-zinc-100/80 text-zinc-950 dark:bg-zinc-900/80 dark:text-white;
+    background: var(--lt-color-neutral-surface);
+    color: var(--lt-color-neutral-text-strong);
   }
+
+  /*
+   * The page you are on is a strip of ink, like the plate on the front page,
+   * with an accent mark at the edge. The text is the surface's colour, so the
+   * contrast is the same as the plate's.
+   */
+  .sidebar-content a[aria-current="page"],
+  .sidebar-content a[aria-current="page"]:hover {
+    background: var(--lt-color-neutral-text-strong);
+    color: var(--lt-color-neutral-canvas);
+    box-shadow: inset var(--lt-spacing-0-5) 0 0 var(--lt-color-accent-fill);
+    font-weight: 500;
+  }
+
+  /*
+   * Below 50rem the menu is an overlay right on top of the article, not a
+   * column beside it. Then it has to be opaque, and it is: the surface is
+   * the canvas with no transparency. 50rem is Starlight's own breakpoint.
+   */
 
   .main-pane {
-    @apply px-4 pb-10 pt-3 md:px-6 md:pb-14 md:pt-8;
+    padding: var(--lt-spacing-3) var(--lt-spacing-4) var(--lt-spacing-10);
   }
 
-  .main-pane main {
-    @apply space-y-5;
+  @media (min-width: 50rem) {
+    .main-pane {
+      padding: var(--lt-spacing-8) var(--lt-spacing-6) var(--lt-spacing-14, 3.5rem);
+    }
   }
 
+  /* The table of contents on the right, set as a list of labels. */
   .right-sidebar-panel .sl-container {
-    @apply rounded-2xl border border-zinc-200/80 bg-white/88 px-4 py-5 shadow-[0_18px_48px_-34px_rgba(15,23,42,0.2)] backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-900/72 dark:shadow-[0_22px_62px_-40px_rgba(2,6,23,0.85)];
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-xs);
   }
 
-  .main-pane main > .content-panel:first-child > .sl-container {
-    @apply border-none bg-transparent px-0 py-2 shadow-none;
+  .right-sidebar-panel h2 {
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-xxs);
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lt-color-neutral-text-subtle);
   }
 
-  .main-pane main > .content-panel:not(:first-child) > .sl-container {
-    @apply rounded-3xl border border-zinc-200/80 bg-white/92 px-4 py-5 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.24)] dark:border-zinc-800/80 dark:bg-zinc-900/72 dark:shadow-[0_28px_80px_-48px_rgba(2,6,23,0.86)] md:px-8 md:py-8;
+  .right-sidebar-panel a {
+    border-radius: 0;
   }
 
-  .content-panel + .content-panel {
-    @apply mt-3 md:mt-5;
-  }
-
-  /* Content marked .not-content, such as the component previews, does not
-	   inherit the documentation's typography. A rule that targets <p>
-	   directly beats the colour inherited from the preview, regardless of
-	   specificity. */
-  /* Tables scroll sideways rather than breaking code in the middle of a tag.
-     The scroll container is put around every table by rehype-table-scroll.mjs,
-     and it is what carries the card look. The table itself must not clip
-     anything: if it does, the columns beyond the edge are gone with no way
-     back. */
-  .sl-markdown-content .table-scroll {
-    max-inline-size: 100%;
-    overflow-x: auto;
-  }
-
-  .sl-markdown-content .table-scroll:focus-visible {
-    outline: 2px solid var(--lt-color-accent-fill);
-    outline-offset: 2px;
-  }
-
-  .sl-markdown-content .table-scroll table {
-    display: table;
-    inline-size: 100%;
-    margin-block: 0;
-    overflow: visible;
-  }
-
-  /* A shadow at the edge with more table behind it. The attributes are set by
-     MarkdownContent.astro. The background stays put while the content
-     scrolls, so the shadow stays at the edge. */
-  .sl-markdown-content .table-scroll {
-    --tabell-skygge: rgb(15 23 42 / 0.16);
-
-    background-repeat: no-repeat;
-    background-size: 1.5rem 100%;
-  }
-
-  :root[data-theme="dark"] .sl-markdown-content .table-scroll {
-    --tabell-skygge: rgb(0 0 0 / 0.5);
-  }
-
-  .sl-markdown-content .table-scroll[data-more-right] {
-    background-image: linear-gradient(
-      to left,
-      var(--tabell-skygge),
-      transparent
-    );
-    background-position: right;
-  }
-
-  .sl-markdown-content .table-scroll[data-more-left] {
-    background-image: linear-gradient(
-      to right,
-      var(--tabell-skygge),
-      transparent
-    );
-    background-position: left;
-  }
-
-  .sl-markdown-content .table-scroll[data-more-left][data-more-right] {
-    background-image:
-      linear-gradient(to right, var(--tabell-skygge), transparent),
-      linear-gradient(to left, var(--tabell-skygge), transparent);
-    background-position: left, right;
-  }
-
-  /* Code in a cell stays on one line. It is the table that scrolls. */
-  .sl-markdown-content :is(td, th) code:not(.not-content *) {
-    white-space: nowrap;
-  }
-
-  .sl-markdown-content :is(h1, h2, h3):not(.not-content, .not-content *) {
-    @apply tracking-tight text-zinc-950 dark:text-zinc-50;
+  .right-sidebar-panel a[aria-current="true"] {
+    color: var(--lt-color-accent-text);
+    box-shadow: inset var(--lt-spacing-0-5) 0 0 var(--lt-color-accent-fill);
   }
 
   /*
    * The heading was checked at 390 pixels: 36 pixels in a 278-pixel column
    * gave eight characters per line, and "Session Timeout" broke over three
    * lines. The steps below are phone, tablet and desktop.
+   *
+   * The page title is a name plate, and stands in the name face. It is wide,
+   * so the size is lower than Starlight's, and words may break where they
+   * can.
    */
   .content-panel h1 {
-    @apply text-3xl font-black sm:text-4xl md:text-5xl;
+    font-family: var(--profile-font-name);
+    font-weight: 400;
+    font-synthesis: none;
+    font-size: clamp(1.375rem, 5.5vw, 2.25rem);
+    line-height: 1.15;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+    color: var(--lt-color-neutral-text-strong);
   }
 
-  /* Three layers of space added up above the heading, and it started further
-     down on mobile than on desktop, which is where space is scarcest. The
-     margin here is the third layer, after the page's and the panel's. */
+  /* A register mark under the title, as on the front page. */
   .main-pane main > .content-panel:first-child h1 {
-    @apply mt-0 md:mt-4;
+    margin-top: 0;
+    padding-bottom: var(--lt-spacing-4);
+    background: linear-gradient(
+        to right,
+        var(--lt-color-accent-fill) 0 3.5rem,
+        var(--lt-color-neutral-border-strong) 3.5rem
+      )
+      no-repeat bottom / 100% var(--lt-spacing-0-5);
+  }
+
+  @media (min-width: 50rem) {
+    .main-pane main > .content-panel:first-child h1 {
+      margin-top: var(--lt-spacing-4);
+    }
+  }
+
+  .sl-markdown-content :is(h2, h3, h4):not(.not-content, .not-content *) {
+    color: var(--lt-color-neutral-text-strong);
+    letter-spacing: -0.01em;
   }
 
   .sl-markdown-content h2 {
-    @apply mt-14 border-b border-zinc-200/80 pb-4 text-2xl font-black dark:border-zinc-800/80;
+    margin-top: var(--lt-spacing-14, 3.5rem);
+    padding-bottom: var(--lt-spacing-3);
+    border-bottom: var(--profile-rule);
+    font-size: var(--lt-font-size-xl);
+    font-weight: 700;
   }
 
   .sl-markdown-content h3 {
-    @apply mt-10 text-xl font-bold;
+    margin-top: var(--lt-spacing-10);
+    font-size: var(--lt-font-size-l);
+    font-weight: 700;
   }
 
   .sl-markdown-content p:not(.not-content, .not-content *),
   .sl-markdown-content li:not(.not-content, .not-content *) {
-    @apply text-[1.02rem] leading-8 text-zinc-700 dark:text-zinc-300;
+    font-size: 1.02rem;
+    line-height: var(--sl-line-height);
+    color: var(--lt-color-neutral-text);
   }
 
   .sl-markdown-content
@@ -320,48 +367,165 @@
       .sl-tabs,
       .starlight-aside
     ) {
-    @apply mt-6;
+    margin-top: var(--lt-spacing-6);
   }
 
   .sl-markdown-content ul:not(.not-content, .not-content *),
   .sl-markdown-content ol:not(.not-content, .not-content *) {
-    @apply pl-6;
+    padding-left: var(--lt-spacing-6);
   }
 
   .sl-markdown-content li:not(.not-content, .not-content *) + li {
-    @apply mt-2;
+    margin-top: var(--lt-spacing-2);
   }
 
+  /* A code word in the text is a printout: the data face on a toned surface. */
   .sl-markdown-content code:not(pre code):not(.not-content, .not-content *) {
-    @apply rounded-md border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 text-[0.9em] text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100;
+    padding: 0.1em 0.35em;
+    border: var(--profile-rule-subtle);
+    background: var(--lt-color-neutral-surface);
+    font-family: var(--profile-font-data);
+    font-size: 0.88em;
+    color: var(--lt-color-neutral-text-strong);
   }
 
+  /* The blocks: code frames, tabs and asides get the same rule as everything else. */
   .expressive-code .frame,
   .sl-tabs,
-  .starlight-aside {
-    @apply overflow-hidden rounded-2xl border border-zinc-200/70 shadow-[0_16px_40px_-30px_rgba(15,23,42,0.22)] dark:border-zinc-800/70 dark:shadow-[0_22px_64px_-36px_rgba(2,6,23,0.85)];
-  }
-
-  /* The card look belongs on the scroll container. Were it on the table, the
-     table would need `overflow: hidden` to clip the rounded corners, and wide
-     tables were then cut off instead of scrolling. */
+  .starlight-aside,
   .sl-markdown-content .table-scroll {
-    @apply rounded-2xl border border-zinc-200/70 bg-white/70 shadow-[0_16px_40px_-30px_rgba(15,23,42,0.22)] dark:border-zinc-800/70 dark:bg-zinc-900/50 dark:shadow-[0_22px_64px_-36px_rgba(2,6,23,0.85)];
+    border: var(--profile-rule-subtle);
+    box-shadow: none;
   }
 
+  .expressive-code .frame {
+    --ec-frm-edBg: var(--lt-color-neutral-surface);
+  }
+
+  .starlight-aside {
+    border-inline-start-width: var(--lt-spacing-1);
+  }
+
+  /* Block quote: a rule in the accent colour and the data face, like an excerpt. */
+  .sl-markdown-content blockquote:not(.not-content, .not-content *) {
+    border-inline-start: var(--lt-spacing-0-5) solid var(--lt-color-accent-fill);
+    padding-inline-start: var(--lt-spacing-4);
+    color: var(--lt-color-neutral-text);
+  }
+
+  /*
+   * Tables scroll sideways rather than breaking code in the middle of a tag.
+   * The scroll container is put around every table by rehype-table-scroll.mjs,
+   * and it is what carries the frame. The table itself must not clip
+   * anything: if it does, the columns beyond the edge are gone with no way
+   * back.
+   */
+  .sl-markdown-content .table-scroll {
+    max-inline-size: 100%;
+    overflow-x: auto;
+    background-color: var(--lt-color-neutral-canvas);
+  }
+
+  .sl-markdown-content .table-scroll:focus-visible {
+    outline: var(--lt-focus-ring, 2px solid var(--lt-color-accent-fill));
+    outline-offset: 2px;
+  }
+
+  .sl-markdown-content .table-scroll table {
+    display: table;
+    inline-size: 100%;
+    margin-block: 0;
+    overflow: visible;
+  }
+
+  /* A shadow at the edge with more table behind it. The attributes are set by
+     MarkdownContent.astro. The background stays put while the content
+     scrolls, so the shadow stays at the edge. */
+  .sl-markdown-content .table-scroll {
+    --table-shadow: rgb(0 0 0 / 0.16);
+
+    background-repeat: no-repeat;
+    background-size: 1.5rem 100%;
+  }
+
+  :root[data-theme="dark"] .sl-markdown-content .table-scroll {
+    --table-shadow: rgb(0 0 0 / 0.5);
+  }
+
+  .sl-markdown-content .table-scroll[data-more-right] {
+    background-image: linear-gradient(
+      to left,
+      var(--table-shadow),
+      transparent
+    );
+    background-position: right;
+  }
+
+  .sl-markdown-content .table-scroll[data-more-left] {
+    background-image: linear-gradient(
+      to right,
+      var(--table-shadow),
+      transparent
+    );
+    background-position: left;
+  }
+
+  .sl-markdown-content .table-scroll[data-more-left][data-more-right] {
+    background-image:
+      linear-gradient(to right, var(--table-shadow), transparent),
+      linear-gradient(to left, var(--table-shadow), transparent);
+    background-position: left, right;
+  }
+
+  /* Code in a cell stays on one line. It is the table that scrolls. */
+  .sl-markdown-content :is(td, th) code:not(.not-content *) {
+    white-space: nowrap;
+  }
+
+  /* The table head is a row of labels in the data face. */
   .sl-markdown-content table:not(.not-content, .not-content *) :is(th, td) {
-    @apply px-4 py-3 align-top;
+    padding: var(--lt-spacing-3) var(--lt-spacing-4);
+    vertical-align: top;
   }
 
   .sl-markdown-content table:not(.not-content, .not-content *) th {
-    @apply border-b border-zinc-200/80 text-sm font-semibold text-zinc-900 dark:border-zinc-700/80 dark:text-zinc-100;
+    border-bottom: var(--profile-rule);
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-xxs);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lt-color-neutral-text-subtle);
   }
 
   .sl-markdown-content table:not(.not-content, .not-content *) td {
-    @apply border-t border-zinc-200/60 text-zinc-700 dark:border-zinc-700/60 dark:text-zinc-300;
+    border-top: var(--profile-rule-subtle);
+    color: var(--lt-color-neutral-text);
   }
 
+  .sl-markdown-content table:not(.not-content, .not-content *) tr:nth-child(2n) {
+    background: transparent;
+  }
+
+  /* Previous and next: two boxes with a rule around them, like the rest. */
   .pagination-links a {
-    @apply rounded-2xl border border-zinc-200/80 bg-white/88 px-5 py-4 transition-colors hover:border-sky-300 hover:bg-white dark:border-zinc-800/80 dark:bg-zinc-900/72 dark:hover:border-sky-500 dark:hover:bg-zinc-900;
+    border: var(--profile-rule-subtle);
+    background: var(--lt-color-neutral-canvas);
+    box-shadow: none;
+    transition: border-color 120ms;
+  }
+
+  .pagination-links a:hover {
+    border-color: var(--lt-color-accent-fill);
+  }
+
+  .pagination-links a .link-title {
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-m);
+  }
+
+  /* The skip link uses the data face. */
+  .sl-flex a[href="#_top"] {
+    font-family: var(--profile-font-data);
   }
 }

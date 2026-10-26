@@ -1,0 +1,53 @@
+---
+/**
+ * A short quotation at the head of a page or a section, with the one who said
+ * it under it.
+ *
+ * It is attributed, so it is a blockquote in a figure with the source as the
+ * caption. It is not part of what the page teaches, so the Markdown version
+ * of the page leaves it out (see `NOISE` in `src/plugins/markdown-pages.mjs`),
+ * and an agent reading that never meets it.
+ */
+interface Props {
+  /** Who said it. */
+  source: string
+}
+
+const { source } = Astro.props
+---
+
+<figure class="epigraph not-content">
+  <blockquote>
+    <slot />
+  </blockquote>
+  <figcaption>{source}</figcaption>
+</figure>
+
+<style>
+  .epigraph {
+    margin: var(--lt-spacing-6) 0;
+    max-inline-size: 36rem;
+  }
+
+  .epigraph blockquote {
+    margin: 0;
+    padding-inline-start: var(--lt-spacing-4);
+    border-inline-start: var(--lt-spacing-0-5) solid var(--lt-color-accent-fill);
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-s);
+    line-height: var(--lt-line-height-article);
+    color: var(--lt-color-neutral-text);
+  }
+
+  .epigraph blockquote :global(p) {
+    margin: 0;
+  }
+
+  .epigraph figcaption {
+    margin: var(--lt-spacing-2) 0 0 var(--lt-spacing-4);
+    font-family: var(--profile-font-data);
+    font-size: var(--lt-font-size-xs);
+    letter-spacing: 0.04em;
+    color: var(--lt-color-neutral-text-subtle);
+  }
+</style>

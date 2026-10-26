@@ -1,0 +1,234 @@
+/*
+ * The visual language the documentation shares with sobernetics.no: a
+ * printed manual from the future as it was imagined in 1990. The typefaces,
+ * the grain in the paper, the wordmark, the plates and the register rule are
+ * here, and both the front page and the Starlight pages read them. The
+ * colours come from LO-TEK's own tokens, so the site shows the system in the
+ * system's own colours.
+ *
+ * The file has no layer declaration of its own. `global.css` puts it in the
+ * `components` layer, and the front page imports it directly, without a
+ * layer.
+ */
+
+:root {
+  /*
+   * Michroma descends from Eurostile, the typeface the manuals and rulebooks
+   * of 1990 set their headings in. It comes in one weight, and a synthetic
+   * bold smears the square curves that are the whole point. The weight comes
+   * from the size.
+   */
+  --profile-font-name: "Michroma", ui-sans-serif, system-ui, sans-serif;
+  /* The data: labels, numbers, code and everything meant to read as a printout. */
+  --profile-font-data: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+  /*
+   * The body text. Michroma is a name plate and not a reading face, and long
+   * pages in monospace wear on anyone who reads slowly. The grotesque is the
+   * one the presentation on the architecture uses, with no web font and no
+   * extra request.
+   */
+  --profile-font-text: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  --profile-rule: var(--lt-spacing-px) solid var(--lt-color-neutral-border);
+  --profile-rule-subtle: var(--lt-spacing-px) solid
+    var(--lt-color-neutral-border-subtle);
+  --profile-rule-strong: var(--lt-spacing-px) solid
+    var(--lt-color-neutral-border-strong);
+}
+
+/*
+ * The grain. Print has texture in the paper and a flat screen has none, so
+ * the page lays a scanned photocopy under everything.
+ *
+ * The layer sits BEHIND the content, never over it. A layer on top would
+ * blend with the type as much as with the paper and quietly take contrast
+ * from every word. Behind the content it touches only the surface, and the
+ * contrast the text has against the surface is the one the tokens promise.
+ * The tile and the opacity are the ones sobernetics.no uses, so the two
+ * sites are printed on the same paper. The opacity is low on purpose: at
+ * 0.25 the light surface settles around 241 of 255, which takes a little of
+ * every text colour's margin and none of its pass.
+ *
+ * The tile is light paper with dark toner, which is what the light theme
+ * wants. The dark theme inverts it, so the specks become light on dark
+ * rather than invisible.
+ *
+ * `position: absolute` and not `fixed`. A blending layer over the whole
+ * window has to be repainted for every scrolled line, and paper does not
+ * stand still while the words slide over it.
+ *
+ * Only the front page is on paper for now. The documentation pages stand on
+ * the flat surface.
+ */
+.profile-grain {
+  position: relative;
+  isolation: isolate;
+}
+
+.profile-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("/grain.webp");
+  background-repeat: repeat;
+  background-size: 384px 384px;
+  mix-blend-mode: multiply;
+  opacity: 0.25;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .profile-grain::before {
+    filter: invert(1);
+    mix-blend-mode: screen;
+    opacity: 0.14;
+  }
+}
+
+:root[data-theme="dark"] .profile-grain::before {
+  filter: invert(1);
+  mix-blend-mode: screen;
+  opacity: 0.14;
+}
+
+/* Texture is the first thing to go when someone has asked for more contrast,
+   and it is not worth a byte to someone who has asked for less data. */
+@media (prefers-contrast: more), (prefers-reduced-data: reduce), print {
+  .profile-grain::before {
+    display: none;
+  }
+}
+
+/* The wordmark. The name in capitals, without tracking: Michroma is wide enough. */
+.profile-name {
+  font-family: var(--profile-font-name);
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* A label in the printout: small, capitals, tracked, in the data face. */
+.profile-label {
+  font-family: var(--profile-font-data);
+  font-size: var(--lt-font-size-xxs);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lt-color-neutral-text-subtle);
+}
+
+/*
+ * The register rule: a line with a mark in the accent colour at the front,
+ * the way a printed sheet carries its register mark. Pure decoration, pure
+ * CSS, nothing for a screen reader to trip over.
+ */
+.profile-register {
+  display: block;
+  height: var(--lt-spacing-0-5);
+  background: linear-gradient(
+    to right,
+    var(--lt-color-accent-fill) 0 3.5rem,
+    var(--lt-color-neutral-border-strong) 3.5rem
+  );
+}
+
+/*
+ * The plate. A strip of ink with the type knocked out of it, the corners cut
+ * at 45 degrees. It does structural work: it says what the list below holds,
+ * and how many there are.
+ */
+.profile-plate {
+  --profile-chamfer: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: var(--lt-spacing-4);
+  margin: 0;
+  padding: var(--lt-spacing-2) var(--lt-spacing-4);
+  background: var(--lt-color-neutral-text-strong);
+  color: var(--lt-color-neutral-canvas);
+  font-family: var(--profile-font-data);
+  font-size: var(--lt-font-size-s);
+  font-weight: 500;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--profile-chamfer)) 0,
+    100% var(--profile-chamfer),
+    100% 100%,
+    var(--profile-chamfer) 100%,
+    0 calc(100% - var(--profile-chamfer))
+  );
+}
+
+/* The mark at the front is a block and not a character, so it carries no
+   meaning anyone needs read out. */
+.profile-plate::before {
+  content: "";
+  flex: none;
+  width: 0.6em;
+  height: 0.6em;
+  background: var(--lt-color-accent-fill);
+}
+
+.profile-plate__title {
+  flex: 1;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.profile-plate__count {
+  margin: 0;
+  font-size: var(--lt-font-size-xxs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: inherit;
+}
+
+/*
+ * The register: a listing with labels in the left column and values in the
+ * right. Two real columns, not a row that wraps: when a value wraps, each
+ * line stays in its column, and the labels keep their edge.
+ */
+.profile-register-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--lt-spacing-4);
+  row-gap: var(--lt-spacing-1);
+  margin: 0;
+  font-family: var(--profile-font-data);
+  font-size: var(--lt-font-size-xs);
+}
+
+.profile-register-list dt {
+  grid-column: 1;
+  color: var(--lt-color-neutral-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.profile-register-list dd {
+  grid-column: 2;
+  min-width: 0;
+  margin: 0;
+  color: var(--lt-color-neutral-text);
+  overflow-wrap: anywhere;
+}
+
+/* Motion is switched off, not shortened to nothing: a transition that
+   carries layout stays at its start value with a duration of zero. */
+@media (prefers-reduced-motion: reduce) {
+  .profile-grain *,
+  .profile-grain *::before,
+  .profile-grain *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
