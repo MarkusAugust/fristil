@@ -223,7 +223,9 @@
   .sidebar-content summary {
     padding: var(--lt-spacing-1-5, 0.375rem) var(--lt-spacing-2);
     font-size: var(--lt-font-size-xs);
-    transition: color 120ms, background-color 120ms;
+    transition:
+      color 120ms,
+      background-color 120ms;
   }
 
   .sidebar-content a {
@@ -261,7 +263,8 @@
 
   @media (min-width: 50rem) {
     .main-pane {
-      padding: var(--lt-spacing-8) var(--lt-spacing-6) var(--lt-spacing-14, 3.5rem);
+      padding: var(--lt-spacing-8) var(--lt-spacing-6)
+        var(--lt-spacing-14, 3.5rem);
     }
   }
 
@@ -314,7 +317,8 @@
   .main-pane main > .content-panel:first-child h1 {
     margin-top: 0;
     padding-bottom: var(--lt-spacing-4);
-    background: linear-gradient(
+    background:
+      linear-gradient(
         to right,
         var(--lt-color-accent-fill) 0 3.5rem,
         var(--lt-color-neutral-border-strong) 3.5rem
@@ -503,7 +507,9 @@
     color: var(--lt-color-neutral-text);
   }
 
-  .sl-markdown-content table:not(.not-content, .not-content *) tr:nth-child(2n) {
+  .sl-markdown-content
+    table:not(.not-content, .not-content *)
+    tr:nth-child(2n) {
     background: transparent;
   }
 

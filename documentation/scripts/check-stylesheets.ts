@@ -163,10 +163,11 @@ const findings: string[] = []
  * built page.
  *
  * It is the addresses that are collected, not the count. A number alone
- * tolerates one page dropping out and another coming in, and `dist` has one
- * HTML file more than the source anyway, since Starlight writes `404.html`,
- * which no source corresponds to. With the addresses the guard says which
- * page is missing.
+ * tolerates one page dropping out and another coming in. With the addresses
+ * the guard says which page is missing.
+ *
+ * `404.mdx` is the one document that is not built to its own folder:
+ * Starlight writes it as `404.html`.
  */
 const expected = new Set<string>()
 for (const rel of new Glob(
@@ -178,7 +179,7 @@ for (const rel of new Glob(
   // `components/index.mdx` is built to `components/index.html`, not to
   // `components/index/index.html`: the file is the folder's own index.
   expected.add(
-    slug.endsWith("/index") || slug === "index"
+    slug.endsWith("/index") || slug === "index" || slug === "404"
       ? `${slug}.html`
       : `${slug}/index.html`,
   )

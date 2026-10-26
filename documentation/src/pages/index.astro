@@ -4,12 +4,12 @@ import "@lo-tek/interfaces/button.css"
 import "@lo-tek/interfaces/tag.css"
 import "@lo-tek/interfaces/sr-only.css"
 import "../styles/profile.css"
+import pkg from "../../../interfaces/package.json" with { type: "json" }
+import sobernetics from "../assets/sobernetics.svg?raw"
 import Logo from "../components/Logo.astro"
 import Plate from "../components/Plate.astro"
 import VersionBadge from "../components/VersionBadge.astro"
-import sobernetics from "../assets/sobernetics.svg?raw"
 import { metaAttributes, SHARE_IMAGE } from "../share-image.mjs"
-import pkg from "../../../interfaces/package.json" with { type: "json" }
 
 const title = "LO-TEK Interfaces"
 const description =
@@ -42,7 +42,11 @@ const CATEGORIES = [
 ]
 
 // The three lines the firm signs, above the facts in the register.
-const GRADE = ["Reads on any screen.", "Survives any patch.", "Says when it’s broken."]
+const GRADE = [
+  "Reads on any screen.",
+  "Survives any patch.",
+  "Says when it’s broken.",
+]
 ---
 
 <!DOCTYPE html>

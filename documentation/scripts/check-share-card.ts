@@ -80,15 +80,18 @@ const REQUIREMENTS: [string, string, (value: string) => boolean][] = [
  * The expected count comes from the source, not from the glob over `dist`:
  * one page per document under `src/content/docs`, one per `.astro` page in
  * `src/pages` apart from the demos (the front page and the changelog), plus
- * the 404 page Starlight makes itself. If it only counted what the glob
- * found, a page missing from the build would never be missed.
+ * the 404 page. If it only counted what the glob found, a page missing from
+ * the build would never be missed.
+ *
+ * `404.mdx` is a document, but it becomes `404.html` rather than a page of
+ * its own, so it is counted as the 404 page and not twice.
  */
 const expected =
   [
     ...new Glob("**/*.{md,mdx}").scanSync(
       `${ROOT}documentation/src/content/docs`,
     ),
-  ].length +
+  ].filter((rel) => !/^404\.mdx?$/.test(rel)).length +
   [...new Glob("**/*.astro").scanSync(`${ROOT}documentation/src/pages`)].filter(
     (rel) => !rel.startsWith("demo/"),
   ).length +

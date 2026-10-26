@@ -20,8 +20,8 @@
    */
   --profile-font-name: "Michroma", ui-sans-serif, system-ui, sans-serif;
   /* The data: labels, numbers, code and everything meant to read as a printout. */
-  --profile-font-data: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo,
-    monospace;
+  --profile-font-data:
+    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   /*
    * The body text. Michroma is a name plate and not a reading face, and long
    * pages in monospace wear on anyone who reads slowly. The grotesque is the
@@ -218,17 +218,4 @@
   margin: 0;
   color: var(--lt-color-neutral-text);
   overflow-wrap: anywhere;
-}
-
-/* Motion is switched off, not shortened to nothing: a transition that
-   carries layout stays at its start value with a duration of zero. */
-@media (prefers-reduced-motion: reduce) {
-  .profile-grain *,
-  .profile-grain *::before,
-  .profile-grain *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
-  }
 }
