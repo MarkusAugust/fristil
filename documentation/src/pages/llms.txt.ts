@@ -61,13 +61,13 @@ const RULES = `Four mistakes account for almost everything that goes wrong. They
    unstyled, and the answer is to load it, never to write your own CSS to make
    them look right.
 2. Only the classes and elements that exist, exist. \`lt-modal\`,
-   \`lt-datepicker\` and \`data-variant="outline"\` belong to other design
+   \`lt-datepicker\` and \`data-variant="outlined"\` belong to other design
    systems. The full list is in every rulebook.
 3. No hard-coded colours or pixels. \`var(--lt-color-…)\` and
    \`var(--lt-spacing-…)\`.
 4. Web components are registered once with \`defineLt*()\`, and a boolean
-   attribute is true as long as it is there: \`invalid="false"\` makes the
-   field invalid. The attribute has to be removed, not set to \`false\`.
+   attribute is true as long as it is there: \`hidden="false"\` still hides
+   the error text. The attribute has to be removed, not set to \`false\`.
 
 Check the markup when you are done, and fix what it reports:
 
@@ -135,7 +135,7 @@ export const GET: APIRoute = async () => {
     `Each rulebook is complete for its environment. If the package is
 installed, the same files are in
 \`node_modules/@lo-tek/interfaces/agent/\`, and \`npx @lo-tek/interfaces agent\`
-writes the one that fits this project.`,
+prints the one that fits this project.`,
     section("Guides", guides),
     section("Patterns", patterns),
     section("Components", components),

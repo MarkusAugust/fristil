@@ -496,7 +496,7 @@ pub fn run(arguments: &[String]) {
     let Some(component) = name.and_then(|n| all_components.iter().find(|c| c.name == n)) else {
         let all: Vec<&str> = all_components.iter().map(|c| c.name.as_str()).collect();
         fail(&format!(
-            "{}Usage: lotek takeover <component> [--out=<folder>]\nFull overview: lotek --help\n\nComponents:\n  {}\n",
+            "{}Usage: lotek takeover <component> [--out=<folder>] [--overwrite=yes]\nFull overview: lotek --help\n\nComponents:\n  {}\n",
             name.map_or(String::new(), |n| format!("No component is called \"{n}\".\n\n")),
             all.join(", ")
         ));

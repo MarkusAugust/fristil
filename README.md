@@ -4,7 +4,7 @@ LO-TEK is a framework-agnostic design system for the web. The components are CSS
 
 **If you want to use LO-TEK in an app, everything is in the [documentation](https://lo-tek.sobernetics.no/).** It covers installation, the component pages, tokens, customising, the Tailwind setup and examples for plain HTML, React, Astro and Datastar. This file is about working on LO-TEK, not about using it.
 
-**Coding agents** find the rules at [lo-tek.sobernetics.no/llms.txt](https://lo-tek.sobernetics.no/llms.txt), with one rulebook per environment under [`/agent/`](https://lo-tek.sobernetics.no/coding-agents/). The same rulebooks ship in the package, in `node_modules/@lo-tek/interfaces/agent/`.
+**Coding agents** find the rules at [lo-tek.sobernetics.no/llms.txt](https://lo-tek.sobernetics.no/llms.txt), with one rulebook per environment under [`/coding-agents/`](https://lo-tek.sobernetics.no/coding-agents/). The same rulebooks ship in the package, in `node_modules/@lo-tek/interfaces/agent/`.
 
 ## Status
 
@@ -22,13 +22,16 @@ the plans are written down, so the README and the documentation cannot disagree.
 
 ## The repository
 
-A Bun monorepo with three workspaces, and one Gradle project alongside:
+A Bun monorepo with three workspaces, a Cargo workspace for the Rust code, and two Gradle projects alongside:
 
-| Workspace | Package | Contents |
+| Folder | Package | Contents |
 | --- | --- | --- |
 | `interfaces/` | `@lo-tek/interfaces` | tokens, CSS components, web components, the theme generator |
 | `documentation/` | `@lo-tek/documentation` | Astro 6 + Starlight, the demos and the checks of them |
-| `editor/` | `interfaces` | the VS Code extension: completion, snippets and diagnostics |
+| `vscode/` | `vscode` | the VS Code extension: completion, snippets and diagnostics |
+| `core/` | `lotek-core`, a Cargo crate | the check and the theme generator in Rust, compiled to WebAssembly |
+| `cli/` | `lotek`, a Cargo crate | the command line, `lotek` |
+| `kotlin/` | not a bun workspace | LO-TEK for Kotlin and Java, built with Gradle |
 | `intellij/` | not a bun workspace | the IntelliJ plugin, built with Gradle |
 
 The components live under `interfaces/src/components/`, split into three categories by who creates the markup and whether a web component adds behaviour to it:
@@ -73,7 +76,7 @@ The browsers are installed with `bun --filter @lo-tek/interfaces browsers`.
 3. Export from `interfaces/src/index.ts` if it belongs in `lt`.
 4. Add the builder function to `interfaces/src/react.ts`, with the React names of the attributes.
 5. Declare the element and its properties in `interfaces/src/jsx/react.ts`.
-6. Add the stylesheet to `STILARK` in `documentation/src/components/Preview.astro`, otherwise the styles are missing from the examples.
+6. Add the stylesheet to `STYLESHEETS` in `documentation/src/components/Preview.astro`, otherwise the styles are missing from the examples.
 7. Write the component page under `documentation/src/content/docs/components/` and add it to the sidebar in `documentation/astro.config.mjs`.
 
 Steps 4 and 5 are not optional: `react.browser.test.ts` requires every function in `lt` to exist in `/react`, and a test reads `static observedAttributes` from the components and requires every attribute to be declared for JSX.
@@ -133,23 +136,23 @@ Every component also has an accessibility test that runs axe against WCAG 2.1 le
 
 ```ts
 import {
-	forventIngenTilgjengelighetsbrudd,
-	monter,
-	ventPaTegning,
+	expectNoAccessibilityViolations,
+	mount,
+	waitForPaint,
 } from "../../../testing/a11y"
 
 it("has enough contrast in every variant", async () => {
-	monter(`
+	mount(`
 		<span class="lt-my-component">Content</span>
 		<span class="lt-my-component" data-variant="primary">Content</span>
 	`)
 
-	await ventPaTegning()
-	await forventIngenTilgjengelighetsbrudd()
+	await waitForPaint()
+	await expectNoAccessibilityViolations()
 })
 ```
 
-`monter` sets up a surface with the design system's page colours. That part is not decoration: axe computes contrast by searching upwards for a background colour, and if it finds none, it reports "incomplete" instead of giving an answer.
+`mount` sets up a surface with the design system's page colours. That part is not decoration: axe computes contrast by searching upwards for a background colour, and if it finds none, it reports "incomplete" instead of giving an answer.
 
 Write the markup the way the component will actually be used, with a label on the field and text in the badge. If you test markup nobody would write, you test nothing. Axe catches contrast, missing labels and wrong use of `aria-*`. It does not catch focus handling, so if the component moves focus, that needs its own test.
 

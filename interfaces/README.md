@@ -6,7 +6,7 @@ A framework-agnostic design system for the web: tokens, CSS components and web c
 
 The full documentation, with component pages, tokens, patterns and examples for four environments, is at **[lo-tek.sobernetics.no](https://lo-tek.sobernetics.no/)**.
 
-**Coding agents** find the rules at [lo-tek.sobernetics.no/llms.txt](https://lo-tek.sobernetics.no/llms.txt), with one rulebook per environment under [`/agent/`](https://lo-tek.sobernetics.no/coding-agents/). The same rulebooks ship in the package, in `node_modules/@lo-tek/interfaces/agent/`.
+**Coding agents** find the rules at [lo-tek.sobernetics.no/llms.txt](https://lo-tek.sobernetics.no/llms.txt), with one rulebook per environment, described under [Coding agents](https://lo-tek.sobernetics.no/coding-agents/). The same rulebooks ship in the package, in `node_modules/@lo-tek/interfaces/agent/`.
 
 ## Installation
 

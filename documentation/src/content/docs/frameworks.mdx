@@ -15,7 +15,7 @@ Three things apply everywhere:
 2. **Boolean attributes are true as long as they exist.** `invalid="false"` makes the field invalid. If the attribute should go, it must be removed entirely.
 3. **The server writes the markup, the component attaches behaviour.** See [Markup and behaviour](../markup-and-behaviour/) for why, and what it means in each environment.
 
-React also has `@lo-tek/interfaces/react`, which gives `className` and `htmlFor`. Without it, React writes "Invalid DOM property" in the console for every element. The others use the HTML names directly.
+React also has `@lo-tek/interfaces/react`, which gives `className` and `htmlFor`. Without it, React writes "Invalid DOM property" in the console, once for `class` and once for `for`. The others use the HTML names directly.
 
 ## Plain HTML
 

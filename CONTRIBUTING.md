@@ -201,7 +201,7 @@ bun run tag extension
 The tag starts `.github/workflows/publish-extension.yml`. Marketplace has
 no OIDC, so the workflow needs the secret `VSCE_PAT`: a personal
 token from Azure DevOps with the scope "Marketplace: Manage", created by whoever
-controls the publisher `lotek` on marketplace.visualstudio.com. The publisher has to
+controls the publisher `lo-tek` on marketplace.visualstudio.com. The publisher has to
 be created there before the first release.
 
 The IntelliJ plugin has its number in `intellij/gradle.properties` and

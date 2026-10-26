@@ -2,7 +2,7 @@
     <!-- The ID can never be changed after the first upload to Marketplace. -->
     <id>no.lotek</id>
     <name>LO-TEK for IntelliJ</name>
-    <vendor email="m.a.sobergklyver@gmail.com" url="https://github.com/MarkusAugust/lo-tek">MarkusAugust</vendor>
+    <vendor email="m.a.sobergklyver@gmail.com" url="https://github.com/MarkusAugust/lo-tek">LO-TEK</vendor>
 
     <!-- Marketplace requires English as the main language of the description. -->
     <description><![CDATA[

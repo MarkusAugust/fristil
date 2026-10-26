@@ -182,11 +182,12 @@ root element:
 </div>
 ```
 
-Below the root element the browser ignores CSS without a layer, within the
-specificity below, and LO-TEK's layer applies again. The rule is in
-`lotek.css` and in `@lo-tek/interfaces/boundary.css`. Fonts and other
-inherited properties still come from the host, and the `--lt-*` variables
-work. Three things follow from it:
+Below the root element the browser then ignores the host's CSS without a
+layer, unless a rule of the host's wins on specificity as described below, and
+LO-TEK's layer applies again. The rule is in `lotek.css` and in
+`@lo-tek/interfaces/boundary.css`. Fonts and other inherited properties still
+come from the host, and the `--lt-*` variables work. Three things follow from
+it:
 
 - Your own CSS inside the boundary must be in a layer after `lotek`. CSS
   without a layer disappears there in the same way as the host's.
@@ -198,15 +199,16 @@ work. Three things follow from it:
   always wins. So do `!important` and layers the host has declared after
   `lotek`.
 
-LO-TEK does **not** set `color-scheme` on `:root`. The property controls the
+LO-TEK sets `color-scheme` only where someone has chosen a theme: on
+`[data-theme="light"]`, on `[data-theme="dark"]` and on the options of the
+theme picker below. Bare `:root` never gets it. The property controls the
 browser's own surfaces, that is, scrollbars, dropdowns and calendar panels,
 and it is inherited. A child can opt out with `color-scheme: normal`, but that
 is a counter-rule the host never asked to have to write: with the value on the
 root, it applied to the whole document, including where the package is only a
 guest. If the whole page should follow the system, write
 `color-scheme: light dark` on `<html>` yourself, in the same way as you set
-the layer order yourself. The exception is the theme picker below: when you
-use it, each option sets `color-scheme` itself.
+the layer order yourself.
 
 ### Letting the user choose a theme
 
@@ -407,8 +409,8 @@ const findings = diagnosePage(html)
 | Symptom | Cause |
 | --- | --- |
 | The styles are missing | `tokens.css` is not loaded. The order between it and the component's stylesheet does not matter |
-| An `<lt-toast>` or `<lt-connection-status>` shows nothing, an `<lt-session-timeout>` never warns, or another component does nothing | The `define` function has not run. `<lt-toast>` and `<lt-connection-status>` create their content themselves and are empty without it, and `<lt-session-timeout>` does not count the time. The markup in the others comes from you and is there regardless, except that `<lt-tabs>` shows only one panel, the one the URL points to or the first, and `<lt-suggestion>` hides the list until they are registered |
-| A component speaks English on a page in another language | The text in the markup comes from you, and is written with the app's own translation setup. The few default texts the package has are replaced with `label` and `close-label` on `<lt-toast>`, `offline-text` and `online-text` on `<lt-connection-status>`, `count-none`, `count-one` and `count-other` on `<lt-suggestion>`, and `--lt-label-required-text`, `--lt-label-optional-text` and `--lt-label-required-symbol` in CSS. Numbers and durations follow `lang` on `<html>`. See https://lo-tek.sobernetics.no/translation/ |
+| An `<lt-toast>` or `<lt-connection-status>` shows nothing, an `<lt-session-timeout>` never warns, or another component does nothing | The `define` function has not run. `<lt-toast>` and `<lt-connection-status>` create their content themselves and are empty without it, and `<lt-session-timeout>` does not count the time. The markup in the others comes from you and is there regardless, with two exceptions until they are registered. `<lt-tabs>` shows one panel: of those the server left without `hidden`, the one the URL points to, otherwise the first, and under `server-controlled` always the first. `<lt-suggestion>` hides the list |
+| A component speaks English on a page in another language | The text in the markup comes from you, and is written with the app's own translation setup. The few default texts the package has are replaced with `label` and `close-label` on `<lt-toast>`, `offline-text` and `online-text` on `<lt-connection-status>`, `count-none`, `count-one` and `count-other` on `<lt-suggestion>`, and `--lt-label-required-text`, `--lt-label-optional-text` and `--lt-label-required-symbol` in CSS. Numbers and durations follow the nearest `lang`, usually the one on `<html>`. See https://lo-tek.sobernetics.no/translation/ |
 | The error text never shows, and the field counts as valid | `hidden="false"` is set on the error text, and it hides it all the same. The attribute must be removed, not set to `false` |
 | The component does nothing, and nothing says so | The registration runs only on the server, where it does nothing. It must also run in the browser |
 
@@ -416,8 +418,12 @@ const findings = diagnosePage(html)
 
 The components are customised with tokens and `--lt-` variables. If that is
 not enough, `npx @lo-tek/interfaces takeover <component>` copies the source
-code of one component into the project, so the code is yours to change. A
-complete colour theme from your brand colours is made with
+code of one component into `src/lotek/<component>/`, so the code is yours to
+change. The copy is TypeScript that imports from the package by name, so it
+needs a build step. It is renamed from `lt-` to `app-`, and a
+`lotek-manifest.json` next to it teaches the check the new names:
+`npx @lo-tek/interfaces check --manifest=src/lotek/<component>/lotek-manifest.json <files>`.
+A complete colour theme from your brand colours is made with
 `npx @lo-tek/interfaces theme`.
 
 All of this, with live examples: https://lo-tek.sobernetics.no/

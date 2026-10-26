@@ -58,29 +58,16 @@ intellijPlatform {
         // Shown on the Marketplace and in the IDE on update, and must be in
         // English like the description. Write a new line for each version.
         changeNotes = """
-            <b>0.4.0</b>: Live templates for every web component, generated from the
-            same recipes as the VS Code snippets, with the id as a variable that
-            <code>for</code> and <code>href</code> follow. Ten new diagnostics about
-            the wiring a template has to write itself: a label not linked to its
-            field, a popover panel without an id, a tab without a panel, a tab row
-            without a name, and the attributes removed from
-            <code>&lt;lt-field&gt;</code>, among others. A quick fix can now make
-            several edits at once, such as the field's id and the label's
-            <code>for</code>.<br>
-            <b>0.3.0</b>: Diagnostics from LO-TEK's checker, in HTML files and in
-            HTML injected into strings, with quick fixes. The checker is written in
-            Rust and runs inside the IDE as WebAssembly, without Node.js. It checks
-            against the project's own manifest when it finds one, as the language
-            server does, so components taken over with <code>lotek overta</code>
-            are known. Completion reads the same manifest, so it suggests those
-            components too and never a class the checker rejects. Files without a
-            LO-TEK class are checked as well, for the rules that apply to plain
-            HTML, such as an icon button without a name.<br>
-            <b>0.2.0</b>: Completion for <code>lt-table__sort</code>, the sort button
-            in a table header. The session timeout is now described as a frame
-            component, and the plugin has the new LO-TEK icon.<br>
-            <b>0.1.0</b>: First release. Completion for LO-TEK's CSS classes in
-            HTML files and in HTML injected into strings.
+            <b>0.4.0</b>: The first version under this name. It takes over from the
+            earlier plugin, and the history starts here. Completion of LO-TEK's CSS
+            classes in HTML files and in HTML injected into strings, and diagnostics
+            from LO-TEK's checker, with quick fixes. The checker is written in Rust
+            and runs inside the IDE as WebAssembly, without Node.js. It checks
+            against the project's own manifest when it finds one, so components
+            taken over with <code>lotek takeover</code> are known, and completion
+            reads the same manifest. Live templates insert each component's markup
+            from the documentation, with the id as a variable that
+            <code>for</code> and <code>href</code> follow.
         """.trimIndent()
         ideaVersion {
             sinceBuild = providers.gradleProperty("sinceBuild")

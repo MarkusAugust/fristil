@@ -184,11 +184,12 @@ root element:
 </div>
 ```
 
-Below the root element the browser ignores CSS without a layer, within the
-specificity below, and LO-TEK's layer applies again. The rule is in
-`lotek.css` and in `@lo-tek/interfaces/boundary.css`. Fonts and other
-inherited properties still come from the host, and the `--lt-*` variables
-work. Three things follow from it:
+Below the root element the browser then ignores the host's CSS without a
+layer, unless a rule of the host's wins on specificity as described below, and
+LO-TEK's layer applies again. The rule is in `lotek.css` and in
+`https://cdn.jsdelivr.net/npm/@lo-tek/interfaces@0.36.0/src/tokens/boundary.css`.
+Fonts and other inherited properties still come from the host, and the
+`--lt-*` variables work. Three things follow from it:
 
 - Your own CSS inside the boundary must be in a layer after `lotek`. CSS
   without a layer disappears there in the same way as the host's.
@@ -200,15 +201,16 @@ work. Three things follow from it:
   always wins. So do `!important` and layers the host has declared after
   `lotek`.
 
-LO-TEK does **not** set `color-scheme` on `:root`. The property controls the
+LO-TEK sets `color-scheme` only where someone has chosen a theme: on
+`[data-theme="light"]`, on `[data-theme="dark"]` and on the options of the
+theme picker below. Bare `:root` never gets it. The property controls the
 browser's own surfaces, that is, scrollbars, dropdowns and calendar panels,
 and it is inherited. A child can opt out with `color-scheme: normal`, but that
 is a counter-rule the host never asked to have to write: with the value on the
 root, it applied to the whole document, including where the package is only a
 guest. If the whole page should follow the system, write
 `color-scheme: light dark` on `<html>` yourself, in the same way as you set
-the layer order yourself. The exception is the theme picker below: when you
-use it, each option sets `color-scheme` itself.
+the layer order yourself.
 
 ### Letting the user choose a theme
 
@@ -339,14 +341,15 @@ back when a patch tears the selection away. The template needs nothing for
 that.
 
 This assumes the patch keeps the elements and only changes the attributes, as
-a morph does: Datastar's `outer`, htmx with the idiomorph extension and Turbo
-8 with morphing. The selection is tied to the link itself. If the patch
-replaces the nodes, as `innerHTML`, htmx's ordinary `innerHTML` and
-`outerHTML` swaps and Turbo without morphing do, the tab is a different one,
-and the component selects the one the URL points to, otherwise the one the
-server hid the other panels for, otherwise the first. If the server wants to
-decide, it writes `hidden="until-found"` on the other panels, or decides the
-state alone with `server-controlled`.
+a morph does: Datastar's `outer` and `inner`, htmx with the idiomorph
+extension and Turbo 8 with morphing. The selection is tied to the link itself.
+If the patch replaces the nodes, as `innerHTML`, htmx's ordinary `innerHTML`
+and `outerHTML` swaps, Datastar's `replace` and Turbo without morphing do, the
+tab is a different one. The component then selects the tab the server marked
+with `aria-selected="true"`, otherwise the one the URL points to, otherwise
+the one whose panel the server left without `hidden`, otherwise the first. If
+the server wants to decide, it marks the tab and writes `hidden="until-found"`
+on the other panels, or decides the state alone with `server-controlled`.
 
 A morph keeps an element only when the id matches: Datastar and idiomorph do
 not morph an element with an id into one without, they replace it. The
@@ -357,8 +360,11 @@ are links without an id, and the panels have the id the link points to, the
 same on every render. The panel in `<lt-popover>` needs an id in the same way,
 for `aria-controls` on the button; the component creates none. The list and
 the options in `<lt-suggestion>` can be replaced; the component wires them
-again and finds the highlighted option again by its text. The component warns
-in the console the first time a patch replaces something the user had touched.
+again and finds the highlighted option again by its text. `<lt-field>` and
+`<lt-suggestion>` warn in the console when a patch replaces the field with one
+that has another id, the same `name` and another value, and `<lt-popover>`
+when a patch replaces the open panel with one that has another id. `<lt-tabs>`
+repairs the selection without a word.
 
 If the server should be able to move the state, as in "go on to step 2", say
 so with `server-controlled`. Then every patch decides, and the component stops
@@ -377,9 +383,10 @@ putting the user's choice back:
 
 The attribute exists on `<lt-tabs>`, `<lt-popover>`, `<lt-dialog>` and
 `<lt-suggestion>`. Without it the server and the component would fight over
-the same state. Note that the state is always in the markup the server sent,
-that is, `aria-selected` on the tab and `hidden` on the panel, not in an
-attribute of its own.
+the same state. Note that the state is always in the markup the server sent:
+`aria-selected` on the tab and `hidden` on the panel in `<lt-tabs>`, `open` on
+`<lt-popover>` and `<lt-dialog>`, and `hidden` on the list and `aria-expanded`
+on the field in `<lt-suggestion>`.
 
 ## 7. The check is the only thing that reads your markup
 
@@ -422,12 +429,13 @@ const findings = diagnosePage(html)
 // findings is empty when the page is correct
 ```
 
-The check is also in the editor as you type. The VS Code extension "LO-TEK"
-gives completion, explanations, error messages and quick fixes in sixteen
-template languages. WebStorm and IntelliJ IDEA Ultimate read `web-types.json`
-from the package without any extension, and the plugin "LO-TEK" from JetBrains
-Marketplace adds the error messages and completion in HTML in a string marked
-with `@Language("HTML")` or `// language=HTML`.
+The check is also in the editor as you type. The VS Code extension "LO-TEK for
+VS Code" gives completion, explanations, error messages and quick fixes in
+sixteen template languages. WebStorm and IntelliJ IDEA Ultimate read
+`web-types.json` from the package without any extension, and the plugin
+"LO-TEK for IntelliJ" from JetBrains Marketplace adds the error messages and
+completion in HTML in a string marked with `@Language("HTML")` or
+`// language=HTML`.
 
 On the JVM without Node there is LO-TEK for Kotlin
 (https://lo-tek.sobernetics.no/kotlin/). `lotek.jar` is the command line as
@@ -442,9 +450,9 @@ newest one there, and never write a `version` you have not seen on Central.
 
 | Symptom | Cause |
 | --- | --- |
-| The styles are missing | `tokens.css` is not loaded. The order between it and the component's stylesheet does not matter |
-| An `<lt-toast>` or `<lt-connection-status>` shows nothing, an `<lt-session-timeout>` never warns, or another component does nothing | The `define` function has not run. `<lt-toast>` and `<lt-connection-status>` create their content themselves and are empty without it, and `<lt-session-timeout>` does not count the time. The markup in the others comes from you and is there regardless, except that `<lt-tabs>` shows only one panel, the one the URL points to or the first, and `<lt-suggestion>` hides the list until they are registered |
-| A component speaks English on a page in another language | The text in the markup comes from you, and is written with the app's own translation setup. The few default texts the package has are replaced with `label` and `close-label` on `<lt-toast>`, `offline-text` and `online-text` on `<lt-connection-status>`, `count-none`, `count-one` and `count-other` on `<lt-suggestion>`, and `--lt-label-required-text`, `--lt-label-optional-text` and `--lt-label-required-symbol` in CSS. Numbers and durations follow `lang` on `<html>`. See https://lo-tek.sobernetics.no/translation/ |
+| The styles are missing | The `<link>` to `lotek.css` is missing, or its address answers 404. With one stylesheet per component instead, `tokens.css` is not loaded |
+| An `<lt-toast>` or `<lt-connection-status>` shows nothing, an `<lt-session-timeout>` never warns, or another component does nothing | The `define` function has not run. `<lt-toast>` and `<lt-connection-status>` create their content themselves and are empty without it, and `<lt-session-timeout>` does not count the time. The markup in the others comes from you and is there regardless, with two exceptions until they are registered. `<lt-tabs>` shows one panel: of those the server left without `hidden`, the one the URL points to, otherwise the first, and under `server-controlled` always the first. `<lt-suggestion>` hides the list |
+| A component speaks English on a page in another language | The text in the markup comes from you, and is written with the app's own translation setup. The few default texts the package has are replaced with `label` and `close-label` on `<lt-toast>`, `offline-text` and `online-text` on `<lt-connection-status>`, `count-none`, `count-one` and `count-other` on `<lt-suggestion>`, and `--lt-label-required-text`, `--lt-label-optional-text` and `--lt-label-required-symbol` in CSS. Numbers and durations follow the nearest `lang`, usually the one on `<html>`. See https://lo-tek.sobernetics.no/translation/ |
 | The error text never shows, and the field counts as valid | `hidden="false"` is set on the error text, and it hides it all the same. The attribute must be removed, not set to `false` |
 | The component does nothing, and nothing says so | The registration runs only on the server, where it does nothing. It must also run in the browser |
 | `SyntaxError` in the browser | TypeScript syntax in a `<script type="module">` without a build step |
@@ -453,8 +461,12 @@ newest one there, and never write a `version` you have not seen on Central.
 
 The components are customised with tokens and `--lt-` variables. If that is
 not enough, `npx @lo-tek/interfaces takeover <component>` copies the source
-code of one component into the project, so the code is yours to change. A
-complete colour theme from your brand colours is made with
+code of one component into `src/lotek/<component>/`, so the code is yours to
+change. The copy is TypeScript that imports from the package by name, so it
+needs a build step. It is renamed from `lt-` to `app-`, and a
+`lotek-manifest.json` next to it teaches the check the new names:
+`npx @lo-tek/interfaces check --manifest=src/lotek/<component>/lotek-manifest.json <files>`.
+A complete colour theme from your brand colours is made with
 `npx @lo-tek/interfaces theme`.
 
 All of this, with live examples: https://lo-tek.sobernetics.no/
