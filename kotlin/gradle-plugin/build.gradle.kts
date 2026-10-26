@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -49,5 +50,11 @@ gradlePlugin {
 
 tasks.test {
     useJUnitPlatform()
-    testLogging { events("failed") }
+    // A build that fails inside a test carries its whole output in the
+    // exception. Without the full format CI shows only the line number, and a
+    // failure that does not happen locally cannot be read anywhere.
+    testLogging {
+        events("failed")
+        exceptionFormat = TestExceptionFormat.FULL
+    }
 }
