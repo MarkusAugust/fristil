@@ -70,8 +70,9 @@ export type { LtEventMap } from "./components/events.js"
  * The rest of the system returns `class` and `for`, as the attributes are
  * actually named in HTML. React accepts them, and they end up correctly in
  * the DOM, but the development build writes "Invalid DOM property `class`.
- * Did you mean `className`?" to the console for every element. A whole field
- * gives two warnings per field, which is too noisy to ship.
+ * Did you mean `className`?" to the console, once for each attribute name. It
+ * is noise in every app that uses the components, and it teaches the reader
+ * to ignore the console.
  *
  * ```ts
  * import { lt } from "@lo-tek/interfaces/react"

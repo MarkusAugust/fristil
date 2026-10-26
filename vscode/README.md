@@ -52,8 +52,8 @@ where no compiler looks at the attributes.
   at the top.
 - **Diagnostics**, as red and yellow squiggles with the component page as a link: an
   `<lt-…>` element that does not exist, an attribute the element does not have, a value
-  outside the list, a number that is not a number, `invalid="false"`, which means
-  on, a class such as `lt-buton`, and `data-variant="ghots"` on a button. `<lt-field>` without a control or without a label gets the same message
+  outside the list, a number that is not a number, a boolean attribute with a value,
+  such as `open="false"` on `<lt-popover>`, which means open, a class such as `lt-buton`, and `data-variant="ghots"` on a button. `<lt-field>` without a control or without a label gets the same message
   the component gives in the browser, with the same exceptions, and one limit: a
   `<label for>` outside the field has to be in the same file, because the extension sees one file
   at a time. Comments, scripts and stylesheets are not read, and where there is
@@ -71,7 +71,7 @@ where no compiler looks at the attributes.
 
 - **Quick fixes** where there is one right answer: the light bulb changes
   `lt-buton` to `lt-button` and `onlinetext` to `online-text`, removes
-  `invalid="false"` and the removed attributes, inserts a label in a
+  a boolean attribute with a value, such as `open="false"`, and the removed attributes, inserts a label in a
   field that lacks one, gives the tab list a name, and gives the field an id and the label
   `for` in one step, from the field's `name`.
 
@@ -93,12 +93,12 @@ the settings, for example `"files.associations": { "*.gohtml": "html" }`.
 ## JetBrains
 
 If you use IntelliJ IDEA Ultimate or WebStorm, you need no extension:
-from 0.15.0 the npm package includes `web-types.json`, JetBrains' format, and
+the npm package includes `web-types.json`, JetBrains' format, and
 the IDE picks it up as soon as `@lo-tek/interfaces` is in
 `package.json`. Checked in IntelliJ IDEA Ultimate 2026.2, with completion of the elements, attributes
 and values, and hover with a link. The diagnostics and quick fixes
 come with the plugin "LO-TEK for IntelliJ" from JetBrains Marketplace, which also gives
-completion in HTML in a string marked with `@Language("HTML")`. See `../intellij`. Neovim, Helix
+completion in HTML in a string marked with `@Language("HTML")`. See [JetBrains](https://lo-tek.sobernetics.no/the-editor/#jetbrains) in the documentation. Neovim, Helix
 and other editors with LSP can use `lotek lsp`.
 
 ## How it is made

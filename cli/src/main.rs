@@ -150,14 +150,14 @@ impl Arguments {
     }
 }
 
-/// `/^--([a-zæøå0-9-]+)=(.+)$/`
+/// `/^--([a-z0-9-]+)=(.+)$/`
 fn flag(part: &str) -> Option<(String, String)> {
     let rest = part.strip_prefix("--")?;
     let (name, value) = rest.split_once('=')?;
     let name_ok = !name.is_empty()
         && name
             .chars()
-            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || "æøå".contains(c));
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
     // `.` in a regular expression does not match a line break.
     let value_ok = !value.is_empty() && !value.contains(['\n', '\r', '\u{2028}', '\u{2029}']);
     (name_ok && value_ok).then(|| (name.to_string(), value.to_string()))

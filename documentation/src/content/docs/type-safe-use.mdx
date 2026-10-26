@@ -29,7 +29,7 @@ The return values are plain objects. That is why the same API works in React, As
 :::note[Using React?]
 Import from `@lo-tek/interfaces/react` instead. The call sites are identical, but the return value uses `className` and `htmlFor`.
 
-`lt` returns `class` and `for`, as the attributes are actually called in HTML. React accepts them, and they end up correctly in the DOM, but the development build writes "Invalid DOM property `class`. Did you mean `className`?" to the console for every element. With a whole field that makes two warnings per field.
+`lt` returns `class` and `for`, as the attributes are actually called in HTML. React accepts them, and they end up correctly in the DOM, but the development build writes "Invalid DOM property `class`. Did you mean `className`?" to the console, once for `class` and once for `for`. It is noise in every app that uses the components.
 
 Plain HTML, Astro and Datastar take `class` and `for` as they are, and use the main entry point.
 :::

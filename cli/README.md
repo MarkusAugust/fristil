@@ -22,7 +22,7 @@ The same code runs in two ways:
 - **As a WASI module**, `cargo build --release -p lotek --target wasm32-wasip1`,
   which `npx @lo-tek/interfaces`, `java -jar` and wasmtime run. WASI has
   no network, so there the host fetches the page and gives it to the module with
-  `--hentet=<file>`. See `src/fetch.rs`.
+  `--fetched=<file>`. See `src/fetch.rs`.
 
 The program carries no data. The manifest, the colour contract, the rulebooks for
 `agent` and the source code of the components for `takeover` are read from

@@ -86,6 +86,10 @@ type Recipe = {
   extra?: string
   /** The command that checks the markup here. */
   check: string
+  /** What the file check cannot see here, said after the command. */
+  checkBlindSpot?: string
+  /** Where the app answers while it is developed. */
+  devUrl?: string
   /** Item 5, when the check is not the main safeguard in this environment. */
   pointFive?: string
   /** The rows of the pitfall table that apply here. */
@@ -107,8 +111,8 @@ const shortVersion = (recipe: Recipe) => `## Short version
   `**Run the check on what you have written:** \`${recipe.check}\`. It knows
    every class, every element, every attribute and every allowed value, prints
    \`file:line:column: error: message\`, or \`warning:\`, and exits with an error code if it finds
-   anything. With the app running, also check every page you have changed:
-   \`npx @lo-tek/interfaces check http://localhost:8080/page\`. That also
+   anything.${recipe.checkBlindSpot ? ` ${recipe.checkBlindSpot}` : ""} With the app running, also check every page you have changed:
+   \`npx @lo-tek/interfaces check ${recipe.devUrl ?? "http://localhost:8080"}/page\`. That also
    requires every \`for\` and \`aria-describedby\` to point to an id that
    exists, and every field to have a label. You are done when both answer
    "The markup matches LO-TEK".`
@@ -193,20 +197,30 @@ const boundaryExample = (recipe: Recipe) =>
 const pickerExample = (recipe: Recipe) => {
   const react = recipe.name === "react"
   const attr = react ? "className" : "class"
+  const option = react
+    ? "className={lt.toggleGroup.option}"
+    : 'class="lt-toggle-group__option"'
   const line = (value: string, text: string, checked = false) =>
-    `  <label ${attr}="lt-toggle-group__option">
+    `  <label ${option}>
     <input ${attr}="lt-theme-control" type="radio" name="theme"
            value="${value}"${checked ? (react ? " defaultChecked" : " checked") : ""} /> ${text}
   </label>`
 
   return `\`\`\`${react ? "tsx" : "html"}
-<fieldset ${attr}="lt-toggle-group">
-  <legend ${attr}="lt-sr-only">Theme</legend>
+<fieldset ${react ? "{...lt.toggleGroup()}" : 'class="lt-toggle-group"'}>
+  <legend ${react ? "{...lt.srOnly()}" : 'class="lt-sr-only"'}>Theme</legend>
 ${line("auto", "Follow the system", true)}
 ${line("light", "Light")}
 ${line("dark", "Dark")}
 </fieldset>
-\`\`\``
+\`\`\`${
+    react
+      ? `
+
+\`lt-theme-control\` has no builder function, so it is the one class written
+as a string.`
+      : ""
+  }`
 }
 
 const THEME = (recipe: Recipe) => `### Light and dark
@@ -234,9 +248,10 @@ same root element:
 
 ${boundaryExample(recipe)}
 
-Below the root element the browser ignores CSS without a layer, within the
-specificity below, and LO-TEK's layer applies again. The rule is in
-\`lotek.css\` and in \`@lo-tek/interfaces/boundary.css\`. Fonts and other
+Below the root element the browser then ignores the host's CSS without a
+layer, unless a rule of the host's wins on specificity as described below,
+and LO-TEK's layer applies again. The rule is in \`lotek.css\` and in
+\`${recipe.stylesheetAddress("boundary")}\`. Fonts and other
 inherited properties still come from the host, and the \`--lt-*\` variables
 work. Three things follow from it:
 
@@ -250,15 +265,16 @@ work. Three things follow from it:
   always wins. So do \`!important\` and layers the host has declared after
   \`lotek\`.
 
-LO-TEK does **not** set \`color-scheme\` on \`:root\`. The property controls
-the browser's own surfaces, that is, scrollbars, dropdowns and calendar
-panels, and it is inherited. A child can opt out with \`color-scheme: normal\`,
-but that is a counter-rule the host never asked to have to write: with the
-value on the root, it applied to the whole document, including where the
-package is only a guest. If the whole page should follow the system, write
+LO-TEK sets \`color-scheme\` only where someone has chosen a theme: on
+\`[data-theme="light"]\`, on \`[data-theme="dark"]\` and on the options of the
+theme picker below. Bare \`:root\` never gets it. The property controls the
+browser's own surfaces, that is, scrollbars, dropdowns and calendar panels,
+and it is inherited. A child can opt out with \`color-scheme: normal\`, but
+that is a counter-rule the host never asked to have to write: with the value
+on the root, it applied to the whole document, including where the package is
+only a guest. If the whole page should follow the system, write
 \`color-scheme: light dark\` on \`<html>\` yourself, in the same way as you set
-the layer order yourself. The exception is the theme picker below: when you
-use it, each option sets \`color-scheme\` itself.
+the layer order yourself.
 
 ### Letting the user choose a theme
 
@@ -302,13 +318,15 @@ Three rules apply to all of them:
    \`hidden="false"\`, \`disabled="false"\` and \`open="false"\` turn it *on*.
    To turn any of them off, remove the attribute entirely.
 3. **You write the markup, the component adds the behaviour.** \`<lt-field>\`
-   does not create your label or your control. You write \`for\` on the label
+   does not create your label or your control. You write \`${recipe.name === "react" ? "htmlFor" : "for"}\` on the label
    and \`id\` on the control, or wrap the control in a \`<label>\`, so the field
    has a name without JavaScript too. The component wires the help text and
    the error text with \`aria-describedby\` and \`aria-invalid\`, and never
-   writes an id on the control: an id the server did not send makes an update
-   from the server replace the field, with the focus and what the user has
-   typed. The field is invalid when the error text is there without
+   writes an id on the control${
+     recipe.name === "react"
+       ? ", so the id is yours, from `useId()`"
+       : ": an id the server did not send makes an update from the server replace the field, with the focus and what the user has typed"
+}. The field is invalid when the error text is there without
    \`hidden\`.
 
 ${webTable(recipe.address, recipe.stylesheetAddress)}
@@ -326,8 +344,12 @@ const CLOSING = `## When CSS is not enough
 
 The components are customised with tokens and \`--lt-\` variables. If that is
 not enough, \`npx @lo-tek/interfaces takeover <component>\` copies the source
-code of one component into the project, so the code is yours to change. A
-complete colour theme from your brand colours is made with
+code of one component into \`src/lotek/<component>/\`, so the code is yours to
+change. The copy is TypeScript that imports from the package by name, so it
+needs a build step. It is renamed from \`lt-\` to \`app-\`, and a
+\`lotek-manifest.json\` next to it teaches the check the new names:
+\`npx @lo-tek/interfaces check --manifest=src/lotek/<component>/lotek-manifest.json <files>\`.
+A complete colour theme from your brand colours is made with
 \`npx @lo-tek/interfaces theme\`.
 
 All of this, with live examples: https://lo-tek.sobernetics.no/`
@@ -337,13 +359,17 @@ const STYLES_MISSING: [string, string] = [
   "The styles are missing",
   "`tokens.css` is not loaded. The order between it and the component's stylesheet does not matter",
 ]
+const BUNDLE_MISSING: [string, string] = [
+  "The styles are missing",
+  "The `<link>` to `lotek.css` is missing, or its address answers 404. With one stylesheet per component instead, `tokens.css` is not loaded",
+]
 const NO_DEFINE: [string, string] = [
   "An `<lt-toast>` or `<lt-connection-status>` shows nothing, an `<lt-session-timeout>` never warns, or another component does nothing",
-  "The `define` function has not run. `<lt-toast>` and `<lt-connection-status>` create their content themselves and are empty without it, and `<lt-session-timeout>` does not count the time. The markup in the others comes from you and is there regardless, except that `<lt-tabs>` shows only one panel, the one the URL points to or the first, and `<lt-suggestion>` hides the list until they are registered",
+  "The `define` function has not run. `<lt-toast>` and `<lt-connection-status>` create their content themselves and are empty without it, and `<lt-session-timeout>` does not count the time. The markup in the others comes from you and is there regardless, with two exceptions until they are registered. `<lt-tabs>` shows one panel: of those the server left without `hidden`, the one the URL points to, otherwise the first, and under `server-controlled` always the first. `<lt-suggestion>` hides the list",
 ]
 const FOREIGN_TEXT: [string, string] = [
   "A component speaks English on a page in another language",
-  "The text in the markup comes from you, and is written with the app's own translation setup. The few default texts the package has are replaced with `label` and `close-label` on `<lt-toast>`, `offline-text` and `online-text` on `<lt-connection-status>`, `count-none`, `count-one` and `count-other` on `<lt-suggestion>`, and `--lt-label-required-text`, `--lt-label-optional-text` and `--lt-label-required-symbol` in CSS. Numbers and durations follow `lang` on `<html>`. See https://lo-tek.sobernetics.no/translation/",
+  "The text in the markup comes from you, and is written with the app's own translation setup. The few default texts the package has are replaced with `label` and `close-label` on `<lt-toast>`, `offline-text` and `online-text` on `<lt-connection-status>`, `count-none`, `count-one` and `count-other` on `<lt-suggestion>`, and `--lt-label-required-text`, `--lt-label-optional-text` and `--lt-label-required-symbol` in CSS. Numbers and durations follow the nearest `lang`, usually the one on `<html>`. See https://lo-tek.sobernetics.no/translation/",
 ]
 const NEVER_INVALID: [string, string] = [
   "The error text never shows, and the field counts as valid",
@@ -396,8 +422,9 @@ file in this folder applies.`,
    \`<script type="module">\`, and a boolean attribute is true as long as it is
    there: \`hidden="false"\` still hides the error text.`,
     registrationRule: `**\`defineLt*()\` runs once** in a
-   \`<script type="module">\` in the page template, before the element is used,
-   not once per component.`,
+   \`<script type="module">\` on the page, not once per component. The
+   elements can come before it in the markup and are upgraded when it runs;
+   only a method call such as \`show()\` has to wait for it.`,
     address: URL_FOR,
     check: "npx @lo-tek/interfaces check page.html",
     stylesheet: `## 1. The stylesheet
@@ -422,8 +449,9 @@ The alternative is one stylesheet per component, and then ${TOKENS_FIRST}
 <link rel="stylesheet" href="${cdnUrl("button.css")}">
 \`\`\`
 
-The individual stylesheets fetch their parts with \`@import\`, which the
-browser only sees once the file has loaded. \`dist/lotek.css\` has everything
+Some of them, such as \`field.css\` and \`suggestion.css\`, fetch the
+stylesheets they build on with \`@import\`, which the browser only sees once
+the file has loaded. \`dist/lotek.css\` has everything
 flattened, without \`@import\`, and is therefore faster when you link.`,
     markup: `## 5. A whole form
 
@@ -466,16 +494,16 @@ the tag as plain JavaScript, and \`event as CustomEvent<…>\` gives a
 npx @lo-tek/interfaces check page.html
 \`\`\`
 
-The shell expands the pattern, so it must not be in quotes: the command reads
-each argument as a file path and expands nothing itself. One finding gives an
-error code, so it can run in CI. It catches an element that does not exist,
+Several files are given as several arguments, or as a pattern such as
+\`pages/*.html\` without quotes: the shell expands it, and the command expands
+nothing itself. One finding gives an error code, so it can run in CI. It catches an element that does not exist,
 an attribute the element does not have, a value outside the list,
 \`lt-buton\`, \`data-variant="secundary"\`, and \`<lt-field>\` without a
 control or a label.
 
 ${CHECK_IN_TESTS}`,
     pitfalls: [
-      STYLES_MISSING,
+      BUNDLE_MISSING,
       NO_DEFINE,
       FOREIGN_TEXT,
       NEVER_INVALID,
@@ -573,14 +601,16 @@ it back when a patch tears the selection away. The template needs nothing
 for that.
 
 This assumes the patch keeps the elements and only changes the attributes,
-as a morph does: Datastar's \`outer\`, htmx with the idiomorph extension and
-Turbo 8 with morphing. The selection is tied to the link itself. If the patch
-replaces the nodes, as \`innerHTML\`, htmx's ordinary \`innerHTML\` and
-\`outerHTML\` swaps and Turbo without morphing do, the tab is a different one,
-and the component selects the one the URL points to, otherwise the one the
-server hid the other panels for, otherwise the first. If the server wants to
-decide, it writes \`hidden="until-found"\` on the other panels, or decides the
-state alone with \`server-controlled\`.
+as a morph does: Datastar's \`outer\` and \`inner\`, htmx with the idiomorph
+extension and Turbo 8 with morphing. The selection is tied to the link
+itself. If the patch replaces the nodes, as \`innerHTML\`, htmx's ordinary
+\`innerHTML\` and \`outerHTML\` swaps, Datastar's \`replace\` and Turbo without
+morphing do, the tab is a different one. The component then selects the tab
+the server marked with \`aria-selected="true"\`, otherwise the one the URL
+points to, otherwise the one whose panel the server left without \`hidden\`,
+otherwise the first. If the server wants to decide, it marks the tab and
+writes \`hidden="until-found"\` on the other panels, or decides the state
+alone with \`server-controlled\`.
 
 A morph keeps an element only when the id matches: Datastar and idiomorph do
 not morph an element with an id into one without, they replace it. The
@@ -591,9 +621,11 @@ The tabs are links without an id, and the panels have the id the link points
 to, the same on every render. The panel in \`<lt-popover>\` needs an id in the
 same way, for \`aria-controls\` on the button; the component creates none. The
 list and the options in \`<lt-suggestion>\` can be replaced; the component
-wires them again and finds the highlighted option again by its text. The
-component warns in the console the first time a patch replaces something the
-user had touched.
+wires them again and finds the highlighted option again by its text.
+\`<lt-field>\` and \`<lt-suggestion>\` warn in the console when a patch
+replaces the field with one that has another id, the same \`name\` and another
+value, and \`<lt-popover>\` when a patch replaces the open panel with one that
+has another id. \`<lt-tabs>\` repairs the selection without a word.
 
 If the server should be able to move the state, as in "go on to step 2", say
 so with \`server-controlled\`. Then every patch decides, and the component
@@ -612,9 +644,10 @@ stops putting the user's choice back:
 
 The attribute exists on \`<lt-tabs>\`, \`<lt-popover>\`, \`<lt-dialog>\` and
 \`<lt-suggestion>\`. Without it the server and the component would fight over
-the same state. Note that the state is always in the markup the server sent,
-that is, \`aria-selected\` on the tab and \`hidden\` on the panel, not in an
-attribute of its own.
+the same state. Note that the state is always in the markup the server sent:
+\`aria-selected\` on the tab and \`hidden\` on the panel in \`<lt-tabs>\`,
+\`open\` on \`<lt-popover>\` and \`<lt-dialog>\`, and \`hidden\` on the list and
+\`aria-expanded\` on the field in \`<lt-suggestion>\`.
 
 ## 7. The check is the only thing that reads your markup
 
@@ -641,11 +674,11 @@ tested and give no false findings:
 
 ${CHECK_IN_TESTS}
 
-The check is also in the editor as you type. The VS Code extension "LO-TEK"
-gives completion, explanations, error messages and quick fixes in sixteen
+The check is also in the editor as you type. The VS Code extension
+"LO-TEK for VS Code" gives completion, explanations, error messages and quick fixes in sixteen
 template languages. WebStorm and IntelliJ IDEA Ultimate read
 \`web-types.json\` from the package without any extension, and the plugin
-"LO-TEK" from JetBrains Marketplace adds the error messages and completion in
+"LO-TEK for IntelliJ" from JetBrains Marketplace adds the error messages and completion in
 HTML in a string marked with \`@Language("HTML")\` or \`// language=HTML\`.
 
 On the JVM without Node there is LO-TEK for Kotlin
@@ -657,7 +690,7 @@ Gradle plugin \`io.github.markusaugust.lo-tek\` are on Maven Central, with the
 same version as the npm package. Not every npm version is on Maven: use the
 newest one there, and never write a \`version\` you have not seen on Central.`,
     pitfalls: [
-      STYLES_MISSING,
+      BUNDLE_MISSING,
       NO_DEFINE,
       FOREIGN_TEXT,
       NEVER_INVALID,
@@ -810,8 +843,8 @@ ${CHECK_IN_TESTS}`,
 React differs from all the other environments in one thing, and it matters
 enough to have its own file: React rewrites the attribute names. \`class\` is
 \`className\` and \`for\` is \`htmlFor\`, and if you use the builder functions
-from the main entry, React prints "Invalid DOM property" in the console for
-every element. That is why the package has a React entry of its own.`,
+from the main entry, React prints "Invalid DOM property" in the console, once
+for each attribute name. That is why the package has a React entry of its own.`,
     stylesheetRule: `**Import the stylesheets in \`main.tsx\`**, \`tokens.css\`
    first. Without them, the components look unstyled. The answer is then to
    add the import, never to write your own CSS to make them look right.`,
@@ -826,11 +859,13 @@ every element. That is why the package has a React entry of its own.`,
     pointFive: `**The types are your check.** \`lt.button({ variant })\` from
    \`@lo-tek/interfaces/react\` turns a variant that does not exist into a
    compile error, and \`@lo-tek/interfaces/react-jsx\`, imported once in a
-   \`.d.ts\` file, does the same for the attributes on the web components.
-   Run \`tsc\`. A hand-written \`className\` or \`data-variant\` is seen by
-   neither of them, nor by \`npx @lo-tek/interfaces check\`, which reads
-   \`class\`, not \`className\`, so use the builder functions. HTML and
-   templates are checked with \`npx @lo-tek/interfaces check <file>\`.`,
+   \`.d.ts\` file, does the same for attribute names without a hyphen on the
+   web components. Run \`tsc\`. TypeScript never flags an unknown attribute
+   with a hyphen, such as \`close-labl\`, and most of LO-TEK's attributes have
+   one, so also run \`npx @lo-tek/interfaces check src/*.tsx\`: it reads the
+   attributes on the web components in the file. A hand-written \`className\`
+   or \`data-variant\` is seen by none of them, since the check reads
+   \`class\`, not \`className\`, so use the builder functions.`,
     stylesheet: `## 1. The stylesheets
 
 ${TOKENS_FIRST} After that, one per component you use:
@@ -985,18 +1020,24 @@ An \`.astro\` file is HTML with frontmatter above it. The stylesheets are
 imported there, and the builder functions are used directly in the template,
 since Astro supports spreading like JSX. What is particular is that all of
 this runs at build time: out comes plain HTML, and \`lt\` is gone once the
-page is built. Zero JavaScript sent to the browser.`,
+page is built. The only JavaScript the browser gets from the package is the
+registration of the web components you use, in a \`<script>\`.`,
     stylesheetRule: `**Import the stylesheets in the frontmatter**, \`tokens.css\`
    first. Without them, the components look unstyled. The answer is then to
    add the import, never to write your own CSS to make them look right.`,
     pointFour: `**\`defineLt*()\` belongs in a \`<script>\` in the template, never
-   in the frontmatter:** the frontmatter runs on the server, where
-   \`customElements\` does not exist. And a boolean attribute is true as long
+   in the frontmatter:** the frontmatter runs at build time, or on the server
+   when a page is rendered on demand, and \`customElements\` exists in
+   neither. And a boolean attribute is true as long
    as it is there.`,
     registrationRule: `**\`defineLt*()\` runs once** in a \`<script>\` in the
    template. Astro bundles \`<script>\` tags and runs them on the client.`,
     address: PACKAGE_NAME,
     check: "npx @lo-tek/interfaces check src/pages/*.astro",
+    checkBlindSpot: `It reads the file as text, so it does not see what a
+   spread such as \`{...lt.button()}\` writes; the check on the running page
+   below does.`,
+    devUrl: "http://localhost:4321",
     stylesheet: `## 1. The stylesheets
 
 ${TOKENS_FIRST} The imports go in the frontmatter:
@@ -1093,7 +1134,7 @@ integration nor a \`client:\` directive.`,
       NEVER_INVALID,
       [
         "The component does nothing, and nothing says so",
-        "The registration is in the frontmatter, which runs only on the server. It belongs in a `<script>` in the template",
+        "The registration is in the frontmatter, which never runs in the browser. It belongs in a `<script>` in the template",
       ],
     ],
   },
@@ -1188,29 +1229,31 @@ therefore send this as plain HTML:
 </lt-field>
 \`\`\`
 
-The component then sets \`lt-label\`, gives the help text and the error text
-ids, adds \`aria-invalid\` because the error text is visible, and builds
+The component then gives the help text and the error text ids, adds \`aria-invalid\` because the error text is visible, and builds
 \`aria-describedby\`, without any JavaScript being sent for this particular
 field. That is the point of the \`frame\` components living in plain DOM: the
 markup is the data, and the accessibility is wired where it lands.
 
 If the server patches a component that holds state, the question is what
 decides it. By default the web component does: \`<lt-tabs>\` remembers the
-tab the user selected, and puts it back when a patch with \`outer\` tears it
-away: \`outer\` morphs, and the selection is tied to the link itself.
-\`inner\` and \`replace\` replace the nodes, and then the component selects the
-tab the URL points to, otherwise the one the server hid the other panels for
-with \`hidden="until-found"\`, otherwise the first. And \`outer\` morphs only
-when the ids match: an element with an id the server did not send is
-replaced. The components therefore never write an id on what the user
+tab the user selected, and puts it back after a patch. \`outer\` and \`inner\`
+morph, so the links are kept and the selection with them. \`replace\`
+replaces the nodes, and then the component selects the tab the server marked
+with \`aria-selected="true"\`, otherwise the one the URL points to, otherwise
+the one whose panel the server left without \`hidden\`, otherwise the first.
+And a morph keeps an element only when the ids match: an element with an id
+the server did not send is replaced. The components therefore never write an id on what the user
 touches. The tabs are links without an id, and the panels have the id the
 link points to, the same on every render, as \`lt.tabs()\` writes it. The
 panel in \`<lt-popover>\` needs an id in the same way; the component creates
 none. The control in \`<lt-field>\` and the field in \`<lt-suggestion>\` never
 get an id from the component: the template writes \`for\` and \`id\`, which
 HTML requires for the field to have a name without JavaScript, or the label
-wraps the field and no id is needed. The component warns in the console the
-first time a patch replaces something the user had touched. If the server
+wraps the field and no id is needed. \`<lt-field>\` and \`<lt-suggestion>\`
+warn in the console when a patch replaces the field with one that has another
+id, the same \`name\` and another value, and \`<lt-popover>\` when a patch
+replaces the open panel with one that has another id. \`<lt-tabs>\` repairs
+the selection without a word. If the server
 should be able to move the tab, say so with \`server-controlled\`:
 
 \`\`\`html
@@ -1231,7 +1274,7 @@ the same state.
 \`lt\` can be used on the server or in a build step. Datastar does not need it
 in the browser.`,
     pitfalls: [
-      STYLES_MISSING,
+      BUNDLE_MISSING,
       NO_DEFINE,
       FOREIGN_TEXT,
       NEVER_INVALID,
