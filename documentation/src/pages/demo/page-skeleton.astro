@@ -41,6 +41,26 @@ const { class: listClass, ...listAttributes } = lt.list({ variant: "plain" })
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--
+			In a frame in the documentation, the page takes the reader's theme
+			before it paints. `FramedPage.astro` hands the theme over too, but only
+			on `load`, after the page has already been drawn once in the system's
+			theme. Blocking and inline, because a module script runs too late.
+			Opened on its own, the page has no frame and follows the system.
+		-->
+		<script is:inline>
+			try {
+				if (window.frameElement?.hasAttribute("data-follow-theme")) {
+					const theme = parent.document.documentElement.dataset.theme
+					if (theme === "light" || theme === "dark") {
+						document.documentElement.dataset.theme = theme
+						document.documentElement.style.colorScheme = theme
+					}
+				}
+			} catch {
+				// A frame from another origin cannot read its parent.
+			}
+		</script>
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 		<title>My cases | Example Council</title>
 		<meta

@@ -11,6 +11,62 @@
  * layer.
  */
 
+/*
+ * The two typefaces, served from the site itself. A stylesheet from a font
+ * service blocks the first paint of every page on a lookup and a handshake
+ * with another origin, and tells that origin who is reading. These are the
+ * Latin subsets, under the SIL Open Font License, which is next to the files
+ * in `src/fonts/`. A character outside the range falls back to the next face
+ * in the stack rather than to nothing.
+ */
+@font-face {
+  font-family: "Michroma";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/michroma-400.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/ibm-plex-mono-400.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/ibm-plex-mono-500.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/ibm-plex-mono-600.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
   /*
    * Michroma descends from Eurostile, the typeface the manuals and rulebooks
@@ -35,6 +91,19 @@
     var(--lt-color-neutral-border-subtle);
   --profile-rule-strong: var(--lt-spacing-px) solid
     var(--lt-color-neutral-border-strong);
+
+  /*
+   * The register rule as an image, so the rule below the front page's
+   * masthead, the one under the title of every page and the one on the share
+   * card are one drawing. It resolves here, on the root, so a page that wants
+   * a longer mark sets `--profile-register-mark` on its root too.
+   */
+  --profile-register-mark: 3.5rem;
+  --profile-register: linear-gradient(
+    to right,
+    var(--lt-color-accent-fill) 0 var(--profile-register-mark),
+    var(--lt-color-neutral-border-strong) var(--profile-register-mark)
+  );
 }
 
 /*
@@ -57,6 +126,11 @@
  * `position: absolute` and not `fixed`. A blending layer over the whole
  * window has to be repainted for every scrolled line, and paper does not
  * stand still while the words slide over it.
+ *
+ * `isolation: isolate` keeps the blend inside the element, so the element
+ * must carry the surface colour itself. On a transparent one the blend has
+ * nothing under it, and the tile is laid on as it is: the inverted dark tile
+ * then darkens the whole page instead of only lightening the specks.
  *
  * Only the front page is on paper for now. The documentation pages stand on
  * the flat surface.
@@ -129,11 +203,7 @@
 .profile-register {
   display: block;
   height: var(--lt-spacing-0-5);
-  background: linear-gradient(
-    to right,
-    var(--lt-color-accent-fill) 0 3.5rem,
-    var(--lt-color-neutral-border-strong) 3.5rem
-  );
+  background: var(--profile-register);
 }
 
 /*

@@ -60,12 +60,6 @@ const GRADE = [
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-  />
   <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
   <title>{title}</title>
   <meta name="description" content={description} />
@@ -89,7 +83,7 @@ const GRADE = [
   <div class="sheet">
     <header class="top">
       <div class="top__mark">
-        <a href="/" class="top__home" aria-label="LO-TEK, front page">
+        <a href="/" class="top__home" aria-label="LO-TEK Interfaces, front page">
           <Logo size="sm" />
         </a>
         <VersionBadge />
@@ -317,7 +311,10 @@ form.html:3:13: warning: The class "lt-modal"
   body {
     min-block-size: 100dvh;
     margin: 0;
-    background: transparent;
+    /* The surface has to be on the body as well as on html: the grain blends
+       inside the body's isolated group, and a transparent body would leave
+       it nothing to blend with. */
+    background: var(--lt-color-neutral-canvas);
     color: var(--lt-color-neutral-text);
     /* The front page is set as a printout, in the data face, as sobernetics.no
        is. It is short. The documentation pages are long, and keep the
@@ -734,18 +731,33 @@ form.html:3:13: warning: The class "lt-modal"
     }
   }
 
+  /* Paper takes the light theme, which the script at the foot of the page
+     switches to for the print. */
   @media print {
-    body {
-      background: #fff;
-      color: #000;
-    }
-
     .sheet {
       max-inline-size: none;
       padding: 0;
     }
   }
 </style>
+
+<script>
+  /*
+   * The page is always dark on screen, but a printer drops the backgrounds,
+   * and the dark theme's light text would stand nearly invisible on white
+   * paper. A colour written into a print rule only reaches the elements that
+   * do not set their own, and nearly all of them do, from the tokens. So the
+   * print switches the whole page to the light tokens, as a sheet of paper
+   * would be, and back afterwards.
+   */
+  const root = document.documentElement
+  addEventListener("beforeprint", () => {
+    root.dataset.theme = "light"
+  })
+  addEventListener("afterprint", () => {
+    root.dataset.theme = "dark"
+  })
+</script>
 
 <style is:global>
   /* The Søbernetics mark. Small on purpose, and small is the whole of how it

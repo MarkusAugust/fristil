@@ -53,7 +53,9 @@ const { src, title, height = "34rem", followTheme = true } = Astro.props
 	 * documentation around it follows the reader's choice. Chosen light on a
 	 * dark phone gave a dark page inside a light one. The frame is on the same
 	 * origin, so the documentation hands its resolved theme to the page in the
-	 * frame when it loads and whenever the reader changes it. `color-scheme`
+	 * frame when it loads and whenever the reader changes it. The demo also
+	 * reads it itself in a blocking script in its head, since `load` comes
+	 * after the first paint and the page would flash. `color-scheme`
 	 * goes along, because the demo sets `light dark` on its own `<html>`, and
 	 * scrollbars and form controls read that.
 	 */
