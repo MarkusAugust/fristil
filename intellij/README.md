@@ -1,4 +1,4 @@
-# LO-TEK for IntelliJ
+# LO-TEK Interfaces for IntelliJ
 
 Completion of LO-TEK's CSS classes and diagnostics from LO-TEK's check in HTML,
 also in HTML injected into a string.

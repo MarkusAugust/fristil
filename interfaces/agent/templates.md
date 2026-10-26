@@ -433,7 +433,7 @@ The check is also in the editor as you type. The VS Code extension "LO-TEK for
 VS Code" gives completion, explanations, error messages and quick fixes in
 sixteen template languages. WebStorm and IntelliJ IDEA Ultimate read
 `web-types.json` from the package without any extension, and the plugin
-"LO-TEK for IntelliJ" from JetBrains Marketplace adds the error messages and
+"LO-TEK Interfaces" from JetBrains Marketplace adds the error messages and
 completion in HTML in a string marked with `@Language("HTML")` or
 `// language=HTML`.
 
