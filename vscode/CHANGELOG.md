@@ -3,7 +3,7 @@
 The extension has its own version number. It does not follow the package,
 since it only changes when an element or an attribute does.
 
-## 0.9.0
+## 0.10.0
 
 In step with the package's 0.37.0, the first under the `lt-` prefix. The
 first version under this name. It takes over from the earlier extension,
