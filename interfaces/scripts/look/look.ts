@@ -54,6 +54,33 @@ async function stylesheet(version: Version, path: string): Promise<string> {
   return readFile(join(PACKAGE, path), "utf8")
 }
 
+/**
+ * The entries under "Unreleased" that this branch added: the acceptance.
+ *
+ * An entry is a bullet with its continuation lines. It counts as added when
+ * any of its lines is an added line in the diff against the merge base.
+ */
+async function changelogEntries(): Promise<string[]> {
+  const text = await readFile(join(PACKAGE, "CHANGELOG.md"), "utf8")
+  const diff = await git(["diff", mergeBase, "--", "interfaces/CHANGELOG.md"])
+  const added = new Set(
+    diff
+      .split("\n")
+      .filter((l) => l.startsWith("+") && !l.startsWith("+++"))
+      .map((l) => l.slice(1)),
+  )
+  const section = text.split(/^## Unreleased\s*$/m)[1]?.split(/^## /m)[0] ?? ""
+  const entries: string[][] = []
+  for (const line of section.split("\n")) {
+    if (line.startsWith("- ")) entries.push([line])
+    else if (/^\s+\S/.test(line) && entries.length)
+      entries[entries.length - 1].push(line)
+  }
+  return entries
+    .filter((lines) => lines.some((l) => added.has(l)))
+    .map((lines) => lines.map((l) => l.replace(/^- |^\s+/, "")).join(" "))
+}
+
 async function css(version: Version): Promise<string> {
   const parts = await Promise.all(
     STYLESHEETS.map((s) => stylesheet(version, s)),
@@ -291,6 +318,7 @@ function renderChanges(result) {
       row.append(pair);
     }
     section.append(row);
+    renderAcceptance(section, group);
     container.append(section);
   });
   if (moved) {
@@ -301,11 +329,53 @@ function renderChanges(result) {
   }
 }
 
+/*
+ * The acceptance is the changelog. A change is accepted when an entry this
+ * branch added under "Unreleased" names the component and the property,
+ * or the shorthand it belongs to: padding for padding-top, border-radius
+ * for border-top-left-radius.
+ */
+let changelog = [];
+const COMPONENT = /lt-button|lt\\.button\\(/;
+function shorthand(prop) {
+  return prop.replace(/-(top|bottom|left|right)(?=-|$)/g, "");
+}
+function acceptedBy(group) {
+  const names = new Set(group.props.flatMap(p => [p, shorthand(p)]));
+  return changelog.find(entry => COMPONENT.test(entry) && Array.from(names).some(n => entry.includes(n))) ?? null;
+}
+function suggestion(group) {
+  const names = Array.from(new Set(group.props.map(shorthand)));
+  return "- **\`lt-button\`: " + names.join(" and ") + " " + group.from + " \\u2192 " + group.to + ".** Why, in a sentence.";
+}
+function renderAcceptance(section, group) {
+  const footer = document.createElement("div");
+  const entry = acceptedBy(group);
+  if (entry) {
+    footer.className = "acceptance accepted";
+    footer.innerHTML = "<b>In the changelog:</b> " + esc(entry.split(/(?<=\\.)\\s/)[0]);
+  } else {
+    footer.className = "acceptance missing";
+    const text = suggestion(group);
+    footer.innerHTML = "<b>Not in the changelog.</b> If this is intended, add it under Unreleased in <code>interfaces/CHANGELOG.md</code>. If it is not, fix the stylesheet."
+      + "<div class=\\"suggest\\"><code></code><button type=\\"button\\">Copy</button></div>";
+    footer.querySelector(".suggest code").textContent = text;
+    footer.querySelector("button").addEventListener("click", (e) => {
+      navigator.clipboard.writeText(text).then(() => { e.target.textContent = "Copied"; });
+    });
+  }
+  section.append(footer);
+}
+
 function renderStatus(result) {
-  const n = result.grouped.groups.length;
+  const groups = result.grouped.groups;
+  const n = groups.length;
+  const missing = groups.filter(g => !acceptedBy(g)).length;
   const status = document.getElementById("status");
-  status.className = n ? "changed" : "same";
-  status.textContent = n === 0 ? "No change against master" : n === 1 ? "1 change against master" : n + " changes against master";
+  status.className = n === 0 ? "same" : missing ? "changed" : "accepted";
+  status.textContent = n === 0 ? "No change against master"
+    : (n === 1 ? "1 change against master" : n + " changes against master")
+      + (missing === 0 ? ", all in the changelog" : missing === n ? ", not in the changelog" : ", " + missing + " not in the changelog");
   const r = result.releasedGroups.length;
   document.getElementById("released-status").textContent = r === 0 ? "Same as the released " + RELEASED + "." : r + " change" + (r === 1 ? "" : "s") + " against the released " + RELEASED + ".";
   document.getElementById("timing").textContent = result.keys + " values compared per copy in " + result.totalMs.toFixed(1) + " ms";
@@ -344,6 +414,11 @@ const socket = new WebSocket("ws://" + location.host + "/ws");
 socket.onmessage = (event) => {
   const received = performance.now();
   const message = JSON.parse(event.data);
+  if (message.type === "changelog") {
+    changelog = message.entries;
+    window.lookDiff(true);
+    return;
+  }
   if (message.type !== "css") return;
   for (const iframe of document.querySelectorAll("iframe[data-version=branch]")) {
     const style = iframe.contentDocument && iframe.contentDocument.getElementById("package");
@@ -368,10 +443,6 @@ function setSlider() {
 }
 slider.addEventListener("input", setSlider);
 setSlider();
-document.getElementById("difference").addEventListener("change", (e) => {
-  compare.classList.toggle("difference", e.target.checked);
-  if (e.target.checked) { slider.value = 100; setSlider(); }
-});
 document.getElementById("whole-toggle").addEventListener("click", () => {
   document.getElementById("whole").classList.toggle("open");
 });
@@ -399,7 +470,16 @@ async function lookPage(): Promise<string> {
   #status { font-size: 32px; font-weight: 700; margin: 4px 0 0; }
   #status.same { color: #1a8a4a; }
   #status.changed { color: #c400c4; }
+  #status.accepted { color: #1d5fb4; }
   #released-status { margin: 2px 0 0; font-size: 14px; color: #444; }
+  .how { margin: 8px 0 0; font-size: 13px; color: #666; max-width: 70ch; }
+  .acceptance { margin-top: 16px; padding: 10px 14px; border-radius: 6px; font-size: 14px; }
+  .acceptance.accepted { background: #e8f1fc; color: #1d5fb4; }
+  .acceptance.missing { background: #fff4e0; color: #7a4b00; }
+  .acceptance code { font-size: 13px; }
+  .suggest { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+  .suggest code { background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid #f0d9a8; flex: 1; }
+  .suggest button { font: inherit; font-size: 13px; padding: 5px 10px; border: 1px solid #c9a35e; background: #fff; border-radius: 4px; cursor: pointer; }
   #timing { font: 12px ui-monospace, monospace; color: #888; margin-top: 4px; }
   #changes { padding: 8px 24px 24px; }
   .change { background: #fff; border-radius: 8px; padding: 16px 20px; margin-top: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
@@ -428,9 +508,6 @@ async function lookPage(): Promise<string> {
   #compare iframe { position: absolute; inset: 0; width: ${SHEET_WIDTH * 2}px; height: 1600px; border: 0; }
   #compare-branch { z-index: 1; }
   #divider { position: absolute; top: 0; bottom: 0; width: 2px; background: #c400c4; z-index: 2; pointer-events: none; }
-  #compare.difference #compare-branch { mix-blend-mode: difference; }
-  #compare.difference { filter: contrast(3) brightness(1.5); }
-  #compare.difference #divider { display: none; }
   .sources { position: absolute; left: -20000px; top: 0; }
   .sources iframe { border: 0; }
 </style></head><body>
@@ -439,13 +516,13 @@ async function lookPage(): Promise<string> {
   <p id="status">Loading the three versions</p>
   <p id="released-status"></p>
   <div id="timing"></div>
+  <p class="how">The sheet is rendered three times, with the stylesheets from the released ${RELEASED_TAG}, from master and from this branch. Every computed style value is compared. A change is accepted when an entry this branch adds under Unreleased in the changelog names the component and the property.</p>
 </header>
 <div id="changes"></div>
 <div id="whole">
   <button id="whole-toggle" type="button">The whole sheet, master against branch</button>
   <div class="panel">
-    <h2>master <input id="slider" type="range" min="0" max="100" value="50" aria-label="How much of the branch to show"> branch
-      <label><input id="difference" type="checkbox"> difference</label></h2>
+    <h2>master <input id="slider" type="range" min="0" max="100" value="50" aria-label="How much of the branch to show"> branch</h2>
     <div id="compare">
       <iframe id="compare-master" title="master, whole sheet" data-version="master" src="/frame/button/master"></iframe>
       <iframe id="compare-branch" title="branch, whole sheet" data-version="branch" src="/frame/button/branch"></iframe>
@@ -454,7 +531,8 @@ async function lookPage(): Promise<string> {
   </div>
 </div>
 <div class="sources" aria-hidden="true">${sources}</div>
-<script>const RELEASED = ${JSON.stringify(RELEASED_TAG)};${DIFF_SCRIPT}</script>
+<script>const RELEASED = ${JSON.stringify(RELEASED_TAG)};${DIFF_SCRIPT}
+changelog = ${JSON.stringify(await changelogEntries())};</script>
 </body></html>`
 }
 
@@ -494,6 +572,18 @@ const server = Bun.serve({
     },
     message() {},
   },
+})
+
+let changelogTimer: ReturnType<typeof setTimeout> | undefined
+watch(join(PACKAGE, "CHANGELOG.md"), () => {
+  clearTimeout(changelogTimer)
+  changelogTimer = setTimeout(async () => {
+    const message = JSON.stringify({
+      type: "changelog",
+      entries: await changelogEntries(),
+    })
+    for (const ws of sockets) ws.send(message)
+  }, 5)
 })
 
 let timer: ReturnType<typeof setTimeout> | undefined
