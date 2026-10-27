@@ -1,0 +1,21 @@
+{
+  "name": "lotek-test-blade",
+  "displayName": "Blade for the LO-TEK test",
+  "description": "Registers the language id blade and nothing else, so the suite can check the snippets in a template language VS Code does not ship with. Loaded only by scripts/check-vscode.ts, never packed.",
+  "version": "0.0.0",
+  "publisher": "lo-tek-test",
+  "private": true,
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "blade",
+        "aliases": [
+          "Blade"
+        ]
+      }
+    ]
+  }
+}

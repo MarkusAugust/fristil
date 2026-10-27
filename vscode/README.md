@@ -83,7 +83,9 @@ job for an HTML linter, and LO-TEK only reports on LO-TEK.
 The diagnostics, quick fixes, classes and hover work in PHP, Razor,
 Astro, Svelte, Vue, Twig, Blade, Jinja, Django, Handlebars, ERB, Go templates,
 EJS, Liquid, Nunjucks and Edge, and in HTML. The list is the setting
-`lotek.languages`, with VS Code's language ids, and can be changed. Outside
+`lotek.languages`, with VS Code's language ids, and can be changed. The
+snippets apply in the twenty language ids of the default list, whatever the
+setting says, since their languages are written into the snippet file when the extension is built. Outside
 HTML the `<lt-…>` elements and their attributes are also completed by the extension
 itself, since VS Code's own HTML service only runs in HTML files.
 

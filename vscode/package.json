@@ -2,7 +2,7 @@
   "name": "interfaces",
   "displayName": "LO-TEK for VS Code",
   "description": "Completion, hover, snippets, diagnostics and quick fixes for the LO-TEK design system: the <lt-*> elements, the lt- classes and their variants.",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "publisher": "lo-tek",
   "license": "MIT",
   "icon": "icon.png",
@@ -41,84 +41,7 @@
     },
     "snippets": [
       {
-        "language": "html",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "php",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "razor",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "aspnetcorerazor",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "astro",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "svelte",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "vue",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "twig",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "blade",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "jinja",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "jinja-html",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "django-html",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "handlebars",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "erb",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "gotmpl",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "go-template",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "ejs",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "liquid",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "nunjucks",
-        "path": "./dist/snippets.json"
-      },
-      {
-        "language": "edge",
-        "path": "./dist/snippets.json"
+        "path": "./dist/lotek.code-snippets"
       }
     ],
     "configurationDefaults": {
@@ -156,13 +79,13 @@
             "nunjucks",
             "edge"
           ],
-          "description": "The languages, as VS Code language ids, in which the extension checks the markup and completes classes and values. Completion of the <lt-*> elements from VS Code's own HTML service applies only to html."
+          "description": "The languages, as VS Code language ids, in which the extension checks the markup and completes classes and values. The snippets do not follow it: they apply in the languages of this default list. Completion of the <lt-*> elements from VS Code's own HTML service applies only to html."
         }
       }
     }
   },
   "scripts": {
-    "build": "bun build src/extension.ts --outfile dist/extension.js --target node --format cjs --external vscode && bun build src/server.ts --outfile dist/server.js --target node --format cjs && rm -f dist/lotek-core.wasm && cp ../interfaces/core/lotek.wasm dist/ && mkdir -p dist/manifest && cp ../interfaces/manifest/manifest.json dist/manifest/ && cp ../interfaces/html-data.json ../interfaces/snippets.json dist/",
+    "build": "bun build src/extension.ts --outfile dist/extension.js --target node --format cjs --external vscode && bun build src/server.ts --outfile dist/server.js --target node --format cjs && rm -f dist/lotek-core.wasm dist/snippets.json && cp ../interfaces/core/lotek.wasm dist/ && mkdir -p dist/manifest && cp ../interfaces/manifest/manifest.json dist/manifest/ && cp ../interfaces/html-data.json dist/ && bun scripts/build-snippets.ts",
     "check": "bun run build && vsce package --no-dependencies --out lotek.vsix",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
