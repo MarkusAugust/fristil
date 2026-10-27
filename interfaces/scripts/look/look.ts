@@ -131,8 +131,14 @@ let changedNodes = [];
 function clearMarks(doc) {
   for (const el of doc.querySelectorAll("[data-look-changed]")) el.removeAttribute("data-look-changed");
 }
-function mark(nodes) {
-  for (const el of nodes) el.setAttribute("data-look-changed", "");
+/** Marks the elements at the same positions in another copy of the sheet, like the compare frame. */
+function mark(doc, indices) {
+  clearMarks(doc);
+  const walker = doc.createTreeWalker(doc.getElementById("sheet"), NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+  let index = 0;
+  for (let node = walker.currentNode; node; node = walker.nextNode(), index++) {
+    if (indices.has(index) && node.nodeType === 1) node.setAttribute("data-look-changed", "");
+  }
 }
 /** Walks both documents in step and compares each node. a is the branch, b the reference. */
 function diffDocuments(docA, docB) {
@@ -158,7 +164,7 @@ function diffDocuments(docA, docB) {
       values += csA.length;
       const before = differences.length;
       compareStyles(key, csA, csB, differences, describe(a));
-      if (differences.some((d, i) => i >= before && !d.derived)) changedNodes.push(a);
+      if (differences.some((d, i) => i >= before && !d.derived)) changedNodes.push(index);
       for (const pseudo of pseudos(a, csA)) {
         const pa = wA.getComputedStyle(a, pseudo), pb = wB.getComputedStyle(b, pseudo);
         if (pseudo === "::before" || pseudo === "::after") {
@@ -192,7 +198,9 @@ window.lookDiff = function lookDiff(withReleased = true) {
     snapshotMs: t1 - t0,
     totalMs: performance.now() - t0,
   };
-  mark(changedNodes);
+  const changed = new Set(changedNodes);
+  mark(frame("branch"), changed);
+  mark(document.getElementById("compare-branch").contentDocument, changed);
   render(result);
   return result;
 };
