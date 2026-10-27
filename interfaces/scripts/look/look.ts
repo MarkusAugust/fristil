@@ -344,9 +344,12 @@ function acceptedBy(group) {
   const names = new Set(group.props.flatMap(p => [p, shorthand(p)]));
   return changelog.find(entry => COMPONENT.test(entry) && Array.from(names).some(n => entry.includes(n))) ?? null;
 }
+function requiredNames(group) {
+  return Array.from(new Set(group.props.map(shorthand)));
+}
+/** The start of an entry: the names the check looks for, and the values for the reader. */
 function suggestion(group) {
-  const names = Array.from(new Set(group.props.map(shorthand)));
-  return "- **\`lt-button\`: " + names.join(" and ") + " " + group.from + " \\u2192 " + group.to + ".** Why, in a sentence.";
+  return "- **\`lt-button\`: " + requiredNames(group).join(" and ") + " " + group.from + " \\u2192 " + group.to + ".**";
 }
 function renderAcceptance(section, group) {
   const footer = document.createElement("div");
@@ -356,12 +359,15 @@ function renderAcceptance(section, group) {
     footer.innerHTML = "<b>In the changelog:</b> " + esc(entry.split(/(?<=\\.)\\s/)[0]);
   } else {
     footer.className = "acceptance missing";
-    const text = suggestion(group);
-    footer.innerHTML = "<b>Not in the changelog.</b> If this is intended, add it under Unreleased in <code>interfaces/CHANGELOG.md</code>. If it is not, fix the stylesheet."
-      + "<div class=\\"suggest\\"><code></code><button type=\\"button\\">Copy</button></div>";
-    footer.querySelector(".suggest code").textContent = text;
+    const names = requiredNames(group);
+    const fixed = suggestion(group);
+    footer.innerHTML = "<b>Not in the changelog.</b> If this change is intended, add an entry under <code>## Unreleased</code> in <code>interfaces/CHANGELOG.md</code>. "
+      + "It is accepted the moment the file is saved with an entry that contains " + names.map(n => "<code>" + esc(n) + "</code>").join(" and ") + " together with <code>lt-button</code>. The wording is yours. "
+      + "If the change is not intended, fix the stylesheet instead."
+      + "<div class=\\"suggest\\"><code><span class=\\"fixed\\"></span> <span class=\\"yours\\">and then why, in your own words</span></code><button type=\\"button\\">Copy the start</button></div>";
+    footer.querySelector(".fixed").textContent = fixed;
     footer.querySelector("button").addEventListener("click", (e) => {
-      navigator.clipboard.writeText(text).then(() => { e.target.textContent = "Copied"; });
+      navigator.clipboard.writeText(fixed + " ").then(() => { e.target.textContent = "Copied"; });
     });
   }
   section.append(footer);
@@ -479,6 +485,9 @@ async function lookPage(): Promise<string> {
   .acceptance code { font-size: 13px; }
   .suggest { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
   .suggest code { background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid #f0d9a8; flex: 1; }
+  .suggest .fixed { font-weight: 600; color: #111; }
+  .suggest .yours { font-style: italic; color: #999; }
+  .acceptance.missing { line-height: 1.5; }
   .suggest button { font: inherit; font-size: 13px; padding: 5px 10px; border: 1px solid #c9a35e; background: #fff; border-radius: 4px; cursor: pointer; }
   #timing { font: 12px ui-monospace, monospace; color: #888; margin-top: 4px; }
   #changes { padding: 8px 24px 24px; }
