@@ -4,7 +4,7 @@
  * A prototype. It serves a page with three iframes, one per version of the
  * package (released, master, branch), and the page computes the difference
  * between them from computed style and geometry, in the browser. The branch
- * iframe is restyled over a WebSocket when a stylesheet on disk changes.
+ * iframes are restyled over a WebSocket when a stylesheet on disk changes.
  *
  * Versions:
  *   released  git show v<version>:…   (the tag of the version on npm)
@@ -22,6 +22,9 @@ const RELEASED_TAG = process.env.LOOK_RELEASED ?? "v0.37.0"
 
 type Version = "released" | "master" | "branch"
 const VERSIONS: Version[] = ["released", "master", "branch"]
+
+/** The width every copy of the sheet is laid out at, so a crop from one matches a crop from another. */
+const SHEET_WIDTH = 560
 
 const STYLESHEETS = [
   "src/tokens/tokens.css",
@@ -91,6 +94,7 @@ function frameDocument(styles: string, sheet: string): string {
 
 /** Runs inside the look page: the comparison of two frames, from computed style and geometry. */
 const DIFF_SCRIPT = `
+const SHEET_WIDTH = ${SHEET_WIDTH};
 function rect(node) {
   const r = node.getBoundingClientRect();
   return r.x.toFixed(2) + "," + r.y.toFixed(2) + "," + r.width.toFixed(2) + "," + r.height.toFixed(2);
@@ -118,20 +122,19 @@ function describe(node) {
   if (theme) name += " (" + theme.getAttribute("data-theme") + ")";
   return name;
 }
-function compareStyles(key, a, b, differences, where) {
+function compareStyles(key, index, a, b, differences, where) {
   const n = a.length;
-  if (n !== b.length) { differences.push({ key: key + "|length", from: b.length, to: n, where, derived: false }); }
+  if (n !== b.length) { differences.push({ key: key + "|length", index, from: b.length, to: n, where, derived: false }); }
   for (let i = 0; i < n; i++) {
     const p = a[i];
     const va = a.getPropertyValue(p), vb = b.getPropertyValue(p);
-    if (va !== vb) differences.push({ key: key + "|" + p, from: vb, to: va, where, derived: DERIVED.has(p) });
+    if (va !== vb) differences.push({ key: key + "|" + p, index, from: vb, to: va, where, derived: DERIVED.has(p) });
   }
 }
-let changedNodes = [];
 function clearMarks(doc) {
   for (const el of doc.querySelectorAll("[data-look-changed]")) el.removeAttribute("data-look-changed");
 }
-/** Marks the elements at the same positions in another copy of the sheet, like the compare frame. */
+/** Marks the elements at the given positions in a copy of the sheet. */
 function mark(doc, indices) {
   clearMarks(doc);
   const walker = doc.createTreeWalker(doc.getElementById("sheet"), NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
@@ -143,6 +146,7 @@ function mark(doc, indices) {
 /** Walks both documents in step and compares each node. a is the branch, b the reference. */
 function diffDocuments(docA, docB) {
   const differences = [];
+  const nodesA = [], nodesB = [];
   const rootA = docA.getElementById("sheet"), rootB = docB.getElementById("sheet");
   const wA = docA.defaultView, wB = docB.defaultView;
   const walkA = docA.createTreeWalker(rootA, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
@@ -150,111 +154,190 @@ function diffDocuments(docA, docB) {
   let values = 0;
   let a = rootA, b = rootB, index = 0;
   while (a && b) {
+    nodesA.push(a); nodesB.push(b);
     const key = index + ":" + (a.nodeType === 1 ? a.localName : "#text");
-    if (a.nodeType !== b.nodeType || a.localName !== b.localName) { differences.push({ key, from: "different markup", to: "" }); break; }
+    if (a.nodeType !== b.nodeType || a.localName !== b.localName) { differences.push({ key, index, from: "different markup", to: "", where: describe(a), derived: false }); break; }
     if (a.nodeType === 3) {
       const ra = textRects(docA, a), rb = textRects(docB, b);
       values++;
-      if (ra !== rb) differences.push({ key: key + "|rects", from: rb, to: ra, where: describe(a), derived: true });
+      if (ra !== rb) differences.push({ key: key + "|rects", index, from: rb, to: ra, where: describe(a), derived: true });
     } else {
       const ra = rect(a), rb = rect(b);
       values++;
-      if (ra !== rb) differences.push({ key: key + "|rect", from: rb, to: ra, where: describe(a), derived: true });
+      if (ra !== rb) differences.push({ key: key + "|rect", index, from: rb, to: ra, where: describe(a), derived: true });
       const csA = wA.getComputedStyle(a), csB = wB.getComputedStyle(b);
       values += csA.length;
-      const before = differences.length;
-      compareStyles(key, csA, csB, differences, describe(a));
-      if (differences.some((d, i) => i >= before && !d.derived)) changedNodes.push(index);
+      compareStyles(key, index, csA, csB, differences, describe(a));
       for (const pseudo of pseudos(a, csA)) {
         const pa = wA.getComputedStyle(a, pseudo), pb = wB.getComputedStyle(b, pseudo);
         if (pseudo === "::before" || pseudo === "::after") {
           const ca = pa.getPropertyValue("content"), cb = pb.getPropertyValue("content");
           values++;
-          if (ca !== cb) differences.push({ key: key + pseudo + "|content", from: cb, to: ca, where: describe(a) + pseudo, derived: false });
+          if (ca !== cb) differences.push({ key: key + pseudo + "|content", index, from: cb, to: ca, where: describe(a) + pseudo, derived: false });
           if (ca === "none" || ca === "normal") continue;
         }
         values += pa.length;
-        compareStyles(key + pseudo, pa, pb, differences, describe(a) + pseudo);
+        compareStyles(key + pseudo, index, pa, pb, differences, describe(a) + pseudo);
       }
     }
     a = walkA.nextNode(); b = walkB.nextNode(); index++;
   }
-  if (a || b) differences.push({ key: index + ":end", from: b ? "more nodes" : "", to: a ? "more nodes" : "" });
-  return { differences, values };
+  if (a || b) differences.push({ key: index + ":end", index, from: b ? "more nodes" : "", to: a ? "more nodes" : "", where: "the sheet", derived: false });
+  return { differences, values, nodesA, nodesB };
+}
+
+/** Logical and vendor names repeat the physical ones, so the summary leaves them out. */
+const ALIAS = /^(-webkit-|.*-(block|inline)(-|$)|.*-(start|end)-(start|end)-)/;
+/**
+ * Groups the differences by change, not by element: one group per set of
+ * properties that went from the same value to the same value on the same
+ * elements. A changed padding is then one group, with the elements behind it.
+ */
+function groupChanges(diffs) {
+  const byChange = new Map();
+  const changedIndices = new Set();
+  const movedIndices = new Set();
+  for (const d of diffs) {
+    if (d.derived) { movedIndices.add(d.index); continue; }
+    const prop = d.key.split("|")[1] ?? d.key;
+    if (ALIAS.test(prop)) continue;
+    const change = prop + "|" + d.from + "|" + d.to;
+    if (!byChange.has(change)) byChange.set(change, { prop, from: d.from, to: d.to, elements: new Map() });
+    byChange.get(change).elements.set(d.index, d.where);
+    changedIndices.add(d.index);
+  }
+  for (const i of changedIndices) movedIndices.delete(i);
+  const merged = new Map();
+  for (const change of byChange.values()) {
+    const signature = change.from + "|" + change.to + "|" + Array.from(change.elements.keys()).sort((x, y) => x - y).join(",");
+    if (!merged.has(signature)) merged.set(signature, { props: [], from: change.from, to: change.to, elements: change.elements });
+    merged.get(signature).props.push(change.prop);
+  }
+  return { groups: Array.from(merged.values()), changedIndices, moved: movedIndices.size };
+}
+
+const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+/*
+ * A window is a crop of one copy of the sheet: a box the size of the element
+ * with an iframe of the sheet behind it, shifted so the element shows. The
+ * iframes are kept in a pool by version and position, so a new diff reuses
+ * them and nothing reloads.
+ */
+const MARGIN = 14;
+const pool = new Map();
+function windowFor(version, index, slot) {
+  const key = version + ":" + index + ":" + slot;
+  if (!pool.has(key)) {
+    const box = document.createElement("div");
+    box.className = "window " + version;
+    const iframe = document.createElement("iframe");
+    iframe.src = "/frame/button/" + version;
+    iframe.dataset.version = version;
+    iframe.title = version;
+    iframe.width = SHEET_WIDTH;
+    iframe.height = 1600;
+    box.append(iframe);
+    pool.set(key, { box, iframe });
+  }
+  return pool.get(key);
+}
+function placeWindow(entry, x, y, w, h) {
+  entry.box.style.width = (w + 2 * MARGIN) + "px";
+  entry.box.style.height = (h + 2 * MARGIN) + "px";
+  entry.iframe.style.left = (MARGIN - x) + "px";
+  entry.iframe.style.top = (MARGIN - y) + "px";
+}
+function union(a, b) {
+  const x = Math.min(a.x, b.x), y = Math.min(a.y, b.y);
+  return { x, y, w: Math.max(a.right, b.right) - x, h: Math.max(a.bottom, b.bottom) - y };
+}
+
+/** The crops: for each group, before and after of the first few elements. */
+function renderChanges(result) {
+  const container = document.getElementById("changes");
+  for (const { box } of pool.values()) box.remove();
+  container.innerHTML = "";
+  const { groups, moved } = result.grouped;
+  groups.forEach((group, n) => {
+    const section = document.createElement("section");
+    section.className = "change";
+    const examples = Array.from(group.elements.entries()).slice(0, 4);
+    const names = Array.from(new Set(group.elements.values()));
+    section.innerHTML = "<h2><span class=\\"n\\">" + (n + 1) + "</span> "
+      + group.props.map(p => "<code>" + esc(p) + "</code>").join(", ")
+      + " <span class=\\"from\\">" + esc(group.from) + "</span> <span class=\\"arrow\\">\\u2192</span> <span class=\\"to\\">" + esc(group.to) + "</span>"
+      + "<small>on " + group.elements.size + " element" + (group.elements.size === 1 ? "" : "s") + ": " + esc(names.slice(0, 3).join(", ")) + (names.length > 3 ? " and " + (names.length - 3) + " more" : "") + "</small></h2>";
+    const row = document.createElement("div");
+    row.className = "pairs";
+    for (const [index, where] of examples) {
+      const nodeA = result.nodesA[index], nodeB = result.nodesB[index];
+      if (!nodeA || nodeA.nodeType !== 1) continue;
+      const u = union(nodeA.getBoundingClientRect(), nodeB.getBoundingClientRect());
+      const pair = document.createElement("div");
+      pair.className = "pair";
+      pair.innerHTML = "<div class=\\"labels\\"><span>before</span><span>after</span></div>";
+      const before = windowFor("master", index, n), after = windowFor("branch", index, n);
+      placeWindow(before, u.x, u.y, u.w, u.h);
+      placeWindow(after, u.x, u.y, u.w, u.h);
+      const crops = document.createElement("div");
+      crops.className = "crops";
+      crops.append(before.box, after.box);
+      pair.append(crops);
+      const caption = document.createElement("div");
+      caption.className = "caption";
+      caption.textContent = where;
+      pair.append(caption);
+      row.append(pair);
+    }
+    section.append(row);
+    container.append(section);
+  });
+  if (moved) {
+    const p = document.createElement("p");
+    p.className = "moved";
+    p.textContent = moved + " element" + (moved === 1 ? "" : "s") + " moved or resized as a consequence.";
+    container.append(p);
+  }
+}
+
+function renderStatus(result) {
+  const n = result.grouped.groups.length;
+  const status = document.getElementById("status");
+  status.className = n ? "changed" : "same";
+  status.textContent = n === 0 ? "No change against master" : n === 1 ? "1 change against master" : n + " changes against master";
+  const r = result.releasedGroups.length;
+  document.getElementById("released-status").textContent = r === 0 ? "Same as the released " + RELEASED + "." : r + " change" + (r === 1 ? "" : "s") + " against the released " + RELEASED + ".";
+  document.getElementById("timing").textContent = result.keys + " values compared per copy in " + result.totalMs.toFixed(1) + " ms";
+  document.title = (n ? n + " changed, " : "") + "lt-button";
 }
 
 window.lookDiff = function lookDiff(withReleased = true) {
   const frame = (v) => document.getElementById("frame-" + v).contentDocument;
   clearMarks(frame("branch"));
-  changedNodes = [];
   const t0 = performance.now();
   const master = diffDocuments(frame("branch"), frame("master"));
   const t1 = performance.now();
   const released = withReleased ? diffDocuments(frame("branch"), frame("released")) : { differences: [], values: 0 };
+  const grouped = groupChanges(master.differences);
   const result = {
     againstMaster: master.differences,
     againstReleased: released.differences,
     keys: master.values,
     snapshotMs: t1 - t0,
     totalMs: performance.now() - t0,
+    grouped,
+    releasedGroups: groupChanges(released.differences).groups,
+    nodesA: master.nodesA,
+    nodesB: master.nodesB,
   };
-  const changed = new Set(changedNodes);
-  mark(frame("branch"), changed);
-  mark(document.getElementById("compare-branch").contentDocument, changed);
-  render(result);
-  return result;
+  renderStatus(result);
+  renderChanges(result);
+  mark(frame("branch"), grouped.changedIndices);
+  mark(document.getElementById("compare-branch").contentDocument, grouped.changedIndices);
+  // What Playwright reads: no nodes, they do not serialise.
+  return { againstMaster: result.againstMaster, againstReleased: result.againstReleased, keys: result.keys, snapshotMs: result.snapshotMs, totalMs: result.totalMs };
 };
-
-/** Logical and vendor names repeat the physical ones in the summary, so they are left out there. */
-const ALIAS = /^(-webkit-|.*-(block|inline)(-|$))/;
-/**
- * Groups the differences by change, not by element: one line per set of
- * properties that went from the same value to the same value on the same
- * elements. Then a changed padding is one line, with the elements behind it.
- */
-function summary(diffs) {
-  if (diffs.length === 0) return "<p class=\\"same\\">No difference.</p>";
-  const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;");
-  const byChange = new Map();
-  const movedOnly = new Set();
-  const changedElements = new Set();
-  for (const d of diffs) {
-    if (d.derived) { movedOnly.add(d.where); continue; }
-    const prop = d.key.split("|")[1];
-    if (ALIAS.test(prop)) continue;
-    const change = prop + "|" + d.from + "|" + d.to;
-    if (!byChange.has(change)) byChange.set(change, { prop, from: d.from, to: d.to, elements: new Map() });
-    const elements = byChange.get(change).elements;
-    elements.set(d.where, (elements.get(d.where) ?? 0) + 1);
-    changedElements.add(d.where);
-  }
-  for (const w of changedElements) movedOnly.delete(w);
-  // Merge changes with the same values on the same elements.
-  const merged = new Map();
-  for (const change of byChange.values()) {
-    const signature = change.from + "|" + change.to + "|" + Array.from(change.elements.keys()).sort().join(",");
-    if (!merged.has(signature)) merged.set(signature, { props: [], from: change.from, to: change.to, elements: change.elements });
-    merged.get(signature).props.push(change.prop);
-  }
-  let html = "<ul class=\\"changed\\">";
-  for (const change of merged.values()) {
-    const names = Array.from(change.elements.keys());
-    const count = Array.from(change.elements.values()).reduce((a, b) => a + b, 0);
-    html += "<li>" + change.props.map(p => "<code>" + esc(p) + "</code>").join(", ") + " " + esc(change.from) + " \\u2192 " + esc(change.to)
-      + " on " + count + " element" + (count === 1 ? "" : "s") + ": " + esc(names.slice(0, 4).join(", ")) + (names.length > 4 ? " and " + (names.length - 4) + " more" : "") + "</li>";
-  }
-  html += "</ul>";
-  if (movedOnly.size) html += "<p class=\\"moved\\">" + movedOnly.size + " element" + (movedOnly.size === 1 ? "" : "s") + " moved or resized as a consequence.</p>";
-  return html;
-}
-
-function render(result) {
-  document.getElementById("timing").textContent = result.keys + " values compared per pair in " + result.totalMs.toFixed(1) + " ms";
-  document.getElementById("against-master").innerHTML = summary(result.againstMaster);
-  document.getElementById("against-released").innerHTML = summary(result.againstReleased);
-  const n = result.againstMaster.filter(d => !d.derived).length;
-  document.title = (n ? n + " changed, " : "") + "lt-button";
-}
 
 // Hot swap: the server sends the branch stylesheet when a file on disk changes.
 const socket = new WebSocket("ws://" + location.host + "/ws");
@@ -262,7 +345,10 @@ socket.onmessage = (event) => {
   const received = performance.now();
   const message = JSON.parse(event.data);
   if (message.type !== "css") return;
-  for (const id of ["frame-branch", "compare-branch"]) document.getElementById(id).contentDocument.getElementById("package").textContent = message.css;
+  for (const iframe of document.querySelectorAll("iframe[data-version=branch]")) {
+    const style = iframe.contentDocument && iframe.contentDocument.getElementById("package");
+    if (style) style.textContent = message.css;
+  }
   requestAnimationFrame(() => requestAnimationFrame(() => {
     const result = window.lookDiff(true);
     result.swapToDiffMs = performance.now() - received;
@@ -271,7 +357,8 @@ socket.onmessage = (event) => {
     document.dispatchEvent(new CustomEvent("look-swapped", { detail: result }));
   }));
 };
-// The compare panel: master under, branch on top, clipped by the slider.
+
+// The whole sheet: master under, branch on top, clipped by the slider.
 const slider = document.getElementById("slider");
 const compare = document.getElementById("compare");
 function setSlider() {
@@ -285,68 +372,89 @@ document.getElementById("difference").addEventListener("change", (e) => {
   compare.classList.toggle("difference", e.target.checked);
   if (e.target.checked) { slider.value = 100; setSlider(); }
 });
+document.getElementById("whole-toggle").addEventListener("click", () => {
+  document.getElementById("whole").classList.toggle("open");
+});
+
 window.addEventListener("load", () => {
-  const frames = document.querySelectorAll("iframe");
+  const frames = document.querySelectorAll(".sources iframe, #compare iframe");
   let pending = frames.length;
   frames.forEach(f => {
-    const done = () => { if (--pending === 0) { window.lookReady = true; document.dispatchEvent(new Event("look-ready")); } };
+    const done = () => { if (--pending === 0) { window.lookDiff(true); window.lookReady = true; document.dispatchEvent(new Event("look-ready")); } };
     if (f.contentDocument && f.contentDocument.readyState === "complete" && f.contentDocument.getElementById("sheet")) done(); else f.addEventListener("load", done);
   });
 });
 `
 
 async function lookPage(): Promise<string> {
-  const frames = VERSIONS.map(
+  const sources = VERSIONS.map(
     (v) =>
-      `<section><h1>${v}</h1><iframe id="frame-${v}" title="${v}" src="/frame/button/${v}"></iframe></section>`,
+      `<iframe id="frame-${v}" title="${v}, source" data-version="${v}" src="/frame/button/${v}" width="${SHEET_WIDTH}" height="1600"></iframe>`,
   ).join("")
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>lt-button</title>
 <style>
-  body { margin: 0; font-family: system-ui, sans-serif; background: #eee; color: #111; }
-  header { padding: 12px 16px; background: #fff; border-bottom: 1px solid #ccc; }
-  header h1 { font-size: 16px; margin: 0 0 8px; }
-  #timing { font: 12px ui-monospace, monospace; color: #555; }
-  .report { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; font-size: 13px; }
-  .report h2 { font-size: 13px; margin: 0 0 4px; font-weight: 600; }
-  .report ul { margin: 0; padding-left: 18px; }
-  .report li { margin: 2px 0; }
-  .report code { background: #f3f3f3; padding: 0 3px; }
-  .same { color: #2a7; margin: 0; }
-  .moved { color: #666; margin: 4px 0 0; }
-  .layout { display: grid; grid-template-columns: 1136px 1fr; gap: 8px; padding: 8px; align-items: start; }
-  .compare-panel h1, section h1 { font-size: 13px; font-weight: normal; margin: 0 0 4px; display: flex; gap: 16px; align-items: center; }
-  .compare-panel h1 input[type=range] { flex: 1; }
-  #compare { position: relative; width: 1120px; height: 780px; overflow: auto; background: #fff; }
-  #compare iframe { position: absolute; inset: 0; width: 1120px; height: 1400px; border: 0; }
+  body { margin: 0; font-family: system-ui, sans-serif; background: #f4f4f4; color: #111; }
+  header { padding: 16px 24px 8px; }
+  header h1 { font-size: 15px; font-weight: 500; margin: 0; color: #666; }
+  #status { font-size: 32px; font-weight: 700; margin: 4px 0 0; }
+  #status.same { color: #1a8a4a; }
+  #status.changed { color: #c400c4; }
+  #released-status { margin: 2px 0 0; font-size: 14px; color: #444; }
+  #timing { font: 12px ui-monospace, monospace; color: #888; margin-top: 4px; }
+  #changes { padding: 8px 24px 24px; }
+  .change { background: #fff; border-radius: 8px; padding: 16px 20px; margin-top: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .change h2 { font-size: 20px; font-weight: 600; margin: 0 0 12px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .change h2 .n { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #c400c4; color: #fff; font-size: 14px; }
+  .change h2 code { background: #f3e5f3; padding: 2px 6px; border-radius: 4px; font-size: 18px; }
+  .change h2 .from { color: #888; text-decoration: line-through; }
+  .change h2 .arrow { color: #888; }
+  .change h2 .to { color: #c400c4; }
+  .change h2 small { flex-basis: 100%; font-size: 13px; font-weight: 400; color: #666; }
+  .pairs { display: flex; flex-wrap: wrap; gap: 24px; }
+  .pair .labels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px; color: #888; margin-bottom: 4px; }
+  .crops { display: flex; gap: 12px; align-items: flex-start; }
+  .window { position: relative; overflow: hidden; border: 2px solid #ddd; border-radius: 6px; background: #fff; }
+  .window.branch { border-color: #c400c4; }
+  .window iframe { position: absolute; border: 0; pointer-events: none; }
+  .caption { font: 12px ui-monospace, monospace; color: #666; margin-top: 6px; }
+  .moved { color: #666; font-size: 13px; margin: 12px 0 0; }
+  #whole { padding: 0 24px 24px; }
+  #whole-toggle { font: inherit; font-size: 14px; background: none; border: 1px solid #bbb; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  #whole .panel { display: none; margin-top: 12px; }
+  #whole.open .panel { display: block; }
+  #whole h2 { font-size: 13px; font-weight: normal; margin: 0 0 4px; display: flex; gap: 16px; align-items: center; width: ${SHEET_WIDTH * 2}px; }
+  #whole h2 input[type=range] { flex: 1; }
+  #compare { position: relative; width: ${SHEET_WIDTH * 2}px; height: 800px; overflow: auto; background: #fff; }
+  #compare iframe { position: absolute; inset: 0; width: ${SHEET_WIDTH * 2}px; height: 1600px; border: 0; }
   #compare-branch { z-index: 1; }
-  #divider { position: absolute; top: 0; bottom: 0; width: 2px; background: #e0e; z-index: 2; pointer-events: none; }
+  #divider { position: absolute; top: 0; bottom: 0; width: 2px; background: #c400c4; z-index: 2; pointer-events: none; }
   #compare.difference #compare-branch { mix-blend-mode: difference; }
   #compare.difference { filter: contrast(3) brightness(1.5); }
   #compare.difference #divider { display: none; }
-  .frames { display: grid; gap: 8px; }
-  .frames iframe { width: 560px; height: 420px; border: 0; background: #fff; display: block; }
+  .sources { position: absolute; left: -20000px; top: 0; }
+  .sources iframe { border: 0; }
 </style></head><body>
 <header>
-  <h1>lt-button</h1>
-  <div id="timing">waiting for the frames</div>
-  <div class="report">
-    <div><h2>This branch against master</h2><div id="against-master"></div></div>
-    <div><h2>This branch against the released ${RELEASED_TAG}</h2><div id="against-released"></div></div>
-  </div>
+  <h1>lt-button, this branch</h1>
+  <p id="status">Loading the three versions</p>
+  <p id="released-status"></p>
+  <div id="timing"></div>
 </header>
-<div class="layout">
-  <div class="compare-panel">
-    <h1>master <input id="slider" type="range" min="0" max="100" value="50" aria-label="How much of the branch to show"> branch
-      <label><input id="difference" type="checkbox"> difference</label></h1>
+<div id="changes"></div>
+<div id="whole">
+  <button id="whole-toggle" type="button">The whole sheet, master against branch</button>
+  <div class="panel">
+    <h2>master <input id="slider" type="range" min="0" max="100" value="50" aria-label="How much of the branch to show"> branch
+      <label><input id="difference" type="checkbox"> difference</label></h2>
     <div id="compare">
-      <iframe id="compare-master" title="master, for comparison" src="/frame/button/master"></iframe>
-      <iframe id="compare-branch" title="branch, for comparison" src="/frame/button/branch"></iframe>
+      <iframe id="compare-master" title="master, whole sheet" data-version="master" src="/frame/button/master"></iframe>
+      <iframe id="compare-branch" title="branch, whole sheet" data-version="branch" src="/frame/button/branch"></iframe>
       <div id="divider"></div>
     </div>
   </div>
-  <div class="frames">${frames}</div>
 </div>
-<script>${DIFF_SCRIPT}</script>
+<div class="sources" aria-hidden="true">${sources}</div>
+<script>const RELEASED = ${JSON.stringify(RELEASED_TAG)};${DIFF_SCRIPT}</script>
 </body></html>`
 }
 
