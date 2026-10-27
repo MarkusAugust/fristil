@@ -3,6 +3,21 @@
 The extension has its own version number. It does not follow the package,
 since it only changes when an element or an attribute does.
 
+## 0.10.1
+
+- The snippets are one snippet file, `lotek.code-snippets`, with the
+  twenty languages as the scope of every snippet, instead of twenty
+  contributions with a language each. VS Code reported "Unknown language"
+  in the extension's runtime status for every contributed language no
+  installed extension registers, sixteen of the twenty on a machine with
+  none of the template-language extensions. The snippets worked where the
+  language existed; the marks were the only symptom. A scope is read when
+  the snippet is offered and never validated, so the marks are gone, and
+  nothing else changes: the same snippets, in the same languages, through
+  VS Code's own snippet service. As before, the snippets apply in the
+  twenty languages of the default list and do not follow a changed
+  `lotek.languages`.
+
 ## 0.10.0
 
 In step with the package's 0.37.0, the first under the `lt-` prefix. The

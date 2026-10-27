@@ -162,10 +162,14 @@ The major number goes up when a class name, a `data-*` attribute, a `part` name,
 
 ## The editor extension
 
-`editor/` is the VS Code extension. `package.json` points to
-`dist/html-data.json` and `dist/snippets.json`, which the build copies from
-the package and which give completion and snippets without code, and to `dist/extension.js`, which connects the check to the editor with
-squiggles, light bulbs, completion and hover. The check is the Rust core in `core/`,
+`vscode/` is the VS Code extension. `package.json` points to
+`dist/html-data.json`, which the build copies from the package, and to
+`dist/lotek.code-snippets`, which `scripts/build-snippets.ts` writes from the
+package's `snippets.json` with the default of `lotek.languages` as the scope
+of every snippet, read when the extension is built, so a changed setting does
+not reach the snippets; together they give completion and snippets without code.
+It also points to `dist/extension.js`, which connects the check to the editor
+with squiggles, light bulbs, completion and hover. The check is the Rust core in `core/`,
 built to WebAssembly. The same module is in the package, as
 `@lo-tek/interfaces/diagnostics` and `lotek check`, and the extension has a
 copy in `dist/`. The core carries no data: every host gives it the manifest from

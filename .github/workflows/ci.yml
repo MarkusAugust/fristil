@@ -98,8 +98,9 @@ jobs:
       - name: Tests
         run: bun run test
 
-      # The package carries the core, built from Rust. `rust-toolchain.toml` in
-      # `core/` decides the version, and rustup fetches it on the first call.
+      # The package carries the core, built from Rust. `rust-toolchain.toml` at
+      # the root of the repository decides the version, and rustup fetches it on
+      # the first call.
       - name: Rust version
         working-directory: core
         run: rustc --version
@@ -131,13 +132,23 @@ jobs:
           (cd vscode && bun run build)
           LOTEK_CLI="[\"node\",\"$PWD/vscode/dist/server.js\"]" bun interfaces/scripts/check-lsp.ts
 
-      # VS Code is 300 MB, and is only fetched when the version in engines
-      # changes.
+      # VS Code is 300 MB, and is only fetched when the version in engines or
+      # the runner that downloads it changes. A hash of the whole
+      # `package.json` fetched it again for every new version of the extension
+      # and every change to a setting; the runner's version is in the key so a
+      # new layout of the folder never meets an old cache. Outside CI there is
+      # no output file.
+      - name: VS Code version
+        id: vscode
+        run: |
+          echo "engines=$(bun -p "require('./vscode/package.json').engines.vscode")" >> "${GITHUB_OUTPUT:-/dev/null}"
+          echo "runner=$(cd vscode && bun -p "require('@vscode/test-electron/package.json').version")" >> "${GITHUB_OUTPUT:-/dev/null}"
+
       - name: Restore VS Code from cache
         uses: actions/cache@v6
         with:
           path: .vscode-test
-          key: vscode-${{ runner.os }}-${{ hashFiles('vscode/package.json') }}
+          key: vscode-${{ runner.os }}-${{ steps.vscode.outputs.engines }}-${{ steps.vscode.outputs.runner }}
 
       # The extension in a real VS Code, with the language server connected.
       - name: VS Code extension
@@ -250,8 +261,8 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # `rust-toolchain.toml` in `core/` decides the version. rustup is on the
-      # machine and fetches it on the first call.
+      # `rust-toolchain.toml` at the root of the repository decides the version.
+      # rustup is on the machine and fetches it on the first call.
       - name: Rust version
         working-directory: core
         run: rustc --version
