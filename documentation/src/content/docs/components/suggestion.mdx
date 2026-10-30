@@ -5,6 +5,7 @@ description: Field with a suggestion list that narrows as the user types. Frame 
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import SuggestionDemo from "../../../components/SuggestionDemo.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 The server writes the field and the list. The component filters as the user types, handles the arrow keys, and announces the number of matches to screen readers.
 
@@ -335,6 +336,8 @@ The list is in the top layer when it is open, so it sits above everything else w
 }
 ```
 ## Accessibility
+
+<ScreenReaderContract component="suggestion" />
 
 The field is a `role="combobox"` with `aria-autocomplete="list"`, and the list a `role="listbox"` with `role="option"` inside. If the server writes them with `lt.suggestion()`, they are in the HTML before the script runs. If the markup comes without them, the component sets them when it is registered.
 

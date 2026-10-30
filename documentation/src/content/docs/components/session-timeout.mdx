@@ -5,6 +5,7 @@ description: Warns before a logged-in session expires, and counts down. You writ
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import SessionTimeoutDemo from "../../../components/SessionTimeoutDemo.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 This is the thing every large organisation builds itself, and gets wrong. Either no warning comes, and the user loses a half-completed application form. Or the dialog steals focus in the middle of a sentence. Or the screen reader reads the countdown every single second.
 
@@ -265,6 +266,8 @@ Shape and size are read from component variables, with the system's value as the
 }
 ```
 ## Accessibility
+
+<ScreenReaderContract component="session-timeout" />
 
 The dialog is a real `<dialog>` opened with `showModal()`, so the focus trap, Escape and the top layer come from the browser. It has `role="alertdialog"`, because it interrupts something the user did not ask to be interrupted in.
 

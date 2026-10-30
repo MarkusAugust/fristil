@@ -4,6 +4,7 @@ description: A text field for forms, with states for valid and invalid. CSS comp
 ---
 
 import Example from "../../../components/Example.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 Plain CSS on an ordinary `<input>`, so the browser's own validation, autofill and keyboard handling work as before.
 
@@ -134,6 +135,8 @@ The variable is on the container, not on the field, so it applies to every field
 See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
+
+<ScreenReaderContract component="input" />
 
 - Every field needs a visible `<label>` with `for`. `placeholder` is no replacement, since it disappears as soon as the user types.
 - Use the right `type`. It decides the phone keyboard and what autofill the browser offers.

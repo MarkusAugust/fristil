@@ -7,11 +7,11 @@ import {
   HostElement,
   isServerControlled,
   languageOf,
+  rememberedId,
   SERVER_CONTROLLED,
   setAttr,
   setFlag,
   setText,
-  uniqueId,
   warnAboutMarkup,
 } from "../../host-element.js"
 import {
@@ -388,7 +388,7 @@ export class LtSuggestion extends HostElement {
       setAttr(
         labelElement,
         "id",
-        this.rememberedId(labelElement, "lt-suggestion-label"),
+        rememberedId(this.ids, labelElement, "lt-suggestion-label"),
       )
     }
     if (label !== null) setAttr(list, "aria-label", null)
@@ -397,17 +397,6 @@ export class LtSuggestion extends HostElement {
       name: "aria-labelledby",
       value: labelElement.id,
     })
-  }
-
-  /** The id an element should have: the one it has, otherwise the one the web component created last. */
-  private rememberedId(element: Element, prefix: string): string {
-    if (element.id) return element.id
-    let id = this.ids.get(element)
-    if (!id) {
-      id = uniqueId(prefix)
-      this.ids.set(element, id)
-    }
-    return id
   }
 
   /**
@@ -547,7 +536,7 @@ export class LtSuggestion extends HostElement {
         const wanted = control.getAttribute("aria-controls")
         const free = wanted && !root.getElementById?.(wanted)
         if (free) this.ids.set(list, wanted)
-        setAttr(list, "id", this.rememberedId(list, "lt-suggestion-list"))
+        setAttr(list, "id", rememberedId(this.ids, list, "lt-suggestion-list"))
       }
       if (!control.hasAttribute("aria-controls")) {
         setAttr(control, "aria-controls", list.id)
@@ -567,7 +556,11 @@ export class LtSuggestion extends HostElement {
         this.roledByMe.add(option)
       }
       if (!option.id) {
-        setAttr(option, "id", this.rememberedId(option, "lt-suggestion-option"))
+        setAttr(
+          option,
+          "id",
+          rememberedId(this.ids, option, "lt-suggestion-option"),
+        )
       }
       // From the start, not only when the list closes: otherwise the options
       // the server sent were without it until then, while the rest of the list

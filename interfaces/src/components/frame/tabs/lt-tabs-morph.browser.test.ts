@@ -52,26 +52,12 @@ import {
 import { waitForPaint } from "../../../testing/a11y"
 import { setAddress } from "../../../testing/address"
 import { attr } from "../../../testing/markup"
+import { datastarPatch as patch } from "../../../testing/update"
 import { defineLtField } from "../field/lt-field"
 import { defineLtPopover } from "../popover/lt-popover"
 import { defineLtSuggestion } from "../suggestion/lt-suggestion"
 import { defineLtTabs } from "./lt-tabs"
 import { tabs } from "./tabs"
-
-import "../../../testing/datastar/datastar-v1.0.4.js"
-
-/** Patches like a `datastar-patch-elements` without a selector: `outer` on the id. */
-function patch(elements: string): void {
-  document.dispatchEvent(
-    new CustomEvent("datastar-fetch", {
-      detail: {
-        type: "datastar-patch-elements",
-        el: document.body,
-        argsRaw: { elements },
-      },
-    }),
-  )
-}
 
 /** Whether each node is still the same. */
 function sameNodes(before: Element[], after: Element[]): boolean[] {
@@ -493,17 +479,8 @@ describe("the components warn when a patch replaced the elements", () => {
   }
 
   /** Patches like a `datastar-patch-elements` with a selector and mode. */
-  function patchInside(selector: string, elements: string): void {
-    document.dispatchEvent(
-      new CustomEvent("datastar-fetch", {
-        detail: {
-          type: "datastar-patch-elements",
-          el: document.body,
-          argsRaw: { selector, mode: "inner", elements },
-        },
-      }),
-    )
-  }
+  const patchInside = (selector: string, elements: string) =>
+    patch(elements, { selector, mode: "inner" })
 
   it("lt-tabs: does not warn, since the component writes no id that could be replaced", async () => {
     await clickAndPatch(BAR)

@@ -17,6 +17,7 @@ import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { compile } from "tailwindcss"
+import { CONTRACTS } from "../../interfaces/scripts/accessibility/contracts.ts"
 import {
   FAMILIES,
   ROLES,
@@ -374,6 +375,32 @@ for (const { name, path } of componentFolders()) {
     problems.push({ where, what: 'is missing the section "Accessibility"' })
   }
 
+  /*
+   * A component with an accessibility contract shows it, in its section
+   * "Accessibility": the steps and what a screen reader is given, written
+   * out by <ScreenReaderContract> from the data check-accessibility-tree.ts
+   * checks. A page cannot then promise one thing while the check tests
+   * another.
+   */
+  const section =
+    text.split(/^## .*[Aa]ccessibility.*$/m)[1]?.split(/^## /m)[0] ?? ""
+  const shown = [
+    ...text.matchAll(/<ScreenReaderContract component="([^"]+)"/g),
+  ].map((m) => m[1])
+  const inSection = [
+    ...section.matchAll(/<ScreenReaderContract component="([^"]+)"/g),
+  ].map((m) => m[1])
+  if (CONTRACTS.some((c) => c.component === name) && !inSection.includes(name))
+    problems.push({
+      where,
+      what: `has an accessibility contract, but the section "Accessibility" does not show it: add <ScreenReaderContract component="${name}" />`,
+    })
+  for (const other of shown.filter((c) => c !== name))
+    problems.push({
+      where,
+      what: `shows the accessibility contract of "${other}", not its own`,
+    })
+
   // <Example> for the simple ones, or a separate demo component where the
   // example needs a script, such as <CalendarDemo>.
   if (!/<(Example|[A-Z][A-Za-z]*Demo)\b/.test(text)) {
@@ -609,6 +636,15 @@ for (const file of [
     })
   }
 }
+
+// A contract for a component that has no folder is shown on no page.
+const folders = new Set(componentFolders().map((f) => f.name))
+for (const contract of CONTRACTS)
+  if (!folders.has(contract.component))
+    problems.push({
+      where: "interfaces/scripts/accessibility/contracts.ts",
+      what: `the contract for "${contract.component}" names no component folder, so no page shows it`,
+    })
 
 if (problems.length > 0) {
   const summary = problems.map((p) => `  ${p.where}: ${p.what}`).join("\n")

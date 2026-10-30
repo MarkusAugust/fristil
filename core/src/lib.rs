@@ -26,6 +26,7 @@
 //! Kotlin. `line` and `column` start at 1, and the column is counted in
 //! UTF-16 units.
 
+pub mod accessibility;
 pub mod diagnose;
 pub mod json;
 pub mod manifest;
@@ -275,6 +276,43 @@ pub unsafe extern "C" fn diagnose_page_raw(ptr: *mut u8, length: usize) -> u32 {
     };
     respond(to_json(&diagnose_page(&html, &vocabulary), &html));
     0
+}
+
+/// The accessibility tree of a page the host has rendered: see
+/// [`accessibility::accessibility_tree`] for the facts the host must write
+/// on each element. Refuses, with the reason, when they are missing.
+///
+/// # Safety
+/// `ptr` and `length` must come from `alloc(length)`, filled with UTF-8.
+#[no_mangle]
+pub unsafe extern "C" fn accessibility_tree_raw(ptr: *mut u8, length: usize) -> u32 {
+    let html = utf16(&read_input(ptr, length));
+    match accessibility::accessibility_tree(&html) {
+        Ok(nodes) => {
+            respond(accessibility::to_json(&nodes));
+            0
+        }
+        Err(error) => refuse(&error),
+    }
+}
+
+/// The facts the host must write on each element before it asks for the
+/// accessibility tree, as a JSON list.
+#[no_mangle]
+pub extern "C" fn accessibility_facts_raw() {
+    respond(accessibility::names_json(accessibility::FACTS));
+}
+
+/// The states the accessibility tree can give, as a JSON list.
+#[no_mangle]
+pub extern "C" fn accessibility_states_raw() {
+    respond(accessibility::names_json(accessibility::STATES));
+}
+
+/// The WAI-ARIA roles the accessibility tree knows, as a JSON list.
+#[no_mangle]
+pub extern "C" fn accessibility_roles_raw() {
+    respond(accessibility::names_json(&accessibility::roles()));
 }
 
 /// Gives the core the vocabulary: the manifest the host has written in.

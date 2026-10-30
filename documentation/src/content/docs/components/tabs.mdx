@@ -5,6 +5,7 @@ description: Tab list of links to their panels. Frame component.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import TabsDemo from "../../../components/TabsDemo.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 The tabs are links to their panels. Without JavaScript the row is a table of contents, and the panels follow one after another below it. With JavaScript the component turns the links into tabs: Tab skips past the whole row and into the selected panel, the arrow keys move between the tabs, and the screen reader says "tab, 2 of 3, selected" where it would otherwise have said "link".
 
@@ -305,6 +306,8 @@ The links have no class of their own; they are styled as `.lt-tabs__list a`. The
 ```
 
 ## Accessibility
+
+<ScreenReaderContract component="tabs" />
 
 The tabs are `role="tab"` in a `role="tablist"`, the list items around them are `role="presentation"` so the screen reader does not count them as a list, and the panels are `role="tabpanel"`. If you write them with `lt.tabs()` from the React entry point, the roles are in the HTML before the script has run. Otherwise the component sets them when it is registered, and puts them back if an update removes them.
 

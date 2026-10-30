@@ -5,6 +5,7 @@ description: A queue of short messages in the corner of the screen. Standalone c
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import ToastDemo from "../../../components/ToastDemo.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 The element is the container, not the message. You add it once in the app and call `show()` when there is something to report.
 
@@ -282,6 +283,8 @@ The container lets clicks through when it is empty, so it does not block buttons
 See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
+
+<ScreenReaderContract component="toast" />
 
 - One thing at a time. Five messages on top of each other are read out one after another, and none of them gets attention.
 - Do not put important actions in a message that disappears. The undo button belongs in the page.

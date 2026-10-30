@@ -31,7 +31,7 @@ const LABELABLE: &[&str] = &[
     "button", "input", "meter", "output", "progress", "select", "textarea",
 ];
 
-const VOID: &[&str] = &[
+pub(crate) const VOID: &[&str] = &[
     "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source",
     "track", "wbr",
 ];
@@ -253,7 +253,7 @@ pub(crate) fn fragment(href: &[u16]) -> Utf16 {
 
 /// `<(\/?)([a-z][a-z0-9-]*)(?=[\s/>])` at `i`: whether it is a closing tag,
 /// and where the name starts and ends.
-fn tag_at(t: &[u16], i: usize) -> Option<(bool, usize, usize)> {
+pub(crate) fn tag_at(t: &[u16], i: usize) -> Option<(bool, usize, usize)> {
     if t.get(i) != Some(&LT) {
         return None;
     }
@@ -356,8 +356,28 @@ fn self_closing(b: &[u16]) -> bool {
 
 /// The elements on the page as a tree, in the order they appear.
 pub(crate) fn tree(source: &[u16]) -> Vec<Node> {
+    walk(source).0
+}
+
+/// What the page holds, in document order: an element by its index in the
+/// list of nodes, or the text between two tags.
+pub(crate) enum Item {
+    Element(usize),
+    Text {
+        parent: Option<usize>,
+        start: usize,
+        end: usize,
+    },
+}
+
+/// The elements as [`tree`] reads them, and the text between them. The one
+/// reading of a page's structure in the core: the checks use the elements,
+/// and the accessibility tree the text as well.
+pub(crate) fn walk(source: &[u16]) -> (Vec<Node>, Vec<Item>) {
     let mut nodes: Vec<Node> = Vec::new();
+    let mut items: Vec<Item> = Vec::new();
     let mut stabel: Vec<usize> = Vec::new();
+    let mut text_start = 0;
     let mut i = 0;
     while i < source.len() {
         let Some((closer, name_start, name_end)) = tag_at(source, i) else {
@@ -367,6 +387,14 @@ pub(crate) fn tree(source: &[u16]) -> Vec<Node> {
         let Some(end) = tag_end(source, name_end) else {
             break;
         };
+        if i > text_start {
+            items.push(Item::Text {
+                parent: stabel.last().copied(),
+                start: text_start,
+                end: i,
+            });
+        }
+        text_start = end + 1;
         i = end + 1;
         let name = lossy(&lowercase(&source[name_start..name_end]));
         if closer {
@@ -390,11 +418,19 @@ pub(crate) fn tree(source: &[u16]) -> Vec<Node> {
             name,
         });
         let index = nodes.len() - 1;
+        items.push(Item::Element(index));
         if !VOID.contains(&nodes[index].name.as_str()) && !(self_closes && foreign) {
             stabel.push(index);
         }
     }
-    nodes
+    if source.len() > text_start {
+        items.push(Item::Text {
+            parent: stabel.last().copied(),
+            start: text_start,
+            end: source.len(),
+        });
+    }
+    (nodes, items)
 }
 
 fn findings(

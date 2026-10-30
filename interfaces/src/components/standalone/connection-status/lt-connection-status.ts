@@ -77,6 +77,23 @@ export class LtConnectionStatus extends HostElement {
 
   connectedCallback(): void {
     this.classList.add(CONNECTION_STATUS_CLASS)
+    /*
+     * The host is the live region, from the moment it is connected, so the
+     * region exists long before the bar and its text arrive. Only what is
+     * missing: a role or politeness the server wrote stays. When the bar was
+     * the region, it was inserted together with its text, and Firefox sent
+     * no live-region text through AT-SPI at all, so "No connection" was
+     * never announced. `check-accessibility-tree.ts` checks it.
+     */
+    this.markRegion()
+    // A morph without `data-ignore-morph` takes both off, and then the next
+    // outage is never announced. Writing only what is missing keeps the
+    // observer from triggering itself.
+    this.regionObserver = new MutationObserver(() => this.markRegion())
+    this.regionObserver.observe(this, {
+      attributes: true,
+      attributeFilter: ["role", "aria-live"],
+    })
     window.addEventListener("offline", this.handleOffline)
     window.addEventListener("online", this.handleOnline)
     if (!navigator.onLine) {
@@ -96,7 +113,17 @@ export class LtConnectionStatus extends HostElement {
     }
   }
 
+  private regionObserver?: MutationObserver
+
+  private markRegion(): void {
+    if (!this.hasAttribute("role")) this.setAttribute("role", "status")
+    if (!this.hasAttribute("aria-live"))
+      this.setAttribute("aria-live", "polite")
+  }
+
   disconnectedCallback(): void {
+    this.regionObserver?.disconnect()
+    this.regionObserver = undefined
     window.removeEventListener("offline", this.handleOffline)
     window.removeEventListener("online", this.handleOnline)
     if (this.timer) window.clearTimeout(this.timer)
@@ -107,12 +134,10 @@ export class LtConnectionStatus extends HostElement {
    * The bar, created empty first and filled afterwards.
    *
    * A live region must exist before its content arrives, or assistive
-   * technology does not announce the first change. When the bar was already
-   * filled as it was inserted, the region appeared complete to the screen
-   * reader, and "No connection", the most important message, could be lost.
-   * So the text is set in the next frame when the bar is new. This cannot be
-   * checked without a screen reader; the rule is known from NVDA, JAWS and
-   * VoiceOver.
+   * technology does not announce the first change. The region is the host
+   * (see `connectedCallback`), so the bar is content inside a region that is
+   * already there; the text is still set in the next frame when the bar is
+   * new, so the bar and its text arrive as two changes.
    *
    * The bar is created only when it is needed, not on connection: when it
    * was in the DOM before React hydrated, React found an element it had not
@@ -123,10 +148,6 @@ export class LtConnectionStatus extends HostElement {
 
     const bar = document.createElement("div")
     bar.className = CONNECTION_STATUS_BAR_CLASS
-    // polite and not assertive: the message matters, but should not
-    // interrupt mid-word. It stays until the connection is back.
-    bar.setAttribute("role", "status")
-    bar.setAttribute("aria-live", "polite")
     this.append(bar)
     this.bar = bar
     return { bar, fresh: true }

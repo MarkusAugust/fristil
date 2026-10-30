@@ -5,6 +5,7 @@ description: A switch for a setting that takes effect immediately. CSS component
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import Example from "../../../components/Example.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 A checkbox with `role="switch"`. Screen readers then say "on" and "off" instead of "checked", while the keyboard and `FormData` work as for an ordinary checkbox.
 
@@ -214,6 +215,8 @@ The knob inside is a gradient and not a pseudo-element, because Firefox does not
 The switch slides between off and on. If the user has asked for reduced motion in their system, it changes state without a transition instead.
 
 ## Accessibility
+
+<ScreenReaderContract component="switch" />
 
 - The label should say what the switch controls, not which state it is in. "Notify me by email", not "Email notifications on".
 - Do not write "Off" and "On" as text next to it. The screen reader already says it, and the text contradicts itself when the user flips the switch.

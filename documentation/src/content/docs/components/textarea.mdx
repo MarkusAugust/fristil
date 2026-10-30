@@ -4,6 +4,7 @@ description: A multi-line text field. A CSS component with one class and no Java
 ---
 
 import Example from "../../../components/Example.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 The same look and states as [Input](../input/), for answers longer than one line.
 
@@ -86,6 +87,8 @@ field.addEventListener("blur", () => {
 See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
+
+<ScreenReaderContract component="textarea" />
 
 - Every field needs a visible `<label>` with `for` pointing to the `id`.
 - If the field has an upper limit, say so in the help text before the user types. `maxlength` alone blocks typing without explaining why.

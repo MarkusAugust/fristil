@@ -4,6 +4,7 @@ description: Radio buttons for one choice among several. A CSS component with tw
 ---
 
 import Example from "../../../components/Example.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 Plain CSS on an ordinary `<input type="radio">`. The buttons in a group are tied together by `name`, and that is what lets only one be selected, and lets the arrow keys move between them.
 
@@ -101,6 +102,8 @@ If validation fails, set the state on every button in the group. It is the group
 The dot is a gradient drawn in `--lt-color-accent-content`, so it follows the theme without a separate image. See [Customising](../../customising/).
 
 ## Accessibility
+
+<ScreenReaderContract component="radio" />
 
 - Every button in the group has to share `name`. Without it each button becomes its own group, and the user can choose several.
 - The arrow keys move between the buttons and select at the same time. Tab leaves the whole group. That is the browser's own behaviour, and it should not be overridden.

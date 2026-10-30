@@ -4,7 +4,11 @@ import Preview from "./Preview.astro"
 
 // The server writes the whole box: the class, the role, the tab stop and
 // the heading. The component only moves focus and handles clicks on the links.
-const summary = lt.errorSummary({ count: 2, id: "demo-summary" })
+const summary = lt.errorSummary({
+  count: 2,
+  id: "demo-summary",
+  titleId: "demo-summary-title",
+})
 ---
 
 <Preview

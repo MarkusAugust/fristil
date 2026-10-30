@@ -45,20 +45,20 @@ import { defineLtSuggestion } from "./components/frame/suggestion/lt-suggestion"
 import suggestionCss from "./components/frame/suggestion/suggestion.css?inline"
 import { waitForPaint } from "./testing/a11y"
 import { Idiomorph } from "./testing/idiomorph/idiomorph-v0.8.0.js"
+import { htmlBlocks } from "./testing/recipes"
+import { datastarPatch, morph, WAYS, type Way } from "./testing/update"
 import tokensCss from "./tokens/tokens.css?inline"
-
-import "./testing/datastar/datastar-v1.0.4.js"
-
-type Way = "Datastar" | "idiomorph" | "innerHTML"
-const WAYS: Way[] = ["Datastar", "idiomorph", "innerHTML"]
 
 /**
  * The recipe in the "Plain HTML" tab on a component page: the first html
  * block containing the element, without the scripts.
  */
 function recipe(page: string, tag: string): string {
-  const tab = page.slice(page.indexOf('<TabItem label="Plain HTML">'))
-  const blocks = [...tab.matchAll(/```html\n([\s\S]*?)```/g)].map((m) => m[1])
+  // Every block from the first "Plain HTML" tab on: the "Text and code"
+  // recipe on the suggestion page stands below the tabs, not in one.
+  const blocks = htmlBlocks(
+    page.slice(page.indexOf('<TabItem label="Plain HTML">')),
+  )
   const block = blocks.find((b) => b.includes(`<${tag}`))
   if (!block) throw new Error(`found no recipe with <${tag}> on the page`)
   return block.replace(/<script[\s\S]*?<\/script>/g, "")
@@ -103,20 +103,9 @@ async function update(way: Way, content: string): Promise<void> {
   root.querySelector("[data-updated]")?.remove()
   if (way === "Datastar") {
     // Like a `datastar-patch-elements` without a selector: `outer` on the id.
-    document.dispatchEvent(
-      new CustomEvent("datastar-fetch", {
-        detail: {
-          type: "datastar-patch-elements",
-          el: document.body,
-          argsRaw: { elements: region(content, true) },
-        },
-      }),
-    )
+    datastarPatch(region(content, true))
   } else if (way === "idiomorph") {
-    Idiomorph.morph(root, region(content, true), {
-      morphStyle: "outerHTML",
-      ignoreActiveValue: true,
-    })
+    morph(root, region(content, true))
   } else {
     root.innerHTML = `<span hidden data-updated></span>${content}`
   }

@@ -5,6 +5,7 @@ description: Frame component that wires the label, field, help text and error te
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import FieldDemo from "../../../components/FieldDemo.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 A form field is accessible when the help text and the error text are wired to the field itself. LO-TEK gives you that wiring in two ways, and **you use one of them, not both**.
 
@@ -339,6 +340,8 @@ The parts are only those that belong to this field. If one `<lt-field>` is insid
 There is no `invalid` attribute. The field is invalid when the error text is visible, or when the server has written `aria-invalid` on the control. The required marker is `data-required` on the label, and is only visual: `required` must be on the `<input>` itself.
 
 ## Accessibility
+
+<ScreenReaderContract component="field" />
 
 - The component does the wiring, not the content. You still have to write the label and the error message well.
 - Write `for` on the label and `id` on the field, or put the label around the field. Without that the field has no name before the script has run. Without an id the field does not get focus back after an `innerHTML` update with htmx, which finds it again by id, and voice control on Windows has not been checked with the label around the field.

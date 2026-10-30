@@ -12,6 +12,8 @@ export type ConnectionStatusOptions = {
 
 export type ConnectionStatusAttributes = {
   class: typeof CONNECTION_STATUS_CLASS
+  role: "status"
+  "aria-live": "polite"
   "offline-text"?: string
   "online-text"?: string
   "data-ignore-morph": ""
@@ -23,7 +25,9 @@ export type ConnectionStatusAttributes = {
  * By definition the server cannot tell you it is unreachable. When it is
  * down, nothing comes from it to render. So the component creates all the
  * content itself, and `data-ignore-morph` stops a later patch from tearing
- * it away the moment the connection is back.
+ * it away the moment the connection is back. The host is the live region,
+ * `role="status"` with `aria-live="polite"`, so the region exists before the
+ * bar and its text arrive.
  *
  * ```ts
  * <lt-connection-status {...lt.connectionStatus()} />
@@ -35,6 +39,8 @@ export const connectionStatus = ({
 }: ConnectionStatusOptions = {}): ConnectionStatusAttributes =>
   attributes({
     class: CONNECTION_STATUS_CLASS,
+    role: "status" as const,
+    "aria-live": "polite" as const,
     "offline-text": offlineText,
     "online-text": onlineText,
     "data-ignore-morph": "" as const,

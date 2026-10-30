@@ -4,6 +4,7 @@ description: A checkbox for a choice that stands on its own. CSS component with 
 ---
 
 import Example from "../../../components/Example.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 Plain CSS on an ordinary `<input type="checkbox">`, so the keyboard, `FormData` and the browser's own validation work as before. If the user should choose one of several options, [Radio](../radio/) is right. If the choice turns a setting on or off and takes effect at once, use [Switch](../switch/).
 
@@ -154,6 +155,8 @@ Identical `name` values give one key with several values in `FormData`. Read the
 The tick and the dash are drawn from `--lt-icon-check` and `--lt-icon-dash`, which follow the theme. See [Customising](../../customising/).
 
 ## Accessibility
+
+<ScreenReaderContract component="checkbox" />
 
 - Every box needs a `<label>` with `for`. Without it the click area is only the box itself, and the screen reader reads nothing.
 - The text should say what happens when the box is checked, not what the question was called. "Send me newsletters", not "Newsletter".
