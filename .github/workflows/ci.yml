@@ -49,8 +49,7 @@ jobs:
       # The image lacks a C linker, which Cargo needs for the CLI, `unzip`,
       # which `setup-bun` unpacks Bun with, and Rust. Only these few packages
       # come from apt. Rustup then installs the version in
-      # `rust-toolchain.toml` on the first call. The accessibility tree check
-      # reads AT-SPI, as Orca does, and needs its bus and Python bindings.
+      # `rust-toolchain.toml` on the first call.
       #
       # The container runs as root, and Firefox will not start as root with a
       # home folder owned by another user. The runner mounts its own as `HOME`
@@ -105,11 +104,6 @@ jobs:
       - name: Rust version
         working-directory: core
         run: rustc --version
-
-      # The model tests compute the accessibility tree with the core, so it is
-      # built before them. The build builds it again, from the same source.
-      - name: The core
-        run: bun --filter @lo-tek/interfaces core
 
       # Runs the component tests in Chromium, Firefox and WebKit, and checks
       # that the Tailwind theme gives LO-TEK's values.

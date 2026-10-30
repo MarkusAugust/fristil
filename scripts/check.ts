@@ -38,7 +38,7 @@ const SKIPPED: Record<string, string> = {
   "check/Trust the checkout":
     "is only needed where the container runs as another user than the checkout",
   "check/Accessibility tools":
-    "installs AT-SPI with apt. Here `check-accessibility-tree.ts` runs the same script in its own container",
+    "installs AT-SPI with apt as root. On macOS `check-accessibility-tree.ts` runs the same script in its own container; on Linux, run `sudo bash interfaces/scripts/accessibility/install.sh` once",
 }
 
 /*

@@ -115,10 +115,15 @@ export class LtConnectionStatus extends HostElement {
 
   private regionObserver?: MutationObserver
 
+  /**
+   * The region, as a pair and only when both are missing. A role the server
+   * wrote carries its own politeness (`alert` is assertive), and an
+   * `aria-live` added next to it would override that.
+   */
   private markRegion(): void {
-    if (!this.hasAttribute("role")) this.setAttribute("role", "status")
-    if (!this.hasAttribute("aria-live"))
-      this.setAttribute("aria-live", "polite")
+    if (this.hasAttribute("role") || this.hasAttribute("aria-live")) return
+    this.setAttribute("role", "status")
+    this.setAttribute("aria-live", "polite")
   }
 
   disconnectedCallback(): void {

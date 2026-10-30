@@ -49,7 +49,10 @@
  * hand next time.
  *
  * Only `frame/` is read. The standalone components create their own content
- * and do not observe it, so a write there cannot call any observer.
+ * and do not observe it, so a write there cannot call any observer. The one
+ * observer among them, on `<lt-connection-status>`, watches only the host's
+ * own `role` and `aria-live`, and writes them only when both are missing,
+ * which a write of its own cannot undo.
  *
  */
 import { readdirSync, readFileSync } from "node:fs"

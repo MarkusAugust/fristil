@@ -64,7 +64,8 @@ fun Lt.legend(
 
 /**
  * `lt.errorSummary`: the error summary. The box is hidden when [count] is zero,
- * and takes its name from the heading with [titleId]. An empty one counts as none.
+ * and takes its name from the heading with [titleId], by default [id] with
+ * `-title`. An empty one counts as none; one with whitespace throws.
  */
 fun Lt.errorSummary(
     count: Number? = null,
@@ -72,6 +73,12 @@ fun Lt.errorSummary(
     titleId: String? = null,
 ): ErrorSummaryParts {
     val titleId = titleId?.takeUnless { it.all(::isJsWhitespace) }
+        ?: id?.takeUnless { it.all(::isJsWhitespace) }?.let { "$it-title" }
+    if (titleId != null) {
+        require(titleId.none(::isJsWhitespace)) {
+            "Lt.errorSummary: the titleId \"$titleId\" contains whitespace. aria-labelledby splits on whitespace, so the box would point at ids that are not the heading's."
+        }
+    }
     val host = linkedMapOf("class" to "lt-error-summary", "role" to "alert", "tabindex" to "-1")
     if (id != null) host["id"] = id
     if ((count?.toDouble() ?: 0.0) == 0.0) host["hidden"] = ""

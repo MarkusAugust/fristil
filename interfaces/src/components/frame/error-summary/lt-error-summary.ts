@@ -2,7 +2,6 @@ import {
   addClass,
   defineElement,
   HostElement,
-  rememberedId,
   setAttr,
   warnAboutMarkup,
 } from "../../host-element.js"
@@ -55,8 +54,6 @@ export const LT_ERROR_SUMMARY_PARTS = {
  * </lt-error-summary>
  * ```
  */
-/** The ids the component gave headings, per node, so a morph gets the same one back. */
-const titleIds = new WeakMap<Element, string>()
 
 /** Decodes a fragment, and returns it untouched if it is not valid. */
 function decodeFragment(fragment: string): string {
@@ -83,6 +80,8 @@ export class LtErrorSummary extends HostElement {
    * live validation patched the list.
    */
   private focusAttempted = false
+  /** Where focus was when `hidden` last changed, until the deferred round has run. */
+  private focusBefore: Element | null | undefined
   private observer?: MutationObserver
   /**
    * The `aria-labelledby` the component wrote on the box, or null. Another
@@ -91,8 +90,6 @@ export class LtErrorSummary extends HostElement {
    * pointing at an id that is gone.
    */
   private labelledByWritten: string | null = null
-  /** The id the heading took from the box's `aria-labelledby`, see `wire()`. */
-  private borrowedId: string | null = null
 
   connectedCallback(): void {
     // One listener on the host, not one per link. The set of links was only
@@ -136,10 +133,34 @@ export class LtErrorSummary extends HostElement {
   }
 
   attributeChangedCallback(): void {
-    // The server can send the box hidden and later only remove `hidden` on
-    // the same node. Without this, a summary that just became visible never
-    // gets focus, and that is the whole reason the component exists.
-    if (this.isConnected) this.sync()
+    /*
+     * The server can send the box hidden and later only remove `hidden` on
+     * the same node. Without this, a summary that just became visible never
+     * gets focus, and that is the whole reason the component exists.
+     *
+     * A microtask later, not now. A morph sets `hidden` in its attribute
+     * pass, before it updates the children; focus moved then made the box
+     * the focused element, and idiomorph with `ignoreActiveValue` leaves the
+     * children of the focused element as they were, so the new errors never
+     * arrived. Found by the code review of PR 240.
+     */
+    // Where focus was when the box was shown. React gives it back there
+    // after the commit, and the box takes it anyway; a script that moves it
+    // somewhere else in the same turn has decided, and the box leaves it.
+    this.focusBefore ??= document.activeElement
+    // Hidden: let go of focus now, in the morph's attribute pass, so the
+    // morph still updates the content (see `sync()`).
+    if (this.hidden) this.blurInside()
+    queueMicrotask(() => {
+      if (this.isConnected) this.sync()
+      this.focusBefore = undefined
+    })
+  }
+
+  /** Takes focus off the box, or off a link in it. */
+  private blurInside(): void {
+    const focused = (this.getRootNode() as Document | ShadowRoot).activeElement
+    if (focused instanceof HTMLElement && this.contains(focused)) focused.blur()
   }
 
   disconnectedCallback(): void {
@@ -180,77 +201,45 @@ export class LtErrorSummary extends HostElement {
     /*
      * The box takes focus, so it needs a name: without one a screen reader
      * says only "alert" when the focus lands, and the heading is what says
-     * how many errors there are. Only what is missing: a name the server
-     * wrote stays. The heading holds nothing the user can lose, so it can
-     * carry an id from the component; the id is remembered per node, so a
-     * morph that tears it off gets the same one back.
+     * how many errors there are. The template writes the heading's id and
+     * the box's `aria-labelledby`, as it writes `for` and `id` on a field;
+     * `lt.errorSummary({ id })` writes both. The component never writes an
+     * id: Datastar and idiomorph replace an element whose id the server did
+     * not send, so an id from the component gave the heading a new one on
+     * every patch. When the heading has an id and the box no name, the
+     * component points `aria-labelledby` at it, and follows a heading a
+     * patch has replaced. A blank `aria-label` or `aria-labelledby` names
+     * nothing, so it counts as missing.
      * `check-accessibility-tree.ts` checks the name a screen reader gets.
      */
-    // A blank value names nothing, so it is missing, not the server's word.
     const labelledBy = this.getAttribute("aria-labelledby")?.trim() || null
+    const label = this.getAttribute("aria-label")?.trim() || null
     const ours = labelledBy !== null && labelledBy === this.labelledByWritten
     if (labelledBy !== null && !ours) this.labelledByWritten = null
-    if (
-      title &&
-      !this.hasAttribute("aria-label") &&
-      (labelledBy === null || ours)
-    ) {
-      if (!title.id)
-        setAttr(
-          title,
-          "id",
-          rememberedId(titleIds, title, "lt-error-summary-title"),
-        )
+    if (title?.id && label === null && (labelledBy === null || ours)) {
       setAttr(this, "aria-labelledby", title.id)
       this.labelledByWritten = title.id
     } else if (ours) {
-      // The heading is gone, or the server named the box with `aria-label`,
-      // which `aria-labelledby` would otherwise win over.
+      // The heading is gone or lost its id, or the server named the box
+      // with `aria-label`, which `aria-labelledby` would otherwise win over.
       this.removeAttribute("aria-labelledby")
       this.labelledByWritten = null
-    } else if (
-      title &&
-      labelledBy !== null &&
-      !/\s/.test(labelledBy) &&
-      title.id !== labelledBy &&
-      (!title.id ||
-        titleIds.get(title) === title.id ||
-        title.id === this.borrowedId)
-    ) {
-      /*
-       * The server names the box after an id that is nowhere on the page,
-       * and the heading has no id, or still the one the component gave it.
-       * idiomorph leaves the content of the focused element as it was, and
-       * the box has focus, so the heading with the server's id never
-       * arrived: the box pointed at nothing, and a screen reader said only
-       * "alert". Found by the model test, which sends every version by
-       * every way. The heading takes the id the box names, and gives it
-       * back as soon as another element on the page has it, so the page
-       * never has two.
-       */
-      const root = this.getRootNode() as Document | ShadowRoot
-      if (!root.getElementById(labelledBy)) {
-        titleIds.delete(title)
-        setAttr(title, "id", labelledBy)
-        this.borrowedId = labelledBy
-        warnAboutMarkup(
-          this,
-          "is named by aria-labelledby after an id that is not on the page, so the heading was given that id. If the server meant another element, send it, and the heading gives the id back.",
-          () => true,
-        )
-      }
     }
-    // The element the id was meant for has arrived: the heading gives it back.
-    if (title && this.borrowedId !== null && title.id === this.borrowedId) {
-      const root = this.getRootNode() as Document | ShadowRoot
-      const owners = root.querySelectorAll(
-        `[id="${CSS.escape(this.borrowedId)}"]`,
+    if (title && !title.id && label === null && labelledBy === null)
+      warnAboutMarkup(
+        this,
+        "has a heading without an id and no name, so it takes focus as an alert a screen reader cannot name. Give the heading an id and the box aria-labelledby pointing at it, as lt.errorSummary({ id }) does.",
+        () => {
+          const now = this.querySelector(LT_ERROR_SUMMARY_PARTS.title)
+          return (
+            this.isConnected &&
+            now !== null &&
+            !now.id &&
+            !this.getAttribute("aria-label")?.trim() &&
+            !this.getAttribute("aria-labelledby")?.trim()
+          )
+        },
       )
-      if (owners.length > 1) {
-        title.removeAttribute("id")
-        this.borrowedId = null
-      }
-    }
   }
 
   private sync(): void {
@@ -279,10 +268,7 @@ export class LtErrorSummary extends HostElement {
        * the server sent never reached the box, which then showed an empty
        * heading and list. Found by the model test.
        */
-      const focused = (this.getRootNode() as Document | ShadowRoot)
-        .activeElement
-      if (focused instanceof HTMLElement && this.contains(focused))
-        focused.blur()
+      this.blurInside()
     }
 
     if (links.length === 0) {
@@ -341,6 +327,11 @@ export class LtErrorSummary extends HostElement {
       const active = document.activeElement
       const nobodyTyping = !active || active === document.body
       if (this.focusAttempted && !nobodyTyping) return
+      const movedByScript =
+        this.focusBefore !== undefined &&
+        active !== this.focusBefore &&
+        !nobodyTyping
+      if (movedByScript) return
       const root = this.getRootNode() as Document | ShadowRoot
 
       this.focusAttempted = true

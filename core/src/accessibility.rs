@@ -49,6 +49,10 @@ pub const FACTS: &[&str] = &[
     "data-lt-ax-modal",
     // The value of a text field, or the text of the chosen option.
     "data-lt-ax-value",
+    // "1" on a field that fails a constraint other than being empty, or
+    // matches `:user-invalid`, and on a chosen `<option>`.
+    "data-lt-ax-invalid",
+    "data-lt-ax-selected",
 ];
 
 /// The states the core can give, by WAI-ARIA name. `platform.ts` maps each
@@ -97,6 +101,7 @@ const fn role(name: &'static str, from_content: bool) -> Role {
 /// built on a fallback the author did not mean is a guess.
 const ROLES: &[Role] = &[
     role("alert", false),
+    role("application", false),
     role("alertdialog", false),
     role("article", false),
     role("banner", false),
@@ -107,10 +112,14 @@ const ROLES: &[Role] = &[
     role("combobox", false),
     role("complementary", false),
     role("contentinfo", false),
+    role("definition", false),
     role("dialog", false),
+    role("document", false),
+    role("feed", false),
     role("figure", false),
     role("form", false),
     role("generic", false),
+    role("grid", false),
     role("gridcell", true),
     role("group", false),
     role("heading", true),
@@ -121,8 +130,10 @@ const ROLES: &[Role] = &[
     role("listitem", false),
     role("log", false),
     role("main", false),
+    role("meter", false),
     role("marquee", false),
     role("menu", false),
+    role("menubar", false),
     role("menuitem", true),
     role("menuitemcheckbox", true),
     role("menuitemradio", true),
@@ -149,10 +160,14 @@ const ROLES: &[Role] = &[
     role("tab", true),
     role("table", false),
     role("tablist", false),
+    role("term", true),
     role("tabpanel", false),
     role("textbox", false),
     role("timer", false),
+    role("toolbar", false),
     role("tooltip", true),
+    role("tree", false),
+    role("treegrid", false),
     role("treeitem", true),
 ];
 
@@ -236,8 +251,23 @@ impl Dom {
                 }
                 Item::Text { parent, start, end } => {
                     let parent = parent.map_or(0, |p| p + 1);
+                    // The original text without its comments: `page_source`
+                    // blanks a comment to spaces, and `Sa<!-- -->ve`, which
+                    // React writes between two text nodes, is "Save".
+                    let raw = matches!(
+                        nodes[parent].kind,
+                        Kind::Element { ref name, .. }
+                            if matches!(name.as_str(), "script" | "style" | "template" | "textarea" | "title")
+                    );
+                    // Raw text and template content stay blank, as the
+                    // page reads them.
+                    let text = if raw {
+                        page[start..end].to_vec()
+                    } else {
+                        without_comments(&source[start..end])
+                    };
                     nodes.push(DomNode {
-                        kind: Kind::Text(lossy(&decode(&page[start..end]))),
+                        kind: Kind::Text(lossy(&decode(&text))),
                         parent: Some(parent),
                         children: vec![],
                     });
@@ -293,14 +323,20 @@ impl Dom {
 fn role_of(dom: &Dom, n: usize) -> Result<&'static str, String> {
     if let Some(explicit) = dom.attribute(n, "role") {
         if !explicit.trim().is_empty() {
-            return explicit
+            let chosen = explicit
                 .split_ascii_whitespace()
                 .find_map(|t| known(&t.to_ascii_lowercase()).map(|r| r.name))
                 .ok_or_else(|| {
                     format!(
                         "role=\"{explicit}\" has no role the core knows: it does not guess the fallback"
                     )
-                });
+                })?;
+            // WAI-ARIA 1.2, presentational role conflict: an element that
+            // can take focus, or has a global aria-* attribute, keeps its own
+            // role.
+            if !(matches!(chosen, "none" | "presentation") && keeps_own_role(dom, n)) {
+                return Ok(chosen);
+            }
         }
     }
     let Some(name) = dom.name(n) else {
@@ -322,7 +358,15 @@ fn role_of(dom: &Dom, n: usize) -> Result<&'static str, String> {
         "p" => "paragraph",
         "dialog" => "dialog",
         "textarea" => "textbox",
-        "select" if dom.has(n, "multiple") => "listbox",
+        "select"
+            if dom.has(n, "multiple")
+                || dom
+                    .attribute(n, "size")
+                    .and_then(|v| v.trim().parse::<u32>().ok())
+                    .is_some_and(|v| v > 1) =>
+        {
+            "listbox"
+        }
         "select" => "combobox",
         "option" => "option",
         "fieldset" => "group",
@@ -457,6 +501,51 @@ const GENERIC: &[&str] = &[
     "select",
 ];
 
+/// Whether an element with `role="none"` or `role="presentation"` keeps its
+/// own role: it can take focus, or it has a global aria-* attribute.
+fn keeps_own_role(dom: &Dom, n: usize) -> bool {
+    // WAI-ARIA 1.2, "Global States and Properties", the deprecated ones too.
+    const GLOBAL: &[&str] = &[
+        "aria-atomic",
+        "aria-busy",
+        "aria-controls",
+        "aria-current",
+        "aria-describedby",
+        "aria-details",
+        "aria-disabled",
+        "aria-dropeffect",
+        "aria-errormessage",
+        "aria-flowto",
+        "aria-grabbed",
+        "aria-haspopup",
+        "aria-invalid",
+        "aria-keyshortcuts",
+        "aria-label",
+        "aria-labelledby",
+        "aria-live",
+        "aria-owns",
+        "aria-relevant",
+        "aria-roledescription",
+    ];
+    // A disabled control takes no focus, and stays presentational.
+    let disabled = matches!(
+        dom.name(n),
+        Some("button" | "select" | "textarea" | "input")
+    ) && dom.fact(n, "data-lt-ax-disabled");
+    let focusable = !disabled
+        && (dom.has(n, "tabindex")
+            || matches!(
+                dom.name(n),
+                Some("button" | "select" | "textarea" | "iframe" | "summary")
+            )
+            || (dom.name(n) == Some("a") && dom.has(n, "href"))
+            || (dom.name(n) == Some("input")
+                && !dom
+                    .attribute(n, "type")
+                    .is_some_and(|t| t.eq_ignore_ascii_case("hidden"))));
+    focusable || GLOBAL.iter().any(|a| dom.has(n, a))
+}
+
 fn has_name_attribute(dom: &Dom, n: usize) -> bool {
     ["aria-label", "aria-labelledby", "title"]
         .iter()
@@ -466,6 +555,12 @@ fn has_name_attribute(dom: &Dom, n: usize) -> bool {
 /// Whether the browser rendered the element. Text is rendered when its
 /// parent is.
 fn visible(dom: &Dom, n: usize) -> Result<bool, String> {
+    // With scripting on, `<noscript>` is raw text that `outerHTML` writes out
+    // as markup: none of it is rendered, and none of it has facts.
+    if dom.name(n) == Some("noscript") || dom.ancestors(n).any(|a| dom.name(a) == Some("noscript"))
+    {
+        return Ok(false);
+    }
     match dom.name(n) {
         None => dom.nodes[n].parent.map_or(Ok(true), |p| visible(dom, p)),
         Some("#document") => Ok(true),
@@ -633,8 +728,8 @@ fn alternative(
     let in_label = t.recursive;
     if !(in_label && embedded) {
         if let Some(label) = dom.attribute(n, "aria-label") {
-            if !label.trim().is_empty() {
-                return Ok((label.trim().to_string(), From::Other));
+            if !ascii_trim(label).is_empty() {
+                return Ok((ascii_trim(label).to_string(), From::Other));
             }
         }
     }
@@ -668,7 +763,9 @@ fn alternative(
                 ..t
             };
             let (part, _) = text_alternative(dom, c, inner, visited)?;
-            if dom.name(c).is_some() && block(dom, c)? {
+            if dom.name(c) == Some("br") {
+                out.push(' ');
+            } else if dom.name(c).is_some() && block(dom, c)? {
                 out.push(' ');
                 out.push_str(&part);
                 out.push(' ');
@@ -711,6 +808,24 @@ fn native_label(
         .attribute(n, "type")
         .unwrap_or("text")
         .to_ascii_lowercase();
+    if tag == "input" && input_type == "image" {
+        for attribute in ["alt", "value", "title"] {
+            if let Some(v) = dom
+                .attribute(n, attribute)
+                .filter(|v| !ascii_trim(v).is_empty())
+            {
+                let from = if attribute == "title" {
+                    From::Title
+                } else {
+                    From::Other
+                };
+                return Ok(Some((ascii_trim(v).to_string(), from)));
+            }
+        }
+        return Err(
+            "<input type=\"image\"> without alt, value or title has the browser's own label, which the core does not know".into(),
+        );
+    }
     if tag == "input" && matches!(input_type.as_str(), "submit" | "reset" | "button") {
         return match dom.attribute(n, "value") {
             Some(v) => Ok(Some((v.trim().to_string(), From::Other))),
@@ -724,17 +839,16 @@ fn native_label(
     }
     match tag {
         "input" | "textarea" | "select" | "button" | "progress" | "meter" | "output" => {
-            let mut labels: Vec<usize> = Vec::new();
-            if let Some(id) = dom.attribute(n, "id") {
-                labels.extend((0..dom.nodes.len()).filter(|&l| {
-                    dom.name(l) == Some("label") && dom.attribute(l, "for") == Some(id)
-                }));
-            }
-            if let Some(wrapping) = dom.ancestors(n).find(|&a| dom.name(a) == Some("label")) {
-                if !labels.contains(&wrapping) && !dom.has(wrapping, "for") {
-                    labels.push(wrapping);
-                }
-            }
+            // HTML: a label with `for` labels the first element with that
+            // id, when it is labelable; one without labels its first
+            // labelable descendant. In tree order.
+            let labels: Vec<usize> = (0..dom.nodes.len())
+                .filter(|&l| dom.name(l) == Some("label"))
+                .filter(|&l| match dom.attribute(l, "for") {
+                    Some(id) => dom.by_id(id) == Some(n),
+                    None => first_labelable(dom, l) == Some(n),
+                })
+                .collect();
             // The control itself is not part of its own label's text.
             visited.push(n);
             let parts: Result<Vec<String>, String> =
@@ -781,9 +895,51 @@ fn native_label(
     }
 }
 
+/// The first labelable element inside a label, in tree order.
+fn first_labelable(dom: &Dom, label: usize) -> Option<usize> {
+    (label + 1..dom.nodes.len()).find(|&c| {
+        dom.ancestors(c).any(|a| a == label)
+            && match dom.name(c) {
+                Some("button" | "meter" | "output" | "progress" | "select" | "textarea") => true,
+                Some("input") => !dom
+                    .attribute(c, "type")
+                    .is_some_and(|t| t.eq_ignore_ascii_case("hidden")),
+                _ => false,
+            }
+    })
+}
+
+/// ASCII whitespace, which HTML and AccName collapse; a no-break space is
+/// text, and the browsers keep it.
+fn ascii_space(c: char) -> bool {
+    matches!(c, ' ' | '\t' | '\n' | '\r' | '\x0c')
+}
+
+fn ascii_trim(s: &str) -> &str {
+    s.trim_matches(ascii_space)
+}
+
 /// Whitespace collapsed and trimmed, as AccName's "flat string".
 fn flat(s: &str) -> String {
-    s.split_whitespace().collect::<Vec<_>>().join(" ")
+    s.split(ascii_space)
+        .filter(|w| !w.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// A piece of the page without its comments.
+fn without_comments(t: &[u16]) -> Vec<u16> {
+    let mut out = Vec::with_capacity(t.len());
+    let mut i = 0;
+    while i < t.len() {
+        if starts_at(t, i, "<!--") {
+            i = find_at(t, i + 4, "-->").map_or(t.len(), |e| e + 3);
+            continue;
+        }
+        out.push(t[i]);
+        i += 1;
+    }
+    out
 }
 
 /// AccName 1.2, section 4.2: the first applicable source, `aria-describedby`,
@@ -848,9 +1004,14 @@ fn states(dom: &Dom, n: usize, role: &str, focus: Option<usize>) -> Vec<&'static
     if focus == Some(n) {
         out.push("focused");
     }
-    if let Some(v) = dom.attribute(n, "aria-expanded") {
+    // An empty or "undefined" aria-expanded is not set (WAI-ARIA 1.2).
+    let expanded = dom
+        .attribute(n, "aria-expanded")
+        .map(|v| v.trim().to_ascii_lowercase())
+        .filter(|v| !v.is_empty() && v != "undefined");
+    if let Some(v) = expanded {
         out.push("expandable");
-        if v.trim().eq_ignore_ascii_case("true") {
+        if v == "true" {
             out.push("expanded");
         }
     } else if role == "combobox" && dom.name(n) == Some("select") {
@@ -859,7 +1020,9 @@ fn states(dom: &Dom, n: usize, role: &str, focus: Option<usize>) -> Vec<&'static
         // in the facts; the contracts never open one.
         out.push("expandable");
     }
-    if dom.is_true(n, "aria-selected") {
+    if (dom.name(n) == Some("option") && dom.fact(n, "data-lt-ax-selected"))
+        || dom.is_true(n, "aria-selected")
+    {
         out.push("selected");
     }
     let checkable = matches!(
@@ -892,13 +1055,21 @@ fn states(dom: &Dom, n: usize, role: &str, focus: Option<usize>) -> Vec<&'static
     if dom.is_true(n, "aria-pressed") {
         out.push("pressed");
     }
-    if dom.attribute(n, "aria-invalid").is_some_and(|v| {
-        let v = v.trim().to_ascii_lowercase();
-        !v.is_empty() && v != "false"
-    }) {
+    // aria-invalid when the page wrote it; otherwise the field's own
+    // validity, which HTML-AAM exposes except an empty required field the
+    // user has not touched yet.
+    let invalid = match dom.attribute(n, "aria-invalid") {
+        Some(v) => {
+            let v = v.trim().to_ascii_lowercase();
+            !v.is_empty() && v != "false"
+        }
+        None => dom.fact(n, "data-lt-ax-invalid"),
+    };
+    if invalid {
         out.push("invalid");
     }
-    if dom.has(n, "required") || dom.is_true(n, "aria-required") {
+    let form_control = matches!(dom.name(n), Some("input" | "select" | "textarea"));
+    if (form_control && dom.has(n, "required")) || dom.is_true(n, "aria-required") {
         out.push("required");
     }
     if dom.is_true(n, "aria-busy") {
@@ -910,7 +1081,25 @@ fn states(dom: &Dom, n: usize, role: &str, focus: Option<usize>) -> Vec<&'static
     if dom.fact(n, "data-lt-ax-disabled") || dom.is_true(n, "aria-disabled") {
         out.push("disabled");
     }
-    if dom.has(n, "readonly") || dom.is_true(n, "aria-readonly") {
+    // `readonly` applies to a textarea and the inputs that take text.
+    let takes_text = dom.name(n) == Some("textarea")
+        || (dom.name(n) == Some("input")
+            && !dom.attribute(n, "type").is_some_and(|t| {
+                matches!(
+                    t.to_ascii_lowercase().as_str(),
+                    "checkbox"
+                        | "radio"
+                        | "file"
+                        | "hidden"
+                        | "range"
+                        | "color"
+                        | "button"
+                        | "submit"
+                        | "reset"
+                        | "image"
+                )
+            }));
+    if (takes_text && dom.has(n, "readonly")) || dom.is_true(n, "aria-readonly") {
         out.push("readonly");
     }
     out.sort_unstable();
@@ -933,8 +1122,11 @@ pub fn accessibility_tree(source: &[u16]) -> Result<Vec<AxNode>, String> {
         {
             continue;
         }
+        if excluded(&dom, n)? {
+            continue;
+        }
         let r = role_of(&dom, n)?;
-        if matches!(r, "generic" | "none" | "presentation") || excluded(&dom, n)? {
+        if matches!(r, "generic" | "none" | "presentation") {
             continue;
         }
         let (name, from) = text_alternative(&dom, n, Traversal::default(), &mut vec![])?;
@@ -1158,8 +1350,8 @@ mod tests {
         let no_facts = accessibility_tree(&utf16("<button>Save</button>")).unwrap_err();
         assert!(no_facts.contains("data-lt-ax-visible"), "{no_facts}");
         let unknown_role =
-            accessibility_tree(&rendered(r##"<div role="widget">x</div>"##)).unwrap_err();
-        assert!(unknown_role.contains("role=\"widget\""), "{unknown_role}");
+            accessibility_tree(&rendered(r##"<div role="made-up">x</div>"##)).unwrap_err();
+        assert!(unknown_role.contains("role=\"made-up\""), "{unknown_role}");
         let default_label =
             accessibility_tree(&rendered(r##"<input type="submit">"##)).unwrap_err();
         assert!(
@@ -1203,6 +1395,88 @@ mod tests {
     fn a_native_select_can_be_expanded() {
         let tree = tree(r##"<select><option>Oslo</option></select>"##);
         assert_eq!(node(&tree, "combobox").states, vec!["expandable"]);
+    }
+
+    #[test]
+    fn hidden_markup_the_core_does_not_know_does_not_stop_the_page() {
+        let tree = tree(
+            r##"<button><svg aria-hidden="true"><path d="M0 0"></path></svg> Delete</button>"##,
+        );
+        assert_eq!(node(&tree, "button").name, "Delete");
+    }
+
+    #[test]
+    fn comments_and_line_breaks_in_a_name() {
+        let tree = tree(r##"<button>Sa<!-- -->ve</button><a href="#x">Delete<br>application</a>"##);
+        assert_eq!(node(&tree, "button").name, "Save");
+        assert_eq!(node(&tree, "link").name, "Delete application");
+    }
+
+    #[test]
+    fn a_no_break_space_is_text() {
+        let tree = tree("<button>10\u{a0}kr</button>");
+        assert_eq!(node(&tree, "button").name, "10\u{a0}kr");
+    }
+
+    #[test]
+    fn labels_follow_html_association() {
+        let tree = tree(
+            r##"<label>Name <input id="a" data-lt-ax-value="x"> <input id="b"></label><label>Outer <input id="c"></label><label for="c">Second</label><div id="d"></div><label for="d">Wrong</label><input id="d">"##,
+        );
+        let fields: Vec<&AxNode> = tree.iter().filter(|n| n.role == "textbox").collect();
+        assert_eq!(fields[1].name, "");
+        assert_eq!(fields[2].name, "Outer Second");
+        assert_eq!(fields[3].name, "");
+    }
+
+    #[test]
+    fn roles_html_and_aria_give() {
+        let tree = tree(
+            r##"<select size="4"><option>Oslo</option></select><div role="feed article">x</div><button role="presentation">Save</button><input type="image" alt="Search">"##,
+        );
+        assert!(tree.iter().any(|n| n.role == "listbox"));
+        assert!(tree.iter().any(|n| n.role == "feed"));
+        let buttons: Vec<&str> = tree
+            .iter()
+            .filter(|n| n.role == "button")
+            .map(|n| n.name.as_str())
+            .collect();
+        assert_eq!(buttons, vec!["Save", "Search"]);
+    }
+
+    #[test]
+    fn states_where_html_applies_them() {
+        let tree = tree(
+            r##"<input type="checkbox" readonly><div role="checkbox" required aria-checked="false">x</div><div role="button" aria-expanded="">y</div><input data-lt-ax-invalid="1">"##,
+        );
+        let boxes: Vec<&AxNode> = tree.iter().filter(|n| n.role == "checkbox").collect();
+        assert!(boxes[0].states.is_empty(), "{:?}", boxes[0].states);
+        assert!(boxes[1].states.is_empty(), "{:?}", boxes[1].states);
+        assert!(node(&tree, "button").states.is_empty());
+        assert_eq!(node(&tree, "textbox").states, vec!["invalid"]);
+    }
+
+    #[test]
+    fn nothing_inside_noscript_is_read() {
+        let html = String::from_utf16(&rendered("<button>Save</button>"))
+            .unwrap()
+            .replace(
+                "</button>",
+                r#"</button><noscript><a href="/x">Without script</a></noscript>"#,
+            );
+        let tree = accessibility_tree(&utf16(&html)).unwrap();
+        assert_eq!(tree.len(), 1);
+    }
+
+    #[test]
+    fn the_presentational_conflict_counts_every_global_attribute() {
+        let tree = tree(
+            r##"<ul><li role="none" aria-current="page">Home</li></ul><button role="presentation" data-lt-ax-disabled="1">Off</button>"##,
+        );
+        // aria-current is global, so the item keeps its role; a disabled
+        // button takes no focus, so it is presentational.
+        assert!(tree.iter().any(|n| n.role == "listitem"));
+        assert!(!tree.iter().any(|n| n.role == "button"));
     }
 
     #[test]

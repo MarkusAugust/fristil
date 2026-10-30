@@ -36,13 +36,14 @@ import Preview from "./Preview.astro"
 	<form id="demo-application" novalidate>
 		<lt-error-summary
 			id="demo-errors"
+			aria-labelledby="demo-errors-title"
 			class="lt-error-summary"
 			role="alert"
 			tabindex="-1"
 			data-autofocus="false"
 			hidden=""
 		>
-			<h2 class="lt-error-summary__title">The form cannot be sent</h2>
+			<h2 class="lt-error-summary__title" id="demo-errors-title">The form cannot be sent</h2>
 			<ul class="lt-list"></ul>
 		</lt-error-summary>
 
