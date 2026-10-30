@@ -1,0 +1,3 @@
+.lt-label { color: red; }
+.lt-label[data-required="text"] { color: red; }
+.lt-input { color: red; }

@@ -1,0 +1,36 @@
+{
+  "markup": [
+    {
+      "start": 27,
+      "end": 35,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/translation/",
+      "message": "<lt-toast> is on a page in \"nb\", and writes its own text in \"en\": \"Notifications\", \"Close message\". A screen reader reads it out in the middle of the page's language. Write label, close-label in the page's language."
+    }
+  ],
+  "page": [
+    {
+      "start": 27,
+      "end": 35,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/translation/",
+      "message": "<lt-toast> is on a page in \"nb\", and writes its own text in \"en\": \"Notifications\", \"Close message\". A screen reader reads it out in the middle of the page's language. Write label, close-label in the page's language."
+    }
+  ],
+  "styled": [
+    {
+      "start": 27,
+      "end": 35,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/translation/",
+      "message": "<lt-toast> is on a page in \"nb\", and writes its own text in \"en\": \"Notifications\", \"Close message\". A screen reader reads it out in the middle of the page's language. Write label, close-label in the page's language."
+    },
+    {
+      "start": 172,
+      "end": 177,
+      "severity": "warning",
+      "link": "https://lo-tek.sobernetics.no/translation/",
+      "message": "<label> is on a page in \"nb\", and the stylesheet shows \"(required)\" after it, in \"en\", which a screen reader reads as part of the name. Set --lt-label-required-text in the page's language in a stylesheet of your own."
+    }
+  ]
+}

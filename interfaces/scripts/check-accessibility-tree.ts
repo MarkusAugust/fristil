@@ -39,6 +39,7 @@ import {
   firefox,
   type Page,
 } from "playwright"
+import { diagnosePage } from "../src/diagnostics/index"
 import { type AxNode, accessibilityCore } from "../src/testing/accessibility"
 import { renderedMarkup } from "../src/testing/rendered"
 import {
@@ -267,10 +268,16 @@ class StepFailure extends Error {
   constructor(
     readonly step: string,
     message: string,
+    /** A node the step names came out with an empty name. */
+    readonly emptyName = false,
   ) {
     super(message)
   }
 }
+
+/** Whether the node has no name where the contract promises one. */
+const emptied = (expected: Expected, node: Node | null) =>
+  node !== null && node.name.trim() === "" && expected.name !== ""
 
 function recorder() {
   const child = Bun.spawn(
@@ -775,12 +782,15 @@ async function step(
    * next step's window, which starts here, or in the last step's tail.
    */
   const problems: string[] = []
+  let emptyName = false
   // Only on the recipe as written: a mutation is caught by the contract, never by a core that disagrees.
   if (clean) problems.push(...(await coreAgrees(engine, page, rec, at, s.name)))
   const now = s.focus || s.within ? await rec.focused(s.name) : undefined
   if (now) {
-    if (s.focus)
+    if (s.focus) {
       problems.push(...compare(engine, at, "focus:", s.focus, now.node))
+      emptyName ||= emptied(s.focus, now.node)
+    }
     if (s.within) {
       const want = s.within
       const ancestor = now.ancestors.find((a) => roleMatches(engine, want, a))
@@ -788,10 +798,12 @@ async function step(
         problems.push(
           `within: no ${want.role} above the focus [${now.ancestors.map((a) => a.role).join(" < ")}]`,
         )
-      else
+      else {
         problems.push(
           ...compare(engine, at, `within ${want.role}:`, want, ancestor),
         )
+        emptyName ||= emptied(want, ancestor)
+      }
     }
   }
   if (s.changes) {
@@ -878,13 +890,20 @@ async function step(
         `    ${engine} ${at} ${from + k === end ? ">>barrier " : ""}${e.type} ${e.node?.role} "${e.node?.name}" ${JSON.stringify(e.node?.attributes)} ${e.text ? JSON.stringify(e.text) : ""}`,
       )
   }
-  if (problems.length > 0) throw new StepFailure(s.name, problems.join("; "))
+  if (problems.length > 0)
+    throw new StepFailure(s.name, problems.join("; "), emptyName)
   return end + 1
 }
 
 type Outcome =
   | { ok: true; steps: number }
-  | { ok: false; steps: number; at: string; message: string }
+  | {
+      ok: false
+      steps: number
+      at: string
+      message: string
+      emptyName?: boolean
+    }
 
 async function run(
   engine: Engine,
@@ -946,7 +965,13 @@ async function run(
     return { ok: true, steps }
   } catch (error) {
     if (error instanceof StepFailure)
-      return { ok: false, steps, at: error.step, message: error.message }
+      return {
+        ok: false,
+        steps,
+        at: error.step,
+        message: error.message,
+        emptyName: error.emptyName,
+      }
     // Anything else, such as a crashed page, is a red run of its own, not
     // the end of the report.
     return { ok: false, steps, at: "error", message: String(error) }
@@ -1150,7 +1175,38 @@ if (!process.env.LOTEK_A11Y_SESSION) {
     ran += result.ran
     failures.push(...result.failures)
   }
+  failures.push(...withoutBrowser())
   report()
+}
+
+/*
+ * What `lotek check` says about each recipe, without a browser, from the
+ * same core: nothing about names on the recipe as written, and
+ * `without-name` on exactly the mutations whose `lotekCheck` says so. The
+ * sessions hold the other side: a mutation that leaves a name empty in a
+ * browser has to say what `lotek check` makes of it.
+ */
+function withoutBrowser(): string[] {
+  const out: string[] = []
+  const missing = (html: string) =>
+    diagnosePage(html).filter((f) => f.rule === "without-name")
+  for (const contract of chosen) {
+    for (const f of missing(fixture(contract, undefined)))
+      out.push(`lotek check, ${label(contract)}: ${f.message}`)
+    for (const [m, mutation] of contract.mutations.entries()) {
+      const found = missing(fixture(contract, m)).length > 0
+      const says = mutation.lotekCheck === "without-name"
+      if (found && !says)
+        out.push(
+          `lotek check, ${label(contract)}: the mutation "${mutation.name}" gives without-name, and does not say so. Write lotekCheck: "without-name".`,
+        )
+      if (!found && says)
+        out.push(
+          `lotek check, ${label(contract)}: the mutation "${mutation.name}" says lotekCheck: "without-name", and lotek check reports no missing name.`,
+        )
+    }
+  }
+  return out
 }
 
 /** The count and the failures, and the exit status. */
@@ -1232,6 +1288,10 @@ for (const [engine, type, options] of ENGINES) {
         else if (broken.at !== mutation.failsAt)
           failures.push(
             `${engine} ${label(contract)}: the mutation "${mutation.name}" failed at ${broken.at}, not ${mutation.failsAt}: ${broken.message}`,
+          )
+        if (!broken.ok && broken.emptyName && mutation.lotekCheck === undefined)
+          failures.push(
+            `${engine} ${label(contract)}: the mutation "${mutation.name}" leaves a name empty, and says nothing about lotek check. Write lotekCheck: "without-name" when the markup shows it, or { not: why } when it cannot.`,
           )
         ran++
       }

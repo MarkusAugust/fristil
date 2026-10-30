@@ -42,8 +42,8 @@ class LotekAnnotator : Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (element !is XmlDocument) return
         val file = element.containingFile ?: return
-        // No shortcut on «lt-» in the text: the rule icon-without-name applies
-        // to markup without a single LO-TEK class, and the core takes
+        // No shortcut on «lt-» in the text: the rule without-name applies to
+        // every button and link, also without a single LO-TEK class, and the core takes
         // milliseconds on a file. With the shortcut IntelliJ said nothing
         // about an icon button without a name that `lotek check` and VS Code
         // reported.

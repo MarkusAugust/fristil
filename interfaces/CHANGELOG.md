@@ -24,6 +24,36 @@ including 0.36.0 were written in Norwegian, and list them under "Brytende".
 
 ## Unreleased
 
+### Breaking
+
+- **One rule, `without-name`, replaces `icon-without-name`,
+  `control-without-label`, `tab-list-without-name` and
+  `field-without-label`.** A `<!-- lotek-ignore-next -->` naming one of the
+  four names now has to name `without-name`. The rule is an error, also for
+  a field, which was a warning.
+
+### Added
+
+- **`lotek check` reports every element a screen reader gets no name for**
+  (`without-name`): the roles WAI-ARIA 1.2 says must have one, on LO-TEK's
+  classes and elements and on every button and link, and what LO-TEK demands
+  beyond that, from `name` on an element, a part or a class in the manifest:
+  a tab list, a fieldset, a toggle group, a dialog in `<lt-dialog>` without a
+  heading, an error summary without a heading with an id. The name is
+  computed as the browsers compute it (AccName 1.2), by the same model the
+  accessibility check compares with Chromium and Firefox, and a `<title>` in
+  an svg counts (SVG-AAM). Where a binding, a template or another part of
+  the page could give the name, the rule says nothing.
+- **`lotek check` warns about LO-TEK's own English texts on a page in
+  another language** (`untranslated-text`): `<lt-toast>`,
+  `<lt-connection-status>` and the counts in `<lt-suggestion>` without the
+  attribute that replaces the text, and, when the style sheets are given,
+  " (required)" and " (optional)" on a label or legend without the CSS
+  variable. The language is the nearest `lang`. The manifest has
+  `textLanguage`, `texts` on the elements and classes, and `name`, which
+  `Manifest` in LO-TEK for Kotlin reads as `textLanguage`, `texts` and
+  `named`.
+
 ### Changed
 
 - **`lt.errorSummary()` writes the heading's id and the box's

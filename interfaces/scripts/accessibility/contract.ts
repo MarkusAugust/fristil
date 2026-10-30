@@ -67,6 +67,15 @@ export type Mutation = {
   replace: [string, string]
   /** The step that must fail. */
   failsAt: string
+  /**
+   * What `lotek check` says about the mutated recipe, without a browser.
+   * `"without-name"`: it reports a name the markup no longer gives. A
+   * mutation that leaves a name empty in the browsers must have it, or
+   * `not` with the reason the markup cannot show it, such as a component
+   * that is never registered. The runner holds both sides: `lotek check`
+   * reports exactly the mutations that say so, and nothing on the recipe.
+   */
+  lotekCheck?: "without-name" | { not: string }
 }
 
 export type Contract = {

@@ -4,7 +4,7 @@
       "start": 1,
       "end": 7,
       "severity": "error",
-      "link": "https://lo-tek.sobernetics.no/components/icon/",
+      "link": "https://lo-tek.sobernetics.no/components/button/",
       "message": "<button> has only an icon in it and no name: no text, and no aria-label, aria-labelledby or title. A screen reader announces it as \"button\" without saying what it does. Give it an aria-label, or a text in an element with the class lt-sr-only.",
       "fix": {
         "title": "Give it a name with aria-label",
@@ -22,7 +22,7 @@
       "start": 141,
       "end": 142,
       "severity": "error",
-      "link": "https://lo-tek.sobernetics.no/components/icon/",
+      "link": "https://lo-tek.sobernetics.no/components/link/",
       "message": "<a> has only an icon in it and no name: no text, and no aria-label, aria-labelledby or title. A screen reader announces it as \"link\" without saying what it does. Give it an aria-label, or a text in an element with the class lt-sr-only.",
       "fix": {
         "title": "Give it a name with aria-label",
@@ -42,7 +42,7 @@
       "start": 1,
       "end": 7,
       "severity": "error",
-      "link": "https://lo-tek.sobernetics.no/components/icon/",
+      "link": "https://lo-tek.sobernetics.no/components/button/",
       "message": "<button> has only an icon in it and no name: no text, and no aria-label, aria-labelledby or title. A screen reader announces it as \"button\" without saying what it does. Give it an aria-label, or a text in an element with the class lt-sr-only.",
       "fix": {
         "title": "Give it a name with aria-label",
@@ -60,7 +60,7 @@
       "start": 141,
       "end": 142,
       "severity": "error",
-      "link": "https://lo-tek.sobernetics.no/components/icon/",
+      "link": "https://lo-tek.sobernetics.no/components/link/",
       "message": "<a> has only an icon in it and no name: no text, and no aria-label, aria-labelledby or title. A screen reader announces it as \"link\" without saying what it does. Give it an aria-label, or a text in an element with the class lt-sr-only.",
       "fix": {
         "title": "Give it a name with aria-label",

@@ -27,7 +27,7 @@ class DiagnosticsTest : BasePlatformTestCase() {
     }
 
     fun `test reports an icon button without a name in a file without lt-`() {
-        // The rule icon-without-name needs no LO-TEK class. The annotator
+        // The rule without-name needs no LO-TEK class on a button. The annotator
         // used to skip every file without «lt-» in the text, so `lotek check`
         // and VS Code reported the button while IntelliJ said nothing.
         val out = findings("test.html", """<button><svg aria-hidden="true"></svg></button>""")

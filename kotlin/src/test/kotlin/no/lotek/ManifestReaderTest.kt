@@ -32,9 +32,10 @@ class ManifestReaderTest {
 
     @Test
     fun `the package manifest is the one in the jar`() {
-        known(raw, "\$schema", "schemaVersion", "version", "elements", "classes", "builders", "tokens", at = "the manifest")
+        known(raw, "\$schema", "schemaVersion", "version", "textLanguage", "elements", "classes", "builders", "tokens", at = "the manifest")
         assertEquals(Manifest.parse(text), Lotek.manifest)
         assertEquals(raw["version"], Lotek.manifest.version)
+        assertEquals(raw["textLanguage"], Lotek.manifest.textLanguage)
     }
 
     @Test
@@ -44,10 +45,28 @@ class ManifestReaderTest {
         var attributes = 0
         var parts = 0
         var partOf = 0
+        var named = 0
+        var texts = 0
         for ((name, c) in classes) {
             val read = Lotek.manifest.classes.getValue(name)
             val expected = c.map()
-            known(c, "component", "title", "description", "link", "content", "partOf", "parts", "attributes", at = name)
+            known(c, "component", "title", "description", "link", "content", "partOf", "parts", "name", "texts", "attributes", at = name)
+            assertEquals(nameJson(read.named), expected["name"], "$name name")
+            assertEquals(
+                expected["texts"] ?: emptyList<Any?>(),
+                read.texts.map { t ->
+                    buildMap {
+                        put("variable", t.variable)
+                        put("text", t.text)
+                        put("attribute", t.attribute)
+                        t.value?.let { put("value", it) }
+                        if (t.unless.isNotEmpty()) put("unless", t.unless)
+                    }
+                },
+                "$name texts",
+            )
+            if (read.named != null) named += 1
+            texts += read.texts.size
             assertEquals(name, read.name)
             assertEquals(listOf(expected["component"], expected["title"], expected["description"], expected["link"]), listOf(read.component, read.title, read.description, read.link), name)
             assertEquals(expected["content"], read.content?.name?.lowercase(), name)
@@ -58,7 +77,8 @@ class ManifestReaderTest {
             for ((part, p) in rawParts) {
                 val r = read.parts.getValue(part)
                 val pm = p.map()
-                known(p, "selector", "description", "content", "multiple", "unique", "optional", "stableId", at = "$name $part")
+                known(p, "selector", "description", "content", "multiple", "unique", "optional", "stableId", "name", at = "$name $part")
+                assertEquals(nameJson(r.named), pm["name"], "$name $part name")
                 assertEquals(listOf(pm["selector"], pm["description"], pm["content"], pm["multiple"] == true, pm["unique"] == true, pm["optional"] == true, pm["stableId"] == true), listOf(r.selector, r.description, r.content.name.lowercase(), r.multiple, r.unique, r.optional, r.stableId), "$name $part")
                 parts += 1
             }
@@ -77,6 +97,7 @@ class ManifestReaderTest {
         }
         assertTrue(attributes > 0, "No class had attributes, so the comparison said nothing.")
         assertTrue(parts > 0 && partOf > 0, "Found $parts parts and $partOf classes with partOf, so the comparison said nothing.")
+        assertTrue(named > 0 && texts > 0, "Found $named classes with name and $texts texts, so those branches in the reader are untested.")
     }
 
     @Test
@@ -87,10 +108,19 @@ class ManifestReaderTest {
         var events = 0
         var stable = 0
         var removed = 0
+        var elementTexts = 0
+        var partNames = 0
         for ((tag, el) in elements) {
             val read = Lotek.manifest.elements.getValue(tag)
             val e = el.map()
-            known(el, "link", "description", "attributes", "parts", "events", "removed", at = tag)
+            known(el, "link", "description", "attributes", "parts", "events", "removed", "name", "texts", at = tag)
+            assertEquals(nameJson(read.named), e["name"], "$tag name")
+            assertEquals(
+                e["texts"] ?: emptyMap<String, Any?>(),
+                read.texts.mapValues { (_, t) -> mapOf("text" to t.text, "replacedBy" to t.replacedBy) },
+                "$tag texts",
+            )
+            elementTexts += read.texts.size
             assertEquals(tag, read.tag)
             assertEquals(e["link"], read.link)
             assertEquals(e["description"], read.description)
@@ -109,7 +139,9 @@ class ManifestReaderTest {
             for ((name, p) in rawParts) {
                 val r = read.parts.getValue(name)
                 val pm = p.map()
-                known(p, "selector", "description", "content", "multiple", "unique", "optional", "stableId", at = "$tag $name")
+                known(p, "selector", "description", "content", "multiple", "unique", "optional", "stableId", "name", at = "$tag $name")
+                assertEquals(nameJson(r.named), pm["name"], "$tag $name name")
+                if (r.named != null) partNames += 1
                 assertEquals(listOf(pm["selector"], pm["description"], pm["content"], pm["multiple"] == true, pm["unique"] == true, pm["optional"] == true, pm["stableId"] == true), listOf(r.selector, r.description, r.content.name.lowercase(), r.multiple, r.unique, r.optional, r.stableId), "$tag $name")
                 if (r.stableId) stable += 1
                 parts += 1
@@ -124,7 +156,18 @@ class ManifestReaderTest {
         }
         assertTrue(parts > 0 && events > 0, "Found $parts parts and $events events, so the comparison said nothing.")
         assertTrue(stable > 0 && removed > 0, "Found $stable parts with stableId and $removed removed attributes, so those branches in the reader are untested.")
+        assertTrue(elementTexts > 0 && partNames > 0, "Found $elementTexts texts and $partNames parts with name, so those branches in the reader are untested.")
     }
+
+    /** A name as the raw JSON writes it, with each field only when it is there. */
+    private fun nameJson(n: Name?): Map<String, Any?>? =
+        n?.let {
+            buildMap {
+                it.after?.let { a -> put("after", a) }
+                if (it.id) put("id", true)
+                if (it.component) put("component", true)
+            }
+        }
 
     /** The shape of a result as the raw JSON writes it, with `optional` only when it is there. */
     private fun returnsJson(r: Returns): Map<String, Any?> =

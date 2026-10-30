@@ -33,6 +33,7 @@ import {
   writeFileSync,
 } from "node:fs"
 import { fileURLToPath } from "node:url"
+import { DEFAULT_LANGUAGE } from "../src/components/default-texts.js"
 import { lt } from "../src/lt.js"
 import { FAMILIES, NEUTRAL_LAYERS, ROLES } from "../src/tokens/matrix-cells.js"
 import {
@@ -573,6 +574,7 @@ const manifest = {
   $schema: "./manifest.schema.json",
   schemaVersion: SCHEMA_VERSION,
   version: version,
+  textLanguage: DEFAULT_LANGUAGE,
   elements,
   classes: classEntries,
   builders: builderFunctions,

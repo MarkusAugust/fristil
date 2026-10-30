@@ -24,6 +24,10 @@
       "type": "string",
       "description": "The version of @lo-tek/interfaces the manifest was written from."
     },
+    "textLanguage": {
+      "type": "string",
+      "description": "The language of the texts the components and stylesheets write themselves. lotek check warns about one of them on a page in another language."
+    },
     "elements": {
       "type": "object",
       "description": "Every <lt-…> element, with the attributes the component reads.",
@@ -49,6 +53,26 @@
             "description": "The parts the element finds in the markup the renderer writes, with the selector it looks for. An empty object when the element creates its own nodes.",
             "additionalProperties": {
               "$ref": "#/$defs/part"
+            }
+          },
+          "name": {
+            "$ref": "#/$defs/name"
+          },
+          "texts": {
+            "type": "object",
+            "description": "The texts the element writes itself, by their name in DEFAULT_TEXTS.",
+            "additionalProperties": {
+              "type": "object",
+              "required": ["text", "replacedBy"],
+              "properties": {
+                "text": { "type": "string" },
+                "replacedBy": {
+                  "type": "array",
+                  "description": "The attributes that replace the text. Any one of them is enough.",
+                  "items": { "type": "string" }
+                }
+              },
+              "additionalProperties": false
             }
           },
           "events": {
@@ -103,6 +127,29 @@
           "partOf": {
             "type": "string",
             "description": "The class this one is part of, when it is only a part of another component's markup, like lt-card__title in lt-card. The parent has a part that matches it."
+          },
+          "name": {
+            "$ref": "#/$defs/name"
+          },
+          "texts": {
+            "type": "array",
+            "description": "The texts the stylesheet shows on the element with the class and the attribute, and the CSS variable that replaces each.",
+            "items": {
+              "type": "object",
+              "required": ["variable", "text", "attribute"],
+              "properties": {
+                "variable": { "type": "string" },
+                "text": { "type": "string" },
+                "attribute": { "type": "string" },
+                "value": { "type": "string" },
+                "unless": {
+                  "type": "array",
+                  "description": "Attributes that keep the text from showing.",
+                  "items": { "type": "string" }
+                }
+              },
+              "additionalProperties": false
+            }
           },
           "parts": {
             "type": "object",
@@ -505,6 +552,32 @@
         "optional": {
           "const": true,
           "description": "The element works without the part."
+        },
+        "stableId": {
+          "const": true,
+          "description": "The part needs an id from the server: the component never writes one."
+        },
+        "name": {
+          "$ref": "#/$defs/name"
+        }
+      },
+      "additionalProperties": false
+    },
+    "name": {
+      "type": "object",
+      "description": "A name LO-TEK demands where WAI-ARIA does not, or one the component gives itself. lotek check reports an element the markup gives no name.",
+      "properties": {
+        "after": {
+          "type": "string",
+          "description": "The part the component points aria-labelledby at when the markup has neither aria-label nor aria-labelledby."
+        },
+        "id": {
+          "const": true,
+          "description": "That part must have an id from the template: the component does not write one."
+        },
+        "component": {
+          "const": true,
+          "description": "The component names it itself, and no rule judges its name in the markup."
         }
       },
       "additionalProperties": false

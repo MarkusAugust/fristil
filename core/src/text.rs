@@ -104,6 +104,11 @@ pub fn contains_str(t: &[u16], pattern: &str) -> bool {
     find_at(t, 0, pattern).is_some()
 }
 
+/// Like [`contains_str`], ignoring ASCII case.
+pub fn contains_ci(t: &[u16], pattern: &str) -> bool {
+    (0..t.len()).any(|i| starts_at_ci(t, i, pattern))
+}
+
 /// `toLowerCase()`: all of Unicode, with the same rules as JavaScript, also
 /// for a final sigma in a word. A lone surrogate is left untouched.
 pub fn lowercase(t: &[u16]) -> Utf16 {

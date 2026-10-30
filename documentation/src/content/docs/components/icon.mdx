@@ -4,6 +4,7 @@ description: An icon from the app's own set, as large as the text around it. A C
 ---
 
 import Example from "../../../components/Example.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 The class goes on an `<svg>`. LO-TEK ships no icons, so the svg comes from the set the app already uses. The class makes the icon as large as the surrounding text and centres it on the line, and `lt.icon()` hides it from screen readers when it is only decoration.
 
@@ -84,6 +85,8 @@ See [Customising](../../customising/) for how the layer works.
 
 ## Accessibility
 
-- A button or link with only an icon in it needs a name: `aria-label` on the button, or a text in an element with the class `lt-sr-only`. `lotek check` and the editors report `icon-without-name` when it is missing.
+<ScreenReaderContract component="icon" />
+
+- A button or link with only an icon in it needs a name: `aria-label` on the button, or a text in an element with the class `lt-sr-only`. `lotek check` and the editors report `without-name` when it is missing. A `<title>` in the svg names it too, when the svg has no `aria-hidden`.
 - Write what the button does, not what the icon depicts. "Delete the application" is better than "Rubbish bin".
 - An icon alone is hard for many people to understand, including those who can see it. If you have room, text next to it is better than only a name for the screen reader.

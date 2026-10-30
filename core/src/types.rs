@@ -27,6 +27,24 @@ pub struct Part {
     pub multiple: bool,
     pub unique: bool,
     pub stable_id: bool,
+    /// LO-TEK's own demand for a name, beyond WAI-ARIA's.
+    pub named: Option<Named>,
+}
+
+/// An element or part LO-TEK demands a name for, where WAI-ARIA does not, or
+/// where the component gives the name itself. WAI-ARIA's own demands, by
+/// role, are in the core.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Named {
+    /// The part the component names it after when the markup gives it no
+    /// name: it points `aria-labelledby` at that part.
+    pub after: Option<String>,
+    /// The part must have an id from the template, since the component does
+    /// not write one.
+    pub id: bool,
+    /// The component names it itself, from what the other rules check, and
+    /// no rule judges its name in the markup.
+    pub component: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -37,6 +55,31 @@ pub struct Element {
     pub parts: Vec<Part>,
     /// Attributes that have been removed, with what to use instead.
     pub removed: Vec<(String, String)>,
+    /// LO-TEK's demand for a name on the element itself.
+    pub named: Option<Named>,
+    /// The texts the element writes itself.
+    pub texts: Vec<DefaultText>,
+}
+
+/// A text a component writes itself when nobody has given it another, and
+/// the attributes that replace it, any one of them.
+#[derive(Clone, Debug, PartialEq)]
+pub struct DefaultText {
+    pub key: String,
+    pub text: String,
+    pub replaced_by: Vec<String>,
+}
+
+/// A text a stylesheet shows on an element with the class and the
+/// attribute, and the CSS variable that replaces it.
+#[derive(Clone, Debug, PartialEq)]
+pub struct CssText {
+    pub variable: String,
+    pub text: String,
+    pub attribute: String,
+    pub value: Option<String>,
+    /// Attributes that keep the text from showing.
+    pub unless: Vec<String>,
 }
 
 /// An attribute a class takes, like `data-variant` on `lt-button`, or a
@@ -55,6 +98,10 @@ pub struct Class {
     pub link: String,
     pub attributes: Vec<(String, ClassAttribute)>,
     pub parts: Vec<Part>,
+    /// LO-TEK's demand for a name on the element with the class.
+    pub named: Option<Named>,
+    /// The texts the stylesheet shows on it.
+    pub texts: Vec<CssText>,
 }
 
 /// Everything the spell check checks against, read from one manifest.
@@ -65,6 +112,9 @@ pub struct Vocabulary {
     pub schema_version: u32,
     pub elements: Vec<Element>,
     pub classes: Vec<Class>,
+    /// The language of the texts the components and stylesheets write
+    /// themselves, when the manifest says.
+    pub text_language: Option<String>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -127,16 +177,13 @@ pub const RULES: &[&str] = &[
     "unknown-class",
     "invalid-class-value",
     "disabled-with-href",
-    "icon-without-name",
     "field-without-control",
     "part-repeated",
-    "field-without-label",
     "timeout-without-dialog",
     "duplicate-id",
     "id-not-found",
     "for-points-nowhere",
     "summary-points-nowhere",
-    "control-without-label",
     "text-not-wired",
     "unstyled-class",
     "unstyled-value",
@@ -144,10 +191,11 @@ pub const RULES: &[&str] = &[
     "panel-without-id",
     "tab-link-without-panel",
     "tab-without-link",
-    "tab-list-without-name",
     "text-in-label",
     "value-without-field",
     "error-text-contradicts",
     "removed-attribute",
     "id-from-component",
+    "without-name",
+    "untranslated-text",
 ];

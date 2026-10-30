@@ -38,6 +38,7 @@ import type {
   Attribute,
   Classes,
   ClassInfo,
+  CssText,
   Elements,
 } from "../src/vocabulary/types.js"
 import { flagsFor, readBuilderFunctions } from "./builder-functions.js"
@@ -350,6 +351,8 @@ export function diagnosticsData(): Elements {
       description: element.description,
       attributes,
       parts: element.parts,
+      ...(element.name ? { name: element.name } : {}),
+      ...(element.texts ? { texts: element.texts } : {}),
       ...(element.removed ? { removed: element.removed } : {}),
       ...(Object.keys(element.events).length
         ? {
@@ -416,6 +419,52 @@ const TOKEN_PAGE = {
   link: "https://lo-tek.sobernetics.no/customising/",
 }
 
+/**
+ * The texts a stylesheet shows: `content: var(--lt-…, "…")`, with the class
+ * and the attribute in the rule's selector. A text without a letter, like
+ * " *", is in no language, and is left out.
+ */
+function textsInCss(css: string): { name: string; text: CssText }[] {
+  const clean = css.replace(/\/\*[\s\S]*?\*\//g, "")
+  const out: { name: string; text: CssText }[] = []
+  const rule = /([^{}]+)\{([^{}]*)\}/g
+  const attributeIn = /\[([\w-]+)(?:=(?:"([^"]*)"|'([^']*)'))?\]/
+  for (const [, selectors, body] of clean.matchAll(rule)) {
+    const content = body.match(
+      /content:\s*var\((--lt-[\w-]+),\s*(?:"([^"]*)"|'([^']*)')\)/,
+    )
+    const text = content?.[2] ?? content?.[3]
+    if (!content || text === undefined || !/\p{L}/u.test(text)) continue
+    for (const selector of selectors.split(",")) {
+      // The element the text is on: the last compound selector.
+      const subject =
+        selector
+          .trim()
+          .split(/\s*[>+~]\s*|\s+/)
+          .pop() ?? ""
+      const unless = [...subject.matchAll(/:not\(([^)]*)\)/g)].flatMap(
+        ([, inside]) => [...inside.matchAll(/\[([\w-]+)/g)].map((m) => m[1]),
+      )
+      const own = subject.replace(/:not\([^)]*\)/g, "")
+      const name = own.match(/\.(lt-[\w-]+)/)?.[1]
+      const attribute = own.match(attributeIn)
+      if (!name || !attribute) continue
+      const value = attribute[2] ?? attribute[3]
+      out.push({
+        name,
+        text: {
+          variable: content[1],
+          text,
+          attribute: attribute[1],
+          ...(value !== undefined ? { value } : {}),
+          ...(unless.length > 0 ? { unless } : {}),
+        },
+      })
+    }
+  }
+  return out
+}
+
 function classesInCss(css: string): string[] {
   const clean = css.replace(/\/\*[\s\S]*?\*\//g, "")
   return [...new Set(clean.match(/\.lt-[\w-]+/g) ?? [])].map((c) => c.slice(1))
@@ -454,9 +503,8 @@ export function classesData(): Classes {
       const title = frontmatter(slug, "title")
       const description = frontmatter(slug, "description")
       for (const file of files) {
-        for (const name of classesInCss(
-          readFileSync(join(dir, slug, file), "utf8"),
-        ))
+        const css = readFileSync(join(dir, slug, file), "utf8")
+        for (const name of classesInCss(css))
           found[name] ??= {
             component: slug,
             title,
@@ -464,6 +512,10 @@ export function classesData(): Classes {
             link,
             attributes: {},
           }
+        for (const { name, text } of textsInCss(css)) {
+          const entry = found[name]
+          if (entry) entry.texts = [...(entry.texts ?? []), text]
+        }
       }
     }
   }
@@ -603,7 +655,7 @@ export function classesData(): Classes {
     )
   const out: Classes = {}
   for (const [name, info] of Object.entries(found)) {
-    const { content, partOf, parts } = classDocs[name]
+    const { content, partOf, parts, name: named } = classDocs[name]
     out[name] = {
       component: info.component,
       title: info.title,
@@ -612,6 +664,8 @@ export function classesData(): Classes {
       content,
       ...(partOf ? { partOf } : {}),
       ...(parts ? { parts } : {}),
+      ...(named ? { name: named } : {}),
+      ...(info.texts ? { texts: info.texts } : {}),
       attributes: info.attributes,
     }
   }

@@ -34,7 +34,28 @@ export type Part = {
   optional?: true
   /** The part must have an id from the server; the component never writes one. */
   stableId?: true
+  /** LO-TEK demands a name for the part. */
+  name?: Name
 }
+
+/**
+ * A name LO-TEK demands where WAI-ARIA does not, or one the component gives
+ * itself. WAI-ARIA's own demands, by role, are in the core, and `lotek check`
+ * reports an element the markup gives no name (`without-name`).
+ *
+ * `after` is the part the component points `aria-labelledby` at when the
+ * markup has neither `aria-label` nor `aria-labelledby`, such as the heading
+ * of a dialog; then that part's name is enough. With `id` the part must have
+ * an id from the template, since the component does not write one. With
+ * `component` the component names it itself, after what the other rules
+ * check, such as the list in a suggestion field after the label, and no
+ * rule judges its name in the markup.
+ *
+ * Each of them is held to the component by a contract in
+ * `interfaces/scripts/accessibility/contracts.ts`: a mutation that takes the name away
+ * must fail in the browsers, and `lotek check` must report it.
+ */
+export type Name = { after?: string; id?: true; component?: true }
 
 /**
  * An event an element dispatches, such as `dialog-toggle`. `detail` is the
@@ -52,8 +73,33 @@ export type Element = {
   /** Empty for the elements that create all of their content themselves. */
   parts?: Record<string, Part>
   events?: Record<string, ElementEvent>
+  /** LO-TEK demands a name for the element itself. */
+  name?: Name
+  /** The texts the element writes itself, by their name in `DEFAULT_TEXTS`. */
+  texts?: Record<string, DefaultText>
   /** Attributes that have been removed, with what applies instead. */
   removed?: Record<string, string>
+}
+
+/**
+ * A text the element writes itself when nobody has given it another, from
+ * `DEFAULT_TEXTS`. `replacedBy` is the attributes that replace it; any one
+ * of them is enough, and `lotek check` warns when none is there on a page in
+ * another language than the text's.
+ */
+export type DefaultText = { text: string; replacedBy: readonly string[] }
+
+/**
+ * A text the stylesheet shows in `::after` on an element with the class and
+ * `attribute`, with `value` when the selector requires one, and none of the
+ * attributes in `unless`. `variable` is the CSS variable that replaces it.
+ */
+export type CssText = {
+  variable: string
+  text: string
+  attribute: string
+  value?: string
+  unless?: readonly string[]
 }
 
 /** The content of `elements.ts`: tag to element. */
@@ -88,6 +134,10 @@ export type ClassInfo = {
   partOf?: string
   /** The parts the markup consists of, for the classes with a fixed structure. */
   parts?: Record<string, Part>
+  /** LO-TEK demands a name for the element with the class. */
+  name?: Name
+  /** The texts the stylesheet shows on it. */
+  texts?: readonly CssText[]
   attributes: Record<string, ClassAttribute>
 }
 

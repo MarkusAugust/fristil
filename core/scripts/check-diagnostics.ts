@@ -101,10 +101,15 @@ const cases: Case[] = [
 <button><img src="x.svg" alt="Slett"></button>
 <button><svg><title>Slett</title></svg></button>
 <a><svg class="lt-icon" aria-hidden="true"></svg></a>
-<button hidden><svg class="lt-icon" aria-hidden="true"></svg></button>
 <button>{{ .Navn }}<svg class="lt-icon" aria-hidden="true"></svg></button>
 <button></button>`,
     count: 0,
+  },
+  {
+    name: "a hidden button without a name: it can be shown, and then has none",
+    html: `<button hidden><svg class="lt-icon" aria-hidden="true"></svg></button>`,
+    count: 1,
+    mentions: ["<button> has only an icon"],
   },
   {
     name: "a field with two controls",
@@ -292,8 +297,9 @@ const cases: Case[] = [
     name: "a field without a label",
     html: `<lt-field><input class="lt-input"></lt-field>`,
     count: 1,
-    mentions: ["found no <label>", "without a name"],
-    severity: "warning",
+    page: true,
+    mentions: ["has no label", "without a name"],
+    severity: "error",
   },
   {
     name: "a session timeout without a dialog, as it used to be written",
@@ -341,8 +347,9 @@ const cases: Case[] = [
   {
     name: "a full stop in the id is a full stop, not any character",
     html: `<label for="ab">X</label><lt-field><input id="a.b"></lt-field>`,
-    count: 1,
-    mentions: ["found no <label>"],
+    count: 2,
+    page: true,
+    mentions: ["Write for on the label and id on the field"],
   },
   {
     name: "aria-label on the control",
@@ -439,7 +446,8 @@ const cases: Case[] = [
     name: "Alpine on the control does not make the field a template",
     html: `<lt-field><input @input="x = 1"></lt-field>`,
     count: 1,
-    mentions: ["found no <label>"],
+    page: true,
+    mentions: ["has no label"],
   },
   {
     name: "nor does Alpine on a button in the field",
@@ -456,7 +464,8 @@ const cases: Case[] = [
     name: "upper-case field: without a label it fails",
     html: `<LT-FIELD><INPUT></LT-FIELD>\n<label>x</label>`,
     count: 1,
-    mentions: ["found no <label>"],
+    page: true,
+    mentions: ["has no label"],
   },
   {
     name: "a typo that resembles a known attribute",
@@ -580,6 +589,7 @@ const cases: Case[] = [
     name: "the fix for a field without a label",
     html: `<lt-field><input class="lt-input" id="navn"></lt-field>`,
     count: 1,
+    page: true,
     fixed: `<lt-field><label for="navn">Label</label><input class="lt-input" id="navn"></lt-field>`,
     fixTitle: "Add a label",
   },
@@ -589,19 +599,22 @@ const cases: Case[] = [
     name: "a field without a label and without an id gets no fix",
     html: `<lt-field><input class="lt-input"></lt-field>`,
     count: 1,
-    mentions: ["put the <label> around the field"],
+    page: true,
+    mentions: ["put the label around the field"],
     noFix: true,
   },
   {
     name: "the label gets its own line with the same indentation",
     html: `<lt-field>\n  <input class="lt-input" id="navn">\n</lt-field>`,
     count: 1,
+    page: true,
     fixed: `<lt-field>\n  <label for="navn">Label</label>\n  <input class="lt-input" id="navn">\n</lt-field>`,
   },
   {
     name: "the label gets its own line with \\r line breaks too",
     html: `<lt-field>\r  <input class="lt-input" id="navn">\r</lt-field>`,
     count: 1,
+    page: true,
     fixed: `<lt-field>\r  <label for="navn">Label</label>\r  <input class="lt-input" id="navn">\r</lt-field>`,
   },
   {
@@ -815,7 +828,7 @@ cases.push(
     html: `<label class="lt-label">Navn</label><input class="lt-input" id="navn">`,
     count: 1,
     page: true,
-    severity: "warning",
+    severity: "error",
     mentions: ["<input> has no label", "lt.field({ id })"],
     covers: "input",
   },
@@ -928,7 +941,7 @@ cases.push(
   },
   {
     name: "page: a link in the error summary to a field that does not exist",
-    html: `${LABELLED}<lt-error-summary><h2>Rett feilene</h2><ul><li><a href="#e-post">E-post</a></li></ul></lt-error-summary>`,
+    html: `${LABELLED}<lt-error-summary><h2 id="feil-tittel">Rett feilene</h2><ul><li><a href="#e-post">E-post</a></li></ul></lt-error-summary>`,
     count: 1,
     page: true,
     severity: "error",
@@ -937,7 +950,7 @@ cases.push(
   },
   {
     name: "page: a link in the error summary to a field that exists",
-    html: `${LABELLED}<lt-error-summary><h2>Rett feilene</h2><ul><li><a href="#epost">E-post</a></li></ul></lt-error-summary>`,
+    html: `${LABELLED}<lt-error-summary><h2 id="feil-tittel">Rett feilene</h2><ul><li><a href="#epost">E-post</a></li></ul></lt-error-summary>`,
     count: 0,
     page: true,
   },
@@ -1001,7 +1014,7 @@ cases.push(
   },
   {
     name: "page: a percent-encoded link in the error summary",
-    html: `<label class="lt-label" for="fødselsdato">F</label><input class="lt-input" id="fødselsdato"><lt-error-summary><h2>Feil</h2><ul><li><a href="#f%C3%B8dselsdato">Dato</a></li></ul></lt-error-summary>`,
+    html: `<label class="lt-label" for="fødselsdato">F</label><input class="lt-input" id="fødselsdato"><lt-error-summary><h2 id="feil-tittel">Feil</h2><ul><li><a href="#f%C3%B8dselsdato">Dato</a></li></ul></lt-error-summary>`,
     count: 0,
     page: true,
   },

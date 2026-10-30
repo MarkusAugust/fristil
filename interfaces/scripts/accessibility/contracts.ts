@@ -40,6 +40,7 @@ const dialog: Contract = {
       name: "the dialog without a name",
       replace: [' aria-labelledby="confirm-title"', ""],
       failsAt: "open",
+      lotekCheck: "without-name",
     },
     {
       name: "focus sent away after the close",
@@ -90,6 +91,7 @@ const field: Contract = {
       name: "the label without its text",
       replace: [">Full name</label>", "></label>"],
       failsAt: "focus-field",
+      lotekCheck: "without-name",
     },
     {
       name: "the error text never shown",
@@ -140,6 +142,7 @@ const suggestion: Contract = {
       name: "the label without its text",
       replace: [">Airport</label>", "></label>"],
       failsAt: "focus-field",
+      lotekCheck: "without-name",
     },
   ],
 }
@@ -173,6 +176,7 @@ const tabs: Contract = {
       name: "the tab list without a name",
       replace: [' aria-label="Parts of the case"', ""],
       failsAt: "focus-first-tab",
+      lotekCheck: "without-name",
     },
     {
       name: "the component not registered",
@@ -646,6 +650,7 @@ const select: Contract = {
       name: "the label not pointing at the field",
       replace: [' for="country"', ""],
       failsAt: "focus-field",
+      lotekCheck: "without-name",
     },
   ],
 }
@@ -689,6 +694,7 @@ const checkbox: Contract = {
       name: "the label not pointing at the box",
       replace: [' for="terms"', ""],
       failsAt: "focus-box",
+      lotekCheck: "without-name",
     },
   ],
 }
@@ -736,6 +742,7 @@ const radio: Contract = {
         "",
       ],
       failsAt: "focus-checked-option",
+      lotekCheck: "without-name",
     },
   ],
 }
@@ -763,6 +770,7 @@ const toggleGroup: Contract = {
       name: "the legend removed",
       replace: ['<legend class="lt-sr-only">View</legend>', ""],
       failsAt: "focus-checked-option",
+      lotekCheck: "without-name",
     },
   ],
 }
@@ -809,6 +817,61 @@ const switchControl: Contract = {
   ],
 }
 
+/*
+ * The icon page: a button with text next to the icon, and one with only the
+ * icon and aria-label. The variant names the icon with a `<title>` in the
+ * svg instead (SVG-AAM), which the core reads too.
+ */
+const icon: Contract = {
+  component: "icon",
+  example: 0,
+  steps: [
+    {
+      name: "focus-text-button",
+      do: [{ focus: "button:nth-of-type(1)" }],
+      focus: { role: "button", name: "New application" },
+    },
+    {
+      name: "focus-icon-button",
+      do: [{ focus: "button:nth-of-type(2)" }],
+      focus: { role: "button", name: "Delete the application" },
+    },
+  ],
+  mutations: [
+    {
+      name: "the icon button without aria-label",
+      replace: [' aria-label="Delete the application"', ""],
+      failsAt: "focus-icon-button",
+      lotekCheck: "without-name",
+    },
+  ],
+}
+
+const iconWithTitle: Contract = {
+  ...icon,
+  variant: {
+    name: "a title in the svg",
+    replace: [
+      [
+        ' aria-label="Delete the application">\n  <svg class="lt-icon" aria-hidden="true"',
+        '>\n  <svg class="lt-icon"',
+      ],
+      [
+        '<path d="M4 7h16',
+        '<title>Delete the application</title><path d="M4 7h16',
+      ],
+    ],
+  },
+  mutations: [
+    {
+      name: "the title taken out",
+      replace: ["<title>Delete the application</title>", ""],
+      failsAt: "focus-icon-button",
+      lotekCheck: "without-name",
+    },
+  ],
+}
+
 export const CONTRACTS: Contract[] = [
   dialog,
   field,
@@ -828,4 +891,6 @@ export const CONTRACTS: Contract[] = [
   radio,
   toggleGroup,
   switchControl,
+  icon,
+  iconWithTitle,
 ]
