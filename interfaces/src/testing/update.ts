@@ -8,8 +8,17 @@ import { Idiomorph } from "./idiomorph/idiomorph-v0.8.0.js"
 
 import "./datastar/datastar-v1.0.4.js"
 
+/** How the content of a region is updated: `innerHTML` keeps the region. */
 export type Way = "Datastar" | "idiomorph" | "innerHTML"
 export const WAYS: Way[] = ["Datastar", "idiomorph", "innerHTML"]
+
+/** How an element is replaced: `outerHTML` makes a new one. */
+export type Replacement = "Datastar" | "idiomorph" | "outerHTML"
+export const REPLACEMENTS: Replacement[] = [
+  "Datastar",
+  "idiomorph",
+  "outerHTML",
+]
 
 /**
  * A `datastar-patch-elements`, as the server sends it. Without a selector
@@ -43,7 +52,7 @@ export function morph(root: Element, html: string): void {
  * the way `way` does it: Datastar's `outer` patch, idiomorph's `outerHTML`
  * morph with the typed text kept, or a plain `outerHTML`.
  */
-export function replace(way: Way, id: string, html: string): void {
+export function replace(way: Replacement, id: string, html: string): void {
   const root = document.getElementById(id)
   if (!root) throw new Error(`no element with the id "${id}" to update`)
   if (way === "Datastar") datastarPatch(html)

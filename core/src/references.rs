@@ -376,7 +376,7 @@ pub(crate) enum Item {
 pub(crate) fn walk(source: &[u16]) -> (Vec<Node>, Vec<Item>) {
     let mut nodes: Vec<Node> = Vec::new();
     let mut items: Vec<Item> = Vec::new();
-    let mut stabel: Vec<usize> = Vec::new();
+    let mut stack: Vec<usize> = Vec::new();
     let mut text_start = 0;
     let mut i = 0;
     while i < source.len() {
@@ -389,7 +389,7 @@ pub(crate) fn walk(source: &[u16]) -> (Vec<Node>, Vec<Item>) {
         };
         if i > text_start {
             items.push(Item::Text {
-                parent: stabel.last().copied(),
+                parent: stack.last().copied(),
                 start: text_start,
                 end: i,
             });
@@ -398,8 +398,8 @@ pub(crate) fn walk(source: &[u16]) -> (Vec<Node>, Vec<Item>) {
         i = end + 1;
         let name = lossy(&lowercase(&source[name_start..name_end]));
         if closer {
-            if let Some(at) = stabel.iter().rposition(|&n| nodes[n].name == name) {
-                stabel.truncate(at);
+            if let Some(at) = stack.iter().rposition(|&n| nodes[n].name == name) {
+                stack.truncate(at);
             }
             continue;
         }
@@ -407,25 +407,25 @@ pub(crate) fn walk(source: &[u16]) -> (Vec<Node>, Vec<Item>) {
         let self_closes = self_closing(b);
         let foreign = name == "svg"
             || name == "math"
-            || stabel
+            || stack
                 .iter()
                 .any(|&n| nodes[n].name == "svg" || nodes[n].name == "math");
         nodes.push(Node {
             name_start,
             name_end: name_start + (name_end - name_start),
             attributes: read_attributes(if self_closes { &b[..b.len() - 1] } else { b }, name_end),
-            parent: stabel.last().copied(),
+            parent: stack.last().copied(),
             name,
         });
         let index = nodes.len() - 1;
         items.push(Item::Element(index));
         if !VOID.contains(&nodes[index].name.as_str()) && !(self_closes && foreign) {
-            stabel.push(index);
+            stack.push(index);
         }
     }
     if source.len() > text_start {
         items.push(Item::Text {
-            parent: stabel.last().copied(),
+            parent: stack.last().copied(),
             start: text_start,
             end: source.len(),
         });

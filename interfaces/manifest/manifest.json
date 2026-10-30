@@ -2485,7 +2485,7 @@
           "type": {
             "kind": "text"
           },
-          "description": "The id of the heading. The box takes its name from it with `aria-labelledby`. Without it, `<lt-error-summary>` gives the heading an id and writes the wiring in the browser. An empty one counts as none."
+          "description": "The id of the heading. The box takes its name from it with `aria-labelledby`. Default: the box's `id` with `-title`, so the markup carries the wiring whenever the box has an id. An empty one counts as none; one with whitespace throws."
         }
       ],
       "returns": {

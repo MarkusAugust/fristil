@@ -47,7 +47,9 @@ Besides Bun it needs: Rust, since the check in the package is built from
 `core/`; Java 17 or later, for the jar and the Kotlin tests; and network access the first
 time, when VS Code is downloaded. On Linux without a display, meaning with neither `DISPLAY` nor
 `WAYLAND_DISPLAY` set, you also need `xvfb-run`; if the machine has a display, VS Code
-runs on it.
+runs on it. The accessibility tree check reads AT-SPI, which only Linux has: on
+macOS it runs in the Playwright image and needs podman or docker; on Linux,
+install what `interfaces/scripts/accessibility/install.sh` lists, once.
 Install [rustup](https://rustup.rs), and `rust-toolchain.toml` fetches
 the right version and the targets on the first call.
 

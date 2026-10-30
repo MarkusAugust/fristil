@@ -86,6 +86,17 @@ describe("lt-connection-status", () => {
     written.remove()
   })
 
+  it("leaves the politeness of a role the server wrote alone", async () => {
+    // role="alert" is assertive by itself; an aria-live="polite" next to it
+    // would make "No connection" wait instead of interrupting.
+    const alert = document.createElement("lt-connection-status")
+    alert.setAttribute("role", "alert")
+    document.body.append(alert)
+    await waitForPaint()
+    expect(alert.hasAttribute("aria-live")).toBe(false)
+    alert.remove()
+  })
+
   it("puts the region back when a morph takes it off", async () => {
     const fresh = document.createElement("lt-connection-status")
     document.body.append(fresh)

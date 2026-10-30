@@ -289,6 +289,12 @@ function recorder() {
   const events: Event[] = []
   const answers: Focused[] = []
   let ready = false
+  // A recorder that has exited sees nothing more: every wait fails at once.
+  let gone: string | undefined
+  child.exited.then((code) => {
+    gone = `the recorder exited with ${code}`
+    for (const tick of waiting) tick()
+  })
   const waiting = new Set<() => void>()
   const lines = createInterface({
     input: require("node:stream").Readable.fromWeb(child.stdout),
@@ -313,6 +319,10 @@ function recorder() {
           waiting.delete(tick)
           clearTimeout(timer)
           done(hit)
+        } else if (gone) {
+          waiting.delete(tick)
+          clearTimeout(timer)
+          fail(new StepFailure(step, gone))
         }
       }
       const timer = setTimeout(() => {
@@ -445,11 +455,14 @@ const isBarrier = (event: Event) =>
   event.node?.attributes.id === "lotek-barrier" ||
   event.ancestors.some((a) => a.attributes.id === "lotek-barrier")
 
-const liveness = (event: Event) =>
-  isBarrier(event)
-    ? undefined
-    : (event.node?.attributes["container-live"] ??
-      event.ancestors.find((a) => a.attributes.live)?.attributes.live)
+const liveness = (event: Event) => {
+  if (isBarrier(event)) return undefined
+  const live =
+    event.node?.attributes["container-live"] ??
+    event.ancestors.find((a) => a.attributes.live)?.attributes.live
+  // aria-live="off" is a region that announces nothing.
+  return live === "off" ? undefined : live
+}
 
 /**
  * What the run is waiting for right now. When a run outlives its deadline,
@@ -466,8 +479,11 @@ async function waiting<T>(what: string, promise: Promise<T>): Promise<T> {
 /** Whether a browser process of the engine is still running here. */
 function alive(engine: Engine): string {
   const ps = Bun.spawnSync(["ps", "-eo", "args"]).stdout.toString()
-  const name = engine === "firefox" ? "firefox" : "chrom"
-  return ps.split("\n").some((l) => l.includes(name) && !l.includes("ps -eo"))
+  // The binary Playwright installed, under /ms-playwright/<engine>-<build>/.
+  // The session's bus has the runtime folder, with the engine's name, on its
+  // command line, so the name alone matched that.
+  const binary = `/ms-playwright/${engine}`
+  return ps.split("\n").some((l) => l.includes(binary))
     ? `${engine} still runs`
     : `no ${engine} process left`
 }
@@ -543,6 +559,101 @@ async function act(page: Page, action: Action) {
   else if ("run" in action) await page.evaluate(action.run)
 }
 
+/*
+ * What live regions announced in some events. One change to a region
+ * arrives at several levels: Firefox reports a new message as a new child
+ * for each element in it (the text, the close button "×") and as text
+ * inserted in the region itself, "Could not save. Try again.×"; Chromium as
+ * text inserted in the region itself, as an embedded object it reads out,
+ * and as the button's own "×". So:
+ *
+ * - text inserted in the region itself (the node has `live`) is one change,
+ *   each time, also when Chromium's second message holds the end of the
+ *   first ("×Could not…×");
+ * - an event further down whose text such a region event, with the same
+ *   politeness, holds is that change seen from below, and is left out, one
+ *   per text for each region event, the nearest;
+ * - what remains, in a region that reports only further down, is counted
+ *   once per text, except that two direct insertions of the same text stay
+ *   two.
+ */
+function insertions(events: Event[]): Event[] {
+  const live = events.filter(
+    (e) =>
+      (e.type.startsWith("object:text-changed:insert") ||
+        e.type.startsWith("object:children-changed:add")) &&
+      liveness(e) &&
+      (e.text ?? "").trim() !== "",
+  )
+  const textOf = (e: Event) => e.text ?? ""
+  const inRegion = (e: Event) =>
+    e.type.startsWith("object:text-changed:insert") &&
+    e.node?.attributes.live !== undefined
+  const regional = live.filter(inRegion)
+  const kindOf = (e: Event) =>
+    e.type.startsWith("object:children-changed")
+      ? "child"
+      : e.embedding
+        ? "embedded"
+        : "direct"
+  /*
+   * Each regional insertion stands for one change, and takes at most one
+   * event per text and kind from below (Chromium sends the bar's own text
+   * and a new child of the region for one message): the nearest one in the
+   * stream. A second direct "Saved" further down, from a second change or
+   * another region, is left standing and counted.
+   */
+  const taken = new Map<Event, Set<string>>()
+  const below = live.filter((e) => {
+    if (inRegion(e)) return false
+    const at = events.indexOf(e)
+    const candidates = regional
+      .filter(
+        (r) =>
+          liveness(r) === liveness(e) &&
+          textOf(r).includes(textOf(e)) &&
+          !taken.get(r)?.has(`${kindOf(e)}\n${textOf(e)}`),
+      )
+      .sort(
+        (a, b) =>
+          Math.abs(events.indexOf(a) - at) - Math.abs(events.indexOf(b) - at),
+      )
+    const owner = candidates[0]
+    if (!owner) return true
+    const texts = taken.get(owner) ?? new Set<string>()
+    texts.add(`${kindOf(e)}\n${textOf(e)}`)
+    taken.set(owner, texts)
+    return false
+  })
+  // Below, the old rule: a text inside a longer one is the same change, an
+  // embedding the same as a direct text, and direct repeats stay.
+  const maximal = below.filter(
+    (e) =>
+      !below.some(
+        (f) =>
+          f !== e &&
+          liveness(f) === liveness(e) &&
+          textOf(f).length > textOf(e).length &&
+          textOf(f).includes(textOf(e)),
+      ),
+  )
+  const direct = new Set(
+    maximal
+      .filter((e) => !e.embedding)
+      .map((e) => `${liveness(e)}\n${textOf(e)}`),
+  )
+  const seen = new Set<string>()
+  const rest = maximal.filter((e) => {
+    const key = `${liveness(e)}\n${textOf(e)}`
+    if (!e.embedding && !e.type.startsWith("object:children-changed"))
+      return true
+    if (direct.has(key) || seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+  return [...regional, ...rest]
+}
+
 async function step(
   engine: Engine,
   page: Page,
@@ -551,9 +662,12 @@ async function step(
   s: Step,
   n: number,
   clean: boolean,
-) {
+  last: boolean,
+  // Where the previous step's window ended: the windows lie edge to edge,
+  // so an event between two steps belongs to the next one, not to none.
+  from: number,
+): Promise<number> {
   const at = deviationAt(contract, s.name)
-  const from = rec.events.length
   for (const action of s.do) {
     try {
       await act(page, action)
@@ -654,11 +768,17 @@ async function step(
     arrived(`lotek-sync-${n}-${s.name}-second`),
   )
   const window = rec.events.slice(from, end)
+  /*
+   * The questions come after the second marker: Chromium can deliver the
+   * first before the component's own events in the same batch, and the
+   * recorder answers from those events. What a question causes lands in the
+   * next step's window, which starts here, or in the last step's tail.
+   */
   const problems: string[] = []
   // Only on the recipe as written: a mutation is caught by the contract, never by a core that disagrees.
   if (clean) problems.push(...(await coreAgrees(engine, page, rec, at, s.name)))
-  if (s.focus || s.within) {
-    const now = await rec.focused(s.name)
+  const now = s.focus || s.within ? await rec.focused(s.name) : undefined
+  if (now) {
     if (s.focus)
       problems.push(...compare(engine, at, "focus:", s.focus, now.node))
     if (s.within) {
@@ -711,46 +831,7 @@ async function step(
         problems.push(`changes: no ${type} for the focused node`)
     }
   }
-  /*
-   * One change to a live region arrives at several levels, and is one
-   * announcement. Firefox reports a new message as the text in its element,
-   * as its close button "×", as the whole element "Could not save. Try
-   * again.×" in the region's text, and as a new child of the region; Chromium
-   * as the text and as an embedded object. So:
-   *
-   * - a text that is part of a longer text from the same step is that same
-   *   change seen from a lower level, and is left out;
-   * - an embedding or a new child with the same text as another event is the
-   *   same change seen from the parent, and is left out;
-   * - two direct insertions of the same text stay two, so a message announced
-   *   twice is still caught.
-   */
-  const live = window.filter(
-    (e) =>
-      (e.type.startsWith("object:text-changed:insert") ||
-        e.type.startsWith("object:children-changed:add")) &&
-      liveness(e) &&
-      (e.text ?? "").trim() !== "",
-  )
-  const textOf = (e: Event) => e.text ?? ""
-  const maximal = live.filter(
-    (e) =>
-      !live.some(
-        (f) =>
-          f !== e &&
-          textOf(f).length > textOf(e).length &&
-          textOf(f).includes(textOf(e)),
-      ),
-  )
-  const directTexts = new Set(maximal.filter((e) => !e.embedding).map(textOf))
-  const seen = new Set<string>()
-  const inserted = maximal.filter((e) => {
-    if (!e.embedding) return true
-    if (directTexts.has(textOf(e))) return false
-    if (seen.has(textOf(e))) return false
-    seen.add(textOf(e))
-    return true
-  })
+  const inserted = insertions(window)
   if (s.announce) {
     const want = s.announce
     const texts = inserted
@@ -766,19 +847,39 @@ async function step(
     problems.push(
       `quiet: text inserted in a live region [${inserted.map((e) => JSON.stringify(e.text)).join(", ")}]`,
     )
-  if (problems.length > 0) {
-    // LOTEK_A11Y_DEBUG=1 prints what AT-SPI sent during the failed step, and
-    // what came after the barrier, a second later, to see whether anything
-    // arrived out of order.
-    if (process.env.LOTEK_A11Y_DEBUG) {
-      await new Promise((r) => setTimeout(r, 1000))
-      for (const [k, e] of rec.events.slice(from).entries())
-        console.error(
-          `    ${engine} ${at} ${from + k === end ? ">>barrier " : ""}${e.type} ${e.node?.role} "${e.node?.name}" ${JSON.stringify(e.node?.attributes)} ${e.text ? JSON.stringify(e.text) : ""}`,
-        )
-    }
-    throw new StepFailure(s.name, problems.join("; "))
+  // After the last step, a third marker: what arrives after the contract is
+  // over is announced too, and nothing else checks it.
+  if (last) {
+    await waiting(
+      `the page to write the last marker after ${s.name}`,
+      writeMarker(`lotek-sync-${n}-${s.name}-after`),
+    )
+    const after = await waiting(
+      `AT-SPI to deliver the last marker after ${s.name}`,
+      arrived(`lotek-sync-${n}-${s.name}-after`),
+    )
+    const late = insertions(rec.events.slice(end + 1, after))
+    if (late.length > 0)
+      problems.push(
+        `after the last step: text inserted in a live region [${late.map((e) => JSON.stringify(e.text)).join(", ")}]`,
+      )
   }
+  /*
+   * LOTEK_A11Y_DEBUG=1 prints what AT-SPI sent during a failed step, and
+   * what came after the barrier, a second later, to see whether anything
+   * arrived out of order. LOTEK_A11Y_DEBUG=<step name> prints it for that
+   * step also when it passes, to see why a mutation is not caught.
+   */
+  const debug = process.env.LOTEK_A11Y_DEBUG
+  if (debug && (problems.length > 0 || debug === s.name)) {
+    await new Promise((r) => setTimeout(r, 1000))
+    for (const [k, e] of rec.events.slice(from).entries())
+      console.error(
+        `    ${engine} ${at} ${from + k === end ? ">>barrier " : ""}${e.type} ${e.node?.role} "${e.node?.name}" ${JSON.stringify(e.node?.attributes)} ${e.text ? JSON.stringify(e.text) : ""}`,
+      )
+  }
+  if (problems.length > 0) throw new StepFailure(s.name, problems.join("; "))
+  return end + 1
 }
 
 type Outcome =
@@ -792,10 +893,11 @@ async function run(
   contract: Contract,
   mutation?: number,
 ): Promise<Outcome> {
-  const page = await waiting("a new page", browser.newPage())
   let steps = 0
   rec.forget()
+  let page: Page | undefined
   try {
+    page = await waiting("a new page", browser.newPage())
     if (contract.clock) await page.clock.install()
     const loadFrom = rec.events.length
     const response = await page.goto(
@@ -826,8 +928,19 @@ async function run(
       "load",
       "the-document-tree",
     )
+    let cursor = rec.events.length
     for (const [n, s] of contract.steps.entries()) {
-      await step(engine, page, rec, contract, s, n, mutation === undefined)
+      cursor = await step(
+        engine,
+        page,
+        rec,
+        contract,
+        s,
+        n,
+        mutation === undefined,
+        n === contract.steps.length - 1,
+        cursor,
+      )
       steps++
     }
     return { ok: true, steps }
@@ -839,7 +952,8 @@ async function run(
     return { ok: false, steps, at: "error", message: String(error) }
   } finally {
     // A page in a browser that has died never closes.
-    await Promise.race([page.close().catch(() => {}), Bun.sleep(5000)])
+    if (page)
+      await Promise.race([page.close().catch(() => {}), Bun.sleep(5000)])
   }
 }
 
@@ -962,6 +1076,11 @@ if (!process.env.LOTEK_A11Y_SESSION) {
     mkdirSync(runtime, { mode: 0o700 })
     const child = Bun.spawn(
       [
+        // A process group of its own: when the deadline runs out, the
+        // session ends, recorder and X server, not only the
+        // `dbus-run-session` at the top. The browsers have groups of their
+        // own (Playwright launches them detached), and are ended by name.
+        "setsid",
         "bash",
         join(PACKAGE, "scripts/accessibility/session.sh"),
         "bun",
@@ -986,7 +1105,13 @@ if (!process.env.LOTEK_A11Y_SESSION) {
         Bun.sleep(SESSION_DEADLINE).then(() => false),
       ])
       if (!ended) {
-        child.kill()
+        try {
+          process.kill(-child.pid, "SIGKILL")
+        } catch {
+          child.kill("SIGKILL")
+        }
+        Bun.spawnSync(["pkill", "-KILL", "-f", `/ms-playwright/${engine}`])
+        await child.exited
         return {
           ran: 0,
           compared: 0,

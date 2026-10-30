@@ -466,6 +466,15 @@ const toast: Contract = {
       ],
       failsAt: "save-fails",
     },
+    {
+      // And two frames apart: the count is by event, not by text.
+      name: "the same message shown again a frame later",
+      replace: [
+        'messages.show("Could not save. Try again.", { color: "danger", duration: 0 })',
+        'messages.show("Could not save. Try again.", { color: "danger", duration: 0 }); requestAnimationFrame(() => requestAnimationFrame(() => messages.show("Could not save. Try again.", { color: "danger", duration: 0 })))',
+      ],
+      failsAt: "save-fails",
+    },
   ],
 }
 
@@ -526,8 +535,12 @@ const connectionStatus: Contract = {
   ],
   mutations: [
     {
-      name: "the component not registered",
-      replace: ["defineLtConnectionStatus()\n", "\n"],
+      // The region switched off: the component keeps what the server wrote.
+      name: "the region switched off",
+      replace: [
+        '<lt-connection-status class="lt-connection-status"',
+        '<lt-connection-status class="lt-connection-status" aria-live="off"',
+      ],
       failsAt: "offline",
     },
   ],
@@ -544,7 +557,7 @@ const connectionStatusWithoutRegion: Contract = {
     name: "the region from the web component",
     replace: [[' role="status" aria-live="polite"', ""]],
   },
-  mutations: [],
+  mutations: connectionStatus.mutations,
 }
 
 /* The form controls. Their markup is the first example on each page. */

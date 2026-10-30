@@ -119,6 +119,27 @@ if (pins.size !== 1)
   )
 checked++
 
+/*
+ * The Playwright image CI runs in is the version in package.json: the tree
+ * check runs its own container from package.json, so a tag that drifted
+ * would make the two check different browsers.
+ */
+const playwright = (
+  JSON.parse(read("interfaces/package.json")) as {
+    devDependencies: Record<string, string>
+  }
+).devDependencies.playwright.replace(/^\^/, "")
+const images = [
+  ...read(".github/workflows/ci.yml").matchAll(
+    /mcr\.microsoft\.com\/playwright:v([0-9.]+)-/g,
+  ),
+].map((m) => m[1])
+if (images.length === 0 || images.some((v) => v !== playwright))
+  problems.push(
+    `ci.yml runs the Playwright image ${images.join(", ") || "nowhere"}, and package.json has playwright ${playwright}`,
+  )
+checked++
+
 console.log(`${checked} sources checked`)
 for (const p of problems) console.error(`✗ ${p}`)
 if (checked === 0) {

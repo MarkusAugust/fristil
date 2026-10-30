@@ -24,48 +24,59 @@ including 0.36.0 were written in Norwegian, and list them under "Brytende".
 
 ## Unreleased
 
-### Added
+### Changed
 
-- **`lt.errorSummary({ titleId })`** writes `aria-labelledby` on the box and
-  `id` on the heading, as `lt.dialog({ titleId })` does. Without it the web
-  component writes the same wiring in the browser.
+- **`lt.errorSummary()` writes the heading's id and the box's
+  `aria-labelledby`.** `titleId` is new, and defaults to the box's `id` with
+  `-title`, so `lt.errorSummary({ id: "errors" })` names the box after
+  `<h2 id="errors-title">`. As with every option of a builder function,
+  `lt.setAttributes()` with a set that has no `aria-labelledby` removes one
+  the element had. An empty `titleId` counts as none, and one with whitespace
+  throws, in TypeScript and in Kotlin; so does an `id` with whitespace,
+  which `lt.errorSummary({ id })` accepted before, since the default
+  `titleId` is made from it.
 - **`lt.connectionStatus()` writes `role="status"` and `aria-live="polite"`**
-  on the host, the region the web component otherwise sets when it is
-  connected.
+  on the host, the live region; `lt.setAttributes()` sets them over a role
+  the element had.
 
 ### Fixed
 
 - **`<lt-error-summary>` has a name when it takes focus.** The box moves
   focus to itself when a submission fails, and had no name, so a screen
-  reader said only "alert" when the focus landed. When the box has neither
-  `aria-labelledby` nor `aria-label`, the component now points
-  `aria-labelledby` at its heading, and gives the heading an id when it has
-  none. The id is remembered per heading, so a morph that tears it off gets
-  the same one back. A name the server wrote stays, and the component's own
-  follows a heading a patch has replaced. When the server names the box with
-  `aria-labelledby` after an id that is nowhere on the page, and the heading
-  has no id or the component's, the heading takes that id and says so in the
-  console; it gives the id back when another element has it. This happens
-  with idiomorph, which leaves the content of the focused box as it was, so
-  the heading the server sent with the id never arrived.
-- **`<lt-error-summary>` lets go of focus when it is hidden.** In Firefox and
-  WebKit the hidden box kept focus, and idiomorph then left its content as it
-  was: the next submission that failed showed an empty heading and list.
+  reader said only "alert". The template writes the heading's `id` and the
+  box's `aria-labelledby`, as it writes `for` and `id` on a field, and the
+  recipes on the page do. When the heading has an id and the box no name,
+  the component points `aria-labelledby` at it, and follows a heading a
+  patch has replaced; when the heading has no id, it says so in the console.
+  It never writes an id itself: Datastar and idiomorph replace an element
+  whose id the server did not send, so the heading would have got a new one
+  on every patch. A blank `aria-label` or `aria-labelledby` counts as
+  missing.
+- **`<lt-error-summary>` takes focus after an update, not in the middle of
+  it.** It moved focus as a morph removed `hidden`, before the morph had
+  updated the content, and idiomorph with `ignoreActiveValue` then left the
+  content of the focused box as it was: the box showed the previous errors.
+  A script that moves focus elsewhere in the same turn keeps it there.
+- **`<lt-error-summary>` lets go of focus when it is hidden**, also from a
+  link inside it. In Firefox and WebKit the hidden box kept focus, so the
+  next errors never reached it.
 - **`<lt-connection-status>` is announced in Firefox.** The component made
   the bar a live region as it inserted it, and Firefox then sent no
-  live-region text through the accessibility API at all, so "No connection"
-  was never read out. The host is now the live region from the moment it is
-  connected, with `role="status"` and `aria-live="polite"` when they are
-  missing, and the bar is content inside it. A morph that takes them off
-  gets them back.
+  live-region text through the accessibility API, so "No connection" was
+  never read out. The host is now the live region from the moment it is
+  connected, with `role="status"` and `aria-live="polite"` when it has
+  neither, and the bar is content inside it. A role the server wrote keeps
+  its own politeness. A morph that takes both off gets them back.
 
-The first two were found by `check-accessibility-tree.ts`, which reads what
-a screen reader is given through AT-SPI in Chromium and Firefox, against an
-accessibility contract per component. The contracts are shown on the
-component pages, under "Accessibility". The other two were found by
-`lt-error-summary.model.browser.test.ts`, which sends every version of the
-box by Datastar, idiomorph and `innerHTML` in every order, and checks the
-accessibility tree the core computes after each step.
+The name, and the announcement in Firefox, were found by
+`check-accessibility-tree.ts`, which reads what a screen reader is given
+through AT-SPI in Chromium and Firefox, against an accessibility contract per
+component; the contracts are shown on the component pages, under
+"Accessibility". The focus fixes were found by
+`lt-error-summary.model.browser.test.ts`, which sends every version of the box
+by Datastar, idiomorph and `outerHTML` in every order and checks the
+accessibility tree the core computes after each step, and by the code review
+of the pull request.
 
 ## 0.37.0 (2026-10-26)
 

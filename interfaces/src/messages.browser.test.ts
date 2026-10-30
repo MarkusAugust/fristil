@@ -488,6 +488,25 @@ describe("the component reports markup that does not hold together", () => {
     expect(messages(warn).some((m) => m.includes("found no links"))).toBe(true)
   })
 
+  it("the error summary with a heading without an id", async () => {
+    // The box takes focus, and the heading names it only through an id the
+    // template writes; the component writes none.
+    const warn = listen()
+
+    mount(`
+      <lt-error-summary class="lt-error-summary" role="alert" tabindex="-1">
+        <h2 class="lt-error-summary__title">The form has one error</h2>
+        <ul class="lt-list"><li><a href="#email-m">Enter an email address</a></li></ul>
+      </lt-error-summary>
+      <input id="email-m">
+    `)
+    await waitUntilSettled()
+
+    expect(
+      messages(warn).filter((m) => m.includes("heading without an id")),
+    ).toHaveLength(1)
+  })
+
   it("the error summary with links that point to nothing", async () => {
     // Without a click. A link that leads nowhere is just as broken if nobody
     // tries it, and whoever reads the summary has just failed with a form.
@@ -664,8 +683,8 @@ describe("the component reports markup that does not hold together", () => {
         </lt-suggestion>
 
         <lt-error-summary class="lt-error-summary" role="alert" tabindex="-1"
-                          data-autofocus="false">
-          <h2 class="lt-error-summary__title">The form has one error</h2>
+                          data-autofocus="false" aria-labelledby="summary-title">
+          <h2 class="lt-error-summary__title" id="summary-title">The form has one error</h2>
           <ul class="lt-list"><li><a href="#city">Choose a city</a></li></ul>
         </lt-error-summary>
 

@@ -20,6 +20,9 @@
  *   on the focused element, a checked or indeterminate checkbox or radio, an
  *   element that matches `:disabled`, and a modal dialog.
  * - `data-lt-ax-value`: a text field's value, or the chosen option's text.
+ * - `data-lt-ax-invalid`, `data-lt-ax-selected`: "1" on a field that fails a
+ *   constraint other than being empty, or matches `:user-invalid`, and on a
+ *   chosen option.
  *
  * The function is self-contained, with no imports and nothing from the
  * scope around it, because Playwright sends its source to the page as it is.
@@ -53,8 +56,22 @@ export function renderedMarkup(): string {
     if (element === focused) write("focused", "1")
     if (element instanceof HTMLInputElement) {
       if (element.checked) write("checked", "1")
-      if (element.indeterminate) write("mixed", "1")
+      // Only a checkbox is mixed: a radio ignores `indeterminate`.
+      if (element.indeterminate && element.type === "checkbox")
+        write("mixed", "1")
     }
+    if (element instanceof HTMLOptionElement && element.selected)
+      write("selected", "1")
+    // A field that fails a constraint other than being empty, or that the
+    // user has touched (HTML-AAM does not expose an untouched empty
+    // required field as invalid).
+    if (
+      "validity" in element &&
+      element.validity instanceof ValidityState &&
+      !element.validity.valid &&
+      (!element.validity.valueMissing || element.matches(":user-invalid"))
+    )
+      write("invalid", "1")
     if (element.matches(":disabled")) write("disabled", "1")
     if (element.matches("dialog:modal")) write("modal", "1")
     if (
@@ -65,5 +82,8 @@ export function renderedMarkup(): string {
     if (element instanceof HTMLSelectElement)
       write("value", [...element.selectedOptions].map((o) => o.text).join(" "))
   })
+  // The core leaves out what is in `<head>`, and serialising it was most of
+  // the time a model test took.
+  copy.querySelector("head")?.replaceChildren()
   return copy.outerHTML
 }

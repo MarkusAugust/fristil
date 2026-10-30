@@ -8,6 +8,7 @@ import {
   waitForPaint,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
+import { datastarPatch } from "../../../testing/update"
 import { errorSummary } from "./error-summary"
 import { defineLtErrorSummary } from "./lt-error-summary"
 
@@ -17,7 +18,7 @@ import "../../css/input/input.css"
 import "../../css/label/label.css"
 
 /** The markup the server sends when it found two errors. */
-const ERRORS = errorSummary({ count: 2 })
+const ERRORS = errorSummary({ count: 2, id: "errors" })
 
 async function settle() {
   await customElements.whenDefined("lt-error-summary")
@@ -62,86 +63,30 @@ describe("lt-error-summary", () => {
     expect(title.textContent).toBe("The form has two errors")
   })
 
-  it("is named by its heading, and gets the same id back after a morph", async () => {
+  it("is named by its heading through the wiring the builder function wrote", () => {
     const box = document.querySelector("lt-error-summary") as HTMLElement
     const title = box.querySelector("h2") as HTMLElement
     // The box takes focus, so it needs a name. What a screen reader gets is
     // checked through AT-SPI in check-accessibility-tree.ts.
-    expect(title.id).not.toBe("")
-    expect(box.getAttribute("aria-labelledby")).toBe(title.id)
-
-    const id = title.id
-    box.removeAttribute("aria-labelledby")
-    title.removeAttribute("id")
-    await settle()
-    expect(title.id).toBe(id)
-    expect(box.getAttribute("aria-labelledby")).toBe(id)
+    expect(title.id).toBe("errors-title")
+    expect(box.getAttribute("aria-labelledby")).toBe("errors-title")
   })
 
-  it("puts the heading's id back when a patch takes only that", async () => {
-    const box = document.querySelector("lt-error-summary") as HTMLElement
-    const title = box.querySelector("h2") as HTMLElement
-    const id = title.id
-    title.removeAttribute("id")
-    await settle()
-    // The name on the box still points at it.
-    expect(title.id).toBe(id)
-    expect(box.getAttribute("aria-labelledby")).toBe(id)
-  })
-
-  it("follows a heading a patch has replaced", async () => {
-    const box = document.querySelector("lt-error-summary") as HTMLElement
-    const old = box.querySelector("h2") as HTMLElement
-    const fresh = document.createElement("h2")
-    fresh.textContent = "The form has one error"
-    old.replaceWith(fresh)
-    await settle()
-    // Before, the name kept pointing at the id of the heading that was gone.
-    expect(fresh.id).not.toBe("")
-    expect(box.getAttribute("aria-labelledby")).toBe(fresh.id)
-  })
-
-  it("keeps the server's aria-labelledby when the heading is replaced", async () => {
-    const box = document.querySelector("lt-error-summary") as HTMLElement
-    box.setAttribute("aria-labelledby", "server-title")
-    const fresh = document.createElement("h2")
-    fresh.id = "server-title"
-    fresh.textContent = "The form has one error"
-    ;(box.querySelector("h2") as HTMLElement).replaceWith(fresh)
-    await settle()
-    expect(box.getAttribute("aria-labelledby")).toBe("server-title")
-  })
-
-  it("takes its own name back when the server names the box", async () => {
-    const box = document.querySelector("lt-error-summary") as HTMLElement
-    box.setAttribute("aria-label", "Errors in the form")
-    await settle()
-    // aria-labelledby wins over aria-label, so the component's had to go.
-    expect(box.hasAttribute("aria-labelledby")).toBe(false)
-  })
-
-  it("lt.errorSummary({ titleId }) writes the wiring", () => {
-    const named = errorSummary({ count: 1, titleId: "errors-title" })
-    expect(named.host["aria-labelledby"]).toBe("errors-title")
-    expect(named.title.id).toBe("errors-title")
-    expect(ERRORS.host["aria-labelledby"]).toBeUndefined()
-  })
-
-  it("names the box when the server wrote an empty aria-labelledby", async () => {
-    const box = document.querySelector("lt-error-summary") as HTMLElement
-    const title = box.querySelector("h2") as HTMLElement
-    box.setAttribute("aria-labelledby", " ")
-    await settle()
-    // A blank value names nothing, so it is not the server's word.
-    expect(box.getAttribute("aria-labelledby")).toBe(title.id)
-  })
-
-  it('lt.errorSummary({ titleId: "" }) writes no empty wiring', () => {
-    for (const titleId of ["", "  "]) {
-      const built = errorSummary({ count: 1, titleId })
-      expect(built.host["aria-labelledby"]).toBeUndefined()
-      expect(built.title.id).toBeUndefined()
-    }
+  it("lt.errorSummary() makes the heading's id from the box's", () => {
+    expect(errorSummary({ count: 1, id: "e" }).title.id).toBe("e-title")
+    expect(errorSummary({ count: 1, id: "e" }).host["aria-labelledby"]).toBe(
+      "e-title",
+    )
+    expect(
+      errorSummary({ count: 1, id: "e", titleId: "t" }).host["aria-labelledby"],
+    ).toBe("t")
+    // No id, no wiring: nothing to point at.
+    expect(errorSummary({ count: 1 }).host["aria-labelledby"]).toBeUndefined()
+    // An empty one names nothing, and one with whitespace points at two ids.
+    expect(errorSummary({ count: 1, titleId: " " }).title.id).toBeUndefined()
+    expect(() => errorSummary({ count: 1, titleId: "a b" })).toThrow(
+      /contains whitespace/,
+    )
   })
 
   it("leaves a name the server wrote alone", async () => {
@@ -206,6 +151,108 @@ describe("lt-error-summary", () => {
   it("has no accessibility violations", async () => {
     await waitForPaint()
     await expectNoAccessibilityViolations()
+  })
+})
+
+describe("lt-error-summary names itself from a heading the template gave an id", () => {
+  beforeAll(() => {
+    defineLtErrorSummary()
+  })
+
+  const BOX = (heading: string, attributes = "") =>
+    `<lt-error-summary${attributes}>${heading}<ul><li><a href="#x">Enter a date</a></li></ul></lt-error-summary><input id="x">`
+
+  it("points aria-labelledby at the heading's id", async () => {
+    mount(BOX('<h2 id="t">There is a problem</h2>'))
+    await settle()
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    expect(box.getAttribute("aria-labelledby")).toBe("t")
+  })
+
+  it("never writes an id on the heading", async () => {
+    // Datastar and idiomorph replace an element whose id the server did not
+    // send, so an id from the component gave the heading a new one on every
+    // patch.
+    mount(BOX("<h2>There is a problem</h2>"))
+    await settle()
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    expect(box.querySelector("h2")?.hasAttribute("id")).toBe(false)
+    expect(box.hasAttribute("aria-labelledby")).toBe(false)
+  })
+
+  it("keeps the heading node and the name when the server sends the same box again", async () => {
+    const html = `<div id="region">${BOX('<h2 id="t">There is a problem</h2>')}</div>`
+    mount(html)
+    await settle()
+    const heading = document.querySelector("h2")
+    datastarPatch(html)
+    await settle()
+    expect(document.querySelector("h2")).toBe(heading)
+    expect(
+      document
+        .querySelector("lt-error-summary")
+        ?.getAttribute("aria-labelledby"),
+    ).toBe("t")
+  })
+
+  it("follows a heading a patch has replaced", async () => {
+    mount(BOX('<h2 id="t">There is a problem</h2>'))
+    await settle()
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    const fresh = document.createElement("h2")
+    fresh.id = "t2"
+    fresh.textContent = "There are 2 problems"
+    ;(box.querySelector("h2") as HTMLElement).replaceWith(fresh)
+    await settle()
+    expect(box.getAttribute("aria-labelledby")).toBe("t2")
+  })
+
+  it("takes its own name back when the heading loses its id", async () => {
+    mount(BOX('<h2 id="t">There is a problem</h2>'))
+    await settle()
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    box.querySelector("h2")?.removeAttribute("id")
+    await settle()
+    // Pointing at an id that is gone names nothing.
+    expect(box.hasAttribute("aria-labelledby")).toBe(false)
+  })
+
+  it("takes its own name back when the server names the box", async () => {
+    mount(BOX('<h2 id="t">There is a problem</h2>'))
+    await settle()
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    box.setAttribute("aria-label", "Errors in the form")
+    await settle()
+    // aria-labelledby wins over aria-label, so the component's had to go.
+    expect(box.hasAttribute("aria-labelledby")).toBe(false)
+  })
+
+  it("names the box when aria-label or aria-labelledby is blank", async () => {
+    mount(BOX('<h2 id="t">There is a problem</h2>', ' aria-label=" "'))
+    await settle()
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    // A blank value names nothing, so it is not the server's word.
+    expect(box.getAttribute("aria-labelledby")).toBe("t")
+    box.removeAttribute("aria-label")
+    box.setAttribute("aria-labelledby", " ")
+    await settle()
+    expect(box.getAttribute("aria-labelledby")).toBe("t")
+  })
+
+  it("keeps the server's aria-labelledby when the heading is replaced", async () => {
+    mount(
+      BOX(
+        '<h2 id="server-title">There is a problem</h2>',
+        ' aria-labelledby="server-title"',
+      ),
+    )
+    await settle()
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    const fresh = document.createElement("h2")
+    fresh.id = "other"
+    ;(box.querySelector("h2") as HTMLElement).replaceWith(fresh)
+    await settle()
+    expect(box.getAttribute("aria-labelledby")).toBe("server-title")
   })
 })
 
@@ -621,9 +668,10 @@ describe("lt-error-summary when a framework gives focus back", () => {
     defineLtErrorSummary()
   })
 
+  const R = errorSummary({ count: 1, id: "summary-r" })
   const box = () => `
-    <lt-error-summary ${attr(ERRORS.host)} id="summary-r" hidden>
-      <h2 ${attr(ERRORS.title)}>The form has one error</h2>
+    <lt-error-summary ${attr(R.host)} hidden>
+      <h2 ${attr(R.title)}>The form has one error</h2>
       <ul><li><a href="#email-r">Enter the email address</a></li></ul>
     </lt-error-summary>`
 
@@ -673,6 +721,8 @@ describe("lt-error-summary when a framework gives focus back", () => {
     submit.focus()
 
     summary.hidden = false
+    // The box takes focus once the update is done, a microtask later.
+    await Promise.resolve()
     // The box got focus; otherwise the test says nothing about the condition.
     expect(root.activeElement).toBe(summary)
     email.focus()
@@ -680,6 +730,22 @@ describe("lt-error-summary when a framework gives focus back", () => {
 
     expect(root.activeElement).toBe(email)
     host.remove()
+  })
+
+  it("leaves focus where a script moved it in the same turn as the box was shown", async () => {
+    mount(
+      `<form>${box()}<input id="email-r"><button type="submit" id="submit-r">Send</button></form>`,
+    )
+    await settle()
+    const submit = document.getElementById("submit-r") as HTMLButtonElement
+    const email = document.getElementById("email-r") as HTMLInputElement
+    const summary = document.getElementById("summary-r") as HTMLElement
+    submit.focus()
+    summary.hidden = false
+    // Not the element that had focus, as React gives back, but another one.
+    email.focus()
+    await waitForPaint()
+    expect(document.activeElement).toBe(email)
   })
 
   it("leaves focus where it is when a script has moved it elsewhere", async () => {
@@ -693,6 +759,7 @@ describe("lt-error-summary when a framework gives focus back", () => {
     submit.focus()
 
     summary.hidden = false
+    await Promise.resolve()
     expect(document.activeElement).toBe(summary)
     email.focus()
     await waitForPaint()
