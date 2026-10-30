@@ -311,6 +311,7 @@ export const classes: Classes = {
         "optional": true
       }
     },
+    "name": {},
     "attributes": {
       "data-state": {
         "values": [
@@ -328,6 +329,22 @@ export const classes: Classes = {
     "link": "https://lo-tek.sobernetics.no/components/fieldset/",
     "content": "text",
     "partOf": "lt-fieldset",
+    "texts": [
+      {
+        "variable": "--lt-label-required-text",
+        "text": " (required)",
+        "attribute": "data-required",
+        "value": "text"
+      },
+      {
+        "variable": "--lt-label-optional-text",
+        "text": " (optional)",
+        "attribute": "data-optional",
+        "unless": [
+          "data-required"
+        ]
+      }
+    ],
     "attributes": {
       "data-required": {
         "values": [
@@ -453,6 +470,22 @@ export const classes: Classes = {
     "description": "A label for form fields, with marking of required and optional. A CSS component.",
     "link": "https://lo-tek.sobernetics.no/components/label/",
     "content": "text",
+    "texts": [
+      {
+        "variable": "--lt-label-required-text",
+        "text": " (required)",
+        "attribute": "data-required",
+        "value": "text"
+      },
+      {
+        "variable": "--lt-label-optional-text",
+        "text": " (optional)",
+        "attribute": "data-optional",
+        "unless": [
+          "data-required"
+        ]
+      }
+    ],
     "attributes": {
       "data-required": {
         "values": [
@@ -885,6 +918,7 @@ export const classes: Classes = {
         "multiple": true
       }
     },
+    "name": {},
     "attributes": {}
   },
   "lt-toggle-group__option": {

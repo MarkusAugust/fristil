@@ -53,6 +53,8 @@ export const LT_SUGGESTION_PARTS = {
   status: "[role='status']",
   /** The hidden field that receives the code of the option the user chose. */
   value: `input.${SUGGESTION_VALUE_CLASS}`,
+  /** The label, which gets `for` from the field's id. */
+  label: "label",
 } as const
 
 const CONTROL_SELECTOR = LT_SUGGESTION_PARTS.control
@@ -419,7 +421,7 @@ export class LtSuggestion extends HostElement {
     if (!control.hasAttribute("aria-autocomplete")) {
       setAttr(control, "aria-autocomplete", "list")
     }
-    const label = this.querySelector("label")
+    const label = this.querySelector(LT_SUGGESTION_PARTS.label)
     const root = this.getRootNode() as Document | ShadowRoot
 
     if (label) {

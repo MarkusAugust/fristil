@@ -25,8 +25,6 @@ const REFERENCES: &[(&str, &str)] = &[
     ("aria-controls", "the wiring to what the element controls"),
 ];
 
-const UNLABELLED_TYPES: &[&str] = &["hidden", "submit", "button", "reset", "image"];
-
 const LABELABLE: &[&str] = &[
     "button", "input", "meter", "output", "progress", "select", "textarea",
 ];
@@ -460,7 +458,6 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
     let nodes = tree(page);
     let mut out = Vec::new();
     let mut ids: HashMap<Utf16, usize> = HashMap::new();
-    let mut label_for: HashSet<Utf16> = HashSet::new();
     let mut described_by: HashSet<Utf16> = HashSet::new();
 
     for (n, node) in nodes.iter().enumerate() {
@@ -481,11 +478,6 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
                         lossy(v)
                     ),
                 ));
-            }
-        }
-        if node.name == "label" {
-            if let Some(target) = non_empty(node, "for") {
-                label_for.insert(decode(target));
             }
         }
         if let Some(v) = value(node, "aria-describedby").and_then(|a| a.value.as_deref()) {
@@ -570,35 +562,6 @@ pub fn check_references(page: &[u16]) -> Vec<Finding> {
 
         if within(&nodes, n, |m| m.name == "lt-field") {
             continue;
-        }
-
-        let type_ = value(node, "type")
-            .and_then(|a| a.value.as_deref())
-            .map(lowercase)
-            .unwrap_or_default();
-        if matches!(node.name.as_str(), "input" | "textarea" | "select")
-            && has_class(node, |c| starts_at(c, 0, "lt-"))
-            && !UNLABELLED_TYPES.iter().any(|t| equals(&type_, t))
-        {
-            let named = within(&nodes, n, |m| {
-                m.name == "lt-suggestion" || m.name == "label"
-            }) || non_empty(node, "id")
-                .is_some_and(|id| label_for.contains(&decode(id)))
-                || value(node, "aria-label").is_some()
-                || value(node, "aria-labelledby").is_some();
-            if !named {
-                out.push(findings(
-                    "control-without-label",
-                    node.name_start,
-                    node.name_end,
-                    Severity::Warning,
-                    LINK,
-                    format!(
-                        "<{}> has no label: no <label for> pointing at it, no <label> around it, and no aria-label or aria-labelledby. A screen reader announces the field without a name. {HOW}",
-                        node.name
-                    ),
-                ));
-            }
         }
 
         let kind = if has_class(node, |c| equals(c, "lt-error-text")) {

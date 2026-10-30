@@ -191,6 +191,7 @@ pub(crate) fn check_wiring(
                 h,
                 own: &own,
                 parsed: &parsed,
+                page_mode,
             };
             out.extend(host.stable_ids());
             match tag {
@@ -215,6 +216,7 @@ struct Host<'a> {
     h: usize,
     own: &'a [usize],
     parsed: &'a [Option<Vec<crate::parts::Complex>>],
+    page_mode: bool,
 }
 
 impl Host<'_> {
@@ -320,10 +322,11 @@ impl Host<'_> {
         {
             return None;
         }
-        // Without any label at all, `field-without-label` reports it for
-        // <lt-field>. The suggestion field has no such rule, so there it is
+        // Without any label at all, `without-name` reports the control in
+        // <lt-field>, and on a whole page in <lt-suggestion>. In a piece of a
+        // page `without-name` cannot tell, and the suggestion field is
         // reported here.
-        if labels.is_empty() && self.tag() == "lt-field" {
+        if labels.is_empty() && (self.tag() == "lt-field" || self.page_mode) {
             return None;
         }
         let id = match id_of(control) {
@@ -398,7 +401,8 @@ impl Host<'_> {
         })
     }
 
-    /// The tabs: every link has a panel, the tab list has a name, and a tab is a link.
+    /// The tabs: every link has a panel, and a tab is a link. The name of the
+    /// tab list is `without-name`'s.
     fn tabs(&self) -> Vec<Finding> {
         let nodes = self.nodes();
         let mut out = Vec::new();
@@ -437,27 +441,6 @@ impl Host<'_> {
 
         if let Some(l) = self.first("list") {
             let list = &nodes[l];
-            let named = attribute(&list.attributes, "aria-label")
-                .is_some_and(|a| a.value.as_deref().is_none_or(|v| !trimmed(v).is_empty()))
-                || has_attribute(list, "aria-labelledby");
-            if !named && !templated_node(list) {
-                out.push(finding(
-                    "tab-list-without-name",
-                    list,
-                    self.link(),
-                    format!(
-                        "<{}> has a tab list without a name. Write aria-label on .lt-tabs__list, like aria-label=\"Case sections\", or aria-labelledby pointing at a heading. Without a name the screen reader only says \"tab list\".",
-                        self.tag()
-                    ),
-                    Some(Fix::one(
-                        "Give the tab list a name with aria-label".into(),
-                        list.name_end,
-                        list.name_end,
-                        " aria-label=\"Case sections\"".into(),
-                        true,
-                    )),
-                ));
-            }
             // What the server has called a tab in the tab list, but is not a
             // link to a panel.
             for &n in self.own {

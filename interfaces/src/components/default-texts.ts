@@ -16,6 +16,13 @@
  * read from an `--lt-` variable with the text as the fallback, and
  * `check-texts.ts` requires that.
  */
+/**
+ * The language the texts are in. `lotek check` warns about a component that
+ * shows one of them on a page in another language, without the attribute or
+ * CSS variable that replaces it.
+ */
+export const DEFAULT_LANGUAGE = "en"
+
 export const DEFAULT_TEXTS = {
   /** `aria-label` on the `<lt-toast>` region. Replaced with `label`. */
   toastRegion: "Notifications",

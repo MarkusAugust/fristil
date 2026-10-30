@@ -30,7 +30,10 @@ export const elements: Elements = {
         "description": "The control the field wires: an `<input>`, `<textarea>` or `<select>` with its `<option>`s. `type=\"hidden\"` does not count, and only the first one is wired. The template writes `for` on the label and `id` on the control, or wraps the control in the label.",
         "content": "none",
         "unique": true,
-        "stableId": true
+        "stableId": true,
+        "name": {
+          "after": "label"
+        }
       },
       "help": {
         "selector": ".lt-help-text",
@@ -75,7 +78,8 @@ export const elements: Elements = {
         "selector": "[role='tablist'], .lt-tabs__list",
         "description": "The tab list, a `<ul>` where each `<li>` gets `role=\"presentation\"`. It needs a name, such as `aria-label`. When the server has written `role=\"tab\"` on the links, the list can also hold other links.",
         "content": "free",
-        "unique": true
+        "unique": true,
+        "name": {}
       },
       "tab": {
         "selector": "a[role='tab'][href^='#'], .lt-tabs__list a[href^='#']:not([role])",
@@ -87,7 +91,10 @@ export const elements: Elements = {
         "selector": "[role='tabpanel'], .lt-tabs__panel:not([role])",
         "description": "The content of one tab, with the id the link points to. The panel has the same name as the tab: the heading at the top of the panel is the name when it says the same as the tab.",
         "content": "free",
-        "multiple": true
+        "multiple": true,
+        "name": {
+          "component": true
+        }
       }
     },
     "events": {
@@ -127,6 +134,10 @@ export const elements: Elements = {
         "content": "text",
         "multiple": true
       }
+    },
+    "name": {
+      "after": "title",
+      "id": true
     }
   },
   "lt-popover": {
@@ -220,13 +231,19 @@ export const elements: Elements = {
         "description": "The field the user types in: `role=\"combobox\"`, otherwise the first `<input>`. The template writes `for` on the label and `id` on the field, or wraps the field in the label.",
         "content": "none",
         "unique": true,
-        "stableId": true
+        "stableId": true,
+        "name": {
+          "after": "label"
+        }
       },
       "list": {
         "selector": "[role='listbox'], .lt-suggestion__list",
         "description": "The list of suggestions. It sits in the top layer when it is open, `popover=\"manual\"`, and has the label as its name.",
         "content": "parts",
-        "unique": true
+        "unique": true,
+        "name": {
+          "component": true
+        }
       },
       "option": {
         "selector": "[role='option'], .lt-suggestion__list > li:not([role])",
@@ -252,6 +269,34 @@ export const elements: Elements = {
         "content": "none",
         "unique": true,
         "optional": true
+      },
+      "label": {
+        "selector": "label",
+        "description": "The label. The component writes `for` on it from the field's id when it does not wrap the field, and names the list after it.",
+        "content": "text",
+        "optional": true
+      }
+    },
+    "texts": {
+      "suggestionNone": {
+        "text": "No matches",
+        "replacedBy": [
+          "count-none",
+          "count-other"
+        ]
+      },
+      "suggestionOne": {
+        "text": "One match",
+        "replacedBy": [
+          "count-one",
+          "count-other"
+        ]
+      },
+      "suggestionOther": {
+        "text": "{n} matches",
+        "replacedBy": [
+          "count-other"
+        ]
       }
     },
     "events": {
@@ -281,7 +326,10 @@ export const elements: Elements = {
         "selector": ":scope > dialog",
         "description": "The `<dialog>` element, as a direct child of the host.",
         "content": "free",
-        "unique": true
+        "unique": true,
+        "name": {
+          "after": "title"
+        }
       },
       "title": {
         "selector": "h1, h2, h3, h4, h5, h6",
@@ -324,6 +372,21 @@ export const elements: Elements = {
       }
     },
     "parts": {},
+    "texts": {
+      "toastRegion": {
+        "text": "Notifications",
+        "replacedBy": [
+          "label",
+          "aria-label"
+        ]
+      },
+      "toastClose": {
+        "text": "Close message",
+        "replacedBy": [
+          "close-label"
+        ]
+      }
+    },
     "events": {
       "toast-dismiss": {}
     }
@@ -350,7 +413,10 @@ export const elements: Elements = {
         "selector": "dialog",
         "description": "The `<dialog>` element with the warning.",
         "content": "free",
-        "unique": true
+        "unique": true,
+        "name": {
+          "after": "title"
+        }
       },
       "title": {
         "selector": "h1, h2, h3, h4, h5, h6",
@@ -404,6 +470,20 @@ export const elements: Elements = {
       }
     },
     "parts": {},
+    "texts": {
+      "connectionOffline": {
+        "text": "No connection. What you type is not being saved.",
+        "replacedBy": [
+          "offline-text"
+        ]
+      },
+      "connectionOnline": {
+        "text": "Connection restored.",
+        "replacedBy": [
+          "online-text"
+        ]
+      }
+    },
     "events": {
       "connection-lost": {},
       "connection-restored": {}

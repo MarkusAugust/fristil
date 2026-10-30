@@ -54,8 +54,8 @@ the open files are checked again (`ManifestListener.kt`).
 Completion reads the classes from the same manifest, see [The data](#the-data).
 
 The annotator runs the core on every file, also one without a single `lt-` class:
-the rule `icon-without-name` applies to plain HTML, and `lotek check` and VS Code
-report an icon button without a name regardless. A shortcut that skipped files without
+the rule `without-name` applies to every button and link in plain HTML, and `lotek check`
+and VS Code report an icon button without a name regardless. A shortcut that skipped files without
 "lt-" in the text made IntelliJ stay silent about it.
 
 Gradle builds `../kotlin` with `includeBuild`, and the Kotlin package is built from

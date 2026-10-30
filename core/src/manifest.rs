@@ -90,9 +90,99 @@ fn parts(value: &Json, path: &str) -> Result<Vec<Part>, String> {
                 multiple: matches!(part.get("multiple"), Some(Json::Bool(true))),
                 unique: matches!(part.get("unique"), Some(Json::Bool(true))),
                 stable_id: matches!(part.get("stableId"), Some(Json::Bool(true))),
+                named: named(part, &at)?,
             })
         })
         .collect()
+}
+
+/// `name` on an element or a part: `{}`, or `{"after": part, "id": true}`.
+fn named(value: &Json, path: &str) -> Result<Option<Named>, String> {
+    let Some(name) = value.get("name") else {
+        return Ok(None);
+    };
+    let path = format!("{path}.name");
+    entries(name, &path)?;
+    Ok(Some(Named {
+        after: name
+            .get("after")
+            .map(|f| text(f, &format!("{path}.after")))
+            .transpose()?,
+        id: matches!(name.get("id"), Some(Json::Bool(true))),
+        component: matches!(name.get("component"), Some(Json::Bool(true))),
+    }))
+}
+
+/// `texts` on an element: `{key: {text, replacedBy}}`.
+fn default_texts(value: &Json, path: &str) -> Result<Vec<DefaultText>, String> {
+    let Some(written) = value.get("texts") else {
+        return Ok(Vec::new());
+    };
+    let path = format!("{path}.texts");
+    entries(written, &path)?
+        .iter()
+        .map(|(key, t)| {
+            let at = format!("{path}.{key}");
+            Ok(DefaultText {
+                key: key.clone(),
+                text: text(field(t, "text", &at)?, &format!("{at}.text"))?,
+                replaced_by: texts(field(t, "replacedBy", &at)?, &format!("{at}.replacedBy"))?,
+            })
+        })
+        .collect()
+}
+
+/// `texts` on a class: `[{variable, text, attribute, value?}]`.
+fn css_texts(value: &Json, path: &str) -> Result<Vec<CssText>, String> {
+    let Some(list) = value.get("texts") else {
+        return Ok(Vec::new());
+    };
+    let path = format!("{path}.texts");
+    list.as_array()
+        .ok_or_else(|| format!("{path} must be an array."))?
+        .iter()
+        .enumerate()
+        .map(|(i, t)| {
+            let at = format!("{path}[{i}]");
+            let get = |key: &str| text(field(t, key, &at)?, &format!("{at}.{key}"));
+            Ok(CssText {
+                variable: get("variable")?,
+                text: get("text")?,
+                attribute: get("attribute")?,
+                value: t
+                    .get("value")
+                    .map(|v| text(v, &format!("{at}.value")))
+                    .transpose()?,
+                unless: t
+                    .get("unless")
+                    .map(|u| texts(u, &format!("{at}.unless")))
+                    .transpose()?
+                    .unwrap_or_default(),
+            })
+        })
+        .collect()
+}
+
+/// Every `after` names a part of the same element.
+fn check_named(parts: &[Part], own: Option<&Named>, path: &str) -> Result<(), String> {
+    let names = parts
+        .iter()
+        .filter_map(|p| {
+            p.named
+                .as_ref()
+                .map(|n| (format!("{path}.parts.{}", p.name), n))
+        })
+        .chain(own.map(|n| (path.to_string(), n)));
+    for (at, n) in names {
+        if let Some(from) = &n.after {
+            if !parts.iter().any(|p| &p.name == from) {
+                return Err(format!(
+                    "{at}.name.after is \"{from}\", which is not one of its parts."
+                ));
+            }
+        }
+    }
+    Ok(())
 }
 
 /// The attributes in `removed`, when present: the name and the note on what
@@ -196,12 +286,17 @@ fn from_value(root: &Json) -> Result<Vocabulary, String> {
             };
             attributes.push((name.clone(), parsed));
         }
+        let element_parts = parts(element, &path)?;
+        let element_named = named(element, &path)?;
+        check_named(&element_parts, element_named.as_ref(), &path)?;
         elements.push(Element {
             tag: tag.clone(),
             link: text(field(element, "link", &path)?, &path)?,
             attributes,
-            parts: parts(element, &path)?,
+            parts: element_parts,
             removed: removed(element, &path)?,
+            named: element_named,
+            texts: default_texts(element, &path)?,
         });
     }
 
@@ -239,7 +334,13 @@ fn from_value(root: &Json) -> Result<Vocabulary, String> {
             title: text(field(class, "title", &path)?, &path)?,
             link: text(field(class, "link", &path)?, &path)?,
             attributes,
-            parts: parts(class, &path)?,
+            parts: {
+                let class_parts = parts(class, &path)?;
+                check_named(&class_parts, named(class, &path)?.as_ref(), &path)?;
+                class_parts
+            },
+            named: named(class, &path)?,
+            texts: css_texts(class, &path)?,
         });
     }
 
@@ -248,6 +349,10 @@ fn from_value(root: &Json) -> Result<Vocabulary, String> {
         schema_version,
         elements,
         classes,
+        text_language: root
+            .get("textLanguage")
+            .map(|l| text(l, "textLanguage"))
+            .transpose()?,
     })
 }
 

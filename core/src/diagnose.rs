@@ -694,72 +694,6 @@ pub fn followed_by_end(t: &[u16], i: usize) -> bool {
         .is_some_and(|&c| is_space(c) || c == SLASH || c == GT)
 }
 
-/// The values of every `<label for>` in the document, like
-/// `/<label\b[^>]*?\sfor\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi`.
-fn label_targets(t: &[u16]) -> Vec<Utf16> {
-    let mut out = Vec::new();
-    let mut i = 0;
-    'outer: while i < t.len() {
-        let starts_label = t[i] == LT
-            && starts_at_ci(t, i + 1, "label")
-            && t.get(i + 6).is_none_or(|&c| !is_word(c));
-        if !starts_label {
-            i += 1;
-            continue;
-        }
-        let mut p = i + 6;
-        loop {
-            if let Some((value, end)) = for_at(t, p) {
-                out.push(value);
-                i = end;
-                continue 'outer;
-            }
-            if p >= t.len() || t[p] == GT {
-                break;
-            }
-            p += 1;
-        }
-        i += 1;
-    }
-    out
-}
-
-/// `\sfor\s*=\s*(value)` at `p`: the value and where the match ends.
-fn for_at(t: &[u16], p: usize) -> Option<(Utf16, usize)> {
-    if !t.get(p).is_some_and(|&c| is_space(c)) || !starts_at_ci(t, p + 1, "for") {
-        return None;
-    }
-    let mut j = p + 4;
-    while j < t.len() && is_space(t[j]) {
-        j += 1;
-    }
-    if t.get(j) != Some(&EQUALS) {
-        return None;
-    }
-    j += 1;
-    while j < t.len() && is_space(t[j]) {
-        j += 1;
-    }
-    let c = *t.get(j)?;
-    if c == DOUBLE_QUOTE || c == SINGLE_QUOTE {
-        if let Some(close) = find_unit(t, j + 1, c) {
-            return Some((t[j + 1..close].to_vec(), close + 1));
-        }
-        return None;
-    }
-    let from = j;
-    while j < t.len()
-        && !is_space(t[j])
-        && !matches!(
-            t[j],
-            DOUBLE_QUOTE | SINGLE_QUOTE | EQUALS | LT | GT | BACKTICK
-        )
-    {
-        j += 1;
-    }
-    (j > from).then(|| (t[from..j].to_vec(), j))
-}
-
 /// `/<name(?=[\s/>])/i`
 fn has_tag(t: &[u16], name: &str) -> bool {
     (0..t.len()).any(|i| {
@@ -767,95 +701,31 @@ fn has_tag(t: &[u16], name: &str) -> bool {
     })
 }
 
-#[allow(clippy::too_many_arguments)]
+/// `field-without-control`: an `<lt-field>` with nothing to wire. Whether the
+/// control has a label is `without-name`'s.
 fn check_field(
-    labels: &[Utf16],
     tag: &str,
     name_start: usize,
     name_end: usize,
     content: &[u16],
-    content_start: usize,
     link: &str,
 ) -> Vec<Finding> {
     let has_element = (0..content.len())
         .any(|i| content[i] == LT && content.get(i + 1).is_some_and(|&c| is_ascii_letter(c)));
-    if !has_element || is_templated_content(content) {
+    if !has_element || is_templated_content(content) || find_control(content).is_some() {
         return vec![];
     }
-    let findings = |rule, message: String, fix| Finding {
+    vec![Finding {
         start: name_start,
         end: name_end,
         severity: Severity::Warning,
         link: link.to_string(),
-        message,
-        fix,
-        rule,
-    };
-    let indent = content.iter().take_while(|&&c| is_space(c)).count();
-    let Some(control) = find_control(content) else {
-        return vec![findings(
-            "field-without-control",
-            format!(
-                "<{tag}> found no control to wire up. The label, help text and error text have no field, so the wiring cannot be made. Add an <input>, <textarea> or <select>."
-            ),
-            None,
-        )];
-    };
-    if has_tag(content, "label") {
-        return vec![];
-    }
-    let has = |name: &str| control.iter().find(|a| equals(&a.name, name));
-    if has("aria-label").is_some() || has("aria-labelledby").is_some() {
-        return vec![];
-    }
-    // Only the control's own id. `<lt-field>` does not write an id on the
-    // control, so a `<label for>` outside can only point at an id the
-    // template has written.
-    let id = has("id").and_then(|a| a.value.clone());
-    if id
-        .as_ref()
-        .is_some_and(|id| !id.is_empty() && labels.contains(id))
-    {
-        return vec![];
-    }
-    let leading = &content[..indent];
-    // `\r` alone is also a line break, as in `Lines`. Otherwise the label
-    // ended up on the line of `<lt-field>` in a document with `\r` line breaks.
-    let newline = leading
-        .iter()
-        .any(|&c| c == b'\n' as u16 || c == b'\r' as u16);
-    // The fix is only offered when the control has an id. A `<label>` without
-    // `for` next to the field is not wired to it, and `<lt-field>` warns about
-    // exactly that; putting the label around the field or writing an id on it
-    // is more than one insertion, so then only the message is given.
-    let Some(id) = id.filter(|id| !id.is_empty()) else {
-        return vec![findings(
-            "field-without-label",
-            format!(
-                "<{tag}> found no <label>. The field then has no label, and a screen reader announces it without a name. Write <label for=\"…\"> and the same id on the field, or put the <label> around the field."
-            ),
-            None,
-        )];
-    };
-    vec![findings(
-        "field-without-label",
-        format!(
-            "<{tag}> found no <label>. The field then has no label, and a screen reader announces it without a name."
+        message: format!(
+            "<{tag}> found no control to wire up. The label, help text and error text have no field, so the wiring cannot be made. Add an <input>, <textarea> or <select>."
         ),
-        Some(Fix::one(
-"Add a label".into(),
-content_start + indent,
-content_start + indent,
-// The label points at the control's id: without `for` the field has no
-            // label before JavaScript has run.
-format!(
-                "<label for=\"{}\">Label</label>{}",
-                lossy(&id),
-                if newline { lossy(leading) } else { String::new() }
-            ),
-true,
-)),
-    )]
+        fix: None,
+        rule: "field-without-control",
+    }]
 }
 
 fn check_session_timeout(
@@ -1157,14 +1027,6 @@ fn collapse_spaces(t: &[u16]) -> String {
     lossy(&out)
 }
 
-/// The page on icons, where the rule for an icon-only button is explained.
-const ICON_LINK: &str = "https://lo-tek.sobernetics.no/components/icon/";
-
-/// The elements that never have content, and therefore no closing tag.
-const NO_CONTENT: &[&str] = &[
-    "area", "br", "col", "embed", "hr", "img", "input", "source", "track", "wbr",
-];
-
 /// An attribute by name, also when bound by a framework. `:aria-label`,
 /// `x-bind:aria-label`, `data-attr:aria-label`, `[attr.aria-label]` and
 /// `th:title` become the same attribute on the page, and case is ignored.
@@ -1179,314 +1041,6 @@ pub(crate) fn attribute<'a>(
             || n.strip_suffix(name)
                 .is_some_and(|p| p.ends_with([':', '.', '[']))
     })
-}
-
-/// An attribute as written, without binding, ignoring case.
-fn plain<'a>(attributes: &'a [ReadAttribute], name: &str) -> Option<&'a ReadAttribute> {
-    attributes
-        .iter()
-        .find(|a| equals(&lowercase(&a.name), name))
-}
-
-/// Whether the attribute is there with something other than whitespace in
-/// it, in one of the forms.
-fn has_text_value(attributes: &[ReadAttribute], name: &str) -> bool {
-    attributes.iter().any(|a| {
-        attribute(std::slice::from_ref(a), name).is_some()
-            && a.value.as_deref().is_some_and(|v| !trimmed(v).is_empty())
-    })
-}
-
-/// Whether the node itself is hidden from the screen reader:
-/// `aria-hidden="true"` or `hidden`. Only as written: a bound `:hidden` may
-/// just as well be false.
-fn hides(attributes: &[ReadAttribute]) -> bool {
-    plain(attributes, "hidden").is_some()
-        || plain(attributes, "aria-hidden")
-            .and_then(|a| a.value.as_deref())
-            .is_some_and(|v| equals(&lowercase(trimmed(v)), "true"))
-}
-
-/// The attributes on a button or link that cannot give it a name.
-const INERT: &[&str] = &[
-    "class",
-    "id",
-    "type",
-    "href",
-    "disabled",
-    "name",
-    "value",
-    "form",
-    "formaction",
-    "formenctype",
-    "formmethod",
-    "formnovalidate",
-    "formtarget",
-    "tabindex",
-    "target",
-    "rel",
-    "download",
-    "hreflang",
-    "ping",
-    "referrerpolicy",
-    "style",
-    "lang",
-    "dir",
-    "autofocus",
-    "accesskey",
-    "draggable",
-    "inert",
-    "role",
-    "popovertarget",
-    "popovertargetaction",
-    "command",
-    "commandfor",
-];
-
-/// Whether the attribute is plain HTML that does not give a name.
-///
-/// The rule reports an error, and must therefore only report what it can
-/// see. A name can come from a binding in every framework, and the forms are
-/// endless: `:aria-label`, `v-bind="$attrs"`, `x-bind`, `data-attr`,
-/// `th:attr`, `@attributes`, `{title}`, `{...props}`. The list of them was
-/// never finished, so the rule asks the other way round: when everything on
-/// the tag is known HTML, it can know that the name is missing.
-fn is_inert(a: &ReadAttribute, own_data: &[&str]) -> bool {
-    let name = lossy(&lowercase(&a.name));
-    let plain_name = name
-        .chars()
-        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
-    plain_name
-        && (INERT.contains(&name.as_str())
-            // A name in aria-label, aria-labelledby or title is checked on
-            // its own. When they are empty, they give no name.
-            || name == "title"
-            || name.starts_with("aria-")
-            || (name.starts_with("on") && name.len() > 2)
-            // Any library can fill the button from a `data-*`, like
-            // `data-i18n`. LO-TEK's own, like `data-variant`, and
-            // `data-testid` do not.
-            || name == "data-testid"
-            || own_data.contains(&name.as_str()))
-}
-
-/// The attributes a child can have without being able to get text from something else.
-const INERT_CHILD: &[&str] = &[
-    "class",
-    "id",
-    "style",
-    "aria-hidden",
-    "hidden",
-    "lang",
-    "dir",
-];
-
-/// Whether the content of a button or link is icons and nothing else.
-///
-/// What is under `aria-hidden="true"` or `hidden` is not read by the screen
-/// reader, and does not count. Other text gives a name, also in a `<title>`
-/// in an svg, and so do `alt`, `aria-label`, `aria-labelledby` and `title` on
-/// a child that is shown. `&nbsp;` is whitespace.
-///
-/// A child outside the svg that has anything on it other than `class`, `id`,
-/// `style` and hiding can get text from something the rule does not see,
-/// like `x-text`, `v-t` or `data-i18n`. The same goes for a `<slot>` and a
-/// component with an upper-case letter or a hyphen in its name. Then the
-/// answer is no. Without an icon the answer is also no: an empty button is
-/// usually a region the server or a script fills later.
-fn only_icons(content: &[u16]) -> bool {
-    // The name, whether it is hidden, and whether it is inside an svg.
-    let mut open: Vec<(Utf16, bool, bool)> = Vec::new();
-    let mut icon = false;
-    let mut i = 0;
-    while i < content.len() {
-        let hidden = open.last().is_some_and(|(_, h, _)| *h);
-        let in_svg = open.last().is_some_and(|(_, _, s)| *s);
-        if content[i] == LT && content.get(i + 1) == Some(&SLASH) {
-            let mut j = i + 2;
-            while j < content.len() && is_name_char(content[j]) {
-                j += 1;
-            }
-            let name = lowercase(&content[i + 2..j]);
-            if let Some(at) = open.iter().rposition(|(n, _, _)| *n == name) {
-                open.truncate(at);
-            }
-            i = tag_end(content, j).map_or(content.len(), |e| e + 1);
-            continue;
-        }
-        if let Some(name_end) = tag_name_end(content, i) {
-            let Some(end) = tag_end(content, name_end) else {
-                break;
-            };
-            let written = &content[i + 1..name_end];
-            let name = lowercase(written);
-            let body = tag_body(content, name_end, end);
-            let attributes = read_attributes(body, name_end);
-            let hidden_here = hidden || hides(&attributes);
-            let is_icon = equals(&name, "svg")
-                || equals(&name, "img")
-                || plain(&attributes, "class")
-                    .and_then(|a| a.value.as_deref())
-                    .is_some_and(|v| words(v).iter().any(|(_, w)| equals(w, "lt-icon")));
-            if !hidden_here {
-                let named = has_text_value(&attributes, "aria-label")
-                    || has_text_value(&attributes, "aria-labelledby")
-                    || has_text_value(&attributes, "title")
-                    || (equals(&name, "img") && has_text_value(&attributes, "alt"));
-                let bound = attributes.iter().any(|a| {
-                    let n = lossy(&lowercase(&a.name));
-                    n.contains([':', '@', '[', '.', '#'])
-                        || ["v-", "x-", "ng-", "data-attr", "data-bind"]
-                            .iter()
-                            .any(|p| n.starts_with(p))
-                });
-                let filled_elsewhere = find_at(body, 0, "{").is_some()
-                    || (!in_svg && bound)
-                    || (!in_svg
-                        && !is_icon
-                        && (written != name.as_slice()
-                            || name.contains(&(b'-' as u16))
-                            || equals(&name, "slot")
-                            || attributes.iter().any(|a| {
-                                !INERT_CHILD.iter().any(|n| equals(&lowercase(&a.name), n))
-                            })));
-                if named || filled_elsewhere {
-                    return false;
-                }
-            }
-            icon |= is_icon;
-            let closes_itself = content[end - 1] == SLASH;
-            if !closes_itself && !NO_CONTENT.iter().any(|n| equals(&name, n)) {
-                open.push((name, hidden_here, in_svg || is_icon));
-            }
-            i = end + 1;
-            continue;
-        }
-        if let Some(space) = ["&nbsp;", "&#160;", "&#xa0;"]
-            .iter()
-            .find(|e| starts_at_ci(content, i, e))
-        {
-            i += space.len();
-            continue;
-        }
-        if !hidden && !is_space(content[i]) {
-            return false;
-        }
-        i += 1;
-    }
-    icon
-}
-
-/// Where each `<label>` opens and closes on the page, in order.
-///
-/// Read once per page. The first version searched backwards from every
-/// button, and on a page without `<label>` every search went all the way to
-/// the start.
-fn label_bounds(source: &[u16]) -> (Vec<usize>, Vec<usize>) {
-    let at = |pattern: &str| -> Vec<usize> {
-        (0..source.len())
-            .filter(|&k| {
-                starts_at_ci(source, k, pattern)
-                    && source.get(k + pattern.len()).is_none_or(|&c| !is_word(c))
-            })
-            .collect()
-    };
-    (at("<label"), at("</label"))
-}
-
-/// Whether `at` is inside a `<label>` that is not closed yet.
-fn inside_label((opens, closes): &(Vec<usize>, Vec<usize>), at: usize) -> bool {
-    let last = |v: &Vec<usize>| v.partition_point(|&k| k < at).checked_sub(1).map(|i| v[i]);
-    match (last(opens), last(closes)) {
-        (Some(open), Some(close)) => open > close,
-        (Some(_), None) => true,
-        _ => false,
-    }
-}
-
-/// A `<button>` or `<a href>` with only an icon in it, and no name.
-fn check_icon_only(source: &[u16], vocabulary: &Vocabulary) -> Vec<Finding> {
-    let mut findings = Vec::new();
-    let mut labels: Option<Vec<Utf16>> = None;
-    let mut bounds: Option<(Vec<usize>, Vec<usize>)> = None;
-    let own_data: Vec<&str> = vocabulary
-        .classes
-        .iter()
-        .flat_map(|c| c.attributes.iter().map(|(n, _)| n.as_str()))
-        .filter(|n| n.starts_with("data-"))
-        .collect();
-    let mut i = 0;
-    while i < source.len() {
-        let Some(name_end) = tag_name_end(source, i) else {
-            i += 1;
-            continue;
-        };
-        let name_start = i + 1;
-        i = name_end;
-        let name = lossy(&lowercase(&source[name_start..name_end]));
-        if name != "button" && name != "a" {
-            continue;
-        }
-        let Some(end) = tag_end(source, name_end) else {
-            continue;
-        };
-        let b = tag_body(source, name_end, end);
-        if is_templated(b) {
-            continue;
-        }
-        let attributes = read_attributes(b, name_end);
-        if (name == "a" && plain(&attributes, "href").is_none())
-            || hides(&attributes)
-            || has_text_value(&attributes, "aria-label")
-            || has_text_value(&attributes, "aria-labelledby")
-            || has_text_value(&attributes, "title")
-            || !attributes.iter().all(|a| is_inert(a, &own_data))
-        {
-            continue;
-        }
-        // A `<label for>` that points at the button, or a `<label>` around
-        // it, gives it its name.
-        if let Some(id) = plain(&attributes, "id").and_then(|a| a.non_empty_value()) {
-            if labels
-                .get_or_insert_with(|| label_targets(source))
-                .contains(id)
-            {
-                continue;
-            }
-        }
-        let Some(close) = closing_tag(source, end + 1, &name) else {
-            continue;
-        };
-        let content = &source[end + 1..close];
-        if is_templated_content(content) || !only_icons(content) {
-            continue;
-        }
-        if inside_label(
-            bounds.get_or_insert_with(|| label_bounds(source)),
-            name_start - 1,
-        ) {
-            continue;
-        }
-        let kind = if name == "a" { "link" } else { "button" };
-        findings.push(Finding {
-            start: name_start,
-            end: name_end,
-            severity: Severity::Error,
-            link: ICON_LINK.into(),
-            message: format!(
-                "<{name}> has only an icon in it and no name: no text, and no aria-label, aria-labelledby or title. A screen reader announces it as \"{kind}\" without saying what it does. Give it an aria-label, or a text in an element with the class lt-sr-only."
-            ),
-            fix: Some(Fix::one(
-"Give it a name with aria-label".into(),
-name_end,
-name_end,
-" aria-label=\"Describe the action\"".into(),
-true,
-)),
-            rule: "icon-without-name",
-        });
-    }
-    findings
 }
 
 /// `/<([a-z][a-z0-9-]*)(?=[\s/>])/gi` at `i`: where the name ends.
@@ -1541,7 +1095,6 @@ pub fn diagnose(text: &[u16], vocabulary: &Vocabulary, page: bool) -> Vec<Findin
 /// copied in from DevTools.
 pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> Vec<Finding> {
     let mut findings = Vec::new();
-    let mut labels: Option<Vec<Utf16>> = None;
     let mut cache = Cache::new();
 
     // The classes, on every tag.
@@ -1666,34 +1219,35 @@ pub fn diagnose_visible(source: Utf16, vocabulary: &Vocabulary, page: bool) -> V
         if tag == "lt-field" {
             let close = closing_tag(&source, end, "lt-field").unwrap_or(source.len());
             let content = &source[(end + 1).min(close.max(end + 1))..close.max(end + 1)];
-            let labels = labels.get_or_insert_with(|| label_targets(&source));
             findings.extend(check_field(
-                labels,
                 &tag,
                 name_start,
                 name_end,
                 content,
-                end + 1,
                 &element.link,
             ));
         }
     }
-    findings.extend(check_icon_only(&source, vocabulary));
     // The tree is built once and shared by the rules that need it. Only when
-    // there is something from LO-TEK in the text: on a page with thousands of
-    // tags without a single component, the tree cost more than the rest of
-    // the check.
-    if contains_str(&source, "lt-")
+    // there is something from LO-TEK in the text, or a button or a link,
+    // which need a name with or without LO-TEK: on a page with thousands of
+    // tags and none of them, the tree cost more than the rest of the check.
+    let ours = contains_str(&source, "lt-")
         || vocabulary
             .elements
             .iter()
-            .any(|e| contains_str(&source, &e.tag))
-    {
+            .any(|e| contains_str(&source, &e.tag));
+    // `has_tag` and `contains_ci` ignore case: `<LT-FIELD>` is the element too.
+    if ours || contains_ci(&source, "lt-") || has_tag(&source, "button") || has_tag(&source, "a") {
         let nodes = crate::references::tree(&source);
-        findings.extend(crate::parts::check_parts(&source, vocabulary, &nodes));
-        findings.extend(crate::wiring::check_wiring(
-            &source, vocabulary, &nodes, page,
-        ));
+        if ours {
+            findings.extend(crate::parts::check_parts(&source, vocabulary, &nodes));
+            findings.extend(crate::wiring::check_wiring(
+                &source, vocabulary, &nodes, page,
+            ));
+            findings.extend(crate::texts::check_texts(&nodes, vocabulary));
+        }
+        findings.extend(crate::names::check_names(&source, vocabulary, &nodes, page));
     }
     findings.sort_by_key(|f| f.start);
     findings
@@ -1824,6 +1378,10 @@ pub fn check_styles_visible(
                 break;
             }
         }
+    }
+    if contains_str(source, "lt-") {
+        let nodes = crate::references::tree(source);
+        findings.extend(crate::texts::check_css_texts(&nodes, vocabulary, styles));
     }
     findings
 }

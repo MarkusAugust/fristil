@@ -30,11 +30,13 @@ pub mod accessibility;
 pub mod diagnose;
 pub mod json;
 pub mod manifest;
+pub mod names;
 pub mod parts;
 pub mod references;
 pub mod styles;
 pub mod suppress;
 pub mod text;
+pub mod texts;
 pub mod theme;
 pub mod types;
 pub mod wiring;
@@ -597,8 +599,12 @@ mod tests {
     #[test]
     fn checks_the_color_of_a_dialog() {
         let markup = |html: &str| diagnose_markup(&utf16(html), &manifest::for_tests());
-        assert!(markup(r#"<dialog class="lt-dialog" data-color="danger"></dialog>"#).is_empty());
-        let found = markup(r#"<dialog class="lt-dialog" data-color="red"></dialog>"#);
+        assert!(markup(
+            r#"<dialog class="lt-dialog" data-color="danger" aria-label="Delete"></dialog>"#
+        )
+        .is_empty());
+        let found =
+            markup(r#"<dialog class="lt-dialog" data-color="red" aria-label="Delete"></dialog>"#);
         assert_eq!(found.len(), 1, "{found:?}");
         assert_eq!(found[0].rule, "invalid-class-value");
     }
@@ -685,11 +691,7 @@ mod tests {
         let in_textarea =
             found(r#"<textarea><!-- lotek-ignore-next --></textarea><input class="lt-inptu">"#);
         let rules: Vec<&str> = in_textarea.iter().map(|f| f.rule).collect();
-        assert_eq!(
-            rules,
-            ["control-without-label", "unknown-class"],
-            "{rules:?}"
-        );
+        assert_eq!(rules, ["without-name", "unknown-class"], "{rules:?}");
         // A real comment suppresses as before.
         assert!(found(r#"<!-- lotek-ignore-next --><input class="lt-inptu">"#).is_empty());
     }
@@ -708,6 +710,8 @@ mod tests {
             attributes: vec![("sone".into(), types::Attribute::Text)],
             parts: Vec::new(),
             removed: Vec::new(),
+            named: None,
+            texts: Vec::new(),
         });
         assert!(diagnose_markup(&html, &vocabulary).is_empty());
     }
@@ -764,7 +768,10 @@ mod tests {
         assert!(missing[0].message.contains("lt-card"));
 
         // The state on lt-search is styled on lt-input, on the same element.
-        assert!(found(r#"<input class="lt-search lt-input" data-state="invalid">"#).is_empty());
+        assert!(found(
+            r#"<input class="lt-search lt-input" data-state="invalid" aria-label="Search">"#
+        )
+        .is_empty());
         // A flag is styled by a selector that asks whether it is present.
         assert!(found(r#"<label class="lt-label" data-optional>x</label>"#).is_empty());
         // Classes outside LO-TEK are not the check's business.
@@ -899,7 +906,7 @@ mod tests {
             diagnose_markup(&utf16(html), &manifest::for_tests())
                 .iter()
                 .map(|f| f.rule)
-                .filter(|r| *r == "icon-without-name")
+                .filter(|r| *r == "without-name")
                 .collect()
         };
         let svg = r#"<svg class="lt-icon" aria-hidden="true"><path d="M0 0"/></svg>"#;
@@ -915,8 +922,10 @@ mod tests {
                 r#"<button type="button" class="lt-button" data-variant="ghost" onclick="slett()">{svg}</button>"#
             ),
             format!(r#"<button data-testid="slett">{svg}</button>"#),
+            // Hidden now, and without a name once it is shown.
+            format!("<button hidden>{svg}</button>"),
         ] {
-            assert_eq!(rules(&html), ["icon-without-name"], "{html}");
+            assert_eq!(rules(&html), ["without-name"], "{html}");
         }
         for html in [
             format!("<button>{svg} Slett</button>"),
@@ -928,7 +937,6 @@ mod tests {
             r#"<button><svg><title>Slett</title></svg></button>"#.to_string(),
             r#"<button><img src="x.svg" alt="Slett"></button>"#.to_string(),
             format!("<a>{svg}</a>"),
-            format!("<button hidden>{svg}</button>"),
             "<button></button>".to_string(),
             format!("<button>{{{{ .Navn }}}}{svg}</button>"),
             format!("<button aria-label=\"{{{{ .Navn }}}}\">{svg}</button>"),

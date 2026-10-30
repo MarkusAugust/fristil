@@ -34,6 +34,8 @@ data class Manifest(
     val tokens: ManifestTokens?,
     /** Every builder function in `lt`, in the manifest's order, with its options and the shape of the result. */
     val builders: List<Builder>,
+    /** The language of the texts the components and stylesheets write themselves, like `en`. `null` in a manifest from before it was there. */
+    val textLanguage: String? = null,
 ) {
     companion object {
         /** The schema version this reader understands. */
@@ -60,8 +62,18 @@ data class Manifest(
                     (root["builders"] as? List<*> ?: wrong("builders", "a list")).mapIndexed { i, b ->
                         builder(b.obj("builders[$i]"), "builders[$i]")
                     },
+                textLanguage = root["textLanguage"]?.str("textLanguage"),
             )
         }
+
+        private fun nameOf(value: Any?, at: String): Name? =
+            value?.obj(at)?.let { n ->
+                Name(
+                    after = n["after"]?.str("$at.after"),
+                    id = n["id"] == true,
+                    component = n["component"] == true,
+                )
+            }
 
         private fun builder(b: Map<String, Any?>, at: String) =
             Builder(
@@ -146,6 +158,13 @@ data class Manifest(
                         )
                     },
                 removed = (e["removed"]?.obj("$at.removed") ?: emptyMap()).mapValues { (name, note) -> note.str("$at.removed.$name") },
+                named = nameOf(e["name"], "$at.name"),
+                texts =
+                    (e["texts"]?.obj("$at.texts") ?: emptyMap()).mapValues { (key, t) ->
+                        val path = "$at.texts.$key"
+                        val text = t.obj(path)
+                        DefaultText(text = text["text"].str("$path.text"), replacedBy = text["replacedBy"].strings("$path.replacedBy"))
+                    },
             )
 
         private fun parts(value: Any?, at: String): Map<String, Part> =
@@ -160,6 +179,7 @@ data class Manifest(
                     unique = part["unique"] == true,
                     optional = part["optional"] == true,
                     stableId = part["stableId"] == true,
+                    named = nameOf(part["name"], "$path.name"),
                 )
             }
 
@@ -173,6 +193,19 @@ data class Manifest(
                 content = c["content"]?.let { enumOf<PartContent>(it.str("$at.content"), "$at.content") },
                 partOf = c["partOf"]?.str("$at.partOf"),
                 parts = parts(c["parts"], "$at.parts"),
+                named = nameOf(c["name"], "$at.name"),
+                texts =
+                    (c["texts"] as? List<*> ?: emptyList<Any?>()).mapIndexed { i, t ->
+                        val path = "$at.texts[$i]"
+                        val text = t.obj(path)
+                        CssText(
+                            variable = text["variable"].str("$path.variable"),
+                            text = text["text"].str("$path.text"),
+                            attribute = text["attribute"].str("$path.attribute"),
+                            value = text["value"]?.str("$path.value"),
+                            unless = text["unless"]?.strings("$path.unless") ?: emptyList(),
+                        )
+                    },
                 attributes =
                     c["attributes"].obj("$at.attributes").mapValues { (attr, a) ->
                         val path = "$at.attributes.$attr"
@@ -222,6 +255,42 @@ data class ManifestElement(
     val events: Map<String, ElementEvent>,
     /** Attributes that were removed from the element, with what applies instead. */
     val removed: Map<String, String>,
+    /** The name LO-TEK demands for the element itself, beyond WAI-ARIA's. */
+    val named: Name? = null,
+    /** The texts the element writes itself, by their name in `DEFAULT_TEXTS`. */
+    val texts: Map<String, DefaultText> = emptyMap(),
+)
+
+/**
+ * A name LO-TEK demands where WAI-ARIA does not, or one the component gives
+ * itself. [after] is the part the component points `aria-labelledby` at when
+ * the markup gives no name; with [id] that part needs an id from the
+ * template. With [component] the component names it itself, and no rule
+ * judges its name in the markup.
+ */
+data class Name(
+    val after: String?,
+    val id: Boolean,
+    val component: Boolean,
+)
+
+/** A text a component writes itself when nobody has given it another, and the attributes that replace it, any one of them. */
+data class DefaultText(
+    val text: String,
+    val replacedBy: List<String>,
+)
+
+/**
+ * A text a stylesheet shows on an element with the class and [attribute],
+ * with [value] when the selector requires one and none of [unless], and the
+ * CSS [variable] that replaces it.
+ */
+data class CssText(
+    val variable: String,
+    val text: String,
+    val attribute: String,
+    val value: String?,
+    val unless: List<String>,
 )
 
 /** An attribute on an element, like `server-controlled`. [values] is empty except for [AttributeType.VALUES]. */
@@ -249,6 +318,8 @@ data class Part(
     val unique: Boolean,
     val optional: Boolean,
     val stableId: Boolean,
+    /** The name LO-TEK demands for the part. */
+    val named: Name? = null,
 )
 
 /**
@@ -360,6 +431,10 @@ data class ManifestClass(
     /** The parts the markup consists of, with the selector relative to the element with the class. Empty for the classes without a fixed structure. */
     val parts: Map<String, Part>,
     val attributes: Map<String, ClassAttribute>,
+    /** The name LO-TEK demands for the element with the class. */
+    val named: Name? = null,
+    /** The texts the stylesheet shows on it. */
+    val texts: List<CssText> = emptyList(),
 )
 
 /**

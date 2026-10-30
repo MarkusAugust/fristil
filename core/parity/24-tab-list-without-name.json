@@ -3,7 +3,7 @@
     {
       "start": 13,
       "end": 15,
-      "severity": "warning",
+      "severity": "error",
       "link": "https://lo-tek.sobernetics.no/components/tabs/",
       "message": "<lt-tabs> has a tab list without a name. Write aria-label on .lt-tabs__list, like aria-label=\"Case sections\", or aria-labelledby pointing at a heading. Without a name the screen reader only says \"tab list\".",
       "fix": {
@@ -23,7 +23,7 @@
     {
       "start": 13,
       "end": 15,
-      "severity": "warning",
+      "severity": "error",
       "link": "https://lo-tek.sobernetics.no/components/tabs/",
       "message": "<lt-tabs> has a tab list without a name. Write aria-label on .lt-tabs__list, like aria-label=\"Case sections\", or aria-labelledby pointing at a heading. Without a name the screen reader only says \"tab list\".",
       "fix": {

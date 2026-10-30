@@ -34,6 +34,8 @@ pub struct Styles {
     pub attributes: BTreeSet<(String, String, Option<String>)>,
     /// The addresses in `@import`, in order.
     pub imports: Vec<String>,
+    /// The custom properties the style sheets set, like `--lt-label-required-text`.
+    pub variables: BTreeSet<String>,
 }
 
 impl Styles {
@@ -41,6 +43,7 @@ impl Styles {
         self.classes.extend(other.classes);
         self.attributes.extend(other.attributes);
         self.imports.extend(other.imports);
+        self.variables.extend(other.variables);
     }
 
     /// Whether a selector styles the attribute on the class: with the value,
@@ -283,15 +286,26 @@ fn rules(input: &mut Parser, parents: &[Compound], out: &mut Styles) {
         let mut first = true;
         let mut prelude_end = start;
         let mut import: Option<String> = None;
+        // A declaration of a custom property, `--name: value`.
+        let mut variable: Option<String> = None;
         let block = loop {
             let before = input.position();
             let token = match input.next() {
                 Ok(token) => token.clone(),
-                Err(_) => return,
+                Err(_) => {
+                    out.variables.extend(variable);
+                    return;
+                }
             };
             match token {
                 Token::AtKeyword(name) if first => at_rule = Some(name.to_ascii_lowercase()),
-                Token::Semicolon => break false,
+                Token::Ident(ref name) if first && name.starts_with("--") => {
+                    variable = Some(name.to_string())
+                }
+                Token::Semicolon => {
+                    out.variables.extend(variable.take());
+                    break false;
+                }
                 Token::CurlyBracketBlock => {
                     prelude_end = before;
                     break true;

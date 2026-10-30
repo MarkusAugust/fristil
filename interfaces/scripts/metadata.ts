@@ -13,6 +13,7 @@
  * The file is not shipped in the package. Only `generate-vocabulary.ts` reads it.
  */
 
+import { DEFAULT_TEXTS } from "../src/components/default-texts.js"
 import type { LtDialog } from "../src/components/frame/dialog/lt-dialog.js"
 import {
   LT_DIALOG_PARTS,
@@ -52,6 +53,7 @@ import type { LtConnectionStatus } from "../src/components/standalone/connection
 import { LT_CONNECTION_STATUS_TAG } from "../src/components/standalone/connection-status/lt-connection-status.js"
 import type { LtToast } from "../src/components/standalone/toast/lt-toast.js"
 import { LT_TOAST_TAG } from "../src/components/standalone/toast/lt-toast.js"
+import type { DefaultText, Name } from "../src/vocabulary/types.js"
 
 /** An allowed value, with what it means. */
 export type ValueDoc = { name: string; description: string }
@@ -117,6 +119,8 @@ export type PartDoc = {
    * for a control when the label neither has `for` pointing at it nor wraps it.
    */
   stableId?: true
+  /** LO-TEK demands a name for the part. See `Name`. */
+  name?: Name
 }
 
 /**
@@ -144,6 +148,10 @@ export type ElementDoc = {
   events: Record<string, EventDoc>
   /** Empty for the elements that create all their content themselves. */
   parts: Record<string, PartDoc>
+  /** LO-TEK demands a name for the element itself. */
+  name?: Name
+  /** The texts the element writes itself, from `TEXT_PLACES`. */
+  texts?: Record<string, DefaultText>
   /**
    * Attributes removed from the element, with what applies instead.
    * `lotek check` reports them with the message, so a template from an older
@@ -176,8 +184,77 @@ function element<T extends Component>(
     attributes,
     events,
     parts: PARTS[tag] ?? {},
+    ...(NAMES[tag] ? { name: NAMES[tag] } : {}),
+    ...textsOf(tag, Object.keys(attributes)),
     ...(removed ? { removed } : {}),
   }
+}
+
+/**
+ * Where each text in `DEFAULT_TEXTS` is written, and the attributes that
+ * replace it, any one of them. Every text has a row: the type requires it.
+ * `default-texts.browser.test.ts` holds each row to the component: the text
+ * shows without the attributes, and each attribute replaces it.
+ *
+ * The counts in `<lt-suggestion>` go through `Intl.PluralRules`: a form the
+ * language does not have is never asked for, so only `count-none` and
+ * `count-other` replace a text in every language.
+ */
+export const TEXT_PLACES: Record<
+  keyof typeof DEFAULT_TEXTS,
+  { element: string; replacedBy: readonly string[] }
+> = {
+  // `aria-label` on the host wins over `label`.
+  toastRegion: { element: LT_TOAST_TAG, replacedBy: ["label", "aria-label"] },
+  toastClose: { element: LT_TOAST_TAG, replacedBy: ["close-label"] },
+  connectionOffline: {
+    element: LT_CONNECTION_STATUS_TAG,
+    replacedBy: ["offline-text"],
+  },
+  connectionOnline: {
+    element: LT_CONNECTION_STATUS_TAG,
+    replacedBy: ["online-text"],
+  },
+  suggestionNone: {
+    element: LT_SUGGESTION_TAG,
+    replacedBy: ["count-none", "count-other"],
+  },
+  suggestionOne: {
+    element: LT_SUGGESTION_TAG,
+    replacedBy: ["count-one", "count-other"],
+  },
+  suggestionOther: { element: LT_SUGGESTION_TAG, replacedBy: ["count-other"] },
+}
+
+/** The element's texts, for the manifest. Each attribute must be one it reads. */
+function textsOf(
+  tag: string,
+  attributes: string[],
+): { texts?: Record<string, DefaultText> } {
+  const rows = Object.entries(TEXT_PLACES).filter(([, p]) => p.element === tag)
+  if (rows.length === 0) return {}
+  for (const [key, place] of rows)
+    for (const attribute of place.replacedBy)
+      if (attribute !== "aria-label" && !attributes.includes(attribute))
+        throw new Error(
+          `TEXT_PLACES.${key}: <${tag}> does not read ${attribute}`,
+        )
+  return {
+    texts: Object.fromEntries(
+      rows.map(([key, place]) => [
+        key,
+        {
+          text: DEFAULT_TEXTS[key as keyof typeof DEFAULT_TEXTS],
+          replacedBy: place.replacedBy,
+        },
+      ]),
+    ),
+  }
+}
+
+/** The names the elements demand for themselves, by tag. */
+const NAMES: Record<string, Name> = {
+  [LT_ERROR_SUMMARY_TAG]: { after: "title", id: true },
 }
 
 /** The parts of the frame components, by tag. */
@@ -194,6 +271,8 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       content: "none",
       unique: true,
       stableId: true,
+      // The component writes `for` on the label from the control's id.
+      name: { after: "label" },
     },
     help: {
       description:
@@ -216,6 +295,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
         'The tab list, a `<ul>` where each `<li>` gets `role="presentation"`. It needs a name, such as `aria-label`. When the server has written `role="tab"` on the links, the list can also hold other links.',
       content: "free",
       unique: true,
+      name: {},
     },
     tab: {
       description:
@@ -228,6 +308,9 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
         "The content of one tab, with the id the link points to. The panel has the same name as the tab: the heading at the top of the panel is the name when it says the same as the tab.",
       content: "free",
       multiple: true,
+      // The component names the panel after its tab, a link
+      // `without-name` holds.
+      name: { component: true },
     },
   }),
   [LT_ERROR_SUMMARY_TAG]: parts(LT_ERROR_SUMMARY_PARTS, {
@@ -263,12 +346,17 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       content: "none",
       unique: true,
       stableId: true,
+      // The component writes `for` on the label from the field's id.
+      name: { after: "label" },
     },
     list: {
       description:
         'The list of suggestions. It sits in the top layer when it is open, `popover="manual"`, and has the label as its name.',
       content: "parts",
       unique: true,
+      // The component points the list's `aria-labelledby` at the label,
+      // which `without-name` holds on the field.
+      name: { component: true },
     },
     option: {
       description:
@@ -294,12 +382,19 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       unique: true,
       optional: true,
     },
+    label: {
+      description:
+        "The label. The component writes `for` on it from the field's id when it does not wrap the field, and names the list after it.",
+      content: "text",
+      optional: true,
+    },
   }),
   [LT_DIALOG_TAG]: parts(LT_DIALOG_PARTS, {
     dialog: {
       description: "The `<dialog>` element, as a direct child of the host.",
       content: "free",
       unique: true,
+      name: { after: "title" },
     },
     title: {
       description:
@@ -320,6 +415,7 @@ const PARTS: Record<string, Record<string, PartDoc>> = {
       description: "The `<dialog>` element with the warning.",
       content: "free",
       unique: true,
+      name: { after: "title" },
     },
     title: {
       description:
@@ -654,6 +750,8 @@ export type ClassDoc = {
   parts?: Record<string, PartDoc>
   /** The class this one is a part of. */
   partOf?: string
+  /** LO-TEK demands a name for the element with the class. */
+  name?: Name
 }
 
 /** A row in a form: the control and the label side by side. */
@@ -771,6 +869,8 @@ export const classDocs: Record<string, ClassDoc> = {
   "lt-error-text": { content: "text" },
   "lt-fieldset": {
     content: "free",
+    // The legend names the group; WAI-ARIA demands no name for a group.
+    name: {},
     parts: {
       legend: {
         selector: "> .lt-legend",
@@ -941,6 +1041,7 @@ export const classDocs: Record<string, ClassDoc> = {
   "lt-textarea": { content: "none" },
   "lt-toggle-group": {
     content: "parts",
+    name: {},
     parts: {
       legend: {
         selector: "> legend",
