@@ -12,7 +12,6 @@
  * since Vitest is itself a script.
  */
 
-import axe from "axe-core"
 import { createElement as h } from "react"
 import { hydrateRoot } from "react-dom/client"
 import { renderToString } from "react-dom/server"
@@ -32,7 +31,7 @@ import { mount, waitForPaint } from "../../../testing/a11y"
 import { setAddress } from "../../../testing/address"
 import { rgb } from "../../../testing/color"
 import { Idiomorph } from "../../../testing/idiomorph/idiomorph-v0.8.0.js"
-import { attr } from "../../../testing/markup"
+import { attr, wiredName } from "../../../testing/markup"
 import { contrastRatio } from "../../../tokens/color"
 import { defineLtTabs, LtTabs } from "./lt-tabs"
 import { tabs } from "./tabs"
@@ -89,29 +88,6 @@ const panels = () => [
 const selectedTabs = () =>
   links().map((f) => f.getAttribute("aria-selected") === "true")
 const hiddenPanels = () => panels().map((p) => p.hasAttribute("hidden"))
-
-/**
- * The computed name, by AccName, as a screen reader gets it.
- *
- * axe's types do not include the functions that compute the name from the
- * tree, so they are typed here.
- */
-const accName = axe as unknown as {
-  setup: (root: Node) => void
-  teardown: () => void
-  utils: { getNodeFromTree: (e: Element) => unknown }
-  commons: { text: { accessibleTextVirtual: (n: unknown) => string } }
-}
-function nameOf(element: Element): string {
-  accName.setup(document)
-  try {
-    return accName.commons.text.accessibleTextVirtual(
-      accName.utils.getNodeFromTree(element),
-    )
-  } finally {
-    accName.teardown()
-  }
-}
 
 /**
  * Tab, as a keyboard user presses it. WebKit on macOS, like Safari, skips
@@ -337,7 +313,7 @@ describe("B. Semantics and names", () => {
     )
     await settle()
 
-    expect(panels().map(nameOf)).toEqual(NAMES)
+    expect(panels().map(wiredName)).toEqual(NAMES)
   })
 
   it("B6: the panel has the same name as the tab, also when the heading says something else", async () => {
@@ -348,7 +324,7 @@ describe("B. Semantics and names", () => {
     )
     await settle()
 
-    expect(panels().map(nameOf)).toEqual(links().map(nameOf))
+    expect(panels().map(wiredName)).toEqual(links().map(wiredName))
   })
 
   it("B7: an aria-labelledby the server wrote is not changed, also when it points to something that arrives later", async () => {
@@ -369,7 +345,7 @@ describe("B. Semantics and names", () => {
     await settle()
 
     expect(panel.getAttribute("aria-labelledby")).toBe("arrives-later")
-    expect(nameOf(panel)).toBe("Attachments")
+    expect(wiredName(panel)).toBe("Attachments")
   })
 
   it("B8: the name follows when the tab's text changes in the text node, as idiomorph does it", async () => {
@@ -379,136 +355,17 @@ describe("B. Semantics and names", () => {
     ;(links()[1].firstChild as Text).nodeValue = "Attachments (2)"
     await settle()
 
-    expect(nameOf(panels()[1])).toBe("Attachments (2)")
+    expect(wiredName(panels()[1])).toBe("Attachments (2)")
   })
 
   /*
-   * Each row replaces the second tab, the heading in its panel and what
-   * stands outside the tab list. The names are computed by axe, as a screen
-   * reader does, and the panel must have the same name as the tab (B5, B6,
-   * D7).
+   * B5 and B6 with the name computed from hidden text, aria-hidden, an
+   * image's alt, aria-label and aria-labelledby on children, and nested
+   * aria-labelledby: the variants are accessibility contracts, in
+   * scripts/accessibility/contracts.ts, and the names are read from the
+   * browser's own tree through AT-SPI. Here they were computed with axe's
+   * copy of AccName.
    */
-  const NAME_VARIANTS: Array<{
-    what: string
-    link: string
-    heading: string
-    outside?: string
-    name: string
-  }> = [
-    {
-      what: "text",
-      link: "Attachments",
-      heading: "<h2>Attachments</h2>",
-      name: "Attachments",
-    },
-    {
-      what: "without a heading",
-      link: "Attachments",
-      heading: "",
-      name: "Attachments",
-    },
-    {
-      what: "heading with different text",
-      link: "Attachments",
-      heading: "<h2>Enclosures</h2>",
-      name: "Attachments",
-    },
-    {
-      what: "hidden heading",
-      link: "Attachments",
-      heading: "<h2 hidden>Attachments</h2>",
-      name: "Attachments",
-    },
-    {
-      what: "heading with aria-label equal to the tab",
-      link: "Attachments",
-      heading: '<h2 aria-label="Attachments">Enclosures</h2>',
-      name: "Attachments",
-    },
-    {
-      what: "heading with aria-label different from the tab",
-      link: "Attachments",
-      heading: '<h2 aria-label="Something else">Attachments</h2>',
-      name: "Attachments",
-    },
-    {
-      // If the panel points to the heading, the heading's own
-      // `aria-labelledby` is not followed, and the panel is named "Enclosures".
-      what: "heading with aria-labelledby",
-      link: "Attachments",
-      heading: '<h2 aria-labelledby="heading-name">Enclosures</h2>',
-      outside: '<span id="heading-name">Attachments</span>',
-      name: "Attachments",
-    },
-    {
-      what: "text hidden with CSS",
-      link: 'Attachments<span style="display: none"> (2)</span>',
-      heading: "",
-      name: "Attachments",
-    },
-    {
-      what: "text with aria-hidden",
-      link: 'Attachments<span aria-hidden="true"> (2)</span>',
-      heading: "<h2>Attachments</h2>",
-      name: "Attachments",
-    },
-    {
-      what: "image with alt",
-      link: '<img alt="Attachments" width="1" height="1">',
-      heading: "<h2>Attachments</h2>",
-      name: "Attachments",
-    },
-    {
-      what: "aria-label on a child",
-      link: '<span role="img" aria-label="Attachments">📎</span>',
-      heading: "",
-      name: "Attachments",
-    },
-    {
-      // AccName 2B also applies to a child of the tab.
-      what: "aria-labelledby on a child, pointing to a hidden element",
-      link: '<svg role="img" aria-labelledby="icon-name" width="16" height="16"></svg>',
-      heading: "",
-      outside: '<span id="icon-name" hidden>Enclosures</span>',
-      name: "Enclosures",
-    },
-    {
-      what: "aria-labelledby on the tab, pointing to a hidden element",
-      link: "Attachments",
-      heading: "",
-      outside: '<span id="tab-name" hidden>Enclosures</span>',
-      name: "Enclosures",
-    },
-    {
-      // Inside an `aria-labelledby` that is already being followed, another one is not followed.
-      what: "aria-labelledby inside aria-labelledby",
-      link: "Attachments",
-      heading: "",
-      outside:
-        '<span id="tab-name"><span role="img" aria-labelledby="deeper">Enclosures</span></span><span id="deeper">Wrong</span>',
-      name: "Enclosures",
-    },
-  ]
-
-  for (const v of NAME_VARIANTS) {
-    it(`B5 and B6: the panel has the tab's name, ${v.what}`, async () => {
-      const linkAttr = v.outside?.includes('id="tab-name"')
-        ? ' aria-labelledby="tab-name"'
-        : ""
-      mount(
-        `${v.outside ?? ""}${bar()
-          .replace(
-            '<a href="#attachments">Attachments</a>',
-            `<a href="#attachments"${linkAttr}>${v.link}</a>`,
-          )
-          .replace("<h2>Attachments</h2>", v.heading)}`,
-      )
-      await settle()
-
-      expect(nameOf(links()[1])).toBe(v.name)
-      expect(nameOf(panels()[1])).toBe(v.name)
-    })
-  }
 
   it("B6: the heading is the name only when its name is the same as the tab's", async () => {
     mount(
@@ -519,7 +376,7 @@ describe("B. Semantics and names", () => {
     )
     await settle()
 
-    expect(panels().map(nameOf)).toEqual(NAMES)
+    expect(panels().map(wiredName)).toEqual(NAMES)
   })
 
   it("B5: a tab with aria-labelledby pointing to a hidden element is named what that element says", async () => {
@@ -533,7 +390,7 @@ describe("B. Semantics and names", () => {
     )
     await settle()
 
-    expect(nameOf(panels()[1])).toBe("Enclosures")
+    expect(wiredName(panels()[1])).toBe("Enclosures")
   })
 
   it("B5: text hidden with CSS and a tab with only a title", async () => {
@@ -550,13 +407,13 @@ describe("B. Semantics and names", () => {
     )
     await settle()
 
-    expect(panels().map(nameOf)).toEqual(NAMES)
+    expect(panels().map(wiredName)).toEqual(NAMES)
   })
 
   it("B8: the name follows when the text in the heading changes", async () => {
     mount(bar())
     await settle()
-    expect(nameOf(panels()[1])).toBe("Attachments")
+    expect(wiredName(panels()[1])).toBe("Attachments")
 
     // As idiomorph does it: only the text node changes.
     const text = panels()[1].querySelector("h2")?.firstChild as Text
@@ -565,7 +422,7 @@ describe("B. Semantics and names", () => {
 
     // The heading no longer says what the tab says, so the panel has the
     // tab's name.
-    expect(nameOf(panels()[1])).toBe("Attachments")
+    expect(wiredName(panels()[1])).toBe("Attachments")
   })
 
   it("B8: the name follows when the text aria-labelledby points to inside a panel changes", async () => {
@@ -581,14 +438,14 @@ describe("B. Semantics and names", () => {
         ),
     )
     await settle()
-    expect(nameOf(panels()[1])).toBe("Enclosures")
+    expect(wiredName(panels()[1])).toBe("Enclosures")
 
     // The text is inside the element the id points to, not directly in it.
     const text = document.querySelector("#late-name b")?.firstChild as Text
     text.nodeValue = "Documents"
     await settle()
 
-    expect(nameOf(panels()[1])).toBe("Documents")
+    expect(wiredName(panels()[1])).toBe("Documents")
   })
 
   it("B8: the same when aria-labelledby is on a child of the tab", async () => {
@@ -604,13 +461,13 @@ describe("B. Semantics and names", () => {
         ),
     )
     await settle()
-    expect(nameOf(panels()[1])).toBe("Enclosures")
+    expect(wiredName(panels()[1])).toBe("Enclosures")
 
     const text = document.getElementById("late-name")?.firstChild as Text
     text.nodeValue = "Documents"
     await settle()
 
-    expect(nameOf(panels()[1])).toBe("Documents")
+    expect(wiredName(panels()[1])).toBe("Documents")
   })
 
   it("B7: the fallback is removed when the element the server's aria-labelledby points to arrives inside a panel", async () => {
@@ -642,7 +499,7 @@ describe("B. Semantics and names", () => {
       ),
     )
     await settle()
-    expect(nameOf(panels()[1])).toBe("Attachments")
+    expect(wiredName(panels()[1])).toBe("Attachments")
 
     const deep = document.getElementById("inside-application") as HTMLElement
     deep.insertAdjacentHTML(
@@ -651,7 +508,7 @@ describe("B. Semantics and names", () => {
     )
     await settle()
 
-    expect(nameOf(panels()[1])).toBe("Enclosures")
+    expect(wiredName(panels()[1])).toBe("Enclosures")
   })
 
   it("B8: the name follows when an element inside a panel gets the id aria-labelledby points to", async () => {
@@ -667,12 +524,12 @@ describe("B. Semantics and names", () => {
         ),
     )
     await settle()
-    expect(nameOf(panels()[1])).toBe("Attachments")
+    expect(wiredName(panels()[1])).toBe("Attachments")
 
     document.getElementById("not-yet")?.setAttribute("id", "late-name")
     await settle()
 
-    expect(nameOf(panels()[1])).toBe("Enclosures")
+    expect(wiredName(panels()[1])).toBe("Enclosures")
   })
 
   it("D7: the heading becomes the name when its text changes to the tab's", async () => {
@@ -701,12 +558,12 @@ describe("B. Semantics and names", () => {
         ),
     )
     await settle()
-    expect(nameOf(panels()[1])).toBe("Enclosures")
+    expect(wiredName(panels()[1])).toBe("Enclosures")
 
     document.getElementById("late-name")?.setAttribute("id", "something-else")
     await settle()
 
-    expect(nameOf(panels()[1])).toBe("Attachments")
+    expect(wiredName(panels()[1])).toBe("Attachments")
   })
 
   it("B8: the name follows when alt on an image in the tab changes", async () => {
@@ -724,7 +581,7 @@ describe("B. Semantics and names", () => {
     )
     await settle()
 
-    expect(nameOf(panels()[1])).toBe("Enclosures")
+    expect(wiredName(panels()[1])).toBe("Enclosures")
   })
 
   it("B9: the component warns when the tab list has no name", async () => {

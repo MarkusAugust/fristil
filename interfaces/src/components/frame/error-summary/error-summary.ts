@@ -8,6 +8,12 @@ export type ErrorSummaryOptions = {
   count?: number
   /** The id of the box, so the form can move focus here after submission. */
   id?: string
+  /**
+   * The id of the heading. The box takes its name from it with
+   * `aria-labelledby`. Without it, `<lt-error-summary>` gives the heading an id
+   * and writes the wiring in the browser. An empty one counts as none.
+   */
+  titleId?: string
 }
 
 export type ErrorSummaryAttributes = {
@@ -17,9 +23,11 @@ export type ErrorSummaryAttributes = {
     tabindex: "-1"
     id?: string
     hidden?: true
+    "aria-labelledby"?: string
   }
   title: {
     class: typeof ERROR_SUMMARY_TITLE_CLASS
+    id?: string
   }
 }
 
@@ -32,7 +40,11 @@ export type ErrorSummaryAttributes = {
  * every morph in Datastar.
  *
  * ```ts
- * const summary = lt.errorSummary({ count: errors.length, id: "errors" })
+ * const summary = lt.errorSummary({
+ *   count: errors.length,
+ *   id: "errors",
+ *   titleId: "errors-title",
+ * })
  * ```
  * ```html
  * <lt-error-summary {...summary.host}>
@@ -44,13 +56,20 @@ export type ErrorSummaryAttributes = {
 export const errorSummary = ({
   count = 0,
   id,
-}: ErrorSummaryOptions = {}): ErrorSummaryAttributes => ({
-  host: attributes({
-    class: ERROR_SUMMARY_CLASS,
-    role: "alert" as const,
-    tabindex: "-1" as const,
-    id,
-    hidden: count === 0 ? (true as const) : undefined,
-  }),
-  title: attributes({ class: ERROR_SUMMARY_TITLE_CLASS }),
-})
+  titleId: givenTitleId,
+}: ErrorSummaryOptions = {}): ErrorSummaryAttributes => {
+  // `aria-labelledby=""` names nothing, and the web component would take it
+  // as the server's word and leave the box without a name.
+  const titleId = givenTitleId?.trim() ? givenTitleId : undefined
+  return {
+    host: attributes({
+      class: ERROR_SUMMARY_CLASS,
+      role: "alert" as const,
+      tabindex: "-1" as const,
+      id,
+      hidden: count === 0 ? (true as const) : undefined,
+      "aria-labelledby": titleId,
+    }),
+    title: attributes({ class: ERROR_SUMMARY_TITLE_CLASS, id: titleId }),
+  }
+}

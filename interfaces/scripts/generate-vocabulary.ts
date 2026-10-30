@@ -48,6 +48,7 @@ import {
   type ElementDoc,
   elements,
 } from "./metadata"
+import { dedent, htmlBlocks } from "./recipes.js"
 
 export const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 const DOCS = "https://lo-tek.sobernetics.no/components/"
@@ -191,7 +192,7 @@ export function webTypes(version: string) {
  */
 export function recipe(element: ElementDoc): string {
   const page = readFileSync(join(PAGES, `${element.slug}.mdx`), "utf8")
-  const blocks = [...page.matchAll(/```html\n([\s\S]*?)```/g)].map((m) => m[1])
+  const blocks = htmlBlocks(page)
   const markup = blocks.find(
     (b) =>
       b.includes(`<${element.tag}`) &&
@@ -208,13 +209,7 @@ export function recipe(element: ElementDoc): string {
   const body = markup.split(
     /\n[ \t]*(?:<!--(?:(?!-->)[\s\S])*-->\n[ \t]*)?<script\b/,
   )[0]
-  const lines = body.replace(/\s+$/, "").split("\n")
-  const indent = Math.min(
-    ...lines
-      .filter((l) => l.trim())
-      .map((l) => (l.match(/^[ \t]*/)?.[0] ?? "").length),
-  )
-  return lines.map((l) => l.slice(indent)).join("\n")
+  return dedent(body)
 }
 
 /*

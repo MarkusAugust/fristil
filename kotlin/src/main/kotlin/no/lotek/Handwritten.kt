@@ -62,15 +62,23 @@ fun Lt.legend(
     disabled: Boolean? = null,
 ): Attributes = Attributes(marked("lt-legend", required, optional, disabled))
 
-/** `lt.errorSummary`: the error summary. The box is hidden when [count] is zero. */
+/**
+ * `lt.errorSummary`: the error summary. The box is hidden when [count] is zero,
+ * and takes its name from the heading with [titleId]. An empty one counts as none.
+ */
 fun Lt.errorSummary(
     count: Number? = null,
     id: String? = null,
+    titleId: String? = null,
 ): ErrorSummaryParts {
+    val titleId = titleId?.takeUnless { it.all(::isJsWhitespace) }
     val host = linkedMapOf("class" to "lt-error-summary", "role" to "alert", "tabindex" to "-1")
     if (id != null) host["id"] = id
     if ((count?.toDouble() ?: 0.0) == 0.0) host["hidden"] = ""
-    return ErrorSummaryParts(host = Attributes(host), title = Attributes(mapOf("class" to "lt-error-summary__title")))
+    if (titleId != null) host["aria-labelledby"] = titleId
+    val title = linkedMapOf("class" to "lt-error-summary__title")
+    if (titleId != null) title["id"] = titleId
+    return ErrorSummaryParts(host = Attributes(host), title = Attributes(title))
 }
 
 /** The ids in `aria-describedby`, split on whitespace as JavaScript splits them, without empty ones and duplicates. */

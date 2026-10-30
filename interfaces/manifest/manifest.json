@@ -2148,6 +2148,8 @@
         "table": {
           "base": {
             "class": "lt-connection-status",
+            "role": "status",
+            "aria-live": "polite",
             "data-ignore-morph": ""
           },
           "options": {
@@ -2476,6 +2478,14 @@
             "kind": "text"
           },
           "description": "The id of the box, so the form can move focus here after submission."
+        },
+        {
+          "name": "titleId",
+          "required": false,
+          "type": {
+            "kind": "text"
+          },
+          "description": "The id of the heading. The box takes its name from it with `aria-labelledby`. Without it, `<lt-error-summary>` gives the heading an id and writes the wiring in the browser. An empty one counts as none."
         }
       ],
       "returns": {

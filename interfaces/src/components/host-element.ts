@@ -176,6 +176,26 @@ export function uniqueId(prefix: string): string {
 }
 
 /**
+ * The id an element should have: the one it has, otherwise the one the
+ * component created for that node before. A morph keeps the node and tears
+ * the id off, and it gets the same one back, so a screen reader does not
+ * follow a reference that changes under it.
+ */
+export function rememberedId(
+  memory: WeakMap<Element, string>,
+  element: Element,
+  prefix: string,
+): string {
+  if (element.id) return element.id
+  let id = memory.get(element)
+  if (!id) {
+    id = uniqueId(prefix)
+    memory.set(element, id)
+  }
+  return id
+}
+
+/**
  * The parts with a role, and those without only when the component set the
  * roles itself.
  *

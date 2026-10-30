@@ -49,7 +49,8 @@ jobs:
       # The image lacks a C linker, which Cargo needs for the CLI, `unzip`,
       # which `setup-bun` unpacks Bun with, and Rust. Only these few packages
       # come from apt. Rustup then installs the version in
-      # `rust-toolchain.toml` on the first call.
+      # `rust-toolchain.toml` on the first call. The accessibility tree check
+      # reads AT-SPI, as Orca does, and needs its bus and Python bindings.
       #
       # The container runs as root, and Firefox will not start as root with a
       # home folder owned by another user. The runner mounts its own as `HOME`
@@ -70,6 +71,11 @@ jobs:
       # container runs as root over a folder the runner created.
       - name: Trust the checkout
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      # What "The accessibility tree" reads AT-SPI with. The same script runs
+      # in the check's own container on a machine that is not Linux.
+      - name: Accessibility tools
+        run: bash interfaces/scripts/accessibility/install.sh
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -93,17 +99,22 @@ jobs:
       - name: Type check the tests
         run: bun run typecheck:tests
 
-      # Runs the component tests in Chromium, Firefox and WebKit, and checks
-      # that the Tailwind theme gives LO-TEK's values.
-      - name: Tests
-        run: bun run test
-
       # The package carries the core, built from Rust. `rust-toolchain.toml` at
       # the root of the repository decides the version, and rustup fetches it on
       # the first call.
       - name: Rust version
         working-directory: core
         run: rustc --version
+
+      # The model tests compute the accessibility tree with the core, so it is
+      # built before them. The build builds it again, from the same source.
+      - name: The core
+        run: bun --filter @lo-tek/interfaces core
+
+      # Runs the component tests in Chromium, Firefox and WebKit, and checks
+      # that the Tailwind theme gives LO-TEK's values.
+      - name: Tests
+        run: bun run test
 
       # Builds the package and the documentation, and checks that the package
       # contains what it promises.
@@ -121,6 +132,18 @@ jobs:
       - name: The rendered page
         working-directory: interfaces
         run: bun scripts/check-rendered.ts
+
+      # That every fact the tree check builds on has one source: the texts,
+      # the states, the packages, the Bun and the steps the deviations name.
+      - name: The accessibility sources
+        run: bun interfaces/scripts/check-accessibility-sources.ts
+
+      # What a screen reader is given, read through AT-SPI in the engines in
+      # ENGINE_NAMES (platform.ts), against the accessibility contracts, with
+      # every contract's mutations required to fail. Locally it runs in this
+      # same image.
+      - name: The accessibility tree
+        run: bun interfaces/scripts/check-accessibility-tree.ts
 
       # The language server over real standard input and output, in every
       # host: Node, the executable and the VS Code extension's server. The jar

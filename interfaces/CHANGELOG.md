@@ -24,6 +24,49 @@ including 0.36.0 were written in Norwegian, and list them under "Brytende".
 
 ## Unreleased
 
+### Added
+
+- **`lt.errorSummary({ titleId })`** writes `aria-labelledby` on the box and
+  `id` on the heading, as `lt.dialog({ titleId })` does. Without it the web
+  component writes the same wiring in the browser.
+- **`lt.connectionStatus()` writes `role="status"` and `aria-live="polite"`**
+  on the host, the region the web component otherwise sets when it is
+  connected.
+
+### Fixed
+
+- **`<lt-error-summary>` has a name when it takes focus.** The box moves
+  focus to itself when a submission fails, and had no name, so a screen
+  reader said only "alert" when the focus landed. When the box has neither
+  `aria-labelledby` nor `aria-label`, the component now points
+  `aria-labelledby` at its heading, and gives the heading an id when it has
+  none. The id is remembered per heading, so a morph that tears it off gets
+  the same one back. A name the server wrote stays, and the component's own
+  follows a heading a patch has replaced. When the server names the box with
+  `aria-labelledby` after an id that is nowhere on the page, and the heading
+  has no id or the component's, the heading takes that id and says so in the
+  console; it gives the id back when another element has it. This happens
+  with idiomorph, which leaves the content of the focused box as it was, so
+  the heading the server sent with the id never arrived.
+- **`<lt-error-summary>` lets go of focus when it is hidden.** In Firefox and
+  WebKit the hidden box kept focus, and idiomorph then left its content as it
+  was: the next submission that failed showed an empty heading and list.
+- **`<lt-connection-status>` is announced in Firefox.** The component made
+  the bar a live region as it inserted it, and Firefox then sent no
+  live-region text through the accessibility API at all, so "No connection"
+  was never read out. The host is now the live region from the moment it is
+  connected, with `role="status"` and `aria-live="polite"` when they are
+  missing, and the bar is content inside it. A morph that takes them off
+  gets them back.
+
+The first two were found by `check-accessibility-tree.ts`, which reads what
+a screen reader is given through AT-SPI in Chromium and Firefox, against an
+accessibility contract per component. The contracts are shown on the
+component pages, under "Accessibility". The other two were found by
+`lt-error-summary.model.browser.test.ts`, which sends every version of the
+box by Datastar, idiomorph and `innerHTML` in every order, and checks the
+accessibility tree the core computes after each step.
+
 ## 0.37.0 (2026-10-26)
 
 ### Breaking

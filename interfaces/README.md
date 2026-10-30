@@ -87,12 +87,13 @@ The builder functions in `lt` give the markup, the components give the behaviour
 ```js
 import { lt } from "@lo-tek/interfaces"
 
-lt.errorSummary({ count: 2, id: "errors" })
-// { host: { class: "lt-error-summary", role: "alert", tabindex: "-1", id: "errors" },
-//   title:     { class: "lt-error-summary__title" } }
+lt.errorSummary({ count: 2, id: "errors", titleId: "errors-title" })
+// { host:  { class: "lt-error-summary", role: "alert", tabindex: "-1", id: "errors",
+//            "aria-labelledby": "errors-title" },
+//   title: { class: "lt-error-summary__title", id: "errors-title" } }
 ```
 
-`id` is required in `lt.field()`, `lt.suggestion()`, `lt.tabs()` and `lt.popover()`, and `titleId` in `lt.dialog()`. `lt.tabs()` and `lt.suggestion()` also take `keys`, one key from the data per tab or option, and `lt.tabs()` requires `label`, the name of the tab list. The reason is hydration: if the function creates the id itself, the server and the browser each create their own, and the wiring between the parts is broken until React has corrected it. In React it comes from `useId()`. In `lt.errorSummary()` it is optional, since it only names the box so that something else can point to it.
+`id` is required in `lt.field()`, `lt.suggestion()`, `lt.tabs()` and `lt.popover()`, and `titleId` in `lt.dialog()`. `lt.tabs()` and `lt.suggestion()` also take `keys`, one key from the data per tab or option, and `lt.tabs()` requires `label`, the name of the tab list. The reason is hydration: if the function creates the id itself, the server and the browser each create their own, and the wiring between the parts is broken until React has corrected it. In React it comes from `useId()`. In `lt.errorSummary()` both are optional: `id` only names the box so that something else can point to it, and without `titleId` the web component names the box from its heading in the browser. In React, pass `titleId`, or the component writes the name before React hydrates.
 
 The full reasoning, with the tests behind it, is on [Markup and behaviour](https://lo-tek.sobernetics.no/markup-and-behaviour/).
 

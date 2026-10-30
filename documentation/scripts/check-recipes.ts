@@ -26,6 +26,7 @@
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { tabItems } from "../../interfaces/scripts/recipes"
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 const PAGES = join(ROOT, "documentation/src/content/docs/components")
@@ -381,10 +382,8 @@ for (const file of readdirSync(PAGES).filter(
    * further down went free, and it is the same code a reader pastes in.
    */
   const tabs: Array<{ name: string; code: string; inRecipe?: boolean }> = []
-  for (const m of text.matchAll(
-    /<TabItem\b[^>]*?\slabel="([^"]+)"[^>]*>([\s\S]*?)<\/TabItem>/g,
-  ))
-    tabs.push({ name: m[1], code: m[2], inRecipe: section.includes(m[2]) })
+  for (const tab of tabItems(text))
+    tabs.push({ ...tab, inRecipe: section.includes(tab.code) })
 
   /*
    * And every `<Example>`, whether or not the page also has tabs.

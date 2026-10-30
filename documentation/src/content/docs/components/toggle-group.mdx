@@ -4,6 +4,7 @@ description: A group where one option is selected at a time. A CSS component wit
 ---
 
 import Example from "../../../components/Example.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 The group is radio buttons in disguise. Each option is a `<label>` with an `<input type="radio">` inside, shrunk away visually. You keep the arrow keys, `FormData` and the screen reader saying "2 of 3", without having to rewrite any of it.
 
@@ -97,6 +98,8 @@ The selected surface is set with `:has(input:checked)`, that is from the state o
 See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
+
+<ScreenReaderContract component="toggle-group" />
 
 - The radio button is shrunk away, not removed. `display: none` would take it out of the keyboard order, and the arrow keys would then stop working.
 - The arrow keys move between the options and select at the same time. Tab leaves the whole group. That is how radio buttons work, and it should not be overridden.

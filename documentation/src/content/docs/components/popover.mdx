@@ -5,6 +5,7 @@ description: Panel that hangs below a button and closes itself. Frame component.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import PopoverDemo from "../../../components/PopoverDemo.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 The panel uses the browser's own `popover`, so it ends up in the top layer and sits above everything else without anyone having to find a `z-index` that is high enough.
 
@@ -267,6 +268,8 @@ The position is set as `--lt-popover-top` and `--lt-popover-left` on the element
 See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
+
+<ScreenReaderContract component="popover" />
 
 - The panel is not a dialog. Focus is not moved inside automatically, and the rest of the page is still usable. If you need to stop the user, use [Dialog](../dialog/).
 - Escape closes it and returns focus to the button. Without that, focus is on something that no longer exists.

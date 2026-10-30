@@ -62,6 +62,97 @@ describe("lt-error-summary", () => {
     expect(title.textContent).toBe("The form has two errors")
   })
 
+  it("is named by its heading, and gets the same id back after a morph", async () => {
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    const title = box.querySelector("h2") as HTMLElement
+    // The box takes focus, so it needs a name. What a screen reader gets is
+    // checked through AT-SPI in check-accessibility-tree.ts.
+    expect(title.id).not.toBe("")
+    expect(box.getAttribute("aria-labelledby")).toBe(title.id)
+
+    const id = title.id
+    box.removeAttribute("aria-labelledby")
+    title.removeAttribute("id")
+    await settle()
+    expect(title.id).toBe(id)
+    expect(box.getAttribute("aria-labelledby")).toBe(id)
+  })
+
+  it("puts the heading's id back when a patch takes only that", async () => {
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    const title = box.querySelector("h2") as HTMLElement
+    const id = title.id
+    title.removeAttribute("id")
+    await settle()
+    // The name on the box still points at it.
+    expect(title.id).toBe(id)
+    expect(box.getAttribute("aria-labelledby")).toBe(id)
+  })
+
+  it("follows a heading a patch has replaced", async () => {
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    const old = box.querySelector("h2") as HTMLElement
+    const fresh = document.createElement("h2")
+    fresh.textContent = "The form has one error"
+    old.replaceWith(fresh)
+    await settle()
+    // Before, the name kept pointing at the id of the heading that was gone.
+    expect(fresh.id).not.toBe("")
+    expect(box.getAttribute("aria-labelledby")).toBe(fresh.id)
+  })
+
+  it("keeps the server's aria-labelledby when the heading is replaced", async () => {
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    box.setAttribute("aria-labelledby", "server-title")
+    const fresh = document.createElement("h2")
+    fresh.id = "server-title"
+    fresh.textContent = "The form has one error"
+    ;(box.querySelector("h2") as HTMLElement).replaceWith(fresh)
+    await settle()
+    expect(box.getAttribute("aria-labelledby")).toBe("server-title")
+  })
+
+  it("takes its own name back when the server names the box", async () => {
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    box.setAttribute("aria-label", "Errors in the form")
+    await settle()
+    // aria-labelledby wins over aria-label, so the component's had to go.
+    expect(box.hasAttribute("aria-labelledby")).toBe(false)
+  })
+
+  it("lt.errorSummary({ titleId }) writes the wiring", () => {
+    const named = errorSummary({ count: 1, titleId: "errors-title" })
+    expect(named.host["aria-labelledby"]).toBe("errors-title")
+    expect(named.title.id).toBe("errors-title")
+    expect(ERRORS.host["aria-labelledby"]).toBeUndefined()
+  })
+
+  it("names the box when the server wrote an empty aria-labelledby", async () => {
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    const title = box.querySelector("h2") as HTMLElement
+    box.setAttribute("aria-labelledby", " ")
+    await settle()
+    // A blank value names nothing, so it is not the server's word.
+    expect(box.getAttribute("aria-labelledby")).toBe(title.id)
+  })
+
+  it('lt.errorSummary({ titleId: "" }) writes no empty wiring', () => {
+    for (const titleId of ["", "  "]) {
+      const built = errorSummary({ count: 1, titleId })
+      expect(built.host["aria-labelledby"]).toBeUndefined()
+      expect(built.title.id).toBeUndefined()
+    }
+  })
+
+  it("leaves a name the server wrote alone", async () => {
+    const box = document.querySelector("lt-error-summary") as HTMLElement
+    box.removeAttribute("aria-labelledby")
+    box.setAttribute("aria-label", "Errors in the form")
+    await settle()
+    expect(box.hasAttribute("aria-labelledby")).toBe(false)
+    expect(box.getAttribute("aria-label")).toBe("Errors in the form")
+  })
+
   it("is hidden by the server when there are no errors", () => {
     const empty = errorSummary({ count: 0 })
 

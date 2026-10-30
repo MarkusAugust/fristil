@@ -18,6 +18,7 @@
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { Glob } from "bun"
+import { VERSION_PLACEHOLDER } from "../../interfaces/scripts/recipes"
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url))
 
@@ -25,7 +26,7 @@ const { version } = JSON.parse(
   readFileSync(`${ROOT}interfaces/package.json`, "utf8"),
 ) as { version: string }
 
-const PLACEHOLDER = "@lo-tek/interfaces@VERSION"
+const PLACEHOLDER = VERSION_PLACEHOLDER
 const WITH_VERSION = `@lo-tek/interfaces@${version}`
 
 const findings: string[] = []

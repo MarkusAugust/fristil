@@ -148,12 +148,23 @@ type Exports = {
   inspect_theme_raw(pointer: number, length: number): number
   inspect_styles_raw(pointer: number, length: number): void
   diagnose_styled_raw(pointer: number, length: number): number
+  accessibility_tree_raw(pointer: number, length: number): number
+  accessibility_facts_raw(): void
+  accessibility_roles_raw(): void
+  accessibility_states_raw(): void
   result_ptr(): number
   result_len(): number
 }
 
-/** Loads the core from the module's bytes or an already compiled module. */
-export function loadCore(source: BufferSource | WebAssembly.Module): Core {
+/**
+ * @internal Not part of the package's API.
+ *
+ * An instance of the core and the helpers every call goes through: the text
+ * written into the module's memory, and the answer read back. Not part of
+ * the package: `index.ts` exports `loadCore`. The tests reach the core's
+ * other functions, such as the accessibility tree, through this.
+ */
+export function instantiate(source: BufferSource | WebAssembly.Module) {
   const module =
     source instanceof WebAssembly.Module
       ? source
@@ -181,6 +192,12 @@ export function loadCore(source: BufferSource | WebAssembly.Module): Core {
     if (status !== 0) throw new Error(read<{ error: string }>().error)
     return read<T>()
   }
+  return { e, write, read, answer }
+}
+
+/** Loads the core from the module's bytes or an already compiled module. */
+export function loadCore(source: BufferSource | WebAssembly.Module): Core {
+  const { e, write, read, answer } = instantiate(source)
 
   return {
     diagnoseMarkup: (html) => answer(e.diagnose_markup_raw(...write(html))),

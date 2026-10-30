@@ -394,10 +394,12 @@ await on(
     const result = await page.evaluate((id) => {
       const root = document.getElementById(id)?.shadowRoot
       const bar = root?.querySelector(".lt-connection-status__bar")
+      // The host is the live region, so it exists before the bar arrives.
+      const host = bar?.closest("lt-connection-status")
       return {
         text: (bar?.textContent ?? "").trim(),
         state: (bar as HTMLElement | null)?.dataset.state ?? "",
-        role: bar?.getAttribute("role") ?? "",
+        role: host?.getAttribute("role") ?? "",
       }
     }, id)
 
@@ -406,7 +408,7 @@ await on(
       result.state === "offline",
       "the bar does not report that the connection is down",
     )
-    expect(result.role === "status", "the bar is not a status region")
+    expect(result.role === "status", "the component is not a status region")
     await visibleInBox(page, id, ".lt-connection-status__bar")
   },
 )

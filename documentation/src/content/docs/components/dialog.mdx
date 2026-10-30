@@ -6,6 +6,7 @@ description: Modal dialog built on the native dialog element. Six classes and no
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import DialogDemo from "../../../components/DialogDemo.astro"
 import Example from "../../../components/Example.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 The class goes on a `<dialog>`, and the rest is the browser's own element. If your app runs JavaScript in the browser, you need nothing from LO-TEK: open the dialog with `showModal()` and close it with `close()`.
 
@@ -416,6 +417,8 @@ The area behind the dialog is `::backdrop`, and only exists when the dialog was 
 See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
+
+<ScreenReaderContract component="dialog" />
 
 - The dialog needs a name. `lt.dialog({ titleId })` writes `aria-labelledby` pointing at the heading, and inside `<lt-dialog>` the component sets it from the first heading outside the body when it is missing. If you have no heading, use `aria-label`.
 - The heading should ask the question: "Delete the application?", not "Confirm".

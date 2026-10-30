@@ -17,3 +17,31 @@ export function attr(values: Record<string, unknown>): string {
     )
     .join(" ")
 }
+
+/**
+ * The name the wiring points at: the text of what `aria-labelledby` refers
+ * to (an element's own `aria-label` before its text), otherwise
+ * `aria-label`, otherwise a link's text. It reads what the components wrote,
+ * and is not the accessible name a screen reader is given: that is read from
+ * the browser's accessibility tree through AT-SPI by
+ * `scripts/check-accessibility-tree.ts`, against the contracts.
+ */
+export function wiredName(element: Element): string {
+  const text = (e: Element | null) =>
+    (e?.textContent ?? "").replace(/\s+/g, " ").trim()
+  const referenced = (e: Element | null) =>
+    e?.getAttribute("aria-label")?.trim() || text(e)
+  const labelledBy = element.getAttribute("aria-labelledby")
+  if (labelledBy !== null) {
+    const root = element.getRootNode() as Document | ShadowRoot
+    return labelledBy
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((id) => referenced(root.getElementById(id)))
+      .join(" ")
+      .trim()
+  }
+  const label = element.getAttribute("aria-label")
+  if (label !== null) return label.trim()
+  return element.localName === "a" ? text(element) : ""
+}

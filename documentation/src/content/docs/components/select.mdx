@@ -4,6 +4,7 @@ description: A dropdown list. CSS component with one class and no JavaScript.
 ---
 
 import Example from "../../../components/Example.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 The same appearance and states as [Input](../input/), on a real `<select>`. The browser's own list is then used, the one that already works with the keyboard, screen readers and the phone's built-in picker.
 
@@ -137,6 +138,8 @@ A compact field, such as "Items per page", becomes as wide as its content with `
 See [Customising](../../customising/) for how the variables and the layer work.
 
 ## Accessibility
+
+<ScreenReaderContract component="select" />
 
 - An `<option>` that says "Choose a country" is a label in disguise, not a replacement for `<label>`.
 - If the list has more than about seven options that belong together logically, group them with `<optgroup label="…">`.

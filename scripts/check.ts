@@ -37,6 +37,8 @@ const SKIPPED: Record<string, string> = {
     "installs what the CI container lacks. Here the browsers are fetched once with `bun --filter @lo-tek/interfaces browsers`",
   "check/Trust the checkout":
     "is only needed where the container runs as another user than the checkout",
+  "check/Accessibility tools":
+    "installs AT-SPI with apt. Here `check-accessibility-tree.ts` runs the same script in its own container",
 }
 
 /*

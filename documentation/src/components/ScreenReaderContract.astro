@@ -1,0 +1,122 @@
+---
+/**
+ * What a screen reader is given, step by step, for one component: the
+ * accessibility contract `check-accessibility-tree.ts` checks through AT-SPI
+ * in the engines in `ENGINE_NAMES`, written out from the same data. The page cannot
+ * promise anything the check does not test, and the other way round.
+ */
+import {
+  type Action,
+  deviationAt,
+  type Expected,
+  type Step,
+} from "../../../interfaces/scripts/accessibility/contract"
+import { CONTRACTS } from "../../../interfaces/scripts/accessibility/contracts"
+import {
+  ENGINE_NAMES,
+  KNOWN_DEVIATIONS,
+  KNOWN_ROLE_DEVIATIONS,
+} from "../../../interfaces/scripts/accessibility/platform"
+
+type Props = { component: string }
+const { component } = Astro.props
+const contract = CONTRACTS.find((c) => c.component === component && !c.variant)
+if (!contract)
+  throw new Error(
+    `<ScreenReaderContract>: no accessibility contract for "${component}"`,
+  )
+
+function duration(ms: number): string {
+  const seconds = Math.round(ms / 1000)
+  if (seconds % 60 === 0) {
+    const minutes = seconds / 60
+    return minutes === 1 ? "1 minute" : `${minutes} minutes`
+  }
+  return seconds === 1 ? "1 second" : `${seconds} seconds`
+}
+
+function action(a: Action): string {
+  if ("focus" in a) return `Focus <code>${escapeHtml(a.focus)}</code>`
+  if ("press" in a) return `Press <kbd>${escapeHtml(a.press)}</kbd>`
+  if ("type" in a) return `Type "${escapeHtml(a.type)}"`
+  if ("click" in a) return `Click <code>${escapeHtml(a.click)}</code>`
+  if ("clock" in a) return `Wait ${duration(a.clock)}`
+  return `Call <code>${escapeHtml(a.run)}</code>`
+}
+
+function node(n: Expected): string {
+  const states = [
+    ...(n.states ?? []),
+    ...(n.notStates ?? []).map((s) => `not ${s}`),
+  ]
+  const description =
+    n.description === undefined
+      ? ""
+      : `, described as "${escapeHtml(n.description)}"`
+  return `the <code>${n.role}</code> "${escapeHtml(n.name)}"${description}${states.length ? `, ${states.join(", ")}` : ""}`
+}
+
+function outcome(s: Step): string {
+  const parts: string[] = []
+  if (s.focus) parts.push(`focus on ${node(s.focus)}`)
+  if (s.within) parts.push(`inside ${node(s.within)}`)
+  if (s.changes?.states?.length)
+    parts.push(
+      `the change to ${s.changes.states.join(" and ")} sent as an event`,
+    )
+  if (s.changes?.description) parts.push("the new description sent as an event")
+  if (s.announce)
+    parts.push(
+      `"${escapeHtml(s.announce.text)}" announced once, ${s.announce.politeness}`,
+    )
+  if (s.quiet) parts.push("nothing announced")
+  return parts.join("; ")
+}
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+}
+
+// The variants count: they are the same component's promise.
+const contracts = CONTRACTS.filter((c) => c.component === component)
+const steps = new Set(
+  contracts.flatMap((c) => c.steps.map((s) => deviationAt(c, s.name))),
+)
+const deviations = [
+  ...KNOWN_DEVIATIONS.filter((d) => steps.has(d.at)).map((d) => ({
+    engine: d.engine,
+    seen: d.seen,
+  })),
+  ...KNOWN_ROLE_DEVIATIONS.filter((d) =>
+    contracts
+      .flatMap((c) => c.steps)
+      .some((s) => [s.focus, s.within].some((n) => n?.role === d.role)),
+  ).map((d) => ({ engine: d.engine, seen: d.seen })),
+]
+const engines = new Intl.ListFormat("en", { type: "conjunction" }).format(
+  Object.values(ENGINE_NAMES),
+)
+---
+
+<p>
+  What a screen reader is given when the recipe above is used, step by step. It is checked through AT-SPI, the
+  interface Orca reads, in {engines}, on every change, by <code>check-accessibility-tree.ts</code>, and
+  every change the check lists as a mutation must make it fail.
+</p>
+<ol>
+  {contract.steps.map((s) => <li><Fragment set:html={`${s.do.map(action).join(", then ")}: ${outcome(s)}.`} /></li>)}
+</ol>
+{
+  deviations.length > 0 && (
+    <>
+      <p>Where a browser does not do what the specification says, which the check requires until the browser changes:</p>
+      <ul>
+        {deviations.map((d) => (
+          <li>
+            <strong>{ENGINE_NAMES[d.engine]}</strong>: {d.seen.endsWith(".") ? d.seen : `${d.seen}.`}
+          </li>
+        ))}
+      </ul>
+    </>
+  )
+}

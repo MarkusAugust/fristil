@@ -21,8 +21,9 @@
  */
 
 import { readFileSync } from "node:fs"
+import { VERSION_PLACEHOLDER } from "../../../interfaces/scripts/recipes.ts"
 
-const PLACEHOLDER = "@lo-tek/interfaces@VERSION"
+const PLACEHOLDER = VERSION_PLACEHOLDER
 
 const { version } = JSON.parse(
   readFileSync(new URL("../../../interfaces/package.json", import.meta.url)),

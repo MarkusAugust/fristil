@@ -19,7 +19,7 @@ import {
   mount,
   waitForPaint,
 } from "../../../testing/a11y"
-import { attr } from "../../../testing/markup"
+import { attr, wiredName } from "../../../testing/markup"
 import { defineLtSuggestion, type LtSuggestion } from "./lt-suggestion"
 import { suggestion } from "./suggestion"
 
@@ -86,18 +86,6 @@ async function openList() {
   await paint()
 }
 
-/** The name the list gets, through `aria-labelledby` or `aria-label`. */
-function nameOf(element: HTMLElement): string {
-  const label = element.getAttribute("aria-label")
-  if (label !== null && !element.hasAttribute("aria-labelledby")) return label
-  const ids = (element.getAttribute("aria-labelledby") ?? "").split(/\s+/)
-  return ids
-    .map((id) => document.getElementById(id)?.textContent ?? "")
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim()
-}
-
 describe("the list has a name", () => {
   beforeAll(() => {
     defineLtSuggestion()
@@ -106,7 +94,7 @@ describe("the list has a name", () => {
   it("from the label, when the markup came without one", async () => {
     mount(BARE)
     await paint()
-    expect(nameOf(list())).toBe("City")
+    expect(wiredName(list())).toBe("City")
   })
 
   it("from the label around the field, with no id on the label or the field", async () => {
@@ -117,7 +105,7 @@ describe("the list has a name", () => {
     field().value = "Lon"
     field().dispatchEvent(new Event("input", { bubbles: true }))
     await paint()
-    expect(nameOf(list())).toBe("City")
+    expect(wiredName(list())).toBe("City")
     expect(document.querySelector("label")?.hasAttribute("id")).toBe(false)
     expect(field().hasAttribute("id")).toBe(false)
   })

@@ -59,8 +59,49 @@ describe("lt-connection-status", () => {
 
     const bar = findBar() as HTMLElement
     expect(bar.dataset.state).toBe("offline")
-    expect(bar.getAttribute("role")).toBe("status")
+    // The host is the live region, from the moment it is connected, so the
+    // region exists before the bar; the bar is not a region of its own. That
+    // the text is announced is checked through AT-SPI in
+    // check-accessibility-tree.ts.
+    expect(status.getAttribute("role")).toBe("status")
+    expect(status.getAttribute("aria-live")).toBe("polite")
+    expect(bar.hasAttribute("role")).toBe(false)
     expect(bar.textContent).toContain("No connection")
+  })
+
+  it("is the live region before anything is reported, and keeps a role the server wrote", async () => {
+    const fresh = document.createElement("lt-connection-status")
+    document.body.append(fresh)
+    expect(fresh.getAttribute("role")).toBe("status")
+    expect(fresh.getAttribute("aria-live")).toBe("polite")
+    expect(fresh.childElementCount).toBe(0)
+    fresh.remove()
+
+    const written = document.createElement("lt-connection-status")
+    written.setAttribute("role", "alert")
+    written.setAttribute("aria-live", "assertive")
+    document.body.append(written)
+    expect(written.getAttribute("role")).toBe("alert")
+    expect(written.getAttribute("aria-live")).toBe("assertive")
+    written.remove()
+  })
+
+  it("puts the region back when a morph takes it off", async () => {
+    const fresh = document.createElement("lt-connection-status")
+    document.body.append(fresh)
+    // The way a morph that only knows the server's markup does it.
+    fresh.removeAttribute("role")
+    fresh.removeAttribute("aria-live")
+    await waitForPaint()
+    expect(fresh.getAttribute("role")).toBe("status")
+    expect(fresh.getAttribute("aria-live")).toBe("polite")
+    fresh.remove()
+  })
+
+  it("lt.connectionStatus() writes the region", () => {
+    const built = connectionStatus()
+    expect(built.role).toBe("status")
+    expect(built["aria-live"]).toBe("polite")
   })
 
   it("confirms when the connection is back", async () => {

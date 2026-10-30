@@ -5,6 +5,7 @@ description: Tells the user when the connection to the server is gone. Standalon
 
 import { TabItem, Tabs } from "@astrojs/starlight/components"
 import ConnectionStatusDemo from "../../../components/ConnectionStatusDemo.astro"
+import ScreenReaderContract from "../../../components/ScreenReaderContract.astro"
 
 A page that loses its connection looks completely normal, but is frozen. If the user fills in a form over a dead connection, everything is gone when she presses send.
 
@@ -32,7 +33,7 @@ defineLtConnectionStatus()
     ```
 
     ```html
-    <lt-connection-status class="lt-connection-status" data-ignore-morph></lt-connection-status>
+    <lt-connection-status class="lt-connection-status" role="status" aria-live="polite" data-ignore-morph></lt-connection-status>
 
     <!-- Once for the whole app, in the page template. Not once per component. -->
     <script type="module">
@@ -115,7 +116,7 @@ defineLtConnectionStatus()
       defineLtConnectionStatus()
     </script>
 
-    <lt-connection-status class="lt-connection-status" data-ignore-morph></lt-connection-status>
+    <lt-connection-status class="lt-connection-status" role="status" aria-live="polite" data-ignore-morph></lt-connection-status>
 
     <script type="module">
       import { reportFailure, reportSuccess } from
@@ -204,7 +205,9 @@ The component also listens to the browser's `offline` and `online`, so a network
 ```
 ## Accessibility
 
-The bar is `role="status"` with `aria-live="polite"`, not `alert`. The message is important, but should not interrupt in the middle of a word. It stays until the connection is back, so someone who reads slowly has time to read it.
+<ScreenReaderContract component="connection-status" />
+
+The component itself is `role="status"` with `aria-live="polite"`, not `alert`, from the moment it is connected, so the region exists before the bar and its text arrive; a role or politeness you write stays. The message is important, but should not interrupt in the middle of a word. It stays until the connection is back, so someone who reads slowly has time to read it.
 
 While a modal dialog is open, the bar is inert and sits under the backdrop, like everything else outside the dialog. If the connection drops then, the user learns about it only when the dialog closes.
 
