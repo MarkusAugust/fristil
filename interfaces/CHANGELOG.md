@@ -24,6 +24,8 @@ including 0.36.0 were written in Norwegian, and list them under "Brytende".
 
 ## Unreleased
 
+## 0.38.0 (2026-10-31)
+
 ### Breaking
 
 - **One rule, `without-name`, replaces `icon-without-name`,
