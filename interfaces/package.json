@@ -367,6 +367,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test:browser": "vitest --config vitest.config.ts --run",
+    "test:model": "vitest --config vitest.model.config.ts --run",
     "check:exports": "bun scripts/check-exports.ts",
     "check:server": "bun scripts/check-server-import.ts",
     "check:types": "bun scripts/check-types.ts",

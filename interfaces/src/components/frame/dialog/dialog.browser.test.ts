@@ -1538,6 +1538,39 @@ describe("lt-dialog wires from bare structure", () => {
     observer.disconnect()
     wrapper.remove()
   })
+
+  it("names the dialog after its heading when an update removes aria-label", async () => {
+    // The component did not watch `aria-label`, and the dialog had no name
+    // until something else changed.
+    const { d, title } = await mountBare(
+      BARE.replace("<lt-dialog>", "<lt-dialog open>").replace(
+        "<dialog>",
+        '<dialog class="lt-dialog" aria-label="Confirm" open>',
+      ),
+    )
+
+    d.removeAttribute("aria-label")
+    await waitForPaint()
+
+    expect(title.id).not.toBe("")
+    expect(d.getAttribute("aria-labelledby")).toBe(title.id)
+  })
+
+  it("reports no close for a dialog that never opened", async () => {
+    // The component closes a `<dialog open>` the host does not hold open,
+    // and that close came out as `dialog-toggle` with `open: false`.
+    const reported: boolean[] = []
+    const listener = new AbortController()
+    document.addEventListener(
+      "dialog-toggle",
+      (e) => reported.push((e as CustomEvent<{ open: boolean }>).detail.open),
+      { signal: listener.signal },
+    )
+    await mountBare(BARE.replace("<dialog>", '<dialog class="lt-dialog" open>'))
+    listener.abort()
+
+    expect(reported).toEqual([])
+  })
 })
 
 describe("lt-dialog when React writes the property", () => {

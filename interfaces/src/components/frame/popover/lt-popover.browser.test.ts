@@ -9,6 +9,7 @@ import {
   waitForPaint,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
+import { datastarPatch } from "../../../testing/update"
 import { defineLtPopover, type LtPopover } from "./lt-popover"
 import { popover, popoverPlacements } from "./popover"
 
@@ -852,5 +853,71 @@ describe("lt-popover inside a modal dialog", () => {
 
     expect(press.defaultPrevented).toBe(false)
     expect(document.activeElement, "focus was moved to the button").toBe(other)
+  })
+})
+
+describe("lt-popover when the app and the server both open and close it", () => {
+  beforeAll(() => {
+    defineLtPopover()
+  })
+
+  /** The recipe on the component page. */
+  const RECIPE = `<lt-popover id="menu" placement="bottom-end">
+    <button class="lt-button" type="button">Actions</button>
+    <ul class="lt-popover" id="actions">
+      <li><button class="lt-button" data-variant="ghost" type="button">Archive the case</button></li>
+    </ul>
+  </lt-popover>`
+  const host = () => document.getElementById("menu") as LtPopover
+  const panel = () => document.getElementById("actions") as HTMLElement
+  const item = () => panel().querySelector("button") as HTMLElement
+
+  it("remembers show() on a popover the server opened", async () => {
+    /*
+     * `show()` returned before the setter when the panel was open already,
+     * so the app's message was not noted, and the next patch without `open`
+     * closed the panel.
+     */
+    mount(RECIPE.replace("<lt-popover", "<lt-popover open"))
+    await paint()
+    host().show()
+
+    datastarPatch(RECIPE)
+    await paint()
+
+    expect(panel().matches(":popover-open")).toBe(true)
+  })
+
+  it("gives focus in the panel back to the button when hide() closes it", async () => {
+    // Escape alone did it, and otherwise the focus was lost to the page.
+    mount(RECIPE)
+    await paint()
+    host().show()
+    await paint()
+    item().focus()
+
+    host().hide()
+    await paint()
+
+    expect(document.activeElement).toBe(host().querySelector("button"))
+  })
+
+  it("keeps the panel open and focus in it when the server sends the same recipe again", async () => {
+    /*
+     * The morph takes `open` for a moment, and the component puts it back
+     * once the patch has landed. Closing the panel while it waited took the
+     * focus from the button in it to the trigger on every patch.
+     */
+    mount(RECIPE)
+    await paint()
+    host().show()
+    await paint()
+    item().focus()
+
+    datastarPatch(RECIPE)
+    await paint()
+
+    expect(panel().matches(":popover-open")).toBe(true)
+    expect(document.activeElement).toBe(item())
   })
 })

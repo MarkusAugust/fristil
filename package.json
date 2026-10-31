@@ -12,6 +12,7 @@
     "typecheck": "tsc -b && bun --filter @lo-tek/interfaces typecheck:scripts && bun --filter ./vscode typecheck",
     "typecheck:tests": "bun --filter @lo-tek/interfaces typecheck:tests",
     "test": "bun --filter @lo-tek/interfaces core && bun --filter @lo-tek/interfaces test:browser && bun --filter @lo-tek/interfaces check:without-javascript && bun --filter @lo-tek/interfaces check:tailwind",
+    "test:model": "bun --filter @lo-tek/interfaces core && bun --filter @lo-tek/interfaces test:model",
     "test:docs": "bun --filter @lo-tek/documentation test:docs",
     "lint": "biome check .",
     "prepare-version": "bun interfaces/scripts/prepare-version.ts",

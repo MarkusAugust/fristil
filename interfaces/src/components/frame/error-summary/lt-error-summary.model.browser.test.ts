@@ -30,6 +30,13 @@ import {
   accessibilityCore,
 } from "../../../testing/accessibility"
 import { attr } from "../../../testing/markup"
+import {
+  exploreSequences,
+  exploreStates,
+  type Model,
+  settle,
+  unchecked,
+} from "../../../testing/model"
 import { htmlBlocks, tabItems } from "../../../testing/recipes"
 import { renderedMarkup } from "../../../testing/rendered"
 import {
@@ -169,18 +176,6 @@ function apply(step: Step): void {
   if ("focus" in step) document.getElementById(step.focus)?.focus()
   else replace(step.way, "errors", VERSIONS[step.send].html)
 }
-
-/**
- * The observers and the component's microtasks, and the task after them.
- * Nothing the invariants read waits for a frame: focus moves in a
- * microtask, and the facts are read with `getComputedStyle`, which lays out.
- */
-const settle = () =>
-  new Promise<void>((done) => {
-    const channel = new MessageChannel()
-    channel.port1.onmessage = () => done()
-    channel.port2.postMessage(null)
-  })
 
 const label = (step: Step) =>
   "focus" in step ? "focus the email field" : `${step.send} by ${step.way}`
@@ -372,50 +367,19 @@ function violations(
   return problems
 }
 
-/**
- * Which node each element is: a number given the first time a replay sees
- * it. A morph that keeps a node and one that replaces it can leave the same
- * markup, so the key holds the numbers too.
- */
-let serials = new WeakMap<Element, number>()
-let nextSerial = 0
-function identities(): string {
-  return [...document.querySelectorAll("#lt-test-surface *")]
-    .map((e) => {
-      let n = serials.get(e)
-      if (n === undefined) {
-        n = nextSerial++
-        serials.set(e, n)
-      }
-      return n
-    })
-    .join(",")
-}
-
-/**
- * A state, by what decides what comes next: the page as the browser
- * rendered it, which node each element is, and the version the server sent
- * last. Two paths that lead to the same state are continued once. The
- * component's memory that is in neither (the name it wrote last, whether it
- * has moved focus) is not in the key; the search over sequences below
- * covers it.
- */
-const key = (shown: string) => `${shown}\n${identities()}\n${renderedMarkup()}`
-
-type State = { path: Step[]; shown: string }
-
-/** The page after `path`, from the recipe: the component's memory cannot be copied, only replayed. */
-async function replay(path: Step[]): Promise<void> {
-  serials = new WeakMap()
-  nextSerial = 0
-  mount(RECIPE)
-  await settle()
-  identities()
-  for (const step of path) {
-    apply(step)
-    await settle()
-    identities()
-  }
+/** The search's view of this component: the version shown is the context. */
+const model: Model<Step, Snapshot, string> = {
+  recipe: RECIPE,
+  steps: STEPS,
+  apply,
+  label,
+  snapshot,
+  initial: "hidden",
+  next: (shown, step) => ("send" in step ? step.send : shown),
+  contextKey: (shown) => shown,
+  violations: (before, after, step, was, now) =>
+    violations(before, after, step, was, now),
+  seen,
 }
 
 describe("lt-error-summary, every sequence of updates", () => {
@@ -448,43 +412,11 @@ describe("lt-error-summary, every sequence of updates", () => {
    * sequences below adds what this one merges: the component's memory.
    */
   it("keeps one named alert, the server's wiring and the user's focus, in every state to depth 3", async () => {
-    const DEPTH = 3
-    const found: string[] = []
-    await replay([])
-    const known = new Set([key("hidden")])
-    let frontier: State[] = [{ path: [], shown: "hidden" }]
-    let transitions = 0
-    for (let depth = 0; depth < DEPTH && frontier.length > 0; depth++) {
-      const next: State[] = []
-      for (const state of frontier)
-        for (const step of STEPS) {
-          await replay(state.path)
-          const before = snapshot()
-          apply(step)
-          await settle()
-          transitions++
-          const shown = "send" in step ? step.send : state.shown
-          const after = snapshot()
-          const path = [...state.path, step]
-          for (const p of violations(before, after, step, state.shown, shown))
-            found.push(`${path.map(label).join(" → ")}: ${p}`)
-          const k = key(shown)
-          if (!known.has(k)) {
-            known.add(k)
-            next.push({ path, shown })
-          }
-        }
-      frontier = next
-    }
-    expect(found.slice(0, 10)).toEqual([])
-    // Every state found was continued with every step, and there were some.
-    expect(transitions).toBe((known.size - frontier.length) * STEPS.length)
-    expect(known.size).toBeGreaterThan(STEPS.length)
-    for (const [name, count] of Object.entries(seen))
-      expect(
-        count,
-        `the invariant "${name}" never had anything to check`,
-      ).toBeGreaterThan(0)
+    const run = await exploreStates(model, 3)
+    expect(run.found.slice(0, 10)).toEqual([])
+    // The search found more states than one step gives.
+    expect(run.states).toBeGreaterThan(STEPS.length)
+    expect(unchecked(seen)).toEqual([])
   }, 600_000)
 
   /*
@@ -497,45 +429,11 @@ describe("lt-error-summary, every sequence of updates", () => {
   it.runIf(server.browser === "chromium")(
     "keeps the same invariants on every sequence of morphs to depth 3",
     async () => {
-      const DEPTH = 3
       const steps = STEPS.filter((s) => !("way" in s) || s.way !== "outerHTML")
-      let ran = 0
-      const found: string[] = []
-      const sequences = function* (depth: number): Generator<Step[]> {
-        if (depth === 0) {
-          yield []
-          return
-        }
-        for (const head of sequences(depth - 1))
-          for (const step of steps) yield [...head, step]
-      }
-      for (const sequence of sequences(DEPTH)) {
-        await replay([])
-        let shown = "hidden"
-        for (const [i, step] of sequence.entries()) {
-          const before = snapshot()
-          apply(step)
-          await settle()
-          const previous = shown
-          if ("send" in step) shown = step.send
-          const after = snapshot()
-          for (const p of violations(before, after, step, previous, shown))
-            found.push(
-              `${sequence
-                .slice(0, i + 1)
-                .map(label)
-                .join(" → ")}: ${p}`,
-            )
-        }
-        ran++
-      }
-      expect(found.slice(0, 10)).toEqual([])
-      expect(ran).toBe(steps.length ** DEPTH)
-      for (const [name, count] of Object.entries(seen))
-        expect(
-          count,
-          `the invariant "${name}" never had anything to check`,
-        ).toBeGreaterThan(0)
+      const run = await exploreSequences(model, 3, steps)
+      expect(run.found.slice(0, 10)).toEqual([])
+      expect(run.ran).toBe(steps.length ** 3)
+      expect(unchecked(seen)).toEqual([])
     },
     600_000,
   )
