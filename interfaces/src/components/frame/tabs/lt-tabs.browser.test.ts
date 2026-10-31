@@ -9,6 +9,7 @@ import {
 } from "../../../testing/a11y"
 import { goTo, setAddress } from "../../../testing/address"
 import { attr } from "../../../testing/markup"
+import { replace } from "../../../testing/update"
 import { defineLtTabs, type LtTabs } from "./lt-tabs"
 import { tabs } from "./tabs"
 
@@ -1457,5 +1458,151 @@ describe("lt-tabs after a morph and with arrow keys", () => {
     await waitForPaint()
 
     expect(document.activeElement).toBe(allTabs()[1])
+  })
+})
+
+describe("lt-tabs through a morph from the server", () => {
+  beforeAll(() => {
+    defineLtTabs()
+  })
+
+  const link = (key: string, extra = "") =>
+    `<li><a href="#${key}"${extra}>${LABELS[KEYS.indexOf(key)] ?? "Summary"}</a></li>`
+  const panel = (key: string, extra = "") =>
+    `<section class="lt-tabs__panel" id="${key}"${extra}><h2>${LABELS[KEYS.indexOf(key)] ?? "Summary"}</h2></section>`
+  /** The recipe on the component page, with `links` and `panels` as given. */
+  const host = (links: string[], panels: string[], extra = "") =>
+    `<lt-tabs id="case-tabs"${extra}><ul class="lt-tabs__list" aria-label="Parts of the case">${links.join("")}</ul>${panels.join("")}</lt-tabs>`
+  const RECIPE = host(
+    [link("application"), link("attachments")],
+    [panel("application"), panel("attachments")],
+  )
+  /** The recipe with a tab first in the row: the same index is another tab. */
+  const INSERTED = host(
+    [link("summary"), link("application"), link("attachments")],
+    [panel("summary"), panel("application"), panel("attachments")],
+  )
+  const ways = ["Datastar", "idiomorph"] as const
+
+  it("hears the server's hidden when it is the value the component wrote", async () => {
+    /*
+     * The server selects the second tab with `aria-selected`, and the
+     * component hides the first panel. Then the server selects it by hiding
+     * the first panel alone, as the component had: the morph leaves a value
+     * that is already right, the component took it for its own echo, and the
+     * tab list went to the first tab, not where the same markup mounted fresh
+     * goes.
+     */
+    mount(RECIPE)
+    await paint()
+    replace(
+      "Datastar",
+      "case-tabs",
+      host(
+        [link("application"), link("attachments", ' aria-selected="true"')],
+        [panel("application"), panel("attachments")],
+      ),
+    )
+    await waitForPaint()
+    replace(
+      "Datastar",
+      "case-tabs",
+      host(
+        [link("application"), link("attachments")],
+        [panel("application", ' hidden="until-found"'), panel("attachments")],
+      ),
+    )
+    await waitForPaint()
+
+    expect(selected()).toEqual([false, true])
+  })
+
+  for (const way of ways) {
+    it(`keeps the user's tab when the server inserts a tab before it, by ${way}`, async () => {
+      /*
+       * The morphers match links without ids by position, and the link the
+       * user pressed became the inserted tab: only the panel it pointed to
+       * tells which tab was the user's. The server marks the new tab, so the
+       * address, which would have said it too, loses.
+       */
+      mount(RECIPE)
+      await paint()
+      allTabs()[1].click()
+      await waitForPaint()
+
+      replace(
+        way,
+        "case-tabs",
+        INSERTED.replace(
+          'href="#summary"',
+          'href="#summary" aria-selected="true"',
+        ),
+      )
+      await waitForPaint()
+
+      expect(selected()).toEqual([false, false, true])
+      expect(location.hash).toBe("#attachments")
+    })
+
+    it(`keeps the user's tab when a morph drops its link and keeps others, by ${way}`, async () => {
+      /*
+       * The row shrinks from the front, and the morph removes the last link,
+       * the user's, and keeps the others: only the panel it pointed to tells
+       * which tab was the user's. The server marks another tab, so the
+       * address loses, as above.
+       */
+      mount(INSERTED)
+      await paint()
+      allTabs()[2].click()
+      await waitForPaint()
+
+      replace(
+        way,
+        "case-tabs",
+        RECIPE.replace(
+          'href="#application"',
+          'href="#application" aria-selected="true"',
+        ),
+      )
+      await waitForPaint()
+
+      expect(selected()).toEqual([false, true])
+    })
+  }
+
+  it("hears the server move the selection with hidden alone, after a click on one of three tabs under server-controlled", async () => {
+    /*
+     * A click on the second leaves the third tab as the server said, so the
+     * component marks nothing there. The missing mark was read as the
+     * server's touch, the click was released at once, and its own
+     * `aria-selected` became the server's word, so the answer through
+     * `hidden`, as `data-attr:hidden` in Datastar writes it, was not heard.
+     */
+    const until = ' hidden="until-found"'
+    mount(
+      host(
+        [
+          link("application", ' aria-selected="true"'),
+          link("attachments", ' aria-selected="false"'),
+          link("messages", ' aria-selected="false"'),
+        ],
+        [
+          panel("application"),
+          panel("attachments", until),
+          panel("messages", until),
+        ],
+        " server-controlled",
+      ),
+    )
+    await paint()
+    allTabs()[1].click()
+    await waitForPaint()
+
+    const [first, ...rest] = allPanels()
+    first.removeAttribute("hidden")
+    for (const p of rest) p.setAttribute("hidden", "until-found")
+    await waitForPaint()
+
+    expect(selected()).toEqual([true, false, false])
   })
 })

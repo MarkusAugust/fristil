@@ -270,11 +270,30 @@ export class LtSessionTimeout extends HostElement {
      * dialog, without the component having to hold on to a particular node.
      */
     this.addEventListener("close", this.handleClose, true)
-    this.openObserver = new MutationObserver(() => this.repairOpen())
+    this.openObserver = new MutationObserver(() => {
+      this.repairOpen()
+      /*
+       * A morph of the open warning takes the role and the name the component
+       * wrote, since the renderer did not send them, and the screen reader had
+       * a modal dialog without a name until the warning closed. They are
+       * written again while it shows. Such a morph also removes `open`, which
+       * is enough to get here; the wiring's own attributes are watched for a
+       * morph that leaves `open` alone.
+       */
+      const dialog = this.dialog
+      if (dialog?.matches(":modal")) this.wire(dialog)
+    })
     this.openObserver.observe(this, {
       subtree: true,
       attributes: true,
-      attributeFilter: ["open"],
+      attributeFilter: [
+        "open",
+        "role",
+        "class",
+        "id",
+        "aria-labelledby",
+        "aria-label",
+      ],
     })
     this.ticker = window.setInterval(() => this.tick(), 1000)
     this.validate()
@@ -509,7 +528,16 @@ export class LtSessionTimeout extends HostElement {
     // dialog has been replaced in the meantime, it never comes, and then the
     // memory is released.
     const current = this.dialog
+    /*
+     * The renderer replaced the dialog while the warning showed, as
+     * `innerHTML` does: still open when it went, so replaced, not closed.
+     * Decided in the tick that opens the new one, below; kept in a field, it
+     * outlived a `reset()` in between, and the next warning, minutes later,
+     * sent no `session-warn`.
+     */
+    let continuing = false
     if (this.shownDialog && this.shownDialog !== current) {
+      continuing = this.shownDialog.open
       this.shownDialog = undefined
     }
     if (this.shownDialog && !this.shownDialog.open) return
@@ -532,7 +560,7 @@ export class LtSessionTimeout extends HostElement {
     if (elapsed < this.warnAt && !dialog?.open) return
 
     if (!dialog?.open) {
-      this.openDialog(left)
+      this.openDialog(left, continuing)
       return
     }
     /*
@@ -577,7 +605,7 @@ export class LtSessionTimeout extends HostElement {
     setText(live, sentence.replace(/\s+/g, " ").trim())
   }
 
-  private openDialog(left: number): void {
+  private openDialog(left: number, continuing = false): void {
     const dialog = this.dialog
     if (!dialog) {
       // By now the page has long since settled, so an empty element is not a
@@ -606,7 +634,13 @@ export class LtSessionTimeout extends HostElement {
     // field is in the page, as `<lt-error-summary>` also warns about. The field
     // can be on either side of the shadow boundary from the component, so only
     // the descent finds it.
-    this.previousFocus = deepActiveElement()
+    /*
+     * A warning that was showing when the renderer replaced the dialog, as
+     * `innerHTML` does, never closed: the user is still being warned. Focus
+     * goes back to where it was before that warning, not to `<body>`, where
+     * it is now, and `session-warn` has been sent already.
+     */
+    if (!continuing) this.previousFocus = deepActiveElement()
     /*
      * The text must be in place before the dialog opens, since `alertdialog` is
      * announced as it appears. The number in the paragraph is `aria-hidden`, so
@@ -623,7 +657,7 @@ export class LtSessionTimeout extends HostElement {
     dialog.returnValue = ""
     dialog.showModal()
     this.shownDialog = dialog
-    this.emit("session-warn")
+    if (!continuing) this.emit("session-warn")
   }
 
   private closeDialog(reason: string): void {

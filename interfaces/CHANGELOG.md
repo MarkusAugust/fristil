@@ -71,6 +71,55 @@ including 0.36.0 were written in Norwegian, and list them under "Brytende".
 
 ### Fixed
 
+- **`<lt-field>` keeps an `aria-invalid` the server writes, and `<lt-tabs>`
+  an `aria-selected`, when the value is the one the component had
+  written.** The components told the server's word from their own by the
+  value, and a morph leaves an attribute whose value is already right, so
+  the server's `aria-invalid="true"` was taken for the component's own and
+  removed. They now mark what they write that differs from the server, in
+  `data-lt-written`, which a morph from the server removes; markup that is
+  already right, as React renders it, gets no mark. Found by the new model
+  tests, which try every order of server updates and user actions.
+- **`<lt-tabs>` keeps the user's tab when the server inserts a tab before
+  it.** Datastar and idiomorph match links without ids by position, and the
+  link the user pressed became the inserted tab. The component now finds
+  the user's tab by the panel it points to when a morph has moved or
+  dropped the link, and still forgets the selection when the links are
+  replaced.
+- **`<lt-popover>` puts focus back on the button whatever closes the panel
+  with focus in it**: `hide()`, `toggle()`, a click on the button in Safari,
+  which gives a clicked button no focus, and the server taking `open`.
+  Escape alone did it before, and otherwise the focus was lost to the page.
+  A patch that only takes `open` for a moment, while the component puts it
+  back, no longer closes and reopens the panel, which took the focus from a
+  button in it.
+- **`show()` on a `<lt-popover>` the server opened is remembered**, as
+  `open = true` is: the next patch without `open` closed the panel, since
+  `show()` returned before the setter that remembers it. `hide()` the same.
+- **`<lt-suggestion>` filters an open list an update changed under
+  `server-controlled` too.** The attribute is about whether the list is open
+  and what is highlighted, but the repair returned before the filter, so the
+  list showed every option the server sent whatever the user had typed, and
+  an emptied list kept its empty message hidden.
+- **`<lt-suggestion>` announces a count only for a list that opens.**
+  Focusing an empty field over a list with nothing to show announced "No
+  matches" for a list that stayed closed. An update that removed
+  `prefiltered` counted the options before the morph had replaced them, and
+  an update that also locked the field announced the count for a list it
+  closed.
+- **`<lt-dialog>` names the dialog after its heading again when an update
+  removes `aria-label`.** The component did not watch `aria-label`, and the
+  dialog was left without a name until something else changed.
+- **`<lt-dialog>` no longer reports a close for a dialog that never
+  opened.** `dialog-toggle` with `open: false` came when the component
+  closed a `<dialog open>` it had never shown.
+- **`<lt-session-timeout>` keeps the warning's role and name through an
+  update.** A morph of the open warning removed `role="alertdialog"` and
+  `aria-labelledby`, which the component had written, and a screen reader
+  had a modal dialog without a name until the warning closed.
+- **`<lt-session-timeout>` goes on with a warning the renderer replaced
+  while it showed**, as `innerHTML` does: focus goes back to where the user
+  was, not to the page, and `session-warn` is not sent a second time.
 - **`<lt-error-summary>` has a name when it takes focus.** The box moves
   focus to itself when a submission fails, and had no name, so a screen
   reader said only "alert". The template writes the heading's `id` and the

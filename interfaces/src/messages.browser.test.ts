@@ -56,6 +56,30 @@ describe("the component reports markup that does not hold together", () => {
     return vi.spyOn(console, "warn").mockImplementation(() => {})
   }
 
+  it("a mark the component writes, copied into the template", async () => {
+    const warn = listen()
+
+    mount(`
+      <lt-field>
+        <label class="lt-label" for="copied">Email</label>
+        <input class="lt-input" id="copied" aria-invalid="true" data-lt-written="aria-invalid" />
+      </lt-field>
+      <lt-tabs>
+        <ul class="lt-tabs__list" aria-label="Parts">
+          <li><a href="#copied-a" aria-selected="true" data-lt-written="aria-selected">A</a></li>
+        </ul>
+        <section class="lt-tabs__panel" id="copied-a">A</section>
+      </lt-tabs>
+    `)
+    await waitUntilSettled()
+
+    const said = messages(warn).filter((m) => m.includes("data-lt-written"))
+    expect(said.map((m) => m.split(":")[0]).sort()).toEqual([
+      "lt-field",
+      "lt-tabs",
+    ])
+  })
+
   it("the field without a control", async () => {
     const warn = listen()
 

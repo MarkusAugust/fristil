@@ -8,6 +8,7 @@ import {
   waitForPaint,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
+import { datastarPatch, replace } from "../../../testing/update"
 import { defineLtSuggestion, type LtSuggestion } from "./lt-suggestion"
 import { suggestion } from "./suggestion"
 
@@ -1752,5 +1753,97 @@ describe("lt-suggestion chooses correctly", () => {
     expect(
       document.querySelector("label")?.classList.contains("lt-label"),
     ).toBe(true)
+  })
+})
+
+describe("lt-suggestion through a morph from the server", () => {
+  beforeAll(() => {
+    defineLtSuggestion()
+  })
+
+  /** The recipe on the component page, with `options` in the list. */
+  const recipe = (
+    options = "<li>Bergen</li><li>Malmö</li>",
+    host = "",
+    input = "",
+  ) => `<lt-suggestion id="airport-search"${host}>
+    <label class="lt-label" for="airport">Airport</label>
+    <input class="lt-input" id="airport" name="airport" type="text"${input}>
+    <ul class="lt-suggestion__list">${options}</ul>
+    <p class="lt-suggestion__empty">No matches</p>
+    <span class="lt-sr-only" role="status"></span>
+  </lt-suggestion>`
+  const input = () => document.getElementById("airport") as HTMLInputElement
+  const list = () =>
+    document.querySelector(".lt-suggestion__list") as HTMLElement
+  const status = () => document.querySelector("[role='status']") as HTMLElement
+  const shown = () =>
+    [...list().querySelectorAll("li")]
+      .filter((o) => !o.hidden)
+      .map((o) => o.textContent)
+
+  it("filters an open list an update changed under server-controlled", async () => {
+    /*
+     * `server-controlled` is about whether the list is open and what is
+     * highlighted, not what matches. The repair returned before the filter,
+     * so the list showed every option the server sent.
+     */
+    const controlled = recipe(
+      '<li id="airport-option-bergen">Bergen</li><li id="airport-option-malmo" aria-selected="true">Malmö</li>',
+      " server-controlled",
+      ' role="combobox" aria-expanded="true" aria-controls="airport-list" aria-activedescendant="airport-option-malmo"',
+    ).replace(
+      '<ul class="lt-suggestion__list">',
+      '<ul class="lt-suggestion__list" id="airport-list">',
+    )
+    mount(controlled)
+    const field = await paint()
+    input().focus()
+    typeInto(field, "b")
+    await paint()
+
+    datastarPatch(controlled)
+    await paint()
+
+    expect(shown()).toEqual(["Bergen"])
+  })
+
+  it("announces nothing on focus over a list with nothing to show", async () => {
+    // The filter came before `setOpen`, which keeps an empty list closed,
+    // and announced "No matches" for it.
+    mount(recipe())
+    await paint()
+    datastarPatch(recipe(""))
+    await paint()
+
+    input().focus()
+    await paint()
+
+    expect(list().hidden).toBe(true)
+    expect(status().textContent).toBe("")
+  })
+
+  it("announces no count for a list an update closes by locking the field", async () => {
+    /*
+     * The update removes `prefiltered` and makes the field readonly. The
+     * count was taken before the morph had replaced the options, and for a
+     * list the same update closed.
+     */
+    mount(recipe())
+    await paint()
+    const prefiltered = recipe("<li>Malmö</li>", " prefiltered").replace(
+      '<p class="lt-suggestion__empty">',
+      '<p class="lt-suggestion__empty" hidden>',
+    )
+    replace("outerHTML", "airport-search", prefiltered)
+    await paint()
+    input().focus()
+    await paint()
+
+    datastarPatch(recipe(undefined, "", " readonly"))
+    await paint()
+
+    expect(list().hidden).toBe(true)
+    expect(status().textContent).toBe("")
   })
 })

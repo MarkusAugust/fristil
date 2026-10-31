@@ -272,11 +272,23 @@ export class LtSuggestion extends HostElement {
      * callback also fires during the upgrade, before the children exist.
      */
     if (name === "prefiltered" && this.observer) {
-      // The count present when the attribute is set is the starting point,
-      // and nothing to announce. Without this the first change afterwards
-      // was taken as the starting point, and was lost.
-      this.announcedCount = this.prefiltered ? this.visible.length : undefined
-      this.filter()
+      /*
+       * After the whole update, as the other repairs: a morph sets the
+       * attribute before it has replaced the options, and the count was
+       * the old list's. And through `repair()`, which filters only a list
+       * that stays open: the filter announces, and a closed list said "One
+       * match" to nobody's search.
+       */
+      queueMicrotask(() => {
+        if (!this.observer) return
+        // The count present when the attribute is set is the starting point,
+        // and nothing to announce. Without this the first change afterwards
+        // was taken as the starting point, and was lost.
+        this.announcedCount = this.prefiltered ? this.visible.length : undefined
+        // The whole repair, not the filter alone: the same update can lock
+        // the field, and `repair()` closes the list before it filters.
+        this.sync()
+      })
     }
   }
 
@@ -595,6 +607,12 @@ export class LtSuggestion extends HostElement {
       this.writeCode(valueField, this.chosen.value)
     }
 
+    // A field that became `readonly` or `disabled` while the list was open
+    // closes it. Otherwise the repair kept it open, and Escape does nothing in
+    // a locked field. First, so nothing below writes for a list that closes.
+    if (!isServerControlled(this) && this.locked && this.wantOpen)
+      this.setOpen(false)
+
     // An emptied status element gets its text back while the list is open,
     // where the count is what the user is working on. Not otherwise: every
     // patch of the region would announce the old count again. And not when
@@ -611,12 +629,17 @@ export class LtSuggestion extends HostElement {
       setText(status, this.announcedText)
     }
 
-    if (isServerControlled(this)) return
-
-    // A field that became `readonly` or `disabled` while the list was open
-    // closes it. Otherwise the repair kept it open, and Escape does nothing in
-    // a locked field.
-    if (this.locked && this.wantOpen) this.setOpen(false)
+    if (isServerControlled(this)) {
+      /*
+       * The server decides whether the list is open and what is
+       * highlighted, not what matches: an update that changes an open list
+       * is filtered here too. Before, the list showed every option the
+       * server sent, whatever the user had typed, and an emptied list kept
+       * the empty message hidden.
+       */
+      if (this.listElement?.hidden === false) this.filter()
+      return
+    }
 
     if (this.wantOpen !== undefined) {
       /*
@@ -1271,8 +1294,17 @@ export class LtSuggestion extends HostElement {
 
   private handleFocus = (): void => {
     if (this.locked) return
-    this.filter()
+    this.openFiltered()
+  }
+
+  /**
+   * Opens the list, and filters and announces only when it opens. Filtering
+   * first announced "No matches" for a list that `setOpen` then kept closed,
+   * since there was nothing to show.
+   */
+  private openFiltered(): void {
     this.setOpen(true)
+    if (this.wantOpen) this.filter()
   }
 
   private handleFocusOut = (event: FocusEvent): void => {
@@ -1292,10 +1324,7 @@ export class LtSuggestion extends HostElement {
 
     if (event.key === "ArrowDown") {
       event.preventDefault()
-      if (!open) {
-        this.filter()
-        this.setOpen(true)
-      }
+      if (!open) this.openFiltered()
       this.markActive(this.activeIndex + 1)
     } else if (event.key === "ArrowUp") {
       event.preventDefault()
@@ -1303,10 +1332,7 @@ export class LtSuggestion extends HostElement {
       // `aria-activedescendant` pointed to an option in a list the field at the
       // same time reported as closed, and the screen reader announced something
       // that was not on screen.
-      if (!open) {
-        this.filter()
-        this.setOpen(true)
-      }
+      if (!open) this.openFiltered()
       // If nothing is highlighted, arrow up goes to the last one.
       // `activeIndex - 1` would have given the second to last, since nothing
       // highlighted is -1.

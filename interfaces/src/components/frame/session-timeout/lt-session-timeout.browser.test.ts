@@ -16,6 +16,7 @@ import {
   waitForPaint,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
+import { morph } from "../../../testing/update"
 import {
   defineLtSessionTimeout,
   extendSession,
@@ -597,6 +598,64 @@ describe("lt-session-timeout handles Escape, wrong numbers and an expiry", () =>
 
     expect(dialog().getAttribute("aria-label")).toBe("Økten går ut")
     expect(dialog().hasAttribute("aria-labelledby")).toBe(false)
+  })
+
+  it("writes the role and the name again when a morph of the open warning takes them", async () => {
+    // The renderer did not send them, so the morph removed them, and a
+    // screen reader had a modal dialog without a name until it closed.
+    const bare = `
+      <lt-session-timeout id="session" warn-at="3" expires-at="13">
+        <dialog>
+          <h2>Du blir snart logget ut</h2>
+          <p class="lt-session-timeout__text">Vi logger deg ut om
+            <span class="lt-session-timeout__count" aria-hidden="true"></span>.</p>
+          <span class="lt-sr-only" role="status"></span>
+          <form method="dialog"><button value="extend">Fortsett</button></form>
+        </dialog>
+      </lt-session-timeout>`
+    await mountShort(bare)
+    await advance(4)
+    expect(dialog().getAttribute("role")).toBe("alertdialog")
+
+    morph(host(), bare)
+    await waitForPaint()
+
+    expect(dialog().getAttribute("role")).toBe("alertdialog")
+    const title = document.getElementById(
+      dialog().getAttribute("aria-labelledby") ?? "",
+    )
+    expect(title?.textContent).toBe("Du blir snart logget ut")
+  })
+
+  it("goes on with a warning the renderer replaced while it showed", async () => {
+    /*
+     * `innerHTML` on the host replaces the open dialog, and the next tick
+     * shows the new one: the same warning, not a new one. It sent
+     * `session-warn` again, and on close focus went to what had it when the
+     * new dialog opened, not to the field the user was in.
+     */
+    mount(`<div lang="nb"><input id="field">${warning()}</div>`)
+    await customElements.whenDefined("lt-session-timeout")
+    const field = document.getElementById("field") as HTMLInputElement
+    const events = listen(host(), ["session-warn"])
+    field.focus()
+    await advance(4)
+    expect(dialog().open).toBe(true)
+
+    const t = document.createElement("template")
+    t.innerHTML = warning()
+    host().innerHTML =
+      t.content.querySelector("lt-session-timeout")?.innerHTML ?? ""
+    await advance(1)
+    expect(dialog().open).toBe(true)
+    const closed = new Promise((r) =>
+      dialog().addEventListener("close", r, { once: true }),
+    )
+    await advance(9)
+    await closed
+
+    expect(events).toEqual(["session-warn"])
+    expect(document.activeElement).toBe(field)
   })
 })
 

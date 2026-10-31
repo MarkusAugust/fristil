@@ -4,9 +4,13 @@ import {
   addClass,
   defineElement,
   HostElement,
+  markWritten,
   setAttr,
   setFlag,
+  stillMarked,
   uniqueId,
+  WRITTEN,
+  warnAboutCopiedMark,
   warnAboutMarkup,
 } from "../../host-element.js"
 import { computeFieldAttributes } from "./field-core.js"
@@ -47,6 +51,9 @@ function readMarker(value: string | null | undefined): Marker | undefined {
  * back.
  */
 const DERIVED_ATTRIBUTES = [
+  // A morph from the server removes the mark, and the component puts it
+  // back: the same markup must give the same page.
+  WRITTEN,
   "class",
   "for",
   "id",
@@ -325,35 +332,42 @@ export class LtField extends HostElement {
     const known = this.labelMemory.get(label)
     if (!known) return now
 
+    const spoke = (name: string, changed: boolean) =>
+      changed || !stillMarked(label, name)
     return {
-      required:
-        now.required !== known.written.required
-          ? now.required
-          : known.server.required,
-      optional:
-        now.optional !== known.written.optional
-          ? now.optional
-          : known.server.optional,
+      required: spoke("data-required", now.required !== known.written.required)
+        ? now.required
+        : known.server.required,
+      optional: spoke("data-optional", now.optional !== known.written.optional)
+        ? now.optional
+        : known.server.optional,
     }
   }
 
   private serverWord(control: Element, now: ControlWord): ControlWord {
     const known = this.memory.get(control)
-    if (!known) return now
+    if (!known) {
+      warnAboutCopiedMark(this, control)
+      return now
+    }
 
+    // The server's when the value is another, or when a morph from the
+    // server has been there since the component wrote it (`WRITTEN`).
+    const spoke = (name: string, changed: boolean) =>
+      changed || !stillMarked(control, name)
     return {
-      invalid:
-        now.invalid !== known.written.invalid
-          ? now.invalid
-          : known.server.invalid,
-      describedBy:
-        now.describedBy !== known.written.describedBy
-          ? now.describedBy
-          : known.server.describedBy,
-      disabled:
-        now.disabled !== known.written.disabled
-          ? now.disabled
-          : known.server.disabled,
+      invalid: spoke("aria-invalid", now.invalid !== known.written.invalid)
+        ? now.invalid
+        : known.server.invalid,
+      describedBy: spoke(
+        "aria-describedby",
+        now.describedBy !== known.written.describedBy,
+      )
+        ? now.describedBy
+        : known.server.describedBy,
+      disabled: spoke("disabled", now.disabled !== known.written.disabled)
+        ? now.disabled
+        : known.server.disabled,
     }
   }
 
@@ -683,11 +697,22 @@ export class LtField extends HostElement {
       }
       setAttr(label, "data-required", computed.label["data-required"])
       setAttr(label, "data-optional", computed.label["data-optional"])
+      const writtenLabel: LabelWord = {
+        required: computed.label["data-required"] ?? null,
+        optional: computed.label["data-optional"] !== undefined,
+      }
+      markWritten(
+        label,
+        "data-required",
+        writtenLabel.required !== serverLabel.required,
+      )
+      markWritten(
+        label,
+        "data-optional",
+        writtenLabel.optional !== serverLabel.optional,
+      )
       this.labelMemory.set(label, {
-        written: {
-          required: computed.label["data-required"] ?? null,
-          optional: computed.label["data-optional"] !== undefined,
-        },
+        written: writtenLabel,
         server: serverLabel,
       })
       setAttr(label, "aria-disabled", computed.label["aria-disabled"])
@@ -714,12 +739,24 @@ export class LtField extends HostElement {
     // alongside it: a real `disabled` is already visible to assistive
     // technology, and `computeFieldAttributes` only writes it on the label.
     setFlag(control, "disabled", disabled)
+    const written: ControlWord = {
+      invalid: ariaInvalid,
+      describedBy: computed.control["aria-describedby"] ?? null,
+      disabled,
+    }
+    markWritten(control, "aria-invalid", written.invalid !== server.invalid)
+    markWritten(
+      control,
+      "aria-describedby",
+      written.describedBy !== server.describedBy,
+    )
+    markWritten(control, "disabled", written.disabled !== server.disabled)
 
     this.memory.set(control, {
       written: {
-        invalid: ariaInvalid,
-        describedBy: computed.control["aria-describedby"] ?? null,
-        disabled,
+        invalid: written.invalid,
+        describedBy: written.describedBy,
+        disabled: written.disabled,
       },
       server,
     })

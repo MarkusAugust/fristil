@@ -7,6 +7,7 @@ import {
   waitForPaint,
 } from "../../../testing/a11y"
 import { attr } from "../../../testing/markup"
+import { replace } from "../../../testing/update"
 import { computeFieldAttributes } from "./field-core"
 import { defineLtField, type LtField } from "./lt-field"
 import "../../../tokens/tokens.css"
@@ -165,6 +166,32 @@ describe("lt-field", () => {
     expect(input.getAttribute("aria-invalid")).toBe("true")
     expect(input.getAttribute("data-state")).toBe("invalid")
   })
+
+  for (const way of ["Datastar", "idiomorph"] as const) {
+    it(`keeps the server's aria-invalid when it is the value the component wrote, by ${way}`, async () => {
+      /*
+       * The component wrote `aria-invalid="true"` for the shown error text,
+       * and the server then sends the same value with the text hidden. A
+       * morph leaves an attribute whose value is already right, and the
+       * component took the server's word for its own echo and removed it.
+       */
+      const form = (invalid: string, error: string) => `
+        <form id="contact"><lt-field>
+          <label class="lt-label" for="name">Full name</label>
+          <input class="lt-input" id="name" type="text"${invalid} />
+          <p class="lt-error-text"${error}>Enter your name.</p>
+        </lt-field></form>`
+      document.body.innerHTML = form("", "")
+      await waitForPaint()
+      const input = document.getElementById("name") as HTMLInputElement
+      expect(input.getAttribute("aria-invalid")).toBe("true")
+
+      replace(way, "contact", form(' aria-invalid="true"', " hidden"))
+      await waitForPaint()
+
+      expect(input.getAttribute("aria-invalid")).toBe("true")
+    })
+  }
 
   it("follows the server when a patch replaces the control", async () => {
     /*

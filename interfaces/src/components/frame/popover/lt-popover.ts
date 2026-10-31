@@ -196,7 +196,8 @@ export class LtPopover extends HostElement {
      * user or the server has said so. If it is gone while the user opened it, the
      * morph took it, and then it comes back.
      */
-    if (this.wantsOpen && !this.open && !isServerControlled(this)) {
+    const repairing = this.wantsOpen && !this.open && !isServerControlled(this)
+    if (repairing) {
       /*
        * Wait until the whole patch has landed before opening the popover again.
        *
@@ -206,10 +207,16 @@ export class LtPopover extends HostElement {
        * was taking over the state, and the popover stayed open afterwards.
        * `queueMicrotask` runs after the whole patch is done, and the condition is
        * checked again there.
+       *
+       * Until then the panel stays as it is: closing it while the repair waits
+       * took the focus from a button in it to the trigger on every patch.
+       * When the repair is called off, `sync()` closes the panel for real.
        */
       queueMicrotask(() => {
-        if (!this.isConnected || isServerControlled(this)) return
-        if (this.wantsOpen && !this.open) setFlag(this, "open", true)
+        if (!this.isConnected) return
+        if (!isServerControlled(this) && this.wantsOpen && !this.open)
+          setFlag(this, "open", true)
+        else this.sync()
       })
     }
 
@@ -322,16 +329,30 @@ export class LtPopover extends HostElement {
       this.panel = panel
     }
 
-    // Written by the component, and set again if a patch took it.
-    setAttr(trigger, "aria-expanded", String(this.open))
+    // Shown while a repair waits, so the button says the same as the panel.
+    const shown = this.open || repairing
 
-    if (this.open) {
+    // Written by the component, and set again if a patch took it.
+    setAttr(trigger, "aria-expanded", String(shown))
+
+    if (shown) {
       if (!panel.matches(":popover-open")) panel.showPopover()
       this.reposition()
       document.addEventListener("click", this.handleOutsideClick, true)
       document.addEventListener("keydown", this.handleKeydown)
     } else {
-      if (panel.matches(":popover-open")) panel.hidePopover()
+      if (panel.matches(":popover-open")) {
+        /*
+         * Focus in the panel goes back to the button, whatever closed it:
+         * `hide()`, `toggle()`, the server taking `open`. Otherwise it stays
+         * on a button that is no longer shown, and the next key press starts
+         * at the top of the page. Escape did this alone before. Focus
+         * elsewhere, such as a field the user clicked outside, stays.
+         */
+        const inside = panel.contains(document.activeElement)
+        panel.hidePopover()
+        if (inside) trigger.focus()
+      }
       document.removeEventListener("click", this.handleOutsideClick, true)
       document.removeEventListener("keydown", this.handleKeydown)
     }
@@ -397,7 +418,13 @@ export class LtPopover extends HostElement {
   }
 
   private handleTriggerClick = (): void => {
+    const closing = this.open
     this.toggle()
+    // Safari gives a clicked button no focus: focus in the panel went to
+    // `<body>` with the click, before the panel closed, and `sync()` did not
+    // see it there. The other browsers have given the button focus already.
+    if (closing && document.activeElement === document.body)
+      this.triggerElement?.focus()
   }
 
   private handlePanelToggle = (event: Event): void => {
@@ -529,18 +556,22 @@ export class LtPopover extends HostElement {
     )
   }
 
-  /** Opens the panel. */
+  /**
+   * Opens the panel. Through the setter also when it is open already, as
+   * when the server sent `open`: the call is the app's message, and without
+   * it the next patch without `open` closed the panel.
+   */
   show(): void {
-    if (this.open) return
+    const was = this.open
     this.open = true
-    this.emit(true)
+    if (!was) this.emit(true)
   }
 
-  /** Closes the panel. */
+  /** Closes the panel. Through the setter also when it is closed, as `show()`. */
   hide(): void {
-    if (!this.open) return
+    const was = this.open
     this.open = false
-    this.emit(false)
+    if (was) this.emit(false)
   }
 
   /** Opens or closes. */

@@ -11,6 +11,9 @@ git checkout -b what-you-are-working-on
 # work and commit, then run what CI runs before you send anything off
 git commit -am "Fix …"
 bun run check
+# and, when the change touches a frame component, host-element.ts or the
+# search in interfaces/src/testing/model.ts:
+bun run test:model
 
 git push -u origin what-you-are-working-on
 gh pr create --fill
@@ -59,6 +62,19 @@ you work, `bun --filter @lo-tek/interfaces test:browser --project chromium`
 is enough. `bun run test -- --project chromium` does not work: `bun run` appends
 the arguments to the end of the script text, and `test` is two commands in a
 row, so the flags end up on the last one.
+
+## `bun run test:model`
+
+The model tests, one `*.model.browser.test.ts` per frame component, try
+every order of server updates and user actions to depth 3, in all three
+browsers, and check the accessibility tree and the component's promises
+after each step (`interfaces/src/testing/model.ts`). They are not in
+`bun run check` or CI: they search for bugs nobody has thought of, rather
+than guard what is known, and took the check from nine minutes to sixteen.
+Run them before a pull request that touches a frame component,
+`interfaces/src/components/host-element.ts` or the search; they took nine minutes on an M-series Mac
+that was busy with other work. A bug they find gets a scenario test of its own in the
+component's ordinary test file, which CI keeps.
 
 The browsers are installed once:
 

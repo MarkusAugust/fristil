@@ -3,10 +3,14 @@ import {
   derivedParts,
   HostElement,
   isServerControlled,
+  markWritten,
   SERVER_CONTROLLED,
   setAttr,
   setFlag,
+  stillMarked,
   uniqueId,
+  WRITTEN,
+  warnAboutCopiedMark,
   warnAboutMarkup,
 } from "../../host-element.js"
 export const LT_TABS_TAG = "lt-tabs" as const
@@ -169,6 +173,18 @@ function nameAsReferenced(element: Element): string {
 type Word = { written: string | null; server: string | null }
 
 /**
+ * Whether a morph from the server has been there since the web component
+ * wrote the attribute: the mark it wrote is gone. Only a value that differed
+ * from the server's word was marked (`markWritten`); one that did not has
+ * no mark to lose, and its absence says nothing. Read as a sign of the
+ * server, every unmarked tab in a row of three released a click under
+ * `server-controlled` at once.
+ */
+function markGone(element: Element, name: string, word: Word): boolean {
+  return word.written !== word.server && !stillMarked(element, name)
+}
+
+/**
  * Keyboard behaviour in a tab list, and the wiring when the markup comes
  * without it.
  *
@@ -239,22 +255,34 @@ export class LtTabs extends HostElement {
 
   private observer?: MutationObserver
   /**
-   * The tab the user selected, remembered so a patch cannot take it.
+   * The panel the user's tab points to, remembered so a patch cannot take
+   * the selection.
    *
-   * The node itself, not the index and not `href`. An index is not an
-   * identity: if the server inserts a tab first in the list, the same index
-   * points to something else, and the selection jumps to a tab the user never
-   * pressed.
+   * Not the index and not the node. An index is not an identity: if the
+   * server inserts a tab first in the list, the same index points to
+   * something else. The node is not one either: the links have no id, so
+   * Datastar and idiomorph match them by position, and the node the user
+   * pressed became the inserted tab. The panel's id is the server's and
+   * stays; a tab pointing to another panel is another tab.
    *
-   * A morph keeps the links, since they have no id. If the patch replaces the
-   * link itself, as `innerHTML` does, the tab is a different one, and then
-   * the web component forgets the selection rather than guessing; the address
-   * still has it, see `selectFromAddress`.
+   * Remembered with the link, `chosenTab`.
    *
    * `undefined` means the user has not selected anything yet, and then the
    * server's markup applies.
    */
+  private chosenTarget?: string
+  /**
+   * The link the user pressed, with `chosenTarget`. While it is in the tab
+   * list and points to the same panel, it is the user's tab, also when
+   * another tab points to that panel too. When a morph has turned it into
+   * another tab, or dropped it while it kept other links, the tab that points
+   * to the panel is found. When the links were replaced, none of the row is
+   * left, as `innerHTML` does, and the selection is forgotten rather than
+   * guessed; the address still has it, see `selectFromAddress`.
+   */
   private chosenTab?: HTMLElement
+  /** The tab list as it was when the user's tab was last found. */
+  private chosenRow: HTMLElement[] = []
   /**
    * Roles the web component set itself. Tells a bare tab list, where every
    * link is a tab, from one where the server wrote the roles, where a link
@@ -287,7 +315,7 @@ export class LtTabs extends HostElement {
    * The tab the user clicked under `server-controlled`, until the server
    * answers.
    *
-   * It is not the user's selection in the sense of `chosenTab`: it is never
+   * It is not the user's selection in the sense of `chosenTarget`: it is never
    * restored against the server's word. It only lasts until someone else has
    * touched `aria-selected` or `hidden`, added a tab or a panel, removed the
    * tab, or removed `server-controlled`. Without it, `repair()` read the
@@ -360,6 +388,9 @@ export class LtTabs extends HostElement {
       // disables the selected tab, the tab stop moves to one that can take
       // focus. `alt`, `aria-hidden` and `title` change the name of a tab.
       attributeFilter: [
+        // A morph from the server removes the mark, and the web component
+        // puts it back: the same markup must give the same page.
+        WRITTEN,
         "aria-selected",
         "tabindex",
         "hidden",
@@ -385,7 +416,7 @@ export class LtTabs extends HostElement {
     // `server-controlled` switched on midway: the web component lets go, and
     // the next patch decides.
     if (name === SERVER_CONTROLLED && isServerControlled(this)) {
-      this.chosenTab = undefined
+      this.choose(undefined)
       // What is there now is the starting point. Without this the tab list
       // jumped back to the tab the server last named, before the user chose
       // another. But as when the server answers a click: `aria-selected` the
@@ -426,28 +457,77 @@ export class LtTabs extends HostElement {
     ).filter((tab) => linkTarget(tab) !== null)
   }
 
+  /** Remembers the user's tab: the link, and the panel it points to. */
+  private choose(tab: HTMLElement | undefined): void {
+    this.chosenTab = tab
+    this.chosenTarget = tab ? (linkTarget(tab) ?? undefined) : undefined
+    this.chosenRow = tab ? this.tabs : []
+  }
+
+  /**
+   * Where the user's tab is now, or -1: the link while it points to the same
+   * panel; the tab that points to that panel when a morph has turned the
+   * link into another tab, or dropped it and kept others (the morphers match
+   * links without ids by position, and look ahead when one is removed);
+   * none when the links were replaced, with nothing of the row left.
+   */
+  private chosenIndex(): number {
+    const tabs = this.tabs
+    const link = this.chosenTab
+    if (!link || this.chosenTarget === undefined) return -1
+    const at = tabs.indexOf(link)
+    if (at >= 0 && linkTarget(link) === this.chosenTarget) {
+      this.chosenRow = tabs
+      return at
+    }
+    const morphed = at >= 0 || this.chosenRow.some((tab) => tabs.includes(tab))
+    if (!morphed) return -1
+    const moved = tabs.findIndex((tab) => linkTarget(tab) === this.chosenTarget)
+    if (moved >= 0) {
+      this.chosenTab = tabs[moved]
+      this.chosenRow = tabs
+    }
+    return moved
+  }
+
   /** The server's word about an attribute, against what the web component last wrote. */
   private serverWord(
     memory: WeakMap<Element, Word>,
     element: Element,
-    now: string | null,
+    name: string,
   ): string | null {
+    const now = element.getAttribute(name)
     const known = memory.get(element)
-    if (!known) return now
-    return now !== known.written ? now : known.server
+    if (!known) {
+      warnAboutCopiedMark(this, element)
+      return now
+    }
+    // The server's when the value is another, or when a morph from the
+    // server has been there since the web component wrote it (`WRITTEN`).
+    return now !== known.written || !stillMarked(element, name)
+      ? now
+      : known.server
   }
 
   /** Is there something on a tab or a panel other than what the web component wrote? */
   private touchedByOthers(): boolean {
     return this.tabs.some((tab) => {
       const selected = this.selectedMemory.get(tab)
-      if (!selected || tab.getAttribute("aria-selected") !== selected.written) {
+      if (
+        !selected ||
+        tab.getAttribute("aria-selected") !== selected.written ||
+        markGone(tab, "aria-selected", selected)
+      ) {
         return true
       }
       const panel = this.panelFor(tab)
       if (!panel) return false
       const hidden = this.hiddenMemory.get(panel)
-      return !hidden || panel.getAttribute("hidden") !== hidden.written
+      return (
+        !hidden ||
+        panel.getAttribute("hidden") !== hidden.written ||
+        markGone(panel, "hidden", hidden)
+      )
     })
   }
 
@@ -476,7 +556,9 @@ export class LtTabs extends HostElement {
       // A new, bare tab has said nothing. Had it counted, the click's
       // `aria-selected` was read as the server's, and a later move with
       // `hidden` alone was undone.
-      return known ? now !== known.written : now !== null
+      return known
+        ? now !== known.written || markGone(tab, "aria-selected", known)
+        : now !== null
     })
     this.hiddenMemory = new WeakMap()
     if (serverSpoke) {
@@ -484,28 +566,19 @@ export class LtTabs extends HostElement {
       return
     }
     for (const tab of tabs) {
-      this.selectedMemory.set(tab, {
-        written: tab.getAttribute("aria-selected"),
-        server: null,
-      })
+      const written = tab.getAttribute("aria-selected")
+      this.selectedMemory.set(tab, { written, server: null })
+      markWritten(tab, "aria-selected", written !== null)
     }
   }
 
   private serverSelected(tab: Element): string | null {
-    return this.serverWord(
-      this.selectedMemory,
-      tab,
-      tab.getAttribute("aria-selected"),
-    )
+    return this.serverWord(this.selectedMemory, tab, "aria-selected")
   }
 
   /** The server's word about `hidden` on the panel: the form, or `null` for visible. */
   private serverHidden(panel: Element): string | null {
-    return this.serverWord(
-      this.hiddenMemory,
-      panel,
-      panel.getAttribute("hidden"),
-    )
+    return this.serverWord(this.hiddenMemory, panel, "hidden")
   }
 
   /**
@@ -879,7 +952,7 @@ export class LtTabs extends HostElement {
       this.releasePending()
     }
 
-    if (!this.chosenTab || isServerControlled(this)) {
+    if (this.chosenTarget === undefined || isServerControlled(this)) {
       /*
        * No user selection to restore, so the server's word decides, and it
        * is written out in full: `aria-selected`, the tab stop and `hidden` in
@@ -898,7 +971,8 @@ export class LtTabs extends HostElement {
       return
     }
 
-    const index = this.tabs.indexOf(this.chosenTab)
+    const chosen = this.chosenTarget
+    const index = this.chosenIndex()
     if (index < 0) {
       /*
        * The tab no longer exists. The server has sent something else, and
@@ -917,8 +991,8 @@ export class LtTabs extends HostElement {
        * loads the panel's content or writes the selection to the address
        * would never learn that it moved.
        */
-      const lostPanel = this.panelFor(this.chosenTab)
-      this.chosenTab = undefined
+      const lostPanel = chosen === undefined ? null : this.byFragment(chosen)
+      this.choose(undefined)
       // The server marked a tab itself. Then that applies, and the panels and
       // the tab stop are written to match it, even when nothing else gave the
       // observer another round.
@@ -938,10 +1012,10 @@ export class LtTabs extends HostElement {
         const tab = this.tabs[index]
         this.apply(index)
         if (this.panelFor(tab) === lostPanel) {
-          this.chosenTab = tab
+          this.choose(tab)
           return
         }
-        if (fromAddress >= 0) this.chosenTab = tab
+        if (fromAddress >= 0) this.choose(tab)
         this.showInAddress(index)
         this.notify(index)
       }
@@ -1225,7 +1299,7 @@ export class LtTabs extends HostElement {
     // No memory when the server decides the selection. Without this a
     // selection made while the attribute was there would be restored the
     // moment someone removed it again.
-    if (!isServerControlled(this)) this.chosenTab = tabs[index]
+    if (!isServerControlled(this)) this.choose(tabs[index])
     this.apply(index)
     if (isServerControlled(this)) this.pendingTab = tabs[index]
     this.showInAddress(index)
@@ -1275,6 +1349,7 @@ export class LtTabs extends HostElement {
       const server = this.serverSelected(tab)
       setAttr(tab, "aria-selected", String(chosen))
       this.selectedMemory.set(tab, { written: String(chosen), server })
+      markWritten(tab, "aria-selected", String(chosen) !== server)
       setAttr(tab, "tabindex", i === stop ? "0" : "-1")
 
       const panel = this.panelFor(tab)
@@ -1299,6 +1374,7 @@ export class LtTabs extends HostElement {
         if (written === null) setFlag(panel, "hidden", false)
         else setAttr(panel, "hidden", written)
         this.hiddenMemory.set(panel, { written, server })
+        markWritten(panel, "hidden", written !== server)
       }
       /*
        * Only the selected panel is a tab stop, so Tab from the tab list goes

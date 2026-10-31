@@ -245,7 +245,7 @@ If the address cannot be written, as in Safari after many quick selections or in
 Two limitations follow from there being only one address:
 
 - Two tab lists on the same page share it. A selection in one overwrites the address of the other, and only the last can be restored from a shared link.
-- An app that routes on the fragment, like `#/case/1`, gets the address overwritten by the tabs. Then `server-controlled` belongs with it, see below: there the address selects no tab, and the component does not write it either.
+- An app that routes on the fragment, like `#/case/1`, gets the address overwritten by the tabs when the user selects one. `server-controlled` stops the address from selecting a tab, see below, but a click still writes the tab to the address.
 
 ## Why the panels are hidden with `hidden="until-found"`
 

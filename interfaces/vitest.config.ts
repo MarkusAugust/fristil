@@ -4,6 +4,9 @@ import { defineConfig } from "vitest/config"
 export default defineConfig({
   test: {
     include: ["src/**/*.browser.test.ts"],
+    // The model tests run on their own, before a pull request:
+    // `vitest.model.config.ts`.
+    exclude: ["src/**/*.model.browser.test.ts"],
     browser: {
       enabled: true,
       provider: playwright(),

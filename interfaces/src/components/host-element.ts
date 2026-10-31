@@ -97,6 +97,79 @@ export function setAttr(
 }
 
 /**
+ * The attribute a component marks what it wrote with: the names of the
+ * attributes on the element whose value is the component's, separated by
+ * spaces.
+ *
+ * Some attributes are both the server's and the component's: `aria-invalid`
+ * on a field, `aria-selected` on a tab. To tell the server's word from its
+ * own echo, a component remembered the value it wrote, and read anything
+ * else as the server's. A server that sent the same value was never seen: a
+ * morph does not touch an attribute whose value is already right, and the
+ * component took the server's `aria-invalid="true"` for its own and removed
+ * it. The mark is what a morph does touch. The server never sends it, so a
+ * morph from the server removes it, and an attribute without the mark is the
+ * server's, whatever its value. A script that changes the element without a
+ * morph leaves the mark, and is seen as before, by the value.
+ *
+ * Only what differs from the server's word is marked. A value that is the
+ * server's has nothing to tell apart, and markup that is already right, as
+ * React renders `lt.tabs()` with the state, must not be touched: hydration
+ * reports every attribute it did not render.
+ */
+export const WRITTEN = "data-lt-written"
+
+/**
+ * Marks `name` on `element` as the component's when `mine`, that is, when
+ * what the component wrote differs from the server's word, and removes the
+ * mark otherwise.
+ */
+export function markWritten(
+  element: Element,
+  name: string,
+  mine: boolean,
+): void {
+  const marked = new Set(
+    (element.getAttribute(WRITTEN) ?? "").split(/\s+/).filter(Boolean),
+  )
+  if (mine) marked.add(name)
+  else marked.delete(name)
+  setAttr(
+    element,
+    WRITTEN,
+    marked.size > 0 ? [...marked].sort().join(" ") : null,
+  )
+}
+
+/**
+ * Warns when `element` carries the mark before the component has written on
+ * it: the mark is in the markup it was given, copied into a template from
+ * the browser's developer tools. A morph then never removes it, and the
+ * component takes the server's word for its own echo again. Called where the
+ * component meets the element for the first time; the check cannot wait, so
+ * the warning is not checked again when the page has settled.
+ */
+export function warnAboutCopiedMark(host: Element, element: Element): void {
+  if (!element.hasAttribute(WRITTEN)) return
+  warnAboutMarkup(
+    host,
+    `found ${WRITTEN} in the markup it was given. The browser writes the ` +
+      "attribute to tell the component's own values from the server's; " +
+      "copied into a template, it makes the component take what the " +
+      "server sends for its own. Remove it from the template.",
+    () => true,
+  )
+}
+
+/**
+ * Whether the component's mark for `name` is still on `element`: no morph
+ * from the server has been there since the component wrote it.
+ */
+export function stillMarked(element: Element, name: string): boolean {
+  return (element.getAttribute(WRITTEN) ?? "").split(/\s+/).includes(name)
+}
+
+/**
  * Turns a boolean attribute on or off, without writing when it is already so.
  *
  * `el.hidden = true` on something already hidden writes the attribute again,

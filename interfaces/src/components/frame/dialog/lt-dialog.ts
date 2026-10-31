@@ -159,7 +159,9 @@ export class LtDialog extends HostElement {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["class", "id", "aria-labelledby"],
+      // `aria-label` too: removed, the dialog is named after its title
+      // again, and without it here the dialog was left without a name.
+      attributeFilter: ["class", "id", "aria-labelledby", "aria-label"],
     })
     this.sync()
   }
@@ -284,7 +286,8 @@ export class LtDialog extends HostElement {
   }
 
   private notify(open: boolean, returnValue = ""): void {
-    if (open === this.lastNotified) return
+    // A dialog starts closed: one that never opened reported a close.
+    if (open === (this.lastNotified ?? false)) return
     this.lastNotified = open
     this.dispatchEvent(
       new CustomEvent("dialog-toggle", {
