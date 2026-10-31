@@ -3,6 +3,22 @@
 The extension has its own version number. It does not follow the package,
 since it only changes when an element or an attribute does.
 
+## 0.11.0
+
+The checker from `@lo-tek/interfaces` 0.38.0.
+
+- **One rule for a missing name, `without-name`, an error.** It replaces
+  `icon-without-name`, `control-without-label`, `tab-list-without-name`
+  and `field-without-label`; a `<!-- lotek-ignore-next -->` naming one of
+  them has to name `without-name`. It covers every role WAI-ARIA requires a
+  name for on LO-TEK's elements and classes and on every button and link,
+  computes the name as the browser does, a `<title>` in an svg included,
+  and says nothing where a binding, a template or another part of the page
+  could give one.
+- **`untranslated-text`, a warning,** when a LO-TEK component shows one of
+  its own English default texts on a page whose nearest `lang` is another
+  language.
+
 ## 0.10.1
 
 - The snippets are one snippet file, `lotek.code-snippets`, with the

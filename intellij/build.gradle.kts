@@ -58,6 +58,16 @@ intellijPlatform {
         // Shown on the Marketplace and in the IDE on update, and must be in
         // English like the description. Write a new line for each version.
         changeNotes = """
+            <b>0.5.0</b>: The checker from <code>@lo-tek/interfaces</code> 0.38.0.
+            One rule for a missing name, <code>without-name</code>, an error, replaces
+            <code>icon-without-name</code>, <code>control-without-label</code>,
+            <code>tab-list-without-name</code> and <code>field-without-label</code>: a
+            <code>lotek-ignore-next</code> naming one of them has to name
+            <code>without-name</code>. It computes the name as the browser does, and
+            says nothing where a binding or a template could give one. A new warning,
+            <code>untranslated-text</code>, for LO-TEK's own English texts on a page in
+            another language.
+            <br><br>
             <b>0.4.0</b>: The first version under this name. It takes over from the
             earlier plugin, and the history starts here. Completion of LO-TEK's CSS
             classes in HTML files and in HTML injected into strings, and diagnostics
