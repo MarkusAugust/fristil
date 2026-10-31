@@ -345,7 +345,7 @@ The field is a `role="combobox"` with `aria-autocomplete="list"`, and the list a
 - **Every option says whether it is selected**, with `aria-selected`, from the start.
 - **While the answer is on its way** the list says `aria-busy="true"`, which `lt.suggestion({ id, pending: true })` writes, and "No matches" stays hidden.
 - **Focus stays in the field.** The highlight moves with `aria-activedescendant`, not by moving focus, so the user can keep typing.
-- **The number of matches is announced.** Without it, someone who cannot see the screen gets no message that the list narrowed. The component writes the text, and if an update from the server clears the element, the component writes it again.
+- **The number of matches is announced.** Without it, someone who cannot see the screen gets no message that the list narrowed. The component writes the text, and if an update from the server clears the element while the list is open, the component writes it again. Over a closed list it stays empty, or every update would announce the old count again.
 - **Escape closes the list** without clearing the field, and a click outside does the same.
 - **An option with `aria-disabled="true"`** is shown, but skipped by the arrow keys and cannot be chosen.
 - **A field with `readonly` or `disabled`** does not open the list.
